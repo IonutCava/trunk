@@ -31,15 +31,7 @@ author:     Paul D Turner
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
-#if (defined( __WIN32__ ) || defined( _WIN32 )) && !defined(CEGUI_STATIC)
-#   if defined(CEGUIOPENGLRENDERER_EXPORTS) || defined(CEGUIOPENGLES2RENDERER_EXPORTS)
-#       define OPENGL_GUIRENDERER_API __declspec(dllexport)
-#   else
-#       define OPENGL_GUIRENDERER_API __declspec(dllimport)
-#   endif
-#else
-#   define OPENGL_GUIRENDERER_API
-#endif
+#define OPENGL_GUIRENDERER_API
 
 namespace CEGUI {
 

@@ -350,27 +350,27 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -437,7 +437,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM;_CRT_SECURE_NO_WARNINGS;_DEBUG;</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -518,7 +518,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableModules>false</EnableModules>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -543,7 +543,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; </PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -570,6 +570,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -591,7 +592,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>PLATFORM;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; </PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -617,6 +618,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

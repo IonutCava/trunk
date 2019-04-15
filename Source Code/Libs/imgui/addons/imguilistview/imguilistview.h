@@ -129,7 +129,7 @@ TODO: Header columns with type HT_CUSTOM have never been tested.
 
 // TODO: move to the .cpp files together with all its references
 #if (defined(_MSC_VER) && !defined(snprintf))
-#   define snprintf _snprintf
+//#   define snprintf _snprintf
 #endif //(defined(_MSC_VER) && !defined(snprintf))
 
 // Enforce cdecl calling convention for functions called by the standard library, in case compilation settings changed the default to e.g. __vectorcall

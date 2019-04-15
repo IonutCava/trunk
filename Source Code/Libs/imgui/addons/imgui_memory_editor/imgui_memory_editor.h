@@ -47,7 +47,7 @@
 #include <stdio.h>      // sprintf, scanf
 #include <stdint.h>     // uint8_t, etc.
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
 #define _PRISizeT   "I"
 #define snprintf    _snprintf
 #else

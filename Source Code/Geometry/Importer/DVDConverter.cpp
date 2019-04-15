@@ -145,7 +145,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                                 g_removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT
                                                        : 0);
 
-    importer.SetPropertyInteger(AI_CONFIG_IMPORT_FBX_SEARCH_EMBEDDED_TEXTURES, 1);
+    //importer.SetPropertyInteger(AI_CONFIG_IMPORT_FBX_SEARCH_EMBEDDED_TEXTURES, 1);
     importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
     importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 

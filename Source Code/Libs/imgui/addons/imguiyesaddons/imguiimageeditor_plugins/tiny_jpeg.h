@@ -189,7 +189,9 @@ static uint8_t tjei_g_output_buffer[TJEI_BUFFER_SIZE];
 #ifdef _WIN32
 
 #include <windows.h>
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
 #define snprintf sprintf_s
+#endif
 // Not quite the same but it works for us. If I am not mistaken, it differs
 // only in the return value.
 
