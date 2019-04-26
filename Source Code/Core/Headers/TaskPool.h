@@ -70,6 +70,10 @@ public:
         return getGUID() != other.getGUID();
     }
 
+    // Called by a task that isn't doing anything (e.g. waiting on child tasks).
+    // Use this to run another task (if any) and return to the previous execution point
+    void threadWaiting();
+
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend struct Task;
@@ -90,10 +94,6 @@ public:
 
     friend class ThreadPool;
     void onThreadCreate(const std::thread::id& threadID);
-
-    // Called by a task that isn't doing anything (e.g. waiting on child tasks).
-    // Use this to run another task (if any) and return to the previous execution point
-    void threadWaiting();
 
   private:
      stringImpl _threadNamePrefix;

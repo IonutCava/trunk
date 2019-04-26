@@ -174,7 +174,7 @@ namespace Import {
     }
 };
     bool MeshImporter::loadMeshDataFromFile(PlatformContext& context, ResourceCache& cache, Import::ImportData& dataOut) {
-        Time::ProfileTimer importTimer;
+        Time::ProfileTimer importTimer = {};
         importTimer.start();
 
         bool success = false;
@@ -197,7 +197,7 @@ namespace Import {
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("LOAD_MESH_TIME")),
                            dataOut._modelName.c_str(),
-                           Time::MicrosecondsToSeconds<F32>(importTimer.get()));
+                           Time::MicrosecondsToMilliseconds<F32>(importTimer.get()));
 
         return success;
     }
@@ -276,7 +276,7 @@ namespace Import {
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")),
                            dataIn._modelName.c_str(),
-                           Time::MillisecondsToSeconds(importTimer.get()));
+                           Time::MicrosecondsToMilliseconds(importTimer.get()));
 
         return true;
     }
