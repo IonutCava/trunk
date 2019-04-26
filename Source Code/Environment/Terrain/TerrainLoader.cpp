@@ -26,6 +26,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                                 PlatformContext& context,
                                 bool threadedLoading,
                                 const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback ) {
+
+    auto waitForReasoureTask = [&context](CachedResource_wptr res) {
+        context.taskPool(TaskPoolType::HIGH_PRIORITY).threadWaiting();
+    };
+
+
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
     const stringImpl& terrainMapLocation = Paths::g_assetsLocation + terrainDescriptor->getVariable("textureLocation");
     Attorney::TerrainLoader::descriptor(*terrain, terrainDescriptor);
@@ -180,7 +186,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     textureBlendMap.assetName(blendMapArray);
     textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
-
     textureTileMaps.assetName(albedoMapArray);
     textureTileMaps.setPropertyDescriptor(albedoDescriptor);
     
@@ -223,7 +228,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     textureWaterCaustics.assetLocation(terrainMapLocation);
     textureWaterCaustics.assetName(terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(miscTexDescriptor);
-    
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
@@ -280,6 +284,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shadowShaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
     shadowShaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
     terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
+    if (threadedLoading) {
+        terrainShaderShadow.waitForReadyCbk(waitForReasoureTask);
+    }
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
     if (terrainDescriptor->wireframeDebug()) {
@@ -291,18 +298,27 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
     shaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
     terrainShaderColour.setPropertyDescriptor(shaderDescriptor);
+    if (threadedLoading) {
+        terrainShaderColour.waitForReadyCbk(waitForReasoureTask);
+    }
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
 
     ResourceDescriptor terrainShaderPrePass(shaderName + ".PrePass-" + name);
     ShaderProgramDescriptor prepassShaderDescriptor = shaderDescriptor;
     prepassShaderDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
     terrainShaderPrePass.setPropertyDescriptor(prepassShaderDescriptor);
+    if (threadedLoading) {
+        terrainShaderPrePass.waitForReadyCbk(waitForReasoureTask);
+    }
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
     ResourceDescriptor terrainShaderColourLQ(shaderName + ".Colour.LowQuality-" + name);
     ShaderProgramDescriptor lowQualityShaderDescriptor = shaderDescriptor;
     lowQualityShaderDescriptor._defines.push_back(std::make_pair("LOW_QUALITY", true));
     terrainShaderColourLQ.setPropertyDescriptor(lowQualityShaderDescriptor);
+    if (threadedLoading) {
+        terrainShaderColourLQ.waitForReadyCbk(waitForReasoureTask);
+    }
     ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColourLQ);
 
     terrainMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);

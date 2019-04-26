@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-ReCast", "Projects\Divide-ReCast\Divide-ReCast.vcxproj", "{1ED21303-434E-46DA-8050-2DF2684BE74E}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -94,9 +94,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{544FCD80-D8C7-42CC-9189-9A65D4F26EC6}"
 EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_UnityBuild|x64 = Debug_UnityBuild|x64
 		Debug|x64 = Debug|x64
@@ -152,7 +149,6 @@ Global
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Debug-UnityBuild|x64.ActiveCfg = Debug-UnityBuild|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Debug-UnityBuild|x64.Build.0 = Debug-UnityBuild|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Profile|x64.ActiveCfg = Profile|x64
-		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Profile|x64.Build.0 = Profile|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Release|x64.ActiveCfg = Release|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Release|x64.Build.0 = Release|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Debug_UnityBuild|x64.ActiveCfg = Debug_UnityBuild|x64
@@ -162,7 +158,6 @@ Global
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Debug-UnityBuild|x64.ActiveCfg = Debug-UnityBuild|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Debug-UnityBuild|x64.Build.0 = Debug-UnityBuild|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Profile|x64.ActiveCfg = Profile|x64
-		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Profile|x64.Build.0 = Profile|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Release|x64.ActiveCfg = Release|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Release|x64.Build.0 = Release|x64
 		{87F22E92-2988-41FA-9E23-00033408A869}.Debug_UnityBuild|x64.ActiveCfg = Debug-UnityBuild|x64
@@ -221,6 +216,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3D06752E-8BD6-487B-9DE6-74632A399539}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

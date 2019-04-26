@@ -176,9 +176,18 @@ bool glShaderProgram::validateInternal() {
     return shaderError;
 }
 
-void glShaderProgram::validate() {
+bool glShaderProgram::validationQueued() {
+    return _validationQueued && _shaderProgramID != 0 && _shaderProgramID != GLUtil::_invalidObjectID;
+}
+
+void glShaderProgram::validatePreBind() {
+    if (validationQueued() && !_loadedFromBinary) {
+    }
+}
+
+void glShaderProgram::validatePostBind() {
     // If we haven't validated the program but used it at lease once ...
-    if (_validationQueued && _shaderProgramID != 0 && _shaderProgramID != GLUtil::_invalidObjectID) {
+    if (validationQueued()) {
         _lockManager->Wait(true);
 
         // Call the internal validation function
@@ -214,6 +223,11 @@ void glShaderProgram::validate() {
              }
             // delete our local code buffer
             MemoryManager::DELETE(binary);
+
+            // Detach shaders after link so that the driver might free up some memory remove shader stages
+            for (glShader* shader : _shaderStage) {
+                detachShader(shader);
+            }
         }
         // clear validation queue flag
         _validationQueued = false;
@@ -306,6 +320,8 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
     // Loading from binary gives us a linked program ready for usage.
     if (!loadFromBinary()) {
+        _linked = true;
+
         bool shouldLink = reloadShaders(false);
 
         _stageMask = UseProgramStageMask::GL_NONE_BIT;
@@ -318,11 +334,8 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
             glUseProgramStages(_shaderProgramIDTemp, _stageMask, _shaderProgramIDTemp);
         }
         // Link the program
-        _linked = shouldLink ? link() : true;
-
-        // Detach shaders after link so that the driver might free up some memory remove shader stages
-        for (glShader* shader : _shaderStage) {
-            detachShader(shader);
+        if (shouldLink) {
+            _linked = link();
         }
     }
 
@@ -341,10 +354,8 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 /// Linking a shader program also sets up all pre-link properties for the shader (varying locations, attrib bindings, etc)
 bool glShaderProgram::link() {
     Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), resourceName().c_str(), _shaderProgramIDTemp, getGUID());
-
     // Link the program
     glLinkProgram(_shaderProgramIDTemp);
-
     _shaderVarLocation.clear();
 
     // And check the result
@@ -359,11 +370,9 @@ bool glShaderProgram::link() {
         if (Config::ENABLE_GPU_VALIDATION) {
             glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, resourceName().c_str());
         }
-        // The linked flag is set to true only if linking succeeded
-        return true;
     }
-
-    return false;
+    // The linked flag is set to true only if linking succeeded
+    return linkStatus == GL_TRUE;
 }
 
 bool glShaderProgram::loadFromBinary() {
@@ -415,7 +424,10 @@ glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
     // If we have effect properties, we extract them from the name
     // (starting from the first "." symbol to the first "," symbol)
     if (propPosition != stringImpl::npos) {
-        loadInfo._programProperties = "." + assetName().substr(propPosition + 1, assetName().length()-1);
+        stringImpl properties = assetName().substr(propPosition + 1, assetName().length() - 1);
+        if (!properties.empty()) {
+            loadInfo._programProperties = "." + properties;
+        }
     }
 
     // Get all of the preprocessor defines and add them to the general shader header for this program
@@ -499,9 +511,12 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
         stringImpl shaderCompileName(info._programName +
                                      "." +
                                      GLUtil::glShaderStageNameTable[i] +
-                                     info._programProperties +
-                                     "." +
-                                     info._programNameSuffix);
+                                     info._programProperties);
+        
+        if (!info._programNameSuffix.empty()) {
+            shaderCompileName.append("." + info._programNameSuffix);
+        }
+
         glShader*& shader = _shaderStage[i];
 
         // We ask the shader manager to see if it was previously loaded elsewhere
@@ -619,11 +634,13 @@ bool glShaderProgram::bind(bool& wasBound) {
     // This should almost always end up as a NOP
     _lockManager->Wait(false);
 
+    validatePreBind();
+
     // Set this program as the currently active one
     wasBound = GL_API::getStateTracker().setActiveProgram(_shaderProgramID);
 
     if (!wasBound) {
-        validate();
+        validatePostBind();
     }
 
     return true;
@@ -935,13 +952,11 @@ void glShaderProgram::shaderFileRead(const stringImpl& filePath,
                                      stringImpl& sourceCodeOut) {
     stringImpl variant = fileName;
     if (Config::Build::IS_DEBUG_BUILD) {
-        variant.append("debug");
-    }
-    else if (Config::Build::IS_PROFILE_BUILD) {
-        variant.append("profile");
-    }
-    else {
-        variant.append("release");
+        variant.append(".debug");
+    } else if (Config::Build::IS_PROFILE_BUILD) {
+        variant.append(".profile");
+    } else {
+        variant.append(".release");
     }
     readFile(filePath, variant, sourceCodeOut, FileType::TEXT);
 }
@@ -951,11 +966,11 @@ void glShaderProgram::shaderFileRead(const stringImpl& filePath,
 void glShaderProgram::shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode) {
     stringImpl variant = fileName;
     if (Config::Build::IS_DEBUG_BUILD) {
-        variant.append("debug");
+        variant.append(".debug");
     } else if (Config::Build::IS_PROFILE_BUILD) {
-        variant.append("profile");
+        variant.append(".profile");
     } else {
-        variant.append("release");
+        variant.append(".release");
     }
 
     writeFile(filePath, variant, (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);

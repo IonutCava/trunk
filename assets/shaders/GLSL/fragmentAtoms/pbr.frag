@@ -152,7 +152,8 @@ vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float
 
 vec4 PBR(in vec4 lightColourAndAtt,
          in vec4 specular,
-         in vec4 albedo,
+         in vec4 albedoAndShadow,
+         in vec3 normalWV,
          in vec3 lightDirection)
 {
     vec3 albedo = albedoAndShadow.rgb;
@@ -163,9 +164,9 @@ vec4 PBR(in vec4 lightColourAndAtt,
     // direction is NOT normalized
     vec3 Hn = normalize(dvd_ViewDirNorm + lightDirection);
     float vdh = clamp((dot(dvd_ViewDirNorm, Hn)), M_EPSILON, 1.0);
-    float ndh = clamp((dot(private_normalWV, Hn)), M_EPSILON, 1.0);
-    float ndl = clamp((dot(private_normalWV, normalize(lightDirection))), M_EPSILON, 1.0);
-    float ndv = clamp((dot(private_normalWV, dvd_ViewDirNorm)), M_EPSILON, 1.0);
+    float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
+    float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0);
+    float ndv = clamp((dot(normalWV, dvd_ViewDirNorm)), M_EPSILON, 1.0);
     vec3 diffuseFactor = Diffuse(albedo, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
 
     vec3 fresnelTerm = Fresnel(specular.rgb, vdh);

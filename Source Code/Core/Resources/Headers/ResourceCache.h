@@ -37,6 +37,7 @@
 
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
@@ -85,6 +86,9 @@ public:
     typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
     loadResource(const ResourceDescriptor& descriptor, bool& wasInCache)
     {
+        Time::ProfileTimer loadTimer = {};
+        loadTimer.start();
+
         // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
         const size_t loadingHash = descriptor.getHash();
 
@@ -111,7 +115,6 @@ public:
             if (descriptor.waitForReadyCbk()) {
                 while (ptr->getState() != ResourceState::RES_LOADED) {
                     descriptor.waitForReadyCbk()(ptr);
-                    std::this_thread::yield();
                 }
             } else {
                 WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
@@ -121,6 +124,11 @@ public:
         if (wasInCache && descriptor.onLoadCallback()) {
             descriptor.onLoadCallback()(ptr);
         }
+
+        loadTimer.stop();
+
+        const F32 timeInMS = Time::MicrosecondsToMilliseconds<F32>(loadTimer.get());
+        Console::printfn(Locale::get(_ID("RESOURCE_CACHE_LOAD_TIME")), descriptor.resourceName().c_str(), wasInCache ? "retrieved" : "loaded", timeInMS, timeInMS >= Time::SecondsToMilliseconds(1) ? " !!!!" : "");
 
         return ptr;
     }
