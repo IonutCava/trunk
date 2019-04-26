@@ -472,7 +472,8 @@ void GFXDevice::closeRenderingAPI() {
     _displayShader = nullptr;
     _textRenderShader = nullptr;
     _prevDepthBuffer = nullptr;
-
+    _blurShader = nullptr;
+    _prevDepthBuffer = nullptr;
     _renderer.reset(nullptr);
 
     // Close the shader manager
