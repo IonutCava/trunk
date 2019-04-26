@@ -649,11 +649,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
 
-    U32 hardwareThreads = config.runtime.maxWorkerThreads < 0 ? 
-                          HARDWARE_THREAD_COUNT() :
-                          to_U32(config.runtime.maxWorkerThreads) + 2;
+    U32 hardwareThreads = std::max(config.runtime.maxWorkerThreads < 0 ? 
+                                   HARDWARE_THREAD_COUNT() :
+                                   to_U32(config.runtime.maxWorkerThreads) + 2u,
+                                   3u);
 
-    U8 threadCount = static_cast<U8>(std::max(hardwareThreads - 2, to_base(RenderStage::COUNT) * 2u + 2));
+    U8 threadCount = static_cast<U8>(std::max(hardwareThreads - 2u, to_base(RenderStage::COUNT) + 2u));
 
     if (!_platformContext->taskPool(TaskPoolType::HIGH_PRIORITY).init(
         threadCount,
