@@ -336,9 +336,9 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2019 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
+    //appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
+    //appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define MAX_CULL_DISTANCES %d", maxClipCull - 6), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_AMD %d", to_base(GPUVendor::AMD)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_NVIDIA %d", to_base(GPUVendor::NVIDIA)), lineOffsets);
@@ -380,12 +380,12 @@ bool GL_API::initGLSW() {
 
     // Add some nVidia specific pragma directives
     if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
-        appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(fastmath on)", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(fastprecision on)",lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(inline all)", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(ifcvt none)", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(strict on)", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(unroll all)", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "//#pragma option fastmath on", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "//#pragma option fastprecision on",lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#pragma option inline all", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "//#pragma option ifcvt none", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#pragma option strict on", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "//#pragma option unroll all", lineOffsets);
     }
 
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);

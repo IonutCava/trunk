@@ -120,7 +120,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                         bool forceReParse,
                         std::pair<bool, stringImpl>& sourceCodeOut);
 
-    void validate();
+    void validatePreBind();
+    void validatePostBind();
+    bool validationQueued();
 
     bool loadFromBinary();
        
