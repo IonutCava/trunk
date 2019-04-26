@@ -45,12 +45,11 @@ void main(void)
 --TessellationC
 
 #define USE_NEXTPOW2 1
+#define id gl_InvocationID
 
 in mat4 mvp[];
 in vec4 tScale[];
 in vec4 posAndTileScaleVert[];
-
-#define id gl_InvocationID
 
 #include "nodeBufferedInput.cmn"
 
