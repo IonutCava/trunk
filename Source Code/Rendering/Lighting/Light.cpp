@@ -9,16 +9,20 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Events/Headers/TransformEvents.h"
 
 namespace Divide {
 
 Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool)
-    : _parentPool(parentPool),
+    : ECS::Event::IEventListener(&sgn.GetECSEngine()), 
+      _parentPool(parentPool),
       _sgn(sgn),
       _type(type),
       _castsShadows(false),
       _shadowIndex(-1)
 {
+    RegisterEventCallback(&Light::onTransformUpdated);
+
     _rangeAndCones.set(1.0f, 45.0f, 0.0f);
 
     _shadowCameras.fill(nullptr);
@@ -41,32 +45,37 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
     _shadowProperties._lightDetails.x = to_U32(type);
     setDiffuseColour(DefaultColours::WHITE);
     setRange(1.0f);
+    updateCache();
 
     _enabled = true;
 }
 
 Light::~Light()
 {
+    UnregisterAllEventCallbacks();
     for (U32 i = 0; i < 6; ++i) {
         Camera::destroyCamera(_shadowCameras[i]);
     }
     _parentPool.removeLight(*this);
 }
 
+
+void Light::onTransformUpdated(const TransformUpdated* event) {
+    if (_sgn.getGUID() == event->_parentGUID) {
+        updateCache();
+    }
+}
+
+void Light::updateCache() {
+    TransformComponent* lightTransform = getSGN().get<TransformComponent>();
+    assert(lightTransform != nullptr);
+
+    _positionCache = lightTransform->getPosition();
+    _directionCache = Normalize(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
+}
+
 void Light::setDiffuseColour(const vec3<U8>& newDiffuseColour) {
     _colour.rgb(newDiffuseColour);
 }
 
-vec3<F32> Light::getPosition() const {
-    TransformComponent* lightTransform = getSGN().get<TransformComponent>();
-    assert(lightTransform != nullptr);
-
-    return lightTransform->getPosition();
-}
-
-vec3<F32> Light::getDirection() const {
-    TransformComponent* lightTransform = getSGN().get<TransformComponent>();
-    assert(lightTransform != nullptr);
-    return Normalize(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
-}
 };

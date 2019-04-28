@@ -49,13 +49,15 @@ enum class LightType : U8 {
     COUNT
 };
 
+struct TransformUpdated;
+
 class Camera;
 class LightPool;
 class SceneGraphNode;
 class EditorComponent;
 class SceneRenderState;
 /// A light object placed in the scene at a certain position
-class Light : public GUIDWrapper
+class Light : public GUIDWrapper, public ECS::Event::IEventListener
 {
    public:
        //Note: 6 - cube faces. CSM splits must always be less than 6!
@@ -188,8 +190,13 @@ class Light : public GUIDWrapper
     inline       SceneGraphNode& getSGN()       { return _sgn; }
     inline const SceneGraphNode& getSGN() const { return _sgn; }
 
-    vec3<F32> getPosition() const;
-    vec3<F32> getDirection() const;
+    inline const vec3<F32>& getPosition() const {
+        return _positionCache;
+    }
+
+    inline const vec3<F32>& getDirection() const {
+        return _directionCache;
+    }
 
    protected:
      friend class LightPool;
@@ -201,8 +208,14 @@ class Light : public GUIDWrapper
          return _shadowIndex;
      }
 
+     void onTransformUpdated(const TransformUpdated* event);
+     void updateCache();
+
    protected:
     SceneGraphNode& _sgn;
+    vec3<F32> _positionCache;
+    vec3<F32> _directionCache;
+
     /// x - range, y = iner cone, z - cos outer cone
     vec3<F32> _rangeAndCones;
     /// rgb - diffuse, a - reserved
