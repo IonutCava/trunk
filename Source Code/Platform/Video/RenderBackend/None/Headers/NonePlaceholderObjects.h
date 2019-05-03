@@ -173,7 +173,6 @@ namespace Divide {
         {}
 
         bool isValid() const override { return true; }
-        I32 Binding(const char* name) override { return 0; }
         U32 GetSubroutineIndex(ShaderType type, const char* name) const override { return 0; }
         U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override { return 0; }
         U32 GetSubroutineUniformCount(ShaderType type) const override { return 0;  }

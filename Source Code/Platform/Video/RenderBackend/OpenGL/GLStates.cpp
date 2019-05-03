@@ -74,7 +74,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
 
     stateTracker._activePipeline = nullptr;
     stateTracker._activeRenderTarget = nullptr;
-    Attorney::GLAPIShaderProgram::unbind();
+    stateTracker.setActiveProgram(0u);
 }
 
 bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {

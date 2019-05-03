@@ -98,9 +98,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
     U32 GetSubroutineUniformCount(ShaderType type) const override;
 
-    /// Cache uniform/attribute locations for shader programs
-    I32 Binding(const char* name) override;
-
     void UploadPushConstant(const GFX::PushConstant& constant);
     void UploadPushConstants(const PushConstants& constants);
 
@@ -119,8 +116,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                         const stringImpl& header,
                         bool forceReParse,
                         std::pair<bool, stringImpl>& sourceCodeOut);
+    /// Cache uniform/attribute locations for shader programs
+    I32 binding(const char* name);
 
-    void validatePreBind();
     void validatePostBind();
     bool validationQueued();
 
@@ -130,9 +128,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
     bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
-    /// Linking a shader program also sets up all pre-link properties for the
-    /// shader (varying locations, attrib bindings, etc)
-    bool link();
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister);
@@ -141,11 +136,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     bool validateInternal();
     /// Retrieve the program's validation log if we need it
     stringImpl getLog() const;
-
-    /// Add a new shader stage to this program
-    void attachShader(glShader* const shader);
-    /// Remove a shader stage from this program
-    void detachShader(glShader* const shader);
 
     /// Returns true if at least one shader linked succesfully
     bool reloadShaders(bool reparseShaderSource);
@@ -162,7 +152,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void SetSubroutine(ShaderType type, U32 index) const;
     /// Bind this shader program
     bool bind(bool& wasBound);
-    static bool unbind();
     /// Returns true if the shader is currently active
     bool isBound() const;
 
@@ -218,9 +207,6 @@ namespace Attorney {
             }
         }
 
-        static bool unbind() {
-            return glShaderProgram::unbind();
-        }
         static void SetSubroutines(glShaderProgram& program, ShaderType type, const vector<U32>& indices) {
             program.SetSubroutines(type, indices);
         }

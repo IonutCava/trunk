@@ -111,9 +111,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual bool unload() noexcept override;
 
-    // Return the binding address (or other identifier) for the push constant specified by name
-    virtual I32 Binding(const char* name) = 0;
-
     /// Subroutine
     virtual U32 GetSubroutineIndex(ShaderType type, const char* name) const = 0;
     virtual U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const = 0;

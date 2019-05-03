@@ -113,7 +113,7 @@ glShaderProgram::~glShaderProgram()
     MemoryManager::DELETE(_lockManager);
 
     if (isBound()) {
-        unbind();
+        GL_API::getStateTracker().setActiveProgram(0u);
     }
 
     // delete shader program
@@ -180,11 +180,6 @@ bool glShaderProgram::validationQueued() {
     return _validationQueued && _shaderProgramID != 0 && _shaderProgramID != GLUtil::_invalidObjectID;
 }
 
-void glShaderProgram::validatePreBind() {
-    if (validationQueued() && !_loadedFromBinary) {
-    }
-}
-
 void glShaderProgram::validatePostBind() {
     // If we haven't validated the program but used it at lease once ...
     if (validationQueued()) {
@@ -223,11 +218,6 @@ void glShaderProgram::validatePostBind() {
              }
             // delete our local code buffer
             MemoryManager::DELETE(binary);
-
-            // Detach shaders after link so that the driver might free up some memory remove shader stages
-            for (glShader* shader : _shaderStage) {
-                detachShader(shader);
-            }
         }
         // clear validation queue flag
         _validationQueued = false;
@@ -269,37 +259,6 @@ stringImpl glShaderProgram::getLog() const {
     }
 }
 
-/// Remove a shader stage from this program
-void glShaderProgram::detachShader(glShader* const shader) {
-    if (!shader) {
-        return;
-    }
-
-    glDetachShader(_shaderProgramID == GLUtil::_invalidObjectID
-                                     ? _shaderProgramIDTemp
-                                     : _shaderProgramID,
-                   shader->getShaderID());
-    // glUseProgramStages(_shaderProgramID,
-    // GLUtil::glShaderStageTable[to_U32(shader->getType())], 0);
-}
-
-/// Add a new shader stage to this program
-void glShaderProgram::attachShader(glShader* const shader) {
-    if (!shader) {
-        return;
-    }
-    // Attach the shader
-    glAttachShader(_shaderProgramID == GLUtil::_invalidObjectID
-                                     ? _shaderProgramIDTemp
-                                     : _shaderProgramID,
-                   shader->getShaderID());
-
-    _stageMask |= GLUtil::glProgramStageMask[to_U32(shader->getType())];
-
-    // Clear the 'linked' flag. Program must be re-linked before usage
-    _linked = false;
-}
-
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
 void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister) {
     // We need a new API specific object
@@ -307,38 +266,80 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
     if (_shaderProgramID == GLUtil::_invalidObjectID) {
         if (g_useSeparateShaderObjects) {
             glCreateProgramPipelines(1, &_shaderProgramIDTemp);
+            glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_SEPARABLE, GL_TRUE);
         } else {
             _shaderProgramIDTemp = glCreateProgram();
         }
 
         // Loading from binary is optional, but using it does require sending the driver a hint to give us access to it later
         glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
-        glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_SEPARABLE, g_useSeparateShaderObjects ? GL_TRUE : GL_FALSE);
     } else {
         _shaderProgramIDTemp = _shaderProgramID;
+        _shaderProgramID = GLUtil::_invalidObjectID;
     }
 
     // Loading from binary gives us a linked program ready for usage.
     if (!loadFromBinary()) {
-        _linked = true;
+        _linked = false;
+        if (reloadShaders(skipRegister)) {
 
-        bool shouldLink = reloadShaders(false);
+            _stageMask = UseProgramStageMask::GL_NONE_BIT;
+            // For every possible stage that the program might use
+            for (glShader* shader : _shaderStage) {
+                // If a shader exists for said stage, attach it
+                if (shader == nullptr) {
+                    continue;
+                }
 
-        _stageMask = UseProgramStageMask::GL_NONE_BIT;
-        // For every possible stage that the program might use
-        for (glShader* shader : _shaderStage) {
-            // If a shader exists for said stage, attach it
-            attachShader(shader);
-        }
-        if (g_useSeparateShaderObjects) {
-            glUseProgramStages(_shaderProgramIDTemp, _stageMask, _shaderProgramIDTemp);
-        }
-        // Link the program
-        if (shouldLink) {
-            _linked = link();
+                // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
+                if (!shader->compile()) {
+                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), shader->getShaderID(), shader->name().c_str());
+                    continue;
+                }
+
+                // Attach the shader
+                glAttachShader(_shaderProgramIDTemp, shader->getShaderID());
+
+                _stageMask |= GLUtil::glProgramStageMask[to_U32(shader->getType())];
+            }
+
+            if (_stageMask != UseProgramStageMask::GL_NONE_BIT) {
+                if (g_useSeparateShaderObjects) {
+                    glUseProgramStages(_shaderProgramIDTemp, _stageMask, _shaderProgramIDTemp);
+                }
+
+                // Link the program
+                Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), resourceName().c_str(), _shaderProgramIDTemp, getGUID());
+                glLinkProgram(_shaderProgramIDTemp);
+
+                // And check the result
+                GLboolean linkStatus;
+                glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
+                // If linking failed, show an error, else print the result in debug builds.
+                // Same getLog() method is used
+                if (linkStatus == GL_FALSE) {
+                    Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), resourceName().c_str(), getLog().c_str(), getGUID());
+                } else {
+                    Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), resourceName().c_str(), getLog().c_str(), getGUID(), _shaderProgramIDTemp);
+                    if (Config::ENABLE_GPU_VALIDATION) {
+                        glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, resourceName().c_str());
+                    }
+                    // The linked flag is set to true only if linking succeeded
+                    _linked = true;
+                }
+
+                // Detach shaders after link so that the driver might free up some memory remove shader stages
+                for (glShader* shader : _shaderStage) {
+                    if (shader == nullptr) {
+                        continue;
+                    }
+                    glDetachShader(_shaderProgramIDTemp, shader->getShaderID());
+                }
+            }
         }
     }
 
+    _shaderVarLocation.clear();
     // This was once an atomic swap. Might still be in the future
     _shaderProgramID = _shaderProgramIDTemp;
     _lockManager->Lock(!Runtime::isMainThread());
@@ -349,30 +350,6 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
     } else {
         reuploadUniforms();
     }
-}
-
-/// Linking a shader program also sets up all pre-link properties for the shader (varying locations, attrib bindings, etc)
-bool glShaderProgram::link() {
-    Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), resourceName().c_str(), _shaderProgramIDTemp, getGUID());
-    // Link the program
-    glLinkProgram(_shaderProgramIDTemp);
-    _shaderVarLocation.clear();
-
-    // And check the result
-    GLboolean linkStatus;
-    glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
-    // If linking failed, show an error, else print the result in debug builds.
-    // Same getLog() method is used
-    if (linkStatus == GL_FALSE) {
-        Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), resourceName().c_str(), getLog().c_str(), getGUID());
-    } else {
-        Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), resourceName().c_str(), getLog().c_str(), getGUID(), _shaderProgramIDTemp);
-        if (Config::ENABLE_GPU_VALIDATION) {
-            glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, resourceName().c_str());
-        }
-    }
-    // The linked flag is set to true only if linking succeeded
-    return linkStatus == GL_TRUE;
 }
 
 bool glShaderProgram::loadFromBinary() {
@@ -471,8 +448,7 @@ void glShaderProgram::loadSourceCode(ShaderType stage,
     }
 }
 
-/// Creation of a new shader program. Pass in a shader token and use glsw to
-/// load the corresponding effects
+/// Creation of a new shader program. Pass in a shader token and use glsw to load the corresponding effects
 bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     // NULL shader means use shaderProgram(0), so bypass the normal loading routine
     if (resourceName().compare("NULL") == 0) {
@@ -485,10 +461,15 @@ bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoad
     _linked = false;
 
     // try to link the program in a separate thread
-    CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
-                [this, onLoadCallback](const Task& parent) {
-                    threadedLoad(std::move(onLoadCallback), false);
-                }).startTask((!_loadedFromBinary && _asyncLoad) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+    if (!_loadedFromBinary && _asyncLoad) {
+        CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
+            [this, onLoadCallback](const Task & parent) {
+                threadedLoad(std::move(onLoadCallback), false);
+            }).startTask();
+    } else {
+        threadedLoad(std::move(onLoadCallback), false);
+    }
+
     return true;
 }
 
@@ -532,12 +513,6 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
                                               type,
                                               sourceCode.first,
                                               _lineOffset[i] + to_U32(_definesList.size()) - 1);
-                if (shader) {
-                    // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
-                    if (!shader->compile()) {
-                        Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), shader->getShaderID(), shaderCompileName.c_str());
-                    }
-                }
             }
         } else {
             shader->AddRef();
@@ -563,7 +538,7 @@ bool glShaderProgram::recompileInternal() {
     // Remember bind state
     bool wasBound = isBound();
     if (wasBound) {
-        unbind();
+        GL_API::getStateTracker().setActiveProgram(0u);
     }
 
     if (resourceName().compare("NULL") == 0) {
@@ -574,7 +549,6 @@ bool glShaderProgram::recompileInternal() {
 
     _lockManager->Wait(true);
 
-    reloadShaders(true);
     threadedLoad(DELEGATE_CBK<void, Resource_wptr>(), true);
     // Restore bind state
     if (wasBound) {
@@ -597,7 +571,7 @@ bool glShaderProgram::isBound() const {
 /// Cache uniform/attribute locations for shader programs
 /// When we call this function, we check our name<->address map to see if we queried the location before
 /// If we didn't, ask the GPU to give us the variables address and save it for later use
-I32 glShaderProgram::Binding(const char* name) {
+I32 glShaderProgram::binding(const char* name) {
     // If the shader can't be used for rendering, just return an invalid address
     if (_shaderProgramID == 0 || !isValid()) {
         return -1;
@@ -620,11 +594,6 @@ I32 glShaderProgram::Binding(const char* name) {
     return location;
 }
 
-/// Bind the NULL shader which should have the same effect as using no shaders at all
-bool glShaderProgram::unbind() {
-    return GL_API::getStateTracker().setActiveProgram(0u);
-}
-
 /// Bind this shader program
 bool glShaderProgram::bind(bool& wasBound) {
     // If the shader isn't ready or failed to link, stop here
@@ -634,14 +603,9 @@ bool glShaderProgram::bind(bool& wasBound) {
     // This should almost always end up as a NOP
     _lockManager->Wait(false);
 
-    validatePreBind();
-
     // Set this program as the currently active one
     wasBound = GL_API::getStateTracker().setActiveProgram(_shaderProgramID);
-
-    if (!wasBound) {
-        validatePostBind();
-    }
+    validatePostBind();
 
     return true;
 }
@@ -712,9 +676,9 @@ I32 glShaderProgram::cachedValueUpdate(const GFX::PushConstant& constant) {
 
     U64 locationHash = constant._bindingHash;
 
-    I32 binding = Binding(constant._binding.c_str());
+    I32 bindingLoc = binding(constant._binding.c_str());
 
-    if (binding == -1 || _shaderProgramID == 0) {
+    if (bindingLoc == -1 || _shaderProgramID == 0) {
         return -1;
     }
 
@@ -729,7 +693,7 @@ I32 glShaderProgram::cachedValueUpdate(const GFX::PushConstant& constant) {
         hashAlg::emplace(_uniformsByNameHash._shaderVars, locationHash, constant);
     }
 
-    return binding;
+    return bindingLoc;
 }
 
 void glShaderProgram::Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const {
@@ -904,6 +868,7 @@ stringImpl glShaderProgram::preprocessIncludes(const stringImpl& name,
                 output.append(preprocessIncludes(name, include_string, level + 1, foundAtoms, lock));
             }
         }
+
         output.append("\n");
         ++line_number;
     }
@@ -939,7 +904,6 @@ const stringImpl& glShaderProgram::shaderFileReadLocked(const stringImpl& filePa
         output = preprocessIncludes(atomName, output, 0, foundAtoms, false);
     }
 
-    
     auto result = hashAlg::insert(s_atoms, atomNameHash, output);
     assert(result.second);
 
@@ -947,52 +911,43 @@ const stringImpl& glShaderProgram::shaderFileReadLocked(const stringImpl& filePa
     return result.first->second;
 }
 
-void glShaderProgram::shaderFileRead(const stringImpl& filePath,
-                                     const stringImpl& fileName,
-                                     stringImpl& sourceCodeOut) {
-    stringImpl variant = fileName;
-    if (Config::Build::IS_DEBUG_BUILD) {
-        variant.append(".debug");
-    } else if (Config::Build::IS_PROFILE_BUILD) {
-        variant.append(".profile");
-    } else {
-        variant.append(".release");
-    }
-    readFile(filePath, variant, sourceCodeOut, FileType::TEXT);
-}
+namespace {
+    stringImpl decorateFileName(const stringImpl& name) {
+        if (Config::Build::IS_DEBUG_BUILD) {
+            return name + ".debug";
+        } else if (Config::Build::IS_PROFILE_BUILD) {
+            return name + ".profile";
+        }
 
+        return name + ".release";
+    }
+};
+
+void glShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& fileName, stringImpl& sourceCodeOut) {
+    readFile(filePath, decorateFileName(fileName), sourceCodeOut, FileType::TEXT);
+}
 
 /// Dump the source code 's' of atom file 'atomName' to file
 void glShaderProgram::shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode) {
-    stringImpl variant = fileName;
-    if (Config::Build::IS_DEBUG_BUILD) {
-        variant.append(".debug");
-    } else if (Config::Build::IS_PROFILE_BUILD) {
-        variant.append(".profile");
-    } else {
-        variant.append(".release");
-    }
-
-    writeFile(filePath, variant, (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
+    writeFile(filePath, decorateFileName(fileName), (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
 }
 
 void glShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
+    // Do nothing if the specified file is "deleted". We do not want to break running programs
     if (evt == FileUpdateEvent::DELETE) {
-        // Do nothing if the specified file is "deleted"
-        // We do not want to break running programs
         return;
     }
+
     // ADD and MODIFY events should get processed as usual
-
-    // Clear the atom from the cache
-
     {
+        // Clear the atom from the cache
         UniqueLockShared w_lock(s_atomLock);
         AtomMap::iterator it = s_atoms.find(_ID(atomName));
         if (it != std::cend(s_atoms)) {
             it = s_atoms.erase(it);
         }
     }
+
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     SharedLock r_lock(s_programLock);
     for (auto it : s_shaderPrograms) {

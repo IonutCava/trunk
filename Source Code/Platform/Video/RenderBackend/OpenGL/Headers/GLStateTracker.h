@@ -82,7 +82,7 @@ namespace Divide {
         /// Switch the current framebuffer by binding it as either a R/W buffer, read
         /// buffer or write buffer
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
-        /// Change the currently active shader program.
+        /// Change the currently active shader program. Returns true if the program was bound
         bool setActiveProgram(GLuint programHandle);
         /// A state block should contain all rendering state changes needed for the next draw call.
         /// Some may be redundant, so we check each one individually
