@@ -62,10 +62,13 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
     }
 
     MeshLoadData loadingData(ptr, &_cache, &_context, _descriptor);
-    CreateTask(_context, [this, tempMeshData, loadingData](const Task& parent) {
+    if (_descriptor.getThreaded()) {
+        CreateTask(_context, [this, tempMeshData, loadingData](const Task & parent) {
+            threadedMeshLoad(loadingData, tempMeshData);
+        }).startTask();
+    } else {
         threadedMeshLoad(loadingData, tempMeshData);
-    }).startTask(_descriptor.getThreaded() ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
-
+    }
     return ptr;
 }
 
