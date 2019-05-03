@@ -382,7 +382,7 @@ bool GL_API::initGLSW() {
     if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option fastmath on", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option fastprecision on",lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "#pragma option inline all", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "//#pragma option inline all", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option ifcvt none", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#pragma option strict on", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option unroll all", lineOffsets);
@@ -1526,10 +1526,6 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
 
 U32 GL_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
     return to_U32(static_cast<const CEGUI::OpenGLTexture&>(textureIn).getOpenGLTexture());
-}
-
-void GL_API::onThreadCreated(const std::thread::id& threadID) {
-    createOrValidateContextForCurrentThread(_context);
 }
 
 };

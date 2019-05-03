@@ -72,13 +72,15 @@ flat in float _alphaFactor;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
-    vec4 albedo = texture(texDiffuseGrass, vec3(dvd_TexCoord, _arrayLayerFrag));
+    vec2 uv = getTexCoord();
+
+    vec4 albedo = texture(texDiffuseGrass, vec3(uv, _arrayLayerFrag));
     albedo.a *= _alphaFactor;
 
-    vec3 normal = getNormal();
+    vec3 normal = getNormal(uv);
 
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    writeOutput(getPixelColour(albedo, colourMatrix, normal));
+    writeOutput(getPixelColour(albedo, colourMatrix, normal, uv));
 }
 
 --Fragment.PrePass

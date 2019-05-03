@@ -422,37 +422,6 @@ void GL_API::closeRenderingAPI() {
     g_ContextPool.destroy();
 }
 
-void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
-    if (SDL_GL_GetCurrentContext() != NULL) {
-        return;
-    }
-
-    // Double check so that we don't run into a race condition!
-    UniqueLock lock(GLUtil::_glSecondaryContextMutex);
-    if (SDL_GL_GetCurrentContext() == NULL) {
-        // This also makes the context current
-        assert(GLUtil::_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
-        bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
-        assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
-        ACKNOWLEDGE_UNUSED(ctxFound);
-        SDL_GL_MakeCurrent(GLUtil::_glMainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
-        glbinding::Binding::initialize([](const char *proc) { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
-        // Enable OpenGL debug callbacks for this context as well
-        if (Config::ENABLE_GPU_VALIDATION) {
-            glEnable(GL_DEBUG_OUTPUT);
-            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-            // Debug callback in a separate thread requires a flag to distinguish it
-            // from the main thread's callbacks
-            glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
-        }
-
-        if (s_activeStateTracker->_opengl46Supported) {
-            gl::glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
-        }
-    }
-    initGLSW();
-}
-
 vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
     int w = 1, h = 1;
     SDL_GL_GetDrawableSize(window.getRawWindow(), &w, &h);
@@ -467,4 +436,36 @@ void GL_API::queueComputeMipMap(GLuint textureHandle) {
     s_mipmapQueue.insert(textureHandle);
 }
 
+void GL_API::onThreadCreated(const std::thread::id& threadID) {
+    assert(SDL_GL_GetCurrentContext() == NULL);
+    
+    // Double check so that we don't run into a race condition!
+    UniqueLock lock(GLUtil::_glSecondaryContextMutex);
+    assert(SDL_GL_GetCurrentContext() == NULL);
+
+    // This also makes the context current
+    assert(GLUtil::_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
+    bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
+    assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
+    ACKNOWLEDGE_UNUSED(ctxFound);
+    SDL_GL_MakeCurrent(GLUtil::_glMainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
+    glbinding::Binding::initialize([](const char* proc) {
+        return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc);
+    });
+    
+    // Enable OpenGL debug callbacks for this context as well
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        // Debug callback in a separate thread requires a flag to distinguish it
+        // from the main thread's callbacks
+        glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
+    }
+
+    if (s_activeStateTracker->_opengl46Supported) {
+        gl::glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
+    }
+
+    initGLSW();
+}
 };

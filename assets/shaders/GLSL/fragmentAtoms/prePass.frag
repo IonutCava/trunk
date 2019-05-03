@@ -14,12 +14,10 @@ layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
 //r,g,b = CSM shadow factor for light ids 0, 1 & 2; a - specular/roughness
 layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
 
-void _output(vec3 normal, float alphaFactor) {
-    updateTexCoord();
-
+void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
 #if defined(USE_ALPHA_DISCARD)
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    if (getAlbedo(colourMatrix).a * alphaFactor < 1.0f - Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix, uv).a * alphaFactor < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 #endif
@@ -31,42 +29,50 @@ void _output(vec3 normal, float alphaFactor) {
 }
 
 void outputNoVelocity(float alphaFactor) {
-    _output(getNormal(), alphaFactor);
+    vec2 uv = getTexCoord();
+    _output(getNormal(uv), alphaFactor, uv);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
 void outputNoVelocity() {
-    _output(getNormal(), 1.0f);
+    vec2 uv = getTexCoord();
+    _output(getNormal(uv), 1.0f, uv);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
 void outputWithVelocity(float alphaFactor) {
-    _output(getNormal(), alphaFactor);
+    vec2 uv = getTexCoord();
+    _output(getNormal(uv), alphaFactor, uv);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
 void outputWithVelocity() {
-    _output(getNormal(), 1.0f);
+    vec2 uv = getTexCoord();
+    _output(getNormal(uv), 1.0f, uv);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
 void outputNoVelocity(vec3 normal, float alphaFactor) {
-    _output(normal, alphaFactor);
+    vec2 uv = getTexCoord();
+    _output(normal, alphaFactor, uv);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
 void outputNoVelocity(vec3 normal) {
-    _output(normal, 1.0f);
+    vec2 uv = getTexCoord();
+    _output(normal, 1.0f, uv);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
 void outputWithVelocity(vec3 normal, float alphaFactor) {
-    _output(normal, alphaFactor);
+    vec2 uv = getTexCoord();
+    _output(normal, alphaFactor, uv);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
 void outputWithVelocity(vec3 normal) {
-    _output(normal, 1.0f);
+    vec2 uv = getTexCoord();
+    _output(normal, 1.0f, uv);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 #endif //_PRE_PASS_FRAG_

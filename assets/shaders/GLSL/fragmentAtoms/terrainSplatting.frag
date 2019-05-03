@@ -12,16 +12,16 @@ layout(binding = TEXTURE_COUNT + 0) uniform sampler2DArray texBlendMaps;
 layout(binding = TEXTURE_COUNT + 1) uniform sampler2DArray texTileMaps;
 layout(binding = TEXTURE_COUNT + 2) uniform sampler2DArray texNormalMaps;
 
-vec4 getTerrainAlbedo() {
+vec4 getTerrainAlbedo(in vec2 uv) {
     vec4 colour = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
-        vec4 blendColour = texture(texBlendMaps, vec3(dvd_TexCoord, i));
+        vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
         vec4 texScale = tileScale[i];// / (LoD + 1);
         for (uint j = 0; j < CURRENT_LAYER_COUNT[i]; ++j) {
             colour = mix(colour,
-                         texture(texTileMaps, vec3(scaledTextureCoords(dvd_TexCoord, texScale[j]), offset + j)),
+                         texture(texTileMaps, vec3(scaledTextureCoords(uv, texScale[j]), offset + j)),
                          blendColour[j]);
         }
 
@@ -31,7 +31,7 @@ vec4 getTerrainAlbedo() {
     return colour;
 }
 
-vec3 getTerrainAlbedoAndNormalTBN(out vec4 colour) {
+vec3 getTerrainAlbedoAndNormalTBN(in vec2 uv, out vec4 colour) {
     colour = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     vec3 tbn = vec3(1.0f);
@@ -42,16 +42,16 @@ vec3 getTerrainAlbedoAndNormalTBN(out vec4 colour) {
 
         vec3 tbnTemp = tbn;
         vec4 texScale = tileScale[i];// / (LoD + 1);
-        vec4 blendColour = texture(texBlendMaps, vec3(dvd_TexCoord, i));
+        vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
 
 
         uint j = 0;
         for (j = 0; j < layerCount; ++j) {
-            vec3 scaledCoords = vec3(scaledTextureCoords(dvd_TexCoord, texScale[j]), offset + j);
+            vec3 scaledCoords = vec3(scaledTextureCoords(uv, texScale[j]), offset + j);
             colour = mix(colour, texture(texTileMaps, scaledCoords), blendColour[j]);
         }
         for (j = 0; j < layerCount; ++j) {
-            vec3 scaledCoords = vec3(scaledTextureCoords(dvd_TexCoord, texScale[j]), offset + j);
+            vec3 scaledCoords = vec3(scaledTextureCoords(uv, texScale[j]), offset + j);
             tbnTemp = mix(tbnTemp, texture(texNormalMaps, scaledCoords).rgb, blendColour[j]);
         }
         //tbn = normalUDNBlend(tbnTemp, tbn);

@@ -487,8 +487,8 @@ noperspective in vec3 gs_edgeDist;
 #endif
 #endif
 
-vec4 UnderwaterMappingRoutine(out vec3 normalWV) {
-    vec2 coords = dvd_TexCoord * UNDERWATER_TILE_SCALE;
+vec4 UnderwaterMappingRoutine(in vec2 uv, out vec3 normalWV) {
+    vec2 coords = uv * UNDERWATER_TILE_SCALE;
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
     normalWV = normalize(getTBNMatrix() * tbn);
 
@@ -505,13 +505,13 @@ vec4 UnderwaterMappingRoutine(out vec3 normalWV) {
 #endif
 }
 
-vec4 TerrainMappingRoutine(out vec3 normalWV) {
+vec4 TerrainMappingRoutine(in vec2 uv, out vec3 normalWV) {
     vec4 albedo;
 #if defined(LOW_QUALITY)
-    albedo = getTerrainAlbedo();
+    albedo = getTerrainAlbedo(uv);
     normalWV = VAR._normalWV;
 #else
-    vec3 normalTBN = getTerrainAlbedoAndNormalTBN(albedo);
+    vec3 normalTBN = getTerrainAlbedoAndNormalTBN(uv, albedo);
     normalWV = normalize(getTBNMatrix() * normalTBN);
 #endif
 
@@ -520,16 +520,16 @@ vec4 TerrainMappingRoutine(out vec3 normalWV) {
 
 void main(void)
 {
-    updateTexCoord();
+    vec2 uv = getTexCoord();
 
     vec3 normalWV = vec3(0.0f);
-    vec4 albedo = mix(TerrainMappingRoutine(normalWV), UnderwaterMappingRoutine(normalWV), _waterDetails.x);
+    vec4 albedo = mix(TerrainMappingRoutine(uv, normalWV), UnderwaterMappingRoutine(uv, normalWV), _waterDetails.x);
 
 #if defined(PRE_PASS)
     outputWithVelocity(normalWV);
 #else
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 colourOut = getPixelColour(albedo, colourMatrix, normalWV);
+    vec4 colourOut = getPixelColour(albedo, colourMatrix, normalWV, uv);
 
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75f;

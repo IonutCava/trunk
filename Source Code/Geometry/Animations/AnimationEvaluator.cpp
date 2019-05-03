@@ -30,7 +30,7 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) : AnimEvaluator(
                           : ANIMATION_TICKS_PER_SECOND;
     _duration = pAnim->mDuration;
     _name = pAnim->mName.data;
-    if (_name.empty()) {
+    if (pAnim->mName.length == 0) {
         _name = Util::StringFormat("unnamed_anim_%d", idx);
     }
     Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_BEGIN")), _name.c_str());

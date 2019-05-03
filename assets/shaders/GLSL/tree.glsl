@@ -60,19 +60,19 @@ layout(early_fragment_tests) in;
 #include "output.frag"
 
 void main (void) {
-    updateTexCoord();
+    vec2 uv = getTexCoord();
 
-    vec3 normal = getNormal();
+    vec3 normal = getNormal(uv);
 
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 albedo = getAlbedo(colourMatrix);
+    vec4 albedo = getAlbedo(colourMatrix, uv);
 #if defined(USE_ALPHA_DISCARD)
     if (albedo.a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 #endif
 
-    writeOutput(getPixelColour(albedo, colourMatrix, normal));
+    writeOutput(getPixelColour(albedo, colourMatrix, normal, uv));
 }
 
 
@@ -103,7 +103,7 @@ out vec2 _colourOut;
 void main() {
 #if defined(HAS_TRANSPARENCY)
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    if (getAlbedo(colourMatrix).a < 1.0f - Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix, getTexCoord()).a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 #endif

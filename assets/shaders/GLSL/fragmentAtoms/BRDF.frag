@@ -83,12 +83,12 @@ vec4 getSpotLightContribution(in uint tileIndex, in uint offset, in uint pointLi
     return ret;
 }
 
-vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal) {
+vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 uv) {
 #if defined(USE_SHADING_FLAT)
     return albedo;
 #else //USE_SHADING_FLAT
     const uint dirLightCount = dvd_LightData.x;
-    const vec4 specular = vec4(getSpecular(colourMatrix), getReflectivity(colourMatrix));
+    const vec4 specular = vec4(getSpecular(colourMatrix, uv), getReflectivity(colourMatrix));
 
     // Apply all lighting contributions (.a = reflectionCoeff)
     vec4 lightColour = getDirectionalLightContribution(dirLightCount, albedo, specular, normal);
@@ -116,8 +116,8 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal) {
 #endif //USE_SHADING_FLAT
 }
 
-vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal) {
-    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normal), albedo.a);
+vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 uv) {
+    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normal, uv), albedo.a);
 
 #if !defined(DISABLE_SHADOW_MAPPING) && defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo) {

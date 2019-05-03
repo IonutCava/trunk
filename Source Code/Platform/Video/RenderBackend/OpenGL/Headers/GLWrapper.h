@@ -160,8 +160,8 @@ public:
     static GLStateTracker& getStateTracker();
     static glGlobalLockManager& getLockManager();
 
-    /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
-    static void createOrValidateContextForCurrentThread(GFXDevice& context);
+    /// This should be called only once for newly created threads (asserts otherwise)
+    static void createContextForCurrentThread();
 
     /// Queue a mipmap recalculation
     static void queueComputeMipMap(GLuint textureHandle);

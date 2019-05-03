@@ -31,12 +31,11 @@ layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
-vec2 dvd_TexCoord = VAR._texCoord;
-
-void updateTexCoord() {
+vec2 getTexCoord() {
 #   if defined(USE_PARALLAX_MAPPING)
-    dvd_TexCoord = ParallaxNormal(dvd_TexCoord, normalize(-VAR._vertexWV.xyz));
+    return ParallaxNormal(VAR._texCoord, normalize(-VAR._vertexWV.xyz));
 #   endif //USE_PARALLAX_MAPPING
+    return VAR._texCoord;
 }
 
 #if defined(USE_PARALLAX_MAPPING)
@@ -87,7 +86,7 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
     return finalTexCoords;
 }
 #endif
-float Gloss(in vec3 bump, in vec2 texCoord)
+float Gloss(in vec3 bump, in vec2 uv)
 {
     #if defined(USE_TOKSVIG)
         // Compute the "Toksvig Factor"
@@ -97,7 +96,7 @@ float Gloss(in vec3 bump, in vec2 texCoord)
         float baked_power = 100.0;
         // Fetch pre-computed "Toksvig Factor"
         // and adjust for specified power
-        float gloss = texture2D(texSpecularMap, texCoord).r;
+        float gloss = texture2D(texSpecularMap, uv).r;
         gloss /= mix(power/baked_power, 1.0, gloss);
         return gloss;
     #else
@@ -166,10 +165,10 @@ float getReflectivity(mat4 colourMatrix) {
 #endif
 }
 
-float getOpacity(mat4 colourMatrix, float albedoAlpha) {
+float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
 #if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_MAP)
-    return texture(texOpacityMap, dvd_TexCoord).r;
+    return texture(texOpacityMap, uv).r;
 #   endif
     return albedoAlpha;
 #endif
@@ -177,15 +176,15 @@ float getOpacity(mat4 colourMatrix, float albedoAlpha) {
     return 1.0;
 }
 
-vec4 getAlbedo(mat4 colourMatrix) {
+vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
 
 #if defined(SKIP_TEXTURES)
     vec4 albedo = colourMatrix[0];
 #else
-    vec4 albedo = getTextureColour(dvd_TexCoord);
+    vec4 albedo = getTextureColour(uv);
 #endif
 
-    albedo.a = getOpacity(colourMatrix, albedo.a);
+    albedo.a = getOpacity(colourMatrix, albedo.a, uv);
 
     return albedo;
 }
@@ -198,21 +197,21 @@ void setEmissive(mat4 colourMatrix, vec3 value) {
     colourMatrix[2].rgb = value;
 }
 
-vec3 getSpecular(mat4 colourMatrix) {
+vec3 getSpecular(mat4 colourMatrix, in vec2 uv) {
 #if defined(USE_SPECULAR_MAP)
-    return texture(texSpecularMap, dvd_TexCoord).rgb;
+    return texture(texSpecularMap, uv).rgb;
 #else
     return colourMatrix[1].rgb;
 #endif
 }
 
-vec3 getNormal() {
+vec3 getNormal(in vec2 uv) {
     vec3 normal = VAR._normalWV;
 
 #if defined(COMPUTE_TBN)
     //if (dvd_lodLevel == 0)
     {
-        normal = getTBNMatrix() * getBump(dvd_TexCoord);
+        normal = getTBNMatrix() * getBump(uv);
     }
 #endif //COMPUTE_TBN
 
