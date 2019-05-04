@@ -137,6 +137,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     inline bool automaticMipMapGeneration() const { return _descriptor.automaticMipMapGeneration(); }
 
     inline bool flipped() const { return _flipped; }
+
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
     bool loadFile(const TextureLoadInfo& info, const stringImpl& name, ImageTools::ImageData& fileData);

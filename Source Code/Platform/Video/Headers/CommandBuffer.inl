@@ -40,10 +40,10 @@ template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
 CommandBuffer::add(const T& command) {
 
-    vec_size_eastl index = static_cast<vec_size_eastl>(T::EType);
+    const vec_size_eastl index = static_cast<vec_size_eastl>(T::EType);
 
-    size_t cmdIndex = _commandCount[index]++;
-    _commandOrder.emplace_back(PolyContainerEntry{ index, cmdIndex });
+    const size_t cmdIndex = _commandCount[index]++;
+    _commandOrder.emplace_back(index, cmdIndex);
 
     T* mem = static_cast<T*>(_commands.getPtr(index, cmdIndex));
     if (mem != nullptr) {

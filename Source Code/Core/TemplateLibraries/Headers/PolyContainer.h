@@ -35,6 +35,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 struct PolyContainerEntry
 {
+    PolyContainerEntry()
+        : PolyContainerEntry(0, 0)
+    {
+    }
+
+    PolyContainerEntry(vec_size_eastl typeIndex, size_t elementIndex) 
+        : _typeIndex(typeIndex),
+          _elementIndex(elementIndex)
+    {
+    }
+
     vec_size_eastl _typeIndex = 0;
     size_t _elementIndex = 0;
 };

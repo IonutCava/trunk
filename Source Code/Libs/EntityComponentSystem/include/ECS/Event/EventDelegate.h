@@ -39,7 +39,7 @@ namespace ECS { namespace Event {
 		}; // class IEventDelegate
 	
 		template<class Class, class EventType>
-		class EventDelegate : public IEventDelegate
+		class EventDelegate final : public IEventDelegate
 		{
 			typedef void(Class::*Callback)(const EventType* const);
 
@@ -53,30 +53,30 @@ namespace ECS { namespace Event {
 				m_Callback(callbackFunction)
 			{}
 
-			virtual IEventDelegate* clone() override
+			IEventDelegate* clone() override
 			{
 				return new EventDelegate(this->m_Receiver, this->m_Callback);
 			}
 
-			virtual inline void invoke(const IEvent* const e) override
+			inline void invoke(const IEvent* const e) override
 			{
 				(m_Receiver->*m_Callback)(reinterpret_cast<const EventType* const>(e));
 			}
 	
-			virtual inline EventDelegateId GetDelegateId() const override
+			inline EventDelegateId GetDelegateId() const override
 			{			
 				static const EventDelegateId DELEGATE_ID { typeid(Class).hash_code() ^ typeid(Callback).hash_code() };
 				return DELEGATE_ID;
 			}
 
 
-			virtual inline u64 GetStaticEventTypeId() const override
+			inline u64 GetStaticEventTypeId() const override
 			{
 				static const u64 SEID { EventType::STATIC_EVENT_TYPE_ID };
 				return SEID;
 			}			
 
-			virtual bool operator==(const IEventDelegate* other) const override
+			bool operator==(const IEventDelegate* other) const override
 			{
 				if (this->GetDelegateId() != other->GetDelegateId())
 					return false;

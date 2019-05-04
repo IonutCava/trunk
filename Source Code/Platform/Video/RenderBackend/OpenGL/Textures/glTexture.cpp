@@ -378,9 +378,7 @@ void glTexture::copy(const Texture_ptr& other) {
         numFaces = 6;
     }
 
-    glTexture* otherTex = std::dynamic_pointer_cast<glTexture>(other).get();
-
-    GLuint srcHandle = otherTex->getData()._textureHandle;
+    GLuint srcHandle = other->getData()._textureHandle;
     GLuint destHandle = _textureData._textureHandle;
 
     glCopyImageSubData(//Source
@@ -398,9 +396,9 @@ void glTexture::copy(const Texture_ptr& other) {
                        0, //Y
                        0, //Z
                        //Source Dim
-                       otherTex->getWidth(),
-                       otherTex->getHeight(),
-                       otherTex->_numLayers * numFaces);
+                       other->getWidth(),
+                       other->getHeight(),
+                       other->getNumLayers() * numFaces);
 }
 
 void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
