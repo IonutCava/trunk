@@ -65,8 +65,6 @@ bool glTexture::unload() noexcept {
             Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
             _textureData._textureHandle = 0u;
         }
-
-        
     }
 
     return _textureData._textureHandle == 0;
@@ -101,22 +99,28 @@ void glTexture::setMipRangeInternal(U16 base, U16 max) {
 void glTexture::resize(const bufferPtr ptr,
                        const vec2<U16>& dimensions) {
 
-    U32 textureID = _textureData._textureHandle;
-    if (textureID > 0 && _allocatedStorage) {
+    if (_textureData._textureHandle > 0 && _allocatedStorage) {
         // Immutable storage requires us to create a new texture object 
         U32 tempHandle = 0;
-        glCreateTextures(_type, 1, &tempHandle);
+        if (GL_API::s_texturePool.typeSupported(_type)) {
+            tempHandle = GL_API::s_texturePool.allocate(_type);
+        } else {
+            glCreateTextures(_type, 1, &tempHandle);
+        }
         assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
 
-        Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
-        textureID = tempHandle;
+        if (GL_API::s_texturePool.typeSupported(_type)) {
+            GL_API::s_texturePool.deallocate(_textureData._textureHandle, _type);
+        } else {
+            Divide::GL_API::deleteTextures(1, &_textureData._textureHandle, _descriptor.type());
+        }
+        _textureData._textureHandle = tempHandle;
     }
 
     vec2<U16> mipLevels(0, _descriptor.getSampler().generateMipMaps()
                                 ? 1 + Texture::computeMipCount(_width, _height)
                                 : 1);
 
-    _textureData._textureHandle = textureID;
     _allocatedStorage = false;
     _descriptor._mipLevels.x = mipLevels.x;
     // We may have limited the number of mips
