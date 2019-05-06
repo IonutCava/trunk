@@ -101,6 +101,8 @@ BETTER_ENUM(CommandType, U8,
     SET_BLEND,
     BLIT_RT,
     RESET_RT,
+    RESOLVE_RT,
+    COPY_TEXTURE,
     COMPUTE_MIPMAPS,
     SET_CAMERA,
     SET_CLIP_PLANES,
@@ -113,7 +115,7 @@ BETTER_ENUM(CommandType, U8,
     DISPATCH_COMPUTE,
     MEMORY_BARRIER,
     READ_BUFFER_DATA,
-	CLEAR_BUFFER_DATA,
+    CLEAR_BUFFER_DATA,
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
     SWITCH_WINDOW,
@@ -187,6 +189,9 @@ BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
  END_COMMAND(BeginRenderPassCommand);
 
 BEGIN_COMMAND(EndRenderPassCommand, CommandType::END_RENDER_PASS);
+    bool _autoResolveMSAAColour = false;
+    bool _autoResolveMSAAExternalColour = false;
+    bool _autoResolveMSAADepth = false;
 END_COMMAND(EndRenderPassCommand);
 
 BEGIN_COMMAND(BeginPixelBufferCommand, CommandType::BEGIN_PIXEL_BUFFER);
@@ -219,6 +224,18 @@ BEGIN_COMMAND(ResetRenderTargetCommand, CommandType::RESET_RT);
     RenderTargetID _source;
     RTDrawDescriptor _descriptor;
 END_COMMAND(ResetRenderTargetCommand);
+
+BEGIN_COMMAND(ResolveRenderTargetCommand, CommandType::RESOLVE_RT);
+    RenderTargetID _source;
+    bool _resolveColours = true;
+    bool _resolveDepth = false;
+    bool _resolveExternalColours = false;
+END_COMMAND(ResolveRenderTargetCommand);
+
+BEGIN_COMMAND(CopyTextureCommand, CommandType::COPY_TEXTURE);
+    Texture_ptr _source = nullptr;
+    Texture_ptr _destination = nullptr;
+END_COMMAND(CopyTextureCommand);
 
 BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);
     Texture* _texture;

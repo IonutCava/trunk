@@ -40,7 +40,8 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
       glObject(glObjectType::TYPE_FRAMEBUFFER, context),
       _parent(parent),
       _resolveBuffer(nullptr),
-      _resolved(false),
+      _resolvedColours(true),
+      _resolvedDepth(true),
       _isLayeredDepth(false),
       _activeDepthBuffer(false),
       _statusCheckQueued(false),
@@ -51,7 +52,6 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
     glCreateFramebuffers(1, &_framebufferHandle);
     assert(_framebufferHandle != 0 && "glFramebuffer error: Tried to bind an invalid framebuffer!");
 
-    _resolved = false;
     _isLayeredDepth = false;
 
     if (Config::ENABLE_GPU_VALIDATION) {
@@ -175,7 +175,7 @@ bool glFramebuffer::create() {
     ACKNOWLEDGE_UNUSED(attachmentCountTotal);
 
     // If this is a multisampled FBO, make sure we have a resolve buffer
-    if (_hasMultisampledColourAttachments && !_resolveBuffer) {
+    if (_hasMultisampledColourAttachments && _resolveBuffer == nullptr) {
         vector<RTAttachmentDescriptor> attachments;
         for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
             for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachmentType>(i)); ++j) {
@@ -200,18 +200,15 @@ bool glFramebuffer::create() {
         desc._attachments = attachments.data();
 
         _resolveBuffer = MemoryManager_NEW glFramebuffer(context(), this, desc);
+        if (!_resolveBuffer->create()) {
+            return false;
+        }
     }
 
     RTDrawDescriptor defaultDescriptor = RenderTarget::defaultPolicy();
     defaultDescriptor.clearExternalColour(false);
     defaultDescriptor.clearExternalDepth(false);
     setDefaultState(defaultDescriptor);
-
-    if (_resolveBuffer) {
-        if (!_resolveBuffer->create()) {
-            return false;
-        }
-    }
 
     return checkStatus();
 }
@@ -227,17 +224,24 @@ bool glFramebuffer::resize(U16 width, U16 height) {
 
     _descriptor._resolution.set(width, height);
 
-    if (_resolveBuffer) {
+    if (_resolveBuffer != nullptr) {
         _resolveBuffer->resize(width, height);
     }
 
     return create();
 }
 
-void glFramebuffer::resolve(bool colours, bool depth) {
-    if (!_resolved) {
+void glFramebuffer::resolve(bool colours, bool depth, bool externalColours) {
+    if ((!_resolvedColours && colours) || (!_resolvedDepth && depth)) {
         // Do this first to prevent a stack overflow
-        _resolved = true;
+        if (colours) {
+            _resolvedColours = true;
+        }
+        if (depth) {
+            _resolvedDepth = true;
+        }
+
+
         if (_resolveBuffer != nullptr) {
             RTBlitParams params = {};
             params._inputFB = this;
@@ -247,19 +251,24 @@ void glFramebuffer::resolve(bool colours, bool depth) {
                     ColourBlitEntry entry = {};
                     entry._inputIndex = entry._outputIndex = to_U16(att->binding() - to_U32(GL_COLOR_ATTACHMENT0));
 
-                    const eastl::set<U16, eastl::greater<U16>>& layers = _attachmentDirtyLayers[static_cast<GLenum>(att->binding())];
+                    eastl::set<U16, eastl::greater<U16>>& layers = _attachmentResolvedLayers[static_cast<GLenum>(att->binding())];
                     for (U16 layer : layers) {
+                        if (att->isExternal() && !externalColours) {
+                            continue;
+                        }
                         entry._inputLayer = entry._outputLayer = layer;
                         params._blitColours.push_back(entry);
                     }
+                    layers.clear();
                 }
             }
 
             if (depth) {
-                const eastl::set<U16, eastl::greater<U16>>& layers = _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT];
+                eastl::set<U16, eastl::greater<U16>>& layers = _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT];
                 for (U16 layer : layers) {
                     params._blitDepth.push_back({ layer, layer });
                 }
+                layers.clear();
             }
 
             _resolveBuffer->blitFrom(params);
@@ -298,13 +307,6 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
     }
 
     glFramebuffer* input = static_cast<glFramebuffer*>(params._inputFB);
-    input->resolve(!params._blitColours.empty(), !params._blitDepth.empty());
-
-    // If we are not resolving ...
-    if (input->_resolveBuffer != nullptr && input->_resolveBuffer != this) {
-        input = input->_resolveBuffer;
-    }
-
     vec2<GLuint> inputDim(input->getWidth(), input->getHeight());
     vec2<GLuint> outputDim(this->getWidth(), this->getHeight());
 
@@ -472,36 +474,36 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
     }
 }
 
-const RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index) const {
-    if (_resolveBuffer) {
-        return _resolveBuffer->getAttachment(type, index);
+const RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index, bool resolved) const {
+    if (_resolveBuffer == nullptr || !resolved) {
+        return getInternalAttachment(type, index, resolved);
     }
 
-    return getInternalAttachment(type, index);
+    return _resolveBuffer->getAttachment(type, index, false);
 }
 
-RTAttachment& glFramebuffer::getInternalAttachment(RTAttachmentType type, U8 index) {
-    return RenderTarget::getAttachment(type, index);
+RTAttachment& glFramebuffer::getInternalAttachment(RTAttachmentType type, U8 index, bool resolved) {
+    return RenderTarget::getAttachment(type, index, resolved);
 }
 
-const RTAttachment& glFramebuffer::getInternalAttachment(RTAttachmentType type, U8 index) const {
-    return RenderTarget::getAttachment(type, index);
+const RTAttachment& glFramebuffer::getInternalAttachment(RTAttachmentType type, U8 index, bool resolved) const {
+    return RenderTarget::getAttachment(type, index, resolved);
 }
 
-const RTAttachment_ptr& glFramebuffer::getAttachmentPtr(RTAttachmentType type, U8 index) const {
-    if (_resolveBuffer) {
-        return _resolveBuffer->getAttachmentPtr(type, index);
+const RTAttachment_ptr& glFramebuffer::getAttachmentPtr(RTAttachmentType type, U8 index, bool resolved) const {
+    if (_resolveBuffer == nullptr || !resolved) {
+        return RenderTarget::getAttachmentPtr(type, index, resolved);
     }
 
-    return RenderTarget::getAttachmentPtr(type, index);
+    return _resolveBuffer->getAttachmentPtr(type, index, resolved);
 }
 
-RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index) {
-    if (_resolveBuffer) {
-        return _resolveBuffer->getAttachment(type, index);
+RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index, bool resolved) {
+    if (_resolveBuffer == nullptr || !resolved) {
+        return RenderTarget::getAttachment(type, index, resolved); 
     }
 
-    return RenderTarget::getAttachment(type, index);
+    return _resolveBuffer->getAttachment(type, index, resolved);
 }
 
 void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) {
@@ -588,9 +590,7 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
 
 void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     /// Push debug state
-    if (Config::ENABLE_GPU_VALIDATION) {
-        GL_API::pushDebugMessage(("FBO Begin: " + name()).c_str(), _framebufferHandle);
-    }
+    GL_API::pushDebugMessage(("FBO Begin: " + name()).c_str(), _framebufferHandle);
 
     /// Activate FBO
     GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, _framebufferHandle);
@@ -603,26 +603,27 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
     setDefaultState(drawPolicy);
 
-    /// Mark the resolve buffer as dirty
-    _resolved = false;
-
     if (hasDepth() && drawPolicy.drawMask().isEnabled(RTAttachmentType::Depth)) {
-        _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT].insert(_attachmentState[GL_DEPTH_ATTACHMENT]._writeLayer);
+        /// Mark the resolve buffer as dirty
+        _resolvedDepth = false;
+
+        _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT].insert(_attachmentState[GL_DEPTH_ATTACHMENT]._writeLayer);
 
         const std::set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Depth);
         for (U16 layer : additionalDirtyLayers) {
-            _attachmentDirtyLayers[GL_DEPTH_ATTACHMENT].insert(layer);
+            _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT].insert(layer);
         }
     }
 
     if (hasColour()) {
         for (U8 i = 0; i < MAX_RT_COLOUR_ATTACHMENTS; ++i) {
             if (drawPolicy.drawMask().isEnabled(RTAttachmentType::Colour, i)) {
-                _attachmentDirtyLayers[GL_COLOR_ATTACHMENT0 + i].insert(_attachmentState[GL_COLOR_ATTACHMENT0 + i]._writeLayer);
+                _attachmentResolvedLayers[GL_COLOR_ATTACHMENT0 + i].insert(_attachmentState[GL_COLOR_ATTACHMENT0 + i]._writeLayer);
                 const std::set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Colour, i);
                 for (U16 layer : additionalDirtyLayers) {
-                    _attachmentDirtyLayers[GL_COLOR_ATTACHMENT0 + i].insert(layer);
+                    _attachmentResolvedLayers[GL_COLOR_ATTACHMENT0 + i].insert(layer);
                 }
+                _resolvedColours = false;
             }
         }
     }
@@ -630,7 +631,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     _previousPolicy = drawPolicy;
 }
 
-void glFramebuffer::end() {
+void glFramebuffer::end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth) {
     GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     if (_previousPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
         _context.setViewport(_prevViewport);
@@ -638,16 +639,12 @@ void glFramebuffer::end() {
 
     queueMipMapRecomputation();
 
-    const RTDrawMask& mask = _previousPolicy.drawMask();
-    resolve(mask.isEnabled(RTAttachmentType::Colour), mask.isEnabled(RTAttachmentType::Depth));
-
-    for (auto& dirtyLayers : _attachmentDirtyLayers) {
-        dirtyLayers.second.clear();
+    if (resolveMSAAColour || resolveMSAAExternalColour || resolveMSAADepth) {
+        const RTDrawMask& mask = _previousPolicy.drawMask();
+        resolve(resolveMSAAColour && mask.isEnabled(RTAttachmentType::Colour), resolveMSAADepth && mask.isEnabled(RTAttachmentType::Depth), resolveMSAAExternalColour);
     }
 
-    if (Config::ENABLE_GPU_VALIDATION) {
-        GL_API::popDebugMessage();
-    }
+    GL_API::popDebugMessage();
 }
 
 void glFramebuffer::queueMipMapRecomputation() {
@@ -795,7 +792,7 @@ void glFramebuffer::readData(const vec4<U16>& rect,
                              GFXDataFormat dataType,
                              bufferPtr outData) {
     if (_resolveBuffer) {
-        resolve(true, false);
+        resolve(true, false, false);
         _resolveBuffer->readData(rect, imageFormat, dataType, outData);
     } else {
         GL_API::getStateTracker().setPixelPackUnpackAlignment();
@@ -817,7 +814,7 @@ bool glFramebuffer::hasColour() const {
 
 void glFramebuffer::setAttachmentState(GLenum binding, BindingState state) {
     _attachmentState[binding] = state;
-    _attachmentDirtyLayers[binding].insert(state._writeLayer);
+    _attachmentResolvedLayers[binding].insert(state._writeLayer);
 }
 
 glFramebuffer::BindingState glFramebuffer::getAttachmentState(GLenum binding) const {

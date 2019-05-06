@@ -262,10 +262,6 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 }
 
-void GFXDevice::blitToScreen(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    blitToBuffer(targetViewport, bufferInOut);
-}
-
 void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = targetID;
@@ -279,13 +275,19 @@ void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& tar
 }
 
 void GFXDevice::blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
-
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 12345;
     beginDebugScopeCmd._scopeName = "Flush Display";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
+    GFX::ResolveRenderTargetCommand resolveCmd = { };
+    resolveCmd._source = RenderTargetID(RenderTargetUsage::SCREEN);
+    resolveCmd._resolveColours = true;
+    resolveCmd._resolveDepth = false;
+    GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
+    RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
 
     drawTextureInViewport(texData, targetViewport, bufferInOut);
     renderUI(targetViewport, bufferInOut);

@@ -502,33 +502,28 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
     prepareRenderQueues(stagePass, params, nodes, !prePassExecuted, bufferInOut);
 
-    bool clearVelocity = false;
     if (params._target._usage != RenderTargetUsage::COUNT) {
-        const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
         const bool hasLightingTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA));
-
-        Attorney::SceneManagerRenderPass::preRender(sceneManager, stagePass, *params._camera, target, bufferInOut);
-    
+   
         if (params._stage != RenderStage::SHADOW) {
+            GFX::ResolveRenderTargetCommand resolveCmd = { };
+            resolveCmd._source = params._target;
+            resolveCmd._resolveColours = false;
+            resolveCmd._resolveDepth = true;
+            GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
             GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
             // Bind the depth buffers
             TextureData depthBufferTextureData = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
             bindDescriptorSets._set._textureData.setTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
-
-            TextureData prevDepthData = depthBufferTextureData;
-            if (hasNormalsTarget) {
-                clearVelocity = true;
-                const RTAttachment_ptr& velocityAttachment = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
-                const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
-                prevDepthData = (velocityAttachment->used() && prevDepthTexture) ? prevDepthTexture->getData() : depthBufferTextureData;
-            }
-            
-            bindDescriptorSets._set._textureData.setTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
-
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
         }
 
+        Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, params._target, bufferInOut);
+
         if (params._bindTargets) {
+            const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
+
             // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
             RTDrawDescriptor drawPolicy =  params._drawPolicy ? *params._drawPolicy
                                                                : RenderTarget::defaultPolicyNoClear();
@@ -635,6 +630,9 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         renderQueueToSubPasses(stagePass, bufferInOut/*, quality*/);
 
         GFX::EndRenderPassCommand endRenderPassOitCmd;
+        endRenderPassOitCmd._autoResolveMSAAColour = true;
+        endRenderPassOitCmd._autoResolveMSAAExternalColour = false;
+        endRenderPassOitCmd._autoResolveMSAADepth = false;
         GFX::EnqueueCommand(bufferInOut, endRenderPassOitCmd);
 
         // Step2: Composition pass
@@ -686,6 +684,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         GFX::EnqueueCommand(bufferInOut, drawCmd);
 
         GFX::EndRenderPassCommand endRenderPassCompCmd;
+        endRenderPassCompCmd._autoResolveMSAAColour = true;
         GFX::EnqueueCommand(bufferInOut, endRenderPassCompCmd);
     }
 
@@ -711,14 +710,19 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 0;
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s )", TypeUtil::renderStageToString(params._stage)).c_str();
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
+    GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
+    bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+
     bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
 
     if (prePassExecuted && params._targetHIZ._usage != RenderTargetUsage::COUNT) {
+
         const Texture_ptr& HiZTex = _context.constructHIZ(params._target, params._targetHIZ, bufferInOut);
         const RenderPass::BufferData& bufferData = getBufferData(RenderStagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex));
         _context.occlusionCull(bufferData,
@@ -752,6 +756,13 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     mainPass(visibleNodes, params, target, bufferInOut, prePassExecuted);
 
     if (params._stage != RenderStage::SHADOW) {
+
+        GFX::ResolveRenderTargetCommand resolveCmd = { };
+        resolveCmd._source = params._target;
+        resolveCmd._resolveColours = true;
+        resolveCmd._resolveDepth = false;
+        GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
         woitPass(visibleNodes, params, target, bufferInOut);
     }
 

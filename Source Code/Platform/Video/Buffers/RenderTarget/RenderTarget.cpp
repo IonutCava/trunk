@@ -103,15 +103,21 @@ bool RenderTarget::hasAttachment(RTAttachmentType type, U8 index) const {
     return _attachmentPool->exists(type, index);
 }
 
-const RTAttachment_ptr& RenderTarget::getAttachmentPtr(RTAttachmentType type, U8 index) const {
+const RTAttachment_ptr& RenderTarget::getAttachmentPtr(RTAttachmentType type, U8 index, bool resolved) const {
+    ACKNOWLEDGE_UNUSED(resolved);
+
     return _attachmentPool->get(type, index);
 }
 
-const RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) const {
+const RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index, bool resolved) const {
+    ACKNOWLEDGE_UNUSED(resolved);
+
     return *_attachmentPool->get(type, index);
 }
 
-RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) {
+RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index, bool resolved) {
+    ACKNOWLEDGE_UNUSED(resolved);
+
     return *_attachmentPool->get(type, index);
 }
 

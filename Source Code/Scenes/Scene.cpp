@@ -798,7 +798,7 @@ U16 Scene::registerInputActions() {
     auto multiselect = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), false); };
     auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
     auto releaseCameraFromMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false); };
-    auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
+    auto rendererDebugView = [this](InputParams param) { ACKNOWLEDGE_UNUSED(param); };
     auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
     auto povNavigation = [this](InputParams param) {
         U32 povMask = param._var[0];

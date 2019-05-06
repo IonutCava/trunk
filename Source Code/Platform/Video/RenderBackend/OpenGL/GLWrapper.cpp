@@ -1099,9 +1099,11 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             GL_API::pushDebugMessage(crtCmd._name.c_str(), std::numeric_limits<I32>::max());
         }break;
         case GFX::CommandType::END_RENDER_PASS: {
+            const GFX::EndRenderPassCommand& crtCmd = commandBuffer.get<GFX::EndRenderPassCommand>(entry);
             assert(s_activeStateTracker->_activeRenderTarget != nullptr);
             GL_API::popDebugMessage();
-            Attorney::GLAPIRenderTarget::end(*s_activeStateTracker->_activeRenderTarget);
+            glFramebuffer& fb = *s_activeStateTracker->_activeRenderTarget;
+            Attorney::GLAPIRenderTarget::end(fb, crtCmd._autoResolveMSAAColour, crtCmd._autoResolveMSAAExternalColour, crtCmd._autoResolveMSAADepth);
         }break;
         case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
             const GFX::BeginPixelBufferCommand& crtCmd = commandBuffer.get<GFX::BeginPixelBufferCommand>(entry);
@@ -1128,7 +1130,17 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {
         }break;
-        
+        case GFX::CommandType::RESOLVE_RT: {
+            const GFX::ResolveRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ResolveRenderTargetCommand>(entry);
+            glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._source));
+            Attorney::GLAPIRenderTarget::resolve(rt, crtCmd._resolveColours, crtCmd._resolveDepth, crtCmd._resolveExternalColours);
+        }break;
+        case GFX::CommandType::COPY_TEXTURE: {
+            const GFX::CopyTextureCommand& crtCmd = commandBuffer.get<GFX::CopyTextureCommand>(entry);
+            if (crtCmd._source != nullptr && crtCmd._destination != nullptr) {
+                crtCmd._destination->copy(crtCmd._source);
+            }
+        }break;
         case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
             const GFX::BindDescriptorSetsCommand& crtCmd = commandBuffer.get<GFX::BindDescriptorSetsCommand>(entry);
             const DescriptorSet& set = crtCmd._set;

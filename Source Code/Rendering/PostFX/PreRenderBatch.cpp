@@ -199,6 +199,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 
+
     TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
 
     if (_adaptiveExposureControl) {
@@ -217,6 +218,13 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
         pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
         GFX::EnqueueCommand(buffer, pipelineCmd);
 
+        // We don't know if our screen target has been resolved
+        GFX::ResolveRenderTargetCommand resolveCmd = { };
+        resolveCmd._source = inputRT()._targetID;
+        resolveCmd._resolveColours = true;
+        resolveCmd._resolveDepth = false;
+
+        GFX::EnqueueCommand(buffer, resolveCmd);
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
         descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
@@ -243,6 +251,13 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
             op->execute(camera, buffer);
         }
     }
+
+    // Post-HDR batch, our screen target has been written to again
+    GFX::ResolveRenderTargetCommand resolveCmd = { };
+    resolveCmd._source = inputRT()._targetID;
+    resolveCmd._resolveColours = true;
+    resolveCmd._resolveDepth = false;
+    GFX::EnqueueCommand(buffer, resolveCmd);
 
     pipelineDescriptor._shaderProgramHandle = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap)->getID();
     GFX::BindPipelineCommand pipelineCmd = {};

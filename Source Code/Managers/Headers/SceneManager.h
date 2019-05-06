@@ -203,7 +203,7 @@ protected:
 protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
-    void preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    void preRender(RenderStagePass stagePass, const Camera& camera, RenderTargetID target, GFX::CommandBuffer& bufferInOut);
     void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void preRenderAllPasses(const Camera& playerCamera);
     void postRenderAllPasses(const Camera& playerCamera);
@@ -373,7 +373,7 @@ class SceneManagerRenderPass {
         mgr.prepareLightData(stage, camera);
     }
 
-    static void preRender(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+    static void preRenderMainPass(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, RenderTargetID target, GFX::CommandBuffer& bufferInOut) {
         mgr.preRender(stagePass, camera, target, bufferInOut);
     }
 

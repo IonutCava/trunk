@@ -142,9 +142,9 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     virtual bool resize(U16 width, U16 height) = 0;
 
     virtual bool hasAttachment(RTAttachmentType type, U8 index) const;
-    virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;
-    virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
-    virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index);
+    virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index, bool resolved = true) const;
+    virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true) const;
+    virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true);
     virtual U8 getAttachmentCount(RTAttachmentType type) const;
 
     virtual void setDefaultState(const RTDrawDescriptor& drawPolicy) = 0;

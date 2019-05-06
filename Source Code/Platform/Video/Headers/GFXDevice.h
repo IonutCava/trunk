@@ -235,8 +235,6 @@ public:  // GPU interface
     ShaderComputeQueue& shaderComputeQueue();
     const ShaderComputeQueue& shaderComputeQueue() const;
 
-    void onPlayerPass(PlayerIndex index);
-
 public:  // Accessors and Mutators
     inline const GPUState& gpuState() const { return _state; }
 
@@ -372,7 +370,6 @@ protected:
 protected:
     void renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
-    void blitToScreen(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
@@ -512,8 +509,8 @@ namespace Attorney {
 
     class GFXDeviceKernel {
     private:
-        static void blitToScreen(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-            device.blitToScreen(targetViewport, bufferInOut);
+        static void blitToBuffer(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+            device.blitToBuffer(targetViewport, bufferInOut);
         }
 
         static void blitToRenderTarget(GFXDevice& device, RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {

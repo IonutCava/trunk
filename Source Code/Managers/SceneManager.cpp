@@ -424,7 +424,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     }
 }
 
-void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, RenderTargetID target, GFX::CommandBuffer& bufferInOut) {
     _platformContext->gfx().getRenderer().preRender(stagePass, target, getActiveScene().lightPool(), bufferInOut);
 }
 
@@ -475,7 +475,6 @@ Camera* SceneManager::playerCamera() const {
 
 void SceneManager::currentPlayerPass(PlayerIndex idx) {
     _currentPlayerPass = idx;
-    _platformContext->gfx().onPlayerPass(idx);
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), _currentPlayerPass);
     playerCamera()->updateLookAt();
 }

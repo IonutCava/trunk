@@ -20,6 +20,8 @@ DEFINE_POOL(BeginRenderSubPassCommand);
 DEFINE_POOL(EndRenderSubPassCommand);
 DEFINE_POOL(BlitRenderTargetCommand);
 DEFINE_POOL(ResetRenderTargetCommand);
+DEFINE_POOL(ResolveRenderTargetCommand);
+DEFINE_POOL(CopyTextureCommand);
 DEFINE_POOL(ComputeMipMapsCommand);
 DEFINE_POOL(SetScissorCommand);
 DEFINE_POOL(SetBlendCommand);
@@ -123,7 +125,14 @@ void CommandBuffer::batch() {
                 hasWork = true;
                 break;
             }break;
-                
+            case GFX::CommandType::RESOLVE_RT: {
+                const ResolveRenderTargetCommand& crtCmd = get<ResolveRenderTargetCommand>(cmd);
+                hasWork = crtCmd._resolveColours || crtCmd._resolveDepth;
+            } break;
+            case GFX::CommandType::COPY_TEXTURE: {
+                const CopyTextureCommand& crtCmd = get<CopyTextureCommand>(cmd);
+                hasWork = crtCmd._source != nullptr && crtCmd._destination != nullptr;
+            }break;
         };
     }
 

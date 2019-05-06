@@ -48,20 +48,12 @@ class Renderer : public PlatformContextComponent {
     ~Renderer();
 
     void preRender(RenderStagePass stagePass,
-                   RenderTarget& target,
+                   RenderTargetID target,
                    LightPool& lightPool,
                    GFX::CommandBuffer& bufferInOut);
 
-    void render(RenderStagePass stagePass,
-                const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
-                const SceneRenderState& sceneRenderState,
-                GFX::CommandBuffer& bufferInOut);
-
-    inline void toggleDebugView() { _debugView = !_debugView; }
-
   private:
     ResourceCache& _resCache;
-    bool _debugView;
 
     ShaderProgram_ptr _lightCullComputeShader;
     ShaderBuffer*     _perTileLightIndexBuffer;

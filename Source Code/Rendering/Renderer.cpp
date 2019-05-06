@@ -18,8 +18,7 @@ namespace {
 
 Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     : PlatformContextComponent(context),
-      _resCache(cache),
-      _debugView(false)
+      _resCache(cache)
 {
     ResourceDescriptor cullShaderDesc("lightCull");
     cullShaderDesc.setThreadedLoading(false);
@@ -44,35 +43,23 @@ Renderer::~Renderer()
 }
 
 void Renderer::preRender(RenderStagePass stagePass,
-                         RenderTarget& target,
+                         RenderTargetID target,
                          LightPool& lightPool,
                          GFX::CommandBuffer& bufferInOut) {
-
-    const Texture_ptr& depthTexture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
-
-    Image img = {};
-    img._texture = depthTexture.get();
-    img._binding = to_U8(ShaderProgram::TextureUsage::DEPTH);
-    img._layer = 0;
-    img._level = 0;
-    img._flag = Image::Flag::READ;
-
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    //bindDescriptorSetsCmd._set._images.push_back(img);
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthTexture->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     if (stagePass._stage == RenderStage::SHADOW) {
         return;
     }
 
     lightPool.uploadLightData(stagePass._stage, bufferInOut);
-    if (stagePass._stage != RenderStage::DISPLAY) {
+
+    if (stagePass._stage != RenderStage::DISPLAY && stagePass._passType != RenderPassType::MAIN_PASS) {
         return;
     }
 
+    const RenderTarget& rt = _context.gfx().renderTargetPool().renderTarget(target);
     GFX::SetViewportCommand viewportCommand;
-    viewportCommand._viewport.set(Rect<I32>(0, 0, depthTexture->getWidth(), depthTexture->getHeight()));
+    viewportCommand._viewport.set(Rect<I32>(0, 0, rt.getWidth(), rt.getHeight()));
     GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd = {};

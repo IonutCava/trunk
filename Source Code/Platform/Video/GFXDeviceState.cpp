@@ -551,10 +551,6 @@ void GFXDevice::endFrame(DisplayWindow& window, bool global) {
     }
 }
 
-void GFXDevice::onPlayerPass(PlayerIndex index) {
-    getPrevDepthBuffer()->copy(_rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture());
-}
-
 ErrorCode GFXDevice::createAPIInstance() {
     assert(_api == nullptr && "GFXDevice error: initRenderingAPI called twice!");
 

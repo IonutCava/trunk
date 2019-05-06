@@ -59,9 +59,9 @@ class glFramebuffer : public RenderTarget,
 
     bool resize(U16 width, U16 height) override;
 
-    const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const override;
-    const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const override;
-    RTAttachment& getAttachment(RTAttachmentType type, U8 index) override;
+    const RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true) const override;
+    const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index, bool resolved = true) const override;
+    RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true) override;
 
     void drawToLayer(const DrawLayerParams& params);
 
@@ -102,12 +102,12 @@ class glFramebuffer : public RenderTarget,
         }
     };
 
-    RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index);
-    const RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index) const;
+    RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index, bool resolved = true);
+    const RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index, bool resolved = true) const;
 
     /// Bake in all settings and attachments to prepare it for rendering
     bool create();
-    void resolve(bool colours, bool depth);
+    void resolve(bool colours, bool depth, bool externalColours);
     void queueCheckStatus();
     bool checkStatus();
 
@@ -144,12 +144,13 @@ class glFramebuffer : public RenderTarget,
     RTAttachmentPool::PoolEntry& getAttachmentInternal(RTAttachmentType type);
 
     void begin(const RTDrawDescriptor& drawPolicy);
-    void end();
+    void end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth);
     void queueMipMapRecomputation();
     void queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange);
 
    protected:
-    bool _resolved;
+    bool _resolvedColours;
+    bool _resolvedDepth;
     bool _isLayeredDepth;
     bool _statusCheckQueued;
     Rect<I32> _prevViewport;
@@ -164,7 +165,7 @@ class glFramebuffer : public RenderTarget,
     bool _hasMultisampledColourAttachments;
 
     hashMap<GLenum, BindingState> _attachmentState;
-    hashMap<GLenum, eastl::set<U16, eastl::greater<U16>>> _attachmentDirtyLayers;
+    hashMap<GLenum, eastl::set<U16, eastl::greater<U16>>> _attachmentResolvedLayers;
 };
 
 namespace Attorney {
@@ -173,8 +174,11 @@ namespace Attorney {
         static void begin(glFramebuffer& buffer, const RTDrawDescriptor& drawPolicy) {
             buffer.begin(drawPolicy);
         }
-        static void end(glFramebuffer& buffer) {
-            buffer.end();
+        static void end(glFramebuffer& buffer, bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth) {
+            buffer.end(resolveMSAAColour, resolveMSAAExternalColour, resolveMSAADepth);
+        }
+        static void resolve(glFramebuffer& buffer, bool colours, bool depth, bool externalColours) {
+            buffer.resolve(colours, depth, externalColours);
         }
         friend class Divide::GL_API;
     };

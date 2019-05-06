@@ -120,27 +120,26 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
         }
     }
 
-    if (parent().platformContext().config().gui.cegui.enabled) {
-        if (!parent().platformContext().config().gui.cegui.skipRendering) {
+    const Configuration::GUI& guiConfig = parent().platformContext().config().gui;
 
-            _ceguiRenderer->beginRendering();
+    if (guiConfig.cegui.enabled && !guiConfig.cegui.skipRendering) {
+        _ceguiRenderer->beginRendering();
 
-            _ceguiRenderTextureTarget->clear();
-            getCEGUIContext().draw();
+        _ceguiRenderTextureTarget->clear();
+        getCEGUIContext().draw();
 
-            _ceguiRenderer->endRendering();
+        _ceguiRenderer->endRendering();
 
-            GFX::SetBlendCommand blendCmd;
-            blendCmd._blendProperties = BlendingProperties{
-                true,
-                BlendProperty::SRC_ALPHA,
-                BlendProperty::INV_SRC_ALPHA,
-                BlendOperation::ADD
-            };
-            GFX::EnqueueCommand(bufferInOut, blendCmd);
+        GFX::SetBlendCommand blendCmd;
+        blendCmd._blendProperties = BlendingProperties{
+            true,
+            BlendProperty::SRC_ALPHA,
+            BlendProperty::INV_SRC_ALPHA,
+            BlendOperation::ADD
+        };
+        GFX::EnqueueCommand(bufferInOut, blendCmd);
 
-            context.drawTextureInRenderWindow(getCEGUIRenderTextureData(), bufferInOut);
-        }
+        context.drawTextureInRenderWindow(getCEGUIRenderTextureData(), bufferInOut);
     }
 }
 

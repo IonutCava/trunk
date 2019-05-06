@@ -190,6 +190,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, drawCommand);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
+    endRenderPassCmd._autoResolveMSAAColour = true;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 

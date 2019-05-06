@@ -531,7 +531,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
                 Attorney::GFXDeviceKernel::blitToRenderTarget(_platformContext->gfx(), RenderTargetID(RenderTargetUsage::EDITOR), _editorViewports[i], buffer);
             } else {
-                Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), _targetViewports[i], buffer);
+                Attorney::GFXDeviceKernel::blitToBuffer(_platformContext->gfx(), _targetViewports[i], buffer);
             }
 
             Attorney::GFXDeviceKernel::renderDebugUI(_platformContext->gfx(), _platformContext->activeWindow().windowViewport(), buffer);
