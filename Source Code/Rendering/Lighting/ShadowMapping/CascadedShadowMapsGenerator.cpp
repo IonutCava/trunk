@@ -188,6 +188,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     }
 
     GFX::EndRenderPassCommand endRenderPassCmd = {};
+    endRenderPassCmd._autoResolveMSAAColour = g_shadowSettings.enableBlurring;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     postRender(dirLight, bufferInOut);
