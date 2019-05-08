@@ -226,7 +226,7 @@ private:
     /// visible in the current frame
     RenderPassCuller* _renderPassCuller;
 
-    TaskHandle _saveTask;
+    Task* _saveTask = nullptr;
     PlayerIndex _currentPlayerPass;
     ScenePool* _scenePool;
     SceneShaderData* _sceneData;

@@ -43,16 +43,14 @@ class PlatformContext;
 * @brief Creates a new Task that runs in a separate thread
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 */
-TaskHandle CreateTask(PlatformContext& context, const DELEGATE_CBK<void, const Task&>& threadedFunction);
+Task* CreateTask(PlatformContext& context, const DELEGATE_CBK<void, Task&>& threadedFunction);
 
 /**
 * @brief Creates a new Task that runs in a separate thread
 * @param context The parent task that would need to wait for our newly created task to complete before finishing
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 */
-TaskHandle CreateTask(PlatformContext& context,
-                      TaskHandle* parentTask,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction);
+Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
 
 void parallel_for(PlatformContext& context,
                   const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,

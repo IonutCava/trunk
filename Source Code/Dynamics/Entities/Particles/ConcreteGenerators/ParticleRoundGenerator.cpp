@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-void ParticleRoundGenerator::generate(TaskHandle& packagedTasksParent,
+void ParticleRoundGenerator::generate(Task& packagedTasksParent,
                                       const U64 deltaTimeUS,
                                       ParticleData& p,
                                       U32 startIndex,

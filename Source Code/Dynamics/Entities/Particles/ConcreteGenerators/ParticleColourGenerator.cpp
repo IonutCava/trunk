@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
+void ParticleColourGenerator::generate(Task& packagedTasksParent,
                                        const U64 deltaTimeUS,
                                        ParticleData& p,
                                        U32 startIndex,
@@ -15,7 +15,7 @@ void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
     const FColour minEndCol(Util::ToFloatColour(_minEndCol));
     const FColour maxEndCol(Util::ToFloatColour(_maxEndCol));
 
-    TaskPool& tp = packagedTasksParent.getOwningPool();
+    TaskPool& tp = *packagedTasksParent._parentPool;
 
     typedef decltype(std::begin(p._startColour)) iter_t_start;
     typedef decltype(std::begin(p._endColour)) iter_t_end;
@@ -24,14 +24,14 @@ void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
                                     ParticleData::g_threadPartitionSize,
                                     [&](iter_t_start from, iter_t_start to)
     {
-        CreateTask(tp,
+        Start(*CreateTask(tp,
                    &packagedTasksParent,
                    [from, to, minStartCol, maxStartCol](const Task& parentTask) {
                        std::for_each(from, to, [&](iter_t_start::value_type& colour)
                        {
                            colour.set(Random(minStartCol, maxStartCol));
                        });
-                   }).startTask();
+                   }));
     });
 
     for_each_interval<iter_t_end>(std::begin(p._endColour) + startIndex,
@@ -39,14 +39,14 @@ void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
                                   ParticleData::g_threadPartitionSize,
                                   [&](iter_t_end from, iter_t_end to)
     {
-        CreateTask(tp,
+        Start(*CreateTask(tp,
                    &packagedTasksParent,
                    [from, to, minEndCol, maxEndCol](const Task& parentTask) {
                        std::for_each(from, to, [&](iter_t_end::value_type& colour)
                        {
                            colour.set(Random(minEndCol, maxEndCol));
                        });
-                   }).startTask();
+                   }));
     });
 }
 };

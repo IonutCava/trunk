@@ -88,6 +88,8 @@ class glTexture final : public Texture,
     std::atomic_bool _allocatedStorage;
 
     glLockManager* _lockManager;
+
+    static std::mutex s_driverLock;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(glTexture);

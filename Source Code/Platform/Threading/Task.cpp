@@ -34,14 +34,17 @@ void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> o
     finish(task);
 }
 
-void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
-    PoolTask wrappedTask = [&task, &pool, priority, onCompletionFunction]() {
-        run(task, pool, priority, onCompletionFunction);
-    };
-
-    while (!pool.enqueue(wrappedTask, priority)) {
+Task& Start(Task& task, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
+    while (!task._parentPool->enqueue(
+        [&task, priority, onCompletionFunction]() {
+            run(task, *task._parentPool, priority, onCompletionFunction);
+        },
+        priority))
+    {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
     }
+
+    return task;
 }
 
 void Wait(const Task& task) {
@@ -50,8 +53,9 @@ void Wait(const Task& task) {
     }
 }
 
-void Stop(Task& task) {
+Task& Stop(Task& task) {
     task._stopRequested.store(true);
+    return task;
 }
 
 bool StopRequested(const Task& task) {
@@ -67,28 +71,4 @@ void TaskYield(const Task& task) {
     task._parentPool->threadWaiting();
 }
 
-TaskHandle& TaskHandle::startTask(TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction) {
-    assert(_task != nullptr);
-    Start(*_task, *_tp, prio, onCompletionFunction);
-    return *this;
-}
-
-bool TaskHandle::operator==(const TaskHandle& other) const {
-    if (_tp != nullptr) {
-        if (other._tp == nullptr) {
-            return false;
-        }
-    } else if (other._tp != nullptr) {
-        return false;
-    }
-    if (_task != nullptr) {
-        if (other._task == nullptr) {
-            return false;
-        }
-    } else if (other._task != nullptr) {
-        return false;
-    }
-
-    return *_tp == *other._tp && _task->_id == other._task->_id;
-}
 };

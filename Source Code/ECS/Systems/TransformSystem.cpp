@@ -35,7 +35,7 @@ namespace Divide {
             transform->PreUpdate(microSec);
         }
 
-        //_preUpdateTask = CreateTask(context(), DELEGATE_CBK<void, const Task&>());
+        //_preUpdateTask = CreateTask(context(), DELEGATE_CBK<void, Task&>());
         //for (TransformComponent* comp : transforms) {
         //    Task* child = _preUpdateTask.addChildTask(CreateTask(context(),
         //        [microSec, &comp](const Task& /*task*/) {
@@ -61,7 +61,7 @@ namespace Divide {
         }
 
         //_preUpdateTask.wait();
-        //_updateTask = CreateTask(context(), DELEGATE_CBK<void, const Task&>());
+        //_updateTask = CreateTask(context(), DELEGATE_CBK<void, Task&>());
         //for (TransformComponent* comp : transforms) {
         //    Task* child = _updateTask.addChildTask(CreateTask(context(),
         //        [microSec, &comp](const Task& /*task*/) {
@@ -87,7 +87,7 @@ namespace Divide {
         }
 
         //_updateTask.wait();
-        //_postUpdateTask = CreateTask(context(), DELEGATE_CBK<void, const Task&>());
+        //_postUpdateTask = CreateTask(context(), DELEGATE_CBK<void, Task&>());
         //for (TransformComponent* comp : transforms) {
         //    Task* child = _postUpdateTask.addChildTask(CreateTask(context(),
         //        [microSec, &comp](const Task& /*task*/) {

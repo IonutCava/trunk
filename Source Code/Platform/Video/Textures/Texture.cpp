@@ -60,10 +60,10 @@ Texture::~Texture()
 
 bool Texture::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     if (_asyncLoad) {
-        CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
+        Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
             [this, onLoadCallback](const Task & parent) {
                 threadedLoad(std::move(onLoadCallback));
-        }).startTask();
+        }));
     } else {
         threadedLoad(std::move(onLoadCallback));
     }

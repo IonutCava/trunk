@@ -260,7 +260,7 @@ class Kernel : public Input::InputAggregatorInterface,
     vector<Rect<I32>> _editorViewports;
     vector<Rect<I32>> _targetViewports;
 
-    TaskHandle _splashTask;
+    Task* _splashTask = nullptr;
     std::atomic_bool _splashScreenUpdating;
 
     std::unique_ptr<ResourceCache>     _resCache;

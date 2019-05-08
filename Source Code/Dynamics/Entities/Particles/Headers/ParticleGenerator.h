@@ -43,7 +43,7 @@ class NOINITVTABLE ParticleGenerator {
     ParticleGenerator() noexcept {}
     virtual ~ParticleGenerator() {}
 
-    virtual void generate(TaskHandle& packagedTasksParent,
+    virtual void generate(Task& packagedTasksParent,
                           const U64 deltaTimeUS,
                           ParticleData& p,
                           U32 startIndex,

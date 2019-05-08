@@ -77,9 +77,8 @@ bool NavigationMesh::unload() {
 
 void NavigationMesh::stopThreadedBuild() {
     if (_buildJobGUID != -1){
-        assert(_buildTask._task);
-        Stop(*_buildTask._task);
-        Wait(*_buildTask._task);
+        assert(_buildTask);
+        Wait(Stop(*_buildTask));
     }
 }
 
@@ -189,7 +188,8 @@ bool NavigationMesh::buildThreaded() {
     _buildTask = CreateTask(_context,
                             [this](const Task& parentTask) {
                                 buildInternal(parentTask);
-                            }).startTask();
+                            });
+    Start(*_buildTask);
 
     return true;
 }

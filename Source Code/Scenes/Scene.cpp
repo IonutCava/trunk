@@ -171,8 +171,8 @@ bool Scene::idle() {  // Called when application is idle
     UniqueLockShared r_lock(_tasksMutex);
     _tasks.erase(std::remove_if(eastl::begin(_tasks),
                                 eastl::end(_tasks),
-                                [](const TaskHandle& handle) -> bool { 
-                                    return !handle.taskRunning();
+                                [](Task* handle) -> bool { 
+                                    return handle != nullptr && Finished(*handle);
                                 }),
                 eastl::end(_tasks));
 
@@ -282,7 +282,7 @@ namespace {
 };
 
 
-void Scene::loadAsset(const Task& parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
+void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
     assert(parent != nullptr);
 
     auto waitForReasoureTask = [&parentTask](CachedResource_wptr res) {
@@ -428,7 +428,10 @@ void Scene::loadAsset(const Task& parentTask, const XML::SceneNode& sceneNode, S
     }
 
     for (const XML::SceneNode& node : sceneNode.children) {
-        loadAsset(parentTask, node, crtNode, waitForReady);
+        //loadAsset(parentTask, node, crtNode, waitForReady);
+        Start(*CreateTask(*parentTask._parentPool, &parentTask, [this, node, waitForReady, &crtNode](Task& subTask) -> void {
+            loadAsset(subTask, node, crtNode, waitForReady);
+        }));
     }
 }
 
@@ -1007,16 +1010,17 @@ bool Scene::load(const stringImpl& name) {
     loadDefaultCamera();
 
     TaskPool& pool = _context.taskPool(TaskPoolType::HIGH_PRIORITY);
-    TaskHandle loadTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
+    Task* loadTask = CreateTask(pool, DELEGATE_CBK<void, Task&>());
     while (!_xmlSceneGraph.empty()) {
         XML::SceneNode node = _xmlSceneGraph.top();
         _xmlSceneGraph.pop();
 
-        CreateTask(pool, &loadTask, [this, node](const Task & parentTask) -> void {
+        Start(
+        *CreateTask(pool, loadTask, [this, node](Task & parentTask) -> void {
             loadAsset(parentTask, node, &_sceneGraph->getRoot(), false);
-        }).startTask();
+        }));
     }
-    loadTask.startTask().wait();
+    Wait(Start(*loadTask));
 
     U32 totalLoadingTasks = _loadingTasks.load();
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
@@ -1311,11 +1315,11 @@ void Scene::onLostFocus() {
     //_paramHandler.setParam(_ID("freezeLoopTime"), true);
 }
 
-void Scene::registerTask(const TaskHandle& taskItem, bool start, TaskPriority priority) {
+void Scene::registerTask(Task& taskItem, bool start, TaskPriority priority) {
     UniqueLockShared w_lock(_tasksMutex);
-    _tasks.push_back(taskItem);
+    _tasks.push_back(&taskItem);
     if (start) {
-        _tasks.back().startTask(priority);
+        Start(taskItem, priority);
     }
 }
 
@@ -1323,22 +1327,20 @@ void Scene::clearTasks() {
     Console::printfn(Locale::get(_ID("STOP_SCENE_TASKS")));
     // Performance shouldn't be an issue here
     UniqueLockShared w_lock(_tasksMutex);
-    for (TaskHandle& task : _tasks) {
-        Stop(*task._task);
-        Wait(*task._task);
+    for (Task* task : _tasks) {
+        Wait(Stop(*task));
     }
 
     _tasks.clear();
 }
 
-void Scene::removeTask(TaskHandle& task) {
+void Scene::removeTask(Task& task) {
     UniqueLockShared w_lock(_tasksMutex);
-    vectorEASTL<TaskHandle>::iterator it;
+    vectorEASTL<Task*>::iterator it;
     for (it = eastl::begin(_tasks); it != eastl::end(_tasks); ++it) {
-        if ((*it) == task) {
-            Stop(*(*it)._task);
+        if ((*it)->_id == task._id) {
+            Wait(Stop(*(*it)));
             _tasks.erase(it);
-            (*it).wait();
             return;
         }
     }

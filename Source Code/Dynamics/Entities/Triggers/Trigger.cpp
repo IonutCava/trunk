@@ -54,7 +54,7 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
     }
 }
 
-void Trigger::setParams(TaskHandle& triggeredTask,
+void Trigger::setParams(Task& triggeredTask,
                         const vec3<F32>& triggerPosition,
                         F32 radius) {
     /// Check if position has changed
@@ -69,7 +69,7 @@ void Trigger::setParams(TaskHandle& triggeredTask,
             _triggerImpostor->setRadius(radius);
         }
     }
-    _triggeredTask = triggeredTask;
+    _triggeredTask = &triggeredTask;
 }
 
 bool Trigger::unload() noexcept {
@@ -96,7 +96,8 @@ bool Trigger::check(Unit* const unit, const vec3<F32>& camEyePos) {
 }
 
 bool Trigger::trigger() {
-    _triggeredTask.startTask();
+    assert(_triggeredTask != nullptr);
+    Start(*_triggeredTask);
     return true;
 }
 };

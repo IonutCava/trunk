@@ -179,6 +179,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     static I64 s_shaderFileWatcherID;
 
+    static std::mutex s_driverLock;
     /// Shaders loaded from files are kept as atoms
     static SharedMutex s_atomLock;
     static AtomMap s_atoms;

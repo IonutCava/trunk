@@ -54,9 +54,9 @@ namespace Divide {
         bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) override;
 
     protected:
-        TaskHandle _preUpdateTask;
-        TaskHandle _updateTask;
-        TaskHandle _postUpdateTask;
+        Task* _preUpdateTask = nullptr;
+        Task* _updateTask = nullptr;
+        Task* _postUpdateTask = nullptr;
     };
 };
 

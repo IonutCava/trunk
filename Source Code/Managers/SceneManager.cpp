@@ -175,7 +175,7 @@ Scene* SceneManager::load(stringImpl sceneName) {
 
 bool SceneManager::unloadScene(Scene* scene) {
     assert(scene != nullptr);
-    _saveTask.wait();
+    Wait(*_saveTask);
 
     _platformContext->gui().onUnloadScene(scene);
     Attorney::SceneManager::onRemoveActive(*scene);
@@ -184,7 +184,7 @@ bool SceneManager::unloadScene(Scene* scene) {
 
 void SceneManager::setActiveScene(Scene* const scene) {
     assert(scene != nullptr);
-    _saveTask.wait();
+    Wait(*_saveTask);
 
     Attorney::SceneManager::onRemoveActive(_scenePool->defaultSceneActive() ? _scenePool->defaultScene()
                                                                             : getActiveScene());
@@ -210,7 +210,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, cons
     }
 
     // We use our rendering task pool for scene changes because we might be creating / loading GPU assets (shaders, textures, buffers, etc)
-    CreateTask(_platformContext->taskPool(TaskPoolType::HIGH_PRIORITY),
+    Start(*CreateTask(_platformContext->taskPool(TaskPoolType::HIGH_PRIORITY),
         [this, name, unloadPrevious, &sceneToUnload](const Task& parentTask)
         {
             // Load first, unload after to make sure we don't reload common resources
@@ -220,7 +220,8 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, cons
                     unloadScene(sceneToUnload);
                 }
             }
-        }).startTask(threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME, 
+        }),
+        threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME, 
         [this, name, &targetRenderViewport, unloadPrevious, &sceneToUnload]()
         {
             bool foundInCache = false;
@@ -791,13 +792,15 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
 bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
     const Scene& activeScene = getActiveScene();
 
+    Wait(*_saveTask);
+
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::LOW_PRIORITY);
-    _saveTask.wait();
     _saveTask = CreateTask(pool,
                            nullptr,
                            [&activeScene, toCache](const Task& parentTask) {
                                LoadSave::saveScene(activeScene, toCache);
-                           }).startTask(deferred ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+                           });
+    Start(*_saveTask, deferred ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     return true;
 }

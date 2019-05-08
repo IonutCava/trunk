@@ -131,7 +131,7 @@ void Kernel::startSplashScreen() {
             break;
         }
     });
-    _splashTask.startTask(TaskPriority::REALTIME/*HIGH*/);
+    Start(*_splashTask, TaskPriority::REALTIME/*HIGH*/);
 
     window.swapBuffers(false);
 }
@@ -141,7 +141,7 @@ void Kernel::stopSplashScreen() {
     window.swapBuffers(true);
     vec2<U16> previousDimensions = window.getPreviousDimensions();
     _splashScreenUpdating = false;
-    _splashTask.wait();
+    Wait(*_splashTask);
 
     window.changeToPreviousType();
     window.decorated(true);

@@ -71,12 +71,12 @@ TEST(TaskCallbackTest)
         testValue = true;
     };
 
-    TaskHandle job = CreateTask(test, task);
-    job.startTask(callback);
+    Task* job = CreateTask(test, task);
+    Start(*job, TaskPriority::DONT_CARE, callback);
 
     CHECK_FALSE(testValue);
 
-    job.wait();
+    Wait(*job);
 
     CHECK_FALSE(testValue);
 
@@ -119,12 +119,12 @@ TEST(TaskClassMemberCallbackTest)
 
     ThreadedTest testObj;
 
-    TaskHandle job = CreateTask(test, [&testObj](const Task& parentTask) { testObj.threadedFunction(parentTask); } );
-    job.startTask( [&testObj]() { testObj.setTestValue(false); } );
+    Task* job = CreateTask(test, [&testObj](const Task& parentTask) { testObj.threadedFunction(parentTask); } );
+    Start(*job, TaskPriority::DONT_CARE, [&testObj]() { testObj.setTestValue(false); } );
 
     CHECK_FALSE(testObj.getTestValue());
 
-    job.wait();
+    Wait(*job);
 
     CHECK_TRUE(testObj.getTestValue());
 
@@ -143,7 +143,7 @@ TEST(TaskSpeedTest)
         Time::ProfileTimer timer;
 
         timer.start();
-        TaskHandle job = CreateTask(test,
+        Task* job = CreateTask(test,
             [](const Task& parentTask) {
             // NOP
         }
@@ -151,14 +151,14 @@ TEST(TaskSpeedTest)
 
         for (std::size_t i = 0; i < 60 * 1000; ++i)
         {
-            CreateTask(test, &job,
+            Start(*CreateTask(test, job,
                 [](const Task& parentTask) {
                 // NOP
             }
-            ).startTask();
+            ));
         }
 
-        job.startTask().wait();
+        Wait(Start(*job));
         F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (blocking): 60K tasks completed in: " << durationMS << " ms." << std::endl;
     }
@@ -170,7 +170,7 @@ TEST(TaskSpeedTest)
         Time::ProfileTimer timer;
 
         timer.start();
-        TaskHandle job = CreateTask(test,
+        Task* job = CreateTask(test,
             [](const Task& parentTask) {
             // NOP
         }
@@ -178,14 +178,14 @@ TEST(TaskSpeedTest)
 
         for (std::size_t i = 0; i < 60 * 1000; ++i)
         {
-            CreateTask(test, &job,
+            Start(*CreateTask(test, job,
                 [](const Task& parentTask) {
                 // NOP
             }
-            ).startTask();
+            ));
         }
 
-        job.startTask().wait();
+        Wait(Start(*job));
         F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (lockfree): 60K tasks completed in: " << durationMS << " ms." << std::endl;
     }
@@ -288,23 +288,20 @@ TEST(TaskPriorityTest)
         callbackValue++;
     };
 
-    TaskHandle job = CreateTask(test, testFunction);
-    job.startTask(callback);
-    job.wait();
+    Task* job = CreateTask(test, testFunction);
+    Wait(Start(*job, TaskPriority::DONT_CARE, callback));
     CHECK_EQUAL(callbackValue, 1u);
     test.flushCallbackQueue();
     CHECK_EQUAL(callbackValue, 2u);
 
     job = CreateTask(test, testFunction);
-    job.startTask();
-    job.wait();
+    Wait(Start(*job));
     CHECK_EQUAL(callbackValue, 3u);
     test.flushCallbackQueue();
     CHECK_EQUAL(callbackValue, 3u);
 
     job = CreateTask(test, testFunction);
-    job.startTask(TaskPriority::REALTIME, callback);
-    job.wait();
+    Wait(Start(*job, TaskPriority::REALTIME, callback));
     CHECK_EQUAL(callbackValue, 5u);
 }
 

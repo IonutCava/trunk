@@ -228,7 +228,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// DebugDraw interface
     NavMeshDebugDraw* _debugDrawInterface;
 
-    TaskHandle _buildTask;
+    Task* _buildTask = nullptr;
 };
 
 namespace Attorney {

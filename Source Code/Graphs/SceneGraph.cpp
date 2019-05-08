@@ -198,7 +198,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     }
 
     if (_loadComplete && false) {
-        CreateTask(parentScene().context(),
+        Start(*CreateTask(parentScene().context(),
             [this, deltaTimeUS](const Task& parentTask) mutable
             {
                 _octreeUpdating = true;
@@ -206,11 +206,12 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
                     _octree->updateTree();
                 }
                 _octree->update(deltaTimeUS);
-            }).startTask(TaskPriority::DONT_CARE,
-                [this]() mutable
-                {
-                    _octreeUpdating = false;
-                });
+            }), 
+            TaskPriority::DONT_CARE,
+            [this]() mutable
+            {
+                _octreeUpdating = false;
+            });
     }
 }
 

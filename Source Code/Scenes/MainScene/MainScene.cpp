@@ -24,7 +24,7 @@
 namespace Divide {
 
 namespace {
-    TaskHandle g_boxMoveTaskID;
+    Task* g_boxMoveTaskID = nullptr;
 };
 
 MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
@@ -195,12 +195,12 @@ bool MainScene::load(const stringImpl& name) {
             vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                 -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
-        removeTask(g_boxMoveTaskID);
+        removeTask(*g_boxMoveTaskID);
         g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
             test(parent, stringImpl("test"), CallbackParam::TYPE_STRING);
         });
 
-        registerTask(g_boxMoveTaskID);
+        registerTask(*g_boxMoveTaskID);
 
         ResourceDescriptor beepSound("beep sound");
         beepSound.assetName("beep.wav");
@@ -267,7 +267,7 @@ U16 MainScene::registerInputActions() {
 bool MainScene::unload() {
     _context.sfx().stopMusic();
     _context.sfx().stopAllSounds();
-    g_boxMoveTaskID.clear();
+    g_boxMoveTaskID = nullptr;
 
     return Scene::unload();
 }
@@ -306,13 +306,13 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
-        if (g_boxMoveTaskID()) {
+        if (g_boxMoveTaskID != nullptr) {
             if (!StopRequested(parentTask)) {
                 g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
                     test(parent, stringImpl("test"), CallbackParam::TYPE_STRING);
                 });
 
-                registerTask(g_boxMoveTaskID);
+                registerTask(*g_boxMoveTaskID);
             }
         }
     }

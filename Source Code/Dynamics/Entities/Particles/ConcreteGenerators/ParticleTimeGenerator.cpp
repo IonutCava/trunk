@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-void ParticleTimeGenerator::generate(TaskHandle& packagedTasksParent,
+void ParticleTimeGenerator::generate(Task& packagedTasksParent,
                                      const U64 deltaTimeUS,
                                      ParticleData& p,
                                      U32 startIndex,

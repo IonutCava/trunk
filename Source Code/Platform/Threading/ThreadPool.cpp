@@ -71,7 +71,7 @@ namespace Divide {
         }
     }
 
-    bool BlockingThreadPool::addTask(const PoolTask& job)  {
+    bool BlockingThreadPool::addTask(PoolTask&& job)  {
         if (_queue.enqueue(job)) {
             _tasksLeft.fetch_add(1);
             return true;
@@ -81,7 +81,8 @@ namespace Divide {
     }
 
     void BlockingThreadPool::executeOneTask(bool waitForTask) {
-        PoolTask task;
+        PoolTask task = {};
+
         if (waitForTask) {
             _queue.wait_dequeue(task);
         } else {
@@ -109,7 +110,7 @@ namespace Divide {
         }
     }
 
-    bool LockFreeThreadPool::addTask(const PoolTask& job) {
+    bool LockFreeThreadPool::addTask(PoolTask&& job) {
         if (_queue.enqueue(job)) {
             _tasksLeft.fetch_add(1);
             return true;
@@ -119,7 +120,8 @@ namespace Divide {
     }
    
     void LockFreeThreadPool::executeOneTask(bool waitForTask) {
-        PoolTask task;
+        PoolTask task = {};
+
         while (!_queue.try_dequeue(task)) {
             std::this_thread::yield();
             if (!waitForTask) {

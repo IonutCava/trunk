@@ -351,9 +351,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
     if (threadedLoading) {
-        CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, onLoadCallback](const Task & parent) {
+        Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, onLoadCallback](const Task & parent) {
             loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
-        }).startTask();
+        }));
     } else {
         loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
     }

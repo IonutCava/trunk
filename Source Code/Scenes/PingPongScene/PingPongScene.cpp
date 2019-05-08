@@ -21,7 +21,7 @@
 namespace Divide {
 
 namespace {
-    TaskHandle g_gameTaskID;
+    Task* g_gameTaskID = nullptr;
 };
 
 PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
@@ -95,13 +95,13 @@ void PingPongScene::serveBall(I64 btnGUID) {
     _GUI->modifyText(_ID("insults"), "");
     resetGame();
 
-    removeTask(g_gameTaskID);
+    removeTask(*g_gameTaskID);
 
     g_gameTaskID = CreateTask(context(), [this](const Task& parent) {
         test(parent, Random(4), CallbackParam::TYPE_INTEGER);
     });
 
-    registerTask(g_gameTaskID);
+    registerTask(*g_gameTaskID);
 }
 
 void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {

@@ -47,7 +47,7 @@ public:
     virtual ~ThreadPool();
 
     // Add a new task to the pool's queue
-    virtual bool addTask(const PoolTask& job) = 0;
+    virtual bool addTask(PoolTask&& job) = 0;
 
     // Join all of the threads and block until all running tasks have completed.
     void join();
@@ -78,7 +78,7 @@ public:
     ~BlockingThreadPool() = default;
 
     // Add a new task to the pool's queue
-    bool addTask(const PoolTask& job) override;
+    bool addTask(PoolTask&& job) override;
 
     void executeOneTask(bool waitForTask) override;
 
@@ -94,7 +94,7 @@ public:
     ~LockFreeThreadPool() = default;
 
     // Add a new task to the pool's queue
-    bool addTask(const PoolTask& job) override;
+    bool addTask(PoolTask&& job) override;
 
     void executeOneTask(bool waitForTask) override;
 

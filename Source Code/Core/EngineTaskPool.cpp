@@ -12,15 +12,12 @@ namespace Divide {
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
-TaskHandle CreateTask(PlatformContext& context, 
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction)
+Task* CreateTask(PlatformContext& context, const DELEGATE_CBK<void, Task&>& threadedFunction)
 {
     return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), threadedFunction);
 }
 
-TaskHandle CreateTask(PlatformContext& context,
-                     TaskHandle* parentTask,
-                     const DELEGATE_CBK<void, const Task&>& threadedFunction)
+Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction)
 {
     return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, threadedFunction);
 }

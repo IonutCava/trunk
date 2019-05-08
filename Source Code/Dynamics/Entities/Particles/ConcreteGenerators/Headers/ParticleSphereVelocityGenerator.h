@@ -43,7 +43,7 @@ class ParticleSphereVelocityGenerator final : public ParticleGenerator {
    public:
     ParticleSphereVelocityGenerator() : _minVel(0.0f), _maxVel(0.0f) {}
 
-    void generate(TaskHandle& packagedTasksParent,
+    void generate(Task& packagedTasksParent,
                   const U64 deltaTimeUS,
                   ParticleData& p,
                   U32 startIndex,

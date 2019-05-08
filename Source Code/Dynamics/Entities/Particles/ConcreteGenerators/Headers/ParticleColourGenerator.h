@@ -45,7 +45,7 @@ class ParticleColourGenerator final : public ParticleGenerator {
    public:
     ParticleColourGenerator() {}
 
-    void generate(TaskHandle& packagedTasksParent,
+    void generate(Task& packagedTasksParent,
                   const U64 deltaTimeUS,
                   ParticleData& p,
                   U32 startIndex,

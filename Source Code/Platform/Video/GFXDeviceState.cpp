@@ -369,20 +369,24 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     assert(_renderTargetDraw != nullptr);
 
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
-    immediateModeShader.setThreadedLoading(false);
+    immediateModeShader.setThreadedLoading(true);
+    immediateModeShader.setOnLoadCallback([this](CachedResource_wptr res) {
+        PipelineDescriptor descriptor = {};
+        descriptor._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getID();
+        descriptor._stateHash = get2DStateBlock();
+        _textRenderPipeline = newPipeline(descriptor);
+    });
     _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
     assert(_textRenderShader != nullptr);
 
-    PipelineDescriptor descriptor = {};
-    descriptor._shaderProgramHandle = _textRenderShader->getID();
-    descriptor._stateHash = get2DStateBlock();
-    _textRenderPipeline = newPipeline(descriptor);
-
     ResourceDescriptor blur("blur.Generic");
-    blur.setThreadedLoading(false);
+    blur.setThreadedLoading(true);
+    blur.setOnLoadCallback([this](CachedResource_wptr res) {
+        ShaderProgram_ptr blurShader = std::static_pointer_cast<ShaderProgram>(res.lock());
+        _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
+        _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
+    });
     _blurShader = CreateResource<ShaderProgram>(cache, blur);
-    _horizBlur = _blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
-    _vertBlur = _blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)

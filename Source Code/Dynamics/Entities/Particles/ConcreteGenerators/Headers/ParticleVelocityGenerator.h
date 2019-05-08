@@ -43,7 +43,7 @@ class ParticleVelocityGenerator final : public ParticleGenerator {
    public:
     ParticleVelocityGenerator() {}
 
-    void generate(TaskHandle& packagedTasksParent,
+    void generate(Task& packagedTasksParent,
                   const U64 deltaTimeUS,
                   ParticleData& p,
                   U32 startIndex,

@@ -278,7 +278,7 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
         _buffersDirty[to_U32(renderStagePass._stage)] = true;
     });
 
-    _bufferUpdate.startTask();
+    Start(*_bufferUpdate);
 }
 
 /// The onRender call will emit particles
@@ -288,7 +288,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
                                bool refreshData) {
 
     if ( _enabled &&  getAliveParticleCount() > 0) {
-        _bufferUpdate.wait();
+        Wait(*_bufferUpdate);
 
         if (refreshData && _buffersDirty[to_U32(renderStagePass._stage)]) {
             GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, 0);
@@ -356,7 +356,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
             up->update(g_updateInterval, data);
         }
 
-        _bbUpdate.wait();
+        Wait(*_bbUpdate);
 
         _bbUpdate = CreateTask(_context.context(), 
               [this, aliveCount, averageEmitRate](const Task& parentTask)
@@ -367,7 +367,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
             }
             setBounds(aabb);
         });
-        _bbUpdate.startTask();
+        Start(*_bbUpdate);
     }
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);

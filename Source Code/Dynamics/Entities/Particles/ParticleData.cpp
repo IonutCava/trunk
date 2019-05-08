@@ -116,10 +116,10 @@ void ParticleData::sort(bool invalidateCache) {
     };
     
     TaskPool& pool = _context.context().taskPool(TaskPoolType::HIGH_PRIORITY);
-    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
-    CreateTask(pool, &updateTask, parsePositions).startTask();
-    CreateTask(pool, &updateTask, parseColours).startTask();
-    updateTask.startTask().wait();
+    Task* updateTask = CreateTask(pool, DELEGATE_CBK<void, Task&>());
+    Start(*CreateTask(pool, updateTask, parsePositions));
+    Start(*CreateTask(pool, updateTask, parseColours));
+    Wait(Start(*updateTask));
 }
 
 void ParticleData::swapData(U32 indexA, U32 indexB) {

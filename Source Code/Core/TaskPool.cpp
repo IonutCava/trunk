@@ -62,7 +62,7 @@ void TaskPool::onThreadCreate(const std::thread::id& threadID) {
     }
 }
 
-bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
+bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority) {
     _runningTaskCount.fetch_add(1);
 
     if (priority == TaskPriority::REALTIME) {
@@ -70,7 +70,7 @@ bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
         return true;
     }
 
-    return _poolImpl->addTask(task);
+    return _poolImpl->addTask(std::move(task));
 }
 
 void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
@@ -129,7 +129,7 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGAT
     _runningTaskCount.fetch_sub(1);
 }
 
-Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task&>& threadedFunction) 
+Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction) 
 {
     if (parentTask != nullptr) {
         parentTask->_unfinishedJobs.fetch_add(1);
@@ -163,18 +163,14 @@ void TaskPool::threadWaiting() {
     _poolImpl->executeOneTask(false);
 }
 
-TaskHandle CreateTask(TaskPool& pool, const DELEGATE_CBK<void, const Task&>& threadedFunction)
+Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction)
 {
     return CreateTask(pool, nullptr, threadedFunction);
 }
 
-TaskHandle CreateTask(TaskPool& pool,
-                      TaskHandle* parentTask,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction)
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction)
 {
-    Task* freeTask = pool.createTask(parentTask ? parentTask->_task : nullptr,
-                                     threadedFunction);
-    return TaskHandle(freeTask, &pool);
+    return pool.createTask(parentTask, threadedFunction);
 }
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear) {
@@ -205,27 +201,27 @@ void parallel_for(TaskPool& pool,
         for (U32 i = 0; i < adjustedCount; ++i) {
             const U32 start = i * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
-            CreateTask(pool,
+            Start(*CreateTask(pool,
                        nullptr,
                        [&cbk, &jobCount, start, end](const Task& parentTask) {
                            cbk(parentTask, start, end);
                            jobCount.fetch_sub(1);
-                       }).startTask(priority);
+                       }), priority);
         }
         if (remainder > 0) {
-            CreateTask(pool,
+            Start(*CreateTask(pool,
                        nullptr,
                        [&cbk, &jobCount, count, remainder](const Task& parentTask) {
                            cbk(parentTask, count - remainder, count);
                            jobCount.fetch_sub(1);
-                       }).startTask(priority);
+                       }), priority);
         }
 
         if (useCurrentThread) {
-            TaskHandle threadTask = CreateTask(pool, [](const Task& parentTask) {ACKNOWLEDGE_UNUSED(parentTask); });
+            Task* threadTask = CreateTask(pool, [](const Task& parentTask) {ACKNOWLEDGE_UNUSED(parentTask); });
             const U32 start = adjustedCount * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
-            cbk(*threadTask._task, start, end);
+            cbk(*threadTask, start, end);
         }
         if (!noWait) {
             while (jobCount.load() > 0) {

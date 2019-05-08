@@ -15,6 +15,8 @@
 
 namespace Divide {
 
+std::mutex glTexture::s_driverLock;
+
 glTexture::glTexture(GFXDevice& context,
                      size_t descriptorHash,
                      const stringImpl& name,
@@ -71,6 +73,8 @@ bool glTexture::unload() noexcept {
 }
 
 void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
+    //UniqueLock lock(s_driverLock);
+
     Texture::threadedLoad(onLoadCallback);
 
     // Loading from file usually involves data that doesn't change, so call this here.

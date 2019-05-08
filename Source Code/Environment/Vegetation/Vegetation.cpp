@@ -153,12 +153,14 @@ Vegetation::Vegetation(GFXDevice& context,
     renderState().addToDrawExclusionMask(RenderStage::REFRACTION);
 
     setState(ResourceState::RES_LOADING);
-    CreateTask(_context.context(),
+    Start(*CreateTask(_context.context(),
         [this](const Task& parentTask) {
             computeVegetationTransforms(parentTask, false);
             computeVegetationTransforms(parentTask, true);
         }
-        ).startTask(TaskPriority::DONT_CARE, [this]() {
+        ),
+        TaskPriority::DONT_CARE,
+        [this]() {
             uploadVegetationData();
         }
     );

@@ -32,6 +32,7 @@ namespace {
     });
 };
 
+std::mutex glShaderProgram::s_driverLock;
 SharedMutex glShaderProgram::s_atomLock;
 ShaderProgram::AtomMap glShaderProgram::s_atoms;
 I64 glShaderProgram::s_shaderFileWatcherID = -1;
@@ -278,9 +279,12 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
         _shaderProgramID = GLUtil::_invalidObjectID;
     }
 
+    //UniqueLock lock(s_driverLock);
+
     // Loading from binary gives us a linked program ready for usage.
     if (!loadFromBinary()) {
         _linked = false;
+
         if (reloadShaders(skipRegister)) {
 
             _stageMask = UseProgramStageMask::GL_NONE_BIT;
@@ -462,10 +466,10 @@ bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoad
 
     // try to link the program in a separate thread
     if (!_loadedFromBinary && _asyncLoad) {
-        CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
+        Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
             [this, onLoadCallback](const Task & parent) {
                 threadedLoad(std::move(onLoadCallback), false);
-            }).startTask();
+            }));
     } else {
         threadedLoad(std::move(onLoadCallback), false);
     }

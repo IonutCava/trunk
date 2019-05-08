@@ -73,8 +73,8 @@ namespace Divide {
 
         U8 renderPassCount = to_U8(_renderPasses.size());
 
-        vector<TaskHandle> tasks(renderPassCount);
-        TaskHandle postFXTask;
+        vector<Task*> tasks(renderPassCount);
+        Task* postFXTask = nullptr;
 
         {
             Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
@@ -94,7 +94,8 @@ namespace Divide {
                                           [pass, buf, &sceneRenderState](const Task & parentTask) {
                                               pass->render(parentTask, sceneRenderState, *buf);
                                               buf->batch();
-                                          }).startTask(TaskPriority::DONT_CARE);
+                                          });
+                    Start(*tasks[i]);
                 }
                 { //PostFX should be pretty fast
                     GFX::CommandBuffer* buf = _postFXCommandBuffer;
@@ -109,7 +110,8 @@ namespace Divide {
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
                                                 buf->batch();
-                                            }).startTask(TaskPriority::DONT_CARE);
+                                            });
+                    Start(*postFXTask);
                 }
             }
         }
@@ -123,7 +125,7 @@ namespace Divide {
                 // For every render pass
                 bool finished = true;
                 for (U8 i = 0; i < renderPassCount; ++i) {
-                    if (completedPasses[i] || tasks[i].taskRunning()) {
+                    if (completedPasses[i] || !Finished(*tasks[i])) {
                         continue;
                     }
 
@@ -166,7 +168,7 @@ namespace Divide {
         }
 
         // Flush the postFX stack
-        postFXTask.wait();
+        Wait(*postFXTask);
         _context.flushCommandBuffer(*_postFXCommandBuffer);
         _postFXCommandBuffer->clear(false);
 

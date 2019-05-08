@@ -56,7 +56,7 @@ public:
     void flushCallbackQueue();
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
-    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, const Task&>& threadedFunction);
+    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
 
     inline U8 workerThreadCount() const noexcept {
         return _workerThreadCount;
@@ -77,17 +77,16 @@ public:
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend struct Task;
-    friend struct TaskHandle;
     friend void Wait(const Task& task);
     friend void TaskYield(const Task& task);
-    friend void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
+    friend Task& Start(Task& task, TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction);
     friend bool StopRequested(const Task& task);
     friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread);
 
     friend void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction);
     void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     
-    bool enqueue(const PoolTask& task, TaskPriority priority);
+    bool enqueue(PoolTask&& task, TaskPriority priority);
     bool stopRequested() const noexcept;
 
     void runCbkAndClearTask(U32 taskIdentifier);
@@ -109,12 +108,9 @@ public:
      std::atomic_uint _threadCount;
 };
 
-TaskHandle CreateTask(TaskPool& pool,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction);
+Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction);
 
-TaskHandle CreateTask(TaskPool& pool,
-                      TaskHandle* parentTask,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction);
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
 
 void parallel_for(TaskPool& pool,
                   const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,

@@ -53,72 +53,15 @@ struct alignas(64) Task {
     TaskPool* _parentPool = nullptr;
     std::atomic_ushort _unfinishedJobs;
     std::atomic_bool _stopRequested = false;
-    DELEGATE_CBK<void, const Task&> _callback;
+    DELEGATE_CBK<void, Task&> _callback;
 };
 
-void Start(Task& task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
-void Stop(Task& task);
+Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, const DELEGATE_CBK<void>& onCompletionFunction = {});
+Task& Stop(Task& task);
 void Wait(const Task& task);
 bool StopRequested(const Task& task);
 bool Finished(const Task& task);
 void TaskYield(const Task& task);
-
-// A task object may be used for multiple jobs
-struct TaskHandle {
-    explicit TaskHandle() noexcept
-        : TaskHandle(nullptr, nullptr)
-    {
-    }
-
-    explicit TaskHandle(Task* task, TaskPool* tp)  noexcept
-        : _task(task),
-          _tp(tp)
-    {
-    }
-
-    inline TaskHandle& startTask(TaskPriority prio = TaskPriority::DONT_CARE) {
-        return startTask(prio, 0);
-    }
-
-    inline TaskHandle& startTask(const DELEGATE_CBK<void>& onCompletionFunction) {
-        return startTask(TaskPriority::DONT_CARE, onCompletionFunction);
-    }
-
-    TaskHandle& startTask(TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction);
-
-    inline TaskHandle& wait() {
-        if (_task != nullptr) {
-            Wait(*_task);
-        }
-        return *this;
-    }
-
-    inline TaskPool& getOwningPool() {
-        return *_tp;
-    }
-
-    inline bool taskRunning() const {
-        return !Finished(*_task);
-    }
-
-    inline bool operator()() const{
-        return _task != nullptr;
-    }
-
-    inline void clear() {
-        _task = nullptr;
-        _tp = nullptr;
-    }
-
-    bool operator==(const TaskHandle& other) const;
-
-    inline bool operator!=(const TaskHandle& other) const {
-        return !(*this == other);
-    }
-    Task* _task;
-    TaskPool* _tp;
-};
-
 
 };  // namespace Divide
 
