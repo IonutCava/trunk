@@ -175,7 +175,9 @@ Scene* SceneManager::load(stringImpl sceneName) {
 
 bool SceneManager::unloadScene(Scene* scene) {
     assert(scene != nullptr);
-    Wait(*_saveTask);
+    if (_saveTask != nullptr) {
+        Wait(*_saveTask);
+    }
 
     _platformContext->gui().onUnloadScene(scene);
     Attorney::SceneManager::onRemoveActive(*scene);
@@ -184,7 +186,9 @@ bool SceneManager::unloadScene(Scene* scene) {
 
 void SceneManager::setActiveScene(Scene* const scene) {
     assert(scene != nullptr);
-    Wait(*_saveTask);
+    if (_saveTask != nullptr) {
+        Wait(*_saveTask);
+    }
 
     Attorney::SceneManager::onRemoveActive(_scenePool->defaultSceneActive() ? _scenePool->defaultScene()
                                                                             : getActiveScene());

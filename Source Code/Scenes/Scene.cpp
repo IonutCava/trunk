@@ -429,7 +429,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
 
     for (const XML::SceneNode& node : sceneNode.children) {
         //loadAsset(parentTask, node, crtNode, waitForReady);
-        Start(*CreateTask(*parentTask._parentPool, &parentTask, [this, node, waitForReady, &crtNode](Task& subTask) -> void {
+        Start(*CreateTask(*parentTask._parentPool, &parentTask, [this, node, waitForReady, crtNode](Task& subTask) -> void {
             loadAsset(subTask, node, crtNode, waitForReady);
         }));
     }
