@@ -61,7 +61,7 @@ namespace Divide {
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(bool recursive);
-        void onTransformUpdated(const TransformUpdated* event);
+        void onTransformUpdated(const TransformUpdated* evt);
         void setRefBoundingBox(const BoundingBox& nodeBounds);
 
     private:

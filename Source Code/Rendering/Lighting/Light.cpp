@@ -60,7 +60,7 @@ Light::~Light()
 }
 
 
-void Light::onTransformUpdated(const TransformUpdated* event) {
+void Light::onTransformUpdated(const TransformUpdated* evt) {
     if (_sgn.getGUID() == event->_parentGUID) {
         updateCache();
     }

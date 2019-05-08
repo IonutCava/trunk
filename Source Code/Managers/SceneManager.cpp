@@ -796,7 +796,9 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
 bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
     const Scene& activeScene = getActiveScene();
 
-    Wait(*_saveTask);
+    if (_saveTask != nullptr) {
+        Wait(*_saveTask);
+    }
 
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::LOW_PRIORITY);
     _saveTask = CreateTask(pool,

@@ -61,17 +61,17 @@ namespace ECS { namespace Event { namespace Internal {
 				{
 					for (auto EC : this->m_PendingRemoveDelegates)
 					{
-						auto result = eastl::find_if(this->m_EventCallbacks.begin(), this->m_EventCallbacks.end(),
+						auto result = eastl::find_if(eastl::cbegin(m_EventCallbacks), eastl::cend(m_EventCallbacks),
 							[&](const IEventDelegate* other)
 							{
 								return other->operator==(EC);
 							});
 
-						if (result != this->m_EventCallbacks.end())
+						if (result != eastl::cend(m_EventCallbacks))
 						{
 							IEventDelegate* ptrMem = (IEventDelegate*)(*result);
 
-							this->m_EventCallbacks.erase(result);
+							m_EventCallbacks.erase(result);
 
 							delete ptrMem;
 							ptrMem = nullptr;

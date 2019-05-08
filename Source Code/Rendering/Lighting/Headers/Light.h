@@ -208,7 +208,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
          return _shadowIndex;
      }
 
-     void onTransformUpdated(const TransformUpdated* event);
+     void onTransformUpdated(const TransformUpdated* evt);
      void updateCache();
 
    protected:

@@ -285,7 +285,8 @@ namespace {
 void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
     assert(parent != nullptr);
 
-    auto waitForReasoureTask = [&parentTask](CachedResource_wptr res) {
+    auto waitForReasoureTask = [&parentTask](const CachedResource_wptr& res) {
+        ACKNOWLEDGE_UNUSED(res);
         TaskYield(parentTask);
     };
 

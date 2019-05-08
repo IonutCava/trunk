@@ -46,7 +46,15 @@ struct PushConstants {
                     GFX::PushConstantType type,
                     const T& value,
                     bool flag = false) {
-        set(binding, type, vectorEASTL<T>{value}, flag);
+        U64 bindingID = _ID(binding.c_str());
+        for (GFX::PushConstant& constant : _data) {
+            if (constant._bindingHash == bindingID) {
+                constant = GFX::PushConstant{ binding, bindingID, type, value, flag };
+                return;
+            }
+        }
+
+        _data.emplace_back(binding, bindingID, type, value, flag);
     }
 
     template<typename T>
@@ -58,12 +66,12 @@ struct PushConstants {
         U64 bindingID = _ID(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                constant = GFX::PushConstant{ binding, type, values, flag };
+                constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
                 return;
             }
         }
 
-        _data.emplace_back(binding, type, values, flag );
+        _data.emplace_back(binding, bindingID, type, values, flag );
     }
 
     template<typename T, size_t N>
@@ -75,12 +83,12 @@ struct PushConstants {
         U64 bindingID = _ID(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                constant = GFX::PushConstant{ binding, type, values, flag };
+                constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
                 return;
             }
         }
 
-        _data.emplace_back(binding, type, values, flag);
+        _data.emplace_back(binding, bindingID, type, values, flag);
     }
 
     inline void clear() {

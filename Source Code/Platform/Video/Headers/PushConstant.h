@@ -87,32 +87,49 @@ namespace GFX {
 
         template<typename T>
         PushConstant(const eastl::string& binding,
+                     U64 bindingHash,
+                     PushConstantType type,
+                     const T& value,
+                     bool flag = false)
+            : _binding(binding),
+              _bindingHash(bindingHash),
+              _type(type),
+              _flag(flag)
+        {
+            _buffer.resize(sizeof(T));
+            std::memcpy(_buffer.data(), &value, _buffer.size());
+        }
+
+        template<typename T>
+        PushConstant(const eastl::string& binding,
+                     U64 bindingHash,
                      PushConstantType type,
                      const vectorEASTL<T>& values,
                      bool flag = false)
             : _binding(binding),
-              _bindingHash(_ID(binding.c_str())),
+              _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
         {
-            _buffer.resize(values.size() * (sizeof(T)));
             if (!values.empty()) {
+                _buffer.resize(values.size() * (sizeof(T)));
                 std::memcpy(_buffer.data(), values.data(), _buffer.size());
             }
         }
 
         template<>
         PushConstant(const eastl::string& binding,
+                     U64 bindingHash,
                      PushConstantType type,
                      const vectorEASTL<bool>& values,
                      bool flag)
             : _binding(binding),
-              _bindingHash(_ID(binding.c_str())),
+              _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
         {
-            _buffer.reserve(values.size());
             if (!values.empty()) {
+                _buffer.reserve(values.size());
                 std::transform(std::cbegin(values), std::cend(values),
                                std::back_inserter(_buffer),
                                [](bool e) {return to_byte(e ? 1 : 0);});
@@ -121,32 +138,34 @@ namespace GFX {
 
         template<typename T, size_t N>
         PushConstant(const eastl::string& binding,
+                     U64 bindingHash,
                      PushConstantType type,
                      const std::array<T, N>& values,
                      bool flag = false)
             : _binding(binding),
-              _bindingHash(_ID(binding.c_str())),
+              _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
         {
-            _buffer.resize(values.size() * (sizeof(T)));
             if (!values.empty()) {
+                _buffer.resize(values.size() * (sizeof(T)));
                 std::memcpy(_buffer.data(), values.data(), _buffer.size());
             }
         }
 
         template<size_t N>
         PushConstant(const eastl::string& binding,
+                     U64 bindingHash,
                      PushConstantType type,
                      const std::array<bool, N>& values,
                      bool flag)
             : _binding(binding),
-              _bindingHash(_ID(binding.c_str())),
+              _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
         {
-            _buffer.reserve(N);
             if (!values.empty()) {
+                _buffer.reserve(N);
                 std::transform(std::cbegin(values), std::cend(values),
                                std::back_inserter(_buffer),
                                [](bool e) {return to_byte(e ? 1 : 0);});

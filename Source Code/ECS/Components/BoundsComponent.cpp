@@ -46,8 +46,8 @@ void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
     }
 }
 
-void BoundsComponent::onTransformUpdated(const TransformUpdated* event) {
-    if (_parentSGN.getGUID() == event->_parentGUID) {
+void BoundsComponent::onTransformUpdated(const TransformUpdated* evt) {
+    if (_parentSGN.getGUID() == evt->_parentGUID) {
         flagBoundingBoxDirty(true);
     }
 }
