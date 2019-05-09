@@ -306,7 +306,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         read_xml(nodePath, nodeTree);
 
         auto loadModelComplete = [this, &nodeTree](CachedResource_wptr res) {
-            ACKNOWLEDGE_UNUSED(res);
+            WAIT_FOR_CONDITION(res.lock()->getState() == ResourceState::RES_LOADED);
             std::static_pointer_cast<SceneNode>(res.lock())->loadFromXML(nodeTree);
             _loadingTasks.fetch_sub(1);
         };
