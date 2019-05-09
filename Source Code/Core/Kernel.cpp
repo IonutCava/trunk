@@ -656,11 +656,14 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     U8 threadCount = static_cast<U8>(std::max(hardwareThreads - 2u, to_base(RenderStage::COUNT) + 2u));
 
+    std::atomic_uint threadCounter = threadCount + 3;
+
     if (!_platformContext->taskPool(TaskPoolType::HIGH_PRIORITY).init(
         threadCount,
         TaskPool::TaskPoolType::TYPE_BLOCKING,
-        [this](const std::thread::id& threadID) {
+        [this, &threadCounter](const std::thread::id& threadID) {
             Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
+            threadCounter.fetch_sub(1);
         },
         "DIVIDE_WORKER_THREAD_"))
     {
@@ -670,13 +673,16 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (!_platformContext->taskPool(TaskPoolType::LOW_PRIORITY).init(
         3,
         TaskPool::TaskPoolType::TYPE_BLOCKING,
-        [this](const std::thread::id& threadID) {
+        [this, &threadCounter](const std::thread::id& threadID) {
             Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
+            threadCounter.fetch_sub(1);
         },
         "DIVIDE_BACKUP_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
+
+    WAIT_FOR_CONDITION(threadCounter.load() == 0);
 
     initError = _platformContext->gfx().postInitRenderingAPI();
 

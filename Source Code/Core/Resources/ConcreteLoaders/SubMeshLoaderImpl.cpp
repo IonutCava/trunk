@@ -17,7 +17,7 @@ CachedResource_ptr ImplResourceLoader<SubMesh>::operator()() {
         ptr.reset(MemoryManager_NEW SubMesh(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName()), DeleteResource(_cache));
     }
 
-    if (!load(ptr, _descriptor.onLoadCallback())) {
+    if (!load(ptr)) {
         ptr.reset();
     } else {
         ptr->setID(_descriptor.getID());

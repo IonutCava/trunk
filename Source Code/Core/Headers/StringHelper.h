@@ -39,7 +39,9 @@ namespace Divide {
     namespace Util {
         bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix = "--");
 
-        void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search, const stringImpl& replace);
+        void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
+
+        stringImpl ReplaceString(const stringImpl& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
 
         void GetPermutations(const stringImpl& inputString, vector<stringImpl>& permutationContainer);
 

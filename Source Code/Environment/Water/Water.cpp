@@ -34,7 +34,7 @@ WaterPlane::~WaterPlane()
 }
 
 
-bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
+bool WaterPlane::load() {
     if (_plane != nullptr) {
         return false;
     }
@@ -110,7 +110,7 @@ bool WaterPlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallb
 
     setBounds(BoundingBox(vec3<F32>(-halfWidth, -_dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength)));
 
-    return SceneNode::load(onLoadCallback);
+    return SceneNode::load();
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {

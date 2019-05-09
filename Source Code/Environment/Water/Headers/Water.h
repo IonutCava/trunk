@@ -73,7 +73,7 @@ class WaterPlane : public SceneNode {
     template <typename T>
     friend class ImplResourceLoader;
 
-    bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
+    bool load() override;
 
    private:
     void updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);

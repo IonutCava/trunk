@@ -81,7 +81,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     }
 
     if (_node->type() == SceneNodeType::TYPE_EMPTY || _node->type() == SceneNodeType::TYPE_ROOT) {
-        _node->load(DELEGATE_CBK<void, CachedResource_wptr>());
+        _node->load();
     }
 
     assert(_node != nullptr);

@@ -72,7 +72,7 @@ class glTexture final : public Texture,
     void setCurrentSampler(const SamplerDescriptor& descriptor) override;
 
    protected:
-    void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) override;
+    void threadedLoad() override;
     void reserveStorage();
 
     void loadDataCompressed(const TextureLoadInfo& info,
@@ -88,8 +88,6 @@ class glTexture final : public Texture,
     std::atomic_bool _allocatedStorage;
 
     glLockManager* _lockManager;
-
-    static std::mutex s_driverLock;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(glTexture);

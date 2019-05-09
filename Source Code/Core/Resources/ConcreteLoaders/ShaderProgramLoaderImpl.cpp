@@ -43,7 +43,7 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
         }
     }
 
-    if (!load(ptr, _descriptor.onLoadCallback())) {
+    if (!load(ptr)) {
         ptr.reset();
     }
 

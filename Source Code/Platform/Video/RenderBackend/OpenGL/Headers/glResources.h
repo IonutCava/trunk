@@ -184,6 +184,8 @@ extern GLuint _invalidObjectID;
 extern GLuint _lastQueryResult;
 extern const DisplayWindow* _glMainRenderWindow;
 extern thread_local SDL_GLContext _glSecondaryContext;
+
+extern std::mutex _driverLock;
 extern std::mutex _glSecondaryContextMutex;
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,

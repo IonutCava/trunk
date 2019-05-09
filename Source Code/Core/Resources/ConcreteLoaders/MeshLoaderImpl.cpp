@@ -41,7 +41,7 @@ void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
         DIVIDE_UNEXPECTED_CALL(Util::StringFormat("Failed to import mesh [ %s ]!", loadData._descriptor.assetName().c_str()).c_str());
     }
 
-    if (!loadData._mesh->load(loadData._descriptor.onLoadCallback())) {
+    if (!loadData._mesh->load()) {
         loadData._mesh.reset();
     }
 }

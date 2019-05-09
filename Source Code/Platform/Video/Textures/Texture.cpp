@@ -58,20 +58,20 @@ Texture::~Texture()
 {
 }
 
-bool Texture::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
+bool Texture::load() {
     if (_asyncLoad) {
         Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
-            [this, onLoadCallback](const Task & parent) {
-                threadedLoad(std::move(onLoadCallback));
+            [this](const Task & parent) {
+                threadedLoad();
         }));
     } else {
-        threadedLoad(std::move(onLoadCallback));
+        threadedLoad();
     }
     return true;
 }
 
 /// Load texture data using the specified file name
-void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
+void Texture::threadedLoad() {
     TextureLoadInfo info;
 
     // Each texture face/layer must be in a comma separated list

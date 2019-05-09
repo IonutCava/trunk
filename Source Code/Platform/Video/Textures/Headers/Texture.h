@@ -142,8 +142,8 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Use STB/NV_DDS to load a file into a Texture Object
     bool loadFile(const TextureLoadInfo& info, const stringImpl& name, ImageTools::ImageData& fileData);
     /// Load texture data using the specified file name
-    virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
-    virtual void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback);
+    virtual bool load() override;
+    virtual void threadedLoad();
 
     virtual void validateDescriptor();
 

@@ -113,7 +113,7 @@ public:
                             const stringImpl& assetLocation);
 
     /// Loading and unloading interface
-    virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback);
+    virtual bool load();
     virtual bool unload() noexcept;
 
     size_t getDescriptorHash() const noexcept;

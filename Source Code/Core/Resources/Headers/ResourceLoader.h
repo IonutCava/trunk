@@ -83,14 +83,15 @@ class ImplResourceLoader : public ResourceLoader {
 
    protected:
 
-    bool load(std::shared_ptr<ResourceType> res, const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
-        if (!res) {
-            return false;
+    bool load(std::shared_ptr<ResourceType> res) {
+        if (res) {
+            res->setState(ResourceState::RES_LOADING);
+            return res->load();
         }
 
-        res->setState(ResourceState::RES_LOADING);
-        return res->load(onLoadCallback);
+        return false;
     }
+
 };
 
 };  // namespace Divide

@@ -61,7 +61,7 @@ class Sky : public SceneNode {
     template <typename T>
     friend class ImplResourceLoader;
 
-    bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
+    bool load() override;
 
   private:
     U32       _diameter;

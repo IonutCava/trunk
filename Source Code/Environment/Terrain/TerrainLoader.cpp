@@ -24,8 +24,7 @@ namespace {
 bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
-                                bool threadedLoading,
-                                const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback ) {
+                                bool threadedLoading) {
 
     auto waitForReasoureTask = [&context](CachedResource_wptr res) {
         context.taskPool(TaskPoolType::HIGH_PRIORITY).threadWaiting();
@@ -351,19 +350,18 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
     if (threadedLoading) {
-        Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, onLoadCallback](const Task & parent) {
-            loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
+        Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor](const Task & parent) {
+            loadThreadedResources(terrain, std::move(terrainDescriptor));
         }));
     } else {
-        loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
+        loadThreadedResources(terrain, std::move(terrainDescriptor));
     }
 
     return true;
 }
 
 bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
-                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
-                                          DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
+                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
 
     const stringImpl& terrainMapLocation = Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation");
     stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
@@ -515,7 +513,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     Attorney::TerrainLoader::postBuild(*terrain);
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->resourceName().c_str());
-    return terrain->load(onLoadCallback);
+    return terrain->load();
 }
 
 void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,

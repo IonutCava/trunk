@@ -30,7 +30,7 @@ InfinitePlane::~InfinitePlane()
 
 }
 
-bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
+bool InfinitePlane::load() {
     if (_plane != nullptr) {
         return false;
     }
@@ -92,7 +92,7 @@ bool InfinitePlane::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCa
     _boundingBox.set(vec3<F32>(-_dimensions.x * 1.5f, -0.5f, -_dimensions.y * 1.5f),
                      vec3<F32>( _dimensions.x * 1.5f,  0.5f,  _dimensions.y * 1.5f));
 
-    return SceneNode::load(onLoadCallback);
+    return SceneNode::load();
 }
 
 void InfinitePlane::postLoad(SceneGraphNode& sgn) {

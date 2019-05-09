@@ -28,7 +28,7 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
         ptr->setMaterialTpl(matTemp);
     }
 
-    if (!load(ptr, _descriptor.onLoadCallback())) {
+    if (!load(ptr)) {
         ptr.reset();
     }
 

@@ -108,7 +108,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
-    virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
+    virtual bool load() override;
     virtual bool unload() noexcept override;
 
     /// Subroutine

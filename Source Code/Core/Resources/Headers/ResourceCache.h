@@ -49,26 +49,27 @@ public:
     {
         WAIT_FOR_CONDITION(notLoading(_loadingHash));
 
-        UniqueLockShared w_lock(_hashLock);
-        _loadingHashes.push_back(_loadingHash);
+        UniqueLockShared w_lock(s_hashLock);
+        s_loadingHashes.push_back(_loadingHash);
     }
 
     ~ResourceLoadLock()
     {
-        UniqueLockShared u_lock(_hashLock);
-        _loadingHashes.erase(std::find(std::cbegin(_loadingHashes), std::cend(_loadingHashes), _loadingHash));
+        UniqueLockShared u_lock(s_hashLock);
+        s_loadingHashes.erase(eastl::find(eastl::cbegin(s_loadingHashes), eastl::cend(s_loadingHashes), _loadingHash));
     }
 
 private:
     static bool notLoading(size_t hash) {
-        SharedLock r_lock(_hashLock);
-        return std::find(std::cbegin(_loadingHashes), std::cend(_loadingHashes), hash) == std::cend(_loadingHashes);
+        SharedLock r_lock(s_hashLock);
+        return eastl::find(eastl::cbegin(s_loadingHashes), eastl::cend(s_loadingHashes), hash) == eastl::cend(s_loadingHashes);
     }
 
 private:
     size_t _loadingHash;
-    static SharedMutex _hashLock;
-    static vector<size_t> _loadingHashes;
+
+    static SharedMutex s_hashLock;
+    static vectorEASTL<size_t> s_loadingHashes;
 };
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources
@@ -113,15 +114,13 @@ public:
 
         if (descriptor.waitForReady()) {
             if (descriptor.waitForReadyCbk()) {
-                while (ptr->getState() != ResourceState::RES_LOADED) {
-                    descriptor.waitForReadyCbk()(ptr);
-                }
+                WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, descriptor.waitForReadyCbk(), ptr);
             } else {
                 WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
             }
         }
 
-        if (wasInCache && descriptor.onLoadCallback()) {
+        if (descriptor.onLoadCallback()) {
             descriptor.onLoadCallback()(ptr);
         }
 

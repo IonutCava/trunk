@@ -14,7 +14,7 @@ CachedResource_ptr ImplResourceLoader<Material>::operator()() {
                      DeleteResource(_cache));
     assert(ptr != nullptr);
 
-    if (!load(ptr, _descriptor.onLoadCallback())) {
+    if (!load(ptr)) {
         ptr.reset();
     } else {
         ptr->setHardwareSkinning(_descriptor.getEnumValue() == to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));

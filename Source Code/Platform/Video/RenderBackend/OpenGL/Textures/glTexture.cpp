@@ -15,8 +15,6 @@
 
 namespace Divide {
 
-std::mutex glTexture::s_driverLock;
-
 glTexture::glTexture(GFXDevice& context,
                      size_t descriptorHash,
                      const stringImpl& name,
@@ -72,10 +70,9 @@ bool glTexture::unload() noexcept {
     return _textureData._textureHandle == 0;
 }
 
-void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
-    //UniqueLock lock(s_driverLock);
+void glTexture::threadedLoad() {
 
-    Texture::threadedLoad(onLoadCallback);
+    Texture::threadedLoad();
 
     // Loading from file usually involves data that doesn't change, so call this here.
     if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
@@ -83,7 +80,7 @@ void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallb
     }
     _lockManager->Lock(!Runtime::isMainThread());
 
-    CachedResource::load(onLoadCallback);
+    CachedResource::load();
 }
 
 void glTexture::setMipMapRange(U16 base, U16 max) {
@@ -258,6 +255,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
         assert(_width > 0 && _height > 0);
 
         validateDescriptor();
+
+        //UniqueLock lock(GLUtil::_driverLock);
         setMipRangeInternal(_descriptor._mipLevels.min, _descriptor._mipLevels.max);
     } else {
         assert(
@@ -266,13 +265,16 @@ void glTexture::loadData(const TextureLoadInfo& info,
             "glTexture error: Invalid dimensions for texture array layer");
     }
 
+    
     bool expected = false;
     if (_allocatedStorage.compare_exchange_strong(expected, true)) {
+        //UniqueLock lock(GLUtil::_driverLock);
         reserveStorage();
     }
     assert(_allocatedStorage);
 
     if (_descriptor._compressed) {
+        //UniqueLock lock(GLUtil::_driverLock);
         loadDataCompressed(info, imageLayers);
     } else {
         bufferPtr texData = nullptr;
@@ -283,6 +285,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
         } else {
             texData = (bufferPtr)imageLayers[0]._data.data();
         }
+        //UniqueLock lock(GLUtil::_driverLock);
         loadDataUncompressed(info, texData);
     }
 

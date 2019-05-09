@@ -64,7 +64,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
                                               *texDescriptor),
                     DeleteResource(_cache));
 
-    if (!load(ptr, _descriptor.onLoadCallback())) {
+    if (!load(ptr)) {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOADER_FILE")),
                          _descriptor.assetLocation().c_str(),
                          _descriptor.assetName().c_str(),

@@ -43,7 +43,7 @@ Sky::~Sky()
 {
 }
 
-bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
+bool Sky::load() {
     if (_sky != nullptr) {
         return false;
     }
@@ -64,7 +64,7 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     skyboxTextures.assetName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");
     skyboxTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     skyboxTextures.setPropertyDescriptor(skyboxTexture);
-
+    skyboxTextures.waitForReady(false);
     _skybox = CreateResource<Texture>(_parentCache, skyboxTextures);
 
     F32 radius = _diameter * 0.5f;
@@ -77,16 +77,18 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     _sky->renderState().setDrawState(false);
 
     ResourceDescriptor skyShaderDescriptor("sky.Display");
+    skyShaderDescriptor.waitForReady(false);
     _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor);
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky.PrePass");
+    skyShaderPrePassDescriptor.waitForReady(false);
     _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor);
 
     assert(_skyShader && _skyShaderPrePass);
     _boundingBox.set(vec3<F32>(-radius), vec3<F32>(radius));
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
 
-    return SceneNode::load(onLoadCallback);
+    return SceneNode::load();
 }
 
 void Sky::postLoad(SceneGraphNode& sgn) {

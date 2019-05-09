@@ -437,8 +437,6 @@ void GL_API::queueComputeMipMap(GLuint textureHandle) {
 }
 
 void GL_API::onThreadCreated(const std::thread::id& threadID) {
-    assert(SDL_GL_GetCurrentContext() == NULL);
-    
     // Double check so that we don't run into a race condition!
     UniqueLock lock(GLUtil::_glSecondaryContextMutex);
     assert(SDL_GL_GetCurrentContext() == NULL);
@@ -448,6 +446,7 @@ void GL_API::onThreadCreated(const std::thread::id& threadID) {
     bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
     assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
     ACKNOWLEDGE_UNUSED(ctxFound);
+
     SDL_GL_MakeCurrent(GLUtil::_glMainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
     glbinding::Binding::initialize([](const char* proc) {
         return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc);

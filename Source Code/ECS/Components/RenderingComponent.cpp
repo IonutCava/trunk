@@ -131,10 +131,13 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     
     if (Config::Build::IS_DEBUG_BUILD) {
         ResourceDescriptor previewReflectionRefractionColour("fbPreview");
-        previewReflectionRefractionColour.setThreadedLoading(true);
+        previewReflectionRefractionColour.setThreadedLoading(false);
+        previewReflectionRefractionColour.waitForReady(false);
         _previewRenderTargetColour = CreateResource<ShaderProgram>(context.kernel().resourceCache(), previewReflectionRefractionColour);
 
         ResourceDescriptor previewReflectionRefractionDepth("fbPreview.LinearDepth.ScenePlanes");
+        previewReflectionRefractionDepth.setThreadedLoading(false);
+        previewReflectionRefractionDepth.waitForReady(false);
         _previewRenderTargetDepth = CreateResource<ShaderProgram>(context.kernel().resourceCache(), previewReflectionRefractionDepth);
 
         // Red X-axis

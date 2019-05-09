@@ -7,8 +7,8 @@
 
 namespace Divide {
 
-SharedMutex ResourceLoadLock::_hashLock;
-vector<size_t> ResourceLoadLock::_loadingHashes;
+SharedMutex ResourceLoadLock::s_hashLock;
+vectorEASTL<size_t> ResourceLoadLock::s_loadingHashes;
 
 void DeleteResource::operator()(CachedResource* res) {
     WAIT_FOR_CONDITION(res->getState() == ResourceState::RES_LOADED);

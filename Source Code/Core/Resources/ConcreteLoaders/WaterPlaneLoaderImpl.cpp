@@ -18,7 +18,7 @@ CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
                                     DeleteResource(_cache));
 
     ptr->setState(ResourceState::RES_LOADING);
-    if (!load(ptr, _descriptor.onLoadCallback())) {
+    if (!load(ptr)) {
         ptr.reset();
     }
 

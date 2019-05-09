@@ -38,6 +38,7 @@ namespace Divide {
 #define GET_MACRO_1(_1,_2,NAME,...) NAME
 #define GET_MACRO_2(_1,_2,_3,NAME,...) NAME
 #define GET_MACRO_3(_1,_2,_3,_4,NAME,...) NAME
+#define GET_MACRO_4(_1,_2,_3,_4,_5,NAME,...) NAME
 
 #define WAIT_FOR_CONDITION_1(condition, shouldYield) \
 {                                                    \
@@ -93,73 +94,81 @@ namespace Divide {
                 WAIT_FOR_CONDITION_TIMEOUT_2, \
                 WAIT_FOR_CONDITION_TIMEOUT_3)(__VA_ARGS__)
 
-#define WAIT_FOR_CONDITION_CALLBACK_1(condition, cbk, yield) \
-{                                                            \
-    assert_type<bool>(yield);                                \
-    assert_type<std::function>(cbk);                         \
-                                                             \
-    while (!(condition)) {                                   \
-        cbk();                                               \
-                                                             \
-        if (yield) {                                         \
-            std::this_thread::yield();                       \
-        }                                                    \
-    }                                                        \
-}                                                         
+#define WAIT_FOR_CONDITION_CALLBACK_1(condition, cbk, param, yield) \
+{                                                                   \
+    assert_type<bool>(yield);                                       \
+    assert_type<std::function>(cbk);                                \
+                                                                    \
+    while (!(condition)) {                                          \
+        cbk(param);                                                 \
+                                                                    \
+        if (yield) {                                                \
+            std::this_thread::yield();                              \
+        }                                                           \
+    }                                                               \
+}
 
-#define WAIT_FOR_CONDITION_CALLBACK_2(condition, cbk) \
-    WAIT_FOR_CONDITION_CALLBACK_1(condition, cbk, true) 
+#define WAIT_FOR_CONDITION_CALLBACK_2(condition, cbk, param) \
+    WAIT_FOR_CONDITION_CALLBACK_1(condition, cbk, param, true) 
 
-#define WAIT_FOR_CONDITION_CALLBACK_3(condition) \
+#define WAIT_FOR_CONDITION_CALLBACK_3(condition, cbk) \
+    WAIT_FOR_CONDITION(condition, cbk, void, true) 
+
+#define WAIT_FOR_CONDITION_CALLBACK_4(condition) \
     WAIT_FOR_CONDITION(condition, true) 
 
 #define WAIT_FOR_CONDITION_CALLBACK(...) \
-    GET_MACRO_2(__VA_ARGS__, \
+    GET_MACRO_3(__VA_ARGS__, \
                 WAIT_FOR_CONDITION_CALLBACK_1, \
                 WAIT_FOR_CONDITION_CALLBACK_2, \
-                WAIT_FOR_CONDITION_CALLBACK_3)(__VA_ARGS__)
+                WAIT_FOR_CONDITION_CALLBACK_3, \
+                WAIT_FOR_CONDITION_CALLBACK_4)(__VA_ARGS__)
 
-#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_1(condition, cbk, timeoutMS, yield) \
-{                                                                               \
-    assert_type<bool>(yield);                                                   \
-    assert_type<std::function>(cbk);                                            \
-    assert_type<D64>(timeoutMS);                                                \
-                                                                                \
-    if (timeoutMS >= 0.0) {                                                     \
-        const D64 start = Time::ElapsedMilliseconds(true);                      \
-                                                                                \
-        while (!(condition)) {                                                  \
-            cbk();                                                              \
-                                                                                \
-            D64 end = Time::ElapsedMilliseconds(true);                          \
-            if (end - start >= timeoutMS) {                                     \
-                break;                                                          \
-            }                                                                   \
-                                                                                \
-            if (yield) {                                                        \
-                std::this_thread::yield();                                      \
-            }                                                                   \
-        }                                                                       \
-    } else {                                                                    \
-        WAIT_FOR_CONDITION(condition, yield);                                   \
-    }                                                                           \
+#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_1(condition, cbk, param, timeoutMS, yield) \
+{                                                                                      \
+    assert_type<bool>(yield);                                                          \
+    assert_type<std::function>(cbk);                                                   \
+    assert_type<D64>(timeoutMS);                                                       \
+                                                                                       \
+    if (timeoutMS >= 0.0) {                                                            \
+        const D64 start = Time::ElapsedMilliseconds(true);                             \
+                                                                                       \
+        while (!(condition)) {                                                         \
+            cbk(param);                                                                \
+                                                                                       \
+            D64 end = Time::ElapsedMilliseconds(true);                                 \
+            if (end - start >= timeoutMS) {                                            \
+                break;                                                                 \
+            }                                                                          \
+                                                                                       \
+            if (yield) {                                                               \
+                std::this_thread::yield();                                             \
+            }                                                                          \
+        }                                                                              \
+    } else {                                                                           \
+        WAIT_FOR_CONDITION(condition, yield);                                          \
+    }                                                                                  \
 }
 
-#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_2(condition, cbk, timeoutMS) \
-    WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_1(condition, cbk, timeoutMS, true)
+#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_2(condition, cbk, param, timeoutMS) \
+    WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_1(condition, cbk, param, timeoutMS, true)
 
-#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_3(condition, cbk) \
-    WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_2(condition, cbk, 0.0)
+#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_3(condition, cbk, param) \
+    WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_2(condition, cbk, param, 0.0)
 
-#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_4(condition) \
+#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_4(condition, cbk) \
+    WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_3(condition, cbk, void)
+
+#define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_5(condition) \
     WAIT_FOR_CONDITION(condition)
 
 #define WAIT_FOR_CONDITION_CALLBACK_TIMEOUT(...) \
-    GET_MACRO_3(__VA_ARGS__, \
+    GET_MACRO_4(__VA_ARGS__, \
                 WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_1, \
                 WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_2, \
                 WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_3, \
-                WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_4)(__VA_ARGS__)
+                WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_4, \
+                WAIT_FOR_CONDITION_CALLBACK_TIMEOUT_5)(__VA_ARGS__)
 
 };
 

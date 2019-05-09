@@ -23,7 +23,7 @@ CachedResource_ptr ImplResourceLoader<Terrain>::operator()() {
         ptr->setState(ResourceState::RES_LOADING);
     }
 
-    if (!ptr || !TerrainLoader::loadTerrain(ptr, terrain, _context, _descriptor.getThreaded(), _descriptor.onLoadCallback())) {
+    if (!ptr || !TerrainLoader::loadTerrain(ptr, terrain, _context, _descriptor.getThreaded())) {
         Console::errorfn(Locale::get(_ID("ERROR_TERRAIN_LOAD")), _descriptor.resourceName().c_str());
         ptr.reset();
     }

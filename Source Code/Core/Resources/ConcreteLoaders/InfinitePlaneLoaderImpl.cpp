@@ -12,7 +12,7 @@ namespace Divide {
         std::shared_ptr<InfinitePlane> ptr(MemoryManager_NEW InfinitePlane(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), vec2<U16>(_descriptor.getID())),
             DeleteResource(_cache));
 
-        if (!load(ptr, _descriptor.onLoadCallback())) {
+        if (!load(ptr)) {
             ptr.reset();
         }
 

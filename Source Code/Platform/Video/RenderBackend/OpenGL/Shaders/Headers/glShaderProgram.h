@@ -127,10 +127,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     bool recompileInternal() override;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
-    bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
+    bool load() override;
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
-    void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister);
+    void threadedLoad(bool skipRegister);
 
     /// Basic OpenGL shader program validation (both in debug and in release)
     bool validateInternal();
@@ -179,7 +179,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     static I64 s_shaderFileWatcherID;
 
-    static std::mutex s_driverLock;
     /// Shaders loaded from files are kept as atoms
     static SharedMutex s_atomLock;
     static AtomMap s_atoms;

@@ -61,12 +61,8 @@ CachedResource::CachedResource(ResourceType type,
 {
 }
 
-bool CachedResource::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
+bool CachedResource::load() {
     setState(ResourceState::RES_LOADED);
-    if (onLoadCallback) {
-        onLoadCallback(shared_from_this());
-    }
-
     return true;
 }
 

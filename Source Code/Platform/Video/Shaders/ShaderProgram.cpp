@@ -48,12 +48,12 @@ ShaderProgram::~ShaderProgram()
     Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), resourceName().c_str());
 }
 
-bool ShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
+bool ShaderProgram::load() {
     if (!weak_from_this().expired()) {
         registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
     }
 
-    return CachedResource::load(onLoadCallback);
+    return CachedResource::load();
 }
 
 bool ShaderProgram::unload() noexcept {

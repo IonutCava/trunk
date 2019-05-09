@@ -16,7 +16,7 @@ ResourceDescriptor::ResourceDescriptor(const stringImpl& resourceName)
     : _propertyDescriptor(nullptr),
       _resourceName(resourceName),
       _assetName(resourceName),
-       _waitForReady(true),
+      _waitForReady(true),
       _flag(false),
       _ID(0),
       _enumValue(0),
@@ -41,7 +41,8 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
       _mask(old._mask),
       _enumValue(old._enumValue),
       _data(old._data),
-      _onLoadCallback(old._onLoadCallback)
+      _onLoadCallback(old._onLoadCallback),
+      _waitForReadyCbk(old._waitForReadyCbk)
 {
     if (old._propertyDescriptor != nullptr) {
         old._propertyDescriptor->clone(_propertyDescriptor);
@@ -60,6 +61,8 @@ ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old)
         _enumValue = old._enumValue;
         _data = old._data;
         _onLoadCallback = old._onLoadCallback;
+        _waitForReadyCbk = old._waitForReadyCbk;
+
         if (old._propertyDescriptor != nullptr) {
             old._propertyDescriptor->clone(_propertyDescriptor);
         }
@@ -79,6 +82,7 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
        _enumValue(std::move(old._enumValue)),
        _data(std::move(old._data)),
        _onLoadCallback(std::move(old._onLoadCallback)),
+       _waitForReadyCbk(std::move(old._waitForReadyCbk)),
        _propertyDescriptor(std::move(old._propertyDescriptor))
 {
     old._propertyDescriptor = nullptr;
@@ -86,9 +90,7 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
 
 size_t ResourceDescriptor::getHash() const {
     _hash = 31;
-    stringImpl file = _assetLocation + "/" + _assetName;
-    Util::ReplaceStringInPlace(file, "//", "/");
-    Util::Hash_combine(_hash, file);
+    Util::Hash_combine(_hash, Util::ReplaceString(_assetLocation + "/" + _assetName, "//", "/", true));
     Util::Hash_combine(_hash, _flag);
     Util::Hash_combine(_hash, _ID);
     Util::Hash_combine(_hash, _mask.i);

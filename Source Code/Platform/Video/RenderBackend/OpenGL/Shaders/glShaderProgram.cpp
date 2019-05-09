@@ -32,7 +32,6 @@ namespace {
     });
 };
 
-std::mutex glShaderProgram::s_driverLock;
 SharedMutex glShaderProgram::s_atomLock;
 ShaderProgram::AtomMap glShaderProgram::s_atoms;
 I64 glShaderProgram::s_shaderFileWatcherID = -1;
@@ -261,7 +260,7 @@ stringImpl glShaderProgram::getLog() const {
 }
 
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
-void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister) {
+void glShaderProgram::threadedLoad(bool skipRegister) {
     // We need a new API specific object
     // If we try to refresh the program, we already have a handle
     if (_shaderProgramID == GLUtil::_invalidObjectID) {
@@ -279,7 +278,6 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
         _shaderProgramID = GLUtil::_invalidObjectID;
     }
 
-    //UniqueLock lock(s_driverLock);
 
     // Loading from binary gives us a linked program ready for usage.
     if (!loadFromBinary()) {
@@ -295,6 +293,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
                     continue;
                 }
 
+                //UniqueLock lock(GLUtil::_driverLock);
                 // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
                 if (!shader->compile()) {
                     Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), shader->getShaderID(), shader->name().c_str());
@@ -309,16 +308,22 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
             if (_stageMask != UseProgramStageMask::GL_NONE_BIT) {
                 if (g_useSeparateShaderObjects) {
+                    //UniqueLock lock(GLUtil::_driverLock);
                     glUseProgramStages(_shaderProgramIDTemp, _stageMask, _shaderProgramIDTemp);
                 }
 
-                // Link the program
-                Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), resourceName().c_str(), _shaderProgramIDTemp, getGUID());
-                glLinkProgram(_shaderProgramIDTemp);
-
+                {
+                    // Link the program
+                    Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), resourceName().c_str(), _shaderProgramIDTemp, getGUID());
+                    //UniqueLock lock(GLUtil::_driverLock);
+                    glLinkProgram(_shaderProgramIDTemp);
+                }
                 // And check the result
                 GLboolean linkStatus;
-                glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
+                {
+                    //UniqueLock lock(GLUtil::_driverLock);
+                    glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
+                }
                 // If linking failed, show an error, else print the result in debug builds.
                 // Same getLog() method is used
                 if (linkStatus == GL_FALSE) {
@@ -337,6 +342,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
                     if (shader == nullptr) {
                         continue;
                     }
+                    //UniqueLock lock(GLUtil::_driverLock);
                     glDetachShader(_shaderProgramIDTemp, shader->getShaderID());
                 }
             }
@@ -350,7 +356,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
     // Pass the rest of the loading steps to the parent class
     if (!skipRegister) {
-        ShaderProgram::load(onLoadCallback);
+        ShaderProgram::load();
     } else {
         reuploadUniforms();
     }
@@ -453,12 +459,12 @@ void glShaderProgram::loadSourceCode(ShaderType stage,
 }
 
 /// Creation of a new shader program. Pass in a shader token and use glsw to load the corresponding effects
-bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
+bool glShaderProgram::load() {
     // NULL shader means use shaderProgram(0), so bypass the normal loading routine
     if (resourceName().compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
-        return ShaderProgram::load(onLoadCallback);
+        return ShaderProgram::load();
     }
 
     // Reset the linked status of the program
@@ -467,11 +473,11 @@ bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoad
     // try to link the program in a separate thread
     if (!_loadedFromBinary && _asyncLoad) {
         Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
-            [this, onLoadCallback](const Task & parent) {
-                threadedLoad(std::move(onLoadCallback), false);
+            [this](const Task & parent) {
+                threadedLoad(false);
             }));
     } else {
-        threadedLoad(std::move(onLoadCallback), false);
+        threadedLoad(false);
     }
 
     return true;
@@ -553,7 +559,7 @@ bool glShaderProgram::recompileInternal() {
 
     _lockManager->Wait(true);
 
-    threadedLoad(DELEGATE_CBK<void, Resource_wptr>(), true);
+    threadedLoad(true);
     // Restore bind state
     if (wasBound) {
         bind(wasBound);

@@ -106,11 +106,9 @@ class ResourceDescriptor : public Hashable {
     inline P32  getMask() const { return _mask; }
     inline const vec3<U16>& getData() const { return _data; }
     inline bool waitForReady() const { return _waitForReady; }
-    inline const DELEGATE_CBK<void, CachedResource_wptr>& waitForReadyCbk() const { return _waitForReadyCbk; }
 
-    const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback() const {
-        return _onLoadCallback;
-    }
+    FORCE_INLINE const DELEGATE_CBK<void, CachedResource_wptr>& waitForReadyCbk() const { return _waitForReadyCbk; }
+    FORCE_INLINE const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback() const { return _onLoadCallback; }
 
     inline void assetLocation(const stringImpl& assetLocation) {
         _assetLocation = assetLocation;
@@ -126,7 +124,6 @@ class ResourceDescriptor : public Hashable {
     inline void setBoolMask(P32 mask) { _mask = mask; }
     inline void setData(const vec3<U16>& data) { _data.set(data); }
     inline void waitForReady(bool state) { _waitForReady = state; }
-    inline void waitForReadyCbk(const DELEGATE_CBK<void, CachedResource_wptr>& cbk) { _waitForReadyCbk = cbk; }
 
     inline void setThreadedLoading(const bool threaded) {
         _threaded = threaded;
@@ -138,9 +135,8 @@ class ResourceDescriptor : public Hashable {
         _propertyDescriptor.reset(new T(descriptor));
     }
 
-    void setOnLoadCallback(const DELEGATE_CBK<void, CachedResource_wptr>& callback) {
-        _onLoadCallback = callback;
-    }
+    FORCE_INLINE void waitForReadyCbk(const DELEGATE_CBK<void, CachedResource_wptr>& cbk) { _waitForReadyCbk = cbk; }
+    FORCE_INLINE void setOnLoadCallback(const DELEGATE_CBK<void, CachedResource_wptr>& callback) { _onLoadCallback = callback; }
 
     size_t getHash() const override;
 
