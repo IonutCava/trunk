@@ -26,11 +26,11 @@ ResourceType Resource::getType() const noexcept {
 }
 
 ResourceState Resource::getState() const noexcept {
-    return _resourceState;
+    return _resourceState.load(std::memory_order_relaxed);
 }
 
 void Resource::setState(ResourceState currentState) noexcept {
-    _resourceState = currentState;
+    _resourceState.store(currentState, std::memory_order_relaxed);
 }
 
 //---------------------------- Cached Resource ------------------------------------//
