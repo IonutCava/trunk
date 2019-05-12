@@ -3,8 +3,8 @@
 #include "vbInputData.vert"
 #include "lightingDefaults.vert"
 
-out flat int _underwater;
-out vec4 _vertexWVP;
+layout(location = 0) out flat int _underwater;
+layout(location = 1) out vec4 _vertexWVP;
 
 void main(void)
 {
@@ -22,8 +22,8 @@ void main(void)
 
 #define SHADOW_INTENSITY_FACTOR 0.5f
 
-in flat int _underwater;
-in vec4 _vertexWVP;
+layout(location = 0) in flat int _underwater;
+layout(location = 1) in vec4 _vertexWVP;
 
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;

@@ -1,7 +1,7 @@
 -- Vertex
 
-out vec2 Frag_UV;
-out vec4 Frag_Color;
+layout(location = 0) out vec2 Frag_UV;
+layout(location = 1) out vec4 Frag_Color;
 
 void main()
 {
@@ -16,8 +16,9 @@ void main()
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D Texture;
 
-in vec2 Frag_UV;
-in vec4 Frag_Color;
+layout(location = 0) in vec2 Frag_UV;
+layout(location = 1) in vec4 Frag_Color;
+
 out vec4 Out_Color;
 
 uniform int depthTexture;

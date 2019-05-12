@@ -4,8 +4,8 @@
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
 
-flat out int _arrayLayerFrag;
-flat out float _alphaFactor;
+layout(location = 0) flat out int _arrayLayerFrag;
+layout(location = 1) flat out float _alphaFactor;
 
 void computeFoliageMovementGrass(inout vec4 vertex, in float heightExtent) {
     float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
@@ -66,8 +66,8 @@ layout(early_fragment_tests) in;
 #include "utility.frag"
 #include "output.frag"
 
-flat in int _arrayLayerFrag;
-flat in float _alphaFactor;
+layout(location = 0) flat in int _arrayLayerFrag;
+layout(location = 1) flat in float _alphaFactor;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
@@ -87,8 +87,8 @@ void main (void){
 
 #include "prePass.frag"
 
-flat in int _arrayLayerFrag;
-flat in float _alphaFactor;
+layout(location = 0) flat in int _arrayLayerFrag;
+layout(location = 1) flat in float _alphaFactor;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
@@ -108,8 +108,8 @@ void main() {
 
 --Fragment.Shadow
 
-flat in int _arrayLayerFrag;
-flat in float _alphaFactor;
+layout(location = 0) flat in int _arrayLayerFrag;
+layout(location = 1) flat in float _alphaFactor;
 
 #include "vsm.frag"
 

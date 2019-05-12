@@ -9,8 +9,6 @@ void main(void)
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-out vec4 _posPos;
-
 void main() {
 
     gl_Position = vec4(1.0, 1.0, 0.0, 1.0);

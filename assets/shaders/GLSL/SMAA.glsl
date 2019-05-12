@@ -9,7 +9,7 @@ void main(void)
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-out vec4 _posPos;
+layout(location = 0) out vec4 _posPos;
 
 uniform float dvd_fxaaSubpixShift = 1.0 / 4.0;
 
@@ -44,7 +44,8 @@ void main() {
 #define FxaaTexLod0(t, p) textureLod(t, p, 0.0)
 #define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
 
-in  vec4 _posPos;
+layout(location = 0) in  vec4 _posPos;
+
 out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;

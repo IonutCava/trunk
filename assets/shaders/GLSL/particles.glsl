@@ -2,7 +2,7 @@
 
 layout(location = 13) in vec4 particleNormalData;
 // Output data will be interpolated for each fragment.
-out vec4 particleColour;
+layout(location = 0) out vec4 particleColour;
 
 void main()
 {
@@ -43,7 +43,7 @@ void main(){
 #include "output.frag"
 
 // Interpolated values from the vertex shaders
-in vec4 particleColour;
+layout(location = 0) in vec4 particleColour;
 
 #ifdef HAS_TEXTURE
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;

@@ -113,8 +113,8 @@ uniform int layerCount;
 uniform int layerOffsetRead;
 uniform int layerOffsetWrite;
 
-out vec3 _blurCoords[7];
-out flat int _blurred;
+layout(location = 0) out flat int _blurred;
+layout(location = 1) out vec3 _blurCoords[7];
 
 subroutine void BlurRoutineType(in float texCoordX, in float texCoordY, in int layer);
 subroutine uniform BlurRoutineType BlurRoutine;
@@ -206,8 +206,9 @@ void main() {
 
 --Fragment.GaussBlur
 
-in vec3 _blurCoords[7];
-in flat int _blurred;
+layout(location = 0) in flat int _blurred;
+layout(location = 1) in vec3 _blurCoords[7];
+
 out vec2 _outColour;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texScreen;

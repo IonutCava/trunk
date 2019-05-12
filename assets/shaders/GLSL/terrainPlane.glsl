@@ -2,7 +2,7 @@
 
 #include "vbInputData.vert"
 
-out vec4 _scrollingUV;
+layout(location = 0) out vec4 _scrollingUV;
 
 void main(void) {
 
@@ -24,7 +24,7 @@ layout(early_fragment_tests) in;
 #include "utility.frag"
 #include "output.frag"
 
-in vec4 _scrollingUV;
+layout(location = 0) in vec4 _scrollingUV;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterCaustics;
 

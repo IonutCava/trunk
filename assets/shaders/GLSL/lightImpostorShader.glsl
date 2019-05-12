@@ -2,9 +2,9 @@
 
 #include "lightInput.cmn"
 
-out float size;
-out vec3 colour;
-out flat vec2 texCoordOffset;
+layout(location = 0) out float size;
+layout(location = 1) out vec3 colour;
+layout(location = 2) out flat vec2 texCoordOffset;
 
 void main()
 {
@@ -29,12 +29,11 @@ void main()
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-in float size[];
-in vec3 colour[];
-in flat vec2 texCoordOffset[];
+layout(location = 0) in float size[];
+layout(location = 1) in vec3 colour[];
+layout(location = 2) in flat vec2 texCoordOffset[];
 
-out vec3 lightColour;
-out flat int skipLight;
+layout(location = 0) out vec3 lightColour;
 
 void main()
 {
@@ -76,7 +75,7 @@ void main()
 
 -- Fragment
 
-in vec3 lightColour;
+layout(location = 0) in vec3 lightColour;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 

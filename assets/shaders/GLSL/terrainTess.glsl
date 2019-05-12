@@ -1,8 +1,8 @@
 --Vertex
 
-out mat4 mvp;
-out vec4 tScale;
-out vec4 posAndTileScaleVert;
+layout(location = 0) out mat4 mvp;
+layout(location = 1) out vec4 tScale;
+layout(location = 2) out vec4 posAndTileScaleVert;
 
 #include "vbInputData.vert"
 
@@ -47,9 +47,9 @@ void main(void)
 #define USE_NEXTPOW2 1
 #define id gl_InvocationID
 
-in mat4 mvp[];
-in vec4 tScale[];
-in vec4 posAndTileScaleVert[];
+layout(location = 0) in mat4 mvp[];
+layout(location = 1) in vec4 tScale[];
+layout(location = 2) in vec4 posAndTileScaleVert[];
 
 #include "nodeBufferedInput.cmn"
 
@@ -60,8 +60,8 @@ uniform vec2 tessellationRange;
 //
 layout(vertices = 4) out;
 
-out float tcs_tessLevel[];
-out vec4 posAndTileScale[];
+layout(location = 0) out float tcs_tessLevel[];
+layout(location = 1) out vec4 posAndTileScale[];
 
 const vec2 cmp = vec2(1.7f);
 
@@ -166,16 +166,16 @@ layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 layout(quads, fractional_even_spacing) in;
 
-in float tcs_tessLevel[];
-in vec4 posAndTileScale[];
-
-out float tes_tessLevel;
+layout(location = 0) in float tcs_tessLevel[];
+layout(location = 1) in vec4 posAndTileScale[];
 
 #if !defined(TOGGLE_WIREFRAME)
 // x = distance, y = depth
-smooth out vec2 _waterDetails;
-out float LoD;
+layout(location = 0) smooth out vec2 _waterDetails;
+layout(location = 1) out float LoD;
 #endif
+
+layout(location = 2) out float tes_tessLevel;
 
 vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
 {
@@ -337,15 +337,15 @@ void main()
 
 layout(triangles) in;
 
-in float tes_tessLevel[];
+layout(location = 2) in float tes_tessLevel[];
 
 layout(triangle_strip, max_vertices = 4) out;
 
 // x = distance, y = depth
-smooth out vec2 _waterDetails;
-out vec3 gs_wireColor;
-out float LoD;
-noperspective out vec3 gs_edgeDist;
+layout(location = 0) smooth out vec2 _waterDetails;
+layout(location = 1) out float LoD;
+layout(location = 2) out vec3 gs_wireColor;
+layout(location = 3) noperspective out vec3 gs_edgeDist;
 
 #if !defined(SHADOW_PASS)
 void waterDetails(in int index) {
@@ -460,15 +460,15 @@ void main(void)
 layout(early_fragment_tests) in;
 #endif
 
-in float LoD;
 // x = distance, y = depth
-smooth in vec2 _waterDetails;
+layout(location = 0) smooth in vec2 _waterDetails;
+layout(location = 1) in float LoD;
 
 #define SHADOW_INTENSITY_FACTOR 0.75f
 
 #if defined(TOGGLE_WIREFRAME)
-in vec3 gs_wireColor;
-noperspective in vec3 gs_edgeDist;
+layout(location = 2) in vec3 gs_wireColor;
+layout(location = 3) noperspective in vec3 gs_edgeDist;
 #endif
 
 #include "BRDF.frag"
