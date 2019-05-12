@@ -101,7 +101,7 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getGUID();
 
     _drawCommand._primitiveType = PrimitiveType::TRIANGLES;
     _drawCommand._drawCount = 1;

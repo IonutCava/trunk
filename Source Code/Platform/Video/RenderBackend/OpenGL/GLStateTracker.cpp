@@ -409,10 +409,29 @@ bool GLStateTracker::setActiveProgram(GLuint programHandle) {
     // Check if we are binding a new program or unbinding all shaders
     // Prevent double bind
     if (_activeShaderProgram != programHandle) {
+        setActivePipeline(0u);
+
         // Remember the new binding for future reference
         _activeShaderProgram = programHandle;
         // Bind the new program
         glUseProgram(programHandle);
+        return true;
+    }
+
+    return false;
+}
+
+/// Change the currently active shader pipeline. Passing null will unbind shaders (will use pipeline 0)
+bool GLStateTracker::setActivePipeline(GLuint pipelineHandle) {
+    // Check if we are binding a new program or unbinding all shaders
+    // Prevent double bind
+    if (_activeShaderPipeline != pipelineHandle) {
+        setActiveProgram(0u);
+
+        // Remember the new binding for future reference
+        _activeShaderPipeline = pipelineHandle;
+        // Bind the new pipeline
+        glBindProgramPipeline(pipelineHandle);
         return true;
     }
 

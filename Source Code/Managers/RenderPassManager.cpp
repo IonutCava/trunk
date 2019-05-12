@@ -585,7 +585,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getGUID();
     Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
 
     RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS, params._passVariant, params._passIndex);

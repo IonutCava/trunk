@@ -37,7 +37,7 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
-    pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
+    pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
 
     _boundingBoxPrimitive = _context.newIMP();
     _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
@@ -154,7 +154,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.getDefaultStateBlock(false);
-    pipelineDescriptor._shaderProgramHandle = _impostorShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _impostorShader->getGUID();
 
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);

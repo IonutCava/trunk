@@ -121,12 +121,12 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     PipelineDescriptor pipelineDescriptor;
     if (renderStagePass._passType == RenderPassType::PRE_PASS) {
         pipelineDescriptor._stateHash = _skyboxRenderStateHashPrePass;
-        pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getID();
+        pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getGUID();
     } else {
         pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION
                                                       ? _skyboxRenderStateReflectedHash
                                                       : _skyboxRenderStateHash);
-        pipelineDescriptor._shaderProgramHandle = _skyShader->getID();
+        pipelineDescriptor._shaderProgramHandle = _skyShader->getGUID();
     }
 
     GFX::BindPipelineCommand pipelineCommand;

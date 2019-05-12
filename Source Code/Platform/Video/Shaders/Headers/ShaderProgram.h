@@ -69,7 +69,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
    public:
     typedef std::pair<ShaderProgram*, size_t> ShaderProgramMapEntry;
-    typedef hashMap<U32 /*handle*/, ShaderProgramMapEntry> ShaderProgramMap;
+    typedef hashMap<I64 /*handle*/, ShaderProgramMapEntry> ShaderProgramMap;
     typedef hashMap<U64 /*name hash*/, stringImpl> AtomMap;
     typedef std::stack<ShaderProgram*, vectorFast<ShaderProgram*> > ShaderQueue;
 
@@ -112,12 +112,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual bool unload() noexcept override;
 
     /// Subroutine
-    virtual U32 GetSubroutineIndex(ShaderType type, const char* name) const = 0;
-    virtual U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const = 0;
-    virtual U32 GetSubroutineUniformCount(ShaderType type) const = 0;
+    virtual U32 GetSubroutineIndex(ShaderType type, const char* name) = 0;
+    virtual U32 GetSubroutineUniformCount(ShaderType type) = 0;
 
-    /// ShaderProgram object id (i.e.: for OGL _shaderProgramID = glCreateProgram())
-    inline U32 getID() const { assert(isValid());  return _shaderProgramID; }
     ///  Calling recompile will re-create the marked shaders from source files
     ///  and update them in the ShaderManager if needed
     bool recompile();
@@ -181,7 +178,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     /// Add a shaderProgram to the program cache
     static void registerShaderProgram(ShaderProgram* shaderProgram);
     /// Find a specific shader program by handle. Returns the default shader on failure
-    static ShaderProgram& findShaderProgram(U32 shaderHandle, bool& success);
+    static ShaderProgram& findShaderProgram(I64 shaderHandle, bool& success);
     /// Find a specific shader program by descriptor hash. Returns the default shader on failure;
     static ShaderProgram& findShaderProgram(size_t shaderHash, bool& success);
 
@@ -193,6 +190,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static void rebuildAllShaders();
 
     static vector<stringImpl> getAllAtomLocations();
+
+    static bool useShaderTexCache() { return s_useShaderTextCache; }
+    static bool useShaderBinaryCache() { return s_useShaderBinaryCache; }
 
    protected:
      virtual bool recompileInternal() = 0;
@@ -218,8 +218,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     friend class ImplResourceLoader;
     bool _shouldRecompile;
     bool _asyncLoad;
-    std::atomic_bool _linked;
-    U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected
     // with a mutex or something
     /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
     vector<std::pair<stringImpl, bool>> _definesList;

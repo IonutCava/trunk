@@ -84,9 +84,6 @@ class glUniformBuffer final : public ShaderBuffer {
     glBufferImpl* bufferImpl() const;
 
    protected:
-    void printInfo(const ShaderProgram *shaderProgram, U8 bindIndex);
-
-   protected:
     std::atomic_int _firstWriteIndex = -1;
     std::atomic_bool _writeComplete ;
 

@@ -64,6 +64,7 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                                        : " [Worker Thread] ",
                                             gl_source, gl_type, id, gl_severity, 
                                             GL_API::getStateTracker()._activeShaderProgram,
+                                            GL_API::getStateTracker()._activeShaderPipeline,
                                             message).c_str());
     }
 

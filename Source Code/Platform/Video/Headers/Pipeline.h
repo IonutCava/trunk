@@ -62,7 +62,7 @@ class PipelineDescriptor : public Hashable {
     bool operator!=(const PipelineDescriptor &other) const;
 
     U8 _multiSampleCount = 0;
-    U32 _shaderProgramHandle = 0;
+    I64 _shaderProgramHandle = 0;
     size_t _stateHash = 0;
     ShaderFunctions _shaderFunctions;
 }; //struct PipelineDescriptor
@@ -71,7 +71,7 @@ class Pipeline {
 public:
     Pipeline(const PipelineDescriptor& descriptor);
 
-    inline U32 shaderProgramHandle() const {
+    inline I64 shaderProgramHandle() const {
         return _descriptor._shaderProgramHandle;
     }
 

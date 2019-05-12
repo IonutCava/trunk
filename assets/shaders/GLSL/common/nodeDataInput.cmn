@@ -116,18 +116,43 @@ bool IsUnderWater(vec3 positionWorld) {
     return false;
 }
 
-#if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER) && !defined(TESS_CTRL_SHADER)
+#if defined(GEOM_SHADER) || defined(TESS_CTRL_SHADER) || defined(TESS_EVAL_SHADER)
+in gl_PerVertex
+{
+  invariant vec4 gl_Position;
+  float gl_PointSize;
+  float gl_ClipDistance[MAX_CLIP_PLANES];
+  float gl_CullDistance[MAX_CULL_DISTANCES];
+}
+#if defined(GEOM_SHADER)
+gl_in[];
+#else
+gl_in[gl_MaxPatchVertices];
+#endif
+
+#endif
+
+#if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
 out gl_PerVertex
 {
   invariant vec4 gl_Position;
   float gl_PointSize;
   float gl_ClipDistance[MAX_CLIP_PLANES];
   float gl_CullDistance[MAX_CULL_DISTANCES];
-};
+}
+#if defined(TESS_CTRL_SHADER)
+gl_out[];
+#else
+;
+#endif
 
 void setClipPlanes(in vec4 worldSpaceVertex) {
     for(int i = 0; i < MAX_CLIP_PLANES; ++i) {
+#if defined(TESS_CTRL_SHADER)
+        gl_out[gl_InvocationID].gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
+#else
         gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
+#endif
     }
 }
 #endif

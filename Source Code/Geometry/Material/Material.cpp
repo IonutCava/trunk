@@ -345,23 +345,23 @@ void Material::recomputeShaders() {
     }
 }
 
-U32 Material::getProgramID(RenderStagePass renderStagePass) const {
+I64 Material::getProgramID(RenderStagePass renderStagePass) const {
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
     /*if (info._shaderCache == nullptr) {
         return info._shaderCache->getID();
     }*/
     if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
-        return info._shaderRef->getID();
+        return info._shaderRef->getGUID();
     }
     /*size_t hash = shaderInfo(renderStagePass)._shaderRefHash;
 
     SharedLock r_lock(s_shaderDBLock);
     auto it = s_shaderDB.find(hash);
     if (it != std::cend(s_shaderDB)) {
-        return it->second->getID();
+        return it->second->getGUID();
     }*/
 
-    return ShaderProgram::defaultShader()->getID();
+    return ShaderProgram::defaultShader()->getGUID();
 }
 
 bool Material::canDraw(RenderStagePass renderStagePass) {
@@ -769,14 +769,14 @@ size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
     return ret;
 }
 
-void Material::getSortKeys(RenderStagePass renderStagePass, I32& shaderKey, I32& textureKey) const {
+void Material::getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32& textureKey) const {
     static const I16 invalidKey = -std::numeric_limits<I16>::max();
-    shaderKey = invalidKey;
+    shaderKey = static_cast<I64>(invalidKey);
     textureKey = _textureKeyCache == -1 ? invalidKey : _textureKeyCache;
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
     if (info._shaderCompStage == ShaderProgramInfo::BuildStage::READY && info._shaderRef) {
-        shaderKey = info._shaderRef->getID();
+        shaderKey = info._shaderRef->getGUID();
     }
 }
 

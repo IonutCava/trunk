@@ -544,7 +544,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
     PipelineDescriptor pipelineDesc;
     pipelineDesc._stateHash = HiZState.getHash();
-    pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getID();
+    pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getGUID();
 
     // The depth buffer's resolution should be equal to the screen's resolution
     RenderTarget& renderTarget = _rtPool->renderTarget(HiZTarget);

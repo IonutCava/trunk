@@ -37,10 +37,6 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
     if (shaderFileName.empty()) {
         assetName(resourceName());
     }
-
-    _linked = false;
-    // Override in concrete implementations with appropriate invalid values
-    _shaderProgramID = 0;
 }
 
 ShaderProgram::~ShaderProgram()
@@ -191,7 +187,7 @@ void ShaderProgram::registerShaderProgram(ShaderProgram* shaderProgram) {
     unregisterShaderProgram(shaderHash);
 
     UniqueLockShared w_lock(s_programLock);
-    s_shaderPrograms[shaderProgram->getID()] = { shaderProgram, shaderHash };
+    s_shaderPrograms[shaderProgram->getGUID()] = { shaderProgram, shaderHash };
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
@@ -219,7 +215,7 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
     return false;
 }
 
-ShaderProgram& ShaderProgram::findShaderProgram(U32 shaderHandle, bool& success) {
+ShaderProgram& ShaderProgram::findShaderProgram(I64 shaderHandle, bool& success) {
     SharedLock r_lock(s_programLock);
     auto it = s_shaderPrograms.find(shaderHandle);
     if (it != std::cend(s_shaderPrograms)) {

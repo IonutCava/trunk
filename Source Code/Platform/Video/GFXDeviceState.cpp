@@ -372,7 +372,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     immediateModeShader.setThreadedLoading(true);
     immediateModeShader.setOnLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor descriptor = {};
-        descriptor._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getID();
+        descriptor._shaderProgramHandle = res.lock()->getGUID();
         descriptor._stateHash = get2DStateBlock();
         _textRenderPipeline = newPipeline(descriptor);
     });
@@ -388,8 +388,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     });
     _blurShader = CreateResource<ShaderProgram>(cache, blur);
 
-    // Initialized our HierarchicalZ construction shader (takes a depth
-    // attachment and down-samples it for every mip level)
+    // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
     ResourceDescriptor descriptor1("HiZConstruct");
     _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1);
     ResourceDescriptor descriptor2("HiZOcclusionCull");
@@ -428,7 +427,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     _axisGizmo->name("GFXDeviceAxisGizmo");
     RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
     pipelineDesc._stateHash = primitiveDescriptor.getHash();
-    pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
+    pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
 
     Pipeline* primitivePipeline = newPipeline(pipelineDesc);
     _axisGizmo->pipeline(*primitivePipeline);

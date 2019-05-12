@@ -126,8 +126,9 @@ void RenderBin::refresh(RenderStage stage) {
 void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePass, F32 minDistToCameraSq) {
     U8 stageIndex = to_U8(stagePass._stage);
 
-    I32 keyA = to_U32(_renderBinStack[stageIndex].size() + 1);
-    I32 keyB = keyA;
+    const size_t count = _renderBinStack[stageIndex].size() + 1;
+    I64 keyA = static_cast<I64>(count);
+    I32 keyB = to_I32(count);
 
     RenderingComponent* const rComp = sgn.get<RenderingComponent>();
 

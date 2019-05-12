@@ -212,7 +212,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
         beginRenderPassCmd._name = "DO_LUMINANCE_PASS";
         GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
-        pipelineDescriptor._shaderProgramHandle = _luminanceCalc->getID();
+        pipelineDescriptor._shaderProgramHandle = _luminanceCalc->getGUID();
 
         GFX::BindPipelineCommand pipelineCmd = {};
         pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
@@ -259,7 +259,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
     resolveCmd._resolveDepth = false;
     GFX::EnqueueCommand(buffer, resolveCmd);
 
-    pipelineDescriptor._shaderProgramHandle = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap)->getID();
+    pipelineDescriptor._shaderProgramHandle = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap)->getGUID();
     GFX::BindPipelineCommand pipelineCmd = {};
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(buffer, pipelineCmd);

@@ -84,6 +84,8 @@ namespace Divide {
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
         /// Change the currently active shader program. Returns true if the program was bound
         bool setActiveProgram(GLuint programHandle);
+        /// Change the currently active shader pipeline. Returns true if the pipeline was bound
+        bool setActivePipeline(GLuint ppipelineHandle);
         /// A state block should contain all rendering state changes needed for the next draw call.
         /// Some may be redundant, so we check each one individually
         void activateStateBlock(const RenderStateBlock& newBlock,
@@ -166,6 +168,7 @@ namespace Divide {
         GLint  _activePackUnpackSkipPixels[2] = { 0 , 0 };
         GLint  _activePackUnpackSkipRows[2] = {0 , 0};
         GLuint _activeShaderProgram = 0; //GLUtil::_invalidObjectID;
+        GLuint _activeShaderPipeline = 0;//GLUtil::_invalidObjectID;
         GLfloat _depthNearVal = .1f;
         GLfloat _depthFarVal = 1.f;
         BlendingProperties _blendPropertiesGlobal = { false,

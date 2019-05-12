@@ -74,7 +74,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
 
     stateTracker._activePipeline = nullptr;
     stateTracker._activeRenderTarget = nullptr;
-    stateTracker.setActiveProgram(0u);
+    stateTracker.setActivePipeline(0u);
 }
 
 bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
@@ -144,13 +144,30 @@ bool GL_API::deleteShaderPrograms(GLuint count, GLuint* programs) {
         for (GLuint i = 0; i < count; ++i) {
             for (auto it : s_stateTrackers) {
                 if (it.second._activeShaderProgram == programs[i]) {
-                    it.second._activeShaderProgram = 0;
+                    it.second.setActiveProgram(0u);
                 }
             }
             glDeleteProgram(programs[i]);
         }
         
         memset(programs, 0, count * sizeof(GLuint));
+        return true;
+    }
+    return false;
+}
+
+bool GL_API::deleteShaderPipelines(GLuint count, GLuint* programPipelines) {
+    if (count > 0 && programPipelines != nullptr) {
+        for (GLuint i = 0; i < count; ++i) {
+            for (auto it : s_stateTrackers) {
+                if (it.second._activeShaderPipeline == programPipelines[i]) {
+                    it.second.setActivePipeline(0);
+                }
+            }
+        }
+
+        glDeleteProgramPipelines(count, programPipelines);
+        memset(programPipelines, 0, count * sizeof(GLuint));
         return true;
     }
     return false;

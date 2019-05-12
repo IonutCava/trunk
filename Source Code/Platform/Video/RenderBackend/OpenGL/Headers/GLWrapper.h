@@ -160,21 +160,19 @@ public:
     static GLStateTracker& getStateTracker();
     static glGlobalLockManager& getLockManager();
 
-    /// This should be called only once for newly created threads (asserts otherwise)
-    static void createContextForCurrentThread();
-
     /// Queue a mipmap recalculation
     static void queueComputeMipMap(GLuint textureHandle);
 
     static void pushDebugMessage(const char* message, I32 id);
     static void popDebugMessage();
 
+    static bool deleteShaderPipelines(GLuint count, GLuint* programsPipelines);
+    static bool deleteShaderPrograms(GLuint count, GLuint * programs);
     static bool deleteTextures(GLuint count, GLuint* textures, TextureType texType);
     static bool deleteSamplers(GLuint count, GLuint* samplers);
     static bool deleteBuffers(GLuint count, GLuint* buffers);
     static bool deleteVAOs(GLuint count, GLuint* vaos);
     static bool deleteFramebuffers(GLuint count, GLuint* framebuffers);
-    static bool deleteShaderPrograms(GLuint count, GLuint* programs);
 
     static void registerBufferBind(const BufferWriteData& data);
     static void registerSyncDelete(GLsync syncObject);

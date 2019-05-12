@@ -45,7 +45,7 @@ namespace NS_GLIM
         unsigned int m_uiBufferOffset;
         unsigned int m_uiBufferStride;
         // previous attribute location (second) used with the saved shader program(first)
-        typedef hashMap<unsigned int, int> AttributeLocationMap;
+        typedef hashMap<Divide::I64, int> AttributeLocationMap;
         AttributeLocationMap m_programAttribLocation;
     };
 
@@ -70,17 +70,17 @@ namespace NS_GLIM
         void Reset(bool reserveBuffers = false, unsigned int vertexCount = 64 * 3, unsigned int attributeCount = 1);
 
         // Uploads the data onto the GPU
-        void Upload (unsigned int uiCurrentProgram);
+        void Upload (Divide::I64 uiCurrentProgram);
         // Binds the vertex arrays for rendering.
-        void Bind (unsigned int uiCurrentProgram);
+        void Bind (Divide::I64 uiCurrentProgram);
         // Unbinds all data after rendering.
         void Unbind (void);
 
 #ifdef AE_RENDERAPI_OPENGL
         // Uploads the data onto the GPU
-        void UploadOGL (unsigned int uiCurrentProgram);
+        void UploadOGL (Divide::I64 uiCurrentProgram);
         // Binds the vertex arrays for rendering.
-        void BindOGL (unsigned int uiCurrentProgram);
+        void BindOGL (Divide::I64 uiCurrentProgram);
         // Unbinds all data after rendering.
         void UnbindOGL (void);
 #endif
@@ -89,7 +89,7 @@ namespace NS_GLIM
         // Uploads the data onto the GPU
         void UploadD3D11 (void);
         // Binds the vertex arrays for rendering.
-        void BindD3D11 (unsigned int uiCurrentProgram);
+        void BindD3D11 (Divide::I64 uiCurrentProgram);
         // Unbinds all data after rendering.
         void UnbindD3D11 (void);
 #endif
@@ -137,7 +137,7 @@ namespace NS_GLIM
         // GL attrib location of the vertex data in the shader program
         unsigned int m_VertAttribLocation;
         // Current bound shader program's handle
-        unsigned int m_ShaderProgramHandle;
+        Divide::I64 m_ShaderProgramHandle;
         // GL ID of the vertex array.
         unsigned int m_uiVertexBufferID;
         // GL ID of the index buffer for points.

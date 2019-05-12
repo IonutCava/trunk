@@ -55,8 +55,6 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     ~glShader();
 
     bool load(const stringImpl& source, U32 lineOffset);
-    bool compile();
-    bool validate();
 
     /// Shader's API specific handle
     inline U32 getShaderID() const { return _shader; }
@@ -68,8 +66,6 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
    public:
     // ======================= static data ========================= //
-    static void initStaticData();
-    static void destroyStaticData();
     /// Remove a shader from the cache
     static void removeShader(glShader* s);
     /// Return a new shader reference
@@ -78,13 +74,17 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     static glShader* loadShader(GFXDevice& context,
                                 const stringImpl& name,
                                 const stringImpl& location,
+                                const stringImpl& sourceFileName,
                                 const ShaderType& type,
                                 const bool parseCode,
                                 U32 lineOffset);
 
    private:
+     bool loadFromBinary();
+
+   private:
     friend class glShaderProgram;
-    
+    void dumpBinary();
 
     inline void skipIncludes(bool state) {
         _skipIncludes = state;
@@ -94,19 +94,53 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
         return _usedAtoms;
     }
 
+    inline bool isValid() const {
+        return _valid;
+    }
+
+    /// Cache uniform/attribute locations for shader programs
+    I32 binding(const char* name);
+    void reuploadUniforms();
+    void UploadPushConstant(const GFX::PushConstant& constant);
+    I32 cachedValueUpdate(const GFX::PushConstant& constant);
+    void Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const;
+
    private:
-    stringImpl _name;
-    ShaderType _type;
+    template<typename T>
+    struct UniformCache {
+        typedef hashMap<T, GFX::PushConstant> ShaderVarMap;
+        inline void clear() { _shaderVars.clear(); }
+        ShaderVarMap _shaderVars;
+    };
+
+    typedef hashMap<U64, I32> ShaderVarMap;
+    typedef UniformCache<U64> UniformsByNameHash;
+
+  private:
+    bool _valid;
     bool _skipIncludes;
-    /// The API dependent object handle. Not thread-safe!
-    U32 _shader;
-    std::atomic_flag _compiled = ATOMIC_FLAG_INIT;
+    bool _loadedFromBinary;
+
+    ShaderType _type;
+    GLenum _binaryFormat;
+    GLuint _shader;
+
+    stringImpl _name;
     vector<stringImpl> _usedAtoms;
+
+    ShaderVarMap _shaderVarLocation;
+    UniformsByNameHash _uniformsByNameHash;
 
    private:
     /// Shader cache
     static ShaderMap _shaderNameMap;
     static SharedMutex _shaderNameLock;
+
+    template<typename T_out, size_t T_out_count, typename T_in>
+    const T_out* castData(const vectorEASTL<char>& values) const {
+        static_assert(sizeof(T_out) * T_out_count == sizeof(T_in), "Invalid cast data");
+        return reinterpret_cast<const T_out*>(values.data());
+    }
 };
 
 };  // namespace Divide

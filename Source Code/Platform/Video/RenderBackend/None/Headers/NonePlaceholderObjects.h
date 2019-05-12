@@ -173,9 +173,9 @@ namespace Divide {
         {}
 
         bool isValid() const override { return true; }
-        U32 GetSubroutineIndex(ShaderType type, const char* name) const override { return 0; }
-        U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override { return 0; }
-        U32 GetSubroutineUniformCount(ShaderType type) const override { return 0;  }
+
+        U32 GetSubroutineIndex(ShaderType type, const char* name) override { return 0; }
+        U32 GetSubroutineUniformCount(ShaderType type) override { return 0;  }
 
     protected:
         bool recompileInternal() override { return true; }

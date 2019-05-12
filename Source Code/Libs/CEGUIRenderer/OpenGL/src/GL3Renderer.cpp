@@ -243,6 +243,7 @@ void OpenGL3Renderer::setupExtraStates()
 {
     Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, 0);
     Divide::GL_API::getStateTracker().setActiveProgram(0);
+    Divide::GL_API::getStateTracker().setActivePipeline(0);
 
     d_openGLStateChanger->blendFunc(GL_ONE, GL_ZERO);
     d_openGLStateChanger->bindVertexArray(0);

@@ -64,7 +64,7 @@ void Renderer::preRender(RenderStagePass stagePass,
 
     GFX::BindPipelineCommand bindPipelineCmd = {};
     PipelineDescriptor pipelineDescriptor = {};
-    pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
     bindPipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 

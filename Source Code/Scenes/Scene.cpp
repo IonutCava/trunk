@@ -106,7 +106,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
         _linesPrimitive->name("LinesRayPick");
         PipelineDescriptor pipeDesc;
         pipeDesc._stateHash = primitiveDescriptor.getHash();
-        pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
+        pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
 
         _linesPrimitive->pipeline(*_context.gfx().newPipeline(pipeDesc));
     } else {

@@ -86,7 +86,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    pipelineDescriptor._shaderProgramHandle = _bloomCalc->getID();
+    pipelineDescriptor._shaderProgramHandle = _bloomCalc->getGUID();
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
@@ -129,7 +129,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    pipelineDescriptor._shaderProgramHandle = _bloomApply->getID();
+    pipelineDescriptor._shaderProgramHandle = _bloomApply->getGUID();
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].clear();
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);

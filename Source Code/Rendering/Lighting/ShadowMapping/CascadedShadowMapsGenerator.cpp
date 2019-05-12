@@ -365,7 +365,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_HORIZONTAL";
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getID();
+        pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getGUID();
         pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
         _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, (I32)light.csmSplitCount());

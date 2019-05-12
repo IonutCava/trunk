@@ -57,13 +57,13 @@ namespace GFX {
 
 struct RenderBinItem {
     RenderingComponent* _renderable = nullptr;
-    I32 _sortKeyA = -1;
+    I64 _sortKeyA = -1;
     I32 _sortKeyB = -1;
     size_t _stateHash = 0;
     F32 _distanceToCameraSq = 0.0f;
 };
 
-enum class RenderingOrder : U8{
+enum class RenderingOrder : U8 {
     NONE = 0,
     FRONT_TO_BACK,
     BACK_TO_FRONT,

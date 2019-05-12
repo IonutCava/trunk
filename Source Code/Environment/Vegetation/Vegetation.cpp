@@ -124,7 +124,7 @@ Vegetation::Vegetation(GFXDevice& context,
     instanceCullShaderGrass.setPropertyDescriptor(shaderDescriptor);
     instanceCullShaderGrass.setOnLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor pipeDesc;
-        pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getID();
+        pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getGUID();
         _cullPipelineGrass = _context.newPipeline(pipeDesc);
     });
 
@@ -138,7 +138,7 @@ Vegetation::Vegetation(GFXDevice& context,
     instanceCullShaderTrees.setPropertyDescriptor(shaderDescriptor);
     instanceCullShaderTrees.setOnLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor pipeDesc;
-        pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getID();
+        pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getGUID();
         _cullPipelineTrees = _context.newPipeline(pipeDesc);
     });
     _cullShaderTrees = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShaderTrees);

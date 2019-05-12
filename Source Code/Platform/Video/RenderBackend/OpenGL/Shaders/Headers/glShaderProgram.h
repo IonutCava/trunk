@@ -55,21 +55,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
            stringImpl _programProperties;
        };
 
-  private:
-    template<typename T>
-    struct UniformCache {
-        typedef hashMap<T, GFX::PushConstant> ShaderVarMap;
-   
-        void clear() {
-            _shaderVars.clear();
-        }
-
-        ShaderVarMap _shaderVars;
-    };
-
-    typedef hashMap<U64, I32> ShaderVarMap;
-    typedef UniformCache<U64> UniformsByNameHash;
-
    public:
     explicit glShaderProgram(GFXDevice& context,
                              size_t descriptorHash,
@@ -92,11 +77,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     /// Get the index of the specified subroutine name for the specified stage.
     /// Not cached!
-    U32 GetSubroutineIndex(ShaderType type, const char* name) const override;
-    /// Get the uniform location of the specified subroutine uniform for the
-    /// specified stage. Not cached!
-    U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
-    U32 GetSubroutineUniformCount(ShaderType type) const override;
+    U32 GetSubroutineIndex(ShaderType type, const char* name) override;
+    U32 GetSubroutineUniformCount(ShaderType type) override;
 
     void UploadPushConstant(const GFX::PushConstant& constant);
     void UploadPushConstants(const PushConstants& constants);
@@ -116,14 +98,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                         const stringImpl& header,
                         bool forceReParse,
                         std::pair<bool, stringImpl>& sourceCodeOut);
-    /// Cache uniform/attribute locations for shader programs
-    I32 binding(const char* name);
 
+    void validatePreBind();
     void validatePostBind();
-    bool validationQueued();
 
-    bool loadFromBinary();
-       
     bool recompileInternal() override;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
@@ -132,18 +110,11 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// present, and it's not recommended (yet)
     void threadedLoad(bool skipRegister);
 
-    /// Basic OpenGL shader program validation (both in debug and in release)
-    bool validateInternal();
     /// Retrieve the program's validation log if we need it
     stringImpl getLog() const;
 
     /// Returns true if at least one shader linked succesfully
     bool reloadShaders(bool reparseShaderSource);
-
-    void reuploadUniforms();
-
-    I32 cachedValueUpdate(const GFX::PushConstant& constant);
-    void Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const;
 
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
@@ -155,27 +126,12 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Returns true if the shader is currently active
     bool isBound() const;
 
-    template<typename T_out, size_t T_out_count, typename T_in>
-    const T_out* castData(const vectorEASTL<char>& values) const;
-
    private:
-
-    ShaderVarMap _shaderVarLocation;
-    UniformsByNameHash _uniformsByNameHash;
-    
+    GLuint _handle;
     bool _validationQueued;
-    GLenum _binaryFormat;
     bool _validated;
-    bool _loadedFromBinary;
-    GLuint _shaderProgramIDTemp;
     static std::array<U32, to_base(ShaderType::COUNT)> _lineOffset;
     std::array<glShader*, to_base(ShaderType::COUNT)> _shaderStage;
-
-    UseProgramStageMask _stageMask;
-    glLockManager* _lockManager;
-
-    /// A list of atoms used by this program. (All stages are added toghether)
-    vector<stringImpl> _usedAtoms;
 
     static I64 s_shaderFileWatcherID;
 

@@ -698,7 +698,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
 
     PipelineDescriptor pipelineDesc = {};
     pipelineDesc._stateHash = state.getHash();
-    pipelineDesc._shaderProgramHandle = _imguiProgram->getID();
+    pipelineDesc._shaderProgramHandle = _imguiProgram->getGUID();
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = std::numeric_limits<U16>::max();

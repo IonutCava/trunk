@@ -325,7 +325,7 @@ namespace NS_GLIM
         m_Data.m_VertAttribLocation = vertexLocation;
     }
     
-    void GLIM_BATCH::SetShaderProgramHandle(unsigned int shaderProgramHandle)
+    void GLIM_BATCH::SetShaderProgramHandle(Divide::I64 shaderProgramHandle)
     {
         m_Data.m_ShaderProgramHandle = shaderProgramHandle;
     }

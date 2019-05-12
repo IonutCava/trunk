@@ -73,7 +73,7 @@ void GlimArrayData::PushElement(void) {
     }
 }
 
-void glimBatchData::Upload(unsigned int uiCurrentProgram) {
+void glimBatchData::Upload(Divide::I64 uiCurrentProgram) {
 #ifdef AE_RENDERAPI_OPENGL
     UploadOGL(uiCurrentProgram);
 #else
@@ -81,7 +81,7 @@ void glimBatchData::Upload(unsigned int uiCurrentProgram) {
 #endif
 }
 
-void glimBatchData::Bind(unsigned int uiCurrentProgram) {
+void glimBatchData::Bind(Divide::I64 uiCurrentProgram) {
 #ifdef AE_RENDERAPI_OPENGL
     BindOGL(uiCurrentProgram);
 #else
@@ -359,7 +359,7 @@ void glimBatchData::UnbindOGL(void) {
 	Divide::GL_API::getStateTracker().setActiveVAO(0);
 }
 
-void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
+void glimBatchData::BindOGL(Divide::I64 uiCurrentProgram) {
     if (!m_bUploadedToGPU)
         return;
 
@@ -445,7 +445,7 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
     glVertexAttribPointer(m_VertAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 }
 
-void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
+void glimBatchData::UploadOGL(Divide::I64 uiCurrentProgram) {
     if (m_bUploadedToGPU) return;
 
     if (m_PositionData.empty()) return;

@@ -172,7 +172,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
                 continue;
             }
 
-            pipelineDesc._shaderProgramHandle = view._shader->getID();
+            pipelineDesc._shaderProgramHandle = view._shader->getGUID();
 
             bindPipeline._pipeline = newPipeline(pipelineDesc);
             GFX::EnqueueCommand(bufferInOut, bindPipeline);

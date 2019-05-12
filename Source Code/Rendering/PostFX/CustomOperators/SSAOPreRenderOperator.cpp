@@ -161,7 +161,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     RenderTargetHandle screen = _parent.inputRT();
 
     // Generate AO
-    pipelineDescriptor._shaderProgramHandle = _ssaoGenerateShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _ssaoGenerateShader->getGUID();
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
@@ -194,7 +194,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     // Blur AO
-    pipelineDescriptor._shaderProgramHandle = _ssaoBlurShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _ssaoBlurShader->getGUID();
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
@@ -219,7 +219,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     blitRTCommand._blitColours.emplace_back();
     GFX::EnqueueCommand(bufferInOut, blitRTCommand);
 
-    pipelineDescriptor._shaderProgramHandle = _ssaoApplyShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _ssaoApplyShader->getGUID();
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
@@ -230,7 +230,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    pipelineDescriptor._shaderProgramHandle = _ssaoApplyShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _ssaoApplyShader->getGUID();
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 

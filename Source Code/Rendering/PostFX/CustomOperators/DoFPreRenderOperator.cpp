@@ -55,7 +55,7 @@ void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& buf
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _dofShader->getID();
+    pipelineDescriptor._shaderProgramHandle = _dofShader->getGUID();
 
     GenericDrawCommand pointsCmd;
     pointsCmd._primitiveType = PrimitiveType::API_POINTS;

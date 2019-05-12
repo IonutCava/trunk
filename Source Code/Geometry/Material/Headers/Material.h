@@ -192,7 +192,7 @@ class Material : public CachedResource {
 
     void setParallaxFactor(F32 factor);
 
-    void getSortKeys(RenderStagePass renderStagePass, I32& shaderKey, I32& textureKey) const;
+    void getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32& textureKey) const;
 
     void getMaterialMatrix(mat4<F32>& retMatrix) const;
 
@@ -200,7 +200,7 @@ class Material : public CachedResource {
 
     size_t getRenderStateBlock(RenderStagePass renderStagePass);
 
-    U32 getProgramID(RenderStagePass renderStagePass) const;
+    I64 getProgramID(RenderStagePass renderStagePass) const;
 
     std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const;
 

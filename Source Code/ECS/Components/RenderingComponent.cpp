@@ -103,7 +103,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     PipelineDescriptor pipelineDescriptor;
 
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
-    pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
+    pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
     Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
 
     _boundingBoxPrimitive[0] = _context.newIMP();
