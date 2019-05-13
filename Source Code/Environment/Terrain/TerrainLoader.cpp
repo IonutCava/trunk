@@ -627,18 +627,22 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     ResourceDescriptor grassColourShader("grass.Colour");
     grassColourShader.setPropertyDescriptor(shaderDescriptor);
+    grassColourShader.waitForReady(false);
     ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader);
 
     ResourceDescriptor grassColourOITShader("grass.Colour.OIT");
     grassColourOITShader.setPropertyDescriptor(shaderOitDescriptor);
+    grassColourOITShader.waitForReady(false);
     ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader);
 
     ResourceDescriptor grassPrePassShader("grass.PrePass");
     grassPrePassShader.setPropertyDescriptor(shaderDescriptor);
+    grassPrePassShader.waitForReady(false);
     ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader);
 
     ResourceDescriptor grassShadowShader("grass.Shadow");
     grassShadowShader.setPropertyDescriptor(shaderDescriptor);
+    grassShadowShader.waitForReady(false);
     ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
 
     vegMaterial->setShaderProgram(grassColour);

@@ -51,6 +51,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     glShader(GFXDevice& context,
              const stringImpl& name,
              const ShaderType& type,
+             const bool deferredUpload,
              const bool optimise = false);
     ~glShader();
 
@@ -77,7 +78,8 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
                                 const stringImpl& sourceFileName,
                                 const ShaderType& type,
                                 const bool parseCode,
-                                U32 lineOffset);
+                                U32 lineOffset,
+                                bool deferredUpload);
 
    private:
      bool loadFromBinary();
@@ -105,6 +107,8 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     I32 cachedValueUpdate(const GFX::PushConstant& constant);
     void Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const;
 
+    bool uploadToGPU();
+
    private:
     template<typename T>
     struct UniformCache {
@@ -120,12 +124,14 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     bool _valid;
     bool _skipIncludes;
     bool _loadedFromBinary;
+    bool _deferredUpload;
 
     ShaderType _type;
     GLenum _binaryFormat;
     GLuint _shader;
 
     stringImpl _name;
+    vector<stringImpl> _sourceCode;
     vector<stringImpl> _usedAtoms;
 
     ShaderVarMap _shaderVarLocation;

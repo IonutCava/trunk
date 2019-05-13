@@ -302,11 +302,14 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
                          to_base(ComponentType::NETWORKING);
 
 
-        boost::property_tree::ptree nodeTree;
+        boost::property_tree::ptree nodeTree = {};
         read_xml(nodePath, nodeTree);
 
-        auto loadModelComplete = [this, &nodeTree](CachedResource_wptr res) {
-            WAIT_FOR_CONDITION(res.lock()->getState() == ResourceState::RES_LOADED);
+        auto loadModelComplete = [this, &nodeTree, &parentTask](CachedResource_wptr res) {
+            while (res.lock()->getState() != ResourceState::RES_LOADED) {
+                //TaskYield(parentTask);
+            }
+
             std::static_pointer_cast<SceneNode>(res.lock())->loadFromXML(nodeTree);
             _loadingTasks.fetch_sub(1);
         };
@@ -357,6 +360,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         }
         // Terrain types
         else if (sceneNode.type == "TERRAIN") {
+            _loadingTasks.fetch_add(1);
             normalMask |= to_base(ComponentType::RENDERING);
             addTerrain(*parent, nodeTree, sceneNode.name);
         }
@@ -365,10 +369,12 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
             NOP(); //we rebuild grass everytime
         }
         else if (sceneNode.type == "INFINITE_PLANE") {
+            _loadingTasks.fetch_add(1);
             normalMask |= to_base(ComponentType::RENDERING);
             addInfPlane(*parent, nodeTree, sceneNode.name);
         } 
         else if (sceneNode.type == "WATER") {
+            _loadingTasks.fetch_add(1);
             normalMask |= to_base(ComponentType::RENDERING);
             addWater(*parent, nodeTree, sceneNode.name);
         }
@@ -382,7 +388,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
                 model.assetLocation(Paths::g_assetsLocation + "models");
                 model.assetName(modelName);
                 model.setFlag(true);
-                model.setThreadedLoading(true);
+                model.setThreadedLoading(false);
                 //model.waitForReady(waitForReady);
                 model.waitForReadyCbk(waitForReasoureTask);
                 model.setOnLoadCallback(loadModelComplete);
@@ -393,6 +399,10 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         }
         // Submesh (change component properties, as the meshes should already be loaded)
         else if (Util::CompareIgnoreCase(sceneNode.type, "SUBMESH")) {
+            while (parent->getNode().getState() != ResourceState::RES_LOADED) {
+                TaskYield(parentTask);
+            }
+
             normalMask |= to_base(ComponentType::RENDERING);
             SceneGraphNode* subMesh = parent->findChild(sceneNode.name, false, false);
             if (subMesh != nullptr) {
@@ -597,7 +607,6 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     terrainDescriptor.setOnLoadCallback(registerTerrain);
     terrainDescriptor.setFlag(ter->getActive());
     terrainDescriptor.waitForReady(false);
-    _loadingTasks.fetch_add(1);
     CreateResource<Terrain>(_resCache, terrainDescriptor);
 }
 
@@ -688,17 +697,22 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
     waterDescriptor.setThreadedLoading(true);
     waterDescriptor.setOnLoadCallback(registerWater);
     waterDescriptor.waitForReady(false);
-    _loadingTasks.fetch_add(1);
-
     CreateResource<WaterPlane>(_resCache, waterDescriptor);
 }
 
 SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
+    auto registerPlane = [this](CachedResource_wptr res) {
+        ACKNOWLEDGE_UNUSED(res);
+        _loadingTasks.fetch_sub(1);
+    };
+
     ResourceDescriptor planeDescriptor("InfPlane_" + nodeName);
 
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
 
     planeDescriptor.setID(to_U32(baseCamera->getZPlanes().max));
+    planeDescriptor.setOnLoadCallback(registerPlane);
+
     std::shared_ptr<InfinitePlane> planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
     DIVIDE_ASSERT(planeItem != nullptr, "Scene::addInfPlane error: Could not create infinite plane resource!");
     planeItem->loadFromXML(pt);

@@ -262,9 +262,6 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     std::pair<Texture_ptr, U32> _defaultReflection;
     std::pair<Texture_ptr, U32> _defaultRefraction;
 
-    ShaderProgram_ptr _previewRenderTargetColour;
-    ShaderProgram_ptr _previewRenderTargetDepth;
-
     vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
 
     std::array<Texture_ptr, 4> _externalTextures;

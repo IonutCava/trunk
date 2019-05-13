@@ -23,6 +23,7 @@ glShader::ShaderMap glShader::_shaderNameMap;
 glShader::glShader(GFXDevice& context,
                    const stringImpl& name,
                    const ShaderType& type,
+                   const bool deferredUpload,
                    const bool optimise)
     : TrackedObject(),
       GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID()),
@@ -30,6 +31,7 @@ glShader::glShader(GFXDevice& context,
      _valid(false),
      _skipIncludes(false),
      _loadedFromBinary(false),
+     _deferredUpload(deferredUpload),
      _binaryFormat(GL_NONE),
      _shader(std::numeric_limits<U32>::max()),
      _name(name),
@@ -42,29 +44,20 @@ glShader::~glShader() {
     GL_API::deleteShaderPrograms(1, &_shader);
 }
 
-bool glShader::load(const stringImpl& source, U32 lineOffset) {
-    static const stringImpl textCacheLocation = Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText;
-
-    if (source.empty()) {
-        Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
-        return false;
+bool glShader::uploadToGPU() {
+    // prevent double load
+    if (_sourceCode.empty()) {
+        return true;
     }
 
-    _usedAtoms.resize(1);
-    _shaderVarLocation.clear();
-
-    stringImpl parsedSource = _skipIncludes ? source
-                                            : glShaderProgram::preprocessIncludes(name(), source, 0, _usedAtoms, true);
-
-    Util::ReplaceStringInPlace(parsedSource, "//__LINE_OFFSET_", Util::StringFormat("#line %d", lineOffset));
-
-    const char* src[] = { parsedSource.c_str() };
-
+    Console::d_printfn(Locale::get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
     if (!loadFromBinary()) {
-        Console::d_printfn(Locale::get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
-        _shader = glCreateShaderProgramv(GLUtil::glShaderStageTable[to_base(_type)], 1, src);
-        
-        if (0) {
+        const char* src[] = { _sourceCode.front().c_str() };
+
+        if (1) {
+            //UniqueLock lock(GLUtil::_driverLock);
+            _shader = glCreateShaderProgramv(GLUtil::glShaderStageTable[to_base(_type)], 1, src);
+        } else {
             const GLuint shader = glCreateShader(GLUtil::glShaderStageTable[to_base(_type)]);
             if (shader) {
                 glShaderSource(shader, 1, src, NULL);
@@ -119,15 +112,40 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
                     }
                     _valid = true;
                 }
+            } else {
+                _valid = true;
             }
         } else {
             Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
-            return false;
         }
+    }
 
-        if (!_skipIncludes) {
-           glShaderProgram::shaderFileWrite(textCacheLocation, name(), src[0]);
-        }
+    _sourceCode.clear();
+
+    return _valid;
+}
+
+bool glShader::load(const stringImpl& source, U32 lineOffset) {
+    static const stringImpl textCacheLocation = Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText;
+
+    if (source.empty()) {
+        Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
+        return false;
+    }
+
+    _usedAtoms.resize(1);
+    _shaderVarLocation.clear();
+
+    _sourceCode.push_back(_skipIncludes ? source
+                                        : glShaderProgram::preprocessIncludes(name(), source, 0, _usedAtoms, true));
+
+    Util::ReplaceStringInPlace(_sourceCode.front(), "//__LINE_OFFSET_", Util::StringFormat("#line %d", lineOffset));
+    if (!_skipIncludes) {
+        glShaderProgram::shaderFileWrite(textCacheLocation, name(), _sourceCode[0].c_str());
+    }
+
+    if (!_deferredUpload) {
+        return uploadToGPU();
     }
 
     return true;
@@ -171,7 +189,8 @@ glShader* glShader::loadShader(GFXDevice& context,
                                const stringImpl& sourceFileName,
                                const ShaderType& type,
                                const bool parseCode,
-                               U32 lineOffset) {
+                               U32 lineOffset,
+                               bool deferredUpload) {
     // See if we have the shader already loaded
     glShader* shader = getShader(name);
     
@@ -179,7 +198,7 @@ glShader* glShader::loadShader(GFXDevice& context,
     // If we do, and don't need a recompile, just return it
     if (shader == nullptr) {
         // If we can't find it, we create a new one
-        shader = MemoryManager_NEW glShader(context, name, type, false);
+        shader = MemoryManager_NEW glShader(context, name, type, deferredUpload, false);
         shader->_usedAtoms.push_back(sourceFileName);
         newShader = true;
     }
@@ -212,11 +231,11 @@ bool glShader::loadFromBinary() {
     if (ShaderProgram::useShaderBinaryCache()) {
         // Load the program's binary format from file
         vector<Byte> data;
-        if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, _name + ".fmt", data, FileType::BINARY) && !data.empty()) {
+        if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, glShaderProgram::decorateFileName(_name) + ".fmt", data, FileType::BINARY) && !data.empty()) {
             _binaryFormat = *reinterpret_cast<GLenum*>(data.data());
             if (_binaryFormat != GL_NONE) {
                 data.resize(0);
-                if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, _name + ".bin", data, FileType::BINARY) && !data.empty()) {
+                if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, glShaderProgram::decorateFileName(_name) + ".bin", data, FileType::BINARY) && !data.empty()) {
                     // Load binary code on the GPU
                     _shader = glCreateProgram();
                     glProgramBinary(_shader, _binaryFormat, (bufferPtr)data.data(), (GLint)data.size());
@@ -226,6 +245,7 @@ bool glShader::loadFromBinary() {
                     // If it loaded properly set all appropriate flags (this also prevents low level access to the program's shaders)
                     if (success == GL_TRUE) {
                         _loadedFromBinary = true;
+                        _valid = true;
                     }
                 }
             }
@@ -252,14 +272,14 @@ void glShader::dumpBinary() {
     if (_binaryFormat != GL_NONE) {
         // dump the buffer to file
         if (writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
-                      _name + ".bin",
+                      glShaderProgram::decorateFileName(_name) + ".bin",
                       binary,
                       (size_t)binaryLength,
                       FileType::BINARY))
         {
             // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
             writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
-                      _name + ".fmt",
+                      glShaderProgram::decorateFileName(_name) + ".fmt",
                       &_binaryFormat,
                       sizeof(GLenum),
                       FileType::BINARY);

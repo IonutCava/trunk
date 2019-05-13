@@ -68,6 +68,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static void destroyStaticData();
     static void onStartup(GFXDevice& context, ResourceCache& parentCache);
     static void onShutdown();
+    static stringImpl decorateFileName(const stringImpl& name);
 
     /// Make sure this program is ready for deletion
     bool unload() noexcept override;

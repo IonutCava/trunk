@@ -120,11 +120,14 @@ void glShaderProgram::validatePreBind() {
         glObjectLabel(GL_PROGRAM_PIPELINE, _handle, -1, resourceName().c_str());
         for (glShader* shader : _shaderStage) {
             // If a shader exists for said stage, attach it
-            if (shader != nullptr && shader->isValid()) {
-                glUseProgramStages(
-                    _handle,
-                    GLUtil::glProgramStageMask[to_U32(shader->getType())],
-                    shader->_shader);
+            if (shader != nullptr) {
+                shader->uploadToGPU();
+                if (shader->isValid()) {
+                    glUseProgramStages(
+                        _handle,
+                        GLUtil::glProgramStageMask[to_U32(shader->getType())],
+                        shader->_shader);
+                }
             }
         }
         registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
@@ -153,7 +156,7 @@ void glShaderProgram::validatePostBind() {
             if (status == 0) {
                 Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), getLog().c_str());
             } else {
-                Console::warnfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), getLog().c_str());
+                Console::printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), getLog().c_str());
             }
         }
         _validated = true;
@@ -330,7 +333,8 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
                                               info._programName + ".glsl",
                                               type,
                                               sourceCode.first,
-                                              _lineOffset[i] + to_U32(_definesList.size()) - 1);
+                                              _lineOffset[i] + to_U32(_definesList.size()) - 1,
+                                              GFXDevice::getGPUVendor() == GPUVendor::NVIDIA);
             }
         } else {
             shader->AddRef();
@@ -422,8 +426,11 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) {
     I32 subroutineCount = 0;
 
     glShader* shader = _shaderStage[to_base(type)];
-    if (shader != nullptr && shader->isValid()) {
-        glGetProgramStageiv(shader->_shader, GLUtil::glShaderStageTable[to_U32(type)], GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
+    if (shader != nullptr) {
+        shader->uploadToGPU();
+        if (shader->isValid()) {
+            glGetProgramStageiv(shader->_shader, GLUtil::glShaderStageTable[to_U32(type)], GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
+        }
     }
 
     return std::max(subroutineCount, 0);
@@ -433,8 +440,11 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) {
 U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) {
 
     glShader* shader = _shaderStage[to_base(type)];
-    if (shader != nullptr && shader->isValid()) {
-        return glGetSubroutineIndex(shader->_shader, GLUtil::glShaderStageTable[to_U32(type)], name);
+    if (shader != nullptr) {
+        shader->uploadToGPU();
+        if (shader->isValid()) {
+            return glGetSubroutineIndex(shader->_shader, GLUtil::glShaderStageTable[to_U32(type)], name);
+        }
     }
 
     return 0u;
@@ -443,8 +453,11 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) {
 
 void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
     for (glShader* shader : _shaderStage) {
-        if (shader != nullptr && shader->isValid()) {
-            shader->UploadPushConstant(constant);
+        if (shader != nullptr) {
+            shader->uploadToGPU();
+            if (shader->isValid()) {
+                shader->UploadPushConstant(constant);
+            }
         }
     }
 }
@@ -555,17 +568,15 @@ const stringImpl& glShaderProgram::shaderFileReadLocked(const stringImpl& filePa
     return result.first->second;
 }
 
-namespace {
-    stringImpl decorateFileName(const stringImpl& name) {
-        if (Config::Build::IS_DEBUG_BUILD) {
-            return name + ".debug";
-        } else if (Config::Build::IS_PROFILE_BUILD) {
-            return name + ".profile";
-        }
-
-        return name + ".release";
+stringImpl glShaderProgram::decorateFileName(const stringImpl& name) {
+    if (Config::Build::IS_DEBUG_BUILD) {
+        return name + ".debug";
+    } else if (Config::Build::IS_PROFILE_BUILD) {
+        return name + ".profile";
     }
-};
+
+    return name + ".release";
+}
 
 void glShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& fileName, stringImpl& sourceCodeOut) {
     readFile(filePath, decorateFileName(fileName), sourceCodeOut, FileType::TEXT);

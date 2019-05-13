@@ -1,8 +1,8 @@
 --Vertex
 
-layout(location = 0) out mat4 mvp;
-layout(location = 1) out vec4 tScale;
-layout(location = 2) out vec4 posAndTileScaleVert;
+layout(location = 0) out vec4 tScale;
+layout(location = 1) out vec4 posAndTileScaleVert;
+layout(location = 2) out mat4 mvp;
 
 #include "vbInputData.vert"
 
@@ -47,9 +47,9 @@ void main(void)
 #define USE_NEXTPOW2 1
 #define id gl_InvocationID
 
-layout(location = 0) in mat4 mvp[];
-layout(location = 1) in vec4 tScale[];
-layout(location = 2) in vec4 posAndTileScaleVert[];
+layout(location = 0) in vec4 tScale[];
+layout(location = 1) in vec4 posAndTileScaleVert[];
+layout(location = 2) in mat4 mvp[];
 
 #include "nodeBufferedInput.cmn"
 

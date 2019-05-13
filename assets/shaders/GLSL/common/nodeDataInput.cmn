@@ -119,7 +119,7 @@ bool IsUnderWater(vec3 positionWorld) {
 #if defined(GEOM_SHADER) || defined(TESS_CTRL_SHADER) || defined(TESS_EVAL_SHADER)
 in gl_PerVertex
 {
-  invariant vec4 gl_Position;
+  vec4  gl_Position;
   float gl_PointSize;
   float gl_ClipDistance[MAX_CLIP_PLANES];
   float gl_CullDistance[MAX_CULL_DISTANCES];

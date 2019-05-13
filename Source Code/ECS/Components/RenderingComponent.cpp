@@ -130,16 +130,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     }
     
     if (Config::Build::IS_DEBUG_BUILD) {
-        ResourceDescriptor previewReflectionRefractionColour("fbPreview");
-        previewReflectionRefractionColour.setThreadedLoading(false);
-        previewReflectionRefractionColour.waitForReady(false);
-        _previewRenderTargetColour = CreateResource<ShaderProgram>(context.kernel().resourceCache(), previewReflectionRefractionColour);
-
-        ResourceDescriptor previewReflectionRefractionDepth("fbPreview.LinearDepth.ScenePlanes");
-        previewReflectionRefractionDepth.setThreadedLoading(false);
-        previewReflectionRefractionDepth.waitForReady(false);
-        _previewRenderTargetDepth = CreateResource<ShaderProgram>(context.kernel().resourceCache(), previewReflectionRefractionDepth);
-
         // Red X-axis
         _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour(255, 0, 0, 255), 5.0f));
         // Green Y-axis
@@ -592,7 +582,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
         if (debugView == nullptr) {
             DebugView_ptr viewPtr = std::make_shared<DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-            viewPtr->_shader = _previewRenderTargetColour;
+            viewPtr->_shader = _context.getRTPreviewShader(false);
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
             viewPtr->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
@@ -605,11 +595,11 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             /*if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
                 if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
-                    debugView->_shader = _previewRenderTargetDepth;
+                    debugView->_shader = _context.getRTPreviewShader(true);
                     debugView->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, camera->getZPlanes());
                 } else {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-                    debugView->_shader = _previewRenderTargetColour;
+                    debugView->_shader = _context.getRTPreviewShader(false);
                 }
             }*/
         }
@@ -671,7 +661,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
         if (debugView == nullptr) {
             DebugView_ptr viewPtr = std::make_shared<DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-            viewPtr->_shader = _previewRenderTargetColour;
+            viewPtr->_shader = _context.getRTPreviewShader(false);
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
             viewPtr->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
@@ -684,11 +674,11 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             /*if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
                 if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
-                    debugView->_shader = _previewRenderTargetDepth;
+                    debugView->_shader = _context.getRTPreviewShader(true);
                     debugView->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, camera->getZPlanes());
                 } else {
                     debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-                    debugView->_shader = _previewRenderTargetColour;
+                    debugView->_shader = _context.getRTPreviewShader(false);
                 }
             } */
         }

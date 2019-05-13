@@ -384,7 +384,9 @@ bool GL_API::initGLSW() {
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option fastprecision on",lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option inline all", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option ifcvt none", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "#pragma option strict on", lineOffsets);
+        if (Config::ENABLE_GPU_VALIDATION) {
+            //appendToShaderHeader(ShaderType::COUNT, "#pragma option strict on", lineOffsets);
+        }
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option unroll all", lineOffsets);
     }
 

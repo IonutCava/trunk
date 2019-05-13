@@ -106,6 +106,8 @@ GFXDevice::GFXDevice(Kernel& parent)
     _HIZCullProgram = nullptr;
     _renderTargetDraw = nullptr;
     _previewDepthMapShader = nullptr;
+    _previewRenderTargetColour = nullptr;
+    _previewRenderTargetDepth = nullptr;
     _textRenderShader = nullptr;
     _blurShader = nullptr;
     _displayShader = nullptr;

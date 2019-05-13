@@ -388,6 +388,17 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     });
     _blurShader = CreateResource<ShaderProgram>(cache, blur);
 
+
+    ResourceDescriptor previewReflectionRefractionColour("fbPreview");
+    previewReflectionRefractionColour.setThreadedLoading(false);
+    previewReflectionRefractionColour.waitForReady(false);
+    _previewRenderTargetColour = CreateResource<ShaderProgram>(cache, previewReflectionRefractionColour);
+
+    ResourceDescriptor previewReflectionRefractionDepth("fbPreview.LinearDepth.ScenePlanes");
+    previewReflectionRefractionDepth.setThreadedLoading(false);
+    previewReflectionRefractionDepth.waitForReady(false);
+    _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth);
+
     // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
     ResourceDescriptor descriptor1("HiZConstruct");
     _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1);
@@ -469,6 +480,8 @@ void GFXDevice::closeRenderingAPI() {
     MemoryManager::SAFE_DELETE(_rtPool);
 
     _previewDepthMapShader = nullptr;
+    _previewRenderTargetColour = nullptr;
+    _previewRenderTargetDepth = nullptr;
     _renderTargetDraw = nullptr;
     _HIZConstructProgram = nullptr;
     _HIZCullProgram = nullptr;

@@ -44,10 +44,14 @@ namespace Divide {
 
 class ResourceLoadLock {
 public:
-    explicit ResourceLoadLock(size_t hash)
+    explicit ResourceLoadLock(size_t hash, const DELEGATE_CBK<void, CachedResource_wptr>& waitCbk)
         : _loadingHash(hash)
     {
-        WAIT_FOR_CONDITION(notLoading(_loadingHash));
+//        if (waitCbk) {
+//            WAIT_FOR_CONDITION_CALLBACK(notLoading(_loadingHash), waitCbk);
+//        } else {
+            WAIT_FOR_CONDITION(notLoading(_loadingHash));
+//        }
 
         UniqueLockShared w_lock(s_hashLock);
         s_loadingHashes.push_back(_loadingHash);
@@ -90,26 +94,29 @@ public:
         Time::ProfileTimer loadTimer = {};
         loadTimer.start();
 
-        // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
-        const size_t loadingHash = descriptor.getHash();
+        std::shared_ptr<T> ptr;
+        {
+            // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
+            const size_t loadingHash = descriptor.getHash();
 
-        // If two thread are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
-        // So check if the hash is currently in the "processing" list, and if it is, just busy-spin until done
-        // Once done, lock the hash for ourselves
-        ResourceLoadLock res_lock(loadingHash);
+            // If two thread are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
+            // So check if the hash is currently in the "processing" list, and if it is, just busy-spin until done
+            // Once done, lock the hash for ourselves
+            ResourceLoadLock res_lock(loadingHash, descriptor.waitForReadyCbk());
 
-        /// Check cache first to avoid loading the same resource twice
-        std::shared_ptr<T> ptr = std::static_pointer_cast<T>(find(loadingHash));
-        /// If the cache did not contain our resource ...
-        wasInCache = ptr != nullptr;
-        if (!wasInCache) {
-            Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
+            /// Check cache first to avoid loading the same resource twice
+            ptr = std::static_pointer_cast<T>(find(loadingHash));
+            /// If the cache did not contain our resource ...
+            wasInCache = ptr != nullptr;
+            if (!wasInCache) {
+                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
 
-            /// ...aquire the resource's loader
-            /// and get our resource as the loader creates it
-            ptr = std::static_pointer_cast<T>(ImplResourceLoader<T>(*this, _context, descriptor, loadingHash)());
-            assert(ptr != nullptr);
-            add(ptr);
+                /// ...aquire the resource's loader
+                /// and get our resource as the loader creates it
+                ptr = std::static_pointer_cast<T>(ImplResourceLoader<T>(*this, _context, descriptor, loadingHash)());
+                assert(ptr != nullptr);
+                add(ptr);
+            }
         }
 
         if (descriptor.waitForReady()) {

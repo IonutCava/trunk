@@ -263,6 +263,10 @@ public:  // Accessors and Mutators
         return *_rtPool;
     }
     
+    inline const ShaderProgram_ptr& getRTPreviewShader(bool depthOnly) const {
+        return depthOnly ? _previewRenderTargetDepth : _previewRenderTargetColour;
+    }
+
     inline PostFX& postFX() {
         return *_postFX;
     }
@@ -448,12 +452,15 @@ protected:
 
     /// shader used to preview the depth buffer
     ShaderProgram_ptr _previewDepthMapShader;
+    ShaderProgram_ptr _previewRenderTargetColour;
+    ShaderProgram_ptr _previewRenderTargetDepth;
     ShaderProgram_ptr _renderTargetDraw;
     ShaderProgram_ptr _HIZConstructProgram;
     ShaderProgram_ptr _HIZCullProgram;
     ShaderProgram_ptr _displayShader;
     ShaderProgram_ptr _textRenderShader;
     ShaderProgram_ptr _blurShader;
+    
     U32 _horizBlur = 0, _vertBlur = 0;
 
     PushConstants _textRenderConstants;
