@@ -63,16 +63,34 @@ bool InfinitePlane::load() {
 
     planeMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics));
 
-    ShaderProgramDescriptor shaderDescriptor;
-    shaderDescriptor._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE 100", true));
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "terrainPlane.glsl";
+    vertModule._variant = "Colour";
+    vertModule._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE 100", true));
 
-    ResourceDescriptor terrainShader("terrainPlane.Colour");
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "terrainPlane.glsl";
+    fragModule._variant = "Colour";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor terrainShader("terrainPlane_Colour");
     terrainShader.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(_parentCache, terrainShader);
 
     planeMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY);
 
-    ResourceDescriptor terrainShaderPrePass("terrainPlane.PrePass");
+    fragModule._variant = "PrePass";
+
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor terrainShaderPrePass("terrainPlane_PrePass");
     terrainShaderPrePass.setPropertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(_parentCache, terrainShaderPrePass);
     planeMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);

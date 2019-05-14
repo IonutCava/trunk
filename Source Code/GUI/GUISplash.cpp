@@ -37,7 +37,20 @@ GUISplash::GUISplash(ResourceCache& cache,
 
     _splashImage = CreateResource<Texture>(cache, splashImage);
 
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "fbPreview.glsl";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "fbPreview.glsl";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
     ResourceDescriptor splashShader("fbPreview");
+    splashShader.setPropertyDescriptor(shaderDescriptor);
     splashShader.setThreadedLoading(false);
     _splashShader = CreateResource<ShaderProgram>(cache, splashShader);
 }

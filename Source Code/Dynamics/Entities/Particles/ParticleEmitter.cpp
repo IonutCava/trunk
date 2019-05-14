@@ -112,15 +112,37 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     _particleStateBlockHashDepth = particleRenderState.getHash();
 
     bool useTexture = _particleTexture != nullptr;
-    ResourceDescriptor particleShader(useTexture ? "particles.WithTexture" : "particles.NoTexture");
+
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "particles.glsl";
+    vertModule._variant = useTexture ? "WithTexture" : "NoTexture";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "particles.glsl";
+    fragModule._variant = useTexture ? "WithTexture" : "NoTexture";
+
     if (useTexture){
-        ShaderProgramDescriptor particleShaderDescriptor;
-        particleShaderDescriptor._defines.push_back(std::make_pair("HAS_TEXTURE", true));
-        particleShader.setPropertyDescriptor(particleShaderDescriptor);
+        fragModule._defines.push_back(std::make_pair("HAS_TEXTURE", true));
     }
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor particleShader(useTexture ? "particles_WithTexture" : "particles_NoTexture");
+    particleShader.setPropertyDescriptor(shaderDescriptor);
     _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShader);
 
-    ResourceDescriptor particleDepthShaderDescriptor("particles.Shadow");
+    fragModule._variant = "Shadow";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor particleDepthShaderDescriptor("particles_Shadow");
+    particleDepthShaderDescriptor.setPropertyDescriptor(shaderDescriptor);
     _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
 
     if (_particleShader != nullptr) {

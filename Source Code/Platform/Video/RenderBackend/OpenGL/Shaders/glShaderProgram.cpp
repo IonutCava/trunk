@@ -85,11 +85,13 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
                                  const stringImpl& name,
                                  const stringImpl& resourceName,
                                  const stringImpl& resourceLocation,
+                                 const ShaderProgramDescriptor& descriptor,
                                  bool asyncLoad)
-    : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, asyncLoad),
+    : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad),
       glObject(glObjectType::TYPE_SHADER_PROGRAM, context),
       _validated(false),
       _validationQueued(false),
+      _descriptor(descriptor),
       _handle(GLUtil::_invalidObjectID)
 {
     // pointers to all of our shader stages
@@ -349,6 +351,18 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
     }
 
     return ret;
+}
+
+bool glShaderProgram::shouldRecompile() const {
+    for (glShader* shader : _shaderStage) {
+        if (shader != nullptr) {
+            if (shader->shouldRecompile()) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 bool glShaderProgram::recompileInternal() {

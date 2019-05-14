@@ -52,6 +52,8 @@ class Kernel;
 class Camera;
 class Material;
 class ShaderBuffer;
+class ShaderProgramDescriptor;
+
 struct PushConstants;
 struct GenericDrawCommand;
 
@@ -103,6 +105,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
                            const stringImpl& shaderName,
                            const stringImpl& shaderFileName,
                            const stringImpl& shaderFileLocation,
+                           const ShaderProgramDescriptor& descriptor,
                            bool asyncLoad);
     virtual ~ShaderProgram();
 
@@ -118,12 +121,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     ///  Calling recompile will re-create the marked shaders from source files
     ///  and update them in the ShaderManager if needed
     bool recompile();
-    /// Add a define to the shader. The defined must not have been added
-    /// previously
-    void addShaderDefine(const stringImpl& define, bool appendPrefix);
-    /// Remove a define from the shader. The defined must have been added
-    /// previously
-    void removeShaderDefine(const stringImpl& define);
+    virtual bool shouldRecompile() const { return false; }
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline vec_size getFunctionCount(ShaderType shader) {
@@ -218,9 +216,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     friend class ImplResourceLoader;
     bool _shouldRecompile;
     bool _asyncLoad;
-    // with a mutex or something
-    /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
-    vector<std::pair<stringImpl, bool>> _definesList;
 
     static bool s_useShaderTextCache;
     static bool s_useShaderBinaryCache;
@@ -245,6 +240,13 @@ namespace Attorney {
     };
 }
 
+struct ShaderModuleDescriptor {
+    ShaderType _moduleType = ShaderType::COUNT;
+    stringImpl _sourceFile;
+    stringImpl _variant;
+    vectorEASTL<std::pair<stringImpl, bool>> _defines;
+};
+
 class ShaderProgramDescriptor final : public PropertyDescriptor {
 public:
     ShaderProgramDescriptor()
@@ -256,7 +258,7 @@ public:
         target.reset(new ShaderProgramDescriptor(*this));
     }
 
-    vector<std::pair<stringImpl, bool>> _defines;
+    vectorEASTL<ShaderModuleDescriptor> _modules;
     
 };
 

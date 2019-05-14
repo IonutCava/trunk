@@ -76,12 +76,34 @@ bool Sky::load() {
     _sky = CreateResource<Sphere3D>(_parentCache, skybox);
     _sky->renderState().setDrawState(false);
 
-    ResourceDescriptor skyShaderDescriptor("sky.Display");
+
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "sky.glsl";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "sky.glsl";
+    fragModule._variant = "Display";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor skyShaderDescriptor("sky_Display");
+    skyShaderDescriptor.setPropertyDescriptor(shaderDescriptor);
     skyShaderDescriptor.waitForReady(false);
     _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor);
 
-    ResourceDescriptor skyShaderPrePassDescriptor("sky.PrePass");
+    fragModule._variant = "PrePass";
+
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor skyShaderPrePassDescriptor("sky_PrePass");
     skyShaderPrePassDescriptor.waitForReady(false);
+    skyShaderPrePassDescriptor.setPropertyDescriptor(shaderDescriptor);
     _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor);
 
     assert(_skyShader && _skyShaderPrePass);

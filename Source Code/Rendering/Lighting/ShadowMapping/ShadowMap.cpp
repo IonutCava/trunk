@@ -364,9 +364,26 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
 
     // Add new views if needed
     if (light.castsShadows()) {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "fbPreview.glsl";
+        vertModule._variant = "BloomCalc";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "fbPreview.glsl";
+
         switch (light.getLightType()) {
             case LightType::DIRECTIONAL: {
+
+                fragModule._variant = "Layered.LinearDepth.ESM.ScenePlanes";
+
+                ShaderProgramDescriptor shaderDescriptor = {};
+                shaderDescriptor._modules.push_back(vertModule);
+                shaderDescriptor._modules.push_back(fragModule);
+
                 ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
+                shadowPreviewShader.setPropertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.setThreadedLoading(false);
                 ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
@@ -382,7 +399,14 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 }
             } break;
             case LightType::SPOT: {
+                fragModule._variant = "Single.LinearDepth";
+
+                ShaderProgramDescriptor shaderDescriptor = {};
+                shaderDescriptor._modules.push_back(vertModule);
+                shaderDescriptor._modules.push_back(fragModule);
+
                 ResourceDescriptor shadowPreviewShader("fbPreview.Single.LinearDepth");
+                shadowPreviewShader.setPropertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.setThreadedLoading(false);
                 ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
@@ -395,7 +419,14 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 s_debugViews.push_back(shadow);
             }break;
             case LightType::POINT: {
+                fragModule._variant = "Cube.LinearDepth.ScenePlanes";
+
+                ShaderProgramDescriptor shaderDescriptor = {};
+                shaderDescriptor._modules.push_back(vertModule);
+                shaderDescriptor._modules.push_back(fragModule);
+
                 ResourceDescriptor shadowPreviewShader("fbPreview.Cube.LinearDepth.ScenePlanes");
+                shadowPreviewShader.setPropertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.setThreadedLoading(false);
                 ShaderProgram_ptr previewCubeDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 

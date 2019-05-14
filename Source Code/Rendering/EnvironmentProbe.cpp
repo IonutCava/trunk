@@ -43,12 +43,27 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
     _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
     _boundingBoxPrimitive->pipeline(*_context.newPipeline(pipelineDescriptor));
 
-    _impostor = CreateResource<ImpostorSphere>(parentScene.resourceCache(),
-                                               ResourceDescriptor(Util::StringFormat("EnvironmentProbeImpostor_%d", getGUID())));
+    _impostor = CreateResource<ImpostorSphere>(parentScene.resourceCache(), ResourceDescriptor(Util::StringFormat("EnvironmentProbeImpostor_%d", getGUID())));
     _impostor->setRadius(1.0f);
 
-    _impostorShader = CreateResource<ShaderProgram>(parentScene.resourceCache(), 
-                                                    ResourceDescriptor("ImmediateModeEmulation.EnvironmentProbe"));
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "ImmediateModeEmulation.glsl";
+    vertModule._variant = "EnvironmentProbe";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "ImmediateModeEmulation.glsl";
+    fragModule._variant = "EnvironmentProbe";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor shaderResDesc("ImmediateModeEmulation.EnvironmentProbe");
+    shaderResDesc.setPropertyDescriptor(shaderDescriptor);
+
+    _impostorShader = CreateResource<ShaderProgram>(parentScene.resourceCache(), shaderResDesc);
 }
 
 EnvironmentProbe::~EnvironmentProbe()

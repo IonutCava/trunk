@@ -248,6 +248,7 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
                                            const stringImpl& name,
                                            const stringImpl& resourceName,
                                            const stringImpl& resourceLocation,
+                                           const ShaderProgramDescriptor& descriptor,
                                            bool asyncLoad) const {
     bool locked = _gpuObjectArenaMutex.try_lock();
 
@@ -258,13 +259,13 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
         case RenderAPI::OpenGLES: {
             /// Create and return a new shader program.
             /// The callee is responsible for it's deletion!
-            temp = new (_gpuObjectArena) glShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
+            temp = new (_gpuObjectArena) glShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad);
         } break;
         case RenderAPI::Vulkan: {
-            temp = new (_gpuObjectArena) vkShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
+            temp = new (_gpuObjectArena) vkShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad);
         } break;
         case RenderAPI::None: {
-            temp = new (_gpuObjectArena) noShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
+            temp = new (_gpuObjectArena) noShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

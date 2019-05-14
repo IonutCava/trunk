@@ -190,9 +190,22 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     Texture::TextureLoadInfo info;
     _fontTexture->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
 
-    ResourceDescriptor shaderDescriptor("IMGUI");
-    shaderDescriptor.setThreadedLoading(false);
-    _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderDescriptor);
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "IMGUI.glsl";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "IMGUI.glsl";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor shaderResDescriptor("IMGUI");
+    shaderResDescriptor.setPropertyDescriptor(shaderDescriptor);
+    shaderResDescriptor.setThreadedLoading(false);
+    _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderResDescriptor);
 
     // Store our identifier
     io.Fonts->TexID = (void *)(intptr_t)_fontTexture->getHandle();

@@ -169,8 +169,9 @@ namespace Divide {
                         const stringImpl& name,
                         const stringImpl& resourceName,
                         const stringImpl& resourceLocation,
+                        const ShaderProgramDescriptor& descriptor,
                         bool asyncLoad)
-            : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, asyncLoad)
+            : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad)
         {}
 
         bool isValid() const override { return true; }

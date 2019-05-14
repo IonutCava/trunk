@@ -331,7 +331,7 @@ void main()
 #endif
 }
 
---Geometry.Wireframe
+--Geometry
 
 #include "nodeBufferedInput.cmn"
 

@@ -363,50 +363,148 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     ResourceCache& cache = parent().resourceCache();
     Configuration& config = _parent.platformContext().config();
 
-    ResourceDescriptor previewNormalsShader("fbPreview");
-    previewNormalsShader.setThreadedLoading(false);
-    _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
-    assert(_renderTargetDraw != nullptr);
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "fbPreview.glsl";
 
-    ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
-    immediateModeShader.setThreadedLoading(true);
-    immediateModeShader.setOnLoadCallback([this](CachedResource_wptr res) {
-        PipelineDescriptor descriptor = {};
-        descriptor._shaderProgramHandle = res.lock()->getGUID();
-        descriptor._stateHash = get2DStateBlock();
-        _textRenderPipeline = newPipeline(descriptor);
-    });
-    _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
-    assert(_textRenderShader != nullptr);
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "fbPreview.glsl";
 
-    ResourceDescriptor blur("blur.Generic");
-    blur.setThreadedLoading(true);
-    blur.setOnLoadCallback([this](CachedResource_wptr res) {
-        ShaderProgram_ptr blurShader = std::static_pointer_cast<ShaderProgram>(res.lock());
-        _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
-        _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
-    });
-    _blurShader = CreateResource<ShaderProgram>(cache, blur);
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
 
+        ResourceDescriptor previewNormalsShader("fbPreview");
+        previewNormalsShader.setThreadedLoading(false);
+        previewNormalsShader.setPropertyDescriptor(shaderDescriptor);
+        _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
+        assert(_renderTargetDraw != nullptr);
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "ImmediateModeEmulation.glsl";
+        vertModule._variant = "GUI";
 
-    ResourceDescriptor previewReflectionRefractionColour("fbPreview");
-    previewReflectionRefractionColour.setThreadedLoading(false);
-    previewReflectionRefractionColour.waitForReady(false);
-    _previewRenderTargetColour = CreateResource<ShaderProgram>(cache, previewReflectionRefractionColour);
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "ImmediateModeEmulation.glsl";
+        fragModule._variant = "GUI";
 
-    ResourceDescriptor previewReflectionRefractionDepth("fbPreview.LinearDepth.ScenePlanes");
-    previewReflectionRefractionDepth.setThreadedLoading(false);
-    previewReflectionRefractionDepth.waitForReady(false);
-    _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth);
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
 
-    // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
-    ResourceDescriptor descriptor1("HiZConstruct");
-    _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1);
-    ResourceDescriptor descriptor2("HiZOcclusionCull");
-    _HIZCullProgram = CreateResource<ShaderProgram>(cache, descriptor2);
-    ResourceDescriptor descriptor3("display");
-    _displayShader = CreateResource<ShaderProgram>(cache, descriptor3);
+        ResourceDescriptor immediateModeShader("ImmediateModeEmulationGUI");
+        immediateModeShader.setThreadedLoading(true);
+        immediateModeShader.setPropertyDescriptor(shaderDescriptor);
+        immediateModeShader.setOnLoadCallback([this](CachedResource_wptr res) {
+            PipelineDescriptor descriptor = {};
+            descriptor._shaderProgramHandle = res.lock()->getGUID();
+            descriptor._stateHash = get2DStateBlock();
+            _textRenderPipeline = newPipeline(descriptor);
+        });
+        _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
+        assert(_textRenderShader != nullptr);
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "blur.glsl";
+        vertModule._variant = "Generic";
 
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "blur.glsl";
+        fragModule._variant = "Generic";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        ResourceDescriptor blur("blurGeneric");
+        blur.setThreadedLoading(true);
+        blur.setPropertyDescriptor(shaderDescriptor);
+        blur.setOnLoadCallback([this](CachedResource_wptr res) {
+            ShaderProgram_ptr blurShader = std::static_pointer_cast<ShaderProgram>(res.lock());
+            _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
+            _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
+        });
+        _blurShader = CreateResource<ShaderProgram>(cache, blur);
+    }
+
+    _previewRenderTargetColour = _renderTargetDraw;;
+
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "fbPreview.glsl";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "fbPreview.glsl";
+        fragModule._variant = "LinearDepth.ScenePlanes";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        ResourceDescriptor previewReflectionRefractionDepth("fbPreviewLinearDepthScenePlanes");
+        previewReflectionRefractionDepth.setThreadedLoading(false);
+        previewReflectionRefractionDepth.waitForReady(false);
+        previewReflectionRefractionDepth.setPropertyDescriptor(shaderDescriptor);
+        _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth);
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "HiZConstruct.glsl";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "HiZConstruct.glsl";
+        //fragModule._variant = "RasterGrid";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
+        ResourceDescriptor descriptor1("HiZConstruct");
+        descriptor1.setPropertyDescriptor(shaderDescriptor);
+        _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1);
+    }
+    {
+        ShaderModuleDescriptor compModule = {};
+        compModule._moduleType = ShaderType::COMPUTE;
+        compModule._sourceFile = "HiZOcclusionCull.glsl";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(compModule);
+
+        ResourceDescriptor descriptor2("HiZOcclusionCull");
+        descriptor2.setPropertyDescriptor(shaderDescriptor);
+        _HIZCullProgram = CreateResource<ShaderProgram>(cache, descriptor2);
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "display.glsl";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "display.glsl";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        ResourceDescriptor descriptor3("display");
+        descriptor3.setPropertyDescriptor(shaderDescriptor);
+        _displayShader = CreateResource<ShaderProgram>(cache, descriptor3);
+    }
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
     // If render targets ready, we initialize our post processing system
     _postFX = std::make_unique<PostFX>(*this, cache);

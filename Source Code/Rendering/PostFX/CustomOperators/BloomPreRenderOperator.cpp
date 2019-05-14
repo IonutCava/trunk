@@ -44,10 +44,32 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     desc._resolution = vec2<U16>(to_U16(res.w / 4.0f), to_U16(res.h / 4.0f));
     _bloomOutput = _context.renderTargetPool().allocateRT(desc);
 
-    ResourceDescriptor bloomCalc("bloom.BloomCalc");
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "bloom.glsl";
+    vertModule._variant = "BloomCalc";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "bloom.glsl";
+    fragModule._variant = "BloomCalc";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor bloomCalc("BloomCalc");
+    bloomCalc.setPropertyDescriptor(shaderDescriptor);
     _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
 
-    ResourceDescriptor bloomApply("bloom.BloomApply");
+    vertModule._variant = "BloomApply";
+    fragModule._variant = "BloomApply";
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor bloomApply("BloomApply");
+    bloomApply.setPropertyDescriptor(shaderDescriptor);
     _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
 }
 

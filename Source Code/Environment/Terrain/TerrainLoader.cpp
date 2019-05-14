@@ -22,9 +22,9 @@ namespace {
 };
 
 bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
-                                const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
-                                PlatformContext& context,
-                                bool threadedLoading) {
+    const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
+    PlatformContext& context,
+    bool threadedLoading) {
 
     auto waitForReasoureTask = [&context](CachedResource_wptr res) {
         context.taskPool(TaskPoolType::HIGH_PRIORITY).threadWaiting();
@@ -63,22 +63,22 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     vector<U8> albedoCount(layerCount);
     vector<U8> normalCount(layerCount);
 
-    TerrainTextureLayer* textureLayer = MemoryManager_NEW TerrainTextureLayer(layerCount);
+    TerrainTextureLayer * textureLayer = MemoryManager_NEW TerrainTextureLayer(layerCount);
     for (U8 i = 0; i < layerCount; ++i) {
         layerOffsetStr = to_stringImpl(i);
         albedoCount[i] = 0;
         normalCount[i] = 0;
 
         blendMapArray += ((i != 0) ? (",") : ("")) + terrainDescriptor->getVariable("blendMap" + layerOffsetStr);
-        
+
         currentEntry = terrainDescriptor->getVariable("redAlbedo" + layerOffsetStr);
         if (!currentEntry.empty()) {
             albedoMapArray += ((i != 0) ? (",") : ("")) + currentEntry;
             ++albedoCount[i];
 
             textureLayer->setTileScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL,
-                                          i,
-                                          terrainDescriptor->getVariablef("redTileScale" + layerOffsetStr));
+                i,
+                terrainDescriptor->getVariablef("redTileScale" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("greenAlbedo" + layerOffsetStr);
@@ -86,34 +86,34 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             albedoMapArray += "," + currentEntry;
             ++albedoCount[i];
 
-            
+
             textureLayer->setTileScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_GREEN_CHANNEL,
-                                          i,
-                                          terrainDescriptor->getVariablef("greenTileScale" + layerOffsetStr));
+                i,
+                terrainDescriptor->getVariablef("greenTileScale" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("blueAlbedo" + layerOffsetStr);
         if (!currentEntry.empty()) {
             albedoMapArray += "," + currentEntry;
             ++albedoCount[i];
-            
+
             textureLayer->setTileScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_BLUE_CHANNEL,
-                                          i,
-                                          terrainDescriptor->getVariablef("blueTileScale" + layerOffsetStr));
+                i,
+                terrainDescriptor->getVariablef("blueTileScale" + layerOffsetStr));
         }
 
         currentEntry = terrainDescriptor->getVariable("alphaAlbedo" + layerOffsetStr);
         if (!currentEntry.empty()) {
             albedoMapArray += "," + currentEntry;
             ++albedoCount[i];
-            
+
             textureLayer->setTileScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL,
-                                          i,
-                                          terrainDescriptor->getVariablef("alphaTileScale" + layerOffsetStr));
+                i,
+                terrainDescriptor->getVariablef("alphaTileScale" + layerOffsetStr));
         }
 
 
-        currentEntry =  terrainDescriptor->getVariable("redDetail" + layerOffsetStr);
+        currentEntry = terrainDescriptor->getVariable("redDetail" + layerOffsetStr);
         if (!currentEntry.empty()) {
             normalMapArray += ((i != 0) ? (",") : ("")) + currentEntry;
             ++normalCount[i];
@@ -157,7 +157,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendMapSampler._minFilter = TextureFilter::LINEAR;
     blendMapSampler._magFilter = TextureFilter::LINEAR;
     blendMapSampler._anisotropyLevel = 0;
-    
+
     SamplerDescriptor tileAlbedoSampler = {};
     tileAlbedoSampler._wrapU = TextureWrap::REPEAT;
     tileAlbedoSampler._wrapV = TextureWrap::REPEAT;
@@ -187,7 +187,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
     textureTileMaps.assetName(albedoMapArray);
     textureTileMaps.setPropertyDescriptor(albedoDescriptor);
-    
+
     textureNormalMaps.assetName(normalMapArray);
     textureNormalMaps.setPropertyDescriptor(normalDescriptor);
 
@@ -200,8 +200,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     Material_ptr terrainMaterial = CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
     terrainMaterial->ignoreXMLData(true);
 
-    const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
-    const vec2<F32>& altitudeRange = terrainDescriptor->getAltitudeRange();
+    const vec2<U16> & terrainDimensions = terrainDescriptor->getDimensions();
+    const vec2<F32> & altitudeRange = terrainDescriptor->getAltitudeRange();
 
     Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
@@ -222,7 +222,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
     miscTexDescriptor.setSampler(tileAlbedoSampler);
-     
+
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.assetLocation(terrainMapLocation);
     textureWaterCaustics.assetName(terrainDescriptor->getVariable("waterCaustics"));
@@ -254,67 +254,113 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "terrainTess.glsl";
+
+    ShaderModuleDescriptor tescModule = {};
+    tescModule._moduleType = ShaderType::TESSELATION_CTRL;
+    tescModule._sourceFile = "terrainTess.glsl";
+
+    ShaderModuleDescriptor teseModule = {};
+    teseModule._moduleType = ShaderType::TESSELATION_EVAL;
+    teseModule._sourceFile = "terrainTess.glsl";
+
+    ShaderModuleDescriptor geomModule = {};
+    geomModule._moduleType = ShaderType::GEOMETRY;
+    geomModule._sourceFile = "terrainTess.glsl";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "terrainTess.glsl";
+
     ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(tescModule);
+    shaderDescriptor._modules.push_back(teseModule);
+    if (terrainDescriptor->wireframeDebug()) {
+        shaderDescriptor._modules.push_back(geomModule);
+    }
+    shaderDescriptor._modules.push_back(fragModule);
 
-    shaderDescriptor._defines.push_back(std::make_pair("USE_SSBO_DATA_BUFFER", true));
+    for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
+        if (!context.config().rendering.shadowMapping.enabled) {
+            shaderModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+        }
 
-    if (!context.config().rendering.shadowMapping.enabled) {
-        shaderDescriptor._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+        if (terrainDescriptor->wireframeDebug()) {
+            shaderModule._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
+        }
+
+        shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+        shaderModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+        shaderModule._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
+        shaderModule._defines.push_back(std::make_pair("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)), true));
+
+        shaderModule._defines.push_back(std::make_pair(layerCountData, false));
+        shaderModule._defines.push_back(std::make_pair("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true));
+        shaderModule._defines.push_back(std::make_pair("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true));
+        shaderModule._defines.push_back(std::make_pair("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true));
+        shaderModule._defines.push_back(std::make_pair("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true));
+        shaderModule._defines.push_back(std::make_pair("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true));
+        shaderModule._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
     }
 
-    shaderDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-    shaderDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-    shaderDescriptor._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
-    shaderDescriptor._defines.push_back(std::make_pair("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)), true));
+    ShaderProgramDescriptor shadowDescriptor = shaderDescriptor;
+    for (ShaderModuleDescriptor& shaderModule : shadowDescriptor._modules) {
+        shaderModule._variant = "Shadow";
+        shaderModule._defines.push_back(std::make_pair("SHADOW_PASS", true));
+        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
+        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
+    }
 
-    shaderDescriptor._defines.push_back(std::make_pair(layerCountData, false));
-    shaderDescriptor._defines.push_back(std::make_pair("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true));
-    shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true));
-    shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true));
-    shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true));
-    shaderDescriptor._defines.push_back(std::make_pair("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true));
-    shaderDescriptor._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
-
-    stringImpl shaderName("terrainTess");
-
-    ResourceDescriptor terrainShaderShadow(shaderName + ".Shadow-" + name);
-    ShaderProgramDescriptor shadowShaderDescriptor = shaderDescriptor;
-    shadowShaderDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
-    shadowShaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
-    shadowShaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
-    terrainShaderShadow.setPropertyDescriptor(shadowShaderDescriptor);
+    ResourceDescriptor terrainShaderShadow("Terrain_Shadow-" + name);
+    terrainShaderShadow.setPropertyDescriptor(shadowDescriptor);
     if (threadedLoading) {
         terrainShaderShadow.waitForReadyCbk(waitForReasoureTask);
     }
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
-    if (terrainDescriptor->wireframeDebug()) {
-        shaderDescriptor._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
-        shaderName.append(".Wireframe");
+    ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
+    for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
+        shaderModule._variant = "Colour";
+        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
+        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
     }
 
-    ResourceDescriptor terrainShaderColour(shaderName + ".Colour-" + name);
-    shaderDescriptor._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
-    shaderDescriptor._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
-    terrainShaderColour.setPropertyDescriptor(shaderDescriptor);
+    ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name);
+    terrainShaderColour.setPropertyDescriptor(colourDescriptor);
     if (threadedLoading) {
         terrainShaderColour.waitForReadyCbk(waitForReasoureTask);
     }
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
 
-    ResourceDescriptor terrainShaderPrePass(shaderName + ".PrePass-" + name);
+    ShaderProgramDescriptor prePassDescriptor = shaderDescriptor;
+    for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
+        shaderModule._variant = "PrePass";
+        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
+        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
+        shaderModule._defines.push_back(std::make_pair("PRE_PASS", true));
+    }
+
+    ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name);
     ShaderProgramDescriptor prepassShaderDescriptor = shaderDescriptor;
-    prepassShaderDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
-    terrainShaderPrePass.setPropertyDescriptor(prepassShaderDescriptor);
+    terrainShaderPrePass.setPropertyDescriptor(prePassDescriptor);
     if (threadedLoading) {
         terrainShaderPrePass.waitForReadyCbk(waitForReasoureTask);
     }
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
-    ResourceDescriptor terrainShaderColourLQ(shaderName + ".Colour.LowQuality-" + name);
-    ShaderProgramDescriptor lowQualityShaderDescriptor = shaderDescriptor;
-    lowQualityShaderDescriptor._defines.push_back(std::make_pair("LOW_QUALITY", true));
-    terrainShaderColourLQ.setPropertyDescriptor(lowQualityShaderDescriptor);
+    ShaderProgramDescriptor lowQualityDescriptor = colourDescriptor;
+    for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
+        shaderModule._variant = "Colour.LowQuality";
+        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
+        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
+        shaderModule._defines.push_back(std::make_pair("LOW_QUALITY", true));
+    }
+
+    ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name);
+    terrainShaderColourLQ.setPropertyDescriptor(lowQualityDescriptor);
     if (threadedLoading) {
         terrainShaderColourLQ.waitForReadyCbk(waitForReasoureTask);
     }

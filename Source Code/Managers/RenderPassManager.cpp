@@ -43,8 +43,23 @@ namespace Divide {
         _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer"))
     {
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
-        ResourceDescriptor shaderDesc("OITComposition");
-        _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
+
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "OITComposition.glsl";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "OITComposition.glsl";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        ResourceDescriptor shaderResDesc("OITComposition");
+        shaderResDesc.setPropertyDescriptor(shaderDescriptor);
+        _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderResDesc);
+
         _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
         _postFXCommandBuffer = GFX::allocateCommandBuffer(true);
     }

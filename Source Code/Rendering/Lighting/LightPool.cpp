@@ -90,8 +90,21 @@ void LightPool::init() {
     
     _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
 
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "lightImpostorShader.glsl";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "lightImpostorShader.glsl";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
     lightImpostorShader.setThreadedLoading(false);
+    lightImpostorShader.setPropertyDescriptor(fragModule);
     _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader);
 
     SamplerDescriptor iconSampler = {};

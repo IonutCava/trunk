@@ -316,6 +316,7 @@ public:
                                         const stringImpl& name,
                                         const stringImpl& resourceName,
                                         const stringImpl& resourceLocation,
+                                        const ShaderProgramDescriptor& descriptor,
                                         bool asyncLoad) const;
     ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor) const;
 

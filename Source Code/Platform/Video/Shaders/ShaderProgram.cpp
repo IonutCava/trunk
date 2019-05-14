@@ -28,6 +28,7 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
                              const stringImpl& shaderName,
                              const stringImpl& shaderFileName,
                              const stringImpl& shaderFileLocation,
+                             const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, shaderFileName, shaderFileLocation),
       GraphicsResource(context, GraphicsResource::Type::SHADER_PROGRAM, getGUID()),
@@ -57,36 +58,6 @@ bool ShaderProgram::unload() noexcept {
     return unregisterShaderProgram(getDescriptorHash());
 }
 
-/// Add a define to the shader. The defined must not have been added previously
-void ShaderProgram::addShaderDefine(const stringImpl& define, bool appendPrefix) {
-    // Find the string in the list of program defines
-    auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, appendPrefix));
-    // If we can't find it, we add it
-    if (it == std::end(_definesList)) {
-        _definesList.push_back(std::make_pair(define, appendPrefix));
-        _shouldRecompile = getState() == ResourceState::RES_LOADED;
-    } else {
-        // If we did find it, we'll show an error message in debug builds about double add
-        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")), define.c_str(), resourceName().c_str());
-    }
-}
-
-/// Remove a define from the shader. The defined must have been added previously
-void ShaderProgram::removeShaderDefine(const stringImpl& define) {
-    // Find the string in the list of program defines
-    auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, true));
-        if (it == std::end(_definesList)) {
-            it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, false));
-        }
-    // If we find it, we remove it
-    if (it != std::end(_definesList)) {
-        _definesList.erase(it);
-        _shouldRecompile = getState() == ResourceState::RES_LOADED;
-    } else {
-        // If we did not find it, we'll show an error message in debug builds
-        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")), define.c_str(), resourceName().c_str());
-    }
-}
 
 /// Rebuild the specified shader stages from source code
 bool ShaderProgram::recompile() {
@@ -144,14 +115,31 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
 }
 
 void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
+
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "ImmediateModeEmulation.glsl";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "ImmediateModeEmulation.glsl";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);
+    immediateModeShader.setPropertyDescriptor(shaderDescriptor);
     s_imShader = CreateResource<ShaderProgram>(parentCache, immediateModeShader);
     assert(s_imShader != nullptr);
 
+    shaderDescriptor._modules.clear();
+    ResourceDescriptor shaderDesc("NULL");
+    shaderDesc.setPropertyDescriptor(shaderDesc);
     // Create a null shader (basically telling the API to not use any shaders when bound)
-    s_nullShader = CreateResource<ShaderProgram>(parentCache, ResourceDescriptor("NULL"));
+    s_nullShader = CreateResource<ShaderProgram>(parentCache, shaderDesc);
     // The null shader should never be nullptr!!!!
     assert(s_nullShader != nullptr);  // LoL -Ionut
 }
@@ -170,12 +158,13 @@ void ShaderProgram::onShutdown() {
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
-    SharedLock r_lock(s_programLock);
-    // Pass the update call to all registered programs
-    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        if (it.second.first->_shouldRecompile) {
-            it.second.first->recompile();
-            it.second.first->_shouldRecompile = false;
+    if (!Config::Build::IS_RELEASE_BUILD) {
+        SharedLock r_lock(s_programLock);
+        // Pass the update call to all registered programs
+        for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+            if (it.second.first->shouldRecompile()) {
+                it.second.first->recompile();
+            }
         }
     }
     return true;

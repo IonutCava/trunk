@@ -29,6 +29,7 @@ glShader::glShader(GFXDevice& context,
       GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID()),
       glObject(glObjectType::TYPE_SHADER, context),
      _valid(false),
+     _shouldRecompile(false),
      _skipIncludes(false),
      _loadedFromBinary(false),
      _deferredUpload(deferredUpload),
@@ -54,7 +55,7 @@ bool glShader::uploadToGPU() {
     if (!loadFromBinary()) {
         const char* src[] = { _sourceCode.front().c_str() };
 
-        if (1) {
+        if (true) {
             //UniqueLock lock(GLUtil::_driverLock);
             _shader = glCreateShaderProgramv(GLUtil::glShaderStageTable[to_base(_type)], 1, src);
         } else {
@@ -451,6 +452,37 @@ void glShader::Uniform(I32 binding, GFX::PushConstantType type, const vectorEAST
             break;
         default:
             DIVIDE_ASSERT(false, "glShaderProgram::Uniform error: Unhandled data type!");
+    }
+}
+
+/// Add a define to the shader. The defined must not have been added previously
+void glShader::addShaderDefine(const stringImpl& define, bool appendPrefix) {
+    // Find the string in the list of program defines
+    auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, appendPrefix));
+    // If we can't find it, we add it
+    if (it == std::end(_definesList)) {
+        _definesList.push_back(std::make_pair(define, appendPrefix));
+        _shouldRecompile = true;
+    } else {
+        // If we did find it, we'll show an error message in debug builds about double add
+        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")), define.c_str(), _name.c_str());
+    }
+}
+
+/// Remove a define from the shader. The defined must have been added previously
+void glShader::removeShaderDefine(const stringImpl& define) {
+    // Find the string in the list of program defines
+    auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, true));
+        if (it == std::end(_definesList)) {
+            it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, false));
+        }
+    // If we find it, we remove it
+    if (it != std::end(_definesList)) {
+        _definesList.erase(it);
+        _shouldRecompile = true;
+    } else {
+        // If we did not find it, we'll show an error message in debug builds
+        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")), define.c_str(), _name.c_str());
     }
 }
 

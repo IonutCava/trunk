@@ -31,11 +31,31 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
     _samplerCopy = _context.renderTargetPool().allocateRT(desc);
 
-    
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "FXAA.glsl";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "FXAA.glsl";
+
+    ShaderProgramDescriptor aaShaderDescriptor = {};
+    aaShaderDescriptor._modules.push_back(vertModule);
+    aaShaderDescriptor._modules.push_back(fragModule);
+
     ResourceDescriptor fxaa("FXAA");
+    fxaa.setPropertyDescriptor(aaShaderDescriptor);
     _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
 
+    vertModule._sourceFile = "SMAA.glsl";
+    fragModule._sourceFile = "SMAA.glsl";
+
+    aaShaderDescriptor = {};
+    aaShaderDescriptor._modules.push_back(vertModule);
+    aaShaderDescriptor._modules.push_back(fragModule);
+
     ResourceDescriptor smaa("SMAA");
+    smaa.setPropertyDescriptor(aaShaderDescriptor);
     _smaa = CreateResource<ShaderProgram>(cache, smaa);
 }
 

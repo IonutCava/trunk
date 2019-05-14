@@ -79,16 +79,34 @@ bool WaterPlane::load() {
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterDUDV);
     waterMat->setTexture(ShaderProgram::TextureUsage::NORMALMAP, waterNM);
 
-    ShaderProgramDescriptor shaderDescriptor;
-    shaderDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "water.glsl";
+    vertModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "water.glsl";
+    fragModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor waterColourShader("water");
     waterColourShader.setPropertyDescriptor(shaderDescriptor);
     waterColourShader.waitForReady(false);
     ShaderProgram_ptr waterColour = CreateResource<ShaderProgram>(_parentCache, waterColourShader);
 
-    ResourceDescriptor waterPrePassShader("water.PrePass");
-    shaderDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
+    vertModule._defines.push_back(std::make_pair("PRE_PASS", true));
+    fragModule._variant = "PrePass";
+    fragModule._defines.push_back(std::make_pair("PRE_PASS", true));
+
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor waterPrePassShader("waterPrePass");
     waterPrePassShader.setPropertyDescriptor(shaderDescriptor);
     waterPrePassShader.waitForReady(false);
     ShaderProgram_ptr waterPrePass = CreateResource<ShaderProgram>(_parentCache, waterPrePassShader);

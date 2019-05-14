@@ -139,23 +139,59 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
 
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
     ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, *this, _resCache));
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "toneMap.glsl";
 
-    ResourceDescriptor toneMap("toneMap");
-    toneMap.setThreadedLoading(false);
-    _toneMap = CreateResource<ShaderProgram>(_resCache, toneMap);
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "toneMap.glsl";
 
-    ResourceDescriptor toneMapAdaptive("toneMap.Adaptive");
-    toneMapAdaptive.setThreadedLoading(false);
+        ShaderProgramDescriptor mapDescriptor1 = {};
+        mapDescriptor1._modules.push_back(vertModule);
+        mapDescriptor1._modules.push_back(fragModule);
 
-    ShaderProgramDescriptor toneMapAdaptiveDescriptor;
-    toneMapAdaptiveDescriptor._defines.push_back(std::make_pair("USE_ADAPTIVE_LUMINANCE", true));
-    toneMapAdaptive.setPropertyDescriptor(toneMapAdaptiveDescriptor);
+        ResourceDescriptor toneMap("toneMap");
+        toneMap.setThreadedLoading(false);
+        toneMap.setPropertyDescriptor(mapDescriptor1);
 
-    _toneMapAdaptive = CreateResource<ShaderProgram>(_resCache, toneMapAdaptive);
+        _toneMap = CreateResource<ShaderProgram>(_resCache, toneMap);
+    
+        fragModule._defines.push_back(std::make_pair("USE_ADAPTIVE_LUMINANCE", true));
 
-    ResourceDescriptor luminanceCalc("luminanceCalc");
-    luminanceCalc.setThreadedLoading(false);
-    _luminanceCalc = CreateResource<ShaderProgram>(_resCache, luminanceCalc);
+        ShaderProgramDescriptor mapDescriptor2 = {};
+        mapDescriptor2._modules.push_back(vertModule);
+        mapDescriptor2._modules.push_back(fragModule);
+
+        ShaderProgramDescriptor toneMapAdaptiveDescriptor;
+        toneMapAdaptiveDescriptor._modules.push_back(vertModule);
+        toneMapAdaptiveDescriptor._modules.push_back(fragModule);
+
+        ResourceDescriptor toneMapAdaptive("toneMap.Adaptive");
+        toneMapAdaptive.setThreadedLoading(false);
+        toneMapAdaptive.setPropertyDescriptor(toneMapAdaptiveDescriptor);
+
+        _toneMapAdaptive = CreateResource<ShaderProgram>(_resCache, toneMapAdaptive);
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "luminanceCalc.glsl";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "luminanceCalc.glsl";
+
+        ShaderProgramDescriptor calcDescriptor = {};
+        calcDescriptor._modules.push_back(vertModule);
+        calcDescriptor._modules.push_back(fragModule);
+
+        ResourceDescriptor luminanceCalc("luminanceCalc");
+        luminanceCalc.setThreadedLoading(false);
+        luminanceCalc.setPropertyDescriptor(calcDescriptor);
+        _luminanceCalc = CreateResource<ShaderProgram>(_resCache, luminanceCalc);
+    }
 
     //_debugOperator = hdrBatch[0];
 }

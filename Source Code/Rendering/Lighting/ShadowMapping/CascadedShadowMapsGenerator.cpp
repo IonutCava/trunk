@@ -35,12 +35,31 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "EVCSM");
 
     g_shadowSettings = context.context().config().rendering.shadowMapping;
-    ResourceDescriptor blurDepthMapShader(Util::StringFormat("blur.GaussBlur_%d_invocations", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
-    blurDepthMapShader.setThreadedLoading(false);
 
-    ShaderProgramDescriptor shaderPropertyDescriptor;
-    shaderPropertyDescriptor._defines.push_back(std::make_pair(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), true));
-    blurDepthMapShader.setPropertyDescriptor(shaderPropertyDescriptor);
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "blur.glsl";
+    vertModule._variant = "GaussBlur";
+
+    ShaderModuleDescriptor geomModule = {};
+    geomModule._moduleType = ShaderType::GEOMETRY;
+    geomModule._sourceFile = "blur.glsl";
+    geomModule._variant = "GaussBlur";
+    geomModule._defines.push_back(std::make_pair(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), true));
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "blur.glsl";
+    fragModule._variant = "GaussBlur";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(geomModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor blurDepthMapShader(Util::StringFormat("GaussBlur_%d_invocations", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
+    blurDepthMapShader.setThreadedLoading(false);
+    blurDepthMapShader.setPropertyDescriptor(shaderDescriptor);
 
     _blurDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), blurDepthMapShader);
     _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);

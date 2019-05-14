@@ -113,14 +113,20 @@ Vegetation::Vegetation(GFXDevice& context,
         }
     }
 
-    ResourceDescriptor instanceCullShaderGrass("instanceCullVegetation.Grass");
+    ResourceDescriptor instanceCullShaderGrass("instanceCullVegetation_Grass");
     instanceCullShaderGrass.setThreadedLoading(true);
     assert(s_maxGrassInstancesPerChunk != 0u && "Vegetation error: call \"precomputeStaticData\" first!");
 
+    ShaderModuleDescriptor compModule = {};
+    compModule._moduleType = ShaderType::COMPUTE;
+    compModule._sourceFile = "instanceCullVegetation.glsl";
+    compModule._defines.push_back(std::make_pair(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true));
+    compModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstancesPerChunk).c_str(), true));
+    compModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstancesPerChunk).c_str(), true));
+
     ShaderProgramDescriptor shaderDescriptor = {};
-    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true));
-    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstancesPerChunk).c_str(), true));
-    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstancesPerChunk).c_str(), true));
+    shaderDescriptor._modules.push_back(compModule);
+
     instanceCullShaderGrass.setPropertyDescriptor(shaderDescriptor);
     instanceCullShaderGrass.setOnLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor pipeDesc;
@@ -129,12 +135,16 @@ Vegetation::Vegetation(GFXDevice& context,
     });
 
     _cullShaderGrass = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShaderGrass);
+
     _cullPushConstants.set("offset", GFX::PushConstantType::UINT, _terrainChunk.ID());
     _cullPushConstants.set("grassExtents", GFX::PushConstantType::VEC4, _grassExtents);
 
-    ResourceDescriptor instanceCullShaderTrees("instanceCullVegetation.Trees");
+    compModule._defines.push_back(std::make_pair("CULL_TREES", true));
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(compModule);
+
+    ResourceDescriptor instanceCullShaderTrees("instanceCullVegetation_Trees");
     instanceCullShaderTrees.setThreadedLoading(true);
-    shaderDescriptor._defines.push_back(std::make_pair("CULL_TREES", true));
     instanceCullShaderTrees.setPropertyDescriptor(shaderDescriptor);
     instanceCullShaderTrees.setOnLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor pipeDesc;

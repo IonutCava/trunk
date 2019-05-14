@@ -20,8 +20,17 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     : PlatformContextComponent(context),
       _resCache(cache)
 {
+    ShaderModuleDescriptor computeDescriptor = {};
+    computeDescriptor._moduleType = ShaderType::COMPUTE;
+    computeDescriptor._sourceFile = "lightCull.glsl";
+
+    ShaderProgramDescriptor cullDescritpor = {};
+    cullDescritpor._modules.push_back(computeDescriptor);
+
     ResourceDescriptor cullShaderDesc("lightCull");
     cullShaderDesc.setThreadedLoading(false);
+    cullShaderDesc.setPropertyDescriptor(cullDescritpor);
+
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
 
     vector<I32> initData(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE * g_numberOfTiles, -1);

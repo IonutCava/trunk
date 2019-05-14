@@ -105,21 +105,46 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
         desc._name = "SSAO_Blurred_Out";
         _ssaoOutputBlurred = _context.renderTargetPool().allocateRT(desc);
     }
-    ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
 
-    ShaderProgramDescriptor ssaoGenerateDescriptor;
-    ssaoGenerateDescriptor._defines.push_back(std::make_pair(Util::StringFormat("KERNEL_SIZE %d", kernelSize), true));
-    ssaoGenerate.setPropertyDescriptor(ssaoGenerateDescriptor);
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "SSAOPass.glsl";
+
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "SSAOPass.glsl";
+    fragModule._variant = "SSAOCalc";
+    fragModule._defines.push_back(std::make_pair(Util::StringFormat("KERNEL_SIZE %d", kernelSize), true));
+
+    ShaderProgramDescriptor ssaoShaderDescriptor = {};
+    ssaoShaderDescriptor._modules.push_back(vertModule);
+    ssaoShaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor ssaoGenerate("SSAOCalc");
+    ssaoGenerate.setPropertyDescriptor(ssaoShaderDescriptor);
     _ssaoGenerateShader = CreateResource<ShaderProgram>(cache, ssaoGenerate);
 
-    ResourceDescriptor ssaoBlur("SSAOPass.SSAOBlur");
-    ShaderProgramDescriptor ssaoBlurDescriptor;
-    ssaoBlurDescriptor._defines.push_back(std::make_pair(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize), true));
-    ssaoBlur.setPropertyDescriptor(ssaoBlurDescriptor);
+    fragModule._variant = "SSAOBlur";
+    fragModule._defines.resize(0);
+    fragModule._defines.push_back(std::make_pair(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize), true));
 
+    ssaoShaderDescriptor = {};
+    ssaoShaderDescriptor._modules.push_back(vertModule);
+    ssaoShaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor ssaoBlur("SSAOBlur");
+    ssaoBlur.setPropertyDescriptor(ssaoShaderDescriptor);
     _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
     
-    ResourceDescriptor ssaoApply("SSAOPass.SSAOApply");
+    fragModule._variant = "SSAOApply";
+    fragModule._defines.resize(0);
+
+    ssaoShaderDescriptor = {};
+    ssaoShaderDescriptor._modules.push_back(vertModule);
+    ssaoShaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor ssaoApply("SSAOApply");
+    ssaoApply.setPropertyDescriptor(ssaoShaderDescriptor);
     _ssaoApplyShader = CreateResource<ShaderProgram>(cache, ssaoApply);
 
     _ssaoGenerateConstants.set("sampleKernel", GFX::PushConstantType::VEC3, kernel);

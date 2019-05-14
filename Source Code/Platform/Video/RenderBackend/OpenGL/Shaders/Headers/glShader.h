@@ -100,6 +100,10 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
         return _valid;
     }
 
+    inline bool shouldRecompile() const {
+        return _shouldRecompile;
+    }
+
     /// Cache uniform/attribute locations for shader programs
     I32 binding(const char* name);
     void reuploadUniforms();
@@ -109,6 +113,10 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     bool uploadToGPU();
 
+    /// Add a define to the shader. The defined must not have been added previously
+    void addShaderDefine(const stringImpl& define, bool appendPrefix);
+    /// Remove a define from the shader. The defined must have been added previously
+    void removeShaderDefine(const stringImpl& define);
    private:
     template<typename T>
     struct UniformCache {
@@ -125,6 +133,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     bool _skipIncludes;
     bool _loadedFromBinary;
     bool _deferredUpload;
+    bool _shouldRecompile;
 
     ShaderType _type;
     GLenum _binaryFormat;
@@ -136,6 +145,9 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     ShaderVarMap _shaderVarLocation;
     UniformsByNameHash _uniformsByNameHash;
+
+    /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
+    vector<std::pair<stringImpl, bool>> _definesList;
 
    private:
     /// Shader cache

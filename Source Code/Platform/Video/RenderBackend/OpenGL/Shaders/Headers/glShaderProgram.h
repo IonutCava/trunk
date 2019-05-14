@@ -61,6 +61,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                              const stringImpl& name,
                              const stringImpl& resourceName,
                              const stringImpl& resourceLocation,
+                             const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad);
     ~glShaderProgram();
 
@@ -103,6 +104,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void validatePreBind();
     void validatePostBind();
 
+    bool shouldRecompile() const override;
     bool recompileInternal() override;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
@@ -133,6 +135,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     bool _validated;
     static std::array<U32, to_base(ShaderType::COUNT)> _lineOffset;
     std::array<glShader*, to_base(ShaderType::COUNT)> _shaderStage;
+    const ShaderProgramDescriptor _descriptor;
 
     static I64 s_shaderFileWatcherID;
 

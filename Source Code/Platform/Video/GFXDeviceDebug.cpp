@@ -33,8 +33,22 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
 
         // Lazy-load preview shader
         if (!_previewDepthMapShader) {
+            ShaderModuleDescriptor vertModule = {};
+            vertModule._moduleType = ShaderType::VERTEX;
+            vertModule._sourceFile = "fbPreview.glsl";
+
+            ShaderModuleDescriptor fragModule = {};
+            fragModule._moduleType = ShaderType::FRAGMENT;
+            fragModule._sourceFile = "fbPreview.glsl";
+            fragModule._variant = "LinearDepth";
+
+            ShaderProgramDescriptor shaderDescriptor = {};
+            shaderDescriptor._modules.push_back(vertModule);
+            shaderDescriptor._modules.push_back(fragModule);
+
             // The LinearDepth variant converts the depth values to linear values between the 2 scene z-planes
-            ResourceDescriptor fbPreview("fbPreview.LinearDepth");
+            ResourceDescriptor fbPreview("fbPreviewLinearDepth");
+            fbPreview.setPropertyDescriptor(shaderDescriptor);
             _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
             assert(_previewDepthMapShader != nullptr);
 

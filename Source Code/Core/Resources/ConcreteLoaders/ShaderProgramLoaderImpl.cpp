@@ -26,22 +26,18 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
         _descriptor.assetLocation(Paths::g_assetsLocation + Paths::g_shadersLocation);
     }
 
+    const std::shared_ptr<ShaderProgramDescriptor>& shaderDescriptor = _descriptor.getPropertyDescriptor<ShaderProgramDescriptor>();
+    assert(shaderDescriptor != nullptr);
+
     ShaderProgram_ptr ptr(_context.gfx().newShaderProgram(_loadingDescriptorHash,
                                                           _descriptor.resourceName(),
                                                           _descriptor.assetName(),
                                                           _descriptor.assetLocation(),
+                                                          *shaderDescriptor,
                                                           USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
                                                                                    : false),
                           DeleteResource(_cache));
 
-
-    const std::shared_ptr<ShaderProgramDescriptor>& shaderDescriptor = _descriptor.getPropertyDescriptor<ShaderProgramDescriptor>();
-    if (shaderDescriptor != nullptr) {
-        // get all of the preprocessor defines
-        for (auto it : shaderDescriptor->_defines) {
-            ptr->addShaderDefine(it.first, it.second);
-        }
-    }
 
     if (!load(ptr)) {
         ptr.reset();

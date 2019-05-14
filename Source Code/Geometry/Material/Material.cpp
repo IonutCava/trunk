@@ -413,13 +413,11 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     constexpr U32 slot1 = to_base(ShaderProgram::TextureUsage::UNIT1);
     constexpr U32 slotOpacity = to_base(ShaderProgram::TextureUsage::OPACITY);
 
-    DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT,
-                  "Material computeShader error: Invalid shading mode specified!");
+    DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT, "Material computeShader error: Invalid shading mode specified!");
 
-    ShaderProgramDescriptor shaderPropertyDescriptor;
 
-    shaderPropertyDescriptor._defines.insert(std::cbegin(shaderPropertyDescriptor._defines), std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines));
-
+    ShaderModuleDescriptor baseModule = {};
+    baseModule._defines.insert(std::cbegin(shaderPropertyDescriptor._defines), std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines));
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
@@ -428,123 +426,135 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         }
     }
 
-    stringImpl shader = _baseShaderName[renderStagePass.isDepthPass() ? 1 : 0];
+    const stringImpl shaderName = _baseShaderName[renderStagePass.isDepthPass() ? 1 : 0];
+    baseModule._sourceFile = shaderName + ".glsl";
 
     if (renderStagePass.isDepthPass()) {
         if (renderStagePass._stage == RenderStage::SHADOW) {
-            shader += ".Shadow";
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("SHADOW_PASS", true));
+            shaderName += ".Shadow";
+            baseModule._variant = "Shadow";
+            baseModule._defines.push_back(std::make_pair("SHADOW_PASS", true));
         } else {
-            shader += ".PrePass";
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("PRE_PASS", true));
+            shaderName += ".PrePass"
+            baseModule._variant = "PrePass";
+            baseModule._defines.push_back(std::make_pair("PRE_PASS", true));
         }
     }
 
     if (renderStagePass._passType == RenderPassType::OIT_PASS) {
-        shader += ".OIT";
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("OIT_PASS", true));
+        shaderName += ".OIT";
+        baseModule._defines.push_back(std::make_pair("OIT_PASS", true));
     }
 
     // Bump mapping?
     if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-        shader += ".NormalMap";  // Normal Mapping
+        baseModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+        shaderName += ".NormalMap";  // Normal Mapping
         if (_bumpMethod == BumpMethod::PARALLAX) {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
-            shader += ".ParallaxMap";
+            baseModule._defines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
+            shaderName += ".ParallaxMap";
         } else if (_bumpMethod == BumpMethod::RELIEF) {
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
-            shader += ".ReliefMap";
+            baseModule._defines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
+            shaderName += ".ReliefMap";
         }
     }
     if (!_textures[slot0]) {
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-        shader += ".NoTexture";
+        baseModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+        shaderName += ".NoTexture";
     }
 
     if (!renderStagePass.isDepthPass() && _textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
-        shader += ".SpecularMap";
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
+        shaderName += ".SpecularMap";
+        baseModule._defines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
     }
 
     updateTranslucency();
 
     if (_translucencySource != TranslucencySource::COUNT && renderStagePass._passType != RenderPassType::OIT_PASS) {
-        shader += ".AlphaDiscard";
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_ALPHA_DISCARD", true));
+        shaderName += ".AlphaDiscard";
+        baseModule._defines.push_back(std::make_pair("USE_ALPHA_DISCARD", true));
     }
 
     switch (_translucencySource) {
         case TranslucencySource::OPACITY_MAP: {
-            shader += ".OpacityMap";
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_OPACITY_MAP", true));
+            shaderName += ".OpacityMap";
+            baseModule._defines.push_back(std::make_pair("USE_OPACITY_MAP", true));
         } break;
         case TranslucencySource::ALBEDO: {
-            shader += ".AlbedoAlpha";
-            shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_ALBEDO_ALPHA", true));
+            shaderName += ".AlbedoAlpha";
+            baseModule._defines.push_back(std::make_pair("USE_ALBEDO_ALPHA", true));
         } break;
         default: break;
     };
 
     if (isDoubleSided()) {
-        shader += ".DoubleSided";
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
+        shaderName += ".DoubleSided";
+        baseModule._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
     }
 
     if (!receivesShadows() || !_context.context().config().rendering.shadowMapping.enabled) {
-        shader += ".NoShadows";
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
-    }
-
-    // Add the GPU skinning module to the vertex shader?
-    if (_hardwareSkinning) {
-        shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_GPU_SKINNING", true));
-        shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only property
+        shaderName += ".NoShadows";
+        baseModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }
 
     if (!renderStagePass.isDepthPass()) {
         switch (_shadingMode) {
             default:
             case ShadingMode::FLAT: {
-                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_FLAT", true));
-                shader += ".Flat";
+                baseModule._defines.push_back(std::make_pair("USE_SHADING_FLAT", true));
+                shaderName += ".Flat";
             } break;
             /*case ShadingMode::PHONG: {
-                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
-                shader += ".Phong";
+                baseModule._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
+                shaderName += ".Phong";
             } break;*/
             case ShadingMode::PHONG:
             case ShadingMode::BLINN_PHONG: {
-                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_BLINN_PHONG", true));
-                shader += ".BlinnPhong";
+                baseModule._defines.push_back(std::make_pair("USE_SHADING_BLINN_PHONG", true));
+                shaderName += ".BlinnPhong";
             } break;
             case ShadingMode::TOON: {
-                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_TOON", true));
-                shader += ".Toon";
+                baseModule._defines.push_back(std::make_pair("USE_SHADING_TOON", true));
+                shaderName += ".Toon";
             } break;
             case ShadingMode::OREN_NAYAR: {
-                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_OREN_NAYAR", true));
-                shader += ".OrenNayar";
+                baseModule._defines.push_back(std::make_pair("USE_SHADING_OREN_NAYAR", true));
+                shaderName += ".OrenNayar";
             } break;
             case ShadingMode::COOK_TORRANCE: {
-                shaderPropertyDescriptor._defines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
-                shader += ".CookTorrance";
+                baseModule._defines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
+                shaderName += ".CookTorrance";
             } break;
         }
     }
     
-    stringImpl shaderName = shader;
     if (!shaderPropertyDescriptor._defines.empty()) {
         shaderName.append("_" + getDefinesHash(shaderPropertyDescriptor._defines));
     }
 
-    ResourceDescriptor shaderDescriptor(shader);
-    shaderDescriptor.assetName(shaderName);
-    shaderPropertyDescriptor._defines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
-    shaderDescriptor.setPropertyDescriptor(shaderPropertyDescriptor);
-    shaderDescriptor.setThreadedLoading(true);
+    ShaderModuleDescriptor vertModule = baseModule;
+    vertModule._moduleType = ShaderType::VERTEX;
+    // Add the GPU skinning module to the vertex shader?
+    if (_hardwareSkinning) {
+        vertModule._defines.push_back(std::make_pair("USE_GPU_SKINNING", true));
+        vertModule._defines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
+        shaderName += ".Skinned";  //<Use "," instead of "." will add a Vertex only property
+    } else {
+        baseModule._defines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
+    }
 
-    setShaderProgramInternal(shaderDescriptor, renderStagePass, false);
+    ShaderModuleDescriptor fragModule = baseModule;
+    fragModule._moduleType == ShaderType::FRAGMENT;
+
+    ShaderPropertyDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor shaderRedDescriptor(shaderName);
+    shaderRedDescriptor.setPropertyDescriptor(shaderDescriptor);
+    shaderRedDescriptor.setThreadedLoading(true);
+
+    setShaderProgramInternal(shaderRedDescriptor, renderStagePass, false);
 
     return false;
 }
