@@ -45,22 +45,30 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
    public:
     typedef hashMap<U64, glShader*> ShaderMap;
 
+    // one per shader type!
+    struct LoadData {
+        ShaderType _type = ShaderType::COUNT;
+        stringImpl _name = "";
+        vector<stringImpl> atoms;
+        vectorEASTL<stringImpl> sourceCode;
+    };
+
+    typedef std::array<LoadData, to_base(ShaderType::COUNT)> ShaderLoadData;
+
    public:
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for
     glShader(GFXDevice& context,
              const stringImpl& name,
-             const ShaderType& type,
-             const bool deferredUpload,
-             const bool optimise = false);
+             const bool deferredUpload);
+
     ~glShader();
 
-    bool load(const stringImpl& source, U32 lineOffset);
+    bool load(const ShaderLoadData& data);
 
     /// Shader's API specific handle
     inline U32 getShaderID() const { return _shader; }
-    /// The pipeline stage this shader is used for
-    inline const ShaderType getType() const { return _type; }
+
     /// The shader's name is a period-separated list of strings used to define
     /// the main shader file and the properties to load
     inline const stringImpl& name() const { return _name; }
@@ -71,14 +79,11 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     static void removeShader(glShader* s);
     /// Return a new shader reference
     static glShader* getShader(const stringImpl& name);
+
     /// Add or refresh a shader from the cache
     static glShader* loadShader(GFXDevice& context,
                                 const stringImpl& name,
-                                const stringImpl& location,
-                                const stringImpl& sourceFileName,
-                                const ShaderType& type,
-                                const bool parseCode,
-                                U32 lineOffset,
+                                const ShaderLoadData& data,
                                 bool deferredUpload);
 
    private:
@@ -87,10 +92,6 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
    private:
     friend class glShaderProgram;
     void dumpBinary();
-
-    inline void skipIncludes(bool state) {
-        _skipIncludes = state;
-    }
 
     inline const vector<stringImpl>& usedAtoms() const{
         return _usedAtoms;
@@ -117,6 +118,9 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     void addShaderDefine(const stringImpl& define, bool appendPrefix);
     /// Remove a define from the shader. The defined must have been added previously
     void removeShaderDefine(const stringImpl& define);
+
+    inline UseProgramStageMask stageMask() const { return _stageMask;  }
+
    private:
     template<typename T>
     struct UniformCache {
@@ -130,18 +134,18 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
   private:
     bool _valid;
-    bool _skipIncludes;
     bool _loadedFromBinary;
     bool _deferredUpload;
     bool _shouldRecompile;
 
-    ShaderType _type;
     GLenum _binaryFormat;
     GLuint _shader;
 
+    UseProgramStageMask _stageMask;
+
     stringImpl _name;
-    vector<stringImpl> _sourceCode;
     vector<stringImpl> _usedAtoms;
+    std::array<vector<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
 
     ShaderVarMap _shaderVarLocation;
     UniformsByNameHash _uniformsByNameHash;

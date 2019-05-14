@@ -663,30 +663,58 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     vegMaterial->setDoubleSided(false);
 
-    ShaderProgramDescriptor shaderDescriptor;
-    shaderDescriptor._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-    shaderDescriptor._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
-    shaderDescriptor._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "grass.glsl";
+    vertModule._variant = "Colour";
 
-    ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
-    shaderOitDescriptor._defines.push_back(std::make_pair("OIT_PASS", true));
+    vertModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+    vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
 
-    ResourceDescriptor grassColourShader("grass.Colour");
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "grass.glsl";
+    fragModule._variant = "Colour";
+    fragModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+    fragModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
+    fragModule._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor grassColourShader("GrassColour");
     grassColourShader.setPropertyDescriptor(shaderDescriptor);
     grassColourShader.waitForReady(false);
     ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader);
 
-    ResourceDescriptor grassColourOITShader("grass.Colour.OIT");
+    ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
+    shaderOitDescriptor._modules.back()._defines.push_back(std::make_pair("OIT_PASS", true));
+    shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
+
+    ResourceDescriptor grassColourOITShader("grassColourOIT");
     grassColourOITShader.setPropertyDescriptor(shaderOitDescriptor);
     grassColourOITShader.waitForReady(false);
     ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader);
 
-    ResourceDescriptor grassPrePassShader("grass.PrePass");
+    vertModule._variant = "PrePass";
+    fragModule._variant = "PrePass";
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor grassPrePassShader("grassPrePass");
     grassPrePassShader.setPropertyDescriptor(shaderDescriptor);
     grassPrePassShader.waitForReady(false);
     ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader);
 
-    ResourceDescriptor grassShadowShader("grass.Shadow");
+    vertModule._variant = "Shadow";
+    fragModule._variant = "Shadow";
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor grassShadowShader("grassShadow");
     grassShadowShader.setPropertyDescriptor(shaderDescriptor);
     grassShadowShader.waitForReady(false);
     ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);

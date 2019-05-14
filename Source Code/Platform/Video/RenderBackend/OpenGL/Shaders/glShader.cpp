@@ -22,21 +22,18 @@ glShader::ShaderMap glShader::_shaderNameMap;
 
 glShader::glShader(GFXDevice& context,
                    const stringImpl& name,
-                   const ShaderType& type,
-                   const bool deferredUpload,
-                   const bool optimise)
+                   const bool deferredUpload)
     : TrackedObject(),
       GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID()),
-      glObject(glObjectType::TYPE_SHADER, context),
+     glObject(glObjectType::TYPE_SHADER, context),
+     _stageMask(UseProgramStageMask::GL_NONE_BIT),
      _valid(false),
      _shouldRecompile(false),
-     _skipIncludes(false),
      _loadedFromBinary(false),
      _deferredUpload(deferredUpload),
      _binaryFormat(GL_NONE),
      _shader(std::numeric_limits<U32>::max()),
-     _name(name),
-     _type(type)
+     _name(name)
 {
 }
 
@@ -126,23 +123,19 @@ bool glShader::uploadToGPU() {
     return _valid;
 }
 
-bool glShader::load(const stringImpl& source, U32 lineOffset) {
-    static const stringImpl textCacheLocation = Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText;
-
-    if (source.empty()) {
+bool glShader::load(const ShaderLoadData& data) {
+    if (data.empty() || data.front().sourceCode.empty()) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
         return false;
     }
 
-    _usedAtoms.resize(1);
     _shaderVarLocation.clear();
 
-    _sourceCode.push_back(_skipIncludes ? source
-                                        : glShaderProgram::preprocessIncludes(name(), source, 0, _usedAtoms, true));
-
-    Util::ReplaceStringInPlace(_sourceCode.front(), "//__LINE_OFFSET_", Util::StringFormat("#line %d", lineOffset));
-    if (!_skipIncludes) {
-        glShaderProgram::shaderFileWrite(textCacheLocation, name(), _sourceCode[0].c_str());
+    for (auto it : data) {
+        for (const stringImpl& source : it.sourceCode) {
+            _sourceCode[to_base(it._type)].push_back(source);
+        }
+        _usedAtoms.insert(std::cend(_usedAtoms), std::cbegin(it.atoms), std::cend(it.atoms));
     }
 
     if (!_deferredUpload) {
@@ -186,11 +179,7 @@ glShader* glShader::getShader(const stringImpl& name) {
 /// Load a shader by name, source code and stage
 glShader* glShader::loadShader(GFXDevice& context,
                                const stringImpl& name,
-                               const stringImpl& source,
-                               const stringImpl& sourceFileName,
-                               const ShaderType& type,
-                               const bool parseCode,
-                               U32 lineOffset,
+                               const ShaderLoadData& data,
                                bool deferredUpload) {
     // See if we have the shader already loaded
     glShader* shader = getShader(name);
@@ -199,14 +188,12 @@ glShader* glShader::loadShader(GFXDevice& context,
     // If we do, and don't need a recompile, just return it
     if (shader == nullptr) {
         // If we can't find it, we create a new one
-        shader = MemoryManager_NEW glShader(context, name, type, deferredUpload, false);
-        shader->_usedAtoms.push_back(sourceFileName);
+        shader = MemoryManager_NEW glShader(context, name, deferredUpload);
         newShader = true;
     }
 
-    shader->skipIncludes(!parseCode);
     // At this stage, we have a valid Shader object, so load the source code
-    if (!shader->load(source, lineOffset)) {
+    if (!shader->load(data)) {
         // If loading the source code failed, delete it
         if (newShader) {
             MemoryManager::DELETE(shader);

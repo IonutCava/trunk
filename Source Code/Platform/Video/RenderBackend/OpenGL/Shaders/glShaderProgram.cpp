@@ -127,7 +127,7 @@ void glShaderProgram::validatePreBind() {
                 if (shader->isValid()) {
                     glUseProgramStages(
                         _handle,
-                        GLUtil::glProgramStageMask[to_U32(shader->getType())],
+                        shader->stageMask(),
                         shader->_shader);
                 }
             }
@@ -235,30 +235,32 @@ glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
     }
 
     // Get all of the preprocessor defines and add them to the general shader header for this program
-    for (auto define : _definesList) {
+    /*for (auto define : _definesList) {
         // Placeholders are ignored
         if (define.first.compare("DEFINE_PLACEHOLDER") != 0) {
             // We manually add define dressing if needed
             loadInfo._header.append((define.second ? "#define " : "") + define.first + "\n");
         }
-    }
+    }*/
 
     return loadInfo;
 }
 
-void glShaderProgram::loadSourceCode(ShaderType stage,
-                                     const stringImpl& stageName,
-                                     const stringImpl& header,
-                                     bool forceReParse,
-                                     std::pair<bool, stringImpl>& sourceCodeOut) {
+vector<stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
+                                                   const stringImpl& stageName,
+                                                   const stringImpl& header,
+                                                   bool forceReParse,
+                                                   std::pair<bool, stringImpl>& sourceCodeOut) {
+
+    vector<stringImpl> atoms = {};
 
     sourceCodeOut.first = false;
     sourceCodeOut.second.resize(0);
 
     if (s_useShaderTextCache && !forceReParse) {
-        glShaderProgram::shaderFileRead(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
-                                        stageName,
-                                        sourceCodeOut.second);
+        shaderFileRead(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                       stageName,
+                       sourceCodeOut.second);
     }
 
     if (sourceCodeOut.second.empty()) {
@@ -272,7 +274,14 @@ void glShaderProgram::loadSourceCode(ShaderType stage,
             // And replace in place with our program's headers created earlier
             Util::ReplaceStringInPlace(sourceCodeOut.second, "//__CUSTOM_DEFINES__", header);
         }
+        sourceCodeOut.second = preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, true);
+
+        shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                        stageName,
+                        sourceCodeOut.second.c_str());
     }
+
+    return atoms;
 }
 
 /// Creation of a new shader piepline. Pass in a shader token and use glsw to load the corresponding effects
@@ -305,22 +314,65 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
     // Use the specified shader path
     glswSetPath(info._resourcePath.c_str(), ".glsl");
 
-    std::pair<bool, stringImpl> sourceCode;
+    glShader::ShaderLoadData loadData;
+    for (const ShaderModuleDescriptor& shaderDescriptor : _descriptor._modules) {
+        const ShaderType type = shaderDescriptor._moduleType;
+        const U8 shaderIdx = to_U8(type);
+        glShader::LoadData& stageData = loadData[shaderIdx];
+        stageData._type = type;
+
+        if (!_shaderStage[shaderIdx] || reparseShaderSource) {
+            stringImpl name = "";
+            name.append(shaderDescriptor._sourceFile.substr(0, shaderDescriptor._sourceFile.find_first_of(".,")).c_str());
+            name.append("." + GLUtil::glShaderStageNameTable[shaderIdx]);
+            if (!shaderDescriptor._variant.empty()) {
+                name.append("." + shaderDescriptor._variant);
+            }
+
+            stringImpl header = "";
+            for (auto define : shaderDescriptor._defines) {
+                // Placeholders are ignored
+                if (define.first.compare("DEFINE_PLACEHOLDER") != 0) {
+                    // We manually add define dressing if needed
+                    header.append((define.second ? "#define " : "") + define.first + "\n");
+                }
+            }
+
+            std::pair<bool, stringImpl> sourceCode;
+            vector<stringImpl> atomsTemp = loadSourceCode(type, name, header, reparseShaderSource, sourceCode);
+            Util::ReplaceStringInPlace(sourceCode.second, "//__LINE_OFFSET_", Util::StringFormat("#line %d", _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()) - 1));
+
+            stageData.atoms.insert(std::cend(stageData.atoms), std::cbegin(atomsTemp), std::cend(atomsTemp));
+            stageData.atoms.push_back(shaderDescriptor._sourceFile);
+
+            if (!sourceCode.second.empty()) {
+
+                stringImpl& shaderName = stageData._name;
+                if (!shaderName.empty()) {
+                    shaderName.append("__");
+                }
+                shaderName.append(name);
+
+                stageData.sourceCode.push_back(sourceCode.second);
+            }
+        }
+    }
+
+    _shaderStage.clear();
+    for (const glShader::LoadData& data : loadData) {
+        _shaderStage.push_back(glShader::getShader(data._name));
+        glShader*& shader = _shaderStage.back();
+        if (!shader || reparseShaderSource) {
+            // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
+            shader = glShader::loadShader(_context,
+                                          data,
+                                          GFXDevice::getGPUVendor() == GPUVendor::NVIDIA);
+        }
+    }
+
+    /*std::pair<bool, stringImpl> sourceCode;
     // For every stage
     for (U32 i = 0; i < to_base(ShaderType::COUNT); ++i) {
-        // Brute force conversion to an enum
-        ShaderType type = static_cast<ShaderType>(i);
-        stringImpl shaderCompileName(info._programName +
-                                     "." +
-                                     GLUtil::glShaderStageNameTable[i] +
-                                     info._programProperties);
-        
-        if (!info._programNameSuffix.empty()) {
-            shaderCompileName.append("." + info._programNameSuffix);
-        }
-
-        glShader*& shader = _shaderStage[i];
-
         // We ask the shader manager to see if it was previously loaded elsewhere
         shader = glShader::getShader(shaderCompileName);
         // If this is the first time this shader is loaded ...
@@ -338,7 +390,7 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
                                               _lineOffset[i] + to_U32(_definesList.size()) - 1,
                                               GFXDevice::getGPUVendor() == GPUVendor::NVIDIA);
             }
-        } else {
+        } else if (!reparseShaderSource) {
             shader->AddRef();
             Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")), shader->name().c_str(), shader->GetRef());
         }
@@ -349,7 +401,7 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
             Console::printfn(Locale::get(_ID("INFO_GLSL_LOAD")), shaderCompileName.c_str());
         }
     }
-
+    */
     return ret;
 }
 

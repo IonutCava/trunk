@@ -261,12 +261,12 @@ inline const stringImpl& Material::getBaseShaderName(bool depthPass) const {
 }
 
 inline void Material::addGlobalShaderDefine(const stringImpl& define, bool addPrefix) {
-    if (std::find(std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines), std::make_pair(define, addPrefix)) == std::cend(_extraShaderDefines)) {
+    if (eastl::find(eastl::cbegin(_extraShaderDefines), eastl::cend(_extraShaderDefines), std::make_pair(define, addPrefix)) == eastl::cend(_extraShaderDefines)) {
         _extraShaderDefines.emplace_back(define, addPrefix);
     }
 }
 
-inline const vector<std::pair<stringImpl, bool>>& Material::extraShaderDefines() const {
+inline const vectorEASTL<std::pair<stringImpl, bool>>& Material::extraShaderDefines() const {
     return _extraShaderDefines;
 }
 

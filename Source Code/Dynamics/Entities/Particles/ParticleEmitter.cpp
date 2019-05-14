@@ -137,7 +137,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 
     fragModule._variant = "Shadow";
 
-    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
 

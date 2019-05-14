@@ -239,7 +239,7 @@ class Material : public CachedResource {
     const stringImpl& getBaseShaderName(bool depthPass) const;
 
     void addGlobalShaderDefine(const stringImpl& define, bool addPrefix);
-    const vector<std::pair<stringImpl, bool>>& extraShaderDefines() const;
+    const vectorEASTL<std::pair<stringImpl, bool>>& extraShaderDefines() const;
 
    private:
     void updateTranslucency();
@@ -299,7 +299,7 @@ class Material : public CachedResource {
     TextureOperation _operation;
     BumpMethod _bumpMethod;
     ColourData _colourData;
-    vector<std::pair<stringImpl, bool>> _extraShaderDefines;
+    vectorEASTL<std::pair<stringImpl, bool>> _extraShaderDefines;
 
     static SharedMutex s_shaderDBLock;
     static hashMap<size_t, ShaderProgram_ptr> s_shaderDB;

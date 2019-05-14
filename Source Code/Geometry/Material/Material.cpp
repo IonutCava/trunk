@@ -24,7 +24,7 @@ namespace {
     const U16 g_numMipsToKeepFromAlphaTextures = 1;
     const char* g_PassThroughMaterialShaderName = "passThrough";
 
-    stringImpl getDefinesHash(const vector<std::pair<stringImpl, bool>>& defines) {
+    stringImpl getDefinesHash(const vectorEASTL<std::pair<stringImpl, bool>>& defines) {
         size_t hash = 31;
         for (auto entry : defines) {
             Util::Hash_combine(hash, _ID(entry.first.c_str()));
@@ -417,7 +417,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
 
     ShaderModuleDescriptor baseModule = {};
-    baseModule._defines.insert(std::cbegin(shaderPropertyDescriptor._defines), std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines));
+    baseModule._defines.insert(std::cend(baseModule._defines), std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines));
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
@@ -426,7 +426,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         }
     }
 
-    const stringImpl shaderName = _baseShaderName[renderStagePass.isDepthPass() ? 1 : 0];
+    stringImpl shaderName = _baseShaderName[renderStagePass.isDepthPass() ? 1 : 0];
     baseModule._sourceFile = shaderName + ".glsl";
 
     if (renderStagePass.isDepthPass()) {
@@ -435,7 +435,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             baseModule._variant = "Shadow";
             baseModule._defines.push_back(std::make_pair("SHADOW_PASS", true));
         } else {
-            shaderName += ".PrePass"
+            shaderName += ".PrePass";
             baseModule._variant = "PrePass";
             baseModule._defines.push_back(std::make_pair("PRE_PASS", true));
         }
@@ -528,8 +528,8 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         }
     }
     
-    if (!shaderPropertyDescriptor._defines.empty()) {
-        shaderName.append("_" + getDefinesHash(shaderPropertyDescriptor._defines));
+    if (!baseModule._defines.empty()) {
+        shaderName.append("_" + getDefinesHash(baseModule._defines));
     }
 
     ShaderModuleDescriptor vertModule = baseModule;
@@ -544,9 +544,9 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     ShaderModuleDescriptor fragModule = baseModule;
-    fragModule._moduleType == ShaderType::FRAGMENT;
+    fragModule._moduleType = ShaderType::FRAGMENT;
 
-    ShaderPropertyDescriptor shaderDescriptor = {};
+    ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
 

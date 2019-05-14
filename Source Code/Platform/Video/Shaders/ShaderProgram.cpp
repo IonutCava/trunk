@@ -137,7 +137,7 @@ void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
 
     shaderDescriptor._modules.clear();
     ResourceDescriptor shaderDesc("NULL");
-    shaderDesc.setPropertyDescriptor(shaderDesc);
+    shaderDesc.setPropertyDescriptor(shaderDescriptor);
     // Create a null shader (basically telling the API to not use any shaders when bound)
     s_nullShader = CreateResource<ShaderProgram>(parentCache, shaderDesc);
     // The null shader should never be nullptr!!!!

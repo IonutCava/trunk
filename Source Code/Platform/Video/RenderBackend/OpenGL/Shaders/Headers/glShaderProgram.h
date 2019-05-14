@@ -49,7 +49,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
    public:
        struct glShaderProgramLoadInfo {
            stringImpl _resourcePath;
-           stringImpl _header;
            stringImpl _programName;
            stringImpl _programNameSuffix;
            stringImpl _programProperties;
@@ -95,11 +94,11 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
    protected:
     glShaderProgramLoadInfo buildLoadInfo();
-    void loadSourceCode(ShaderType stage,
-                        const stringImpl& stageName,
-                        const stringImpl& header,
-                        bool forceReParse,
-                        std::pair<bool, stringImpl>& sourceCodeOut);
+    vector<stringImpl> loadSourceCode(ShaderType stage,
+                                      const stringImpl& stageName,
+                                      const stringImpl& header,
+                                      bool forceReParse,
+                                      std::pair<bool, stringImpl>& sourceCodeOut);
 
     void validatePreBind();
     void validatePostBind();
@@ -133,8 +132,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     GLuint _handle;
     bool _validationQueued;
     bool _validated;
+
+    vectorEASTL<glShader*> _shaderStage;
     static std::array<U32, to_base(ShaderType::COUNT)> _lineOffset;
-    std::array<glShader*, to_base(ShaderType::COUNT)> _shaderStage;
     const ShaderProgramDescriptor _descriptor;
 
     static I64 s_shaderFileWatcherID;

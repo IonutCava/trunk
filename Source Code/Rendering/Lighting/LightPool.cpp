@@ -104,7 +104,7 @@ void LightPool::init() {
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
     lightImpostorShader.setThreadedLoading(false);
-    lightImpostorShader.setPropertyDescriptor(fragModule);
+    lightImpostorShader.setPropertyDescriptor(shaderDescriptor);
     _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader);
 
     SamplerDescriptor iconSampler = {};
