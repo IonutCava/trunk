@@ -5,9 +5,15 @@
 out gl_PerVertex
 {
   invariant vec4 gl_Position;
+#if defined(USE_POINT_SIZE)
   float gl_PointSize;
+#endif
+#if defined(USE_CUSTOM_CLIP_PLANES)
   float gl_ClipDistance[MAX_CLIP_PLANES];
+#endif
+#if defined(USE_CULL_DISTANCE)
   float gl_CullDistance[MAX_CULL_DISTANCES];
+#endif
 }
 #if defined(TESS_CTRL_SHADER)
 gl_out[];
@@ -19,9 +25,15 @@ gl_out[];
     in gl_PerVertex
     {
       vec4  gl_Position;
+#if defined(USE_POINT_SIZE)
       float gl_PointSize;
+#endif
+#if defined(USE_CUSTOM_CLIP_PLANES)
       float gl_ClipDistance[MAX_CLIP_PLANES];
+#endif
+#if defined(USE_CULL_DISTANCE)
       float gl_CullDistance[MAX_CULL_DISTANCES];
+#endif
     }
     #if defined(GEOM_SHADER)
     gl_in[];
@@ -102,13 +114,15 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
 void setClipPlanes(in vec4 worldSpaceVertex) {
+#if defined(USE_CUSTOM_CLIP_PLANES)
     for (int i = 0; i < MAX_CLIP_PLANES; ++i) {
-#if defined(TESS_CTRL_SHADER)
+#   if defined(TESS_CTRL_SHADER)
         gl_out[gl_InvocationID].gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
-#else
+#   else
         gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
-#endif
+#   endif
     }
+#endif //USE_CUSTOM_CLIP_PLANES
 }
 #endif
 

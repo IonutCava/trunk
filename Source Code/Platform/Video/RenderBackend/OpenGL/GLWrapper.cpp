@@ -405,13 +405,13 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + 
-        to_stringImpl(to_base(Frustum::FrustPlane::COUNT)),
+        to_stringImpl(1/*to_base(Frustum::FrustPlane::COUNT)*/),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CULL_DISTANCES " + 
-        to_stringImpl(maxClipCull - to_base(Frustum::FrustPlane::COUNT)),
+         to_stringImpl(1/*maxClipCull - to_base(Frustum::FrustPlane::COUNT)*/),
         lineOffsets);
 
     appendToShaderHeader(

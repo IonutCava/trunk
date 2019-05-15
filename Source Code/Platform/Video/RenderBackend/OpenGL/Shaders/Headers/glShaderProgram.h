@@ -47,14 +47,6 @@ namespace Attorney {
 class glShaderProgram final : public ShaderProgram, public glObject {
     friend class Attorney::GLAPIShaderProgram;
    public:
-       struct glShaderProgramLoadInfo {
-           stringImpl _resourcePath;
-           stringImpl _programName;
-           stringImpl _programNameSuffix;
-           stringImpl _programProperties;
-       };
-
-   public:
     explicit glShaderProgram(GFXDevice& context,
                              size_t descriptorHash,
                              const stringImpl& name,
@@ -93,7 +85,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static stringImpl preprocessIncludes(const stringImpl& name, const stringImpl& source, GLint level, vector<stringImpl>& foundAtoms, bool lock);
 
    protected:
-    glShaderProgramLoadInfo buildLoadInfo();
+
     vector<stringImpl> loadSourceCode(ShaderType stage,
                                       const stringImpl& stageName,
                                       const stringImpl& extension,
@@ -113,9 +105,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
     void threadedLoad(bool skipRegister);
-
-    /// Retrieve the program's validation log if we need it
-    stringImpl getLog() const;
 
     /// Returns true if at least one shader linked succesfully
     bool reloadShaders(bool reparseShaderSource);

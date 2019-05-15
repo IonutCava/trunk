@@ -26,8 +26,11 @@ void main()
     float scale = data.positionAndScale.w;
 
     if (LoD > 2.0f) {
-        //scale = 0.0f;
+#if defined(USE_CULL_DISTANCE)
         gl_CullDistance[0] = -0.01f;
+#else
+        scale = 0.0f;
+#endif
     }
 
     if (dvd_Vertex.y > 0.75) {

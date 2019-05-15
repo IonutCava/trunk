@@ -65,14 +65,14 @@ glShader::glShader(GFXDevice& context,
       _loadedFromBinary(false),
       _deferredUpload(deferredUpload),
       _binaryFormat(GL_NONE),
-      _shader(GLUtil::_invalidObjectID),
+      _programHandle(GLUtil::_invalidObjectID),
       _name(name)
 {
 }
 
 glShader::~glShader() {
     Console::d_printfn(Locale::get(_ID("SHADER_DELETE")), name().c_str());
-    GL_API::deleteShaderPrograms(1, &_shader);
+    GL_API::deleteShaderPrograms(1, &_programHandle);
 }
 
 bool glShader::embedsType(ShaderType type) const {
@@ -81,43 +81,44 @@ bool glShader::embedsType(ShaderType type) const {
 
 bool glShader::uploadToGPU() {
     // prevent double load
-    if (_sourceCode.empty()) {
+    if (_valid) {
         return false;
     }
 
     Console::d_printfn(Locale::get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
     if (!loadFromBinary()) {
+        vectorEASTL<char*> cstrings;
         if (_stageCount == 1) {
             const U8 shaderIdx = to_base(getShaderType(_stageMask));
-            const vector<stringImpl>& src = _sourceCode[shaderIdx];
+            const vectorEASTL<stringImpl>& src = _sourceCode[shaderIdx];
 
-            vector<char*> cstrings;
+            cstrings.resize(0);
             cstrings.reserve(src.size());
             for (const stringImpl& it : src) {
                 cstrings.push_back(const_cast<char*>(it.c_str()));
             }
 
-            _shader = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], (GLsizei)cstrings.size(), cstrings.data());
-            _valid = _shader != 0 && _shader != GLUtil::_invalidObjectID;
+            _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], (GLsizei)cstrings.size(), cstrings.data());
+            _valid = _programHandle != 0 && _programHandle != GLUtil::_invalidObjectID;
 
         } else {
-            _shader = glCreateProgram();
-            if (_shader == 0 || _shader == GLUtil::_invalidObjectID) {
+            _programHandle = glCreateProgram();
+            if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
                 _valid = false;
                 return false;
             }
 
-            vector<GLuint> shaders;
+            vectorEASTL<GLuint> shaders;
             for (U8 i = 0; i < to_base(ShaderType::COUNT); ++i) {
                 const ShaderType type = static_cast<ShaderType>(i);
 
-                const vector<stringImpl>& src = _sourceCode[i];
+                const vectorEASTL<stringImpl>& src = _sourceCode[i];
                 if (src.empty()) {
                     continue;
                 }
 
-                vector<char*> cstrings;
+                cstrings.resize(0);
                 cstrings.reserve(src.size());
                 for (const stringImpl& it : src) {
                     cstrings.push_back(const_cast<char*>(it.c_str()));
@@ -154,30 +155,32 @@ bool glShader::uploadToGPU() {
                 }
             }
 
-            glProgramParameteri(_shader, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
-            glProgramParameteri(_shader, GL_PROGRAM_SEPARABLE, GL_TRUE);
             for (GLuint shader : shaders) {
-                glAttachShader(_shader, shader);
+                glAttachShader(_programHandle, shader);
             }
-            glLinkProgram(_shader);
+
+            glProgramParameteri(_programHandle, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+            glProgramParameteri(_programHandle, GL_PROGRAM_SEPARABLE, GL_TRUE);
+            glLinkProgram(_programHandle);
 
             for (GLuint shader : shaders) {
-                glDetachShader(_shader, shader);
+                glDetachShader(_programHandle, shader);
                 glDeleteShader(shader);
             }
+            shaders.clear();
 
             // And check the result
-            GLboolean linkStatus;
-            glGetProgramiv(_shader, GL_LINK_STATUS, &linkStatus);
+            GLboolean linkStatus = GL_FALSE;
+            glGetProgramiv(_programHandle, GL_LINK_STATUS, &linkStatus);
 
             stringImpl validationBuffer = "[OK]";
             // If linking failed, show an error, else print the result in debug builds.
             if (linkStatus == GL_FALSE) {
                 GLint logSize = 0;
-                glGetProgramiv(_shader, GL_INFO_LOG_LENGTH, &logSize);
+                glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logSize);
                 validationBuffer.resize(logSize);
 
-                glGetProgramInfoLog(_shader, logSize, NULL, &validationBuffer[0]);
+                glGetProgramInfoLog(_programHandle, logSize, NULL, &validationBuffer[0]);
                 if (validationBuffer.size() > g_validationBufferMaxSize) {
                     // On some systems, the program's disassembly is printed, and that can get quite large
                     validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
@@ -188,23 +191,33 @@ bool glShader::uploadToGPU() {
                 Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), _name.c_str(), validationBuffer.c_str(), getGUID());
             } else {
                 if (Config::ENABLE_GPU_VALIDATION) {
-                    Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), validationBuffer.c_str(), getGUID(), _shader);
-                    glObjectLabel(GL_PROGRAM, _shader, -1, _name.c_str());
+                    Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), validationBuffer.c_str(), getGUID(), _programHandle);
+                    glObjectLabel(GL_PROGRAM, _programHandle, -1, _name.c_str());
                 }
 
                 _valid = true;
             }
         }
     }
+    _sourceCode.fill({});
 
     return _valid;
 }
 
 bool glShader::load(const ShaderLoadData& data) {
     bool hasSourceCode = false;
-    _shaderVarLocation.clear();
 
-    for (auto it : data) {
+    // Reset all state first
+    {
+        _valid = false;
+        _stageCount = 0;
+        _stageMask = UseProgramStageMask::GL_NONE_BIT;
+        _sourceCode.fill({});
+        _usedAtoms.clear();
+        _shaderVarLocation.clear();
+    }
+
+    for (const LoadData& it : data) {
         if (it._type != ShaderType::COUNT) {
             _stageMask |= getStageMask(it._type);
             _stageCount++;
@@ -282,9 +295,7 @@ glShader* glShader::loadShader(GFXDevice& context,
     // At this stage, we have a valid Shader object, so load the source code
     if (!shader->load(data)) {
         // If loading the source code failed, delete it
-        if (newShader) {
-            MemoryManager::DELETE(shader);
-        }
+        MemoryManager::SAFE_DELETE(shader);
     } else {
         if (newShader) {
             U64 nameHash = _ID(name.c_str());
@@ -311,11 +322,11 @@ bool glShader::loadFromBinary() {
                 data.resize(0);
                 if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, glShaderProgram::decorateFileName(_name) + ".bin", data, FileType::BINARY) && !data.empty()) {
                     // Load binary code on the GPU
-                    _shader = glCreateProgram();
-                    glProgramBinary(_shader, _binaryFormat, (bufferPtr)data.data(), (GLint)data.size());
+                    _programHandle = glCreateProgram();
+                    glProgramBinary(_programHandle, _binaryFormat, (bufferPtr)data.data(), (GLint)data.size());
                     // Check if the program linked successfully on load
                     GLboolean success = 0;
-                    glGetProgramiv(_shader, GL_LINK_STATUS, &success);
+                    glGetProgramiv(_programHandle, GL_LINK_STATUS, &success);
                     // If it loaded properly set all appropriate flags (this also prevents low level access to the program's shaders)
                     if (success == GL_TRUE) {
                         _loadedFromBinary = true;
@@ -336,13 +347,13 @@ void glShader::dumpBinary() {
 
     // Get the size of the binary code
     GLint binaryLength = 0;
-    glGetProgramiv(_shader, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
+    glGetProgramiv(_programHandle, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
     // allocate a big enough buffer to hold it
     char* binary = MemoryManager_NEW char[binaryLength];
     DIVIDE_ASSERT(binary != NULL, "glShader error: could not allocate memory for the program binary!");
 
     // and fill the buffer with the binary code
-    glGetProgramBinary(_shader, binaryLength, NULL, &_binaryFormat, binary);
+    glGetProgramBinary(_programHandle, binaryLength, NULL, &_binaryFormat, binary);
     if (_binaryFormat != GL_NONE) {
         // dump the buffer to file
         if (writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
@@ -370,7 +381,7 @@ void glShader::dumpBinary() {
 /// If we didn't, ask the GPU to give us the variables address and save it for later use
 I32 glShader::binding(const char* name) {
     // If the shader can't be used for rendering, just return an invalid address
-    if (_shader == 0 || _shader == GLUtil::_invalidObjectID || !isValid()) {
+    if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID || !isValid()) {
         return -1;
     }
 
@@ -382,7 +393,7 @@ I32 glShader::binding(const char* name) {
     }
 
     // Cache miss. Query OpenGL for the location
-    GLint location = glGetUniformLocation(_shader, name);
+    GLint location = glGetUniformLocation(_programHandle, name);
 
     // Save it for later reference
     hashAlg::insert(_shaderVarLocation, nameHash, location);
@@ -400,7 +411,7 @@ I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant) {
 
     I32 bindingLoc = binding(constant._binding.c_str());
 
-    if (bindingLoc == -1 || _shader == 0 || _shader == GLUtil::_invalidObjectID) {
+    if (bindingLoc == -1 || _programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
         return -1;
     }
 
@@ -437,91 +448,91 @@ void glShader::Uniform(I32 binding, GFX::PushConstantType type, const vectorEAST
     GLsizei byteCount = (GLsizei)values.size();
     switch (type) {
         case GFX::PushConstantType::BOOL:
-            glProgramUniform1iv(_shader, binding, byteCount / (1 * sizeof(GLbyte)), (GLint*)castData<GLbyte, 1, char>(values));
+            glProgramUniform1iv(_programHandle, binding, byteCount / (1 * sizeof(GLbyte)), (GLint*)castData<GLbyte, 1, char>(values));
             break;
         case GFX::PushConstantType::INT:
-            glProgramUniform1iv(_shader, binding, byteCount / (1 * sizeof(GLint)), castData<GLint, 1, I32>(values));
+            glProgramUniform1iv(_programHandle, binding, byteCount / (1 * sizeof(GLint)), castData<GLint, 1, I32>(values));
             break;
         case GFX::PushConstantType::UINT:
-            glProgramUniform1uiv(_shader, binding, byteCount / (1 * sizeof(GLuint)), castData<GLuint, 1, U32>(values));
+            glProgramUniform1uiv(_programHandle, binding, byteCount / (1 * sizeof(GLuint)), castData<GLuint, 1, U32>(values));
             break;
         case GFX::PushConstantType::DOUBLE:
-            glProgramUniform1dv(_shader, binding, byteCount / (1 * sizeof(GLdouble)), castData<GLdouble, 1, D64>(values));
+            glProgramUniform1dv(_programHandle, binding, byteCount / (1 * sizeof(GLdouble)), castData<GLdouble, 1, D64>(values));
             break;
         case GFX::PushConstantType::FLOAT:
-            glProgramUniform1fv(_shader, binding, byteCount / (1 * sizeof(GLfloat)), castData<GLfloat, 1, F32>(values));
+            glProgramUniform1fv(_programHandle, binding, byteCount / (1 * sizeof(GLfloat)), castData<GLfloat, 1, F32>(values));
             break;
         case GFX::PushConstantType::IVEC2:
-            glProgramUniform2iv(_shader, binding, byteCount / (2 * sizeof(GLint)), castData<GLint, 2, vec2<I32>>(values));
+            glProgramUniform2iv(_programHandle, binding, byteCount / (2 * sizeof(GLint)), castData<GLint, 2, vec2<I32>>(values));
             break;
         case GFX::PushConstantType::IVEC3:
-            glProgramUniform3iv(_shader, binding, byteCount / (3 * sizeof(GLint)), castData<GLint, 3, vec3<I32>>(values));
+            glProgramUniform3iv(_programHandle, binding, byteCount / (3 * sizeof(GLint)), castData<GLint, 3, vec3<I32>>(values));
             break;
         case GFX::PushConstantType::IVEC4:
-            glProgramUniform4iv(_shader, binding, byteCount / (4 * sizeof(GLint)), castData<GLint, 4, vec4<I32>>(values));
+            glProgramUniform4iv(_programHandle, binding, byteCount / (4 * sizeof(GLint)), castData<GLint, 4, vec4<I32>>(values));
             break;
         case GFX::PushConstantType::UVEC2:
-            glProgramUniform2uiv(_shader, binding, byteCount / (2 * sizeof(GLuint)), castData<GLuint, 2, vec2<U32>>(values));
+            glProgramUniform2uiv(_programHandle, binding, byteCount / (2 * sizeof(GLuint)), castData<GLuint, 2, vec2<U32>>(values));
             break;
         case GFX::PushConstantType::UVEC3:
-            glProgramUniform3uiv(_shader, binding, byteCount / (3 * sizeof(GLuint)), castData<GLuint, 3, vec3<U32>>(values));
+            glProgramUniform3uiv(_programHandle, binding, byteCount / (3 * sizeof(GLuint)), castData<GLuint, 3, vec3<U32>>(values));
             break;
         case GFX::PushConstantType::UVEC4:
-            glProgramUniform4uiv(_shader, binding, byteCount / (4 * sizeof(GLuint)), castData<GLuint, 4, vec4<U32>>(values));
+            glProgramUniform4uiv(_programHandle, binding, byteCount / (4 * sizeof(GLuint)), castData<GLuint, 4, vec4<U32>>(values));
             break;
         case GFX::PushConstantType::DVEC2:
-            glProgramUniform2dv(_shader, binding, byteCount / (2 * sizeof(GLdouble)), castData<GLdouble, 2, vec2<D64>>(values));
+            glProgramUniform2dv(_programHandle, binding, byteCount / (2 * sizeof(GLdouble)), castData<GLdouble, 2, vec2<D64>>(values));
             break;
         case GFX::PushConstantType::DVEC3:
-            glProgramUniform3dv(_shader, binding, byteCount / (3 * sizeof(GLdouble)), castData<GLdouble, 3, vec3<D64>>(values));
+            glProgramUniform3dv(_programHandle, binding, byteCount / (3 * sizeof(GLdouble)), castData<GLdouble, 3, vec3<D64>>(values));
             break;
         case GFX::PushConstantType::DVEC4:
-            glProgramUniform4dv(_shader, binding, byteCount / (4 * sizeof(GLdouble)), castData<GLdouble, 4, vec4<D64>>(values));
+            glProgramUniform4dv(_programHandle, binding, byteCount / (4 * sizeof(GLdouble)), castData<GLdouble, 4, vec4<D64>>(values));
             break;
         case GFX::PushConstantType::VEC2:
-            glProgramUniform2fv(_shader, binding, byteCount / (2 * 4), castData<GLfloat, 2, vec2<F32>>(values));
+            glProgramUniform2fv(_programHandle, binding, byteCount / (2 * 4), castData<GLfloat, 2, vec2<F32>>(values));
             break;
         case GFX::PushConstantType::VEC3:
-            glProgramUniform3fv(_shader, binding, byteCount / (3 * 4), castData<GLfloat, 3, vec3<F32>>(values));
+            glProgramUniform3fv(_programHandle, binding, byteCount / (3 * 4), castData<GLfloat, 3, vec3<F32>>(values));
             break;
         case GFX::PushConstantType::VEC4:
-            glProgramUniform4fv(_shader, binding, byteCount / (4 * 4), castData<GLfloat, 4, vec4<F32>>(values));
+            glProgramUniform4fv(_programHandle, binding, byteCount / (4 * 4), castData<GLfloat, 4, vec4<F32>>(values));
             break;
         case GFX::PushConstantType::IMAT2:
-            glProgramUniformMatrix2fv(_shader, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<I32>>(values));
+            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<I32>>(values));
             break;
         case GFX::PushConstantType::IMAT3:
-            glProgramUniformMatrix3fv(_shader, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<I32>>(values));
+            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<I32>>(values));
             break;
         case GFX::PushConstantType::IMAT4:
-            glProgramUniformMatrix4fv(_shader, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<I32>>(values));
+            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<I32>>(values));
             break;
         case GFX::PushConstantType::UMAT2:
-            glProgramUniformMatrix2fv(_shader, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<U32>>(values));
+            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<U32>>(values));
             break;
         case GFX::PushConstantType::UMAT3:
-            glProgramUniformMatrix3fv(_shader, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<U32>>(values));
+            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<U32>>(values));
             break;
         case GFX::PushConstantType::UMAT4:
-            glProgramUniformMatrix4fv(_shader, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<U32>>(values));
+            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<U32>>(values));
             break;
         case GFX::PushConstantType::MAT2:
-            glProgramUniformMatrix2fv(_shader, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<F32>>(values));
+            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<F32>>(values));
             break;
         case GFX::PushConstantType::MAT3:
-            glProgramUniformMatrix3fv(_shader, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<F32>>(values));
+            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<F32>>(values));
             break;
         case GFX::PushConstantType::MAT4:
-            glProgramUniformMatrix4fv(_shader, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<F32>>(values));
+            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<F32>>(values));
             break;
         case GFX::PushConstantType::DMAT2:
-            glProgramUniformMatrix2dv(_shader, binding, byteCount / (2 * 2 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 4, mat2<D64>>(values));
+            glProgramUniformMatrix2dv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 4, mat2<D64>>(values));
             break;
         case GFX::PushConstantType::DMAT3:
-            glProgramUniformMatrix3dv(_shader, binding, byteCount / (3 * 3 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 9, mat3<D64>>(values));
+            glProgramUniformMatrix3dv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 9, mat3<D64>>(values));
             break;
         case GFX::PushConstantType::DMAT4:
-            glProgramUniformMatrix4dv(_shader, binding, byteCount / (4 * 4 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 16, mat4<D64>>(values));
+            glProgramUniformMatrix4dv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 16, mat4<D64>>(values));
             break;
         default:
             DIVIDE_ASSERT(false, "glShaderProgram::Uniform error: Unhandled data type!");

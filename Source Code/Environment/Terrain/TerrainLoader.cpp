@@ -667,6 +667,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vertModule._sourceFile = "grass.glsl";
     vertModule._variant = "Colour";
 
+    vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
     vertModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
     vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
 

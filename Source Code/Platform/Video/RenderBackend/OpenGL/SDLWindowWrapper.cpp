@@ -436,6 +436,14 @@ void GL_API::queueComputeMipMap(GLuint textureHandle) {
     s_mipmapQueue.insert(textureHandle);
 }
 
+void GL_API::dequeueComputeMipMap(GLuint textureHandle) {
+    UniqueLockShared w_lock(s_mipmapQueueSetLock);
+    auto it = s_mipmapQueue.find(textureHandle);
+    if (it != std::cend(s_mipmapQueue)) {
+        s_mipmapQueue.erase(it);
+    }
+}
+
 void GL_API::onThreadCreated(const std::thread::id& threadID) {
     // Double check so that we don't run into a race condition!
     UniqueLock lock(GLUtil::_glSecondaryContextMutex);

@@ -23,8 +23,11 @@ void main(void){
 
     const float LoDValue = data.data.z;
     if (LoDValue > 2.1f) {
-        //scale = 0.0f;
+#if defined(USE_CULL_DISTANCE)
         gl_CullDistance[0] = -0.01f;
+#else
+        scale = 0.0f;
+#endif
     }
 
     if (LoDValue < 1.1f && dvd_Vertex.y * scale > 0.85f) {

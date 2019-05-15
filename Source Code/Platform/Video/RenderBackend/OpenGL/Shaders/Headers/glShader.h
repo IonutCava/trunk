@@ -66,8 +66,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     bool load(const ShaderLoadData& data);
 
-    /// Shader's API specific handle
-    inline U32 getShaderID() const { return _shader; }
+    inline U32 getProgramHandle() const { return _programHandle; }
 
     /// The shader's name is a period-separated list of strings used to define
     /// the main shader file and the properties to load
@@ -141,14 +140,14 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     bool _shouldRecompile;
 
     GLenum _binaryFormat;
-    GLuint _shader;
+    GLuint _programHandle;
 
     U8 _stageCount;
     UseProgramStageMask _stageMask;
 
     stringImpl _name;
     std::set<U64> _usedAtoms;
-    std::array<vector<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
+    std::array<vectorEASTL<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
 
     ShaderVarMap _shaderVarLocation;
     UniformsByNameHash _uniformsByNameHash;

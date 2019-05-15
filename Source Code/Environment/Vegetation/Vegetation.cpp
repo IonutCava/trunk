@@ -341,6 +341,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     s_treeMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     s_treeMaterial->setBaseShaderName("tree", true);
     s_treeMaterial->setBaseShaderName("tree", false);
+    s_treeMaterial->addGlobalShaderDefine("USE_CULL_DISTANCE", true);
     s_treeMaterial->addGlobalShaderDefine(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstancesPerChunk).c_str(), true);
 }
 

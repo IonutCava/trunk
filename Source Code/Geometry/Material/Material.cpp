@@ -428,6 +428,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     stringImpl shaderName = _baseShaderName[renderStagePass.isDepthPass() ? 1 : 0];
     baseModule._sourceFile = shaderName + ".glsl";
+    baseModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
 
     if (renderStagePass.isDepthPass()) {
         if (renderStagePass._stage == RenderStage::SHADOW) {

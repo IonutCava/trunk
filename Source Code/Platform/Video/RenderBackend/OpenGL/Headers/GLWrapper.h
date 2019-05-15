@@ -162,6 +162,7 @@ public:
 
     /// Queue a mipmap recalculation
     static void queueComputeMipMap(GLuint textureHandle);
+    static void dequeueComputeMipMap(GLuint textureHandle);
 
     static void pushDebugMessage(const char* message, I32 id);
     static void popDebugMessage();

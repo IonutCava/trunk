@@ -58,7 +58,7 @@ bool glTexture::unload() noexcept {
         if (_lockManager) {
             _lockManager->Wait(false);
         }
-        
+        GL_API::dequeueComputeMipMap(_textureData._textureHandle);
         if (GL_API::s_texturePool.typeSupported(_type)) {
             GL_API::s_texturePool.deallocate(_textureData._textureHandle, _type);
         } else {

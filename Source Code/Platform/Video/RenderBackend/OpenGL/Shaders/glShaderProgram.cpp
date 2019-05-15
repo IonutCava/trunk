@@ -141,7 +141,7 @@ void glShaderProgram::validatePreBind() {
                 glUseProgramStages(
                     _handle,
                     shader->stageMask(),
-                    shader->_shader);
+                    shader->getProgramHandle());
             }
         }
 
@@ -161,17 +161,37 @@ void glShaderProgram::validatePostBind() {
 
         // Call the internal validation function
         if (Config::ENABLE_GPU_VALIDATION) {
-            GLint status = 0;
             glValidateProgramPipeline(_handle);
+
+            GLint status = 0;
             glGetProgramPipelineiv(_handle, GL_VALIDATE_STATUS, &status);
 
             // we print errors in debug and in release, but everything else only in debug
             // the validation log is only retrieved if we request it. (i.e. in release,
             // if the shader is validated, it isn't retrieved)
             if (status == 0) {
-                Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), getLog().c_str());
-            } else {
-                Console::printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), getLog().c_str());
+                // Query the size of the log
+                GLint length = 0;
+                glGetProgramPipelineiv(_handle, GL_INFO_LOG_LENGTH, &length);
+
+                // If we actually have something in the validation log
+                if (length > 1) {
+                    stringImpl validationBuffer = "";
+                    validationBuffer.resize(length);
+                    glGetProgramPipelineInfoLog(_handle, length, NULL, &validationBuffer[0]);
+
+                    // To avoid overflowing the output buffers (both CEGUI and Console), limit the maximum output size
+                    if (validationBuffer.size() > g_validationBufferMaxSize) {
+                        // On some systems, the program's disassembly is printed, and that can get quite large
+                        validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
+                        // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
+                        validationBuffer.append(" ... ");
+                    }
+                    // Return the final message, whatever it may contain
+                    Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), validationBuffer.c_str());
+                } else {
+                    Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), "[ Couldn't retrieve info log! ]");
+                }
             }
         }
         _validated = true;
@@ -183,33 +203,6 @@ void glShaderProgram::validatePostBind() {
     }
 }
 
-/// Retrieve the program's validation log if we need it
-stringImpl glShaderProgram::getLog() const {
-    // Query the size of the log
-    GLint length = 0;
-    glGetProgramPipelineiv(_handle, GL_INFO_LOG_LENGTH, &length);
-
-    // If we actually have something in the validation log
-    if (length > 1) {
-        stringImpl validationBuffer;
-        validationBuffer.resize(length);
-
-        glGetProgramPipelineInfoLog(_handle, length, NULL,  &validationBuffer[0]);
-        
-        // To avoid overflowing the output buffers (both CEGUI and Console), limit the maximum output size
-        if (validationBuffer.size() > g_validationBufferMaxSize) {
-            // On some systems, the program's disassembly is printed, and that can get quite large
-            validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
-            // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
-            validationBuffer.append(" ... ");
-        }
-        // Return the final message, whatever it may contain
-        return validationBuffer;
-    } else {
-        return "[OK]";
-    }
-}
-
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
 void glShaderProgram::threadedLoad(bool skipRegister) {
     reloadShaders(skipRegister);
@@ -218,44 +211,6 @@ void glShaderProgram::threadedLoad(bool skipRegister) {
     if (!skipRegister) {
         ShaderProgram::load();
     }
-}
-
-glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
-
-    glShaderProgramLoadInfo loadInfo;
-    loadInfo._resourcePath = assetLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc;
-
-    // Split the shader name to get the effect file name and the effect properties
-    // The effect file name is the part up until the first period or comma symbol
-    loadInfo._programName = assetName().substr(0, assetName().find_first_of(".,"));
-
-    size_t idx = resourceName().find_last_of('-');
-
-    if (idx != stringImpl::npos) {
-        loadInfo._programNameSuffix = resourceName().substr(idx+1);
-    }
-
-    // Get the position of the first "." symbol
-    stringAlg::stringSize propPosition = assetName().find_first_of(".");
-    // If we have effect properties, we extract them from the name
-    // (starting from the first "." symbol to the first "," symbol)
-    if (propPosition != stringImpl::npos) {
-        stringImpl properties = assetName().substr(propPosition + 1, assetName().length() - 1);
-        if (!properties.empty()) {
-            loadInfo._programProperties = "." + properties;
-        }
-    }
-
-    // Get all of the preprocessor defines and add them to the general shader header for this program
-    /*for (auto define : _definesList) {
-        // Placeholders are ignored
-        if (define.first.compare("DEFINE_PLACEHOLDER") != 0) {
-            // We manually add define dressing if needed
-            loadInfo._header.append((define.second ? "#define " : "") + define.first + "\n");
-        }
-    }*/
-
-    return loadInfo;
 }
 
 vector<stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
@@ -332,21 +287,18 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
     }
     _shaderStage.clear();
 
-    glShaderProgramLoadInfo info = buildLoadInfo();
     //glswClearCurrentContext();
-    // The program wasn't loaded from binary, so process shaders
-    // Use the specified shader path
-    glswSetPath(info._resourcePath.c_str(), ".glsl");
+    glswSetPath((assetLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc).c_str(), ".glsl");
 
-    hashMap<U64, vector<ShaderModuleDescriptor>> modulesByFile;
+    hashMap<U64, vectorEASTL<ShaderModuleDescriptor>> modulesByFile;
     for (const ShaderModuleDescriptor& shaderDescriptor : _descriptor._modules) {
         const U64 fileHash = _ID(shaderDescriptor._sourceFile.c_str());
-        vector<ShaderModuleDescriptor>& modules = modulesByFile[fileHash];
+        vectorEASTL<ShaderModuleDescriptor>& modules = modulesByFile[fileHash];
         modules.push_back(shaderDescriptor);
     }
 
     for (auto it : modulesByFile) {
-        const vector<ShaderModuleDescriptor>& modules = it.second;
+        const vectorEASTL<ShaderModuleDescriptor>& modules = it.second;
         assert(!modules.empty());
 
         glShader::ShaderLoadData loadData;
@@ -400,11 +352,13 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
                                           loadData,
                                           GFXDevice::getGPUVendor() == GPUVendor::NVIDIA);
             assert(shader != nullptr);
-        } else {
+        } else if (!reparseShaderSource) {
             shader->AddRef();
             Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")), shader->name().c_str(), shader->GetRef());
         }
-        _shaderStage.push_back(shader);
+        if (!reparseShaderSource) {
+            _shaderStage.push_back(shader);
+        }
     }
 
     return !_shaderStage.empty();
@@ -499,7 +453,7 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) {
         assert(shader != nullptr);
         shader->uploadToGPU();
         if (shader->isValid() && shader->embedsType(type)) {
-            glGetProgramStageiv(shader->_shader, GLUtil::glShaderStageTable[to_U32(type)], GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
+            glGetProgramStageiv(shader->getProgramHandle(), GLUtil::glShaderStageTable[to_U32(type)], GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
             break;
         }
     }
@@ -514,7 +468,7 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) {
         assert(shader != nullptr);
         shader->uploadToGPU();
         if (shader->isValid() && shader->embedsType(type)) {
-            return glGetSubroutineIndex(shader->_shader, GLUtil::glShaderStageTable[to_U32(type)], name);
+            return glGetSubroutineIndex(shader->getProgramHandle(), GLUtil::glShaderStageTable[to_U32(type)], name);
         }
     }
 
