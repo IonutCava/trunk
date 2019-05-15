@@ -525,7 +525,6 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
         if (params._stage != RenderStage::SHADOW) {
             GFX::ResolveRenderTargetCommand resolveCmd = { };
             resolveCmd._source = params._target;
-            resolveCmd._resolveColours = false;
             resolveCmd._resolveDepth = true;
             GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
@@ -570,6 +569,11 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
         }
 
         if (hasLightingTarget) {
+            GFX::ResolveRenderTargetCommand resolveCmd = { };
+            resolveCmd._source = params._target;
+            resolveCmd._resolveColour = to_I8(GFXDevice::ScreenTargets::EXTRA);
+            GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
             const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->getData();
             constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::PREPASS_SHADOWS);
 
@@ -777,7 +781,6 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
         GFX::ResolveRenderTargetCommand resolveCmd = { };
         resolveCmd._source = params._target;
         resolveCmd._resolveColours = true;
-        resolveCmd._resolveDepth = false;
         GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
         woitPass(visibleNodes, params, target, bufferInOut);

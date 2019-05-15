@@ -1135,7 +1135,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::RESOLVE_RT: {
             const GFX::ResolveRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ResolveRenderTargetCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._source));
-            Attorney::GLAPIRenderTarget::resolve(rt, crtCmd._resolveColours, crtCmd._resolveDepth, crtCmd._resolveExternalColours);
+            Attorney::GLAPIRenderTarget::resolve(rt, crtCmd._resolveColour, crtCmd._resolveColours, crtCmd._resolveDepth, crtCmd._resolveExternalColours);
         }break;
         case GFX::CommandType::COPY_TEXTURE: {
             const GFX::CopyTextureCommand& crtCmd = commandBuffer.get<GFX::CopyTextureCommand>(entry);

@@ -94,12 +94,17 @@ void LightPool::init() {
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "lightImpostorShader.glsl";
 
+    ShaderModuleDescriptor geomModule = {};
+    geomModule._moduleType = ShaderType::GEOMETRY;
+    geomModule._sourceFile = "lightImpostorShader.glsl";
+
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "lightImpostorShader.glsl";
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(geomModule);
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");

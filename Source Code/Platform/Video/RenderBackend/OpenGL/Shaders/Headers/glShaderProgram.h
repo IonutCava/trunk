@@ -96,7 +96,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     glShaderProgramLoadInfo buildLoadInfo();
     vector<stringImpl> loadSourceCode(ShaderType stage,
                                       const stringImpl& stageName,
+                                      const stringImpl& extension,
                                       const stringImpl& header,
+                                      U32 lineOffset,
                                       bool forceReParse,
                                       std::pair<bool, stringImpl>& sourceCodeOut);
 
@@ -145,6 +147,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     //extra entry for "common" location
     static stringImpl shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
+    static stringImpl shaderAtomExtensionName[to_base(ShaderType::COUNT) + 1];
     static U64 shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
 };
 

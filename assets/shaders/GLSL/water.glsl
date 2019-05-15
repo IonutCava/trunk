@@ -33,6 +33,8 @@ uniform vec2 _noiseFactor;
 #include "BRDF.frag"
 #include "shadowMapping.frag"
 
+#include "utility.frag"
+
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else
@@ -73,11 +75,11 @@ void main()
     vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
     vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
 
-    /*vec4 distOffset = texture(texDiffuse0, VAR._texCoord + vec2(time2)) * kDistortion;
-    vec4 dudvColor = texture(texDiffuse0, vec2(VAR._texCoord + distOffset.xy));
-    dudvColor = normalize(dudvColor * 2.0 - 1.0) * kRefraction;
+    //vec4 distOffset = texture(texDiffuse0, VAR._texCoord + vec2(time2)) * kDistortion;
+    //vec4 dudvColor = texture(texDiffuse0, vec2(VAR._texCoord + distOffset.xy));
+    //dudvColor = normalize(dudvColor * 2.0 - 1.0) * kRefraction;
 
-    normal = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;*/
+    //normal = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
     normal = normalize(normal * 2.0f - 1.0f);
 
     normal = normalize(getTBNMatrix() * normal);
@@ -92,7 +94,7 @@ void main()
     vec4 texColour = mix(texture(texReflectPlanar, uvFinalReflect),
         texture(texRefractPlanar, uvFinalRefract),
         mixFactor);
-
+    
     writeOutput(getPixelColour(texColour, colourMatrix, normal, VAR._texCoord));
 #endif
 }

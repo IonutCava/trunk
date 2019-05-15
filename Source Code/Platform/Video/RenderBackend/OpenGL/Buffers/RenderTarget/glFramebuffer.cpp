@@ -40,8 +40,6 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
       glObject(glObjectType::TYPE_FRAMEBUFFER, context),
       _parent(parent),
       _resolveBuffer(nullptr),
-      _resolvedColours(true),
-      _resolvedDepth(true),
       _isLayeredDepth(false),
       _activeDepthBuffer(false),
       _statusCheckQueued(false),
@@ -231,48 +229,39 @@ bool glFramebuffer::resize(U16 width, U16 height) {
     return create();
 }
 
-void glFramebuffer::resolve(bool colours, bool depth, bool externalColours) {
-    if ((!_resolvedColours && colours) || (!_resolvedDepth && depth)) {
-        // Do this first to prevent a stack overflow
-        if (colours) {
-            _resolvedColours = true;
-        }
-        if (depth) {
-            _resolvedDepth = true;
-        }
-
-
-        if (_resolveBuffer != nullptr) {
-            RTBlitParams params = {};
-            params._inputFB = this;
-            if (colours) {
-                const RTAttachmentPool::PoolEntry& colourAtt = _attachmentPool->get(RTAttachmentType::Colour);
-                for (const RTAttachment_ptr& att : colourAtt) {
-                    ColourBlitEntry entry = {};
-                    entry._inputIndex = entry._outputIndex = to_U16(att->binding() - to_U32(GL_COLOR_ATTACHMENT0));
-
-                    eastl::set<U16, eastl::greater<U16>>& layers = _attachmentResolvedLayers[static_cast<GLenum>(att->binding())];
-                    for (U16 layer : layers) {
-                        if (att->isExternal() && !externalColours) {
-                            continue;
-                        }
-                        entry._inputLayer = entry._outputLayer = layer;
-                        params._blitColours.push_back(entry);
-                    }
-                    layers.clear();
-                }
-            }
-
-            if (depth) {
-                eastl::set<U16, eastl::greater<U16>>& layers = _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT];
+void glFramebuffer::resolve(I8 colour, bool allColours, bool depth, bool externalColours) {
+    if (_resolveBuffer != nullptr) {
+        RTBlitParams params = {};
+        params._inputFB = this;
+        if (allColours || colour != -1) {
+            const RTAttachmentPool::PoolEntry& colourAtt = _attachmentPool->get(RTAttachmentType::Colour);
+            for (const RTAttachment_ptr& att : colourAtt) {
+                ColourBlitEntry entry = {};
+                entry._inputIndex = entry._outputIndex = to_U16(att->binding() - to_U32(GL_COLOR_ATTACHMENT0));
+                eastl::set<U16, eastl::greater<U16>>& layers = _attachmentResolvedLayers[static_cast<GLenum>(att->binding())];
                 for (U16 layer : layers) {
-                    params._blitDepth.push_back({ layer, layer });
+                    if (att->isExternal() && !externalColours) {
+                        continue;
+                    }
+                    entry._inputLayer = entry._outputLayer = layer;
+                    params._blitColours.push_back(entry);
                 }
                 layers.clear();
+                if (!allColours && entry._inputIndex == colour) {
+                    break;
+                }
             }
-
-            _resolveBuffer->blitFrom(params);
         }
+
+        if (depth) {
+            eastl::set<U16, eastl::greater<U16>>& layers = _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT];
+            for (U16 layer : layers) {
+                params._blitDepth.push_back({ layer, layer });
+            }
+            layers.clear();
+        }
+
+        _resolveBuffer->blitFrom(params);
     }
 }
 
@@ -604,9 +593,6 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     setDefaultState(drawPolicy);
 
     if (hasDepth() && drawPolicy.drawMask().isEnabled(RTAttachmentType::Depth)) {
-        /// Mark the resolve buffer as dirty
-        _resolvedDepth = false;
-
         _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT].insert(_attachmentState[GL_DEPTH_ATTACHMENT]._writeLayer);
 
         const std::set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Depth);
@@ -623,7 +609,6 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
                 for (U16 layer : additionalDirtyLayers) {
                     _attachmentResolvedLayers[GL_COLOR_ATTACHMENT0 + i].insert(layer);
                 }
-                _resolvedColours = false;
             }
         }
     }
@@ -641,7 +626,7 @@ void glFramebuffer::end(bool resolveMSAAColour, bool resolveMSAAExternalColour, 
 
     if (resolveMSAAColour || resolveMSAAExternalColour || resolveMSAADepth) {
         const RTDrawMask& mask = _previousPolicy.drawMask();
-        resolve(resolveMSAAColour && mask.isEnabled(RTAttachmentType::Colour), resolveMSAADepth && mask.isEnabled(RTAttachmentType::Depth), resolveMSAAExternalColour);
+        resolve(-1, resolveMSAAColour && mask.isEnabled(RTAttachmentType::Colour), resolveMSAADepth && mask.isEnabled(RTAttachmentType::Depth), resolveMSAAExternalColour);
     }
 
     GL_API::popDebugMessage();
@@ -792,7 +777,7 @@ void glFramebuffer::readData(const vec4<U16>& rect,
                              GFXDataFormat dataType,
                              bufferPtr outData) {
     if (_resolveBuffer) {
-        resolve(true, false, false);
+        resolve(-1, true, false, false);
         _resolveBuffer->readData(rect, imageFormat, dataType, outData);
     } else {
         GL_API::getStateTracker().setPixelPackUnpackAlignment();

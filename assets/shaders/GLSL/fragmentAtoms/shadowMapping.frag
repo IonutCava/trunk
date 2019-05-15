@@ -5,7 +5,7 @@ layout(binding = SHADOW_SINGLE_MAP_ARRAY)  uniform sampler2DArrayShadow    texDe
 layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArrayShadow  texDepthMapFromLightCube;
 layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDepthMapFromLightArray;
 
-layout(binding = TEXTURE_PREPASS_SHADOWS)  uniform sampler2D               texDepthMapFromPrePass;
+//layout(binding = TEXTURE_PREPASS_SHADOWS)  uniform sampler2D               texDepthMapFromPrePass;
 
 
 
@@ -25,7 +25,7 @@ float getShadowFactorInternal(int idx) {
 
 #if !defined(PRE_PASS)
     if (idx >= 0 && idx < 4) {
-        return texture(texDepthMapFromPrePass, getScreenPositionNormalised())[idx];
+        //return texture(texDepthMapFromPrePass, getScreenPositionNormalised())[idx];
     }
 #endif
 
@@ -39,6 +39,7 @@ float getShadowFactorInternal(int idx) {
             case LIGHT_SPOT: return applyShadowSpot(lightIndex, crtDetails);
         };
     }
+
     return 1.0f;
 }
 

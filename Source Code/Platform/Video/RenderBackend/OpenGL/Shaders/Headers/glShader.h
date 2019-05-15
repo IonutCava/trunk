@@ -49,7 +49,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     struct LoadData {
         ShaderType _type = ShaderType::COUNT;
         stringImpl _name = "";
-        vector<stringImpl> atoms;
+        std::set<U64> atoms;
         vectorEASTL<stringImpl> sourceCode;
     };
 
@@ -73,6 +73,8 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     /// the main shader file and the properties to load
     inline const stringImpl& name() const { return _name; }
 
+    bool embedsType(ShaderType type) const;
+
    public:
     // ======================= static data ========================= //
     /// Remove a shader from the cache
@@ -93,7 +95,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     friend class glShaderProgram;
     void dumpBinary();
 
-    inline const vector<stringImpl>& usedAtoms() const{
+    inline const std::set<U64>& usedAtoms() const{
         return _usedAtoms;
     }
 
@@ -141,10 +143,11 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     GLenum _binaryFormat;
     GLuint _shader;
 
+    U8 _stageCount;
     UseProgramStageMask _stageMask;
 
     stringImpl _name;
-    vector<stringImpl> _usedAtoms;
+    std::set<U64> _usedAtoms;
     std::array<vector<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
 
     ShaderVarMap _shaderVarLocation;

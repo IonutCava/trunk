@@ -344,14 +344,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name);
-    ShaderProgramDescriptor prepassShaderDescriptor = shaderDescriptor;
     terrainShaderPrePass.setPropertyDescriptor(prePassDescriptor);
     if (threadedLoading) {
         terrainShaderPrePass.waitForReadyCbk(waitForReasoureTask);
     }
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
-    ShaderProgramDescriptor lowQualityDescriptor = colourDescriptor;
+    ShaderProgramDescriptor lowQualityDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
         shaderModule._variant = "Colour.LowQuality";
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));

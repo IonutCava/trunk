@@ -1,4 +1,14 @@
--- Vertex
+--Vertex
+
+#include "vbInputData.vert"
+
+void main(void) {
+
+    computeData();
+    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+}
+
+-- Vertex.Colour
 
 #include "vbInputData.vert"
 
@@ -21,10 +31,11 @@ void main(void) {
 
 layout(early_fragment_tests) in;
 
+layout(location = 0) in vec4 _scrollingUV;
+
 #include "utility.frag"
 #include "output.frag"
 
-layout(location = 0) in vec4 _scrollingUV;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterCaustics;
 

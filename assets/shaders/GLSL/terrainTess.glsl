@@ -169,13 +169,13 @@ layout(quads, fractional_even_spacing) in;
 layout(location = 0) in float tcs_tessLevel[];
 layout(location = 1) in vec4 posAndTileScale[];
 
-#if !defined(TOGGLE_WIREFRAME)
+#if defined(TOGGLE_WIREFRAME)
+layout(location = 0) out float tes_tessLevel;
+#else
+layout(location = 0) out float LoD;
 // x = distance, y = depth
-layout(location = 0) smooth out vec2 _waterDetails;
-layout(location = 1) out float LoD;
+layout(location = 1) smooth out vec2 _waterDetails;
 #endif
-
-layout(location = 2) out float tes_tessLevel;
 
 vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
 {
@@ -305,16 +305,16 @@ void main()
 #endif
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
-    tes_tessLevel = tcs_tessLevel[0];
 #if defined(TOGGLE_WIREFRAME)
+    tes_tessLevel = tcs_tessLevel[0];
     gl_Position = _out._vertexW;
-
 #else
     gl_Position = dvd_ViewProjectionMatrix * _out._vertexW;
     setClipPlanes(_out._vertexW);
 
 #if !defined(SHADOW_PASS)
     waterDetails();
+#if defined(TOGGLE_WIREFRAME)
     if (tes_tessLevel >= 64.0) {
         LoD = 0;
     } else if (tes_tessLevel >= 32.0) {
@@ -326,6 +326,7 @@ void main()
     } else {
         LoD = 4;
     }
+#endif //TOGGLE_WIREFRAME
 #endif //SHADOW_PASS
 
 #endif
@@ -337,15 +338,17 @@ void main()
 
 layout(triangles) in;
 
-layout(location = 2) in float tes_tessLevel[];
+layout(location = 0) in float tes_tessLevel[];
 
 layout(triangle_strip, max_vertices = 4) out;
 
 // x = distance, y = depth
-layout(location = 0) smooth out vec2 _waterDetails;
-layout(location = 1) out float LoD;
+layout(location = 0) out float LoD;
+layout(location = 1) smooth out vec2 _waterDetails;
+
 layout(location = 2) out vec3 gs_wireColor;
 layout(location = 3) noperspective out vec3 gs_edgeDist;
+
 
 #if !defined(SHADOW_PASS)
 void waterDetails(in int index) {
@@ -460,9 +463,9 @@ void main(void)
 layout(early_fragment_tests) in;
 #endif
 
+layout(location = 0) in float LoD;
 // x = distance, y = depth
-layout(location = 0) smooth in vec2 _waterDetails;
-layout(location = 1) in float LoD;
+layout(location = 1) smooth in vec2 _waterDetails;
 
 #define SHADOW_INTENSITY_FACTOR 0.75f
 

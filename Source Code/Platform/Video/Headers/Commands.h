@@ -227,7 +227,8 @@ END_COMMAND(ResetRenderTargetCommand);
 
 BEGIN_COMMAND(ResolveRenderTargetCommand, CommandType::RESOLVE_RT);
     RenderTargetID _source;
-    bool _resolveColours = true;
+    I8   _resolveColour = -1; //must be less than MAX_RT_COLOUR_ATTACHMENTS
+    bool _resolveColours = false;
     bool _resolveDepth = false;
     bool _resolveExternalColours = false;
 END_COMMAND(ResolveRenderTargetCommand);

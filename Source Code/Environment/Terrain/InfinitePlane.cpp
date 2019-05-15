@@ -84,6 +84,7 @@ bool InfinitePlane::load() {
 
     planeMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY);
 
+    vertModule._variant = "PrePass";
     fragModule._variant = "PrePass";
 
     shaderDescriptor = {};

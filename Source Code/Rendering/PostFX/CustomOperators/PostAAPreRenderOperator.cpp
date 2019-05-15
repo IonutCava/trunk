@@ -50,8 +50,13 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     vertModule._sourceFile = "SMAA.glsl";
     fragModule._sourceFile = "SMAA.glsl";
 
+    ShaderModuleDescriptor geomModule = {};
+    geomModule._moduleType = ShaderType::GEOMETRY;
+    geomModule._sourceFile = "SMAA.glsl";
+
     aaShaderDescriptor = {};
     aaShaderDescriptor._modules.push_back(vertModule);
+    aaShaderDescriptor._modules.push_back(geomModule);
     aaShaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor smaa("SMAA");

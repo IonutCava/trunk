@@ -107,7 +107,7 @@ class glFramebuffer : public RenderTarget,
 
     /// Bake in all settings and attachments to prepare it for rendering
     bool create();
-    void resolve(bool colours, bool depth, bool externalColours);
+    void resolve(I8 colour, bool allColours, bool depth, bool externalColours);
     void queueCheckStatus();
     bool checkStatus();
 
@@ -149,8 +149,6 @@ class glFramebuffer : public RenderTarget,
     void queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange);
 
    protected:
-    bool _resolvedColours;
-    bool _resolvedDepth;
     bool _isLayeredDepth;
     bool _statusCheckQueued;
     Rect<I32> _prevViewport;
@@ -177,8 +175,8 @@ namespace Attorney {
         static void end(glFramebuffer& buffer, bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth) {
             buffer.end(resolveMSAAColour, resolveMSAAExternalColour, resolveMSAADepth);
         }
-        static void resolve(glFramebuffer& buffer, bool colours, bool depth, bool externalColours) {
-            buffer.resolve(colours, depth, externalColours);
+        static void resolve(glFramebuffer& buffer, I8 colour, bool allColours, bool depth, bool externalColours) {
+            buffer.resolve(colour, allColours, depth, externalColours);
         }
         friend class Divide::GL_API;
     };
