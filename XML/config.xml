@@ -7,7 +7,7 @@
   <enableDebugMsgGroups>false</enableDebugMsgGroups>
   <useGeometryCache>true</useGeometryCache>
   <useVegetationCache>true</useVegetationCache>
-  <useShaderBinaryCache>true</useShaderBinaryCache>
+  <useShaderBinaryCache>false</useShaderBinaryCache>
   <enableTreeInstances>true</enableTreeInstances>
   <enableGrassInstances>true</enableGrassInstances>
   <!-- this is only taken into consideration if binary cache is disabled-->

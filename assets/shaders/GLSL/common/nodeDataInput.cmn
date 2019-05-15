@@ -1,30 +1,36 @@
 #ifndef _NODE_DATA_INPUT_CMN_
 #define _NODE_DATA_INPUT_CMN_
 
-vec4 positionFromDepth(in float depth,
-                       in mat4 invProjectionMatrix,
-                       in vec2 uv) {
-
-    vec4 pos = vec4(2.0f * uv.x - 1.0f,
-                    2.0f * uv.y - 1.0f,
-                    2.0f * depth - 1.0f,
-                    1.0f);
-
-    pos = invProjectionMatrix * pos;
-    pos /= pos.w;
-
-    return pos;
+#if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
+out gl_PerVertex
+{
+  invariant vec4 gl_Position;
+  float gl_PointSize;
+  float gl_ClipDistance[MAX_CLIP_PLANES];
+  float gl_CullDistance[MAX_CULL_DISTANCES];
 }
+#if defined(TESS_CTRL_SHADER)
+gl_out[];
+#else //defined(TESS_CTRL_SHADER)
+;
+#endif //defined(TESS_CTRL_SHADER)
 
-vec3 UNPACK_FLOAT(in float value) {
-    return (fract(vec3(1.0f, 256.0f, 65536.0f) * value)* 2.0f) - 1.0f;
-}
+#if defined(GEOM_SHADER) || defined(TESS_CTRL_SHADER) || defined(TESS_EVAL_SHADER)
+    in gl_PerVertex
+    {
+      vec4  gl_Position;
+      float gl_PointSize;
+      float gl_ClipDistance[MAX_CLIP_PLANES];
+      float gl_CullDistance[MAX_CULL_DISTANCES];
+    }
+    #if defined(GEOM_SHADER)
+    gl_in[];
+    #else //defined(GEOM_SHADER)
+    gl_in[gl_MaxPatchVertices];
+    #endif //defined(GEOM_SHADER)
+#endif
 
-vec2 UNPACK_UINT(in uint value) {
-    return vec2(
-        (value >> 16) / 65535.0f,
-        (value & 0xFFFF) / 65535.0f);
-}
+#endif //!defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
 
 #if defined(COMPUTE_SHADER)
 struct IndirectDrawCommand {
@@ -93,6 +99,45 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_showDebugInfo (uint(dvd_otherData.z) == 1)
 #define dvd_renderDetailLevel (uint(dvd_otherData.w) * DETAIL_COUNT))
 
+
+#if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
+void setClipPlanes(in vec4 worldSpaceVertex) {
+    for (int i = 0; i < MAX_CLIP_PLANES; ++i) {
+#if defined(TESS_CTRL_SHADER)
+        gl_out[gl_InvocationID].gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
+#else
+        gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
+#endif
+    }
+}
+#endif
+
+
+vec4 positionFromDepth(in float depth,
+    in mat4 invProjectionMatrix,
+    in vec2 uv) {
+
+    vec4 pos = vec4(2.0f * uv.x - 1.0f,
+        2.0f * uv.y - 1.0f,
+        2.0f * depth - 1.0f,
+        1.0f);
+
+    pos = invProjectionMatrix * pos;
+    pos /= pos.w;
+
+    return pos;
+}
+
+vec3 UNPACK_FLOAT(in float value) {
+    return (fract(vec3(1.0f, 256.0f, 65536.0f) * value) * 2.0f) - 1.0f;
+}
+
+vec2 UNPACK_UINT(in uint value) {
+    return vec2(
+        (value >> 16) / 65535.0f,
+        (value & 0xFFFF) / 65535.0f);
+}
+
 bool IsUnderWater(vec3 positionWorld) {
     for (int i = 0; i < dvd_waterEntities.length(); ++i) {
         WaterBodyData data = dvd_waterEntities[i];
@@ -115,47 +160,6 @@ bool IsUnderWater(vec3 positionWorld) {
 
     return false;
 }
-
-#if defined(GEOM_SHADER) || defined(TESS_CTRL_SHADER) || defined(TESS_EVAL_SHADER)
-in gl_PerVertex
-{
-  vec4  gl_Position;
-  float gl_PointSize;
-  float gl_ClipDistance[MAX_CLIP_PLANES];
-  float gl_CullDistance[MAX_CULL_DISTANCES];
-}
-#if defined(GEOM_SHADER)
-gl_in[];
-#else
-gl_in[gl_MaxPatchVertices];
-#endif
-
-#endif
-
-#if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
-out gl_PerVertex
-{
-  invariant vec4 gl_Position;
-  float gl_PointSize;
-  float gl_ClipDistance[MAX_CLIP_PLANES];
-  float gl_CullDistance[MAX_CULL_DISTANCES];
-}
-#if defined(TESS_CTRL_SHADER)
-gl_out[];
-#else
-;
-#endif
-
-void setClipPlanes(in vec4 worldSpaceVertex) {
-    for(int i = 0; i < MAX_CLIP_PLANES; ++i) {
-#if defined(TESS_CTRL_SHADER)
-        gl_out[gl_InvocationID].gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
-#else
-        gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
-#endif
-    }
-}
-#endif
 
 //mix(false, true, condition);
 

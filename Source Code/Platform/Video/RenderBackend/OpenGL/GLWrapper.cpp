@@ -336,10 +336,11 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2019 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
-    //appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
+    
     //appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define MAX_CULL_DISTANCES %d", maxClipCull - 6), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_AMD %d", to_base(GPUVendor::AMD)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_NVIDIA %d", to_base(GPUVendor::NVIDIA)), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_INTEL %d", to_base(GPUVendor::INTEL)), lineOffsets);
@@ -385,7 +386,7 @@ bool GL_API::initGLSW() {
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option inline all", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option ifcvt none", lineOffsets);
         if (Config::ENABLE_GPU_VALIDATION) {
-            //appendToShaderHeader(ShaderType::COUNT, "#pragma option strict on", lineOffsets);
+            appendToShaderHeader(ShaderType::COUNT, "#pragma option strict on", lineOffsets);
         }
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option unroll all", lineOffsets);
     }
@@ -405,6 +406,12 @@ bool GL_API::initGLSW() {
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + 
         to_stringImpl(to_base(Frustum::FrustPlane::COUNT)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define MAX_CULL_DISTANCES " + 
+        to_stringImpl(maxClipCull - to_base(Frustum::FrustPlane::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(
