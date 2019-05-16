@@ -49,7 +49,8 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "postProcessing.glsl";
+    vertModule._sourceFile = "baseVertexShaders.glsl";
+    vertModule._variant = "FullScreenQuad";
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;

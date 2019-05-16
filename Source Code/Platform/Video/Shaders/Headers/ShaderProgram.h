@@ -65,6 +65,8 @@ namespace Attorney {
     class ShaderProgramKernel;
 }
 
+typedef vectorEASTL<std::pair<stringImpl, bool>> ModuleDefines;
+
 class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
     friend class Attorney::ShaderProgramKernel;
@@ -192,6 +194,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static bool useShaderTexCache() { return s_useShaderTextCache; }
     static bool useShaderBinaryCache() { return s_useShaderBinaryCache; }
 
+    static stringImpl getDefinesHash(const ModuleDefines& defines);
+
    protected:
      virtual bool recompileInternal() = 0;
 
@@ -241,10 +245,11 @@ namespace Attorney {
 }
 
 struct ShaderModuleDescriptor {
+    bool _batchSameFile = true;
     ShaderType _moduleType = ShaderType::COUNT;
     stringImpl _sourceFile;
     stringImpl _variant;
-    vectorEASTL<std::pair<stringImpl, bool>> _defines;
+    ModuleDefines _defines;
 };
 
 class ShaderProgramDescriptor final : public PropertyDescriptor {

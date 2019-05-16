@@ -46,8 +46,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "bloom.glsl";
-    vertModule._variant = "BloomCalc";
+    vertModule._sourceFile = "baseVertexShaders.glsl";
+    vertModule._variant = "FullScreenQuad";
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
@@ -62,7 +62,6 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     bloomCalc.setPropertyDescriptor(shaderDescriptor);
     _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
 
-    vertModule._variant = "BloomApply";
     fragModule._variant = "BloomApply";
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);

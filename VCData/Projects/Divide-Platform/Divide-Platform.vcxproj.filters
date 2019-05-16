@@ -1056,6 +1056,9 @@
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\prePass.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
+    <None Include="..\..\..\assets\shaders\GLSL\baseVertexShaders.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../../assets\shaders\GLSL\toneMap.glsl">

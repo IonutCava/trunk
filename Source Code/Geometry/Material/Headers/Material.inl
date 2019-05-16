@@ -252,12 +252,12 @@ inline bool Material::ignoreXMLData() const {
     return _ignoreXMLData;
 }
 
-inline void Material::setBaseShaderName(const stringImpl& name, bool depthPass) {
-    _baseShaderName[depthPass ? 1 : 0] = name;
+inline void Material::setBaseShaderData(const ShaderData& data) {
+    _baseShaderSources = data;
 }
 
-inline const stringImpl& Material::getBaseShaderName(bool depthPass) const {
-    return _baseShaderName[depthPass ? 1 : 0];
+inline const Material::ShaderData& Material::getBaseShaderData() const {
+    return _baseShaderSources;
 }
 
 inline void Material::addGlobalShaderDefine(const stringImpl& define, bool addPrefix) {
@@ -266,7 +266,7 @@ inline void Material::addGlobalShaderDefine(const stringImpl& define, bool addPr
     }
 }
 
-inline const vectorEASTL<std::pair<stringImpl, bool>>& Material::extraShaderDefines() const {
+inline const ModuleDefines& Material::extraShaderDefines() const {
     return _extraShaderDefines;
 }
 

@@ -1,9 +1,3 @@
--- Vertex
-
-void main(void)
-{
-}
-
 -- Geometry
 
 layout(points) in;

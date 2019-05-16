@@ -47,11 +47,16 @@ public:
     explicit ResourceLoadLock(size_t hash, const DELEGATE_CBK<void, CachedResource_wptr>& waitCbk)
         : _loadingHash(hash)
     {
-//        if (waitCbk) {
-//            WAIT_FOR_CONDITION_CALLBACK(notLoading(_loadingHash), waitCbk);
-//        } else {
+#if 0
+        if (waitCbk) {
+            WAIT_FOR_CONDITION_CALLBACK(notLoading(_loadingHash), waitCbk);
+        } else
+#else
+            ACKNOWLEDGE_UNUSED(waitCbk);
+#endif
+        {
             WAIT_FOR_CONDITION(notLoading(_loadingHash));
-//        }
+        }
 
         UniqueLockShared w_lock(s_hashLock);
         s_loadingHashes.push_back(_loadingHash);

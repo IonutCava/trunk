@@ -35,7 +35,8 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
         if (!_previewDepthMapShader) {
             ShaderModuleDescriptor vertModule = {};
             vertModule._moduleType = ShaderType::VERTEX;
-            vertModule._sourceFile = "fbPreview.glsl";
+            vertModule._sourceFile = "baseVertexShaders.glsl";
+            vertModule._variant = "FullScreenQuad";
 
             ShaderModuleDescriptor fragModule = {};
             fragModule._moduleType = ShaderType::FRAGMENT;

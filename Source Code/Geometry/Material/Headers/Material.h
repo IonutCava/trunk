@@ -135,6 +135,14 @@ class Material : public CachedResource {
         }
     };
 
+    struct ShaderData {
+        stringImpl _depthShaderVertSource = "depthPass";
+        stringImpl _depthShaderFragSource = "depthPass";
+
+        stringImpl _colourShaderVertSource = "material";
+        stringImpl _colourShaderFragSource = "material";
+    };
+
    public:
     explicit Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~Material();
@@ -235,11 +243,11 @@ class Material : public CachedResource {
     void saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
     void loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
-    void setBaseShaderName(const stringImpl& name, bool depthPass);
-    const stringImpl& getBaseShaderName(bool depthPass) const;
+    void setBaseShaderData(const ShaderData& data);
+    const ShaderData& getBaseShaderData() const;
 
     void addGlobalShaderDefine(const stringImpl& define, bool addPrefix);
-    const vectorEASTL<std::pair<stringImpl, bool>>& extraShaderDefines() const;
+    const ModuleDefines& extraShaderDefines() const;
 
    private:
     void updateTranslucency();
@@ -290,7 +298,7 @@ class Material : public CachedResource {
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
 
-    std::array<stringImpl, 2> _baseShaderName;
+    ShaderData _baseShaderSources;
 
     vector<ExternalTexture> _externalTextures;
 
@@ -299,7 +307,7 @@ class Material : public CachedResource {
     TextureOperation _operation;
     BumpMethod _bumpMethod;
     ColourData _colourData;
-    vectorEASTL<std::pair<stringImpl, bool>> _extraShaderDefines;
+    ModuleDefines _extraShaderDefines;
 
     static SharedMutex s_shaderDBLock;
     static hashMap<size_t, ShaderProgram_ptr> s_shaderDB;

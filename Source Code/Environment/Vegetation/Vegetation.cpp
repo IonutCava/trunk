@@ -336,11 +336,14 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     maxGrassInstances = to_U32(s_maxGrassInstancesPerChunk);
     maxTreeInstances = to_U32(s_maxTreeInstancesPerChunk);
 
+    Material::ShaderData treeShaderData = {};
+    treeShaderData._depthShaderVertSource = "tree";
+    treeShaderData._colourShaderVertSource = "tree";
+
     ResourceDescriptor matDesc("Tree_material");
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);
     s_treeMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    s_treeMaterial->setBaseShaderName("tree", true);
-    s_treeMaterial->setBaseShaderName("tree", false);
+    s_treeMaterial->setBaseShaderData(treeShaderData);
     s_treeMaterial->addGlobalShaderDefine("USE_CULL_DISTANCE", true);
     s_treeMaterial->addGlobalShaderDefine(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstancesPerChunk).c_str(), true);
 }

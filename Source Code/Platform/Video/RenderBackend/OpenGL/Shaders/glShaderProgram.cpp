@@ -28,17 +28,6 @@ namespace {
     UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
         glShaderProgram::onAtomChange(atomName, evt);
     });
-
-
-    stringImpl getDefinesHash(const vectorEASTL<std::pair<stringImpl, bool>>& defines) {
-        size_t hash = 31;
-        for (auto entry : defines) {
-            Util::Hash_combine(hash, _ID(entry.first.c_str()));
-            Util::Hash_combine(hash, entry.second);
-        }
-        return to_stringImpl(hash);
-    }
-
 };
 
 SharedMutex glShaderProgram::s_atomLock;
@@ -290,9 +279,10 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
     //glswClearCurrentContext();
     glswSetPath((assetLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc).c_str(), ".glsl");
 
+    U64 batchCounter = 0;
     hashMap<U64, vectorEASTL<ShaderModuleDescriptor>> modulesByFile;
     for (const ShaderModuleDescriptor& shaderDescriptor : _descriptor._modules) {
-        const U64 fileHash = _ID(shaderDescriptor._sourceFile.c_str());
+        const U64 fileHash = shaderDescriptor._batchSameFile ? _ID(shaderDescriptor._sourceFile.c_str()) : batchCounter++;
         vectorEASTL<ShaderModuleDescriptor>& modules = modulesByFile[fileHash];
         modules.push_back(shaderDescriptor);
     }
@@ -316,7 +306,7 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
                 programName.append("." + shaderDescriptor._variant);
             }
             if (!shaderDescriptor._defines.empty()) {
-                programName.append("." + getDefinesHash(shaderDescriptor._defines));
+                programName.append("." + ShaderProgram::getDefinesHash(shaderDescriptor._defines));
             }
 
             stringImpl header = "";

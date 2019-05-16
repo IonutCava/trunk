@@ -142,7 +142,8 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     {
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
-        vertModule._sourceFile = "toneMap.glsl";
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
 
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
@@ -177,7 +178,8 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     {
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
-        vertModule._sourceFile = "luminanceCalc.glsl";
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
 
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;

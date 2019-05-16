@@ -366,8 +366,8 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
     if (light.castsShadows()) {
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
-        vertModule._sourceFile = "fbPreview.glsl";
-        vertModule._variant = "BloomCalc";
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
 
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;

@@ -47,8 +47,7 @@ void Mesh::setMaterialTpl(const Material_ptr& material) {
         if (material != nullptr) {
             const Material_ptr& submeshMaterial = submesh->getMaterialTpl();
             if (submeshMaterial != nullptr) {
-                submeshMaterial->setBaseShaderName(material->getBaseShaderName(true), true);
-                submeshMaterial->setBaseShaderName(material->getBaseShaderName(false), false);
+                submeshMaterial->setBaseShaderData(material->getBaseShaderData());
 
                 for (auto it : material->extraShaderDefines()) {
                     submeshMaterial->addGlobalShaderDefine(it.first, it.second);

@@ -108,7 +108,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "SSAOPass.glsl";
+    vertModule._sourceFile = "baseVertexShaders.glsl";
+    vertModule._variant = "FullScreenQuad";
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;

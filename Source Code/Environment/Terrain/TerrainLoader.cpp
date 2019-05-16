@@ -271,6 +271,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     geomModule._sourceFile = "terrainTess.glsl";
 
     ShaderModuleDescriptor fragModule = {};
+    fragModule._batchSameFile = false;
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "terrainTess.glsl";
 
@@ -308,7 +309,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgramDescriptor shadowDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : shadowDescriptor._modules) {
-        shaderModule._variant = "Shadow";
+        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+            shaderModule._variant = "Shadow";
+        }
         shaderModule._defines.push_back(std::make_pair("SHADOW_PASS", true));
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
@@ -323,7 +326,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
-        shaderModule._variant = "Colour";
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
     }
@@ -337,7 +339,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgramDescriptor prePassDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
-        shaderModule._variant = "PrePass";
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
         shaderModule._defines.push_back(std::make_pair("PRE_PASS", true));
@@ -352,7 +353,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgramDescriptor lowQualityDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
-        shaderModule._variant = "Colour.LowQuality";
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
         shaderModule._defines.push_back(std::make_pair("LOW_QUALITY", true));
@@ -663,21 +663,20 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->setDoubleSided(false);
 
     ShaderModuleDescriptor vertModule = {};
+    vertModule._batchSameFile = false;
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "grass.glsl";
-    vertModule._variant = "Colour";
 
     vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
-    vertModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
     vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "grass.glsl";
-    fragModule._variant = "Colour";
     fragModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
     fragModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
     fragModule._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
+    fragModule._variant = "Colour";
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
@@ -697,7 +696,6 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassColourOITShader.waitForReady(false);
     ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader);
 
-    vertModule._variant = "PrePass";
     fragModule._variant = "PrePass";
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
@@ -708,7 +706,6 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassPrePassShader.waitForReady(false);
     ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader);
 
-    vertModule._variant = "Shadow";
     fragModule._variant = "Shadow";
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);

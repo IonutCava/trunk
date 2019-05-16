@@ -33,7 +33,8 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "FXAA.glsl";
+    vertModule._sourceFile = "baseVertexShaders.glsl";
+    vertModule._variant = "Dummy";
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
@@ -47,7 +48,9 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     fxaa.setPropertyDescriptor(aaShaderDescriptor);
     _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
 
-    vertModule._sourceFile = "SMAA.glsl";
+    vertModule._sourceFile = "baseVertexShaders.glsl";
+    vertModule._variant = "Dummy";
+
     fragModule._sourceFile = "SMAA.glsl";
 
     ShaderModuleDescriptor geomModule = {};

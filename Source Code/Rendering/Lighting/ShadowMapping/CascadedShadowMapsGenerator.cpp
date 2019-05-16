@@ -38,8 +38,8 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "blur.glsl";
-    vertModule._variant = "GaussBlur";
+    vertModule._sourceFile = "baseVertexShaders.glsl";
+    vertModule._variant = "FullScreenQuad";
 
     ShaderModuleDescriptor geomModule = {};
     geomModule._moduleType = ShaderType::GEOMETRY;
