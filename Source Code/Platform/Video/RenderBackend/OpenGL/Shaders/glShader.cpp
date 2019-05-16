@@ -71,8 +71,10 @@ glShader::glShader(GFXDevice& context,
 }
 
 glShader::~glShader() {
-    Console::d_printfn(Locale::get(_ID("SHADER_DELETE")), name().c_str());
-    GL_API::deleteShaderPrograms(1, &_programHandle);
+    if (_programHandle != GLUtil::_invalidObjectID) {
+        Console::d_printfn(Locale::get(_ID("SHADER_DELETE")), name().c_str());
+        GL_API::deleteShaderPrograms(1, &_programHandle);
+    }
 }
 
 bool glShader::embedsType(ShaderType type) const {
