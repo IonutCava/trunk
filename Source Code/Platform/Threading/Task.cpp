@@ -20,11 +20,17 @@ void finish(Task& task) {
     }
 }
 
-void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction) {
+bool run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction) {
 
+#if 0
     while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
         task._parentPool->threadWaiting();
     }
+#else
+    if (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
+        return false;
+    }
+#endif
 
     if (task._callback) {
         task._callback(task);
@@ -32,12 +38,13 @@ void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> o
 
     pool.taskCompleted(task._id, priority, onCompletionFunction);
     finish(task);
+    return true;
 }
 
 Task& Start(Task& task, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
     while (!task._parentPool->enqueue(
-        [&task, priority, onCompletionFunction]() {
-            run(task, *task._parentPool, priority, onCompletionFunction);
+        [&task, priority, onCompletionFunction]() -> bool {
+            return run(task, *task._parentPool, priority, onCompletionFunction);
         },
         priority))
     {

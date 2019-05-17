@@ -750,7 +750,7 @@ void Material::updateTranslucency() {
 
     // base texture is translucent
     Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
-    if (albedo && albedo->hasTransparency()) {
+    if (albedo && albedo->getState() == ResourceState::RES_LOADED && albedo->hasTransparency()) {
         _translucencySource = TranslucencySource::ALBEDO;
         _translucent = albedo->hasTranslucency();
 
@@ -768,7 +768,7 @@ void Material::updateTranslucency() {
 
     // opacity map
     const Texture_ptr& opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
-    if (opacity && opacity->hasTransparency()) {
+    if (opacity && opacity->getState() == ResourceState::RES_LOADED && opacity->hasTransparency()) {
         _translucencySource = TranslucencySource::OPACITY_MAP;
         _translucent = opacity->hasTranslucency();
     }
@@ -996,6 +996,7 @@ namespace {
         texture.assetName(img_name);
         texture.assetLocation(pathName);
         texture.setPropertyDescriptor(texDesc);
+        texture.waitForReady(false);
         texture.setFlag(!pt.get(textureNode + ".flipped", false));
 
         return CreateResource<Texture>(targetCache, texture);

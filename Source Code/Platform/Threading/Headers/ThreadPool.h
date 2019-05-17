@@ -35,7 +35,7 @@
 
 namespace Divide {
 
-typedef std::function<void()> PoolTask;
+typedef std::function<bool()> PoolTask;
 class TaskPool;
 
 // Dead simple ThreadPool class

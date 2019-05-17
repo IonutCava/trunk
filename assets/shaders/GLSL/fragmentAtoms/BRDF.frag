@@ -1,10 +1,6 @@
 #ifndef _BRDF_FRAG_
 #define _BRDF_FRAG_
 
-#if defined(COMPUTE_TBN)
-#include "bumpMapping.frag"
-#endif
-
 #include "lightInput.cmn"
 
 #include "lightData.frag"

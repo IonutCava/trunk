@@ -101,8 +101,11 @@ bool glShader::uploadToGPU() {
             }
 
             _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], (GLsizei)cstrings.size(), cstrings.data());
-            _valid = _programHandle != 0 && _programHandle != GLUtil::_invalidObjectID;
-
+            if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
+                Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
+                _valid = false;
+                return false;
+            }
         } else {
             _programHandle = glCreateProgram();
             if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
@@ -170,35 +173,35 @@ bool glShader::uploadToGPU() {
                 glDeleteShader(shader);
             }
             shaders.clear();
+        }
 
-            // And check the result
-            GLboolean linkStatus = GL_FALSE;
-            glGetProgramiv(_programHandle, GL_LINK_STATUS, &linkStatus);
+        // And check the result
+        GLboolean linkStatus = GL_FALSE;
+        glGetProgramiv(_programHandle, GL_LINK_STATUS, &linkStatus);
 
-            stringImpl validationBuffer = "[OK]";
-            // If linking failed, show an error, else print the result in debug builds.
-            if (linkStatus == GL_FALSE) {
-                GLint logSize = 0;
-                glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logSize);
-                validationBuffer.resize(logSize);
+        stringImpl validationBuffer = "[OK]";
+        // If linking failed, show an error, else print the result in debug builds.
+        if (linkStatus == GL_FALSE) {
+            GLint logSize = 0;
+            glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logSize);
+            validationBuffer.resize(logSize);
 
-                glGetProgramInfoLog(_programHandle, logSize, NULL, &validationBuffer[0]);
-                if (validationBuffer.size() > g_validationBufferMaxSize) {
-                    // On some systems, the program's disassembly is printed, and that can get quite large
-                    validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
-                    // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
-                    validationBuffer.append(" ... ");
-                }
-
-                Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), _name.c_str(), validationBuffer.c_str(), getGUID());
-            } else {
-                if (Config::ENABLE_GPU_VALIDATION) {
-                    Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), validationBuffer.c_str(), getGUID(), _programHandle);
-                    glObjectLabel(GL_PROGRAM, _programHandle, -1, _name.c_str());
-                }
-
-                _valid = true;
+            glGetProgramInfoLog(_programHandle, logSize, NULL, &validationBuffer[0]);
+            if (validationBuffer.size() > g_validationBufferMaxSize) {
+                // On some systems, the program's disassembly is printed, and that can get quite large
+                validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
+                // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
+                validationBuffer.append(" ... ");
             }
+
+            Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), _name.c_str(), validationBuffer.c_str(), getGUID());
+        } else {
+            if (Config::ENABLE_GPU_VALIDATION) {
+                Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), validationBuffer.c_str(), getGUID(), _programHandle);
+                glObjectLabel(GL_PROGRAM, _programHandle, -1, _name.c_str());
+            }
+
+            _valid = true;
         }
     }
     _sourceCode.fill({});

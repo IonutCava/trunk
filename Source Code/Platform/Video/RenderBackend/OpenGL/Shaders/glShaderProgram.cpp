@@ -340,7 +340,7 @@ bool glShaderProgram::reloadShaders(bool reparseShaderSource) {
             shader = glShader::loadShader(_context,
                                           programName,
                                           loadData,
-                                          GFXDevice::getGPUVendor() == GPUVendor::NVIDIA);
+                                          false && GFXDevice::getGPUVendor() == GPUVendor::NVIDIA);
             assert(shader != nullptr);
         } else if (!reparseShaderSource) {
             shader->AddRef();
