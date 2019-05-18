@@ -94,6 +94,7 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
                                  bool asyncLoad)
     : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad),
       glObject(glObjectType::TYPE_SHADER_PROGRAM, context),
+      _stageMask(UseProgramStageMask::GL_NONE_BIT),
       _validated(false),
       _validationQueued(false),
       _descriptor(descriptor),
@@ -122,6 +123,7 @@ void glShaderProgram::validatePreBind() {
     if (!isValid()) {
         glCreateProgramPipelines(1, &_handle);
         glObjectLabel(GL_PROGRAM_PIPELINE, _handle, -1, resourceName().c_str());
+        _stageMask = UseProgramStageMask::GL_NONE_BIT;
         for (glShader* shader : _shaderStage) {
             // If a shader exists for said stage, attach it
             assert(shader != nullptr);
@@ -130,6 +132,7 @@ void glShaderProgram::validatePreBind() {
                     _handle,
                     shader->stageMask(),
                     shader->getProgramHandle());
+                _stageMask |= shader->stageMask();
             }
         }
 
@@ -152,7 +155,11 @@ void glShaderProgram::validatePostBind() {
             glValidateProgramPipeline(_handle);
 
             GLint status = 0;
-            glGetProgramPipelineiv(_handle, GL_VALIDATE_STATUS, &status);
+            if (_stageMask != UseProgramStageMask::GL_COMPUTE_SHADER_BIT) {
+                glGetProgramPipelineiv(_handle, GL_VALIDATE_STATUS, &status);
+            } else {
+                status = 1;
+            }
 
             // we print errors in debug and in release, but everything else only in debug
             // the validation log is only retrieved if we request it. (i.e. in release,

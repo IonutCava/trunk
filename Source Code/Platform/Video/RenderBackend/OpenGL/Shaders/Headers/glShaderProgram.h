@@ -124,6 +124,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     bool _validationQueued;
     bool _validated;
 
+    UseProgramStageMask _stageMask = UseProgramStageMask::GL_NONE_BIT;
     vectorEASTL<glShader*> _shaderStage;
     static std::array<U32, to_base(ShaderType::COUNT)> _lineOffset;
     const ShaderProgramDescriptor _descriptor;
