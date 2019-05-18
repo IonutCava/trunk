@@ -5,9 +5,7 @@
 
 #include "lightData.frag"
 #include "materialData.frag"
-#if !defined(DISABLE_SHADOW_MAPPING)
 #include "shadowMapping.frag"
-#endif
 
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
 #include "pbr.frag"

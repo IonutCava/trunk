@@ -121,13 +121,14 @@ bool glShaderProgram::unload() noexcept {
 
 void glShaderProgram::validatePreBind() {
     if (!isValid()) {
+        assert(getState() == ResourceState::RES_LOADED);
         glCreateProgramPipelines(1, &_handle);
         glObjectLabel(GL_PROGRAM_PIPELINE, _handle, -1, resourceName().c_str());
         _stageMask = UseProgramStageMask::GL_NONE_BIT;
         for (glShader* shader : _shaderStage) {
             // If a shader exists for said stage, attach it
             assert(shader != nullptr);
-            if (shader->isValid()) {
+            if (shader->uploadToGPU()) {
                 glUseProgramStages(
                     _handle,
                     shader->stageMask(),
@@ -443,6 +444,7 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
 U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) {
     I32 subroutineCount = 0;
 
+    validatePreBind();
     for (glShader* shader : _shaderStage) {
         assert(shader != nullptr);
         if (shader->isValid() && shader->embedsType(type)) {
@@ -457,6 +459,7 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) {
 /// Get the index of the specified subroutine name for the specified stage. Not cached!
 U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) {
 
+    validatePreBind();
     for (glShader* shader : _shaderStage) {
         assert(shader != nullptr);
         if (shader->isValid() && shader->embedsType(type)) {
@@ -469,6 +472,8 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) {
 
 
 void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
+    assert(isValid());
+
     for (glShader* shader : _shaderStage) {
         assert(shader != nullptr);
         if (shader->isValid()) {

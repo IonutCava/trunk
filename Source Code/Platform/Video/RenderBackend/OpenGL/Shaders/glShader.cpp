@@ -81,7 +81,7 @@ bool glShader::embedsType(ShaderType type) const {
 bool glShader::uploadToGPU() {
     // prevent double load
     if (_valid) {
-        return false;
+        return true;
     }
 
     Console::d_printfn(Locale::get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
@@ -240,7 +240,8 @@ bool glShader::load(const ShaderLoadData& data) {
         return false;
     }
 
-    return uploadToGPU();
+    //return uploadToGPU();
+    return true;
 }
 
 // ============================ static data =========================== //
