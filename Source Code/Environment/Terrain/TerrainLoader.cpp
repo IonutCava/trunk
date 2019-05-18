@@ -22,9 +22,9 @@ namespace {
 };
 
 bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
-    const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
-    PlatformContext& context,
-    bool threadedLoading) {
+                                const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
+                                PlatformContext& context,
+                                bool threadedLoading) {
 
     auto waitForReasoureTask = [&context](CachedResource_wptr res) {
         context.taskPool(TaskPoolType::HIGH_PRIORITY).threadWaiting();
@@ -39,16 +39,18 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name);
     textureBlendMap.assetLocation(terrainMapLocation);
     textureBlendMap.setFlag(true);
-
+    textureBlendMap.waitForReadyCbk(waitForReasoureTask);
     // Albedo map
     ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name);
     textureTileMaps.assetLocation(terrainMapLocation);
     textureTileMaps.setFlag(true);
+    textureTileMaps.waitForReadyCbk(waitForReasoureTask);
 
     // Normal map
     ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
     textureNormalMaps.assetLocation(terrainMapLocation);
     textureNormalMaps.setFlag(true);
+    textureNormalMaps.waitForReadyCbk(waitForReasoureTask);
 
     //temp data
     stringImpl layerOffsetStr;
@@ -227,24 +229,27 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     textureWaterCaustics.assetLocation(terrainMapLocation);
     textureWaterCaustics.assetName(terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(miscTexDescriptor);
+    textureWaterCaustics.waitForReadyCbk(waitForReasoureTask);
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
     underwaterAlbedoTexture.assetLocation(terrainMapLocation);
     underwaterAlbedoTexture.assetName(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
     underwaterAlbedoTexture.setPropertyDescriptor(miscTexDescriptor);
+    underwaterAlbedoTexture.waitForReadyCbk(waitForReasoureTask);
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
     underwaterDetailTexture.assetLocation(terrainMapLocation);
     underwaterDetailTexture.assetName(terrainDescriptor->getVariable("underwaterDetailTexture"));
     underwaterDetailTexture.setPropertyDescriptor(miscTexDescriptor);
+    underwaterDetailTexture.waitForReadyCbk(waitForReasoureTask);
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
 
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation"));
     heightMapTexture.assetName(terrainDescriptor->getVariable("heightmap"));
-
+    heightMapTexture.waitForReadyCbk(waitForReasoureTask);
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, terrainDescriptor->is16Bit() ? GFXDataFormat::UNSIGNED_SHORT : GFXDataFormat::UNSIGNED_BYTE);
     heightMapDescriptor.setSampler(heightMapSampler);
@@ -319,9 +324,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ResourceDescriptor terrainShaderShadow("Terrain_Shadow-" + name);
     terrainShaderShadow.setPropertyDescriptor(shadowDescriptor);
-    if (threadedLoading) {
-        terrainShaderShadow.waitForReadyCbk(waitForReasoureTask);
-    }
+    terrainShaderShadow.waitForReadyCbk(waitForReasoureTask);
+
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
     ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
@@ -332,9 +336,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name);
     terrainShaderColour.setPropertyDescriptor(colourDescriptor);
-    if (threadedLoading) {
-        terrainShaderColour.waitForReadyCbk(waitForReasoureTask);
-    }
+    terrainShaderColour.waitForReadyCbk(waitForReasoureTask);
+
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
 
     ShaderProgramDescriptor prePassDescriptor = shaderDescriptor;
@@ -346,9 +349,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name);
     terrainShaderPrePass.setPropertyDescriptor(prePassDescriptor);
-    if (threadedLoading) {
-        terrainShaderPrePass.waitForReadyCbk(waitForReasoureTask);
-    }
+    terrainShaderPrePass.waitForReadyCbk(waitForReasoureTask);
+
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
     ShaderProgramDescriptor lowQualityDescriptor = shaderDescriptor;
@@ -360,9 +362,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name);
     terrainShaderColourLQ.setPropertyDescriptor(lowQualityDescriptor);
-    if (threadedLoading) {
-        terrainShaderColourLQ.waitForReadyCbk(waitForReasoureTask);
-    }
+    terrainShaderColourLQ.waitForReadyCbk(waitForReasoureTask);
+
     ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColourLQ);
 
     terrainMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);
@@ -397,7 +398,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     if (threadedLoading) {
         Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor](const Task & parent) {
             loadThreadedResources(terrain, std::move(terrainDescriptor));
-        }));
+        }, ("TerrainLoader::loadTerrain [ " + name + " ]").c_str()));
     } else {
         loadThreadedResources(terrain, std::move(terrainDescriptor));
     }

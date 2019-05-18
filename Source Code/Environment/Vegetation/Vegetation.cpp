@@ -167,7 +167,8 @@ Vegetation::Vegetation(GFXDevice& context,
         [this](const Task& parentTask) {
             computeVegetationTransforms(parentTask, false);
             computeVegetationTransforms(parentTask, true);
-        }
+        },
+        "Vegetation compute transforms"
         ),
         TaskPriority::DONT_CARE,
         [this]() {

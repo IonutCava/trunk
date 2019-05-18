@@ -100,7 +100,7 @@ vec3 normalUnityBlend(in vec3 n1, in vec3 n2) {
     mat3 nBasis = mat3(
         vec3(n1.z, n1.y, -n1.x), // +90 degree rotation around y axis
         vec3(n1.x, n1.z, -n1.y), // -90 degree rotation around x axis
-        vec3(n1.x, n1.y, n1.z));
+        vec3(n1.x, n1.y,  n1.z));
     return normalize(n2.x * nBasis[0] + n2.y * nBasis[1] + n2.z * nBasis[2]);
 }
 

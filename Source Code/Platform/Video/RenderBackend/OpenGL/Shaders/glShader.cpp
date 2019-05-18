@@ -52,9 +52,7 @@ namespace {
 SharedMutex glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
 
-glShader::glShader(GFXDevice& context,
-                   const stringImpl& name,
-                   const bool deferredUpload)
+glShader::glShader(GFXDevice& context, const stringImpl& name)
     : TrackedObject(),
       GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID()),
       glObject(glObjectType::TYPE_SHADER, context),
@@ -63,7 +61,6 @@ glShader::glShader(GFXDevice& context,
       _valid(false),
       _shouldRecompile(false),
       _loadedFromBinary(false),
-      _deferredUpload(deferredUpload),
       _binaryFormat(GL_NONE),
       _programHandle(GLUtil::_invalidObjectID),
       _name(name)
@@ -243,11 +240,7 @@ bool glShader::load(const ShaderLoadData& data) {
         return false;
     }
 
-    if (!_deferredUpload) {
-        return uploadToGPU();
-    }
-
-    return true;
+    return uploadToGPU();
 }
 
 // ============================ static data =========================== //
@@ -284,8 +277,7 @@ glShader* glShader::getShader(const stringImpl& name) {
 /// Load a shader by name, source code and stage
 glShader* glShader::loadShader(GFXDevice& context,
                                const stringImpl& name,
-                               const ShaderLoadData& data,
-                               bool deferredUpload) {
+                               const ShaderLoadData& data) {
     // See if we have the shader already loaded
     glShader* shader = getShader(name);
     
@@ -293,7 +285,7 @@ glShader* glShader::loadShader(GFXDevice& context,
     // If we do, and don't need a recompile, just return it
     if (shader == nullptr) {
         // If we can't find it, we create a new one
-        shader = MemoryManager_NEW glShader(context, name, deferredUpload);
+        shader = MemoryManager_NEW glShader(context, name);
         newShader = true;
     }
 

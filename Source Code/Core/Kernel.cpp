@@ -130,7 +130,8 @@ void Kernel::startSplashScreen() {
 
             break;
         }
-    });
+    },
+    "Splash Task");
     Start(*_splashTask, TaskPriority::REALTIME/*HIGH*/);
 
     window.swapBuffers(false);

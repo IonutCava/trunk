@@ -39,58 +39,54 @@
 #include "Utility/Headers/Localization.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Headers/PlatformContextComponent.h"
+#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
 class ResourceLoadLock {
 public:
-    explicit ResourceLoadLock(size_t hash, const DELEGATE_CBK<void, CachedResource_wptr>& waitCbk)
+    explicit ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded)
         : _loadingHash(hash)
     {
-#if 0
-        if (waitCbk) {
-            WAIT_FOR_CONDITION_CALLBACK(notLoading(_loadingHash), waitCbk);
-        } else
-#else
-            ACKNOWLEDGE_UNUSED(waitCbk);
-#endif
-        {
+        if (threaded) {
+            WAIT_FOR_CONDITION_CALLBACK(notLoading(_loadingHash), notifyTaskPool, context);
+        } else {
             WAIT_FOR_CONDITION(notLoading(_loadingHash));
         }
 
         UniqueLockShared w_lock(s_hashLock);
-        s_loadingHashes.push_back(_loadingHash);
+        s_loadingHashes.emplace_back(_loadingHash);
     }
 
     ~ResourceLoadLock()
     {
         UniqueLockShared u_lock(s_hashLock);
-        s_loadingHashes.erase(eastl::find(eastl::cbegin(s_loadingHashes), eastl::cend(s_loadingHashes), _loadingHash));
+        s_loadingHashes.erase(std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), _loadingHash));
     }
+
+    static void notifyTaskPool(PlatformContext& context);
 
 private:
     static bool notLoading(size_t hash) {
         SharedLock r_lock(s_hashLock);
-        return eastl::find(eastl::cbegin(s_loadingHashes), eastl::cend(s_loadingHashes), hash) == eastl::cend(s_loadingHashes);
+        return std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), hash) == std::cend(s_loadingHashes);
     }
 
 private:
     size_t _loadingHash;
 
     static SharedMutex s_hashLock;
-    static vectorEASTL<size_t> s_loadingHashes;
+    static vectorFast<size_t> s_loadingHashes;
 };
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources
-/// - load new resources using appropriate resource loader and store them in
-/// cache
+/// - load new resources using appropriate resource loader and store them in cache
 /// - remove resources by name / pointer or remove all
 class ResourceCache : public PlatformContextComponent {
 public:
     ResourceCache(PlatformContext& context);
     ~ResourceCache();
 
- 
     /// Each resource entity should have a 'resource name'Loader implementation.
     template <typename T>
     typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
@@ -107,7 +103,7 @@ public:
             // If two thread are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
             // So check if the hash is currently in the "processing" list, and if it is, just busy-spin until done
             // Once done, lock the hash for ourselves
-            ResourceLoadLock res_lock(loadingHash, descriptor.waitForReadyCbk());
+            ResourceLoadLock res_lock(loadingHash, _context, !Runtime::isMainThread());
 
             /// Check cache first to avoid loading the same resource twice
             ptr = std::static_pointer_cast<T>(find(loadingHash));
@@ -128,7 +124,11 @@ public:
             if (descriptor.waitForReadyCbk()) {
                 WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, descriptor.waitForReadyCbk(), ptr);
             } else {
-                WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
+                if (!Runtime::isMainThread()) {
+                    WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, ResourceLoadLock::notifyTaskPool, _context);
+                } else {
+                    WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
+                }
             }
         }
 

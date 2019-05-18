@@ -129,7 +129,7 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGAT
     _runningTaskCount.fetch_sub(1);
 }
 
-Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction) 
+Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName) 
 {
     if (parentTask != nullptr) {
         parentTask->_unfinishedJobs.fetch_add(1, std::memory_order_relaxed);
@@ -144,7 +144,9 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& th
             task = &crtTask;
         }
     } while (task == nullptr);
-
+#if defined(_DEBUG)
+    task->_debugName = debugName;
+#endif
     task->_parent = parentTask;
     task->_parentPool = this;
     task->_callback = threadedFunction;
@@ -163,14 +165,14 @@ void TaskPool::threadWaiting() {
     _poolImpl->executeOneTask(false);
 }
 
-Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction)
+Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName)
 {
-    return CreateTask(pool, nullptr, threadedFunction);
+    return CreateTask(pool, nullptr, threadedFunction, debugName);
 }
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction)
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName)
 {
-    return pool.createTask(parentTask, threadedFunction);
+    return pool.createTask(parentTask, threadedFunction, debugName);
 }
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear) {
@@ -183,7 +185,8 @@ void parallel_for(TaskPool& pool,
                   U32 partitionSize,
                   TaskPriority priority,
                   bool noWait,
-                  bool useCurrentThread)
+                  bool useCurrentThread,
+                  const char* debugName)
 {
     if (count > 0) {
 
@@ -206,7 +209,8 @@ void parallel_for(TaskPool& pool,
                        [&cbk, &jobCount, start, end](const Task& parentTask) {
                            cbk(parentTask, start, end);
                            jobCount.fetch_sub(1);
-                       }), priority);
+                       },
+                       debugName), priority);
         }
         if (remainder > 0) {
             Start(*CreateTask(pool,
@@ -214,18 +218,21 @@ void parallel_for(TaskPool& pool,
                        [&cbk, &jobCount, count, remainder](const Task& parentTask) {
                            cbk(parentTask, count - remainder, count);
                            jobCount.fetch_sub(1);
-                       }), priority);
+                       },
+                       debugName), priority);
         }
 
         if (useCurrentThread) {
-            Task* threadTask = CreateTask(pool, [](const Task& parentTask) {ACKNOWLEDGE_UNUSED(parentTask); });
+            Task* threadTask = CreateTask(pool, [](const Task& parentTask) {ACKNOWLEDGE_UNUSED(parentTask); }, debugName);
             const U32 start = adjustedCount * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
             cbk(*threadTask, start, end);
         }
         if (!noWait) {
             while (jobCount.load() > 0) {
-                pool.threadWaiting();
+                if (!Runtime::isMainThread()) {
+                    pool.threadWaiting();
+                }
             }
         }
     }

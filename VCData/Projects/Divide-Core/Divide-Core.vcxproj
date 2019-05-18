@@ -223,6 +223,7 @@
     <None Include="../../../Source Code/Core\Time\Headers\ApplicationTimer.inl" />
     <None Include="../../../Source Code/Core\Time\Headers\FrameRateHandler.inl" />
     <None Include="../../../Source Code/Core\Time\Headers\ProfileTimer.inl" />
+    <None Include="cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4B595495-F8D2-4E58-89D4-DC7257E69676}</ProjectGuid>

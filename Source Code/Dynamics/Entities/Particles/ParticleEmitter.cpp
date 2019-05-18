@@ -298,7 +298,7 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
         // invalidateCache means that the existing particle data is no longer partially sorted
         _particles->sort(true);
         _buffersDirty[to_U32(renderStagePass._stage)] = true;
-    });
+    }, "ParticleEmitter - buffer update");
 
     Start(*_bufferUpdate);
 }
@@ -388,7 +388,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
                 aabb.add(_particles->_position[i]);
             }
             setBounds(aabb);
-        });
+        }, "ParticleEmitter - bb update");
         Start(*_bbUpdate);
     }
 

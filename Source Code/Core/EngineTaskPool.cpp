@@ -12,14 +12,14 @@ namespace Divide {
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
-Task* CreateTask(PlatformContext& context, const DELEGATE_CBK<void, Task&>& threadedFunction)
+Task* CreateTask(PlatformContext& context, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName)
 {
-    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), threadedFunction);
+    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), threadedFunction, debugName);
 }
 
-Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction)
+Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName)
 {
-    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, threadedFunction);
+    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, threadedFunction, debugName);
 }
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear) {
@@ -32,8 +32,9 @@ void parallel_for(PlatformContext& context,
                   U32 partitionSize,
                   TaskPriority priority,
                   bool noWait,
-                  bool useCurrentThread) {
-    parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), cbk, count, partitionSize, priority, noWait, useCurrentThread);
+                  bool useCurrentThread,
+                  const char* debugName) {
+    parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), cbk, count, partitionSize, priority, noWait, useCurrentThread, debugName);
 }
 
 }; //namespace Divide

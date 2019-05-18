@@ -56,7 +56,7 @@ public:
     void flushCallbackQueue();
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
-    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
+    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName = "");
 
     inline U8 workerThreadCount() const noexcept {
         return _workerThreadCount;
@@ -81,9 +81,9 @@ public:
     friend void TaskYield(const Task& task);
     friend Task& Start(Task& task, TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction);
     friend bool StopRequested(const Task& task);
-    friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread);
+    friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread, const char* debugName);
 
-    friend bool run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction);
+    friend void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction);
     void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     
     bool enqueue(PoolTask&& task, TaskPriority priority);
@@ -108,9 +108,9 @@ public:
      std::atomic_uint _threadCount;
 };
 
-Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction);
+Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName = "");
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName = "");
 
 void parallel_for(TaskPool& pool,
                   const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
@@ -118,7 +118,8 @@ void parallel_for(TaskPool& pool,
                   U32 partitionSize,
                   TaskPriority priority = TaskPriority::DONT_CARE,
                   bool noWait = false,
-                  bool useCurrentThread = false);
+                  bool useCurrentThread = false,
+                  const char* debugName = "");
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);
 

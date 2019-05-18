@@ -28,7 +28,8 @@ void ParticleVelocityGenerator::generate(Task& packagedTasksParent,
                 {
                     velocity.set(Random(min, max));
                 });
-            }));
+            },
+            "ParticleVelocityGenerator"));
         });
 }
 };

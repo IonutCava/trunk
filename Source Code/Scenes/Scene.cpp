@@ -442,7 +442,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         //loadAsset(parentTask, node, crtNode, waitForReady);
         Start(*CreateTask(*parentTask._parentPool, &parentTask, [this, node, waitForReady, crtNode](Task& subTask) -> void {
             loadAsset(subTask, node, crtNode, waitForReady);
-        }));
+        }, ("Load asset task [ " + node.name + " ]").c_str()));
     }
 }
 
@@ -1025,7 +1025,7 @@ bool Scene::load(const stringImpl& name) {
     loadDefaultCamera();
 
     TaskPool& pool = _context.taskPool(TaskPoolType::HIGH_PRIORITY);
-    Task* loadTask = CreateTask(pool, DELEGATE_CBK<void, Task&>());
+    Task* loadTask = CreateTask(pool, DELEGATE_CBK<void, Task&>(), ("Scene [ "+ name +" ] load parent task").c_str());
     while (!_xmlSceneGraph.empty()) {
         XML::SceneNode node = _xmlSceneGraph.top();
         _xmlSceneGraph.pop();
@@ -1033,7 +1033,7 @@ bool Scene::load(const stringImpl& name) {
         Start(
         *CreateTask(pool, loadTask, [this, node](Task & parentTask) -> void {
             loadAsset(parentTask, node, &_sceneGraph->getRoot(), false);
-        }));
+        },"Parent load asset task"));
     }
     Wait(Start(*loadTask));
 

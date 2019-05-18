@@ -58,10 +58,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
    public:
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for
-    glShader(GFXDevice& context,
-             const stringImpl& name,
-             const bool deferredUpload);
-
+    explicit glShader(GFXDevice& context, const stringImpl& name);
     ~glShader();
 
     bool load(const ShaderLoadData& data);
@@ -84,8 +81,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     /// Add or refresh a shader from the cache
     static glShader* loadShader(GFXDevice& context,
                                 const stringImpl& name,
-                                const ShaderLoadData& data,
-                                bool deferredUpload);
+                                const ShaderLoadData& data);
 
    private:
      bool loadFromBinary();
@@ -136,7 +132,6 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
   private:
     bool _valid;
     bool _loadedFromBinary;
-    bool _deferredUpload;
     bool _shouldRecompile;
 
     GLenum _binaryFormat;

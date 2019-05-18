@@ -110,7 +110,8 @@ namespace Divide {
                                           [pass, buf, &sceneRenderState](const Task & parentTask) {
                                               pass->render(parentTask, sceneRenderState, *buf);
                                               buf->batch();
-                                          });
+                                          },
+                                          "Render pass task");
                     Start(*tasks[i]);
                 }
                 { //PostFX should be pretty fast
@@ -126,7 +127,8 @@ namespace Divide {
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
                                                 buf->batch();
-                                            });
+                                            },
+                                            "PostFX pass task");
                     Start(*postFXTask);
                 }
             }

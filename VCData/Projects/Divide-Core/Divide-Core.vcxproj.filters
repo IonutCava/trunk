@@ -43,6 +43,7 @@
     <None Include="../../../Source Code/Core\Headers\ByteBuffer.inl">
       <Filter>Core\Headers</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Core">

@@ -3,15 +3,22 @@
 #include "Headers/ResourceCache.h"
 
 #include "Environment/Terrain/Headers/TerrainLoader.h"
+#include "Core/Headers/TaskPool.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 
 namespace Divide {
 
 SharedMutex ResourceLoadLock::s_hashLock;
-vectorEASTL<size_t> ResourceLoadLock::s_loadingHashes;
+vectorFast<size_t> ResourceLoadLock::s_loadingHashes;
+
+
+void ResourceLoadLock::notifyTaskPool(PlatformContext& context) {
+    context.taskPool(TaskPoolType::HIGH_PRIORITY).threadWaiting();
+}
 
 void DeleteResource::operator()(CachedResource* res) {
-    WAIT_FOR_CONDITION(res->getState() == ResourceState::RES_LOADED);
+    WAIT_FOR_CONDITION(res->getState() == ResourceState::RES_LOADED, false);
 
     _context.remove(res);
 

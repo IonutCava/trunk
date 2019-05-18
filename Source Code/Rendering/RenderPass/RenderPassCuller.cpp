@@ -101,7 +101,8 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
                      g_nodesPerCullingPartition,
                      nodeParams._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
                      false, //Wait for all subtasks to finish! This means that the subtasks can run without waiting as the parent task should keep count of all running child taks
-                     true);
+                     true,
+                     "Frustum cull task");
         
         for (const VisibleNodeList& nodeListEntry : nodes) {
             nodeCache.insert(eastl::end(nodeCache), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
@@ -163,7 +164,8 @@ void RenderPassCuller::frustumCullNode(const Task& task,
                          g_nodesPerCullingPartition * 2,
                          params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
                          false,
-                         true);
+                         true,
+                         "Frustum cull node task");
             for (const VisibleNodeList& nodeListEntry : nodesTemp) {
                 nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
             }

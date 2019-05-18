@@ -71,7 +71,6 @@ bool glTexture::unload() noexcept {
 }
 
 void glTexture::threadedLoad() {
-    assert(_textureData._textureHandle != 0);
 
     Texture::threadedLoad();
 

@@ -206,7 +206,8 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
                     _octree->updateTree();
                 }
                 _octree->update(deltaTimeUS);
-            }), 
+            },
+            "SceneGraph - update octree"), 
             TaskPriority::DONT_CARE,
             [this]() mutable
             {

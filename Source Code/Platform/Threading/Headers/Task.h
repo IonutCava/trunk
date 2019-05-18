@@ -54,6 +54,9 @@ struct alignas(64) Task {
     std::atomic_ushort _unfinishedJobs;
     std::atomic_bool _stopRequested = false;
     DELEGATE_CBK<void, Task&> _callback;
+#if defined(_DEBUG)
+    eastl::string _debugName = "";
+#endif
 };
 
 Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, const DELEGATE_CBK<void>& onCompletionFunction = {});

@@ -14,10 +14,6 @@
 
 namespace Divide {
 
-namespace {
-    static const U16 g_partitionSize = 256;
-};
-
 const char* Texture::s_missingTextureFileName = nullptr;
 
 Texture::Texture(GFXDevice& context,
@@ -63,7 +59,8 @@ bool Texture::load() {
         Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
             [this](const Task & parent) {
                 threadedLoad();
-        }));
+        },
+        ("Texture load task [ " + resourceName() + " ]").c_str()));
     } else {
         threadedLoad();
     }
@@ -193,7 +190,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         const stringImpl cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation;
         const stringImpl cacheName = fwp._path + "_" + fwp._fileName + ".cache";
         ByteBuffer metadataCache;
-        if (metadataCache.loadFromFile(cachePath, cacheName)) {
+        if (false && metadataCache.loadFromFile(cachePath, cacheName)) {
             metadataCache >> _hasTransparency;
             metadataCache >> _hasTranslucency;
         } else {
@@ -227,7 +224,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                     }
                 };
 
-                parallel_for(_context.context(), findAlpha, width, g_partitionSize);
+                parallel_for(_context.context(), findAlpha, width, std::max(16u, to_U32(width / 10)), TaskPriority::DONT_CARE, false, true, ("Find alpha task [ " + name + " ]").c_str());
 
                 metadataCache << _hasTransparency;
                 metadataCache << _hasTranslucency;

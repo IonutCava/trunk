@@ -224,7 +224,8 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, cons
                     unloadScene(sceneToUnload);
                 }
             }
-        }),
+        },
+        "Switch scene task"),
         threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME, 
         [this, name, &targetRenderViewport, unloadPrevious, &sceneToUnload]()
         {
@@ -805,7 +806,8 @@ bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
                            nullptr,
                            [&activeScene, toCache](const Task& parentTask) {
                                LoadSave::saveScene(activeScene, toCache);
-                           });
+                           },
+                           "Save scene task");
     Start(*_saveTask, deferred ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     return true;
