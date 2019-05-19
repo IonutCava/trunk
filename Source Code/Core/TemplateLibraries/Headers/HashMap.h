@@ -37,6 +37,14 @@
 #include <EASTL/unordered_map.h>
 #include <EASTL/intrusive_hash_map.h>
 
+#pragma warning(push)
+#pragma warning(disable: 4310)
+#pragma warning(disable: 4458)
+#include <skarupke/flat_hash_map.hpp>
+#include <skarupke/unordered_map.hpp>
+#include <skarupke/bytell_hash_map.hpp>
+#pragma warning(pop)
+
 template<class T>
 struct EnumHash;
 

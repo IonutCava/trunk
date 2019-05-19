@@ -272,7 +272,7 @@ private:
     static bool s_syncDeleteQueueSwitchFlag;
     static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[2];
 
-    typedef std::unordered_map<I64, GLStateTracker> stateTrackerMap;
+    typedef ska::bytell_hash_map<I64, GLStateTracker> stateTrackerMap;
     static stateTrackerMap s_stateTrackers;
     static GLStateTracker* s_activeStateTracker;
 

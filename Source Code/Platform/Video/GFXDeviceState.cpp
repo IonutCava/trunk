@@ -598,6 +598,7 @@ void GFXDevice::closeRenderingAPI() {
     MemoryManager::DELETE(_shaderComputeQueue);
     ShaderProgram::onShutdown();
     _gpuObjectArena.clear();
+    assert(ShaderProgram::shaderProgramCount() == 0);
     // Close the rendering API
     _api->closeRenderingAPI();
     _api.reset();

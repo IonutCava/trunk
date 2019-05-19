@@ -217,7 +217,7 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
         pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
         if (!_globalPushConstants.empty()) {
-            GFX::SendPushConstantsCommand pushConstantsCommand;
+            GFX::SendPushConstantsCommand pushConstantsCommand = {};
             pushConstantsCommand._constants = _globalPushConstants;
             pkg.addPushConstantsCommand(pushConstantsCommand);
         }

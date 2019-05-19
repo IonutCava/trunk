@@ -408,7 +408,15 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     ModuleDefines fragDefines = {};
     ModuleDefines globalDefines = {};
 
-    globalDefines.insert(std::cend(globalDefines), std::cbegin(_extraShaderDefines), std::cend(_extraShaderDefines));
+    vertDefines.insert(std::cend(vertDefines),
+                       std::cbegin(_extraShaderDefines[to_base(ShaderType::VERTEX)]),
+                       std::cend(_extraShaderDefines[to_base(ShaderType::VERTEX)]));
+
+    fragDefines.insert(std::cend(fragDefines),
+                       std::cbegin(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]),
+                       std::cend(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]));
+    
+    //vertDefines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
@@ -422,7 +430,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     stringImpl variant = "";
     stringImpl shaderName = vertSource + "_" + fragSource;
 
-    globalDefines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
 
     if (renderStagePass.isDepthPass()) {
         if (renderStagePass._stage == RenderStage::SHADOW) {
@@ -440,6 +447,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderName += ".OIT";
         fragDefines.push_back(std::make_pair("OIT_PASS", true));
     }
+    fragDefines.push_back(std::make_pair(Util::StringFormat("TEX_OPERATION %d", to_base(getTextureOperation())), true));
 
     // Bump mapping?
     if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
@@ -803,7 +811,7 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
     retMatrix.setRow(0, _colourData._diffuse);
     retMatrix.setRow(1, _colourData._specular);
     retMatrix.setRow(2, FColour(_colourData._emissive.rgb(), _colourData._shininess));
-    retMatrix.setRow(3, vec4<F32>(to_F32(getTextureOperation()), getParallaxFactor(), 0.0, 0.0));
+    retMatrix.setRow(3, vec4<F32>(0.0f, getParallaxFactor(), 0.0f, 0.0f));
 }
 
 void Material::rebuild() {

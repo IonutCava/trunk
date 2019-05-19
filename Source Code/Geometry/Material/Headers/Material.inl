@@ -260,14 +260,28 @@ inline const Material::ShaderData& Material::getBaseShaderData() const {
     return _baseShaderSources;
 }
 
-inline void Material::addGlobalShaderDefine(const stringImpl& define, bool addPrefix) {
-    if (eastl::find(eastl::cbegin(_extraShaderDefines), eastl::cend(_extraShaderDefines), std::make_pair(define, addPrefix)) == eastl::cend(_extraShaderDefines)) {
-        _extraShaderDefines.emplace_back(define, addPrefix);
+inline void Material::addShaderDefine(ShaderType type, const stringImpl& define, bool addPrefix) {
+    if (type != ShaderType::COUNT) {
+        addShaderDefineInternal(type, define, addPrefix);
+    } else {
+        for (U8 i = 0; i < to_U8(ShaderType::COUNT); ++i) {
+            addShaderDefine(static_cast<ShaderType>(i), define, addPrefix);
+        }
     }
 }
 
-inline const ModuleDefines& Material::extraShaderDefines() const {
-    return _extraShaderDefines;
+inline void Material::addShaderDefineInternal(ShaderType type, const stringImpl& define, bool addPrefix) {
+    ModuleDefines& defines = _extraShaderDefines[to_base(type)];
+
+    if (eastl::find(eastl::cbegin(defines), eastl::cend(defines), std::make_pair(define, addPrefix)) == eastl::cend(defines)) {
+        defines.emplace_back(define, addPrefix);
+    }
+}
+
+inline const ModuleDefines& Material::shaderDefines(ShaderType type) const {
+    assert(type != ShaderType::COUNT);
+
+    return _extraShaderDefines[to_base(type)];
 }
 
 }; //namespace Divide

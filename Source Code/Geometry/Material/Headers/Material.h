@@ -246,10 +246,13 @@ class Material : public CachedResource {
     void setBaseShaderData(const ShaderData& data);
     const ShaderData& getBaseShaderData() const;
 
-    void addGlobalShaderDefine(const stringImpl& define, bool addPrefix);
-    const ModuleDefines& extraShaderDefines() const;
+    // type == ShaderType::Count = add to all stages
+    void addShaderDefine(ShaderType type, const stringImpl& define, bool addPrefix);
+    const ModuleDefines& shaderDefines(ShaderType type) const;
 
    private:
+    void addShaderDefineInternal(ShaderType type, const stringImpl& define, bool addPrefix);
+
     void updateTranslucency();
 
     bool getTextureDataFast(RenderStagePass renderStagePass, TextureDataContainer& textureData);
@@ -307,7 +310,7 @@ class Material : public CachedResource {
     TextureOperation _operation;
     BumpMethod _bumpMethod;
     ColourData _colourData;
-    ModuleDefines _extraShaderDefines;
+    std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines;
 
     static SharedMutex s_shaderDBLock;
     static hashMap<size_t, ShaderProgram_ptr> s_shaderDB;

@@ -70,13 +70,13 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     typedef hashMap<Input::KeyCode, PressReleaseActionCbks> KeyMapCache;
     typedef hashMap<Input::MouseButton, PressReleaseActionCbks> MouseMapCache;
-    typedef std::unordered_map<JoystickMapKey, PressReleaseActionCbks, pair_hash> JoystickMapCacheEntry;
-    typedef std::unordered_map<std::underlying_type<Input::Joystick>::type, JoystickMapCacheEntry> JoystickMapCache;
+    typedef ska::bytell_hash_map<JoystickMapKey, PressReleaseActionCbks, pair_hash> JoystickMapCacheEntry;
+    typedef ska::bytell_hash_map<std::underlying_type<Input::Joystick>::type, JoystickMapCacheEntry> JoystickMapCache;
 
     typedef hashMap<Input::KeyCode, PressReleaseActions> KeyMap;
     typedef hashMap<Input::MouseButton, PressReleaseActions> MouseMap;
-    typedef std::unordered_map<JoystickMapKey, PressReleaseActions, pair_hash> JoystickMapEntry;
-    typedef std::unordered_map<std::underlying_type<Input::Joystick>::type, JoystickMapEntry> JoystickMap;
+    typedef ska::bytell_hash_map<JoystickMapKey, PressReleaseActions, pair_hash> JoystickMapEntry;
+    typedef ska::bytell_hash_map<std::underlying_type<Input::Joystick>::type, JoystickMapEntry> JoystickMap;
 
     typedef vector<std::pair<Input::KeyCode, Input::InputState>> KeyLog;
     typedef vector<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> MouseBtnLog;

@@ -14,7 +14,9 @@
 
 #if !defined(SKIP_TEXTURES)
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
+#if TEX_OPERATION != TEX_NONE
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
+#endif
 #endif
 
 layout(binding = TEXTURE_REFLECTION_PLANAR) uniform sampler2D texReflectPlanar;
@@ -118,14 +120,11 @@ vec4 getTextureColour(in vec2 uv) {
 
     vec4 colour = texture(texDiffuse0, uv);
 
-    if (dvd_texOperation == TEX_NONE) {
-        return colour;
-    }
-
+#if TEX_OPERATION != TEX_NONE
     vec4 colour2 = texture(texDiffuse1, uv);
 
     // Read from the texture
-    switch (dvd_texOperation) {
+    switch (TEX_OPERATION) {
         default             : colour = vec4(0.7743, 0.3188, 0.5465, 1.0);   break; // <hot pink to easily spot it in a crowd
         case TEX_MODULATE   : colour *= colour2;       break;
         case TEX_REPLACE    : colour  = colour2;       break;
@@ -141,6 +140,7 @@ vec4 getTextureColour(in vec2 uv) {
             colour = (colour + colour2) - (colour * colour2);
         }break;
     }
+#endif
 
     return saturate(colour);
 }

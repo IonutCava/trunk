@@ -80,7 +80,7 @@ void ResourceCache::add(CachedResource_wptr res) {
 
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getGUID(), hash);
     UniqueLockShared w_lock(_creationMutex);
-    hashAlg::insert(_resDB, hashAlg::make_pair(hash, res));
+    _resDB.insert({ hash, res });
 }
 
 CachedResource_ptr ResourceCache::find(size_t descriptorHash) {

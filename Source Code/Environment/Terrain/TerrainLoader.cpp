@@ -290,26 +290,29 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shaderDescriptor._modules.push_back(fragModule);
 
     for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
-        if (!context.config().rendering.shadowMapping.enabled) {
-            shaderModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
-        }
-
         if (terrainDescriptor->wireframeDebug()) {
             shaderModule._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
         }
 
         shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-        shaderModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-        shaderModule._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
-        shaderModule._defines.push_back(std::make_pair("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)), true));
-
-        shaderModule._defines.push_back(std::make_pair(layerCountData, false));
         shaderModule._defines.push_back(std::make_pair("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true));
-        shaderModule._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
+
+        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+            if (!context.config().rendering.shadowMapping.enabled) {
+                shaderModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+            }
+
+            shaderModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
+            shaderModule._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
+            shaderModule._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
+
+            shaderModule._defines.push_back(std::make_pair(layerCountData, false));
+            shaderModule._defines.push_back(std::make_pair("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)), true));
+        }
     }
 
     ShaderProgramDescriptor shadowDescriptor = shaderDescriptor;
@@ -668,7 +671,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "grass.glsl";
 
-    vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
+    //vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
     vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
 
     ShaderModuleDescriptor fragModule = {};

@@ -36,7 +36,7 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 #define dvd_boneCount     uint(dvd_Matrices[VAR.dvd_baseInstance]._normalMatrixW[0][3])
 #endif
 
-// x - textureOperation; y - parallax/relief mapping factor, z - lod level, w - data
+// x - reserved; y - parallax/relief mapping factor, z - lod level, w - data
 #define buffer_matProperties dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix[3]
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull flag
@@ -44,7 +44,6 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 #define dvd_dataFlag int(buffer_matProperties.w)
 
 #if defined(FRAG_SHADER)
-#define dvd_texOperation    uint(buffer_matProperties.x)
 #define dvd_parallaxFactor  buffer_matProperties.y
 #define dvd_reliefFactor    dvd_parallaxFactor
 #define dvd_reflectionIndex uint(dvd_Matrices[VAR.dvd_baseInstance]._normalMatrixW[1][3])

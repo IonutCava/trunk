@@ -112,7 +112,7 @@ private:
     Factory() = default;
 
     static auto &data() {
-        static std::unordered_map<ComponentType::_integral, DELEGATE_CBK<void, SceneGraphNode&, Args...>> s;
+        static ska::bytell_hash_map<ComponentType::_integral, DELEGATE_CBK<void, SceneGraphNode&, Args...>> s;
         return s;
     }
 };

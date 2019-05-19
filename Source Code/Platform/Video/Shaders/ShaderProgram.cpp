@@ -22,6 +22,7 @@ ShaderProgram::ShaderQueue ShaderProgram::s_recompileQueue;
 ShaderProgram::ShaderProgramMap ShaderProgram::s_shaderPrograms;
 
 SharedMutex ShaderProgram::s_programLock;
+std::atomic_int ShaderProgram::s_shaderCount;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, 
                              size_t descriptorHash,
@@ -38,11 +39,13 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
     if (shaderFileName.empty()) {
         assetName(resourceName());
     }
+    s_shaderCount.fetch_add(1, std::memory_order_relaxed);
 }
 
 ShaderProgram::~ShaderProgram()
 {
     Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), resourceName().c_str());
+    s_shaderCount.fetch_sub(1, std::memory_order_relaxed);
 }
 
 bool ShaderProgram::load() {

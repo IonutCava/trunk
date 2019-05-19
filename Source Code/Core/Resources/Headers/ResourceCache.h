@@ -162,7 +162,7 @@ protected:
 
 protected:
     /// multithreaded resource creation
-    typedef hashMap<size_t, CachedResource_wptr> ResourceMap;
+    typedef ska::bytell_hash_map<size_t, CachedResource_wptr> ResourceMap;
 
     ResourceMap _resDB; 
     mutable SharedMutex _creationMutex;

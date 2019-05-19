@@ -73,8 +73,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
    public:
     typedef std::pair<ShaderProgram*, size_t> ShaderProgramMapEntry;
-    typedef hashMap<I64 /*handle*/, ShaderProgramMapEntry> ShaderProgramMap;
-    typedef hashMap<U64 /*name hash*/, stringImpl> AtomMap;
+    typedef ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry> ShaderProgramMap;
+    typedef ska::bytell_hash_map<U64 /*name hash*/, stringImpl> AtomMap;
     typedef std::stack<ShaderProgram*, vectorFast<ShaderProgram*> > ShaderQueue;
 
     /// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used
@@ -196,6 +196,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static stringImpl getDefinesHash(const ModuleDefines& defines);
 
+    static I32 shaderProgramCount() { return s_shaderCount.load(std::memory_order_relaxed); }
+
    protected:
      virtual bool recompileInternal() = 0;
 
@@ -223,6 +225,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static bool s_useShaderTextCache;
     static bool s_useShaderBinaryCache;
+    static std::atomic_int s_shaderCount;
 
    private:
     std::array<vector<U32>, to_base(ShaderType::COUNT)> _functionIndex;
