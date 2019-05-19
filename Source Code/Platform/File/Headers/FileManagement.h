@@ -117,6 +117,8 @@ namespace Paths {
 
     // include command regex pattern
     extern std::regex g_includePattern;
+    // define regex pattern
+    extern std::regex g_definePattern;
     // use command regex pattern
     extern std::regex g_usePattern;
 

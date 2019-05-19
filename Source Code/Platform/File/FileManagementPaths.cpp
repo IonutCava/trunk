@@ -77,6 +77,7 @@ namespace Paths {
     };
 
     std::regex g_includePattern;
+    std::regex g_definePattern;
     std::regex g_usePattern;
 
     void initPaths(const SysInfo& info) {
@@ -133,6 +134,7 @@ namespace Paths {
         Shaders::HLSL::g_parentShaderLoc = stringImpl("HLSL/");
 
         g_includePattern = std::regex(R"(^\s*#\s*include\s+["<]([^">]+)*[">])");
+        g_definePattern = std::regex(R"(([#!][A-z]{2,}[\s]{1,}?([A-z]{2,}[\s]{1,}?)?)([\\(]?[^\s\\)]{1,}[\\)]?)?)");
         g_usePattern = std::regex(R"(^\s*use\s*\(\s*\"(.*)\"\s*\))");
     }
 

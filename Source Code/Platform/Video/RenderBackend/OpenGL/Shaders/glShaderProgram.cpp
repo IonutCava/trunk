@@ -246,7 +246,9 @@ vector<stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
             Util::ReplaceStringInPlace(sourceCodeOut.second, "//__CUSTOM_DEFINES__", header);
             Util::ReplaceStringInPlace(sourceCodeOut.second, "//__LINE_OFFSET_", Util::StringFormat("#line %d", lineOffset));
         }
-        sourceCodeOut.second = preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, true);
+        vector<stringImpl> foundDefines;
+        foundDefines.reserve(20);
+        sourceCodeOut.second = preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, foundDefines, true);
 
         shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
                         fileName,
@@ -494,6 +496,7 @@ stringImpl glShaderProgram::preprocessIncludes(const stringImpl& name,
                                                const stringImpl& source,
                                                GLint level,
                                                vector<stringImpl>& foundAtoms,
+                                               vector<stringImpl>& foundDefines,
                                                bool lock) {
     if (level > 32) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
@@ -509,6 +512,9 @@ stringImpl glShaderProgram::preprocessIncludes(const stringImpl& name,
 
     while (std::getline(input, line)) {
         if (!std::regex_search(line, matches, Paths::g_includePattern)) {
+            if (std::regex_search(line, matches, Paths::g_definePattern)) {
+                foundDefines.push_back(Util::Trim(matches[1].str()));
+            }
             output.append(line);
         } else {
             include_file = Util::Trim(matches[1].str().c_str());
@@ -542,7 +548,7 @@ stringImpl glShaderProgram::preprocessIncludes(const stringImpl& name,
             if (wasParsed) {
                 output.append(include_string);
             } else {
-                output.append(preprocessIncludes(name, include_string, level + 1, foundAtoms, lock));
+                output.append(preprocessIncludes(name, include_string, level + 1, foundAtoms, foundDefines, lock));
             }
         }
 
@@ -578,7 +584,9 @@ const stringImpl& glShaderProgram::shaderFileReadLocked(const stringImpl& filePa
     readFile(filePath, atomName, output, FileType::TEXT);
 
     if (recurse) {
-        output = preprocessIncludes(atomName, output, 0, foundAtoms, false);
+        vector<stringImpl> foundDefines;
+        foundDefines.reserve(20);
+        output = preprocessIncludes(atomName, output, 0, foundAtoms, foundDefines, false);
     }
 
     auto result = s_atoms.insert({ atomNameHash, output });

@@ -553,7 +553,7 @@ namespace Attorney {
            vector<std::tuple<GraphicsResource::Type, I64, U64>>::iterator it;
            it = std::find_if(std::begin(device._graphicResources),
                 std::end(device._graphicResources),
-                [type, GUID](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) -> bool {
+                [type, GUID, nameHash](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) -> bool {
                     if (std::get<1>(crtEntry) == GUID) {
                         assert(std::get<0>(crtEntry) == type && std::get<2>(crtEntry) == nameHash);
                         return true;

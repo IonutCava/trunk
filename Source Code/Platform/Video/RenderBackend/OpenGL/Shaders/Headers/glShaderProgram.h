@@ -82,7 +82,12 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     static void shaderFileRead(const stringImpl& filePath, const stringImpl& fileName, stringImpl& sourceCodeOut);
     static void shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode);
-    static stringImpl preprocessIncludes(const stringImpl& name, const stringImpl& source, GLint level, vector<stringImpl>& foundAtoms, bool lock);
+    static stringImpl preprocessIncludes(const stringImpl& name,
+                                         const stringImpl& source,
+                                         GLint level,
+                                         vector<stringImpl>& foundAtoms,
+                                         vector<stringImpl>& foundDefines,
+                                         bool lock);
 
    protected:
 
