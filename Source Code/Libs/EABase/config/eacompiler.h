@@ -16,6 +16,7 @@
  *     EA_COMPILER_QNX
  *     EA_COMPILER_GREEN_HILLS
  *     EA_COMPILER_CLANG
+ *     EA_COMPILER_CLANG_CL
  *     
  *     EA_COMPILER_VERSION = <integer>
  *     EA_COMPILER_NAME = <string>
@@ -297,6 +298,8 @@
 	#if !defined(EA_COMPILER_CPP17_ENABLED) && defined(__cplusplus)
 		#if (__cplusplus >= 201703L) 
 			#define EA_COMPILER_CPP17_ENABLED 1
+		#elif defined(_MSVC_LANG) && (_MSVC_LANG >= 201703L) // C++17+
+			#define EA_COMPILER_CPP17_ENABLED 1
 		#endif
 	#endif
 
@@ -313,7 +316,8 @@
 		#define EA_COMPILER_NAME    "RVCT"
 	  //#define EA_COMPILER_STRING (defined below)
 
-	#elif defined(__clang__)
+	// Clang's GCC-compatible driver.
+	#elif defined(__clang__) && !defined(_MSC_VER)
 		#define EA_COMPILER_CLANG   1
 		#define EA_COMPILER_VERSION (__clang_major__ * 100 + __clang_minor__)
 		#define EA_COMPILER_NAME    "clang"
@@ -392,6 +396,11 @@
 		#define EA_COMPILER_VERSION _MSC_VER
 		#define EA_COMPILER_NAME "Microsoft Visual C++"
 	  //#define EA_COMPILER_STRING (defined below)
+
+		#if defined(__clang__)
+			// Clang's MSVC-compatible driver.
+			#define EA_COMPILER_CLANG_CL 1
+		#endif
 
 		#define EA_STANDARD_LIBRARY_MSVC 1
 		#define EA_STANDARD_LIBRARY_MICROSOFT 1
@@ -593,7 +602,7 @@
 		#if defined(_MSC_VER)
 			#define EA_DISABLE_ALL_VC_WARNINGS()  \
 				__pragma(warning(push, 0)) \
-				__pragma(warning(disable: 4244 4265 4267 4350 4472 4509 4548 4710 4985 6320 4755 4625 4626 4702)) // Some warnings need to be explicitly called out.
+				__pragma(warning(disable: 4244 4265 4267 4350 4472 4509 4548 4623 4710 4985 6320 4755 4625 4626 4702)) // Some warnings need to be explicitly called out.
 		#else
 			#define EA_DISABLE_ALL_VC_WARNINGS()
 		#endif
@@ -618,7 +627,7 @@
 			EA_RESTORE_ALL_VC_WARNINGS()
 		#endif
 
-		#if defined(__cplusplus) && defined(_YVALS) /* If using the Dinkumware Standard library... */
+		#if defined(__cplusplus) && defined(_CPPLIB_VER) /* If using the Dinkumware Standard library... */
 			#define EA_HAVE_DINKUMWARE_CPP_LIBRARY 1
 		#else
 			#define EA_NO_HAVE_DINKUMWARE_CPP_LIBRARY 1
@@ -841,6 +850,23 @@
 		#endif
 	#endif
 
+
+	// EA_COMPILER_NO_CONSTEXPR_IF
+	//
+	// Refers to C++17 = constexpr if(const expression) conditionals.
+	//
+	#if !defined(EA_COMPILER_NO_CONSTEXPR_IF)
+		#if defined(EA_COMPILER_CPP17_ENABLED) && (defined(_MSC_VER) && (EA_COMPILER_VERSION >= 1911)) // VS2017 15.3+
+			// supported.
+		#elif defined(EA_COMPILER_CPP17_ENABLED) && defined(__clang__) && (EA_COMPILER_VERSION >= 309) // Clang 3.9+
+			// supported.
+		#elif defined(EA_COMPILER_CPP17_ENABLED) && defined(__GNUC__) && (EA_COMPILER_VERSION >= 7000) // GCC 7+
+			// supported.
+		#else
+			#define EA_COMPILER_NO_CONSTEXPR_IF 1
+		#endif
+	#endif
+	
 
 	// EA_COMPILER_NO_OVERRIDE
 	// 
@@ -1247,6 +1273,23 @@
 			// supported.
 		#else
 			#define EA_COMPILER_NO_MAYBE_UNUSED 1
+		#endif
+	#endif
+
+
+	// EA_COMPILER_NO_STRUCTURED_BINDING
+	//
+	// Indicates if target compiler supports the C++17 "structured binding" language feature.
+	// https://en.cppreference.com/w/cpp/language/structured_binding
+	//
+	//
+	#if !defined(EA_COMPILER_NO_STRUCTURED_BINDING)
+		#if defined(EA_COMPILER_CPP17_ENABLED) 
+			// supported.
+		#elif defined(EA_COMPILER_MSVC) && (EA_COMPILER_VERSION >= 1912) // VS2017 15.3+
+			// supported.
+		#else
+			#define EA_COMPILER_NO_STRUCTURED_BINDING 1
 		#endif
 	#endif
 

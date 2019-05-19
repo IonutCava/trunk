@@ -169,9 +169,17 @@ struct tuple_index<T, Internal::TupleImpl<Indices, Ts...>> : public tuple_index<
 
 namespace Internal
 {
+	// swallow
+	//
+	// Provides a vessel to expand variadic packs.
+	//
+	template <typename... Ts>
+	void swallow(Ts&&...) {}
+
 
 // TupleLeaf
-template <size_t I, typename ValueType, bool IsEmpty = is_empty<ValueType>::value>
+	//
+	template <size_t I, typename ValueType, bool IsEmpty = is_empty_v<ValueType>>
 class TupleLeaf;
 
 template <size_t I, typename ValueType, bool IsEmpty>
@@ -224,7 +232,7 @@ private:
 	ValueType mValue;  
 };
 
-// Specialize for when ValueType is a reference 
+	// TupleLeaf: Specialize for when ValueType is a reference 
 template <size_t I, typename ValueType, bool IsEmpty>
 class TupleLeaf<I, ValueType&, IsEmpty>
 {
@@ -268,7 +276,7 @@ private:
 	ValueType& mValue;
 };
 
-// TupleLeaf partial specialization for when we can use the Empty Base Class Optimization
+	// TupleLeaf: partial specialization for when we can use the Empty Base Class Optimization
 template <size_t I, typename ValueType>
 class TupleLeaf<I, ValueType, true> : private ValueType
 {
@@ -310,7 +318,8 @@ private:
 };
 
 // MakeTupleTypes
-
+	//
+	//
 template <typename TupleTypes, typename Tuple, size_t Start, size_t End>
 struct MakeTupleTypesImpl;
 
@@ -338,12 +347,8 @@ using MakeTupleTypes_t = typename MakeTupleTypesImpl<TupleTypes<>, Tuple, 0,
 													 tuple_size<typename remove_reference<Tuple>::type>::value>::type;
 
 // TupleImpl
-
-template <typename... Ts>
-void swallow(Ts&&...)
-{
-}
-
+	//
+	//
 template <size_t I, typename Indices, typename... Ts>
 tuple_element_t<I, TupleImpl<Indices, Ts...>>& get(TupleImpl<Indices, Ts...>& t);
 
@@ -442,39 +447,25 @@ inline T&& get(TupleImpl<Indices, Ts...>&& t)
 }
 
 // TupleLike
-
-template <typename T>
-struct TupleLike : public false_type
-{
-};
-
-template <typename T>
-struct TupleLike<const T> : public TupleLike<T>
-{
-};
-
-template <typename T>
-struct TupleLike<volatile T> : public TupleLike<T>
-{
-};
-
-template <typename T>
-struct TupleLike<const volatile T> : public TupleLike<T>
-{
-};
+	//
+	// type-trait that determines if a type is an eastl::tuple or an eastl::pair.
+	//
+	template <typename T> struct TupleLike                   : public false_type {};
+	template <typename T> struct TupleLike<const T>          : public TupleLike<T> {};
+	template <typename T> struct TupleLike<volatile T>       : public TupleLike<T> {};
+	template <typename T> struct TupleLike<const volatile T> : public TupleLike<T> {};
 
 template <typename... Ts>
-struct TupleLike<tuple<Ts...>> : public true_type
-{
-};
+	struct TupleLike<tuple<Ts...>> : public true_type {};
 
 template <typename First, typename Second>
-struct TupleLike<eastl::pair<First, Second>> : public true_type
-{
-};
+	struct TupleLike<eastl::pair<First, Second>> : public true_type {};
+
 
 // TupleConvertible
-
+	//
+	//
+	//
 template <bool IsSameSize, typename From, typename To>
 struct TupleConvertibleImpl : public false_type
 {
@@ -502,7 +493,9 @@ struct TupleConvertible<From, To, true, true>
 };
 
 // TupleAssignable
-
+	//
+	//
+	//
 template <bool IsSameSize, typename Target, typename From>
 struct TupleAssignableImpl : public false_type
 {
@@ -530,8 +523,11 @@ struct TupleAssignable<Target, From, true, true>
 {
 };
 
-// TupleImplicitlyConvertible and TupleExplicitlyConvertible - helpers for constraining conditionally-explicit ctors
 
+	// TupleImplicitlyConvertible and TupleExplicitlyConvertible 
+	//
+	// helpers for constraining conditionally-explicit ctors
+	//
 template <bool IsSameSize, typename TargetType, typename... FromTypes>
 struct TupleImplicitlyConvertibleImpl : public false_type
 {
@@ -582,7 +578,9 @@ template<typename TargetTupleType, typename... FromTypes>
 using TupleExplicitlyConvertible_t = enable_if_t<TupleExplicitlyConvertible<TargetTupleType, FromTypes...>::value, bool>;
 
 // TupleEqual
-
+	//
+	//
+	//
 template <size_t I>
 struct TupleEqual
 {
@@ -605,7 +603,9 @@ struct TupleEqual<0>
 };
 
 // TupleLess
-
+	//
+	//
+	//
 template <size_t I>
 struct TupleLess
 {
@@ -627,40 +627,31 @@ struct TupleLess<0>
 	}
 };
 
-template <typename T>
-struct MakeTupleReturnImpl
-{
-	typedef T type;
-};
+
+	// MakeTupleReturnImpl
+	//
+	//
+	//
+	template <typename T> struct MakeTupleReturnImpl                       { typedef T type; };
+	template <typename T> struct MakeTupleReturnImpl<reference_wrapper<T>> { typedef T& type; };
 
 template <typename T>
-struct MakeTupleReturnImpl<reference_wrapper<T>>
-{
-	typedef T& type;
-};
+	using MakeTupleReturn_t = typename MakeTupleReturnImpl<decay_t<T>>::type;
 
-template <typename T>
-using MakeTupleReturn_t = typename MakeTupleReturnImpl<typename decay<T>::type>::type;
 
-struct ignore_t
-{
-	ignore_t() {}
+	// tuple_cat helpers
+	//
+	//
+	//
 
-	template <typename T>
-	const ignore_t& operator=(const T&) const
-	{
-		return *this;
-	}
-};
-
-// tuple_cat helpers
+	// TupleCat2Impl
 template <typename Tuple1, typename Is1, typename Tuple2, typename Is2>
 struct TupleCat2Impl;
 
 template <typename... T1s, size_t... I1s, typename... T2s, size_t... I2s>
 struct TupleCat2Impl<tuple<T1s...>, index_sequence<I1s...>, tuple<T2s...>, index_sequence<I2s...>>
 {
-	typedef tuple<T1s..., T2s...> ResultType;
+		using ResultType = tuple<T1s..., T2s...>;
 
 	template <typename Tuple1, typename Tuple2>
 	static inline ResultType DoCat2(Tuple1&& t1, Tuple2&& t2)
@@ -669,16 +660,17 @@ struct TupleCat2Impl<tuple<T1s...>, index_sequence<I1s...>, tuple<T2s...>, index
 	}
 };
 
+	// TupleCat2
 template <typename Tuple1, typename Tuple2>
 struct TupleCat2;
 
 template <typename... T1s, typename... T2s>
 struct TupleCat2<tuple<T1s...>, tuple<T2s...>>
 {
-	typedef make_index_sequence<sizeof...(T1s)> Is1;
-	typedef make_index_sequence<sizeof...(T2s)> Is2;
-	typedef TupleCat2Impl<tuple<T1s...>, Is1, tuple<T2s...>, Is2> TCI;
-	typedef typename TCI::ResultType ResultType;
+		using Is1        = make_index_sequence<sizeof...(T1s)>;
+		using Is2        = make_index_sequence<sizeof...(T2s)>;
+		using TCI        = TupleCat2Impl<tuple<T1s...>, Is1, tuple<T2s...>, Is2>;
+		using ResultType = typename TCI::ResultType;
 
 	template <typename Tuple1, typename Tuple2>
 	static inline ResultType DoCat2(Tuple1&& t1, Tuple2&& t2)
@@ -687,14 +679,15 @@ struct TupleCat2<tuple<T1s...>, tuple<T2s...>>
 	}
 };
 
+	// TupleCat
 template <typename... Tuples>
 struct TupleCat;
 
 template <typename Tuple1, typename Tuple2, typename... TuplesRest>
 struct TupleCat<Tuple1, Tuple2, TuplesRest...>
 {
-	typedef typename TupleCat2<Tuple1, Tuple2>::ResultType FirstResultType;
-	typedef typename TupleCat<FirstResultType, TuplesRest...>::ResultType ResultType;
+		using FirstResultType = typename TupleCat2<Tuple1, Tuple2>::ResultType;
+		using ResultType      = typename TupleCat<FirstResultType, TuplesRest...>::ResultType;
 
 	template <typename TupleArg1, typename TupleArg2, typename... TupleArgsRest>
 	static inline ResultType DoCat(TupleArg1&& t1, TupleArg2&& t2, TupleArgsRest&&... ts)
@@ -708,17 +701,26 @@ struct TupleCat<Tuple1, Tuple2, TuplesRest...>
 template <typename Tuple1, typename Tuple2>
 struct TupleCat<Tuple1, Tuple2>
 {
-	typedef typename TupleCat2<Tuple1, Tuple2>::ResultType ResultType;
+		using TC2 = TupleCat2<Tuple1, remove_reference_t<Tuple2>>;
+		using ResultType = typename TC2::ResultType;
 
 	template <typename TupleArg1, typename TupleArg2>
 	static inline ResultType DoCat(TupleArg1&& t1, TupleArg2&& t2)
 	{
-		return TupleCat2<TupleArg1, TupleArg2>::DoCat2(forward<TupleArg1>(t1), forward<TupleArg2>(t2));
+			return TC2::DoCat2(forward<TupleArg1>(t1), forward<TupleArg2>(t2));
 	}
 };
-
 }  // namespace Internal
 
+
+
+// tuple
+//
+// eastl::tuple is a fixed-size container of heterogeneous values. It is a
+// generalization of eastl::pair which hold only two heterogeneous values.
+//
+// https://en.cppreference.com/w/cpp/utility/tuple
+//
 template <typename... Ts>
 class tuple;
 
@@ -798,6 +800,7 @@ private:
 	friend T_&& get(tuple<ts_...>&& t);
 };
 
+// template specialization for an empty tuple
 template <>
 class tuple<>
 {
@@ -847,16 +850,14 @@ inline void swap(tuple<Ts...>& a, tuple<Ts...>& b)
 	a.swap(b);
 }
 
+
+// tuple operators
+//
+//
 template <typename... T1s, typename... T2s>
 inline bool operator==(const tuple<T1s...>& t1, const tuple<T2s...>& t2)
 {
 	return Internal::TupleEqual<sizeof...(T1s)>()(t1, t2);
-}
-
-template <typename... T1s, typename... T2s>
-inline bool operator!=(const tuple<T1s...>& t1, const tuple<T2s...>& t2)
-{
-	return !(t1 == t2);
 }
 
 template <typename... T1s, typename... T2s>
@@ -865,57 +866,77 @@ inline bool operator<(const tuple<T1s...>& t1, const tuple<T2s...>& t2)
 	return Internal::TupleLess<sizeof...(T1s)>()(t1, t2);
 }
 
-template <typename... T1s, typename... T2s>
-inline bool operator>(const tuple<T1s...>& t1, const tuple<T2s...>& t2)
+template <typename... T1s, typename... T2s> inline bool operator!=(const tuple<T1s...>& t1, const tuple<T2s...>& t2) { return !(t1 == t2); }
+template <typename... T1s, typename... T2s> inline bool operator> (const tuple<T1s...>& t1, const tuple<T2s...>& t2) { return t2 < t1; }
+template <typename... T1s, typename... T2s> inline bool operator<=(const tuple<T1s...>& t1, const tuple<T2s...>& t2) { return !(t2 < t1); }
+template <typename... T1s, typename... T2s> inline bool operator>=(const tuple<T1s...>& t1, const tuple<T2s...>& t2) { return !(t1 < t2); }
+
+
+// tuple_cat 
+//
+//
+template <typename... Tuples>
+inline typename Internal::TupleCat<Tuples...>::ResultType tuple_cat(Tuples&&... ts)
 {
-	return t2 < t1;
+	return Internal::TupleCat<Tuples...>::DoCat(forward<Tuples>(ts)...);
 }
 
-template <typename... T1s, typename... T2s>
-inline bool operator<=(const tuple<T1s...>& t1, const tuple<T2s...>& t2)
-{
-	return !(t2 < t1);
-}
 
-template <typename... T1s, typename... T2s>
-inline bool operator>=(const tuple<T1s...>& t1, const tuple<T2s...>& t2)
-{
-	return !(t1 < t2);
-}
-
-// Tuple helper functions
-
+// make_tuple 
+//
+//
 template <typename... Ts>
 inline EA_CONSTEXPR tuple<Internal::MakeTupleReturn_t<Ts>...> make_tuple(Ts&&... values)
 {
 	return tuple<Internal::MakeTupleReturn_t<Ts>...>(forward<Ts>(values)...);
 }
 
+
+// forward_as_tuple 
+//
+//
 template <typename... Ts>
 inline EA_CONSTEXPR tuple<Ts&&...> forward_as_tuple(Ts&&... ts) EA_NOEXCEPT
 {
 	return tuple<Ts&&...>(forward<Ts&&>(ts)...);
 }
 
-// Specialize ignore_t is_assignable type trait due to yet another VS2013 type traits bug
-template <typename U>
-struct is_assignable<const Internal::ignore_t&, U> : public true_type
+
+// ignore 
+//
+// An object of unspecified type such that any value can be assigned to it with no effect.
+//
+// https://en.cppreference.com/w/cpp/utility/tuple/ignore
+//
+namespace Internal 
 {
+	struct ignore_t
+	{
+		ignore_t() = default;
+
+		template <typename T>
+		const ignore_t& operator=(const T&) const
+{
+			return *this;
+		}
 };
+}// namespace Internal
 
 static const Internal::ignore_t ignore;
 
+
+// tie 
+//
+// Creates a tuple of lvalue references to its arguments or instances of eastl::ignore.
+//
+// https://en.cppreference.com/w/cpp/utility/tuple/tie
+//
 template <typename... Ts>
 inline EA_CONSTEXPR tuple<Ts&...> tie(Ts&... ts) EA_NOEXCEPT
 {
 	return tuple<Ts&...>(ts...);
 }
 
-template <typename... Tuples>
-inline typename Internal::TupleCat<Tuples...>::ResultType tuple_cat(Tuples&&... ts)
-{
-	return Internal::TupleCat<Tuples...>::DoCat(forward<Tuples>(ts)...);
-}
 
 // apply
 //

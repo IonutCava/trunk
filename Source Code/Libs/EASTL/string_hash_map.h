@@ -41,6 +41,7 @@ public:
 
 	insert_return_type	insert(const char* key, const T& value);
 	insert_return_type	insert(const char* key);
+	pair<iterator, bool> insert_or_assign(const char* key, const T& value);
 	iterator			erase(const_iterator position);
 	size_type			erase(const char* key);
 	mapped_type&		operator[](const char* key);
@@ -71,8 +72,7 @@ string_hash_map<T, Hash, Predicate, Allocator>::~string_hash_map()
 }
 
 template<typename T, typename Hash, typename Predicate, typename Allocator>
-void
-string_hash_map<T, Hash, Predicate, Allocator>::clear()
+void string_hash_map<T, Hash, Predicate, Allocator>::clear()
 {
 	allocator_type& allocator = base::base_type::get_allocator();
 	for (const_iterator i=base::base_type::begin(), e=base::base_type::end(); i!=e; ++i)
@@ -81,8 +81,7 @@ string_hash_map<T, Hash, Predicate, Allocator>::clear()
 }
 
 template<typename T, typename Hash, typename Predicate, typename Allocator>
-void
-string_hash_map<T, Hash, Predicate, Allocator>::clear(bool clearBuckets)
+void string_hash_map<T, Hash, Predicate, Allocator>::clear(bool clearBuckets)
 {
 	allocator_type& allocator = base::base_type::get_allocator();
 	for (const_iterator i=base::base_type::begin(), e=base::base_type::end(); i!=e; ++i)
@@ -121,6 +120,13 @@ string_hash_map<T, Hash, Predicate, Allocator>::insert(const char* key, const T&
 		return ret;
 	}
 	return base::base_type::insert(eastl::make_pair(strduplicate(key), value));
+}
+
+template<typename T, typename Hash, typename Predicate, typename Allocator>
+eastl::pair<typename string_hash_map<T, Hash, Predicate, Allocator>::iterator, bool>
+string_hash_map<T, Hash, Predicate, Allocator>::insert_or_assign(const char* key, const T& value)
+{
+	return base::base_type::insert_or_assign(strduplicate(key), value);
 }
 
 template<typename T, typename Hash, typename Predicate, typename Allocator>

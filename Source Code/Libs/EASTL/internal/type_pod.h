@@ -25,12 +25,7 @@ namespace eastl
 	//
 	// is_empty cannot be used with union types until is_union can be made to work.
 	///////////////////////////////////////////////////////////////////////
-	#if (defined(_MSC_VER) && (_MSC_VER >= 1600))  // VS2010 and later.
-		#define EASTL_TYPE_TRAIT_is_empty_CONFORMANCE 1    // is_empty is conforming. 
-
-		template <typename T> 
-		struct is_empty : public integral_constant<bool, __is_empty(T)>{};
-	#elif EASTL_COMPILER_INTRINSIC_TYPE_TRAITS_AVAILABLE && (defined(_MSC_VER) || defined(EA_COMPILER_GNUC) || (defined(EA_COMPILER_CLANG) && EA_COMPILER_HAS_FEATURE(is_empty)))
+	#if EASTL_COMPILER_INTRINSIC_TYPE_TRAITS_AVAILABLE && (defined(_MSC_VER) || defined(EA_COMPILER_GNUC) || (defined(EA_COMPILER_CLANG) && EA_COMPILER_HAS_FEATURE(is_empty)))
 		#define EASTL_TYPE_TRAIT_is_empty_CONFORMANCE 1    // is_empty is conforming. 
 
 		template <typename T> 
@@ -61,6 +56,12 @@ namespace eastl
 		template <typename T> 
 		struct is_empty : public eastl::is_empty_helper2<T>::type {};
 	#endif
+
+
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR bool is_empty_v = is_empty<T>::value;
+    #endif
 
 
 	///////////////////////////////////////////////////////////////////////
@@ -138,6 +139,11 @@ namespace eastl
 		template <typename T> // There's not much we can do here without some compiler extension.
 		struct is_standard_layout : public eastl::integral_constant<bool, is_void<T>::value || is_scalar<T>::value>{};
 	#endif
+
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR bool is_standard_layout_v = is_standard_layout<T>::value;
+    #endif
 
 	#define EASTL_DECLARE_IS_STANDARD_LAYOUT(T, isStandardLayout)                                                    \
 		namespace eastl {                                                                                            \
@@ -534,6 +540,11 @@ namespace eastl
 		template <typename T>
 		struct has_virtual_destructor : public eastl::false_type{};
 	#endif
+
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR bool has_virtual_destructor_v = has_virtual_destructor<T>::value;
+    #endif
 
 	#define EASTL_DECLARE_HAS_VIRTUAL_DESTRUCTOR(T, hasVirtualDestructor)                                                                   \
 		namespace eastl {                                                                                                                   \
@@ -1145,6 +1156,13 @@ namespace eastl
 
 
 	///////////////////////////////////////////////////////////////////////
+	// is_nothrow_default_constructible
+	///////////////////////////////////////////////////////////////////////
+	// TODO(rparolin):  implement type-trait
+
+
+
+	///////////////////////////////////////////////////////////////////////
 	// is_copy_constructible
 	//
 	// is_constructible<T, const T&>::value is true.
@@ -1212,7 +1230,7 @@ namespace eastl
 
 	#if EASTL_VARIABLE_TEMPLATES_ENABLED
 		template <class T>
-		EA_CONSTEXPR bool is_move_constructible_v = is_nothrow_copy_constructible<T>::value;
+		EA_CONSTEXPR bool is_move_constructible_v = is_move_constructible<T>::value;
     #endif
 
 
@@ -1291,33 +1309,6 @@ namespace eastl
 	// represent the spirit or the Standard but not the letter of the Standard. 
 	//
 	///////////////////////////////////////////////////////////////////////
-
-	#if (defined(EA_COMPILER_NO_DECLTYPE) && !EASTL_TYPE_TRAIT_declval_CONFORMANCE) || (defined(_MSC_VER) && _MSC_VER <= 1800) // VS2012 mis-compiles the conforming code below and so must be placed here.
-		#define EASTL_TYPE_TRAIT_is_assignable_CONFORMANCE 0
-
-		// It's impossible to do this correctly without declval or some other compiler help.
-		// is_assignable is defined in terms of add_rvalue_reference<T>::type instead of T alone,
-		// and so we will need to have two fallback implementations: one for compilers with rvalue
-		// support and one for compilers without it. 
-
-		// Version for compilers without rvalue support:
-		template<typename T, typename U>
-		struct is_assignable_helper
-		{
-			typedef typename eastl::remove_reference<T>::type T1;
-			typedef typename eastl::remove_reference<U>::type U1;
-
-			// Do not decay the types, as a decayed array (pointer) can be assigned but an array cannot.
-			static const bool eitherIsArray = (eastl::is_array<T1>::value || eastl::is_array<U1>::value);
-			static const bool isArithmetic  = (eastl::is_arithmetic<T1>::value && eastl::is_arithmetic<U1>::value);
-			static const bool isSameScalar  = (eastl::is_same<T1, U1>::value && eastl::is_scalar<T1>::value && eastl::is_scalar<U1>::value);
-			static const bool isTConst      = eastl::is_const<T1>::value;
-
-			EA_DISABLE_VC_WARNING(6285)
-			static const bool value = (isArithmetic || isSameScalar) && !eitherIsArray && !isTConst;
-			EA_RESTORE_VC_WARNING()
-		};
-	#else
 		#define EASTL_TYPE_TRAIT_is_assignable_CONFORMANCE 1
 
 		template<typename T, typename U>
@@ -1331,7 +1322,6 @@ namespace eastl
 
 			static const bool value = (sizeof(is<T, U>(0)) == sizeof(eastl::yes_type));
 		};
-	#endif
 
 	template<typename T, typename U>
 	struct is_assignable : 
@@ -1668,6 +1658,10 @@ namespace eastl
 		: public eastl::is_trivially_assignable<typename eastl::add_lvalue_reference<T>::type,
 												typename eastl::add_rvalue_reference<T>::type> {};
 
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR bool is_trivially_move_assignable_v = is_trivially_move_assignable<T>::value;
+	#endif
 
 
 	///////////////////////////////////////////////////////////////////////
@@ -1747,6 +1741,11 @@ namespace eastl
 			: public is_destructible_helper<T> {};
 
 	#endif
+
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR bool is_destructible_v = is_destructible<T>::value;
+    #endif
 
 	#define EASTL_DECLARE_IS_DESTRUCTIBLE(T, isDestructible)												                \
 		namespace eastl{                                                                                                    \
@@ -1902,6 +1901,11 @@ namespace eastl
 			template <> struct is_nothrow_destructible<const volatile T> { static const bool value = isNoThrowDestructible; }; \
 		}
 
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR bool is_nothrow_destructible_v = is_nothrow_destructible<T>::value;
+	#endif
+
 
 
 	///////////////////////////////////////////////////////////////////////
@@ -1914,6 +1918,10 @@ namespace eastl
 	struct is_nothrow_default_constructible
 		: public eastl::is_nothrow_constructible<T> {};
 
+	#if EASTL_VARIABLE_TEMPLATES_ENABLED
+		template <class T>
+		EA_CONSTEXPR bool is_nothrow_default_constructible_v = is_nothrow_default_constructible<T>::value;
+	#endif
 
 
 	///////////////////////////////////////////////////////////////////////

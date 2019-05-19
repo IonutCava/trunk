@@ -28,6 +28,7 @@
 // Define common SI unit macros
 #include <EABase/eaunits.h>
 
+
 // ------------------------------------------------------------------------
 // The C++ standard defines size_t as a built-in type. Some compilers are
 // not standards-compliant in this respect, so we need an additional include.
@@ -58,17 +59,6 @@
 // 7.2/3 Diagnostics <assert.h>(p : 186)
 #if !defined(__cplusplus) && defined(__STDC_VERSION__)  && __STDC_VERSION__ >= 201100L
 	#include <assert.h>
-#endif
-
-// ------------------------------------------------------------------------
-// Ensure this header file is only processed once (with certain compilers)
-// GCC doesn't need such a pragma because it has special recognition for 
-// include guards (such as that above) and effectively implements the same
-// thing without having to resort to non-portable pragmas. It is possible
-// that the decision to use pragma once here is ill-advised, perhaps because
-// some compilers masquerade as MSVC but don't implement all features.
-#if defined(EA_PRAGMA_ONCE_SUPPORTED)
-	#pragma once
 #endif
 
 
@@ -439,14 +429,7 @@
 	#define PRIx64        EA_PRI_64_LENGTH_SPECIFIER "x"
 	#define PRIX64        EA_PRI_64_LENGTH_SPECIFIER "X"
 
-	#if defined(EA_COMPILER_MSVC) && (EA_COMPILER_VERSION >= 1900)
-		#define PRIdPTR       "Id"
-		#define PRIiPTR       "Ii"
-		#define PRIoPTR       "Io"
-		#define PRIuPTR       "Iu"
-		#define PRIxPTR       "Ix"
-		#define PRIXPTR       "IX"
-	#elif (EA_PLATFORM_PTR_SIZE == 4)
+	#if (EA_PLATFORM_PTR_SIZE == 4)
 		#define PRIdPTR       PRId32 // Usage of pointer values will generate warnings with 
 		#define PRIiPTR       PRIi32 // some compilers because they are defined in terms of 
 		#define PRIoPTR       PRIo32 // integers. However, you can't simply use "p" because
@@ -714,6 +697,11 @@
 	#define EA_WCHAR_UNIQUE 0
 #endif
 
+// Feature check for native char8_t support. Currently only enabled
+// in Clang since r346892 when -std=c++2a is specified.  
+#if defined(__cpp_char8_t)
+	#define CHAR8_T_DEFINED
+#endif
 
 #ifndef CHAR8_T_DEFINED // If the user hasn't already defined these...
 	#define CHAR8_T_DEFINED
@@ -981,6 +969,14 @@
 #define EA_DISABLED             333-
 // NOTE: Numeric values for x will produce a parse error while empty values produce a divide by zero, and the test is a bool for proper negation behavior
 #define EA_IS_ENABLED(x) (333 == 333 * 111 / ((x 0) * (((x 0) == 333 ? 1 : 0) + ((x 0) == 111 ? 1 : 0))))
+
+
+
+// Define int128_t / uint128_t types.
+// NOTE(rparolin):  include file at the end because we want all the signed integral types defined.
+#ifdef __cplusplus
+	#include <EABase/int128.h>
+#endif
 
 #endif // Header include guard
 

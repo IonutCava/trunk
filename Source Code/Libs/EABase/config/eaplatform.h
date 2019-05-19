@@ -340,7 +340,7 @@
 			#define EA_PLATFORM_DESCRIPTION "OSX on ARM64"
 		#elif defined(__POWERPC64__) || defined(__powerpc64__)
 			#define EA_PROCESSOR_POWERPC 1
-			#define CS_UNDEFINED_STRING 1
+			#define EA_PROCESSOR_POWERPC_64 1
 			#define EA_SYSTEM_BIG_ENDIAN 1
 			#define EA_PLATFORM_DESCRIPTION "OSX on PowerPC 64"
 		#elif defined(__POWERPC__) || defined(__powerpc__)
@@ -368,6 +368,8 @@
 // _M_IX86 is defined by the Borland compiler.
 // __sparc__ is defined by the GCC compiler.
 // __powerpc__ is defined by the GCC compiler.
+// __ARM_EABI__ is defined by GCC on an ARM v6l (Raspberry Pi 1)
+// __ARM_ARCH_7A__ is defined by GCC on an ARM v7l (Raspberry Pi 2)
 #elif defined(EA_PLATFORM_LINUX) || (defined(__linux) || defined(__linux__))
 	#undef  EA_PLATFORM_LINUX
 	#define EA_PLATFORM_LINUX 1
@@ -378,13 +380,20 @@
 		#define EA_PROCESSOR_X86 1
 		#define EA_SYSTEM_LITTLE_ENDIAN 1
 		#define EA_PLATFORM_DESCRIPTION "Linux on x86"
+	#elif defined(__ARM_ARCH_7A__) || defined(__ARM_EABI__)
+		#define EA_ABI_ARM_LINUX 1
+		#define EA_PROCESSOR_ARM32 1
+		#define EA_PLATFORM_DESCRIPTION "Linux on ARM 6/7 32-bits"
+	#elif defined(__aarch64__) || defined(__AARCH64)
+		#define EA_PROCESSOR_ARM64 1
+		#define EA_PLATFORM_DESCRIPTION "Linux on ARM64"
 	#elif defined(__x86_64__)
 		#define EA_PROCESSOR_X86_64 1
 		#define EA_SYSTEM_LITTLE_ENDIAN 1
 		#define EA_PLATFORM_DESCRIPTION "Linux on x64"
 	#elif defined(__powerpc64__)
 		#define EA_PROCESSOR_POWERPC 1
-		#define CS_UNDEFINED_STRING 1
+		#define EA_PROCESSOR_POWERPC_64 1
 		#define EA_SYSTEM_BIG_ENDIAN 1
 		#define EA_PLATFORM_DESCRIPTION "Linux on PowerPC 64"
 	#elif defined(__powerpc__)
@@ -418,7 +427,7 @@
 		#define EA_PLATFORM_DESCRIPTION "BSD on x64"
 	#elif defined(__powerpc64__)
 		#define EA_PROCESSOR_POWERPC 1
-		#define CS_UNDEFINED_STRING 1
+		#define EA_PROCESSOR_POWERPC_64 1
 		#define EA_SYSTEM_BIG_ENDIAN 1
 		#define EA_PLATFORM_DESCRIPTION "BSD on PowerPC 64"
 	#elif defined(__powerpc__)
@@ -627,11 +636,7 @@
 // have 64 bit registers but 32 bit pointers.
 //
 #ifndef EA_PLATFORM_WORD_SIZE
-   #if (EA_PLATFORM_PTR_SIZE == 8)
-	  #define EA_PLATFORM_WORD_SIZE 8
-   #else
-	  #define EA_PLATFORM_WORD_SIZE EA_PLATFORM_PTR_SIZE
-   #endif
+	#define EA_PLATFORM_WORD_SIZE EA_PLATFORM_PTR_SIZE
 #endif
 
 // EA_PLATFORM_MIN_MALLOC_ALIGNMENT
@@ -639,9 +644,11 @@
 // implementation will return. This should be used when writing custom
 // allocators to ensure that the alignment matches that of malloc
 #ifndef EA_PLATFORM_MIN_MALLOC_ALIGNMENT
-	#if defined EA_PLATFORM_APPLE
+	#if defined(EA_PLATFORM_APPLE)
 		#define EA_PLATFORM_MIN_MALLOC_ALIGNMENT 16
-	#elif defined EA_PLATFORM_ANDROID
+	#elif defined(EA_PLATFORM_ANDROID) && defined(EA_PROCESSOR_ARM)
+		#define EA_PLATFORM_MIN_MALLOC_ALIGNMENT 8
+	#elif defined(EA_PLATFORM_ANDROID) && defined(EA_PROCESSOR_X86_64)
 		#define EA_PLATFORM_MIN_MALLOC_ALIGNMENT 8
 	#else
 		#define EA_PLATFORM_MIN_MALLOC_ALIGNMENT (EA_PLATFORM_PTR_SIZE * 2)
@@ -657,7 +664,7 @@
 //    2 - supported and fast.
 //
 #ifndef EA_MISALIGNED_SUPPORT_LEVEL
-	#if defined(EA_PROCESSOR_X64) || defined(EA_PROCESSOR_X86_64)
+	#if defined(EA_PROCESSOR_X86_64)
 		#define EA_MISALIGNED_SUPPORT_LEVEL 2
 	#else
 		#define EA_MISALIGNED_SUPPORT_LEVEL 0
