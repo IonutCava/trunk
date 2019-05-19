@@ -405,7 +405,7 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + 
-        to_stringImpl(1/*to_base(Frustum::FrustPlane::COUNT)*/),
+        to_stringImpl(to_base(Frustum::FrustPlane::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(

@@ -32,7 +32,7 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
                              const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, shaderFileName, shaderFileLocation),
-      GraphicsResource(context, GraphicsResource::Type::SHADER_PROGRAM, getGUID()),
+      GraphicsResource(context, GraphicsResource::Type::SHADER_PROGRAM, getGUID(), _ID(shaderName.c_str())),
       _asyncLoad(asyncLoad),
       _shouldRecompile(false)
 {

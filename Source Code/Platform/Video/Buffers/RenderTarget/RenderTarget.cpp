@@ -65,7 +65,7 @@ const RTDrawDescriptor& RenderTarget::defaultPolicyNoClear() {
 }
 
 RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)
-    : GraphicsResource(context, GraphicsResource::Type::RENDER_TARGET, getGUID()),
+    : GraphicsResource(context, GraphicsResource::Type::RENDER_TARGET, getGUID(), _ID(descriptor._name.c_str())),
       _descriptor(descriptor)
 {
     if (Config::Profile::USE_2x2_TEXTURES) {

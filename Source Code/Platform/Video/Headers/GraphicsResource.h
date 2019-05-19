@@ -50,17 +50,19 @@ public:
     };
 
 protected:
-    explicit GraphicsResource(GFXDevice& context, Type type, I64 GUID);
+    explicit GraphicsResource(GFXDevice& context, Type type, I64 GUID, U64 nameHash);
     virtual ~GraphicsResource();
 
 public:
     inline GFXDevice& context() { return _context; }
+    inline U64 nameHash() const { return _nameHash; }
 
 protected:
     GFXDevice& _context;
 
 private:
     I64 _GUID;
+    U64 _nameHash;
     Type _type;
 };
 

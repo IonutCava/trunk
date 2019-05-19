@@ -25,7 +25,7 @@ Texture::Texture(GFXDevice& context,
                  bool asyncLoad,
                  const TextureDescriptor& texDescriptor)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
-      GraphicsResource(context, GraphicsResource::Type::TEXTURE, getGUID()),
+      GraphicsResource(context, GraphicsResource::Type::TEXTURE, getGUID(), _ID(name.c_str())),
       _descriptor(texDescriptor),
       _numLayers(texDescriptor._layerCount),
       _hasTransparency(false),

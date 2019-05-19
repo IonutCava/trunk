@@ -43,7 +43,7 @@ namespace Divide {
 /// It can be used simultaneously in multiple programs/pipelines
 class glShader : public TrackedObject, public GraphicsResource,  public glObject {
    public:
-    typedef hashMap<U64, glShader*> ShaderMap;
+    typedef ska::bytell_hash_map<U64, glShader*> ShaderMap;
 
     // one per shader type!
     struct LoadData {

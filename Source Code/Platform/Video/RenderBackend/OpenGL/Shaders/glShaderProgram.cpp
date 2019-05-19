@@ -581,7 +581,7 @@ const stringImpl& glShaderProgram::shaderFileReadLocked(const stringImpl& filePa
         output = preprocessIncludes(atomName, output, 0, foundAtoms, false);
     }
 
-    auto result = hashAlg::insert(s_atoms, atomNameHash, output);
+    auto result = s_atoms.insert({ atomNameHash, output });
     assert(result.second);
 
     // Return the source code

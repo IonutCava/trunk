@@ -468,7 +468,7 @@ protected:
     Pipeline* _textRenderPipeline = nullptr;
         
     std::mutex _graphicsResourceMutex;
-    vector<std::pair<GraphicsResource::Type, I64>> _graphicResources;
+    vector<std::tuple<GraphicsResource::Type, I64, U64>> _graphicResources;
 
     Rect<I32> _viewport;
     vec2<U16> _renderingResolution;
@@ -543,19 +543,19 @@ namespace Attorney {
 
     class GFXDeviceGraphicsResource {
        private:
-       static void onResourceCreate(GFXDevice& device, GraphicsResource::Type type, I64 GUID) {
+       static void onResourceCreate(GFXDevice& device, GraphicsResource::Type type, I64 GUID, U64 nameHash) {
            UniqueLock w_lock(device._graphicsResourceMutex);
-           device._graphicResources.emplace_back(type, GUID);
+           device._graphicResources.emplace_back(type, GUID, nameHash);
        }
 
-       static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID) {
+       static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID, U64 nameHash) {
            UniqueLock w_lock(device._graphicsResourceMutex);
-           vector<std::pair<GraphicsResource::Type, I64>>::iterator it;
+           vector<std::tuple<GraphicsResource::Type, I64, U64>>::iterator it;
            it = std::find_if(std::begin(device._graphicResources),
                 std::end(device._graphicResources),
-                [type, GUID](const std::pair<GraphicsResource::Type, I64> crtEntry) -> bool {
-                    if (crtEntry.second == GUID) {
-                        assert(crtEntry.first == type);
+                [type, GUID](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) -> bool {
+                    if (std::get<1>(crtEntry) == GUID) {
+                        assert(std::get<0>(crtEntry) == type && std::get<2>(crtEntry) == nameHash);
                         return true;
                     }
                     return false;

@@ -416,7 +416,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
                        std::cbegin(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]),
                        std::cend(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]));
     
-    //vertDefines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
+    vertDefines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {

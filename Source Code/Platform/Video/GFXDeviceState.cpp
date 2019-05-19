@@ -36,6 +36,23 @@
 
 namespace Divide {
 
+namespace {
+    stringImpl GraphicResourceTypeToName(GraphicsResource::Type type) {
+
+        switch (type) {
+            case GraphicsResource::Type::PIXEL_BUFFER: return "PIXEL_BUFFER";
+            case GraphicsResource::Type::RENDER_TARGET: return "RENDER_TARGET";
+            case GraphicsResource::Type::SHADER: return "SHADER";
+            case GraphicsResource::Type::SHADER_BUFFER: return "SHADER_BUFFER";
+            case GraphicsResource::Type::SHADER_PROGRAM: return "SHADER_PROGRAM";
+            case GraphicsResource::Type::TEXTURE: return "TEXTURE";
+            case GraphicsResource::Type::VERTEX_BUFFER: return "VERTEX_BUFFER";
+        };
+
+        return "UNKNOWN";
+    };
+};
+
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution) {
@@ -606,8 +623,11 @@ void GFXDevice::closeRenderingAPI() {
     UniqueLock lock(_graphicsResourceMutex);
     if (!_graphicResources.empty()) {
         stringImpl list = " [ ";
-        for (const std::pair<GraphicsResource::Type, I64>& res : _graphicResources) {
-            list += to_stringImpl(to_base(res.first)) + " _ " + to_stringImpl(res.second) + " ";
+        for (const std::tuple<GraphicsResource::Type, I64, U64>& res : _graphicResources) {
+            list.append(GraphicResourceTypeToName(std::get<0>(res)));
+            list.append(" _ " + std::get<1>(res));
+            list.append(" _ " + std::get<2>(res));
+            list.append(" ");
         }
         list += " ]";
         Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), _graphicResources.size());

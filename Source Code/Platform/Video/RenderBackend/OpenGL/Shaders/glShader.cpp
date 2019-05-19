@@ -54,7 +54,7 @@ glShader::ShaderMap glShader::_shaderNameMap;
 
 glShader::glShader(GFXDevice& context, const stringImpl& name)
     : TrackedObject(),
-      GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID()),
+      GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID(), _ID(name.c_str())),
       glObject(glObjectType::TYPE_SHADER, context),
       _stageMask(UseProgramStageMask::GL_NONE_BIT),
       _stageCount(0),
@@ -250,7 +250,7 @@ void glShader::removeShader(glShader* s) {
     assert(s != nullptr);
 
     // Try to find it
-    U64 nameHash = _ID(s->name().c_str());
+    U64 nameHash = s->nameHash();
     UniqueLockShared w_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {
@@ -296,10 +296,9 @@ glShader* glShader::loadShader(GFXDevice& context,
         MemoryManager::SAFE_DELETE(shader);
     } else {
         if (newShader) {
-            U64 nameHash = _ID(name.c_str());
             // If we loaded the source code successfully,  register it
             UniqueLockShared w_lock(_shaderNameLock);
-            hashAlg::insert(_shaderNameMap, nameHash, shader);
+            _shaderNameMap.insert({ shader->nameHash(), shader });
         }
         shader->reuploadUniforms();
     }
