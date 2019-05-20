@@ -389,7 +389,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
                 model.assetName(modelName);
                 model.setFlag(true);
                 model.setThreadedLoading(false);
-                //model.waitForReady(waitForReady);
+                model.waitForReady(waitForReady);
                 model.waitForReadyCbk(waitForReasoureTask);
                 model.setOnLoadCallback(loadModelComplete);
                 ret = CreateResource<Mesh>(_resCache, model);

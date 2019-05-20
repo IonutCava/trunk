@@ -625,8 +625,10 @@ void GFXDevice::closeRenderingAPI() {
         stringImpl list = " [ ";
         for (const std::tuple<GraphicsResource::Type, I64, U64>& res : _graphicResources) {
             list.append(GraphicResourceTypeToName(std::get<0>(res)));
-            list.append(" _ " + std::get<1>(res));
-            list.append(" _ " + std::get<2>(res));
+            list.append(" _ ");
+            list.append(to_stringImpl(std::get<1>(res)));
+            list.append(" _ ");
+            list.append(to_stringImpl(std::get<2>(res)));
             list.append(" ");
         }
         list += " ]";

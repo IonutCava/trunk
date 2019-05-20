@@ -144,7 +144,7 @@ public:
         return ptr;
     }
 
-    CachedResource_ptr find(size_t descriptorHash);
+    CachedResource_ptr find(const size_t descriptorHash);
     void add(CachedResource_wptr resource);
     /// Empty the entire cache of resources
     void clear();

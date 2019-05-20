@@ -38,6 +38,8 @@
 
 namespace Divide {
 
+//#define DEBUG_TASK_SYSTEM
+
 struct Task;
 class TaskPool;
 
@@ -54,8 +56,9 @@ struct alignas(64) Task {
     std::atomic_ushort _unfinishedJobs;
     std::atomic_bool _stopRequested = false;
     DELEGATE_CBK<void, Task&> _callback;
-#if defined(_DEBUG)
+#if defined(DEBUG_TASK_SYSTEM)
     eastl::string _debugName = "";
+    std::vector<Task*> _childTasks;
 #endif
 };
 

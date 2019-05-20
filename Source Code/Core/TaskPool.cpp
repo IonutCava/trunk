@@ -66,7 +66,7 @@ bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority) {
     _runningTaskCount.fetch_add(1);
 
     if (priority == TaskPriority::REALTIME) {
-        task();
+        task(true);
         return true;
     }
 
@@ -144,8 +144,12 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& th
             task = &crtTask;
         }
     } while (task == nullptr);
-#if defined(_DEBUG)
+
+#if defined(DEBUG_TASK_SYSTEM)
     task->_debugName = debugName;
+    if (parentTask != nullptr) {
+        parentTask->_childTasks.push_back(task);
+    }
 #endif
     task->_parent = parentTask;
     task->_parentPool = this;

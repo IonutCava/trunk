@@ -29,7 +29,7 @@ namespace Divide {
 
         const vec_size_eastl threadCount = _threads.size();
         for (vec_size_eastl idx = 0; idx < threadCount; ++idx) {
-            addTask([] {});
+            addTask([](bool wait) { ACKNOWLEDGE_UNUSED(wait);  return true; });
         }
 
         for (std::thread& thread : _threads) {
@@ -91,7 +91,9 @@ namespace Divide {
             }
         }
 
-        task();
+        if (!task(waitForTask)) {
+            addTask(std::move(task));
+        }
         _tasksLeft.fetch_sub(1);
     }
 
@@ -129,7 +131,9 @@ namespace Divide {
             }
         }
 
-        task();
+        if (!task(waitForTask)) {
+            addTask(std::move(task));
+        }
         _tasksLeft.fetch_sub(1);
     }
 };

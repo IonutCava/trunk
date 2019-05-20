@@ -14,30 +14,38 @@ namespace Divide {
 
 void finish(Task& task) {
     if (task._unfinishedJobs.fetch_sub(1, std::memory_order_relaxed) == 1) {
+#if defined(DEBUG_TASK_SYSTEM)
+        task._childTasks.clear();
+#endif
         if (task._parent != nullptr) {
            finish(*task._parent);
         }
     }
 }
 
-void run(Task& task, TaskPool& pool, TaskPriority priority, DELEGATE_CBK<void> onCompletionFunction) {
+bool run(Task& task, TaskPool& pool, TaskPriority priority, bool wait, DELEGATE_CBK<void> onCompletionFunction) {
 
     while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
-        task._parentPool->threadWaiting();
+        if (wait) {
+            task._parentPool->threadWaiting();
+        } else {
+            return false;
+        }
     }
-
+    
     if (task._callback) {
         task._callback(task);
     }
 
     pool.taskCompleted(task._id, priority, onCompletionFunction);
     finish(task);
+    return true;
 }
 
 Task& Start(Task& task, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
     while (!task._parentPool->enqueue(
-        [&task, priority, onCompletionFunction]() {
-            run(task, *task._parentPool, priority, onCompletionFunction);
+        [&task, priority, onCompletionFunction](bool wait) {
+            return run(task, *task._parentPool, priority, wait, onCompletionFunction);
         },
         priority))
     {

@@ -39,29 +39,26 @@ ResourceCache::~ResourceCache()
 }
 
 void ResourceCache::printContents() const {
-    UniqueLockShared w_lock(_creationMutex);
-    for (ResourceMap::const_iterator it = std::cbegin(_resDB); it != std::cend(_resDB); ++it)
-    {
-        if (!it->second.expired())
-        {
-            CachedResource_ptr res = it->second.lock();
-            Console::printfn(Locale::get(_ID("RESOURCE_INFO")), res->resourceName().c_str(), res->getGUID());
-        }
+    SharedLock r_lock(_creationMutex);
+    for (ResourceMap::const_iterator it = std::cbegin(_resDB); it != std::cend(_resDB); ++it) {
+        assert(!it->second.expired());
+
+        CachedResource_ptr res = it->second.lock();
+        Console::printfn(Locale::get(_ID("RESOURCE_INFO")), res->resourceName().c_str(), res->getGUID());
+
     }
 }
 
 void ResourceCache::clear() {
-    UniqueLockShared w_lock(_creationMutex);
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
 
-    for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB); ++it)
-    {
-        if (!it->second.expired()) 
-        {
-            CachedResource_ptr res = it->second.lock();
-            if (res->getType() != ResourceType::GPU_OBJECT) {
-                Console::warnfn(Locale::get(_ID("WARN_RESOURCE_LEAKED")), res->resourceName().c_str(), res->getGUID());
-            }
+    UniqueLockShared w_lock(_creationMutex);
+    for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB); ++it) {
+        assert(!it->second.expired());
+        
+        CachedResource_ptr res = it->second.lock();
+        if (res->getType() != ResourceType::GPU_OBJECT) {
+            Console::warnfn(Locale::get(_ID("WARN_RESOURCE_LEAKED")), res->resourceName().c_str(), res->getGUID());
         }
     }
 
@@ -69,21 +66,20 @@ void ResourceCache::clear() {
 }
 
 void ResourceCache::add(CachedResource_wptr res) {
-    if (res.expired()) {
-        Console::errorfn(Locale::get(_ID("ERROR_RESOURCE_CACHE_LOAD_RES")));
-        return;
-    }
+    DIVIDE_ASSERT(!res.expired(), Locale::get(_ID("ERROR_RESOURCE_CACHE_LOAD_RES")));
 
     CachedResource_ptr resource = res.lock();
-    size_t hash = resource->getDescriptorHash();
+    const size_t hash = resource->getDescriptorHash();
     DIVIDE_ASSERT(hash != 0, "ResourceCache add error: Invalid resource hash!");
 
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getGUID(), hash);
+
     UniqueLockShared w_lock(_creationMutex);
-    _resDB.insert({ hash, res });
+    auto ret = _resDB.emplace(hash, res);
+    DIVIDE_ASSERT(ret.second, Locale::get(_ID("ERROR_RESOURCE_CACHE_LOAD_RES")));
 }
 
-CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
+CachedResource_ptr ResourceCache::find(const size_t descriptorHash) {
     /// Search in our resource cache
     SharedLock r_lock(_creationMutex);
     const ResourceMap::const_iterator it = _resDB.find(descriptorHash);
@@ -97,18 +93,17 @@ CachedResource_ptr ResourceCache::find(size_t descriptorHash) {
 void ResourceCache::remove(CachedResource* resource) {
     WAIT_FOR_CONDITION(resource->getState() != ResourceState::RES_LOADING);
 
-    size_t resourceHash = resource->getDescriptorHash();
+    const size_t resourceHash = resource->getDescriptorHash();
     const stringImpl& name = resource->resourceName();
-    I64 guid = resource->getGUID();
+    const I64 guid = resource->getGUID();
 
     DIVIDE_ASSERT(resourceHash != 0, Locale::get(_ID("ERROR_RESOURCE_CACHE_INVALID_NAME")));
 
     bool resDBEmpty = false;
     {
         SharedLock r_lock(_creationMutex);
-        DIVIDE_ASSERT(_resDB.find(resourceHash) != std::end(_resDB),
-                      Locale::get(_ID("ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE")));
         resDBEmpty = _resDB.empty();
+        DIVIDE_ASSERT(!resDBEmpty && _resDB.find(resourceHash) != std::end(_resDB), Locale::get(_ID("ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE")));
     }
 
 
