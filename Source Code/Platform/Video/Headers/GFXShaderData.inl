@@ -46,9 +46,5 @@ inline F32 GFXShaderData::GPUData::FoV() const {
     return _renderProperties.z;
 }
 
-inline RenderStage GFXShaderData::GPUData::renderStage() const {
-    return static_cast<RenderStage>(to_U8(_renderProperties.w));
-}
-
 }; //namespace Divide
 #endif //_HARDWARE_VIDEO_GFX_SHADER_DATA_INL_

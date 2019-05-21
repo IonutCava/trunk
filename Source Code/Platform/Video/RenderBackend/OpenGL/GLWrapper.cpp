@@ -21,6 +21,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Utility/Headers/Localization.h"
@@ -263,7 +264,7 @@ bool GL_API::initShaders() {
     return true;
 }
 
-bool GL_API::initGLSW() {
+bool GL_API::initGLSW(const Configuration& config) {
     static const std::pair<stringImpl, stringImpl>  shaderVaryings[] =
     {
         { "vec4"       , "_vertexW"},
@@ -325,6 +326,13 @@ bool GL_API::initGLSW() {
         DIVIDE_ASSERT(glswState == 1);
     }
 
+    I32 numLightsPerTile = config.rendering.numLightsPerScreenTile;
+    if (numLightsPerTile < 0) {
+        numLightsPerTile = to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE);
+    } else {
+        CLAMP(numLightsPerTile, 0, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
+    }
+
     ShaderOffsetArray lineOffsets = { 0 };
 
     // Add our engine specific defines and various code pieces to every GLSL shader
@@ -341,22 +349,7 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
     
     //appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_AMD %d", to_base(GPUVendor::AMD)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_NVIDIA %d", to_base(GPUVendor::NVIDIA)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_INTEL %d", to_base(GPUVendor::INTEL)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR_OTHER %d", to_base(GPUVendor::OTHER)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define GPU_VENDOR %d", to_U32(GFXDevice::getGPUVendor())), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_OFF %d", to_base(RenderDetailLevel::OFF)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_LOW %d", to_base(RenderDetailLevel::LOW)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_MED %d", to_base(RenderDetailLevel::MEDIUM)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_HIGH %d", to_base(RenderDetailLevel::HIGH)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_ULTRA %d", to_base(RenderDetailLevel::ULTRA)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define DETAIL_COUNT %d", to_base(RenderDetailLevel::COUNT)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_DISPLAY %d", to_base(RenderStage::DISPLAY)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_REFLECTION %d", to_base(RenderStage::REFLECTION)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_REFRACTION %d", to_base(RenderStage::REFRACTION)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_SHADOW %d", to_base(RenderStage::SHADOW)), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define STAGE_OTHER %d", to_base(RenderStage::COUNT)), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define MSAA_SAMPLES %d", config.rendering.msaaSamples), lineOffsets);
 
     // Add current build environment information to the shaders
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -367,8 +360,7 @@ bool GL_API::initGLSW() {
         appendToShaderHeader(ShaderType::COUNT, "#define _RELEASE", lineOffsets);
     }
 
-    // Shader stage level reflection system. A shader stage must know what stage
-    // it's used for
+    // Shader stage level reflection system. A shader stage must know what stage it's used for
     appendToShaderHeader(ShaderType::VERTEX,   "#define VERT_SHADER", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "#define FRAG_SHADER", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#define GEOM_SHADER", lineOffsets);
@@ -392,7 +384,6 @@ bool GL_API::initGLSW() {
     }
 
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + to_stringImpl(Config::Lighting::MAX_POSSIBLE_LIGHTS), lineOffsets);
     
@@ -412,18 +403,6 @@ bool GL_API::initGLSW() {
         ShaderType::COUNT,
         "#define MAX_CULL_DISTANCES " + 
          to_stringImpl(maxClipCull - to_base(Frustum::FrustPlane::COUNT)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define MAX_LIGHT_TYPES " +
-        to_stringImpl(to_base(LightType::COUNT)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_GPU_BLOCK " +
-        to_stringImpl(to_base(ShaderBufferLocation::GPU_BLOCK)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -460,6 +439,12 @@ bool GL_API::initGLSW() {
         ShaderType::COUNT,
         "#define TARGET_MODULATE " +
         to_stringImpl(to_base(GFXDevice::ScreenTargets::MODULATE)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_GPU_BLOCK " +
+        to_stringImpl(to_base(ShaderBufferLocation::GPU_BLOCK)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -531,37 +516,13 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_NUM_LIGHTS_PER_TILE " + 
-        to_stringImpl(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE),
+        to_stringImpl(numLightsPerTile),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define LIGHT_NUM_TILES_X " +
         to_stringImpl(Config::Lighting::ForwardPlus::NUM_TILES_X),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define LIGHT_NUM_TILES_Y " +
-        to_stringImpl(Config::Lighting::ForwardPlus::NUM_TILES_Y),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define LIGHT_MAX_WIDTH " +
-        to_stringImpl(Config::Lighting::ForwardPlus::MAX_WIDTH),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define LIGHT_MAX_HEIGHT " +
-        to_stringImpl(Config::Lighting::ForwardPlus::MAX_HEIGHT),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define MAX_TEXTURE_SLOTS " + 
-        to_stringImpl(GL_API::s_maxTextureUnits),
         lineOffsets);
 
     appendToShaderHeader(
@@ -856,11 +817,12 @@ bool GL_API::initGLSW() {
     Attorney::GLAPIShaderProgram::setGlobalLineOffset(lineOffsets[to_base(ShaderType::COUNT)]);
 
     Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::VERTEX,   lineOffsets[to_base(ShaderType::VERTEX)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::FRAGMENT, lineOffsets[to_base(ShaderType::FRAGMENT)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::GEOMETRY, lineOffsets[to_base(ShaderType::GEOMETRY)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::COMPUTE,  lineOffsets[to_base(ShaderType::COMPUTE)]);
     Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::TESSELATION_CTRL, lineOffsets[to_base(ShaderType::TESSELATION_CTRL)]);
     Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::TESSELATION_EVAL, lineOffsets[to_base(ShaderType::TESSELATION_EVAL)]);
+    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::GEOMETRY, lineOffsets[to_base(ShaderType::GEOMETRY)]);
+    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::FRAGMENT, lineOffsets[to_base(ShaderType::FRAGMENT)]);
+    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::COMPUTE,  lineOffsets[to_base(ShaderType::COMPUTE)]);
+
     // Check initialization status for GLSL and glsl-optimizer
     return glswState == 1;
 }

@@ -198,7 +198,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         params._passIndex = (lightIndex * stride) + i;
         params._camera = light.shadowCameras()[i];
         //params._minLoD = i > 1 ? 1 : -1;
-        params._minExtents.set(i > 1 ? 3.0f : (i > 0 ? 2.0f : 0.0f));
+        params._minExtents.set(i > 1 ? 3.5f : (i > 0 ? 2.5f : 0.5f));
 
         rpm.doCustomPass(params, bufferInOut);
 

@@ -84,7 +84,6 @@ vec2 dvd_invScreenDimensions() {
 #define dvd_zPlanes vec2(dvd_renderProperties.xy)
 #define dvd_aspectRatio dvd_cameraPosition.w
 #define dvd_fieldOfView dvd_renderProperties.z
-#define dvd_crtStage uint(dvd_renderProperties.w)
 
 struct WaterBodyData {
     vec4 positionW;
@@ -99,7 +98,7 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
     vec4   dvd_windDetails;
     //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
-    //x - elapsed time (ms), y - delta time (ms), z - debug render, w.x - detail level
+    //x - elapsed time (ms), y - delta time (ms), z - debug render, w.x - reserved
     vec4   dvd_otherData;
     WaterBodyData dvd_waterEntities[];
 };
@@ -109,7 +108,6 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_time int(dvd_otherData.x)
 #define dvd_deltaTime (int(dvd_otherData.y))
 #define dvd_showDebugInfo (uint(dvd_otherData.z) == 1)
-#define dvd_renderDetailLevel (uint(dvd_otherData.w) * DETAIL_COUNT))
 
 
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)

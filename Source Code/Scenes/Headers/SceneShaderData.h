@@ -107,10 +107,6 @@ class SceneShaderData {
         _dirty = true;
     }
 
-    inline void detailLevel(RenderDetailLevel renderDetailLevel) {
-        _bufferData._otherData.w = to_F32(renderDetailLevel) / to_F32(RenderDetailLevel::COUNT);
-    }
-
     inline bool waterDetails(U8 index, const vec3<F32>& positionW, const vec3<F32>& dimensions) {
         if (index < MAX_WATER_BODIES) {
             WaterBodyData& waterBody = _bufferData._waterEntities[index];

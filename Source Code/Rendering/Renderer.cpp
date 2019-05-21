@@ -3,6 +3,7 @@
 #include "Headers/Renderer.h"
 
 #include "Core/Headers/Console.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
@@ -33,11 +34,17 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
 
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
 
-    vector<I32> initData(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE * g_numberOfTiles, -1);
+    I32 numLightsPerTile = context.config().rendering.numLightsPerScreenTile;
+    if (numLightsPerTile < 0) {
+        numLightsPerTile = to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE);
+    } else {
+        CLAMP(numLightsPerTile, 0, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
+    }
+    vector<I32> initData(numLightsPerTile * g_numberOfTiles, -1);
 
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-    bufferDescriptor._elementCount = Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE * g_numberOfTiles;
+    bufferDescriptor._elementCount = to_U32(initData.size());
     bufferDescriptor._elementSize = sizeof(I32);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;

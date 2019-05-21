@@ -94,11 +94,12 @@ void writeOutput(vec4 colour) {
     nvidiaSample(colour, linearDepth);
 #else //OIT_PASS
 
-// write depth value to alpha for refraction?
+    // write depth value to alpha for refraction?
     _colourOut = colour;
-    if (dvd_crtStage == STAGE_REFRACTION) {
-        _colourOut.a = 0.5f;
-    }
+#if defined(WRITE_DEPTH_TO_ALPHA)
+    //ToDo
+    _colourOut.a = 0.5f;
+#endif
 #endif //OIT_PASS
 }
 

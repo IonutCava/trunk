@@ -366,6 +366,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
         shaderModule._defines.push_back(std::make_pair("LOW_QUALITY", true));
+        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+            shaderModule._defines.push_back(std::make_pair("WRITE_DEPTH_TO_ALPHA", true));
+        }
     }
 
     ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name);

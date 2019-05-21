@@ -7,9 +7,6 @@ float filterFinalShadow(in sampler2DArrayShadow depthMap, in vec4 vPosInDM){
 
     float fShadow = 0.0;
     if((vDepthMapColour+Z_TEST_SIGMA) < vPosInDM.w){
-#if GPU_VENDOR == GPU_VENDOR_AMD
-        fShadow = vDepthMapColour;
-#else
         fShadow = vDepthMapColour * 0.25;
         fShadow += textureOffset(depthMap, vPosInDM, ivec2( -1, -1)) * 0.0625;
         fShadow += textureOffset(depthMap, vPosInDM, ivec2( -1,  0)) * 0.125;
@@ -19,7 +16,6 @@ float filterFinalShadow(in sampler2DArrayShadow depthMap, in vec4 vPosInDM){
         fShadow += textureOffset(depthMap, vPosInDM, ivec2(  1, -1)) * 0.0625;
         fShadow += textureOffset(depthMap, vPosInDM, ivec2(  1,  0)) * 0.125;
         fShadow += textureOffset(depthMap, vPosInDM, ivec2(  1,  1)) * 0.0625;
-#endif
         fShadow = clamp(fShadow, 0.0, 1.0);
     }else{
         fShadow = 1.0;

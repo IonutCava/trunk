@@ -449,6 +449,10 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
     fragDefines.push_back(std::make_pair(Util::StringFormat("TEX_OPERATION %d", to_base(getTextureOperation())), true));
 
+    if (renderStagePass._stage == RenderStage::REFRACTION) {
+        fragDefines.push_back(std::make_pair("WRITE_DEPTH_TO_ALPHA", true));
+    }
+
     // Bump mapping?
     if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
         globalDefines.push_back(std::make_pair("COMPUTE_TBN", true));

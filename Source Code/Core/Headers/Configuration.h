@@ -38,8 +38,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-enum class RenderDetailLevel : U8;
-
 class Configuration : public XML::IXMLSerializable {
 public:
     Configuration();
@@ -110,8 +108,8 @@ public:
     struct Rendering {
         U8 msaaSamples;
         U8 anisotropicFilteringLevel;
-        RenderDetailLevel renderDetailLevel;
         U8 reflectionResolutionFactor;
+        I32 numLightsPerScreenTile;
         bool enableFog;
         F32 fogDensity;
         vec3<F32> fogColour;

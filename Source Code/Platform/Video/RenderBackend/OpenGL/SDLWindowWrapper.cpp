@@ -372,7 +372,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(_context, 6);
 
     // Prepare shader headers and various shader related states
-    if (initShaders() && initGLSW()) {
+    if (initShaders() && initGLSW(config)) {
         // That's it. Everything should be ready for draw calls
         Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
 
@@ -473,6 +473,6 @@ void GL_API::onThreadCreated(const std::thread::id& threadID) {
         gl::glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
     }
 
-    initGLSW();
+    initGLSW(_context.context().config());
 }
 };

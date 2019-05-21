@@ -11,9 +11,43 @@
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 
+#include <boost/wave.hpp>
+#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
+#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
+
 namespace Divide {
 
 namespace {
+    //ref: https://stackoverflow.com/questions/14858017/using-boost-wave
+    class custom_directives_hooks : public boost::wave::context_policies::default_preprocessing_hooks
+    {
+    public:
+        template <typename ContextT, typename ContainerT>
+        bool found_unknown_directive(ContextT const& ctx, ContainerT const& line, ContainerT& pending) {
+            typedef typename ContainerT::const_iterator iterator_type;
+            iterator_type it = line.begin();
+            boost::wave::token_id id = boost::wave::util::impl::skip_whitespace(it, line.end());
+
+            if (id != boost::wave::T_IDENTIFIER) {
+                return false;       // nothing we could do
+            }
+
+            if (it->get_value() == "version" || it->get_value() == "extension") {
+                // Handle #version and #extension directives
+                std::copy(line.begin(), line.end(), std::back_inserter(pending));
+                return true;
+            }
+
+            if (it->get_value() == "type") {
+                // Handle type directive
+                return true;
+            }
+
+            // Unknown directive
+            return false;
+        }
+    };
+
     size_t g_validationBufferMaxSize = 4096 * 16;
 
     ShaderType getShaderType(UseProgramStageMask mask) {
@@ -46,6 +80,31 @@ namespace {
         }
 
         return UseProgramStageMask::GL_NONE_BIT;
+    }
+
+
+    stringImpl preProcess(std::string input, std::string name) {
+
+        typedef boost::wave::cpplexer::lex_iterator<boost::wave::cpplexer::lex_token<>> lex_iterator_type;
+        typedef boost::wave::context<std::string::iterator, lex_iterator_type, boost::wave::iteration_context_policies::load_file_to_string, custom_directives_hooks> context_type;
+        context_type ctx(input.begin(), input.end(), name.c_str());
+        ctx.set_language(boost::wave::support_cpp0x);
+        //ctx.set_language(boost::wave::enable_preserve_comments(ctx.get_language()));
+        ctx.set_language(boost::wave::enable_emit_pragma_directives(ctx.get_language()));
+        //ctx.set_language(boost::wave::enable_prefer_pp_numbers(ctx.get_language()));
+        ctx.set_language(boost::wave::enable_emit_contnewlines(ctx.get_language()));
+
+        context_type::iterator_type first = ctx.begin();
+        context_type::iterator_type last = ctx.end();
+
+
+        stringImpl ret = "";
+        while (first != last) {
+            ret.append((*first).get_value().c_str());
+            ++first;
+        }
+        //return ret.c_str();
+        return input.c_str();
     }
 };
 
@@ -224,7 +283,7 @@ bool glShader::load(const ShaderLoadData& data) {
             _stageMask |= getStageMask(it._type);
             _stageCount++;
             for (const stringImpl& source : it.sourceCode) {
-                _sourceCode[to_base(it._type)].push_back(source.c_str());
+                _sourceCode[to_base(it._type)].push_back(preProcess(source, _name.c_str()).c_str());
                 if (!source.empty()) {
                     hasSourceCode = true;
                 }

@@ -501,7 +501,6 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot, RenderSta
         data._cameraPosition.set(cameraSnapshot._eye, cameraSnapshot._aspectRatio);
         data._renderProperties.xy(cameraSnapshot._zPlanes);
         data._renderProperties.z = FoV;
-        data._renderProperties.w = to_F32(to_base(stage));
 
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
         Frustum::computePlanes(GetInverse(data._ViewProjectionMatrix), _frustumPlanes);

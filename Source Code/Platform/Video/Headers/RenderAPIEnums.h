@@ -126,17 +126,7 @@ enum class PrimitiveType : U8 {
     COUNT
 };
 
-enum class RenderDetailLevel : U8 {
-    OFF = 0,
-    LOW = 1,
-    MEDIUM = 2,
-    HIGH = 3,
-    ULTRA = 4,
-    COUNT
-};
-
-/// Specifies how the red, green, blue, and alpha source blending factors are
-/// computed.
+/// Specifies how the red, green, blue, and alpha source blending factors are computed.
 enum class BlendProperty : U8 {
     ZERO = 0,
     ONE,
