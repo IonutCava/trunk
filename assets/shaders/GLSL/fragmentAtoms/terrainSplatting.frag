@@ -10,9 +10,9 @@ layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 
-layout(binding = TEXTURE_COUNT + 0) uniform sampler2DArray texBlendMaps;
-layout(binding = TEXTURE_COUNT + 1) uniform sampler2DArray texTileMaps;
-layout(binding = TEXTURE_COUNT + 2) uniform sampler2DArray texNormalMaps;
+layout(binding = TEXTURE_TERRAIN_SPLAT)       uniform sampler2DArray texBlendMaps;
+layout(binding = TEXTURE_TERRAIN_ALBEDO_TILE) uniform sampler2DArray texTileMaps;
+layout(binding = TEXTURE_TERRAIN_NORMAL_TILE) uniform sampler2DArray texNormalMaps;
 
 
 vec4 getTerrainAlbedo(in vec2 uv) {
@@ -62,7 +62,7 @@ vec3 getTerrainAlbedoAndNormalTBN(in vec2 uv, out vec4 colour) {
         offset += CURRENT_LAYER_COUNT[i];
     }
 
-    return normalize(2.0 * tbn - 1.0);
+    return normalize(2.0f * tbn - 1.0f);
 }
 
 #endif //_TERRAIN_SPLATTING_FRAG_

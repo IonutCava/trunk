@@ -502,23 +502,22 @@ vec4 UnderwaterMappingRoutine(in vec2 uv, out vec3 normalWV) {
     vec4 scrollingUV = vec4(coords, coords + time2);
     scrollingUV.s -= time2;
 
-    return mix(texture(texWaterCaustics, scrollingUV.st) + texture(texWaterCaustics, scrollingUV.pq) * 0.5,
+    return mix((texture(texWaterCaustics, scrollingUV.st) + texture(texWaterCaustics, scrollingUV.pq)) * 0.5f,
                texture(texUnderwaterAlbedo, coords),
                _waterDetails.y);
 #endif
 }
 
 vec4 TerrainMappingRoutine(in vec2 uv, out vec3 normalWV) {
-    vec4 albedo;
 #if defined(LOW_QUALITY)
-    albedo = getTerrainAlbedo(uv);
     normalWV = VAR._normalWV;
+    return getTerrainAlbedo(uv);
 #else
-    vec3 normalTBN = getTerrainAlbedoAndNormalTBN(uv, albedo);
+    vec4 albedo;
+    const vec3 normalTBN = getTerrainAlbedoAndNormalTBN(uv, albedo);
     normalWV = normalize(getTBNMatrix() * normalTBN);
-#endif
-
     return albedo;
+#endif
 }
 
 void main(void)

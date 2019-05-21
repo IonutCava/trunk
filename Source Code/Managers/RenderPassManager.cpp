@@ -285,8 +285,6 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
         }
     }
 
-    dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
-
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     AnimationComponent* animComp = nullptr;
     if (playAnimations) {

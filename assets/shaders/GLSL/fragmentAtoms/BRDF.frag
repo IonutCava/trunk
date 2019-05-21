@@ -25,56 +25,46 @@
 #define MAX_LIGHTS_PER_PASS MAX_NUM_LIGHTS_PER_TILE
 #endif
 
-vec4 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 specular, in vec3 normalWV) {
-    vec4 ret = vec4(0.0f);
-
+void getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 specular, in vec3 normalWV, inout vec4 lightColour) {
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
-        ret += getBRDFFactors(vec4(light._colour.rgb, 1.0f), specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, -light._directionWV.xyz);
+        lightColour += getBRDFFactors(vec4(light._colour.rgb, 1.0f), specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, -light._directionWV.xyz);
     }
-
-    return ret;
 }
 
-vec4 getPointLightContribution(in uint tileIndex, in uint offset, in vec3 albedo, in vec4 specular, in vec3 normalWV) {
-    vec4 ret = vec4(0.0f);
+void getPointLightContribution(in uint tileIndex, in uint dirLightCount, in vec3 albedo, in vec4 specular, in vec3 normalWV, inout vec4 lightColour) {
+    const uint tileOffset = (tileIndex * MAX_NUM_LIGHTS_PER_TILE);
 
-    uint tileOffset = tileIndex * MAX_NUM_LIGHTS_PER_TILE;
     for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
-        int lightIdx = perTileLightIndices[tileOffset + i];
+        const int lightIdx = perTileLightIndices[tileOffset + i];
         if (lightIdx == -1) {
-            return ret;
+            break;
         }
 
-        const Light light = dvd_LightSource[lightIdx + offset];
+        const Light light = dvd_LightSource[lightIdx + dirLightCount];
 
         const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light, lightDirection));
 
-        ret += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, lightDirection);
+        lightColour += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, lightDirection);
     }
-
-    return ret;
 }
 
-vec4 getSpotLightContribution(in uint tileIndex, in uint offset, in uint pointLightCount, in vec3 albedo, in vec4 specular, in vec3 normalWV) {
-    vec4 ret = vec4(0.0f);
+void getSpotLightContribution(in uint tileIndex, in uint dirLightCount, in uint pointLightCount, in vec3 albedo, in vec4 specular, in vec3 normalWV, inout vec4 lightColour) {
+    const uint tileOffset = (tileIndex * MAX_NUM_LIGHTS_PER_TILE) + pointLightCount;
 
-    uint tileOffset = tileIndex * MAX_NUM_LIGHTS_PER_TILE;
     for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
-        int lightIdx = perTileLightIndices[tileOffset + i + pointLightCount];
+        const int lightIdx = perTileLightIndices[tileOffset + i];
         if (lightIdx == -1) {
-            return ret;
+            break;
         }
 
-        const Light light = dvd_LightSource[lightIdx + offset];
+        const Light light = dvd_LightSource[lightIdx + dirLightCount];
         const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light, lightDirection));
 
-        ret += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, lightDirection);
+        lightColour += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, lightDirection);
     }
-
-    return ret;
 }
 
 vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 uv) {
@@ -82,17 +72,20 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 
     return albedo;
 #else //USE_SHADING_FLAT
     const uint dirLightCount = dvd_LightData.x;
+    const uint pointLightCount = dvd_LightData.y;
+
     const vec4 specular = vec4(getSpecular(colourMatrix, uv), getReflectivity(colourMatrix));
 
     // Apply all lighting contributions (.a = reflectionCoeff)
-    vec4 lightColour = getDirectionalLightContribution(dirLightCount, albedo, specular, normal);
+    vec4 lightColour = vec4(0.0f);
+    getDirectionalLightContribution(dirLightCount, albedo, specular, normal, lightColour);
 
     if (dvd_lodLevel < 2)
     {
-         uint tileIndex = GetTileIndex(gl_FragCoord.xy);
-         lightColour += getPointLightContribution(tileIndex, dirLightCount, albedo, specular, normal);
+         const uint tileIndex = GetTileIndex(gl_FragCoord.xy);
+         getPointLightContribution(tileIndex, dirLightCount, albedo, specular, normal, lightColour);
          // Move past the first sentinel to get to the spot lights
-         lightColour += getSpotLightContribution(tileIndex, dirLightCount, dvd_LightData.y, albedo, specular, normal);
+         getSpotLightContribution(tileIndex, dirLightCount, pointLightCount, albedo, specular, normal, lightColour);
     }
 
     lightColour.rgb += getEmissive(colourMatrix);

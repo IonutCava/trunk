@@ -608,6 +608,18 @@ bool GL_API::initGLSW() {
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
+        "#define TEXTURE_GLOSS " +
+        to_stringImpl(to_base(ShaderProgram::TextureUsage::GLOSS)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
+        "#define TEXTURE_ROUGHNESS " +
+        to_stringImpl(to_base(ShaderProgram::TextureUsage::ROUGHNESS)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
         "#define TEXTURE_PROJECTION " +
         to_stringImpl(to_base(ShaderProgram::TextureUsage::PROJECTION)),
         lineOffsets);

@@ -141,7 +141,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     U32 totalNormalCount = std::accumulate(std::cbegin(normalCount), std::cend(normalCount), 0u);
-    U32 totalAlbedoCount = std::accumulate(std::cbegin(normalCount), std::cend(normalCount), 0u);
+    U32 totalAlbedoCount = std::accumulate(std::cbegin(albedoCount), std::cend(albedoCount), 0u);
     assert(totalNormalCount == totalAlbedoCount);
 
     SamplerDescriptor heightMapSampler = {};
@@ -312,6 +312,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
             shaderModule._defines.push_back(std::make_pair(layerCountData, false));
             shaderModule._defines.push_back(std::make_pair("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)), true));
+
+
+            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_TERRAIN_SPLAT %d", to_base(ShaderProgram::TextureUsage::TERRAIN_SPLAT)), true));
+            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_TERRAIN_ALBEDO_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE)), true));
+            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_TERRAIN_NORMAL_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_NORMAL_TILE)), true));
         }
     }
 
