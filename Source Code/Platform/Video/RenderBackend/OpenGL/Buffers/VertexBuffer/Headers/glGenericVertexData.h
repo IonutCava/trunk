@@ -91,7 +91,7 @@ class glGenericVertexData final : public GenericVertexData {
 
    protected:
     friend class GFXDevice;
-    void draw(const GenericDrawCommand& command) override;
+    void draw(const GenericDrawCommand& command, I32 passIdx = -1) override;
 
    protected:
     void setBufferBindings();

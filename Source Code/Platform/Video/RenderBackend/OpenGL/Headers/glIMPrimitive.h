@@ -71,7 +71,7 @@ class glIMPrimitive final : public IMPrimitive {
     /// Specify an attribute that will be applied to all vertex calls after this
     void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w);
     /// Submit the created batch to the GPU for rendering
-    void draw(const GenericDrawCommand& cmd) override;
+    void draw(const GenericDrawCommand& cmd, I32 passIdx = -1) override;
     void pipeline(const Pipeline& pipeline) override;
 
     GFX::CommandBuffer& toCommandBuffer() const override;

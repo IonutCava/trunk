@@ -85,7 +85,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     virtual bool create(bool staticDraw = true);
 
-    virtual void draw(const GenericDrawCommand& command) = 0;
+    virtual void draw(const GenericDrawCommand& command, I32 passIdx = -1) = 0;
 
     inline void useLargeIndices(bool state = true) {
         assert(_hardwareIndicesL.empty() && _hardwareIndicesS.empty() &&

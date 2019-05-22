@@ -72,14 +72,15 @@ class glVertexArray final : public VertexBuffer {
 
    protected:
     friend class GFXDevice;
-    void draw(const GenericDrawCommand& commands) override;
+    void draw(const GenericDrawCommand& commands, I32 passIdx = -1) override;
 
    protected:
     friend class GL_API;
     void reset() override;
-    /// If we have a shader, we create a VAO, if not, we use simple VB + IB. If
-    /// that fails, use VA
+    /// Prepare data for upload
     bool refresh();
+    /// Create vao objects for the current pass
+    void upload(I32 passIdx);
     /// Internally create the VB
     bool createInternal();
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
@@ -100,6 +101,7 @@ class glVertexArray final : public VertexBuffer {
     GLenum _usage;
     ///< A refresh call might be called before "Create()". This should help with that
     bool _refreshQueued;  
+    bool _uploadQueued;
     GLsizei _prevSize;
     GLsizei _prevSizeIndices;
     GLsizei _effectiveEntrySize;

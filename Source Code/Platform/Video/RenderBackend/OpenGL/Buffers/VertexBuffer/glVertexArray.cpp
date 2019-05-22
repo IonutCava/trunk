@@ -107,6 +107,7 @@ void glVertexArray::cleanup() {
 glVertexArray::glVertexArray(GFXDevice& context)
     : VertexBuffer(context),
       _refreshQueued(false),
+      _uploadQueued(false),
       _drawIndexed(true),
       _formatInternal(GL_NONE)
 {
@@ -238,25 +239,6 @@ bool glVertexArray::refresh() {
     }
     _attribDirty.fill(false);
 
-
-    Console::printfn("VAO HASHES: ");
-    std::array<bool, to_base(RenderStagePass::count())> vaoCachesDirty;
-    std::array<AttribFlags, to_base(RenderStagePass::count())> attributesPerStage;
-
-    vaoCachesDirty.fill(false);
-    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        const AttribFlags& stageMask = _attribMasks[i];
-
-        AttribFlags& stageUsage = attributesPerStage[i];
-        for (U8 j = 0; j < to_base(AttribLocation::COUNT); ++j) {
-            stageUsage[j] = _useAttribute[j] && stageMask[j];
-        }
-
-        size_t crtHash = 0;
-        // Dirty on a VAO map cache miss
-        vaoCachesDirty[i] = !_VAOMap.getVAO(stageUsage, _vaoCaches[i], crtHash);
-        Console::printfn("      %s : %zu (pass: %s)", TypeUtil::renderStageToString(RenderStagePass::stage(i)), crtHash, TypeUtil::renderPassTypeToString(RenderStagePass::pass(i)));    }
-
     std::pair<bufferPtr, size_t> bufferData = getMinimalData();
     // If any of the VBO's components changed size, we need to recreate the
     // entire buffer.
@@ -306,37 +288,47 @@ bool glVertexArray::refresh() {
         glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
     }
 
-    vectorEASTL<GLuint> vaos;
-    vaos.reserve(RenderStagePass::count());
-
-    for (RenderStagePass::StagePassIndex pass = 0; pass < RenderStagePass::count(); ++pass) {
-        if (vaoCachesDirty[pass]) {
-            GLuint crtVao = _vaoCaches[pass];
-            if (eastl::find_if(eastl::cbegin(vaos),
-                               eastl::cend(vaos),
-                               [crtVao](GLuint vao) {
-                                   return crtVao == vao;
-                               }) == eastl::cend(vaos))
-            {
-                vaos.push_back(crtVao);
-            }
-        }
-    }
-
-    for (U8 i = 0; i < to_U8(vaos.size()); ++i) {
-        // Set vertex attribute pointers
-        uploadVBAttributes(vaos[i]);
-    }
-
-    vaoCachesDirty.fill(false);
-
     // Possibly clear client-side buffer for all non-required attributes?
     // foreach attribute if !required then delete else skip ?
-_refreshQueued = false;
+    _refreshQueued = false;
+    _uploadQueued = true;
 
-return true;
+    return true;
 }
 
+void glVertexArray::upload(I32 passIdx) {
+
+    ACKNOWLEDGE_UNUSED(passIdx);
+
+    Console::printfn("VAO HASHES: ");
+
+    vectorEASTL<GLuint> vaos;
+    vaos.reserve(RenderStagePass::count());
+    std::array<AttribFlags, to_base(RenderStagePass::count())> attributesPerStage;
+    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        const AttribFlags& stageMask = _attribMasks[i];
+
+        AttribFlags& stageUsage = attributesPerStage[i];
+        for (U8 j = 0; j < to_base(AttribLocation::COUNT); ++j) {
+            stageUsage[j] = _useAttribute[j] && stageMask[j];
+        }
+
+        size_t crtHash = 0;
+        // Dirty on a VAO map cache miss
+        if (!_VAOMap.getVAO(stageUsage, _vaoCaches[i], crtHash)) {
+            GLuint crtVao = _vaoCaches[i];
+            if (eastl::find(eastl::cbegin(vaos), eastl::cend(vaos), crtVao) == eastl::cend(vaos)) {
+                vaos.push_back(crtVao);
+                // Set vertex attribute pointers
+                uploadVBAttributes(crtVao);
+            }
+        }
+
+        Console::printfn("      %s : %zu (pass: %s)", TypeUtil::renderStageToString(RenderStagePass::stage(i)), crtHash, TypeUtil::renderPassTypeToString(RenderStagePass::pass(i)));
+    }
+
+    _uploadQueued = false;
+}
 /// This method creates the initial VAO and VB OpenGL objects and queues a
 /// Refresh call
 bool glVertexArray::createInternal() {
@@ -366,7 +358,7 @@ bool glVertexArray::createInternal() {
 }
 
 /// Render the current buffer data using the specified command
-void glVertexArray::draw(const GenericDrawCommand& command) {
+void glVertexArray::draw(const GenericDrawCommand& command, I32 passIdx) {
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
     if (_IBid == 0) {
@@ -380,6 +372,10 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
         if (!refresh()) {
             return;
         }
+    }
+
+    if (_uploadQueued) {
+        upload(passIdx);
     }
 
     GLStateTracker& stateTracker = GL_API::getStateTracker();

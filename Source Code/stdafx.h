@@ -121,6 +121,8 @@ namespace boost {
 #include <boost/intrusive/slist.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/locks.hpp>
 
 #include <simplefilewatcher/includes/FileWatcher.h>
 

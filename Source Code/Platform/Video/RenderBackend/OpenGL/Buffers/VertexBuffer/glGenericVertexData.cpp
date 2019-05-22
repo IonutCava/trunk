@@ -47,7 +47,7 @@ void glGenericVertexData::create(U8 numBuffers) {
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
-void glGenericVertexData::draw(const GenericDrawCommand& command) {
+void glGenericVertexData::draw(const GenericDrawCommand& command, I32 passIdx) {
     bool useCmdBuffer = isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT);
     // Update buffer bindings
     setBufferBindings();

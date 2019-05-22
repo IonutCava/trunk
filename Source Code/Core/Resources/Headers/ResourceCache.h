@@ -45,38 +45,16 @@ namespace Divide {
 
 class ResourceLoadLock {
 public:
-    explicit ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded)
-        : _loadingHash(hash)
-    {
-        if (threaded) {
-            WAIT_FOR_CONDITION_CALLBACK(notLoading(_loadingHash), notifyTaskPool, context);
-        } else {
-            WAIT_FOR_CONDITION(notLoading(_loadingHash));
-        }
-
-        UniqueLockShared w_lock(s_hashLock);
-        s_loadingHashes.emplace_back(_loadingHash);
-    }
-
-    ~ResourceLoadLock()
-    {
-        UniqueLockShared u_lock(s_hashLock);
-        s_loadingHashes.erase(std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), _loadingHash));
-    }
+    explicit ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded);
+    ~ResourceLoadLock();
 
     static void notifyTaskPool(PlatformContext& context);
 
 private:
-    static bool notLoading(size_t hash) {
-        SharedLock r_lock(s_hashLock);
-        return std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), hash) == std::cend(s_loadingHashes);
-    }
+    const size_t _loadingHash;
 
-private:
-    size_t _loadingHash;
-
-    static SharedMutex s_hashLock;
-    static vectorFast<size_t> s_loadingHashes;
+    static boost::shared_mutex s_hashLock;
+    static std::set<size_t> s_loadingHashes;
 };
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources

@@ -119,7 +119,7 @@ namespace Paths {
         Shaders::GLSL::g_geomAtomExt = stringImpl("geom");
         Shaders::GLSL::g_tescAtomExt = stringImpl("tesc");
         Shaders::GLSL::g_teseAtomExt = stringImpl("tese");
-        Shaders::GLSL::g_compAtomExt = stringImpl(".cpt");
+        Shaders::GLSL::g_compAtomExt = stringImpl(".comp");
         Shaders::GLSL::g_comnAtomExt = stringImpl(".cmn");
 
         Shaders::GLSL::g_parentShaderLoc = stringImpl("GLSL/");

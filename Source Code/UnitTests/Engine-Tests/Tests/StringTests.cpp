@@ -122,18 +122,6 @@ TEST(RegexFailTest)
         vector<stringImpl> temp3 = getFiles(inputUse3, Paths::g_usePattern);
         CHECK_FALSE(temp3.size() == 1);
     }
-    {
-        const stringImpl& inputUse1("#define bla");
-        const stringImpl& inputUse2("#ifdef bla");
-        const stringImpl& inputUse3("      #elif       bla");
-
-        /*vector<stringImpl> temp1 = getFiles(inputUse1, Paths::g_definePattern);
-        CHECK_FALSE(temp1.size() == 1);
-        vector<stringImpl> temp2 = getFiles(inputUse2, Paths::g_definePattern);
-        CHECK_FALSE(temp2.size() == 1);
-        vector<stringImpl> temp3 = getFiles(inputUse3, Paths::g_definePattern);
-        CHECK_FALSE(temp3.size() == 1);*/
-    }
 }
 
 TEST(TestReplaceInPlace)

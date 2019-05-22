@@ -21,9 +21,71 @@
 #include "Core/Headers/EngineTaskPool.h"
 #include "Utility/Headers/Localization.h"
 
+#pragma warning(push)
+#pragma warning(disable:4458)
+#pragma warning(disable:4706)
+#include <boost/wave.hpp>
+#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
+#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
+#pragma warning(pop)
+
 namespace Divide {
 
 namespace {
+    //ref: https://stackoverflow.com/questions/14858017/using-boost-wave
+    class custom_directives_hooks : public boost::wave::context_policies::default_preprocessing_hooks
+    {
+    public:
+        template <typename ContextT, typename ContainerT>
+        bool found_unknown_directive(ContextT const& ctx, ContainerT const& line, ContainerT& pending)
+        {
+            namespace wave = boost::wave;
+
+            typedef typename ContainerT::const_iterator iterator_type;
+            iterator_type it = line.begin();
+            wave::token_id id = wave::util::impl::skip_whitespace(it, line.end());
+
+            if (id != wave::T_IDENTIFIER) {
+                return false;       // nothing we could do
+            }
+
+            if ((*it).get_value() == "version" || (*it).get_value() == "extension")
+            {
+                // handle #version and #extension directives
+                std::copy(line.begin(), line.end(), std::back_inserter(pending));
+                return true;
+            }
+
+            return false;           // unknown directive
+        }
+    };
+
+    stringImpl preProcess(std::string input, const char* name) {
+        typedef boost::wave::cpplexer::lex_token<> token_type;
+        typedef boost::wave::cpplexer::lex_iterator<token_type> lex_iterator_type;
+        typedef boost::wave::context<std::string::iterator, lex_iterator_type,
+                                     boost::wave::iteration_context_policies::load_file_to_string,
+                                     custom_directives_hooks
+                                    > context_type;
+
+        context_type ctx(input.begin(), input.end(), name);
+
+        ctx.set_language(boost::wave::enable_long_long(ctx.get_language()));
+        ctx.set_language(boost::wave::enable_preserve_comments(ctx.get_language()));
+        ctx.set_language(boost::wave::enable_prefer_pp_numbers(ctx.get_language()));
+        ctx.set_language(boost::wave::enable_emit_line_directives(ctx.get_language(), false));
+
+        context_type::iterator_type first = ctx.begin();
+        context_type::iterator_type last = ctx.end();
+
+
+        stringImpl ret = "";
+        while (first != last) {
+            ret.append((*first).get_value().c_str());
+            ++first;
+        }
+        return ret.c_str();
+    }
     size_t g_validationBufferMaxSize = 4096 * 16;
     UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
         glShaderProgram::onAtomChange(atomName, evt);
@@ -248,7 +310,8 @@ vector<stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
         }
         vector<stringImpl> foundDefines;
         foundDefines.reserve(20);
-        sourceCodeOut.second = preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, foundDefines, true);
+        sourceCodeOut.second = 
+            preProcess(preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, foundDefines, true), fileName.c_str());
 
         shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
                         fileName,

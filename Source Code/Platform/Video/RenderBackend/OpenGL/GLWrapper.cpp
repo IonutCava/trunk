@@ -1037,7 +1037,7 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     static_cast<glShaderProgram&>(program).UploadPushConstants(pushConstants);
 }
 
-bool GL_API::draw(const GenericDrawCommand& cmd) {
+bool GL_API::draw(const GenericDrawCommand& cmd, I32 passIdx) {
     if (cmd._sourceBuffer == nullptr) {
         getStateTracker().setActiveVAO(s_dummyVAO);
 
@@ -1050,7 +1050,7 @@ bool GL_API::draw(const GenericDrawCommand& cmd) {
 
         glDrawArrays(GLUtil::glPrimitiveTypeTable[to_U32(cmd._primitiveType)], cmd._cmd.firstIndex, indexCount);
     } else {
-        cmd._sourceBuffer->draw(cmd);
+        cmd._sourceBuffer->draw(cmd, passIdx);
     }
 
     return true;

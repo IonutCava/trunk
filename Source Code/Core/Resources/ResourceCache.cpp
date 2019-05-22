@@ -9,9 +9,36 @@
 
 namespace Divide {
 
-SharedMutex ResourceLoadLock::s_hashLock;
-vectorFast<size_t> ResourceLoadLock::s_loadingHashes;
+boost::shared_mutex ResourceLoadLock::s_hashLock;
+std::set<size_t> ResourceLoadLock::s_loadingHashes;
 
+ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded)
+    : _loadingHash(hash)
+{
+    while (true) {
+        {
+            boost::shared_lock<boost::shared_mutex> r_lock(s_hashLock);
+            if (std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), hash) == std::cend(s_loadingHashes)) {
+                r_lock.unlock();
+                boost::upgrade_lock<boost::shared_mutex> u_lock(s_hashLock);
+                if (std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), hash) == std::cend(s_loadingHashes)) {
+                    boost::upgrade_to_unique_lock<boost::shared_mutex> w_lock(u_lock);
+                    s_loadingHashes.insert(_loadingHash);
+                    return;
+                }
+            }
+        }
+        if (threaded) {
+            notifyTaskPool(context);
+        }
+    }
+}
+
+ResourceLoadLock::~ResourceLoadLock()
+{
+    boost::unique_lock<boost::shared_mutex> w_lock(s_hashLock);
+    s_loadingHashes.erase(std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), _loadingHash));
+}
 
 void ResourceLoadLock::notifyTaskPool(PlatformContext& context) {
     context.taskPool(TaskPoolType::HIGH_PRIORITY).threadWaiting();

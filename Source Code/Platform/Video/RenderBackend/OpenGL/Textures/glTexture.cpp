@@ -78,9 +78,9 @@ void glTexture::threadedLoad() {
     if (automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
         GL_API::queueComputeMipMap(_textureData._textureHandle);
     }
-    _lockManager->Lock(!Runtime::isMainThread());
-
     CachedResource::load();
+
+    _lockManager->Lock(!Runtime::isMainThread());
 }
 
 void glTexture::setMipMapRange(U16 base, U16 max) {

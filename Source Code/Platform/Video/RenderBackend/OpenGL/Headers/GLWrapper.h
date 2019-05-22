@@ -124,7 +124,7 @@ protected:
     void drawText(const TextElementBatch& batch);
     void drawIMGUI(ImDrawData* data, I64 windowGUID);
 
-    bool draw(const GenericDrawCommand& cmd);
+    bool draw(const GenericDrawCommand& cmd, I32 passIdx = -1);
 
     /// Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash) override;

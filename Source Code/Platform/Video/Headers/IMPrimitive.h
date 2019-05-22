@@ -64,7 +64,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     virtual void pipeline(const Pipeline& pipeline);
     virtual void texture(const Texture& texture);
 
-    virtual void draw(const GenericDrawCommand& cmd) = 0;
+    virtual void draw(const GenericDrawCommand& cmd, I32 passIdx = -1) = 0;
 
     virtual void beginBatch(bool reserveBuffers, 
                             U32 vertexCount,
