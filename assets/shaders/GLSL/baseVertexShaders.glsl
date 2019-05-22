@@ -25,3 +25,16 @@ void main(void)
 {
     computeData();
 }
+
+--Vertex.BasicLightData
+
+#include "vbInputData.vert"
+#include "lightingDefaults.vert"
+
+void main() {
+
+    computeData();
+    computeLightVectors();
+
+    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+}

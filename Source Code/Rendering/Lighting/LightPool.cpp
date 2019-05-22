@@ -183,8 +183,8 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     ShadowMap::clearShadowMapBuffers(bufferInOut);
     ShadowMap::resetShadowMaps();
 
-    for (vec4<U32>& details : _shadowBufferData._lightDetails) {
-        details.x = to_U32(LightType::COUNT);
+    for (vec4<F32>& details : _shadowBufferData._lightDetails) {
+        details.x = to_F32(LightType::COUNT);
     }
 
     if (!_sortedShadowLights.empty()) {

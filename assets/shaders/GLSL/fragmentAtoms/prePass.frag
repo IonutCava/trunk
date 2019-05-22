@@ -5,10 +5,9 @@
 #define PRE_PASS
 #endif
 
-#include "lightInput.cmn"
 #include "materialData.frag"
 #include "velocityCalc.frag"
-#include "shadowMapping.frag"
+#include "shadowUtils.frag"
 
 layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
 //r,g,b = CSM shadow factor for light ids 0, 1 & 2; a - specular/roughness
@@ -24,7 +23,7 @@ void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
 
     _normalAndVelocityOut.rg = packNormal(normalize(normal));
     for (int i = 0; i < 3; ++i) {
-        _extraDetailsOut[i] = getShadowFactor(i);
+        //_extraDetailsOut[i] = getShadowFactor(i);
     }
 }
 

@@ -30,6 +30,12 @@ struct RenderQueueDistanceFrontToBack {
     }
 };
 
+
+struct RenderQueueWaterFirst {
+    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+        return a._renderable->getSGN().getNode().type() == SceneNodeType::TYPE_WATER;
+    }
+};
 /// Sorting opaque items is a 3 step process:
 /// 1: sort by shaders
 /// 2: if the shader is identical, sort by state hash
@@ -92,6 +98,11 @@ void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
                         eastl::end(_renderBinStack[stageIndex]),
                         RenderQueueDistanceFrontToBack());
         } break;
+        case RenderingOrder::WATER_FIRST: {
+            eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
+                        eastl::end(_renderBinStack[stageIndex]),
+                        RenderQueueWaterFirst());
+        } break;
         case RenderingOrder::NONE: {
             // no need to sort
         } break;
@@ -139,13 +150,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePas
 
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
-    _renderBinStack[stageIndex].emplace_back(RenderBinItem{
-                                                 rComp,
-                                                 keyA,
-                                                 keyB,
-                                                 rComp->getSortKeyHash(stagePass),
-                                                 minDistToCameraSq
-                                             });
+    _renderBinStack[stageIndex].emplace_back(rComp, keyA, keyB, rComp->getSortKeyHash(stagePass), minDistToCameraSq );
 }
 
 void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const {

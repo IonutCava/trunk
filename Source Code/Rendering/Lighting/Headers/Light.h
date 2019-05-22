@@ -64,8 +64,8 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
        struct ShadowProperties {
            /// light viewProjection matrices
            mat4<F32> _lightVP[6];
-           // x = light type, y = arrayOffset
-           vec4<U32> _lightDetails;
+           // x = light type, y = arrayOffset, z - bias
+           vec4<F32> _lightDetails;
            /// light's position in world space. w - csm split distances (or whatever else might be needed)
            vec4<F32> _lightPosition[6];
 
@@ -76,7 +76,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
            }
 
            // Renderdoc:
-           //uvec4 details; mat4 vp[6]; vec4 pos[6]; float f[6]
+           //vec4 details; mat4 vp[6]; vec4 pos[6]; float f[6]
        };
 
     /// Create a new light assigned to the specified slot with the specified range
@@ -181,7 +181,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     }
 
     inline void setShadowOffset(U16 offset) {
-        _shadowProperties._lightDetails.y = offset;
+        _shadowProperties._lightDetails.y = to_F32(offset);
     }
 
     inline ShadowCameraPool& shadowCameras() { return _shadowCameras; }

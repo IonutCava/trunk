@@ -18,47 +18,7 @@ float VSM(vec2 moments, float fragDepth) {
     return clamp(lit, 0.0f, 1.0f);
 }
 
-// find the appropriate depth map to look up in based on the depth of this fragment
-int getCSMSlice(in uint idx) {
-
-    int Split = 0;
-    const float fragDepth = VAR._vertexWV.z;
-    // Figure out which cascade to sample from
-
-    float dist = 0.0f;
-    for (; Split < MAX_CSM_SPLITS_PER_LIGHT; Split++) {
-        dist = dvd_shadowLightPosition[Split + (idx * 6)].w;
-        if (fragDepth > dist) {
-            break;
-        }
-    }
-
-    // GLOBAL
-    const int SplitPowLookup[] = { 
-        0,
-        1, 1,
-        2, 2, 2, 2,
-        3
-#       if MAX_CSM_SPLITS_PER_LIGHT > 4
-        , 3, 3, 3, 3, 3, 3, 3,
-        LT(4),
-        LT(5), LT(5),
-        LT(6), LT(6), LT(6), LT(6)
-#       endif //MAX_CSM_SPLITS_PER_LIGHT
-    };
-
-    // Ensure that every fragment in the quad choses the same split so that derivatives
-    // will be meaningful for proper texture filtering and LOD selection.
-    const int SplitPow = 1 << Split;
-    const int SplitX = int(abs(dFdx(SplitPow)));
-    const int SplitY = int(abs(dFdy(SplitPow)));
-    const int SplitXY = int(abs(dFdx(SplitY)));
-    const int SplitMax = max(SplitXY, max(SplitX, SplitY));
-    
-    return SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : Split;
-}
-
-float applyShadowDirectional(in uint idx, in uvec4 details) {
+float applyShadowDirectional(in uint idx, in vec4 details) {
     const int Split = getCSMSlice(idx);
 
     const vec4 sc = dvd_shadowLightVP[Split + (idx * 6)] * VAR._vertexW;
@@ -83,7 +43,7 @@ float applyShadowDirectional(in uint idx, in uvec4 details) {
         //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
 
         //float bias = max(angleBias * (1.0 - dot(normal, lightDirection)), 0.0008);
-        float bias = 0.0f;
+        float bias = details.z;
         return max(VSM(moments, shadowCoord.z - bias), 0.2f);
     }
     

@@ -75,6 +75,10 @@ RenderingOrder RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinTyp
                 sortOrder = RenderingOrder::FRONT_TO_BACK;
             }
         } break;
+        case RenderBinType::RBT_TERRAIN_AUX: {
+            // Water first, everything else after
+            sortOrder = RenderingOrder::WATER_FIRST;
+        } break;
         case RenderBinType::RBT_TRANSLUCENT: {
              // We are using weighted blended OIT. State is fine (and faster)
             sortOrder = RenderingOrder::BY_STATE;
@@ -114,7 +118,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
 
         case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_INFINITEPLANE:
-            return _renderBins[RenderBinType::RBT_TERRAIN];
+            return _renderBins[RenderBinType::RBT_TERRAIN_AUX];
 
         // Water is also opaque as refraction and reflection are separate textures
         // We may want to break this stuff up into mesh rendering components and not care about specifics anymore (i.e. just material checks)
@@ -217,6 +221,7 @@ void RenderQueue::getSortedQueues(RenderStagePass stagePass, SortedQueues& queue
             RenderBinType::RBT_OPAQUE,
             RenderBinType::RBT_IMPOSTOR,
             RenderBinType::RBT_TERRAIN,
+            RenderBinType::RBT_TERRAIN_AUX,
             RenderBinType::RBT_SKY,
             RenderBinType::RBT_TRANSLUCENT
         };

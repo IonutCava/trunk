@@ -21,7 +21,8 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
       _csmNearClipOffset(100.0f)
 {
     setRange(g_defaultLightDistance);
-    _shadowProperties._lightDetails.y = to_U32(_csmSplitCount);
+    _shadowProperties._lightDetails.y = to_F32(_csmSplitCount);
+    _shadowProperties._lightDetails.z = 0.0f;
     csmSplitCount(context.config().rendering.shadowMapping.defaultCSMSplitCount);
     getEditorComponent().registerField("Range and Cone", &_rangeAndCones, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
 

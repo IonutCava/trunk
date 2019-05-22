@@ -474,13 +474,20 @@ layout(location = 2) in vec3 gs_wireColor;
 layout(location = 3) noperspective in vec3 gs_edgeDist;
 #endif
 
-#include "BRDF.frag"
-#include "terrainSplatting.frag"
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else
+#include "BRDF.frag"
 #include "output.frag"
 #endif
+
+#include "terrainSplatting.frag"
+
+#if !defined(PRE_PASS)
+layout(binding = TEXTURE_UNIT0)     uniform sampler2D texWaterCaustics;
+layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
+layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
+layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 
 // ToDo: Move this above the includes
 #if defined(LOW_QUALITY)
@@ -519,17 +526,18 @@ vec4 TerrainMappingRoutine(in vec2 uv, out vec3 normalWV) {
     return albedo;
 #endif
 }
+#endif
 
 void main(void)
 {
     vec2 uv = getTexCoord();
 
+#if defined(PRE_PASS)
+    outputWithVelocity(normalize(getTBNMatrix() * getTerrainNormalTBN(uv)));
+#else
     vec3 normalWV = vec3(0.0f);
     vec4 albedo = mix(TerrainMappingRoutine(uv, normalWV), UnderwaterMappingRoutine(uv, normalWV), _waterDetails.x);
 
-#if defined(PRE_PASS)
-    outputWithVelocity(normalWV);
-#else
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 colourOut = getPixelColour(albedo, colourMatrix, normalWV, uv);
 

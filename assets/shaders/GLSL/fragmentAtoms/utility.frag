@@ -6,7 +6,6 @@
 uniform float projectedTextureMixWeight;
 
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
-layout(binding = TEXTURE_PROJECTION) uniform sampler2D texDiffuseProjected;
 
 #define PRECISION 0.000001
 
@@ -34,10 +33,14 @@ float overlay(float x, float y)
         return 1.0 - 2.0*(1.0 - x)*(1.0 - y);
 }
 
+#if defined(PROJECTED_TEXTURE)
+layout(binding = TEXTURE_PROJECTION) uniform sampler2D texDiffuseProjected;
+
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));
     targetTexture.xyz = mix(targetTexture.xyz, projectedTex.xyz, projectedTextureMixWeight);
 }
+#endif
 
 bool isSamplerSet(sampler2D sampler) {
     return textureSize(sampler, 0).x > 0;

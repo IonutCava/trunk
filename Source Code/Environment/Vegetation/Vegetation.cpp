@@ -339,7 +339,9 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
 
     Material::ShaderData treeShaderData = {};
     treeShaderData._depthShaderVertSource = "tree";
+    treeShaderData._depthShaderVertVariant = "";
     treeShaderData._colourShaderVertSource = "tree";
+    treeShaderData._colourShaderVertVariant = "";
 
     ResourceDescriptor matDesc("Tree_material");
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);

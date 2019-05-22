@@ -55,11 +55,18 @@ namespace GFX {
     class CommandBuffer;
 };
 
-struct RenderBinItem {
+struct alignas(64) RenderBinItem {
+    RenderBinItem() : RenderBinItem(nullptr, -1, -1, 0, 0.0f) 
+    {}
+
+    RenderBinItem(RenderingComponent* rcomp, I64 a, I32 b, size_t hash, F32 dist)
+        : _renderable(rcomp), _sortKeyA(a), _sortKeyB(b), _stateHash(hash), _distanceToCameraSq(dist)
+    {}
+
     RenderingComponent* _renderable = nullptr;
+    size_t _stateHash = 0;
     I64 _sortKeyA = -1;
     I32 _sortKeyB = -1;
-    size_t _stateHash = 0;
     F32 _distanceToCameraSq = 0.0f;
 };
 
@@ -68,13 +75,15 @@ enum class RenderingOrder : U8 {
     FRONT_TO_BACK,
     BACK_TO_FRONT,
     BY_STATE,
+    WATER_FIRST, //Hack, but improves rendering perf :D
     COUNT
 };
 
 //Bins can hold certain node types. This is also the order in which nodes will be rendered!
 BETTER_ENUM(RenderBinType, U32,
-    RBT_TERRAIN = 0, //< Terrains should occupy most of the screen and be balanced fill/geometry cost
-    RBT_OPAQUE,      //< Opaque geometry will be occluded by terrain but will often occlude most of the sky (e.g.: indoors)
+    RBT_OPAQUE,      //< Opaque objects will occlude a lot of the terrain and terrain is REALLY expensive to render, so maybe draw them first?
+    RBT_TERRAIN_AUX, //< Water, infinite ground plane, etc. Ground, but not exactly ground. Still oclude a lot of terrain AND cheaper to render
+    RBT_TERRAIN,     //< Actual terrain. It should cover most of the remaining empty screen space
     RBT_SKY,         //< Sky needs to be drawn after ALL opaque geometry to save on fillrate
     RBT_TRANSLUCENT, //< Translucent items use a [0.0...1.0] alpha values supplied via an opacity map or the albedo's alpha channel
     RBT_IMPOSTOR,    //< Impostors should be overlayed over everything since they are a debugging tool
@@ -117,7 +126,7 @@ class RenderBin {
     inline RenderBinType getType() const { return _rbType; }
 
    private:
-    RenderBinType _rbType;
+    const RenderBinType _rbType;
 
     std::array<RenderBinStack, to_base(RenderStage::COUNT)> _renderBinStack;
 };

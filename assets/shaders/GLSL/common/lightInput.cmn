@@ -44,18 +44,6 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLi
     int perTileLightIndices[];
 };
 
-#if defined(FRAG_SHADER)
-
-layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
-{
-    // x = light type, y =  arrayOffset
-    uvec4 dvd_shadowLightDetails[MAX_SHADOW_CASTING_LIGHTS];
-    vec4  dvd_shadowLightPosition[MAX_SHADOW_CASTING_LIGHTS * 6];
-    mat4  dvd_shadowLightVP[MAX_SHADOW_CASTING_LIGHTS * 6];
-};
-
-#endif 
-
 uint GetTileIndex(in vec2 ScreenPos)
 {
     ivec2 location = ivec2(ScreenPos.xy);

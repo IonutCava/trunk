@@ -30,16 +30,14 @@ uniform vec2 _noiseFactor;
 
 #define USE_SHADING_BLINN_PHONG
 
-#include "BRDF.frag"
-#include "shadowMapping.frag"
-
-#include "utility.frag"
 
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else
+#include "BRDF.frag"
+#include "shadowMapping.frag"
+#include "utility.frag"
 #include "output.frag"
-#endif
 
 const float Eta = 0.15f; //water
 
@@ -50,6 +48,7 @@ float Fresnel(in vec3 viewDir, in vec3 normal) {
     
     return Eta + (1.0 - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f);
 }
+#endif
 
 void main()
 {  
@@ -70,6 +69,7 @@ void main()
     vec3 normal1 = texture(texNormalMap, uvNormal1).rgb * 2.0f - 1.0f;
     vec3 normal = normalize(normal0 + normal1);
 
+#if !defined(PRE_PASS)
     vec3 incident = normalize(-VAR._vertexWV.xyz);
 
     vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
@@ -80,16 +80,14 @@ void main()
     //dudvColor = normalize(dudvColor * 2.0 - 1.0) * kRefraction;
 
     //normal = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
+#endif
     normal = normalize(normal * 2.0f - 1.0f);
-
     normal = normalize(getTBNMatrix() * normal);
-
-    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
 
 #if defined(PRE_PASS)
     outputWithVelocity(normal);
 #else
-
+    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 mixFactor = vec4(clamp(Fresnel(incident, normalize(VAR._normalWV)), 0.0f, 1.0f));
     vec4 texColour = mix(texture(texReflectPlanar, uvFinalReflect),
         texture(texRefractPlanar, uvFinalRefract),

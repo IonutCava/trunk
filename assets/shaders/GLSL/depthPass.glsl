@@ -1,14 +1,3 @@
--- Vertex
-
-#include "vbInputData.vert"
-
-void main() {
-
-    computeData();
-
-    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
-}
-
 -- Fragment.PrePass
 
 #include "prePass.frag"

@@ -1,18 +1,3 @@
--- Vertex
-
-#include "vbInputData.vert"
-#include "lightingDefaults.vert"
-
-void main(void){
-
-    computeData();
-    computeLightVectors();
-
-    //Compute the final vert position
-    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
-
-}
-
 -- Fragment
 
 #if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)

@@ -427,18 +427,21 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     const stringImpl vertSource = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertSource : _baseShaderSources._colourShaderVertSource;
     const stringImpl fragSource = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragSource : _baseShaderSources._colourShaderFragSource;
 
-    stringImpl variant = "";
+    stringImpl vertVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertVariant : _baseShaderSources._colourShaderVertVariant;
+    stringImpl fragVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragVariant : _baseShaderSources._colourShaderFragVariant;
     stringImpl shaderName = vertSource + "_" + fragSource;
 
 
     if (renderStagePass.isDepthPass()) {
         if (renderStagePass._stage == RenderStage::SHADOW) {
             shaderName += ".Shadow";
-            variant = "Shadow";
+            vertVariant += "Shadow";
+            fragVariant += "Shadow";
             globalDefines.push_back(std::make_pair("SHADOW_PASS", true));
         } else {
             shaderName += ".PrePass";
-            variant = "PrePass";
+            vertVariant += "PrePass";
+            fragVariant += "PrePass";
             globalDefines.push_back(std::make_pair("PRE_PASS", true));
         }
     }
@@ -555,14 +558,14 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     ShaderModuleDescriptor vertModule = {};
-    vertModule._variant = variant;
+    vertModule._variant = vertVariant;
     vertModule._sourceFile = vertSource + ".glsl";
     vertModule._batchSameFile = false;
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._defines = vertDefines;
 
     ShaderModuleDescriptor fragModule = {};
-    fragModule._variant = variant;
+    fragModule._variant = fragVariant;
     fragModule._sourceFile = fragSource + ".glsl";
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._defines = fragDefines;

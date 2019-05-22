@@ -136,11 +136,17 @@ class Material : public CachedResource {
     };
 
     struct ShaderData {
-        stringImpl _depthShaderVertSource = "depthPass";
-        stringImpl _depthShaderFragSource = "depthPass";
+        stringImpl _depthShaderVertSource = "baseVertexShaders";
+        stringImpl _depthShaderVertVariant = "BasicLightData";
 
-        stringImpl _colourShaderVertSource = "material";
+        stringImpl _colourShaderVertSource = "baseVertexShaders";
+        stringImpl _colourShaderVertVariant = "BasicLightData";
+
+        stringImpl _depthShaderFragSource = "depthPass";
+        stringImpl _depthShaderFragVariant = "";
+
         stringImpl _colourShaderFragSource = "material";
+        stringImpl _colourShaderFragVariant = "";
     };
 
    public:

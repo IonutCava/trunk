@@ -12,25 +12,27 @@
 #   define HAS_TRANSPARENCY
 #endif
 
+#if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 #if !defined(SKIP_TEXTURES)
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-#if TEX_OPERATION != TEX_NONE
+#   if TEX_OPERATION != TEX_NONE
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
-#endif
+#   endif //TEX_OPERATION != TEX_NONE
+#endif //SKIP_TEXTURES
 #endif
 
+#if !defined(PRE_PASS)
 layout(binding = TEXTURE_REFLECTION_PLANAR) uniform sampler2D texReflectPlanar;
 layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
-
 layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
+#if defined(USE_SPECULAR_MAP)
+layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
+#endif //USE_SPECULAR_MAP
+#endif  //PRE_PASS
 
 //Specular and opacity maps are available even for non-textured geometry
 #if defined(USE_OPACITY_MAP)
 layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
-#endif
-
-#if defined(USE_SPECULAR_MAP)
-layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
 vec2 getTexCoord() {
@@ -88,6 +90,8 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
     return finalTexCoords;
 }
 #endif
+
+#if !defined(PRE_PASS)
 float Gloss(in vec3 bump, in vec2 uv)
 {
     #if defined(USE_TOKSVIG)
@@ -105,47 +109,6 @@ float Gloss(in vec3 bump, in vec2 uv)
         return 1.0;
     #endif
 }
-
-#if !defined(SKIP_TEXTURES)
-vec4 getTextureColour(in vec2 uv) {
-    #define TEX_NONE 0
-    #define TEX_MODULATE 1
-    #define TEX_ADD  2
-    #define TEX_SUBTRACT  3
-    #define TEX_DIVIDE  4
-    #define TEX_SMOOTH_ADD  5
-    #define TEX_SIGNED_ADD  6
-    #define TEX_DECAL  7
-    #define TEX_REPLACE  8
-
-    vec4 colour = texture(texDiffuse0, uv);
-
-#if TEX_OPERATION != TEX_NONE
-    vec4 colour2 = texture(texDiffuse1, uv);
-
-    // Read from the texture
-    switch (TEX_OPERATION) {
-        default             : colour = vec4(0.7743, 0.3188, 0.5465, 1.0);   break; // <hot pink to easily spot it in a crowd
-        case TEX_MODULATE   : colour *= colour2;       break;
-        case TEX_REPLACE    : colour  = colour2;       break;
-        case TEX_SIGNED_ADD : colour += colour2 - 0.5; break;
-        case TEX_DIVIDE     : colour /= colour2;       break;
-        case TEX_SUBTRACT   : colour -= colour2;       break;
-        case TEX_DECAL      : colour = vec4(mix(colour.rgb, colour2.rgb, colour2.a), colour.a); break;
-        case TEX_ADD        : {
-            colour.rgb += colour2.rgb;
-            colour.a   *= colour2.a;
-        }break;
-        case TEX_SMOOTH_ADD : {
-            colour = (colour + colour2) - (colour * colour2);
-        }break;
-    }
-#endif
-
-    return saturate(colour);
-}
-#endif
-
 float getShininess(mat4 colourMatrix) {
     return colourMatrix[2].w;
 }
@@ -165,30 +128,6 @@ float getReflectivity(mat4 colourMatrix) {
 #endif
 }
 
-float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
-#if defined(HAS_TRANSPARENCY)
-#   if defined(USE_OPACITY_MAP)
-    return texture(texOpacityMap, uv).r;
-#   endif
-    return albedoAlpha;
-#endif
-
-    return 1.0;
-}
-
-vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
-
-#if defined(SKIP_TEXTURES)
-    vec4 albedo = colourMatrix[0];
-#else
-    vec4 albedo = getTextureColour(uv);
-#endif
-
-    albedo.a = getOpacity(colourMatrix, albedo.a, uv);
-
-    return albedo;
-}
-
 vec3 getEmissive(mat4 colourMatrix) {
     return colourMatrix[2].rgb;
 }
@@ -204,6 +143,73 @@ vec3 getSpecular(mat4 colourMatrix, in vec2 uv) {
     return colourMatrix[1].rgb;
 #endif
 }
+#endif //PRE_PASS
+
+float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
+#if defined(HAS_TRANSPARENCY)
+#   if defined(USE_OPACITY_MAP)
+    return texture(texOpacityMap, uv).r;
+#   endif
+    return albedoAlpha;
+#endif
+
+    return 1.0;
+}
+
+#if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
+#if !defined(SKIP_TEXTURES)
+vec4 getTextureColour(in vec2 uv) {
+#define TEX_NONE 0
+#define TEX_MODULATE 1
+#define TEX_ADD  2
+#define TEX_SUBTRACT  3
+#define TEX_DIVIDE  4
+#define TEX_SMOOTH_ADD  5
+#define TEX_SIGNED_ADD  6
+#define TEX_DECAL  7
+#define TEX_REPLACE  8
+
+    vec4 colour = texture(texDiffuse0, uv);
+
+#if TEX_OPERATION != TEX_NONE
+    vec4 colour2 = texture(texDiffuse1, uv);
+
+    // Read from the texture
+    switch (TEX_OPERATION) {
+    default: colour = vec4(0.7743, 0.3188, 0.5465, 1.0);   break; // <hot pink to easily spot it in a crowd
+    case TEX_MODULATE: colour *= colour2;       break;
+    case TEX_REPLACE: colour = colour2;       break;
+    case TEX_SIGNED_ADD: colour += colour2 - 0.5; break;
+    case TEX_DIVIDE: colour /= colour2;       break;
+    case TEX_SUBTRACT: colour -= colour2;       break;
+    case TEX_DECAL: colour = vec4(mix(colour.rgb, colour2.rgb, colour2.a), colour.a); break;
+    case TEX_ADD: {
+        colour.rgb += colour2.rgb;
+        colour.a *= colour2.a;
+    }break;
+    case TEX_SMOOTH_ADD: {
+        colour = (colour + colour2) - (colour * colour2);
+    }break;
+    }
+#endif
+
+    return saturate(colour);
+}
+#endif //SKIP_TEXTURES
+
+vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
+
+#if defined(SKIP_TEXTURES)
+    vec4 albedo = colourMatrix[0];
+#else
+    vec4 albedo = getTextureColour(uv);
+#endif
+
+    albedo.a = getOpacity(colourMatrix, albedo.a, uv);
+
+    return albedo;
+}
+#endif //!defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 
 vec3 getNormal(in vec2 uv) {
     vec3 normal = VAR._normalWV;

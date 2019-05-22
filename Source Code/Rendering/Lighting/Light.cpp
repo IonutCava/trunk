@@ -42,7 +42,7 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
         _shadowProperties._lightPosition[i].w = std::numeric_limits<F32>::max();
     }
     
-    _shadowProperties._lightDetails.x = to_U32(type);
+    _shadowProperties._lightDetails.x = to_F32(type);
     setDiffuseColour(DefaultColours::WHITE);
     setRange(1.0f);
     updateCache();
