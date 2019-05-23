@@ -3,30 +3,24 @@
 <heightmapLocation>terrain/</heightmapLocation>
 <heightmap>warTerrain_preview.png</heightmap>
 <is16Bit>true</is16Bit>
-<wireframeDebugMode>false</wireframeDebugMode>
 <terrainWidth>2048</terrainWidth>
 <terrainHeight>2048</terrainHeight>
 <altitudeRange min="-33.5999985" max="68.8000031"/>
-<tessellationRange min="5" max="75" chunkSize="128"/>
+<tessellationRange min="2" max="100" chunkSize="128"/>
 <textureLocation>misc_images</textureLocation>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
+<wireframeDebugMode>true</wireframeDebugMode>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
 <underwaterTileScale>100</underwaterTileScale>
 <vegetation>
     <vegetationTextureLocation>misc_images</vegetationTextureLocation>
     <grassMap>warTerrainAlpha_Alpha1.tga</grassMap>
-    <grassBillboard1 scale = "0.75">billboardgrass0001.png</grassBillboard1>
-    <grassBillboard2 scale = "0.5">grass_billboards1.png</grassBillboard2>
-    <grassBillboard3 scale = "1.0">grass_billboards2.png</grassBillboard3>
-    <grassBillboard4 scale = "1.0">grass_billboards3.png</grassBillboard4>
-    <treeMap>warTerrainAlpha_Alpha1.tga</treesMap>
-	<treeMesh1 scale = "0.075" rotate_x = "0" rotate_y = "0" rotate_z = "-90">tree_mango_01.fbx</treeMesh1>
-	<treeMesh2 scale = "0.075" rotate_x = "0" rotate_y = "0" rotate_z = "-90">tree_mango_02.fbx</treeMesh2>
-	<treeMesh3 scale = "0.0075" rotate_x = "0" rotate_y = "0" rotate_z = "0">birch_13m.obj</treeMesh3>
-    <!--<treeMesh1 scale = "0.02">copac.obj</treeMesh1>
-    <treeMesh2 scale = "0.01">Pin.obj</treeMesh2>
-    <treeMesh3 scale = "1.0">copacel.obj</treeMesh3>-->
+    <grassBillboard1 scale="0.75">billboardgrass0001.png</grassBillboard1>
+    <grassBillboard2 scale="0.5">grass_billboards1.png</grassBillboard2>
+    <grassBillboard3 scale="1">grass_billboards2.png</grassBillboard3>
+    <grassBillboard4 scale="1">grass_billboards3.png</grassBillboard4>
+    <treeMap>warTerrainAlpha_Alpha1.tga</treeMap>
 </vegetation>
 <textureLayers>
     <layer0>
@@ -78,6 +72,7 @@
         <specular r="0.100000001" g="0.100000001" b="0.100000001"/>
         <shininess>20</shininess>
         <doubleSided>false</doubleSided>
+        <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
         <parallaxFactor>1</parallaxFactor>
@@ -87,7 +82,7 @@
                 <path>assets/misc_images</path>
                 <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
-                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                <Filter min="LINEAR" mag="LINEAR"/>
                 <anisotropy>8</anisotropy>
             </UNIT0>
             <UNIT1>
@@ -113,5 +108,5 @@
 <NETWORKING/>
 <RIGID_BODY/>
 <TERRAIN>
-    <Tessellation__Range x="5" y="75"/>
+    <Tessellation__Range x="2" y="100"/>
 </TERRAIN>

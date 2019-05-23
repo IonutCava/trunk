@@ -16,8 +16,9 @@
         <colour r="0.639999986" g="0.639999986" b="0.639999986" a="1"/>
         <emissive r="0" g="0" b="0"/>
         <specular r="0.5" g="0.5" b="0.5"/>
-        <shininess>96.0784302</shininess>
+        <shininess>200</shininess>
         <doubleSided>true</doubleSided>
+        <receivesShadows>true</receivesShadows>
         <bumpMethod>NORMAL</bumpMethod>
         <shadingMode>PHONG</shadingMode>
         <parallaxFactor>0.00999999978</parallaxFactor>

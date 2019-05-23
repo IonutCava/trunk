@@ -1,8 +1,7 @@
 --Vertex
 
-layout(location = 0) out vec4 tScale;
-layout(location = 1) out vec4 posAndTileScaleVert;
-layout(location = 2) out mat4 mvp;
+layout(location = 0) out vec4 posAndTileScaleVert;
+layout(location = 1) out vec4 tScale;
 
 #include "vbInputData.vert"
 
@@ -36,8 +35,6 @@ void main(void)
     // Calculate texture coordinates (u,v) relative to entire terrain
     VAR._texCoord = calcTerrainTexCoord(VAR._vertexW);
 
-    mvp = dvd_ViewProjectionMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
-    
     // Send vertex position along
     gl_Position = patchPosition;
 }
@@ -47,9 +44,8 @@ void main(void)
 #define USE_NEXTPOW2 1
 #define id gl_InvocationID
 
-layout(location = 0) in vec4 tScale[];
-layout(location = 1) in vec4 posAndTileScaleVert[];
-layout(location = 2) in mat4 mvp[];
+layout(location = 0) in vec4 posAndTileScaleVert[];
+layout(location = 1) in vec4 tScale[];
 
 #include "nodeBufferedInput.cmn"
 
@@ -60,8 +56,8 @@ uniform vec2 tessellationRange;
 //
 layout(vertices = 4) out;
 
-layout(location = 0) out float tcs_tessLevel[];
-layout(location = 1) out vec4 posAndTileScale[];
+layout(location = 0) out vec4 posAndTileScale[];
+layout(location = 1) out float tcs_tessLevel[];
 
 const vec2 cmp = vec2(1.7f);
 
@@ -71,8 +67,8 @@ bool offscreen(in vec4 vertex) {
            any(greaterThan(vertex.xy, cmp));
 }
 
-vec4 project(in vec4 vertex) {
-    const vec4 result = mvp[0] * vertex;
+vec4 project(in vec4 vertex, in mat4 mvp) {
+    const vec4 result = mvp * vertex;
     return result / result.w;
 }
 
@@ -90,11 +86,11 @@ uint nextPOW2(in uint n) {
 #endif
 
 // Dynamic level of detail using camera distance algorithm.
-float dlodCameraDistance(vec4 p0, vec4 p1)
+float dlodCameraDistance(vec4 p0, vec4 p1, in mat4 world)
 {
     if (MAX_TESS_SCALE != MIN_TESS_SCALE) {
-        float d0 = clamp((abs(p0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
-        float d1 = clamp((abs(p1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
+        float d0 = clamp((abs((p0).z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
+        float d1 = clamp((abs((p1).z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
 
 #if USE_NEXTPOW2
         uint t = uint(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f));
@@ -120,10 +116,13 @@ void main(void)
 {
     PassData(id);
 
-    const vec4 v0 = project(gl_in[0].gl_Position);
-    const vec4 v1 = project(gl_in[1].gl_Position);
-    const vec4 v2 = project(gl_in[2].gl_Position);
-    const vec4 v3 = project(gl_in[3].gl_Position);
+    const mat4 worldMatrix = dvd_WorldMatrix(VAR.dvd_baseInstance);
+    const mat4 mvp = dvd_ViewProjectionMatrix * worldMatrix;
+
+    const vec4 v0 = project(gl_in[0].gl_Position, mvp);
+    const vec4 v1 = project(gl_in[1].gl_Position, mvp);
+    const vec4 v2 = project(gl_in[2].gl_Position, mvp);
+    const vec4 v3 = project(gl_in[3].gl_Position, mvp);
 
     if (gl_InvocationID == 0 && all(bvec4(offscreen(v0), offscreen(v1), offscreen(v2), offscreen(v3)))) {
         gl_TessLevelInner[0] = 0;
@@ -135,10 +134,10 @@ void main(void)
         gl_TessLevelOuter[3] = 0;
     } else {
         // Outer tessellation level
-        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position);
-        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position);
-        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position);
-        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position);
+        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, worldMatrix);
+        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, worldMatrix);
+        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, worldMatrix);
+        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, worldMatrix);
 
         gl_TessLevelOuter[0] = max(2.0f, gl_TessLevelOuter[0] * tScale[id].x);
         gl_TessLevelOuter[1] = max(2.0f, gl_TessLevelOuter[1] * tScale[id].y);
@@ -166,8 +165,8 @@ layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 layout(quads, fractional_even_spacing) in;
 
-layout(location = 0) in float tcs_tessLevel[];
-layout(location = 1) in vec4 posAndTileScale[];
+layout(location = 0) in vec4 posAndTileScale[];
+layout(location = 1) in float tcs_tessLevel[];
 
 #if defined(TOGGLE_WIREFRAME)
 layout(location = 0) out float tes_tessLevel;

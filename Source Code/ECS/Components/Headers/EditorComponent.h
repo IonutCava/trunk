@@ -63,20 +63,40 @@ namespace Divide {
         bool _readOnly = false;
         stringImpl _name;
         void* _data = nullptr;
-        std::function<void*()> _dataGetter = {};
-        std::function<void(void*)> _dataSetter = {};
+        std::function<void(void*)> _dataGetter = {};
+        std::function<void(const void*)> _dataSetter = {};
 
-
-        /*FORCE_INLINE */void* data() const {
+        template<typename T>
+        T* getPtr() const {
             if (_dataGetter) {
-                return _dataGetter();
+                T* ret = nullptr;
+                _dataGetter(ret);
+                return ret;
             }
+            return static_cast<T*>(_data);
+        }
+        template<typename T>
+        /*FORCE_INLINE */T get() const {
+            if (_dataGetter) {
+                T dataOut = {};
+                _dataGetter(&dataOut);
+                return dataOut;
+            } 
 
-            return _data;
+            return *static_cast<T*>(_data);
         }
 
         template<typename T>
-        /*FORCE_INLINE */void data(T& dataIn) {
+        /*FORCE_INLINE */void get(T& dataOut) const {
+            if (_dataGetter) {
+                _dataGetter(&dataOut);
+            } else {
+                dataOut = *static_cast<T*>(_data);
+            }
+        }
+
+        template<typename T>
+        /*FORCE_INLINE */void set(const T& dataIn) {
             if (_dataSetter) {
                 _dataSetter(&dataIn);
             } else {
@@ -110,8 +130,8 @@ namespace Divide {
 
 
         void registerField(const stringImpl& name,
-                           std::function<void*()> dataGetter,
-                           std::function<void(void*)> dataSetter,
+                           std::function<void(void*)> dataGetter,
+                           std::function<void(const void*)> dataSetter,
                            EditorComponentFieldType type,
                            bool readOnly,
                            GFX::PushConstantType basicType = GFX::PushConstantType::COUNT);

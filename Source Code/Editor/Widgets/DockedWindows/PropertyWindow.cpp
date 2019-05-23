@@ -255,33 +255,36 @@ namespace Divide {
                 ret = processBasicField(field);
             }break;
             case EditorComponentFieldType::BOUNDING_BOX: {
-                BoundingBox bb = *static_cast<BoundingBox*>(field.data());
+                BoundingBox bb = {};
+                field.get<BoundingBox>(bb);
+
                 F32* bbMin = Attorney::BoundingBoxEditor::min(bb);
                 F32* bbMax = Attorney::BoundingBoxEditor::max(bb);
                 ret = ImGui::InputFloat3("- Min ", bbMin, "%.3f", flags) ||
                       ImGui::InputFloat3("- Max ", bbMax, "%.3f", flags);
                 if (ret) {
-                    field.data(bb);
+                    field.set<BoundingBox>(bb);
                 }
             }break;
             case EditorComponentFieldType::BOUNDING_SPHERE: {
-                BoundingSphere bs = *static_cast<BoundingSphere*>(field.data());
+                BoundingSphere bs = {};
+                field.get<BoundingSphere>(bs);
                 F32* center = Attorney::BoundingSphereEditor::center(bs);
                 F32& radius = Attorney::BoundingSphereEditor::radius(bs);
                 ret = ImGui::InputFloat3("- Center ", center, "%.3f", flags) ||
                       ImGui::InputFloat("- Radius ", &radius, 0.0f, 0.0f, -1, flags);
                 if (ret) {
-                    field.data(bs);
+                    field.set<BoundingSphere>(bs);
                 }
             }break;
             case EditorComponentFieldType::TRANSFORM: {
                 assert(!field._dataSetter && "Need direct access to memory");
-                ret = processTransform(static_cast<TransformComponent*>(field.data()), field._readOnly);
+                ret = processTransform(field.getPtr<TransformComponent>(), field._readOnly);
             }break;
 
             case EditorComponentFieldType::MATERIAL: {
                 assert(!field._dataSetter && "Need direct access to memory");
-                ret = processMaterial(static_cast<Material*>(field.data()), field._readOnly);
+                ret = processMaterial(field.getPtr<Material>(), field._readOnly);
             }break;
         };
 
@@ -385,26 +388,26 @@ namespace Divide {
      }
 
      bool PropertyWindow::processBasicField(EditorComponentField& field) {
-         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
+         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsDecimal;
          flags |= field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
 
          bool ret = false;
          switch (field._basicType) {
              case GFX::PushConstantType::BOOL: {
                  ImGui::SameLine();
-                 bool val = *(bool*)(field.data());
+                 bool val = field.get<bool>();
                  ret = ImGui::Checkbox("", &val);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<bool>(val);
                  }
              }break;
              case GFX::PushConstantType::INT: {
-                 I32 val = *(I32*)(field.data());
+                 I32 val = field.get<I32>();
                  ImGui::SameLine();
 
                  ret = ImGui::InputInt("", &val, 1, 100, flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<I32>(val);
                  }
              }break;
              case GFX::PushConstantType::UINT: {
@@ -412,43 +415,43 @@ namespace Divide {
                  ImGui::Text("Not currently supported");
              }break;
              case GFX::PushConstantType::DOUBLE: {
-                 D64 val = *(D64*)(field.data());
+                 D64 val = field.get<D64>();
                  ImGui::SameLine();
                  ret = ImGui::InputDouble("", &val, 0.0, 0.0, "%.6f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<D64>(val);
                  }
              }break;
              case GFX::PushConstantType::FLOAT: {
-                 F32 val = *(F32*)(field.data());
+                 F32 val = field.get<F32>();
                  ImGui::SameLine();
                  ret = ImGui::InputFloat("", &val, 0.0f, 0.0f, -1, flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<F32>(val);
                  }
              }break;
              case GFX::PushConstantType::IVEC2: {
-                 vec2<I32> val = *(vec2<I32>*)(field.data());
+                 vec2<I32> val = field.get<vec2<I32>>();
                  ImGui::SameLine();
                  ret = ImGui::InputInt2("", val._v, flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec2<I32>>(val);
                  }
              }break;
              case GFX::PushConstantType::IVEC3: {
-                 vec3<I32> val = *(vec3<I32>*)(field.data());
+                 vec3<I32> val = field.get<vec3<I32>>();
                  ImGui::SameLine();
                  ret = ImGui::InputInt3("", val._v, flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec3<I32>>(val);
                  }
              }break;
              case GFX::PushConstantType::IVEC4: {
-                 vec4<I32> val = *(vec4<I32>*)(field.data());
+                 vec4<I32> val = field.get<vec4<I32>>();
                  ImGui::SameLine();
                  ret = ImGui::InputInt4("", val._v, flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec4<I32>>(val);
                  }
              }break;
              case GFX::PushConstantType::UVEC2: {
@@ -464,78 +467,78 @@ namespace Divide {
                  ImGui::Text("Not currently supported");
              }break;
              case GFX::PushConstantType::VEC2: {
-                 vec2<F32> val = *(vec2<F32>*)(field.data());
+                 vec2<F32> val = field.get<vec2<F32>>();
                  ImGui::SameLine();
                  ret = ImGui::InputFloat2("", val._v, "%.3f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec2<F32>>(val);
                  }
              }break;
              case GFX::PushConstantType::VEC3: {
-                 vec3<F32> val = *(vec3<F32>*)(field.data());
+                 vec3<F32> val = field.get<vec3<F32>>();
                  ImGui::SameLine();
                  ret = ImGui::InputFloat3("", val._v, "%.3f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec3<F32>>(val);
                  }
              }break;
              case GFX::PushConstantType::VEC4: {
-                 vec4<F32> val = *(vec4<F32>*)(field.data());
+                 vec4<F32> val = field.get<vec4<F32>>();
                  ImGui::SameLine();
                  ret = ImGui::InputFloat4("", val._v, "%.3f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec4<F32>>(val);
                  }
              }break;
              case GFX::PushConstantType::DVEC2: {
-                 vec2<D64> val = *(vec2<D64>*)(field.data());
+                 vec2<D64> val = field.get<vec2<D64>>();
                  ImGui::SameLine();
                  ret = ImGui::InputDouble2("", val._v, "%.6f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec2<D64>>(val);
                  }
              }break;
              case GFX::PushConstantType::DVEC3: {
-                 vec3<D64> val = *(vec3<D64>*)(field.data());
+                 vec3<D64> val = field.get<vec3<D64>>();
                  ImGui::SameLine();
                  ret = ImGui::InputDouble3("", val._v, "%.6f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec3<D64>>(val);
                  }
              }break;
              case GFX::PushConstantType::DVEC4: {
-                 vec4<D64> val = *(vec4<D64>*)(field.data());
+                 vec4<D64> val = field.get<vec4<D64>>();
                  ImGui::SameLine();
                  ret = ImGui::InputDouble4("", val._v, "%.6f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(val);
+                     field.set<vec4<D64>>(val);
                  }
              }break;
              case GFX::PushConstantType::IMAT2: {
-                 mat2<I32> mat = *(mat2<I32>*)(field.data());
+                 mat2<I32> mat = field.get<mat2<I32>>();
                  ret = ImGui::InputInt2("", mat._vec[0], flags) ||
                        ImGui::InputInt2("", mat._vec[1], flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat2<I32>>(mat);
                  }
              }break;
              case GFX::PushConstantType::IMAT3: {
-                 mat3<I32> mat = *(mat3<I32>*)(field.data());
+                 mat3<I32> mat = field.get<mat3<I32>>();
                  ret = ImGui::InputInt3("", mat._vec[0], flags) ||
                        ImGui::InputInt3("", mat._vec[1], flags) ||
                        ImGui::InputInt3("", mat._vec[2], flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat3<I32>>(mat);
                  }
              }break;
              case GFX::PushConstantType::IMAT4: {
-                 mat4<I32> mat = *(mat4<I32>*)(field.data());
+                 mat4<I32> mat = field.get<mat4<I32>>();
                  ret = ImGui::InputInt4("", mat._vec[0], flags) ||
                        ImGui::InputInt4("", mat._vec[1], flags) ||
                        ImGui::InputInt4("", mat._vec[2], flags) ||
                        ImGui::InputInt4("", mat._vec[3], flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat4<I32>>(mat);
                  }
              }break;
              case GFX::PushConstantType::UMAT2: {
@@ -551,57 +554,57 @@ namespace Divide {
                  ImGui::Text("Not currently supported");
              }break;
              case GFX::PushConstantType::MAT2: {
-                 mat2<F32> mat = *(mat2<F32>*)(field.data());
+                 mat2<F32> mat = field.get<mat2<F32>>();
                  ret = ImGui::InputFloat2("", mat._vec[0], "%.3f", flags) ||
                        ImGui::InputFloat2("", mat._vec[1], "%.3f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat2<F32>>(mat);
                  }
              }break;
              case GFX::PushConstantType::MAT3: {
-                 mat3<F32> mat = *(mat3<F32>*)(field.data());
+                 mat3<F32> mat = field.get<mat3<F32>>();
                  ret = ImGui::InputFloat3("", mat._vec[0], "%.3f", flags) ||
                        ImGui::InputFloat3("", mat._vec[1], "%.3f", flags) ||
                        ImGui::InputFloat3("", mat._vec[2], "%.3f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat3<F32>>(mat);
                  }
              }break;
              case GFX::PushConstantType::MAT4: {
-                 mat4<F32> mat = *(mat4<F32>*)(field.data());
+                 mat4<F32> mat = field.get<mat4<F32>>();
                  ret = ImGui::InputFloat4("", mat._vec[0], "%.3f", flags) ||
                        ImGui::InputFloat4("", mat._vec[1], "%.3f", flags) ||
                        ImGui::InputFloat4("", mat._vec[2], "%.3f", flags) ||
                        ImGui::InputFloat4("", mat._vec[3], "%.3f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat4<F32>>(mat);
                  }
              }break;
              case GFX::PushConstantType::DMAT2: {
-                 mat2<D64> mat = *(mat2<D64>*)(field.data());
+                 mat2<D64> mat = field.get<mat2<D64>>();
                  ret = ImGui::InputDouble2("", mat._vec[0], "%.6f", flags) ||
                        ImGui::InputDouble2("", mat._vec[1], "%.6f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat2<D64>>(mat);
                  }
              }break;
              case GFX::PushConstantType::DMAT3: {
-                 mat3<D64> mat = *(mat3<D64>*)(field.data());
+                 mat3<D64> mat = field.get<mat3<D64>>();
                  ret = ImGui::InputDouble3("", mat._vec[0], "%.6f", flags) ||
                        ImGui::InputDouble3("", mat._vec[1], "%.6f", flags) ||
                        ImGui::InputDouble3("", mat._vec[2], "%.6f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat3<D64>>(mat);
                  }
              }break;
              case GFX::PushConstantType::DMAT4: {
-                 mat4<D64> mat = *(mat4<D64>*)(field.data());
+                 mat4<D64> mat = field.get<mat4<D64>>();
                  ret = ImGui::InputDouble4("", mat._vec[0], "%.6f", flags) ||
                        ImGui::InputDouble4("", mat._vec[1], "%.6f", flags) ||
                        ImGui::InputDouble4("", mat._vec[2], "%.6f", flags) ||
                        ImGui::InputDouble4("", mat._vec[3], "%.6f", flags);
                  if (ret && !field._readOnly) {
-                     field.data(mat);
+                     field.set<mat4<D64>>(mat);
                  }
              }break;
              default: {

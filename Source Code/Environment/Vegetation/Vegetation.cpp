@@ -443,30 +443,31 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
                                to_base(ComponentType::RENDERING);
 
     U32 ID = _terrainChunk.ID();
-    U32 meshID = to_U32(ID % _treeMeshNames.size());
-    const stringImpl& meshName = _treeMeshNames[meshID];
-
-    Mesh_ptr crtMesh = nullptr;
-    {
-        SharedLock r_lock(g_treeMeshLock);
-        crtMesh = s_treeMeshes.front();
-        for (const Mesh_ptr& mesh : s_treeMeshes) {
-            if (Util::CompareIgnoreCase(mesh->assetName(), meshName)) {
-                crtMesh = mesh;
-                break;
-            }
-        }
-    }
 
     SceneGraphNodeDescriptor nodeDescriptor = {};
     nodeDescriptor._componentMask = normalMask;
     nodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
     nodeDescriptor._serialize = false;
-    nodeDescriptor._node = crtMesh;
     nodeDescriptor._instanceCount = _instanceCountTrees;
 
     assert(s_grassData != nullptr);
     if (_instanceCountTrees > 0) {
+        U32 meshID = to_U32(ID % _treeMeshNames.size());
+
+        Mesh_ptr crtMesh = nullptr;
+        {
+            SharedLock r_lock(g_treeMeshLock);
+            crtMesh = s_treeMeshes.front();
+            const stringImpl& meshName = _treeMeshNames[meshID];
+            for (const Mesh_ptr& mesh : s_treeMeshes) {
+                if (Util::CompareIgnoreCase(mesh->assetName(), meshName)) {
+                    crtMesh = mesh;
+                    break;
+                }
+            }
+        }
+
+        nodeDescriptor._node = crtMesh;
         nodeDescriptor._name = Util::StringFormat("Trees_chunk_%d", ID);
         SceneGraphNode* node = sgn.addNode(nodeDescriptor);
         node->lockVisibility(true);

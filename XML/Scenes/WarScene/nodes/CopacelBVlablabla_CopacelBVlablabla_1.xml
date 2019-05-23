@@ -8,7 +8,7 @@
         <orientation x="0" y="0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
-    <WorldMat 00="-0.0730943605" 01="-0.0349420346" 02="0.0585475639" 03="0" 10="-0.0349712223" 11="0.0929404497" 12="0.0117788436" 13="0" 20="-0.0585301332" 21="-0.0118651511" 22="-0.0801538825" 23="0" 30="714.256287" 31="10" 32="95.0199814" 33="1"/>
+    <WorldMat 00="-0.0730521083" 01="-0.0349335037" 02="0.0585332774" 03="0" 10="-0.0349626839" 11="0.0929421782" 12="0.0117759667" 13="0" 20="-0.0585158467" 21="-0.0118622538" 22="-0.0801099092" 23="0" 30="714.256287" 31="10" 32="95.0199814" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
 <RENDERING>
@@ -18,9 +18,10 @@
         <specular r="0.0450000018" g="0.0450000018" b="0.0450000018"/>
         <shininess>25</shininess>
         <doubleSided>false</doubleSided>
+        <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>..\textures\branch.png</name>

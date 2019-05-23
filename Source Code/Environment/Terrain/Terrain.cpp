@@ -97,11 +97,11 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     _editorComponent.registerField(
         "Tessellation Range",
-        [this]() {
-            return _descriptor->getTessellationRange().xy();
+        [this](void* dataOut) {
+            std::memcpy(dataOut, _descriptor->getTessellationRange().xy()._v, 2 * sizeof(F32));
         },
 
-        [this](void* data) {
+        [this](const void* data) {
             vec2<F32> newTess = *(vec2<F32>*)data;
             _descriptor->setTessellationRange(vec3<F32>(newTess, _descriptor->getTessellationRange().z));
         },

@@ -7,7 +7,7 @@
         <orientation x="0" y="0" z="-90"/>
         <scale x="100" y="100" z="100"/>
     </Transform>
-    <WorldMat 00="100" 01="0" 02="0" 03="0" 10="0" 11="5.96046448e-06" 12="99.9999924" 13="0" 20="0" 21="-99.9999924" 22="5.96046448e-06" 23="0" 30="100" 31="15" 32="-50" 33="1"/>
+    <WorldMat 00="100" 01="0" 02="0" 03="0" 10="0" 11="-0.048828125" 12="100.048828" 13="0" 20="0" 21="-100.048828" 22="-0.048828125" 23="0" 30="100" 31="15" 32="-50" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
 <RENDERING>
@@ -17,6 +17,7 @@
         <specular r="0.800000012" g="0.800000012" b="0.800000012"/>
         <shininess>50</shininess>
         <doubleSided>true</doubleSided>
+        <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
         <parallaxFactor>0.00999999978</parallaxFactor>

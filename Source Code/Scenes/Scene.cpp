@@ -598,6 +598,8 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
 
         terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
         terrainTemp->loadFromXML(pt);
+
+        WAIT_FOR_CONDITION(terrainNodeDescriptor._node->getState() == ResourceState::RES_LOADED);
         _loadingTasks.fetch_sub(1);
     };
 

@@ -8,7 +8,7 @@
         <orientation x="0" y="0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
-    <WorldMat 00="0.018217409" 01="0" 02="-0.0238317735" 03="0" 10="0" 11="0.0299999993" 12="0" 13="0" 20="0.0238317735" 21="0" 22="0.018217409" 23="0" 30="784.863403" 31="14.730073" 32="79.9280167" 33="1"/>
+    <WorldMat 00="0.0182202887" 01="0" 02="-0.0238259491" 03="0" 10="0" 11="0.0299999993" 12="0" 13="0" 20="0.0238259491" 21="0" 22="0.0182202887" 23="0" 30="784.863403" 31="14.730073" 32="79.9280167" 33="1"/>
 </TRANSFORM>
 <BOUNDS/>
 <RENDERING>
@@ -18,9 +18,10 @@
         <specular r="0" g="0" b="0"/>
         <shininess>10</shininess>
         <doubleSided>false</doubleSided>
+        <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>sponza_floor_a_diff.png</name>

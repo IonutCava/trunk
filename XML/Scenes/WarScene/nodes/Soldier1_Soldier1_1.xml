@@ -21,9 +21,10 @@
         <specular r="0" g="0" b="0"/>
         <shininess>0</shininess>
         <doubleSided>false</doubleSided>
+        <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>dwarf.jpg</name>

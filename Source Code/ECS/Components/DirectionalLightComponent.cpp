@@ -27,8 +27,8 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     getEditorComponent().registerField("Range and Cone", &_rangeAndCones, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
 
     getEditorComponent().registerField("Direction",
-                                        [this]() { return getDirection(); },
-                                        [this](void* data) { /*NOP*/},
+                                        [this](void* dataOut) { static_cast<vec3<F32>*>(dataOut)->set(getDirection()); },
+                                        [this](const void* data) { /*NOP*/ ACKNOWLEDGE_UNUSED(data); },
                                         EditorComponentFieldType::PUSH_TYPE,
                                         true,
                                         GFX::PushConstantType::VEC3);

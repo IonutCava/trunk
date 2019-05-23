@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>Bob.md5mesh-submesh-2</model>
+<model>guard1_helmet.png.msh</model>
 <ANIMATION/>
 <INVERSE_KINEMATICS/>
 <RAGDOLL/>
@@ -21,9 +21,10 @@
         <specular r="1" g="1" b="1"/>
         <shininess>15</shininess>
         <doubleSided>false</doubleSided>
+        <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>guard1_helmet.png</name>
