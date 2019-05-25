@@ -451,7 +451,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
     nodeDescriptor._instanceCount = _instanceCountTrees;
 
     assert(s_grassData != nullptr);
-    if (_instanceCountTrees > 0) {
+    if (_instanceCountTrees > 0 && !_treeMeshNames.empty()) {
         U32 meshID = to_U32(ID % _treeMeshNames.size());
 
         Mesh_ptr crtMesh = nullptr;

@@ -339,7 +339,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
-        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
+        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
     }
 
     ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name);
@@ -351,7 +351,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ShaderProgramDescriptor prePassDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
-        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
+        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
         shaderModule._defines.push_back(std::make_pair("PRE_PASS", true));
     }
 

@@ -1,7 +1,6 @@
 --Vertex
 
-layout(location = 0) out vec4 posAndTileScaleVert;
-layout(location = 1) out vec4 tScale;
+layout(location = 0) out vec4 tScale;
 
 #include "vbInputData.vert"
 
@@ -25,29 +24,24 @@ void main(void)
 {
     computeDataNoClip();
 
-    posAndTileScaleVert = dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale;
     tScale = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
 
-    vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndTileScaleVert.w, 1.0f);
-    
-    VAR._vertexW = vec4(patchPosition + vec4(posAndTileScaleVert.xyz, 0.0f));
+    const vec4 posAndTileScaleVert = dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale;
+    // Send vertex position along
+    gl_Position = vec4(dvd_Vertex.xyz * posAndTileScaleVert.w + posAndTileScaleVert.xyz, 1.0f);
 
     // Calculate texture coordinates (u,v) relative to entire terrain
-    VAR._texCoord = calcTerrainTexCoord(VAR._vertexW);
-
-    // Send vertex position along
-    gl_Position = patchPosition;
+    VAR._texCoord = calcTerrainTexCoord(gl_Position);
 }
 
 --TessellationC
 
-#define USE_NEXTPOW2 1
 #define id gl_InvocationID
 
-layout(location = 0) in vec4 posAndTileScaleVert[];
-layout(location = 1) in vec4 tScale[];
+layout(location = 0) in vec4 tScale[];
 
 #include "nodeBufferedInput.cmn"
+//layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 uniform vec2 tessellationRange;
 
@@ -56,8 +50,7 @@ uniform vec2 tessellationRange;
 //
 layout(vertices = 4) out;
 
-layout(location = 0) out vec4 posAndTileScale[];
-layout(location = 1) out float tcs_tessLevel[];
+layout(location = 0) out float tcs_tessLevel[];
 
 const vec2 cmp = vec2(1.7f);
 
@@ -72,7 +65,6 @@ vec4 project(in vec4 vertex, in mat4 mvp) {
     return result / result.w;
 }
 
-#if USE_NEXTPOW2
 uint nextPOW2(in uint n) {
     n--;
     n |= n >> 1;
@@ -83,29 +75,26 @@ uint nextPOW2(in uint n) {
 
     return ++n;
 }
-#endif
 
 // Dynamic level of detail using camera distance algorithm.
-float dlodCameraDistance(vec4 p0, vec4 p1, in mat4 world)
+float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in mat4 viewMatrix)
 {
     if (MAX_TESS_SCALE != MIN_TESS_SCALE) {
-        float d0 = clamp((abs((p0).z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
-        float d1 = clamp((abs((p1).z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
+        //p0.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, t0).r) + TERRAIN_MIN_HEIGHT;
+        //p1.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, t1).r) + TERRAIN_MIN_HEIGHT;
 
-#if USE_NEXTPOW2
-        uint t = uint(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f));
+        const vec4 view0 = viewMatrix * p0;
+        const vec4 view1 = viewMatrix * p1;
 
-        return float(min(nextPOW2(t), MAX_TESS_SCALE));
+        const float d0 = clamp((abs(view0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
+        const float d1 = clamp((abs(view1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
+#if 1
+        return mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f);
 #else
-        float t = uint(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f));
 
-             if (t <= 2.0f)  return  2.0f;
-        else if (t <= 4.0f)  return  4.0f;
-        else if (t <= 8.0f)  return  8.0f;
-        else if (t <= 16.0f) return 16.0f;
-        else if (t <= 32.0f) return 32.0f;
+        const uint t = nextPOW2(uint(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f)));
 
-        return MAX_TESS_SCALE;
+        return float(clamp(t, uint(MIN_TESS_SCALE), uint(MAX_TESS_SCALE)));
 #endif
     }
 
@@ -116,8 +105,7 @@ void main(void)
 {
     PassData(id);
 
-    const mat4 worldMatrix = dvd_WorldMatrix(VAR.dvd_baseInstance);
-    const mat4 mvp = dvd_ViewProjectionMatrix * worldMatrix;
+    const mat4 mvp = dvd_ViewProjectionMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
 
     const vec4 v0 = project(gl_in[0].gl_Position, mvp);
     const vec4 v1 = project(gl_in[1].gl_Position, mvp);
@@ -134,10 +122,10 @@ void main(void)
         gl_TessLevelOuter[3] = 0;
     } else {
         // Outer tessellation level
-        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, worldMatrix);
-        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, worldMatrix);
-        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, worldMatrix);
-        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, worldMatrix);
+        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, dvd_ViewMatrix);
+        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, dvd_ViewMatrix);
+        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, dvd_ViewMatrix);
+        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, dvd_ViewMatrix);
 
         gl_TessLevelOuter[0] = max(2.0f, gl_TessLevelOuter[0] * tScale[id].x);
         gl_TessLevelOuter[1] = max(2.0f, gl_TessLevelOuter[1] * tScale[id].y);
@@ -154,7 +142,6 @@ void main(void)
 
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[id] = gl_TessLevelOuter[0];
-    posAndTileScale[id] = posAndTileScaleVert[id];
 }
 
 --TessellationE
@@ -165,8 +152,7 @@ layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 layout(quads, fractional_even_spacing) in;
 
-layout(location = 0) in vec4 posAndTileScale[];
-layout(location = 1) in float tcs_tessLevel[];
+layout(location = 0) in float tcs_tessLevel[];
 
 #if defined(TOGGLE_WIREFRAME)
 layout(location = 0) out float tes_tessLevel;
@@ -291,8 +277,7 @@ void main()
     pos.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
 
     // Project the vertex to clip space and send it along
-    vec3 offset = posAndTileScale[0].xyz;
-    _out._vertexW = dvd_WorldMatrix(baseInstance) * vec4(pos.xyz + offset, pos.w);
+    _out._vertexW = dvd_WorldMatrix(baseInstance) * pos;
 
 #if !defined(SHADOW_PASS)
     mat3 normalMatrixWV = dvd_NormalMatrixWV(baseInstance);

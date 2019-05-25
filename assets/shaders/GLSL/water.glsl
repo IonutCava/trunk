@@ -35,8 +35,6 @@ uniform vec2 _noiseFactor;
 #include "prePass.frag"
 #else
 #include "BRDF.frag"
-#include "shadowMapping.frag"
-#include "utility.frag"
 #include "output.frag"
 
 const float Eta = 0.15f; //water

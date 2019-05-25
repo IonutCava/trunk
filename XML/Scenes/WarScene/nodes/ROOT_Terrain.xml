@@ -6,7 +6,7 @@
 <terrainWidth>2048</terrainWidth>
 <terrainHeight>2048</terrainHeight>
 <altitudeRange min="-33.5999985" max="68.8000031"/>
-<tessellationRange min="2" max="100" chunkSize="128"/>
+<tessellationRange min="100" max="300" chunkSize="128"/>
 <textureLocation>misc_images</textureLocation>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <wireframeDebugMode>true</wireframeDebugMode>
@@ -21,6 +21,12 @@
     <grassBillboard3 scale="1">grass_billboards2.png</grassBillboard3>
     <grassBillboard4 scale="1">grass_billboards3.png</grassBillboard4>
     <treeMap>warTerrainAlpha_Alpha1.tga</treeMap>
+	<treeMesh1 scale = "0.075" rotate_x = "0" rotate_y = "0" rotate_z = "-90">tree_mango_01.fbx</treeMesh1>
+	<treeMesh2 scale = "0.075" rotate_x = "0" rotate_y = "0" rotate_z = "-90">tree_mango_02.fbx</treeMesh2>
+	<treeMesh3 scale = "0.0075" rotate_x = "0" rotate_y = "0" rotate_z = "0">birch_13m.obj</treeMesh3>
+    <!--<treeMesh1 scale = "0.02">copac.obj</treeMesh1>
+    <treeMesh2 scale = "0.01">Pin.obj</treeMesh2>
+    <treeMesh3 scale = "1.0">copacel.obj</treeMesh3>-->
 </vegetation>
 <textureLayers>
     <layer0>
@@ -108,5 +114,5 @@
 <NETWORKING/>
 <RIGID_BODY/>
 <TERRAIN>
-    <Tessellation__Range x="2" y="100"/>
+    <Tessellation__Range x="100" y="300"/>
 </TERRAIN>
