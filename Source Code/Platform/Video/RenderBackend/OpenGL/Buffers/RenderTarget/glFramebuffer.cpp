@@ -63,8 +63,6 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
     // Everything disabled so that the initial "begin" will override this
     _previousPolicy.drawMask().disableAll();
     _previousPolicy.stateMask(0);
-
-    create();
 }
 
 glFramebuffer::~glFramebuffer()
@@ -162,6 +160,10 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentS
 }
 
 bool glFramebuffer::create() {
+    if (!RenderTarget::create()) {
+        return false;
+    }
+
     // For every attachment, be it a colour or depth attachment ...
     I32 attachmentCountTotal = 0;
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {

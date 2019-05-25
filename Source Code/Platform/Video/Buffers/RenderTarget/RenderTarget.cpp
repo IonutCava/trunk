@@ -66,7 +66,8 @@ const RTDrawDescriptor& RenderTarget::defaultPolicyNoClear() {
 
 RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)
     : GraphicsResource(context, GraphicsResource::Type::RENDER_TARGET, getGUID(), _ID(descriptor._name.c_str())),
-      _descriptor(descriptor)
+     _descriptor(descriptor),
+     _created(false)
 {
     if (Config::Profile::USE_2x2_TEXTURES) {
         _descriptor._resolution.set(2u);
@@ -86,12 +87,23 @@ RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& des
 
     _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, colourAttachmentCount);
 
-    for (U8 i = 0; i < descriptor._attachmentCount; ++i) {
-        _attachmentPool->update(descriptor._attachments[i]);
+}
+
+bool RenderTarget::create() {
+    if (_created) {
+        return false;
     }
-    for (U8 i = 0; i < descriptor._externalAttachmentCount; ++i) {
-        _attachmentPool->update(descriptor._externalAttachments[i]);
+
+
+    for (U8 i = 0; i < _descriptor._attachmentCount; ++i) {
+        _attachmentPool->update(_descriptor._attachments[i]);
     }
+    for (U8 i = 0; i < _descriptor._externalAttachmentCount; ++i) {
+        _attachmentPool->update(_descriptor._externalAttachments[i]);
+    }
+
+    _created = true;
+    return true;
 }
 
 RenderTarget::~RenderTarget()

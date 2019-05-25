@@ -138,6 +138,8 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     static const RTDrawDescriptor& defaultPolicyDepthOnly();
     static const RTDrawDescriptor& defaultPolicyNoClear();
 
+    /// Init all attachments. Returns false if already called
+    virtual bool create();
     /// Resize all attachments
     virtual bool resize(U16 width, U16 height) = 0;
 
@@ -161,6 +163,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     const stringImpl& name() const;
 
    protected:
+    bool _created;
     RTAttachmentPool* _attachmentPool;
     RenderTargetDescriptor _descriptor;
 };

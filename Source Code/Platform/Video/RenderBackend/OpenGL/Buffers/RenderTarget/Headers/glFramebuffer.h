@@ -74,6 +74,9 @@ class glFramebuffer : public RenderTarget,
 
     void blitFrom(const RTBlitParams& params) override;
 
+    /// Bake in all settings and attachments to prepare it for rendering
+    bool create() override;
+
   protected:
     enum class AttachmentState : U8 {
         STATE_DISABLED = 0,
@@ -105,8 +108,7 @@ class glFramebuffer : public RenderTarget,
     RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index, bool resolved = true);
     const RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index, bool resolved = true) const;
 
-    /// Bake in all settings and attachments to prepare it for rendering
-    bool create();
+
     void resolve(I8 colour, bool allColours, bool depth, bool externalColours);
     void queueCheckStatus();
     bool checkStatus();
