@@ -105,7 +105,7 @@ void main() {
         discard;
     }
 
-    outputNoVelocity(_alphaFactor);
+    outputNoVelocity(VAR._texCoord, _alphaFactor);
 }
 
 

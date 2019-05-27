@@ -55,7 +55,7 @@ namespace GFX {
     class CommandBuffer;
 };
 
-struct alignas(64) RenderBinItem {
+struct RenderBinItem {
     RenderBinItem() : RenderBinItem(nullptr, -1, -1, 0, 0.0f) 
     {}
 

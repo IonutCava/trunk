@@ -127,14 +127,14 @@ vec4  ToSRGB(vec4 v)  { return vec4(pow(v.rgb, invGammaVec), v.a);}
 vec3 unpackNormal(vec2 packedNormal)
 {
     vec3 normal;
-    normal.xy = packedNormal.xy * (255.0 / 128.0) - 1.0;
-    normal.z = sqrt(1 - normal.x*normal.x - normal.y * normal.y);
+    normal.xy = packedNormal.xy * (255.0f / 128.0f) - 1.0f;
+    normal.z = sqrt(1.0f - normal.x*normal.x - normal.y * normal.y);
     return normal;
 }
 
 vec2 packNormal(vec3 normal)
 {
-    return vec2(normal.xy * 0.5 + 0.5);
+    return vec2(normal.xy * 0.5f + 0.5f);
 }
 
 float Gloss(vec3 bump)

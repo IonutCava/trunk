@@ -9,7 +9,7 @@
 <tessellationRange min="100" max="300" chunkSize="128"/>
 <textureLocation>misc_images</textureLocation>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
-<wireframeDebugMode>true</wireframeDebugMode>
+<wireframeDebugMode>false</wireframeDebugMode>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
 <underwaterTileScale>100</underwaterTileScale>

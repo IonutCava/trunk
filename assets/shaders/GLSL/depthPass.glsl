@@ -3,7 +3,7 @@
 #include "prePass.frag"
 
 void main() {
-    outputWithVelocity();
+    outputWithVelocity(getTexCoord());
 }
 
 -- Fragment.Shadow

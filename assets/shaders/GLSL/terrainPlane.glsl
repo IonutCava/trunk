@@ -52,5 +52,5 @@ void main(void) {
 #include "prePass.frag"
 
 void main() {
-    outputNoVelocity();
+    outputNoVelocity(VAR._texCoord);
 }

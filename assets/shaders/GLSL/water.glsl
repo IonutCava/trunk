@@ -83,7 +83,7 @@ void main()
     normal = normalize(getTBNMatrix() * normal);
 
 #if defined(PRE_PASS)
-    outputWithVelocity(normal);
+    outputWithVelocity(VAR._texCoord, normal);
 #else
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 mixFactor = vec4(clamp(Fresnel(incident, normalize(VAR._normalWV)), 0.0f, 1.0f));

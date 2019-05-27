@@ -27,50 +27,42 @@ void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
     }
 }
 
-void outputNoVelocity(float alphaFactor) {
-    vec2 uv = getTexCoord();
+void outputNoVelocity(in vec2 uv, float alphaFactor) {
     _output(getNormal(uv), alphaFactor, uv);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
-void outputNoVelocity() {
-    vec2 uv = getTexCoord();
+void outputNoVelocity(in vec2 uv) {
     _output(getNormal(uv), 1.0f, uv);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
-void outputWithVelocity(float alphaFactor) {
-    vec2 uv = getTexCoord();
+void outputWithVelocity(in vec2 uv, float alphaFactor) {
     _output(getNormal(uv), alphaFactor, uv);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
-void outputWithVelocity() {
-    vec2 uv = getTexCoord();
+void outputWithVelocity(in vec2 uv) {
     _output(getNormal(uv), 1.0f, uv);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
-void outputNoVelocity(vec3 normal, float alphaFactor) {
-    vec2 uv = getTexCoord();
+void outputNoVelocity(in vec2 uv, vec3 normal, float alphaFactor) {
     _output(normal, alphaFactor, uv);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
-void outputNoVelocity(vec3 normal) {
-    vec2 uv = getTexCoord();
+void outputNoVelocity(in vec2 uv, vec3 normal) {
     _output(normal, 1.0f, uv);
     _normalAndVelocityOut.ba = vec2(1.0f);
 }
 
-void outputWithVelocity(vec3 normal, float alphaFactor) {
-    vec2 uv = getTexCoord();
+void outputWithVelocity(in vec2 uv, vec3 normal, float alphaFactor) {
     _output(normal, alphaFactor, uv);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }
 
-void outputWithVelocity(vec3 normal) {
-    vec2 uv = getTexCoord();
+void outputWithVelocity(in vec2 uv, vec3 normal) {
     _output(normal, 1.0f, uv);
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

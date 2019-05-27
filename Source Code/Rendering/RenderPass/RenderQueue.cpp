@@ -21,7 +21,8 @@ namespace {
 };
 
 RenderQueue::RenderQueue(Kernel& parent)
-    : KernelComponent(parent)
+    : KernelComponent(parent),
+      _renderBins{nullptr}
 {
     for (RenderBinType rbType : RenderBinType::_values()) {
         if (rbType._value == RenderBinType::RBT_COUNT) {

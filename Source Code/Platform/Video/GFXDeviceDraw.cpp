@@ -310,7 +310,7 @@ void GFXDevice::renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bu
 
 void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     if (!Config::Build::IS_DEBUG_BUILD) {
-        return;
+        //return;
     }
 
     constexpr I32 padding = 5;

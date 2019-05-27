@@ -78,7 +78,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 #define windowHeight int(dvd_ViewPort.w)
 
 vec2 dvd_invScreenDimensions() {
-    return 1.0 / dvd_ViewPort.zw;
+    return 1.0f / dvd_ViewPort.zw;
 }
 
 #define dvd_zPlanes vec2(dvd_renderProperties.xy)
