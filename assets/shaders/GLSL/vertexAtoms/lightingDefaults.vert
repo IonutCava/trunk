@@ -9,8 +9,12 @@ void computeLightVectors() {
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
 #if defined(COMPUTE_TBN)
-    VAR._tangentWV = normalize(normalMatrixWV * dvd_Tangent);
-    VAR._bitangentWV = normalize(cross(VAR._normalWV, VAR._tangentWV));
+    vec3 tangent = normalize(normalMatrixWV * dvd_Tangent);
+    VAR._tbn = mat3(
+                    tangent,
+                    normalize(cross(VAR._normalWV, tangent)),
+                    VAR._normalWV
+                );
 #endif
 }
 

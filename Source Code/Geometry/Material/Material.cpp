@@ -68,6 +68,8 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
 {
     _textures.fill(nullptr);
 
+    _textureUseForDepth.fill(false);
+
     _textureExtenalFlag.fill(false);
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFLECTION_PLANAR)] = true;
     _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFRACTION_PLANAR)] = true;
@@ -457,7 +459,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     // Bump mapping?
-    if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] &&  _bumpMethod != BumpMethod::NONE) {
+    if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] && _bumpMethod != BumpMethod::NONE) {
         globalDefines.push_back(std::make_pair("COMPUTE_TBN", true));
         shaderName += ".NormalMap";  // Normal Mapping
         if (_bumpMethod == BumpMethod::PARALLAX) {
@@ -544,6 +546,11 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderName += ".Skinned";  //<Use "," instead of "." will add a Vertex only property
     }
 
+    if (renderStagePass._stage == RenderStage::DISPLAY) {
+        fragDefines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
+        shaderName += ".DeferredNormals";
+    }
+
     globalDefines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
 
     vertDefines.insert(std::cend(vertDefines), std::cbegin(globalDefines), std::cend(globalDefines));
@@ -619,17 +626,26 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
     const bool depthStage = renderStagePass.isDepthPass();
 
     bool ret = false;
-    if (!depthStage || hasTransparency()) {
+    if (!depthStage || hasTransparency() || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::UNIT0)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData) || ret;
+    }
+
+    if (!depthStage || hasTransparency() || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::OPACITY)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData) || ret;
     }
 
     ret = getTextureData(ShaderProgram::TextureUsage::HEIGHTMAP, textureData) || ret;
-    ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
 
-    if (!depthStage) {
+    if (!depthStage || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::UNIT1)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData) || ret;
+    }
+
+    if (!depthStage || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData) || ret;
+    }
+
+    if (renderStagePass._stage != RenderStage::DISPLAY || depthStage) {
+        ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
     }
 
     for (const ExternalTexture& tex : _externalTextures) {
@@ -659,40 +675,47 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
     TextureDataContainer::DataEntries& textures = textureData.textures();
     {
         constexpr U8 heightSlot = to_base(ShaderProgram::TextureUsage::HEIGHTMAP);
-        constexpr U8 normalSlot = to_base(ShaderProgram::TextureUsage::NORMALMAP);
         SharedLock r_lock(_textureLock);
         const Texture_ptr& crtHeightTexture = _textures[heightSlot];
         if (crtHeightTexture != nullptr) {
             textures[heightSlot] = crtHeightTexture->getData();
             ret = true;
         }
+    }
+
+    const bool depthStage = renderStagePass.isDepthPass();
+    {
+        SharedLock r_lock(_textureLock);
+        for (U8 slot : transparentSlots) {
+            if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
+                const Texture_ptr& crtTexture = _textures[slot];
+                if (crtTexture != nullptr) {
+                    textures[slot] = crtTexture->getData();
+                    ret = true;
+                }
+            }
+        }
+    }
+
+    {
+        SharedLock r_lock(_textureLock);
+        for (U8 slot : extraSlots) {
+            if (!depthStage || _textureUseForDepth[slot]) {
+                const Texture_ptr& crtTexture = _textures[slot];
+                if (crtTexture != nullptr) {
+                    textures[slot] = crtTexture->getData();
+                    ret = true;
+                }
+            }
+        }
+    } 
+
+    if (renderStagePass._stage != RenderStage::DISPLAY || depthStage) {
+        constexpr U8 normalSlot = to_base(ShaderProgram::TextureUsage::NORMALMAP);
         const Texture_ptr& crtNormalTexture = _textures[normalSlot];
         if (crtNormalTexture != nullptr) {
             textures[normalSlot] = crtNormalTexture->getData();
             ret = true;
-        }
-    }
-
-    const bool depthStage = renderStagePass.isDepthPass();
-    if (!depthStage || hasTransparency()) {
-        SharedLock r_lock(_textureLock);
-        for (U8 slot : transparentSlots) {
-            const Texture_ptr& crtTexture = _textures[slot];
-            if (crtTexture != nullptr) {
-                textures[slot] = crtTexture->getData();
-                ret = true;
-            }
-        }
-    }
-
-    if (!depthStage) {
-        SharedLock r_lock(_textureLock);
-        for (U8 slot : extraSlots) {
-            const Texture_ptr& crtTexture = _textures[slot];
-            if (crtTexture != nullptr) {
-                textures[slot] = crtTexture->getData();
-                ret = true;
-            }
         }
     }
 

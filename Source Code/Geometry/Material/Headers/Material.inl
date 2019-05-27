@@ -68,6 +68,10 @@ inline void Material::setShininess(F32 value) {
     _colourData._shininess = value;
 }
 
+inline void Material::setTextureUseForDepth(ShaderProgram::TextureUsage slot, bool state) {
+    _textureUseForDepth[to_base(slot)] = state;
+}
+
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
     for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         setShaderProgram(shader, RenderStagePass::stagePass(i));

@@ -177,6 +177,8 @@ class Material : public CachedResource {
     void setReflective(const bool state);
     void setRefractive(const bool state);
 
+    void setTextureUseForDepth(ShaderProgram::TextureUsage slot, bool state);
+
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
                     const TextureOperation& op = TextureOperation::NONE);
@@ -306,7 +308,7 @@ class Material : public CachedResource {
     mutable SharedMutex _textureLock;
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
-
+    std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureUseForDepth;
     ShaderData _baseShaderSources;
 
     vector<ExternalTexture> _externalTextures;

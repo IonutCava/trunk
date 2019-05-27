@@ -3,10 +3,6 @@
 
 #include "utility.frag"
 
-#if defined(COMPUTE_TBN)
-#include "bumpMapping.frag"
-#endif
-
 //Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl
 #if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
 #   define HAS_TRANSPARENCY
@@ -34,6 +30,16 @@ layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #if defined(USE_OPACITY_MAP)
 layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 #endif
+
+#if !defined(USE_CUSTOM_NORMAL_MAP)
+//Normal or BumpMap
+layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
+#endif
+
+#if defined(COMPUTE_TBN)
+#include "bumpMapping.frag"
+#endif
+
 
 vec2 getTexCoord() {
 #   if defined(USE_PARALLAX_MAPPING)
@@ -212,12 +218,13 @@ vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
 #endif //!defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 
 vec3 getNormal(in vec2 uv) {
+#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
     vec3 normal = VAR._normalWV;
 
-#if defined(COMPUTE_TBN)
+#if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
     //if (dvd_lodLevel == 0)
     {
-        normal = getTBNMatrix() * getBump(uv);
+        normal = VAR._tbn * getBump(uv);
     }
 #endif //COMPUTE_TBN
 
@@ -227,6 +234,9 @@ vec3 getNormal(in vec2 uv) {
     }
 #   endif //USE_DOUBLE_SIDED
 
-    return normal;
+    return normalize(normal);
+#else //PRE_PASS
+    return unpackNormal(texture(texNormalMap, getScreenPositionNormalised()).rg);
+#endif //PRE_PASS
 }
 #endif //_MATERIAL_DATA_FRAG_

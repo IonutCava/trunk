@@ -29,7 +29,7 @@ uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 
 #define USE_SHADING_BLINN_PHONG
-
+#define USE_DEFERRED_NORMALS
 
 #if defined(PRE_PASS)
 #include "prePass.frag"
@@ -49,11 +49,10 @@ float Fresnel(in vec3 viewDir, in vec3 normal) {
 #endif
 
 void main()
-{  
+{
+#if defined(PRE_PASS)
     const float kDistortion = 0.015f;
     const float kRefraction = 0.09f;
-
-    vec4 uvReflection = clamp(((_vertexWVP / _vertexWVP.w) + 1.0f) * 0.5f, vec4(0.001f), vec4(0.999f));
 
     float time2 = float(dvd_time) * 0.00001f;
     vec2 uvNormal0 = VAR._texCoord * _noiseTile;
@@ -63,11 +62,14 @@ void main()
     uvNormal1.s -= time2;
     uvNormal1.t += time2;
 
-    vec3 normal0 = texture(texNormalMap, uvNormal0).rgb * 2.0f - 1.0f;
-    vec3 normal1 = texture(texNormalMap, uvNormal1).rgb * 2.0f - 1.0f;
-    vec3 normal = normalize(normal0 + normal1);
+    vec3 normal0 = getBump(uvNormal0);
+    vec3 normal1 = getBump(uvNormal1);
 
-#if !defined(PRE_PASS)
+    outputWithVelocity(VAR._texCoord, normalize(VAR._tbn * normalize(normal0 + normal1)));
+#else
+
+    vec3 normal = getNormal(VAR._texCoord);
+    vec4 uvReflection = clamp(((_vertexWVP / _vertexWVP.w) + 1.0f) * 0.5f, vec4(0.001f), vec4(0.999f));
     vec3 incident = normalize(-VAR._vertexWV.xyz);
 
     vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
@@ -78,18 +80,12 @@ void main()
     //dudvColor = normalize(dudvColor * 2.0 - 1.0) * kRefraction;
 
     //normal = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
-#endif
-    normal = normalize(normal * 2.0f - 1.0f);
-    normal = normalize(getTBNMatrix() * normal);
 
-#if defined(PRE_PASS)
-    outputWithVelocity(VAR._texCoord, normal);
-#else
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 mixFactor = vec4(clamp(Fresnel(incident, normalize(VAR._normalWV)), 0.0f, 1.0f));
     vec4 texColour = mix(texture(texReflectPlanar, uvFinalReflect),
-        texture(texRefractPlanar, uvFinalRefract),
-        mixFactor);
+                         texture(texRefractPlanar, uvFinalRefract),
+                         mixFactor);
     
     writeOutput(getPixelColour(texColour, colourMatrix, normal, VAR._texCoord));
 #endif

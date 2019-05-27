@@ -275,8 +275,13 @@ void main()
     vec3 normal = getNormal(pos.y, heightOffsets);
 
     _out._normalWV = normalize(normalMatrixWV * normal);
-    _out._tangentWV = normalize(normalMatrixWV * getTangent(normal));
-    _out._bitangentWV = normalize(cross(_out._normalWV, _out._tangentWV));
+    const vec3 tangent = normalize(normalMatrixWV * getTangent(normal));
+
+    _out._tbn = mat3(
+                    tangent,
+                    normalize(cross(_out._normalWV, tangent)),
+                    _out._normalWV
+                );
 #endif
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
@@ -436,6 +441,8 @@ void main(void)
 
 #if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
+#else
+#define USE_CUSTOM_NORMAL_MAP
 #endif
 
 layout(location = 0) in float LoD;
@@ -458,10 +465,11 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 
 #include "terrainSplatting.frag"
 
+layout(binding = TEXTURE_SPECULAR)  uniform sampler2D texUnderwaterDetail;
+
 #if !defined(PRE_PASS)
 layout(binding = TEXTURE_UNIT0)     uniform sampler2D texWaterCaustics;
 layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
-layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 
 // ToDo: Move this above the includes
@@ -472,11 +480,8 @@ layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 #endif
 #endif
 
-vec4 UnderwaterMappingRoutine(in vec2 uv, out vec3 normalWV) {
+vec4 UnderwaterAlbedo(in vec2 uv) {
     vec2 coords = uv * UNDERWATER_TILE_SCALE;
-    vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
-    normalWV = normalize(getTBNMatrix() * tbn);
-
 #if defined(LOW_QUALITY)
     return texture(texUnderwaterAlbedo, coords);
 #else
@@ -485,36 +490,43 @@ vec4 UnderwaterMappingRoutine(in vec2 uv, out vec3 normalWV) {
     scrollingUV.s -= time2;
 
     return mix((texture(texWaterCaustics, scrollingUV.st) + texture(texWaterCaustics, scrollingUV.pq)) * 0.5f,
-               texture(texUnderwaterAlbedo, coords),
-               _waterDetails.y);
+                texture(texUnderwaterAlbedo, coords),
+                _waterDetails.y);
 #endif
 }
 
-vec4 TerrainMappingRoutine(in vec2 uv, out vec3 normalWV) {
+#endif
+
+vec3 UnderwaterNormal(in vec2 uv) {
 #if defined(LOW_QUALITY)
-    normalWV = VAR._normalWV;
-    return getTerrainAlbedo(uv);
+    return VAR._normalWV;
 #else
-    vec4 albedo;
-    const vec3 normalTBN = getTerrainAlbedoAndNormalTBN(uv, albedo);
-    normalWV = normalize(getTBNMatrix() * normalTBN);
-    return albedo;
+    return normalize(2.0f * texture(texUnderwaterDetail, uv * UNDERWATER_TILE_SCALE).rgb - 1.0f);
 #endif
 }
+
+#if !defined(PRE_PASS)
+vec3 getNormalInternal(in vec2 uv) {
+#if defined(LOW_QUALITY)
+    return getNormal(uv);
+#else
+    return normalize(VAR._tbn * getNormal(uv));
 #endif
+}
+#endif //PRE_PASS
 
 void main(void)
 {
     vec2 uv = getTexCoord();
 
 #if defined(PRE_PASS)
-    outputWithVelocity(normalize(getTBNMatrix() * getTerrainNormalTBN(uv)));
+    const vec3 normal = mix(getTerrainNormalTBN(uv), UnderwaterNormal(uv), _waterDetails.x);
+    outputWithVelocity(uv, normalize(normal));
 #else
-    vec3 normalWV = vec3(0.0f);
-    vec4 albedo = mix(TerrainMappingRoutine(uv, normalWV), UnderwaterMappingRoutine(uv, normalWV), _waterDetails.x);
 
+    vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 colourOut = getPixelColour(albedo, colourMatrix, normalWV, uv);
+    vec4 colourOut = getPixelColour(albedo, colourMatrix, getNormalInternal(uv), uv);
 
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75f;

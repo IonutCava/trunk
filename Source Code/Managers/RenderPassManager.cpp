@@ -538,6 +538,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
         Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, params._target, bufferInOut);
 
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         if (params._bindTargets) {
             const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
 
@@ -556,6 +557,15 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             if (hasNormalsTarget) {
                 drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
+
+                GFX::ResolveRenderTargetCommand resolveCmd = { };
+                resolveCmd._source = params._target;
+                resolveCmd._resolveColour = to_I8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY);
+                GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
+                const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY))->texture()->getData();
+                constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::NORMALMAP);
+                descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
             }
 
             if (prePassExecuted) {
@@ -578,10 +588,10 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->getData();
             constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::PREPASS_SHADOWS);
 
-            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
-            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
         }
+
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
         // We try and render translucent items in the shadow pass and due some alpha-discard tricks
         renderQueueToSubPasses(stagePass, bufferInOut);
 
@@ -597,7 +607,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
         }
     }
-    
+
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }

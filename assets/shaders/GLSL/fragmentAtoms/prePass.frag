@@ -9,9 +9,11 @@
 #include "velocityCalc.frag"
 #include "shadowUtils.frag"
 
+#if defined(USE_DEFERRED_NORMALS)
 layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
 //r,g,b = CSM shadow factor for light ids 0, 1 & 2; a - specular/roughness
 layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
+#endif
 
 void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
 #if defined(USE_ALPHA_DISCARD)
@@ -21,49 +23,55 @@ void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
     }
 #endif
 
-    _normalAndVelocityOut.rg = packNormal(normalize(normal));
+#if defined(USE_DEFERRED_NORMALS)
+    _normalAndVelocityOut.rg = packNormal(normal);
     for (int i = 0; i < 3; ++i) {
         //_extraDetailsOut[i] = getShadowFactor(i);
     }
+#endif
 }
 
 void outputNoVelocity(in vec2 uv, float alphaFactor) {
     _output(getNormal(uv), alphaFactor, uv);
+#if defined(USE_DEFERRED_NORMALS)
     _normalAndVelocityOut.ba = vec2(1.0f);
+#endif
 }
 
 void outputNoVelocity(in vec2 uv) {
-    _output(getNormal(uv), 1.0f, uv);
-    _normalAndVelocityOut.ba = vec2(1.0f);
+    outputNoVelocity(uv, 1.0f);
 }
 
 void outputWithVelocity(in vec2 uv, float alphaFactor) {
     _output(getNormal(uv), alphaFactor, uv);
+#if defined(USE_DEFERRED_NORMALS)
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+#endif
 }
 
 void outputWithVelocity(in vec2 uv) {
-    _output(getNormal(uv), 1.0f, uv);
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    outputWithVelocity(uv, 1.0f);
 }
 
 void outputNoVelocity(in vec2 uv, vec3 normal, float alphaFactor) {
     _output(normal, alphaFactor, uv);
+#if defined(USE_DEFERRED_NORMALS)
     _normalAndVelocityOut.ba = vec2(1.0f);
+#endif
 }
 
 void outputNoVelocity(in vec2 uv, vec3 normal) {
-    _output(normal, 1.0f, uv);
-    _normalAndVelocityOut.ba = vec2(1.0f);
+    outputNoVelocity(uv, normal, 1.0f);
 }
 
 void outputWithVelocity(in vec2 uv, vec3 normal, float alphaFactor) {
     _output(normal, alphaFactor, uv);
+#if defined(USE_DEFERRED_NORMALS)
     _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+#endif
 }
 
 void outputWithVelocity(in vec2 uv, vec3 normal) {
-    _output(normal, 1.0f, uv);
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    outputWithVelocity(uv, normal, 1.0f);
 }
 #endif //_PRE_PASS_FRAG_

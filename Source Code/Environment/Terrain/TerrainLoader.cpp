@@ -193,9 +193,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     textureNormalMaps.assetName(normalMapArray);
     textureNormalMaps.setPropertyDescriptor(normalDescriptor);
 
+    Texture_ptr normalMaps = CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps);
     textureLayer->setBlendMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
     textureLayer->setTileMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps), albedoCount);
-    textureLayer->setNormalMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps), normalCount);
+    textureLayer->setNormalMaps(normalMaps, normalCount);
+
     Attorney::TerrainLoader::setTextureLayer(*terrain, textureLayer);
 
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
@@ -244,7 +246,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     underwaterDetailTexture.assetName(terrainDescriptor->getVariable("underwaterDetailTexture"));
     underwaterDetailTexture.setPropertyDescriptor(miscTexDescriptor);
     underwaterDetailTexture.waitForReadyCbk(waitForReasoureTask);
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::SPECULAR, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
+    terrainMaterial->setTextureUseForDepth(ShaderProgram::TextureUsage::SPECULAR, true);
 
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("heightmapLocation"));
@@ -258,6 +261,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapTexture.setFlag(true);
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, normalMaps);
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -316,7 +320,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
             shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_TERRAIN_SPLAT %d", to_base(ShaderProgram::TextureUsage::TERRAIN_SPLAT)), true));
             shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_TERRAIN_ALBEDO_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE)), true));
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_TERRAIN_NORMAL_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_NORMAL_TILE)), true));
         }
     }
 
@@ -340,6 +343,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
+        shaderModule._defines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
     }
 
     ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name);
@@ -353,6 +357,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
         shaderModule._defines.push_back(std::make_pair("PRE_PASS", true));
+        shaderModule._defines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
     }
 
     ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name);

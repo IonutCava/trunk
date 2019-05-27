@@ -99,9 +99,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
         GLOSS = SPECULAR,
         ROUGHNESS = GLOSS,
-        TERRAIN_SPLAT = GLOSS,
+        TERRAIN_SPLAT = OPACITY,
         TERRAIN_ALBEDO_TILE = REFLECTION_CUBE,
-        TERRAIN_NORMAL_TILE = REFLECTION_PLANAR,
     };
 
    public:

@@ -1,16 +1,11 @@
 #ifndef _BUMP_MAPPING_FRAG_
 #define _BUMP_MAPPING_FRAG_
 
-//Normal or BumpMap
-layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
-
-mat3 getTBNMatrix() {
-    return mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
-}
-
+#if !defined(USE_CUSTOM_NORMAL_MAP)
 vec3 getBump(in vec2 uv) {
     return normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f);
 }
+#endif
 
 // http://www.thetenthplanet.de/archives/1180
 mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
