@@ -184,7 +184,7 @@ vec4 getHeightOffsets(in vec2 tex_coord) {
     float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r;
     float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r;
 
-    return vec4(s01, s21, s10, s12);
+    return (TERRAIN_HEIGHT_RANGE * vec4(s01, s21, s10, s12)) + TERRAIN_MIN_HEIGHT;
 }
 
 float getHeight(in vec4 heightOffsets) {
@@ -198,25 +198,17 @@ float getHeight(in vec4 heightOffsets) {
 }
 
 vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
-    const vec2 size = vec2(2.0f, 0.0f);
-
-    float s11 = sampleHeight;
     float s01 = heightOffsets.r;
     float s21 = heightOffsets.g;
     float s10 = heightOffsets.b;
     float s12 = heightOffsets.a;
 
-    vec3 va = normalize(vec3(size.xy, s21 - s01));
-    vec3 vb = normalize(vec3(size.yx, s12 - s10));
-
-    return cross(va, vb);
+    return normalize(vec3(s01 - s21, s10 - s12, 2.0f));
 }
 
 vec3 getTangent(in vec3 normal) {
-    vec3 temp_tangent = vec3(0.0f, 0.0f, 1.0f);
-    vec3 bitangent = cross(temp_tangent, normal);
-    vec3 tangent = cross(normal, bitangent);
-    return tangent;
+    const vec3 bitangent = cross(vec3(0.0f, 0.0f, 1.0f), normal);
+    return cross(normal, bitangent);
 }
 
 #if !defined(TOGGLE_WIREFRAME)
@@ -270,18 +262,17 @@ void main()
     // Terrain heightmap coords
     _out._texCoord = interpolate2(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord);
 
-    vec4 heightOffsets = getHeightOffsets(_out._texCoord);
+    const vec4 heightOffsets = getHeightOffsets(_out._texCoord);
 
     // Sample the heightmap and offset y position of vertex
-    const float sampleHeight = getHeight(heightOffsets);
-    pos.y = (TERRAIN_HEIGHT_RANGE * sampleHeight) + TERRAIN_MIN_HEIGHT;
+    pos.y = getHeight(heightOffsets);
 
     // Project the vertex to clip space and send it along
     _out._vertexW = dvd_WorldMatrix(baseInstance) * pos;
 
 #if !defined(SHADOW_PASS)
     mat3 normalMatrixWV = dvd_NormalMatrixWV(baseInstance);
-    vec3 normal = getNormal(sampleHeight, heightOffsets);
+    vec3 normal = getNormal(pos.y, heightOffsets);
 
     _out._normalWV = normalize(normalMatrixWV * normal);
     _out._tangentWV = normalize(normalMatrixWV * getTangent(normal));

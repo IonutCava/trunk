@@ -42,7 +42,7 @@ void main(void){
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
 
 #if !defined(SHADOW_PASS)
-    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * -dvd_Normal);
+    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * dvd_Normal);
     setClipPlanes(VAR._vertexW);
 #endif
 
