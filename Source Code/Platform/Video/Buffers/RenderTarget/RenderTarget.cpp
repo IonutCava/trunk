@@ -85,7 +85,7 @@ RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& des
         }
     }
 
-    _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, colourAttachmentCount);
+    _attachmentPool = std::make_unique<RTAttachmentPool>(*this, colourAttachmentCount);
 
 }
 
@@ -93,7 +93,6 @@ bool RenderTarget::create() {
     if (_created) {
         return false;
     }
-
 
     for (U8 i = 0; i < _descriptor._attachmentCount; ++i) {
         _attachmentPool->update(_descriptor._attachments[i]);
@@ -108,7 +107,6 @@ bool RenderTarget::create() {
 
 RenderTarget::~RenderTarget()
 {
-    MemoryManager::DELETE(_attachmentPool);
 }
 
 bool RenderTarget::hasAttachment(RTAttachmentType type, U8 index) const {

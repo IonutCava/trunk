@@ -164,8 +164,8 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
 
    protected:
     bool _created;
-    RTAttachmentPool* _attachmentPool;
     RenderTargetDescriptor _descriptor;
+    std::unique_ptr<RTAttachmentPool> _attachmentPool;
 };
 
 };  // namespace Divide

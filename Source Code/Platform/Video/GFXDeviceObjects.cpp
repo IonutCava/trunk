@@ -52,12 +52,13 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) const {
         }
     }
 
+    bool valid = false;
     if (temp != nullptr) {
-        bool valid = temp->create();
+        valid = temp->create();
         assert(valid);
     }
 
-    return temp;
+    return valid ? temp : nullptr;
 }
 
 IMPrimitive* GFXDevice::newIMP() const {

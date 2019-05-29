@@ -45,8 +45,6 @@ namespace Divide {
 
 class TerrainLoader;
 
-constexpr U8 MAX_TEXTURE_LAYERS = 128 / 4;
-
 template <typename T>
 inline T TER_COORD(T x, T y, T width) {
     return x + (width * y);
@@ -54,13 +52,14 @@ inline T TER_COORD(T x, T y, T width) {
 
 struct TerrainTextureLayer {
     explicit TerrainTextureLayer(U8 layerCount)
-        : _layerCount(layerCount)
     {
-        assert(_layerCount <= MAX_TEXTURE_LAYERS);
-
         _blendMaps = nullptr;
         _tileMaps = nullptr;
         _normalMaps = nullptr;
+
+        _tileUVScale.resize(layerCount);
+        _albedoCountPerLayer.resize(layerCount);
+        _detailCountPerLayer.resize(layerCount);
     }
 
     ~TerrainTextureLayer();
@@ -83,31 +82,35 @@ struct TerrainTextureLayer {
         _detailCountPerLayer = countPerLayer;
     }
 
+    inline void setTileScales(U8 layer, const vec4<F32>& scale) {
+        assert(_tileUVScale.size() > layer);
+        _tileUVScale[layer].set(scale);
+    }
+
     inline void setTileScale(TerrainTextureChannel textureChannel, U8 layer, F32 scale) {
+        assert(_tileUVScale.size() > layer);
         _tileUVScale[layer][to_U32(textureChannel)]= scale;
     }
 
     inline const vec4<F32>& getTileScales(U8 layer) const noexcept { return _tileUVScale[layer]; }
 
-    inline const std::array<vec4<F32>, MAX_TEXTURE_LAYERS>& getTileScales() const noexcept { return _tileUVScale; }
+    inline const vector<vec4<F32>>& getTileScales() const noexcept { return _tileUVScale; }
 
     const Texture_ptr& blendMaps()  const noexcept { return _blendMaps; }
     const Texture_ptr& tileMaps()   const noexcept { return _tileMaps; }
     const Texture_ptr& normalMaps() const noexcept { return _normalMaps; }
 
-    inline U8 layerCount() const noexcept { return _layerCount; }
-    inline U8 albedoCountPerLayer(U8 layer) const { assert(layer < _layerCount); return _albedoCountPerLayer[layer]; }
-    inline U8 detailCountPerLayer(U8 layer) const { assert(layer < _layerCount); return _detailCountPerLayer[layer]; }
+    inline U8 layerCount() const noexcept { return to_U8(_albedoCountPerLayer.size()); }
+    inline U8 albedoCountPerLayer(U8 layer) const { assert(layer < layerCounte()); return _albedoCountPerLayer[layer]; }
+    inline U8 detailCountPerLayer(U8 layer) const { assert(layer < layerCount()); return _detailCountPerLayer[layer]; }
 
    private:
-    U8 _layerCount = 0;
-    std::vector<U8> _albedoCountPerLayer;
-    std::vector<U8> _detailCountPerLayer;
-
-    std::array<vec4<F32>, MAX_TEXTURE_LAYERS> _tileUVScale;
+    vector<U8> _albedoCountPerLayer;
+    vector<U8> _detailCountPerLayer;
     Texture_ptr _blendMaps;
     Texture_ptr _tileMaps;
     Texture_ptr _normalMaps;
+    vector<vec4<F32>> _tileUVScale;
 };
 
 class VertexBuffer;

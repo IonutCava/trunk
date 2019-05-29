@@ -109,6 +109,23 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         false,
         GFX::PushConstantType::VEC2);
 
+    TerrainTextureLayer* textureLayers = _terrainTextures;
+    for (U8 i = 0; i < textureLayers->layerCount(); ++i) {
+        _editorComponent.registerField(
+            Util::StringFormat("Tile Scale %d [R G B A]", i),
+            [this, i](void* dataOut) {
+                std::memcpy(dataOut, _terrainTextures->getTileScales(i), 4 * sizeof(F32));
+            },
+            [this, i](const void* data) {
+                vec4<F32> newScales = *(vec4<F32>*)data;
+                _terrainTextures->setTileScales(i, newScales);
+            },
+            EditorComponentFieldType::PUSH_TYPE,
+            false,
+            GFX::PushConstantType::VEC4);
+    }
+    
+
     SceneNode::postLoad(sgn);
 }
 
@@ -200,6 +217,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
         constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
+        constants.set("tileScale", GFX::PushConstantType::VEC4, _terrainTextures->getTileScales());
         pkg.pushConstants(0, constants);
     }
 

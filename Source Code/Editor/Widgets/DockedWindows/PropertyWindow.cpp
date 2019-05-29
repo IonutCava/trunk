@@ -391,6 +391,9 @@ namespace Divide {
          ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsDecimal;
          flags |= field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
 
+         const char* name = field._name.c_str();
+         ImGui::PushID(name);
+
          bool ret = false;
          switch (field._basicType) {
              case GFX::PushConstantType::BOOL: {
@@ -608,9 +611,10 @@ namespace Divide {
                  }
              }break;
              default: {
-                 ImGui::Text(field._name.c_str());
+                 ImGui::Text(name);
              }break;
          }
+         ImGui::PopID();
 
          return ret;
      }
