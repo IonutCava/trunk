@@ -6,6 +6,18 @@
 
 #define PRECISION 0.000001
 
+//ref: http://theorangeduck.com/page/avoiding-shader-conditionals
+#define when_eq(x, y) (1.0f - abs(sign(x - y)))
+#define when_neq(x, y) abs(sign(x - y))
+#define when_gt(x, y)  max(sign(x - y), 0.0f)
+#define when_lt(x, y)  max(sign(y - x), 0.0f)
+#define when_ge(x, y) (1.0f - when_lt(x, y))
+#define when_le(x, y) (1.0f - when_gt(x, y))
+#define AND(a, b) (a * b)
+#define OR(a, b) min(a + b, 1.0f)
+#define XOR(a, b) ((a + b) % 2.0f)
+#define NOT(a) (1.0f - a)
+
 float DIST_TO_ZERO(float val) {
     return 1.0 - (step(-PRECISION, val) * (1.0 - step(PRECISION, val)));
 }

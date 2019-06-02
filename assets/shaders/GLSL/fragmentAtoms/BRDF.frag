@@ -26,9 +26,13 @@
 #endif
 
 void getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 specular, in vec3 normalWV, inout vec4 lightColour) {
+    const vec3 ambient = vec3(0.01f, 0.01f, 0.01f);
+
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
         lightColour += getBRDFFactors(vec4(light._colour.rgb, 1.0f), specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, getLightDirection(light));
+
+        lightColour.rgb += (ambient * when_lt(lightColour.a, 0.01f)) * when_eq(lightIdx, 0);
     }
 }
 
@@ -42,11 +46,9 @@ void getPointLightContribution(in uint tileIndex, in uint dirLightCount, in vec3
         }
 
         const Light light = dvd_LightSource[lightIdx + dirLightCount];
+        const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light));
 
-        const vec3 lightDirection = getLightDirection(light);
-        const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light, lightDirection));
-
-        lightColour += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, lightDirection);
+        lightColour += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, getLightDirection(light));
     }
 }
 
@@ -60,10 +62,9 @@ void getSpotLightContribution(in uint tileIndex, in uint dirLightCount, in uint 
         }
 
         const Light light = dvd_LightSource[lightIdx + dirLightCount];
-        const vec3 lightDirection = getLightDirection(light);
-        const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light, lightDirection));
+        const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light));
 
-        lightColour += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, lightDirection);
+        lightColour += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, getLightDirection(light));
     }
 }
 

@@ -46,7 +46,7 @@ vec4 getTerrainAlbedo(in vec2 uv) {
             offset += CURRENT_LAYER_COUNT[i] * 2;
         }
     }
-    return vec4(colour.rgb * (detail.rgb * DETAIL_BRIGHTNESS), 1.0f);
+    return vec4(colour.rgb /** (detail.rgb * DETAIL_BRIGHTNESS)*/, 1.0f);
 #endif
 }
 #endif //PRE_PASS
@@ -76,7 +76,7 @@ vec3 getTerrainNormalTBN(in vec2 uv) {
 #if defined(LOW_QUALITY)
     return VAR._normalWV;
 #else //LOW_QUALITY
-    return mix(_getSplatNormal(uv), VAR._normalWV, LoD / 6);
+    return _getSplatNormal(uv);
 
 #endif //LOW_QUALITY
 }

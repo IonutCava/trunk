@@ -125,20 +125,20 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     U32 totalTexCount = std::accumulate(std::cbegin(texCount), std::cend(texCount), 0u);
 
     SamplerDescriptor heightMapSampler = {};
-    heightMapSampler._wrapU = TextureWrap::CLAMP;
-    heightMapSampler._wrapV = TextureWrap::CLAMP;
-    heightMapSampler._wrapW = TextureWrap::CLAMP;
-    heightMapSampler._minFilter = TextureFilter::LINEAR;
+    heightMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    heightMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    heightMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    heightMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
     heightMapSampler._magFilter = TextureFilter::LINEAR;
-    heightMapSampler._anisotropyLevel = 0;
+    heightMapSampler._anisotropyLevel = 8;
 
     SamplerDescriptor blendMapSampler = {};
-    blendMapSampler._wrapU = TextureWrap::CLAMP;
-    blendMapSampler._wrapV = TextureWrap::CLAMP;
-    blendMapSampler._wrapW = TextureWrap::CLAMP;
-    blendMapSampler._minFilter = TextureFilter::LINEAR;
+    blendMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
+    blendMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
+    blendMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
+    blendMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
     blendMapSampler._magFilter = TextureFilter::LINEAR;
-    blendMapSampler._anisotropyLevel = 0;
+    blendMapSampler._anisotropyLevel = 8;
 
     SamplerDescriptor tileAlbedoSampler = {};
     tileAlbedoSampler._wrapU = TextureWrap::REPEAT;
@@ -155,6 +155,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.setSampler(blendMapSampler);
     blendMapDescriptor._layerCount = layerCount;
+    blendMapDescriptor._srgb = false;
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
     albedoDescriptor.setSampler(tileAlbedoSampler);
