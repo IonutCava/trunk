@@ -157,7 +157,7 @@ layout(location = 0) in float tcs_tessLevel[];
 #if defined(TOGGLE_WIREFRAME)
 layout(location = 0) out float tes_tessLevel;
 #else
-layout(location = 0) out float LoD;
+layout(location = 0) out flat int LoD;
 // x = distance, y = depth
 layout(location = 1) smooth out vec2 _waterDetails;
 #endif
@@ -203,12 +203,7 @@ vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
     float s10 = heightOffsets.b;
     float s12 = heightOffsets.a;
 
-    return normalize(vec3(s01 - s21, s10 - s12, 2.0f));
-}
-
-vec3 getTangent(in vec3 normal) {
-    const vec3 bitangent = cross(vec3(0.0f, 0.0f, 1.0f), normal);
-    return cross(normal, bitangent);
+    return normalize(vec3(s21 - s01, 2.0f, s12 - s10));
 }
 
 #if !defined(TOGGLE_WIREFRAME)
@@ -275,11 +270,13 @@ void main()
     vec3 normal = getNormal(pos.y, heightOffsets);
 
     _out._normalWV = normalize(normalMatrixWV * normal);
-    const vec3 tangent = normalize(normalMatrixWV * getTangent(normal));
+
+    const vec3 bitangent = cross(vec3(0.0f, 0.0f, 1.0f), normal);
+    const vec3 tangnet = cross(normal, bitangent);
 
     _out._tbn = mat3(
-                    tangent,
-                    normalize(cross(_out._normalWV, tangent)),
+                    normalize(normalMatrixWV * tangnet),
+                    normalize(normalMatrixWV * bitangent),
                     _out._normalWV
                 );
 #endif
@@ -295,17 +292,7 @@ void main()
 #if !defined(SHADOW_PASS)
     waterDetails();
 #if !defined(TOGGLE_WIREFRAME)
-    if (tcs_tessLevel[0] >= 64.0) {
-        LoD = 0;
-    } else if (tcs_tessLevel[0] >= 32.0) {
-        LoD = 1;
-    } else if (tcs_tessLevel[0] >= 16.0) {
-        LoD = 2;
-    } else if (tcs_tessLevel[0] >= 8.0) {
-        LoD = 3;
-    } else {
-        LoD = 4;
-    }
+    LoD = int(log2(MAX_TESS_SCALE / tcs_tessLevel[0]));
 #endif //TOGGLE_WIREFRAME
 #endif //SHADOW_PASS
 
@@ -323,7 +310,7 @@ layout(location = 0) in float tes_tessLevel[];
 layout(triangle_strip, max_vertices = 4) out;
 
 // x = distance, y = depth
-layout(location = 0) out float LoD;
+layout(location = 0) out flat int LoD;
 layout(location = 1) smooth out vec2 _waterDetails;
 
 layout(location = 2) out vec3 gs_wireColor;
@@ -375,21 +362,18 @@ void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     gl_Position = getWVPPositon(i);
 #if !defined(SHADOW_PASS)
+    LoD = int(log2(MAX_TESS_SCALE / tes_tessLevel[0]));
+
     if (tes_tessLevel[0] >= 64.0) {
         gs_wireColor = vec3(0.0, 0.0, 1.0);
-        LoD = 0;
     } else if (tes_tessLevel[0] >= 32.0) {
         gs_wireColor = vec3(0.0, 1.0, 0.0);
-        LoD = 1;
     } else if (tes_tessLevel[0] >= 16.0) {
         gs_wireColor = vec3(1.0, 0.0, 0.0);
-        LoD = 2;
     } else if (tes_tessLevel[0] >= 8.0) {
         gs_wireColor = vec3(0.25, 1.00, 1.0);
-        LoD = 3;
     } else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
-        LoD = 4;
     }
     waterDetails(i);
 
@@ -445,7 +429,7 @@ layout(early_fragment_tests) in;
 #define USE_CUSTOM_NORMAL_MAP
 #endif
 
-layout(location = 0) in float LoD;
+layout(location = 0) in flat int LoD;
 // x = distance, y = depth
 layout(location = 1) smooth in vec2 _waterDetails;
 
@@ -493,13 +477,11 @@ vec4 UnderwaterAlbedo(in vec2 uv) {
 
 #else
 
+#if !defined(LOW_QUALITY)
 vec3 UnderwaterNormal(in vec2 uv) {
-#if defined(LOW_QUALITY)
-    return VAR._normalWV;
-#else
-    return VAR._tbn * normalize(2.0f * texture(underwaterTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f);
-#endif
+    return normalize(2.0f * texture(underwaterTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f);
 }
+#endif //LQ
 
 #endif
 
@@ -508,8 +490,13 @@ void main(void)
     vec2 uv = getTexCoord();
 
 #if defined(PRE_PASS)
-    const vec3 normal = mix(getTerrainNormalTBN(uv), UnderwaterNormal(uv), _waterDetails.x);
-    outputWithVelocity(uv, normalize(normal));
+#if defined(LOW_QUALITY)
+    const vec3 normal = TerrainNormal(uv);
+#else
+    const vec3 normal = mix(TerrainNormal(uv), UnderwaterNormal(uv), _waterDetails.x);
+#endif
+
+    outputWithVelocity(uv, normalize(VAR._tbn * normal));
 #else
 
     vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);

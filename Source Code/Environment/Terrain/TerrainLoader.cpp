@@ -211,14 +211,23 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     miscTexDescriptor.setSampler(blendMapSampler);
     miscTexDescriptor._srgb = true;
 
-    ResourceDescriptor underwaterAlbedoTexture("Terrain Albedo_" + name);
-    underwaterAlbedoTexture.assetLocation(terrainLocation);
-    underwaterAlbedoTexture.assetName(terrainDescriptor->getVariable("textureMap"));
-    underwaterAlbedoTexture.setPropertyDescriptor(miscTexDescriptor);
-    underwaterAlbedoTexture.setFlag(true);
-    underwaterAlbedoTexture.waitForReadyCbk(waitForReasoureTask);
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), underwaterAlbedoTexture));
+    ResourceDescriptor albedoTexture ("Terrain Albedo_" + name);
+    albedoTexture.assetLocation(terrainLocation);
+    albedoTexture.assetName(terrainDescriptor->getVariable("textureMap"));
+    albedoTexture.setPropertyDescriptor(miscTexDescriptor);
+    albedoTexture.setFlag(true);
+    albedoTexture.waitForReadyCbk(waitForReasoureTask);
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), albedoTexture));
 
+    miscTexDescriptor._srgb = false;
+    ResourceDescriptor normalTexture("Terrain Normal_" + name);
+    normalTexture.assetLocation(terrainLocation);
+    normalTexture.assetName(terrainDescriptor->getVariable("normalMap"));
+    normalTexture.setPropertyDescriptor(miscTexDescriptor);
+    normalTexture.setFlag(true);
+    normalTexture.waitForReadyCbk(waitForReasoureTask);
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::SPECULAR, CreateResource<Texture>(terrain->parentResourceCache(), normalTexture));
+    terrainMaterial->setTextureUseForDepth(ShaderProgram::TextureUsage::SPECULAR, true);
 
     stringImpl underwaterTextures = terrainDescriptor->getVariable("waterCaustics") + "," +
                                     terrainDescriptor->getVariable("underwaterAlbedoTexture") + "," + 

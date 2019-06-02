@@ -3,11 +3,11 @@
 <heightfieldTex>heightfield.png</heightfieldTex>
 <heightfieldResolution x="2048" y="2048"/>
 <altitudeRange min="-39.02" max="75.13"/>
-<horizontalScale>0.5</horizontalScale>
+<horizontalScale>1</horizontalScale>
 <detailTillingFactor>30</detailTillingFactor>
 <detailBrightnessFactor>3.5</detailBrightnessFactor>
 <tessellationRange min="80" max="500" chunkSize="256" patchSizeInM="64"/>
-<normalMap>normals.dds</normalMap>
+<normalMap>normals.png</normalMap>
 <textureMap>texture.png</textureMap>
 <alphaMaps>alpha_maps.xml</alphaMaps>
 

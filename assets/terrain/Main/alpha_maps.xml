@@ -3,7 +3,7 @@
 	<nImages>3</nImages>
 	<nLayers>10</nLayers>
 	<LayersPerImage>4</LayersPerImage>
-	<ImageFileExt>dds</ImageFileExt>
+	<ImageFileExt>png</ImageFileExt>
 	<Width>2048</Width>
 	<Height>2048</Height>
 	<HiResRatio>1</HiResRatio>
@@ -15,37 +15,37 @@
 				<Layer>
 					<LayerColour>red</LayerColour>
 					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\ground\dirt1.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1-dry.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_mud</MtlName>
+						<MtlName>std_grass_dry</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
 					<LayerColour>green</LayerColour>
 					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\ground\rocks1-grey.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_pebbles</MtlName>
+						<MtlName>std_grass</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
 					<LayerColour>blue</LayerColour>
 					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\rock\rock1.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\rock\rock1b.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_cliffs_grey</MtlName>
+						<MtlName>std_cliffs</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
 					<LayerColour>alpha</LayerColour>
 					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\sand\yellowsand1.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\rock\rock1.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_sand_yellow</MtlName>
+						<MtlName>std_cliffs_steep</MtlName>
 					</MtlList>
 				</Layer>
 			</LayerList>
@@ -56,10 +56,10 @@
 				<Layer>
 					<LayerColour>red</LayerColour>
 					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\rock\rock1b.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\ground\rocks1-grey.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_cliffs</MtlName>
+						<MtlName>std_pebbles</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
@@ -68,16 +68,16 @@
 						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\rock\rock1.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_cliffs_steep</MtlName>
+						<MtlName>std_cliffs_grey</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
 					<LayerColour>blue</LayerColour>
 					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1-dry.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\sand\yellowsand1.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_grass_dry</MtlName>
+						<MtlName>std_sand_yellow</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
@@ -86,7 +86,7 @@
 						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_grass</MtlName>
+						<MtlName>std_grass_steep</MtlName>
 					</MtlList>
 				</Layer>
 			</LayerList>
@@ -106,10 +106,10 @@
 				<Layer>
 					<LayerColour>green</LayerColour>
 					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\ground\dirt1.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_grass_steep</MtlName>
+						<MtlName>std_mud</MtlName>
 					</MtlList>
 				</Layer>
 			</LayerList>
