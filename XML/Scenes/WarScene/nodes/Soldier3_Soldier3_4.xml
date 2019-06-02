@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>round_grill.png.msh</model>
+<model>Bob.md5mesh-submesh-4</model>
 <ANIMATION/>
 <INVERSE_KINEMATICS/>
 <RAGDOLL/>

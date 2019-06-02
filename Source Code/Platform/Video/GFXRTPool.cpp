@@ -8,6 +8,13 @@
 namespace Divide {
 
 namespace {
+    // Used to delete resources
+    struct DeleteRT {
+        void operator()(RenderTarget* res) {
+            res->destroy();
+        }
+    };
+
     U32 g_maxAdditionalRenderTargets = 128;
 };
 
@@ -52,29 +59,24 @@ void GFXRTPool::clear() {
 }
 
 void GFXRTPool::resizeTargets(RenderTargetUsage target, U16 width, U16 height) {
-    for (RenderTarget* rt : _renderTargets[to_U32(target)]) {
+    for (const std::shared_ptr<RenderTarget>& rt : _renderTargets[to_U32(target)]) {
         if (rt) {
             rt->resize(width, height);
         }
     }
 }
 
-void GFXRTPool::set(RenderTargetID target, RenderTarget* newTarget) {
-    RenderTarget*& oldTarget = _renderTargets[to_U32(target._usage)][target._index];
-    if (oldTarget) {
-        //overriding old target
-    }
-
-    oldTarget = newTarget;
+void GFXRTPool::set(RenderTargetID target, const std::shared_ptr<RenderTarget>& newTarget) {
+    _renderTargets[to_U32(target._usage)][target._index] = newTarget;
 }
 
-RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, RenderTarget* newTarget) {
-    vector<RenderTarget*>& rts = _renderTargets[to_U32(targetUsage)];
+RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget) {
+    vector<std::shared_ptr<RenderTarget>>& rts = _renderTargets[to_U32(targetUsage)];
 
     for (U32 i = 0; i < to_U32(rts.size()); ++i) {
         if (rts[i] == nullptr) {
             rts[i] = newTarget;
-            return RenderTargetHandle(RenderTargetID(targetUsage, i), newTarget);
+            return RenderTargetHandle(RenderTargetID(targetUsage, i), newTarget.get());
         }
     }
 
@@ -95,7 +97,8 @@ bool GFXRTPool::remove(RenderTargetHandle& handle) {
 }
 
 RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor) {
-    return add(targetUsage, Attorney::GFXDeviceGFXRTPool::newRT(_parent, descriptor));
+    std::shared_ptr<RenderTarget> rt(Attorney::GFXDeviceGFXRTPool::newRT(_parent, descriptor), DeleteRT());
+    return add(targetUsage, rt);
 }
 
 }; //namespace Divide

@@ -310,9 +310,13 @@ vector<stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
         }
         vector<stringImpl> foundDefines;
         foundDefines.reserve(20);
-        sourceCodeOut.second = 
-            preProcess(preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, foundDefines, true), fileName.c_str());
+        stringImpl srcTemp = preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, foundDefines, true);
 
+        if (Config::Build::IS_DEBUG_BUILD) {
+            sourceCodeOut.second = srcTemp;
+        } else {
+            sourceCodeOut.second = preProcess(srcTemp, fileName.c_str());
+        }
         shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
                         fileName,
                         sourceCodeOut.second.c_str());

@@ -327,6 +327,8 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
             } break;
 
             case TextureType::TEXTURE_3D:
+            case TextureType::TEXTURE_2D_ARRAY:
+            case TextureType::TEXTURE_2D_ARRAY_MS:
             case TextureType::TEXTURE_CUBE_MAP:
             case TextureType::TEXTURE_CUBE_ARRAY: {
                 glCompressedTextureSubImage3D(

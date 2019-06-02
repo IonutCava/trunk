@@ -27,14 +27,14 @@ Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, 
     // Generate a render state
     RenderStateBlock skyboxRenderState;
     skyboxRenderState.setCullMode(CullMode::CCW);
-    skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
+    skyboxRenderState.setZFunc(ComparisonFunction::EQUAL);
     _skyboxRenderStateHash = skyboxRenderState.getHash();
 
     skyboxRenderState.setCullMode(CullMode::CW);
     _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
 
     skyboxRenderState.setCullMode(CullMode::CCW);
-    skyboxRenderState.setZFunc(ComparisonFunction::LESS);
+    skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
     skyboxRenderState.setColourWrites(false, false, false, false);
     _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
 }

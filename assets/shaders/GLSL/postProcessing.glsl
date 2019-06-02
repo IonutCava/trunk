@@ -1,5 +1,6 @@
 -- Fragment
 
+#define NEED_DEPTH_TEXTURE
 #include "utility.frag"
 
 out vec4 _colourOut;

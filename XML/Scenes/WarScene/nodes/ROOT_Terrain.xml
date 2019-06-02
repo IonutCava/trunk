@@ -1,65 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<heightmapLocation>terrain/</heightmapLocation>
-<heightmap>warTerrain_preview.png</heightmap>
-<is16Bit>true</is16Bit>
-<terrainWidth>2048</terrainWidth>
-<terrainHeight>2048</terrainHeight>
-<altitudeRange min="-33.5999985" max="68.8000031"/>
-<tessellationRange min="100" max="300" chunkSize="128"/>
-<textureLocation>misc_images</textureLocation>
-<waterCaustics>terrain_water_caustics.jpg</waterCaustics>
+<descriptor>Main</descriptor>
 <wireframeDebugMode>false</wireframeDebugMode>
+<waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
 <underwaterTileScale>100</underwaterTileScale>
-<vegetation>
-    <vegetationTextureLocation>misc_images</vegetationTextureLocation>
-    <grassMap>warTerrainAlpha_Alpha1.tga</grassMap>
-    <grassBillboard1 scale="0.75">billboardgrass0001.png</grassBillboard1>
-    <grassBillboard2 scale="0.5">grass_billboards1.png</grassBillboard2>
-    <grassBillboard3 scale="1">grass_billboards2.png</grassBillboard3>
-    <grassBillboard4 scale="1">grass_billboards3.png</grassBillboard4>
-    <treeMap>warTerrainAlpha_Alpha1.tga</treeMap>
-	<treeMesh1 scale = "0.075" rotate_x = "0" rotate_y = "0" rotate_z = "-90">tree_mango_01.fbx</treeMesh1>
-	<treeMesh2 scale = "0.075" rotate_x = "0" rotate_y = "0" rotate_z = "-90">tree_mango_02.fbx</treeMesh2>
-	<treeMesh3 scale = "0.0075" rotate_x = "0" rotate_y = "0" rotate_z = "0">birch_13m.obj</treeMesh3>
-    <!--<treeMesh1 scale = "0.02">copac.obj</treeMesh1>
-    <treeMesh2 scale = "0.01">Pin.obj</treeMesh2>
-    <treeMesh3 scale = "1.0">copacel.obj</treeMesh3>-->
-</vegetation>
-<textureLayers>
-    <layer0>
-        <blendMap>warTerrainAlpha_Alpha1.tga</blendMap>
-        <redAlbedo>riverdalegrass.jpg</redAlbedo>
-        <redDetail>riverdalegrass_bump.jpg</redDetail>
-        <redTileScale>250</redTileScale>
-        <greenAlbedo>riverdalegrassdead.jpg</greenAlbedo>
-        <greenDetail>riverdalegrass_bump.jpg</greenDetail>
-        <greenTileScale>250</greenTileScale>
-        <blueAlbedo>redsand1a.jpg</blueAlbedo>
-        <blueDetail>redsand1a_bump.jpg</blueDetail>
-        <blueTileScale>250</blueTileScale>
-        <alphaAlbedo>rock3.jpg</alphaAlbedo>
-        <alphaDetail>rock3_bump.jpg</alphaDetail>
-        <alphaTileScale>250</alphaTileScale>
-    </layer0>
-    <layer1>
-        <blendMap>warTerrainAlpha_Alpha2.tga</blendMap>
-        <redAlbedo>yellowsand1.jpg</redAlbedo>
-        <redDetail>terrain_detail_NM.png</redDetail>
-        <redTileScale>250</redTileScale>
-        <greenAlbedo>grass1-dry.jpg</greenAlbedo>
-        <greenDetail>hillside_bump.jpg</greenDetail>
-        <greenTileScale>250</greenTileScale>
-        <blueAlbedo>rocks1-grey.jpg</blueAlbedo>
-        <blueDetail>rocks1_bump.jpg</blueDetail>
-        <blueTileScale>250</blueTileScale>
-        <alphaAlbedo>murcim049.jpg</alphaAlbedo>
-        <alphaDetail>terrain_detail_NM.png</alphaDetail>
-        <alphaTileScale>250</alphaTileScale>
-    </layer1>
-</textureLayers>
 <model>Terrain</model>
 <NAVIGATION/>
 <TRANSFORM>
@@ -84,16 +30,16 @@
         <parallaxFactor>1</parallaxFactor>
         <texture>
             <UNIT0>
-                <name>terrain_water_caustics.jpg</name>
-                <path>assets/misc_images</path>
-                <flipped>true</flipped>
-                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <name>texture.png</name>
+                <path>assets/terrain/Main</path>
+                <flipped>false</flipped>
+                <Map U="CLAMP" V="CLAMP" W="CLAMP"/>
                 <Filter min="LINEAR" mag="LINEAR"/>
-                <anisotropy>8</anisotropy>
+                <anisotropy>0</anisotropy>
             </UNIT0>
             <UNIT1>
-                <name>sandfloor009a.jpg</name>
-                <path>assets/misc_images</path>
+                <name>terrain_water_caustics.jpg,sandfloor009a.jpg,terrain_detail_NM.png</name>
+                <path>assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images</path>
                 <flipped>true</flipped>
                 <usage>TEX_OP_REPLACE</usage>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
@@ -101,12 +47,12 @@
                 <anisotropy>8</anisotropy>
             </UNIT1>
             <NORMALMAP>
-                <name>terrain_detail_NM.png</name>
-                <path>assets/misc_images</path>
-                <flipped>true</flipped>
+                <name>common\detail\detailmap_bump.jpg,common\ground\rocks1_bump.jpg,common\rock\rock1_bump.jpg,common/detail/detailmap_bump.jpg,common\rock\rock1_bump.jpg,common\rock\rock1_bump.jpg,common\detail\detailmap_bump.jpg,common\detail\detailmap_bump.jpg,common\detail\detailmap_bump.jpg,common\detail\detailmap_bump.jpg</name>
+                <path>assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates</path>
+                <flipped>false</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
-                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
-                <anisotropy>8</anisotropy>
+                <Filter min="LINEAR" mag="LINEAR"/>
+                <anisotropy>0</anisotropy>
             </NORMALMAP>
         </texture>
     </Material>
@@ -114,5 +60,5 @@
 <NETWORKING/>
 <RIGID_BODY/>
 <TERRAIN>
-    <Tessellation__Range x="100" y="300"/>
+    <Tessellation__Range x="90" y="500"/>
 </TERRAIN>

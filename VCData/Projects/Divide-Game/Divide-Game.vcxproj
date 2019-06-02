@@ -109,6 +109,7 @@
     <ClCompile Include="..\..\..\Source Code\Environment\Terrain\Quadtree\Quadtree.cpp" />
     <ClCompile Include="..\..\..\Source Code\Environment\Terrain\Quadtree\QuadtreeNode.cpp" />
     <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TerrainChunk.cpp" />
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TerrainDescriptor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/AI\ActionInterface\Headers\AIProcessor.h" />

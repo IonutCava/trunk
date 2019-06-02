@@ -3,9 +3,6 @@
 
 #include "nodeBufferedInput.cmn"
 
-uniform float projectedTextureMixWeight;
-
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 
 #define PRECISION 0.000001
 
@@ -34,6 +31,9 @@ float overlay(float x, float y)
 }
 
 #if defined(PROJECTED_TEXTURE)
+
+uniform float projectedTextureMixWeight;
+
 layout(binding = TEXTURE_PROJECTION) uniform sampler2D texDiffuseProjected;
 
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
@@ -124,17 +124,18 @@ vec3  ToSRGB(vec3 v)  { return pow(v, invGammaVec); }
 vec4  ToSRGB(vec4 v)  { return vec4(pow(v.rgb, invGammaVec), v.a);}
 
 
-vec3 unpackNormal(vec2 packedNormal)
+vec3 unpackNormal(vec2 enc)
 {
-    vec3 normal;
-    normal.xy = packedNormal.xy * (255.0f / 128.0f) - 1.0f;
-    normal.z = sqrt(1.0f - normal.x*normal.x - normal.y * normal.y);
-    return normal;
+    vec2 fenc = enc * 4 - 2;
+    float f = dot(fenc, fenc);
+    float g = sqrt(1 - f * 0.25f);
+    return vec3(fenc * g, 1 - f * 0.5f);
 }
 
-vec2 packNormal(vec3 normal)
+vec2 packNormal(vec3 n)
 {
-    return vec2(normal.xy * 0.5f + 0.5f);
+    float f = sqrt(8 * n.z + 8);
+    return n.xy / f + 0.5f;
 }
 
 float Gloss(vec3 bump)
@@ -163,6 +164,9 @@ vec2 getScreenPositionNormalised() {
     return gl_FragCoord.xy * dvd_invScreenDimensions();
 }
 
+#if defined(NEED_DEPTH_TEXTURE)
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
+
 float private_depth = -1.0;
 float getDepthValue(vec2 screenNormalisedPos) {
     if (private_depth < 0.0) {
@@ -171,5 +175,21 @@ float getDepthValue(vec2 screenNormalisedPos) {
 
     return private_depth;
 }
+#endif
 
+
+vec4 positionFromDepth(in float depth,
+                       in mat4 invProjectionMatrix,
+                       in vec2 uv) {
+
+    vec4 pos = vec4(2.0f * uv.x - 1.0f,
+        2.0f * uv.y - 1.0f,
+        2.0f * depth - 1.0f,
+        1.0f);
+
+    pos = invProjectionMatrix * pos;
+    pos /= pos.w;
+
+    return pos;
+}
 #endif //_UTILITY_FRAG_

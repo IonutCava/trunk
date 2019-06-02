@@ -8,6 +8,7 @@ See "license.txt" or "http://copyfree.org/licenses/mit/license.txt".
 *******************************************************************************/
 /*And: https://github.com/McNopper/OpenGL/blob/master/Example28/shader/ssao.frag.glsl */
 
+#define NEED_DEPTH_TEXTURE
 #include "utility.frag"
 
 uniform vec3 sampleKernel[KERNEL_SIZE];
@@ -20,7 +21,6 @@ uniform vec2 noiseScale;
 
 // Input screen texture
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texNoise;
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepth;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormal;
 
 out float _ssaoOut;

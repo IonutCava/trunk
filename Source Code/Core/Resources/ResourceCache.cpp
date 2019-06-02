@@ -49,8 +49,12 @@ void DeleteResource::operator()(CachedResource* res) {
 
     _context.remove(res);
 
-    if (res && res->getType() != ResourceType::GPU_OBJECT) {
-        MemoryManager::DELETE(res);
+    if (res) {
+        if (res->getType() != ResourceType::GPU_OBJECT) {
+            MemoryManager::DELETE(res);
+        } else {
+            //?
+        }
     }
 }
 

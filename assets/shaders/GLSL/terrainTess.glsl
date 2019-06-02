@@ -294,14 +294,14 @@ void main()
 
 #if !defined(SHADOW_PASS)
     waterDetails();
-#if defined(TOGGLE_WIREFRAME)
-    if (tes_tessLevel >= 64.0) {
+#if !defined(TOGGLE_WIREFRAME)
+    if (tcs_tessLevel[0] >= 64.0) {
         LoD = 0;
-    } else if (tes_tessLevel >= 32.0) {
+    } else if (tcs_tessLevel[0] >= 32.0) {
         LoD = 1;
-    } else if (tes_tessLevel >= 16.0) {
+    } else if (tcs_tessLevel[0] >= 16.0) {
         LoD = 2;
-    } else if (tes_tessLevel >= 8.0) {
+    } else if (tcs_tessLevel[0] >= 8.0) {
         LoD = 3;
     } else {
         LoD = 4;
@@ -385,7 +385,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
         gs_wireColor = vec3(1.0, 0.0, 0.0);
         LoD = 2;
     } else if (tes_tessLevel[0] >= 8.0) {
-        gs_wireColor = vec3(0.25, 0.50, 0.75);
+        gs_wireColor = vec3(0.25, 1.00, 1.0);
         LoD = 3;
     } else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
@@ -465,13 +465,9 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 
 #include "terrainSplatting.frag"
 
-layout(binding = TEXTURE_SPECULAR)  uniform sampler2D texUnderwaterDetail;
+layout(binding = TEXTURE_UNIT1)  uniform sampler2DArray underwaterTextures;
 
 #if !defined(PRE_PASS)
-layout(binding = TEXTURE_UNIT0)     uniform sampler2D texWaterCaustics;
-layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
-layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
-
 // ToDo: Move this above the includes
 #if defined(LOW_QUALITY)
 #if defined(MAX_TEXTURE_LAYERS)
@@ -483,37 +479,29 @@ layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 vec4 UnderwaterAlbedo(in vec2 uv) {
     vec2 coords = uv * UNDERWATER_TILE_SCALE;
 #if defined(LOW_QUALITY)
-    return texture(texUnderwaterAlbedo, coords);
+    return texture(underwaterTextures, vec3(coords, 1));
 #else
     float time2 = float(dvd_time) * 0.0001f;
     vec4 scrollingUV = vec4(coords, coords + time2);
     scrollingUV.s -= time2;
 
-    return mix((texture(texWaterCaustics, scrollingUV.st) + texture(texWaterCaustics, scrollingUV.pq)) * 0.5f,
-                texture(texUnderwaterAlbedo, coords),
+    return mix((texture(underwaterTextures, vec3(scrollingUV.st, 0)) + texture(underwaterTextures, vec3(scrollingUV.pq, 0))) * 0.5f,
+                texture(underwaterTextures, vec3(coords, 1)),
                 _waterDetails.y);
 #endif
 }
 
-#endif
+#else
 
 vec3 UnderwaterNormal(in vec2 uv) {
 #if defined(LOW_QUALITY)
     return VAR._normalWV;
 #else
-    return normalize(2.0f * texture(texUnderwaterDetail, uv * UNDERWATER_TILE_SCALE).rgb - 1.0f);
+    return VAR._tbn * normalize(2.0f * texture(underwaterTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f);
 #endif
 }
 
-#if !defined(PRE_PASS)
-vec3 getNormalInternal(in vec2 uv) {
-#if defined(LOW_QUALITY)
-    return getNormal(uv);
-#else
-    return normalize(VAR._tbn * getNormal(uv));
 #endif
-}
-#endif //PRE_PASS
 
 void main(void)
 {
@@ -526,7 +514,7 @@ void main(void)
 
     vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 colourOut = getPixelColour(albedo, colourMatrix, getNormalInternal(uv), uv);
+    vec4 colourOut = getPixelColour(albedo, colourMatrix, getNormal(uv), uv);
 
 #if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75f;

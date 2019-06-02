@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<varlist name="Spring Greenworld (FA)">
+	<string name="FileVer">2.2</string>
+	<string name="AuthorName">Forboding Angel</string>
+	<colour name="DisplayCol">0, 255, 0</colour>
+	<varlist name="GlobalParams">
+		<float name="Grad">1</float>
+		<float name="Curv">1</float>
+		<float name="Water">1</float>
+		<float name="Salin">1</float>
+	</varlist>
+	<varlist name="RandOffset">
+		<int name="x">34</int>
+		<int name="y">7843784</int>
+	</varlist>
+	<varlist name="MaterialDependencies">
+		<varlist>
+			<string name="MaterialName">Spring Greenworld (FA)_Grass</string>
+			<string name="MaterialFile">Spring Greenworld (FA)\Spring Greenworld (FA)_Grass.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Spring Greenworld (FA)_Steep Grass</string>
+			<string name="MaterialFile">Spring Greenworld (FA)\Spring Greenworld (FA)_Steep Grass.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Spring Greenworld (FA)_Rock Slope</string>
+			<string name="MaterialFile">Spring Greenworld (FA)\Spring Greenworld (FA)_Rock Slope.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Spring Greenworld (FA)_Cliff Face</string>
+			<string name="MaterialFile">Spring Greenworld (FA)\Spring Greenworld (FA)_Cliff Face.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Spring Greenworld (FA)_Beach sand</string>
+			<string name="MaterialFile">Spring Greenworld (FA)\Spring Greenworld (FA)_Beach sand.mat.xml</string>
+		</varlist>
+	</varlist>
+	<varlist name="LandTypeList">
+		<varlist name="Grass">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">0, 128, 0</colour>
+			<varlist name="Params">
+				<float name="BaseProb">1</float>
+				<bool name="MinAltFlag">true</bool>
+				<float name="MinAlt1">0</float>
+				<float name="MinAlt2">0</float>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Spring Greenworld (FA)_Grass</string>
+		</varlist>
+		<varlist name="Steep Grass">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">68, 170, 0</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.95</float>
+				<float name="Grad">0.2</float>
+				<bool name="MinAltFlag">true</bool>
+				<float name="MinAlt1">0</float>
+				<float name="MinAlt2">0</float>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Spring Greenworld (FA)_Steep Grass</string>
+		</varlist>
+		<varlist name="Rock Slope">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">128, 128, 128</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.8</float>
+				<float name="Grad">0.48</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">4</int>
+			<string name="MaterialName">Spring Greenworld (FA)_Rock Slope</string>
+		</varlist>
+		<varlist name="Cliff Face">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">0, 0, 0</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.6</float>
+				<float name="Grad">0.8</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">1</int>
+			<string name="MaterialName">Spring Greenworld (FA)_Cliff Face</string>
+		</varlist>
+		<varlist name="Beach sand">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">244, 242, 142</colour>
+			<varlist name="Params">
+				<float name="BaseProb">1.1</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">true</bool>
+				<float name="MaxAlt1">10</float>
+				<float name="MaxAlt2">20</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Spring Greenworld (FA)_Beach sand</string>
+		</varlist>
+	</varlist>
+</varlist>

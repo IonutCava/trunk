@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<varlist name="Demo-grass-rock-sand">
+	<string name="FileVer">2.2</string>
+	<string name="AuthorName">Aaron Torpy</string>
+	<colour name="DisplayCol">106, 213, 0</colour>
+	<varlist name="GlobalParams">
+		<float name="Grad">1.000000</float>
+		<float name="Curv">1.000000</float>
+		<float name="Water">1.000000</float>
+		<float name="Salin">1.000000</float>
+	</varlist>
+	<varlist name="RandOffset">
+		<int name="x">7784</int>
+		<int name="y">2394</int>
+	</varlist>
+	<varlist name="MaterialDependencies">
+		<varlist>
+			<string name="MaterialName">std_grass</string>
+			<string name="MaterialFile">common\grass\std_grass.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_cliffs</string>
+			<string name="MaterialFile">common\rock\std_cliffs.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_sand_yellow</string>
+			<string name="MaterialFile">common\sand\std_sand_yellow.mat.xml</string>
+		</varlist>
+	</varlist>
+	<varlist name="LandTypeList">
+		<varlist name="Grass">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">97, 165, 22</colour>
+			<varlist name="Params">
+				<float name="BaseProb">1.000000</float>
+				<bool name="MinAltFlag">true</bool>
+				<float name="MinAlt1">0</float>
+				<float name="MinAlt2">10.000000</float>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_grass</string>
+		</varlist>
+		<varlist name="Rock">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">106, 88, 68</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.700000</float>
+				<float name="Grad">1.000000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">std_cliffs</string>
+		</varlist>
+		<varlist name="Sand">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">243, 237, 105</colour>
+			<varlist name="Params">
+				<float name="BaseProb">1.100000</float>
+				<float name="Grad">-0.100000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">true</bool>
+				<float name="MaxAlt1">10.000000</float>
+				<float name="MaxAlt2">30.000000</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_sand_yellow</string>
+		</varlist>
+	</varlist>
+	<string name="AuthorsNotes">'Demo-grass-rock-sand' is a really, really simple climate that includes only three land types: grass, rock and sand. If you'd like to learn how to make climates, this climate is a good starting place.</string>
+</varlist>

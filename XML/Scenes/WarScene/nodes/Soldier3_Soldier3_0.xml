@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>guard1_body.png.msh</model>
+<model>Bob.md5mesh-submesh-0</model>
 <ANIMATION/>
 <INVERSE_KINEMATICS/>
 <RAGDOLL/>

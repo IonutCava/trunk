@@ -40,7 +40,12 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
                                            std::cend(resourceLocation),
                                            ',');
 
+    if (texDescriptor->_layerCount < numCommas + 1) {
+        texDescriptor->setLayerCount(to_U32(numCommas + 1));
+    }
+
     if (crtNumCommas < numCommas ) {
+
         if (!resourceLocation.empty()) {
             stringstreamImpl textureLocationList(resourceLocation);
             while (std::getline(textureLocationList, resourceLocation, ',')) {}

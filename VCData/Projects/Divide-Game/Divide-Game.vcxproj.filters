@@ -446,6 +446,9 @@
     <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TerrainChunk.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TerrainDescriptor.cpp">
+      <Filter>Environment\Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/AI\Sensors\Headers\AudioSensor.h">

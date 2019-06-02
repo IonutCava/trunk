@@ -55,6 +55,7 @@ namespace Paths {
     extern stringImpl g_shadersLocation;
     extern stringImpl g_texturesLocation;
     extern stringImpl g_heightmapLocation;
+    extern stringImpl g_climatesLocation;
     extern stringImpl g_imagesLocation;
     extern stringImpl g_materialsLocation;
     extern stringImpl g_soundsLocation;
@@ -138,10 +139,12 @@ bool readFile(const stringImpl& filePath, const stringImpl& fileName, T& content
 bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const bufferPtr content, size_t length, FileType fileType);
 bool deleteFile(const stringImpl& filePath, const stringImpl& fileName);
 bool copyFile(const stringImpl& sourcePath, const stringImpl& sourceName, const stringImpl& targetPath, const stringImpl& targetName, bool overwrite);
+bool findFile(const stringImpl& filePath, const stringImpl& fileName, stringImpl& foundPath);
 
 /// will add '.' automatically at the start of 'extension'
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension);
 
+stringImpl stripQuotes(const stringImpl& input);
 FileWithPath splitPathToNameAndLocation(const stringImpl& input);
 
 bool clearCache();

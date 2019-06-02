@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<varlist name="Tropical">
+	<string name="FileVer">2.2</string>
+	<string name="AuthorName">Aaron Torpy</string>
+	<colour name="DisplayCol">64, 255, 64</colour>
+	<varlist name="GlobalParams">
+		<float name="Grad">1.000000</float>
+		<float name="Curv">1.000000</float>
+		<float name="Water">0.820000</float>
+		<float name="Salin">1.000000</float>
+	</varlist>
+	<varlist name="RandOffset">
+		<int name="x">10899</int>
+		<int name="y">8112</int>
+	</varlist>
+	<varlist name="MaterialDependencies">
+		<varlist>
+			<string name="MaterialName">std_sand_yellow</string>
+			<string name="MaterialFile">common\sand\std_sand_yellow.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_pebbles</string>
+			<string name="MaterialFile">common\ground\std_pebbles.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_cliffs_grey</string>
+			<string name="MaterialFile">common\rock\std_cliffs_grey.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_cliffs</string>
+			<string name="MaterialFile">common\rock\std_cliffs.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_grass</string>
+			<string name="MaterialFile">common\grass\std_grass.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_grass_lush</string>
+			<string name="MaterialFile">common\grass\std_grass_lush.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_cliffs_steep</string>
+			<string name="MaterialFile">common\rock\std_cliffs_steep.mat.xml</string>
+		</varlist>
+	</varlist>
+	<varlist name="LandTypeList">
+		<varlist name="Sand">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">230, 230, 120</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.320000</float>
+				<float name="Water">0.860000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<varlist name="Gen1">
+					<float name="Amp">0.005000</float>
+					<float name="Freq">1.000000</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">3125</int>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_sand_yellow</string>
+		</varlist>
+		<varlist name="Pebbles">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">175, 160, 131</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.270000</float>
+				<float name="Grad">0.200000</float>
+				<float name="Water">0.860000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">std_pebbles</string>
+		</varlist>
+		<varlist name="Pebbles (2)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">175, 161, 131</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.610000</float>
+				<float name="Grad">0.200000</float>
+				<float name="Water">0.450000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">std_pebbles</string>
+		</varlist>
+		<varlist name="Underwater rock">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">120, 121, 120</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.250000</float>
+				<float name="Grad">0.300000</float>
+				<float name="Water">0.860000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<varlist name="Gen1">
+					<float name="Amp">0.010000</float>
+					<float name="Freq">1.000000</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">31577</int>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">std_cliffs_grey</string>
+		</varlist>
+		<varlist name="Coastal rock">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">120, 122, 122</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.550000</float>
+				<float name="Grad">0.400000</float>
+				<float name="Water">0.450000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<varlist name="Gen1">
+					<float name="Amp">0.005000</float>
+					<float name="Freq">1.000000</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<varlist name="Gen2">
+					<float name="Amp">0.005000</float>
+					<float name="Freq">0.250000</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">26447</int>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">std_cliffs</string>
+		</varlist>
+		<varlist name="Grass">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">140, 220, 80</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.860000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="ColMod">
+				<bool name="Enabled">true</bool>
+				<float name="r">0.900000</float>
+				<float name="g">1.050000</float>
+				<float name="b">0.950000</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_grass</string>
+		</varlist>
+		<varlist name="Steep grass">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">140, 220, 70</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.830000</float>
+				<float name="Grad">0.100000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<varlist name="Gen1">
+					<float name="Amp">0.010000</float>
+					<float name="Freq">0.500000</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">12478</int>
+			</varlist>
+			<varlist name="ColMod">
+				<bool name="Enabled">true</bool>
+				<float name="r">0.950000</float>
+				<float name="g">1.000000</float>
+				<float name="b">1.000000</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_grass</string>
+		</varlist>
+		<varlist name="Lush grass">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">120, 230, 80</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.835000</float>
+				<float name="Water">0.200000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="ColMod">
+				<bool name="Enabled">true</bool>
+				<float name="r">0.900000</float>
+				<float name="g">1.100000</float>
+				<float name="b">0.950000</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_grass_lush</string>
+		</varlist>
+		<varlist name="Steep lush grass">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">110, 220, 80</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.810000</float>
+				<float name="Grad">0.100000</float>
+				<float name="Water">0.200000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="ColMod">
+				<bool name="Enabled">true</bool>
+				<float name="r">0.850000</float>
+				<float name="g">1.000000</float>
+				<float name="b">0.900000</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_grass_lush</string>
+		</varlist>
+		<varlist name="Steep lush grass (2)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">110, 225, 80</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.813000</float>
+				<float name="Grad">0.100000</float>
+				<float name="Water">0.190000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_grass_lush</string>
+		</varlist>
+		<varlist name="Cliff face">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">120, 120, 120</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.530000</float>
+				<float name="Grad">0.800000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<varlist name="Gen1">
+					<float name="Amp">0.030000</float>
+					<float name="Freq">1.000000</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">7145</int>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">std_cliffs</string>
+		</varlist>
+		<varlist name="Steep cliffs">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">80, 80, 80</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.300000</float>
+				<float name="Grad">1.000000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">std_cliffs_steep</string>
+		</varlist>
+	</varlist>
+	<string name="AuthorsNotes">This climate is similar to 'Temperate', but is a bit greener, and  has bump-mapping enabled on the grass land types. <br/><br/>For best results, use light map and texture resolutions of 4x or greater. </string>
+</varlist>

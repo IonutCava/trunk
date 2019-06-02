@@ -103,28 +103,11 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
         [this](const void* data) {
             vec2<F32> newTess = *(vec2<F32>*)data;
-            _descriptor->setTessellationRange(vec3<F32>(newTess, _descriptor->getTessellationRange().z));
+            _descriptor->setTessellationRange(vec4<F32>(newTess, _descriptor->getTessellationRange().z, _descriptor->getTessellationRange().w));
         },
         EditorComponentFieldType::PUSH_TYPE,
         false,
         GFX::PushConstantType::VEC2);
-
-    TerrainTextureLayer* textureLayers = _terrainTextures;
-    for (U8 i = 0; i < textureLayers->layerCount(); ++i) {
-        _editorComponent.registerField(
-            Util::StringFormat("Tile Scale %d [R G B A]", i),
-            [this, i](void* dataOut) {
-                std::memcpy(dataOut, _terrainTextures->getTileScales(i), 4 * sizeof(F32));
-            },
-            [this, i](const void* data) {
-                vec4<F32> newScales = *(vec4<F32>*)data;
-                _terrainTextures->setTileScales(i, newScales);
-            },
-            EditorComponentFieldType::PUSH_TYPE,
-            false,
-            GFX::PushConstantType::VEC4);
-    }
-    
 
     SceneNode::postLoad(sgn);
 }
@@ -217,7 +200,6 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
         constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
-        constants.set("tileScale", GFX::PushConstantType::VEC4, _terrainTextures->getTileScales());
         pkg.pushConstants(0, constants);
     }
 
@@ -234,7 +216,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
         if (update)
         {
-            tessellator->createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions());
+            tessellator->createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions(), _descriptor->getTessellationRange().w);
             U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
 
             bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(depth, LoD);
@@ -280,7 +262,6 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, tesRange);
-    pushConstantsCommand._constants.set("tileScale", GFX::PushConstantType::VEC4, _terrainTextures->getTileScales());
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
@@ -437,100 +418,12 @@ vec2<F32> Terrain::getAltitudeRange() const {
 
 void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
 
-    pt.put("heightmapLocation", _descriptor->getVariable("heightmapLocation"));
-    pt.put("heightmap", _descriptor->getVariable("heightmap"));
-    pt.put("is16Bit", _descriptor->is16Bit());
-    pt.put("terrainWidth", _descriptor->getDimensions().width);
-    pt.put("terrainHeight", _descriptor->getDimensions().height);
-    pt.put("altitudeRange.<xmlattr>.min", _descriptor->getAltitudeRange().min);
-    pt.put("altitudeRange.<xmlattr>.max", _descriptor->getAltitudeRange().max);
-    pt.put("tessellationRange.<xmlattr>.min", _descriptor->getTessellationRange().x);
-    pt.put("tessellationRange.<xmlattr>.max", _descriptor->getTessellationRange().y);
-    pt.put("tessellationRange.<xmlattr>.chunkSize", _descriptor->getTessellationRange().z);
-    pt.put("textureLocation", _descriptor->getVariable("textureLocation"));
-    pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
+    pt.put("descriptor", _descriptor->getVariable("descriptor"));
     pt.put("wireframeDebugMode", _descriptor->wireframeDebug());
+    pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
     pt.put("underwaterDetailTexture", _descriptor->getVariable("underwaterDetailTexture"));
     pt.put("underwaterTileScale", _descriptor->getVariablef("underwaterTileScale"));
-    pt.put("vegetation.vegetationTextureLocation", _descriptor->getVariable("vegetationTextureLocation"));
-    pt.put("vegetation.grassMap", _descriptor->getVariable("grassMap"));
-    if (!_descriptor->getVariable("grassBillboard1").empty()) {
-        pt.put("vegetation.grassBillboard1", _descriptor->getVariable("grassBillboard1"));
-        pt.put("vegetation.grassBillboard1.<xmlattr>.scale", _descriptor->getVariablef("grassScale1"));
-    }
-    if (!_descriptor->getVariable("grassBillboard2").empty()) {
-        pt.put("vegetation.grassBillboard2", _descriptor->getVariable("grassBillboard2"));
-        pt.put("vegetation.grassBillboard2.<xmlattr>.scale", _descriptor->getVariablef("grassScale2"));
-    }
-    if (!_descriptor->getVariable("grassBillboard3").empty()) {
-        pt.put("vegetation.grassBillboard3", _descriptor->getVariable("grassBillboard3"));
-        pt.put("vegetation.grassBillboard3.<xmlattr>.scale", _descriptor->getVariablef("grassScale3"));
-    }
-    if (!_descriptor->getVariable("grassBillboard4").empty()) {
-        pt.put("vegetation.grassBillboard4", _descriptor->getVariable("grassBillboard4"));
-        pt.put("vegetation.grassBillboard4.<xmlattr>.scale", _descriptor->getVariablef("grassScale4"));
-    }
-    pt.put("vegetation.treeMap", _descriptor->getVariable("treeMap"));
-
-    for (I32 i = 1; i < 5; ++i) {
-        if (!_descriptor->getVariable(Util::StringFormat("treeMesh%d", i)).empty()) {
-            pt.put(Util::StringFormat("treeMesh%d", i), _descriptor->getVariable(Util::StringFormat("treeMesh%d", i)));
-            pt.put(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.scale", i), _descriptor->getVariablef(Util::StringFormat("treeScale%d", i)));
-            pt.put(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_x", i), _descriptor->getVariablef(Util::StringFormat("treeRotationX%d", i)));
-            pt.put(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_y", i), _descriptor->getVariablef(Util::StringFormat("treeRotationY%d", i)));
-            pt.put(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_z", i), _descriptor->getVariablef(Util::StringFormat("treeRotationZ%d", i)));
-        }
-    }
-
-    U8 prevAlbedoCount = 0u;
-    U8 prevDetailCount = 0u;
-
-    const stringImpl layerPrefix = "textureLayers.layer";
-    for (U8 layer = 0; layer < _terrainTextures->layerCount(); ++layer) {
-        stringImpl crtLayerPrefix = layerPrefix + to_stringImpl(layer);
-        pt.put(crtLayerPrefix + ".blendMap", _terrainTextures->blendMaps()->getDescriptor().sourceFileList()[layer]);
-
-        U8 albedoCount = _terrainTextures->albedoCountPerLayer(layer);
-        U8 detailCount = _terrainTextures->detailCountPerLayer(layer);
-
-        if (albedoCount > 0) {
-            //R
-            pt.put(crtLayerPrefix + ".redAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[0 + prevAlbedoCount]);
-            if (detailCount > 0) {
-                pt.put(crtLayerPrefix + ".redDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[0 + prevDetailCount]);
-            }
-            pt.put(crtLayerPrefix + ".redTileScale", _terrainTextures->getTileScales()[layer].r);
-            if (albedoCount > 1) {
-                //G
-                pt.put(crtLayerPrefix + ".greenAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[1 + prevAlbedoCount]);
-                if (detailCount > 1) {
-                    pt.put(crtLayerPrefix + ".greenDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[1 + prevDetailCount]);
-                }
-                pt.put(crtLayerPrefix + ".greenTileScale", _terrainTextures->getTileScales()[layer].g);
-                if (albedoCount > 2) {
-                    //B
-                    pt.put(crtLayerPrefix + ".blueAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[2 + prevAlbedoCount]);
-                    if (detailCount > 2) {
-                        pt.put(crtLayerPrefix + ".blueDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[2 + prevDetailCount]);
-                    }
-                    pt.put(crtLayerPrefix + ".blueTileScale", _terrainTextures->getTileScales()[layer].b);
-                    if (albedoCount > 3) {
-                        //A
-                        pt.put(crtLayerPrefix + ".alphaAlbedo", _terrainTextures->tileMaps()->getDescriptor().sourceFileList()[3 + prevAlbedoCount]);
-                        if (detailCount > 3) {
-                            pt.put(crtLayerPrefix + ".alphaDetail", _terrainTextures->normalMaps()->getDescriptor().sourceFileList()[3 + prevDetailCount]);
-                        }
-                        pt.put(crtLayerPrefix + ".alphaTileScale", _terrainTextures->getTileScales()[layer].a);
-                    }
-                }
-            }
-        }
-
-        prevAlbedoCount = albedoCount;
-        prevDetailCount = detailCount;
-    }
-
     Object3D::saveToXML(pt);
 }
 

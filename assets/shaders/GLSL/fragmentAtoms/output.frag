@@ -1,8 +1,6 @@
 #ifndef _OUTPUT_FRAG_
 #define _OUTPUT_FRAG_
 
-#include "velocityCalc.frag"
-
 #if defined(OIT_PASS)
 #define uDepthScale 0.5f
 

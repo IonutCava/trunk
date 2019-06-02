@@ -67,32 +67,35 @@ const RTDrawDescriptor& RenderTarget::defaultPolicyNoClear() {
 RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)
     : GraphicsResource(context, GraphicsResource::Type::RENDER_TARGET, getGUID(), _ID(descriptor._name.c_str())),
      _descriptor(descriptor),
-     _created(false)
+     _colourAttachmentCount(0)
 {
     if (Config::Profile::USE_2x2_TEXTURES) {
         _descriptor._resolution.set(2u);
     }
 
-    U8 colourAttachmentCount = 0;
     for (U8 i = 0; i < descriptor._attachmentCount; ++i) {
         if (descriptor._attachments[i]._type == RTAttachmentType::Colour) {
-            ++colourAttachmentCount;
+            ++_colourAttachmentCount;
         }
     }
     for (U8 i = 0; i < descriptor._externalAttachmentCount; ++i) {
         if (descriptor._externalAttachments[i]._type == RTAttachmentType::Colour) {
-            ++colourAttachmentCount;
+            ++_colourAttachmentCount;
         }
     }
 
-    _attachmentPool = std::make_unique<RTAttachmentPool>(*this, colourAttachmentCount);
+}
 
+RenderTarget::~RenderTarget()
+{
+    destroy();
 }
 
 bool RenderTarget::create() {
-    if (_created) {
+    if (_attachmentPool != nullptr) {
         return false;
     }
+    _attachmentPool = std::make_unique<RTAttachmentPool>(*this, _colourAttachmentCount);
 
     for (U8 i = 0; i < _descriptor._attachmentCount; ++i) {
         _attachmentPool->update(_descriptor._attachments[i]);
@@ -101,12 +104,13 @@ bool RenderTarget::create() {
         _attachmentPool->update(_descriptor._externalAttachments[i]);
     }
 
-    _created = true;
     return true;
 }
 
-RenderTarget::~RenderTarget()
-{
+void RenderTarget::destroy() {
+    if (_attachmentPool != nullptr) {
+        _attachmentPool.reset();
+    }
 }
 
 bool RenderTarget::hasAttachment(RTAttachmentType type, U8 index) const {

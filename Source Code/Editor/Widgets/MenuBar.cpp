@@ -231,7 +231,7 @@ void MenuBar::drawToolsMenu() {
                     ImGui::MenuItem(UsageToString(usage));
                 } else {
                     if (ImGui::BeginMenu(UsageToString(usage))) {
-                        for (const RenderTarget* rt : rTargets) {
+                        for (const std::shared_ptr<RenderTarget>& rt : rTargets) {
                             if (rt != nullptr && ImGui::BeginMenu(rt->name().c_str())) {
                                 for (U8 j = 0; j < to_U8(RTAttachmentType::COUNT); ++j) {
                                     RTAttachmentType type = static_cast<RTAttachmentType>(j);

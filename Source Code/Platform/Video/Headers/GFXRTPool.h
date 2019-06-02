@@ -40,7 +40,7 @@ namespace Divide {
 
 class GFXRTPool {
 protected:
-    typedef vector<RenderTarget*> TargetsPerUsage;
+    typedef vector<std::shared_ptr<RenderTarget>> TargetsPerUsage;
     typedef std::array<TargetsPerUsage, to_base(RenderTargetUsage::COUNT)> RenderTargets;
 
 protected:
@@ -50,11 +50,11 @@ protected:
 
     void resizeTargets(RenderTargetUsage target, U16 width, U16 height);
     void clear();
-    void set(RenderTargetID target, RenderTarget* newTarget);
-    RenderTargetHandle add(RenderTargetUsage targetUsage, RenderTarget* newTarget);
+    void set(RenderTargetID target, const std::shared_ptr<RenderTarget>& newTarget);
+    RenderTargetHandle add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget);
     bool remove(RenderTargetHandle& handle);
 
-    inline void set(const RenderTargetHandle& handle, RenderTarget* newTarget) {
+    inline void set(const RenderTargetHandle& handle, const std::shared_ptr<RenderTarget>& newTarget) {
         set(handle._targetID, newTarget);
     }
 
@@ -77,11 +77,11 @@ public:
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
-    inline vector<RenderTarget*>& renderTargets(RenderTargetUsage target) {
+    inline vector<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) {
         return _renderTargets[to_U32(target)];
     }
 
-    inline const vector<RenderTarget*>& renderTargets(RenderTargetUsage target) const {
+    inline const vector<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const {
         return _renderTargets[to_U32(target)];
     }
 

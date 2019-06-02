@@ -104,6 +104,23 @@ namespace GFX {
         PushConstant(const eastl::string& binding,
                      U64 bindingHash,
                      PushConstantType type,
+                     const vector<T>& values,
+                     bool flag = false)
+            : _binding(binding),
+              _bindingHash(bindingHash),
+              _type(type),
+              _flag(flag)
+        {
+            if (!values.empty()) {
+                _buffer.resize(values.size() * (sizeof(T)));
+                std::memcpy(_buffer.data(), values.data(), _buffer.size());
+            }
+        }
+
+        template<typename T>
+        PushConstant(const eastl::string& binding,
+                     U64 bindingHash,
+                     PushConstantType type,
                      const vectorEASTL<T>& values,
                      bool flag = false)
             : _binding(binding),

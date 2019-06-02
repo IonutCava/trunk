@@ -124,22 +124,6 @@ void setClipPlanes(in vec4 worldSpaceVertex) {
 }
 #endif
 
-
-vec4 positionFromDepth(in float depth,
-    in mat4 invProjectionMatrix,
-    in vec2 uv) {
-
-    vec4 pos = vec4(2.0f * uv.x - 1.0f,
-        2.0f * uv.y - 1.0f,
-        2.0f * depth - 1.0f,
-        1.0f);
-
-    pos = invProjectionMatrix * pos;
-    pos /= pos.w;
-
-    return pos;
-}
-
 vec3 UNPACK_FLOAT(in float value) {
     return (fract(vec3(1.0f, 256.0f, 65536.0f) * value) * 2.0f) - 1.0f;
 }

@@ -97,7 +97,7 @@ public:
     ~TerrainTessellator();
 
     // Builds a terrain quadtree based on specified parameters and current camera position.
-    void createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
+    void createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions, const F32 patchSizeInMetres);
 
     // Prepare data to draw the terrain. Returns the final render depth
     bufferPtr updateAndGetRenderData(U16& renderDepth, U8 LoD);

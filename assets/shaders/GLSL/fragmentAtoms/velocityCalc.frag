@@ -3,12 +3,10 @@
 
 layout(binding = TEXTURE_DEPTH_MAP_PREV) uniform sampler2D texDepthMapPrev;
 
-vec2 velocityCalc(mat4 invProj, vec2 screenNormalisedPos) {
-    float crtDepth = getDepthValue(screenNormalisedPos);
-
+vec2 velocityCalc(float crtDepth, mat4 invProj, vec2 screenNormalisedPos) {
     float prevDepth = textureLod(texDepthMapPrev, screenNormalisedPos, 0).r;
 
-    vec4 crtPos = positionFromDepth(crtDepth, invProj, screenNormalisedPos);
+    vec4 crtPos  = positionFromDepth(crtDepth, invProj, screenNormalisedPos);
     vec4 prevPos = positionFromDepth(prevDepth, invProj, screenNormalisedPos);
 
     vec4 velocity = (crtPos - prevPos) * 0.5f;

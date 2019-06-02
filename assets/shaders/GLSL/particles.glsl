@@ -39,6 +39,7 @@ void main(){
 
 -- Fragment
 
+#define NEED_DEPTH_TEXTURE
 #include "utility.frag"
 #include "output.frag"
 

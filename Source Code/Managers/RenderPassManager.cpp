@@ -522,18 +522,22 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
         const bool hasLightingTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA));
-   
+
         if (params._stage != RenderStage::SHADOW) {
             GFX::ResolveRenderTargetCommand resolveCmd = { };
             resolveCmd._source = params._target;
             resolveCmd._resolveDepth = true;
             GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
-            GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-            // Bind the depth buffers
-            TextureData depthBufferTextureData = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-            bindDescriptorSets._set._textureData.setTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
-            GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+            if (prePassExecuted && params._targetHIZ._usage != RenderTargetUsage::COUNT) {
+                // Bind the depth buffers
+                const RenderTarget& renderTarget = _context.renderTargetPool().renderTarget(params._targetHIZ);
+                const Texture_ptr& HiZTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
+
+                GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
+                bindDescriptorSets._set._textureData.setTexture(HiZTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+                GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+            }
         }
 
         Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, params._target, bufferInOut);
@@ -544,7 +548,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
             // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
             RTDrawDescriptor drawPolicy =  params._drawPolicy ? *params._drawPolicy
-                                                               : RenderTarget::defaultPolicyNoClear();
+                                                              : RenderTarget::defaultPolicyNoClear();
 
             drawPolicy.enableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
             drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<varlist name="Spring Desertworld (FA)">
+	<string name="FileVer">2.2</string>
+	<string name="AuthorName">Ben Woods (Forboding Angel)</string>
+	<colour name="DisplayCol">254, 231, 139</colour>
+	<varlist name="GlobalParams">
+		<float name="Grad">1.000000</float>
+		<float name="Curv">1.000000</float>
+		<float name="Water">1.000000</float>
+		<float name="Salin">1.000000</float>
+	</varlist>
+	<varlist name="RandOffset">
+		<int name="x">43444</int>
+		<int name="y">3473</int>
+	</varlist>
+	<varlist name="MaterialDependencies">
+		<varlist>
+			<string name="MaterialName">Spring Desertworld (FA)_Dirty sand</string>
+			<string name="MaterialFile">Spring Desertworld (FA)\Spring Desertworld (FA)_Dirty sand.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Spring Desertworld (FA)_Rough sand</string>
+			<string name="MaterialFile">Spring Desertworld (FA)\Spring Desertworld (FA)_Rough sand.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Spring Desertworld (FA)_Redsand slope</string>
+			<string name="MaterialFile">Spring Desertworld (FA)\Spring Desertworld (FA)_Redsand slope.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Spring Desertworld (FA)_Cliff face</string>
+			<string name="MaterialFile">Spring Desertworld (FA)\Spring Desertworld (FA)_Cliff face.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Spring Desertworld (FA)_Beach sand</string>
+			<string name="MaterialFile">Spring Desertworld (FA)\Spring Desertworld (FA)_Beach sand.mat.xml</string>
+		</varlist>
+	</varlist>
+	<varlist name="LandTypeList">
+		<varlist name="Dirty sand">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">249, 208, 113</colour>
+			<varlist name="Params">
+				<float name="BaseProb">1.000000</float>
+				<bool name="MinAltFlag">true</bool>
+				<float name="MinAlt1">0</float>
+				<float name="MinAlt2">0</float>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Spring Desertworld (FA)_Dirty sand</string>
+		</varlist>
+		<varlist name="Rough sand">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">224, 134, 12</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.950000</float>
+				<float name="Grad">0.200000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="ColMod">
+				<bool name="Enabled">true</bool>
+				<float name="r">1.000000</float>
+				<float name="g">0.980000</float>
+				<float name="b">0.980000</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Spring Desertworld (FA)_Rough sand</string>
+		</varlist>
+		<varlist name="Redsand slope">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">255, 77, 0</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.800000</float>
+				<float name="Grad">0.480000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">4</int>
+			<string name="MaterialName">Spring Desertworld (FA)_Redsand slope</string>
+		</varlist>
+		<varlist name="Cliff face">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">0, 0, 0</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.600000</float>
+				<float name="Grad">0.800000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">1</int>
+			<string name="MaterialName">Spring Desertworld (FA)_Cliff face</string>
+		</varlist>
+		<varlist name="Beach sand">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">254, 238, 148</colour>
+			<varlist name="Params">
+				<float name="BaseProb">1.100000</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">true</bool>
+				<float name="MaxAlt1">10.000000</float>
+				<float name="MaxAlt2">20.000000</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Spring Desertworld (FA)_Beach sand</string>
+		</varlist>
+	</varlist>
+	<string name="AuthorsNotes">Copied from 'Greenworld'</string>
+</varlist>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<varlist name="MaterialInfo">
+	<string name="FileVer">1.0</string>
+	<string name="MaterialName">std_cliffs</string>
+	<varlist name="ColMod">
+		<bool name="Enabled">false</bool>
+		<float name="r">1</float>
+		<float name="g">1</float>
+		<float name="b">1</float>
+	</varlist>
+	<varlist name="Strata">
+		<bool name="Enabled">false</bool>
+		<string name="FileName"></string>
+		<float name="VertScale">1</float>
+		<float name="Strength">1</float>
+	</varlist>
+	<varlist name="SpecLM">
+		<float name="Strength">0.3</float>
+	</varlist>
+	<varlist name="BumpMap">
+		<bool name="Enabled">true</bool>
+		<float name="Strength">0.4</float>
+	</varlist>
+	<varlist name="Splat">
+		<bool name="AutoBase">true</bool>
+		<bool name="AutoNormal">true</bool>
+		<string name="DetailFile">common\rock\rock1_t3d_detail.jpg</string>
+	</varlist>
+	<varlist name="TextureLayers">
+		<varlist>
+			<int name="LayerRes">1</int>
+			<varlist name="Texture">
+				<string name="FileName">common\rock\rock1b.jpg</string>
+				<float name="Weight">0.5</float>
+				<string name="BlendMode">ADD</string>
+			</varlist>
+			<varlist name="BumpMap">
+				<string name="FileName">common\rock\rock1_bump.jpg</string>
+				<float name="Weight">0.3</float>
+			</varlist>
+			<varlist name="ColMod">
+				<bool name="Enabled">false</bool>
+				<float name="r">1</float>
+				<float name="g">1</float>
+				<float name="b">1</float>
+			</varlist>
+		</varlist>
+		<varlist>
+			<int name="LayerRes">1</int>
+			<bool name="UseTexRes">true</bool>
+			<varlist name="Texture">
+				<string name="FileName">common\rock\rock2b.jpg</string>
+				<float name="Weight">0.5</float>
+				<string name="BlendMode">ADD</string>
+			</varlist>
+			<varlist name="BumpMap">
+				<string name="FileName">common\rock\rock2_bump.jpg</string>
+				<float name="Weight">0.7</float>
+			</varlist>
+			<varlist name="ColMod">
+				<bool name="Enabled">false</bool>
+				<float name="r">1</float>
+				<float name="g">1</float>
+				<float name="b">1</float>
+			</varlist>
+		</varlist>
+	</varlist>
+</varlist>

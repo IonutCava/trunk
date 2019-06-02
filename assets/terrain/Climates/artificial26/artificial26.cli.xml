@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<varlist name="Artificial">
+	<string name="FileVer">2.2</string>
+	<string name="AuthorName">Aaron Torpy</string>
+	<colour name="DisplayCol">254, 0, 255</colour>
+	<varlist name="GlobalParams">
+		<float name="Grad">1.000000</float>
+		<float name="Curv">1.000000</float>
+		<float name="Water">1.000000</float>
+		<float name="Salin">1.000000</float>
+	</varlist>
+	<varlist name="RandOffset">
+		<int name="x">8742</int>
+		<int name="y">23635</int>
+	</varlist>
+	<varlist name="MaterialDependencies">
+		<varlist>
+			<string name="MaterialName">Artificial_Concrete</string>
+			<string name="MaterialFile">artificial26\Artificial_Concrete.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Artificial_Brick</string>
+			<string name="MaterialFile">artificial26\Artificial_Brick.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Artificial_Metal</string>
+			<string name="MaterialFile">artificial26\Artificial_Metal.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Artificial_Asphalt</string>
+			<string name="MaterialFile">artificial26\Artificial_Asphalt.mat.xml</string>
+		</varlist>
+	</varlist>
+	<varlist name="LandTypeList">
+		<varlist name="Concrete">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">192, 192, 192</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">1</int>
+			<string name="MaterialName">Artificial_Concrete</string>
+		</varlist>
+		<varlist name="Brick">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">255, 0, 0</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">1</int>
+			<string name="MaterialName">Artificial_Brick</string>
+		</varlist>
+		<varlist name="Metal">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">128, 128, 128</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">1</int>
+			<string name="MaterialName">Artificial_Metal</string>
+		</varlist>
+		<varlist name="Asphalt">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">0, 0, 0</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">1</int>
+			<string name="MaterialName">Artificial_Asphalt</string>
+		</varlist>
+	</varlist>
+</varlist>

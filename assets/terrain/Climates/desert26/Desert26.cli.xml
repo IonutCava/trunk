@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<varlist name="Desert">
+	<string name="FileVer">2.2</string>
+	<string name="AuthorName">Aaron Torpy</string>
+	<colour name="DisplayCol">254, 191, 1</colour>
+	<varlist name="GlobalParams">
+		<float name="Grad">1</float>
+		<float name="Curv">1</float>
+		<float name="Water">1</float>
+		<float name="Salin">1</float>
+	</varlist>
+	<varlist name="RandOffset">
+		<int name="x">5560</int>
+		<int name="y">9412</int>
+	</varlist>
+	<varlist name="MaterialDependencies">
+		<varlist>
+			<string name="MaterialName">std_sand_yellow</string>
+			<string name="MaterialFile">common\sand\std_sand_yellow.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Desert_Desert sand</string>
+			<string name="MaterialFile">desert26\Desert_Desert sand.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Desert_Deep desert</string>
+			<string name="MaterialFile">desert26\Desert_Deep desert.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Desert_Desert rocks</string>
+			<string name="MaterialFile">desert26\Desert_Desert rocks.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Desert_Cliffs</string>
+			<string name="MaterialFile">desert26\Desert_Cliffs.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Desert_Desert cliffs</string>
+			<string name="MaterialFile">desert26\Desert_Desert cliffs.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Desert_Desert cliffs (2)</string>
+			<string name="MaterialFile">desert26\Desert_Desert cliffs (2).mat.xml</string>
+		</varlist>
+	</varlist>
+	<varlist name="LandTypeList">
+		<varlist name="Beach sand">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">230, 230, 120</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.2</float>
+				<float name="Water">0.6</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<float name="RandAmp">0.01</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_sand_yellow</string>
+		</varlist>
+		<varlist name="Desert sand">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">220, 210, 102</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.72</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<float name="RandAmp">0.005</float>
+				<varlist name="Gen1">
+					<float name="Amp">0.0005</float>
+					<float name="Freq">0.01</float>
+					<int name="nOct">2</int>
+				</varlist>
+				<varlist name="Gen2">
+					<float name="Amp">0.001</float>
+					<float name="Freq">0.0015</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">11064</int>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Desert_Desert sand</string>
+		</varlist>
+		<varlist name="Desert sand (2)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">220, 210, 100</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.9</float>
+				<float name="Grad">-0.2</float>
+				<float name="Water">-0.4</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<float name="RandAmp">0.005</float>
+				<varlist name="Gen1">
+					<float name="Amp">0.0005</float>
+					<float name="Freq">0.01</float>
+					<int name="nOct">2</int>
+				</varlist>
+				<varlist name="Gen2">
+					<float name="Amp">0.001</float>
+					<float name="Freq">0.0015</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">27183</int>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Desert_Desert sand</string>
+		</varlist>
+		<varlist name="Desert sand (3)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">230, 220, 130</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.93</float>
+				<float name="Water">-1</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<float name="RandAmp">0.005</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Desert_Desert sand</string>
+		</varlist>
+		<varlist name="Deep desert">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">236, 230, 149</colour>
+			<varlist name="Params">
+				<float name="BaseProb">1.02</float>
+				<float name="Water">-10</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<float name="RandAmp">0.005</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">Desert_Deep desert</string>
+		</varlist>
+		<varlist name="Desert rocks">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">228, 215, 137</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.7</float>
+				<float name="Grad">0.2</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">4</int>
+			<string name="MaterialName">Desert_Desert rocks</string>
+		</varlist>
+		<varlist name="Desert rocks (2)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">228, 215, 135</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.9</float>
+				<float name="Grad">0.3</float>
+				<float name="Water">-1</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">4</int>
+			<string name="MaterialName">Desert_Desert rocks</string>
+		</varlist>
+		<varlist name="Desert rocks (3)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">226, 207, 129</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.9</float>
+				<float name="Grad">0.5</float>
+				<float name="Curv">0.2</float>
+				<float name="Water">-2</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">4</int>
+			<string name="MaterialName">Desert_Desert rocks</string>
+		</varlist>
+		<varlist name="Cliffs">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">196, 177, 123</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.5</float>
+				<float name="Grad">0.8</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">Desert_Cliffs</string>
+		</varlist>
+		<varlist name="Desert cliffs">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">196, 177, 121</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.8</float>
+				<float name="Grad">0.8</float>
+				<float name="Water">-2</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">Desert_Desert cliffs</string>
+		</varlist>
+		<varlist name="Desert cliffs (2)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">181, 158, 111</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.68</float>
+				<float name="Grad">1</float>
+				<float name="Water">-2</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">Desert_Desert cliffs (2)</string>
+		</varlist>
+	</varlist>
+	<string name="AuthorsNotes">Lots of strata and bump-mapping; works best with high-res light- and texture-maps (4x or greater). </string>
+</varlist>

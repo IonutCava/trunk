@@ -152,9 +152,9 @@ class ImageData : private NonCopyable {
   protected:
     friend class ImageDataInterface;
     /// creates this image instance from the specified data
-    bool create(const stringImpl& fileName);
-    bool loadDDS_IL(const stringImpl& filename);
-    bool loadDDS_NV(const stringImpl& filename);
+    bool create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& fileName);
+    bool loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename);
+    bool loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename);
 
    private:
     //Each entry is a separate mip map.
@@ -184,7 +184,8 @@ class ImageData : private NonCopyable {
 
 class ImageDataInterface {
 public:
-    static void CreateImageData(const stringImpl& filename, ImageData& imgOut);
+    //refWidth/Height = if not 0, we will attempt to resize the texture to the specified dimensions
+    static void CreateImageData(const stringImpl& filename, U16 refWidth, U16 refHeight, bool srgb, ImageData& imgOut);
 protected:
     friend class ImageData;
     /// used to lock image loader in a sequential operating mode in a multithreaded environment

@@ -89,6 +89,11 @@ bool WaterPlane::load() {
     fragModule._sourceFile = "water.glsl";
     fragModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
 
+    if (!_parentCache.context().config().rendering.shadowMapping.enabled) {
+        vertModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+        fragModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+    }
+
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);

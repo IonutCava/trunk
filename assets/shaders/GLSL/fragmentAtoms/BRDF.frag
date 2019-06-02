@@ -28,7 +28,7 @@
 void getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 specular, in vec3 normalWV, inout vec4 lightColour) {
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
-        lightColour += getBRDFFactors(vec4(light._colour.rgb, 1.0f), specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, -light._directionWV.xyz);
+        lightColour += getBRDFFactors(vec4(light._colour.rgb, 1.0f), specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, getLightDirection(light));
     }
 }
 
@@ -43,7 +43,7 @@ void getPointLightContribution(in uint tileIndex, in uint dirLightCount, in vec3
 
         const Light light = dvd_LightSource[lightIdx + dirLightCount];
 
-        const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
+        const vec3 lightDirection = getLightDirection(light);
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationPoint(light, lightDirection));
 
         lightColour += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, lightDirection);
@@ -60,7 +60,7 @@ void getSpotLightContribution(in uint tileIndex, in uint dirLightCount, in uint 
         }
 
         const Light light = dvd_LightSource[lightIdx + dirLightCount];
-        const vec3 lightDirection = light._positionWV.xyz - VAR._vertexWV.xyz;
+        const vec3 lightDirection = getLightDirection(light);
         const vec4 colourAndAtt = vec4(light._colour.rgb, getLightAttenuationSpot(light, lightDirection));
 
         lightColour += getBRDFFactors(colourAndAtt, specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, lightDirection);

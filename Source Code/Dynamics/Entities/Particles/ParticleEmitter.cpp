@@ -106,9 +106,10 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     // Generate a render state
     RenderStateBlock particleRenderState;
     particleRenderState.setCullMode(CullMode::NONE);
+    particleRenderState.setZFunc(ComparisonFunction::EQUAL);
     _particleStateBlockHash = particleRenderState.getHash();
 
-    particleRenderState.setZFunc(ComparisonFunction::LESS);
+    particleRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _particleStateBlockHashDepth = particleRenderState.getHash();
 
     bool useTexture = _particleTexture != nullptr;

@@ -29,6 +29,16 @@ bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const buf
     return false;
 }
 
+stringImpl stripQuotes(const stringImpl& input) {
+    stringImpl ret = input;
+
+    if (!input.empty()) {
+        ret.erase(std::remove(std::begin(ret), std::end(ret), '\"'), std::end(ret));
+    }
+
+    return ret;
+}
+
 FileWithPath splitPathToNameAndLocation(const stringImpl& input) {
     size_t pathNameSplitPoint = input.find_last_of('/') + 1;
     if (pathNameSplitPoint == 0) {
@@ -95,6 +105,25 @@ bool copyFile(const stringImpl& sourcePath, const stringImpl& sourceName, const 
     boost::filesystem::path source(sourcePath + sourceName);
     boost::filesystem::copy_file(source, destination, boost::filesystem::copy_option::overwrite_if_exists);
     return true;
+}
+
+bool findFile(const stringImpl& filePath, const stringImpl& fileName, stringImpl& foundPath) {
+
+    boost::filesystem::path dir_path(filePath);
+    boost::filesystem::path file_name(fileName);
+
+    const boost::filesystem::recursive_directory_iterator end;
+    const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(dir_path), end,
+        [&file_name](const boost::filesystem::directory_entry& e) {
+        return e.path().filename() == file_name;
+    });
+    if (it == end) {
+        return false;
+    }
+    else {
+        foundPath = it->path().string().c_str();
+        return true;
+    }
 }
 
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension) {

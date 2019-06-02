@@ -45,7 +45,7 @@ void outputNoVelocity(in vec2 uv) {
 void outputWithVelocity(in vec2 uv, float alphaFactor) {
     _output(getNormal(uv), alphaFactor, uv);
 #if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    _normalAndVelocityOut.ba = velocityCalc(gl_FragCoord.z, dvd_InvProjectionMatrix, getScreenPositionNormalised());
 #endif
 }
 
@@ -67,7 +67,7 @@ void outputNoVelocity(in vec2 uv, vec3 normal) {
 void outputWithVelocity(in vec2 uv, vec3 normal, float alphaFactor) {
     _output(normal, alphaFactor, uv);
 #if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.ba = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    _normalAndVelocityOut.ba = velocityCalc(gl_FragCoord.z, dvd_InvProjectionMatrix, getScreenPositionNormalised());
 #endif
 }
 

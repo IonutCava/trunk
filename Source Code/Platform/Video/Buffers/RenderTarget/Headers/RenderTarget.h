@@ -140,6 +140,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
 
     /// Init all attachments. Returns false if already called
     virtual bool create();
+    virtual void destroy();
     /// Resize all attachments
     virtual bool resize(U16 width, U16 height) = 0;
 
@@ -163,7 +164,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     const stringImpl& name() const;
 
    protected:
-    bool _created;
+    U8 _colourAttachmentCount = 0;
     RenderTargetDescriptor _descriptor;
     std::unique_ptr<RTAttachmentPool> _attachmentPool;
 };

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<varlist name="Arctic">
+	<string name="FileVer">2.2</string>
+	<string name="AuthorName">Aaron Torpy</string>
+	<colour name="DisplayCol">179, 215, 255</colour>
+	<varlist name="GlobalParams">
+		<float name="Grad">1</float>
+		<float name="Curv">1</float>
+		<float name="Water">1</float>
+		<float name="Salin">1</float>
+	</varlist>
+	<varlist name="RandOffset">
+		<int name="x">1882</int>
+		<int name="y">24557</int>
+	</varlist>
+	<varlist name="MaterialDependencies">
+		<varlist>
+			<string name="MaterialName">std_snow</string>
+			<string name="MaterialFile">common\snow\std_snow.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Arctic_cliffs</string>
+			<string name="MaterialFile">arctic26\Arctic_cliffs.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Arctic_cliffs (2)</string>
+			<string name="MaterialFile">arctic26\Arctic_cliffs (2).mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Arctic_cliffs (3)</string>
+			<string name="MaterialFile">arctic26\Arctic_cliffs (3).mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">std_pebbles</string>
+			<string name="MaterialFile">common\ground\std_pebbles.mat.xml</string>
+		</varlist>
+		<varlist>
+			<string name="MaterialName">Arctic_rock (underwater)</string>
+			<string name="MaterialFile">arctic26\Arctic_rock (underwater).mat.xml</string>
+		</varlist>
+	</varlist>
+	<varlist name="LandTypeList">
+		<varlist name="snow">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">255, 255, 255</colour>
+			<varlist name="Params">
+				<float name="BaseProb">1</float>
+				<float name="Grad">-0.2</float>
+				<float name="Curv">-0.5</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<float name="RandAmp">0.01</float>
+			</varlist>
+			<int name="BlendRadius">-1</int>
+			<string name="MaterialName">std_snow</string>
+		</varlist>
+		<varlist name="cliffs">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">180, 180, 180</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.6</float>
+				<float name="Grad">0.55</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<varlist name="Gen1">
+					<float name="Amp">0.01</float>
+					<float name="Freq">1</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">19492</int>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">Arctic_cliffs</string>
+		</varlist>
+		<varlist name="cliffs (2)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">170, 170, 170</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.55</float>
+				<float name="Grad">0.64</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">Arctic_cliffs (2)</string>
+		</varlist>
+		<varlist name="cliffs (3)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">160, 160, 160</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.5</float>
+				<float name="Grad">0.7</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">Arctic_cliffs (3)</string>
+		</varlist>
+		<varlist name="pebbles">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">175, 160, 130</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.3</float>
+				<float name="Water">0.8</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<varlist name="Gen1">
+					<float name="Amp">0.01</float>
+					<float name="Freq">1</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">8636</int>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">std_pebbles</string>
+		</varlist>
+		<varlist name="rock (u/w)">
+			<bool name="Enabled">true</bool>
+			<colour name="DisplayCol">80, 80, 80</colour>
+			<varlist name="Params">
+				<float name="BaseProb">0.2</float>
+				<float name="Grad">0.5</float>
+				<float name="Water">0.8</float>
+				<bool name="MinAltFlag">false</bool>
+				<bool name="MaxAltFlag">false</bool>
+			</varlist>
+			<varlist name="Noise">
+				<varlist name="Gen1">
+					<float name="Amp">0.01</float>
+					<float name="Freq">1</float>
+					<int name="nOct">1</int>
+				</varlist>
+				<int name="RandKey">15932</int>
+			</varlist>
+			<int name="BlendRadius">2</int>
+			<string name="MaterialName">Arctic_rock (underwater)</string>
+		</varlist>
+	</varlist>
+	<string name="AuthorsNotes">Arctic is a very simple climate with snow, rocky cliffs, and pebble-covered shore-lines.</string>
+</varlist>

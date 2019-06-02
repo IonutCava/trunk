@@ -480,101 +480,10 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), name.c_str());
 
     // Load the rest of the terrain
-    std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((name + "_descriptor").c_str());
-    ter->addVariable("terrainName", name.c_str());
-    ter->addVariable("heightmap", pt.get<stringImpl>("heightmap"));
-    ter->addVariable("heightmapLocation", pt.get<stringImpl>("heightmapLocation", Paths::g_heightmapLocation));
-    ter->addVariable("textureLocation", pt.get<stringImpl>("textureLocation", Paths::g_imagesLocation));
-    ter->addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
-    ter->addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture"));
-    ter->addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture"));
-    ter->addVariable("underwaterTileScale", pt.get<F32>("underwaterTileScale"));
-
-    I32 i = 0;
-    stringImpl temp;
-    stringImpl layerOffsetStr;
-    for (boost::property_tree::ptree::iterator itTexture = std::begin(pt.get_child("textureLayers"));
-        itTexture != std::end(pt.get_child("textureLayers"));
-        ++itTexture, ++i) {
-        stringImpl layerName(itTexture->second.data());
-        stringImpl format(itTexture->first.data());
-
-        if (format.find("<xmlcomment>") != stringImpl::npos) {
-            i--;
-            continue;
-        }
-
-        layerName = "textureLayers." + format;
-
-        layerOffsetStr = to_stringImpl(i);
-        temp = pt.get<stringImpl>(layerName + ".blendMap", "");
-        DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
-        ter->addVariable("blendMap" + layerOffsetStr, temp);
-
-        temp = pt.get<stringImpl>(layerName + ".redAlbedo", "");
-        if (!temp.empty()) {
-            ter->addVariable("redAlbedo" + layerOffsetStr, temp);
-        }
-        temp = pt.get<stringImpl>(layerName + ".redDetail", "");
-        if (!temp.empty()) {
-            ter->addVariable("redDetail" + layerOffsetStr, temp);
-        }
-        temp = pt.get<stringImpl>(layerName + ".greenAlbedo", "");
-        if (!temp.empty()) {
-            ter->addVariable("greenAlbedo" + layerOffsetStr, temp);
-        }
-        temp = pt.get<stringImpl>(layerName + ".greenDetail", "");
-        if (!temp.empty()) {
-            ter->addVariable("greenDetail" + layerOffsetStr, temp);
-        }
-        temp = pt.get<stringImpl>(layerName + ".blueAlbedo", "");
-        if (!temp.empty()) {
-            ter->addVariable("blueAlbedo" + layerOffsetStr, temp);
-        }
-        temp = pt.get<stringImpl>(layerName + ".blueDetail", "");
-        if (!temp.empty()) {
-            ter->addVariable("blueDetail" + layerOffsetStr, temp);
-        }
-        temp = pt.get<stringImpl>(layerName + ".alphaAlbedo", "");
-        if (!temp.empty()) {
-            ter->addVariable("alphaAlbedo" + layerOffsetStr, temp);
-        }
-        temp = pt.get<stringImpl>(layerName + ".alphaDetail", "");
-        if (!temp.empty()) {
-            ter->addVariable("alphaDetail" + layerOffsetStr, temp);
-        }
-
-        ter->addVariable("redTileScale" + layerOffsetStr, pt.get<F32>(layerName + ".redTileScale", 1.0f));
-        ter->addVariable("greenTileScale" + layerOffsetStr, pt.get<F32>(layerName + ".greenTileScale", 1.0f));
-        ter->addVariable("blueTileScale" + layerOffsetStr, pt.get<F32>(layerName + ".blueTileScale", 1.0f));
-        ter->addVariable("alphaTileScale" + layerOffsetStr, pt.get<F32>(layerName + ".alphaTileScale", 1.0f));
+    std::shared_ptr<TerrainDescriptor> ter(new TerrainDescriptor((name + "_descriptor").c_str()));
+    if (!ter->loadFromXML(pt, name)) {
+        return;
     }
-    
-    ter->setTextureLayerCount(to_U8(i));
-    ter->addVariable("vegetationTextureLocation", pt.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation));
-    ter->addVariable("grassMap", pt.get<stringImpl>("vegetation.grassMap"));
-    ter->addVariable("treeMap", pt.get<stringImpl>("vegetation.treeMap"));
-
-    for (I32 j = 1; j < 5; ++j) {
-        ter->addVariable(Util::StringFormat("grassBillboard%d", j), pt.get<stringImpl>(Util::StringFormat("vegetation.grassBillboard%d", j), ""));
-        ter->addVariable(Util::StringFormat("grassScale%d", j), pt.get<F32>(Util::StringFormat("vegetation.grassBillboard%d.<xmlattr>.scale", j), 1.0f));
-
-        ter->addVariable(Util::StringFormat("treeMesh%d", j), pt.get<stringImpl>(Util::StringFormat("vegetation.treeMesh%d",j), ""));
-        ter->addVariable(Util::StringFormat("treeScale%d", j), pt.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.scale", j), 1.0f));
-        ter->addVariable(Util::StringFormat("treeRotationX%d", j), pt.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_x", j), 0.0f));
-        ter->addVariable(Util::StringFormat("treeRotationY%d", j), pt.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_y", j), 0.0f));
-        ter->addVariable(Util::StringFormat("treeRotationZ%d", j), pt.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_z", j), 0.0f));
-    }
-
-    ter->set16Bit(pt.get<bool>("is16Bit", false));
-    ter->setWireframeDebug(pt.get<bool>("wireframeDebugMode", false));
-    ter->setDimensions(vec2<U16>(pt.get<U16>("terrainWidth", 0), pt.get<U16>("terrainHeight", 0)));
-    ter->setAltitudeRange(vec2<F32>(pt.get<F32>("altitudeRange.<xmlattr>.min", 0.0f),
-                                    pt.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
-    ter->setTessellationRange(vec3<F32>(pt.get<F32>("tessellationRange.<xmlattr>.min", 10.0f),
-                                        pt.get<F32>("tessellationRange.<xmlattr>.max", 150.0f),
-                                        pt.get<F32>("tessellationRange.<xmlattr>.chunkSize", 32.0f)));
-
 
     auto registerTerrain = [this, name, &parentNode, pt](CachedResource_wptr res) {
         SceneGraphNodeDescriptor terrainNodeDescriptor;
@@ -603,13 +512,13 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
         _loadingTasks.fetch_sub(1);
     };
 
-    ResourceDescriptor terrainDescriptor(ter->getVariable("terrainName"));
-    terrainDescriptor.setPropertyDescriptor(*ter);
-    terrainDescriptor.setThreadedLoading(true);
-    terrainDescriptor.setOnLoadCallback(registerTerrain);
-    terrainDescriptor.setFlag(ter->getActive());
-    terrainDescriptor.waitForReady(false);
-    CreateResource<Terrain>(_resCache, terrainDescriptor);
+    ResourceDescriptor descriptor(ter->getVariable("terrainName"));
+    descriptor.setPropertyDescriptor(*ter);
+    descriptor.setThreadedLoading(true);
+    descriptor.setOnLoadCallback(registerTerrain);
+    descriptor.setFlag(ter->getActive());
+    descriptor.waitForReady(false);
+    CreateResource<Terrain>(_resCache, descriptor);
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {

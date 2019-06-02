@@ -87,6 +87,6 @@ void main()
                          texture(texRefractPlanar, uvFinalRefract),
                          mixFactor);
     
-    writeOutput(getPixelColour(texColour, colourMatrix, normal, VAR._texCoord));
+    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normal, VAR._texCoord));
 #endif
 }

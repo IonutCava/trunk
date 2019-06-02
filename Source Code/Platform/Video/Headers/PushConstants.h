@@ -60,6 +60,23 @@ struct PushConstants {
     template<typename T>
     inline void set(const eastl::string& binding,
                     GFX::PushConstantType type,
+                    const vector<T>& values,
+                    bool flag = false) {
+
+        U64 bindingID = _ID(binding.c_str());
+        for (GFX::PushConstant& constant : _data) {
+            if (constant._bindingHash == bindingID) {
+                constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
+                return;
+            }
+        }
+
+        _data.emplace_back(binding, bindingID, type, values, flag );
+    }
+
+    template<typename T>
+    inline void set(const eastl::string& binding,
+                    GFX::PushConstantType type,
                     const vectorEASTL<T>& values,
                     bool flag = false) {
 

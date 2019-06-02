@@ -128,10 +128,11 @@ bool TerrainTessellator::divideNode(TessellatedTerrainNode* node) {
     return divided;
 }
 
-void TerrainTessellator::createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions) {
+void TerrainTessellator::createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions, const F32 patchSizeInMetres) {
     _cameraEyeCache.set(camPos);
     _originCache.set(origin);
     _frustumCache.set(frust);
+    _config._cutoffDistance = patchSizeInMetres;
 
     _numNodes = 0;
     _tree.resize(std::max(terrainDimensions.width, terrainDimensions.height));

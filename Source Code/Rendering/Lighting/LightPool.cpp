@@ -305,7 +305,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         // So we need W = 0 for an infinite distance.
         temp._position.set((viewMatrix * vec4<F32>(light->getPosition(), type == LightType::DIRECTIONAL ? 0.0f : 1.0f)).xyz(), light->getRange());
         // spot direction is not considered a point in space, so W = 0
-        temp._direction.set(viewMatrix.transformNonHomogeneous(light->getDirection()), light->getConeAngle());
+        temp._direction.set((viewMatrix * vec4<F32>(light->getDirection(), 0.0f)).xyz(), light->getConeAngle());
 
         temp._options.x = typeIndex;
         temp._options.y = light->shadowIndex();

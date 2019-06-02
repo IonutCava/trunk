@@ -162,9 +162,8 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                           _descriptor.dataType() == GFXDataFormat::UNSIGNED_SHORT);
         
         // Save file contents in  the "img" object
-        ImageTools::ImageDataInterface::CreateImageData(name, fileData);
+        ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor._srgb, fileData);
 
-        
         bufferPtr data = fileData.is16Bit() ? fileData.data16() : fileData.isHDR() ? fileData.dataf() : fileData.data();
         // Validate data
         if (data == nullptr) {
@@ -176,7 +175,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
             // Missing texture fallback.
             fileData.flip(false);
             // missing_texture.jpg must be something that really stands out
-            ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, fileData);
+            ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, _width, _height, _descriptor._srgb, fileData);
 
         }
 

@@ -10,6 +10,9 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize.h"
+
 #include "nv_dds.h"
 
 #define IL_STATIC_LIB
@@ -40,12 +43,12 @@ ImageData::~ImageData()
 {
 }
 
-bool ImageData::create(const stringImpl& filename) {
+bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename) {
     _name = filename;
 
     if (Util::CompareIgnoreCase(_name.substr(_name.find_last_of('.') + 1), "DDS")) {
         std::lock_guard<std::mutex> lock(ImageDataInterface::_loadingMutex);
-        return loadDDS_IL(filename);
+        return loadDDS_IL(srgb, refWidth, refHeight, filename);
     }
 
     stbi_set_flip_vertically_on_load(_flip ? TRUE : FALSE);
@@ -104,6 +107,48 @@ bool ImageData::create(const stringImpl& filename) {
         _bpp *= 2;
     }
 
+    vector<U8> data2 = {};
+    vector<U16> data162 = {};
+    vector<F32> dataF2 = {};
+
+    if (refWidth != 0 && refHeight != 0 && (refWidth != width || refHeight != height)) {
+        I32 ret = 0;
+        if (is16Bit()) {
+            data162.resize(refWidth * refHeight * comp, 0);
+            ret = stbir_resize_uint16_generic(data16, width, height, 0,
+                                              data162.data(), refWidth, refHeight, 0,
+                                              comp, -1, 0,
+                                              STBIR_EDGE_CLAMP, STBIR_FILTER_DEFAULT, STBIR_COLORSPACE_LINEAR,
+                                              NULL);
+            if (ret == 1) {
+                stbi_image_free(data16);
+                data16 = nullptr;
+            }
+        } else if (isHDR()) {
+            dataF2.resize(refWidth * refHeight * comp, 0);
+            ret = stbir_resize_float(dataf, width, height, 0, dataF2.data(), refWidth, refHeight, 0, comp);
+            if (ret == 1) {
+                stbi_image_free(dataf);
+                dataf = nullptr;
+            }
+        } else {
+            data2.resize(refWidth * refHeight * comp, 0);
+            if (srgb) {
+                ret = stbir_resize_uint8_srgb(data, width, height, 0, data2.data(), refWidth, refHeight, 0, comp, -1, 0);
+            } else {
+                ret = stbir_resize_uint8(data, width, height, 0, data2.data(), refWidth, refHeight, 0, comp);
+            }
+            if (ret == 1) {
+                stbi_image_free(data);
+                data = nullptr;
+            }
+        }
+        if (ret == 1) {
+            width = refWidth;
+            height = refHeight;
+        }
+    }
+
     image._dimensions.set(width, height, 1);
     // most formats do not have an alpha channel
     _alpha = comp % 2 == 0;
@@ -111,20 +156,28 @@ bool ImageData::create(const stringImpl& filename) {
     image._size = width * height * _bpp / 8;
 
     if (_isHDR) {
-        image.writeData(dataf, to_U32(image._size / 4));
-        stbi_image_free(dataf);
+        image.writeData(dataf != nullptr ? dataf : dataF2.data(), to_U32(image._size / 4));
+        if (dataf != nullptr) {
+            stbi_image_free(dataf);
+        }
     } else if (is16Bit()) {
-        image.writeData(data16, to_U32(image._size / 2));
-        stbi_image_free(data16);
+        image.writeData(data16 != nullptr ? data16 : data162.data(), to_U32(image._size / 2));
+        if (data16 != nullptr) {
+            stbi_image_free(data16);
+        }
     } else {
-        image.writeData(data, to_U32(image._size));
-        stbi_image_free(data);
+        image.writeData(data != nullptr ? data : data2.data(), to_U32(image._size));
+        if (data != nullptr) {
+            stbi_image_free(data);
+        }
     }
 
     return true;
 }
 
-bool ImageData::loadDDS_IL(const stringImpl& filename) {
+bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename) {
+    ACKNOWLEDGE_UNUSED(srgb);
+
     U32 ilTexture = 0;
     ilInit();
     ilGenImages(1, &ilTexture);
@@ -267,7 +320,9 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
     return true;
 }
 
-bool ImageData::loadDDS_NV(const stringImpl& filename) {
+bool ImageData::loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename) {
+    ACKNOWLEDGE_UNUSED(srgb);
+
     nv_dds::CDDSImage image;
     image.load(filename.c_str(), _flip);
     _alpha = image.get_components() == 4;
@@ -394,10 +449,10 @@ void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel
 }
 
 
-void ImageDataInterface::CreateImageData(const stringImpl& filename, ImageData& imgOut) {
+void ImageDataInterface::CreateImageData(const stringImpl& filename, U16 refWidth, U16 refHeight, bool srgb, ImageData& imgOut) {
     if (fileExists(filename.c_str())) {
         //std::lock_guard<std::mutex> lock(_loadingMutex);
-        imgOut.create(filename);
+        imgOut.create(srgb, refWidth, refHeight, filename);
     }
 }
 
