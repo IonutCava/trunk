@@ -7,8 +7,8 @@
   <enableDebugMsgGroups>false</enableDebugMsgGroups>
   <useGeometryCache>true</useGeometryCache>
   <useVegetationCache>true</useVegetationCache>
-  <enableTreeInstances>true</enableTreeInstances>
-  <enableGrassInstances>true</enableGrassInstances>
+  <enableTreeInstances>false</enableTreeInstances>
+  <enableGrassInstances>false</enableGrassInstances>
   <!-- this is only taken into consideration if binary cache is disabled-->
   <useShaderTextCache>false</useShaderTextCache>
   <useShaderBinaryCache>false</useShaderBinaryCache>
@@ -94,7 +94,7 @@
   </postFX>
   
   <shadowMapping>
-    <enabled>true</enabled>
+    <enabled>false</enabled>
     <!-- Will be rounded up to the next POW_2. Cube/Dual paraboloid will be 1/2 resolution per face/slice -->
     <shadowMapResolution>1024</shadowMapResolution>
     <MSAAsamples>0</MSAAsamples>

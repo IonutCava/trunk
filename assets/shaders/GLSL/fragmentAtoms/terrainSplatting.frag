@@ -50,21 +50,28 @@ vec4 getTerrainAlbedo(in vec2 uv) {
         detail = _getTexture(texTileMaps, vec3(scaledTextureCoords(uv, tileScale * DETAIL_TILLING), 1));
     } else {
 
+        
+
         uint offset = 0;
         for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
             const vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
 
             const uint layerCount = CURRENT_LAYER_COUNT[i];
             for (uint j = 0; j < layerCount; ++j) {
-                vec3 coordsC = vec3(scaledTextureCoords(uv, tileScale), offset + (j * 2) + 0);
-                vec3 coordsD = vec3(scaledTextureCoords(uv, (tileScale * DETAIL_TILLING)), offset + (j * 2) + 1);
-
                 float amnt = blendColour[j];
-                colour = mix(colour, _getTexture(texTileMaps, coordsC), amnt);
-                detail = mix(detail, _getTexture(texTileMaps, coordsD), amnt);
+                uint aSlice = ALBEDO_IDX[offset + j];
+                if (aSlice < 255) {
+                    vec3 coordsC = vec3(scaledTextureCoords(uv, tileScale), aSlice);
+                    colour = mix(colour, _getTexture(texTileMaps, coordsC), amnt);
+                }
+                uint dSlice = DETAIL_IDX[offset + j];
+                if (dSlice < 255) {
+                    vec3 coordsD = vec3(scaledTextureCoords(uv, (tileScale * DETAIL_TILLING)), dSlice);
+                    detail = mix(detail, _getTexture(texTileMaps, coordsD), amnt);
+                }
             }
 
-            offset += CURRENT_LAYER_COUNT[i] * 2;
+            offset += CURRENT_LAYER_COUNT[i];
         }
     }
     return vec4(colour.rgb * (detail.rgb * DETAIL_BRIGHTNESS), 1.0f);
@@ -114,7 +121,12 @@ vec3 _getSplatNormal(in vec2 uv) {
 
         vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
         for (uint j = 0; j < layerCount; ++j) {
-            vec3 scaledCoords = vec3(scaledTextureCoords(uv, tileScale), offset + j);
+            uint nSlice = NORMALS_IDX[offset + j];
+            if (nSlice == 255) {
+                continue;
+            }
+
+            vec3 scaledCoords = vec3(scaledTextureCoords(uv, tileScale), nSlice);
             tbn = mix(tbn, _getTexture(texNormalMaps, scaledCoords).rgb, blendColour[j]);
         }
         offset += CURRENT_LAYER_COUNT[i];

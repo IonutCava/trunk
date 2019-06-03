@@ -24,6 +24,15 @@ namespace {
 
 TerrainLoader::TerrainMaterialMap TerrainLoader::s_terrainMaterials;
 
+
+enum class TerrainTextureType : U8 {
+    ALBEDO = 0,
+    DETAIL,
+    NORMALS,
+    SPLAT,
+    COUNT
+};
+
 bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
@@ -63,13 +72,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     stringImpl currentMaterial;
     stringImpl currentTexture;
 
-    //texture data
-    stringImpl blendMapArray;
-    stringImpl albedoMapArray;
-    stringImpl normalMapArray;
-
     U8 layerCount = terrainDescriptor->getTextureLayerCount();
-    vector<U8> texCount(layerCount);
 
     const vector<std::pair<stringImpl, TerrainTextureLayer::TerrainTextureChannel>> channels = {
         {"red", TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL},
@@ -81,17 +84,19 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     const F32 detailBrightness = terrainDescriptor->getVariablef("detailBrightnessFactor");
     const F32 detailTillingFactor = terrainDescriptor->getVariablef("detailTillingFactor");
 
+    std::set<stringImpl> textures[to_base(TerrainTextureType::COUNT)] = {};
+
+    vector<U8> albedoIndices(layerCount * to_base(TerrainTextureLayer::TerrainTextureChannel::COUNT), 255u);
+    vector<U8> normalsIndices(layerCount * to_base(TerrainTextureLayer::TerrainTextureChannel::COUNT), 255u);
+    vector<U8> detailsIndices(layerCount * to_base(TerrainTextureLayer::TerrainTextureChannel::COUNT), 255u);
+
     TerrainTextureLayer * textureLayer = MemoryManager_NEW TerrainTextureLayer(layerCount);
+
+    U16 idx = 0;
     for (U8 i = 0; i < layerCount; ++i) {
         layerOffsetStr = to_stringImpl(i);
-        texCount[i] = 0;
+        textures[to_base(TerrainTextureType::SPLAT)].insert(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
 
-        blendMapArray += ((i != 0) ? (",") : ("")) + terrainDescriptor->getVariable("blendMap" + layerOffsetStr);
-
-        if (i > 0) {
-            albedoMapArray += ",";
-            normalMapArray += ",";
-        }
         U8 j = 0;
         for (auto it : channels) {
             currentMaterial = terrainDescriptor->getVariable(it.first + layerOffsetStr + "_mat");
@@ -99,6 +104,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                 currentTexture = terrainDescriptor->getVariable(it.first + layerOffsetStr + "_tex");
 
                 const TerrainMaterial& mat = TerrainLoader::getOrCreateMaterial(currentMaterial);
+
+                if (!mat._detailTex.empty()) {
+                    auto& detailTextures = textures[to_base(TerrainTextureType::DETAIL)];
+                    auto ret = detailTextures.insert(mat._detailTex);
+                    detailsIndices[idx] = to_U8(ret.second ? detailTextures.size() - 1 : std::distance(std::begin(detailTextures), ret.first));
+                }
+
                 if (!mat._textures.empty()) {
                     auto tex = std::find_if(std::cbegin(mat._textures), std::cend(mat._textures), [&currentTexture](const TerrainMaterialTexture& tex) {
                         if (splitPathToNameAndLocation(tex._albedo)._fileName.compare(currentTexture) == 0) {
@@ -112,17 +124,53 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                         tex = std::cbegin(mat._textures);
                     }
 
-                    const TerrainMaterialTexture& textures = *tex;
-                    albedoMapArray += ((j != 0) ? (",") : ("")) + textures._albedo + "," + mat._detailTex;
-                    normalMapArray += ((j != 0) ? (",") : ("")) + textures._bump;
-                    ++texCount[i];
+                    {
+                        auto& albedoTextures = textures[to_base(TerrainTextureType::ALBEDO)];
+                        auto ret = albedoTextures.insert(tex->_albedo);
+                        albedoIndices[idx] = to_U8(ret.second ? albedoTextures.size() - 1 : std::distance(std::begin(albedoTextures), ret.first));
+                    }
+
+                    if (!tex->_bump.empty()) {
+                        auto& normalsTextures = textures[to_base(TerrainTextureType::NORMALS)];
+                        auto ret = normalsTextures.insert(tex->_bump);
+                        normalsIndices[idx] = to_U8(ret.second ? normalsTextures.size() - 1 : std::distance(std::begin(normalsTextures), ret.first));
+                    }
                 }
                 ++j;
+                ++idx;
             }
         }
+        textureLayer->channelCountPerLayer(i, j);
     }
 
-    U32 totalTexCount = std::accumulate(std::cbegin(texCount), std::cend(texCount), 0u);
+    detailsIndices.resize(idx);
+    albedoIndices.resize(idx);
+    normalsIndices.resize(idx);
+
+    stringImpl blendMapArray = "";
+    stringImpl albedoMapArray = "";
+    stringImpl normalMapArray = "";
+
+    for (const stringImpl& tex : textures[to_base(TerrainTextureType::SPLAT)]) {
+        blendMapArray += tex + ",";
+    }
+    for (const stringImpl& tex : textures[to_base(TerrainTextureType::NORMALS)]) {
+        normalMapArray += tex + ",";
+    }
+    for (const stringImpl& tex : textures[to_base(TerrainTextureType::ALBEDO)]) {
+        albedoMapArray += tex + ",";
+    }
+    for (const stringImpl& tex : textures[to_base(TerrainTextureType::DETAIL)]) {
+        albedoMapArray += tex + ",";
+    }
+
+    auto removeLastChar = [](stringImpl& strIn) {
+        strIn = strIn.substr(0, strIn.length() - 1);
+    };
+
+    removeLastChar(blendMapArray);
+    removeLastChar(normalMapArray);
+    removeLastChar(albedoMapArray);
 
     SamplerDescriptor heightMapSampler = {};
     heightMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
@@ -154,17 +202,18 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.setSampler(blendMapSampler);
-    blendMapDescriptor._layerCount = layerCount;
+    blendMapDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::SPLAT)].size());
     blendMapDescriptor._srgb = false;
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
     albedoDescriptor.setSampler(tileAlbedoSampler);
-    albedoDescriptor._layerCount = totalTexCount * 2;
+    albedoDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::ALBEDO)].size() + 
+                                          textures[to_base(TerrainTextureType::DETAIL)].size());
     albedoDescriptor._srgb = true;
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
     normalDescriptor.setSampler(tileNormalSampler);
-    normalDescriptor._layerCount = totalTexCount;
+    normalDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::NORMALS)].size());
 
     textureBlendMap.assetName(blendMapArray);
     textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
@@ -178,8 +227,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     Texture_ptr tileMaps = CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps);
     Texture_ptr normalMaps = CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps);
     textureLayer->setBlendMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
-    textureLayer->setTileMaps(tileMaps, texCount);
-    textureLayer->setNormalMaps(normalMaps, texCount);
+    textureLayer->setTileMaps(tileMaps);
+    textureLayer->setNormalMaps(normalMaps);
 
     Attorney::TerrainLoader::setTextureLayer(*terrain, textureLayer);
 
@@ -200,12 +249,34 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     stringImpl layerCountData = "const uint CURRENT_LAYER_COUNT[" + to_stringImpl(layerCount) + "] = {";
     for (U8 i = 0; i < layerCount; ++i) {
-        layerCountData += to_stringImpl(texCount[i]);
-        if (i < layerCount - 1) {
-            layerCountData += ",";
-        }
+        layerCountData.append(to_stringImpl(textureLayer->channelCountPerLayer(i)) + ",");
     }
+    removeLastChar(layerCountData);
     layerCountData += "};";
+
+    stringImpl albedoIndexData = "const uint ALBEDO_IDX[" + to_stringImpl(albedoIndices.size()) + "] = {";
+    for (size_t i = 0; i < albedoIndices.size(); ++i) {
+        albedoIndexData.append(to_stringImpl(albedoIndices[i]) + ",");
+    }
+    removeLastChar(albedoIndexData);
+    albedoIndexData += "};";
+
+    stringImpl normalsIndexData = "const uint NORMALS_IDX[" + to_stringImpl(normalsIndices.size()) + "] = {";
+    for (size_t i = 0; i < normalsIndices.size(); ++i) {
+        normalsIndexData.append(to_stringImpl(normalsIndices[i]) + ",");
+    }
+    removeLastChar(normalsIndexData);
+    normalsIndexData += "};";
+
+    size_t albedoCount = textures[to_base(TerrainTextureType::ALBEDO)].size();
+    stringImpl detailsIndexData = "const uint DETAIL_IDX[" + to_stringImpl(detailsIndices.size()) + "] = {";
+    for (size_t i = 0; i < detailsIndices.size(); ++i) {
+        idx = to_U8(std::min(albedoCount + detailsIndices[i], size_t(255)));
+
+        detailsIndexData.append(to_stringImpl(idx) + ",");
+    }
+    removeLastChar(detailsIndexData);
+    detailsIndexData += "};";
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
     miscTexDescriptor.setSampler(blendMapSampler);
@@ -316,6 +387,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             shaderModule._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
 
             shaderModule._defines.push_back(std::make_pair(layerCountData, false));
+            shaderModule._defines.push_back(std::make_pair(albedoIndexData, false));
+            shaderModule._defines.push_back(std::make_pair(normalsIndexData, false));
+            shaderModule._defines.push_back(std::make_pair(detailsIndexData, false));
+
             shaderModule._defines.push_back(std::make_pair("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)), true));
 
 
@@ -799,7 +874,6 @@ TerrainMaterial TerrainLoader::loadMaterialFromXML(const stringImpl& materialXML
                     }
                 }
             } else if (v1.second.data().compare("TextureLayers") == 0) {
-                //OOOOOOOffff
                 for (const boost::property_tree::ptree::value_type& layers : it->second) {
                     if (layers.first.compare("varlist") == 0) {
                         for (const boost::property_tree::ptree::value_type& data : layers.second) {
@@ -834,9 +908,6 @@ TerrainMaterial TerrainLoader::loadMaterialFromXML(const stringImpl& materialXML
                                 }
                             }
                         }
-                        if (texTemp._bump.empty()) {
-                            texTemp._bump = "common/detail/detailmap_bump.jpg";
-                        }
                         ret._textures.push_back(texTemp);
                     }
                 }
@@ -847,10 +918,6 @@ TerrainMaterial TerrainLoader::loadMaterialFromXML(const stringImpl& materialXML
     std::sort(std::begin(ret._textures), std::end(ret._textures), [](const TerrainMaterialTexture& a, const TerrainMaterialTexture& b) {
         return a._weight > b._weight;
     });
-
-    if (ret._detailTex.empty()) {
-        ret._detailTex = "common/detail/detailmap.jpg";
-    }
 
     return ret;
 }

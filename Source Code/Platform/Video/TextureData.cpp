@@ -22,7 +22,7 @@ namespace Divide {
     }
 
     TextureDataContainer::UpdateState TextureDataContainer::setTexture(const TextureData& data, U8 binding, bool force) {
-        assert(data._textureType != TextureType::COUNT);
+        assert(data.type() != TextureType::COUNT);
         return setTextureInternal(data, binding, force);
     }
 

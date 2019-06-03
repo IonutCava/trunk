@@ -57,8 +57,7 @@ struct TerrainTextureLayer {
         _tileMaps = nullptr;
         _normalMaps = nullptr;
 
-        _albedoCountPerLayer.resize(layerCount);
-        _detailCountPerLayer.resize(layerCount);
+        _channelCountPerLayer.resize(layerCount);
     }
 
     ~TerrainTextureLayer();
@@ -67,31 +66,26 @@ struct TerrainTextureLayer {
         TEXTURE_RED_CHANNEL = 0,
         TEXTURE_GREEN_CHANNEL = 1,
         TEXTURE_BLUE_CHANNEL = 2,
-        TEXTURE_ALPHA_CHANNEL = 3
+        TEXTURE_ALPHA_CHANNEL = 3,
+        COUNT
     };
 
+    inline void channelCountPerLayer(U8 layer, U8 channelCount) { _channelCountPerLayer[layer] = channelCount; }
+
     inline void setBlendMaps(const Texture_ptr& texture) noexcept { _blendMaps = texture; }
-    inline void setTileMaps(const Texture_ptr& texture, const vector<U8>& countPerLayer)   {
-        _tileMaps = texture;
-        _albedoCountPerLayer = countPerLayer;
-    }
+    inline void setTileMaps(const Texture_ptr& texture) noexcept { _tileMaps = texture; }
+    inline void setNormalMaps(const Texture_ptr& texture) noexcept { _normalMaps = texture; }
 
-    inline void setNormalMaps(const Texture_ptr& texture, const vector<U8>& countPerLayer) {
-        _normalMaps = texture;
-        _detailCountPerLayer = countPerLayer;
-    }
+    inline U8 layerCount() const { return to_U8(_channelCountPerLayer.size()); }
+    inline U8 channelCountPerLayer(U8 layer) const { return _channelCountPerLayer[layer]; }
 
-    const Texture_ptr& blendMaps()  const noexcept { return _blendMaps; }
-    const Texture_ptr& tileMaps()   const noexcept { return _tileMaps; }
-    const Texture_ptr& normalMaps() const noexcept { return _normalMaps; }
+    inline const Texture_ptr& blendMaps()  const noexcept { return _blendMaps; }
+    inline const Texture_ptr& tileMaps()   const noexcept { return _tileMaps; }
+    inline const Texture_ptr& normalMaps() const noexcept { return _normalMaps; }
 
-    inline U8 layerCount() const noexcept { return to_U8(_albedoCountPerLayer.size()); }
-    inline U8 albedoCountPerLayer(U8 layer) const { assert(layer < layerCount()); return _albedoCountPerLayer[layer]; }
-    inline U8 detailCountPerLayer(U8 layer) const { assert(layer < layerCount()); return _detailCountPerLayer[layer]; }
 
    private:
-    vector<U8> _albedoCountPerLayer;
-    vector<U8> _detailCountPerLayer;
+    vector<U8> _channelCountPerLayer;
     Texture_ptr _blendMaps;
     Texture_ptr _tileMaps;
     Texture_ptr _normalMaps;
