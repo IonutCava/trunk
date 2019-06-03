@@ -30,7 +30,7 @@ void PreRenderOperator::reshape(U16 width, U16 height) {
 }
 
 TextureData PreRenderOperator::getDebugOutput() const {
-    return TextureData();
+    return TextureData(0u, 0u, TextureType::COUNT);
 };
 
 }; //namespace Divide

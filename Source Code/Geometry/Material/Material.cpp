@@ -225,7 +225,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         textureUsageSlot == ShaderProgram::TextureUsage::OPACITY)
     {
         if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0) {
-            _textureKeyCache = texture == nullptr ? -1 : texture->getHandle();
+            _textureKeyCache = texture == nullptr ? -1 : texture->getData().textureHandle();
         }
 
         // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
@@ -1034,6 +1034,7 @@ namespace {
         texture.assetName(img_name);
         texture.assetLocation(pathName);
         texture.setPropertyDescriptor(texDesc);
+        texture.waitForReady(false);
         texture.setFlag(!pt.get(textureNode + ".flipped", false));
 
         return CreateResource<Texture>(targetCache, texture);

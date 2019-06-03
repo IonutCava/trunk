@@ -1168,7 +1168,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::COMPUTE_MIPMAPS: {
             const GFX::ComputeMipMapsCommand& crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
             if (crtCmd._layerRange.x == 0 && crtCmd._layerRange.y <= 1) {
-                glGenerateTextureMipmap(crtCmd._texture->getData()._textureHandle);
+                glGenerateTextureMipmap(crtCmd._texture->getData().textureHandle());
             } else {
 
                 Texture* tex = crtCmd._texture;
@@ -1176,11 +1176,11 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 const TextureDescriptor& descriptor = tex->getDescriptor();
                 GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
 
-                GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
+                GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
                 GLuint handle = s_texturePool.allocate(GL_NONE);
                 glTextureView(handle,
                     type,
-                    data._textureHandle,
+                    data.textureHandle(),
                     glInternalFormat,
                     (GLuint)descriptor._mipLevels.x,
                     (GLuint)descriptor._mipLevels.y,
@@ -1440,18 +1440,18 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         samplers.reserve(texCount);
 
         for (auto data : textureData.textures()) {
-            types.push_back(data.second._textureType);
-            handles.push_back(data.second._textureHandle);
-            samplers.push_back(data.second._samplerHandle);
+            types.push_back(data.second.type());
+            handles.push_back(data.second.textureHandle());
+            samplers.push_back(data.second.samplerHandle());
         }
 
         bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
     } else {
         for (auto data : textureData.textures()) {
             bound = getStateTracker().bindTexture(static_cast<GLushort>(data.first),
-                                                  data.second._textureType,
-                                                  data.second._textureHandle,
-                                                  data.second._samplerHandle) || bound;
+                                                  data.second.type(),
+                                                  data.second.textureHandle(),
+                                                  data.second.samplerHandle()) || bound;
         }
     }
 
@@ -1461,18 +1461,18 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         const TextureDescriptor& descriptor = tex->getDescriptor();
         GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
 
-        GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
+        GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
         GLuint handle = s_texturePool.allocate(GL_NONE);
         glTextureView(handle,
             type,
-            data._textureHandle,
+            data.textureHandle(),
             glInternalFormat,
             (GLuint)it._view._mipLevels.x,
             (GLuint)it._view._mipLevels.y,
             (GLuint)it._view._layerRange.x,
             (GLuint)it._view._layerRange.y);
 
-        getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, handle, data._samplerHandle);
+        getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data.type(), handle, data.samplerHandle());
         s_texturePool.deallocate(handle, GL_NONE, 3);
     }
 

@@ -187,7 +187,7 @@ namespace Divide {
             startPos.y += remainingWndSize.y*.5f;
             endPos.x = startPos.x + imageSz.x;
             endPos.y = startPos.y + imageSz.y;
-            window->DrawList->AddImage((void *)(intptr_t)gameView->getHandle(), startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+            window->DrawList->AddImage((void *)(intptr_t)gameView->getData().textureHandle(), startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
             
             DisplayWindow* displayWindow = static_cast<DisplayWindow*>(window->Viewport->PlatformHandle);
             // We might be dragging the window

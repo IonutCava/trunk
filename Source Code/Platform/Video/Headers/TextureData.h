@@ -44,21 +44,34 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct TextureData {
+    TextureData() : TextureData(0u, 0u, TextureType::COUNT)
+    {}
+
+    TextureData(U32 texHandle, U32 samplerHandle, TextureType type)
+        : _textureHandle(texHandle), _samplerHandle(samplerHandle), _textureType(type)
+    {}
+
+    inline U32 textureHandle() const { return _textureHandle; }
+    inline U32 samplerHandle() const { return _samplerHandle; }
+    inline TextureType type()  const { return _textureType; }
+
+private:
+    friend class Texture;
     U32 _textureHandle = 0u;
     U32 _samplerHandle = 0u;
     TextureType _textureType = TextureType::COUNT;
 };
 
 FORCE_INLINE bool operator==(const TextureData& lhs, const TextureData& rhs) noexcept {
-    return lhs._textureType == rhs._textureType &&
-           lhs._textureHandle == rhs._textureHandle &&
-           lhs._samplerHandle == rhs._samplerHandle;
+    return lhs.type() == rhs.type() &&
+           lhs.textureHandle() == rhs.textureHandle() &&
+           lhs.samplerHandle() == rhs.samplerHandle();
 }
 
 FORCE_INLINE bool operator!=(const TextureData& lhs, const TextureData& rhs) noexcept {
-    return lhs._textureType != rhs._textureType ||
-           lhs._textureHandle != rhs._textureHandle ||
-           lhs._samplerHandle != rhs._samplerHandle;
+    return lhs.type() != rhs.type() ||
+           lhs.textureHandle() != rhs.textureHandle() ||
+           lhs.samplerHandle() != rhs.samplerHandle();
 }
 
 class TextureDataContainer {

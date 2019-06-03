@@ -102,7 +102,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
         return _descriptor._samplerDescriptor;
     }
 
-    inline TextureData getData() const {
+    inline const TextureData& getData() const {
         return _textureData;
     }
 
@@ -119,16 +119,10 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     inline U16 getMaxMipLevel() const { return _descriptor._mipLevels.y; }
     /// Number of loaded mip levels in VRAM
     inline U16 getMipCount() const { return _descriptor._mipCount; }
-    /// A rendering API level handle used to uniquely identify this texture
-    /// (e.g. for OpenGL, it's the texture object)
-    inline U32 getHandle() const { return _textureData._textureHandle; }
     /// If the texture has an alpha channel and at least one pixel is translucent, return true
     inline bool hasTranslucency() const { return _hasTranslucency; }
-    /// If the texture has an alpha channel and at least on pixel is fully transparent and
-    // no pixels are partially transparent, return true
+    /// If the texture has an alpha channel and at least on pixel is fully transparent and no pixels are partially transparent, return true
     inline bool hasTransparency() const { return _hasTransparency; }
-    /// Get the type of the texture
-    inline TextureType getTextureType() const { return _textureData._textureType; }
 
     const TextureDescriptor& getDescriptor() const { return _descriptor; }
 
@@ -146,6 +140,9 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     virtual void threadedLoad();
 
     virtual void validateDescriptor();
+
+    inline void setTextureHandle(U32 handle) { _textureData._textureHandle = handle; }
+    inline void setSamplerHandle(U32 handle) { _textureData._samplerHandle = handle; }
 
    protected:
     U32 _numLayers;

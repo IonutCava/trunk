@@ -269,9 +269,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
 }
 
 TextureData SSAOPreRenderOperator::getDebugOutput() const {
-    TextureData ret;
-    ret = _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    return ret;
+    return _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
 }
 
 };

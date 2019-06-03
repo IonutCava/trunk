@@ -199,13 +199,11 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
 }
 
 TextureData PreRenderBatch::getOutput() {
-    TextureData ret;
     if (_debugOperator != nullptr) {
-        ret = _debugOperator->getDebugOutput();
-    } else {
-        ret = _postFXOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        return _debugOperator->getDebugOutput();
     }
-    return ret;
+
+    return _postFXOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
 }
 
 void PreRenderBatch::idle(const Configuration& config) {

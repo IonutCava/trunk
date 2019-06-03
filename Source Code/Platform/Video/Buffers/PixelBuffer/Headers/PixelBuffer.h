@@ -45,7 +45,7 @@ class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
        PixelBuffer(GFXDevice& context, PBType type, const char* name = nullptr)
          : GraphicsResource(context, GraphicsResource::Type::PIXEL_BUFFER, getGUID(), name == nullptr ? 0u : _ID(name)),
            _pbtype(type),
-           _name(name),
+           _name(name != nullptr ? name : ""),
            _textureID(0),
            _width(0),
            _height(0),
@@ -72,7 +72,7 @@ class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
     inline U16 getDepth() const { return _depth; }
     inline PBType getType() const { return _pbtype; }
 
-    inline TextureData getData() const { return { getTextureHandle(), 0u, _textureType }; }
+    inline TextureData getData() const { return TextureData{ _textureID, 0u, _textureType }; }
 
    protected:
     PBType _pbtype;
