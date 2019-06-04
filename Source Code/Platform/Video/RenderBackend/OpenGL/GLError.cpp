@@ -10,9 +10,7 @@ namespace Divide {
 namespace GLUtil {
 
 /// Print OpenGL specific messages
-void
-DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
-              GLsizei length, const GLchar* message, const void* userParam) {
+void DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
 
     if (severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
         // Translate message source

@@ -182,20 +182,20 @@ vec4 getTextureColour(in vec2 uv) {
 
     // Read from the texture
     switch (TEX_OPERATION) {
-    default: colour = vec4(0.7743, 0.3188, 0.5465, 1.0);   break; // <hot pink to easily spot it in a crowd
-    case TEX_MODULATE: colour *= colour2;       break;
-    case TEX_REPLACE: colour = colour2;       break;
-    case TEX_SIGNED_ADD: colour += colour2 - 0.5; break;
-    case TEX_DIVIDE: colour /= colour2;       break;
-    case TEX_SUBTRACT: colour -= colour2;       break;
-    case TEX_DECAL: colour = vec4(mix(colour.rgb, colour2.rgb, colour2.a), colour.a); break;
-    case TEX_ADD: {
-        colour.rgb += colour2.rgb;
-        colour.a *= colour2.a;
-    }break;
-    case TEX_SMOOTH_ADD: {
-        colour = (colour + colour2) - (colour * colour2);
-    }break;
+        default: colour = vec4(0.7743, 0.3188, 0.5465, 1.0);   break; // <hot pink to easily spot it in a crowd
+        case TEX_MODULATE: colour *= colour2;       break;
+        case TEX_REPLACE: colour = colour2;       break;
+        case TEX_SIGNED_ADD: colour += colour2 - 0.5; break;
+        case TEX_DIVIDE: colour /= colour2;       break;
+        case TEX_SUBTRACT: colour -= colour2;       break;
+        case TEX_DECAL: colour = vec4(mix(colour.rgb, colour2.rgb, colour2.a), colour.a); break;
+        case TEX_ADD: {
+            colour.rgb += colour2.rgb;
+            colour.a *= colour2.a;
+        }break;
+        case TEX_SMOOTH_ADD: {
+            colour = (colour + colour2) - (colour * colour2);
+        }break;
     }
 #endif
 

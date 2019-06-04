@@ -38,7 +38,8 @@ struct TerrainMaterialTexture {
     stringImpl _albedo = "";
     stringImpl _bump = "";
     stringImpl _blendMode = "ADD";
-    F32 _weight;
+    F32 _texWeight = 1.0f;
+    F32 _bumpWeight = 1.0f;
 };
 
 struct TerrainMaterial {

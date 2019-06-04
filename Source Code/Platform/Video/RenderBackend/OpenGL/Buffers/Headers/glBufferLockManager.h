@@ -90,7 +90,7 @@ protected:
     bool test(GLsync syncObject, vectorEASTL<BufferRange>& ranges, BufferRange testRange, bool noWait = false);
 
 private:
-    mutable SharedMutex _lock;
+    mutable boost::shared_mutex _lock;
     hashMap<GLsync, BufferLockEntries> _bufferLocks;
 };
 

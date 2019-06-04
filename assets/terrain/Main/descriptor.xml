@@ -4,9 +4,10 @@
 <heightfieldResolution x="2048" y="2048"/>
 <altitudeRange min="-39.02" max="75.13"/>
 <horizontalScale>1</horizontalScale>
-<detailTillingFactor>30</detailTillingFactor>
+<albedoTilingFactor>4</albedoTilingFactor>
+<detailTilingFactor>8</detailTilingFactor>
 <detailBrightnessFactor>3.5</detailBrightnessFactor>
-<tessellationRange min="80" max="500" chunkSize="256" patchSizeInM="64"/>
+<tessellationRange min="80" max="500" chunkSize="256" patchSizeInM="96"/>
 <normalMap>normals.png</normalMap>
 <textureMap>texture.png</textureMap>
 <alphaMaps>alpha_maps.xml</alphaMaps>

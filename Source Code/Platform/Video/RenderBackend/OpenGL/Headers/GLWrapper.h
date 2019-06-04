@@ -269,8 +269,9 @@ private:
 
     static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
 
-    static bool s_syncDeleteQueueSwitchFlag;
-    static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[2];
+    static const U8 s_syncDeleteQueueSize = 5;
+    static U8 s_syncDeleteQueueIndexR, s_syncDeleteQueueIndexW;
+    static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[s_syncDeleteQueueSize];
 
     typedef ska::bytell_hash_map<I64, GLStateTracker> stateTrackerMap;
     static stateTrackerMap s_stateTrackers;

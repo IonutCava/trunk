@@ -59,8 +59,9 @@ glGlobalLockManager GL_API::s_globalLockManager;
 
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
 
-bool GL_API::s_syncDeleteQueueSwitchFlag = false;
-moodycamel::ConcurrentQueue<GLsync> GL_API::s_syncDeleteQueue[2];
+U8 GL_API::s_syncDeleteQueueIndexR = 1;
+U8 GL_API::s_syncDeleteQueueIndexW = 0;
+moodycamel::ConcurrentQueue<GLsync> GL_API::s_syncDeleteQueue[s_syncDeleteQueueSize];
 
 GL_API::GL_API(GFXDevice& context, const bool glES)
     : RenderAPIWrapper(),
@@ -181,6 +182,9 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
             s_texturePool.onFrameEnd();
             processSyncDeleteQeueue();
             s_glFlushQueued = false;
+
+            s_syncDeleteQueueIndexR = (s_syncDeleteQueueIndexR + 1) % s_syncDeleteQueueSize;
+            s_syncDeleteQueueIndexW = (s_syncDeleteQueueIndexW + 1) % s_syncDeleteQueueSize;
         }
     }
 
@@ -1206,6 +1210,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 if (draw(currentDrawCommand)) {
                     // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now
                     lockBuffers(s_firstCommandInBuffer);
+                    s_firstCommandInBuffer = false;
+
                     if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
                         if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
                             _context.registerDrawCalls(2);
@@ -1262,8 +1268,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         } break;
     };
-
-    s_firstCommandInBuffer = false;
 }
 
 void GL_API::lockBuffers(bool flush) {
@@ -1330,17 +1334,20 @@ void GL_API::registerBufferBind(const BufferWriteData& data) {
 }
 
 void GL_API::registerSyncDelete(GLsync syncObject) {
-    if (!s_syncDeleteQueue[s_syncDeleteQueueSwitchFlag ? 1 : 0].enqueue(syncObject)) {
+#if 1
+    glDeleteSync(syncObject);
+#else
+    if (!s_syncDeleteQueue[s_syncDeleteQueueIndexW].enqueue(syncObject)) {
         assert(false && "GL_API::registerSyncDelete failure!");
     }
+#endif
 }
 
 void GL_API::processSyncDeleteQeueue() {
     GLsync sync;
-    while (s_syncDeleteQueue[s_syncDeleteQueueSwitchFlag ? 0 : 1].try_dequeue(sync)) {
+    while (s_syncDeleteQueue[s_syncDeleteQueueIndexR].try_dequeue(sync)) {
         glDeleteSync(sync);
     }
-    s_syncDeleteQueueSwitchFlag = !s_syncDeleteQueueSwitchFlag;
 }
 
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {

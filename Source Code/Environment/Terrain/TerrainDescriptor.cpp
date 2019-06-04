@@ -38,7 +38,8 @@ namespace Divide {
             addVariable("heightfield", descTree.get<stringImpl>("heightfield", ""));
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
             addVariable("horizontalScale", descTree.get<F32>("horizontalScale", 1.0f));
-            addVariable("detailTillingFactor", descTree.get<F32>("detailTillingFactor", 30.0f));
+            addVariable("albedoTilingFactor", descTree.get<F32>("albedoTilingFactor", 4.0f));
+            addVariable("detailTilingFactor", descTree.get<F32>("detailTilingFactor", 4.0f));
             addVariable("detailBrightnessFactor", descTree.get<F32>("detailBrightnessFactor", 1.8f));
             addVariable("normalMap", descTree.get<stringImpl>("normalMap", ""));
             addVariable("textureMap", descTree.get<stringImpl>("textureMap", ""));

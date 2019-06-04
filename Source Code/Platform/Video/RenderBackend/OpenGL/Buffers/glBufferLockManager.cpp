@@ -112,30 +112,31 @@ bool glGlobalLockManager::test(GLsync syncObject, vectorEASTL<BufferRange>& rang
 }
 
 bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginBytes, size_t lockLength, bool noWait) {
-    vectorEASTL<std::pair<GLsync, vectorEASTL<BufferRange>>> toTest = {};
-    {
-        SharedLock r_lock(_lock);
-        for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks); ++it) {
-            const BufferLockEntries& entries = it->second;
-            auto entry = entries.find(bufferGUID);
-            if (entry != std::cend(entries)) {
-                toTest.emplace_back(it->first, entry->second);
+    bool ret = false;
+    BufferRange testRange{ lockBeginBytes, lockLength };
+
+    for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
+        boost::shared_lock<boost::shared_mutex> r_lock(_lock);
+        auto entry = it->second.find(bufferGUID);
+        if (entry != std::cend(it->second)) {
+            r_lock.unlock();
+            boost::upgrade_lock<boost::shared_mutex> u_lock(_lock);
+            auto entry2 = it->second.find(bufferGUID);
+            if (entry2 != std::cend(it->second)) {
+                if (test(it->first, entry2->second, testRange, noWait)) {
+                    boost::upgrade_to_unique_lock<boost::shared_mutex> w_lock(u_lock);
+                    it = _bufferLocks.erase(it);
+                } else {
+                    ++it;
+                }
+                ret = true;
             }
+        } else {
+            ++it;
         }
     }
-
-    if (!toTest.empty()) {
-        BufferRange testRange{ lockBeginBytes, lockLength };
-        for (auto& it : toTest) {
-            if (test(it.first, it.second, testRange, noWait)) {
-                UniqueLockShared w_lock(_lock);
-                _bufferLocks.erase(it.first);
-            }
-        }
-        return true;
-    }
-
-    return false;
+    
+   return ret;
 }
 
 void glGlobalLockManager::LockBuffers(BufferLockEntries entries, bool flush) {
@@ -145,11 +146,8 @@ void glGlobalLockManager::LockBuffers(BufferLockEntries entries, bool flush) {
         }
     }
 
-    GLsync syncObject = syncHere();
-    {
-        UniqueLockShared w_lock(_lock);
-        hashAlg::emplace(_bufferLocks, syncObject, entries);
-    }
+    boost::unique_lock<boost::shared_mutex> w_lock(_lock);
+    hashAlg::emplace(_bufferLocks, syncHere(), entries);
     if (flush) {
         glFlush();
     }
