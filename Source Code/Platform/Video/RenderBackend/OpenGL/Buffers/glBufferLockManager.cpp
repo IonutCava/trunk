@@ -114,25 +114,33 @@ bool glGlobalLockManager::test(GLsync syncObject, vectorEASTL<BufferRange>& rang
 bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginBytes, size_t lockLength, bool noWait) {
     bool ret = false;
     BufferRange testRange{ lockBeginBytes, lockLength };
+    bool foundLockedRange = false;
 
-    for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-        boost::shared_lock<boost::shared_mutex> r_lock(_lock);
-        auto entry = it->second.find(bufferGUID);
-        if (entry != std::cend(it->second)) {
-            r_lock.unlock();
-            boost::upgrade_lock<boost::shared_mutex> u_lock(_lock);
-            auto entry2 = it->second.find(bufferGUID);
-            if (entry2 != std::cend(it->second)) {
-                if (test(it->first, entry2->second, testRange, noWait)) {
-                    boost::upgrade_to_unique_lock<boost::shared_mutex> w_lock(u_lock);
+    {
+        SharedLock r_lock(_lock);
+        for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks); ++it) {
+            if (it->second.find(bufferGUID) != std::cend(it->second)) {
+                foundLockedRange = true;
+                break;
+            }
+        }
+    }
+
+    if (foundLockedRange) {
+        UniqueLockShared w_lock(_lock);
+        // Check again as the range may have been cleared on another thread
+        for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
+            auto entry = it->second.find(bufferGUID);
+            if (entry != std::cend(it->second)) {
+                if (test(it->first, entry->second, testRange, noWait)) {
                     it = _bufferLocks.erase(it);
                 } else {
                     ++it;
                 }
                 ret = true;
+            } else {
+                ++it;
             }
-        } else {
-            ++it;
         }
     }
     
@@ -146,8 +154,11 @@ void glGlobalLockManager::LockBuffers(BufferLockEntries entries, bool flush) {
         }
     }
 
-    boost::unique_lock<boost::shared_mutex> w_lock(_lock);
-    hashAlg::emplace(_bufferLocks, syncHere(), entries);
+    {
+        UniqueLockShared w_lock(_lock);
+        hashAlg::emplace(_bufferLocks, syncHere(), entries);
+    }
+
     if (flush) {
         glFlush();
     }
