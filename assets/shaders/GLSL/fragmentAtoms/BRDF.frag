@@ -26,13 +26,9 @@
 #endif
 
 void getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 specular, in vec3 normalWV, inout vec4 lightColour) {
-    const vec3 ambient = vec3(0.01f, 0.01f, 0.01f);
-
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
         lightColour += getBRDFFactors(vec4(light._colour.rgb, 1.0f), specular, vec4(albedo, getShadowFactor(light._options.y)), normalWV, getLightDirection(light));
-
-        lightColour.rgb += (ambient * when_lt(lightColour.a, 0.01f)) * when_eq(lightIdx, 0);
     }
 }
 
@@ -90,6 +86,9 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 
     }
 
     lightColour.rgb += getEmissive(colourMatrix);
+
+    const vec3 ambient = vec3(0.01f, 0.01f, 0.01f);
+    lightColour.rgb += (ambient * when_lt(lightColour.a, 0.01f));
 
     if (dvd_lodLevel < 1 && getReflectivity(colourMatrix) > 100) {
         vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normal);

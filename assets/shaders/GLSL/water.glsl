@@ -40,11 +40,7 @@ uniform vec2 _noiseFactor;
 const float Eta = 0.15f; //water
 
 float Fresnel(in vec3 viewDir, in vec3 normal) {
-    if (_underwater == 1) {
-        return 1.0;
-    }
-    
-    return Eta + (1.0 - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f);
+    return mix(Eta + (1.0 - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f), 1.0f, _underwater * 1.0f);
 }
 #endif
 
