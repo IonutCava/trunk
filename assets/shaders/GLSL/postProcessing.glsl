@@ -81,7 +81,7 @@ void main(void){
         colour = mix(colour, _fadeColour, _fadeStrength);
     }
 
-    float depth = getDepthValue(getScreenPositionNormalised());
+    float depth = getDepthValue(dvd_screenPositionNormalised);
     _colourOut = applyFog(depth, colour, _zPlanes);
     //_colourOut = screenNormal();
 }

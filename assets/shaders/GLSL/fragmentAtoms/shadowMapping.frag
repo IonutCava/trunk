@@ -26,7 +26,7 @@ float getShadowFactorInternal(int idx) {
 
 #if !defined(PRE_PASS)
     if (idx >= 0 && idx < 4) {
-        //return texture(texDepthMapFromPrePass, getScreenPositionNormalised())[idx];
+        //return texture(texDepthMapFromPrePass, dvd_screenPositionNormalised)[idx];
     }
 #endif
 

@@ -239,7 +239,7 @@ vec3 getNormal(in vec2 uv) {
 
     return normalize(normal);
 #else //PRE_PASS
-    return unpackNormal(texture(texNormalMap, getScreenPositionNormalised()).rg);
+    return unpackNormal(texture(texNormalMap, dvd_screenPositionNormalised).rg);
 #endif //PRE_PASS
 }
 #endif //_MATERIAL_DATA_FRAG_

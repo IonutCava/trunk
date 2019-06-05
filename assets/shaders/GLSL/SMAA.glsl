@@ -8,7 +8,7 @@ layout(location = 0) out vec4 _posPos;
 uniform float dvd_fxaaSubpixShift = 1.0 / 4.0;
 
 void main() {
-    vec2 offset = dvd_invScreenDimensions() * (0.5 + dvd_fxaaSubpixShift);
+    vec2 offset = dvd_invScreenDimensions * (0.5 + dvd_fxaaSubpixShift);
 
     gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
     _out._texCoord = vec2(1.0, 1.0);
@@ -51,7 +51,7 @@ void main(){
 
 /*---------------------------------------------------------*/
     const vec3 luma = vec3(0.299, 0.587, 0.114);
-    vec2 invDim = dvd_invScreenDimensions();
+    vec2 invDim = dvd_invScreenDimensions;
     float lumaNW = dot(FxaaTexLod0(texScreen, _posPos.zw).xyz ,luma);
     float lumaNE = dot(FxaaTexOff(texScreen, _posPos.zw, ivec2(1,0), invDim).xyz ,luma);
     float lumaSW = dot(FxaaTexOff(texScreen, _posPos.zw, ivec2(0,1), invDim).xyz ,luma);

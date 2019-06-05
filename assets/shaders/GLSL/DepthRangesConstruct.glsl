@@ -41,7 +41,7 @@ vec3 unProject(vec2 fragmentPos, float fragmentDepth)
 
 vec3 fetchPosition(vec2 p, float d)
 {
-  vec2 fragmentPos = p * dvd_invScreenDimensions();
+  vec2 fragmentPos = p * dvd_invScreenDimensions;
   return unProject(fragmentPos, d);
 }
 

@@ -41,7 +41,6 @@ void main(void)
 layout(location = 0) in vec4 tScale[];
 
 #include "nodeBufferedInput.cmn"
-//layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 uniform vec2 tessellationRange;
 
@@ -52,9 +51,9 @@ layout(vertices = 4) out;
 
 layout(location = 0) out float tcs_tessLevel[];
 
-const vec2 cmp = vec2(1.7f);
-
 bool offscreen(in vec4 vertex) {
+    const vec2 cmp = vec2(1.7f);
+
     return vertex.z < -0.5f ||
            any(lessThan(vertex.xy, -cmp)) ||
            any(greaterThan(vertex.xy, cmp));
@@ -65,40 +64,22 @@ vec4 project(in vec4 vertex, in mat4 mvp) {
     return result / result.w;
 }
 
-uint nextPOW2(in uint n) {
-    n--;
-    n |= n >> 1;
-    n |= n >> 2;
-    n |= n >> 4;
-    n |= n >> 8;
-    n |= n >> 16;
-
-    return ++n;
-}
-
 // Dynamic level of detail using camera distance algorithm.
 float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in mat4 viewMatrix)
 {
-    if (MAX_TESS_SCALE != MIN_TESS_SCALE) {
-        //p0.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, t0).r) + TERRAIN_MIN_HEIGHT;
-        //p1.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, t1).r) + TERRAIN_MIN_HEIGHT;
+#if MAX_TESS_SCALE != MIN_TESS_SCALE
 
         const vec4 view0 = viewMatrix * p0;
         const vec4 view1 = viewMatrix * p1;
 
-        const float d0 = clamp((abs(view0.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
-        const float d1 = clamp((abs(view1.z) - tessellationRange.x) / (tessellationRange.y - tessellationRange.x), 0.0f, 1.0f);
-#if 1
-        return mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f);
+        const float range = tessellationRange.y - tessellationRange.x;
+
+        const float d0 = (abs(view0.z) - tessellationRange.x) / range;
+        const float d1 = (abs(view1.z) - tessellationRange.x) / range;
+        return mix(MAX_TESS_SCALE, MIN_TESS_SCALE, clamp((d0 + d1) * 0.5f, 0.0f, 1.0f));
 #else
-
-        const uint t = nextPOW2(uint(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f)));
-
-        return float(clamp(t, uint(MIN_TESS_SCALE), uint(MAX_TESS_SCALE)));
+        return MAX_TESS_SCALE;
 #endif
-    }
-
-    return MAX_TESS_SCALE;
 }
 
 void main(void)
@@ -107,12 +88,12 @@ void main(void)
 
     const mat4 mvp = dvd_ViewProjectionMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
 
-    const vec4 v0 = project(gl_in[0].gl_Position, mvp);
-    const vec4 v1 = project(gl_in[1].gl_Position, mvp);
-    const vec4 v2 = project(gl_in[2].gl_Position, mvp);
-    const vec4 v3 = project(gl_in[3].gl_Position, mvp);
-
-    if (gl_InvocationID == 0 && all(bvec4(offscreen(v0), offscreen(v1), offscreen(v2), offscreen(v3)))) {
+    if (gl_InvocationID == 0 && 
+        all(bvec4(offscreen(project(gl_in[0].gl_Position, mvp)),
+                  offscreen(project(gl_in[1].gl_Position, mvp)),
+                  offscreen(project(gl_in[2].gl_Position, mvp)),
+                  offscreen(project(gl_in[3].gl_Position, mvp)))))
+    {
         gl_TessLevelInner[0] = 0;
         gl_TessLevelInner[1] = 0;
 
@@ -146,11 +127,11 @@ void main(void)
 
 --TessellationE
 
+layout(quads, fractional_even_spacing) in;
+
 #include "nodeBufferedInput.cmn"
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
-
-layout(quads, fractional_even_spacing) in;
 
 layout(location = 0) in float tcs_tessLevel[];
 
@@ -164,44 +145,44 @@ layout(location = 1) smooth out vec2 _waterDetails;
 
 vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
 {
-    vec4 a = mix(v0, v1, gl_TessCoord.x);
-    vec4 b = mix(v3, v2, gl_TessCoord.x);
+    const vec4 a = mix(v0, v1, gl_TessCoord.x);
+    const vec4 b = mix(v3, v2, gl_TessCoord.x);
     return mix(a, b, gl_TessCoord.y);
 }
 
 vec2 interpolate2(in vec2 v0, in vec2 v1, in vec2 v2, in vec2 v3)
 {
-    vec2 a = mix(v0, v1, gl_TessCoord.x);
-    vec2 b = mix(v3, v2, gl_TessCoord.x);
+    const vec2 a = mix(v0, v1, gl_TessCoord.x);
+    const vec2 b = mix(v3, v2, gl_TessCoord.x);
     return mix(a, b, gl_TessCoord.y);
 }
 
 vec4 getHeightOffsets(in vec2 tex_coord) {
     const ivec3 off = ivec3(-1, 0, 1);
 
-    float s01 = textureOffset(TexTerrainHeight, tex_coord, off.xy).r;
-    float s21 = textureOffset(TexTerrainHeight, tex_coord, off.zy).r;
-    float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r;
-    float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r;
+    const float s01 = textureOffset(TexTerrainHeight, tex_coord, off.xy).r;
+    const float s21 = textureOffset(TexTerrainHeight, tex_coord, off.zy).r;
+    const float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r;
+    const float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r;
 
     return (TERRAIN_HEIGHT_RANGE * vec4(s01, s21, s10, s12)) + TERRAIN_MIN_HEIGHT;
 }
 
 float getHeight(in vec4 heightOffsets) {
     
-    float s01 = heightOffsets.r;
-    float s21 = heightOffsets.g;
-    float s10 = heightOffsets.b;
-    float s12 = heightOffsets.a;
+    const float s01 = heightOffsets.r;
+    const float s21 = heightOffsets.g;
+    const float s10 = heightOffsets.b;
+    const float s12 = heightOffsets.a;
 
     return (s01 + s21 + s10 + s12) * 0.25f;
 }
 
 vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
-    float s01 = heightOffsets.r;
-    float s21 = heightOffsets.g;
-    float s10 = heightOffsets.b;
-    float s12 = heightOffsets.a;
+    const float s01 = heightOffsets.r;
+    const float s21 = heightOffsets.g;
+    const float s10 = heightOffsets.b;
+    const float s12 = heightOffsets.a;
 
     return normalize(vec3(s21 - s01, 2.0f, s12 - s10));
 }
@@ -214,7 +195,9 @@ void waterDetails() {
     float maxDistance = 0.0f;
     float minDepth = 1.0f;
 
-    for (int i = 0; i < dvd_waterEntities.length(); ++i)
+    const int entityCount = dvd_waterEntities.length();
+
+    for (int i = 0; i < entityCount; ++i)
     {
         WaterBodyData data = dvd_waterEntities[i];
 
@@ -251,14 +234,12 @@ void main()
 
     const uint baseInstance = VAR[0].dvd_baseInstance;
 
-    // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
-    vec4 pos = interpolate(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position, gl_in[3].gl_Position);
-
     // Terrain heightmap coords
     _out._texCoord = interpolate2(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord);
-
     const vec4 heightOffsets = getHeightOffsets(_out._texCoord);
 
+    // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
+    vec4 pos = interpolate(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position, gl_in[3].gl_Position);
     // Sample the heightmap and offset y position of vertex
     pos.y = getHeight(heightOffsets);
 
@@ -462,10 +443,11 @@ layout(binding = TEXTURE_UNIT1)  uniform sampler2DArray underwaterTextures;
 #endif
 
 vec4 UnderwaterAlbedo(in vec2 uv) {
-    vec2 coords = uv * UNDERWATER_TILE_SCALE;
 #if defined(LOW_QUALITY)
-    return texture(underwaterTextures, vec3(coords, 1));
+    return texture(underwaterTextures, vec3(uv * UNDERWATER_TILE_SCALE, 1));
 #else
+
+    vec2 coords = uv * UNDERWATER_TILE_SCALE;
     float time2 = float(dvd_time) * 0.0001f;
     vec4 scrollingUV = vec4(coords, coords + time2);
     scrollingUV.s -= time2;
@@ -491,13 +473,14 @@ void main(void)
     vec2 uv = getTexCoord();
 
 #if defined(PRE_PASS)
+    const float crtDepth = computeDepth(VAR._vertexWV);
 #if defined(LOW_QUALITY)
     const vec3 normal = TerrainNormal(uv);
 #else
-    const vec3 normal = mix(TerrainNormal(uv), UnderwaterNormal(uv), _waterDetails.x);
+    const vec3 normal = mix(TerrainNormal(uv, crtDepth), UnderwaterNormal(uv), _waterDetails.x);
 #endif
 
-    outputWithVelocity(uv, normalize(VAR._tbn * normal));
+    outputWithVelocity(uv, 1.0f, crtDepth, normalize(VAR._tbn * normal));
 #else
 
     vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);

@@ -189,9 +189,7 @@ float Gloss(vec3 bump)
     return gloss;
 }
 
-vec2 getScreenPositionNormalised() {
-    return gl_FragCoord.xy * dvd_invScreenDimensions();
-}
+#define dvd_screenPositionNormalised (gl_FragCoord.xy / dvd_ViewPort.zw)
 
 #if defined(NEED_DEPTH_TEXTURE)
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;

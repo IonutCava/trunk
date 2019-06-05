@@ -35,33 +35,16 @@ vec4 _getTexture(in sampler2DArray tex, in vec3 coords) {
 }
 
 #if !defined(PRE_PASS)
-
-vec4 _getAlbedoNoDetail(in vec2 uv) {
-    const int tileScale = tiling[LoD];
-    vec4 colour = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-
-    uint offset = 0;
-    for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
-        const vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
-
-        const uint layerCount = CURRENT_LAYER_COUNT[i];
-        for (uint j = 0; j < layerCount; ++j) {
-            float amnt = blendColour[j];
-            const uint aSlice = ALBEDO_IDX[offset + j];
-            if (aSlice < 255) {
-                vec3 coordsC = vec3(scaledTextureCoords(uv, ALBEDO_TILING * tileScale), aSlice);
-                colour = mix(colour, _getTexture(texTileMaps, coordsC), amnt);
-            }
-        }
-
-        offset += CURRENT_LAYER_COUNT[i];
+vec4 getTerrainAlbedo(in vec2 uv) {
+#if defined(LOW_QUALITY)
+    return texture(texAlbedo, uv);
+#else
+    if (LoD > 1) {
+        return texture(texAlbedo, uv);
     }
 
-    return colour;
-}
-
-vec4 _getAlbedoWithDetail(in vec2 uv) {
     const int tileScale = tiling[LoD];
+
     vec4 colour = vec4(0.0f, 0.0f, 0.0f, 0.0f);
     float detail = 1.0f;
 
@@ -87,19 +70,8 @@ vec4 _getAlbedoWithDetail(in vec2 uv) {
         offset += CURRENT_LAYER_COUNT[i];
     }
 
-    return colour * detail * DETAIL_BRIGHTNESS;
-}
-
-vec4 getTerrainAlbedo(in vec2 uv) {
-#if defined(LOW_QUALITY)
-    return texture(texAlbedo, uv);
-#else
-    if (LoD > 1) {
-        return texture(texAlbedo, uv);
-    }
-
-    float linearDepth = ToLinearDepth(getDepthValue(getScreenPositionNormalised()));
-    return mix(_getAlbedoWithDetail(uv), _getAlbedoNoDetail(uv), saturate(linearDepth * 0.1f));
+    float linearDepth = ToLinearDepth(getDepthValue(dvd_screenPositionNormalised));
+    return mix(colour * detail * DETAIL_BRIGHTNESS, colour, saturate(linearDepth * 0.1f));
 #endif
 }
 #endif //PRE_PASS
@@ -164,13 +136,14 @@ vec3 _getSplatNormal(in vec2 uv, in vec3 texNormal) {
 }
 #endif //LOW_QUALITY
 
-vec3 TerrainNormal(in vec2 uv) {
-    vec3 texNormal = _getTexNormal(uv);
+vec3 TerrainNormal(in vec2 uv, in float crtDepth) {
 #if defined(LOW_QUALITY)
-    return texNormal;
+    return _getTexNormal(uv);
 #else //LOW_QUALITY
-    float linearDepth = ToLinearDepth(computeDepth(VAR._vertexWV));
-    return mix(normalWhiteoutBlend(texNormal, _getSplatNormal(uv, texNormal)), texNormal, saturate(linearDepth * 0.005f));
+    vec3 texNormal = _getTexNormal(uv);
+    return mix(normalWhiteoutBlend(texNormal, _getSplatNormal(uv, texNormal)),
+               texNormal,
+               saturate(ToLinearDepth(crtDepth) * 0.05f));
 #endif //LOW_QUALITY
 }
 #endif //PRE_PASS

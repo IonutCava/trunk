@@ -38,40 +38,25 @@ void outputNoVelocity(in vec2 uv, float alphaFactor) {
 #endif
 }
 
-void outputNoVelocity(in vec2 uv) {
-    outputNoVelocity(uv, 1.0f);
-}
-
-void outputWithVelocity(in vec2 uv, float alphaFactor) {
-    _output(getNormal(uv), alphaFactor, uv);
-#if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.ba = velocityCalc(gl_FragCoord.z, dvd_InvProjectionMatrix, getScreenPositionNormalised());
-#endif
-}
-
-void outputWithVelocity(in vec2 uv) {
-    outputWithVelocity(uv, 1.0f);
-}
-
-void outputNoVelocity(in vec2 uv, vec3 normal, float alphaFactor) {
+void outputNoVelocity(in vec2 uv, float alphaFactor, vec3 normal) {
     _output(normal, alphaFactor, uv);
 #if defined(USE_DEFERRED_NORMALS)
     _normalAndVelocityOut.ba = vec2(1.0f);
 #endif
 }
 
-void outputNoVelocity(in vec2 uv, vec3 normal) {
-    outputNoVelocity(uv, normal, 1.0f);
-}
-
-void outputWithVelocity(in vec2 uv, vec3 normal, float alphaFactor) {
-    _output(normal, alphaFactor, uv);
+void outputWithVelocity(in vec2 uv, float alphaFactor, in float crtDepth) {
+    _output(getNormal(uv), alphaFactor, uv);
 #if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.ba = velocityCalc(gl_FragCoord.z, dvd_InvProjectionMatrix, getScreenPositionNormalised());
+    _normalAndVelocityOut.ba = velocityCalc(crtDepth, dvd_InvProjectionMatrix, dvd_screenPositionNormalised);
 #endif
 }
 
-void outputWithVelocity(in vec2 uv, vec3 normal) {
-    outputWithVelocity(uv, normal, 1.0f);
+void outputWithVelocity(in vec2 uv, float alphaFactor, in float crtDepth, vec3 normal) {
+    _output(normal, alphaFactor, uv);
+#if defined(USE_DEFERRED_NORMALS)
+    _normalAndVelocityOut.ba = velocityCalc(crtDepth, dvd_InvProjectionMatrix, dvd_screenPositionNormalised);
+#endif
 }
+
 #endif //_PRE_PASS_FRAG_

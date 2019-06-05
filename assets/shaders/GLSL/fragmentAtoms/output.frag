@@ -81,7 +81,7 @@ float nvidiaSample(in vec4 color, in float linearDepth) {
 void writeOutput(vec4 colour) {
 #if defined(OIT_PASS)
     float linearDepth = abs(1.0 / gl_FragCoord.w);
-    //float linearDepth = ToLinearDepth(getDepthValue(getScreenPositionNormalised()));
+    //float linearDepth = ToLinearDepth(getDepthValue(dvd_screenPositionNormalised));
 
 #if defined(USE_COLOURED_WOIT)
     //writePixel(colour, colour.rgb - vec3(0.2f), linearDepth);
