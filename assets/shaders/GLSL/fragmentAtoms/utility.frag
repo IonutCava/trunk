@@ -34,6 +34,9 @@ float maxComponent(vec4 v) { return max(maxComponent(v.xyz), v.w); }
 float ToLinearDepth(in float depthIn);
 float ToLinearDepth(in float depthIn, in vec2 depthRange);
 
+float ToLinearPreviewDepth(in float depthIn);
+float ToLinearPreviewDepth(in float depthIn, in vec2 depthRange);
+
 float overlay(float x, float y)
 {
     if (x < 0.5)
@@ -95,10 +98,24 @@ vec4 applyFog(in float depth, in vec4 colour, in vec2 depthRange) {
     return vec4(applyFogColour(depth, colour.rgb, depthRange), colour.a);
 }
 
+float ToLinearPreviewDepth(in float depthIn, in vec2 depthRange) {
+    float zNear = depthRange.x;
+    float zFar  = depthRange.y;
+    float depthSample = depthIn;
+
+    return (2 * zNear) / (zFar + zNear - depthSample * (zFar - zNear));
+}
+
+float ToLinearPreviewDepth(in float depthIn) {
+    return ToLinearPreviewDepth(depthIn, dvd_zPlanes);
+}
+
 float ToLinearDepth(in float depthIn, in vec2 depthRange) {
-    float n = depthRange.x;
-    float f = depthRange.y * 0.5;
-    return (2 * n) / (f + n - (depthIn) * (f - n));
+    float zNear = depthRange.x;
+    float zFar  = depthRange.y ;
+    float depthSample = 2.0f * depthIn - 1.0f;
+
+    return (2 * zNear * zFar) / (zFar + zNear - depthSample * (zFar - zNear));
 }
 
 float ToLinearDepth(in float depthIn) {
@@ -179,16 +196,22 @@ vec2 getScreenPositionNormalised() {
 #if defined(NEED_DEPTH_TEXTURE)
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 
-float private_depth = -1.0;
 float getDepthValue(vec2 screenNormalisedPos) {
-    if (private_depth < 0.0) {
-        private_depth = textureLod(texDepthMap, screenNormalisedPos, 0).r;
-    }
-
-    return private_depth;
+    return textureLod(texDepthMap, screenNormalisedPos, 0).r;
 }
 #endif
 
+
+float computeDepth(in vec4 posWV) {
+    float near = gl_DepthRange.near;
+    float far = gl_DepthRange.far;
+
+    vec4 clip_space_pos = dvd_ProjectionMatrix * posWV;
+
+    float ndc_depth = clip_space_pos.z / clip_space_pos.w;
+
+    return (((far - near) * ndc_depth) + near + far) * 0.5f;
+}
 
 vec4 positionFromDepth(in float depth,
                        in mat4 invProjectionMatrix,

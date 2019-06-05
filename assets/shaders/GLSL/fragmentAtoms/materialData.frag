@@ -1,6 +1,9 @@
 #ifndef _MATERIAL_DATA_FRAG_
 #define _MATERIAL_DATA_FRAG_
 
+#if defined(OIT_PASS)
+#define NEED_DEPTH_TEXTURE
+#endif
 #include "utility.frag"
 
 //Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl

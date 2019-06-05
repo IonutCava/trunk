@@ -9,7 +9,7 @@ void main(void){
     VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_baseInstance) * dvd_Normal);
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
-    gl_Position.z = gl_Position.w - 0.0001;
+    gl_Position.z = gl_Position.w - 0.000001f;
 }
 
 -- Fragment.Display

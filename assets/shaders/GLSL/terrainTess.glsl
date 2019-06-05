@@ -443,6 +443,7 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else
+#define NEED_DEPTH_TEXTURE
 #include "BRDF.frag"
 #include "output.frag"
 #endif

@@ -36,14 +36,31 @@ vec4 _getTexture(in sampler2DArray tex, in vec3 coords) {
 
 #if !defined(PRE_PASS)
 
-vec4 getTerrainAlbedo(in vec2 uv) {
-#if defined(LOW_QUALITY)
-    return texture(texAlbedo, uv);
-#else
-    if (LoD > 1) {
-        return texture(texAlbedo, uv);
+vec4 _getAlbedoNoDetail(in vec2 uv) {
+    const int tileScale = tiling[LoD];
+    vec4 colour = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    uint offset = 0;
+    for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
+        const vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
+
+        const uint layerCount = CURRENT_LAYER_COUNT[i];
+        for (uint j = 0; j < layerCount; ++j) {
+            float amnt = blendColour[j];
+            const uint aSlice = ALBEDO_IDX[offset + j];
+            if (aSlice < 255) {
+                vec3 coordsC = vec3(scaledTextureCoords(uv, ALBEDO_TILING * tileScale), aSlice);
+                colour = mix(colour, _getTexture(texTileMaps, coordsC), amnt);
+            }
+        }
+
+        offset += CURRENT_LAYER_COUNT[i];
     }
 
+    return colour;
+}
+
+vec4 _getAlbedoWithDetail(in vec2 uv) {
     const int tileScale = tiling[LoD];
     vec4 colour = vec4(0.0f, 0.0f, 0.0f, 0.0f);
     float detail = 1.0f;
@@ -61,19 +78,28 @@ vec4 getTerrainAlbedo(in vec2 uv) {
                 colour = mix(colour, _getTexture(texTileMaps, coordsC), amnt);
             }
             const uint dSlice = DETAIL_IDX[offset + j];
-            if (dSlice < 255 && gl_FragCoord.z < 0.97f) {
+            if (dSlice < 255) {
                 vec3 coordsD = vec3(scaledTextureCoords(uv, (DETAIL_TILING * tileScale)), dSlice);
-                //detail = mix(detail, _getTexture(texTileMaps, coordsD).r, amnt);
+                detail = mix(detail, _getTexture(texTileMaps, coordsD).r, amnt);
             }
         }
 
         offset += CURRENT_LAYER_COUNT[i];
     }
 
-    //return vec4(colour.rgb * detail * DETAIL_BRIGHTNESS, 1.0f);
-    //return vec4(colour.rgb, 1.0f);
-    return vec4(colour.rgb * detail, 1.0f);
-    //return vec4(detail, 1.0f);
+    return colour * detail * DETAIL_BRIGHTNESS;
+}
+
+vec4 getTerrainAlbedo(in vec2 uv) {
+#if defined(LOW_QUALITY)
+    return texture(texAlbedo, uv);
+#else
+    if (LoD > 1) {
+        return texture(texAlbedo, uv);
+    }
+
+    float linearDepth = ToLinearDepth(getDepthValue(getScreenPositionNormalised()));
+    return mix(_getAlbedoWithDetail(uv), _getAlbedoNoDetail(uv), saturate(linearDepth * 0.1f));
 #endif
 }
 #endif //PRE_PASS
@@ -143,10 +169,8 @@ vec3 TerrainNormal(in vec2 uv) {
 #if defined(LOW_QUALITY)
     return texNormal;
 #else //LOW_QUALITY
-    if (gl_FragCoord.z < 0.99f) {
-        return normalWhiteoutBlend(texNormal, _getSplatNormal(uv, texNormal));
-    }
-    return texNormal;
+    float linearDepth = ToLinearDepth(computeDepth(VAR._vertexWV));
+    return mix(normalWhiteoutBlend(texNormal, _getSplatNormal(uv, texNormal)), texNormal, saturate(linearDepth * 0.005f));
 #endif //LOW_QUALITY
 }
 #endif //PRE_PASS
