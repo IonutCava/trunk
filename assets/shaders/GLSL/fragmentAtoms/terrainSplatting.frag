@@ -4,6 +4,8 @@
 //#define TRI_PLANAR_BLEND
 
 layout(binding = TEXTURE_TERRAIN_SPLAT) uniform sampler2DArray texBlendMaps;
+layout(binding = TEXTURE_UNIT1)  uniform sampler2DArray helperTextures;
+
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2DArray texNormalMaps;
 #endif
@@ -27,11 +29,15 @@ const int tiling[] = {
 };
 
 vec4 _getTexture(in sampler2DArray tex, in vec3 coords) {
-    if (LoD > 0)
-    {
-        return textureNoTile(tex, coords);
+#if 1
+    if (LoD == 0) {
+        return vec4(textureNoTile(tex, helperTextures, 3, coords), 1.0f);
     }
+     
+    return vec4(textureNoTile(tex, coords), 1.0f); 
+#else
     return texture(tex, coords);
+#endif
 }
 
 #if !defined(PRE_PASS)

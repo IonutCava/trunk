@@ -431,8 +431,6 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 
 #include "terrainSplatting.frag"
 
-layout(binding = TEXTURE_UNIT1)  uniform sampler2DArray underwaterTextures;
-
 #if !defined(PRE_PASS)
 // ToDo: Move this above the includes
 #if defined(LOW_QUALITY)
@@ -444,7 +442,7 @@ layout(binding = TEXTURE_UNIT1)  uniform sampler2DArray underwaterTextures;
 
 vec4 UnderwaterAlbedo(in vec2 uv) {
 #if defined(LOW_QUALITY)
-    return texture(underwaterTextures, vec3(uv * UNDERWATER_TILE_SCALE, 1));
+    return texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 1));
 #else
 
     vec2 coords = uv * UNDERWATER_TILE_SCALE;
@@ -452,8 +450,8 @@ vec4 UnderwaterAlbedo(in vec2 uv) {
     vec4 scrollingUV = vec4(coords, coords + time2);
     scrollingUV.s -= time2;
 
-    return mix((texture(underwaterTextures, vec3(scrollingUV.st, 0)) + texture(underwaterTextures, vec3(scrollingUV.pq, 0))) * 0.5f,
-                texture(underwaterTextures, vec3(coords, 1)),
+    return mix((texture(helperTextures, vec3(scrollingUV.st, 0)) + texture(helperTextures, vec3(scrollingUV.pq, 0))) * 0.5f,
+                texture(helperTextures, vec3(coords, 1)),
                 _waterDetails.y);
 #endif
 }
@@ -462,7 +460,7 @@ vec4 UnderwaterAlbedo(in vec2 uv) {
 
 #if !defined(LOW_QUALITY)
 vec3 UnderwaterNormal(in vec2 uv) {
-    return normalize(2.0f * texture(underwaterTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f);
+    return normalize(2.0f * texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f);
 }
 #endif //LQ
 

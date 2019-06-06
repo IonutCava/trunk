@@ -5,6 +5,7 @@
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
+<tileNoiseTexture>bruit_gaussien_2.jpg</tileNoiseTexture>
 <underwaterTileScale>100</underwaterTileScale>
 <model>Terrain</model>
 <NAVIGATION/>

@@ -21,15 +21,15 @@ namespace Divide {
         if (terrainDescriptor.empty()) {
             return false;
         }
-
+        
         addVariable("terrainName", name.c_str());
         addVariable("descriptor", terrainDescriptor.c_str());
         setWireframeDebug(pt.get<bool>("wireframeDebugMode", false));
         addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
-        addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture"));
-        addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture"));
+        addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture", "sandfloor009a.jpg"));
+        addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture", "terrain_detail_NM.png"));
+        addVariable("tileNoiseTexture", pt.get<stringImpl>("tileNoiseTexture", "bruit_gaussien_2.jpg"));
         addVariable("underwaterTileScale", pt.get<F32>("underwaterTileScale"));
-
         stringImpl alphaMapDescriptor = "";
         {
             boost::property_tree::ptree descTree = {};

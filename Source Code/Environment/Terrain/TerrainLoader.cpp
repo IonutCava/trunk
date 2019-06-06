@@ -192,17 +192,15 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendMapSampler._magFilter = TextureFilter::LINEAR;
     blendMapSampler._anisotropyLevel = 8;
 
-    SamplerDescriptor tileAlbedoSampler = {};
-    tileAlbedoSampler._wrapU = TextureWrap::REPEAT;
-    tileAlbedoSampler._wrapV = TextureWrap::REPEAT;
-    tileAlbedoSampler._wrapW = TextureWrap::REPEAT;
-    tileAlbedoSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-    tileAlbedoSampler._magFilter = TextureFilter::LINEAR;
-    tileAlbedoSampler._anisotropyLevel = 8;
-
-    SamplerDescriptor tileNormalSampler = tileAlbedoSampler;
-    tileNormalSampler._minFilter = TextureFilter::LINEAR;
-    tileNormalSampler._anisotropyLevel = 0;
+    SamplerDescriptor tileSampler = {};
+#if 1
+    tileSampler._wrapU = TextureWrap::MIRROR_REPEAT;
+    tileSampler._wrapV = TextureWrap::MIRROR_REPEAT;
+    tileSampler._wrapW = TextureWrap::MIRROR_REPEAT;
+#endif
+    tileSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+    tileSampler._magFilter = TextureFilter::LINEAR;
+    tileSampler._anisotropyLevel = 4;
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.setSampler(blendMapSampler);
@@ -210,14 +208,15 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendMapDescriptor._srgb = false;
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    albedoDescriptor.setSampler(tileAlbedoSampler);
+    albedoDescriptor.setSampler(tileSampler);
     albedoDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::ALBEDO)].size() + 
                                           textures[to_base(TerrainTextureType::DETAIL)].size());
     albedoDescriptor._srgb = true;
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    normalDescriptor.setSampler(tileNormalSampler);
+    normalDescriptor.setSampler(tileSampler);
     normalDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::NORMALS)].size());
+    normalDescriptor._srgb = false;
 
     textureBlendMap.assetName(blendMapArray);
     textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
@@ -313,17 +312,18 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::SPECULAR, CreateResource<Texture>(terrain->parentResourceCache(), normalTexture));
     terrainMaterial->setTextureUseForDepth(ShaderProgram::TextureUsage::SPECULAR, true);
 
-    stringImpl underwaterTextures = terrainDescriptor->getVariable("waterCaustics") + "," +
-                                    terrainDescriptor->getVariable("underwaterAlbedoTexture") + "," + 
-                                    terrainDescriptor->getVariable("underwaterDetailTexture");
+    stringImpl helperTextures = terrainDescriptor->getVariable("waterCaustics") + "," +
+                                terrainDescriptor->getVariable("underwaterAlbedoTexture") + "," + 
+                                terrainDescriptor->getVariable("underwaterDetailTexture") + "," +
+                                terrainDescriptor->getVariable("tileNoiseTexture");
 
-    TextureDescriptor underwaterTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    underwaterTexDescriptor.setSampler(tileAlbedoSampler);
+    TextureDescriptor helperTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
+    helperTexDescriptor.setSampler(blendMapSampler);
 
-    ResourceDescriptor textureWaterCaustics("Terrain Water Textures_" + name);
+    ResourceDescriptor textureWaterCaustics("Terrain Helper Textures_" + name);
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    textureWaterCaustics.assetName(underwaterTextures);
-    textureWaterCaustics.setPropertyDescriptor(underwaterTexDescriptor);
+    textureWaterCaustics.assetName(helperTextures);
+    textureWaterCaustics.setPropertyDescriptor(helperTexDescriptor);
     textureWaterCaustics.waitForReadyCbk(waitForReasoureTask);
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
 
