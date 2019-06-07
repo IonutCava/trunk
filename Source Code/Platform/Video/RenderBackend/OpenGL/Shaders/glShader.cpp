@@ -282,7 +282,7 @@ glShader* glShader::loadShader(GFXDevice& context,
                                const ShaderLoadData& data) {
     // See if we have the shader already loaded
     glShader* shader = getShader(name);
-    
+
     bool newShader = false;
     // If we do, and don't need a recompile, just return it
     if (shader == nullptr) {
@@ -291,17 +291,25 @@ glShader* glShader::loadShader(GFXDevice& context,
         newShader = true;
     }
 
+    return loadShader(context, shader, newShader, data);
+}
+
+
+glShader* glShader::loadShader(GFXDevice & context,
+                              glShader * shader,
+                              bool isNew,
+                              const ShaderLoadData & data) {
+
     // At this stage, we have a valid Shader object, so load the source code
     if (!shader->load(data)) {
         // If loading the source code failed, delete it
         MemoryManager::SAFE_DELETE(shader);
     } else {
-        if (newShader) {
+        if (isNew) {
             // If we loaded the source code successfully,  register it
             UniqueLockShared w_lock(_shaderNameLock);
             _shaderNameMap.insert({ shader->nameHash(), shader });
         }
-        shader->reuploadUniforms();
     }
 
     return shader;
@@ -400,7 +408,7 @@ I32 glShader::binding(const char* name) {
     return location;
 }
 
-I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant) {
+I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, bool force) {
     if (constant._binding.empty() || constant._type == GFX::PushConstantType::COUNT) {
         return -1;
     }
@@ -415,10 +423,9 @@ I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant) {
 
     UniformsByNameHash::ShaderVarMap::iterator it = _uniformsByNameHash._shaderVars.find(locationHash);
     if (it != std::end(_uniformsByNameHash._shaderVars)) {
-        if (it->second == constant) {
+        if (it->second == constant && !force) {
             return -1;
-        }
-        else {
+        } else {
             it->second = constant;
         }
     } else {
@@ -428,17 +435,17 @@ I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant) {
     return bindingLoc;
 }
 
-void glShader::UploadPushConstant(const GFX::PushConstant& constant) {
-    I32 binding = cachedValueUpdate(constant);
+void glShader::UploadPushConstant(const GFX::PushConstant& constant, bool force) {
+    I32 binding = cachedValueUpdate(constant, force);
 
     if (binding != -1) {
         Uniform(binding, constant._type, constant._buffer, constant._flag);
     }
 }
 
-void glShader::reuploadUniforms() {
-    for (UniformsByNameHash::ShaderVarMap::value_type it : _uniformsByNameHash._shaderVars) {
-        UploadPushConstant(it.second);
+void glShader::reuploadUniforms(bool force) {
+    for (const UniformsByNameHash::ShaderVarMap::value_type& it : _uniformsByNameHash._shaderVars) {
+        UploadPushConstant(it.second, force);
     }
 }
 

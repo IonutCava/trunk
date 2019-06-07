@@ -86,7 +86,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                                          const stringImpl& source,
                                          GLint level,
                                          vector<stringImpl>& foundAtoms,
-                                         vector<stringImpl>& foundDefines,
                                          bool lock);
 
    protected:
@@ -96,9 +95,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                                       const stringImpl& extension,
                                       const stringImpl& header,
                                       U32 lineOffset,
-                                      bool forceReParse,
+                                      bool reloadExisting,
                                       std::pair<bool, stringImpl>& sourceCodeOut);
 
+    void rebindStages();
     void validatePreBind();
     void validatePostBind();
 
@@ -109,10 +109,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     bool load() override;
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
-    void threadedLoad(bool skipRegister);
+    void threadedLoad(bool reloadExisting);
 
     /// Returns true if at least one shader linked succesfully
-    bool reloadShaders(bool reparseShaderSource);
+    bool reloadShaders(bool reloadExisting);
 
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program

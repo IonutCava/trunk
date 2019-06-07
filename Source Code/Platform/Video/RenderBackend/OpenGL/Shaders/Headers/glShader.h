@@ -55,6 +55,14 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     typedef std::array<LoadData, to_base(ShaderType::COUNT)> ShaderLoadData;
 
+    template<typename T>
+    struct UniformCache {
+        typedef hashMap<T, GFX::PushConstant> ShaderVarMap;
+        inline void clear() { _shaderVars.clear(); }
+        ShaderVarMap _shaderVars;
+    };
+    typedef UniformCache<U64> UniformsByNameHash;
+
    public:
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for
@@ -71,6 +79,9 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     bool embedsType(ShaderType type) const;
 
+    /// Slow and memory intensive, but it works
+    inline UniformsByNameHash getUniformsCopy() const { return _uniformsByNameHash; }
+
    public:
     // ======================= static data ========================= //
     /// Remove a shader from the cache
@@ -83,6 +94,10 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
                                 const stringImpl& name,
                                 const ShaderLoadData& data);
 
+    static glShader* loadShader(GFXDevice& context,
+                                glShader* shader,
+                                bool isNew,
+                                const ShaderLoadData& data);
    private:
      bool loadFromBinary();
 
@@ -104,9 +119,9 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     /// Cache uniform/attribute locations for shader programs
     I32 binding(const char* name);
-    void reuploadUniforms();
-    void UploadPushConstant(const GFX::PushConstant& constant);
-    I32 cachedValueUpdate(const GFX::PushConstant& constant);
+    void reuploadUniforms(bool force);
+    void UploadPushConstant(const GFX::PushConstant& constant, bool force);
+    I32 cachedValueUpdate(const GFX::PushConstant& constant, bool force);
     void Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const;
 
     bool uploadToGPU();
@@ -119,15 +134,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     inline UseProgramStageMask stageMask() const { return _stageMask;  }
 
    private:
-    template<typename T>
-    struct UniformCache {
-        typedef hashMap<T, GFX::PushConstant> ShaderVarMap;
-        inline void clear() { _shaderVars.clear(); }
-        ShaderVarMap _shaderVars;
-    };
-
     typedef hashMap<U64, I32> ShaderVarMap;
-    typedef UniformCache<U64> UniformsByNameHash;
 
   private:
     bool _valid;

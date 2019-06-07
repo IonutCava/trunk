@@ -257,8 +257,8 @@ void GL_API::appendToShaderHeader(ShaderType type,
     if (entry.find("#include") == stringImpl::npos) {
         inOutOffset[index] += Util::LineCount(entry);
     } else {
-        vector<stringImpl> tempAtoms, tempDefines;
-        inOutOffset[index] += Util::LineCount(glShaderProgram::preprocessIncludes("header", entry, 0, tempAtoms, tempDefines, true));
+        vector<stringImpl> tempAtoms;
+        inOutOffset[index] += Util::LineCount(glShaderProgram::preprocessIncludes("header", entry, 0, tempAtoms, true));
     }
 }
 
