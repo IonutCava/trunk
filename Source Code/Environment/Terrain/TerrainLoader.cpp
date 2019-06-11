@@ -465,6 +465,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
+    // PRE PASS LQ
     ShaderProgramDescriptor prePassDescriptorLQ = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : prePassDescriptorLQ._modules) {
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
@@ -482,9 +483,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgram_ptr terrainPrePassShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePassLQ);
 
+    // MAIN PASS LQ
     ShaderProgramDescriptor lowQualityDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+            shaderModule._variant = "LQPass";
             shaderModule._defines.push_back(std::make_pair("WRITE_DEPTH_TO_ALPHA", true));
         }
 

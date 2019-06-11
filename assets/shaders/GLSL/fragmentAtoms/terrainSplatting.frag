@@ -13,7 +13,9 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2DArray texNormalMaps;
 #if !defined(PRE_PASS)
 layout(binding = TEXTURE_UNIT0)  uniform sampler2D texAlbedo;
 layout(binding = TEXTURE_TERRAIN_ALBEDO_TILE) uniform sampler2DArray texTileMaps;
-#else
+#endif
+
+#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texNormals;
 #endif
 
@@ -82,8 +84,7 @@ vec4 getTerrainAlbedo(in vec2 uv) {
 }
 #endif //PRE_PASS
 
-
-#if defined(PRE_PASS)
+#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
 vec3 _getTexNormal(in vec2 uv) {
 #if defined(TRI_PLANAR_BLEND)
     const float normalScale = 1.0f;
@@ -100,8 +101,6 @@ vec3 _getTexNormal(in vec2 uv) {
     return normalize(2.0f * texture(texNormals, uv).rgb - 1.0f);
 #endif
 }
-
-#if !defined(LOW_QUALITY)
 
 #if defined(TRI_PLANAR_BLEND)
 vec3 _getTriPlanarBlend(vec3 _wNorm) {
@@ -140,7 +139,6 @@ vec3 _getSplatNormal(in vec2 uv, in vec3 texNormal) {
 
     return normalize(2.0f * tbn - 1.0f);
 }
-#endif //LOW_QUALITY
 
 vec3 TerrainNormal(in vec2 uv, in float crtDepth) {
 #if defined(LOW_QUALITY)
@@ -152,6 +150,6 @@ vec3 TerrainNormal(in vec2 uv, in float crtDepth) {
                saturate(ToLinearDepth(crtDepth) * 0.05f));
 #endif //LOW_QUALITY
 }
-#endif //PRE_PASS
+#endif //PRE_PASS || !USE_DEFERRED_NORMALS
 
 #endif //_TERRAIN_SPLATTING_FRAG_

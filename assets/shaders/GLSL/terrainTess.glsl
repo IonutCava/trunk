@@ -402,6 +402,52 @@ void main(void)
     EndPrimitive();
 }
 
+--Fragment.LQPass
+layout(early_fragment_tests) in;
+
+layout(location = 0) in flat int LoD;
+layout(location = 1) smooth in vec2 _waterDetails;
+
+#if defined(TOGGLE_WIREFRAME)
+layout(location = 2) in vec3 gs_wireColor;
+layout(location = 3) noperspective in vec3 gs_edgeDist;
+#endif
+
+#define NEED_DEPTH_TEXTURE
+#include "BRDF.frag"
+#include "output.frag"
+
+#if defined(MAX_TEXTURE_LAYERS)
+#undef MAX_TEXTURE_LAYERS
+#define MAX_TEXTURE_LAYERS 1
+#endif
+
+#include "terrainSplatting.frag"
+
+vec4 UnderwaterAlbedo(in vec2 uv) {
+    return texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 1));
+}
+
+void main(void)
+{
+    vec2 uv = getTexCoord();
+    const float crtDepth = computeDepth(VAR._vertexWV);
+    const vec3 normal = normalize(VAR._tbn * TerrainNormal(uv, crtDepth));
+
+    vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);
+    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+    vec4 colourOut = getPixelColour(albedo, colourMatrix, normal, uv);
+
+#if defined(TOGGLE_WIREFRAME)
+    const float LineWidth = 0.75f;
+    float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
+    colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
+#endif
+
+    writeOutput(colourOut);
+}
+
+
 --Fragment.MainPass
 
 #if !defined(PRE_PASS)
@@ -432,19 +478,8 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 #include "terrainSplatting.frag"
 
 #if !defined(PRE_PASS)
-// ToDo: Move this above the includes
-#if defined(LOW_QUALITY)
-#if defined(MAX_TEXTURE_LAYERS)
-#undef MAX_TEXTURE_LAYERS
-#define MAX_TEXTURE_LAYERS 1
-#endif
-#endif
 
 vec4 UnderwaterAlbedo(in vec2 uv) {
-#if defined(LOW_QUALITY)
-    return texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 1));
-#else
-
     vec2 coords = uv * UNDERWATER_TILE_SCALE;
     float time2 = float(dvd_time) * 0.0001f;
     vec4 scrollingUV = vec4(coords, coords + time2);
@@ -453,16 +488,13 @@ vec4 UnderwaterAlbedo(in vec2 uv) {
     return mix((texture(helperTextures, vec3(scrollingUV.st, 0)) + texture(helperTextures, vec3(scrollingUV.pq, 0))) * 0.5f,
                 texture(helperTextures, vec3(coords, 1)),
                 _waterDetails.y);
-#endif
 }
 
 #else
 
-#if !defined(LOW_QUALITY)
 vec3 UnderwaterNormal(in vec2 uv) {
     return normalize(2.0f * texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f);
 }
-#endif //LQ
 
 #endif
 
@@ -472,12 +504,7 @@ void main(void)
 
 #if defined(PRE_PASS)
     const float crtDepth = computeDepth(VAR._vertexWV);
-#if defined(LOW_QUALITY)
-    const vec3 normal = TerrainNormal(uv, crtDepth);
-#else
     const vec3 normal = mix(TerrainNormal(uv, crtDepth), UnderwaterNormal(uv), _waterDetails.x);
-#endif
-
     outputWithVelocity(uv, 1.0f, crtDepth, normalize(VAR._tbn * normal));
 #else
 
