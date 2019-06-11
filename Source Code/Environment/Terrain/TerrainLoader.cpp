@@ -381,6 +381,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
 
         shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+        if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() ? ShaderType::GEOMETRY : ShaderType::TESSELATION_EVAL)) {
+            shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
+        }
+
         shaderModule._defines.push_back(std::make_pair("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true));
         shaderModule._defines.push_back(std::make_pair("DETAIL_BRIGHTNESS " + to_stringImpl(detailBrightness), true));
         shaderModule._defines.push_back(std::make_pair("DETAIL_TILING " + to_stringImpl(detailTilingFactor), true));
@@ -415,6 +419,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
     }
 
+    // SHADOW
     ShaderProgramDescriptor shadowDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : shadowDescriptor._modules) {
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
@@ -431,8 +436,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
 
+    // MAIN PASS
     ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
     for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
+        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+            shaderModule._variant = "MainPass";
+        }
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
         shaderModule._defines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
@@ -444,6 +453,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
 
+    // PRE PASS
     ShaderProgramDescriptor prePassDescriptor = colourDescriptor;
     for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
         shaderModule._defines.push_back(std::make_pair("PRE_PASS", true));
@@ -455,14 +465,32 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
 
-    ShaderProgramDescriptor lowQualityDescriptor = shaderDescriptor;
-    for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
+    ShaderProgramDescriptor prePassDescriptorLQ = shaderDescriptor;
+    for (ShaderModuleDescriptor& shaderModule : prePassDescriptorLQ._modules) {
+        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+            shaderModule._variant = "";
+        }
+        shaderModule._defines.push_back(std::make_pair("PRE_PASS", true));
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 4", true));
         shaderModule._defines.push_back(std::make_pair("LOW_QUALITY", true));
+    }
+
+    ResourceDescriptor terrainShaderPrePassLQ("Terrain_PrePass_LowQuality-" + name);
+    terrainShaderPrePassLQ.setPropertyDescriptor(prePassDescriptorLQ);
+    terrainShaderPrePassLQ.waitForReadyCbk(waitForReasoureTask);
+
+    ShaderProgram_ptr terrainPrePassShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePassLQ);
+
+    ShaderProgramDescriptor lowQualityDescriptor = shaderDescriptor;
+    for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._defines.push_back(std::make_pair("WRITE_DEPTH_TO_ALPHA", true));
         }
+
+        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
+        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 4", true));
+        shaderModule._defines.push_back(std::make_pair("LOW_QUALITY", true));
     }
 
     ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name);
@@ -475,6 +503,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setShaderProgram(terrainColourShader, RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
     terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
     terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
+    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
+    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
+
     terrainMaterial->setShaderProgram(terrainShadowShader, RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS));
 
     terrain->setMaterialTpl(terrainMaterial);

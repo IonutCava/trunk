@@ -402,7 +402,7 @@ void main(void)
     EndPrimitive();
 }
 
---Fragment
+--Fragment.MainPass
 
 #if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
@@ -473,7 +473,7 @@ void main(void)
 #if defined(PRE_PASS)
     const float crtDepth = computeDepth(VAR._vertexWV);
 #if defined(LOW_QUALITY)
-    const vec3 normal = TerrainNormal(uv);
+    const vec3 normal = TerrainNormal(uv, crtDepth);
 #else
     const vec3 normal = mix(TerrainNormal(uv, crtDepth), UnderwaterNormal(uv), _waterDetails.x);
 #endif

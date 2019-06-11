@@ -302,7 +302,6 @@ vector<stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
     }
 
     if (sourceCodeOut.second.empty()) {
-        sourceCodeOut.first = true;
         // Use GLSW to read the appropriate part of the effect file
         // based on the specified stage and properties
         const char* sourceCodeStr = glswGetShader(stageName.c_str());
@@ -315,15 +314,17 @@ vector<stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
         }
 
         stringImpl srcTemp = preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, true);
-
-        if (Config::Build::IS_DEBUG_BUILD) {
-            sourceCodeOut.second = srcTemp;
-        } else {
-            sourceCodeOut.second = preProcess(srcTemp, fileName.c_str());
+        if (!srcTemp.empty()) {
+            sourceCodeOut.first = true;
+            if (Config::Build::IS_DEBUG_BUILD) {
+                sourceCodeOut.second = srcTemp;
+            } else {
+                sourceCodeOut.second = preProcess(srcTemp, fileName.c_str());
+            }
+            shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                            fileName,
+                            sourceCodeOut.second.c_str());
         }
-        shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
-                        fileName,
-                        sourceCodeOut.second.c_str());
     }
 
     return atoms;
@@ -371,6 +372,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
         stringImpl programName = modules.front()._sourceFile;
         programName = programName.substr(0, programName.find_first_of(".,"));
 
+        bool hasData = false;
         for (const ShaderModuleDescriptor& shaderDescriptor : modules) {
             const ShaderType type = shaderDescriptor._moduleType;
             assert(type != ShaderType::COUNT);
@@ -404,11 +406,19 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
 
             std::pair<bool, stringImpl> sourceCode;
             vector<stringImpl> atomsTemp = loadSourceCode(type, stageData._name, shaderAtomExtensionName[shaderIdx], header, _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()), reloadExisting, sourceCode);
+            if (!sourceCode.first) {
+                continue;
+            }
             stageData.atoms.insert(_ID(shaderDescriptor._sourceFile.c_str()));
             for (auto atomIt : atomsTemp) {
                 stageData.atoms.insert(_ID(atomIt.c_str()));
             }
             stageData.sourceCode.push_back(sourceCode.second);
+            hasData = true;
+        }
+
+        if (!hasData) {
+            continue;
         }
 
         if (reloadExisting) {
