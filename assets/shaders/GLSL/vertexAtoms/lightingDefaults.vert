@@ -6,7 +6,6 @@
 void computeLightVectors() {
     mat3 normalMatrixWV = dvd_NormalMatrixWV(VAR.dvd_baseInstance);
 
-    VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
 #if defined(COMPUTE_TBN)
     vec3 tangent = normalize(normalMatrixWV * dvd_Tangent);

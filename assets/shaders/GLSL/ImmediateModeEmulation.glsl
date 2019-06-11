@@ -71,7 +71,7 @@ void main(void) {
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_baseInstance) * dvd_Normal);
     //Compute the final vert position
-    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 }
 
 --Fragment.EnvironmentProbe

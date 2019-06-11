@@ -5,7 +5,7 @@
 void main(void) {
 
     computeData();
-    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 }
 
 -- Vertex.Colour
@@ -24,7 +24,7 @@ void main(void) {
     _scrollingUV.pq = noiseUV + time2;
     _scrollingUV.s -= time2;
 
-    gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 }
 
 --Fragment.Colour

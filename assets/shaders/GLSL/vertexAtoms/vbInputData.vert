@@ -51,6 +51,7 @@ void computeDataNoClip() {
     computeDataMinimal();
 
     VAR._vertexW = dvd_WorldMatrix(VAR.dvd_baseInstance) * dvd_Vertex;
+    VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
 }
 
 void computeData() {

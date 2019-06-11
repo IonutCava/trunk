@@ -862,6 +862,23 @@ mat3<T>::mat3(const mat4<U> &B) noexcept
 {
 }
 
+//ref: http://iquilezles.org/www/articles/noacos/noacos.htm
+template<typename T>
+template<typename U>
+mat3<T>::mat3(const vec3<U>& rotStart, const vec3<U>& rotEnd) noexcept
+{
+    const vec3<U>& d = rotStart;
+    const vec3<U>& z = rotEnd;
+
+    const vec3<U>  v = cross(z, d);
+    const F32 c = dot(z, d);
+    const F32 k = 1.0f / (1.0f + c);
+
+    set(v.x * v.x * k + c, v.y * v.x * k - v.z, v.z * v.x * k + v.y,
+        v.x * v.y * k + v.z, v.y * v.y * k + c, v.z * v.y * k - v.x,
+        v.x * v.z * K - v.y, v.y * v.z * k + v.x, v.z * v.z * k + c);
+}
+
 template<typename T>
 mat3<T>& mat3<T>::operator=(const mat3& other) noexcept {
     set(other);

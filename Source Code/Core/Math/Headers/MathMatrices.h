@@ -294,6 +294,8 @@ class mat3 {
     mat3(const mat3<U> &B) noexcept;
     template<typename U>
     mat3(const mat4<U> &B) noexcept;
+    template<typename U>
+    mat3(const vec3<U>& rotStart, const vec3<U>& rotEnd) noexcept;
 
     mat3 &operator=(const mat3& other) noexcept;
     template<typename U>

@@ -10,12 +10,14 @@ void main()
     vec3 camUpW = dvd_ViewMatrix[1].xyz;
 
     float spriteSize = particleNormalData.w;
-    vec3 vertexPositionW = particleNormalData.xyz + 
-                           (camRighW * inVertexData.x * spriteSize) +
-                           (camUpW * inVertexData.y * spriteSize);
+    vec3 vertexPositionWV = dvd_ViewMatrix * vec4( particleNormalData.xyz + 
+                                                  (camRighW * inVertexData.x * spriteSize) +
+                                                  (camUpW * inVertexData.y * spriteSize), 1.0f);
     // Output position of the vertex
     // Even though the variable ends with WV, we'll store WVP to skip adding a new varying variable
-    VAR._vertexWV = dvd_ViewProjectionMatrix * vec4(vertexPositionW, 1.0f);
+
+    //VAR._vertexWV is actually VAR._vertexWVP
+    VAR._vertexWV = dvd_ProjectionMatrix * vec4(vertexPositionWV, 1.0f);
     gl_Position = VAR._vertexWV;
     
     // UV of the vertex. No special space for this one.
