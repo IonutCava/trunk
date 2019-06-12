@@ -137,6 +137,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     ~RenderingComponent();
 
     void Update(const U64 deltaTimeUS) override;
+    void FrameEnded() override;
 
     inline PushConstants& pushConstants() { return _globalPushConstants; }
     inline const PushConstants& pushConstants() const { return _globalPushConstants; }
@@ -183,7 +184,10 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
     inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }
 
-   protected:    
+    inline bool rebuildQueued() const { return _rebuildQueued; }
+    inline void rebuildQueued(const bool state) { _rebuildQueued = state; }
+
+  protected:    
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
     bool canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData);
 
@@ -232,6 +236,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     F32 _cullFlagValue;
     U32 _renderMask;
+    bool _rebuildQueued;
     bool _lodLocked;
     vec2<F32> _renderRange;
 

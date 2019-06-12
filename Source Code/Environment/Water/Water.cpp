@@ -250,13 +250,13 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
 
     RenderTargetHandle source(renderParams._renderTarget, &reflectTarget);
     RenderTargetHandle buffer(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR_BLUR), &reflectBlurTarget);
-    renderParams._context.blurTarget(source,
+    /*renderParams._context.blurTarget(source,
                                      buffer,
                                      source,
                                      RTAttachmentType::Colour,
                                      0, 
                                      9,
-                                     bufferInOut);
+                                     bufferInOut);*/
 }
 
 void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {

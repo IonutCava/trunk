@@ -58,6 +58,10 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(deltaTime);
     }
 
+    void SGNComponent::FrameEnded() {
+
+    }
+
     void SGNComponent::OnUpdateLoop() {
 
     }

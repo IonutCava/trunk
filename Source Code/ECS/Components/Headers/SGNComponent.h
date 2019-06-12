@@ -136,6 +136,8 @@ class SGNComponent : private PlatformContextComponent,
     virtual void PreUpdate(const U64 deltaTime);
     virtual void Update(const U64 deltaTime);
     virtual void PostUpdate(const U64 deltaTime);
+    virtual void FrameEnded();
+
     virtual void OnUpdateLoop();
 
     inline SceneGraphNode& getSGN() const { return _parentSGN; }

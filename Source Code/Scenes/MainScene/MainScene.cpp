@@ -50,10 +50,7 @@ void MainScene::updateLights() {
     _sun->get<TransformComponent>()->setRotationEuler(_sunvector);
     _sun->get<DirectionalLightComponent>()->setDiffuseColour(_sunColour);
 
-    PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
-    constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
-    constants.set("sun_vector", GFX::PushConstantType::VEC3, _sunvector);
-    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sunColour.rgb());
+    _currentSky->getNode<Sky>().enableSun(true, _sunColour, _sunvector);
 
     _updateLights = false;
     return;

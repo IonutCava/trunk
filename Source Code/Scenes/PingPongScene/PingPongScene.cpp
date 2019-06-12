@@ -72,10 +72,7 @@ void PingPongScene::processTasks(const U64 deltaTimeUS) {
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
-    constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
-    constants.set("sun_vector", GFX::PushConstantType::VEC3, _sunvector);
-    constants.set("sun_colour", GFX::PushConstantType::VEC3, _sun->get<DirectionalLightComponent>()->getDiffuseColour());
+    _currentSky->getNode<Sky>().enableSun(true, _sun->get<DirectionalLightComponent>()->getDiffuseColour(), _sunvector);
 
     Scene::processTasks(deltaTimeUS);
 }

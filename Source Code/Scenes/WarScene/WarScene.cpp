@@ -178,12 +178,12 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         return;
     }
 
-    //D64 SunTimer = Time::Milliseconds(33);
+    D64 SunTimer = Time::Milliseconds(33);
     //D64 AnimationTimer1 = Time::SecondsToMilliseconds(5);
     //D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
     D64 updateLights = Time::Milliseconds(16);
 
-    /*if (_taskTimers[0] >= SunTimer) {
+    if (_taskTimers[0] >= SunTimer) {
         g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);
 
         if (!IS_IN_RANGE_INCLUSIVE(g_sunAngle.y, 
@@ -201,15 +201,12 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
 
         _sun->get<DirectionalLightComponent>()->setDiffuseColour(sunColour);
 
-        PushConstants& constants = _currentSky->get<RenderingComponent>()->pushConstants();
-        constants.set("enable_sun", GFX::PushConstantType::BOOL, true);
-        constants.set("sun_vector", GFX::PushConstantType::VEC3, sunVector);
-        constants.set("sun_colour", GFX::PushConstantType::VEC3, sunColour);
+        _currentSky->getNode<Sky>().enableSun(true, sunColour, sunVector);
 
         _taskTimers[0] = 0.0;
     }
 
-    if (_taskTimers[1] >= AnimationTimer1) {
+    /*if (_taskTimers[1] >= AnimationTimer1) {
         for (SceneGraphNode* npc : _armyNPCs[0]) {
             assert(npc);
             npc->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();

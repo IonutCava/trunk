@@ -16,13 +16,18 @@ namespace Divide {
 Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_SKY),
       _context(context),
+      _enableSun(true),
+      _rebuildDrawCommands(RebuildCommandsState::NONE),
       _sky(nullptr),
       _skyShader(nullptr),
       _skyShaderPrePass(nullptr),
       _skybox(nullptr),
       _diameter(diameter)
 {
+    _sunColour = FColour(1.0f, 1.0f, 0.2f, 1.0f);
+
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
+    _renderState.addToDrawExclusionMask(RenderStage::REFRACTION);
 
     // Generate a render state
     RenderStateBlock skyboxRenderState;
@@ -135,12 +140,46 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
     SceneNode::postLoad(sgn);
 }
+
+void Sky::enableSun(bool state, const FColour& sunColour, const vec3<F32>& sunVector) {
+    if (_enableSun != state) {
+        _enableSun = state;
+        _rebuildDrawCommands = RebuildCommandsState::REQUESTED;
+    }
+
+    if (_sunColour != sunColour || _sunVector != sunVector) {
+        _sunColour.set(sunColour);
+        _sunVector.set(sunVector);
+        _rebuildDrawCommands = RebuildCommandsState::REQUESTED;
+    }
+}
+
+void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
+    if (_rebuildDrawCommands == RebuildCommandsState::DONE) {
+        _rebuildDrawCommands = RebuildCommandsState::NONE;
+    }
+
+    SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
+}
+
+bool Sky::onRender(SceneGraphNode& sgn,
+                   const Camera& camera,
+                   RenderStagePass renderStagePass,
+                   bool refreshData) {
+    if (_rebuildDrawCommands == RebuildCommandsState::REQUESTED) {
+        sgn.get<RenderingComponent>()->rebuildQueued(true);
+        _rebuildDrawCommands = RebuildCommandsState::DONE;
+    }
+
+    return SceneNode::onRender(sgn, camera, renderStagePass, refreshData);
+}
+
 void Sky::buildDrawCommands(SceneGraphNode& sgn,
                             RenderStagePass renderStagePass,
                             RenderPackage& pkgInOut) {
     assert(renderStagePass._stage != RenderStage::SHADOW);
 
-    PipelineDescriptor pipelineDescriptor;
+    PipelineDescriptor pipelineDescriptor = {};
     if (renderStagePass._passType == RenderPassType::PRE_PASS) {
         pipelineDescriptor._stateHash = _skyboxRenderStateHashPrePass;
         pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getGUID();
@@ -151,21 +190,27 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
         pipelineDescriptor._shaderProgramHandle = _skyShader->getGUID();
     }
 
-    GFX::BindPipelineCommand pipelineCommand;
+    GFX::BindPipelineCommand pipelineCommand = {};
     pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
     pkgInOut.addPipelineCommand(pipelineCommand);
 
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
     bindDescriptorSetsCommand._set._textureData.setTexture(_skybox->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     pkgInOut.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
-    GenericDrawCommand cmd;
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants.set("enable_sun", GFX::PushConstantType::BOOL, _enableSun);
+    pushConstantsCommand._constants.set("sun_vector", GFX::PushConstantType::VEC3, _sunVector);
+    pushConstantsCommand._constants.set("sun_colour", GFX::PushConstantType::VEC3, _sunColour.rgb());
+    pkgInOut.addPushConstantsCommand(pushConstantsCommand);
+
+    GenericDrawCommand cmd = {};
     cmd._sourceBuffer = _sky->getGeometryVB();
     cmd._bufferIndex = renderStagePass.index();
     cmd._cmd.indexCount = _sky->getGeometryVB()->getIndexCount();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
-    GFX::DrawCommand drawCommand;
+    GFX::DrawCommand drawCommand = {};
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
 

@@ -45,17 +45,31 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 enum class RenderStage : U8;
 
+enum class RebuildCommandsState : U8 {
+    NONE,
+    REQUESTED,
+    DONE
+};
+
 class Sky : public SceneNode {
    public:
     explicit Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter);
     ~Sky();
 
+    void enableSun(bool state, const FColour& sunColour, const vec3<F32>& sunVector);
    protected:
     void postLoad(SceneGraphNode& sgn) override;
 
     void buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
+
+    bool onRender(SceneGraphNode& sgn,
+                  const Camera& camera,
+                  RenderStagePass renderStagePass,
+                  bool refreshData) override;
+
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 
    protected:
     template <typename T>
@@ -64,6 +78,10 @@ class Sky : public SceneNode {
     bool load() override;
 
   private:
+    bool _enableSun;
+    FColour _sunColour;
+    vec3<F32>_sunVector;
+    RebuildCommandsState _rebuildDrawCommands;
     U32       _diameter;
     GFXDevice& _context;
     Texture_ptr  _skybox;

@@ -58,6 +58,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _context(context.gfx()),
       _config(context.config()),
       _lodLocked(false),
+      _rebuildQueued(false),
       _cullFlagValue(1.0f),
       _renderMask(0),
       _reflectionIndex(-1),
@@ -244,6 +245,12 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
     }
 
     BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
+}
+
+void RenderingComponent::FrameEnded() {
+    SGNComponent::FrameEnded();
+
+    rebuildQueued(false);
 }
 
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
@@ -486,7 +493,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     if (canDraw(renderStagePass, lod, refreshData)) {
-        if (pkg.empty()) {
+        if (pkg.empty() || rebuildQueued()) {
             rebuildDrawCommands(renderStagePass);
         }
 
