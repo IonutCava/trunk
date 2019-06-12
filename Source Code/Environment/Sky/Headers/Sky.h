@@ -64,10 +64,10 @@ class Sky : public SceneNode {
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) override;
 
-    bool onRender(SceneGraphNode& sgn,
-                  const Camera& camera,
-                  RenderStagePass renderStagePass,
-                  bool refreshData) override;
+    bool preRender(SceneGraphNode& sgn,
+                   const Camera& camera,
+                   RenderStagePass renderStagePass,
+                   bool refreshData) override;
 
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 

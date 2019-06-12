@@ -182,6 +182,8 @@ bool SceneGraph::frameEnded(const FrameEvent& evt) {
         node->frameEnded();
     }
 
+    GetECSEngine().FrameEnded();
+
     return true;
 }
 

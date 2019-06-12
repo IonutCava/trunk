@@ -96,9 +96,15 @@ class SceneNode : public CachedResource {
     explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
 
-    /// Perform any pre-draw operations (this is after sort and transform updates)
-    /// If the node isn't ready for rendering and should be skipped this frame,
-    /// the return value is false
+    /// Perform any pre-draw operations PRE-command build
+    /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
+    virtual bool preRender(SceneGraphNode& sgn,
+                            const Camera& camera,
+                            RenderStagePass renderStagePass,
+                            bool refreshData);
+
+    /// Perform any pre-draw operations POST-command build
+    /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
     virtual bool onRender(SceneGraphNode& sgn,
                           const Camera& camera,
                           RenderStagePass renderStagePass,

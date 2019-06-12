@@ -42,9 +42,10 @@ namespace Divide {
         UpdateSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~UpdateSystem();
 
-        virtual void PreUpdate(F32 dt) override;
-        virtual void Update(F32 dt) override;
-        virtual void PostUpdate(F32 dt) override;
+        void PreUpdate(F32 dt) override;
+        void Update(F32 dt) override;
+        void PostUpdate(F32 dt) override;
+        void FrameEnded() override;
     };
 };
 

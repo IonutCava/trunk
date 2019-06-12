@@ -59,7 +59,6 @@ namespace Divide {
     }
 
     void SGNComponent::FrameEnded() {
-
     }
 
     void SGNComponent::OnUpdateLoop() {

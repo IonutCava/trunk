@@ -92,6 +92,9 @@ namespace ECS
 		virtual void PostUpdate(f32 dt) override
 		{}
 
+        virtual void FrameEnded() override
+        {}
+
         virtual void OnUpdateLoop() override
         {}
 	}; // class System<T>

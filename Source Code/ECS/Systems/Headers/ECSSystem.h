@@ -62,6 +62,7 @@ namespace Divide {
             ACKNOWLEDGE_UNUSED(inputBuffer);
             return true;
         }
+
     protected:
         ECS::ECSEngine& _engine;
     };

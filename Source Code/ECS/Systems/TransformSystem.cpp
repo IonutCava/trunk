@@ -100,6 +100,15 @@ namespace Divide {
         //_postUpdateTask.startTask().wait();
     }
 
+    void TransformSystem::FrameEnded() {
+        auto compManager = _engine.GetComponentManager();
+        auto comp = compManager->begin<TransformComponent>();
+        auto compEnd = compManager->end<TransformComponent>();
+        for (; comp != compEnd; ++comp) {
+            comp->FrameEnded();
+        }
+    }
+
     void TransformSystem::OnUpdateLoop() {
         
         auto compManager = _engine.GetComponentManager();

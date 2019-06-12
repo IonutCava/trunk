@@ -380,9 +380,15 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             shaderModule._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
         }
 
-        shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-        shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
+        if (GFXDevice::getGPUVendor() == GPUVendor::AMD) {
+            if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() ? ShaderType::GEOMETRY : ShaderType::TESSELATION_EVAL)) {
+                shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
+            }
+        } else {
+            shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
+        }
 
+        shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
         shaderModule._defines.push_back(std::make_pair("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true));
         shaderModule._defines.push_back(std::make_pair("DETAIL_BRIGHTNESS " + to_stringImpl(detailBrightness), true));
         shaderModule._defines.push_back(std::make_pair("DETAIL_TILING " + to_stringImpl(detailTilingFactor), true));

@@ -41,7 +41,7 @@ vec3 sunColour(){
 }
 
 void main() {
-    vec3 sky_colour = textureLod(texSky, vec4(VAR._vertexW.xyz - dvd_cameraPosition.xyz, 0), 0).rgb;
+    vec3 sky_colour = texture(texSky, vec4(VAR._vertexW.xyz - dvd_cameraPosition.xyz, 0)).rgb;
     vec4 skyColour = vec4(enable_sun ? sky_colour * sunColour() : sky_colour, 1.0);
     writeOutput(skyColour);
 }

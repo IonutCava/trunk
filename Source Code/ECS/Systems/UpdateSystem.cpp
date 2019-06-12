@@ -29,4 +29,6 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(dt);
     }
 
+    void UpdateSystem::FrameEnded() {
+    }
 }; //namespace Divide

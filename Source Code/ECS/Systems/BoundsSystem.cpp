@@ -73,4 +73,13 @@ namespace Divide {
             bComp->PostUpdate(microSec);
         }
     }
+
+    void BoundsSystem::FrameEnded() {
+        auto compManager = _engine.GetComponentManager();
+        auto comp = compManager->begin<BoundsComponent>();
+        auto compEnd = compManager->end<BoundsComponent>();
+        for (; comp != compEnd; ++comp) {
+            comp->FrameEnded();
+        }
+    }
 }; //namespace Divide

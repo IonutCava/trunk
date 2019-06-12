@@ -52,6 +52,15 @@ namespace Divide {
         }
     }
 
+    void RenderingSystem::FrameEnded() {
+        auto compManager = _engine.GetComponentManager();
+        auto comp = compManager->begin<RenderingComponent>();
+        auto compEnd = compManager->end<RenderingComponent>();
+        for (; comp != compEnd; ++comp) {
+            comp->FrameEnded();
+        }
+    }
+
     bool RenderingSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
         RenderingComponent* rComp = sgn.GetComponent<RenderingComponent>();
         if (rComp != nullptr && !rComp->saveCache(outputBuffer)) {

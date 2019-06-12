@@ -68,6 +68,11 @@ namespace ECS
 		ECS_EventHandler->DispatchEvents();
 	}
 
+    void ECSEngine::FrameEnded()
+    {
+        ECS_SystemManager->FrameEnded();
+    }
+
     void ECSEngine::OnUpdateLoop()
     {
         ECS_SystemManager->OnUpdateLoop();

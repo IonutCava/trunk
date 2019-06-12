@@ -22,8 +22,11 @@ RenderPackage::~RenderPackage()
 }
 
 void RenderPackage::clear() {
-    _commands->clear();
-    _drawCommandCount = 0;
+    if (!empty()) {
+        _commands->clear();
+        _drawCommandCount = 0;
+    }
+    assert(_drawCommandCount == 0);
 }
 
 void RenderPackage::set(const RenderPackage& other) {
