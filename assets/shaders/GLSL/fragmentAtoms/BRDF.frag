@@ -64,7 +64,7 @@ void getSpotLightContribution(in uint tileIndex, in uint dirLightCount, in uint 
     }
 }
 
-vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 uv) {
+vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv) {
 #if defined(USE_SHADING_FLAT)
     return albedo;
 #else //USE_SHADING_FLAT
@@ -75,14 +75,14 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 
 
     // Apply all lighting contributions (.a = reflectionCoeff)
     vec4 lightColour = vec4(0.0f);
-    getDirectionalLightContribution(dirLightCount, albedo, specular, normal, lightColour);
+    getDirectionalLightContribution(dirLightCount, albedo, specular, normalWV, lightColour);
 
     if (dvd_lodLevel < 2)
     {
          const uint tileIndex = GetTileIndex(gl_FragCoord.xy);
-         getPointLightContribution(tileIndex, dirLightCount, albedo, specular, normal, lightColour);
+         getPointLightContribution(tileIndex, dirLightCount, albedo, specular, normalWV, lightColour);
          // Move past the first sentinel to get to the spot lights
-         getSpotLightContribution(tileIndex, dirLightCount, pointLightCount, albedo, specular, normal, lightColour);
+         getSpotLightContribution(tileIndex, dirLightCount, pointLightCount, albedo, specular, normalWV, lightColour);
     }
 
     lightColour.rgb += getEmissive(colourMatrix);
@@ -91,7 +91,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 
     lightColour.rgb += (ambient * when_lt(lightColour.a, 0.01f));
 
     if (dvd_lodLevel < 1 && getReflectivity(colourMatrix) > 100) {
-        vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normal);
+        vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normalWV);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0f));
         /*lightColour.rgb = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
                           lightColour.rgb,
@@ -103,8 +103,8 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 
 #endif //USE_SHADING_FLAT
 }
 
-vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normal, in vec2 uv) {
-    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normal, uv), albedo.a);
+vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv) {
+    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv), albedo.a);
 
 #if !defined(DISABLE_SHADOW_MAPPING) && defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo) {

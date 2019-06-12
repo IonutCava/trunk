@@ -178,7 +178,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderPackage& pkgInOut) {
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(0.10f, 0.10f));
+    pushConstantsCommand._constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(0.010f, 0.010f));
     pushConstantsCommand._constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(15.0f, 15.0f));
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 

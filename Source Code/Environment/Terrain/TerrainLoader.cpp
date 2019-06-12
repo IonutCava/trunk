@@ -528,6 +528,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     RenderStateBlock terrainRenderStateReflection;
     terrainRenderStateReflection.setCullMode(terrainDescriptor->wireframeDebug() ? CullMode::CCW : CullMode::CW);
+
+    RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
+    terrainRenderStatePrePassReflection.setCullMode(terrainDescriptor->wireframeDebug() ? CullMode::CCW : CullMode::CW);
+
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
     terrainRenderStateDepth.setCullMode(CullMode::CCW);
@@ -537,7 +541,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());
     terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderPassType::PRE_PASS);
-    terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
+    terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
+    terrainMaterial->setRenderStateBlock(terrainRenderStatePrePassReflection.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
     if (threadedLoading) {

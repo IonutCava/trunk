@@ -64,25 +64,26 @@ void main()
     outputWithVelocity(VAR._texCoord, 1.0f, computeDepth(VAR._vertexWV), normalize(VAR._tbn * normalize(normal0 + normal1)));
 #else
 
-    vec3 normal = getNormal(VAR._texCoord);
+    vec3 normalWV = getNormal(VAR._texCoord);
     vec4 uvReflection = clamp(((_vertexWVP / _vertexWVP.w) + 1.0f) * 0.5f, vec4(0.001f), vec4(0.999f));
     vec3 incident = normalize(-VAR._vertexWV.xyz);
 
-    vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
-    vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
+    vec2 uvFinalReflect = uvReflection.xy + (_noiseFactor * normalWV.xy);
+    vec2 uvFinalRefract = uvReflection.xy + (_noiseFactor * normalWV.xy);
 
     //vec4 distOffset = texture(texDiffuse0, VAR._texCoord + vec2(time2)) * kDistortion;
     //vec4 dudvColor = texture(texDiffuse0, vec2(VAR._texCoord + distOffset.xy));
     //dudvColor = normalize(dudvColor * 2.0 - 1.0) * kRefraction;
 
-    //normal = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
+    //normalWV = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
 
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 mixFactor = vec4(clamp(Fresnel(incident, normalize(VAR._normalWV)), 0.0f, 1.0f));
-    vec4 texColour = mix(texture(texReflectPlanar, uvFinalReflect),
-                         texture(texRefractPlanar, uvFinalRefract),
-                         mixFactor);
+
+    vec4 texColour = mix(texture(texRefractPlanar, uvFinalReflect),
+                         texture(texReflectPlanar, uvFinalRefract),
+                         saturate(Fresnel(incident, VAR._normalWV)));
     
-    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normal, VAR._texCoord));
+    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
+    //writeOutput(vec4(texColour.rgb, 1.0f));
 #endif
 }

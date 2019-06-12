@@ -90,7 +90,9 @@ class Sky : public SceneNode {
     ShaderProgram_ptr _skyShaderPrePass;
     size_t _skyboxRenderStateHash;
     size_t _skyboxRenderStateHashPrePass;
+
     size_t _skyboxRenderStateReflectedHash;
+    size_t _skyboxRenderStateReflectedHashPrePass;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Sky);

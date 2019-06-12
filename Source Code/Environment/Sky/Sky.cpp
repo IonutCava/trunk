@@ -31,17 +31,19 @@ Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, 
 
     // Generate a render state
     RenderStateBlock skyboxRenderState;
-    skyboxRenderState.setCullMode(CullMode::CCW);
-    skyboxRenderState.setZFunc(ComparisonFunction::EQUAL);
-    _skyboxRenderStateHash = skyboxRenderState.getHash();
-
     skyboxRenderState.setCullMode(CullMode::CW);
+    skyboxRenderState.setZFunc(ComparisonFunction::EQUAL);
     _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
 
     skyboxRenderState.setCullMode(CullMode::CCW);
+    _skyboxRenderStateHash = skyboxRenderState.getHash();
+
     skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
     skyboxRenderState.setColourWrites(false, false, false, false);
     _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
+
+    skyboxRenderState.setCullMode(CullMode::CW);
+    _skyboxRenderStateReflectedHashPrePass = skyboxRenderState.getHash();
 }
 
 Sky::~Sky()
@@ -181,7 +183,9 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
 
     PipelineDescriptor pipelineDescriptor = {};
     if (renderStagePass._passType == RenderPassType::PRE_PASS) {
-        pipelineDescriptor._stateHash = _skyboxRenderStateHashPrePass;
+        pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION 
+                                            ? _skyboxRenderStateReflectedHashPrePass
+                                            : _skyboxRenderStateHashPrePass);
         pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getGUID();
     } else {
         pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION
