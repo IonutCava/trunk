@@ -122,9 +122,6 @@ class Plane {
         return (point - signedDistanceToPoint(point)) * _normal;
     }
 
-    inline T& getDistance() { return _distance; }
-    inline T  getDistance() const { return _distance; }
-
     inline void set(const vec4<T>& equation) {
         set(equation.xyz(), equation.w);
     }
@@ -152,11 +149,6 @@ class Plane {
         _distance = _normal.dot(point);
     }
 
-    inline const vec4<T>& getEquation() const { return _equation; }
-
-    inline vec3<T>& getNormal() { return _normal; }
-    inline const vec3<T>& getNormal() const { return _normal; }
-
     /// Comparison operator
     bool operator==(const Plane& rhs) const {
         return COMPARE(rhs._distance, _distance) && rhs._normal == _normal;
@@ -170,10 +162,10 @@ class Plane {
         return COMPARE_TOLERANCE(rhs._distance, _distance, epsilon) && rhs._normal.compare(_normal, epsilon);
     }
 
-    T normalize() {
+    inline T normalize() {
         T length = _normal.length();
-        if (length > 0.0f) {
-            T invLength = 1.0f / length;
+        if (length > (T)0) {
+            F32 invLength = 1.0f / length;
             _normal *= invLength;
             _distance *= invLength;
         }
@@ -181,15 +173,14 @@ class Plane {
         return length;
     }
 
-   protected:
-       union {
-           struct {
-               vec3<T> _normal;
-               T _distance;
-           };
+     union {
+          struct {
+          vec3<T> _normal;
+          T _distance;
+          };
 
-           vec4<T> _equation;
-       };
+          vec4<T> _equation;
+     };
 };
 
 template<size_t N>

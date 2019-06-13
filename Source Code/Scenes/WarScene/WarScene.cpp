@@ -173,6 +173,7 @@ void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, 
     Scene::debugDraw(activeCamera, stagePass, bufferInOut);
 }
 
+bool _updatedSun = false;
 void WarScene::processTasks(const U64 deltaTimeUS) {
     if (!_sceneReady) {
         return;
@@ -183,7 +184,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
     //D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
     D64 updateLights = Time::Milliseconds(16);
 
-    if (_taskTimers[0] >= SunTimer) {
+    if (!_updatedSun && _taskTimers[0] >= SunTimer) {
         g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);
 
         if (!IS_IN_RANGE_INCLUSIVE(g_sunAngle.y, 
@@ -197,13 +198,14 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
         _sun->get<TransformComponent>()->setRotationEuler(sunVector);
-        FColour sunColour = FColour(1.0f, 1.0f, 0.2f, 1.0f);
+        FColour sunColour(1.0f, 1.0f, 1.0f, 1.0f);
 
         _sun->get<DirectionalLightComponent>()->setDiffuseColour(sunColour);
 
         _currentSky->getNode<Sky>().enableSun(true, sunColour, sunVector);
 
         _taskTimers[0] = 0.0;
+        _updatedSun = true;
     }
 
     /*if (_taskTimers[1] >= AnimationTimer1) {

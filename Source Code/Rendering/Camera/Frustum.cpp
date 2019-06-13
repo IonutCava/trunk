@@ -98,7 +98,7 @@ Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center, F32 rad
 
 Frustum::FrustCollision Frustum::PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane,
                                                            const BoundingBox& bbox) const {
-    const vec3<F32>& normal = frustumPlane.getNormal();
+    const vec3<F32>& normal = frustumPlane._normal;
     if (frustumPlane.signedDistanceToPoint(bbox.getPVertex(normal)) < 0) {
         return FrustCollision::FRUSTUM_OUT;
     }
@@ -149,10 +149,10 @@ void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMa
 
 void Frustum::intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
                                 const Plane<F32>& c, vec3<F32>& outResult) {
-    outResult.set((a.getDistance() * (Cross(b.getNormal(), c.getNormal()))) +
-                  (b.getDistance() * (Cross(c.getNormal(), a.getNormal()))) +
-                  (c.getDistance() * (Cross(a.getNormal(), b.getNormal()))) /
-                  -Dot(a.getNormal(), Cross(b.getNormal(), c.getNormal())));
+    outResult.set((a._distance * (Cross(b._normal, c._normal))) +
+                  (b._distance * (Cross(c._normal, a._normal))) +
+                  (c._distance * (Cross(a._normal, b._normal))) /
+                  -Dot(a._normal, Cross(b._normal, c._normal)));
 }
 
 void Frustum::updatePoints() {

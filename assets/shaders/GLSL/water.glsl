@@ -65,11 +65,14 @@ void main()
 #else
 
     vec3 normalWV = getNormal(VAR._texCoord);
-    vec4 uvReflection = clamp(((_vertexWVP / _vertexWVP.w) + 1.0f) * 0.5f, vec4(0.001f), vec4(0.999f));
+    vec3 uvReflection = clamp(((_vertexWVP.xyz / _vertexWVP.w) + 1.0f) * 0.5f, vec3(0.001f), vec3(0.999f));
     vec3 incident = normalize(-VAR._vertexWV.xyz);
 
-    vec2 uvFinalReflect = uvReflection.xy + (_noiseFactor * normalWV.xy);
-    vec2 uvFinalRefract = uvReflection.xy + (_noiseFactor * normalWV.xy);
+    vec2 uvFinalReflect = uvReflection.xy;
+    vec2 uvFinalRefract = uvReflection.xy; 
+
+    uvFinalReflect += (_noiseFactor * normalWV.xy);
+    uvFinalRefract += (_noiseFactor * normalWV.xy);
 
     //vec4 distOffset = texture(texDiffuse0, VAR._texCoord + vec2(time2)) * kDistortion;
     //vec4 dudvColor = texture(texDiffuse0, vec2(VAR._texCoord + distOffset.xy));

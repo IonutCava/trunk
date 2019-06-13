@@ -2342,7 +2342,7 @@ const mat4<T>& mat4<T>::reflect(const Plane<U> &plane) {
     const U zero = static_cast<U>(0);
     const U one = static_cast<U>(1);
 
-    const vec4<U> &eq = plane.getEquation();
+    const vec4<U> &eq = plane._equation;
 
     U x = eq.x;
     U y = eq.y;

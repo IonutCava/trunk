@@ -17,6 +17,8 @@ namespace Divide {
 
 namespace {
     constexpr bool g_occlusionCullReflection = false;
+    // how far to offset the clipping planes for reflections in order to avoid artefacts at water/geometry intersections with high wave noise factors
+    constexpr F32 g_reflectionPlaneCorrectionHeight = 15.0f;
 };
 
 WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
@@ -178,7 +180,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderPackage& pkgInOut) {
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(0.010f, 0.010f));
+    pushConstantsCommand._constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(0.10f, 0.10f));
     pushConstantsCommand._constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(15.0f, 15.0f));
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
@@ -203,6 +205,8 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
     Plane<F32> refractionPlane;
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
+
+    refractionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
     RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
@@ -230,6 +234,8 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     if (!underwater) {
         _reflectionCam->setReflection(reflectionPlane);
     }
+
+    reflectionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
     RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
