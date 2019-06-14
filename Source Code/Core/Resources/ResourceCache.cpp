@@ -10,7 +10,7 @@
 namespace Divide {
 
 boost::shared_mutex ResourceLoadLock::s_hashLock;
-std::set<size_t> ResourceLoadLock::s_loadingHashes;
+std::unordered_set<size_t> ResourceLoadLock::s_loadingHashes;
 
 ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded)
     : _loadingHash(hash)

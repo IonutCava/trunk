@@ -22,7 +22,7 @@ layout(binding = TEXTURE_SPECULAR) uniform sampler2D texNormals;
 #include "texturing.frag"
 
 const int tiling[] = {
-    int(TEXTURE_TILE_SIZE * 1.0f),
+    //int(TEXTURE_TILE_SIZE * 1.0f),
     int(TEXTURE_TILE_SIZE * 0.25f),
     int(TEXTURE_TILE_SIZE * 0.0625f),
     int(TEXTURE_TILE_SIZE * 0.015625f),

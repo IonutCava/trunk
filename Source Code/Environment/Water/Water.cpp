@@ -18,7 +18,7 @@ namespace Divide {
 namespace {
     constexpr bool g_occlusionCullReflection = false;
     // how far to offset the clipping planes for reflections in order to avoid artefacts at water/geometry intersections with high wave noise factors
-    constexpr F32 g_reflectionPlaneCorrectionHeight = 15.0f;
+    constexpr F32 g_reflectionPlaneCorrectionHeight = 1.0f;
 };
 
 WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)

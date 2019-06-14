@@ -342,7 +342,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
         return;
     }
 
-    std::set<vec_size_eastl> blitDepthEntry;
+    std::unordered_set<vec_size_eastl> blitDepthEntry;
     // Multiple attachments, multiple layers, multiple everything ... what a mess ... -Ionut
     if (!params._blitColours.empty() && hasColour()) {
 
@@ -597,7 +597,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     if (hasDepth() && drawPolicy.drawMask().isEnabled(RTAttachmentType::Depth)) {
         _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT].insert(_attachmentState[GL_DEPTH_ATTACHMENT]._writeLayer);
 
-        const std::set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Depth);
+        const std::unordered_set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Depth);
         for (U16 layer : additionalDirtyLayers) {
             _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT].insert(layer);
         }
@@ -607,7 +607,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
         for (U8 i = 0; i < MAX_RT_COLOUR_ATTACHMENTS; ++i) {
             if (drawPolicy.drawMask().isEnabled(RTAttachmentType::Colour, i)) {
                 _attachmentResolvedLayers[GL_COLOR_ATTACHMENT0 + i].insert(_attachmentState[GL_COLOR_ATTACHMENT0 + i]._writeLayer);
-                const std::set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Colour, i);
+                const std::unordered_set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Colour, i);
                 for (U16 layer : additionalDirtyLayers) {
                     _attachmentResolvedLayers[GL_COLOR_ATTACHMENT0 + i].insert(layer);
                 }

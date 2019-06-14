@@ -103,14 +103,14 @@ class RTDrawDescriptor {
     bool clearExternalDepth() const { return _clearExternalDepth; }
 
     void markDirtyLayer(RTAttachmentType type, U8 index, U16 layer);
-    std::set<U16> getDirtyLayers(RTAttachmentType type, U8 index = 0) const;
+    std::unordered_set<U16> getDirtyLayers(RTAttachmentType type, U8 index = 0) const;
 
     bool operator==(const RTDrawDescriptor& other) const;
     bool operator!=(const RTDrawDescriptor& other) const;
 
   protected:
 
-    typedef std::set<U16> DirtyLayers;
+    typedef std::unordered_set<U16> DirtyLayers;
     typedef std::pair<U8, DirtyLayers> DirtyLayersEntry;
 
     hashMap<RTAttachmentType, vectorEASTL<DirtyLayersEntry>> _dirtyLayers;

@@ -49,7 +49,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     struct LoadData {
         ShaderType _type = ShaderType::COUNT;
         stringImpl _name = "";
-        std::set<U64> atoms;
+        std::unordered_set<U64> atoms;
         vectorEASTL<stringImpl> sourceCode;
     };
 
@@ -105,7 +105,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     friend class glShaderProgram;
     void dumpBinary();
 
-    inline const std::set<U64>& usedAtoms() const{
+    inline const std::unordered_set<U64>& usedAtoms() const{
         return _usedAtoms;
     }
 
@@ -148,7 +148,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     UseProgramStageMask _stageMask;
 
     stringImpl _name;
-    std::set<U64> _usedAtoms;
+    std::unordered_set<U64> _usedAtoms;
     std::array<vectorEASTL<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
 
     ShaderVarMap _shaderVarLocation;

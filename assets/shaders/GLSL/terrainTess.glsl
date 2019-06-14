@@ -30,6 +30,8 @@ void main(void)
     // Send vertex position along
     gl_Position = vec4(dvd_Vertex.xyz * posAndTileScaleVert.w + posAndTileScaleVert.xyz, 1.0f);
 
+    VAR._vertexWV = dvd_ViewMatrix * gl_Position;
+
     // Calculate texture coordinates (u,v) relative to entire terrain
     VAR._texCoord = calcTerrainTexCoord(gl_Position);
 }
@@ -59,9 +61,21 @@ bool offscreen(in vec4 vertex) {
            any(greaterThan(vertex.xy, cmp));
 }
 
-vec4 project(in vec4 vertex, in mat4 mvp) {
-    const vec4 result = mvp * vertex;
+vec4 project(in vec4 vertexWV, in mat4 proj) {
+    const vec4 result = proj * vertexWV;
     return result / result.w;
+}
+
+float saturate(in float val) { return clamp(val, 0.0f, 1.0f); }
+
+uint nextPOW2(in uint v) {
+    --v;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    return ++v;
 }
 
 // Dynamic level of detail using camera distance algorithm.
@@ -69,16 +83,18 @@ float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in mat4 viewM
 {
 #if MAX_TESS_SCALE != MIN_TESS_SCALE
 
-        const vec4 view0 = viewMatrix * p0;
-        const vec4 view1 = viewMatrix * p1;
+    const vec4 view0 = viewMatrix * p0;
+    const vec4 view1 = viewMatrix * p1;
 
-        const float range = tessellationRange.y - tessellationRange.x;
+    const float range = tessellationRange.y - tessellationRange.x;
 
-        const float d0 = (abs(view0.z) - tessellationRange.x) / range;
-        const float d1 = (abs(view1.z) - tessellationRange.x) / range;
-        return mix(MAX_TESS_SCALE, MIN_TESS_SCALE, clamp((d0 + d1) * 0.5f, 0.0f, 1.0f));
+    const float d0 = (abs(view0.z) - tessellationRange.x) / range;
+    const float d1 = (abs(view1.z) - tessellationRange.x) / range;
+    float mixVal = floor(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, saturate((d0 + d1) * 0.5f)));
+    uint pow2Val = nextPOW2(uint(mixVal));
+    return clamp(pow2Val, MIN_TESS_SCALE, MAX_TESS_SCALE);
 #else
-        return MAX_TESS_SCALE;
+     return MAX_TESS_SCALE;
 #endif
 }
 
@@ -86,13 +102,11 @@ void main(void)
 {
     PassData(id);
 
-    const mat4 mvp = dvd_ViewProjectionMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance);
-
     if (gl_InvocationID == 0 && 
-        all(bvec4(offscreen(project(gl_in[0].gl_Position, mvp)),
-                  offscreen(project(gl_in[1].gl_Position, mvp)),
-                  offscreen(project(gl_in[2].gl_Position, mvp)),
-                  offscreen(project(gl_in[3].gl_Position, mvp)))))
+        all(bvec4(offscreen(project(_in[0]._vertexWV, dvd_ProjectionMatrix)),
+                  offscreen(project(_in[1]._vertexWV, dvd_ProjectionMatrix)),
+                  offscreen(project(_in[2]._vertexWV, dvd_ProjectionMatrix)),
+                  offscreen(project(_in[3]._vertexWV, dvd_ProjectionMatrix)))))
     {
         gl_TessLevelInner[0] = 0;
         gl_TessLevelInner[1] = 0;
@@ -103,19 +117,20 @@ void main(void)
         gl_TessLevelOuter[3] = 0;
     } else {
         // Outer tessellation level
-        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, dvd_ViewMatrix);
-        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, dvd_ViewMatrix);
-        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, dvd_ViewMatrix);
-        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, dvd_ViewMatrix);
+        const float tessLevels[4] = {
+            dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, dvd_ViewMatrix),
+            dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, dvd_ViewMatrix),
+            dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, dvd_ViewMatrix),
+            dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, dvd_ViewMatrix)
+        };
 
-        gl_TessLevelOuter[0] = max(2.0f, gl_TessLevelOuter[0] * tScale[id].x);
-        gl_TessLevelOuter[1] = max(2.0f, gl_TessLevelOuter[1] * tScale[id].y);
-        gl_TessLevelOuter[2] = max(2.0f, gl_TessLevelOuter[2] * tScale[id].z);
-        gl_TessLevelOuter[3] = max(2.0f, gl_TessLevelOuter[3] * tScale[id].w);
+        for (int i = 0; i < 4; ++i) {
+            gl_TessLevelOuter[i] = max(MIN_TESS_SCALE, tessLevels[i] * tScale[id][i]);
+        }
 
         // Inner tessellation level
-        gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
-        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
+        gl_TessLevelInner[0] = (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]) * 0.5f;
+        gl_TessLevelInner[1] = (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]) * 0.5f;
     }
 
     // Pass the patch verts along

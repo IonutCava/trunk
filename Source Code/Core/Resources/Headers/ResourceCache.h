@@ -54,7 +54,7 @@ private:
     const size_t _loadingHash;
 
     static boost::shared_mutex s_hashLock;
-    static std::set<size_t> s_loadingHashes;
+    static std::unordered_set<size_t> s_loadingHashes;
 };
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources

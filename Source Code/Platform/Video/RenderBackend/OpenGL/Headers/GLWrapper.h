@@ -253,7 +253,7 @@ private:
     FONScontext* _fonsContext;
 
     static SharedMutex s_mipmapQueueSetLock;
-    static std::set<GLuint> s_mipmapQueue;
+    static std::unordered_set<GLuint> s_mipmapQueue;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
 

@@ -20,6 +20,18 @@ namespace Divide {
 namespace {
     constexpr bool g_disableLoadFromCache = false;
     const char* g_materialFileExtension = ".mat.xml";
+
+    U8 findOrInsert(vector<stringImpl>& container, const stringImpl& item) {
+        auto it = std::find(std::cbegin(container),
+                            std::cend(container),
+                            item);
+        if (it != std::cend(container)) {
+            return to_U8(std::distance(std::cbegin(container), it));
+        }
+
+        container.push_back(item);
+        return to_U8(container.size() - 1);
+    }
 };
 
 TerrainLoader::TerrainMaterialMap TerrainLoader::s_terrainMaterials;
@@ -32,6 +44,7 @@ enum class TerrainTextureType : U8 {
     SPLAT,
     COUNT
 };
+
 
 bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
@@ -85,7 +98,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     const F32 detailTilingFactor = terrainDescriptor->getVariablef("detailTilingFactor");
     const F32 albedoTilingFactor = terrainDescriptor->getVariablef("detailTilingFactor");
 
-    std::set<stringImpl> textures[to_base(TerrainTextureType::COUNT)] = {};
+    vector<stringImpl> textures[to_base(TerrainTextureType::COUNT)] = {};
 
     vector<U8> albedoIndices(layerCount * to_base(TerrainTextureLayer::TerrainTextureChannel::COUNT), 255u);
     vector<U8> normalsIndices(albedoIndices.size(), 255u);
@@ -97,7 +110,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     U16 idx = 0;
     for (U8 i = 0; i < layerCount; ++i) {
         layerOffsetStr = to_stringImpl(i);
-        textures[to_base(TerrainTextureType::SPLAT)].insert(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
+        textures[to_base(TerrainTextureType::SPLAT)].push_back(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
 
         U8 j = 0;
         for (auto it : channels) {
@@ -109,8 +122,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
                 if (!mat._detailTex.empty()) {
                     auto& detailTextures = textures[to_base(TerrainTextureType::DETAIL)];
-                    auto ret = detailTextures.insert(mat._detailTex);
-                    detailsIndices[idx] = to_U8(ret.second ? detailTextures.size() - 1 : std::distance(std::begin(detailTextures), ret.first));
+                    detailsIndices[idx] = findOrInsert(detailTextures, mat._detailTex);
                 }
 
                 if (!mat._textures.empty()) {
@@ -128,15 +140,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
                     {
                         auto& albedoTextures = textures[to_base(TerrainTextureType::ALBEDO)];
-                        auto ret = albedoTextures.insert(tex->_albedo);
-                        albedoIndices[idx] = to_U8(ret.second ? albedoTextures.size() - 1 : std::distance(std::begin(albedoTextures), ret.first));
+                        albedoIndices[idx] = findOrInsert(albedoTextures, tex->_albedo);
                         texWeights[idx] = tex->_texWeight;
                     }
 
                     if (!tex->_bump.empty()) {
                         auto& normalsTextures = textures[to_base(TerrainTextureType::NORMALS)];
-                        auto ret = normalsTextures.insert(tex->_bump);
-                        normalsIndices[idx] = to_U8(ret.second ? normalsTextures.size() - 1 : std::distance(std::begin(normalsTextures), ret.first));
+                        detailsIndices[idx] = findOrInsert(normalsTextures, tex->_bump);
                         bumpWeights[idx] = tex->_bumpWeight;
                     }
                 }

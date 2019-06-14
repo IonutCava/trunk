@@ -153,7 +153,7 @@ void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U16 layer
     entries.push_back(std::make_pair(index, DirtyLayers{ layer }));
 }
 
-std::set<U16> RTDrawDescriptor::getDirtyLayers(RTAttachmentType type, U8 index) const {
+std::unordered_set<U16> RTDrawDescriptor::getDirtyLayers(RTAttachmentType type, U8 index) const {
     auto retEntry = _dirtyLayers.find(type);
     if (retEntry != std::end(_dirtyLayers)) {
         for (const DirtyLayersEntry& entry : retEntry->second) {
