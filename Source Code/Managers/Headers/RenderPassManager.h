@@ -102,6 +102,7 @@ public:
 private:
     // Returns false if we skipped the pre-pass step
     bool prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    void occlusionPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted);
     void mainPass(const VisibleNodeList& nodes, const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted);
     void woitPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
 

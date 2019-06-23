@@ -24,7 +24,8 @@ namespace {
             case RenderTargetUsage::EDITOR: return "Editor";
             case RenderTargetUsage::ENVIRONMENT: return "Environment";
             case RenderTargetUsage::HI_Z: return "HI-Z";
-            case RenderTargetUsage::HI_Z_REFLECT: return "HI-Z Low";
+            case RenderTargetUsage::HI_Z_REFLECT: return "HI-Z Reflect";
+            case RenderTargetUsage::HI_Z_REFRACT: return "HI-Z Refract";
             case RenderTargetUsage::OIT: return "OIT";
             case RenderTargetUsage::OTHER: return "Other";
             case RenderTargetUsage::REFLECTION_CUBE: return "Cube Reflection";

@@ -113,10 +113,7 @@ vec3 _getTriPlanarBlend(vec3 _wNorm) {
 }
 #endif //TRI_PLANAR_BLEND
 
-vec3 _getSplatNormal(in vec2 uv, in vec3 texNormal) {
-    const vec3 flatNormal = vec3(0.0f, 0.0f, -1.0f);
-    const float strength = (LoD > 1 ? 0.5f : 1.0f);
-
+vec3 _getSplatNormal(in vec2 uv) {
     const float tileScale = ALBEDO_TILING * tiling[LoD];
 
     vec3 tbn = vec3(1.0f);
@@ -132,22 +129,28 @@ vec3 _getSplatNormal(in vec2 uv, in vec3 texNormal) {
             }
 
             vec3 scaledCoords = vec3(scaledTextureCoords(uv, tileScale), nSlice);
-            tbn = mix(tbn, mix(texNormal, _getTexture(texNormalMaps, scaledCoords).rgb, NORMAL_WEIGHT[offset + j]), blendColour[j]);
+            tbn = mix(tbn, _getTexture(texNormalMaps, scaledCoords).rgb, blendColour[j]);
         }
         offset += CURRENT_LAYER_COUNT[i];
     }
 
-    return normalize(2.0f * tbn - 1.0f);
+    vec3 ret = normalize(2.0f * tbn - 1.0f);
+
+    //const vec3 V = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
+    //return perturb_normal(ret, VAR._normalW, V, uv);
+    return normalize(ret);
 }
 
 vec3 TerrainNormal(in vec2 uv, in float crtDepth) {
+    vec3 texNormals = VAR._normalWV;
 #if defined(LOW_QUALITY)
-    return _getTexNormal(uv);
+    return texNormals;
 #else //LOW_QUALITY
-    vec3 texNormal = _getTexNormal(uv);
-    return mix(normalWhiteoutBlend(texNormal, _getSplatNormal(uv, texNormal)),
-               texNormal,
-               saturate(ToLinearDepth(crtDepth) * 0.05f));
+    return texNormals;
+    float distance = saturate(ToLinearDepth(crtDepth) * 0.05f);
+    return normalize(mix(normalWhiteoutBlend(_getSplatNormal(uv), texNormals),
+                         texNormals,
+                         distance));
 #endif //LOW_QUALITY
 }
 #endif //PRE_PASS || !USE_DEFERRED_NORMALS

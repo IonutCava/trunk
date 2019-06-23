@@ -284,7 +284,8 @@ bool GL_API::initGLSW(const Configuration& config) {
 
     static const std::pair<stringImpl, stringImpl> shaderVaryingsBump[] =
     {
-        { "mat3" , "_tbn"}
+        { "mat3" , "_tbn"},
+        { "vec3" , "_normalW"}
     };
 
     static const stringImpl crossTypeGLSLHLSL = "#define float2 vec2\n"
@@ -565,7 +566,7 @@ bool GL_API::initGLSW(const Configuration& config) {
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::FRAGMENT,
+        ShaderType::COUNT,
         "#define TEXTURE_SPECULAR " +
         to_stringImpl(to_base(ShaderProgram::TextureUsage::SPECULAR)),
         lineOffsets);

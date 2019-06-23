@@ -13,14 +13,17 @@ shared uint maxDepthInt;
 shared uint visibleLightCount;
 shared vec4 frustumPlanes[6];
 shared mat4 viewInverse;
+shared mat4 viewProjection;
+
 // Shared local storage for visible indices, will be written out to the global buffer at the end
 shared int visibleLightIndices[MAX_NUM_LIGHTS_PER_TILE];
 
-//layout(r32f, binding = TEXTURE_DEPTH_MAP) uniform image2D depthBuffer;
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthBuffer;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec2 viewportDimensions;
 
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
 layout(local_size_x = FORWARD_PLUS_TILE_RES, local_size_y = FORWARD_PLUS_TILE_RES, local_size_z = 1) in;
-
 void main(void)
 {
     uint lightCount = POINT_LIGHT_COUNT + SPOT_LIGHT_COUNT;
@@ -36,17 +39,18 @@ void main(void)
         minDepthInt = 0xFFFFFFFF;
         maxDepthInt = 0;
         visibleLightCount = 0;
-        viewInverse = inverse(dvd_ViewMatrix);
+        viewInverse = inverse(viewMatrix);
+        viewProjection = projectionMatrix * viewMatrix;
     }
 
     barrier();
 
     // Step 1: Calculate the minimum and maximum depth values (from the depth buffer) for this group's tile
     float maxDepth, minDepth;
-    vec2 text = vec2(location) / vec2(windowWidth, windowHeight);
-    float depth = texture(depthBuffer, text).r;
+    vec2 text = vec2(location) / viewportDimensions;
+    float depth = textureLod(HiZBuffer, text, 0).r;
     // Linearize the depth value from depth buffer (must do this because we created it using projection)
-    depth = (0.5 * dvd_ProjectionMatrix[3][2]) / (depth + 0.5 * dvd_ProjectionMatrix[2][2] - 0.5);
+    depth = (0.5 * projectionMatrix[3][2]) / (depth + 0.5 * projectionMatrix[2][2] - 0.5);
 
     // Convert depth to uint so we can do atomic min and max comparisons between the threads
     uint depthInt = floatBitsToUint(depth);
@@ -57,6 +61,7 @@ void main(void)
 
     // Step 2: One thread should calculate the frustum planes to be used for this tile
     if (gl_LocalInvocationIndex == 0) {
+
         // Convert the min and max across the entire tile back to float
         minDepth = uintBitsToFloat(minDepthInt);
         maxDepth = uintBitsToFloat(maxDepthInt);
@@ -66,24 +71,24 @@ void main(void)
         vec2 positiveStep = (2.0 * vec2(tileID + ivec2(1, 1))) / vec2(tileNumber);
 
         // Set up starting values for planes using steps and min and max z values
-        frustumPlanes[0] = vec4(1.0, 0.0, 0.0, 1.0 - negativeStep.x); // Left
-        frustumPlanes[1] = vec4(-1.0, 0.0, 0.0, -1.0 + positiveStep.x); // Right
-        frustumPlanes[2] = vec4(0.0, 1.0, 0.0, 1.0 - negativeStep.y); // Bottom
-        frustumPlanes[3] = vec4(0.0, -1.0, 0.0, -1.0 + positiveStep.y); // Top
-        frustumPlanes[4] = vec4(0.0, 0.0, -1.0, -minDepth); // Near
-        frustumPlanes[5] = vec4(0.0, 0.0, 1.0, maxDepth); // Far
+        frustumPlanes[0] = vec4( 1.0,  0.0,  0.0,  1.0 - negativeStep.x); // Left
+        frustumPlanes[1] = vec4(-1.0,  0.0,  0.0, -1.0 + positiveStep.x); // Right
+        frustumPlanes[2] = vec4( 0.0,  1.0,  0.0,  1.0 - negativeStep.y); // Bottom
+        frustumPlanes[3] = vec4( 0.0, -1.0,  0.0, -1.0 + positiveStep.y); // Top
+        frustumPlanes[4] = vec4( 0.0,  0.0, -1.0, -minDepth); // Near
+        frustumPlanes[5] = vec4( 0.0,  0.0,  1.0,  maxDepth); // Far
 
         // Transform the first four planes
         for (uint i = 0; i < 4; i++) {
-            frustumPlanes[i] *= dvd_ViewProjectionMatrix;
+            frustumPlanes[i] *= projectionMatrix;//viewProjection;
             frustumPlanes[i] /= length(frustumPlanes[i].xyz);
         }
 
         // Transform the depth planes
-        frustumPlanes[4] *= dvd_ViewMatrix;
+        /*frustumPlanes[4] *= viewMatrix;
         frustumPlanes[4] /= length(frustumPlanes[4].xyz);
-        frustumPlanes[5] *= dvd_ViewMatrix;
-        frustumPlanes[5] /= length(frustumPlanes[5].xyz);
+        frustumPlanes[5] *= viewMatrix;
+        frustumPlanes[5] /= length(frustumPlanes[5].xyz);*/
     }
 
     barrier();
@@ -105,7 +110,7 @@ void main(void)
         float radius = position.w;
         position.w = 1.0f;
 
-        position = viewInverse * position;
+        //position = viewInverse * position;
 
         // We check if the light exists in our frustum
         float distance = 0.0;
@@ -132,7 +137,7 @@ void main(void)
     // One thread should fill the global light buffer
     if (gl_LocalInvocationIndex == 0) {
         uint offset = index * MAX_NUM_LIGHTS_PER_TILE; // Determine bosition in global buffer
-        for (uint i = 0; i < visibleLightCount; i++) {
+        for (uint i = 0; i < visibleLightCount; ++i) {
             perTileLightIndices[offset + i] = visibleLightIndices[i];
         }
 

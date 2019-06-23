@@ -146,7 +146,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
                     if (!tex->_bump.empty()) {
                         auto& normalsTextures = textures[to_base(TerrainTextureType::NORMALS)];
-                        detailsIndices[idx] = findOrInsert(normalsTextures, tex->_bump);
+                        normalsIndices[idx] = findOrInsert(normalsTextures, tex->_bump);
                         bumpWeights[idx] = tex->_bumpWeight;
                     }
                 }
@@ -257,7 +257,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
     terrainMaterial->setDiffuse(FColour(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
     terrainMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
-    terrainMaterial->setShininess(20.0f);
+    terrainMaterial->setShininess(2.0f);
     terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
 
     stringImpl layerCountData = Util::StringFormat("const uint CURRENT_LAYER_COUNT[ %d ] = {", layerCount);

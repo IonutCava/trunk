@@ -123,17 +123,22 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
                               const Camera& camera,
                               GFX::CommandBuffer& bufferInOut) const {
 
+    static Pipeline* pipeline = nullptr;
+    if (pipeline == nullptr) {
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getGUID();
+        pipeline = newPipeline(pipelineDescriptor);
+    }
+
     constexpr U32 GROUP_SIZE_AABB = 64;
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 0;
     beginDebugScopeCmd._scopeName = "Occlusion Cull";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    GFX::BindPipelineCommand bindPipelineCmd;
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getGUID();
-    bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
+    GFX::BindPipelineCommand bindPipelineCmd = {};
+    bindPipelineCmd._pipeline = pipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     ShaderBufferBinding shaderBuffer = {};
@@ -141,7 +146,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     shaderBuffer._buffer = bufferData._cmdBuffer;
     shaderBuffer._elementRange.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
 
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
     bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
 
     if (bufferData._cullCounter != nullptr) {
@@ -161,15 +166,16 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     sendPushConstantsCmd._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
     sendPushConstantsCmd._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
     sendPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->getWidth(), depthBuffer->getHeight()));
+    sendPushConstantsCmd._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
     sendPushConstantsCmd._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
     sendPushConstantsCmd._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
     GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
-    GFX::DispatchComputeCommand computeCmd;
+    GFX::DispatchComputeCommand computeCmd = {};
     computeCmd._computeGroupSize.set((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 
-    GFX::EndDebugScopeCommand endDebugScopeCmd;
+    GFX::EndDebugScopeCommand endDebugScopeCmd = {};
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 

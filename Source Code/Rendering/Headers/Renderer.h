@@ -50,6 +50,7 @@ class Renderer : public PlatformContextComponent {
     void preRender(RenderStagePass stagePass,
                    RenderTargetID target,
                    LightPool& lightPool,
+                   const Camera& camera,
                    GFX::CommandBuffer& bufferInOut);
 
   private:

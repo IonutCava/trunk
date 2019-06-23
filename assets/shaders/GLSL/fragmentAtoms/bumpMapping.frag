@@ -31,7 +31,7 @@ vec3 perturb_normal(vec3 texNorm, vec3 N, vec3 V, vec2 texcoord)
 {
     // assume N, the interpolated vertex normal and 
     // V, the view vector (vertex to eye)
-    texNorm = texNorm * 255. / 127. - 128. / 127.;
+    //texNorm = texNorm * 255. / 127. - 128. / 127.;
     mat3 TBN = cotangent_frame(N, -V, texcoord);
     return normalize(TBN * texNorm);
 }

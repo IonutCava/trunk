@@ -28,6 +28,7 @@ GFXRTPool::GFXRTPool(GFXDevice& parent)
     _renderTargets[to_U32(RenderTargetUsage::SCREEN)].resize(1, nullptr);
     _renderTargets[to_U32(RenderTargetUsage::HI_Z)].resize(1, nullptr);
     _renderTargets[to_U32(RenderTargetUsage::HI_Z_REFLECT)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::HI_Z_REFRACT)].resize(1, nullptr);
 
     _renderTargets[to_U32(RenderTargetUsage::OIT)].resize(1, nullptr);
 

@@ -156,8 +156,6 @@ vec4 PBR(in vec4 lightColourAndAtt,
          in vec3 normalWV,
          in vec3 lightDirection)
 {
-    vec3 albedo = albedoAndShadow.rgb;
-
     float roughness = specular.a;
     vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
 
@@ -167,7 +165,7 @@ vec4 PBR(in vec4 lightColourAndAtt,
     float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
     float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0);
     float ndv = clamp((dot(normalWV, dvd_ViewDirNorm)), M_EPSILON, 1.0);
-    vec3 diffuseFactor = Diffuse(albedo, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
+    vec3 diffuseFactor = Diffuse(albedoAndShadow.rgb, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
 
     vec3 fresnelTerm = Fresnel(specular.rgb, vdh);
     float distTerm = Distribution(ndh, roughness);

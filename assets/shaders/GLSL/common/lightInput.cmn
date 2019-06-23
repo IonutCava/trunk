@@ -46,8 +46,7 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLi
 
 uint GetTileIndex(in vec2 ScreenPos)
 {
-    ivec2 location = ivec2(ScreenPos.xy);
-    ivec2 tileID = location / ivec2(FORWARD_PLUS_TILE_RES, FORWARD_PLUS_TILE_RES);
+    ivec2 tileID = ivec2(ScreenPos.xy) / ivec2(FORWARD_PLUS_TILE_RES, FORWARD_PLUS_TILE_RES);
     return uint(tileID.y * LIGHT_NUM_TILES_X + tileID.x);
 }
 

@@ -5,7 +5,7 @@ vec4 Phong(in vec4 lightColourAndAtt,
            in vec4 specular,
            in vec4 albedoAndShadow,
            in vec3 normalWV,
-           in vec3 lightDirection) // direction is NOT normalized
+           in vec3 lightDirection)
 {
     const float kPi = 3.14159265;
     const float kShininess = specular.a;
@@ -33,8 +33,8 @@ vec4 Phong(in vec4 lightColourAndAtt,
 
     vec3 lightColour = lightColourAndAtt.rgb * lightColourAndAtt.a;
 
-    vec3 colorOut = albedoAndShadow.rgb * NDotL * lightColour +
-                    specular.rgb * specPower * lightColour;
+    vec3 colorOut = (albedoAndShadow.rgb * saturate(NDotL) * lightColour) +
+                    (specular.rgb * specPower * lightColour);
 
     return vec4(colorOut * albedoAndShadow.a, specPower);
 }

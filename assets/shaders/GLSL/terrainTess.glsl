@@ -147,6 +147,9 @@ layout(quads, fractional_even_spacing) in;
 #include "nodeBufferedInput.cmn"
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
+layout(binding = TEXTURE_SPECULAR) uniform sampler2D texNormals;
+#endif
 
 layout(location = 0) in float tcs_tessLevel[];
 
@@ -194,12 +197,17 @@ float getHeight(in vec4 heightOffsets) {
 }
 
 vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
+    const vec2 size = vec2(2.0f, 0.0f);
+
+    const float s11 = sampleHeight;
     const float s01 = heightOffsets.r;
     const float s21 = heightOffsets.g;
     const float s10 = heightOffsets.b;
     const float s12 = heightOffsets.a;
 
-    return normalize(vec3(s21 - s01, 2.0f, s12 - s10));
+    vec3 va = normalize(vec3(size.xy, s21 - s01));
+    vec3 vb = normalize(vec3(size.yx, s12 - s10));
+    return normalize(cross(va, vb) * 0.5f + 0.5f);
 }
 
 #if !defined(TOGGLE_WIREFRAME)
@@ -262,19 +270,18 @@ void main()
     _out._vertexW = dvd_WorldMatrix(baseInstance) * pos;
 
 #if !defined(SHADOW_PASS)
+#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
     mat3 normalMatrixWV = dvd_NormalMatrixWV(baseInstance);
-    vec3 normal = getNormal(pos.y, heightOffsets);
+    const vec3 rightVec = vec3(1.0f, 0.0f, 0.0f);
+    const vec3 N = normalize(2.0f * texture(texNormals, _out._texCoord).rgb - 1.0f);
+    const vec3 T = cross(rightVec, N);
+    const vec3 B = cross(T, N);
 
-    _out._normalWV = normalize(normalMatrixWV * normal);
+    _out._normalW = N;
+    _out._normalWV = normalize(normalMatrixWV * N);
+    _out._tbn = normalMatrixWV * mat3(T, B, N);
+#endif //PRE_PASS
 
-    const vec3 bitangent = cross(vec3(0.0f, 0.0f, 1.0f), normal);
-    const vec3 tangnet = cross(normal, bitangent);
-
-    _out._tbn = mat3(
-                    normalize(normalMatrixWV * tangnet),
-                    normalize(normalMatrixWV * bitangent),
-                    _out._normalWV
-                );
 #endif
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
@@ -282,7 +289,7 @@ void main()
     tes_tessLevel = tcs_tessLevel[0];
     gl_Position = _out._vertexW;
 #else
-    gl_Position = dvd_ViewProjectionMatrix * _out._vertexW;
+    gl_Position = dvd_ProjectionMatrix * _out._vertexWV;
     setClipPlanes(_out._vertexW);
 
 #if !defined(SHADOW_PASS)
@@ -423,6 +430,8 @@ layout(early_fragment_tests) in;
 layout(location = 0) in flat int LoD;
 layout(location = 1) smooth in vec2 _waterDetails;
 
+#define NO_SPECULAR
+
 #if defined(TOGGLE_WIREFRAME)
 layout(location = 2) in vec3 gs_wireColor;
 layout(location = 3) noperspective in vec3 gs_edgeDist;
@@ -447,7 +456,7 @@ void main(void)
 {
     vec2 uv = getTexCoord();
     const float crtDepth = computeDepth(VAR._vertexWV);
-    const vec3 normal = normalize(VAR._tbn * TerrainNormal(uv, crtDepth));
+    const vec3 normal = TerrainNormal(uv, crtDepth);
 
     vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
@@ -465,6 +474,7 @@ void main(void)
 
 --Fragment.MainPass
 
+#define NO_SPECULAR
 #if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
 #else
@@ -508,7 +518,7 @@ vec4 UnderwaterAlbedo(in vec2 uv) {
 #else
 
 vec3 UnderwaterNormal(in vec2 uv) {
-    return normalize(2.0f * texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f);
+    return normalize(VAR._tbn * normalize(2.0f * texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f));
 }
 
 #endif
@@ -520,7 +530,7 @@ void main(void)
 #if defined(PRE_PASS)
     const float crtDepth = computeDepth(VAR._vertexWV);
     const vec3 normal = mix(TerrainNormal(uv, crtDepth), UnderwaterNormal(uv), _waterDetails.x);
-    outputWithVelocity(uv, 1.0f, crtDepth, normalize(VAR._tbn * normal));
+    outputWithVelocity(uv, 1.0f, crtDepth, normal);
 #else
 
     vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);

@@ -6,6 +6,7 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -61,7 +62,15 @@ Renderer::~Renderer()
 void Renderer::preRender(RenderStagePass stagePass,
                          RenderTargetID target,
                          LightPool& lightPool,
+                         const Camera& camera,
                          GFX::CommandBuffer& bufferInOut) {
+
+    static Pipeline* pipeline = nullptr;
+    if (pipeline == nullptr) {
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
+        pipeline = _context.gfx().newPipeline(pipelineDescriptor);
+    }
 
     if (stagePass._stage == RenderStage::SHADOW) {
         return;
@@ -69,28 +78,26 @@ void Renderer::preRender(RenderStagePass stagePass,
 
     lightPool.uploadLightData(stagePass._stage, bufferInOut);
 
-    if (stagePass._stage != RenderStage::DISPLAY && stagePass._passType != RenderPassType::MAIN_PASS) {
-        return;
-    }
-
     const RenderTarget& rt = _context.gfx().renderTargetPool().renderTarget(target);
-    GFX::SetViewportCommand viewportCommand;
+    GFX::SetViewportCommand viewportCommand = {};
     viewportCommand._viewport.set(Rect<I32>(0, 0, rt.getWidth(), rt.getHeight()));
     GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd = {};
-    PipelineDescriptor pipelineDescriptor = {};
-    pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
-    bindPipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = pipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+
+    GFX::SendPushConstantsCommand sendPushConstantsCmd;
+    sendPushConstantsCmd._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
+    sendPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(rt.getWidth(), rt.getHeight()));
+    sendPushConstantsCmd._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+    GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
     GFX::DispatchComputeCommand computeCmd = {};
     computeCmd._computeGroupSize.set(
         Config::Lighting::ForwardPlus::NUM_TILES_X,
         Config::Lighting::ForwardPlus::NUM_TILES_Y,
         1);
-
-    assert(computeCmd._computeGroupSize.lengthSquared() > 0);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 
     GFX::MemoryBarrierCommand memCmd = {};

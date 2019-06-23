@@ -1,6 +1,7 @@
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
 
 uniform mat4 viewProjectionMatrix;
+uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec2 viewportDimensions;
 

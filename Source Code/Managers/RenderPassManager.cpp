@@ -508,6 +508,59 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
     return doPrePass;
 }
 
+void RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted) {
+    ACKNOWLEDGE_UNUSED(nodes);
+
+    if (params._targetHIZ._usage != RenderTargetUsage::COUNT) {
+
+        // Update HiZ Target
+        const Texture_ptr& HiZTex = _context.constructHIZ(params._target, params._targetHIZ, bufferInOut);
+
+        // Run occlusion culling CS
+        const RenderPass::BufferData& bufferData = getBufferData(RenderStagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex));
+        _context.occlusionCull(bufferData, HiZTex, *params._camera, bufferInOut);
+
+        // Occlusion culling barrier
+        GFX::MemoryBarrierCommand memCmd;
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+
+        if (bufferData._cullCounter != nullptr) {
+            memCmd._barrierMask |= to_base(MemoryBarrierType::COUNTER);
+            GFX::EnqueueCommand(bufferInOut, memCmd);
+
+            _context.updateCullCount(bufferData, bufferInOut);
+
+            bufferData._cullCounter->incQueue();
+
+            GFX::ClearBufferDataCommand clearAtomicCounter;
+            clearAtomicCounter._buffer = bufferData._cullCounter;
+            clearAtomicCounter._offsetElementCount = 0;
+            clearAtomicCounter._elementCount = 1;
+            GFX::EnqueueCommand(bufferInOut, clearAtomicCounter);
+        } else {
+            GFX::EnqueueCommand(bufferInOut, memCmd);
+        }
+
+        // Bind the HiZ target as our depth texture
+        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
+        bindDescriptorSets._set._textureData.setTexture(HiZTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+    } else {
+        GFX::ResolveRenderTargetCommand resolveCmd = { };
+        resolveCmd._source = params._target;
+        resolveCmd._resolveDepth = true;
+        GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
+        // Bind the regular depth buffer as our depth texture
+        const RenderTarget& renderTarget = _context.renderTargetPool().renderTarget(params._target);
+        const Texture_ptr& DepthTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
+
+        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
+        bindDescriptorSets._set._textureData.setTexture(DepthTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+    }
+}
+
 void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted) {
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
@@ -521,27 +574,9 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
     prepareRenderQueues(stagePass, params, nodes, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
-        const bool hasLightingTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA));
-
-        if (params._stage != RenderStage::SHADOW) {
-            GFX::ResolveRenderTargetCommand resolveCmd = { };
-            resolveCmd._source = params._target;
-            resolveCmd._resolveDepth = true;
-            GFX::EnqueueCommand(bufferInOut, resolveCmd);
-
-            if (prePassExecuted && params._targetHIZ._usage != RenderTargetUsage::COUNT) {
-                // Bind the depth buffers
-                const RenderTarget& renderTarget = _context.renderTargetPool().renderTarget(params._targetHIZ);
-                const Texture_ptr& HiZTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
-
-                GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-                bindDescriptorSets._set._textureData.setTexture(HiZTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-                GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
-            }
-        }
-
         Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, params._target, bufferInOut);
 
+        const bool hasLightingTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA));
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         if (params._bindTargets) {
             const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
@@ -756,39 +791,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
     bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
-
-    if (prePassExecuted && params._targetHIZ._usage != RenderTargetUsage::COUNT) {
-
-        const Texture_ptr& HiZTex = _context.constructHIZ(params._target, params._targetHIZ, bufferInOut);
-        const RenderPass::BufferData& bufferData = getBufferData(RenderStagePass(params._stage, RenderPassType::PRE_PASS, params._passVariant, params._passIndex));
-        _context.occlusionCull(bufferData,
-                               HiZTex,
-                               *params._camera,
-                               bufferInOut);
-
-        // Occlusion culling barrier
-        GFX::MemoryBarrierCommand memCmd;
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
-
-        if (params._stage == RenderStage::DISPLAY) {
-            memCmd._barrierMask |= to_base(MemoryBarrierType::COUNTER);
-            GFX::EnqueueCommand(bufferInOut, memCmd);
-            _context.updateCullCount(bufferData, bufferInOut);
-        } else {
-            GFX::EnqueueCommand(bufferInOut, memCmd);
-        }
-
-        if (bufferData._cullCounter != nullptr) {
-            bufferData._cullCounter->incQueue();
-
-            GFX::ClearBufferDataCommand clearAtomicCounter;
-            clearAtomicCounter._buffer = bufferData._cullCounter;
-            clearAtomicCounter._offsetElementCount = 0;
-            clearAtomicCounter._elementCount = 1;
-            GFX::EnqueueCommand(bufferInOut, clearAtomicCounter);
-        }
-    }
-
+    occlusionPass(visibleNodes, params, target, bufferInOut, prePassExecuted);
     mainPass(visibleNodes, params, target, bufferInOut, prePassExecuted);
 
     if (params._stage != RenderStage::SHADOW) {
