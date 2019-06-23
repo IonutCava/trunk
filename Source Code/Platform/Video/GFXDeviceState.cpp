@@ -228,7 +228,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         hizRTDesc._resolution = renderResolution;
         hizRTDesc._attachmentCount = to_U8(hiZAttachments.size());
         hizRTDesc._attachments = hiZAttachments.data();
-        rtPool->allocateRT(RenderTargetUsage::HI_Z, hizRTDesc);
+        _rtPool->allocateRT(RenderTargetUsage::HI_Z, hizRTDesc);
 
         hizRTDesc._resolution = reflectRes;
         hizRTDesc._name = "HiZ_Reflect";
