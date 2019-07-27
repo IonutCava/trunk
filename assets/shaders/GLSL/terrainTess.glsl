@@ -147,13 +147,10 @@ layout(quads, fractional_even_spacing) in;
 #include "nodeBufferedInput.cmn"
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
-#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
-layout(binding = TEXTURE_SPECULAR) uniform sampler2D texNormals;
-#endif
 
 layout(location = 0) in float tcs_tessLevel[];
 
-#if defined(TOGGLE_WIREFRAME)
+#if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 0) out float tes_tessLevel;
 #else
 layout(location = 0) out flat int LoD;
@@ -188,29 +185,43 @@ vec4 getHeightOffsets(in vec2 tex_coord) {
 
 float getHeight(in vec4 heightOffsets) {
     
-    const float s01 = heightOffsets.r;
-    const float s21 = heightOffsets.g;
-    const float s10 = heightOffsets.b;
-    const float s12 = heightOffsets.a;
+    const float s01 = heightOffsets.x;
+    const float s21 = heightOffsets.y;
+    const float s10 = heightOffsets.z;
+    const float s12 = heightOffsets.w;
 
     return (s01 + s21 + s10 + s12) * 0.25f;
 }
 
 vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
+#if 0
     const vec2 size = vec2(2.0f, 0.0f);
 
-    const float s11 = sampleHeight;
-    const float s01 = heightOffsets.r;
-    const float s21 = heightOffsets.g;
-    const float s10 = heightOffsets.b;
-    const float s12 = heightOffsets.a;
 
-    vec3 va = normalize(vec3(size.xy, s21 - s01));
-    vec3 vb = normalize(vec3(size.yx, s12 - s10));
+    const float s11 = sampleHeight;
+    const float s01 = heightOffsets.x;
+    const float s21 = heightOffsets.y;
+    const float s10 = heightOffsets.z;
+    const float s12 = heightOffsets.w;
+
+    //vec3 va = normalize(vec3(size.xy, s21 - s01));
+    //vec3 vb = normalize(vec3(size.yx, s12 - s10));
+
+    vec3 va = normalize(vec3(size.x, s21 - s01, size.y));
+    vec3 vb = normalize(vec3(size.y, s12 - s10, -size.x));
     return normalize(cross(va, vb) * 0.5f + 0.5f);
+#else
+    float hL = heightOffsets.x;
+    float hR = heightOffsets.y;
+    float hD = heightOffsets.z;
+    float hU = heightOffsets.w;
+
+    // deduce terrain normal
+    return normalize(vec3(hL - hR, 2.0f, hD - hU));
+#endif
 }
 
-#if !defined(TOGGLE_WIREFRAME)
+#if !defined(TOGGLE_WIREFRAME) && !defined(TOGGLE_NORMALS)
 void waterDetails() {
 
     vec3 vertexW = _out._vertexW.xyz;
@@ -266,26 +277,26 @@ void main()
     // Sample the heightmap and offset y position of vertex
     pos.y = getHeight(heightOffsets);
 
+    mat4 worldMat = dvd_WorldMatrix(baseInstance);
     // Project the vertex to clip space and send it along
-    _out._vertexW = dvd_WorldMatrix(baseInstance) * pos;
+    _out._vertexW = worldMat * pos;
 
 #if !defined(SHADOW_PASS)
-#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
-    mat3 normalMatrixWV = dvd_NormalMatrixWV(baseInstance);
-    const vec3 rightVec = vec3(1.0f, 0.0f, 0.0f);
-    const vec3 N = normalize(2.0f * texture(texNormals, _out._texCoord).rgb - 1.0f);
-    const vec3 T = cross(rightVec, N);
-    const vec3 B = cross(T, N);
+    mat3 normalMatrixW = dvd_NormalMatrixW(baseInstance);
+    mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * normalMatrixW;
 
-    _out._normalW = N;
+    const vec3 N = getNormal(pos.y, heightOffsets);
+    const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
+    const vec3 T = cross(N, B);
+
+    _out._normalW = normalMatrixW * N;
     _out._normalWV = normalize(normalMatrixWV * N);
     _out._tbn = normalMatrixWV * mat3(T, B, N);
-#endif //PRE_PASS
 
 #endif
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
-#if defined(TOGGLE_WIREFRAME)
+#if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     tes_tessLevel = tcs_tessLevel[0];
     gl_Position = _out._vertexW;
 #else
@@ -294,7 +305,7 @@ void main()
 
 #if !defined(SHADOW_PASS)
     waterDetails();
-#if !defined(TOGGLE_WIREFRAME)
+#if !defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     LoD = int(log2(MAX_TESS_SCALE / tcs_tessLevel[0]));
 #endif //TOGGLE_WIREFRAME
 #endif //SHADOW_PASS
@@ -310,7 +321,11 @@ layout(triangles) in;
 
 layout(location = 0) in float tes_tessLevel[];
 
+#if defined(TOGGLE_NORMALS)
+layout(line_strip, max_vertices = 18) out;
+#else
 layout(triangle_strip, max_vertices = 4) out;
+#endif
 
 // x = distance, y = depth
 layout(location = 0) out flat int LoD;
@@ -404,15 +419,65 @@ void main(void)
         float a = length(p1 - p2);
         float b = length(p2 - p0);
         float c = length(p1 - p0);
-        float alpha = acos((b*b + c*c - a*a) / (2.0*b*c));
-        float beta = acos((a*a + c*c - b*b) / (2.0*a*c));
+        float alpha = acos((b * b + c * c - a * a) / (2.0 * b * c));
+        float beta = acos((a * a + c * c - b * b) / (2.0 * a * c));
         edge_dist.x = abs(c * sin(beta));
         edge_dist.y = abs(c * sin(alpha));
         edge_dist.z = abs(b * sin(alpha));
     }
 
+#if defined(TOGGLE_NORMALS)
+
+    const float sizeFactor = 0.75f;
+    const int count = gl_in.length();
+    for (int i = 0; i < count; ++i) {
+
+        mat3 normalMatrixWVInv = inverse(dvd_NormalMatrixWV(_in[i].dvd_baseInstance));
+        mat3 tbn = normalMatrixWVInv * _in[i]._tbn;
+
+        vec3 P = gl_in[i].gl_Position.xyz;
+        vec3 T = tbn[0];
+        vec3 B = tbn[1];
+        vec3 N = tbn[2];
+
+        gs_edgeDist = vec3(i == 0 ? edge_dist.x : 0.0,
+                           i == 1 ? edge_dist.y : 0.0,
+                           i >= 2 ? edge_dist.z : 0.0);
+
+        LoD = 0;
+        // normals
+        gs_wireColor = vec3(0.0f, 0.0f, 1.0f);
+        gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
+        EmitVertex();
+
+        gl_Position = dvd_ViewProjectionMatrix * vec4(P + N * sizeFactor, 1.0);
+        EmitVertex();
+
+        EndPrimitive();
+
+        // binormals
+        gs_wireColor = vec3(0.0f, 1.0f, 0.0f);
+        gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
+        EmitVertex();
+
+        gl_Position = dvd_ViewProjectionMatrix * vec4(P + B * sizeFactor, 1.0);
+        EmitVertex();
+
+        EndPrimitive();
+
+        // tangents
+        gs_wireColor = vec3(1.0f, 0.0f, 0.0f);
+        gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
+        EmitVertex();
+
+        gl_Position = dvd_ViewProjectionMatrix * vec4(P + T * sizeFactor, 1.0);
+        EmitVertex();
+
+        EndPrimitive();
+    }
+#else
     // Output verts
-    for (int i = 0; i < gl_in.length(); ++i) {
+    for (int i = 0; i < count; ++i) {
         PerVertex(i, edge_dist);
         EmitVertex();
     }
@@ -422,6 +487,7 @@ void main(void)
     EmitVertex();
 
     EndPrimitive();
+#endif
 }
 
 --Fragment.LQPass
@@ -432,7 +498,7 @@ layout(location = 1) smooth in vec2 _waterDetails;
 
 #define NO_SPECULAR
 
-#if defined(TOGGLE_WIREFRAME)
+#if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 2) in vec3 gs_wireColor;
 layout(location = 3) noperspective in vec3 gs_edgeDist;
 #endif
@@ -460,9 +526,11 @@ void main(void)
 
     vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 colourOut = getPixelColour(albedo, colourMatrix, normal, uv);
+    vec4 colourOut = getPixelColour(albedo, colourMatrix, normalize(normal), uv);
 
-#if defined(TOGGLE_WIREFRAME)
+#if defined(TOGGLE_NORMALS)
+    colourOut = vec4(gs_WireColor, 1.0f);
+#elif defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75f;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
@@ -487,7 +555,7 @@ layout(location = 1) smooth in vec2 _waterDetails;
 
 #define SHADOW_INTENSITY_FACTOR 0.75f
 
-#if defined(TOGGLE_WIREFRAME)
+#if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 2) in vec3 gs_wireColor;
 layout(location = 3) noperspective in vec3 gs_edgeDist;
 #endif
@@ -518,9 +586,8 @@ vec4 UnderwaterAlbedo(in vec2 uv) {
 #else
 
 vec3 UnderwaterNormal(in vec2 uv) {
-    return normalize(VAR._tbn * normalize(2.0f * texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f));
+    return (VAR._tbn * normalize(2.0f * texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f));
 }
-
 #endif
 
 void main(void)
@@ -529,15 +596,14 @@ void main(void)
 
 #if defined(PRE_PASS)
     const float crtDepth = computeDepth(VAR._vertexWV);
-    const vec3 normal = mix(TerrainNormal(uv, crtDepth), UnderwaterNormal(uv), _waterDetails.x);
+    const vec3 normal = normalize(mix(TerrainNormal(uv, crtDepth), UnderwaterNormal(uv), _waterDetails.x));
     outputWithVelocity(uv, 1.0f, crtDepth, normal);
 #else
-
     vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 colourOut = getPixelColour(albedo, colourMatrix, getNormal(uv), uv);
 
-#if defined(TOGGLE_WIREFRAME)
+#if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     const float LineWidth = 0.75f;
     float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));

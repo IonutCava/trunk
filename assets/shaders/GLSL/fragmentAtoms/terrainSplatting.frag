@@ -10,13 +10,13 @@ layout(binding = TEXTURE_UNIT1)  uniform sampler2DArray helperTextures;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2DArray texNormalMaps;
 #endif
 
+#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
+layout(binding = TEXTURE_SPECULAR) uniform sampler2D texNormals;
+#endif
+
 #if !defined(PRE_PASS)
 layout(binding = TEXTURE_UNIT0)  uniform sampler2D texAlbedo;
 layout(binding = TEXTURE_TERRAIN_ALBEDO_TILE) uniform sampler2DArray texTileMaps;
-#endif
-
-#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
-layout(binding = TEXTURE_SPECULAR) uniform sampler2D texNormals;
 #endif
 
 #include "texturing.frag"
@@ -138,19 +138,18 @@ vec3 _getSplatNormal(in vec2 uv) {
 
     //const vec3 V = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
     //return perturb_normal(ret, VAR._normalW, V, uv);
-    return normalize(ret);
+    return ret;
 }
 
 vec3 TerrainNormal(in vec2 uv, in float crtDepth) {
-    vec3 texNormals = VAR._normalWV;
 #if defined(LOW_QUALITY)
-    return texNormals;
+    return  VAR._normalWV;
 #else //LOW_QUALITY
-    return texNormals;
     float distance = saturate(ToLinearDepth(crtDepth) * 0.05f);
-    return normalize(mix(normalWhiteoutBlend(_getSplatNormal(uv), texNormals),
-                         texNormals,
-                         distance));
+    /*return normalize(VAR._tbn * mix(normalWhiteoutBlend(_getSplatNormal(uv), tempNormals),
+                                    tempNormals,
+                                    distance));*/
+    return VAR._tbn * _getSplatNormal(uv);
 #endif //LOW_QUALITY
 }
 #endif //PRE_PASS || !USE_DEFERRED_NORMALS
