@@ -24,7 +24,7 @@ void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
 #endif
 
 #if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.rg = packNormal(normal);
+    _normalAndVelocityOut.rg = packNormal(normalize(normal));
     for (int i = 0; i < 3; ++i) {
         //_extraDetailsOut[i] = getShadowFactor(i);
     }

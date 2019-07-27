@@ -81,10 +81,8 @@ void main (void){
     vec4 albedo = texture(texDiffuseGrass, vec3(uv, _arrayLayerFrag));
     albedo.a *= _alphaFactor;
 
-    vec3 normal = getNormal(uv);
-
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    writeOutput(getPixelColour(albedo, colourMatrix, normal, uv));
+    writeOutput(getPixelColour(albedo, colourMatrix, getNormal(uv), uv));
 }
 
 --Fragment.PrePass

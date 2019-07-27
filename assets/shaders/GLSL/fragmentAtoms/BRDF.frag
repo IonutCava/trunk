@@ -9,15 +9,15 @@
 
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
 #include "pbr.frag"
-#define getBRDFFactors(A, B, C, D, E) PBR(A, B, C, D, E);
+#define getBRDFFactors(LCol, Spec, Albedo, N, LDir) PBR(LCol, Spec, Albedo, N, LDir);
 #elif defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
 #include "phong_lighting.frag"
-#define getBRDFFactors(A, B, C, D, E) Phong(A, B, C, D, E)
+#define getBRDFFactors(LCol, Spec, Albedo, N, LDir) Phong(LCol, Spec, Albedo, N, LDir)
 #else
 #if defined(USE_SHADING_TOON) // ToDo
-#   define getBRDFFactors(A, B, C, D, E) vec4(0.6f, 0.2f, 0.9f, 0.0f); //obvious pink
+#   define getBRDFFactors(LCol, Spec, Albedo, N, LDir) vec4(0.6f, 0.2f, 0.9f, 0.0f); //obvious pink
 #else
-#   define getBRDFFactors(A, B, C, D, E) vec4(0.6f, 1.0f, 0.7f, 0.0f); //obvious lime-green
+#   define getBRDFFactors(LCol, Spec, Albedo, N, LDir) vec4(0.6f, 1.0f, 0.7f, 0.0f); //obvious lime-green
 #endif
 #endif
 

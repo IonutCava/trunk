@@ -12,8 +12,6 @@ layout(early_fragment_tests) in;
 void main (void) {
     vec2 uv = getTexCoord();
 
-    vec3 normal = getNormal(uv);
-
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 albedo = getAlbedo(colourMatrix, uv);
   
@@ -23,5 +21,5 @@ void main (void) {
     }
 #endif
 
-    writeOutput(getPixelColour(albedo, colourMatrix, normal, uv));
+    writeOutput(getPixelColour(albedo, colourMatrix, getNormal(uv), uv));
 }

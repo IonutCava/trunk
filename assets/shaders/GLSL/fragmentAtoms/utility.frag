@@ -152,19 +152,30 @@ float ToSRGB(float v) { return pow(v, invGamma); }
 vec3  ToSRGB(vec3 v)  { return pow(v, invGammaVec); }
 vec4  ToSRGB(vec4 v)  { return vec4(pow(v.rgb, invGammaVec), v.a);}
 
-
+//ref: https://aras-p.info/texts/CompactNormalStorage.html#method08ppview
 vec3 unpackNormal(vec2 enc)
 {
+#if 1
     vec2 fenc = enc * 4 - 2;
     float f = dot(fenc, fenc);
     float g = sqrt(1 - f * 0.25f);
     return vec3(fenc * g, 1 - f * 0.5f);
+#else
+    vec3 ret;
+    ret.xy = enc * 2 - 1;
+    ret.z = sqrt(1 - dot(ret.xy, ret.xy));
+    return ret;
+#endif
 }
 
 vec2 packNormal(vec3 n)
 {
+#if 1
     float f = sqrt(8 * n.z + 8);
     return n.xy / f + 0.5f;
+#else
+    return n.xy * 0.5f + 0.5f;
+#endif
 }
 
 float Gloss(vec3 bump)

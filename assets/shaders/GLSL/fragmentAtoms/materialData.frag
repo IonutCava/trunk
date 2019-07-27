@@ -220,6 +220,7 @@ vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
 }
 #endif //!defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 
+// Computed normals are NOT normalized. Retrieved normals ARE.
 vec3 getNormal(in vec2 uv) {
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
     vec3 normal = VAR._normalWV;
@@ -237,9 +238,9 @@ vec3 getNormal(in vec2 uv) {
     }
 #   endif //USE_DOUBLE_SIDED
 
-    return normalize(normal);
+    return normal;
 #else //PRE_PASS
-    return unpackNormal(texture(texNormalMap, dvd_screenPositionNormalised).rg);
+    return normalize(unpackNormal(texture(texNormalMap, dvd_screenPositionNormalised).rg));
 #endif //PRE_PASS
 }
 #endif //_MATERIAL_DATA_FRAG_
