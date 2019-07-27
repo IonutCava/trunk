@@ -24,7 +24,7 @@ namespace Divide {
         
         addVariable("terrainName", name.c_str());
         addVariable("descriptor", terrainDescriptor.c_str());
-        setWireframeDebug(pt.get<bool>("wireframeDebugMode", false));
+        setWireframeDebug(pt.get<I32>("wireframeDebugMode", 0));
         addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
         addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture", "sandfloor009a.jpg"));
         addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture", "terrain_detail_NM.png"));

@@ -56,11 +56,11 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setAltitudeRange(const vec2<F32>& dim) noexcept { _altitudeRange = dim; }
     void setTessellationRange(const vec4<F32>& rangeChunkAndPatch) noexcept { _tessellationRange = rangeChunkAndPatch; }
     void setActive(bool active) noexcept { _active = active; }
-    void setWireframeDebug(bool state) noexcept { _wireframeDebug = state; }
+    void setWireframeDebug(U8 state) noexcept { _wireframeDebug = to_U8(CLAMPED(to_I32(state), 0, 2)); }
 
     U8 getTextureLayerCount() const noexcept { return _textureLayers; }
     bool getActive() const noexcept { return _active; }
-    bool wireframeDebug() const noexcept { return _wireframeDebug; }
+    U8 wireframeDebug() const noexcept { return _wireframeDebug; }
 
     const vec2<F32>& getAltitudeRange() const noexcept { return _altitudeRange; }
     const vec4<F32>& getTessellationRange() const noexcept { return _tessellationRange; }
@@ -114,7 +114,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     vec2<F32> _altitudeRange = { 0.f, 1.f };
     vec2<U16> _dimensions = { 1.f, 1.f };
     U8 _textureLayers = 1;
-    bool _wireframeDebug = false;
+    U8 _wireframeDebug = 0;
     bool _active = false;
 };
 

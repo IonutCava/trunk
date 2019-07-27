@@ -376,7 +376,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(tescModule);
     shaderDescriptor._modules.push_back(teseModule);
-    if (terrainDescriptor->wireframeDebug()) {
+    if (terrainDescriptor->wireframeDebug() > 0) {
         shaderDescriptor._modules.push_back(geomModule);
     }
     shaderDescriptor._modules.push_back(fragModule);
@@ -386,12 +386,14 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     const U16 tileMapSize = tileMaps->getWidth();
     for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
-        if (terrainDescriptor->wireframeDebug()) {
+        if (terrainDescriptor->wireframeDebug() == 1) {
             shaderModule._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
+        } else if (terrainDescriptor->wireframeDebug() == 2) {
+            shaderModule._defines.push_back(std::make_pair("TOGGLE_NORMALS", true));
         }
 
         if (GFXDevice::getGPUVendor() == GPUVendor::AMD) {
-            if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() ? ShaderType::GEOMETRY : ShaderType::TESSELATION_EVAL)) {
+            if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() != 0 ? ShaderType::GEOMETRY : ShaderType::TESSELATION_EVAL)) {
                 shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
             }
         } else {
@@ -529,7 +531,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(terrainDescriptor->wireframeDebug() ? CullMode::CW : CullMode::CCW);
+    terrainRenderState.setCullMode(terrainDescriptor->wireframeDebug() != 0 ? CullMode::CW : CullMode::CCW);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
 
     // Generate a render state for drawing reflections
@@ -537,10 +539,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setCullMode(terrainDescriptor->wireframeDebug() ? CullMode::CCW : CullMode::CW);
+    terrainRenderStateReflection.setCullMode(terrainDescriptor->wireframeDebug() != 0 ? CullMode::CCW : CullMode::CW);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
-    terrainRenderStatePrePassReflection.setCullMode(terrainDescriptor->wireframeDebug() ? CullMode::CCW : CullMode::CW);
+    terrainRenderStatePrePassReflection.setCullMode(terrainDescriptor->wireframeDebug() != 0 ? CullMode::CCW : CullMode::CW);
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
