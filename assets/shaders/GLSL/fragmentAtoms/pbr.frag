@@ -150,21 +150,21 @@ vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float
 #define M_PI 3.14159265358979323846
 #define M_EPSILON 0.0000001
 
-vec4 PBR(in vec4 lightColourAndAtt,
+vec4 PBR(in vec3 lightDirection, 
+         in vec4 lightColourAndAtt,
          in vec4 specular,
          in vec4 albedoAndShadow,
          in vec3 normalWV,
-         in vec3 lightDirection)
+         in vec3 viewDir)
 {
     float roughness = specular.a;
-    vec3 dvd_ViewDirNorm = normalize(-VAR._vertexWV.xyz);
 
     // direction is NOT normalized
-    vec3 Hn = normalize(dvd_ViewDirNorm + lightDirection);
-    float vdh = clamp((dot(dvd_ViewDirNorm, Hn)), M_EPSILON, 1.0);
+    vec3 Hn = normalize(viewDir + lightDirection);
+    float vdh = clamp((dot(viewDir, Hn)), M_EPSILON, 1.0);
     float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
     float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0);
-    float ndv = clamp((dot(normalWV, dvd_ViewDirNorm)), M_EPSILON, 1.0);
+    float ndv = clamp((dot(normalWV, viewDir)), M_EPSILON, 1.0);
     vec3 diffuseFactor = Diffuse(albedoAndShadow.rgb, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
 
     vec3 fresnelTerm = Fresnel(specular.rgb, vdh);

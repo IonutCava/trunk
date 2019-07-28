@@ -284,8 +284,7 @@ bool GL_API::initGLSW(const Configuration& config) {
 
     static const std::pair<stringImpl, stringImpl> shaderVaryingsBump[] =
     {
-        { "mat3" , "_tbn"},
-        { "vec3" , "_normalW"}
+        { "mat3" , "_tbn"}
     };
 
     static const stringImpl crossTypeGLSLHLSL = "#define float2 vec2\n"

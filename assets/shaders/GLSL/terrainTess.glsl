@@ -282,14 +282,12 @@ void main()
     _out._vertexW = worldMat * pos;
 
 #if !defined(SHADOW_PASS)
-    mat3 normalMatrixW = dvd_NormalMatrixW(baseInstance);
-    mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * normalMatrixW;
+    const mat3 normalMatrixWV = dvd_NormalMatrixWV(baseInstance);
 
     const vec3 N = getNormal(pos.y, heightOffsets);
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
     const vec3 T = cross(N, B);
 
-    _out._normalW = normalMatrixW * N;
     _out._normalWV = normalize(normalMatrixWV * N);
     _out._tbn = normalMatrixWV * mat3(T, B, N);
 

@@ -137,7 +137,8 @@ vec3 _getSplatNormal(in vec2 uv) {
     vec3 ret = normalize(2.0f * tbn - 1.0f);
 
     //const vec3 V = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
-    //return perturb_normal(ret, VAR._normalW, V, uv);
+    //const vec3 normalW = inverse(mat3(dvd_ViewMatrix)) * VAR._normalWV;
+    //return perturb_normal(ret, normalW, V, uv);
     return ret;
 }
 
@@ -146,10 +147,7 @@ vec3 TerrainNormal(in vec2 uv, in float crtDepth) {
     return  VAR._normalWV;
 #else //LOW_QUALITY
     float distance = saturate(ToLinearDepth(crtDepth) * 0.05f);
-    /*return normalize(VAR._tbn * mix(normalWhiteoutBlend(_getSplatNormal(uv), tempNormals),
-                                    tempNormals,
-                                    distance));*/
-    return VAR._tbn * _getSplatNormal(uv);
+    return mix(VAR._tbn * _getSplatNormal(uv), VAR._normalWV, distance);
 #endif //LOW_QUALITY
 }
 #endif //PRE_PASS || !USE_DEFERRED_NORMALS
