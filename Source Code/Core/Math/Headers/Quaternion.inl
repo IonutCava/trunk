@@ -317,24 +317,21 @@ inline void Quaternion<T>::fromEuler(const vec3<Angle::DEGREES<T>>& v) {
 
 template <typename T>
 void Quaternion<T>::fromEuler(Angle::DEGREES<T> pitch, Angle::DEGREES<T> yaw, Angle::DEGREES<T> roll) {
-    const Angle::RADIANS<T> attitude = Angle::to_RADIANS(pitch);
-    const Angle::RADIANS<T> heading = Angle::to_RADIANS(yaw);
-    const Angle::RADIANS<T> bank = Angle::to_RADIANS(roll);
+    vec3<D64> eulerAngles(Angle::to_RADIANS(pitch) * 0.5, 
+                          Angle::to_RADIANS(yaw)   * 0.5,
+                          Angle::to_RADIANS(roll)  * 0.5);
 
-    const D64 c1 = std::cos(heading * 0.5);
-    const D64 s1 = std::sin(heading * 0.5);
-    const D64 c2 = std::cos(attitude * 0.5);
-    const D64 s2 = std::sin(attitude * 0.5);
-    const D64 c3 = std::cos(bank * 0.5);
-    const D64 s3 = std::sin(bank * 0.5);
+    vec3<D64> c(std::cos(eulerAngles.x),
+                std::cos(eulerAngles.y),
+                std::cos(eulerAngles.z));
+    vec3<D64> s(std::sin(eulerAngles.x),
+                std::sin(eulerAngles.y),
+                std::sin(eulerAngles.z));
 
-    const D64 c1c2 = c1 * c2;
-    const D64 s1s2 = s1 * s2;
-
-    W(static_cast<T>(c1c2 * c3 - s1s2 * s3));
-    X(static_cast<T>(c1c2 * s3 + s1s2 * c3));
-    Y(static_cast<T>(s1 * c2 * c3 + c1 * s2 * s3));
-    Z(static_cast<T>(c1 * s2 * c3 - s1 * c2 * s3));
+    W(c.x * c.y * c.z + s.x * s.y * s.z);
+    X(s.x * c.y * c.z - c.x * s.y * s.z);
+    Y(c.x * s.y * c.z + s.x * c.y * s.z);
+    Z(c.x * c.y * s.z - s.x * s.y * c.z);
     // normalize(); this method does produce a normalized quaternion
 }
 
@@ -434,16 +431,16 @@ void Quaternion<T>::getMatrix(mat3<T>& outMatrix) const {
 }
 
 template <typename T>
-void Quaternion<T>::getAxisAngle(vec3<T>* axis, Angle::DEGREES<T>* angle) const {
-    axis->set(_elements / _elements.xyz().length());
-    *angle = Angle::to_DEGREES(std::acos(W()) * 2.0f);
+void Quaternion<T>::getAxisAngle(vec3<T>& axis, Angle::DEGREES<T>& angle) const {
+    axis.set(_elements / _elements.xyz().length());
+    angle = Angle::to_DEGREES(std::acos(W()) * 2.0f);
 }
 
 template <typename T>
 void Quaternion<T>::getEuler(vec3<Angle::RADIANS<T>>& euler) const {
-    T& heading = euler.yaw;
-    T& attitude = euler.pitch;
-    T& bank = euler.roll;
+    T& yaw = euler.yaw;
+    T& pitch = euler.pitch;
+    T& roll = euler.roll;
 
     const T& x = X();
     const T& y = Y();
@@ -458,20 +455,17 @@ void Quaternion<T>::getEuler(vec3<Angle::RADIANS<T>>& euler) const {
     T unit = sqx + sqy + sqz + sqw;  
 
     if (test > (0.5f - EPSILON_F32) * unit) {  // singularity at north pole
-        heading = 2 * std::atan2(x, w);
-        attitude = static_cast<T>(M_PI2);
-        bank = 0;
+        roll = 0;
+        pitch = 2 * std::atan2(x, w);
+        yaw = -static_cast<T>(M_PI2);
     } else if (test < -(0.5f - EPSILON_F32) * unit) {  // singularity at south pole
-        heading = -2 * std::atan2(x, w);
-        attitude = -static_cast<T>(M_PI2);
-        bank = 0;
+        roll = 0;
+        pitch = -2 * std::atan2(x, w);
+        yaw = static_cast<T>(M_PI2);
     } else {
-        T x2 = 2 * x;
-        T y2 = 2 * y;
-
-        heading = std::atan2(y2 * w - x2 * z, sqx - sqy - sqz + sqw);
-        attitude = std::asin(2 * test / unit);
-        bank = std::atan2(x2 * w - y2 * z, -sqx + sqy - sqz + sqw);
+        roll  = std::atan2(2 * x * y + 2 * w * z, sqw + sqx - sqy - sqz);
+        pitch = std::atan2(2 * y * z + 2 * w * x, sqw - sqx - sqy + sqz);
+        yaw   = std::asin(-2 * (x * z - w * y));
     }
 }
 
@@ -598,23 +592,27 @@ inline vec3<T> Quaternion<T>::XYZ() const noexcept {
 }
 
 template <typename T>
-inline void Quaternion<T>::X(T x) noexcept {
-    _elements.x = x;
+template <typename U>
+inline void Quaternion<T>::X(U x) noexcept {
+    _elements.x = static_cast<T>(x);
 }
 
 template <typename T>
-inline void Quaternion<T>::Y(T y) noexcept {
-    _elements.y = y;
+template <typename U>
+inline void Quaternion<T>::Y(U y) noexcept {
+    _elements.y = static_cast<T>(y);
 }
 
 template <typename T>
-inline void Quaternion<T>::Z(T z) noexcept {
-    _elements.z = z;
+template <typename U>
+inline void Quaternion<T>::Z(U z) noexcept {
+    _elements.z = static_cast<T>(z);
 }
 
 template <typename T>
-inline void Quaternion<T>::W(T w) noexcept {
-    _elements.w = w;
+template <typename U>
+inline void Quaternion<T>::W(U w) noexcept {
+    _elements.w = static_cast<T>(w);
 }
 
 template <typename T>

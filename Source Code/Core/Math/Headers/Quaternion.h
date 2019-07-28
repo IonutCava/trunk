@@ -141,7 +141,7 @@ class Quaternion {
     void getMatrix(mat3<T>& outMatrix) const;
 
     //! Convert to Axis/Angles
-    void getAxisAngle(vec3<T>* axis, Angle::DEGREES<T>* angle) const;
+    void getAxisAngle(vec3<T>& axis, Angle::DEGREES<T>& angle) const;
 
     void getEuler(vec3<Angle::RADIANS<T>>& euler) const;
 
@@ -162,10 +162,14 @@ class Quaternion {
 
     inline vec3<T> XYZ() const noexcept;
 
-    inline void X(T x) noexcept;
-    inline void Y(T y) noexcept;
-    inline void Z(T z) noexcept;
-    inline void W(T w) noexcept;
+    template<typename U>
+    inline void X(U x) noexcept;
+    template<typename U>
+    inline void Y(U y) noexcept;
+    template<typename U>
+    inline void Z(U z) noexcept;
+    template<typename U>
+    inline void W(U w) noexcept;
 
     inline void identity();
 
