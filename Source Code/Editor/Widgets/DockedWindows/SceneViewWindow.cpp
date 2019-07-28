@@ -105,28 +105,28 @@ namespace Divide {
         }
 
         F32 pos = SButtonWidth + ItemSpacing + 25;
-        ImGui::SameLine(window->SizeContents.x - pos);
+        ImGui::SameLine(window->ContentSize.x - pos);
         if (button(!enableGizmo || settings.currentGizmoOperation == ImGuizmo::SCALE, "S", "Scale", true)) {
             settings.currentGizmoOperation = ImGuizmo::SCALE;
         }
         SButtonWidth = ImGui::GetItemRectSize().x;
 
         pos += RButtonWidth + ItemSpacing + 5;
-        ImGui::SameLine(window->SizeContents.x - pos);
+        ImGui::SameLine(window->ContentSize.x - pos);
         if (button(!enableGizmo || settings.currentGizmoOperation == ImGuizmo::ROTATE, "R", "Rotate", true)) {
             settings.currentGizmoOperation = ImGuizmo::ROTATE;
         }
         RButtonWidth = ImGui::GetItemRectSize().x;
 
         pos += TButtonWidth + ItemSpacing + 5;
-        ImGui::SameLine(window->SizeContents.x - pos);
+        ImGui::SameLine(window->ContentSize.x - pos);
         if (button(!enableGizmo || settings.currentGizmoOperation == ImGuizmo::TRANSLATE, "T", "Translate", true)) {
             settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
         }
         TButtonWidth = ImGui::GetItemRectSize().x;
 
         pos += NButtonWidth + ItemSpacing + 5;
-        ImGui::SameLine(window->SizeContents.x - pos);
+        ImGui::SameLine(window->ContentSize.x - pos);
         if (button(false, "N", "Select", true)) {
             
         }

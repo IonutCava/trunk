@@ -41,6 +41,8 @@
 #include <GL3Renderer.h>
 #include <Texture.h>
 
+#define MAX_IMGUI_VERTS 65535 
+
 namespace Divide {
 
 namespace {
