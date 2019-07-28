@@ -193,9 +193,9 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
             g_direction = !g_direction;
         }
 
-        vec3<F32> sunVector(-cosf(g_sunAngle.x) * sinf(g_sunAngle.y),
-                            -cosf(g_sunAngle.y),
-                            -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
+        vec3<F32> sunVector(Angle::to_DEGREES(-cosf(g_sunAngle.x) * sinf(g_sunAngle.y)),
+                            Angle::to_DEGREES(-cosf(g_sunAngle.y)),
+                            Angle::to_DEGREES(-sinf(g_sunAngle.x) * sinf(g_sunAngle.y)));
 
         _sun->get<TransformComponent>()->setRotationEuler(sunVector);
         FColour sunColour(1.0f, 1.0f, 1.0f, 1.0f);

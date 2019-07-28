@@ -20,7 +20,7 @@
     <autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>
 <fog>
-    <fogDensity>0.00125</fogDensity>
+    <fogDensity>0.00124999997</fogDensity>
     <fogColour r="0.699999988" g="0.699999988" b="0.800000012"/>
 </fog>
 <lod>
