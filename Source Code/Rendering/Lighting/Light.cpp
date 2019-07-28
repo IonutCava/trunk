@@ -69,7 +69,7 @@ void Light::onTransformUpdated(const TransformUpdated* evt) {
 void Light::updateCache() {
     TransformComponent* lightTransform = getSGN().get<TransformComponent>();
     assert(lightTransform != nullptr);
-
+    
     _positionCache = lightTransform->getPosition();
     _directionCache = Normalize(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
 }

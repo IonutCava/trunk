@@ -28,7 +28,7 @@ std::array<U8, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {
     to_U8(ShaderProgram::TextureUsage::SHADOW_CUBE)
 }};
 
-bool LightPool::_previewShadowMaps = false;
+bool LightPool::_debugDraw = false;
 
 LightPool::LightPool(Scene& parentScene, PlatformContext& context)
     : SceneComponent(parentScene),
@@ -230,14 +230,14 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 }
 
 void LightPool::togglePreviewShadowMaps(GFXDevice& context, Light& light) {
-    _previewShadowMaps = !_previewShadowMaps;
+    _debugDraw = !_debugDraw;
     // Stop if we have shadows disabled
     if (!context.context().config().rendering.shadowMapping.enabled) {
-        _previewShadowMaps = false;
+        return;
     }
 
-    ParamHandler::instance().setParam(_ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
-    if (_previewShadowMaps) {
+    ParamHandler::instance().setParam(_ID("rendering.debug.displayShadowDebugInfo"), _debugDraw);
+    if (_debugDraw) {
         ShadowMap::enableShadowDebugViewForLight(context, light);
     } else {
         ShadowMap::disableShadowDebugViews(context);
@@ -389,7 +389,7 @@ void LightPool::postRenderAllPasses(const Camera& playerCamera) {
 }
 
 void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& bufferInOut) const {
-    if (!_previewShadowMaps) {
+    if (!_debugDraw) {
         return;
     }
 

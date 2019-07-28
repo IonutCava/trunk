@@ -192,7 +192,7 @@ class LightPool : public SceneComponent,
 
     Time::ProfileTimer& _shadowPassTimer;
 
-    static bool _previewShadowMaps;
+    static bool _debugDraw;
     static std::array<U8, to_base(ShadowType::COUNT)> _shadowLocation;
 };
 
