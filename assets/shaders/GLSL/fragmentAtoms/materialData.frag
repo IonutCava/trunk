@@ -134,18 +134,21 @@ float getShininess(mat4 colourMatrix) {
     return colourMatrix[2].w;
 }
 
+#if defined(USE_CUSTOM_ROUGHNESS)
+float getRoughness(mat4 colourMatrix);
+#else
 float getRoughness(mat4 colourMatrix) {
     return 1.0 - saturate(getShininess(colourMatrix) / 255.0);
 }
+#endif
 
 float getReflectivity(mat4 colourMatrix) {
-#if defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
+#if defined(USE_SHADING_PHONG) || defined(USE_SHADING_BLINN_PHONG)
     return getShininess(colourMatrix);
 #elif defined(USE_SHADING_TOON)
     // ToDo - will cause compile error
-#else //if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-    float roughness = getRoughness(colourMatrix);
-    return roughness * roughness;
+#elif defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
+    return getRoughness(colourMatrix);
 #endif
 }
 

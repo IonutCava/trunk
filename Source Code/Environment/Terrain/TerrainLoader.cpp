@@ -253,9 +253,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
     terrainMaterial->setDiffuse(FColour(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
     terrainMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
-    terrainMaterial->setShininess(2.0f);
+    terrainMaterial->setShininess(1.0f);
     terrainMaterial->disableTranslucency();
-    terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+    terrainMaterial->setShadingMode(Material::ShadingMode::COOK_TORRANCE);
 
     stringImpl layerCountData = Util::StringFormat("const uint CURRENT_LAYER_COUNT[ %d ] = {", layerCount);
     for (U8 i = 0; i < layerCount; ++i) {
@@ -380,7 +380,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             }
 
             shaderModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-            shaderModule._defines.push_back(std::make_pair("USE_SHADING_PHONG", true));
+            shaderModule._defines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
             shaderModule._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
 
             shaderModule._defines.push_back(std::make_pair(layerCountData, false));

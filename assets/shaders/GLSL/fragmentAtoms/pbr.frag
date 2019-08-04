@@ -115,7 +115,9 @@ vec3 BurleyDiffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL,
 // roughness    = the roughness of the pixel
 float Distribution(float NdotH, float roughness)
 {
-    return GGXDistribution(NdotH, roughness);
+    return BlinnPhongDistribution(NdotH, roughness);
+    //return GGXDistribution(NdotH, roughness);
+    //return BeckmannDistribution(NdotH, roughness);
 }
 
 //Get Fresnel
@@ -132,7 +134,8 @@ vec3 Fresnel(vec3 specular, float VdotH)
 // roughness    = the roughness of the pixel
 float Visibility(float NdotL, float NdotV, float roughness)
 {
-    return SmithGGXSchlickVisibility(NdotL, NdotV, roughness);
+    //return SmithGGXSchlickVisibility(NdotL, NdotV, roughness);
+    return SchlickVisibility(NdotL, NdotV, roughness);
 }
 
 //Get Diffuse
@@ -170,7 +173,7 @@ vec4 PBR(in vec3 lightDirection,
     vec3 fresnelTerm = Fresnel(specular.rgb, vdh);
     float distTerm = Distribution(ndh, roughness);
     float visTerm = Visibility(ndl, ndv, roughness);
-    vec3 specularFactor = (fresnelTerm * distTerm * visTerm / M_PI) * albedoAndShadow.a;
+    vec3 specularFactor = ((fresnelTerm * distTerm * visTerm) / M_PI) *albedoAndShadow.a;
 
     return vec4((lightColourAndAtt.rgb * (diffuseFactor + specularFactor) * lightColourAndAtt.a) / M_PI, length(specularFactor));
 }

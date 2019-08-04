@@ -514,10 +514,10 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 
 void main(void)
 {
-	TerrainData data = BuildTerrainData(_waterDetails);
+    TerrainData data = BuildTerrainData(_waterDetails);
 
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-	vec4 colourOut = getPixelColour(data.albedo, colourMatrix, data.normal, data.uv);
+    vec4 colourOut = getPixelColour(data.albedo, colourMatrix, data.normal, data.uv);
 
 #if defined(TOGGLE_NORMALS)
     colourOut = vec4(gs_WireColor, 1.0f);
@@ -554,20 +554,29 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 #include "prePass.frag"
 #else
 #define NEED_DEPTH_TEXTURE
+#define USE_CUSTOM_ROUGHNESS
 #include "BRDF.frag"
 #include "output.frag"
 #endif
 
 #include "terrainSplatting.frag"
 
+float _private_roughness = 0.0f;
+
+float getRoughness(mat4 colourMatrix) {
+    return _private_roughness;
+}
+
 void main(void)
 {
-	TerrainData data = BuildTerrainData(_waterDetails);
+    TerrainData data = BuildTerrainData(_waterDetails);
 
 #if defined(PRE_PASS)
-	const float crtDepth = computeDepth(VAR._vertexWV);
+    const float crtDepth = computeDepth(VAR._vertexWV);
     outputWithVelocity(data.uv, 1.0f, crtDepth, data.normal);
 #else
+    _private_roughness = data.roughness;
+
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
     vec4 colourOut = getPixelColour(data.albedo, colourMatrix, data.normal, data.uv);
 
