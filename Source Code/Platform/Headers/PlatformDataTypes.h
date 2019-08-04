@@ -120,6 +120,11 @@ constexpr auto to_base(const Type value) -> typename std::underlying_type<Type>:
 }
 
 template <typename T>
+constexpr size_t to_size(const T value) {
+    return static_cast<size_t>(value);
+}
+
+template <typename T>
 constexpr U32 to_U32(const T value) {
     return static_cast<U32>(value);
 }

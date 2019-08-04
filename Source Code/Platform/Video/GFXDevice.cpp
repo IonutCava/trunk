@@ -144,7 +144,7 @@ GFXDevice::GFXDevice(Kernel& parent)
 
     AttribFlags flags;
     flags.fill(true);
-    VertexBuffer::setAttribMasks(static_cast<size_t>(RenderStagePass::count()), flags);
+    VertexBuffer::setAttribMasks(to_size(RenderStagePass::count()), flags);
 
     // Don't (currently) need these for shadow passes
     flags[to_base(AttribLocation::COLOR)] = false;

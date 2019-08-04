@@ -22,11 +22,11 @@ namespace {
 
         vec3<size_t>& crtConfig = g_currentBindConfig[bindIndex];
 
-        if (crtConfig.x != static_cast<size_t>(UBOid) ||
+        if (crtConfig.x != to_size(UBOid) ||
             crtConfig.y != offsetInBytes ||
             crtConfig.z != rangeInBytes)
         {
-            crtConfig.set(static_cast<size_t>(UBOid), offsetInBytes, rangeInBytes);
+            crtConfig.set(to_size(UBOid), offsetInBytes, rangeInBytes);
             return true;
         }
 

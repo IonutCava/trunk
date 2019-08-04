@@ -39,6 +39,18 @@ namespace Divide {
 
 class TerrainDescriptor final : public PropertyDescriptor {
    public:
+	   enum class WireframeMode : U8 {
+		   NONE = 0,
+		   EDGES,
+		   NORMALS
+	   };
+
+	   enum class ParallaxMode : U8 {
+		   NONE = 0,
+		   NORMAL,
+		   OCCLUSION
+	   };
+   public:
     explicit TerrainDescriptor(const stringImpl& name) noexcept;
 
     ~TerrainDescriptor();
@@ -56,11 +68,13 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setAltitudeRange(const vec2<F32>& dim) noexcept { _altitudeRange = dim; }
     void setTessellationRange(const vec4<F32>& rangeChunkAndPatch) noexcept { _tessellationRange = rangeChunkAndPatch; }
     void setActive(bool active) noexcept { _active = active; }
-    void setWireframeDebug(U8 state) noexcept { _wireframeDebug = to_U8(CLAMPED(to_I32(state), 0, 2)); }
+    void setWireframeDebug(U8 state) noexcept { _wireframeDebug = static_cast<WireframeMode>(CLAMPED(to_I32(state), 0, 2)); }
+	void setParallaxMode(U8 state) noexcept { _parallaxMode = static_cast<ParallaxMode>(CLAMPED(to_I32(state), 0, 2)); }
 
     U8 getTextureLayerCount() const noexcept { return _textureLayers; }
     bool getActive() const noexcept { return _active; }
-    U8 wireframeDebug() const noexcept { return _wireframeDebug; }
+	WireframeMode wireframeDebug() const noexcept { return _wireframeDebug; }
+	ParallaxMode parallaxMode() const noexcept { return _parallaxMode; }
 
     const vec2<F32>& getAltitudeRange() const noexcept { return _altitudeRange; }
     const vec4<F32>& getTessellationRange() const noexcept { return _tessellationRange; }
@@ -102,6 +116,8 @@ class TerrainDescriptor final : public PropertyDescriptor {
         Util::Hash_combine(hash, _tessellationRange.w);
         Util::Hash_combine(hash, _dimensions.x);
         Util::Hash_combine(hash, _dimensions.y);
+		Util::Hash_combine(hash, to_base(_wireframeDebug));
+		Util::Hash_combine(hash, to_base(_parallaxMode));
         Util::Hash_combine(hash, PropertyDescriptor::getHash());
 
         return hash;
@@ -114,7 +130,8 @@ class TerrainDescriptor final : public PropertyDescriptor {
     vec2<F32> _altitudeRange = { 0.f, 1.f };
     vec2<U16> _dimensions = { 1.f, 1.f };
     U8 _textureLayers = 1;
-    U8 _wireframeDebug = 0;
+	WireframeMode _wireframeDebug = WireframeMode::NONE;
+	ParallaxMode _parallaxMode = ParallaxMode::NONE;
     bool _active = false;
 };
 

@@ -69,10 +69,10 @@ void main()
     vec3 incident = normalize(-VAR._vertexWV.xyz);
 
     vec2 uvFinalReflect = uvReflection.xy;
-    vec2 uvFinalRefract = uvReflection.xy; 
+    vec2 uvFinalRefract = uvReflection.xy;
 
-    uvFinalReflect += (_noiseFactor * normalWV.xy);
-    uvFinalRefract += (_noiseFactor * normalWV.xy);
+    //uvFinalReflect += (_noiseFactor * normalWV.xy);
+    //uvFinalRefract += (_noiseFactor * normalWV.xy);
 
     //vec4 distOffset = texture(texDiffuse0, VAR._texCoord + vec2(time2)) * kDistortion;
     //vec4 dudvColor = texture(texDiffuse0, vec2(VAR._texCoord + distOffset.xy));
@@ -86,7 +86,7 @@ void main()
                          texture(texReflectPlanar, uvFinalRefract),
                          saturate(Fresnel(incident, VAR._normalWV)));
     
-    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
-    //writeOutput(vec4(texColour.rgb, 1.0f));
+    //writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
+    writeOutput(vec4(texture(texReflectPlanar, uvFinalReflect).rgb, 1.0f));
 #endif
 }

@@ -32,7 +32,7 @@ namespace Divide {
         if (sysctl(mib, namelen, &size, &len, NULL, 0) < 0) {
             perror("sysctl");
         } else {
-            info._availableRam = static_cast<size_t>(size);
+            info._availableRam = to_size(size);
         }
 
         return true;

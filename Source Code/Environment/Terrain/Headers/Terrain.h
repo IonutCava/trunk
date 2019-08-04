@@ -50,45 +50,12 @@ inline T TER_COORD(T x, T y, T width) {
     return x + (width * y);
 }
 
-struct TerrainTextureLayer {
-    explicit TerrainTextureLayer(U8 layerCount)
-    {
-        _blendMaps = nullptr;
-        _tileMaps = nullptr;
-        _normalMaps = nullptr;
-
-        _channelCountPerLayer.resize(layerCount);
-    }
-
-    ~TerrainTextureLayer();
-
-    enum class TerrainTextureChannel : U8 {
-        TEXTURE_RED_CHANNEL = 0,
-        TEXTURE_GREEN_CHANNEL = 1,
-        TEXTURE_BLUE_CHANNEL = 2,
-        TEXTURE_ALPHA_CHANNEL = 3,
-        COUNT
-    };
-
-    inline void channelCountPerLayer(U8 layer, U8 channelCount) { _channelCountPerLayer[layer] = channelCount; }
-
-    inline void setBlendMaps(const Texture_ptr& texture) noexcept { _blendMaps = texture; }
-    inline void setTileMaps(const Texture_ptr& texture) noexcept { _tileMaps = texture; }
-    inline void setNormalMaps(const Texture_ptr& texture) noexcept { _normalMaps = texture; }
-
-    inline U8 layerCount() const { return to_U8(_channelCountPerLayer.size()); }
-    inline U8 channelCountPerLayer(U8 layer) const { return _channelCountPerLayer[layer]; }
-
-    inline const Texture_ptr& blendMaps()  const noexcept { return _blendMaps; }
-    inline const Texture_ptr& tileMaps()   const noexcept { return _tileMaps; }
-    inline const Texture_ptr& normalMaps() const noexcept { return _normalMaps; }
-
-
-   private:
-    vector<U8> _channelCountPerLayer;
-    Texture_ptr _blendMaps;
-    Texture_ptr _tileMaps;
-    Texture_ptr _normalMaps;
+enum class TerrainTextureChannel : U8 {
+    TEXTURE_RED_CHANNEL = 0,
+    TEXTURE_GREEN_CHANNEL = 1,
+    TEXTURE_BLUE_CHANNEL = 2,
+    TEXTURE_ALPHA_CHANNEL = 3,
+    COUNT
 };
 
 class VertexBuffer;
@@ -192,7 +159,6 @@ class Terrain : public Object3D {
     bool _drawBBoxes;
     bool _shaderDataDirty;
     SceneGraphNode* _vegetationGrassNode;
-    TerrainTextureLayer* _terrainTextures;
     std::shared_ptr<TerrainDescriptor> _descriptor;
 };
 
@@ -212,14 +178,6 @@ private:
 
 class TerrainLoader {
    private:
-    static void setTextureLayer(Terrain& terrain, TerrainTextureLayer* textureLayer) noexcept {
-        terrain._terrainTextures = textureLayer;
-    }
-
-    static U32 textureLayerCount(Terrain& terrain) noexcept {
-        return to_U32(terrain._terrainTextures->layerCount());
-    }
-
     static VegetationDetails& vegetationDetails(Terrain& terrain) noexcept {
         return terrain._vegDetails;
     }

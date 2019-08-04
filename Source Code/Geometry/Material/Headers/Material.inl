@@ -78,6 +78,10 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
     }
 }
 
+inline void Material::disableTranslucency() {
+    _translucencyDisabled = true;
+}
+
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash, I32 variant) {
     for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         setRenderStateBlock(renderStateBlockHash, RenderStagePass::stagePass(i), variant);
@@ -142,13 +146,6 @@ inline F32 Material::getParallaxFactor() const {
     return _parallaxFactor;
 }
 
-/// Add a texture <-> bind slot pair to be bound with the default textures
-/// on each "bindTexture" call
-inline void Material::addExternalTexture(const Texture_ptr& texture, U8 slot, bool activeForDepth) {
-    // custom textures are not material dependencies!
-    _externalTextures.push_back(ExternalTexture { texture, slot, activeForDepth });
-}
-
 inline std::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage textureUsage) const {
     SharedLock r_lock(_textureLock);
     return _textures[to_U32(textureUsage)];
@@ -194,11 +191,6 @@ inline bool Material::isReflective() const {
 
 inline bool Material::isRefractive() const {
     return hasTransparency() && _isRefractive;
-}
-
-
-inline bool Material::isExternalTexture(ShaderProgram::TextureUsage slot) const {
-    return _textureExtenalFlag[to_U32(slot)];
 }
 
 inline void Material::setBumpMethod(const BumpMethod& newBumpMethod) {

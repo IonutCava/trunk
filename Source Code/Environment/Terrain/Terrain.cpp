@@ -31,7 +31,6 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
       _shaderData(nullptr),
       _drawBBoxes(false),
       _shaderDataDirty(false),
-      _terrainTextures(nullptr),
       _vegetationGrassNode(nullptr),
       _initBufferWriteCounter(0),
       _drawDistance(0.0f),
@@ -53,7 +52,6 @@ Terrain::~Terrain()
 }
 
 bool Terrain::unload() noexcept {
-    MemoryManager::DELETE(_terrainTextures);
     return Object3D::unload();
 }
 
@@ -137,10 +135,6 @@ void Terrain::postBuild() {
             triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
         }
     }
-
-    TerrainTextureLayer* textureLayer = _terrainTextures;
-    getMaterialTpl()->addExternalTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::TERRAIN_SPLAT), true);
-    getMaterialTpl()->addExternalTexture(textureLayer->tileMaps(),   to_U8(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE), false);
 
     // Approximate bounding box
     F32 halfWidth = terrainWidth * 0.5f;
@@ -419,7 +413,8 @@ vec2<F32> Terrain::getAltitudeRange() const {
 void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
 
     pt.put("descriptor", _descriptor->getVariable("descriptor"));
-    pt.put("wireframeDebugMode", _descriptor->wireframeDebug());
+    pt.put("wireframeDebugMode", to_base(_descriptor->wireframeDebug()));
+	pt.put("parallaxMappingMode", to_base(_descriptor->parallaxMode()));
     pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
     pt.put("underwaterDetailTexture", _descriptor->getVariable("underwaterDetailTexture"));
@@ -431,11 +426,6 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
 void Terrain::loadFromXML(const boost::property_tree::ptree& pt) {
  
     Object3D::loadFromXML(pt);
-}
-
-
-TerrainTextureLayer::~TerrainTextureLayer()
-{
 }
 
 };

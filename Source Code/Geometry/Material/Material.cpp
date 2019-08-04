@@ -57,6 +57,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _needsNewShader(false),
       _doubleSided(false),
       _translucent(false),
+      _translucencyDisabled(false),
       _receivesShadows(true),
       _isReflective(false),
       _isRefractive(false),
@@ -143,6 +144,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_translucent = base._translucent;
+    cloneMat->_translucencyDisabled = base._translucencyDisabled;
     cloneMat->_receivesShadows = base._receivesShadows;
     cloneMat->_isReflective = base._isReflective;
     cloneMat->_isRefractive = base._isRefractive;
@@ -164,17 +166,11 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
 
     for (U8 i = 0; i < to_U8(base._textures.size()); ++i) {
         ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
-        if (!isExternalTexture(usage)) {
-            Texture_ptr tex = base._textures[i];
-            if (tex) {
-                cloneMat->setTexture(usage, tex);
-            }
+        Texture_ptr tex = base._textures[i];
+        if (tex) {
+            cloneMat->setTexture(usage, tex);
         }
-    }
-    for (const ExternalTexture& tex : base._externalTextures) {
-        if (tex._texture) {
-            cloneMat->addExternalTexture(tex._texture, tex._bindSlot, tex._activeForDepth);
-        }
+        
     }
 
     cloneMat->_colourData = base._colourData;
@@ -224,13 +220,17 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
         textureUsageSlot == ShaderProgram::TextureUsage::OPACITY)
     {
+        bool isOpacity = true;
         if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0) {
             _textureKeyCache = texture == nullptr ? -1 : texture->getData().textureHandle();
+            isOpacity = false;
         }
 
         // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
-        const Texture_ptr& opacityTex = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
-        if (opacityTex != nullptr && texture != nullptr && opacityTex->getData() == texture->getData()) {
+        const Texture_ptr& otherTex = _textures[isOpacity ? to_base(ShaderProgram::TextureUsage::UNIT0)
+                                                          : to_base(ShaderProgram::TextureUsage::OPACITY)];
+
+        if (otherTex != nullptr && texture != nullptr && otherTex->getData() == texture->getData()) {
             _textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = nullptr;
         }
 
@@ -590,25 +590,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     return false;
 }
 
-/// Remove the custom texture assigned to the specified offset
-bool Material::removeCustomTexture(U8 bindslot) {
-    vector<ExternalTexture>::iterator it =
-        std::find_if(std::begin(_externalTextures),
-                    std::end(_externalTextures),
-                    [&bindslot](const ExternalTexture& tex)
-                    -> bool {
-                        return tex._bindSlot == bindslot;
-                    });
-
-    if (it == std::end(_externalTextures)) {
-        return false;
-    }
-
-    _externalTextures.erase(it);
-
-    return true;
-}
-
 bool Material::getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container, bool force) {
     const U8 slotValue = to_U8(slot);
 
@@ -635,6 +616,7 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
     }
 
     ret = getTextureData(ShaderProgram::TextureUsage::HEIGHTMAP, textureData) || ret;
+    ret = getTextureData(ShaderProgram::TextureUsage::PROJECTION, textureData) || ret;
 
     if (!depthStage || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::UNIT1)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData) || ret;
@@ -646,14 +628,6 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
 
     if (renderStagePass._stage != RenderStage::DISPLAY || depthStage) {
         ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
-    }
-
-    for (const ExternalTexture& tex : _externalTextures) {
-        if (!depthStage || tex._activeForDepth) {
-            if (textureData.setTexture(tex._texture->getData(), to_U8(tex._bindSlot), true) != TextureDataContainer::UpdateState::NOTHING) {
-                ret = true;
-            }
-        }
     }
 
     return ret;
@@ -682,7 +656,15 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
             ret = true;
         }
     }
-
+    {
+        constexpr U8 projectionSlot = to_base(ShaderProgram::TextureUsage::PROJECTION);
+        SharedLock r_lock(_textureLock);
+        const Texture_ptr& crtProjectionTexture = _textures[projectionSlot];
+        if (crtProjectionTexture != nullptr) {
+            textures[projectionSlot] = crtProjectionTexture->getData();
+            ret = true;
+        }
+    }
     const bool depthStage = renderStagePass.isDepthPass();
     {
         SharedLock r_lock(_textureLock);
@@ -719,19 +701,11 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
         }
     }
 
-    for (const ExternalTexture& tex : _externalTextures) {
-        if (!depthStage || tex._activeForDepth) {
-            textures[to_U8(tex._bindSlot)] = tex._texture->getData();
-            ret = true;
-        }
-    }
-
     return ret;
 }
 
 bool Material::unload() noexcept {
     _textures.fill(nullptr);
-    _externalTextures.clear();
     _shaderInfo.fill(ShaderProgramInfo());
 
     return true;
@@ -775,6 +749,10 @@ void Material::setReceivesShadows(const bool state) {
 }
 
 void Material::updateTranslucency() {
+    if (_translucencyDisabled) {
+        return;
+    }
+
     bool wasTranslucent = _translucent;
     TranslucencySource oldSource = _translucencySource;
     _translucencySource = TranslucencySource::COUNT;

@@ -1111,7 +1111,7 @@ void Scene::addPlayerInternal(bool queue) {
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
         playerNodeDescriptor._serialize = false;
-        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, static_cast<size_t>(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName);
+        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |

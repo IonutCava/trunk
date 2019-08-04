@@ -299,7 +299,7 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
                                      : width * height * depth * _bpp;
 
         const I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
-        layer._size = static_cast<size_t>(size) * numImagePasses;
+        layer._size = to_size(size) * numImagePasses;
         layer._data.resize(layer._size);
 
         for (I32 j = 0, offset = 0; j < numImagePasses; ++j, offset += size) {

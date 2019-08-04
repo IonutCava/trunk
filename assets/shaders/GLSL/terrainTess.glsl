@@ -512,19 +512,12 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 
 #include "terrainSplatting.frag"
 
-vec4 UnderwaterAlbedo(in vec2 uv) {
-    return texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 1));
-}
-
 void main(void)
 {
-    vec2 uv = getTexCoord();
-    const float crtDepth = computeDepth(VAR._vertexWV);
-    const vec3 normal = TerrainNormal(uv, crtDepth);
+	TerrainData data = BuildTerrainData(_waterDetails);
 
-    vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 colourOut = getPixelColour(albedo, colourMatrix, normalize(normal), uv);
+	vec4 colourOut = getPixelColour(data.albedo, colourMatrix, data.normal, data.uv);
 
 #if defined(TOGGLE_NORMALS)
     colourOut = vec4(gs_WireColor, 1.0f);
@@ -536,7 +529,6 @@ void main(void)
 
     writeOutput(colourOut);
 }
-
 
 --Fragment.MainPass
 
@@ -568,38 +560,16 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 
 #include "terrainSplatting.frag"
 
-#if !defined(PRE_PASS)
-
-vec4 UnderwaterAlbedo(in vec2 uv) {
-    vec2 coords = uv * UNDERWATER_TILE_SCALE;
-    float time2 = float(dvd_time) * 0.0001f;
-    vec4 scrollingUV = vec4(coords, coords + time2);
-    scrollingUV.s -= time2;
-
-    return mix((texture(helperTextures, vec3(scrollingUV.st, 0)) + texture(helperTextures, vec3(scrollingUV.pq, 0))) * 0.5f,
-                texture(helperTextures, vec3(coords, 1)),
-                _waterDetails.y);
-}
-
-#else
-
-vec3 UnderwaterNormal(in vec2 uv) {
-    return (VAR._tbn * normalize(2.0f * texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f));
-}
-#endif
-
 void main(void)
 {
-    vec2 uv = getTexCoord();
+	TerrainData data = BuildTerrainData(_waterDetails);
 
 #if defined(PRE_PASS)
-    const float crtDepth = computeDepth(VAR._vertexWV);
-    const vec3 normal = normalize(mix(TerrainNormal(uv, crtDepth), UnderwaterNormal(uv), _waterDetails.x));
-    outputWithVelocity(uv, 1.0f, crtDepth, normal);
+	const float crtDepth = computeDepth(VAR._vertexWV);
+    outputWithVelocity(data.uv, 1.0f, crtDepth, data.normal);
 #else
-    vec4 albedo = mix(getTerrainAlbedo(uv), UnderwaterAlbedo(uv), _waterDetails.x);
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 colourOut = getPixelColour(albedo, colourMatrix, getNormal(uv), uv);
+    vec4 colourOut = getPixelColour(data.albedo, colourMatrix, data.normal, data.uv);
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     const float LineWidth = 0.75f;

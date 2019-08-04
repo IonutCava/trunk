@@ -161,10 +161,10 @@ bool glUniformBuffer::bindRange(U8 bindIndex,
     }
 
     dataOut._bufferGUID = bufferImpl()->getGUID();
-    dataOut._range = static_cast<size_t>(rangeElementCount * _elementSize);
-    dataOut._offset = static_cast<size_t>(offsetElementCount * _elementSize);
+    dataOut._range = to_size(rangeElementCount * _elementSize);
+    dataOut._offset = to_size(offsetElementCount * _elementSize);
     if (queueLength() > 1) {
-        dataOut._offset += static_cast<size_t>(queueReadIndex() * _allignedBufferSize);
+        dataOut._offset += to_size(queueReadIndex() * _allignedBufferSize);
     }
     size_t req = alignmentRequirement(_usage);
     if (dataOut._offset % req != 0) {

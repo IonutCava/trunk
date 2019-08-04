@@ -45,20 +45,30 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 
 
 vec2 getTexCoord() {
-#   if defined(USE_PARALLAX_MAPPING)
-    return ParallaxNormal(VAR._texCoord, normalize(-VAR._vertexWV.xyz));
-#   endif //USE_PARALLAX_MAPPING
-    return VAR._texCoord;
+	return VAR._texCoord;
 }
 
-#if defined(USE_PARALLAX_MAPPING)
+
+#if defined(USE_PARALLAX_MAPPING) || defined(USE_PARALLAX_OCCLUSION_MAPPING)
+#if defined(USE_PARALLAX_OCCLUSION_MAPPING) && defined(USE_PARALLAX_MAPPING)
+#undef USE_PARALLAX_MAPPING
+#endif
+
 uniform float height_scale = 0.1f;
 
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D parallaxDepthMap;
-
+#if defined(USE_PARALLAX_MAPPING)
 //ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 // Returned parallaxed texCoords
-vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir, float height)
+{
+	vec2 p = viewDir.xy / viewDir.z * (height * height_scale);
+	return texCoords - p;
+}
+#endif
+
+#if defined(USE_PARALLAX_OCCLUSION_MAPPING)
+float getDisplacementValue(vec2 uv);
+vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
 {
     // number of depth layers
     const float minLayers = 8.0;
@@ -74,14 +84,14 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 
     // get initial values
     vec2  currentTexCoords = texCoords;
-    float currentDepthMapValue = texture(parallaxDepthMap, currentTexCoords).r;
+	float currentDepthMapValue = getDisplacementValue(currentTexCoords);
 
     while (currentLayerDepth < currentDepthMapValue)
     {
         // shift texture coordinates along direction of P
         currentTexCoords -= deltaTexCoords;
         // get depthmap value at current texture coordinates
-        currentDepthMapValue = texture(depthMap, currentTexCoords).r;
+        currentDepthMapValue = getDisplacementValue(currentTexCoords);
         // get depth of next layer
         currentLayerDepth += layerDepth;
     }
@@ -90,7 +100,7 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 
     // get depth after and before collision for linear interpolation
     float afterDepth = currentDepthMapValue - currentLayerDepth;
-    float beforeDepth = texture(depthMap, prevTexCoords).r - currentLayerDepth + layerDepth;
+    float beforeDepth = getDisplacementValue(prevTexCoords) - currentLayerDepth + layerDepth;
 
     // interpolation of texture coordinates
     float weight = afterDepth / (afterDepth - beforeDepth);
@@ -98,7 +108,9 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 
     return finalTexCoords;
 }
-#endif
+#endif //USE_PARALLAX_OCCLUSION_MAPPING
+
+#endif //USE_PARALLAX_MAPPING || USE_PARALLAX_OCCLUSION_MAPPING
 
 #if !defined(PRE_PASS)
 float Gloss(in vec3 bump, in vec2 uv)

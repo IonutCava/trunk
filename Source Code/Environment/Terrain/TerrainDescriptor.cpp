@@ -25,6 +25,7 @@ namespace Divide {
         addVariable("terrainName", name.c_str());
         addVariable("descriptor", terrainDescriptor.c_str());
         setWireframeDebug(to_U8(pt.get<I32>("wireframeDebugMode", 0)));
+		setParallaxMode(to_U8(pt.get<I32>("parallaxMappingMode", 0)));
         addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
         addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture", "sandfloor009a.jpg"));
         addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture", "terrain_detail_NM.png"));
@@ -39,10 +40,6 @@ namespace Divide {
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
             addVariable("horizontalScale", descTree.get<F32>("horizontalScale", 1.0f));
             addVariable("albedoTilingFactor", descTree.get<F32>("albedoTilingFactor", 4.0f));
-            addVariable("detailTilingFactor", descTree.get<F32>("detailTilingFactor", 4.0f));
-            addVariable("detailBrightnessFactor", descTree.get<F32>("detailBrightnessFactor", 1.8f));
-            addVariable("normalMap", descTree.get<stringImpl>("normalMap", ""));
-            addVariable("textureMap", descTree.get<stringImpl>("textureMap", ""));
             setDimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
             setAltitudeRange(vec2<F32>(descTree.get<F32>("altitudeRange.<xmlattr>.min", 0.0f), descTree.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
             setTessellationRange(vec4<F32>(descTree.get<F32>("tessellationRange.<xmlattr>.min", 10.0f),
@@ -110,20 +107,6 @@ namespace Divide {
 
                     stringImpl layerColour = itLayer->second.get<stringImpl>("LayerColour", "");
                     stringImpl materialName = "";
-                    stringImpl selectedTexture = "";
-                    for (boost::property_tree::ptree::iterator itTextures = std::begin(itLayer->second.get_child("TexList"));
-                        itTextures != std::end(itLayer->second.get_child("TexList"));
-                        ++itTextures)
-                    {
-                        if (stringImpl(itTextures->first.data()).find("<xmlcomment>") != stringImpl::npos) {
-                            continue;
-                        }
-
-                        selectedTexture = splitPathToNameAndLocation(stripQuotes(itTextures->second.data()))._fileName;
-                        // Only one material per channel = one texture per channel!
-                        break;
-                    }
-
                     for (boost::property_tree::ptree::iterator itMaterial = std::begin(itLayer->second.get_child("MtlList"));
                         itMaterial != std::end(itLayer->second.get_child("MtlList"));
                         ++itMaterial)
@@ -138,7 +121,6 @@ namespace Divide {
                     }
 
                     addVariable(layerColour + layerOffsetStr + "_mat", materialName);
-                    addVariable(layerColour + layerOffsetStr + "_tex", selectedTexture);
                 }
             }
         }

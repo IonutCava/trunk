@@ -34,27 +34,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-struct TerrainMaterialTexture {
-    stringImpl _albedo = "";
-    stringImpl _bump = "";
-    stringImpl _blendMode = "ADD";
-    F32 _texWeight = 1.0f;
-    F32 _bumpWeight = 1.0f;
-};
-
-struct TerrainMaterial {
-    stringImpl _name = "Default";
-    vector<TerrainMaterialTexture> _textures;
-    stringImpl _detailTex = "";
-    U16        _tiling = 1;
+enum class TerrainTextureType : U8 {
+    ALBEDO = 0,
+    NORMAL,
+    ROUGHNESS,
+    AO,
+    DISPLACEMENT,
+    COUNT
 };
 
 class TerrainDescriptor;
 FWD_DECLARE_MANAGED_CLASS(Terrain);
 class TerrainLoader : private NonCopyable {
-   public:
-     typedef hashMap<I64, TerrainMaterial> TerrainMaterialMap;
-
    public:
     static bool loadTerrain(Terrain_ptr terrain,
                             const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
@@ -62,10 +53,6 @@ class TerrainLoader : private NonCopyable {
                             bool threadedLoading);
 
 
-    static const TerrainMaterial& getOrCreateMaterial(const stringImpl& materialName);
-
-   public:
-     static TerrainMaterialMap s_terrainMaterials;
 
    protected:
     static bool Save(const char* fileName);
@@ -80,8 +67,6 @@ class TerrainLoader : private NonCopyable {
 
     static void initializeVegetation(Terrain_ptr terrain,
                                      const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
-
-    static TerrainMaterial loadMaterialFromXML(const stringImpl& materialXMLFile);
 };
 
 };  // namespace Divide

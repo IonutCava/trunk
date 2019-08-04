@@ -96,12 +96,6 @@ class Material : public CachedResource {
         COUNT
     };
 
-    struct ExternalTexture {
-        Texture_ptr _texture = nullptr;
-        U8 _bindSlot = 0;
-        bool _activeForDepth = false;
-    };
-
     /// ShaderData stores information needed by the shader code to properly
     /// shade objects
     struct ColourData {
@@ -182,12 +176,6 @@ class Material : public CachedResource {
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
                     const TextureOperation& op = TextureOperation::NONE);
-    /// Add a texture <-> bind slot pair to be bound with the default textures
-    /// on each "bindTexture" call
-    void addExternalTexture(const Texture_ptr& texture, U8 slot, bool activeForDepth = false);
-
-    /// Remove the custom texture assigned to the specified offset
-    bool removeCustomTexture(U8 bindslot);
 
     /// Set the desired bump mapping method.
     void setBumpMethod(const BumpMethod& newBumpMethod);
@@ -207,6 +195,8 @@ class Material : public CachedResource {
     void setRenderStateBlock(size_t renderStateBlockHash, RenderStagePass renderStagePass, I32 variant = -1);
 
     void setParallaxFactor(F32 factor);
+
+    void disableTranslucency();
 
     void getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32& textureKey) const;
 
@@ -274,8 +264,6 @@ class Material : public CachedResource {
     void setShaderProgramInternal(const ShaderProgram_ptr& shader,
                                   RenderStagePass renderStagePass);
 
-    bool isExternalTexture(ShaderProgram::TextureUsage slot) const;
-
     ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass);
 
     const ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass) const;
@@ -295,6 +283,7 @@ class Material : public CachedResource {
     bool _needsNewShader;
     bool _doubleSided;
     bool _translucent;
+    bool _translucencyDisabled;
     bool _receivesShadows;
     bool _isReflective;
     bool _isRefractive;
@@ -310,8 +299,6 @@ class Material : public CachedResource {
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureUseForDepth;
     ShaderData _baseShaderSources;
-
-    vector<ExternalTexture> _externalTextures;
 
     I32 _textureKeyCache = -1;
     /// use the below map to define texture operation
