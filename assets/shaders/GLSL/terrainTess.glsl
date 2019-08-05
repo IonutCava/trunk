@@ -92,7 +92,7 @@ float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in mat4 viewM
     const float d1 = (abs(view1.z) - tessellationRange.x) / range;
     float mixVal = floor(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, saturate((d0 + d1) * 0.5f)));
     uint pow2Val = nextPOW2(uint(mixVal));
-    return clamp(pow2Val, MIN_TESS_SCALE, MAX_TESS_SCALE);
+    return clamp(pow2Val, uint(MIN_TESS_SCALE), uint(MAX_TESS_SCALE));
 #else
      return MAX_TESS_SCALE;
 #endif

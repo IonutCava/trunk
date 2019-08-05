@@ -257,9 +257,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->disableTranslucency();
     terrainMaterial->setShadingMode(Material::ShadingMode::COOK_TORRANCE);
 
+    U8 totalLayerCount = 0;
     stringImpl layerCountData = Util::StringFormat("const uint CURRENT_LAYER_COUNT[ %d ] = {", layerCount);
     for (U8 i = 0; i < layerCount; ++i) {
         layerCountData.append(Util::StringFormat("%d,", channelCountPerLayer[i]));
+        totalLayerCount += channelCountPerLayer[i];
     }
     removeLastChar(layerCountData);
     layerCountData.append("};");
@@ -381,8 +383,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
             shaderModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
             shaderModule._defines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
-            shaderModule._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE " + to_stringImpl(underwaterTileScale), true));
-
+            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("UNDERWATER_TILE_SCALE %d", underwaterTileScale), true));
+            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TOTAL_LAYER_COUNT %d", totalLayerCount), true));
             shaderModule._defines.push_back(std::make_pair(layerCountData, false));
             for (const stringImpl& str : indexData) {
                 shaderModule._defines.push_back(std::make_pair(str, false));
