@@ -19,7 +19,6 @@ struct TerrainData {
 #if !defined(PRE_PASS)
     vec4  albedo;
 #endif
-    vec3  viewDir;
     vec3  normal;
     vec2  uv;
 #if !defined(PRE_PASS)
@@ -40,15 +39,15 @@ const int tiling[] = {
 
 
 vec4 _getTexture(in sampler2DArray tex, in vec3 coords) {
-#if 1
-    if (LoD == 0) {
+    if (DETAIL_LEVEL > 2 && LoD == 0) {
         return vec4(textureNoTile(tex, helperTextures, 3, coords), 1.0f);
     }
-     
-    return vec4(textureNoTile(tex, coords), 1.0f); 
-#else
+
+    if (DETAIL_LEVEL > 1) {
+        return vec4(textureNoTile(tex, coords), 1.0f);
+    }
+
     return texture(tex, coords);
-#endif
 }
 
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
@@ -81,6 +80,7 @@ vec4 _getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
 #endif //LOW_QUALITY
 }
 
+#if defined(USE_PARALLAX_OCCLUSION_MAPPING)
 float getDisplacementValue(vec2 uv) {
     const int tileScale = tiling[LoD];
 
@@ -103,16 +103,28 @@ float getDisplacementValue(vec2 uv) {
 
     return ret;
 }
+#endif
+
+
+vec3 blend(vec3 texture1, float d1, float a1, vec3 texture2, float d2, float a2)
+{
+    float depth = 0.2;
+    float ma = max(d1 + a1, d2 + a2) - depth;
+
+    float b1 = max(d1 + a1 - ma, 0);
+    float b2 = max(d2 + a2 - ma, 0);
+
+    return (texture1 * b1 + texture2 * b2) / (b1 + b2);
+}
 
 TerrainData BuildTerrainData(in vec2 waterDetails) {
     const int tileScale = tiling[LoD];
 
     TerrainData ret;
-    ret.viewDir = normalize(-VAR._vertexWV.xyz);
     ret.uv = getTexCoord();
 #if !defined(PRE_PASS)
     ret.albedo = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    ret.roughness = 0.0f;
+    ret.roughness = 1.0f;
     ret.ao = 0.0f;
     ret.normal = getNormal(ret.uv);
 #else //PRE_PASS
@@ -123,14 +135,6 @@ TerrainData BuildTerrainData(in vec2 waterDetails) {
 #endif //LOW_QUALITY
 #endif //PRE_PASS
 
-    vec2 scaledCoords = scaledTextureCoords(ret.uv, tileScale);
-#if defined(USE_PARALLAX_MAPPING)
-    float displacement = getDisplacementValue(ret.uv);
-    scaledCoords = ParallaxMapping(scaledCoords, ret.viewDir, displacement);
-#elif defined(USE_PARALLAX_OCCLUSION_MAPPING)
-    scaledCoords = ParallaxOcclusionMapping(scaledCoords, ret.viewDir);
-#endif //USE_PARALLAX_OCCLUSION_MAPPING
-
     // Gather all blend ammounts
     float blendAmount[TOTAL_LAYER_COUNT] = float[TOTAL_LAYER_COUNT](0.0f);
     uint offset = 0;
@@ -140,19 +144,30 @@ TerrainData BuildTerrainData(in vec2 waterDetails) {
         for (uint j = 0; j < layerCount; ++j) {
             blendAmount[offset + j] = blendColour[j];
         }
-        offset += CURRENT_LAYER_COUNT[i];
+        offset += layerCount;
     }
 
-#if !defined(PRE_PASS)
-    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        // ALBEDO
-        const uint aSlice = ALBEDO_IDX[i];
-        if (aSlice < 255) {
-            ret.albedo = mix(ret.albedo, _getTexture(texTileMaps, vec3(scaledCoords, aSlice)), blendAmount[i]);
+    vec2 scaledCoords = scaledTextureCoords(ret.uv, tileScale);
+    if (DETAIL_LEVEL > 0 && LoD == 0) {
+#if defined(USE_PARALLAX_MAPPING)
+        float displacement = 0.0f;
+        for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
+            const uint dSlice = DISPLACEMENT_IDX[i];
+            if (dSlice < 255) {
+                displacement = mix(displacement, _getTexture(texExtraMaps, vec3(scaledCoords, dSlice)).r, blendAmount[i]);
+            }
         }
+
+        const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
+        scaledCoords = ParallaxMapping(scaledCoords, viewDir, displacement);
+#elif defined(USE_PARALLAX_OCCLUSION_MAPPING)
+        const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
+        scaledCoords = ParallaxOcclusionMapping(scaledCoords, viewDir);
+#endif //USE_PARALLAX_OCCLUSION_MAPPING
     }
+#if !defined(PRE_PASS)
 #if !defined(LOW_QUALITY)
-    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
+    for (uint i = 0; i < TOTAL_LAYER_COUNT && LoD == 0; ++i) {
         const float amnt = blendAmount[i];
         // ROUGHNESS
         const uint rSlice = ROUGHNESS_IDX[i];
@@ -161,12 +176,18 @@ TerrainData BuildTerrainData(in vec2 waterDetails) {
         }
         // AO
         const uint aoSlice = AO_IDX[i];
-        if (aoSlice < 255) {
+        if (LoD == 0) {
             ret.ao = mix(ret.ao, _getTexture(texExtraMaps, vec3(scaledCoords, aoSlice)).r, amnt);
         }
     }
 #endif //LOW_QUALITY
-
+    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
+        // ALBEDO
+        const uint aSlice = ALBEDO_IDX[i];
+        if (aSlice < 255) {
+            ret.albedo = mix(ret.albedo, _getTexture(texTileMaps, vec3(scaledCoords, aSlice)), blendAmount[i]);
+        }
+    }
     ret.albedo = mix(ret.albedo, _getUnderwaterAlbedo(ret.uv, waterDetails.y), waterDetails.x);
 
 #else //PRE_PASS
@@ -174,7 +195,7 @@ TerrainData BuildTerrainData(in vec2 waterDetails) {
 #if !defined(LOW_QUALITY)
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
         // NORMAL
-        uint nSlice = NORMAL_IDX[i];
+        const uint nSlice = NORMAL_IDX[i];
         if (nSlice < 255) {
             ret.normal = mix(ret.normal, _getTexture(texNormalMaps, vec3(scaledCoords, nSlice)).rgb, blendAmount[i]);
         }

@@ -109,6 +109,7 @@ public:
         U8 msaaSamples;
         U8 anisotropicFilteringLevel;
         U8 reflectionResolutionFactor;
+        I32 terrainDetailLevel;
         I32 numLightsPerScreenTile;
         bool enableFog;
         F32 fogDensity;

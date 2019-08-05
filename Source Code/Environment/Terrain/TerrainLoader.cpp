@@ -367,6 +367,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
         }
 
+        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("DETAIL_LEVEL %d", context.config().rendering.terrainDetailLevel), true));
         shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
         shaderModule._defines.push_back(std::make_pair("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true));
         shaderModule._defines.push_back(std::make_pair("ALBEDO_TILING " + to_stringImpl(albedoTilingFactor), true));

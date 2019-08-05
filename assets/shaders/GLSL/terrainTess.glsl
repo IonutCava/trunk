@@ -561,11 +561,13 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 
 #include "terrainSplatting.frag"
 
+#if !defined(PRE_PASS)
 float _private_roughness = 0.0f;
 
 float getRoughness(mat4 colourMatrix) {
     return _private_roughness;
 }
+#endif
 
 void main(void)
 {
