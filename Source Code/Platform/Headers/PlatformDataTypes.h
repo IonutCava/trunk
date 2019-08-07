@@ -115,8 +115,8 @@ constexpr auto to_base(const Type value) -> Type {
 }
 
 template <typename Type, typename = typename std::enable_if<std::is_enum<Type>::value>::type>
-constexpr auto to_base(const Type value) -> typename std::underlying_type<Type>::type {
-    return static_cast<typename std::underlying_type<Type>::type>(value);
+constexpr auto to_base(const Type value) -> std::underlying_type_t<Type> {
+    return static_cast<std::underlying_type_t<Type>>(value);
 }
 
 template <typename T>
