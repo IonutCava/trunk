@@ -78,7 +78,7 @@
   <!-- base reflectio resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
   <reflectionResolutionFactor>1</reflectionResolutionFactor>
   <!-- higher => better (less tilling, more parallax effects, etc) -->
-  <terrainDetailLevel>0</terrainDetailLevel>
+  <terrainDetailLevel>2</terrainDetailLevel>
   <numLightsPerScreenTile>-1</numLightsPerScreenTile>
   <enableFog>true</enableFog>
   <fogDensity>0.001</fogDensity>
