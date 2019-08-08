@@ -159,6 +159,8 @@ class Object3D : public SceneNode {
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) override;
 
+    virtual const char* getResourceTypeName() const override { return "Object3D"; }
+
    protected:
     GFXDevice& _context;
     U32 _geometryFlagMask;

@@ -123,6 +123,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     ResourceDescriptor ssaoGenerate("SSAOCalc");
     ssaoGenerate.setPropertyDescriptor(ssaoShaderDescriptor);
+    ssaoGenerate.waitForReady(false);
     _ssaoGenerateShader = CreateResource<ShaderProgram>(cache, ssaoGenerate);
 
     fragModule._variant = "SSAOBlur";
@@ -135,6 +136,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     ResourceDescriptor ssaoBlur("SSAOBlur");
     ssaoBlur.setPropertyDescriptor(ssaoShaderDescriptor);
+    ssaoBlur.waitForReady(false);
     _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
     
     fragModule._variant = "SSAOApply";
@@ -146,6 +148,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     ResourceDescriptor ssaoApply("SSAOApply");
     ssaoApply.setPropertyDescriptor(ssaoShaderDescriptor);
+    ssaoApply.waitForReady(false);
     _ssaoApplyShader = CreateResource<ShaderProgram>(cache, ssaoApply);
 
     _ssaoGenerateConstants.set("sampleKernel", GFX::PushConstantType::VEC3, kernel);

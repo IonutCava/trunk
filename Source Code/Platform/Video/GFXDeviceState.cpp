@@ -401,6 +401,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         ResourceDescriptor previewNormalsShader("fbPreview");
         previewNormalsShader.setThreadedLoading(false);
         previewNormalsShader.setPropertyDescriptor(shaderDescriptor);
+        previewNormalsShader.waitForReady(false);
         _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
         assert(_renderTargetDraw != nullptr);
     }

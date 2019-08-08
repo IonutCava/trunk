@@ -93,6 +93,8 @@ class Mesh : public Object3D {
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
 
+    const char* getResourceTypeName() const override { return "Mesh"; }
+
    protected:
     bool _visibleToNetwork;
     /// Animation player to animate the mesh if necessary

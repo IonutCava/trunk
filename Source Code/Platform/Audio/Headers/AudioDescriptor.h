@@ -87,6 +87,9 @@ class AudioDescriptor : public CachedResource {
 
     inline bool dirty() const { return _dirty; }
     inline void clean() { _dirty = false; }
+
+    const char* getResourceTypeName() const override { return "AudioDescriptor"; }
+
    private:
     bool _dirty;
     bool _isLooping, _is3D;

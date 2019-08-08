@@ -51,6 +51,8 @@ class Box3D : public Object3D {
    void saveToXML(boost::property_tree::ptree& pt) const override;
    void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
+   const char* getResourceTypeName() const override { return "Box3D"; }
+
    private:
       vec3<F32> _halfExtent;
 };

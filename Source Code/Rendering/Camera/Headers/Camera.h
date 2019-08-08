@@ -348,6 +348,8 @@ class Camera : public Resource {
     /// Inject mouse events
     virtual void updateInternal(const U64 deltaTimeUS);
 
+    const char* getResourceTypeName() const override { return "Camera"; }
+
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND

@@ -116,6 +116,8 @@ class Vegetation : public SceneNode {
     void uploadVegetationData();
     void computeVegetationTransforms(const Task& parentTask, bool treeData);
 
+    const char* getResourceTypeName() const override { return "Vegetation"; }
+
    private:
     GFXDevice& _context;
     TerrainChunk& _terrainChunk;

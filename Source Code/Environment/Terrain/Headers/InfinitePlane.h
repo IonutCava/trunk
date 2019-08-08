@@ -55,6 +55,8 @@ protected:
 
     bool load() override;
 
+    const char* getResourceTypeName() const override { return "InfinitePlane"; }
+
 private:
     GFXDevice& _context;
     vec2<U16> _dimensions;

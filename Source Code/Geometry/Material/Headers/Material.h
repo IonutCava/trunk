@@ -273,6 +273,8 @@ class Material : public CachedResource {
 
     void waitForShader(const ShaderProgram_ptr& shader, RenderStagePass stagePass, const char* newShader);
 
+    const char* getResourceTypeName() const override { return "Material"; }
+
    private:
     GFXDevice& _context;
     ResourceCache& _parentCache;

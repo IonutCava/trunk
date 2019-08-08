@@ -18,7 +18,7 @@
 						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1-dry.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_grass_dry</MtlName>
+						<MtlName>std_grass_lush</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>

@@ -87,6 +87,8 @@ class SubMesh : public Object3D {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) override;
 
+    virtual const char* getResourceTypeName() const override { return "SubMesh"; }
+
     // SGN node + parent mesh
     size_t maxReferenceCount() const noexcept override { return 2; }
    protected:

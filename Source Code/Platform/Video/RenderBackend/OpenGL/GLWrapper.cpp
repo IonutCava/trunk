@@ -260,6 +260,7 @@ void GL_API::appendToShaderHeader(ShaderType type,
         inOutOffset[index] += Util::LineCount(entry);
     } else {
         vector<stringImpl> tempAtoms;
+        tempAtoms.reserve(10);
         inOutOffset[index] += Util::LineCount(glShaderProgram::preprocessIncludes("header", entry, 0, tempAtoms, true));
     }
 }

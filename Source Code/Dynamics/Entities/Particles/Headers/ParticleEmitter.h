@@ -90,6 +90,8 @@ class ParticleEmitter : public SceneNode {
 
     GenericVertexData& getDataBuffer(RenderStage stage, PlayerIndex idx);
 
+    const char* getResourceTypeName() const override { return "ParticleEmitter"; }
+
    private:
     static const U8 s_MaxPlayerBuffers = 4;
 

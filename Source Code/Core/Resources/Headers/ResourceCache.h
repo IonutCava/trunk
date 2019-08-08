@@ -90,8 +90,7 @@ public:
             if (!wasInCache) {
                 Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
 
-                /// ...aquire the resource's loader
-                /// and get our resource as the loader creates it
+                /// ...aquire the resource's loader and get our resource as the loader creates it
                 ptr = std::static_pointer_cast<T>(ImplResourceLoader<T>(*this, _context, descriptor, loadingHash)());
                 assert(ptr != nullptr);
                 add(ptr);
@@ -116,8 +115,21 @@ public:
 
         loadTimer.stop();
 
+        // Print load times
         const F32 timeInMS = Time::MicrosecondsToMilliseconds<F32>(loadTimer.get());
-        Console::printfn(Locale::get(_ID("RESOURCE_CACHE_LOAD_TIME")), descriptor.resourceName().c_str(), wasInCache ? "retrieved" : "loaded", timeInMS, timeInMS >= Time::SecondsToMilliseconds(1) ? " !!!!" : "");
+        if (timeInMS >= Time::SecondsToMilliseconds(1)) {
+            if (wasInCache) {
+                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_RETRIEVE_TIME_S")), descriptor.resourceName().c_str(), Time::MillisecondsToSeconds(timeInMS));
+            } else {
+                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_LOAD_TIME_S")), descriptor.resourceName().c_str(), Time::MillisecondsToSeconds(timeInMS));
+            }
+        } else {
+            if (wasInCache) {
+                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_RETRIEVE_TIME_MS")), descriptor.resourceName().c_str(), timeInMS);
+            } else {
+                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_LOAD_TIME_MS")), descriptor.resourceName().c_str(), timeInMS);
+            }
+        }
 
         return ptr;
     }

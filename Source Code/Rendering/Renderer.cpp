@@ -41,7 +41,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     } else {
         CLAMP(numLightsPerTile, 0, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
     }
-    vector<I32> initData(numLightsPerTile * g_numberOfTiles, -1);
+    vectorEASTL<I32> initData(numLightsPerTile * g_numberOfTiles, -1);
 
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;

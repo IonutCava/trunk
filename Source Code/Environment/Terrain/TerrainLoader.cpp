@@ -20,8 +20,15 @@ namespace Divide {
 namespace {
     constexpr bool g_disableLoadFromCache = false;
     const char* g_materialFileExtension = ".mat.xml";
+    stringImpl climatesLocation() {
+       return Paths::g_assetsLocation + Paths::g_heightmapLocation + Paths::g_climatesLowResLocation;
+    }
 
-    std::pair<U8, bool> findOrInsert(vector<stringImpl>& container, const stringImpl& item) {
+    std::pair<U8, bool> findOrInsert(vector<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
+        if (!fileExists((climatesLocation() + "/" + materialName + "/" + texture).c_str())) {
+            materialName = "std_default";
+        }
+        const stringImpl item = materialName + "/" + texture;
         auto it = std::find(std::cbegin(container),
                             std::cend(container),
                             item);
@@ -46,7 +53,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
     
     stringImpl terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
-    const stringImpl climatesLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + Paths::g_climatesLowResLocation;
 
     Attorney::TerrainLoader::descriptor(*terrain, terrainDescriptor);
 
@@ -57,20 +63,20 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     textureBlendMap.waitForReadyCbk(waitForReasoureTask);
 
     // Albedo maps
-    ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name);
-    textureTileMaps.assetLocation(climatesLocation);
-    textureTileMaps.setFlag(true);
-    textureTileMaps.waitForReadyCbk(waitForReasoureTask);
+    ResourceDescriptor textureAlbedoMaps("Terrain Albedo Maps_" + name);
+    textureAlbedoMaps.assetLocation(climatesLocation());
+    textureAlbedoMaps.setFlag(true);
+    textureAlbedoMaps.waitForReadyCbk(waitForReasoureTask);
 
     // Normals and roughness
     ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
-    textureNormalMaps.assetLocation(climatesLocation);
+    textureNormalMaps.assetLocation(climatesLocation());
     textureNormalMaps.setFlag(true);
     textureNormalMaps.waitForReadyCbk(waitForReasoureTask);
 
     // AO and displacement
     ResourceDescriptor textureExtraMaps("Terrain Extra Maps_" + name);
-    textureExtraMaps.assetLocation(climatesLocation);
+    textureExtraMaps.assetLocation(climatesLocation());
     textureExtraMaps.setFlag(true);
     textureExtraMaps.waitForReadyCbk(waitForReasoureTask);
 
@@ -103,7 +109,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     offsets.fill(0u);
 
     const char* textureNames[to_base(TerrainTextureType::COUNT)] = {
-        "Albedo", "Normal", "Roughness", "AO", "Displacement"
+        "Albedo", "Normal", "Displacement", "Roughness"//, "AO"
     };
 
     U16 idx = 0;
@@ -118,7 +124,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             }
 
             for (U8 k = 0; k < to_base(TerrainTextureType::COUNT); ++k) {
-                auto ret = findOrInsert(textures[k], Util::StringFormat("%s/%s.jpg", currentMaterial.c_str(), textureNames[k]));
+                auto ret = findOrInsert(textures[k], Util::StringFormat("%s.jpg", textureNames[k]), currentMaterial.c_str());
                 indices[k][idx] = ret.first;
                 if (ret.second) {
                     ++offsets[k];
@@ -135,38 +141,27 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         indices[k].resize(idx);
     }
 
-    offsets[to_base(TerrainTextureType::ROUGHNESS)] += offsets[to_base(TerrainTextureType::NORMAL)];
-    offsets[to_base(TerrainTextureType::DISPLACEMENT)] += offsets[to_base(TerrainTextureType::AO)];
+    offsets[to_base(TerrainTextureType::ROUGHNESS)] += offsets[to_base(TerrainTextureType::DISPLACEMENT)];
 
-    std::transform(std::begin(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::end(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::begin(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::bind2nd(std::plus<U16>(), offsets[to_base(TerrainTextureType::NORMAL)]));
-    std::transform(std::begin(indices[to_base(TerrainTextureType::DISPLACEMENT)]), std::end(indices[to_base(TerrainTextureType::DISPLACEMENT)]), std::begin(indices[to_base(TerrainTextureType::DISPLACEMENT)]), std::bind2nd(std::plus<U16>(), offsets[to_base(TerrainTextureType::AO)]));
+    std::transform(std::begin(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::end(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::begin(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::bind2nd(std::plus<U16>(), offsets[to_base(TerrainTextureType::DISPLACEMENT)]));
 
     stringImpl blendMapArray = "";
     stringImpl albedoMapArray = "";
     stringImpl normalMapArray = "";
     stringImpl extraMapArray = "";
 
+    U32 extraMapCount = 0;
     for (const stringImpl& tex : textures[to_base(TerrainTextureType::ALBEDO)]) {
         albedoMapArray += tex + ",";
     }
+    for (const stringImpl& tex : textures[to_base(TerrainTextureType::NORMAL)]) {
+        normalMapArray += tex + ",";
+    }
 
-    U32 normalMapCount = 0;
-    U32 extraMapCount = 0;
-    for (U8 i = 0; i < to_U8(TerrainTextureType::COUNT); ++i) {
-        if (i == to_base(TerrainTextureType::ALBEDO)) {
-            continue;
-        }
-
-        if (i == to_U8(TerrainTextureType::NORMAL) || i == to_U8(TerrainTextureType::ROUGHNESS)) {
-            for (const stringImpl& tex : textures[i]) {
-                normalMapArray += tex + ",";
-                ++normalMapCount;
-            }
-        } else {
-            for (const stringImpl& tex : textures[i]) {
-                extraMapArray += tex + ",";
-                ++extraMapCount;
-            }
+    for (U8 i = to_U8(TerrainTextureType::DISPLACEMENT); i < to_U8(TerrainTextureType::COUNT); ++i) {
+        for (const stringImpl& tex : textures[i]) {
+            extraMapArray += tex + ",";
+            ++extraMapCount;
         }
     }
 
@@ -199,15 +194,15 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendMapSampler._magFilter = TextureFilter::LINEAR;
     blendMapSampler._anisotropyLevel = 8;
 
-    SamplerDescriptor tileSampler = {};
-#if 0
-    tileSampler._wrapU = TextureWrap::MIRROR_REPEAT;
-    tileSampler._wrapV = TextureWrap::MIRROR_REPEAT;
-    tileSampler._wrapW = TextureWrap::MIRROR_REPEAT;
-#endif
-    tileSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-    tileSampler._magFilter = TextureFilter::LINEAR;
-    tileSampler._anisotropyLevel = 4;
+    SamplerDescriptor albedoSampler = {};
+    if (false) {
+        albedoSampler._wrapU = TextureWrap::MIRROR_REPEAT;
+        albedoSampler._wrapV = TextureWrap::MIRROR_REPEAT;
+        albedoSampler._wrapW = TextureWrap::MIRROR_REPEAT;
+    }
+    albedoSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+    albedoSampler._magFilter = TextureFilter::LINEAR;
+    albedoSampler._anisotropyLevel = 4;
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.setSampler(blendMapSampler);
@@ -215,25 +210,25 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendMapDescriptor._srgb = false;
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    albedoDescriptor.setSampler(tileSampler);
+    albedoDescriptor.setSampler(albedoSampler);
     albedoDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::ALBEDO)].size());
     albedoDescriptor._srgb = true;
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    normalDescriptor.setSampler(tileSampler);
-    normalDescriptor._layerCount = normalMapCount;
+    normalDescriptor.setSampler(albedoSampler);
+    normalDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::NORMAL)].size());
     normalDescriptor._srgb = false;
 
     TextureDescriptor extraDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    extraDescriptor.setSampler(tileSampler);
+    extraDescriptor.setSampler(albedoSampler);
     extraDescriptor._layerCount = extraMapCount;
     extraDescriptor._srgb = false;
 
     textureBlendMap.assetName(blendMapArray);
     textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
 
-    textureTileMaps.assetName(albedoMapArray);
-    textureTileMaps.setPropertyDescriptor(albedoDescriptor);
+    textureAlbedoMaps.assetName(albedoMapArray);
+    textureAlbedoMaps.setPropertyDescriptor(albedoDescriptor);
 
     textureNormalMaps.assetName(normalMapArray);
     textureNormalMaps.setPropertyDescriptor(normalDescriptor);
@@ -259,15 +254,22 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     U8 totalLayerCount = 0;
     stringImpl layerCountData = Util::StringFormat("const uint CURRENT_LAYER_COUNT[ %d ] = {", layerCount);
+    stringImpl blendAmntStr = "INSERT_BLEND_AMNT_ARRAY float blendAmount[TOTAL_LAYER_COUNT] = {";
     for (U8 i = 0; i < layerCount; ++i) {
         layerCountData.append(Util::StringFormat("%d,", channelCountPerLayer[i]));
+        for (U8 j = 0; j < channelCountPerLayer[i]; ++j) {
+            blendAmntStr.append("0.0f,");
+        }
         totalLayerCount += channelCountPerLayer[i];
     }
     removeLastChar(layerCountData);
     layerCountData.append("};");
 
+    removeLastChar(blendAmntStr);
+    blendAmntStr.append("};");
+
     const char* idxNames[to_base(TerrainTextureType::COUNT)] = {
-        "ALBEDO_IDX", "NORMAL_IDX", "ROUGHNESS_IDX", "AO_IDX", "DISPLACEMENT_IDX"
+        "ALBEDO_IDX", "NORMAL_IDX", "DISPLACEMENT_IDX", "ROUGHNESS_IDX"//, "AO_IDX"
     };
 
     std::array<stringImpl, to_base(TerrainTextureType::COUNT)> indexData = {};
@@ -307,7 +309,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapTexture.setFlag(true);
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_SPLAT, CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_NORMAL_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_EXTRA_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_HELPER_TEXTURES, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
@@ -378,6 +380,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.push_back(std::make_pair("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true));
 
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+            shaderModule._defines.push_back(std::make_pair(blendAmntStr, true));
+
             if (!context.config().rendering.shadowMapping.enabled) {
                 shaderModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
             }
