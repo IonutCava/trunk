@@ -98,6 +98,7 @@ public:
     RenderPass::BufferData getBufferData(RenderStagePass stagePass) const;
 
     void doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut);
+    void postInit();
 
 private:
     // Returns false if we skipped the pre-pass step

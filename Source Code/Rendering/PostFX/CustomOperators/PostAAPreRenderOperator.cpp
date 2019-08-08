@@ -46,6 +46,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
     ResourceDescriptor fxaa("FXAA");
     fxaa.setPropertyDescriptor(aaShaderDescriptor);
+    fxaa.waitForReady(false);
     _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
 
     vertModule._sourceFile = "baseVertexShaders.glsl";
@@ -64,6 +65,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
     ResourceDescriptor smaa("SMAA");
     smaa.setPropertyDescriptor(aaShaderDescriptor);
+    smaa.waitForReady(false);
     _smaa = CreateResource<ShaderProgram>(cache, smaa);
 }
 

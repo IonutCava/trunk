@@ -250,6 +250,9 @@ class Scene : public Resource, public PlatformContextComponent {
     void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
     bool lockCameraToPlayerMouse(PlayerIndex index, bool lockState);
+
+    const char* getResourceTypeName() const override { return "Scene"; }
+
    protected:
        /// Global info
        SceneManager& _parent;

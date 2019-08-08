@@ -37,9 +37,9 @@ namespace Divide {
 enum class TerrainTextureType : U8 {
     ALBEDO = 0,
     NORMAL,
-    ROUGHNESS,
-    AO,
     DISPLACEMENT,
+    ROUGHNESS,
+    //AO,
     COUNT
 };
 

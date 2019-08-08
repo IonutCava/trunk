@@ -68,7 +68,7 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir, float height)
 
 #if defined(USE_PARALLAX_OCCLUSION_MAPPING)
 float getDisplacementValue(vec2 uv);
-vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
+vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir, float currentDepthMapValue)
 {
     // number of depth layers
     const float minLayers = 8.0;
@@ -84,8 +84,6 @@ vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
 
     // get initial values
     vec2  currentTexCoords = texCoords;
-	float currentDepthMapValue = getDisplacementValue(currentTexCoords);
-
     while (currentLayerDepth < currentDepthMapValue)
     {
         // shift texture coordinates along direction of P

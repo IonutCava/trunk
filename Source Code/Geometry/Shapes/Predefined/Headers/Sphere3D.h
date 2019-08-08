@@ -51,6 +51,8 @@ class Sphere3D : public Object3D {
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
+    const char* getTypeName() const override { return "Sphere3D"; }
+
   private:
     // SuperBible stuff
     void rebuildVB() override;

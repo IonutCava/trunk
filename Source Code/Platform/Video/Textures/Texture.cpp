@@ -78,10 +78,12 @@ void Texture::threadedLoad() {
 
     bool loadFromFile = false;
 
-    vector<stringImpl> fileNames;
+    _descriptor._sourceFileList.reserve(6);
 
-    // We loop over every texture in the above list and store it in this
-    // temporary string
+    hashMap<U64, ImageTools::ImageData> dataStorage;
+
+    bool loadedFromFile = false;
+    // We loop over every texture in the above list and store it in this temporary string
     stringImpl currentTextureFile;
     stringImpl currentTextureLocation;
     stringImpl currentTextureFullPath;
@@ -92,34 +94,30 @@ void Texture::threadedLoad() {
 
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
-            fileNames.push_back(
-                (currentTextureLocation.empty() ? Paths::g_texturesLocation
-                                                : currentTextureLocation) +
-                "/" +
-                currentTextureFile);
+
+            currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation : currentTextureLocation);
+            currentTextureFullPath.append("/" + currentTextureFile);
 
             _descriptor._sourceFileList.push_back(currentTextureFile);
-        }
-    }
 
-    loadFromFile = !fileNames.empty();
-
-    hashMap<U64, ImageTools::ImageData> dataStorage;
-
-    for(const stringImpl& file : fileNames) {
-        // Attempt to load the current entry
-        if (!loadFile(info, file, dataStorage[_ID(file.c_str())])) {
-            // Invalid texture files are not handled yet, so stop loading
-            return;
-        }
-        info._layerIndex++;
-        if (_textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
-            if (info._layerIndex == 6) {
-                info._layerIndex = 0;
-                info._cubeMapCount++;
+            // Attempt to load the current entry
+            if (!loadFile(info, currentTextureFullPath, dataStorage[_ID(currentTextureFullPath.c_str())])) {
+                // Invalid texture files are not handled yet, so stop loading
+                continue;
             }
+
+            info._layerIndex++;
+            if (_textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+                if (info._layerIndex == 6) {
+                    info._layerIndex = 0;
+                    info._cubeMapCount++;
+                }
+            }
+
+            loadedFromFile = true;
         }
     }
+    _descriptor._sourceFileList.shrink_to_fit();
 
     if (loadFromFile) {
         if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
@@ -189,8 +187,9 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         Util::ReplaceStringInPlace(fwp._path, "/", "_");
         const stringImpl cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation;
         const stringImpl cacheName = fwp._path + "_" + fwp._fileName + ".cache";
-        ByteBuffer metadataCache;
-        if (false && metadataCache.loadFromFile(cachePath, cacheName)) {
+
+        ByteBuffer metadataCache = {};
+        if (metadataCache.loadFromFile(cachePath, cacheName)) {
             metadataCache >> _hasTransparency;
             metadataCache >> _hasTranslucency;
         } else {

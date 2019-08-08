@@ -173,6 +173,8 @@ class SceneNode : public CachedResource {
 
     virtual size_t maxReferenceCount() const { return 1; }
 
+    virtual const char* getResourceTypeName() const override { return "SceneNode"; }
+
    protected:
      virtual void editorFieldChanged(EditorComponentField& field);
      virtual void onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const;

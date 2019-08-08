@@ -69,6 +69,8 @@ class Trigger : public SceneNode {
     /// SceneNode concrete implementations
     bool unload() noexcept override;
 
+    const char* getResourceTypeName() const override { return "Trigger"; }
+
    private:
     /// The Task to be launched when triggered
     Task* _triggeredTask = nullptr;

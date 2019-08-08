@@ -59,6 +59,7 @@ namespace Divide {
 
         ResourceDescriptor shaderResDesc("OITComposition");
         shaderResDesc.setPropertyDescriptor(shaderDescriptor);
+        shaderResDesc.waitForReady(false);
         _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderResDesc);
 
         _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
@@ -72,6 +73,10 @@ namespace Divide {
         }
 
         GFX::deallocateCommandBuffer(_postFXCommandBuffer);
+    }
+
+    void RenderPassManager::postInit() {
+        WAIT_FOR_CONDITION(_OITCompositionShader->getState() == ResourceState::RES_LOADED);
     }
 
     void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {

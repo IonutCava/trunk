@@ -103,7 +103,7 @@ void ResourceCache::add(CachedResource_wptr res) {
     const size_t hash = resource->getDescriptorHash();
     DIVIDE_ASSERT(hash != 0, "ResourceCache add error: Invalid resource hash!");
 
-    Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getGUID(), hash);
+    Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getResourceTypeName(), resource->getGUID(), hash);
 
     UniqueLockShared w_lock(_creationMutex);
     auto ret = _resDB.emplace(hash, res);

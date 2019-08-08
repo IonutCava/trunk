@@ -83,6 +83,7 @@ class Resource : public GUIDWrapper
 
    protected:
     virtual void setState(ResourceState currentState) noexcept;
+    virtual const char* getResourceTypeName() const { return "Resource"; }
 
    protected:
     stringImpl   _resourceName;
@@ -130,6 +131,7 @@ protected:
     void setState(ResourceState currentState) noexcept override;
     void assetName(const stringImpl& name);
     void assetLocation(const stringImpl& location);
+    virtual const char* getResourceTypeName() const override { return "Cached Resource"; }
 
 protected:
     size_t _descriptorHash;

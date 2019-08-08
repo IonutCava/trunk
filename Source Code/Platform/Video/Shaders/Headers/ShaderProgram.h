@@ -203,6 +203,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static I32 shaderProgramCount() { return s_shaderCount.load(std::memory_order_relaxed); }
 
+    const char* getResourceTypeName() const override { return "ShaderProgram"; }
+
    protected:
      virtual bool recompileInternal() = 0;
 

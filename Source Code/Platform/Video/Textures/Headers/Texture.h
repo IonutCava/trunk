@@ -144,6 +144,8 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     inline void setTextureHandle(U32 handle) { _textureData._textureHandle = handle; }
     inline void setSamplerHandle(U32 handle) { _textureData._samplerHandle = handle; }
 
+    const char* getResourceTypeName() const override { return "Texture"; }
+
    protected:
     U32 _numLayers;
     U16 _width;

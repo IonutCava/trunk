@@ -77,6 +77,8 @@ class Sky : public SceneNode {
 
     bool load() override;
 
+    const char* getResourceTypeName() const override { return "Sky"; }
+
   private:
     bool _enableSun;
     FColour _sunColour;

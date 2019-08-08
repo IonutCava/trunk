@@ -750,6 +750,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                          entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
+
+    _renderPassManager->postInit();
+
     if (Config::Build::ENABLE_EDITOR) {
         if (!_platformContext->editor().init(config.runtime.resolution)) {
             return ErrorCode::EDITOR_INIT_ERROR;
