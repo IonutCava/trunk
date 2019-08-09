@@ -1,8 +1,6 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
-//#define TRI_PLANAR_BLEND
-
 layout(binding = TEXTURE_SPLAT) uniform sampler2DArray texBlendMaps;
 
 #if defined(PRE_PASS)
@@ -38,48 +36,62 @@ const int tiling[] = {
     int(TEXTURE_TILE_SIZE * 0.0009765625f),
 };
 
-
-vec4 _getTexture(in sampler2DArray tex, in vec3 coords) {
+vec4 _getTexture(in sampler2DArray tex, in vec3 uv) {
     if (DETAIL_LEVEL > 2 && LoD == 0) {
-        return textureNoTile(tex, helperTextures, 3, coords);
+        return textureNoTile(tex, helperTextures, 3, uv);
     }
 
     if (DETAIL_LEVEL > 1) {
-        return textureNoTile(tex, coords);
+        return textureNoTile(tex, uv);
     }
 
-    return texture(tex, coords);
+    return texture(tex, uv);
 }
 
-#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
-#if defined(TRI_PLANAR_BLEND)
-vec3 _getTriPlanarBlend(vec3 _wNorm) {
-    // in wNorm is the world-space normal of the fragment
-    vec3 blending = abs(_wNorm);
-    blending = normalize(max(blending, 0.00001)); // Force weights to sum to 1.0
-    float b = (blending.x + blending.y + blending.z);
-    blending /= vec3(b, b, b);
-    return blending;
+#if defined(PRE_PASS)
+vec3 _getUnderwaterNormal(in vec2 uv) {
+    return (2.0f * texture(helperTextures, vec3(uv, 2)).rgb - 1.0f);
 }
-#endif //TRI_PLANAR_BLEND
-#endif //PRE_PASS || !USE_DEFERRED_NORMALS
 
+vec3 _getTerrainNormal(in vec2 uv, in float blendAmount[TOTAL_LAYER_COUNT]) {
+    vec3 normal = vec3(0.0f);
 
-vec3 _getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
-    vec2 coords = uv * UNDERWATER_TILE_SCALE;
+    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
+        normal = mix(normal, _getTexture(texNormalMaps, vec3(uv, NORMAL_IDX[i])).rgb, blendAmount[i]);
+    }
 
+    return (2.0f * normal - 1.0f);
+}
+
+#else //PRE_PASS
+
+vec4 _getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
 #if defined(LOW_QUALITY)
-    return texture(helperTextures, vec3(coords, 1));
+    return vec4(texture(helperTextures, vec3(uv, 1)).rgb, 0.3f);
 #else //LOW_QUALITY
     float time2 = float(dvd_time) * 0.0001f;
-    vec4 scrollingUV = vec4(coords, coords + time2);
+    vec4 scrollingUV = vec4(uv, uv + time2);
     scrollingUV.s -= time2;
 
-    return mix((texture(helperTextures, vec3(scrollingUV.st, 0)) + texture(helperTextures, vec3(scrollingUV.pq, 0))) * 0.5f,
-                texture(helperTextures, vec3(coords, 1)),
-                waterDepth).rgb;
+    return vec4(mix((texture(helperTextures, vec3(scrollingUV.st, 0)).rgb + texture(helperTextures, vec3(scrollingUV.pq, 0)).rgb) * 0.5f,
+                    texture(helperTextures, vec3(uv, 1)).rgb,
+                    waterDepth),
+                0.3f);
 #endif //LOW_QUALITY
 }
+
+vec4 _getTerrainAlbedo(in vec2 uv, in float blendAmount[TOTAL_LAYER_COUNT]) {
+    vec4 ret = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
+        // Albedo & Roughness
+        ret = mix(ret, _getTexture(texTileMaps, vec3(uv, ALBEDO_IDX[i])), blendAmount[i]);
+        // ToDo: AO
+    }
+
+    return ret;
+}
+
+#endif // PRE_PASS
 
 #if defined(HAS_PARALLAX)
 float getDisplacementValue(vec2 uv) {
@@ -99,9 +111,24 @@ float getDisplacementValue(vec2 uv) {
 }
 #endif
 
-TerrainData BuildTerrainData(in vec2 waterDetails) {
-    const int tileScale = tiling[LoD];
+vec2 _getScaledCoords(in vec2 uv) {
+    vec2 scaledCoords = scaledTextureCoords(uv, tiling[LoD]);
 
+#if defined(HAS_PARALLAX)
+    float currentHeight = getDisplacementValue(scaledCoords);
+    const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
+
+#if defined(USE_PARALLAX_MAPPING)
+    scaledCoords = ParallaxMapping(scaledCoords, viewDir, currentHeight);
+#else
+    scaledCoords = ParallaxOcclusionMapping(scaledCoords, viewDir, currentHeight);
+#endif //USE_PARALLAX_OCCLUSION_MAPPING
+
+#endif //HAS_PARALLAX
+    return scaledCoords;
+}
+
+TerrainData BuildTerrainData(in vec2 waterDetails) {
     TerrainData ret;
     ret.uv = getTexCoord();
 #if !defined(PRE_PASS)
@@ -127,45 +154,19 @@ TerrainData BuildTerrainData(in vec2 waterDetails) {
         offset += layerCount;
     }
 
-    vec2 scaledCoords = scaledTextureCoords(ret.uv, tileScale);
-
-#if defined(HAS_PARALLAX)
-    float currentHeight = getDisplacementValue(scaledCoords);
-    const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
-
-#if defined(USE_PARALLAX_MAPPING)
-    scaledCoords = ParallaxMapping(scaledCoords, viewDir, currentHeight);
-#else
-    scaledCoords = ParallaxOcclusionMapping(scaledCoords, viewDir, currentHeight);
-#endif //USE_PARALLAX_OCCLUSION_MAPPING
-
-#endif //HAS_PARALLAX
-
 #if defined(PRE_PASS)
 #if !defined(LOW_QUALITY)
-for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-    ret.normal = mix(ret.normal, _getTexture(texNormalMaps, vec3(scaledCoords, NORMAL_IDX[i])).rgb, blendAmount[i]);
-}
-
-ret.normal = VAR._tbn * mix(2.0f * ret.normal - 1.0f,
-                            2.0f * texture(helperTextures, vec3(ret.uv * UNDERWATER_TILE_SCALE, 2)).rgb - 1.0f,
+ret.normal = VAR._tbn * mix(_getTerrainNormal(_getScaledCoords(ret.uv), blendAmount),
+                            _getUnderwaterNormal(ret.uv * UNDERWATER_TILE_SCALE),
                             waterDetails.x);
 #endif //LOW_QUALITY
 
 ret.normal = normalize(ret.normal);
 #else // PRE_PASS
-#if !defined(LOW_QUALITY)
-    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        // Roughness
-        ret.albedo.a = mix(ret.albedo.a, _getTexture(texExtraMaps, vec3(scaledCoords, ROUGHNESS_IDX[i])).r, blendAmount[i]);
-        // ToDo: AO
-    }
-#endif //LOW_QUALITY
 
-    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        ret.albedo.rgb = mix(ret.albedo.rgb, _getTexture(texTileMaps, vec3(scaledCoords, ALBEDO_IDX[i])).rgb, blendAmount[i]);
-    }
-    ret.albedo = mix(ret.albedo, vec4(_getUnderwaterAlbedo(ret.uv, waterDetails.y), 0.3f), waterDetails.x);
+    ret.albedo = mix(_getTerrainAlbedo(_getScaledCoords(ret.uv), blendAmount),
+                     _getUnderwaterAlbedo(ret.uv * UNDERWATER_TILE_SCALE, waterDetails.y),
+                     waterDetails.x);
 #endif //PRE_PASS
 
     return ret;

@@ -109,7 +109,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     offsets.fill(0u);
 
     const char* textureNames[to_base(TerrainTextureType::COUNT)] = {
-        "Albedo", "Normal", "Displacement", "Roughness"//, "AO"
+        "Albedo_roughness", "Normal", "Displacement"
     };
 
     U16 idx = 0;
@@ -124,7 +124,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             }
 
             for (U8 k = 0; k < to_base(TerrainTextureType::COUNT); ++k) {
-                auto ret = findOrInsert(textures[k], Util::StringFormat("%s.jpg", textureNames[k]), currentMaterial.c_str());
+                auto ret = findOrInsert(textures[k], Util::StringFormat("%s.%s", textureNames[k], k == to_base(TerrainTextureType::ALBEDO_ROUGHNESS) ? "png" : "jpg"), currentMaterial.c_str());
                 indices[k][idx] = ret.first;
                 if (ret.second) {
                     ++offsets[k];
@@ -141,24 +141,20 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         indices[k].resize(idx);
     }
 
-    offsets[to_base(TerrainTextureType::ROUGHNESS)] += offsets[to_base(TerrainTextureType::DISPLACEMENT)];
-
-    std::transform(std::begin(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::end(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::begin(indices[to_base(TerrainTextureType::ROUGHNESS)]), std::bind2nd(std::plus<U16>(), offsets[to_base(TerrainTextureType::DISPLACEMENT)]));
-
     stringImpl blendMapArray = "";
     stringImpl albedoMapArray = "";
     stringImpl normalMapArray = "";
     stringImpl extraMapArray = "";
 
     U32 extraMapCount = 0;
-    for (const stringImpl& tex : textures[to_base(TerrainTextureType::ALBEDO)]) {
+    for (const stringImpl& tex : textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)]) {
         albedoMapArray += tex + ",";
     }
     for (const stringImpl& tex : textures[to_base(TerrainTextureType::NORMAL)]) {
         normalMapArray += tex + ",";
     }
 
-    for (U8 i = to_U8(TerrainTextureType::DISPLACEMENT); i < to_U8(TerrainTextureType::COUNT); ++i) {
+    for (U8 i = to_U8(TerrainTextureType::DISPLACEMENT_AO); i < to_U8(TerrainTextureType::COUNT); ++i) {
         for (const stringImpl& tex : textures[i]) {
             extraMapArray += tex + ",";
             ++extraMapCount;
@@ -211,7 +207,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
     albedoDescriptor.setSampler(albedoSampler);
-    albedoDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::ALBEDO)].size());
+    albedoDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)].size());
     albedoDescriptor._srgb = true;
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
@@ -245,7 +241,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
-    F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
+    const F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
     terrainMaterial->setDiffuse(FColour(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
     terrainMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(1.0f);
@@ -269,7 +265,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendAmntStr.append("};");
 
     const char* idxNames[to_base(TerrainTextureType::COUNT)] = {
-        "ALBEDO_IDX", "NORMAL_IDX", "DISPLACEMENT_IDX", "ROUGHNESS_IDX"//, "AO_IDX"
+        "ALBEDO_IDX", "NORMAL_IDX", "DISPLACEMENT_IDX"
     };
 
     std::array<stringImpl, to_base(TerrainTextureType::COUNT)> indexData = {};
@@ -388,7 +384,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
             shaderModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
             shaderModule._defines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("UNDERWATER_TILE_SCALE %d", underwaterTileScale), true));
+            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("UNDERWATER_TILE_SCALE %d", to_I32(underwaterTileScale)), true));
             shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TOTAL_LAYER_COUNT %d", totalLayerCount), true));
             shaderModule._defines.push_back(std::make_pair(layerCountData, false));
             for (const stringImpl& str : indexData) {

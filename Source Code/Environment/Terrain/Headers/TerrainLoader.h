@@ -35,11 +35,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 enum class TerrainTextureType : U8 {
-    ALBEDO = 0,
+    ALBEDO_ROUGHNESS = 0,
     NORMAL,
-    DISPLACEMENT,
-    ROUGHNESS,
-    //AO,
+    DISPLACEMENT_AO,
     COUNT
 };
 

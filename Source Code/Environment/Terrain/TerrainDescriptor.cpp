@@ -30,7 +30,7 @@ namespace Divide {
         addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture", "sandfloor009a.jpg"));
         addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture", "terrain_detail_NM.png"));
         addVariable("tileNoiseTexture", pt.get<stringImpl>("tileNoiseTexture", "bruit_gaussien_2.jpg"));
-        addVariable("underwaterTileScale", pt.get<F32>("underwaterTileScale"));
+        addVariable("underwaterTileScale", pt.get<F32>("underwaterTileScale", 1.0f));
         stringImpl alphaMapDescriptor = "";
         {
             boost::property_tree::ptree descTree = {};
