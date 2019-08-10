@@ -57,21 +57,20 @@ namespace Divide {
         if (!sgn.hasChildren()) {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;//| ImGuiTreeNodeFlags_NoTreePushOnOpen; 
         }
-        if (ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.name().c_str())) {
-            if (ImGui::IsItemClicked()) {
-                sceneManager.resetSelection(0);
-                sceneManager.setSelected(0, sgn);
-                Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
-            }
+        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.name().c_str());
+        if (ImGui::IsItemClicked()) {
+            sceneManager.resetSelection(0);
+            sceneManager.setSelected(0, sgn);
+            Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
+        }
         
+        if (node_open) {
             sgn.forEachChild([this, &sceneManager](SceneGraphNode& child) {
                 printSceneGraphNode(sceneManager, child, false);
             });
 
             ImGui::TreePop();
         }
-        
-        
     }
 
     void SolutionExplorerWindow::drawInternal() {

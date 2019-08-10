@@ -675,9 +675,10 @@ static void ShowDemoWindowWidgets()
                 for (int i = 0; i < 6; i++)
                 {
                     // Disable the default open on single-click behavior and pass in Selected flag according to our selection state.
-                ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-                if (selection_mask & (1 << i))
-                    node_flags |= ImGuiTreeNodeFlags_Selected;
+                    ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+                    if (selection_mask & (1 << i))
+                        node_flags |= ImGuiTreeNodeFlags_Selected;
+
                     if (i < 3)
                     {
                     // Items 0..2 are Tree Node
