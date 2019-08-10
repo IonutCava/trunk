@@ -20,12 +20,17 @@ namespace Divide {
 namespace {
     constexpr bool g_disableLoadFromCache = false;
     const char* g_materialFileExtension = ".mat.xml";
-    stringImpl climatesLocation() {
-       return Paths::g_assetsLocation + Paths::g_heightmapLocation + Paths::g_climatesLowResLocation;
+    stringImpl climatesLocation(U8 textureQuality) {
+       CLAMP<U8>(textureQuality, 0u, 3u);
+
+       return Paths::g_assetsLocation + Paths::g_heightmapLocation +
+             (textureQuality == 3u ? Paths::g_climatesHighResLocation
+                                   : textureQuality == 2u ? Paths::g_climatesMedResLocation
+                                                          : Paths::g_climatesLowResLocation);
     }
 
-    std::pair<U8, bool> findOrInsert(vector<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
-        if (!fileExists((climatesLocation() + "/" + materialName + "/" + texture).c_str())) {
+    std::pair<U8, bool> findOrInsert(U8 textureQuality, vector<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
+        if (!fileExists((climatesLocation(textureQuality) + "/" + materialName + "/" + texture).c_str())) {
             materialName = "std_default";
         }
         const stringImpl item = materialName + "/" + texture;
@@ -56,6 +61,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     Attorney::TerrainLoader::descriptor(*terrain, terrainDescriptor);
 
+    const U8 textureQuality = to_U8(context.config().rendering.terrainTextureQuality);
     // Blend maps
     ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name);
     textureBlendMap.assetLocation(terrainLocation);
@@ -64,19 +70,19 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Albedo maps
     ResourceDescriptor textureAlbedoMaps("Terrain Albedo Maps_" + name);
-    textureAlbedoMaps.assetLocation(climatesLocation());
+    textureAlbedoMaps.assetLocation(climatesLocation(textureQuality));
     textureAlbedoMaps.setFlag(true);
     textureAlbedoMaps.waitForReadyCbk(waitForReasoureTask);
 
     // Normals and roughness
     ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
-    textureNormalMaps.assetLocation(climatesLocation());
+    textureNormalMaps.assetLocation(climatesLocation(textureQuality));
     textureNormalMaps.setFlag(true);
     textureNormalMaps.waitForReadyCbk(waitForReasoureTask);
 
     // AO and displacement
     ResourceDescriptor textureExtraMaps("Terrain Extra Maps_" + name);
-    textureExtraMaps.assetLocation(climatesLocation());
+    textureExtraMaps.assetLocation(climatesLocation(textureQuality));
     textureExtraMaps.setFlag(true);
     textureExtraMaps.waitForReadyCbk(waitForReasoureTask);
 
@@ -124,7 +130,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             }
 
             for (U8 k = 0; k < to_base(TerrainTextureType::COUNT); ++k) {
-                auto ret = findOrInsert(textures[k], Util::StringFormat("%s.%s", textureNames[k], k == to_base(TerrainTextureType::ALBEDO_ROUGHNESS) ? "png" : "jpg"), currentMaterial.c_str());
+                auto ret = findOrInsert(textureQuality, textures[k], Util::StringFormat("%s.%s", textureNames[k], k == to_base(TerrainTextureType::ALBEDO_ROUGHNESS) ? "png" : "jpg"), currentMaterial.c_str());
                 indices[k][idx] = ret.first;
                 if (ret.second) {
                     ++offsets[k];

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AlphaData>
-	<nImages>3</nImages>
-	<nLayers>10</nLayers>
+	<nImages>2</nImages>
+	<nLayers>8</nLayers>
 	<LayersPerImage>4</LayersPerImage>
 	<ImageFileExt>png</ImageFileExt>
 	<Width>2048</Width>
@@ -18,16 +18,18 @@
 						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1-dry.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
-						<MtlName>std_grass_lush</MtlName>
+						<MtlName>std_grass_steep</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
 					<LayerColour>green</LayerColour>
 					<TexList>
 						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
 						<MtlName>std_grass</MtlName>
+						<MtlName>std_grass_steep</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
@@ -75,41 +77,20 @@
 					<LayerColour>blue</LayerColour>
 					<TexList>
 						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\sand\yellowsand1.jpg"</TextureFile>
+						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\ground\dirt1.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
 						<MtlName>std_sand_yellow</MtlName>
+						<MtlName>std_mud</MtlName>
 					</MtlList>
 				</Layer>
 				<Layer>
 					<LayerColour>alpha</LayerColour>
 					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1.jpg"</TextureFile>
-					</TexList>
-					<MtlList>
-						<MtlName>std_grass_steep</MtlName>
-					</MtlList>
-				</Layer>
-			</LayerList>
-		</Image>
-		<Image>
-			<FileName>"alpha_maps_Alpha3.png"</FileName>
-			<LayerList>
-				<Layer>
-					<LayerColour>red</LayerColour>
-					<TexList>
 						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\grass\grass1-lush.jpg"</TextureFile>
 					</TexList>
 					<MtlList>
 						<MtlName>std_grass_lush</MtlName>
-					</MtlList>
-				</Layer>
-				<Layer>
-					<LayerColour>green</LayerColour>
-					<TexList>
-						<TextureFile>"C:\Users\Ionut\L3DT\Resources\Pro 18.08.0.1 x64\Climates\common\ground\dirt1.jpg"</TextureFile>
-					</TexList>
-					<MtlList>
-						<MtlName>std_mud</MtlName>
 					</MtlList>
 				</Layer>
 			</LayerList>

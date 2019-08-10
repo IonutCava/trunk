@@ -79,6 +79,8 @@
   <reflectionResolutionFactor>1</reflectionResolutionFactor>
   <!-- higher => better (less tilling, more parallax effects, etc) -->
   <terrainDetailLevel>2</terrainDetailLevel>
+  <!-- 0 - low, 1 - med, 2 - high -->
+  <terrainTextureQuality>0</terrainTextureQuality>
   <numLightsPerScreenTile>-1</numLightsPerScreenTile>
   <enableFog>true</enableFog>
   <fogDensity>0.001</fogDensity>

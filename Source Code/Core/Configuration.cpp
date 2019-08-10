@@ -59,6 +59,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     rendering.anisotropicFilteringLevel = 1;
     rendering.reflectionResolutionFactor = 1;
     rendering.terrainDetailLevel = 3;
+    rendering.terrainTextureQuality = 0;
     rendering.numLightsPerScreenTile = -1;
     rendering.enableFog = true;
     rendering.fogDensity = 0.01f; 
@@ -137,6 +138,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.anisotropicFilteringLevel);
         GET_PARAM(rendering.reflectionResolutionFactor);
         GET_PARAM(rendering.terrainDetailLevel);
+        GET_PARAM(rendering.terrainTextureQuality);
         GET_PARAM(rendering.numLightsPerScreenTile);
         GET_PARAM(rendering.enableFog);
         GET_PARAM(rendering.fogDensity);
@@ -220,6 +222,7 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(rendering.anisotropicFilteringLevel);
     PUT_PARAM(rendering.reflectionResolutionFactor);
     PUT_PARAM(rendering.terrainDetailLevel);
+    PUT_PARAM(rendering.terrainTextureQuality);
     PUT_PARAM(rendering.numLightsPerScreenTile);
     PUT_PARAM(rendering.enableFog);
     PUT_PARAM(rendering.fogDensity);

@@ -110,6 +110,7 @@ public:
         U8 anisotropicFilteringLevel;
         U8 reflectionResolutionFactor;
         I32 terrainDetailLevel;
+        I32 terrainTextureQuality;
         I32 numLightsPerScreenTile;
         bool enableFog;
         F32 fogDensity;
