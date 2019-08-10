@@ -28,7 +28,8 @@ struct TerrainData {
 
 
 const int tiling[] = {
-    int(TEXTURE_TILE_SIZE * 1.0f),
+    int(TEXTURE_TILE_SIZE * 1.0f), //LoD 0
+    int(TEXTURE_TILE_SIZE * 1.0f), //LoD 1
     int(TEXTURE_TILE_SIZE * 0.25f),
     int(TEXTURE_TILE_SIZE * 0.0625f),
     int(TEXTURE_TILE_SIZE * 0.015625f),
@@ -94,36 +95,46 @@ vec4 _getTerrainAlbedo(in vec2 uv, in float blendAmount[TOTAL_LAYER_COUNT]) {
 #endif // PRE_PASS
 
 #if defined(HAS_PARALLAX)
-float getDisplacementValue(vec2 uv) {
+
+float getDisplacementValueFromCoords(vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
     float ret = 0.0f;
+    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
+        ret = mix(ret, _getTexture(texExtraMaps, vec3(sampleUV, DISPLACEMENT_IDX[i])).r, amnt[i]);
+    }
+    return ret;
+}
+
+float getDisplacementValue(vec2 sampleUV) {
+    vec2 blendUV = unscaledTextureCoords(sampleUV, tiling[LoD]);
+
+    INSERT_BLEND_AMNT_ARRAY;
 
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
-        const vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
+        const vec4 blendColour = texture(texBlendMaps, vec3(blendUV, i));
         const uint layerCount = CURRENT_LAYER_COUNT[i];
         for (uint j = 0; j < layerCount; ++j) {
-            ret = mix(ret, _getTexture(texExtraMaps, vec3(uv, DISPLACEMENT_IDX[offset + j])).r, blendColour[j]);
+            blendAmount[offset + j] = blendColour[j];
         }
-        offset += CURRENT_LAYER_COUNT[i];
+        offset += layerCount;
     }
 
-    return ret;
+    return getDisplacementValueFromCoords(sampleUV, blendAmount);
 }
 #endif
 
-vec2 _getScaledCoords(in vec2 uv) {
+vec2 _getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
     vec2 scaledCoords = scaledTextureCoords(uv, tiling[LoD]);
-
 #if defined(HAS_PARALLAX)
-    float currentHeight = getDisplacementValue(scaledCoords);
-    const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
-
+    if (LoD == 0) {
+        const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
+        float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
 #if defined(USE_PARALLAX_MAPPING)
-    scaledCoords = ParallaxMapping(scaledCoords, viewDir, currentHeight);
+        return ParallaxOffset(scaledCoords, viewDir, currentHeight);
 #else
-    scaledCoords = ParallaxOcclusionMapping(scaledCoords, viewDir, currentHeight);
+        return ParallaxOcclusionMapping(scaledCoords, viewDir, currentHeight);
 #endif //USE_PARALLAX_OCCLUSION_MAPPING
-
+    }
 #endif //HAS_PARALLAX
     return scaledCoords;
 }
@@ -156,7 +167,7 @@ TerrainData BuildTerrainData(in vec2 waterDetails) {
 
 #if defined(PRE_PASS)
 #if !defined(LOW_QUALITY)
-ret.normal = VAR._tbn * mix(_getTerrainNormal(_getScaledCoords(ret.uv), blendAmount),
+ret.normal = VAR._tbn * mix(_getTerrainNormal(_getScaledCoords(ret.uv, blendAmount), blendAmount),
                             _getUnderwaterNormal(ret.uv * UNDERWATER_TILE_SCALE),
                             waterDetails.x);
 #endif //LOW_QUALITY
@@ -164,7 +175,7 @@ ret.normal = VAR._tbn * mix(_getTerrainNormal(_getScaledCoords(ret.uv), blendAmo
 ret.normal = normalize(ret.normal);
 #else // PRE_PASS
 
-    ret.albedo = mix(_getTerrainAlbedo(_getScaledCoords(ret.uv), blendAmount),
+    ret.albedo = mix(_getTerrainAlbedo(_getScaledCoords(ret.uv, blendAmount), blendAmount),
                      _getUnderwaterAlbedo(ret.uv * UNDERWATER_TILE_SCALE, waterDetails.y),
                      waterDetails.x);
 #endif //PRE_PASS

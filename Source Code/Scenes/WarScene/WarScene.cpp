@@ -658,6 +658,15 @@ bool WarScene::load(const stringImpl& name) {
     //state().renderState().generalVisibility(state().renderState().generalVisibility() * 2);
 
     
+    SceneGraphNodeDescriptor lightParentNodeDescriptor;
+    lightParentNodeDescriptor._serialize = false;
+    lightParentNodeDescriptor._name = "Point Lights";
+    lightParentNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
+    lightParentNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+                                               to_base(ComponentType::BOUNDS) |
+                                               to_base(ComponentType::NETWORKING);
+    SceneGraphNode* pointLightNode = _sceneGraph->getRoot().addNode(lightParentNodeDescriptor);
+
     SceneGraphNodeDescriptor lightNodeDescriptor;
     lightNodeDescriptor._serialize = false;
     lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
@@ -671,7 +680,7 @@ bool WarScene::load(const stringImpl& name) {
     for (U8 row = 0; row < rowCount; row++) {
         for (U8 col = 0; col < colCount; col++) {
             lightNodeDescriptor._name = Util::StringFormat("Light_point_%d_%d", row, col);
-            SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(lightNodeDescriptor);
+            SceneGraphNode* lightSGN = pointLightNode->addNode(lightNodeDescriptor);
             PointLightComponent* pointLight = lightSGN->get<PointLightComponent>();
             pointLight->castsShadows(false);
             pointLight->setRange(50.0f);

@@ -6,6 +6,7 @@
 <horizontalScale>1</horizontalScale>
 <albedoTilingFactor>1</albedoTilingFactor>
 <tessellationRange min="80" max="500" chunkSize="256" patchSizeInM="96"/>
+<tessellatedTriangleWidth>32</tessellatedTriangleWidth>
 <normalMap>normals.png</normalMap>
 <textureMap>texture.png</textureMap>
 <alphaMaps>alpha_maps.xml</alphaMaps>

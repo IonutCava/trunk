@@ -45,13 +45,14 @@ layout(location = 0) in vec4 tScale[];
 #include "nodeBufferedInput.cmn"
 
 uniform vec2 tessellationRange;
-
+uniform float tessTriangleWidth = 30.0f;
 //
 // Outputs
 //
 layout(vertices = 4) out;
 
 layout(location = 0) out float tcs_tessLevel[];
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 bool offscreen(in vec4 vertex) {
     const vec2 cmp = vec2(1.7f);
@@ -78,13 +79,54 @@ uint nextPOW2(in uint v) {
     return ++v;
 }
 
-// Dynamic level of detail using camera distance algorithm.
-float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in mat4 viewMatrix)
+float getHeight(in vec2 tex_coord) {
+    return (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, tex_coord).r) + TERRAIN_MIN_HEIGHT;
+}
+
+vec2 eyeToScreen(vec4 p) {
+    vec4 r = dvd_ProjectionMatrix * p;   // to clip space
+    r.xy /= r.w;                         // project
+    r.xy = r.xy * 0.5f + 0.5f;           // to NDC
+    r.xy *= dvd_ViewPort.zw;             // to pixels
+    return r.xy;
+}
+
+// calculate edge tessellation level from two edge vertices in screen space
+float calcEdgeTessellation(vec2 s0, vec2 s1) {
+    float d = distance(s0, s1);
+    // tessTriangleWidth is desired pixels per tri edge
+    return clamp(d / tessTriangleWidth, 1, 64);
+}
+
+float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1, in mat4 worldViewMatrix)
 {
 #if MAX_TESS_SCALE != MIN_TESS_SCALE
 
-    const vec4 view0 = viewMatrix * p0;
-    const vec4 view1 = viewMatrix * p1;
+    p0.y = getHeight(t0);
+    p1.y = getHeight(t1);
+
+    vec4 center = 0.5f * (p0 + p1);
+    vec4 view0 = worldViewMatrix * center;
+    vec4 view1 = view0;
+    view1.x += distance(p0, p1);
+
+    vec2 s0 = eyeToScreen(view0);
+    vec2 s1 = eyeToScreen(view1);
+
+    float t = calcEdgeTessellation(s0, s1);
+    return min(nextPOW2(uint(t)), uint(MAX_TESS_SCALE));
+#else
+    return MAX_TESS_SCALE;
+#endif
+}
+
+// Dynamic level of detail using camera distance algorithm.
+float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in mat4 worldViewMatrix)
+{
+#if MAX_TESS_SCALE != MIN_TESS_SCALE
+
+    const vec4 view0 = worldViewMatrix * p0;
+    const vec4 view1 = worldViewMatrix * p1;
 
     const float range = tessellationRange.y - tessellationRange.x;
 
@@ -98,6 +140,13 @@ float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in mat4 viewM
 #endif
 }
 
+
+#if 0
+#define lodDistance dlodCameraDistance
+#else
+#define lodDistance dlodSphere
+#endif
+
 void main(void)
 {
     PassData(id);
@@ -108,24 +157,22 @@ void main(void)
                   offscreen(project(_in[2]._vertexWV, dvd_ProjectionMatrix)),
                   offscreen(project(_in[3]._vertexWV, dvd_ProjectionMatrix)))))
     {
-        gl_TessLevelInner[0] = 0;
-        gl_TessLevelInner[1] = 0;
+        gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
+        gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
 
-        gl_TessLevelOuter[0] = 0;
-        gl_TessLevelOuter[1] = 0;
-        gl_TessLevelOuter[2] = 0;
-        gl_TessLevelOuter[3] = 0;
     } else {
         // Outer tessellation level
+        const mat4 worldViewMatrix = dvd_ViewMatrix * dvd_WorldMatrix(_in[0].dvd_baseInstance);
         const float tessLevels[4] = {
-            dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, dvd_ViewMatrix),
-            dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, dvd_ViewMatrix),
-            dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, dvd_ViewMatrix),
-            dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, dvd_ViewMatrix)
+            lodDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, worldViewMatrix),
+            lodDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, worldViewMatrix),
+            lodDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, worldViewMatrix),
+            lodDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, worldViewMatrix)
         };
 
+        const vec4 scaleFactor = tScale[id];
         for (int i = 0; i < 4; ++i) {
-            gl_TessLevelOuter[i] = max(MIN_TESS_SCALE, tessLevels[i] * tScale[id][i]);
+            gl_TessLevelOuter[i] = max(MIN_TESS_SCALE, tessLevels[i] * scaleFactor[i]);
         }
 
         // Inner tessellation level
@@ -194,23 +241,6 @@ float getHeight(in vec4 heightOffsets) {
 }
 
 vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
-#if 0
-    const vec2 size = vec2(2.0f, 0.0f);
-
-
-    const float s11 = sampleHeight;
-    const float s01 = heightOffsets.x;
-    const float s21 = heightOffsets.y;
-    const float s10 = heightOffsets.z;
-    const float s12 = heightOffsets.w;
-
-    //vec3 va = normalize(vec3(size.xy, s21 - s01));
-    //vec3 vb = normalize(vec3(size.yx, s12 - s10));
-
-    vec3 va = normalize(vec3(size.x, s21 - s01, size.y));
-    vec3 vb = normalize(vec3(size.y, s12 - s10, -size.x));
-    return normalize(cross(va, vb) * 0.5f + 0.5f);
-#else
     float hL = heightOffsets.x;
     float hR = heightOffsets.y;
     float hD = heightOffsets.z;
@@ -218,7 +248,6 @@ vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
 
     // deduce terrain normal
     return normalize(vec3(hL - hR, 2.0f, hD - hU));
-#endif
 }
 
 #if !defined(TOGGLE_WIREFRAME) && !defined(TOGGLE_NORMALS)
@@ -424,10 +453,10 @@ void main(void)
         edge_dist.z = abs(b * sin(alpha));
     }
 
+    const int count = gl_in.length();
 #if defined(TOGGLE_NORMALS)
 
     const float sizeFactor = 0.75f;
-    const int count = gl_in.length();
     for (int i = 0; i < count; ++i) {
 
         mat3 normalMatrixWVInv = inverse(dvd_NormalMatrixWV(_in[i].dvd_baseInstance));

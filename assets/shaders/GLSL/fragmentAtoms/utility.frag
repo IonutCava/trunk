@@ -69,6 +69,13 @@ vec2 scaledTextureCoords(in vec2 texCoord, in float scaleFactor) {
     return scaledTextureCoords(texCoord, vec2(scaleFactor));
 }
 
+vec2 unscaledTextureCoords(in vec2 texCoord, in vec2 scaleFactor) {
+    return scaledTextureCoords(texCoord, 1.0f / scaleFactor);
+}
+
+vec2 unscaledTextureCoords(in vec2 texCoord, in float scaleFactor) {
+    return scaledTextureCoords(texCoord, 1.0f / scaleFactor);
+}
 //Box Projected Cube Environment Mapping by Bartosz Czuba
 vec3 bpcem(in vec3 v, vec3 Emax, vec3 Emin, vec3 Epos)
 {

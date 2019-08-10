@@ -66,6 +66,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setTextureLayerCount(U8 count) noexcept { _textureLayers = count; }
     void setDimensions(const vec2<U16>& dim) noexcept { _dimensions = dim; }
     void setAltitudeRange(const vec2<F32>& dim) noexcept { _altitudeRange = dim; }
+    void setTessellatedTriangleWidth(F32 width) noexcept { _tessellatedTriangleWidth = width; }
     void setTessellationRange(const vec4<F32>& rangeChunkAndPatch) noexcept { _tessellationRange = rangeChunkAndPatch; }
     void setActive(bool active) noexcept { _active = active; }
     void setWireframeDebug(U8 state) noexcept { _wireframeDebug = static_cast<WireframeMode>(CLAMPED(to_I32(state), 0, 2)); }
@@ -78,6 +79,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
 
     const vec2<F32>& getAltitudeRange() const noexcept { return _altitudeRange; }
     const vec4<F32>& getTessellationRange() const noexcept { return _tessellationRange; }
+    const F32        getTessellatedTriangleWidth() const noexcept { return _tessellatedTriangleWidth; }
     const vec2<U16>& getDimensions() const noexcept { return _dimensions; }
 
     stringImpl getVariable(const stringImpl& name) const {
@@ -114,6 +116,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
         Util::Hash_combine(hash, _tessellationRange.y);
         Util::Hash_combine(hash, _tessellationRange.z);
         Util::Hash_combine(hash, _tessellationRange.w);
+        Util::Hash_combine(hash, _tessellatedTriangleWidth);
         Util::Hash_combine(hash, _dimensions.x);
         Util::Hash_combine(hash, _dimensions.y);
 		Util::Hash_combine(hash, to_base(_wireframeDebug));
@@ -123,6 +126,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
         return hash;
     }
 
+    F32 _tessellatedTriangleWidth = 35.0f;
    private:
     hashMap<U64, stringImpl> _variables;
     hashMap<U64, F32> _variablesf;

@@ -68,13 +68,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     textureBlendMap.setFlag(true);
     textureBlendMap.waitForReadyCbk(waitForReasoureTask);
 
-    // Albedo maps
+    // Albedo maps and roughness
     ResourceDescriptor textureAlbedoMaps("Terrain Albedo Maps_" + name);
     textureAlbedoMaps.assetLocation(climatesLocation(textureQuality));
     textureAlbedoMaps.setFlag(true);
     textureAlbedoMaps.waitForReadyCbk(waitForReasoureTask);
 
-    // Normals and roughness
+    // Normals
     ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
     textureNormalMaps.assetLocation(climatesLocation(textureQuality));
     textureNormalMaps.setFlag(true);
@@ -184,9 +184,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
     heightMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
     heightMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    heightMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+    heightMapSampler._minFilter = TextureFilter::LINEAR;
     heightMapSampler._magFilter = TextureFilter::LINEAR;
-    heightMapSampler._anisotropyLevel = 8;
+    heightMapSampler._anisotropyLevel = 0;
 
     SamplerDescriptor blendMapSampler = {};
     blendMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
@@ -194,7 +194,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
     blendMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
     blendMapSampler._magFilter = TextureFilter::LINEAR;
-    blendMapSampler._anisotropyLevel = 8;
+    blendMapSampler._anisotropyLevel = 0;
 
     SamplerDescriptor albedoSampler = {};
     if (false) {
@@ -306,6 +306,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_SHORT);
     heightMapDescriptor.setSampler(heightMapSampler);
+    heightMapDescriptor.automaticMipMapGeneration(false);
     heightMapTexture.setPropertyDescriptor(heightMapDescriptor);
 
     heightMapTexture.setFlag(true);

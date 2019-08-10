@@ -54,21 +54,20 @@ vec2 getTexCoord() {
 #undef USE_PARALLAX_MAPPING
 #endif
 
-uniform float height_scale = 0.1f;
+uniform float height_scale = 0.3f;
 
 #if defined(USE_PARALLAX_MAPPING)
 //ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 // Returned parallaxed texCoords
-vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir, float height)
+vec2 ParallaxOffset(vec2 uv, vec3 viewDir, float height)
 {
-	vec2 p = viewDir.xy / viewDir.z * (height * height_scale);
-	return texCoords - p;
+	return uv - (viewDir.xy / viewDir.z * (height * height_scale));
 }
 #endif
 
 #if defined(USE_PARALLAX_OCCLUSION_MAPPING)
-float getDisplacementValue(vec2 uv);
-vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir, float currentDepthMapValue)
+float getDisplacementValue(vec2 sampleUV);
+vec2 ParallaxOcclusionMapping(vec2 sampleUV, vec3 viewDir, float currentDepthMapValue)
 {
     // number of depth layers
     const float minLayers = 8.0;
@@ -83,7 +82,7 @@ vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir, float currentDepthMa
     vec2 deltaTexCoords = P / numLayers;
 
     // get initial values
-    vec2  currentTexCoords = texCoords;
+    vec2  currentTexCoords = sampleUV;
     while (currentLayerDepth < currentDepthMapValue)
     {
         // shift texture coordinates along direction of P

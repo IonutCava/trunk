@@ -46,6 +46,7 @@ namespace Divide {
                                            descTree.get<F32>("tessellationRange.<xmlattr>.max", 150.0f),
                                            descTree.get<F32>("tessellationRange.<xmlattr>.chunkSize", 32.0f),
                                            descTree.get<F32>("tessellationRange.<xmlattr>.patchSizeInM", 100.0f)));
+            setTessellatedTriangleWidth(descTree.get<F32>("tessellatedTriangleWidth", 30.0f));
             addVariable("vegetationTextureLocation", descTree.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation));
             addVariable("grassMap", descTree.get<stringImpl>("vegetation.grassMap"));
             addVariable("treeMap", descTree.get<stringImpl>("vegetation.treeMap"));

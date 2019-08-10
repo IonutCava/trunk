@@ -57,6 +57,14 @@ bool Terrain::unload() noexcept {
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
 
+    SceneGraphNodeDescriptor vegetationParentNode;
+    vegetationParentNode._serialize = false;
+    vegetationParentNode._name = "Vegetation";
+    vegetationParentNode._usageContext = NodeUsageContext::NODE_STATIC;
+    vegetationParentNode._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
+    SceneGraphNode* vegParent = sgn.addNode(vegetationParentNode);
+    assert(vegParent != nullptr);
+
     SceneGraphNodeDescriptor vegetationNodeDescriptor;
     vegetationNodeDescriptor._serialize = false;
     vegetationNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
@@ -67,7 +75,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     for (TerrainChunk* chunk : _terrainChunks) {
         vegetationNodeDescriptor._node = Attorney::TerrainChunkTerrain::getVegetation(*chunk);
         vegetationNodeDescriptor._name = Util::StringFormat("Vegetation_chunk_%d", chunk->ID());
-        sgn.addNode(vegetationNodeDescriptor);
+        vegParent->addNode(vegetationNodeDescriptor);
     }
 
     static_assert(MAX_RENDER_NODES * sizeof(TessellatedNodeData) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
@@ -106,6 +114,13 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         EditorComponentFieldType::PUSH_TYPE,
         false,
         GFX::PushConstantType::VEC2);
+
+    _editorComponent.registerField(
+        "Tessellated Triangle Width",
+        &_descriptor->_tessellatedTriangleWidth,
+        EditorComponentFieldType::PUSH_TYPE,
+        false,
+        GFX::PushConstantType::FLOAT);
 
     SceneNode::postLoad(sgn);
 }
@@ -194,6 +209,8 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
         constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
+        constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, _descriptor->getTessellatedTriangleWidth());
+        constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
         pkg.pushConstants(0, constants);
     }
 
@@ -256,6 +273,8 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, tesRange);
+    pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, _descriptor->getTessellatedTriangleWidth());
+    pushConstantsCommand._constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
