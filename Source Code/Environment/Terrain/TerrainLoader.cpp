@@ -248,11 +248,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
     const F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
-    terrainMaterial->setDiffuse(FColour(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
-    terrainMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
-    terrainMaterial->setShininess(1.0f);
-    terrainMaterial->disableTranslucency();
     terrainMaterial->setShadingMode(Material::ShadingMode::COOK_TORRANCE);
+    terrainMaterial->getColourData().baseColour(FColour4(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
+    terrainMaterial->getColourData().metallic(0.2f);
+    terrainMaterial->getColourData().roughness(0.8f);
+    terrainMaterial->disableTranslucency();
 
     U8 totalLayerCount = 0;
     stringImpl layerCountData = Util::StringFormat("const uint CURRENT_LAYER_COUNT[ %d ] = {", layerCount);
@@ -778,11 +778,10 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     ResourceDescriptor vegetationMaterial("grassMaterial");
     Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
-
-    vegMaterial->setDiffuse(DefaultColours::WHITE);
-    vegMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
-    vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+    vegMaterial->getColourData().baseColour(DefaultColours::WHITE);
+    vegMaterial->getColourData().specular(FColour3(0.1f, 0.1f, 0.1f));
+    vegMaterial->getColourData().shininess(5.0f);
     vegMaterial->setDoubleSided(false);
 
     ShaderModuleDescriptor vertModule = {};

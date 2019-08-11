@@ -67,7 +67,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     for (vec_size i = 0; i < stateTracker._blendEnabled.size(); ++i) {
         stateTracker.setBlending((GLuint)i, BlendingProperties());
     }
-    stateTracker.setBlendColour(UColour(0u), true);
+    stateTracker.setBlendColour(UColour4(0u), true);
 
     const vec2<U16>& drawableSize = _context.getDrawableSize(window);
     stateTracker.setScissor(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));

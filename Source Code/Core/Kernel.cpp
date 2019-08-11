@@ -733,7 +733,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                     RelativePosition2D(RelativeValue(0.75f, 0.0f),
                                                        RelativeValue(0.2f, 0.0f)), // Position
                                     Font::DROID_SERIF_BOLD,                        // Font
-                                    UColour(255,  50, 0, 255),                     // Colour
+                                    UColour4(255,  50, 0, 255),                    // Colour
                                     "PROFILE DATA",                                // Text
                                     12);                                           // Font size
 

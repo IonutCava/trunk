@@ -476,8 +476,13 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     if (!renderStagePass.isDepthPass() && _textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
-        shaderName += ".SpecularMap";
-        fragDefines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
+        if (isPBRMaterial()) {
+            shaderName += ".MetallicRoughness";
+            fragDefines.push_back(std::make_pair("USE_METALLIC_ROUGHNESS_MAP", true));
+        } else {
+            shaderName += ".SpecularMap";
+            fragDefines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
+        }
     }
 
     updateTranslucency();
@@ -759,7 +764,7 @@ void Material::updateTranslucency() {
 
     // In order of importance (less to more)!
     // diffuse channel alpha
-    if (_colourData._diffuse.a < 0.95f) {
+    if (_colourData.baseColour().a < 0.95f) {
         _translucencySource = TranslucencySource::ALBEDO;
         _translucent = true;
     }
@@ -816,9 +821,9 @@ void Material::getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32&
 }
 
 void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
-    retMatrix.setRow(0, _colourData._diffuse);
-    retMatrix.setRow(1, _colourData._specular);
-    retMatrix.setRow(2, FColour(_colourData._emissive.rgb(), _colourData._shininess));
+    retMatrix.setRow(0, _colourData._data[0]);
+    retMatrix.setRow(1, _colourData._data[1]);
+    retMatrix.setRow(2, _colourData._data[2]);
     retMatrix.setRow(3, vec4<F32>(0.0f, getParallaxFactor(), 0.0f, 0.0f));
 }
 
@@ -1020,28 +1025,35 @@ namespace {
 };
 
 void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
-    pt.put(entryName + ".colour.<xmlattr>.r", getColourData()._diffuse.r);
-    pt.put(entryName + ".colour.<xmlattr>.g", getColourData()._diffuse.g);
-    pt.put(entryName + ".colour.<xmlattr>.b", getColourData()._diffuse.b);
-    pt.put(entryName + ".colour.<xmlattr>.a", getColourData()._diffuse.a);
+    pt.put(entryName + ".shadingMode", getShadingModeName(getShadingMode()));
 
-    pt.put(entryName + ".emissive.<xmlattr>.r", getColourData()._emissive.r);
-    pt.put(entryName + ".emissive.<xmlattr>.g", getColourData()._emissive.g);
-    pt.put(entryName + ".emissive.<xmlattr>.b", getColourData()._emissive.b);
+    pt.put(entryName + ".colour.<xmlattr>.r", getColourData().baseColour().r);
+    pt.put(entryName + ".colour.<xmlattr>.g", getColourData().baseColour().g);
+    pt.put(entryName + ".colour.<xmlattr>.b", getColourData().baseColour().b);
+    pt.put(entryName + ".colour.<xmlattr>.a", getColourData().baseColour().a);
 
-    pt.put(entryName + ".specular.<xmlattr>.r", getColourData()._specular.r);
-    pt.put(entryName + ".specular.<xmlattr>.g", getColourData()._specular.g);
-    pt.put(entryName + ".specular.<xmlattr>.b", getColourData()._specular.b);
+    pt.put(entryName + ".emissive.<xmlattr>.r", getColourData().emissive().r);
+    pt.put(entryName + ".emissive.<xmlattr>.g", getColourData().emissive().g);
+    pt.put(entryName + ".emissive.<xmlattr>.b", getColourData().emissive().b);
 
-    pt.put(entryName + ".shininess", getColourData()._shininess);
+    if (!isPBRMaterial())
+    {
+        pt.put(entryName + ".specular.<xmlattr>.r", getColourData().specular().r);
+        pt.put(entryName + ".specular.<xmlattr>.g", getColourData().specular().g);
+        pt.put(entryName + ".specular.<xmlattr>.b", getColourData().specular().b);
+
+        pt.put(entryName + ".shininess", getColourData().shininess());
+    } else {
+        pt.put(entryName + ".metallic", getColourData().metallic());
+        pt.put(entryName + ".reflectivity", getColourData().reflectivity());
+        pt.put(entryName + ".roughness", getColourData().roughness());
+    }
 
     pt.put(entryName + ".doubleSided", isDoubleSided());
 
     pt.put(entryName + ".receivesShadows", receivesShadows());
 
     pt.put(entryName + ".bumpMethod", getBumpMethodName(getBumpMethod()));
-
-    pt.put(entryName + ".shadingMode", getShadingModeName(getShadingMode()));
 
     pt.put(entryName + ".parallaxFactor", getParallaxFactor());
 
@@ -1079,29 +1091,40 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
     if (ignoreXMLData()) {
         return;
     }
+    setShadingMode(getShadingModeByName(pt.get<stringImpl>(entryName + ".shadingMode", "FLAT")));
 
-    setDiffuse(FColour(pt.get<F32>(entryName + ".colour.<xmlattr>.r", 0.6f),
-                       pt.get<F32>(entryName + ".colour.<xmlattr>.g", 0.6f),
-                       pt.get<F32>(entryName + ".colour.<xmlattr>.b", 0.6f),
-                       pt.get<F32>(entryName + ".colour.<xmlattr>.a", 1.f)));
+    _colourData.baseColour(
+        FColour4(pt.get<F32>(entryName + ".colour.<xmlattr>.r", 0.6f),
+                 pt.get<F32>(entryName + ".colour.<xmlattr>.g", 0.6f),
+                 pt.get<F32>(entryName + ".colour.<xmlattr>.b", 0.6f),
+                 pt.get<F32>(entryName + ".colour.<xmlattr>.a", 1.f))
+    );
 
-    setEmissive(FColour(pt.get<F32>(entryName + ".emissive.<xmlattr>.r", 0.f),
-                        pt.get<F32>(entryName + ".emissive.<xmlattr>.g", 0.f),
-                        pt.get<F32>(entryName + ".emissive.<xmlattr>.b", 0.f)));
+    _colourData.emissive(
+        FColour3(pt.get<F32>(entryName + ".emissive.<xmlattr>.r", 0.f),
+                 pt.get<F32>(entryName + ".emissive.<xmlattr>.g", 0.f),
+                 pt.get<F32>(entryName + ".emissive.<xmlattr>.b", 0.f))
+    );
 
-    setSpecular(FColour(pt.get<F32>(entryName + ".specular.<xmlattr>.r", 1.f),
-                        pt.get<F32>(entryName + ".specular.<xmlattr>.g", 1.f),
-                        pt.get<F32>(entryName + ".specular.<xmlattr>.b", 1.f)));
+    if (!isPBRMaterial()) {
+        _colourData.specular(
+            FColour3(pt.get<F32>(entryName + ".specular.<xmlattr>.r", 1.f),
+                     pt.get<F32>(entryName + ".specular.<xmlattr>.g", 1.f),
+                     pt.get<F32>(entryName + ".specular.<xmlattr>.b", 1.f))
+        );
 
-    setShininess(pt.get<F32>(entryName + ".shininess", 0.0f));
+        _colourData.shininess(pt.get<F32>(entryName + ".shininess", 0.0f));
+    } else {
+        _colourData.metallic(pt.get<F32>(entryName + ".metallic", 0.0f));
+        _colourData.reflectivity(pt.get<F32>(entryName + ".reflectivity", 0.0f));
+        _colourData.roughness(pt.get<F32>(entryName + ".roughness", 0.0f));
+    }
 
     setDoubleSided(pt.get<bool>(entryName + ".doubleSided", false));
 
     setReceivesShadows(pt.get<bool>(entryName + ".receivesShadows", true));
 
     setBumpMethod(getBumpMethodByName(pt.get<stringImpl>(entryName + ".bumpMethod", "NORMAL")));
-
-    setShadingMode(getShadingModeByName(pt.get<stringImpl>(entryName + ".shadingMode", "FLAT")));
 
     setParallaxFactor(pt.get<F32>(entryName + ".parallaxFactor", 1.0f));
 

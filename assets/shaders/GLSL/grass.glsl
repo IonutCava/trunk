@@ -76,7 +76,7 @@ layout(location = 1) flat in float _alphaFactor;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
-    vec2 uv = getTexCoord();
+    const vec2 uv = TexCoords;
 
     vec4 albedo = texture(texDiffuseGrass, vec3(uv, _arrayLayerFrag));
     albedo.a *= _alphaFactor;

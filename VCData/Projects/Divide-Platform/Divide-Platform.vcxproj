@@ -331,6 +331,7 @@
     <None Include="../../../Source Code\Platform\Headers\PlatformRuntime.inl" />
     <None Include="..\..\..\assets\shaders\GLSL\baseVertexShaders.glsl" />
     <None Include="..\..\..\assets\shaders\GLSL\common\vegetationData.cmn" />
+    <None Include="..\..\..\assets\shaders\GLSL\common\waterData.cmn" />
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\output.frag" />
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\prePass.frag" />
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\shadowUtils.frag" />

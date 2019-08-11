@@ -57,7 +57,7 @@ class LightPool : public SceneComponent,
       struct LightProperties {
           /// rgb = diffuse
           /// w = cosOuterConeAngle;
-          FColour _diffuse = { DefaultColours::WHITE.rgb(), 0.0f };
+          FColour4 _diffuse = { DefaultColours::WHITE.rgb(), 0.0f };
           /// light position (or direction for Directional lights)
           /// w = range
           vec4<F32> _position = { 0.0f, 0.0f, 0.0f, 0.0f };

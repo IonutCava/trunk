@@ -30,6 +30,8 @@ uniform vec2 _noiseFactor;
 
 #define USE_SHADING_BLINN_PHONG
 #define USE_DEFERRED_NORMALS
+#define USE_PLANAR_REFLECTION
+#define USE_PLANAR_REFRACTION
 
 #if defined(PRE_PASS)
 #include "prePass.frag"

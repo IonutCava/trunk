@@ -63,7 +63,7 @@ struct SamplerDescriptor : public Hashable {
     /// OpenGL eg: used by TEXTURE_LOD_BIAS
     F32 _biasLOD = 0.f;
     /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
-    FColour _borderColour = DefaultColours::BLACK;
+    FColour4 _borderColour = DefaultColours::BLACK;
 
     inline size_t getHash() const override {
         _hash = 23;

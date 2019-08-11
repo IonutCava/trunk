@@ -167,11 +167,11 @@ public:
            void opacity(U8 opacity);
     inline U8   opacity() const;
 
-    inline void clearColour(const FColour& colour);
-    inline void clearColour(const FColour& colour, bool clearColour, bool clearDepth);
+    inline void clearColour(const FColour4& colour);
+    inline void clearColour(const FColour4& colour, bool clearColour, bool clearDepth);
 
-    inline const FColour& clearColour() const;
-    inline const FColour& clearColour(bool &clearColour, bool &clearDepth) const;
+    inline const FColour4& clearColour() const;
+    inline const FColour4& clearColour(bool &clearColour, bool &clearDepth) const;
 
     /// width and height get adjusted to the closest supported value
     bool setDimensions(U16& width, U16& height);
@@ -244,7 +244,7 @@ private:
 
     U8 _opacity;
     vec2<U16> _prevDimensions;
-    FColour   _clearColour;
+    FColour4  _clearColour;
     typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 

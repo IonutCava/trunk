@@ -10,10 +10,8 @@ layout(early_fragment_tests) in;
 #include "output.frag"
 
 void main (void) {
-    vec2 uv = getTexCoord();
-
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    vec4 albedo = getAlbedo(colourMatrix, uv);
+    vec4 albedo = getAlbedo(colourMatrix, TexCoords);
   
 #if defined(USE_ALPHA_DISCARD)
     if (albedo.a < 1.0 - Z_TEST_SIGMA) {
@@ -21,5 +19,5 @@ void main (void) {
     }
 #endif
 
-    writeOutput(getPixelColour(albedo, colourMatrix, getNormal(uv), uv));
+    writeOutput(getPixelColour(albedo, colourMatrix, getNormal(TexCoords), TexCoords));
 }

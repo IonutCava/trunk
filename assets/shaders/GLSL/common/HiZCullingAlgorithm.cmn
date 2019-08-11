@@ -82,7 +82,7 @@ int zBufferCull(const in vec3 view_center, const in float radius) {
     vec2 zw = mat2(projectionMatrix[2].zw, projectionMatrix[3].zw) * vec2(nearest_z, 1.0);
     nearest_z = 0.5 * zw.x / zw.y + 0.5;
 
-    vec2 diff_pix = (max_xy - min_xy) * vec2(textureSize(HiZBuffer, 0));
+    vec2 diff_pix = (max_xy - min_xy) * viewportDimensions;
     float max_diff = max(max(diff_pix.x, diff_pix.y), 1.0);
     float lod = ceil(log2(max_diff));
     vec2 mid_pix = 0.5 * (max_xy + min_xy);

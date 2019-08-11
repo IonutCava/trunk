@@ -168,7 +168,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
 
     if (useColour) {
         _attributeOffset[to_base(AttribLocation::COLOR)] = to_U32(prevOffset);
-        prevOffset += sizeof(UColour);
+        prevOffset += sizeof(UColour4);
     }
 
     if (useBoneData) {

@@ -56,7 +56,7 @@ class Sky : public SceneNode {
     explicit Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter);
     ~Sky();
 
-    void enableSun(bool state, const FColour& sunColour, const vec3<F32>& sunVector);
+    void enableSun(bool state, const FColour3& sunColour, const vec3<F32>& sunVector);
    protected:
     void postLoad(SceneGraphNode& sgn) override;
 
@@ -81,7 +81,7 @@ class Sky : public SceneNode {
 
   private:
     bool _enableSun;
-    FColour _sunColour;
+    FColour3 _sunColour;
     vec3<F32>_sunVector;
     RebuildCommandsState _rebuildDrawCommands;
     U32       _diameter;

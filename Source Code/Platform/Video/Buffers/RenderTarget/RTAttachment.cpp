@@ -88,11 +88,11 @@ bool RTAttachment::changed() const {
     return _changed;
 }
 
-void RTAttachment::clearColour(const FColour& clearColour) {
+void RTAttachment::clearColour(const FColour4& clearColour) {
     _descriptor._clearColour.set(clearColour);
 }
 
-const FColour& RTAttachment::clearColour() const {
+const FColour4& RTAttachment::clearColour() const {
     return _descriptor._clearColour;
 }
 

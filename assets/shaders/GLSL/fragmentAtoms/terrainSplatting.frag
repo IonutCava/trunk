@@ -2,6 +2,7 @@
 #define _TERRAIN_SPLATTING_FRAG_
 
 layout(binding = TEXTURE_SPLAT) uniform sampler2DArray texBlendMaps;
+layout(binding = TEXTURE_HELPER_TEXTURES) uniform sampler2DArray helperTextures;
 
 #if defined(PRE_PASS)
 layout(binding = TEXTURE_NORMAL_TILE) uniform sampler2DArray texNormalMaps;
@@ -10,7 +11,6 @@ layout(binding = TEXTURE_ALBEDO_TILE) uniform sampler2DArray texTileMaps;
 #endif
 
 layout(binding = TEXTURE_EXTRA_TILE) uniform sampler2DArray texExtraMaps;
-layout(binding = TEXTURE_HELPER_TEXTURES) uniform sampler2DArray helperTextures;
 
 #include "texturing.frag"
 
@@ -38,11 +38,11 @@ const int tiling[] = {
 };
 
 vec4 _getTexture(in sampler2DArray tex, in vec3 uv) {
-    if (DETAIL_LEVEL > 2 && LoD == 0) {
-        return textureNoTile(tex, helperTextures, 3, uv);
-    }
+    if (DETAIL_LEVEL > 1 && false) {
+        if (DETAIL_LEVEL > 2 && LoD == 0) {
+            return textureNoTile(tex, helperTextures, 3, uv);
+        }
 
-    if (DETAIL_LEVEL > 1) {
         return textureNoTile(tex, uv);
     }
 
@@ -156,28 +156,22 @@ vec4 _getTerrainAlbedo(in vec2 uv) {
 
 TerrainData BuildTerrainData(in vec2 waterDetails) {
     TerrainData ret;
-    ret.uv = getTexCoord();
-#if !defined(PRE_PASS)
-    ret.albedo = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-    ret.normal = getNormal(ret.uv);
-#else //PRE_PASS
-#if defined(LOW_QUALITY)
-    ret.normal = VAR._normalWV;
-#else //LOW_QUALITY
-    ret.normal = vec3(1.0f);
-#endif //LOW_QUALITY
-#endif //PRE_PASS
+    ret.uv = TexCoords;
 
 #if defined(PRE_PASS)
-#   if !defined(LOW_QUALITY)
+#   if defined(LOW_QUALITY)
+    ret.normal = VAR._normalWV;
+#   else
     ret.normal = VAR._tbn * mix(_getTerrainNormal(ret.uv),
                                 _getUnderwaterNormal(ret.uv * UNDERWATER_TILE_SCALE),
                                 waterDetails.x);
 #   endif //LOW_QUALITY
-
-    ret.normal = normalize(ret.normal);
 #else // PRE_PASS
-
+#   if defined(LOW_QUALITY)
+    ret.normal = VAR._normalWV; // skip some texture fetches
+#   else //LOW_QUALITY
+    ret.normal = getNormal(ret.uv);
+#   endif //LOW_QUALITY
     ret.albedo = mix(_getTerrainAlbedo(ret.uv),
                      _getUnderwaterAlbedo(ret.uv * UNDERWATER_TILE_SCALE, waterDetails.y),
                      waterDetails.x);

@@ -293,9 +293,9 @@ bool PingPongScene::load(const stringImpl& name) {
     _ball = CreateResource<Sphere3D>(_resCache, minge);
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
-    _ball->getMaterialTpl()->setDiffuse(FColour(0.4f, 0.4f, 0.4f, 1.0f));
-    _ball->getMaterialTpl()->setShininess(36.8f);
-    _ball->getMaterialTpl()->setSpecular(FColour(0.774597f, 0.774597f, 0.774597f, 1.0f));
+    _ball->getMaterialTpl()->getColourData().baseColour(FColour4(0.4f, 0.4f, 0.4f, 1.0f));
+    _ball->getMaterialTpl()->getColourData().shininess(36.8f);
+    _ball->getMaterialTpl()->getColourData().specular(FColour3(0.774597f, 0.774597f, 0.774597f));
 
     SceneGraphNodeDescriptor ballNodeDescriptor;
     ballNodeDescriptor._node = _ball;
@@ -377,25 +377,25 @@ void PingPongScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                   pixelPosition(to_I32(targetRenderViewport.sizeX - 120),
                                 to_I32(targetRenderViewport.sizeY / 1.3f)),
         Font::DIVIDE_DEFAULT,
-                  UColour(255, 0, 0, 255),
+                  UColour4(255, 0, 0, 255),
         Util::StringFormat("Score: %d", 0));
 
     _GUI->addText("Message",
                   pixelPosition(to_I32(targetRenderViewport.sizeX - 120),
                                 to_I32(targetRenderViewport.sizeY / 1.5f)),
         Font::DIVIDE_DEFAULT,
-                  UColour(255, 0, 0, 255),
+                  UColour4(255, 0, 0, 255),
         "");
     _GUI->addText("insults",
                   pixelPosition(targetRenderViewport.sizeX / 4,
                                 targetRenderViewport.sizeY / 3),
         Font::DIVIDE_DEFAULT,
-                  UColour(0, 255, 0, 255),
+                  UColour4(0, 255, 0, 255),
         "");
     _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-                  UColour(0, 50, 255, 255),// Colour
+                  UColour4(0, 50, 255, 255),// Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     Scene::postLoadMainThread(targetRenderViewport);

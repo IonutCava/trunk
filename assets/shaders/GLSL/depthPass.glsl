@@ -3,7 +3,7 @@
 #include "prePass.frag"
 
 void main() {
-    outputWithVelocity(getTexCoord(), 1.0f, computeDepth(VAR._vertexWV));
+    outputWithVelocity(TexCoords, 1.0f, computeDepth(VAR._vertexWV));
 }
 
 -- Fragment.Shadow
@@ -22,7 +22,7 @@ out vec2 _colourOut;
 void main() {
 #if defined(HAS_TRANSPARENCY)
     mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
-    if (getAlbedo(colourMatrix, getTexCoord()).a < 1.0f - Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix, TexCoords).a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 #endif

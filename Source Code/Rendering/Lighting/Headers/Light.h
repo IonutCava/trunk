@@ -89,25 +89,17 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     inline void castsShadows(const bool state) { _castsShadows = state; }
 
     /// Get light diffuse colour
-    inline void getDiffuseColour(vec3<F32>& colourOut) const {
+    inline void getDiffuseColour(FColour3& colourOut) const {
         Util::ToFloatColour(_colour.rgb(), colourOut);
     }
 
-    inline vec3<F32> getDiffuseColour() const {
+    inline FColour3 getDiffuseColour() const {
         return Util::ToFloatColour(_colour.rgb());
     }
 
-    void setDiffuseColour(const vec3<U8>& newDiffuseColour);
+    void setDiffuseColour(const UColour3& newDiffuseColour);
 
-    inline void setDiffuseColour(const UColour& newDiffuseColour) {
-        setDiffuseColour(newDiffuseColour.rgb());
-    }
-
-    inline void setDiffuseColour(const FColour& newDiffuseColour) {
-        setDiffuseColour(newDiffuseColour.rgb());
-    }
-
-    inline void setDiffuseColour(const vec3<F32>& newDiffuseColour) {
+    inline void setDiffuseColour(const FColour3& newDiffuseColour) {
         setDiffuseColour(Util::ToByteColour(newDiffuseColour));
     }
 
@@ -219,7 +211,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     /// x - range, y = iner cone, z - cos outer cone
     vec3<F32> _rangeAndCones;
     /// rgb - diffuse, a - reserved
-    UColour  _colour;
+    UColour4  _colour;
     // does this light casts shadows?
     bool _castsShadows;
     // Shadow mapping properties

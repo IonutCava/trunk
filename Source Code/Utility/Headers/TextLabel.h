@@ -66,7 +66,7 @@ class TextLabelStyle : public Hashable {
 
   public:
    TextLabelStyle(const char* font,
-                  const UColour& colour,
+                  const UColour4& colour,
                   U8 fontSize);
 
     size_t getHash() const override;
@@ -77,7 +77,7 @@ class TextLabelStyle : public Hashable {
     inline F32 blurAmount() const { return _blurAmount; }
     inline F32 spacing() const { return _spacing; }
     inline U32 alignFlag() const { return _alignFlag; }
-    inline const UColour& colour() const { return _colour; }
+    inline const UColour4& colour() const { return _colour; }
     inline bool bold() const { return _bold; }
     inline bool italic() const { return _italic; }
 
@@ -88,7 +88,7 @@ class TextLabelStyle : public Hashable {
     inline void blurAmount(F32 blurAmount) { _blurAmount = blurAmount; _dirty = true; }
     inline void spacing(F32 spacing) { _spacing = spacing; _dirty = true; }
     inline void alignFlag(U32 alignFlag) { _alignFlag = alignFlag; _dirty = true; }
-    inline void colour(const UColour& colour) { _colour.set(colour); _dirty = true; }
+    inline void colour(const UColour4& colour) { _colour.set(colour); _dirty = true; }
     inline void bold(bool bold) { _bold = bold; _dirty = true; }
     inline void italic(bool italic) { _italic = italic; _dirty = true; }
 
@@ -99,7 +99,7 @@ class TextLabelStyle : public Hashable {
     F32 _blurAmount;
     F32 _spacing;
     U32 _alignFlag;  ///< Check font-stash alignment for details
-    UColour _colour;
+    UColour4 _colour;
     bool _bold;
     bool _italic;
 

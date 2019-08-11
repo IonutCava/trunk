@@ -37,7 +37,7 @@ void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
 
     _bbPrimitive->fromBox(_root->getBoundingBox().getMin(),
                           _root->getBoundingBox().getMax(),
-                          UColour(0, 64, 255, 255));
+                          UColour4(0, 64, 255, 255));
 
     packageOut.addCommandBuffer(_bbPrimitive->toCommandBuffer());
 }

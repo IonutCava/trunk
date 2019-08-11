@@ -53,14 +53,14 @@ struct ExternalRTAttachmentDescriptor {
     RTAttachment_ptr _attachment;
     RTAttachmentType _type = RTAttachmentType::COUNT;
     U8 _index = 0;
-    FColour _clearColour = DefaultColours::WHITE;
+    FColour4 _clearColour = DefaultColours::WHITE;
 };
 
 struct RTAttachmentDescriptor {
     TextureDescriptor _texDescriptor;
     RTAttachmentType _type = RTAttachmentType::COUNT;
     U8 _index = 0;
-    FColour _clearColour = DefaultColours::WHITE;
+    FColour4 _clearColour = DefaultColours::WHITE;
 };
 
 class RTAttachmentPool;
@@ -77,8 +77,8 @@ class RTAttachment {
         bool changed() const;
         void clearChanged();
 
-        void clearColour(const FColour& clearColour);
-        const FColour& clearColour() const;
+        void clearColour(const FColour4& clearColour);
+        const FColour4& clearColour() const;
 
         bool mipWriteLevel(U16 level);
         U16  mipWriteLevel() const;

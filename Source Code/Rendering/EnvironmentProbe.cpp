@@ -198,7 +198,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
 }
 
 void EnvironmentProbe::updateInternal() {
-    _boundingBoxPrimitive->fromBox(_aabb.getMin(), _aabb.getMax(), UColour(255, 255, 255, 255));
+    _boundingBoxPrimitive->fromBox(_aabb.getMin(), _aabb.getMax(), UColour4(255, 255, 255, 255));
 }
 
 }; //namespace Divide

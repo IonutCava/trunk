@@ -145,7 +145,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     _GUI->addText("globalMessage",
                   textPosition,
                   Font::DIVIDE_DEFAULT,
-                  UColour(128, 64, 64, 255),
+                  UColour4(128, 64, 64, 255),
                   "");
 
     textPosition.d_y.d_offset -= 20;

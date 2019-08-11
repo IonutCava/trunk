@@ -120,7 +120,7 @@ bool WaterPlane::load() {
 
     waterMat->setShaderProgram(waterColour, RenderPassType::MAIN_PASS);
     waterMat->setShaderProgram(waterPrePass, RenderPassType::PRE_PASS);
-    waterMat->setShininess(75.0f);
+    waterMat->getColourData().shininess(75.0f);
 
     setMaterialTpl(waterMat);
     

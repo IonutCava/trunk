@@ -47,14 +47,14 @@ class Line {
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const UColour& colour) noexcept
+         const UColour4& colour) noexcept
         : Line(startPoint, endPoint, colour, colour)
     {
     }
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const UColour& colour,
+         const UColour4& colour,
          F32 width)
         : Line(startPoint, endPoint, colour, colour, width)
     {
@@ -62,16 +62,16 @@ class Line {
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const UColour& colourStart,
-         const UColour& colourEnd)
+         const UColour4& colourStart,
+         const UColour4& colourEnd)
         : Line(startPoint, endPoint, colourStart, colourEnd, 1.0f)
     {
     }
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const UColour& colourStart,
-         const UColour& colourEnd,
+         const UColour4& colourStart,
+         const UColour4& colourEnd,
          F32 width)
         : Line(startPoint, endPoint, colourStart, colourEnd, width, width)
     {
@@ -79,8 +79,8 @@ class Line {
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const UColour& colourStart,
-         const UColour& colourEnd,
+         const UColour4& colourStart,
+         const UColour4& colourEnd,
          F32 widthStart,
          F32 widthEnd)
         : _startPoint(startPoint),
@@ -126,11 +126,11 @@ class Line {
         return _endPoint;
     }
 
-    inline const UColour& colourStart() const {
+    inline const UColour4& colourStart() const {
         return _colourStart;
     }
 
-    inline const UColour& colourEnd() const {
+    inline const UColour4& colourEnd() const {
         return _colourEnd;
     }
 
@@ -145,8 +145,8 @@ class Line {
 public:
     vec3<F32> _startPoint;
     vec3<F32> _endPoint;
-    UColour   _colourStart;
-    UColour   _colourEnd;
+    UColour4  _colourStart;
+    UColour4  _colourEnd;
     F32       _widthStart;
     F32       _widthEnd;
 };

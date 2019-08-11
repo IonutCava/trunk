@@ -38,34 +38,9 @@ inline void Material::setColourData(const ColourData& other) {
     _colourData = other;
     updateTranslucency();
 }
-
-inline void Material::setDiffuse(const FColour& value) {
-    _colourData._diffuse = value;
-    if (value.a < 0.95f) {
-        updateTranslucency();
-    }
-}
-
-inline void Material::setSpecular(const FColour& value) {
-    _colourData._specular = value;
-}
-
-inline void Material::setEmissive(const vec3<F32>& value) {
-    _colourData._emissive = value;
-}
-
 inline void Material::setHardwareSkinning(const bool state) {
     _needsNewShader = true;
     _hardwareSkinning = state;
-}
-
-inline void Material::setOpacity(F32 value) {
-    _colourData._diffuse.a = value;
-    updateTranslucency();
-}
-
-inline void Material::setShininess(F32 value) {
-    _colourData._shininess = value;
 }
 
 inline void Material::setTextureUseForDepth(ShaderProgram::TextureUsage slot, bool state) {
@@ -155,6 +130,10 @@ inline const Material::TextureOperation& Material::getTextureOperation() const {
     return _operation;
 }
 
+inline Material::ColourData& Material::getColourData() {
+    return _colourData;
+}
+
 inline const Material::ColourData&  Material::getColourData()  const {
     return _colourData;
 }
@@ -177,6 +156,10 @@ inline bool Material::hasTranslucency() const {
     return _translucent;
 }
 
+inline bool Material::isPBRMaterial() const {
+    return getShadingMode() == ShadingMode::OREN_NAYAR || getShadingMode() == ShadingMode::COOK_TORRANCE;
+}
+
 inline bool Material::isDoubleSided() const {
     return _doubleSided;
 }
@@ -186,7 +169,18 @@ inline bool Material::receivesShadows() const {
 }
 
 inline bool Material::isReflective() const {
-    return _colourData._shininess > 100 || _isReflective;
+    if (_isReflective) {
+        return true;
+    }
+    if (getShadingMode() == ShadingMode::BLINN_PHONG ||
+        getShadingMode() == ShadingMode::PHONG ||
+        getShadingMode() == ShadingMode::FLAT ||
+        getShadingMode() == ShadingMode::TOON)
+    {
+        return _colourData.shininess() > PHONG_REFLECTIVITY_THRESHOLD;
+    }
+
+    return  _colourData.reflectivity() > 0.0f;
 }
 
 inline bool Material::isRefractive() const {

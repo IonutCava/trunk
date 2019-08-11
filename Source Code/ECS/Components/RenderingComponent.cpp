@@ -131,11 +131,11 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     
     if (Config::Build::IS_DEBUG_BUILD) {
         // Red X-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour(255, 0, 0, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour4(255, 0, 0, 255), 5.0f));
         // Green Y-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, UColour(0, 255, 0, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, UColour4(0, 255, 0, 255), 5.0f));
         // Blue Z-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, UColour(0, 0, 255, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, UColour4(0, 0, 255, 255), 5.0f));
         _axisGizmo = _context.newIMP();
         // Prepare it for line rendering
         size_t noDepthStateBlock = _context.getDefaultStateBlock(true);
@@ -387,7 +387,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
     if (renderBBox) {
         const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
-        _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour(0, 0, 255, 255));
+        _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour4(0, 0, 255, 255));
         bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
 
         bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
@@ -400,14 +400,14 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 _boundingBoxPrimitive[1]->fromBox(
                                      bbGrandParent.getMin() - vec3<F32>(0.0025f),
                                      bbGrandParent.getMax() + vec3<F32>(0.0025f),
-                                     UColour(255, 0, 0, 255));
+                                     UColour4(255, 0, 0, 255));
                 bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
             }
         }
 
         if (renderBSphere) {
             const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
-            _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), UColour(0, 255, 0, 255));
+            _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), UColour4(0, 255, 0, 255));
             bufferInOut.add(_boundingSpherePrimitive->toCommandBuffer());
         }
     }

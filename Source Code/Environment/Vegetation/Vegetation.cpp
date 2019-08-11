@@ -565,7 +565,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
 }
 
 namespace {
-    FORCE_INLINE U8 bestIndex(const UColour& in) {
+    FORCE_INLINE U8 bestIndex(const UColour4& in) {
         U8 maxValue = 0;
         U8 bestIndex = 0;
         for (U8 i = 0; i < 4; ++i) {
@@ -642,7 +642,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
             assert(vert._position != VECTOR3_ZERO);
 
             auto map = treeData ? _treeMap : _grassMap;
-            const UColour colour = map->getColour((U16)mapCoord.x, (U16)mapCoord.y);
+            const UColour4 colour = map->getColour((U16)mapCoord.x, (U16)mapCoord.y);
             const U8 index = bestIndex(colour);
             const F32 colourVal = colour[index];
             if (colourVal <= EPSILON_F32) {

@@ -58,12 +58,12 @@ void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
         }
         if (BitCompare(_optionsMask,
                        to_base(Properties::PROPERTIES_COLOR))) {
-            _colour.resize(_totalCount, FColour(0.0f));
+            _colour.resize(_totalCount, FColour4(0.0f));
         }
         if (BitCompare(_optionsMask,
                        to_base(Properties::PROPERTIES_COLOR_TRANS))) {
-            _startColour.resize(_totalCount, FColour(0.0f));
-            _endColour.resize(_totalCount, FColour(0.0f));
+            _startColour.resize(_totalCount, FColour4(0.0f));
+            _endColour.resize(_totalCount, FColour4(0.0f));
         }
         _misc.resize(_totalCount, vec4<F32>(0.0f));
     }

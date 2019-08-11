@@ -53,6 +53,15 @@ class ResourceDescriptor;
 enum class BlendProperty : U8;
 enum class ReflectorType : U8;
 
+constexpr F32 Specular_Glass = 0.5f;
+constexpr F32 Specular_Plastic = 0.5f;
+constexpr F32 Specular_Quarts = 0.57f;
+constexpr F32 Specular_Ice = 0.224f;
+constexpr F32 Specular_Water = 0.255f;
+constexpr F32 Specular_Milk = 0.277f;
+constexpr F32 Specular_Skin = 0.35f;
+constexpr F32 PHONG_REFLECTIVITY_THRESHOLD = 100.0f;
+
 class Material : public CachedResource {
    public:
     enum class BumpMethod : U8 {
@@ -96,37 +105,40 @@ class Material : public CachedResource {
         COUNT
     };
 
-    /// ShaderData stores information needed by the shader code to properly
-    /// shade objects
+    /// ShaderData stores information needed by the shader code to properly shade objects
     struct ColourData {
-        FColour _diffuse;  /* diffuse component */
-        FColour _specular; /* specular component*/
-        FColour _emissive; /* emissive component*/
-        F32 _shininess;    /* specular exponent */
-
         ColourData() noexcept
-            : _diffuse(FColour(VECTOR3_UNIT / 1.5f, 1)),
-              _specular(0.8f, 0.8f, 0.8f, 1.0f),
-              _emissive(0.0f, 0.0f, 0.0f, 1.0f),
-              _shininess(5)
         {
+            baseColour(FColour4(VECTOR3_UNIT / 1.5f, 1.0f));
+            emissive(DefaultColours::BLACK.rgb());
+            specular(DefaultColours::BLACK.rgb());
+            shininess(0.0f);
         }
 
-        ColourData(const ColourData& other)
-            : _diffuse(other._diffuse),
-              _specular(other._specular),
-              _emissive(other._emissive),
-              _shininess(other._shininess)
-        {
-        }
+        inline void     baseColour(const FColour4& colour) { _data[0].set(colour); }
+        inline FColour4 baseColour() const                 { return _data[0]; }
 
-        ColourData& operator=(const ColourData& other) {
-            _diffuse.set(other._diffuse);
-            _specular.set(other._specular);
-            _emissive.set(other._emissive);
-            _shininess = other._shininess;
-            return *this;
-        }
+        inline void     emissive(const FColour3& colour)   { _data[2].rgb(colour); }
+        inline FColour3 emissive() const                   { return _data[2].rgb(); }
+
+        //Phong:
+        inline void     specular(const FColour3& emissive) { _data[1].rgb(emissive); }
+        inline FColour3 specular() const                   { return _data[1].rgb(); }
+
+        inline void shininess(F32 value)                { _data[1].a = value; }
+        inline F32  shininess() const                   { return _data[1].a; }
+
+        //Pbr:
+        inline void metallic(F32 value) { _data[1].r = CLAMPED_01(value); }
+        inline F32  metallic()    const { return _data[1].r; }
+
+        inline void reflectivity(F32 value) { _data[1].g = CLAMPED_01(value); } //specular
+        inline F32  reflectivity() const    { return _data[1].g; }  //specular
+
+        inline void roughness(F32 value) { _data[1].b = CLAMPED_01(value); }
+        inline F32  roughness() const    { return _data[1].b; }
+
+        vec4<F32> _data[3];
     };
 
     struct ShaderData {
@@ -158,12 +170,7 @@ class Material : public CachedResource {
     void update(const U64 deltaTimeUS);
 
     void setColourData(const ColourData& other);
-    void setDiffuse(const FColour& value);
-    void setSpecular(const FColour& value);
-    void setEmissive(const vec3<F32>& value);
     void setHardwareSkinning(const bool state);
-    void setOpacity(F32 value);
-    void setShininess(F32 value);
     void setShadingMode(const ShadingMode& mode);
 
     void setDoubleSided(const bool state);
@@ -214,6 +221,7 @@ class Material : public CachedResource {
 
     const TextureOperation& getTextureOperation() const;
 
+          ColourData&  getColourData();
     const ColourData&  getColourData()  const;
     const ShadingMode& getShadingMode() const;
     const BumpMethod&  getBumpMethod()  const;
@@ -224,6 +232,7 @@ class Material : public CachedResource {
     bool hasTransparency() const;
     bool hasTranslucency() const;
 
+    bool isPBRMaterial() const;
     bool isDoubleSided() const;
     bool receivesShadows() const;
     bool isReflective() const;

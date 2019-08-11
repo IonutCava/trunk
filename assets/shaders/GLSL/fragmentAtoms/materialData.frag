@@ -21,8 +21,12 @@ layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
 #endif
 
 #if !defined(PRE_PASS)
+#if defined(USE_PLANAR_REFLECTION)
 layout(binding = TEXTURE_REFLECTION_PLANAR) uniform sampler2D texReflectPlanar;
+#endif
+#if defined(USE_PLANAR_REFRACTION)
 layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
+#endif
 layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
 #if defined(USE_SPECULAR_MAP)
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
@@ -43,11 +47,7 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 #include "bumpMapping.frag"
 #endif
 
-
-vec2 getTexCoord() {
-	return VAR._texCoord;
-}
-
+#define TexCoords VAR._texCoord
 
 #if defined(USE_PARALLAX_MAPPING) || defined(USE_PARALLAX_OCCLUSION_MAPPING)
 #if defined(USE_PARALLAX_OCCLUSION_MAPPING) && defined(USE_PARALLAX_MAPPING)
@@ -127,27 +127,30 @@ float Gloss(in vec3 bump, in vec2 uv)
         return 1.0;
     #endif
 }
-float getShininess(mat4 colourMatrix) {
+
+float getRimLighting(in mat4 colourMatrix, in vec2 uv) {
+    return 0.0f;
+}
+
+#if defined(USE_CUSTOM_SHININESS)
+float getShininess(in mat4 colourMatrix);
+#else
+float getShininess(in mat4 colourMatrix) {
     return colourMatrix[2].w;
 }
+#endif
 
 #if defined(USE_CUSTOM_ROUGHNESS)
-float getRoughness(mat4 colourMatrix);
+vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv);
 #else
-float getRoughness(mat4 colourMatrix) {
-    return 1.0 - saturate(getShininess(colourMatrix) / 255.0);
-}
-#endif
-
-float getReflectivity(mat4 colourMatrix) {
-#if defined(USE_SHADING_PHONG) || defined(USE_SHADING_BLINN_PHONG)
-    return getShininess(colourMatrix);
-#elif defined(USE_SHADING_TOON)
-    // ToDo - will cause compile error
-#elif defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-    return getRoughness(colourMatrix);
+vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+#if defined(USE_METALLIC_ROUGHNESS_MAP)
+    return texture(texSpecularMap, uv).rg;
+#else
+    return colourMatrix[1].rb;
 #endif
 }
+#endif
 
 vec3 getEmissive(mat4 colourMatrix) {
     return colourMatrix[2].rgb;
@@ -158,14 +161,17 @@ void setEmissive(mat4 colourMatrix, vec3 value) {
 }
 
 vec3 getSpecular(mat4 colourMatrix, in vec2 uv) {
+#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
+    return vec3(colourMatrix[1].g);
+#else
 #if defined(USE_SPECULAR_MAP)
     return texture(texSpecularMap, uv).rgb;
 #else
     return colourMatrix[1].rgb;
 #endif
+#endif
 }
 #endif //PRE_PASS
-
 float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
 #if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_MAP)

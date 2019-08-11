@@ -107,10 +107,9 @@ namespace Import {
         dataOut << _ignoreAlpha;
         dataOut << _doubleSided;
         dataOut << _name;
-        dataOut << _colourData._diffuse;
-        dataOut << _colourData._specular;
-        dataOut << _colourData._emissive;
-        dataOut << _colourData._shininess;
+        dataOut << _colourData._data[0];
+        dataOut << _colourData._data[1];
+        dataOut << _colourData._data[2];
         dataOut << to_U32(_shadingMode);
         dataOut << to_U32(_bumpMethod);
         for (const TextureEntry& texture : _textures) {
@@ -128,10 +127,9 @@ namespace Import {
         dataIn >> _ignoreAlpha;
         dataIn >> _doubleSided;
         dataIn >> _name;
-        dataIn >> _colourData._diffuse;
-        dataIn >> _colourData._specular;
-        dataIn >> _colourData._emissive;
-        dataIn >> _colourData._shininess;
+        dataIn >> _colourData._data[0];
+        dataIn >> _colourData._data[1];
+        dataIn >> _colourData._data[2];
         dataIn >> temp;
         _shadingMode = static_cast<Material::ShadingMode>(temp);
         dataIn >> temp;

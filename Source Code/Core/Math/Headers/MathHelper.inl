@@ -292,6 +292,11 @@ T CLAMPED(const T& n, const T min, const T max) {
 }
 
 template <typename T>
+T CLAMPED_01(const T& n) {
+    return CLAMPED(n, T(0), T(1));
+}
+
+template <typename T>
 T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut) {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be mapped!");
 

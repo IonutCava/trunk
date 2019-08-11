@@ -66,7 +66,7 @@ struct WindowDescriptor {
     stringImpl title = "";
     vec2<I16> position;
     vec2<U16> dimensions;
-    FColour clearColour = DefaultColours::DIVIDE_BLUE;
+    FColour4 clearColour = DefaultColours::DIVIDE_BLUE;
     U32 flags = to_U32(Flags::DECORATED) |
                 to_U32(Flags::RESIZEABLE) |
                 to_U32(Flags::ALLOW_HIGH_DPI) |

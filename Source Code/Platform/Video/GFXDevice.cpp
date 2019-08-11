@@ -134,13 +134,13 @@ GFXDevice::GFXDevice(Kernel& parent)
 
     // Red X-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour(255, 0, 0, 255), 3.0f));
+        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour4(255, 0, 0, 255), 3.0f));
     // Green Y-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, UColour(0, 255, 0, 255), 3.0f));
+        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, UColour4(0, 255, 0, 255), 3.0f));
     // Blue Z-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, UColour(0, 0, 255, 255), 3.0f));
+        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, UColour4(0, 0, 255, 255), 3.0f));
 
     AttribFlags flags;
     flags.fill(true);
@@ -557,12 +557,6 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     // Store the current width and height of each mip
     Rect<I32> previousViewport(_viewport);
 
-    // Bind the depth texture to the first texture unit
-    const Texture_ptr& depth = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
-    if (depth->getDescriptor().automaticMipMapGeneration()) {
-        return depth;
-    }
-
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = to_I32(depthBuffer._index);
     beginDebugScopeCmd._scopeName = "Construct Hi-Z";
@@ -575,87 +569,92 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     blitDepthBufferCmd._blitDepth.emplace_back();
     GFX::EnqueueCommand(cmdBufferInOut, blitDepthBufferCmd);
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = HiZTarget;
-    beginRenderPassCmd._descriptor = depthOnlyTarget;
-    beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
-    GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
+    const Texture_ptr& hizDepthTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
+    if (!hizDepthTex->getDescriptor().automaticMipMapGeneration()) {
 
-    GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = newPipeline(pipelineDesc);
-    GFX::EnqueueCommand(cmdBufferInOut, pipelineCmd);
+        GFX::BeginRenderPassCommand beginRenderPassCmd;
+        beginRenderPassCmd._target = HiZTarget;
+        beginRenderPassCmd._descriptor = depthOnlyTarget;
+        beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
+        GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
-    GFX::SetViewportCommand viewportCommand;
-    GFX::SendPushConstantsCommand pushConstantsCommand;
-    GFX::EndRenderSubPassCommand endRenderSubPassCmd;
+        GFX::BindPipelineCommand pipelineCmd;
+        pipelineCmd._pipeline = newPipeline(pipelineDesc);
+        GFX::EnqueueCommand(cmdBufferInOut, pipelineCmd);
 
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
-    beginRenderSubPassCmd._validateWriteLevel = firstRun;
+        GFX::SetViewportCommand viewportCommand;
+        GFX::SendPushConstantsCommand pushConstantsCommand;
+        GFX::EndRenderSubPassCommand endRenderSubPassCmd;
 
-    GenericDrawCommand triangleCmd;
-    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-    triangleCmd._drawCount = 1;
+        GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+        beginRenderSubPassCmd._validateWriteLevel = firstRun;
 
-    // for i > 0, use texture views?
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(depth->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-    GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
+        GenericDrawCommand triangleCmd;
+        triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+        triangleCmd._drawCount = 1;
 
-    // We skip the first level as that's our full resolution image
-    U16 twidth = width;
-    U16 theight = height;
-    bool wasEven = false;
+        TextureData hizData = hizDepthTex->getData();
+        // for i > 0, use texture views?
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set._textureData.setTexture(hizData, to_U8(ShaderProgram::TextureUsage::DEPTH));
+        GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
 
-    while (dim) {
-        if (level) {
-            twidth = twidth < 1 ? 1 : twidth;
-            theight = theight < 1 ? 1 : theight;
+        // We skip the first level as that's our full resolution image
+        U16 twidth = width;
+        U16 theight = height;
+        bool wasEven = false;
 
-            // Bind next mip level for rendering but first restrict fetches only to previous level
-            beginRenderSubPassCmd._mipWriteLevel = level;
-            GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
+        while (dim) {
+            if (level) {
+                twidth = twidth < 1 ? 1 : twidth;
+                theight = theight < 1 ? 1 : theight;
 
-            // Update the viewport with the new resolution
-            viewportCommand._viewport.set(0, 0, twidth, theight);
-            GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
+                // Bind next mip level for rendering but first restrict fetches only to previous level
+                beginRenderSubPassCmd._mipWriteLevel = level;
+                GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
 
-            pushConstantsCommand._constants.set("depthInfo", GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
-            GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
+                // Update the viewport with the new resolution
+                viewportCommand._viewport.set(0, 0, twidth, theight);
+                GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
-            // Dummy draw command as the full screen quad is generated completely in the vertex shader
-            GFX::DrawCommand drawCmd;
-            drawCmd._drawCommands.push_back(triangleCmd);
-            GFX::EnqueueCommand(cmdBufferInOut, drawCmd);
+                pushConstantsCommand._constants.set("depthInfo", GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+                GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
 
-            GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
+                // Dummy draw command as the full screen quad is generated completely in the vertex shader
+                GFX::DrawCommand drawCmd;
+                drawCmd._drawCommands.push_back(triangleCmd);
+                GFX::EnqueueCommand(cmdBufferInOut, drawCmd);
+
+                GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
+            }
+
+            // Calculate next viewport size
+            wasEven = (twidth % 2 == 0) && (theight % 2 == 0);
+            dim /= 2;
+            twidth /= 2;
+            theight /= 2;
+            level++;
         }
 
-        // Calculate next viewport size
-        wasEven = (twidth % 2 == 0) && (theight % 2 == 0);
-        dim /= 2;
-        twidth /= 2;
-        theight /= 2;
-        level++;
+        // Restore mip level
+        beginRenderSubPassCmd._mipWriteLevel = 0;
+        GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
+        GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
+
+        viewportCommand._viewport.set(previousViewport);
+        GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
+
+        // Unbind the render target
+        GFX::EndRenderPassCommand endRenderPassCmd;
+        GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);
     }
 
-    // Restore mip level
-    beginRenderSubPassCmd._mipWriteLevel = 0;
-    GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
-    GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
-
-    viewportCommand._viewport.set(previousViewport);
-    GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
- 
-    // Unbind the render target
-    GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);
-    
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(cmdBufferInOut, endDebugScopeCmd);
 
     firstRun = false;
 
-    return depth;
+    return hizDepthTex;
 }
 
 void GFXDevice::updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut) {

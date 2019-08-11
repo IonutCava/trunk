@@ -131,29 +131,6 @@ vec2 UNPACK_UINT(in uint value) {
         (value & 0xFFFF) / 65535.0f);
 }
 
-bool IsUnderWater(vec3 positionWorld) {
-    for (int i = 0; i < dvd_waterEntities.length(); ++i) {
-        WaterBodyData data = dvd_waterEntities[i];
-        vec4 details = data.details;
-        vec4 position = data.positionW;
-        float waterWidth = details.x + position.x;
-        float waterLength = details.y + position.z;
-        float halfWidth = waterWidth * 0.5;
-        float halfLength = waterLength * 0.5;
-        if (positionWorld.x >= -halfWidth && positionWorld.x <= halfWidth &&
-            positionWorld.z >= -halfLength && positionWorld.z <= halfLength)
-        {
-            float height = position.y;
-            float depth = -details.y + height;
-            if (positionWorld.y < height && positionWorld.y > depth) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 //mix(false, true, condition);
 
 #endif //_NODE_DATA_INPUT_CMN_

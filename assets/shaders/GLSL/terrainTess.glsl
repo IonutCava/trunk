@@ -192,6 +192,7 @@ void main(void)
 layout(quads, fractional_even_spacing) in;
 
 #include "nodeBufferedInput.cmn"
+#include "waterData.cmn"
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
@@ -250,47 +251,6 @@ vec3 getNormal(in float sampleHeight, in vec4 heightOffsets) {
     return normalize(vec3(hL - hR, 2.0f, hD - hU));
 }
 
-#if !defined(TOGGLE_WIREFRAME) && !defined(TOGGLE_NORMALS)
-void waterDetails() {
-
-    vec3 vertexW = _out._vertexW.xyz;
-
-    float maxDistance = 0.0f;
-    float minDepth = 1.0f;
-
-    const int entityCount = dvd_waterEntities.length();
-
-    for (int i = 0; i < entityCount; ++i)
-    {
-        WaterBodyData data = dvd_waterEntities[i];
-
-        vec4 details = data.details;
-        vec4 position = data.positionW;
-
-        float waterWidth = details.x + position.x;
-        float waterLength = details.y + position.z;
-        float halfWidth = waterWidth * 0.5f;
-        float halfLength = waterLength * 0.5f;
-        if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
-            vertexW.z >= -halfLength && vertexW.z <= halfLength)
-        {
-            float depth = -details.y + position.y;
-
-            // Distance
-            maxDistance = max(maxDistance, 1.0 - smoothstep(position.y - 0.05f, position.y + 0.05f, vertexW.y));
-
-
-            // Current water depth in relation to the minimum possible depth
-            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - TERRAIN_MIN_HEIGHT), 0.0f, 1.0f));
-        }
-    }
-#if !defined(SHADOW_PASS)
-    _waterDetails = vec2(maxDistance, minDepth);
-#endif
-}
-
-#endif
-
 void main()
 {
     PassData(0);
@@ -314,11 +274,14 @@ void main()
     const mat3 normalMatrixWV = dvd_NormalMatrixWV(baseInstance);
 
     const vec3 N = getNormal(pos.y, heightOffsets);
+    _out._normalWV = normalize(normalMatrixWV * N);
+
+#if defined(PRE_PASS)
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
     const vec3 T = cross(N, B);
 
-    _out._normalWV = normalize(normalMatrixWV * N);
     _out._tbn = normalMatrixWV * mat3(T, B, N);
+#endif
 
 #endif
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
@@ -331,7 +294,10 @@ void main()
     setClipPlanes(_out._vertexW);
 
 #if !defined(SHADOW_PASS)
-    waterDetails();
+#if !defined(TOGGLE_WIREFRAME) && !defined(TOGGLE_NORMALS)
+    _waterDetails = waterDetails(_out._vertexW.xyz, TERRAIN_MIN_HEIGHT);
+#endif
+
 #if !defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     LoD = int(log2(MAX_TESS_SCALE / tcs_tessLevel[0]));
 #endif //TOGGLE_WIREFRAME
@@ -343,6 +309,7 @@ void main()
 --Geometry
 
 #include "nodeBufferedInput.cmn"
+#include "waterData.cmn"
 
 layout(triangles) in;
 
@@ -360,44 +327,6 @@ layout(location = 1) smooth out vec2 _waterDetails;
 
 layout(location = 2) out vec3 gs_wireColor;
 layout(location = 3) noperspective out vec3 gs_edgeDist;
-
-
-#if !defined(SHADOW_PASS)
-void waterDetails(in int index) {
-
-    vec3 vertexW = VAR[index]._vertexW.xyz;
-
-    float maxDistance = 0.0f;
-    float minDepth = 1.0;
-
-    for (int i = 0; i < dvd_waterEntities.length(); ++i)
-    {
-        WaterBodyData data = dvd_waterEntities[i];
-        
-        vec4 details = data.details;
-        vec4 position = data.positionW;
-
-        float waterWidth = details.x + position.x;
-        float waterLength = details.y + position.z;
-        float halfWidth = waterWidth * 0.5;
-        float halfLength = waterLength * 0.5;
-        if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
-            vertexW.z >= -halfLength && vertexW.z <= halfLength)
-        {
-            float depth = -details.y + position.y;
-
-            // Distance
-            maxDistance = max(maxDistance, 1.0 - smoothstep(position.y - 0.05f, position.y + 0.05f, vertexW.y));
-
-
-            // Current water depth in relation to the minimum possible depth
-            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - TERRAIN_MIN_HEIGHT), 0.0, 1.0));
-        }
-    }
-        
-    _waterDetails = vec2(maxDistance, minDepth);
-}
-#endif
 
 vec4 getWVPPositon(int index) {
     return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
@@ -420,8 +349,8 @@ void PerVertex(in int i, in vec3 edge_dist) {
     } else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }
-    waterDetails(i);
 
+    _waterDetails = waterDetails(VAR[index]._vertexW.xyz, TERRAIN_MIN_HEIGHT);
 
     gs_edgeDist = vec3(i == 0 ? edge_dist.x : 0.0,
                        i == 1 ? edge_dist.y : 0.0,
@@ -544,8 +473,8 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 
 
 #if !defined(PRE_PASS)
-float getRoughness(mat4 colourMatrix) {
-    return 0.8f;
+vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+    return vec2(0.2f, 0.8f);
 }
 #endif
 
@@ -601,8 +530,8 @@ layout(location = 3) noperspective in vec3 gs_edgeDist;
 #if !defined(PRE_PASS)
 float _private_roughness = 0.0f;
 
-float getRoughness(mat4 colourMatrix) {
-    return _private_roughness;
+vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+    return vec2(0.2f, _private_roughness);
 }
 #endif
 

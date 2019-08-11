@@ -43,7 +43,7 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
     }
     
     _shadowProperties._lightDetails.x = to_F32(type);
-    setDiffuseColour(DefaultColours::WHITE);
+    setDiffuseColour(FColour3(DefaultColours::WHITE));
     setRange(1.0f);
     updateCache();
 

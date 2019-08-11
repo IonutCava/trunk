@@ -52,7 +52,7 @@ class ParticleData {
     /// helper array used for sorting
     vectorBest<std::pair<U32, F32>> _indices;
     vectorBest<vec4<F32>> _renderingPositions;
-    vectorBest<UColour>   _renderingColours;
+    vectorBest<UColour4>  _renderingColours;
     /// x,y,z = position; w = size
     vectorBest<vec4<F32>> _position;
     /// x,y,z = _velocity; w = angle;
@@ -62,11 +62,11 @@ class ParticleData {
     /// x = time; y = interpolation; z = 1 / time;  w = distance to camera sq;
     vectorBest<vec4<F32>> _misc;
     /// r,g,b,a = colour and transparency
-    vectorBest<FColour> _colour;
+    vectorBest<FColour4> _colour;
     /// r,g,b,a = colour and transparency
-    vectorBest<FColour> _startColour;
+    vectorBest<FColour4> _startColour;
     /// r,g,b,a = colour and transparency
-    vectorBest<FColour> _endColour;
+    vectorBest<FColour4> _endColour;
     /// Location of the texture file. Leave blank for colour only
     stringImpl _textureFileName;
 

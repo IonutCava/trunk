@@ -6,18 +6,18 @@
 //Schlick Fresnel
 //specular  = the rgb specular color value of the pixel
 //VdotH     = the dot product of the camera view direction and the half vector 
-vec3 SchlickFresnel(vec3 specular, float VdotH)
+vec3 SchlickFresnel(in vec3 f0, float VdotH)
 {
-    return specular + (vec3(1.0, 1.0, 1.0) - specular) * pow(1.0 - VdotH, 5.0);
+    return mix(f0, vec3(1.0f), pow(1.01f - VdotH, 5.0f));
 }
 
 //Schlick Gaussian Fresnel
 //specular  = the rgb specular color value of the pixel
 //VdotH     = the dot product of the camera view direction and the half vector 
-vec3 SchlickGaussianFresnel(in vec3 specular, in float VdotH)
+vec3 SchlickGaussianFresnel(in vec3 f0, in float VdotH)
 {
     float sphericalGaussian = pow(2.0, (-5.55473 * VdotH - 6.98316) * VdotH);
-    return specular + (vec3(1.0, 1.0, 1.0) - specular) * sphericalGaussian;
+    return mix(f0, vec3(1.0f), sphericalGaussian);
 }
 
 // Smith GGX corrected Visibility
@@ -123,9 +123,9 @@ float Distribution(float NdotH, float roughness)
 //Get Fresnel
 //specular  = the rgb specular color value of the pixel
 //VdotH     = the dot product of the camera view direction and the half vector 
-vec3 Fresnel(vec3 specular, float VdotH)
+vec3 Fresnel(vec3 f0, float VdotH)
 {
-    return SchlickFresnel(specular, VdotH);
+    return SchlickFresnel(f0, VdotH);
 }
 
 // Get Visibility
@@ -155,12 +155,17 @@ vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float
 
 vec4 PBR(in vec3 lightDirection, 
          in vec4 lightColourAndAtt,
-         in vec4 specular,
+         in vec4 metallicRoughness, //r - metallic, g - roughness, b - rim lighting
          in vec4 albedoAndShadow,
          in vec3 normalWV,
          in vec3 viewDir)
 {
-    float roughness = specular.a;
+    float metallic = metallicRoughness.r;
+    float roughness = metallicRoughness.g;
+    vec3 specular = mix(vec3(0.04f), albedoAndShadow.rgb, metallic);
+
+    mat3 tnrm = transpose(dvd_NormalMatrixWV(VAR.dvd_baseInstance));
+    //vec3 envdiff = textureCubeLod(texEnvironmentCube, vec4(tnrm * N, 0), 10).xyz;
 
     // direction is NOT normalized
     vec3 Hn = normalize(viewDir + lightDirection);
@@ -170,7 +175,7 @@ vec4 PBR(in vec3 lightDirection,
     float ndv = clamp((dot(normalWV, viewDir)), M_EPSILON, 1.0);
     vec3 diffuseFactor = Diffuse(albedoAndShadow.rgb, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
 
-    vec3 fresnelTerm = Fresnel(specular.rgb, vdh);
+    vec3 fresnelTerm = Fresnel(specular, vdh);
     float distTerm = Distribution(ndh, roughness);
     float visTerm = Visibility(ndl, ndv, roughness);
     vec3 specularFactor = ((fresnelTerm * distTerm * visTerm) / M_PI) *albedoAndShadow.a;

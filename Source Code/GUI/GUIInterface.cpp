@@ -158,7 +158,7 @@ GUIText* GUIInterface::addText(U64 guiID,
                                const stringImpl& name,
                                const RelativePosition2D& position,
                                const stringImpl& font,
-                               const UColour& colour,
+                               const UColour4& colour,
                                const stringImpl& text,
                                U8 fontSize) {
     assert(getGUIElement(guiID) == nullptr);

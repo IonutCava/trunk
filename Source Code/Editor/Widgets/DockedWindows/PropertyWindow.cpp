@@ -346,28 +346,40 @@ namespace Divide {
 
          bool ret = false;
          if (material) {
-             FColour diffuse = material->getColourData()._diffuse;
-             if (ImGui::InputFloat4(" - Diffuse", diffuse._v, "%.3f", flags)) {
-                 material->setDiffuse(diffuse);
+             FColour4 diffuse = material->getColourData().baseColour();
+             if (ImGui::InputFloat4(" - BaseColour", diffuse._v, "%.3f", flags)) {
+                 material->getColourData().baseColour(diffuse);
              }
 
-             FColour emissive = material->getColourData()._emissive;
+             FColour4 emissive = material->getColourData().emissive();
              if (ImGui::InputFloat4(" - Emissive", emissive._v, "%.3f", flags)) {
-                 material->setEmissive(emissive);
+                 material->getColourData().emissive(emissive);
              }
 
+             if (material->isPBRMaterial()) {
+                 F32 reflectivity = material->getColourData().reflectivity();
+                 if (ImGui::InputFloat(" - Specular", &reflectivity, 0.0f, 0.0f, "%.3f", flags)) {
+                     material->getColourData().reflectivity(reflectivity);
+                 }
+                 F32 metallic = material->getColourData().metallic();
+                 if (ImGui::InputFloat(" - Shininess", &metallic, 0.0f, 0.0f, "%.3f", flags)) {
+                     material->getColourData().metallic(metallic);
+                 }
+                 F32 roughness = material->getColourData().roughness();
+                 if (ImGui::InputFloat(" - Roughness", &roughness, 0.0f, 0.0f, "%.3f", flags)) {
+                     material->getColourData().roughness(roughness);
+                 }
+             } else {
+                 FColour4 specular = material->getColourData().specular();
+                 if (ImGui::InputFloat4(" - Specular", specular._v, "%.3f", flags)) {
+                     material->getColourData().specular(specular);
+                 }
 
-             FColour specular = material->getColourData()._specular;
-             if (ImGui::InputFloat4(" - Specular", specular._v, "%.3f", flags)) {
-                 material->setSpecular(specular);
+                 F32 shininess = material->getColourData().shininess();
+                 if (ImGui::InputFloat(" - Shininess", &shininess, 0.0f, 0.0f, "%.3f", flags)) {
+                     material->getColourData().shininess(shininess);
+                 }
              }
-
-             F32 shininess = material->getColourData()._shininess;
-             if (ImGui::InputFloat(" - Shininess", &shininess, 0.0f, 0.0f, "%.3f", flags)) {
-                 material->setShininess(shininess);
-             }
-
-             
              ImGui::SameLine();
              bool doubleSided = material->isDoubleSided();
              if (readOnly) {

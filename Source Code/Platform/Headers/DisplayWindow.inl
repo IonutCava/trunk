@@ -69,24 +69,24 @@ namespace Divide {
         return _opacity;
     }
 
-    inline void DisplayWindow::clearColour(const FColour& colour) {
+    inline void DisplayWindow::clearColour(const FColour4& colour) {
         clearColour(colour,
                     BitCompare(_flags, WindowFlags::CLEAR_COLOUR),
                     BitCompare(_flags, WindowFlags::CLEAR_DEPTH));
     }
 
-    void DisplayWindow::clearColour(const FColour& colour, bool clearColour, bool clearDepth) {
+    void DisplayWindow::clearColour(const FColour4& colour, bool clearColour, bool clearDepth) {
         _clearColour.set(colour);
         ToggleBit(_flags, WindowFlags::CLEAR_COLOUR, clearColour);
         ToggleBit(_flags, WindowFlags::CLEAR_DEPTH, clearDepth);
     }
 
-    inline const FColour& DisplayWindow::clearColour() const {
+    inline const FColour4& DisplayWindow::clearColour() const {
         bool shouldClearColour, shouldClearDepth;
         return clearColour(shouldClearColour, shouldClearDepth);
     }
 
-    inline const FColour& DisplayWindow::clearColour(bool &clearColour, bool &clearDepth) const {
+    inline const FColour4& DisplayWindow::clearColour(bool &clearColour, bool &clearDepth) const {
         clearColour = BitCompare(_flags, WindowFlags::CLEAR_COLOUR);
         clearDepth = BitCompare(_flags, WindowFlags::CLEAR_DEPTH);
         return _clearColour;

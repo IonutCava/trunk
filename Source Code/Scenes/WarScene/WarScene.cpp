@@ -198,7 +198,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
                             Angle::to_DEGREES(-sinf(g_sunAngle.x) * sinf(g_sunAngle.y)));
 
         _sun->get<TransformComponent>()->setRotationEuler(sunVector);
-        FColour sunColour(1.0f, 1.0f, 1.0f, 1.0f);
+        FColour3 sunColour(1.0f, 1.0f, 1.0f);
 
         _sun->get<DirectionalLightComponent>()->setDiffuseColour(sunColour);
 
@@ -348,8 +348,8 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
     
     // renderState().drawDebugLines(true);
     vec3<F32> tempDestination;
-    UColour redLine(255,0,0,128);
-    UColour blueLine(0,0,255,128);
+    UColour4 redLine(255,0,0,128);
+    UColour4 blueLine(0,0,255,128);
     vector<Line> paths;
     paths.reserve(_armyNPCs[0].size() + _armyNPCs[1].size());
     for (U8 i = 0; i < 2; ++i) {
@@ -411,7 +411,7 @@ bool WarScene::load(const stringImpl& name) {
 
     // Make the center cylinder reflective
     const Material_ptr& matInstance = cylinder[0]->getChild(0).get<RenderingComponent>()->getMaterialInstance();
-    matInstance->setShininess(200);
+    matInstance->getColourData().shininess(200);
 
     stringImpl currentName;
 #if 0
@@ -619,10 +619,10 @@ bool WarScene::load(const stringImpl& name) {
         particleSource->addGenerator(boxGenerator);
 
         std::shared_ptr<ParticleColourGenerator> colGenerator(new ParticleColourGenerator());
-        colGenerator->_minStartCol.set(Util::ToByteColour(FColour(0.7f, 0.4f, 0.4f, 1.0f)));
-        colGenerator->_maxStartCol.set(Util::ToByteColour(FColour(1.0f, 0.8f, 0.8f, 1.0f)));
-        colGenerator->_minEndCol.set(Util::ToByteColour(FColour(0.5f, 0.2f, 0.2f, 0.5f)));
-        colGenerator->_maxEndCol.set(Util::ToByteColour(FColour(0.7f, 0.5f, 0.5f, 0.75f)));
+        colGenerator->_minStartCol.set(Util::ToByteColour(FColour4(0.7f, 0.4f, 0.4f, 1.0f)));
+        colGenerator->_maxStartCol.set(Util::ToByteColour(FColour4(1.0f, 0.8f, 0.8f, 1.0f)));
+        colGenerator->_minEndCol.set(Util::ToByteColour(FColour4(0.5f, 0.2f, 0.2f, 0.5f)));
+        colGenerator->_maxEndCol.set(Util::ToByteColour(FColour4(0.7f, 0.5f, 0.5f, 0.75f)));
         particleSource->addGenerator(colGenerator);
 
         std::shared_ptr<ParticleVelocityGenerator> velGenerator(new ParticleVelocityGenerator());
@@ -684,7 +684,7 @@ bool WarScene::load(const stringImpl& name) {
             PointLightComponent* pointLight = lightSGN->get<PointLightComponent>();
             pointLight->castsShadows(false);
             pointLight->setRange(50.0f);
-            pointLight->setDiffuseColour(DefaultColours::RANDOM());
+            pointLight->setDiffuseColour(DefaultColours::RANDOM().rgb());
             lightSGN->get<TransformComponent>()->setPosition(vec3<F32>(-21.0f + (115 * row), 20.0f, (-21.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }
@@ -822,16 +822,16 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 63),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-                  UColour(0, 50, 255, 255), // Colour
+                  UColour4(0, 50, 255, 255), // Colour
         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
     _GUI->addText("RenderBinCount",
                   pixelPosition(60, 83),
         Font::DIVIDE_DEFAULT,
-                  UColour(164, 50, 50, 255),
+                  UColour4(164, 50, 50, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
     _GUI->addText("camPosition", pixelPosition(60, 103),
         Font::DIVIDE_DEFAULT,
-                  UColour(50, 192, 50, 255),
+                  UColour4(50, 192, 50, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 
@@ -839,13 +839,13 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     _GUI->addText("scoreDisplay",
                   pixelPosition(60, 123),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-                  UColour(50, 192, 50, 255),// Colour
+                  UColour4(50, 192, 50, 255),// Colour
         Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
 
     _GUI->addText("entityState",
                   pixelPosition(60, 163),
                   Font::DIVIDE_DEFAULT,
-                  UColour(0, 0, 0, 255),
+                  UColour4(0, 0, 0, 255),
                   "");
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");

@@ -448,9 +448,9 @@ void GLStateTracker::setDepthRange(F32 nearVal, F32 farVal) {
     }
 }
 
-void GLStateTracker::setBlendColour(const UColour& blendColour, bool force) {
+void GLStateTracker::setBlendColour(const UColour4& blendColour, bool force) {
     if (_blendColour != blendColour || force) {
-        FColour floatColour = Util::ToFloatColour(blendColour);
+        FColour4 floatColour = Util::ToFloatColour(blendColour);
         glBlendColor(static_cast<GLfloat>(floatColour.r),
                      static_cast<GLfloat>(floatColour.g),
                      static_cast<GLfloat>(floatColour.b),
@@ -579,7 +579,7 @@ bool GLStateTracker::setViewport(I32 x, I32 y, I32 width, I32 height) {
     return false;
 }
 
-bool GLStateTracker::setClearColour(const FColour& colour) {
+bool GLStateTracker::setClearColour(const FColour4& colour) {
     if (colour != _activeClearColour) {
         glClearColor(colour.r, colour.g, colour.b, colour.a);
         _activeClearColour.set(colour);

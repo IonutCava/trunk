@@ -60,8 +60,10 @@ class Rect;
 template <typename T>
 class Quaternion;
 
-typedef vec4<U8> UColour;
-typedef vec4<F32> FColour;
+typedef vec4<U8> UColour4;
+typedef vec3<U8> UColour3;
+typedef vec4<F32> FColour4;
+typedef vec3<F32> FColour3;
 
 #if !defined(M_PI)
     constexpr D64 M_PI = 3.14159265358979323846;
@@ -160,6 +162,9 @@ void CLAMP(T& n, const T min, const T max);
 
 template <typename T>
 T CLAMPED(const T& n, const T min, const T max);
+
+template <typename T>
+T CLAMPED_01(const T& n);
 
 template <typename T>
 T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut);
@@ -424,27 +429,27 @@ void Normalize(vec3<F32>& inputRotation, bool degrees = false,
                bool normYaw = true, bool normPitch = true,
                bool normRoll = true) noexcept;
 
-UColour  ToByteColour(const FColour& floatColour) noexcept;
-vec3<U8>  ToByteColour(const vec3<F32>& floatColour) noexcept;
-vec4<I32> ToIntColour(const vec4<F32>& floatColour);
-vec3<I32> ToIntColour(const vec3<F32>& floatColour) noexcept;
-vec4<U32> ToUIntColour(const vec4<F32>& floatColour);
-vec3<U32> ToUIntColour(const vec3<F32>& floatColour) noexcept;
-FColour ToFloatColour(const UColour& byteColour);
-vec3<F32> ToFloatColour(const vec3<U8>& byteColour) noexcept;
-FColour ToFloatColour(const vec4<U32>& uintColour);
-vec3<F32> ToFloatColour(const vec3<U32>& uintColour) noexcept;
+UColour4  ToByteColour(const FColour4& floatColour) noexcept;
+UColour3  ToByteColour(const FColour3& floatColour) noexcept;
+vec4<I32> ToIntColour(const FColour4& floatColour);
+vec3<I32> ToIntColour(const FColour3& floatColour) noexcept;
+vec4<U32> ToUIntColour(const FColour4& floatColour);
+vec3<U32> ToUIntColour(const FColour3& floatColour) noexcept;
+FColour4 ToFloatColour(const UColour4& byteColour);
+FColour3 ToFloatColour(const UColour3& byteColour) noexcept;
+FColour4 ToFloatColour(const vec4<U32>& uintColour);
+FColour3 ToFloatColour(const vec3<U32>& uintColour) noexcept;
 
-void ToByteColour(const FColour& floatColour, UColour& colourOut) noexcept;
-void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut) noexcept;
-void ToIntColour(const FColour& floatColour, vec4<I32>& colourOut);
-void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut) noexcept;
-void ToUIntColour(const FColour& floatColour, vec4<U32>& colourOut);
-void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut) noexcept;
-void ToFloatColour(const UColour& byteColour, FColour& colourOut) noexcept;
-void ToFloatColour(const vec3<U8>& byteColour, vec3<F32>& colourOut) noexcept;
-void ToFloatColour(const vec4<U32>& uintColour, FColour& colourOut) noexcept;
-void ToFloatColour(const vec3<U32>& uintColour, vec3<F32>& colourOut) noexcept;
+void ToByteColour(const FColour4& floatColour, UColour4& colourOut) noexcept;
+void ToByteColour(const FColour3& floatColour, UColour3& colourOut) noexcept;
+void ToIntColour(const FColour4& floatColour, vec4<I32>& colourOut);
+void ToIntColour(const FColour3& floatColour, vec3<I32>& colourOut) noexcept;
+void ToUIntColour(const FColour4& floatColour, vec4<U32>& colourOut);
+void ToUIntColour(const FColour3& floatColour, vec3<U32>& colourOut) noexcept;
+void ToFloatColour(const UColour4& byteColour, FColour4& colourOut) noexcept;
+void ToFloatColour(const UColour3& byteColour, FColour3& colourOut) noexcept;
+void ToFloatColour(const vec4<U32>& uintColour, FColour4& colourOut) noexcept;
+void ToFloatColour(const vec3<U32>& uintColour, FColour3& colourOut) noexcept;
 
 
 inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) {

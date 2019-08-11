@@ -402,8 +402,8 @@ bool ImageData::loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringI
     return true;
 }
 
-UColour ImageData::getColour(I32 x, I32 y, U32 mipLevel) const {
-    UColour returnColour;
+UColour4 ImageData::getColour(I32 x, I32 y, U32 mipLevel) const {
+    UColour4 returnColour;
     getColour(x, y, returnColour.r, returnColour.g, returnColour.b, returnColour.a, mipLevel);
     return returnColour;
 }

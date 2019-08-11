@@ -254,7 +254,7 @@ void PostFX::update(const U64 deltaTimeUS) {
     }
 }
 
-void PostFX::setFadeOut(const UColour& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete) {
+void PostFX::setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete) {
     _drawConstants.set("_fadeColour", GFX::PushConstantType::VEC4, Util::ToFloatColour(targetColour));
     _drawConstants.set("_fadeActive", GFX::PushConstantType::BOOL, true);
     _targetFadeTimeMS = durationMS;
@@ -276,13 +276,13 @@ void PostFX::setFadeIn(D64 durationMS, DELEGATE_CBK<void> onComplete) {
     _fadeInComplete = onComplete;
 }
 
-void PostFX::setFadeOutIn(const UColour& targetColour, D64 durationFadeOutMS, D64 durationMS) {
+void PostFX::setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationMS) {
     if (durationMS > 0.0) {
         setFadeOutIn(targetColour, durationMS * 0.5, durationMS * 0.5, durationFadeOutMS);
     }
 }
 
-void PostFX::setFadeOutIn(const UColour& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS) {
+void PostFX::setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS) {
     setFadeOut(targetColour, durationFadeOutMS, waitDurationMS, [this, durationFadeInMS]() {setFadeIn(durationFadeInMS); });
 }
 

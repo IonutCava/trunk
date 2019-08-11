@@ -137,7 +137,7 @@ class ImageData : private NonCopyable {
 
     inline GFXDataFormat dataType() const { return _dataType; }
     /// get the texel colour at the specified offset from the origin
-    UColour getColour(I32 x, I32 y, U32 mipLevel = 0) const;
+    UColour4 getColour(I32 x, I32 y, U32 mipLevel = 0) const;
     void getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
 
     void getRed(I32 x, I32 y, U8& r, U32 mipLevel = 0) const;

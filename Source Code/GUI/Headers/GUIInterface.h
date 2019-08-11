@@ -80,14 +80,14 @@ public:
                              const stringImpl& name,
                              const RelativePosition2D& position,
                              const stringImpl& font,
-                             const UColour& colour,
+                             const UColour4& colour,
                              const stringImpl& text,
                              U8 fontSize = 16u);
 
     inline GUIText* addText(const stringImpl& name,
                             const RelativePosition2D& position,
                             const stringImpl& font,
-                            const UColour& colour,
+                            const UColour4& colour,
                             const stringImpl& text,
                             U8 fontSize = 16u) {
 

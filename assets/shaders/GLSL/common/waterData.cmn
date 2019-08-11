@@ -1,0 +1,62 @@
+#ifndef _WATER_DATA_CMN_
+#define _WATER_DATA_CMN_
+
+bool IsUnderWater(vec3 positionWorld) {
+    for (int i = 0; i < dvd_waterEntities.length(); ++i) {
+        WaterBodyData data = dvd_waterEntities[i];
+        vec4 details = data.details;
+        vec4 position = data.positionW;
+        float waterWidth = details.x + position.x;
+        float waterLength = details.y + position.z;
+        float halfWidth = waterWidth * 0.5;
+        float halfLength = waterLength * 0.5;
+        if (positionWorld.x >= -halfWidth && positionWorld.x <= halfWidth &&
+            positionWorld.z >= -halfLength && positionWorld.z <= halfLength)
+        {
+            float height = position.y;
+            float depth = -details.y + height;
+            if (positionWorld.y < height && positionWorld.y > depth) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+vec2 waterDetails(in vec3 vertexW, in float maxDepth) {
+
+    float maxDistance = 0.0f;
+    float minDepth = 1.0f;
+
+    const int entityCount = dvd_waterEntities.length();
+
+    for (int i = 0; i < entityCount; ++i)
+    {
+        WaterBodyData data = dvd_waterEntities[i];
+
+        vec4 details = data.details;
+        vec4 position = data.positionW;
+
+        float waterWidth = details.x + position.x;
+        float waterLength = details.y + position.z;
+        float halfWidth = waterWidth * 0.5f;
+        float halfLength = waterLength * 0.5f;
+        if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
+            vertexW.z >= -halfLength && vertexW.z <= halfLength)
+        {
+            float depth = -details.y + position.y;
+
+            // Distance
+            maxDistance = max(maxDistance, 1.0 - smoothstep(position.y - 0.05f, position.y + 0.05f, vertexW.y));
+
+
+            // Current water depth in relation to the minimum possible depth
+            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - maxDepth), 0.0f, 1.0f));
+        }
+    }
+
+    return vec2(maxDistance, minDepth);
+}
+
+#endif //_WATER_DATA_CMN_

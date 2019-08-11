@@ -10,10 +10,10 @@ void ParticleColourGenerator::generate(Task& packagedTasksParent,
                                        U32 startIndex,
                                        U32 endIndex) {
 
-    const FColour minStartCol(Util::ToFloatColour(_minStartCol));
-    const FColour maxStartCol(Util::ToFloatColour(_maxStartCol));
-    const FColour minEndCol(Util::ToFloatColour(_minEndCol));
-    const FColour maxEndCol(Util::ToFloatColour(_maxEndCol));
+    const FColour4 minStartCol(Util::ToFloatColour(_minStartCol));
+    const FColour4 maxStartCol(Util::ToFloatColour(_maxStartCol));
+    const FColour4 minEndCol(Util::ToFloatColour(_minEndCol));
+    const FColour4 maxEndCol(Util::ToFloatColour(_maxEndCol));
 
     TaskPool& tp = *packagedTasksParent._parentPool;
 

@@ -54,7 +54,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         vec2<F32> _texcoord;
         F32       _normal;
         F32       _tangent;
-        UColour   _colour;
+        UColour4  _colour;
         P32       _weights;
         P32       _indices;
         
@@ -152,12 +152,12 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _data[index]._weights;
     }
 
-    inline FColour getBoneWeights(U32 index) const {
+    inline FColour4 getBoneWeights(U32 index) const {
         const P32& weight = _data[index]._weights;
-        return FColour(CHAR_TO_FLOAT_SNORM(weight.b[0]),
-                       CHAR_TO_FLOAT_SNORM(weight.b[1]),
-                       CHAR_TO_FLOAT_SNORM(weight.b[2]),
-                       CHAR_TO_FLOAT_SNORM(weight.b[3]));
+        return FColour4(CHAR_TO_FLOAT_SNORM(weight.b[0]),
+                        CHAR_TO_FLOAT_SNORM(weight.b[1]),
+                        CHAR_TO_FLOAT_SNORM(weight.b[2]),
+                        CHAR_TO_FLOAT_SNORM(weight.b[3]));
     }
 
     virtual bool queueRefresh() = 0;
@@ -254,7 +254,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::POSITION)] = true;
     }
 
-    inline void modifyColourValue(U32 index, const UColour& newValue) {
+    inline void modifyColourValue(U32 index, const UColour4& newValue) {
         modifyColourValue(index, newValue.r, newValue.g, newValue.b, newValue.a);
     }
 
@@ -325,7 +325,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::BONE_INDICE)] = true;
     }
 
-    inline void modifyBoneWeights(U32 index, const FColour& weights) {
+    inline void modifyBoneWeights(U32 index, const FColour4& weights) {
         P32 boneWeights;
         boneWeights.b[0] = FLOAT_TO_CHAR_SNORM(weights.x);
         boneWeights.b[1] = FLOAT_TO_CHAR_SNORM(weights.y);

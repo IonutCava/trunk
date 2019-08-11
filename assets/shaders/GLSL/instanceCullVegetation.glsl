@@ -4,6 +4,7 @@
 
 #include "HiZCullingAlgorithm.cmn";
 #include "vegetationData.cmn"
+#include "waterData.cmn"
 
 uniform float dvd_treeVisibilityDistance;
 uniform float dvd_grassVisibilityDistance;
@@ -31,7 +32,6 @@ uniform vec4 grassExtents;
 #   define Extents grassExtents
 #   define dvd_visibilityDistance dvd_grassVisibilityDistance
 #endif //CULL_TREES
-
 
 void main(void) {
 

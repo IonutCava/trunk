@@ -535,7 +535,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
         flashLight = _sceneGraph->getRoot().addNode(lightNodeDescriptor);
         SpotLightComponent* spotLight = flashLight->get<SpotLightComponent>();
         spotLight->castsShadows(true);
-        spotLight->setDiffuseColour(DefaultColours::WHITE);
+        spotLight->setDiffuseColour(DefaultColours::WHITE.rgb());
 
         hashAlg::insert(_flashLight, idx, flashLight);
 
@@ -1323,7 +1323,7 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
 
             for (size_t i = 0; i < regionCount; ++i) {
                 const BoundingBox& box = _octreeBoundingBoxes[i];
-                _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), UColour(255, 0, 255, 255));
+                _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), UColour4(255, 0, 255, 255));
                 bufferInOut.add(_octreePrimitives[i]->toCommandBuffer());
             }
         }

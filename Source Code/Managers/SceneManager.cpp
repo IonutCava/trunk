@@ -80,7 +80,7 @@ const Scene& SceneManager::getActiveScene() const {
 
 void SceneManager::idle() {
     if (_sceneSwitchTarget.isSet()) {
-        _parent.platformContext().gfx().postFX().setFadeOut(UColour(0), 1000.0, 0.0);
+        _parent.platformContext().gfx().postFX().setFadeOut(UColour3(0), 1000.0, 0.0);
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
                     _sceneSwitchTarget.targetViewRect(),

@@ -22,7 +22,7 @@ namespace Divide {
 
 void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     static DebugView* HiZPtr = nullptr;
-    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour(128), 96).getHash();
+    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour4(128), 96).getHash();
 
     // As this is touched once per frame, we'll only enable it in debug builds
     if (Config::ENABLE_GPU_VALIDATION) {

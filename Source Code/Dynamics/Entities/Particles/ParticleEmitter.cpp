@@ -185,7 +185,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
 
             params._buffer = g_particleColourBuffer;
             params._elementCount = particleCount;
-            params._elementSize = sizeof(UColour);
+            params._elementSize = sizeof(UColour4);
 
             buffer.setBuffer(params);
 

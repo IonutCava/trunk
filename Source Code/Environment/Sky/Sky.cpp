@@ -24,7 +24,7 @@ Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, 
       _skybox(nullptr),
       _diameter(diameter)
 {
-    _sunColour = FColour(1.0f, 1.0f, 0.2f, 1.0f);
+    _sunColour = FColour3(1.0f, 1.0f, 0.2f);
 
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
@@ -142,7 +142,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Sky::enableSun(bool state, const FColour& sunColour, const vec3<F32>& sunVector) {
+void Sky::enableSun(bool state, const FColour3& sunColour, const vec3<F32>& sunVector) {
     if (_enableSun != state) {
         _enableSun = state;
         _rebuildDrawCommands = RebuildCommandsState::REQUESTED;
@@ -204,7 +204,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set("enable_sun", GFX::PushConstantType::BOOL, _enableSun);
     pushConstantsCommand._constants.set("sun_vector", GFX::PushConstantType::VEC3, _sunVector);
-    pushConstantsCommand._constants.set("sun_colour", GFX::PushConstantType::VEC3, _sunColour.rgb());
+    pushConstantsCommand._constants.set("sun_colour", GFX::PushConstantType::VEC3, _sunColour);
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};

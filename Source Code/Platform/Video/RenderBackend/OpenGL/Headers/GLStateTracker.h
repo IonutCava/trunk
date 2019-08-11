@@ -78,7 +78,7 @@ namespace Divide {
             setBlending(drawBufferIdx, _blendProperties[drawBufferIdx], force);
         }
 
-        void setBlendColour(const UColour& blendColour, bool force = false);
+        void setBlendColour(const UColour4& blendColour, bool force = false);
         /// Switch the current framebuffer by binding it as either a R/W buffer, read
         /// buffer or write buffer
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
@@ -127,8 +127,8 @@ namespace Divide {
             return setScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
         }
 
-        bool setClearColour(const FColour& colour);
-        inline bool setClearColour(const UColour& colour) {
+        bool setClearColour(const FColour4& colour);
+        inline bool setClearColour(const UColour4& colour) {
             return setClearColour(Util::ToFloatColour(colour));
         }
 
@@ -180,10 +180,10 @@ namespace Divide {
         vector<BlendingProperties> _blendProperties;
         vector<GLboolean> _blendEnabled;
         GLenum    _currentCullMode;
-        UColour   _blendColour = UColour(0u);
+        UColour4  _blendColour = UColour4(0, 0, 0, 0);
         Rect<I32> _activeViewport = Rect<I32>(-1);
         Rect<I32> _activeScissor = Rect<I32>(-1);
-        FColour   _activeClearColour = DefaultColours::DIVIDE_BLUE;
+        FColour4  _activeClearColour = DefaultColours::DIVIDE_BLUE;
 
         /// Boolean value used to verify if primitive restart index is enabled or disabled
         bool _primitiveRestartEnabled = false;

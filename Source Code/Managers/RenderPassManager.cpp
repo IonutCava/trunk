@@ -322,11 +322,11 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 
     // Temp: Make the hovered/selected node brighter. 
     if (properties.x > 0.5f || properties.x < -0.5f) {
-        FColour matColour = dataOut._colourMatrix.getRow(0);
+        FColour4 matColour = dataOut._colourMatrix.getRow(0);
         if (properties.x < -0.5f) {
-            matColour *= 3;
+            matColour.rgb(matColour.rgb() * 3);
         } else {
-            matColour *= 2;
+            matColour.rgb(matColour.rgb() * 2);
         }
         dataOut._colourMatrix.setRow(0, matColour);
     }
