@@ -198,7 +198,7 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
 
             TessellatedNodeData& data = _renderData[renderDepth++];
             data._positionAndTileScale.set(node->origin, node->dim.width * 0.5f);
-            data._tScale.set(LoD == 0 ? node->tscale : 0.5f);
+            //data._tScale.set(LoD == 0 ? node->tscale : 0.5f);
         }
     } else {
         // Otherwise, recurse to the children.

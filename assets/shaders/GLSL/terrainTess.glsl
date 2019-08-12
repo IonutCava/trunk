@@ -114,7 +114,7 @@ float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1, in mat4 worldViewMatrix)
     vec2 s1 = eyeToScreen(view1);
 
     float t = calcEdgeTessellation(s0, s1);
-    return min(nextPOW2(uint(t)), uint(MAX_TESS_SCALE));
+    return min(nextPOW2(uint(floor(t))), uint(MAX_TESS_SCALE));
 #else
     return MAX_TESS_SCALE;
 #endif
@@ -158,26 +158,23 @@ void main(void)
                   offscreen(project(_in[3]._vertexWV, dvd_ProjectionMatrix)))))
     {
         gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
-        gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
-
-    } else {
-        // Outer tessellation level
-        const mat4 worldViewMatrix = dvd_ViewMatrix * dvd_WorldMatrix(_in[0].dvd_baseInstance);
-        const float tessLevels[4] = {
-            lodDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, worldViewMatrix),
-            lodDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, worldViewMatrix),
-            lodDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, worldViewMatrix),
-            lodDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, worldViewMatrix)
-        };
-
+        gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = -1;
+        gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
+    } 
+    else
+    {
         const vec4 scaleFactor = tScale[id];
-        for (int i = 0; i < 4; ++i) {
-            gl_TessLevelOuter[i] = max(MIN_TESS_SCALE, tessLevels[i] * scaleFactor[i]);
-        }
+        const mat4 worldViewMatrix = dvd_ViewMatrix * dvd_WorldMatrix(_in[0].dvd_baseInstance);
+
+        // Outer tessellation level
+        gl_TessLevelOuter[0] = max(MIN_TESS_SCALE, lodDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, worldViewMatrix) * scaleFactor.x);
+        gl_TessLevelOuter[1] = max(MIN_TESS_SCALE, lodDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, worldViewMatrix) * scaleFactor.y);
+        gl_TessLevelOuter[2] = max(MIN_TESS_SCALE, lodDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, worldViewMatrix) * scaleFactor.z);
+        gl_TessLevelOuter[3] = max(MIN_TESS_SCALE, lodDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, worldViewMatrix) * scaleFactor.w);
 
         // Inner tessellation level
-        gl_TessLevelInner[0] = (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]) * 0.5f;
-        gl_TessLevelInner[1] = (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]) * 0.5f;
+        gl_TessLevelInner[0] = (gl_TessLevelOuter[1] + gl_TessLevelOuter[3]) * 0.5f;
+        gl_TessLevelInner[1] = (gl_TessLevelOuter[0] + gl_TessLevelOuter[2]) * 0.5f;
     }
 
     // Pass the patch verts along
@@ -266,9 +263,8 @@ void main()
     // Sample the heightmap and offset y position of vertex
     pos.y = getHeight(heightOffsets);
 
-    mat4 worldMat = dvd_WorldMatrix(baseInstance);
     // Project the vertex to clip space and send it along
-    _out._vertexW = worldMat * pos;
+    _out._vertexW = dvd_WorldMatrix(baseInstance) * pos;
 
 #if !defined(SHADOW_PASS)
     const mat3 normalMatrixWV = dvd_NormalMatrixWV(baseInstance);
@@ -328,8 +324,8 @@ layout(location = 1) smooth out vec2 _waterDetails;
 layout(location = 2) out vec3 gs_wireColor;
 layout(location = 3) noperspective out vec3 gs_edgeDist;
 
-vec4 getWVPPositon(int index) {
-    return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
+vec4 getWVPPositon(in int i) {
+    return dvd_ViewProjectionMatrix * gl_in[i].gl_Position;
 }
 
 void PerVertex(in int i, in vec3 edge_dist) {
@@ -350,7 +346,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }
 
-    _waterDetails = waterDetails(VAR[index]._vertexW.xyz, TERRAIN_MIN_HEIGHT);
+    _waterDetails = waterDetails(VAR[i]._vertexW.xyz, TERRAIN_MIN_HEIGHT);
 
     gs_edgeDist = vec3(i == 0 ? edge_dist.x : 0.0,
                        i == 1 ? edge_dist.y : 0.0,
