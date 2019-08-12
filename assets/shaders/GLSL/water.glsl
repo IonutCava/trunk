@@ -88,7 +88,7 @@ void main()
                          texture(texReflectPlanar, uvFinalRefract),
                          saturate(Fresnel(incident, VAR._normalWV)));
     
-    //writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
-    writeOutput(vec4(texture(texReflectPlanar, uvFinalReflect).rgb, 1.0f));
+    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
+    //writeOutput(vec4(texture(texReflectPlanar, uvFinalReflect).rgb, 1.0f));
 #endif
 }

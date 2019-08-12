@@ -136,7 +136,7 @@ float getRimLighting(in mat4 colourMatrix, in vec2 uv) {
 float getShininess(in mat4 colourMatrix);
 #else
 float getShininess(in mat4 colourMatrix) {
-    return colourMatrix[2].w;
+    return colourMatrix[1].w;
 }
 #endif
 
