@@ -193,12 +193,12 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
             inFrustum = result != Frustum::FrustCollision::FRUSTUM_OUT;
         }
 
-        if (inFrustum) {
-            calcTessScale(node);
+        calcTessScale(node);
 
+        if (inFrustum) {
             TessellatedNodeData& data = _renderData[renderDepth++];
             data._positionAndTileScale.set(node->origin, node->dim.width * 0.5f);
-            //data._tScale.set(LoD == 0 ? node->tscale : 0.5f);
+            data._tScale.set(node->tscale);
         }
     } else {
         // Otherwise, recurse to the children.
@@ -213,25 +213,29 @@ void TerrainTessellator::calcTessScale(TessellatedTerrainNode* node) {
 
     // Positive Z (north)
     t = find(data, node->origin.x, node->origin.z + 1 + node->dim.width * 0.5f);
-    if (t->dim.width > node->dim.width) {
+    if (t->dim.width > node->dim.width)
+    {
         node->tscale[3] = 0.5f;
     }
 
     // Positive X (east)
     t = find(data, node->origin.x + 1 + node->dim.width * 0.5f, node->origin.z);
-    if (t->dim.width > node->dim.width) {
+    if (t->dim.width > node->dim.width)
+    {
         node->tscale[1] = 0.5f;
     }
 
     // Negative Z (south)
     t = find(data, node->origin.x, node->origin.z - 1 - node->dim.width * 0.5f);
-    if (t->dim.width > node->dim.width) {
+    if (t->dim.width > node->dim.width)
+    {
         node->tscale[2] = 0.5f;
     }
 
     // Negative X (west)
     t = find(data, node->origin.x - 1 - node->dim.width * 0.5f, node->origin.z);
-    if (t->dim.width > node->dim.width) {
+    if (t->dim.width > node->dim.width) 
+    {
         node->tscale[0] = 0.5f;
     }
 }

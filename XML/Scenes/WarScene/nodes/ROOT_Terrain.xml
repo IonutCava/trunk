@@ -2,7 +2,7 @@
 <static>true</static>
 <descriptor>Main</descriptor>
 <!-- 0 - disabled, 1 - wireframe, 2 - normals -->
-<wireframeDebugMode>0</wireframeDebugMode> 
+<wireframeDebugMode>1</wireframeDebugMode> 
 <!-- 0 - disabled, 1 - parallax mapping, 2 - parallax occlusion mapping -->
 <parallaxMappingMode>1</parallaxMappingMode>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
@@ -72,5 +72,5 @@
 <NETWORKING/>
 <RIGID_BODY/>
 <TERRAIN>
-    <Tessellation__Range x="80" y="500"/>
+    <Tessellation__Range x="4" y="300"/>
 </TERRAIN>
