@@ -510,7 +510,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? CullMode::CW : CullMode::CCW);
+    terrainRenderState.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE && false? CullMode::CW : CullMode::CCW);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
 
     // Generate a render state for drawing reflections
@@ -518,10 +518,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? CullMode::CCW : CullMode::CW);
+    terrainRenderStateReflection.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE && false ? CullMode::CCW : CullMode::CW);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
-    terrainRenderStatePrePassReflection.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? CullMode::CCW : CullMode::CW);
+    terrainRenderStatePrePassReflection.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE && false ? CullMode::CCW : CullMode::CW);
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;

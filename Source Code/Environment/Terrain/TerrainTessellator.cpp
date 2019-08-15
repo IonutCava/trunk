@@ -213,30 +213,30 @@ void TerrainTessellator::calcTessScale(TessellatedTerrainNode* node) {
 
     // Positive Z (north)
     t = find(data, node->origin.x, node->origin.z + 1 + node->dim.width * 0.5f);
-    if (t->dim.width > node->dim.width)
+    //if (t->dim.width > node->dim.width)
     {
-        node->tscale[3] = 0.5f;
+        node->tscale[3] = t->dim.width / node->dim.width;
     }
 
     // Positive X (east)
     t = find(data, node->origin.x + 1 + node->dim.width * 0.5f, node->origin.z);
-    if (t->dim.width > node->dim.width)
+    //if (t->dim.width > node->dim.width)
     {
-        node->tscale[1] = 0.5f;
+        node->tscale[0] = t->dim.width / node->dim.width;
     }
 
     // Negative Z (south)
     t = find(data, node->origin.x, node->origin.z - 1 - node->dim.width * 0.5f);
-    if (t->dim.width > node->dim.width)
+    //if (t->dim.width > node->dim.width)
     {
-        node->tscale[2] = 0.5f;
+        node->tscale[1] = t->dim.width / node->dim.width;
     }
 
     // Negative X (west)
     t = find(data, node->origin.x - 1 - node->dim.width * 0.5f, node->origin.z);
-    if (t->dim.width > node->dim.width) 
+    //if (t->dim.width > node->dim.width)
     {
-        node->tscale[0] = 0.5f;
+        node->tscale[2] = t->dim.width / node->dim.width;
     }
 }
 

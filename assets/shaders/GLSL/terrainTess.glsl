@@ -104,17 +104,24 @@ float calcEdgeTessellation(vec2 s0, vec2 s1) {
     return clamp(d / tessTriangleWidth, 1, 64);
 }
 
-float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1, in mat4 viewMatrix)
+
+void MakeVertexHeightsAgree(inout vec4 p0, inout vec4 p1, in vec2 t0, in vec2 t1)
+{
+    //p0.y = p1.y = 0;
+    p0.y = getHeight(t0);
+    p1.y = getHeight(t1);
+}
+
+float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1, in float diameter)
 {
 #if MAX_TESS_SCALE != MIN_TESS_SCALE
 
-    p0.y = getHeight(t0);
-    p1.y = getHeight(t1);
-    
+    MakeVertexHeightsAgree(p0, p1, t0, t1);
+
     vec4 center = 0.5f * (p0 + p1);
-    vec4 view0 = viewMatrix * center;
+    vec4 view0 = dvd_ViewMatrix * center;
     vec4 view1 = view0;
-    view1.x += distance(p0, p1);
+    view1.x += diameter;//distance(p0, p1);
 
     vec2 s0 = eyeToScreen(view0);
     vec2 s1 = eyeToScreen(view1);
@@ -137,26 +144,85 @@ float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1, in mat4 viewMatrix)
 }
 
 // Dynamic level of detail using camera distance algorithm.
-float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in mat4 viewMatrix)
+float dlodCameraDistance(vec4 p0, vec4 p1, in vec2 t0, in vec2 t1, in float sideLen)
 {
 #if MAX_TESS_SCALE != MIN_TESS_SCALE
-    p0.y = getHeight(t0);
-    p1.y = getHeight(t1);
+    MakeVertexHeightsAgree(p0, p1, t0, t1);
 
-    const vec4 view0 = viewMatrix * p0;
-    const vec4 view1 = viewMatrix * p1;
+    const vec4 view0 = dvd_ViewMatrix * p0;
+    const vec4 view1 = dvd_ViewMatrix * p1;
     const float MinDepth = max(tessellationRange.x, 0.0001f);
     const float MaxDepth = max(MinDepth + 1.0f, tessellationRange.y);
 
-    const float d0 = saturate((abs(view0.z) - MinDepth) / (MaxDepth - MinDepth));    const float d1 = saturate((abs(view1.z) - MinDepth) / (MaxDepth - MinDepth));    const float mixVal = floor(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f));
+    const float d0 = saturate((abs(view0.z) - MinDepth) / (MaxDepth - MinDepth));
+    const float d1 = saturate((abs(view1.z) - MinDepth) / (MaxDepth - MinDepth));
+    const float mixVal = floor(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f));
     return min(nextPOW2(uint(mixVal)), uint(MAX_TESS_SCALE));
 #else
      return MAX_TESS_SCALE;
 #endif
 }
 
+// The adjacency calculations ensure that neighbours have tessellations that agree.
+// However, only power of two sizes *seem* to get correctly tessellated with no cracks.
+float SmallerNeighbourAdjacencyClamp(float tess)
+{
+    // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
+    // Output is [4,64].
+    float logTess = ceil(log2(tess));
+    float t = pow(2, logTess);
 
-#if 1
+    // Our smaller neighbour's min tessellation is pow(2,1) = 2.  As we are twice its size, we can't go below 4.
+    return max(4, t);
+}
+
+float LargerNeighbourAdjacencyClamp(float tess)
+{
+    // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
+    float logTess = ceil(log2(tess));
+    float t = pow(2, logTess);
+
+    // Our larger neighbour's max tessellation is 64; as we are half its size, our tessellation must max out
+    // at 32, otherwise we could be over-tessellated relative to the neighbour.  Output is [2,32].
+    return clamp(t, 2, 32);
+}
+
+float SmallerNeighbourAdjacencyFix(vec4 p0, vec4 p1, vec2 t0, vec2 t1, float diameter)
+{
+    MakeVertexHeightsAgree(p0, p1, t0, t1);
+    float t = dlodSphere(p0, p1, t0, t1, diameter);
+    return SmallerNeighbourAdjacencyClamp(t);
+}
+
+float LargerNeighbourAdjacencyFix(vec4 p0, vec4 p1, vec2 t0, vec2 t1, int patchIdx, float diameter)
+{
+    // We move one of the corner vertices in 2D (x,z) to match where the corner vertex is 
+    // on our larger neighbour.  We move p0 or p1 depending on the even/odd patch index.
+    //
+    // Larger neighbour
+    // +-------------------+
+    // +---------+
+    // p0   Us   p1 ---->  +		Move p1
+    // |    0    |    1    |		patchIdx % 2 
+    //
+    //           +---------+
+    // +  <----  p0   Us   p1		Move p0
+    // |    0    |    1    |		patchIdx % 2 
+    //
+    if (patchIdx % 2 != 0)
+        p0.xyz += (p0.xyz - p1.xyz);
+    else
+        p1.xyz += (p1.xyz - p0.xyz);
+
+    // Having moved the vertex in (x,z), its height is no longer correct.
+    MakeVertexHeightsAgree(p0, p1, t0, t1);
+
+    // Half the tessellation because the edge is twice as long.
+    float t = 0.5 * dlodSphere(p0, p1, t0, t1, 2 * diameter);
+    return LargerNeighbourAdjacencyClamp(t);
+}
+
+#if 0
 #define lodDistance dlodCameraDistance
 #else
 #define lodDistance dlodSphere
@@ -178,22 +244,54 @@ void main(void)
     } 
     else
     {
+        const float  sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x));		// assume square & uniform
         const vec4 scaleFactor = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
-#       define tscale_negx scaleFactor[0]
-#       define tscale_posx scaleFactor[1]
-#       define tscale_negz scaleFactor[2]
-#       define tscale_posz scaleFactor[3]
-#       define negx 0
-#       define posx 2
+        const int tileScale = int(dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale.w);
+#       define negx 2
 #       define negz 1
+#       define posx 0
 #       define posz 3
-       {
-            // Outer tessellation level
-            gl_TessLevelOuter[negx] = max(2.0f, lodDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, dvd_ViewMatrix) * tscale_negx);
-            gl_TessLevelOuter[negz] = max(2.0f, lodDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, dvd_ViewMatrix) * tscale_negz);
-            gl_TessLevelOuter[posx] = max(2.0f, lodDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, dvd_ViewMatrix) * tscale_posx);
-            gl_TessLevelOuter[posz] = max(2.0f, lodDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, dvd_ViewMatrix) * tscale_posz);
-       }
+#       define tscale_negx scaleFactor[negx]
+#       define tscale_posx scaleFactor[posx]
+#       define tscale_negz scaleFactor[negz]
+#       define tscale_posz scaleFactor[posz]
+       
+        // Outer tessellation level
+        gl_TessLevelOuter[negx] = lodDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, sideLen);
+        gl_TessLevelOuter[negz] = lodDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, sideLen);
+        gl_TessLevelOuter[posx] = lodDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, sideLen);
+        gl_TessLevelOuter[posz] = lodDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, sideLen);
+
+        const int PATCHES_PER_TILE_EDGE = 1;// tileScale / 32;
+
+        ivec2 patchXY;
+        patchXY.y = 0;// gl_PrimitiveID / PATCHES_PER_TILE_EDGE;
+        patchXY.x = patchXY.y;// gl_PrimitiveID - patchXY.y * PATCHES_PER_TILE_EDGE;
+
+        if (tscale_negx < 0.55f /*&& patchXY.x == 0*/)
+            gl_TessLevelOuter[negx] *= 2;
+            //gl_TessLevelOuter[negx] = SmallerNeighbourAdjacencyFix(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, sideLen);
+        if (tscale_negz < 0.55f /*&& patchXY.y == 0*/)
+            gl_TessLevelOuter[negz] *= 2;
+            //gl_TessLevelOuter[negz] = SmallerNeighbourAdjacencyFix(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, sideLen);
+        if (tscale_posx < 0.55f /*&& patchXY.x == PATCHES_PER_TILE_EDGE - 1*/)
+            gl_TessLevelOuter[posx] *= 2;
+            //gl_TessLevelOuter[posx] = SmallerNeighbourAdjacencyFix(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, sideLen);
+        if (tscale_posz < 0.55f /*&& patchXY.y == PATCHES_PER_TILE_EDGE - 1*/)
+            gl_TessLevelOuter[posz] *= 2;
+            //gl_TessLevelOuter[posz] = SmallerNeighbourAdjacencyFix(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, sideLen);
+
+        // Deal with neighbours that are larger than us.
+        //if (tscale_negx > 1.55f /*&& patchXY.x == 0*/)
+        //    gl_TessLevelOuter[negx] = LargerNeighbourAdjacencyFix(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord, patchXY.y, sideLen);
+        //if (tscale_negz > 1.55f /*&& patchXY.y == 0*/)
+        //    gl_TessLevelOuter[negz] = LargerNeighbourAdjacencyFix(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
+        //if (tscale_posx > 1.55f /*&& patchXY.x == PATCHES_PER_TILE_EDGE - 1*/)
+        //    gl_TessLevelOuter[posx] = LargerNeighbourAdjacencyFix(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord, patchXY.y, sideLen);
+        //if (tscale_posz > 1.55f /*&& patchXY.y == PATCHES_PER_TILE_EDGE - 1*/)
+        //    gl_TessLevelOuter[posz] = LargerNeighbourAdjacencyFix(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
+
+
 
        // Inner tessellation level
        gl_TessLevelInner[0] = (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]) * 0.5f;
@@ -335,7 +433,7 @@ layout(triangles) in;
 layout(location = 0) in float tes_tessLevel[];
 
 
-//#define SHOW_TILE_SCALE
+#define SHOW_TILE_SCALE
 #if defined(SHOW_TILE_SCALE)
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
@@ -388,7 +486,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }
 #else
-    float tileScale = dvd_TerrainData[_in[i].dvd_instanceID]._positionAndTileScale.w;
+    const float tileScale = dvd_TerrainData[_in[i].dvd_instanceID]._positionAndTileScale.w;
     if (tileScale == 256) {
         gs_wireColor = vec3(0.0, 0.0, 1.0);
     }
