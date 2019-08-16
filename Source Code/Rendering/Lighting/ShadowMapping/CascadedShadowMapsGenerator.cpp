@@ -255,7 +255,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
                                                      U8 numSplits,
                                                      const SplitDepths& splitDepths)
 {
-    vec3<F32> lightInitialDirection = Normalize(light.getDirection());
+    vec3<F32> lightInitialDirection = Normalized(light.getDirection());
     const mat4<F32> invViewProj = GetInverse(mat4<F32>::Multiply(viewMatrix, projectionMatrix));
 
     for (U8 cascadeIterator = 0 ; cascadeIterator < numSplits; ++cascadeIterator) {

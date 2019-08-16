@@ -99,7 +99,8 @@ inline vec2<T> Normalize(vec2<T> &vector) {
 }
 
 template <typename T>
-inline vec2<T> Normalize(const vec2<T> &vector) {
+//[[nodiscard]]
+inline vec2<T> Normalized(const vec2<T> &vector) {
     vec2<T> result(vector);
     result.normalize();
     return result;
@@ -134,7 +135,8 @@ inline vec3<T> Normalize(vec3<T> &vector) {
 }
 
 template <typename T>
-inline vec3<T> Normalize(const vec3<T> &vector) {
+//[[nodiscard]]
+inline vec3<T> Normalized(const vec3<T> &vector) {
     vec3<T> result(vector);
     result.normalize();
     return result;
@@ -167,7 +169,7 @@ inline vec3<T> Inverse(const vec3<T> &v) {
 template <typename T>
 inline void OrthoNormalize(vec3<T> &n, vec3<T> &u) {
     n.normalize();
-    u.set(Cross(Normalize((Cross(n, u))), n));
+    u.set(Cross(Normalized((Cross(n, u))), n));
 }
 
 /// min/max functions
@@ -190,7 +192,8 @@ inline vec4<T> Normalize(vec4<T> &vector) {
 }
 
 template <typename T>
-inline vec4<T> Normalize(const vec4<T> &vector) {
+//[[nodiscard]]
+inline vec4<T> Normalized(const vec4<T> &vector) {
     vec4<T> result(vector);
     result.normalize();
     return result;

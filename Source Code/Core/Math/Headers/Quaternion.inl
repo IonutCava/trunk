@@ -349,7 +349,7 @@ void Quaternion<T>::fromRotation(const vec3<T>& sourceDirection, const vec3<T>& 
         // so we return the identity quaternion
         identity();
     } else {
-        fromAxisAngle(Normalize(Cross(sourceDirection, destinationDirection)), std::acos(dot));
+        fromAxisAngle(Normalized(Cross(sourceDirection, destinationDirection)), std::acos(dot));
     }
 }
 

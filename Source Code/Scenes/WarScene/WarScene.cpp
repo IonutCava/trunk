@@ -396,7 +396,7 @@ bool WarScene::load(const stringImpl& name) {
     _sun->get<DirectionalLightComponent>()->csmNearClipOffset(25.0f);
     // Add some obstacles
 
-    SceneGraphNode* cylinder[5];
+    /*SceneGraphNode* cylinder[5];
     cylinder[0] = _sceneGraph->findNode("cylinderC");
     cylinder[1] = _sceneGraph->findNode("cylinderNW");
     cylinder[2] = _sceneGraph->findNode("cylinderNE");
@@ -412,7 +412,7 @@ bool WarScene::load(const stringImpl& name) {
     // Make the center cylinder reflective
     const Material_ptr& matInstance = cylinder[0]->getChild(0).get<RenderingComponent>()->getMaterialInstance();
     matInstance->getColourData().shininess(200);
-
+    */
     stringImpl currentName;
 #if 0
     SceneNode_ptr cylinderMeshNW = cylinder[1]->getNode();

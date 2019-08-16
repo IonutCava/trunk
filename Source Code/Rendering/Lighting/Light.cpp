@@ -71,7 +71,7 @@ void Light::updateCache() {
     assert(lightTransform != nullptr);
     
     _positionCache = lightTransform->getPosition();
-    _directionCache = Normalize(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
+    _directionCache = Normalized(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
 }
 
 void Light::setDiffuseColour(const vec3<U8>& newDiffuseColour) {

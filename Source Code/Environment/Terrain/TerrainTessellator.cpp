@@ -213,31 +213,20 @@ void TerrainTessellator::calcTessScale(TessellatedTerrainNode* node) {
 
     // Positive Z (north)
     t = find(data, node->origin.x, node->origin.z + 1 + node->dim.width * 0.5f);
-    //if (t->dim.width > node->dim.width)
-    {
-        node->tscale[3] = t->dim.width / node->dim.width;
-    }
+    node->tscale[3] = CLAMPED(t->dim.width / node->dim.width, 0.5f, 2.0f);
 
     // Positive X (east)
     t = find(data, node->origin.x + 1 + node->dim.width * 0.5f, node->origin.z);
-    //if (t->dim.width > node->dim.width)
-    {
-        node->tscale[0] = t->dim.width / node->dim.width;
-    }
+    node->tscale[0] = CLAMPED(t->dim.width / node->dim.width, 0.5f, 2.0f);
 
     // Negative Z (south)
     t = find(data, node->origin.x, node->origin.z - 1 - node->dim.width * 0.5f);
     //if (t->dim.width > node->dim.width)
-    {
-        node->tscale[1] = t->dim.width / node->dim.width;
-    }
+    node->tscale[1] = CLAMPED(t->dim.width / node->dim.width, 0.5f, 2.0f);
 
     // Negative X (west)
     t = find(data, node->origin.x - 1 - node->dim.width * 0.5f, node->origin.z);
-    //if (t->dim.width > node->dim.width)
-    {
-        node->tscale[2] = t->dim.width / node->dim.width;
-    }
+    node->tscale[2] = CLAMPED(t->dim.width / node->dim.width, 0.5f, 2.0f);
 }
 
 TessellatedTerrainNode* TerrainTessellator::find(TessellatedTerrainNode* const n, F32 x, F32 z) {
@@ -265,9 +254,9 @@ TessellatedTerrainNode* TerrainTessellator::find(TessellatedTerrainNode* const n
 void TerrainTessellator::initTessellationPatch(VertexBuffer* vb) {
     vb->resizeVertexCount(4);
     vb->modifyPositionValue(0, -1.0f, 0.0f, -1.0f);
-    vb->modifyPositionValue(1, 1.0f, 0.0f, -1.0f);
-    vb->modifyPositionValue(2, 1.0f, 0.0f, 1.0f);
-    vb->modifyPositionValue(3, -1.0f, 0.0f, 1.0f);
+    vb->modifyPositionValue(1,  1.0f, 0.0f, -1.0f);
+    vb->modifyPositionValue(2,  1.0f, 0.0f,  1.0f);
+    vb->modifyPositionValue(3, -1.0f, 0.0f,  1.0f);
 
     vb->modifyColourValue(0, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
     vb->modifyColourValue(1, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));

@@ -369,7 +369,7 @@ void AIEntity::setDestination(const vec3<F32>& destination) {
 
 void AIEntity::moveForward() {
     vec3<F32> lookDirection(_unitRef != nullptr
-                               ? Normalize(_unitRef->getLookingDirection())
+                               ? Normalized(_unitRef->getLookingDirection())
                                : WORLD_Z_NEG_AXIS);
 
     setVelocity(lookDirection * to_F32(getMaxSpeed()));
@@ -377,7 +377,7 @@ void AIEntity::moveForward() {
 
 void AIEntity::moveBackwards() {
     vec3<F32> lookDirection(_unitRef != nullptr
-                               ? Normalize(_unitRef->getLookingDirection())
+                               ? Normalized(_unitRef->getLookingDirection())
                                : WORLD_Z_NEG_AXIS);
 
     setVelocity(lookDirection * to_F32(getMaxSpeed()) * -1.0f);

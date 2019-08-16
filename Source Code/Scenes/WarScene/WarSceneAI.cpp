@@ -135,7 +135,8 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     _faction[0]->addEnemyTeam(_faction[1]->getTeamID());
     _faction[1]->addEnemyTeam(_faction[0]->getTeamID());
 
-    if (addUnits()) {
+    //if (addUnits()) 
+    {
         //_sceneGraph->findNode("Soldier1")->setActive(false);
         //_sceneGraph->findNode("Soldier2")->setActive(false);
         //_sceneGraph->findNode("Soldier3")->setActive(false);
