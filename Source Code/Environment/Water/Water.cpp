@@ -193,7 +193,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
     {
         GFX::DrawCommand drawCommand = {};
         drawCommand._drawCommands.push_back(cmd);
-        pkgInOut.addDrawCommand(drawCommand);
+        //pkgInOut.addDrawCommand(drawCommand);
     }
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

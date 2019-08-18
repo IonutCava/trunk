@@ -216,7 +216,9 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
     for (auto& cmd : cmds) {
         auto& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
         for (GenericDrawCommand& drawCmd : drawCommands) {
-            drawCmd._cmd.baseInstance = dataIndex;
+            if (drawCmd._cmd.primCount == 1) {
+                drawCmd._cmd.baseInstance = dataIndex;
+            }
             drawCmd._commandOffset = startOffset++;
         }
     }

@@ -57,17 +57,9 @@ namespace Divide {
                  bool normalized,
                  size_t strideInBytes);
 
-        void set(U32 bufferIndex,
-                 U32 componentsPerElement,
-                 GFXDataFormat dataType,
-                 bool normalized,
-                 size_t strideInBytes,
-                 U32 instanceDivisor);
-
         void attribIndex(U32 index);
         void strideInBytes(size_t strideInBytes);
         void bufferIndex(U32 bufferIndex);
-        void instanceDivisor(U32 instanceDivisor);
         void componentsPerElement(U32 componentsPerElement);
         void interleavedOffsetInBytes(U32 interleavedOffsetInBytes);
         void normalized(bool normalized);
@@ -78,7 +70,6 @@ namespace Divide {
         inline U32 attribIndex() const { return _index; }
         inline size_t strideInBytes() const { return _strideInBytes; }
         inline U32 bufferIndex() const { return _parentBuffer; }
-        inline U32 instanceDivisor() const { return _divisor; }
         inline U32 componentsPerElement() const { return _componentsPerElement; }
         inline bool normalized() const { return _normalized; }
         inline U32 interleavedOffsetInBytes() const { return _interleavedOffset; }
@@ -88,7 +79,6 @@ namespace Divide {
  
     protected:
         U32 _index;
-        U32 _divisor;
         U32 _parentBuffer;
         U32 _componentsPerElement;
         U32 _interleavedOffset;

@@ -60,6 +60,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _lodLocked(false),
       _cullFlagValue(1.0f),
       _renderMask(0),
+      _dataIndex(-1),
       _reflectionIndex(-1),
       _refractionIndex(-1),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
@@ -291,17 +292,29 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass, bool refreshD
     }
 }
 
+void RenderingComponent::setDataIndex(U32 idx) {
+    _dataIndex = to_I64(idx);
+}
+
+bool RenderingComponent::getDataIndex(U32& idxOut) {
+    if (_dataIndex == -1) {
+        return false;
+    }
+    idxOut = to_U32(_dataIndex);
+    return true;
+}
+
 bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams) {
     RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
     I32 drawCommandCount = pkg.drawCommandCount();
 
     if (drawCommandCount > 0) {
         if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._nodeCount, to_U32(refreshParams._drawCommandsInOut.size()));
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()));
         } else {
             RenderPackagesPerPassType& packages = _renderPackagesNormal[to_base(refreshParams._stagePass._stage) - 1];
             for (RenderPackage& package : packages) {
-                Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, refreshParams._nodeCount, to_U32(refreshParams._drawCommandsInOut.size()));
+                Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()));
             }
         }
         for (I32 i = 0; i < drawCommandCount; ++i) {

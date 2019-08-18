@@ -84,7 +84,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
             params._updateFrequency = BufferUpdateFrequency::ONCE;
             params._sync = false;
             params._data = (bufferPtr)geometry.data();
-            
+
             buffer.setBuffer(params);
 
             if (!indices.empty()) {
@@ -180,6 +180,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
             params._updateFrequency = BufferUpdateFrequency::OFTEN;
             params._sync = true;
             params._data = NULL;
+            params._instanceDivisor = 1;
 
             buffer.setBuffer(params);
 
@@ -193,15 +194,13 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
                                                                 4,
                                                                 GFXDataFormat::FLOAT_32,
                                                                 false,
-                                                                0,
-                                                                1);
+                                                                0);
 
             buffer.attribDescriptor(colourAttribLocation).set(g_particleColourBuffer,
                                                               4,
                                                               GFXDataFormat::UNSIGNED_BYTE,
                                                               true,
-                                                              0,
-                                                              1);
+                                                              0);
         }
     }
 

@@ -124,8 +124,6 @@ namespace Divide {
             : GenericVertexData(context, ringBufferLength, name)
         {}
 
-        void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) override {}
-        void updateIndexBuffer(const IndexBuffer& indices) override {}
         void create(U8 numBuffers = 1) override {}
 
         void draw(const GenericDrawCommand& command, I32 passIdx = -1) override {}

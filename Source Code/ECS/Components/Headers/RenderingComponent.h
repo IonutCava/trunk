@@ -74,7 +74,7 @@ struct RefreshNodeDataParams {
 
     RenderStagePass _stagePass = {};
     U32 _nodeCount = 0;
-
+    U32 _dataIdx = 0;
     const Camera* _camera = nullptr;
     vectorEASTL<IndirectDrawCommand>& _drawCommandsInOut;
     GFX::CommandBuffer& _bufferInOut;
@@ -186,6 +186,9 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     void queueRebuildCommands(RenderStagePass renderStagePass);
 
+    bool getDataIndex(U32& idxOut);
+    void setDataIndex(U32 idx);
+
   protected:
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
     bool canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData);
@@ -233,6 +236,7 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
     Material_ptr _materialInstance;
     Material* _materialInstanceCache;
 
+    I64 _dataIndex;
     F32 _cullFlagValue;
     U32 _renderMask;
     bool _lodLocked;

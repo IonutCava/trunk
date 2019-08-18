@@ -9,6 +9,8 @@
 namespace Divide {
 
 namespace {
+    constexpr U32 MAX_RENDER_NODES = 256;
+
     FORCE_INLINE bool hasChildren(TessellatedTerrainNode& node) {
         for (U8 i = 0; i < 4; ++i) {
             if (node.c[i] != nullptr) {
@@ -25,7 +27,7 @@ TerrainTessellator::TerrainTessellator()
      _prevRenderDepth(0)
 {
     _tree.reserve(MAX_TESS_NODES);
-    _renderData.resize(Terrain::MAX_RENDER_NODES);
+    _renderData.resize(MAX_RENDER_NODES);
 }
 
 TerrainTessellator::~TerrainTessellator()
@@ -182,7 +184,7 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
         // Just in we used a N x sized buffer, we should allow for some margin in frustum culling
         const F32 radiusAdjustmentFactor = 1.1f;
 
-        assert(renderDepth < Terrain::MAX_RENDER_NODES);
+        assert(renderDepth < MAX_RENDER_NODES);
 
         // half of the diagonal of the rectangle
         F32 radius = Sqrt(SQUARED(node->dim.width) + SQUARED(node->dim.height)) * 0.5f;

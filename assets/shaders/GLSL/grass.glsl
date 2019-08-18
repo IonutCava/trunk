@@ -81,7 +81,7 @@ void main (void){
     vec4 albedo = texture(texDiffuseGrass, vec3(uv, _arrayLayerFrag));
     albedo.a *= _alphaFactor;
 
-    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     writeOutput(getPixelColour(albedo, colourMatrix, getNormal(uv), uv));
 }
 

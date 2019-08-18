@@ -32,7 +32,7 @@
 #ifndef _TERRAIN_H_
 #define _TERRAIN_H_
 
-#include "TerrainTessellator.h"
+#include "TileRing.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
@@ -75,8 +75,7 @@ class Terrain : public Object3D {
     friend class Attorney::TerrainLoader;
 
    public:
-     static constexpr U32 MAX_RENDER_NODES = 1024;
-     static constexpr size_t NODE_DATA_SIZE = sizeof(TessellatedNodeData) * Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
+     static constexpr I32 MAX_RINGS = 10;
 
    public:
        struct Vert {
@@ -141,26 +140,19 @@ class Terrain : public Object3D {
         QUEUED,
         IDLE
     };
-
-    F32 _drawDistance;
-    I32 _initBufferWriteCounter = 0;
-    ShaderBuffer* _shaderData;
+    bool _drawBBoxes;
+    U32  _nodeDataIndex = 0;
     VegetationDetails _vegDetails;
-
-    typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)-1> TessellatorArray;
-    typedef hashMap<I64, bool> CameraUpdateFlagArray;
 
     Quadtree _terrainQuadtree;
     vector<TerrainChunk*> _terrainChunks;
 
-    TessellatorArray _terrainTessellator;
-    std::array<TerrainTessellator, ShadowMap::MAX_SHADOW_PASSES> _shadowTessellators;
-
+    std::array<std::shared_ptr<TileRing>, MAX_RINGS>  _tileRings;
     EditorDataState _editorDataDirtyState;
-    bool _drawBBoxes;
-    bool _shaderDataDirty;
     SceneGraphNode* _vegetationGrassNode;
     std::shared_ptr<TerrainDescriptor> _descriptor;
+
+    static std::atomic_uint g_NodeDataIndex;
 };
 
 namespace Attorney {
@@ -193,6 +185,10 @@ class TerrainLoader {
 
     static void descriptor(Terrain& terrain, const std::shared_ptr<TerrainDescriptor>& descriptor) noexcept {
         terrain._descriptor = descriptor;
+    }
+
+    static U32 dataIdx(Terrain& terrain) noexcept {
+        return terrain._nodeDataIndex;
     }
 
     friend class Divide::TerrainLoader;

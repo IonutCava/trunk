@@ -28,8 +28,11 @@
 namespace Divide {
 
     namespace {
+        typedef std::set<U32> SetType;
+        thread_local SetType g_usedIndices;
+        thread_local U32 g_freeCounter = 0;
         thread_local RenderQueue::SortedQueues g_sortedQueues;
-        thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
+        thread_local std::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> g_nodeData;
         thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
     };
 
@@ -341,41 +344,72 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                                         GFX::CommandBuffer& bufferInOut)
 {
     bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
-
-    g_nodeData.resize(0);
-    g_nodeData.reserve(Config::MAX_VISIBLE_NODES);
-
+    g_usedIndices.clear();
+    g_freeCounter = 0;
     g_drawCommands.resize(0);
     g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
     for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
-
-            RefreshNodeDataParams params(g_drawCommands, bufferInOut);
-            params._camera = &camera;
-            params._stagePass = stagePass;
-            params._nodeCount = to_U32(g_nodeData.size());
-            if (params._nodeCount == Config::MAX_VISIBLE_NODES) {
-                goto skip;
-            }
-            if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
-                g_nodeData.push_back(processVisibleNode(node, stagePass, playAnimations, camera.getViewMatrix()));
+            U32 dataIdxOut = 0;
+            if (renderable.getDataIndex(dataIdxOut)) {
+                g_usedIndices.insert(dataIdxOut);
             }
         }
     }
 
-skip:
+    bool skip = false;
+    for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
+        if (skip) {
+            break;
+        }
 
-    U32 nodeCount = to_U32(g_nodeData.size());
+        for (SceneGraphNode* node : queue) {
+            RenderingComponent& renderable = *node->get<RenderingComponent>();
+
+            RefreshNodeDataParams params(g_drawCommands, bufferInOut);
+            params._camera = &camera;
+            params._stagePass = stagePass;
+            if (params._nodeCount == Config::MAX_VISIBLE_NODES) {
+                skip = true;
+                break;
+            }
+
+            if (!renderable.getDataIndex(params._dataIdx)) {
+                SetType::iterator iter = g_usedIndices.lower_bound(g_freeCounter);
+                while (iter != std::end(g_usedIndices) && *iter == g_freeCounter) {
+                    ++iter;
+                    ++g_freeCounter;
+                }
+                params._dataIdx = g_freeCounter;
+            }
+
+            if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
+                GFXDevice::NodeData data = processVisibleNode(node, stagePass, playAnimations, camera.getViewMatrix());
+                g_nodeData[params._dataIdx] = data;
+                g_usedIndices.insert(params._dataIdx);
+                ++params._nodeCount;
+                ++g_freeCounter;
+            }
+        }
+    }
+
+    U32 nodeCount = to_U32(*std::max_element(std::cbegin(g_usedIndices), std::cend(g_usedIndices)));
     U32 cmdCount = to_U32(g_drawCommands.size());
-    assert(cmdCount >= nodeCount);
 
     RenderPass::BufferData bufferData = getBufferData(stagePass);
     *bufferData._lastCommandCount = cmdCount;
 
-    bufferData._cmdBuffer->writeData(0, cmdCount, (bufferPtr)g_drawCommands.data());
-    bufferData._renderData->writeData(bufferData._renderDataElementOffset, nodeCount, (bufferPtr)g_nodeData.data());
+    bufferData._cmdBuffer->writeData(
+        0,
+        cmdCount,
+        (bufferPtr)g_drawCommands.data());
+
+    bufferData._renderData->writeData(
+        bufferData._renderDataElementOffset,
+        nodeCount,
+        (bufferPtr)g_nodeData.data());
 
     ShaderBufferBinding cmdBuffer = {};
     cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;

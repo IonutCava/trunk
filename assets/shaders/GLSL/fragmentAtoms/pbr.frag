@@ -164,7 +164,7 @@ vec4 PBR(in vec3 lightDirection,
     float roughness = metallicRoughness.g;
     vec3 specular = mix(vec3(0.04f), albedoAndShadow.rgb, metallic);
 
-    mat3 tnrm = transpose(dvd_NormalMatrixWV(VAR.dvd_baseInstance));
+    mat3 tnrm = transpose(dvd_NormalMatrixWV(DATA_IDX));
     //vec3 envdiff = textureCubeLod(texEnvironmentCube, vec4(tnrm * N, 0), 10).xyz;
 
     // direction is NOT normalized

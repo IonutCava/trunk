@@ -897,9 +897,9 @@ inline void DELETE_HASHMAP(hashMap<K, V, HashFun>& map) {
         map.clear();
     }
 }
-#define SET_DELETE_HASHMAP_FRIEND                                           \
-    template <typename K, typename V, typename HashFun = hashAlg::hash<K> > \
-    friend void MemoryManager::DELETE_HASHMAP(                              \
+#define SET_DELETE_HASHMAP_FRIEND                       \
+    template <typename K, typename V, typename HashFun> \
+    friend void MemoryManager::DELETE_HASHMAP(          \
         hashMap<K, V, HashFun>& map);
 
 /// Deletes the object pointed to by "OLD" and redirects that pointer to the

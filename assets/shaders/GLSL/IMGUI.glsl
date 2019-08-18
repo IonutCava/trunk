@@ -1,5 +1,10 @@
 -- Vertex
 
+layout(location = ATTRIB_POSITION) in vec3 inVertexData;
+layout(location = ATTRIB_TEXCOORD) in vec2 inTexCoordData;
+layout(location = ATTRIB_COLOR) in vec4 inColourData;
+layout(location = ATTRIB_GENERIC) in vec2 inGenericData;
+
 layout(location = 0) out vec2 Frag_UV;
 layout(location = 1) out vec4 Frag_Color;
 

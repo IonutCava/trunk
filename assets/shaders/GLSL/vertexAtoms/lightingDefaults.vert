@@ -4,7 +4,7 @@
 #include "lightInput.cmn"
 
 void computeLightVectors() {
-    mat3 normalMatrixWV = dvd_NormalMatrixWV(VAR.dvd_baseInstance);
+    mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
 
     VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
 #if defined(COMPUTE_TBN)

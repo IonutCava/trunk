@@ -110,6 +110,7 @@
     <ClCompile Include="..\..\..\Source Code\Environment\Terrain\Quadtree\QuadtreeNode.cpp" />
     <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TerrainChunk.cpp" />
     <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TerrainDescriptor.cpp" />
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TileRing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/AI\ActionInterface\Headers\AIProcessor.h" />
@@ -189,6 +190,7 @@
     <ClInclude Include="../../../Source Code/Scenes\WarScene\Headers\WarSceneAIProcessor.h" />
     <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Headers\InfinitePlane.h" />
     <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Headers\TerrainChunk.h" />
+    <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Headers\TileRing.h" />
     <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h" />
     <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
   </ItemGroup>
@@ -217,34 +219,34 @@
     <ProjectGuid>{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}</ProjectGuid>
     <RootNamespace>DivideHardware</RootNamespace>
     <ProjectName>Divide-Game</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

@@ -82,13 +82,14 @@ void main()
 
     //normalWV = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
 
-    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
 
     vec4 texColour = mix(texture(texRefractPlanar, uvFinalReflect),
                          texture(texReflectPlanar, uvFinalRefract),
                          saturate(Fresnel(incident, VAR._normalWV)));
     
-    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
+    //writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
+    writeOutput(vec4(0.0f, 0.0f, 0.0f, 1.0f));
     //writeOutput(vec4(texture(texReflectPlanar, uvFinalReflect).rgb, 1.0f));
 #endif
 }

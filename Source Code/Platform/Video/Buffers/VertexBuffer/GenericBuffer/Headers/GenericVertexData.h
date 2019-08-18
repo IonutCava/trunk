@@ -60,6 +60,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
      struct SetBufferParams {
          U32 _buffer = 0;
          U32 _elementCount = 0;
+         U32 _instanceDivisor = 0;
          size_t _elementSize = 0;
          bool _sync = false;
          bool _useRingBuffer = false;
@@ -72,8 +73,8 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     GenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name = nullptr);
     virtual ~GenericVertexData();
 
-    virtual void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) = 0;
-    virtual void updateIndexBuffer(const IndexBuffer& indices) = 0;
+    virtual void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency);
+    virtual void updateIndexBuffer(const IndexBuffer& indices);
 
     virtual void create(U8 numBuffers = 1) = 0;
 
@@ -92,11 +93,14 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     
     AttributeDescriptor& attribDescriptor(U32 attribIndex);
 
+    inline const IndexBuffer& indexBuffer() const { return _idxBuffer; }
+
    protected:
     typedef hashMap<U32, AttributeDescriptor> attributeMap;
     attributeMap _attributeMapDraw;
 
     stringImpl _name;
+    IndexBuffer _idxBuffer;
 };
 
 };  // namespace Divide

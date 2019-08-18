@@ -4,7 +4,7 @@
 void computeData()
 {
     VAR._texCoord = inTexCoordData;
-    gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance) * vec4(inVertexData,1.0);
+    gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix(DATA_IDX) * vec4(inVertexData,1.0);
 }
 
 #endif //_VERTEX_DEFAULT_VERT_

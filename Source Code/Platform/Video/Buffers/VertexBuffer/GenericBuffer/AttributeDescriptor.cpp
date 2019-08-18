@@ -6,7 +6,6 @@ namespace Divide {
 
 AttributeDescriptor::AttributeDescriptor()
   : _index(0),
-    _divisor(0),
     _parentBuffer(0),
     _componentsPerElement(0),
     _wasSet(false),
@@ -33,23 +32,13 @@ void AttributeDescriptor::set(U32 bufferIndex,
     set(bufferIndex, componentsPerElement, dataType, normalized, 0);
 }
 
-void AttributeDescriptor::set(U32 bufferIndex,
-                              U32 componentsPerElement,
-                              GFXDataFormat dataType,
-                              bool normalized,
-                              size_t strideInBytes) {
-    set(bufferIndex, componentsPerElement, dataType, normalized, strideInBytes, 0);
-}
-
 void AttributeDescriptor::set(U32 bufferIndex, 
                               U32 componentsPerElement,
                               GFXDataFormat dataType,
                               bool normalized,
-                              size_t strideInBytes,
-                              U32 instanceDivisor) {
+                              size_t strideInBytes) {
 
     this->bufferIndex(bufferIndex);
-    this->instanceDivisor(instanceDivisor);
     this->componentsPerElement(componentsPerElement);
     this->normalized(normalized);
     this->strideInBytes(strideInBytes);
@@ -72,11 +61,6 @@ void AttributeDescriptor::bufferIndex(U32 bufferIndex) {
     _parentBuffer = bufferIndex;
     _dirty = true;
     _wasSet = false;
-}
-
-void AttributeDescriptor::instanceDivisor(U32 instanceDivisor) {
-    _divisor = instanceDivisor;
-    _dirty = true;
 }
 
 void AttributeDescriptor::componentsPerElement(U32 componentsPerElement) {

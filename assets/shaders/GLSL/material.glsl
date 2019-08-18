@@ -10,7 +10,7 @@ layout(early_fragment_tests) in;
 #include "output.frag"
 
 void main (void) {
-    mat4 colourMatrix = dvd_Matrices[VAR.dvd_baseInstance]._colourMatrix;
+    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     vec4 albedo = getAlbedo(colourMatrix, TexCoords);
   
 #if defined(USE_ALPHA_DISCARD)

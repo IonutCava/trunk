@@ -74,6 +74,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
 
+#define dvd_cameraForward vec3(dvd_ViewMatrix[3].xyz)
 #define windowWidth int(dvd_ViewPort.z)
 #define windowHeight int(dvd_ViewPort.w)
 

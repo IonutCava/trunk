@@ -115,7 +115,6 @@ class glVertexArray final : public VertexBuffer {
     
     static GLUtil::glVAOCache _VAOMap;
 
-    bool _drawIndexed;
     U32 _lastDrawCount = 0;
     U32 _lastIndexCount = 0;
     U32 _lastFirstIndex = 0;

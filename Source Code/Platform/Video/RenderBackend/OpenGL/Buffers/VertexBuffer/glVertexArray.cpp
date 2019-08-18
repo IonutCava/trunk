@@ -108,7 +108,6 @@ glVertexArray::glVertexArray(GFXDevice& context)
     : VertexBuffer(context),
       _refreshQueued(false),
       _uploadQueued(false),
-      _drawIndexed(true),
       _formatInternal(GL_NONE)
 {
     // We assume everything is static draw
@@ -388,10 +387,10 @@ void glVertexArray::draw(const GenericDrawCommand& command, I32 passIdx) {
     stateTracker.bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
     if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
-        GLUtil::submitRenderCommand(command, _drawIndexed, true, _formatInternal);
+        GLUtil::submitRenderCommand(command, true, true, _formatInternal);
     } else {
         rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
-        GLUtil::submitRenderCommand(command, _drawIndexed, false, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
+        GLUtil::submitRenderCommand(command, true, false, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 }
 

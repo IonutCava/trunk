@@ -1062,6 +1062,7 @@
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\shadowUtils.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
+    <None Include="..\..\..\assets\shaders\GLSL\common\waterData.cmn" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../../assets\shaders\GLSL\toneMap.glsl">

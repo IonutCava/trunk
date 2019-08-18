@@ -666,65 +666,56 @@ bool GL_API::initGLSW(const Configuration& config) {
     // Vertex data has a fixed format
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::POSITION)) +
-        ") in vec3 inVertexData;",
+        "#define ATTRIB_POSITION " +
+        to_stringImpl(to_base(AttribLocation::POSITION)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::TEXCOORD)) +
-        ") in vec2 inTexCoordData;",
+        "#define ATTRIB_TEXCOORD " +
+        to_stringImpl(to_base(AttribLocation::TEXCOORD)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::NORMAL)) +
-        ") in float inNormalData;",
+        "#define ATTRIB_NORMAL " +
+        to_stringImpl(to_base(AttribLocation::NORMAL)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::TANGENT)) +
-        ") in float inTangentData;",
+        "#define ATTRIB_TANGENT " +
+        to_stringImpl(to_base(AttribLocation::TANGENT)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::COLOR)) +
-        ") in vec4 inColourData;",
+        "#define ATTRIB_COLOR " +
+        to_stringImpl(to_base(AttribLocation::COLOR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::BONE_WEIGHT)) +
-        ") in vec4 inBoneWeightData;",
+        "#define ATTRIB_BONE_WEIGHT " +
+        to_stringImpl(to_base(AttribLocation::BONE_WEIGHT)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::BONE_INDICE)) +
-        ") in uvec4 inBoneIndiceData;",
+        "#define ATTRIB_BONE_INDICE " +
+        to_stringImpl(to_base(AttribLocation::BONE_INDICE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::WIDTH)) +
-        ") in uint inLineWidthData;",
+        "#define ATTRIB_WIDTH " +
+        to_stringImpl(to_base(AttribLocation::WIDTH)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
-        "layout(location = " +
-        to_stringImpl(to_base(AttribLocation::GENERIC)) +
-        ") in vec2 inGenericData;",
+        "#define ATTRIB_GENERIC " +
+        to_stringImpl(to_base(AttribLocation::GENERIC)),
         lineOffsets);
 
     auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets, bool bump) {

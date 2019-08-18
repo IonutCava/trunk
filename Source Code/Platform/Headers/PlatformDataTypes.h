@@ -125,6 +125,11 @@ constexpr size_t to_size(const T value) {
 }
 
 template <typename T>
+constexpr U64 to_U64(const T value) {
+    return static_cast<U64>(value);
+}
+
+template <typename T>
 constexpr U32 to_U32(const T value) {
     return static_cast<U32>(value);
 }
@@ -137,6 +142,11 @@ constexpr U16 to_U16(const T value) {
 template <typename T>
 constexpr U8 to_U8(const T value) {
     return static_cast<U8>(value);
+}
+
+template <typename T>
+constexpr I64 to_I64(const T value) {
+    return static_cast<I64>(value);
 }
 
 template <typename T>

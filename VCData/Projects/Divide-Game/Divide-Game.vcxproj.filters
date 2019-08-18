@@ -449,6 +449,9 @@
     <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TerrainDescriptor.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source Code\Environment\Terrain\TileRing.cpp">
+      <Filter>Environment\Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../../Source Code/AI\Sensors\Headers\AudioSensor.h">
@@ -685,6 +688,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h">
       <Filter>Environment\Terrain\Quadtree\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source Code\Environment\Terrain\Headers\TileRing.h">
+      <Filter>Environment\Terrain\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

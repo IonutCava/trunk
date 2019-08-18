@@ -22,4 +22,12 @@ AttributeDescriptor& GenericVertexData::attribDescriptor(U32 attribIndex) {
     return desc;
 }
 
+void GenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) {
+    ACKNOWLEDGE_UNUSED(updateFrequency);
+    _idxBuffer = indices;
+}
+
+void GenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
+    _idxBuffer = indices;
+}
 }; //namespace Divide

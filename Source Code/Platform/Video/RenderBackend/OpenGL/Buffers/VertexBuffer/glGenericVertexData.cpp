@@ -9,12 +9,16 @@
 namespace Divide {
 
 glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name)
-    : GenericVertexData(context, ringBufferLength)
+    : GenericVertexData(context, ringBufferLength, name)
 {
+    _lastDrawCount = 0;
+    _lastIndexCount = 0;
+    _lastFirstIndex = 0;
     _indexBuffer = 0;
     _indexBufferSize = 0;
     _indexBufferUsage = GL_NONE;
     _smallIndices = false;
+    _idxBufferDirty = false;
     _vertexArray = 0;
 }
 
@@ -44,11 +48,11 @@ void glGenericVertexData::create(U8 numBuffers) {
     GL_API::s_vaoPool.allocate(1, &_vertexArray);
     // Create our buffer objects
     _bufferObjects.resize(numBuffers, nullptr);
+    _instanceDivisor.resize(numBuffers, 0);
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
 void glGenericVertexData::draw(const GenericDrawCommand& command, I32 passIdx) {
-    bool useCmdBuffer = isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT);
     // Update buffer bindings
     setBufferBindings();
     // Update vertex attributes if needed (e.g. if offsets changed)
@@ -56,9 +60,17 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, I32 passIdx) {
 
     // Delay this for as long as possible
     GL_API::getStateTracker().setActiveVAO(_vertexArray);
-   
+    if (_idxBufferDirty) {
+        GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+        _idxBufferDirty = false;
+    }    
     // Submit the draw command
-    GLUtil::submitRenderCommand(command, _indexBuffer > 0, useCmdBuffer, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
+    if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
+        GLUtil::submitRenderCommand(command, _indexBuffer > 0, true, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
+    } else {
+        rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
+        GLUtil::submitRenderCommand(command, _indexBuffer > 0, false, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _countData.data(), (bufferPtr)_indexOffsetData.data());
+    }
 
     vec_size bufferCount = _bufferObjects.size();
     for (vec_size i = 0; i < bufferCount; ++i) {
@@ -67,7 +79,35 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, I32 passIdx) {
     }
 }
 
+void glGenericVertexData::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex) {
+    STUBBED("ToDo: Move all of this somewhere outside of glVertexArray so that we can gather proper data from all of the batched commands -Ionut");
+
+    if (_lastDrawCount == drawCount && _lastIndexCount == indexCount && _lastFirstIndex == firstIndex) {
+        return;
+    }
+
+    if (_lastDrawCount != drawCount || _lastIndexCount != indexCount) {
+        eastl::fill(eastl::begin(_countData), eastl::begin(_countData) + drawCount, indexCount);
+    }
+
+    if (_indexBuffer > 0 && (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex)) {
+        U32 idxCount = drawCount * _idxBuffer.count;
+
+        if (_indexOffsetData.size() < idxCount) {
+            _indexOffsetData.resize(idxCount, firstIndex);
+        }
+        if (_lastFirstIndex != firstIndex) {
+            eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
+        }
+    }
+    _lastDrawCount = drawCount;
+    _lastIndexCount = indexCount;
+    _lastFirstIndex = firstIndex;
+}
+
 void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) {
+    GenericVertexData::setIndexBuffer(indices, updateFrequency);
+
     if (_indexBuffer != 0) {
         GLUtil::freeBuffer(_indexBuffer);
     }
@@ -91,11 +131,12 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdat
             _name.empty() ? nullptr : (_name + "_index").c_str());
     }
 
-    GL_API::getStateTracker().setActiveVAO(_vertexArray);
-    GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+    _idxBufferDirty = true;
 }
 
 void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
+    GenericVertexData::updateIndexBuffer(indices);
+
     DIVIDE_ASSERT(indices.count > 0, "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
     assert(_indexBuffer != 0 && "glGenericVertexData::UpdateIndexBuffer error: no valid index buffer found!");
 
@@ -121,8 +162,7 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
                              indices.data);
     }
 
-    GL_API::getStateTracker().setActiveVAO(_vertexArray);
-    GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+    _idxBufferDirty = true;
 }
 
 /// Specify the structure and data of the given buffer
@@ -149,6 +189,7 @@ void glGenericVertexData::setBuffer(const SetBufferParams& params) {
 
     glGenericBuffer * tempBuffer = MemoryManager_NEW glGenericBuffer(_context, paramsOut);
     _bufferObjects[buffer] = tempBuffer;
+    _instanceDivisor[buffer] = params._instanceDivisor;
 }
 
 /// Update the elementCount worth of data contained in the buffer starting from
@@ -173,6 +214,7 @@ void glGenericVertexData::setBufferBindings() {
                                                        buffer->bufferHandle(),
                                                        buffer->getBindOffset(queueIndex()),
                                                        static_cast<GLsizei>(buffer->bufferImpl()->elementSize()));
+            glVertexArrayBindingDivisor(_vertexArray, i, _instanceDivisor[i]);
         }
     }
 
@@ -223,8 +265,6 @@ void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) 
                                    GLUtil::glDataFormat[to_U32(format)],
                                    (GLuint)descriptor.strideInBytes());
     }
-
-    glVertexArrayBindingDivisor(_vertexArray, descriptor.bufferIndex(), descriptor.instanceDivisor());
 
     // Inform the descriptor that the data was updated
     descriptor.clean();

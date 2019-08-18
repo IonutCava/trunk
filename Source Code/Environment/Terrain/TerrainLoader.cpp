@@ -346,10 +346,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(tescModule);
-    shaderDescriptor._modules.push_back(teseModule);
+    //shaderDescriptor._modules.push_back(tescModule);
+    //shaderDescriptor._modules.push_back(teseModule);
     if (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE) {
-        shaderDescriptor._modules.push_back(geomModule);
+        //shaderDescriptor._modules.push_back(geomModule);
     }
     shaderDescriptor._modules.push_back(fragModule);
 
@@ -374,9 +374,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
         shaderModule._defines.push_back(std::make_pair(Util::StringFormat("DETAIL_LEVEL %d", context.config().rendering.terrainDetailLevel), true));
         shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
+        shaderModule._defines.push_back(std::make_pair("DATA_IDX " + to_stringImpl(Attorney::TerrainLoader::dataIdx(*terrain)), true));
         shaderModule._defines.push_back(std::make_pair("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true));
         shaderModule._defines.push_back(std::make_pair("ALBEDO_TILING " + to_stringImpl(albedoTilingFactor), true));
-        shaderModule._defines.push_back(std::make_pair("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true));
@@ -510,7 +510,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE && false? CullMode::CW : CullMode::CCW);
+    terrainRenderState.setCullMode(CullMode::CW);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
 
     // Generate a render state for drawing reflections
@@ -518,14 +518,14 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE && false ? CullMode::CCW : CullMode::CW);
+    terrainRenderStateReflection.setCullMode(CullMode::CCW);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
-    terrainRenderStatePrePassReflection.setCullMode(terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE && false ? CullMode::CCW : CullMode::CW);
+    terrainRenderStatePrePassReflection.setCullMode(CullMode::CCW);
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(CullMode::CCW);
+    terrainRenderStateDepth.setCullMode(CullMode::CW);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setZFunc(ComparisonFunction::LESS);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
@@ -671,11 +671,6 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
         terrainCache << terrain->_physicsVerts;
         terrainCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache");
     }
-    
-    VertexBuffer* vb = terrain->getGeometryVB();
-    Attorney::TerrainTessellatorLoader::initTessellationPatch(vb);
-    vb->keepData(false);
-    vb->create(true);
 
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::postBuild(*terrain);
