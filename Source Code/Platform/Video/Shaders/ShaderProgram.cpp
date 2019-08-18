@@ -49,10 +49,6 @@ ShaderProgram::~ShaderProgram()
 }
 
 bool ShaderProgram::load() {
-    if (!weak_from_this().expired()) {
-        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
-    }
-
     return CachedResource::load();
 }
 

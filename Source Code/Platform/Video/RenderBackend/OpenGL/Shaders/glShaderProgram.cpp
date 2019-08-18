@@ -204,7 +204,6 @@ void glShaderProgram::validatePreBind() {
         glCreateProgramPipelines(1, &_handle);
         glObjectLabel(GL_PROGRAM_PIPELINE, _handle, -1, resourceName().c_str());
         rebindStages();
-        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
     }
 
     if (!_validated) {
@@ -268,6 +267,10 @@ void glShaderProgram::validatePostBind() {
 
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
 void glShaderProgram::threadedLoad(bool reloadExisting) {
+    if (!weak_from_this().expired()) {
+        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
+    }
+
     reloadShaders(reloadExisting);
     
     // Pass the rest of the loading steps to the parent class
@@ -721,8 +724,8 @@ void glShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     SharedLock r_lock(s_programLock);
     for (auto it : s_shaderPrograms) {
-        ShaderProgram* programPtr = it.second.first;
-        glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(programPtr);
+
+        glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(it.second.first);
 
         bool skip = false;
         for (glShader* shader : shaderProgram->_shaderStage) {
@@ -733,7 +736,7 @@ void glShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
             assert(shader != nullptr);
             for (U64 atomHash : shader->_usedAtoms) {
                 if (atomHash == atomNameHash) {
-                    s_recompileQueue.push(programPtr);
+                    s_recompileQueue.push(shaderProgram);
                     skip = true;
                     break;
                 }

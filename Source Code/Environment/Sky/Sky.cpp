@@ -182,11 +182,13 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
 
     PipelineDescriptor pipelineDescriptor = {};
     if (renderStagePass._passType == RenderPassType::PRE_PASS) {
+        WAIT_FOR_CONDITION(_skyShaderPrePass->getState() == ResourceState::RES_LOADED);
         pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION 
                                             ? _skyboxRenderStateReflectedHashPrePass
                                             : _skyboxRenderStateHashPrePass);
         pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getGUID();
     } else {
+        WAIT_FOR_CONDITION(_skyShader->getState() == ResourceState::RES_LOADED);
         pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION
                                                       ? _skyboxRenderStateReflectedHash
                                                       : _skyboxRenderStateHash);

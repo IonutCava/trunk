@@ -21,7 +21,9 @@ bool CEGUIInput::injectKey(bool pressed, const Input::KeyEvent& inKey) {
     bool consumed = false;
     if (pressed) {
         if (_parent.getCEGUIContext().injectKeyDown((CEGUI::Key::Scan)inKey._key)) {
-            _parent.getCEGUIContext().injectChar((CEGUI::Key::Scan)inKey._text[0]);
+            if (inKey._text != nullptr) {
+                _parent.getCEGUIContext().injectChar((CEGUI::Key::Scan)inKey._text[0]);
+            }
             begin(inKey);
             consumed = true;
         }
