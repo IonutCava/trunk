@@ -60,6 +60,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
 
     /// Rasterizer
     CullMode _cullMode = CullMode::CW;
+    bool _frontFaceCCW = true;
     bool _cullEnabled = true;
     bool _scissorTest = false;
 
@@ -97,7 +98,9 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     void setZBias(F32 zBias, F32 zUnits);
     void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
     void flipCullMode();
+    void flipFrontFace();
     void setCullMode(CullMode mode);
+    void setFrontFaceCCW(bool state);
     void depthTestEnabled(const bool enable);
     void setScissorTest(const bool enable);
 
@@ -115,9 +118,11 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     inline P32 colourWrite() const {
         return _colourWrite;
     }
-   
     inline CullMode cullMode() const {
         return _cullMode;
+    }
+    inline bool frontFaceCCW() const {
+        return _frontFaceCCW;
     }
     inline bool cullEnabled() const {
         return _cullEnabled;

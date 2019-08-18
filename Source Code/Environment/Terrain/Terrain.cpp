@@ -24,33 +24,28 @@ namespace Divide {
 
 namespace {
     I32 g_nRings = 0;
-    constexpr U32 g_bufferFrameDelay = 3;
-    constexpr I32 VTX_PER_TILE_EDGE = 9; // overlap => -2
-    constexpr I32 QUAD_LIST_INDEX_COUNT = (VTX_PER_TILE_EDGE - 1) * (VTX_PER_TILE_EDGE - 1) * 4;
-    constexpr F32 WORLD_SCALE = 1.0f;
-    F32 SNAP_GRID_SIZE = 0;
 
     vectorEASTL<U32> g_indices;
     void CreateTileQuadListIB(vectorEASTL<U32>& indices)
     {
-        indices.resize(QUAD_LIST_INDEX_COUNT, 0u);
+        indices.resize(Terrain::QUAD_LIST_INDEX_COUNT, 0u);
         I32 index = 0;
 
         // The IB describes one tile of NxN patches.
         // Four vertices per quad, with VTX_PER_TILE_EDGE-1 quads per tile edge.
-        for (I32 y = 0; y < VTX_PER_TILE_EDGE - 1; ++y)
+        for (I32 y = 0; y < Terrain::VTX_PER_TILE_EDGE - 1; ++y)
         {
-            const I32 rowStart = y * VTX_PER_TILE_EDGE;
+            const I32 rowStart = y * Terrain::VTX_PER_TILE_EDGE;
 
-            for (I32 x = 0; x < VTX_PER_TILE_EDGE - 1; ++x)
+            for (I32 x = 0; x < Terrain::VTX_PER_TILE_EDGE - 1; ++x)
             {
                 indices[index++] = rowStart + x;
-                indices[index++] = rowStart + x + VTX_PER_TILE_EDGE;
-                indices[index++] = rowStart + x + VTX_PER_TILE_EDGE + 1;
+                indices[index++] = rowStart + x + Terrain::VTX_PER_TILE_EDGE;
+                indices[index++] = rowStart + x + Terrain::VTX_PER_TILE_EDGE + 1;
                 indices[index++] = rowStart + x + 1;
             }
         }
-        assert(index == QUAD_LIST_INDEX_COUNT);
+        assert(index == Terrain::QUAD_LIST_INDEX_COUNT);
     }
 }
 
@@ -168,18 +163,14 @@ void Terrain::postBuild() {
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
     I32 widths[] = { 0, 16, 16, 16, 16 };
-    g_nRings = sizeof(widths) / sizeof(widths[0]) - 1;		// widths[0] doesn't define a ring hence -1
+    g_nRings = sizeof(widths) / sizeof(widths[0]) - 1; // widths[0] doesn't define a ring hence -1
     assert(g_nRings <= MAX_RINGS);
-
-    const I32 PATCHES_PER_TILE_EDGE = VTX_PER_TILE_EDGE - 1;
 
     F32 tileWidth = 0.125f;
     for (I32 i = 0; i != g_nRings && i != MAX_RINGS; ++i) {
         _tileRings[i] = std::make_shared<TileRing>(_context, widths[i] / 2, widths[i + 1], tileWidth);
         tileWidth *= 2.0f;
     }
-
-    SNAP_GRID_SIZE = WORLD_SCALE * _tileRings[g_nRings - 1]->tileSize() / PATCHES_PER_TILE_EDGE;
 
     CreateTileQuadListIB(g_indices);
 

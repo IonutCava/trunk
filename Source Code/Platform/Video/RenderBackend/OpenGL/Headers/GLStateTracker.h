@@ -180,6 +180,7 @@ namespace Divide {
         vector<BlendingProperties> _blendProperties;
         vector<GLboolean> _blendEnabled;
         GLenum    _currentCullMode;
+        GLenum    _currentFrontFace;
         UColour4  _blendColour = UColour4(0, 0, 0, 0);
         Rect<I32> _activeViewport = Rect<I32>(-1);
         Rect<I32> _activeScissor = Rect<I32>(-1);

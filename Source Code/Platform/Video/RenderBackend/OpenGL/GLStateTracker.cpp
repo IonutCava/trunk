@@ -48,6 +48,7 @@ void GLStateTracker::init(GLStateTracker* base) {
         *this = *base;
     }
     _currentCullMode = GL_BACK;
+    _currentFrontFace = GL_CCW;
     GLUtil::getGLValue(GL_PATCH_VERTICES, _patchVertexCount);
     _init = true;
 }
@@ -640,6 +641,12 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
             }
         }
     }
+
+    if (oldBlock.frontFaceCCW() != newBlock.frontFaceCCW()) {
+        _currentFrontFace = newBlock.frontFaceCCW() ? GL_CCW : GL_CW;
+        glFrontFace(_currentFrontFace);
+    }
+
     // Check rasterization mode
     if (oldBlock.fillMode() != newBlock.fillMode()) {
         glPolygonMode(GL_FRONT_AND_BACK,
@@ -705,6 +712,9 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock) {
             _currentCullMode = targetMode;
         }
     }
+
+    _currentFrontFace = newBlock.frontFaceCCW() ? GL_CCW : GL_CW;
+    glFrontFace(_currentFrontFace);
 
     glPolygonMode(GL_FRONT_AND_BACK, GLUtil::glFillModeTable[to_U32(newBlock.fillMode())]);
     glDepthFunc(GLUtil::glCompareFuncTable[to_U32(newBlock.zFunc())]);

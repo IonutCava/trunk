@@ -1,29 +1,11 @@
 --Vertex
 
-const int CONTROL_VTX_PER_TILE_EDGE = 9;
-const int PATCHES_PER_TILE_EDGE = 8;
-const float RECIP_CONTROL_VTX_PER_TILE_EDGE = 1.0 / 9;
-
 uniform float g_tileSize = 1.0f;
 
 layout(location = ATTRIB_POSITION) in vec2 inPosition;
 layout(location = ATTRIB_TEXCOORD) in vec4 inAdjacency;
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
-
-layout(location = 10) out int LoD;
-layout(location = 11) out vec2 _waterDetails;
-
-vec3 ReconstructPosition(out ivec2 intUV)
-{
-    float iv = floor(gl_VertexID * RECIP_CONTROL_VTX_PER_TILE_EDGE);
-    float iu = gl_VertexID - iv * CONTROL_VTX_PER_TILE_EDGE;
-    float u = iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
-    float v = iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
-
-    intUV = ivec2(iu, iv);
-    return vec3(u * g_tileSize * 100 + inPosition[0], 0, v * g_tileSize * 100 + inPosition[1]);
-}
 
 vec2 worldXZtoHeightUV(vec2 worldXZ)
 {
@@ -48,27 +30,29 @@ float SampleHeightForVS(in vec2 uv)
 
 void main(void)
 {
-    VAR.dvd_baseInstance = gl_BaseInstanceARB;
+    VAR.dvd_baseInstance = DATA_IDX;
     VAR.dvd_instanceID = gl_InstanceID;
     VAR.dvd_drawID = gl_DrawIDARB;
 
-    LoD = 0;
-    _waterDetails = vec2(0);
     // Send vertex position along
-    ivec2 intUV;
-    vec3 displacedPos = ReconstructPosition(intUV);
+    float iv = floor(gl_VertexID * RECIP_CONTROL_VTX_PER_TILE_EDGE);
+    float iu = gl_VertexID - iv * CONTROL_VTX_PER_TILE_EDGE;
+    float u = iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
+    float v = iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
+
+    ivec2 intUV = ivec2(iu, iv);
+    vec3 displacedPos = vec3(u * g_tileSize + inPosition.x, 10.0f, v * g_tileSize + inPosition.y);
     VAR._texCoord = worldXZtoHeightUV(displacedPos.xz);
-    displacedPos.y = SampleHeightForVS(VAR._texCoord);
+    //displacedPos.y = SampleHeightForVS(VAR._texCoord);
 
     VAR._vertexW = inAdjacency;
 
-    gl_Position = dvd_ViewProjectionMatrix * vec4(displacedPos, 1.0f);
+    gl_Position = vec4(displacedPos, 1.0f);
 }
 
 --TessellationC
 
 const float WORLD_SCALE = 1.0f;
-const int PATCHES_PER_TILE_EDGE = 8;
 
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
 #define id gl_InvocationID
@@ -80,7 +64,7 @@ layout(vertices = 4) out;
 layout(location = 10) out float tcs_tessLevel[];
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
-uniform float tessTriangleWidth = 30.0f;
+uniform float tessTriangleWidth = 10.0f;
 
 float saturate(in float val) { return clamp(val, 0.0f, 1.0f); }
 
@@ -216,10 +200,10 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
     return SphereToScreenSpaceTessellation(p0, p1, diameter);
 }
 
-#define neighbourMinusX 0
-#define neighbourMinusY 1
-#define neighbourPlusX 2
-#define neighbourPlusY 3
+#define neighbourMinusX x
+#define neighbourMinusY y
+#define neighbourPlusX  z
+#define neighbourPlusY  w
 
 void main(void)
 {
@@ -239,10 +223,10 @@ void main(void)
         PassData(id);
 
         // Outer tessellation level
-        gl_TessLevelOuter[0] = getTessLevel(0, 1, sideLen);
-        gl_TessLevelOuter[3] = getTessLevel(1, 2, sideLen);
-        gl_TessLevelOuter[2] = getTessLevel(2, 3, sideLen);
-        gl_TessLevelOuter[1] = getTessLevel(3, 0, sideLen);
+        gl_TessLevelOuter[0] = 4;// getTessLevel(0, 1, sideLen);
+        gl_TessLevelOuter[3] = 4;// getTessLevel(1, 2, sideLen);
+        gl_TessLevelOuter[2] = 4;// getTessLevel(2, 3, sideLen);
+        gl_TessLevelOuter[1] = 4;// getTessLevel(3, 0, sideLen);
 
         // Edges that need adjacency adjustment are identified by the per-instance ip[0].adjacency 
         // scalars, in *conjunction* with a patch ID that puts them on the edge of a tile.
@@ -256,29 +240,24 @@ void main(void)
         // is the neighbour's size relative to ours.  Similarly for plus and Y, etc.  You really
         // need a diagram to make sense of the adjacency conditions in the if statements. :-(
         // These four ifs deal with neighbours that are smaller.
-        if (adjacency[neighbourMinusX] < 0.55 && patchXY.x == 0)
+        /*if (adjacency.neighbourMinusX < 0.55 && patchXY.x == 0)
             gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
-        if (adjacency[neighbourMinusY] < 0.55 && patchXY.y == 0)
+        if (adjacency.neighbourMinusY < 0.55 && patchXY.y == 0)
             gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
-        if (adjacency[neighbourPlusX] < 0.55 && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+        if (adjacency.neighbourPlusX < 0.55 && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
-        if (adjacency[neighbourPlusY] < 0.55 && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+        if (adjacency.neighbourPlusY < 0.55 && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[3] = SmallerNeighbourAdjacencyFix(1, 2, sideLen);
 
         // Deal with neighbours that are larger than us.
-        if (adjacency[neighbourMinusX] > 1 && patchXY.x == 0)
+        if (adjacency.neighbourMinusX > 1 && patchXY.x == 0)
             gl_TessLevelOuter[0] = LargerNeighbourAdjacencyFix(0, 1, patchXY.y, sideLen);
-        if (adjacency[neighbourMinusY] > 1 && patchXY.y == 0)
+        if (adjacency.neighbourMinusY > 1 && patchXY.y == 0)
             gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
-        if (adjacency[neighbourPlusX] > 1 && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+        if (adjacency.neighbourPlusX > 1 && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
-        if (adjacency[neighbourPlusY] > 1 && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
-            gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
-
-        gl_TessLevelOuter[0] = 2;
-        gl_TessLevelOuter[3] = 2;
-        gl_TessLevelOuter[2] = 2;
-        gl_TessLevelOuter[1] = 2;
+        if (adjacency.neighbourPlusY > 1 && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+            gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.*/
 
        // Inner tessellation level
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[2]);
@@ -288,8 +267,6 @@ void main(void)
 
     // Pass the patch verts along
     gl_out[id].gl_Position = gl_in[id].gl_Position;
-    gl_out[id].gl_Position.y = 0.0f;
-
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[id] = gl_TessLevelOuter[0];
 }
@@ -316,18 +293,16 @@ layout(location = 11) smooth out vec2 _waterDetails;
 // Templates please!!!
 vec2 Bilerp(vec2 v0, vec2 v1, vec2 v2, vec2 v3, vec2 i)
 {
-    vec2 bottom = mix(v0, v3, i.x);
-    vec2 top = mix(v1, v2, i.x);
-    vec2 result = mix(bottom, top, i.y);
-    return result;
+    vec2 v0Out = mix(v0, v1, i.x);
+    vec2 v1Out = mix(v3, v2, i.x);
+    return mix(v0Out, v1Out, i.y);
 }
 
 vec3 Bilerp(vec3 v0, vec3 v1, vec3 v2, vec3 v3, vec2 i)
 {
-    vec3 bottom = mix(v0, v3, i.x);
-    vec3 top = mix(v1, v2, i.x);
-    vec3 result = mix(bottom, top, i.y);
-    return result;
+    vec3 v0Out = mix(v0, v1, i.x);
+    vec3 v1Out = mix(v3, v2, i.x);
+    return mix(v0Out, v1Out, i.y);
 }
 
 vec4 getHeightOffsets(in vec2 tex_coord) {
@@ -366,16 +341,17 @@ void main()
     PassData(0);
 
     // Terrain heightmap coords
-    _out._texCoord = Bilerp(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord, gl_TessCoord.xy);
-    const vec4 heightOffsets = getHeightOffsets(_out._texCoord);
-
+    _out._texCoord = Bilerp(_in[0]._texCoord, _in[1]._texCoord, _in[2]._texCoord, _in[3]._texCoord, gl_TessCoord.xy);
     // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
     vec3 pos = Bilerp(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz, gl_in[3].gl_Position.xyz, gl_TessCoord.xy);
-    // Sample the heightmap and offset y position of vertex
-    pos.y = getHeight(heightOffsets);
+    pos.x *= 10;// TERRAIN_WIDTH;
+    pos.z *= 10;// TERRAIN_LENGTH;
 
-    // Project the vertex to clip space and send it along
-    _out._vertexW = vec4(pos, 1.0f);
+    // Sample the heightmap and offset y position of vertex
+    const vec4 heightOffsets = getHeightOffsets(_out._texCoord);
+    pos.y = 10.0f;// getHeight(heightOffsets);
+
+    _out._vertexW = dvd_WorldMatrix(DATA_IDX) * vec4(pos, 1.0f);
 
 #if !defined(SHADOW_PASS)
     const mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
@@ -629,6 +605,9 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
+    writeOutput(vec4(vec3(0.0f), 1.0f));
+    return;
+
     TerrainData data = BuildTerrainData(_waterDetails);
 
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
@@ -704,7 +683,8 @@ void main(void)
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
-    writeOutput(colourOut);
+    writeOutput(vec3(0.0f));
+    //writeOutput(colourOut);
 
 #endif
 }

@@ -14,25 +14,24 @@
 
 #include "stdafx.h"
 #include "Headers/TileRing.h"
+#include "Headers/Terrain.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
-    struct Adjacency
-    {
-        // These are the size of the neighbours along +/- x or y axes.  For interior tiles
-        // this is 1.  For edge tiles it is 0.5 or 2.0.
-        F32 neighbourMinusX;
-        F32 neighbourMinusY;
-        F32 neighbourPlusX;
-        F32 neighbourPlusY;
-    };
+    // These are the size of the neighbours along +/- x or y axes.  For interior tiles
+    // this is 1.  For edge tiles it is 0.5 or 2.0.
+#   define neighbourMinusX x
+#   define neighbourMinusY y
+#   define neighbourPlusX  z
+#   define neighbourPlusY  w
 
     struct InstanceData
     {
-        F32 x, y;
-        Adjacency adjacency;
+        vec4<F32> adjacency;
+        vec2<F32> pos;
+        vec2<F32> _padding_;
     };
 
     TileRing::TileRing(GFXDevice& device, I32 holeWidth, I32 outerWidth, F32 tileSize) :
@@ -40,8 +39,7 @@ namespace Divide {
         _outerWidth(outerWidth),
         _ringWidth((outerWidth - holeWidth) / 2),   // No remainder - see assert below.
         _nTiles(outerWidth* outerWidth - holeWidth * holeWidth),
-        _tileSize(tileSize),
-        _pVBData(nullptr)
+        _tileSize(tileSize)
     {
         _buffer = device.newGVD(1, Util::StringFormat("Terrain Tile Ring [ %d - %d - %5.2f ]", holeWidth, outerWidth, tileSize).c_str());
         assert((outerWidth - holeWidth) % 2 == 0);
@@ -50,7 +48,6 @@ namespace Divide {
 
     TileRing::~TileRing()
     {
-        MemoryManager::DELETE_ARRAY(_pVBData);
     }
 
     void TileRing::CreateInputLayout(const GenericVertexData::IndexBuffer& idxBuff)
@@ -62,7 +59,7 @@ namespace Divide {
                   2,
                   GFXDataFormat::FLOAT_32,
                   false,
-                  offsetof(InstanceData, x));
+                  offsetof(InstanceData, pos));
 
         AttributeDescriptor& desc2 = _buffer->attribDescriptor(to_base(AttribLocation::TEXCOORD));
         desc2.set(0,
@@ -136,7 +133,7 @@ namespace Divide {
     void TileRing::CreateInstanceDataVB()
     {
         I32 index = 0;
-        _pVBData = MemoryManager_NEW InstanceData[_nTiles];
+        vector<InstanceData> vbData(_nTiles);
 
         const F32 halfWidth = 0.5f * (F32)_outerWidth;
         for (I32 y = 0; y < _outerWidth; ++y)
@@ -145,15 +142,16 @@ namespace Divide {
             {
                 if (InRing(x, y))
                 {
-                    _pVBData[index].x = _tileSize * ((F32)x - halfWidth);
-                    _pVBData[index].y = _tileSize * ((F32)y - halfWidth);
-                    AssignNeighbourSizes(x, y, &(_pVBData[index].adjacency));
+                    vbData[index].pos.x = _tileSize * ((F32)x - halfWidth);
+                    vbData[index].pos.y = _tileSize * ((F32)y - halfWidth);
+                    AssignNeighbourSizes(x, y, &(vbData[index].adjacency));
                     index++;
                 }
             }
         }
         assert(index == _nTiles);
 
+        _buffer->create(1);
 
         GenericVertexData::SetBufferParams params = {};
         params._buffer = 0;
@@ -162,10 +160,9 @@ namespace Divide {
         params._useRingBuffer = false;
         params._updateFrequency = BufferUpdateFrequency::ONCE;
         params._sync = false;
-        params._data = (bufferPtr)_pVBData;
+        params._data = vbData.data();
         params._instanceDivisor = 1;
 
-        _buffer->create(1);
         _buffer->setBuffer(params);
     }
 }; //namespace Divide

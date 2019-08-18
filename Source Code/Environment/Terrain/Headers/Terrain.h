@@ -76,6 +76,10 @@ class Terrain : public Object3D {
 
    public:
      static constexpr I32 MAX_RINGS = 10;
+     static constexpr I32 VTX_PER_TILE_EDGE = 9; // overlap => -2
+     static constexpr I32 PATCHES_PER_TILE_EDGE = VTX_PER_TILE_EDGE - 1;
+     static constexpr I32 QUAD_LIST_INDEX_COUNT = (VTX_PER_TILE_EDGE - 1) * (VTX_PER_TILE_EDGE - 1) * 4;
+     static constexpr F32 WORLD_SCALE = 1.0f;
 
    public:
        struct Vert {

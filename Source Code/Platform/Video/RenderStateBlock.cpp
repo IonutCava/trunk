@@ -25,6 +25,7 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _colourWrite(other._colourWrite),
      _cullMode(other._cullMode),
      _cullEnabled(other._cullEnabled),
+     _frontFaceCCW(other._frontFaceCCW),
      _depthTestEnabled(other._depthTestEnabled),
      _zFunc(other._zFunc),
      _zBias(other._zBias),
@@ -61,52 +62,88 @@ void RenderStateBlock::flipCullMode() {
 }
 
 void RenderStateBlock::setCullMode(CullMode mode) {
-    _cullMode = mode;
-    _cullEnabled = _cullMode == CullMode::NONE ? false : true;
+    if (_cullMode != mode) {
+        _cullMode = mode;
+        _cullEnabled = _cullMode == CullMode::NONE ? false : true;
+        _dirty = true;
+    }
+}
+
+void RenderStateBlock::flipFrontFace() {
+    _frontFaceCCW = !_frontFaceCCW;
     _dirty = true;
 }
 
+void RenderStateBlock::setFrontFaceCCW(bool state) {
+    if (_frontFaceCCW != state) {
+        _frontFaceCCW = state;
+        _dirty = true;
+    }
+}
 void RenderStateBlock::depthTestEnabled(const bool enable) {
-    _depthTestEnabled = enable;
-    _dirty = true;
+    if (_depthTestEnabled != enable) {
+        _depthTestEnabled = enable;
+        _dirty = true;
+    }
 }
 
 void RenderStateBlock::setColourWrites(bool red,
                                        bool green,
                                        bool blue,
                                        bool alpha) {
-    _colourWrite.b[0] = red ? 1 : 0;
-    _colourWrite.b[1] = green ? 1 : 0;
-    _colourWrite.b[2] = blue ? 1 : 0;
-    _colourWrite.b[3] = alpha ? 1 : 0;
-    _dirty = true;
+    const U8 r = red ? 1 : 0;
+    const U8 g = green ? 1 : 0;
+    const U8 b = blue ? 1 : 0;
+    const U8 a = alpha ? 1 : 0;
+
+    if (_colourWrite.b[0] != r ||
+        _colourWrite.b[1] != g ||
+        _colourWrite.b[2] != b ||
+        _colourWrite.b[3] != a)
+    {
+        _colourWrite.b[0] = r;
+        _colourWrite.b[1] = g;
+        _colourWrite.b[2] = b;
+        _colourWrite.b[3] = a;
+        _dirty = true;
+    }
 }
 
 void RenderStateBlock::setScissorTest(const bool enable) {
-    _scissorTest = enable;
-    _dirty = true;
+    if (_scissorTest != enable) {
+        _scissorTest = enable;
+        _dirty = true;
+    }
 }
 
 void RenderStateBlock::setZBias(F32 zBias, F32 zUnits) {
-    _zBias = zBias;
-    _zUnits = zUnits;
-    _dirty = true;
+    if (!COMPARE(_zBias, zBias) || !COMPARE(_zUnits, zUnits)) {
+        _zBias = zBias;
+        _zUnits = zUnits;
+        _dirty = true;
+    }
 }
 
 void RenderStateBlock::setZFunc(ComparisonFunction zFunc) {
-    _zFunc = zFunc;
-    _dirty = true;
+    if (_zFunc != zFunc) {
+        _zFunc = zFunc;
+        _dirty = true;
+    }
 }
 
 void RenderStateBlock::setFillMode(FillMode mode) {
-    _fillMode = mode;
-    _dirty = true;
+    if (_fillMode != mode) {
+        _fillMode = mode;
+        _dirty = true;
+    }
 }
 
 void RenderStateBlock::setStencilReadWriteMask(U32 read, U32 write) {
-    _stencilMask = read;
-    _stencilWriteMask = write;
-    _dirty = true;
+    if (_stencilMask != read || _stencilWriteMask != write) {
+        _stencilMask = read;
+        _stencilWriteMask = write;
+        _dirty = true;
+    }
 }
 
 void RenderStateBlock::setStencil(bool enable,
@@ -115,13 +152,21 @@ void RenderStateBlock::setStencil(bool enable,
                                   StencilOperation stencilZFailOp,
                                   StencilOperation stencilPassOp,
                                   ComparisonFunction stencilFunc) {
-    _stencilEnable = enable;
-    _stencilRef = stencilRef;
-    _stencilFailOp = stencilFailOp;
-    _stencilZFailOp = stencilZFailOp;
-    _stencilPassOp = stencilPassOp;
-    _stencilFunc = stencilFunc;
-    _dirty = true;
+    if (_stencilEnable != enable ||
+        _stencilRef != stencilRef ||
+        _stencilFailOp != stencilFailOp ||
+        _stencilZFailOp != stencilZFailOp ||
+        _stencilPassOp != stencilPassOp ||
+        _stencilFunc != stencilFunc) 
+    {
+        _stencilEnable = enable;
+        _stencilRef = stencilRef;
+        _stencilFailOp = stencilFailOp;
+        _stencilZFailOp = stencilZFailOp;
+        _stencilPassOp = stencilPassOp;
+        _stencilFunc = stencilFunc;
+        _dirty = true;
+    }
 }
 
 void RenderStateBlock::setDefaultValues() {
@@ -132,6 +177,7 @@ void RenderStateBlock::setDefaultValues() {
     _depthTestEnabled = true;
     _cullMode = CullMode::CW;
     _cullEnabled = true;
+    _frontFaceCCW = true;
     _fillMode = FillMode::SOLID;
     _stencilMask = 0xFFFFFFFF;
     _stencilWriteMask = 0xFFFFFFFF;
@@ -198,6 +244,7 @@ size_t RenderStateBlock::getHash() const {
         Util::Hash_combine(_hash, _stencilRef);
         Util::Hash_combine(_hash, _stencilMask);
         Util::Hash_combine(_hash, _stencilWriteMask);
+        Util::Hash_combine(_hash, _frontFaceCCW);
         Util::Hash_combine(_hash, to_U32(_stencilFailOp));
         Util::Hash_combine(_hash, to_U32(_stencilZFailOp));
         Util::Hash_combine(_hash, to_U32(_stencilPassOp));

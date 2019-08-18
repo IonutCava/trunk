@@ -346,8 +346,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
-    //shaderDescriptor._modules.push_back(tescModule);
-    //shaderDescriptor._modules.push_back(teseModule);
+    shaderDescriptor._modules.push_back(tescModule);
+    shaderDescriptor._modules.push_back(teseModule);
     if (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE) {
         //shaderDescriptor._modules.push_back(geomModule);
     }
@@ -372,6 +372,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
         }
 
+        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", Terrain::PATCHES_PER_TILE_EDGE), true));
+        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %d", Terrain::VTX_PER_TILE_EDGE), true));
+        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("RECIP_CONTROL_VTX_PER_TILE_EDGE %5.2f", 1.0f / Terrain::VTX_PER_TILE_EDGE), true));
         shaderModule._defines.push_back(std::make_pair(Util::StringFormat("DETAIL_LEVEL %d", context.config().rendering.terrainDetailLevel), true));
         shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
         shaderModule._defines.push_back(std::make_pair("DATA_IDX " + to_stringImpl(Attorney::TerrainLoader::dataIdx(*terrain)), true));
@@ -510,7 +513,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(CullMode::CW);
+    terrainRenderState.setCullMode(CullMode::CCW);
+    terrainRenderState.setFrontFaceCCW(false);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
 
     // Generate a render state for drawing reflections
@@ -518,14 +522,15 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setCullMode(CullMode::CCW);
+    terrainRenderStateReflection.setFrontFaceCCW(false);
+    terrainRenderStateReflection.setCullMode(CullMode::CW);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
-    terrainRenderStatePrePassReflection.setCullMode(CullMode::CCW);
+    terrainRenderStatePrePassReflection.setCullMode(CullMode::CW);
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(CullMode::CW);
+    terrainRenderStateDepth.setCullMode(CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setZFunc(ComparisonFunction::LESS);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);

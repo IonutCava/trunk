@@ -59,8 +59,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     class GenericVertexData;
     struct InstanceData;
-    struct Adjacency;
-
+    typedef vec4<F32> Adjacency;
     // Int dimensions specified to the ctor are in numbers of tiles.  It's symmetrical in
     // each direction.  (Don't read much into the exact numbers of #s in this diagram.)
     //
@@ -101,7 +100,6 @@ namespace Divide {
         const I32 _holeWidth, _outerWidth, _ringWidth;
         const I32 _nTiles;
         const F32 _tileSize;
-        InstanceData* _pVBData;
         GenericVertexData* _buffer;
     };
 }; //namespace Divide
