@@ -91,7 +91,7 @@ void glGenericVertexData::rebuildCountAndIndexData(U32 drawCount, U32 indexCount
     }
 
     if (_indexBuffer > 0 && (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex)) {
-        U32 idxCount = drawCount * _idxBuffer.count;
+        U32 idxCount = to_U32(drawCount * _idxBuffer.count);
 
         if (_indexOffsetData.size() < idxCount) {
             _indexOffsetData.resize(idxCount, firstIndex);

@@ -41,7 +41,7 @@ void main(void)
     float v = iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
 
     ivec2 intUV = ivec2(iu, iv);
-    vec3 displacedPos = vec3(u * g_tileSize + inPosition.x, 10.0f, v * g_tileSize + inPosition.y);
+    vec3 displacedPos = vec3(u * g_tileSize + inPosition.x, 0.0f, v * g_tileSize + inPosition.y);
     VAR._texCoord = worldXZtoHeightUV(displacedPos.xz);
     //displacedPos.y = SampleHeightForVS(VAR._texCoord);
 
@@ -180,7 +180,7 @@ float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in 
     // +  <----  p0   Us   p1		Move p0
     // |    0    |    1    |		patchIdx % 2 
     //
-    if (patchIdx % 2)
+    if (patchIdx % 2 != 0)
         p0 += (p0 - p1);
     else
         p1 += (p1 - p0);
@@ -605,7 +605,7 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
-    writeOutput(vec4(vec3(0.0f), 1.0f));
+    writeOutput(vec3(0.3f));
     return;
 
     TerrainData data = BuildTerrainData(_waterDetails);
@@ -621,8 +621,7 @@ void main(void)
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
-    //writeOutput(colourOut);
-    writeOutput(vec4(vec3(0.0f), 1.0f));
+    writeOutput(colourOut);
 }
 
 --Fragment.MainPass
@@ -666,6 +665,7 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
+
     TerrainData data = BuildTerrainData(_waterDetails);
 
 #if defined(PRE_PASS)
@@ -683,8 +683,7 @@ void main(void)
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
-    writeOutput(vec3(0.0f));
-    //writeOutput(colourOut);
+    writeOutput(colourOut);
 
 #endif
 }

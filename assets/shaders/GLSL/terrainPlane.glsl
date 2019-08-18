@@ -41,6 +41,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterCaustics;
 
 
 void main(void) {
+    discard;
     vec4 colourOut = (texture(texWaterCaustics, _scrollingUV.st) +
                       texture(texWaterCaustics, _scrollingUV.pq)) * 0.5;
 
@@ -52,5 +53,6 @@ void main(void) {
 #include "prePass.frag"
 
 void main() {
+    discard;
     outputNoVelocity(VAR._texCoord, 1.0f);
 }
