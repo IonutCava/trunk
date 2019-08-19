@@ -155,8 +155,6 @@ class Terrain : public Object3D {
     EditorDataState _editorDataDirtyState;
     SceneGraphNode* _vegetationGrassNode;
     std::shared_ptr<TerrainDescriptor> _descriptor;
-
-    static std::atomic_uint g_NodeDataIndex;
 };
 
 namespace Attorney {

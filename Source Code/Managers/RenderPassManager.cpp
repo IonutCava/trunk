@@ -36,6 +36,11 @@ namespace Divide {
         thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
     };
 
+    std::atomic_uint RenderPassManager::g_NodeDataIndex = 0;
+    U32 RenderPassManager::getUniqueNodeDataIndex() {
+        return g_NodeDataIndex.fetch_add(1);
+    }
+
     RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
         : KernelComponent(parent),
         _renderQueue(parent),
@@ -360,6 +365,7 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
     }
 
     bool skip = false;
+    U32 totalNodes = 0;
     for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
         if (skip) {
             break;
@@ -391,11 +397,12 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                 g_usedIndices.insert(params._dataIdx);
                 ++params._nodeCount;
                 ++g_freeCounter;
+                ++totalNodes;
             }
         }
     }
 
-    U32 nodeCount = to_U32(*std::max_element(std::cbegin(g_usedIndices), std::cend(g_usedIndices)));
+    U32 nodeCount = std::max(totalNodes, to_U32(*std::max_element(std::cbegin(g_usedIndices), std::cend(g_usedIndices))));
     U32 cmdCount = to_U32(g_drawCommands.size());
 
     RenderPass::BufferData bufferData = getBufferData(stagePass);

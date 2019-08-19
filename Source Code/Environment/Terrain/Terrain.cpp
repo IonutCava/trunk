@@ -8,6 +8,7 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "ECS/Components/Headers/TransformComponent.h"
@@ -49,15 +50,13 @@ namespace {
     }
 }
 
-std::atomic_uint Terrain::g_NodeDataIndex = 0;
-
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
       _drawBBoxes(false),
       _vegetationGrassNode(nullptr),
       _editorDataDirtyState(EditorDataState::IDLE)
 {
-    _nodeDataIndex = g_NodeDataIndex.fetch_add(1);
+    _nodeDataIndex = RenderPassManager::getUniqueNodeDataIndex();
 }
 
 Terrain::~Terrain()

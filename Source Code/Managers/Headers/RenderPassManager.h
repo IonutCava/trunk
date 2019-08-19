@@ -100,6 +100,8 @@ public:
     void doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut);
     void postInit();
 
+    static U32 getUniqueNodeDataIndex();
+
 private:
     // Returns false if we skipped the pre-pass step
     bool prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
@@ -133,6 +135,9 @@ private:
     Time::ProfileTimer* _flushCommandBufferTimer;
     Time::ProfileTimer* _postFxRenderTimer;
     std::array<vectorEASTLFast<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
+
+    // Used to reserve an index into node data buffers. Usefull if we can't use baseInstance as an index, for example
+    static std::atomic_uint g_NodeDataIndex;
 };
 
 };  // namespace Divide
