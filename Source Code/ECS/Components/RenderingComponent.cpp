@@ -455,44 +455,34 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
 U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStage renderStage, const vec4<U16>& lodThresholds) {
     U8 lodLevel = 0;
+    // ToDo: Hack for lower LoD rendering in reflection and refraction passes
+    if (renderStage == RenderStage::REFLECTION || renderStage == RenderStage::REFRACTION) {
+        lodLevel = 1;
+    }
 
     if (_lodLocked) {
         return lodLevel;
     
     }
-    const U32 SCENE_NODE_LOD0_SQ = lodThresholds.x * lodThresholds.x;
-    const U32 SCENE_NODE_LOD1_SQ = lodThresholds.y * lodThresholds.y;
-    const U32 SCENE_NODE_LOD2_SQ = lodThresholds.z * lodThresholds.z;
-    const U32 SCENE_NODE_LOD3_SQ = lodThresholds.w * lodThresholds.w;
-
     const vec3<F32>& eyePos = camera.getEye();
     BoundsComponent* bounds = _parentSGN.get<BoundsComponent>();
 
     const BoundingSphere& bSphere = bounds->getBoundingSphere();
-    F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
-
-    if (cameraDistanceSQ <= SCENE_NODE_LOD0_SQ) {
+    if (bSphere.getCenter().distanceSquared(eyePos) <= SQUARED(lodThresholds.x)) {
         return lodLevel;
     }
 
-    cameraDistanceSQ = bounds->getBoundingBox().nearestDistanceFromPointSquared(eyePos);
-    if (cameraDistanceSQ > SCENE_NODE_LOD0_SQ) {
-        lodLevel = 1;
-        if (cameraDistanceSQ > SCENE_NODE_LOD1_SQ) {
-            lodLevel = 2;
-            if (cameraDistanceSQ > SCENE_NODE_LOD2_SQ) {
-                lodLevel = 3;
-                if (cameraDistanceSQ > SCENE_NODE_LOD3_SQ) {
-                    lodLevel = 4;
-                }
+    lodLevel += 1;
+
+    const F32 cameraDistanceSQ = bounds->getBoundingBox().nearestDistanceFromPointSquared(eyePos);
+    if (cameraDistanceSQ > SQUARED(lodThresholds.y)) {
+        lodLevel += 1;
+        if (cameraDistanceSQ > SQUARED(lodThresholds.z)) {
+            lodLevel += 1;
+            if (cameraDistanceSQ > SQUARED(lodThresholds.w)) {
+                lodLevel += 1;
             }
         }
-        
-    }
-
-    // ToDo: Hack for lower LoD rendering in reflection and refraction passes
-    if (renderStage == RenderStage::REFLECTION || renderStage == RenderStage::REFRACTION) {
-        lodLevel += 1;
     }
 
     return lodLevel;
@@ -570,7 +560,7 @@ void RenderingComponent::updateReflectionIndex(ReflectorType type, I32 index) {
             _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
                 ? RenderTargetUsage::REFLECTION_PLANAR
                 : RenderTargetUsage::REFLECTION_CUBE,
-                index));
+                to_U16(index)));
         const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
         _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
                                              ? RenderTargetUsage::REFLECTION_PLANAR
@@ -587,7 +577,7 @@ bool RenderingComponent::clearReflection() {
     return true;
 }
 
-bool RenderingComponent::updateReflection(U32 reflectionIndex,
+bool RenderingComponent::updateReflection(U16 reflectionIndex,
                                           Camera* camera,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut)
@@ -651,7 +641,7 @@ void RenderingComponent::updateRefractionIndex(ReflectorType type, I32 index) {
     _refractionIndex = index;
     if (_refractionIndex > -1) {
         RenderTarget& refractionTarget =
-            _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION_PLANAR, index));
+            _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION_PLANAR, to_U16(index)));
         const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
         _externalTextures[getUsageIndex(RenderTargetUsage::REFRACTION_PLANAR)] = refTex;
     } else {
@@ -664,7 +654,7 @@ bool RenderingComponent::clearRefraction() {
     return true;
 }
 
-bool RenderingComponent::updateRefraction(U32 refractionIndex,
+bool RenderingComponent::updateRefraction(U16 refractionIndex,
                                           Camera* camera,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut) {

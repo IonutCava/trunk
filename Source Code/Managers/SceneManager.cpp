@@ -486,17 +486,23 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
 
 VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
     const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
-    vectorEASTL<SceneGraphNode*> allNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
-    vectorEASTL<SceneGraphNode*> otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
-    otherNodes.erase(eastl::remove_if(eastl::begin(otherNodes),
-                                      eastl::end(otherNodes),
-                                      [](SceneGraphNode* node) -> bool {
-                                          RenderingComponent* rComp = node->get<RenderingComponent>();
-                                          return !(rComp->getMaterialInstance() && rComp->getMaterialInstance()->isReflective());
-                                      }),
-                    eastl::end(otherNodes));
+    const vectorEASTL<SceneGraphNode*>& waterNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
+    const vectorEASTL<SceneGraphNode*>& otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
 
-    allNodes.insert(eastl::end(allNodes), eastl::begin(otherNodes), eastl::end(otherNodes));
+    vectorEASTL<SceneGraphNode*> allNodes;
+    allNodes.reserve(waterNodes.size() + otherNodes.size());
+
+    eastl::copy(eastl::cbegin(waterNodes),
+                eastl::cend(waterNodes),
+                eastl::back_inserter(allNodes));
+
+    eastl::copy_if(eastl::cbegin(otherNodes),
+                   eastl::cend(otherNodes),
+                   eastl::back_inserter(allNodes),
+                   [](SceneGraphNode* node) -> bool {
+                        RenderingComponent* rComp = node->get<RenderingComponent>();
+                        return rComp->getMaterialInstance() && rComp->getMaterialInstance()->isReflective();
+                   });
 
     if (inView) {
         NodeCullParams cullParams = {};
@@ -514,17 +520,23 @@ VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, Ren
 
 VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
     const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
-    vectorEASTL<SceneGraphNode*> allNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
-    vectorEASTL<SceneGraphNode*> otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
-    otherNodes.erase(eastl::remove_if(eastl::begin(otherNodes),
-                                      eastl::end(otherNodes),
-                                      [](SceneGraphNode* node) -> bool {
-                                          RenderingComponent* rComp = node->get<RenderingComponent>();
-                                          return !(rComp->getMaterialInstance() && rComp->getMaterialInstance()->isRefractive());
-                                      }),
-                    eastl::end(otherNodes));
+    const vectorEASTL<SceneGraphNode*>& waterNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
+    const vectorEASTL<SceneGraphNode*>& otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
 
-    allNodes.insert(eastl::end(allNodes), eastl::begin(otherNodes), eastl::end(otherNodes));
+    vectorEASTL<SceneGraphNode*> allNodes;
+    allNodes.reserve(waterNodes.size() + otherNodes.size());
+
+    eastl::copy(eastl::cbegin(waterNodes),
+                eastl::cend(waterNodes),
+                eastl::back_inserter(allNodes));
+
+    eastl::copy_if(eastl::cbegin(otherNodes),
+                   eastl::cend(otherNodes),
+                   eastl::back_inserter(allNodes),
+                   [](SceneGraphNode* node) -> bool {
+                        RenderingComponent* rComp = node->get<RenderingComponent>();
+                        return rComp->getMaterialInstance() && rComp->getMaterialInstance()->isRefractive();
+                   });
 
     if (inView) {
         NodeCullParams cullParams = {};

@@ -132,13 +132,20 @@ namespace Divide {
                     assert(buf->empty());
 
                     Time::ProfileTimer& timer = *_postFxRenderTimer;
-                    PostFX& postFX = parent().platformContext().gfx().postFX();
+                    GFXDevice& gfx = parent().platformContext().gfx();
+                    PostFX& postFX = gfx.postFX();
 
                     postFXTask = CreateTask(pool,
                                             nullptr,
-                                            [buf, &postFX, &cam, &timer](const Task & parentTask) {
+                                            [buf, &gfx, &postFX, &cam, &timer](const Task & parentTask) {
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
+
+                                                GFX::CopyTextureCommand copyCmd = {};
+                                                copyCmd._source = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+                                                copyCmd._destination = gfx.getPrevDepthBuffer();
+                                                GFX::EnqueueCommand(*buf, copyCmd);
+
                                                 buf->batch();
                                             },
                                             "PostFX pass task");
@@ -377,7 +384,7 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
             RefreshNodeDataParams params(g_drawCommands, bufferInOut);
             params._camera = &camera;
             params._stagePass = stagePass;
-            if (params._nodeCount == Config::MAX_VISIBLE_NODES) {
+            if (totalNodes == Config::MAX_VISIBLE_NODES) {
                 skip = true;
                 break;
             }
@@ -395,14 +402,13 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                 GFXDevice::NodeData data = processVisibleNode(node, stagePass, playAnimations, camera.getViewMatrix());
                 g_nodeData[params._dataIdx] = data;
                 g_usedIndices.insert(params._dataIdx);
-                ++params._nodeCount;
                 ++g_freeCounter;
                 ++totalNodes;
             }
         }
     }
 
-    U32 nodeCount = std::max(totalNodes, to_U32(*std::max_element(std::cbegin(g_usedIndices), std::cend(g_usedIndices))));
+    U32 nodeCount = std::max(totalNodes, to_U32(*std::max_element(std::cbegin(g_usedIndices), std::cend(g_usedIndices)) + 1));
     U32 cmdCount = to_U32(g_drawCommands.size());
 
     RenderPass::BufferData bufferData = getBufferData(stagePass);

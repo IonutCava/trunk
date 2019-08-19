@@ -202,13 +202,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
-            GFX::CopyTextureCommand copyCmd = {};
-            copyCmd._source = _context.renderTargetPool().renderTarget(params._target).getAttachment(RTAttachmentType::Depth, 0).texture();
-            copyCmd._destination = _context.getPrevDepthBuffer();
-            GFX::EnqueueCommand(bufferInOut, copyCmd);
-
             _parent.doCustomPass(params, bufferInOut);
-
             _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize(_stageFlag);
 
         } break;

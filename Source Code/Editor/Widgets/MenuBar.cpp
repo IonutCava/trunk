@@ -240,7 +240,7 @@ void MenuBar::drawToolsMenu() {
                                     for (U8 k = 0; k < count; ++k) {
                                         const RTAttachment& attachment = rt->getAttachment(type, k);
                                         const Texture_ptr& tex = attachment.texture();
-                                        if (tex != nullptr && ImGui::MenuItem(attachment.texture()->resourceName().c_str())) {
+                                        if (tex != nullptr && ImGui::MenuItem(tex->resourceName().c_str())) {
                                             _previewTexture = tex;
                                         }
                                     }
@@ -252,6 +252,13 @@ void MenuBar::drawToolsMenu() {
                         ImGui::EndMenu();
                     }
                 }
+            }
+            const Texture_ptr& prevDepthBufferTex = _context.gfx().getPrevDepthBuffer();
+            if (prevDepthBufferTex != nullptr && ImGui::BeginMenu("Misc")) {
+                if (ImGui::MenuItem(prevDepthBufferTex->resourceName().c_str())) {
+                    _previewTexture = prevDepthBufferTex;
+                }
+                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }

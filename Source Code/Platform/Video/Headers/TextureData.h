@@ -35,6 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "RenderAPIEnums.h"
 #include "Core/Headers/Hashable.h"
+#include "Core/Math/Headers/MathVectors.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 
 #include <EASTL/vector_map.h>
@@ -42,6 +43,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <MemoryPool/C-11/MemoryPool.h>
 
 namespace Divide {
+
+struct CopyTexParams {
+    U8 _sourceMipLevel = 0;
+    U8 _targetMipLevel = 0;
+    vec3<U32> _sourceCoords;
+    vec3<U32> _targetCoords;
+};
 
 struct TextureData {
     TextureData() : TextureData(0u, 0u, TextureType::COUNT)
@@ -82,6 +90,9 @@ class TextureDataContainer {
           NOTHING,
           COUNT
       };
+
+      TextureDataContainer();
+      ~TextureDataContainer();
 
       using DataEntries = eastl::vector_map<U8/*binding*/, TextureData>;
 

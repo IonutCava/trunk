@@ -67,7 +67,7 @@ class glTexture final : public Texture,
                   const bufferPtr data,
                   const vec2<U16>& dimensions) override;
 
-    void copy(const Texture_ptr& other) override;
+    void copy(const Texture_ptr& other, const CopyTexParams& params) override;
 
     void setCurrentSampler(const SamplerDescriptor& descriptor) override;
 

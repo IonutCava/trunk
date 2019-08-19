@@ -9,6 +9,13 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
+    TextureDataContainer::TextureDataContainer() {
+        _textures.reserve(to_size(ShaderProgram::TextureUsage::COUNT));
+    }
+
+    TextureDataContainer::~TextureDataContainer()
+    {
+    }
 
     bool TextureDataContainer::set(const TextureDataContainer& other) {
         // EASTL should be fast enough to handle this

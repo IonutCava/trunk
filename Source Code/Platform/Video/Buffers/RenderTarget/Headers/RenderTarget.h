@@ -51,13 +51,13 @@ struct RenderTargetID {
     {
     }
 
-    RenderTargetID(RenderTargetUsage usage, U32 index)
+    RenderTargetID(RenderTargetUsage usage, U16 index)
         : _index(index),
           _usage(usage)
     {
     }
 
-    U32 _index = 0;
+    U16 _index = 0;
     RenderTargetUsage _usage = RenderTargetUsage::COUNT;
 };
 

@@ -27,14 +27,18 @@ layout(location = 1) in vec4 Frag_Color;
 out vec4 Out_Color;
 
 uniform int depthTexture;
+uniform int flip;
 uniform vec2 depthRange;
 uniform ivec4 toggleChannel;
 
 void main()
 {
     Out_Color = Frag_Color;
-
-    vec4 texColor = texture( Texture, Frag_UV.st);
+    vec2 uv = Frag_UV.st;
+    if (flip == 1) {
+        uv.t = 1.0f - uv.t;
+    }
+    vec4 texColor = texture( Texture, uv );
     if (depthTexture == 1) {
         texColor = vec4(ToLinearDepth(texColor.r, dvd_zPlanes * depthRange) * toggleChannel[0]);
     } else {

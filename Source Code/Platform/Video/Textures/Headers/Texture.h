@@ -42,6 +42,8 @@
 #include "Utility/Headers/ImageTools.h"
 
 namespace Divide {
+    
+ TYPEDEF_SMART_POINTERS_FOR_TYPE(Texture);
 
 /// An API-independent representation of a texture
 class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
@@ -60,6 +62,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
            U32 _layerIndex;
            U32 _cubeMapCount;
        };
+
     public:
 
     explicit Texture(GFXDevice& context,
@@ -92,7 +95,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
                           const vec2<U16>& dimensions) = 0;
 
     // Other must have same size!
-    virtual void copy(const Texture_ptr& other) = 0;
+    virtual void copy(const Texture_ptr& other, const CopyTexParams& params) = 0;
 
     /// Specify the sampler descriptor used to sample from this texture in the shaders
     virtual void setCurrentSampler(const SamplerDescriptor& descriptor);
@@ -160,8 +163,6 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
   protected:
     static const char* s_missingTextureFileName;
 };
-
-TYPEDEF_SMART_POINTERS_FOR_TYPE(Texture);
 
 };  // namespace Divide
 #endif // _TEXTURE_H_

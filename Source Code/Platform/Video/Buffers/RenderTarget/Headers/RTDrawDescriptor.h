@@ -56,9 +56,9 @@ class RTDrawMask {
     bool operator!=(const RTDrawMask& other) const;
 
   private:
+    std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _disabledColours;
     bool _disabledDepth;
     bool _disabledStencil;
-    std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _disabledColours;
 };
 
 struct RTBlendState {
@@ -113,13 +113,13 @@ class RTDrawDescriptor {
     typedef std::unordered_set<U16> DirtyLayers;
     typedef std::pair<U8, DirtyLayers> DirtyLayersEntry;
 
-    hashMap<RTAttachmentType, vectorEASTL<DirtyLayersEntry>> _dirtyLayers;
     RTDrawMask _drawMask;
+    std::array<vectorEASTL<DirtyLayersEntry>, to_base(RTAttachmentType::COUNT)> _dirtyLayers;
+    std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;
+    std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _clearColourAttachment;
     U32 _stateMask = 0;
     bool _clearExternalColour = false;
     bool _clearExternalDepth = false;
-    std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;
-    std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _clearColourAttachment;
 };
 
 }; //namespace Divide

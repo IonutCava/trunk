@@ -53,7 +53,7 @@ GFXRTPool::~GFXRTPool()
 void GFXRTPool::clear() {
     // Delete all of our rendering targets
     for (U8 i = 0; i < to_base(RenderTargetUsage::COUNT); ++i) {
-        for (U32 j = 0; j < to_U32(_renderTargets[i].size()); ++j) {
+        for (U16 j = 0; j < to_U16(_renderTargets[i].size()); ++j) {
             set(RenderTargetID(static_cast<RenderTargetUsage>(i), j), nullptr);
         }
     }
@@ -74,7 +74,7 @@ void GFXRTPool::set(RenderTargetID target, const std::shared_ptr<RenderTarget>& 
 RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget) {
     vector<std::shared_ptr<RenderTarget>>& rts = _renderTargets[to_U32(targetUsage)];
 
-    for (U32 i = 0; i < to_U32(rts.size()); ++i) {
+    for (U16 i = 0; i < to_U16(rts.size()); ++i) {
         if (rts[i] == nullptr) {
             rts[i] = newTarget;
             return RenderTargetHandle(RenderTargetID(targetUsage, i), newTarget.get());

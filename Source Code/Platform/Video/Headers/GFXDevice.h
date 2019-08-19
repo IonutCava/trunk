@@ -386,7 +386,7 @@ protected:
     void occlusionCull(const RenderPass::BufferData& bufferData,
                        const Texture_ptr& depthBuffer,
                        const Camera& camera,
-                       GFX::CommandBuffer& bufferInOut) const;
+                       GFX::CommandBuffer& bufferInOut);
 
     // Returns the HiZ texture that can be sent directly to occlusionCull
     const Texture_ptr& constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) const;
@@ -462,6 +462,8 @@ protected:
     ShaderProgram_ptr _textRenderShader;
     ShaderProgram_ptr _blurShader;
     
+    GFX::SendPushConstantsCommand _HIZPushConstantsCMD;
+
     U32 _horizBlur = 0, _vertBlur = 0;
 
     PushConstants _textRenderConstants;

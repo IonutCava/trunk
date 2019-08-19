@@ -91,7 +91,7 @@ namespace GFX {
                      PushConstantType type,
                      const T& value,
                      bool flag = false)
-            : _binding(binding),
+            : _binding(binding.c_str()),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -106,7 +106,7 @@ namespace GFX {
                      PushConstantType type,
                      const vector<T>& values,
                      bool flag = false)
-            : _binding(binding),
+            : _binding(binding.c_str()),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -123,7 +123,7 @@ namespace GFX {
                      PushConstantType type,
                      const vectorEASTL<T>& values,
                      bool flag = false)
-            : _binding(binding),
+            : _binding(binding.c_str()),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -140,7 +140,7 @@ namespace GFX {
                      PushConstantType type,
                      const vectorEASTL<bool>& values,
                      bool flag)
-            : _binding(binding),
+            : _binding(binding.c_str()),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -159,7 +159,7 @@ namespace GFX {
                      PushConstantType type,
                      const std::array<T, N>& values,
                      bool flag = false)
-            : _binding(binding),
+            : _binding(binding.c_str()),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -176,7 +176,7 @@ namespace GFX {
                      PushConstantType type,
                      const std::array<bool, N>& values,
                      bool flag)
-            : _binding(binding),
+            : _binding(binding.c_str()),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -188,6 +188,65 @@ namespace GFX {
                                [](bool e) {return to_byte(e ? 1 : 0);});
             }
         }
+
+        template<typename T>
+        inline void set(const T& value, bool flag = false) {
+            _flag = flag;
+            std::memcpy(_buffer.data(), &value, _buffer.size());
+        }
+
+        template<typename T>
+        inline void set(const vector<T>& values, bool flag = false) {
+            _flag = flag;
+            if (values.empty()) {
+                _buffer.resize(values.size() * (sizeof(T)));
+                std::memcpy(_buffer.data(), values.data(), _buffer.size());
+            }
+        }
+
+        template<typename T>
+        inline void set(const vectorEASTL<T>& values, bool flag = false) {
+            _flag = flag;
+            if (!values.empty()) {
+                _buffer.resize(values.size() * (sizeof(T)));
+                std::memcpy(_buffer.data(), values.data(), _buffer.size());
+            }
+        }
+
+        template<>
+        inline void set(const vectorEASTL<bool>& values, bool flag) {
+            _flag = flag;
+
+            if (!values.empty()) {
+                _buffer.reserve(values.size());
+                std::transform(std::cbegin(values), std::cend(values),
+                    std::back_inserter(_buffer),
+                    [](bool e) {return to_byte(e ? 1 : 0); });
+            }
+        }
+
+        template<typename T, size_t N>
+        inline void set(const std::array<T, N>& values, bool flag = false){
+            _flag = flag;
+
+            if (!values.empty()) {
+                _buffer.resize(values.size() * (sizeof(T)));
+                std::memcpy(_buffer.data(), values.data(), _buffer.size());
+            }
+        }
+
+        template<size_t N>
+        inline void set(const std::array<bool, N>& values, bool flag) {
+            _flag = flag;
+
+            if (!values.empty()) {
+                _buffer.reserve(N);
+                std::transform(std::cbegin(values), std::cend(values),
+                    std::back_inserter(_buffer),
+                    [](bool e) {return to_byte(e ? 1 : 0); });
+            }
+        }
+
 
         void clear();
 
@@ -210,10 +269,10 @@ namespace GFX {
             bool _transpose;
         };
 
+        eastl::fixed_string<char, 128 + 1, false> _binding;
+        vectorEASTL<char> _buffer;
         U64               _bindingHash;
         PushConstantType  _type = PushConstantType::COUNT;
-        eastl::string     _binding;
-        vectorEASTL<char> _buffer;
     };
 }; //namespace GFX
 }; //namespace Divide

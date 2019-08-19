@@ -1151,9 +1151,10 @@ void Editor::toggleMemoryEditor(bool state) {
 
 struct TextureCallbackData {
     vec4<I32> _colourData = {1, 1, 1, 1};
+    vec2<F32> _depthRange = { 0.0f, 1.0f };
     GFXDevice* _gfxDevice = nullptr;
     bool _isDepthTexture = false;
-    vec2<F32> _depthRange = { 0.0f, 1.0f };
+    bool _flip = false;
 };
 
 bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect) {
@@ -1170,6 +1171,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
         pushConstants.set("toggleChannel", GFX::PushConstantType::IVEC4, data._colourData);
         pushConstants.set("depthTexture", GFX::PushConstantType::INT, data._isDepthTexture ? 1 : 0);
         pushConstants.set("depthRange", GFX::PushConstantType::VEC2, data._depthRange);
+        pushConstants.set("flip", GFX::PushConstantType::INT, data._flip ? 1 : 0);
 
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
         pushConstantsCommand._constants = pushConstants;
@@ -1185,10 +1187,12 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
         assert(modalName != nullptr);
         static TextureCallbackData data = {};
         data._gfxDevice = &_context.gfx();
+        data._flip = false;
 
         static TextureCallbackData defaultData = {};
         defaultData._gfxDevice = &_context.gfx();
         defaultData._isDepthTexture = false;
+        defaultData._flip = false;
 
         static std::array<bool, 4> state = { true, true, true, true };
 
@@ -1198,6 +1202,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
         if (numChannels > 0) {
             if (data._isDepthTexture) {
+                data._flip = true; //ToDo: Investigate why - Ionut
                 ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
                 ImGui::SameLine();
                 ImGui::Text("Range: "); ImGui::SameLine();

@@ -39,6 +39,7 @@ namespace Divide {
 struct PushConstants {
     vectorEASTL<GFX::PushConstant> _data;
 
+    void countHint(size_t count);
     void set(const GFX::PushConstant& constant);
 
     template<typename T>
@@ -49,7 +50,11 @@ struct PushConstants {
         U64 bindingID = _ID(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                constant = GFX::PushConstant{ binding, bindingID, type, value, flag };
+                if (constant._type != type) {
+                    constant = GFX::PushConstant{ binding, bindingID, type, value, flag };
+                } else {
+                    constant.set(value, flag);
+                }
                 return;
             }
         }
@@ -66,7 +71,11 @@ struct PushConstants {
         U64 bindingID = _ID(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
+                if (constant._type != type) {
+                    constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
+                } else {
+                    constant.set(values, flag);
+                }
                 return;
             }
         }
@@ -83,7 +92,11 @@ struct PushConstants {
         U64 bindingID = _ID(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
+                if (constant._type != type) {
+                    constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
+                } else {
+                    constant.set(values, flag);
+                }
                 return;
             }
         }
@@ -100,7 +113,11 @@ struct PushConstants {
         U64 bindingID = _ID(binding.c_str());
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
+                if (constant._type != type) {
+                    constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
+                } else {
+                    constant.set(values, flag);
+                }
                 return;
             }
         }

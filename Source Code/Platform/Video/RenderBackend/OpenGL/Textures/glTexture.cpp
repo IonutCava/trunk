@@ -385,8 +385,8 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
     }
 }
 
-void glTexture::copy(const Texture_ptr& other) {
-    _lockManager->Wait(false);
+void glTexture::copy(const Texture_ptr& other, const CopyTexParams& params) {
+    _lockManager->Wait(true);
 
     U32 numFaces = 1;
     TextureType type = other->getData().type();
@@ -400,17 +400,17 @@ void glTexture::copy(const Texture_ptr& other) {
     glCopyImageSubData(//Source
                        srcHandle,
                        GLUtil::glTextureTypeTable[to_U32(type)],
-                       0, //Level
-                       0, //X
-                       0, //Y
-                       0, //Z
+                       params._sourceMipLevel,
+                       params._sourceCoords.x,
+                       params._sourceCoords.y,
+                       params._sourceCoords.z,
                        //Destination
                        destHandle,
                        _type,
-                       0, //Level
-                       0, //X
-                       0, //Y
-                       0, //Z
+                       params._targetMipLevel,
+                       params._targetCoords.x,
+                       params._targetCoords.y,
+                       params._targetCoords.z,
                        //Source Dim
                        other->getWidth(),
                        other->getHeight(),

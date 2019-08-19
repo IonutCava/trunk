@@ -38,8 +38,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Rendering/Camera/Headers/CameraSnapshot.h"
 
-#include <MemoryPool/StackAlloc.h>
-#include <MemoryPool/C-11/MemoryPool.h>
 #include <BetterEnums/include/enum.h>
 
 struct ImDrawData;
@@ -183,7 +181,7 @@ END_COMMAND(SetViewportCommand);
 BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
-    eastl::fixed_string<char, 128 + 1, true> _name = "";
+    eastl::fixed_string<char, 128 + 1, false> _name = "";
 
     stringImpl toString(U16 indent) const override;
  END_COMMAND(BeginRenderPassCommand);
@@ -236,6 +234,7 @@ END_COMMAND(ResolveRenderTargetCommand);
 BEGIN_COMMAND(CopyTextureCommand, CommandType::COPY_TEXTURE);
     Texture_ptr _source = nullptr;
     Texture_ptr _destination = nullptr;
+    CopyTexParams _params;
 END_COMMAND(CopyTextureCommand);
 
 BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);

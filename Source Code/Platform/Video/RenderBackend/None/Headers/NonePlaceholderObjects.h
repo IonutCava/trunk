@@ -157,7 +157,7 @@ namespace Divide {
         void resize(const bufferPtr ptr, const vec2<U16>& dimensions) override {}
         void loadData(const TextureLoadInfo& info, const vector<ImageTools::ImageLayer>& imageLayers) override {}
         void loadData(const TextureLoadInfo& info, const bufferPtr data, const vec2<U16>& dimensions) override {}
-        void copy(const Texture_ptr& other) override {}
+        void copy(const Texture_ptr& other, const CopyTexParams& params) override {}
     };
 
     class noShaderProgram final : public ShaderProgram {

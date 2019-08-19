@@ -347,6 +347,12 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     LightVec sortedLights = {};
     {
         SharedLock r_lock(_lightLock);
+        size_t totalLightCount = 0;
+        for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
+            totalLightCount += _lights[i].size();
+        }
+        sortedLights.reserve(totalLightCount);
+
         for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
             sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
         }
@@ -397,10 +403,12 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
     U8 stageIndex = to_U8(stage);
 
     assert(_lightImpostorShader);
-    const U32 directionalLightCount = _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)];
-    const U32 pointLightCount = _activeLightCount[stageIndex][to_base(LightType::POINT)];
-    const U32 spotLightCount = _activeLightCount[stageIndex][to_base(LightType::SPOT)];
-    const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
+
+    U32 totalLightCount = 0;
+    for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+        totalLightCount += _activeLightCount[stageIndex][i];
+    }
+
     if (totalLightCount > 0) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);

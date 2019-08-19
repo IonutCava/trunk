@@ -175,6 +175,7 @@ void RenderStateBlock::setDefaultValues() {
     _zFunc = ComparisonFunction::LEQUAL;
     _colourWrite.b[0] = _colourWrite.b[1] = _colourWrite.b[2] = _colourWrite.b[3] = 1;
     _depthTestEnabled = true;
+    _scissorTest = false;
     _cullMode = CullMode::CW;
     _cullEnabled = true;
     _frontFaceCCW = true;
@@ -182,7 +183,6 @@ void RenderStateBlock::setDefaultValues() {
     _stencilMask = 0xFFFFFFFF;
     _stencilWriteMask = 0xFFFFFFFF;
     _stencilEnable = false;
-    _scissorTest = false;
     _stencilRef = 0;
     _stencilFailOp = StencilOperation::KEEP;
     _stencilZFailOp = StencilOperation::KEEP;

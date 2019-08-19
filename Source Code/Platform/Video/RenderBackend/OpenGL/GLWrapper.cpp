@@ -1118,7 +1118,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::COPY_TEXTURE: {
             const GFX::CopyTextureCommand& crtCmd = commandBuffer.get<GFX::CopyTextureCommand>(entry);
             if (crtCmd._source != nullptr && crtCmd._destination != nullptr) {
-                crtCmd._destination->copy(crtCmd._source);
+                crtCmd._destination->copy(crtCmd._source, crtCmd._params);
             }
         }break;
         case GFX::CommandType::BIND_DESCRIPTOR_SETS: {

@@ -143,23 +143,21 @@ bool RTDrawDescriptor::operator!=(const RTDrawDescriptor& other) const {
 }
 
 void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U16 layer) {
-    vectorEASTL<DirtyLayersEntry>& entries = _dirtyLayers[type];
-    for (DirtyLayersEntry& entry : entries) {
+    vectorEASTL<DirtyLayersEntry>& retEntry = _dirtyLayers[to_base(type)];
+    for (DirtyLayersEntry& entry : retEntry) {
         if (entry.first == index) {
             entry.second.insert(layer);
             return;
         }
     }
-    entries.push_back(std::make_pair(index, DirtyLayers{ layer }));
+    retEntry.push_back(std::make_pair(index, DirtyLayers{ layer }));
 }
 
 std::unordered_set<U16> RTDrawDescriptor::getDirtyLayers(RTAttachmentType type, U8 index) const {
-    auto retEntry = _dirtyLayers.find(type);
-    if (retEntry != std::end(_dirtyLayers)) {
-        for (const DirtyLayersEntry& entry : retEntry->second) {
-            if (entry.first == index) {
-                return entry.second;
-            }
+    const vectorEASTL<DirtyLayersEntry>& retEntry = _dirtyLayers[to_base(type)];
+    for (const DirtyLayersEntry& entry : retEntry) {
+        if (entry.first == index) {
+            return entry.second;
         }
     }
 

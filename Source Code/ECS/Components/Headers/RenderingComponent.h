@@ -73,7 +73,6 @@ struct RefreshNodeDataParams {
     }
 
     RenderStagePass _stagePass = {};
-    U32 _nodeCount = 0;
     U32 _dataIdx = 0;
     const Camera* _camera = nullptr;
     vectorEASTL<IndirectDrawCommand>& _drawCommandsInOut;
@@ -204,11 +203,11 @@ class RenderingComponent : public BaseComponentType<RenderingComponent, Componen
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
-    bool updateReflection(U32 reflectionIndex, 
+    bool updateReflection(U16 reflectionIndex, 
                           Camera* camera,
                           const SceneRenderState& renderState,
                           GFX::CommandBuffer& bufferInOut);
-    bool updateRefraction(U32 refractionIndex,
+    bool updateRefraction(U16 refractionIndex,
                           Camera* camera,
                           const SceneRenderState& renderState,
                           GFX::CommandBuffer& bufferInOut);
@@ -282,7 +281,7 @@ namespace Attorney {
 class RenderingCompRenderPass {
     private:
         static bool updateReflection(RenderingComponent& renderable,
-                                     U32 reflectionIndex,
+                                     U16 reflectionIndex,
                                      Camera* camera,
                                      const SceneRenderState& renderState,
                                      GFX::CommandBuffer& bufferInOut)
@@ -291,7 +290,7 @@ class RenderingCompRenderPass {
         }
 
         static bool updateRefraction(RenderingComponent& renderable,
-                                     U32 refractionIndex,
+                                     U16 refractionIndex,
                                      Camera* camera,
                                      const SceneRenderState& renderState,
                                      GFX::CommandBuffer& bufferInOut)

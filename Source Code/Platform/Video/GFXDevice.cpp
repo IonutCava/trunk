@@ -528,6 +528,16 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) const {
     static bool firstRun = true;
+    static Pipeline* pipeline = nullptr;
+    if (pipeline == nullptr) {
+        RenderStateBlock HiZState;
+        HiZState.setZFunc(ComparisonFunction::ALWAYS);
+
+        PipelineDescriptor pipelineDesc;
+        pipelineDesc._stateHash = HiZState.getHash();
+        pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getGUID();
+        pipeline = newPipeline(pipelineDesc);
+    }
 
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
@@ -539,13 +549,6 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     depthOnlyTarget.disableState(RTDrawDescriptor::State::CHANGE_VIEWPORT);
     depthOnlyTarget.drawMask().disableAll();
     depthOnlyTarget.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
-
-    RenderStateBlock HiZState;
-    HiZState.setZFunc(ComparisonFunction::ALWAYS);
-
-    PipelineDescriptor pipelineDesc;
-    pipelineDesc._stateHash = HiZState.getHash();
-    pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getGUID();
 
     // The depth buffer's resolution should be equal to the screen's resolution
     RenderTarget& renderTarget = _rtPool->renderTarget(HiZTarget);
@@ -579,7 +582,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
-        pipelineCmd._pipeline = newPipeline(pipelineDesc);
+        pipelineCmd._pipeline = pipeline;
         GFX::EnqueueCommand(cmdBufferInOut, pipelineCmd);
 
         GFX::SetViewportCommand viewportCommand;

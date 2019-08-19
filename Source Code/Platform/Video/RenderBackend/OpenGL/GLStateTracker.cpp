@@ -43,12 +43,12 @@ void GLStateTracker::init(GLStateTracker* base) {
 
         _blendProperties.resize(GL_API::s_maxFBOAttachments, BlendingProperties());
         _blendEnabled.resize(GL_API::s_maxFBOAttachments, GL_FALSE);
-      
     } else {
         *this = *base;
+        _currentCullMode = GL_BACK;
+        _currentFrontFace = GL_CCW;
     }
-    _currentCullMode = GL_BACK;
-    _currentFrontFace = GL_CCW;
+    
     GLUtil::getGLValue(GL_PATCH_VERTICES, _patchVertexCount);
     _init = true;
 }

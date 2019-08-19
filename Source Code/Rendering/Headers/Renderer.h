@@ -56,6 +56,7 @@ class Renderer : public PlatformContextComponent {
   private:
     ResourceCache& _resCache;
 
+    GFX::SendPushConstantsCommand _preRenderPushConstantsCmd;
     ShaderProgram_ptr _lightCullComputeShader;
     ShaderBuffer*     _perTileLightIndexBuffer;
 
