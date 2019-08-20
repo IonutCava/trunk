@@ -218,23 +218,23 @@ void fillEnumTables() {
     glShaderStageTable[to_base(ShaderType::VERTEX)] = GL_VERTEX_SHADER;
     glShaderStageTable[to_base(ShaderType::FRAGMENT)] = GL_FRAGMENT_SHADER;
     glShaderStageTable[to_base(ShaderType::GEOMETRY)] = GL_GEOMETRY_SHADER;
-    glShaderStageTable[to_base(ShaderType::TESSELATION_CTRL)] = GL_TESS_CONTROL_SHADER;
-    glShaderStageTable[to_base(ShaderType::TESSELATION_EVAL)] = GL_TESS_EVALUATION_SHADER;
+    glShaderStageTable[to_base(ShaderType::TESSELLATION_CTRL)] = GL_TESS_CONTROL_SHADER;
+    glShaderStageTable[to_base(ShaderType::TESSELLATION_EVAL)] = GL_TESS_EVALUATION_SHADER;
     glShaderStageTable[to_base(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER;
 
     glProgramStageMask[to_base(ShaderType::VERTEX)] = GL_VERTEX_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::FRAGMENT)] = GL_FRAGMENT_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::GEOMETRY)] = GL_GEOMETRY_SHADER_BIT;
-    glProgramStageMask[to_base(ShaderType::TESSELATION_CTRL)] = GL_TESS_CONTROL_SHADER_BIT;
-    glProgramStageMask[to_base(ShaderType::TESSELATION_EVAL)] = GL_TESS_EVALUATION_SHADER_BIT;
+    glProgramStageMask[to_base(ShaderType::TESSELLATION_CTRL)] = GL_TESS_CONTROL_SHADER_BIT;
+    glProgramStageMask[to_base(ShaderType::TESSELLATION_EVAL)] = GL_TESS_EVALUATION_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::COUNT)] = GL_NONE_BIT;
 
     glShaderStageNameTable[to_base(ShaderType::VERTEX)] = "Vertex";
     glShaderStageNameTable[to_base(ShaderType::FRAGMENT)] = "Fragment";
     glShaderStageNameTable[to_base(ShaderType::GEOMETRY)] = "Geometry";
-    glShaderStageNameTable[to_base(ShaderType::TESSELATION_CTRL)] = "TessellationC";
-    glShaderStageNameTable[to_base(ShaderType::TESSELATION_EVAL)] = "TessellationE";
+    glShaderStageNameTable[to_base(ShaderType::TESSELLATION_CTRL)] = "TessellationC";
+    glShaderStageNameTable[to_base(ShaderType::TESSELLATION_EVAL)] = "TessellationE";
     glShaderStageNameTable[to_base(ShaderType::COMPUTE)] = "Compute";
 
     glQueryTypeTable[to_base(QueryType::TIME)] = GL_TIME_ELAPSED;

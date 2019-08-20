@@ -328,11 +328,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     vertModule._sourceFile = "terrainTess.glsl";
 
     ShaderModuleDescriptor tescModule = {};
-    tescModule._moduleType = ShaderType::TESSELATION_CTRL;
+    tescModule._moduleType = ShaderType::TESSELLATION_CTRL;
     tescModule._sourceFile = "terrainTess.glsl";
 
     ShaderModuleDescriptor teseModule = {};
-    teseModule._moduleType = ShaderType::TESSELATION_EVAL;
+    teseModule._moduleType = ShaderType::TESSELLATION_EVAL;
     teseModule._sourceFile = "terrainTess.glsl";
 
     ShaderModuleDescriptor geomModule = {};
@@ -365,7 +365,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
 
         if (GFXDevice::getGPUVendor() == GPUVendor::AMD) {
-            if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? ShaderType::GEOMETRY : ShaderType::TESSELATION_EVAL)) {
+            if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? ShaderType::GEOMETRY : ShaderType::TESSELLATION_EVAL)) {
                 shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
             }
         } else {
@@ -513,8 +513,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(CullMode::NONE);
-    terrainRenderState.setFrontFaceCCW(false);
+    terrainRenderState.setCullMode(CullMode::CW);
+    //terrainRenderState.setFrontFaceCCW(false);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
 
     // Generate a render state for drawing reflections
@@ -522,16 +522,16 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock terrainRenderStateReflection;
-    terrainRenderStateReflection.setFrontFaceCCW(false);
-    terrainRenderStateReflection.setCullMode(CullMode::NONE);
+    //terrainRenderStateReflection.setFrontFaceCCW(false);
+    terrainRenderStateReflection.setCullMode(CullMode::CCW);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
-    terrainRenderStatePrePassReflection.setCullMode(CullMode::NONE);
+    terrainRenderStatePrePassReflection.setCullMode(CullMode::CCW);
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setFrontFaceCCW(false);
-    terrainRenderStateDepth.setCullMode(CullMode::NONE);
+    //terrainRenderStateDepth.setFrontFaceCCW(false);
+    terrainRenderStateDepth.setCullMode(CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setZFunc(ComparisonFunction::LESS);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);

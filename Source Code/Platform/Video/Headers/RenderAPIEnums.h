@@ -211,8 +211,8 @@ enum class ShaderType : U8 {
     FRAGMENT = 0,
     VERTEX = 1,
     GEOMETRY = 2,
-    TESSELATION_CTRL = 3,
-    TESSELATION_EVAL = 4,
+    TESSELLATION_CTRL = 3,
+    TESSELLATION_EVAL = 4,
     COMPUTE = 5,
     COUNT
 };
