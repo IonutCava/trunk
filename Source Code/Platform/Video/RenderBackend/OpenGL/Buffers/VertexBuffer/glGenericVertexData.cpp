@@ -161,8 +161,6 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
                              indices.count * elementSize,
                              indices.data);
     }
-
-    _idxBufferDirty = true;
 }
 
 /// Specify the structure and data of the given buffer

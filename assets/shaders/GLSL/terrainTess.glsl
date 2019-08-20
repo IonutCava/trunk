@@ -1,6 +1,6 @@
 --Vertex
 
-uniform float g_tileSize = 1.0f;
+uniform float g_tileSize;
 
 layout(location = ATTRIB_POSITION) in vec2 inPosition;
 layout(location = ATTRIB_TEXCOORD) in vec4 inAdjacency;
@@ -43,8 +43,7 @@ void main(void)
     ivec2 intUV = ivec2(iu, iv);
     vec3 displacedPos = vec3(u * g_tileSize + inPosition.x, 0.0f, v * g_tileSize + inPosition.y);
     VAR._texCoord = worldXZtoHeightUV(displacedPos.xz);
-    //displacedPos.y = SampleHeightForVS(VAR._texCoord);
-
+    displacedPos.y = SampleHeightForVS(VAR._texCoord);
     VAR._vertexW = inAdjacency;
 
     gl_Position = vec4(displacedPos, 1.0f);
@@ -210,23 +209,23 @@ void main(void)
     const vec4 adjacency = _in[0]._vertexW;
 
     const vec3  centre = 0.25 * (gl_in[0].gl_Position.xyz + gl_in[1].gl_Position.xyz + gl_in[2].gl_Position.xyz + gl_in[3].gl_Position.xyz);
-    const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x));		// assume square & uniform
+    const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x)); // assume square & uniform
     const float diagLen = sqrt(2 * sideLen * sideLen);
-    //if (!inFrustum(centre, dvd_cameraPosition.xyz / WORLD_SCALE, dvd_cameraForward, diagLen))
-    //{
-    //    gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
-    //    gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = -1;
-    //    gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
-    //} 
-    //else
+   /* if (!inFrustum(centre, dvd_cameraPosition.xyz / WORLD_SCALE, dvd_cameraForward, diagLen))
+    {
+        gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
+        gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = -1;
+        gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
+    } 
+    else*/
     {
         PassData(id);
 
         // Outer tessellation level
-        gl_TessLevelOuter[0] = 4;// getTessLevel(0, 1, sideLen);
-        gl_TessLevelOuter[3] = 4;// getTessLevel(1, 2, sideLen);
-        gl_TessLevelOuter[2] = 4;// getTessLevel(2, 3, sideLen);
-        gl_TessLevelOuter[1] = 4;// getTessLevel(3, 0, sideLen);
+        gl_TessLevelOuter[0] = getTessLevel(0, 1, sideLen);
+        gl_TessLevelOuter[3] = getTessLevel(1, 2, sideLen);
+        gl_TessLevelOuter[2] = getTessLevel(2, 3, sideLen);
+        gl_TessLevelOuter[1] = getTessLevel(3, 0, sideLen);
 
         // Edges that need adjacency adjustment are identified by the per-instance ip[0].adjacency 
         // scalars, in *conjunction* with a patch ID that puts them on the edge of a tile.
@@ -240,7 +239,7 @@ void main(void)
         // is the neighbour's size relative to ours.  Similarly for plus and Y, etc.  You really
         // need a diagram to make sense of the adjacency conditions in the if statements. :-(
         // These four ifs deal with neighbours that are smaller.
-        /*if (adjacency.neighbourMinusX < 0.55 && patchXY.x == 0)
+        if (adjacency.neighbourMinusX < 0.55 && patchXY.x == 0)
             gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
         if (adjacency.neighbourMinusY < 0.55 && patchXY.y == 0)
             gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
@@ -257,7 +256,7 @@ void main(void)
         if (adjacency.neighbourPlusX > 1 && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
         if (adjacency.neighbourPlusY > 1 && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
-            gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.*/
+            gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
 
        // Inner tessellation level
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[2]);
@@ -273,7 +272,7 @@ void main(void)
 
 --TessellationE
 
-layout(quads, fractional_even_spacing) in;
+layout(quads, fractional_even_spacing, cw) in;
 
 #include "nodeBufferedInput.cmn"
 #include "waterData.cmn"
@@ -315,7 +314,6 @@ vec4 getHeightOffsets(in vec2 tex_coord) {
 
     return (TERRAIN_HEIGHT_RANGE * vec4(s01, s21, s10, s12)) + TERRAIN_MIN_HEIGHT;
 }
-
 float getHeight(in vec4 heightOffsets) {
     
     const float s01 = heightOffsets.x;
@@ -344,18 +342,18 @@ void main()
     _out._texCoord = Bilerp(_in[0]._texCoord, _in[1]._texCoord, _in[2]._texCoord, _in[3]._texCoord, gl_TessCoord.xy);
     // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
     vec3 pos = Bilerp(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz, gl_in[3].gl_Position.xyz, gl_TessCoord.xy);
-    pos.x *= 10;// TERRAIN_WIDTH;
-    pos.z *= 10;// TERRAIN_LENGTH;
 
     // Sample the heightmap and offset y position of vertex
     const vec4 heightOffsets = getHeightOffsets(_out._texCoord);
-    pos.y = 10.0f;// getHeight(heightOffsets);
+    pos.x *= TERRAIN_WIDTH;
+    pos.z *= TERRAIN_LENGTH;
+    pos.y = getHeight(heightOffsets);
 
     _out._vertexW = dvd_WorldMatrix(DATA_IDX) * vec4(pos, 1.0f);
+    _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
 #if !defined(SHADOW_PASS)
     const mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
-
     const vec3 N = getNormal(pos.y, heightOffsets);
     _out._normalWV = normalize(normalMatrixWV * N);
 
@@ -364,29 +362,27 @@ void main()
     const vec3 T = cross(N, B);
 
     _out._tbn = normalMatrixWV * mat3(T, B, N);
-#endif
-
-#endif
-    _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
+#endif //PRE_PASS
+#endif //SHADOW_PASS
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     tes_tessLevel = int(tcs_tessLevel[0]);
     gl_Position = _out._vertexW;
 #else
     gl_Position = dvd_ProjectionMatrix * _out._vertexWV;
-    //setClipPlanes(_out._vertexW);
+    setClipPlanes(_out._vertexW);
+#endif //TOGGLE_WIREFRAME
 
 #if !defined(SHADOW_PASS)
 #if !defined(TOGGLE_WIREFRAME) && !defined(TOGGLE_NORMALS)
     _waterDetails = waterDetails(_out._vertexW.xyz, TERRAIN_MIN_HEIGHT);
-#endif
+#endif //TOGGLE_WIREFRAME
 
 #if !defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     LoD = int(log2(MAX_TESS_SCALE / tcs_tessLevel[0]));
 #endif //TOGGLE_WIREFRAME
-#endif //SHADOW_PASS
 
-#endif
+#endif //SHADOW_PASS
 }
 
 --Geometry
@@ -397,20 +393,6 @@ void main()
 layout(triangles) in;
 
 layout(location = 10) in int tes_tessLevel[];
-
-
-//#define SHOW_TILE_SCALE
-#if defined(SHOW_TILE_SCALE)
-struct TerrainNodeData {
-    vec4 _positionAndTileScale;
-    vec4 _tScale;
-};
-
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
-{
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
-};
-#endif
 
 #if defined(TOGGLE_NORMALS)
 layout(line_strip, max_vertices = 18) out;
@@ -449,29 +431,6 @@ void PerVertex(in int i, in vec3 edge_dist) {
     } else if (tes_tessLevel[0] == 2) {
         gs_wireColor = vec3(0.0, 1.00, 1.0);
     } else {
-        gs_wireColor = vec3(1.0, 1.0, 1.0);
-    }
-#else
-    const int tileScale = int(dvd_TerrainData[_in[i].dvd_instanceID]._positionAndTileScale.w);
-    if (tileScale == 256) {
-        gs_wireColor = vec3(0.0, 0.0, 1.0);
-    }
-    else if (tileScale == 128) {
-        gs_wireColor = vec3(0.0, 1.0, 0.0);
-    }
-    else if (tileScale == 64) {
-        gs_wireColor = vec3(1.0, 0.0, 0.0);
-    }
-    else if (tileScale == 32) {
-        gs_wireColor = vec3(1.0, 1.0, 0.0);
-    }
-    else if (tileScale == 16) {
-        gs_wireColor = vec3(1.0, 0.0, 1.0);
-    }
-    else if (tileScale == 8) {
-        gs_wireColor = vec3(0.0, 1.00, 1.0);
-    }
-    else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }
 #endif

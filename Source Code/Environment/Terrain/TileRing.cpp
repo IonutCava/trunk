@@ -20,19 +20,21 @@
 
 namespace Divide {
 
-    // These are the size of the neighbours along +/- x or y axes.  For interior tiles
-    // this is 1.  For edge tiles it is 0.5 or 2.0.
-#   define neighbourMinusX x
-#   define neighbourMinusY y
-#   define neighbourPlusX  z
-#   define neighbourPlusY  w
-
+#pragma pack(push)  /* push current alignment to stack */
+#pragma pack(1)
     struct InstanceData
     {
-        vec4<F32> adjacency;
-        vec2<F32> pos;
-        vec2<F32> _padding_;
+        F32 x = 0.0f;
+        F32 y = 0.0f;
+
+        // These are the size of the neighbours along +/- x or y axes.  For interior tiles
+        // this is 1.  For edge tiles it is 0.5 or 2.0.
+        F32 neighbourMinusX = 1.0f;
+        F32 neighbourMinusY = 1.0f;
+        F32 neighbourPlusX = 1.0f;
+        F32 neighbourPlusY = 1.0f;
     };
+#pragma pack(pop)   /* restore original alignment from stack */
 
     TileRing::TileRing(GFXDevice& device, I32 holeWidth, I32 outerWidth, F32 tileSize) :
         _holeWidth(holeWidth),
@@ -59,14 +61,14 @@ namespace Divide {
                   2,
                   GFXDataFormat::FLOAT_32,
                   false,
-                  offsetof(InstanceData, pos));
+                  offsetof(InstanceData, x));
 
         AttributeDescriptor& desc2 = _buffer->attribDescriptor(to_base(AttribLocation::TEXCOORD));
         desc2.set(0,
                   4,
                   GFXDataFormat::FLOAT_32,
                   false,
-                  offsetof(InstanceData, adjacency));
+                  offsetof(InstanceData, neighbourMinusX));
     }
 
     void TileRing::ReleaseInputLayout()
@@ -80,7 +82,7 @@ namespace Divide {
         return (x < _ringWidth || y < _ringWidth || x >= _outerWidth - _ringWidth || y >= _outerWidth - _ringWidth);
     }
 
-    void TileRing::AssignNeighbourSizes(I32 x, I32 y, Adjacency* pAdj) const
+    void TileRing::AssignNeighbourSizes(I32 x, I32 y, InstanceData* pAdj) const
     {
         pAdj->neighbourPlusX = 1.0f;
         pAdj->neighbourPlusY = 1.0f;
@@ -142,10 +144,10 @@ namespace Divide {
             {
                 if (InRing(x, y))
                 {
-                    vbData[index].pos.x = _tileSize * ((F32)x - halfWidth);
-                    vbData[index].pos.y = _tileSize * ((F32)y - halfWidth);
-                    AssignNeighbourSizes(x, y, &(vbData[index].adjacency));
-                    index++;
+                    vbData[index].x = _tileSize * (to_F32(x) - halfWidth);
+                    vbData[index].y = _tileSize * (to_F32(y) - halfWidth);
+                    AssignNeighbourSizes(x, y, &(vbData[index]));
+                    ++index;
                 }
             }
         }

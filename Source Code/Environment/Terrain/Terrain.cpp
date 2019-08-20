@@ -26,8 +26,8 @@ namespace Divide {
 namespace {
     I32 g_nRings = 0;
 
-    vectorEASTL<U32> g_indices;
-    void CreateTileQuadListIB(vectorEASTL<U32>& indices)
+    vector<U32> g_indices;
+    void CreateTileQuadListIB(vector<U32>& indices)
     {
         indices.resize(Terrain::QUAD_LIST_INDEX_COUNT, 0u);
         I32 index = 0;
@@ -38,8 +38,7 @@ namespace {
         {
             const I32 rowStart = y * Terrain::VTX_PER_TILE_EDGE;
 
-            for (I32 x = 0; x < Terrain::VTX_PER_TILE_EDGE - 1; ++x)
-            {
+            for (I32 x = 0; x < Terrain::VTX_PER_TILE_EDGE - 1; ++x) {
                 indices[index++] = rowStart + x;
                 indices[index++] = rowStart + x + Terrain::VTX_PER_TILE_EDGE;
                 indices[index++] = rowStart + x + Terrain::VTX_PER_TILE_EDGE + 1;
@@ -181,6 +180,7 @@ void Terrain::postBuild() {
     for (I32 i = 0; i != g_nRings && i != MAX_RINGS; ++i) {
         _tileRings[i]->CreateInputLayout(idxBuff);
     }
+    g_indices.clear();
 }
 
 void Terrain::frameStarted(SceneGraphNode& sgn) {
@@ -234,7 +234,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
         cmd._cmd.primCount  = _tileRings[i]->nTiles();
         cmd._sourceBuffer   = _tileRings[i]->getBuffer();
-        cmd._cmd.indexCount = to_U32(_tileRings[i]->getBuffer()->indexBuffer().count);
+        cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
 
         GFX::DrawCommand drawCommand = {};
         drawCommand._drawCommands.push_back(cmd);

@@ -349,7 +349,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shaderDescriptor._modules.push_back(tescModule);
     shaderDescriptor._modules.push_back(teseModule);
     if (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE) {
-        //shaderDescriptor._modules.push_back(geomModule);
+        shaderDescriptor._modules.push_back(geomModule);
     }
     shaderDescriptor._modules.push_back(fragModule);
 
