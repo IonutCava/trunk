@@ -1042,7 +1042,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="../../../localisation\enGB.ini">
+    <None Include="../../localisation\enGB.ini">
       <Filter>Languages</Filter>
     </None>
     <None Include="../../Source Code/Core\Headers\Application.inl">

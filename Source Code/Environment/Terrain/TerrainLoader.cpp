@@ -513,7 +513,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(CullMode::CCW);
+    terrainRenderState.setCullMode(CullMode::NONE);
     terrainRenderState.setFrontFaceCCW(false);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
 
@@ -523,14 +523,15 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     RenderStateBlock terrainRenderStateReflection;
     terrainRenderStateReflection.setFrontFaceCCW(false);
-    terrainRenderStateReflection.setCullMode(CullMode::CW);
+    terrainRenderStateReflection.setCullMode(CullMode::NONE);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
-    terrainRenderStatePrePassReflection.setCullMode(CullMode::CW);
+    terrainRenderStatePrePassReflection.setCullMode(CullMode::NONE);
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(CullMode::CCW);
+    terrainRenderStateDepth.setFrontFaceCCW(false);
+    terrainRenderStateDepth.setCullMode(CullMode::NONE);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setZFunc(ComparisonFunction::LESS);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);

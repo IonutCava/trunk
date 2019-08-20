@@ -668,7 +668,7 @@
     <ClInclude Include="../../Source Code\Rendering\Lighting\Headers\Light.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="../../../localisation\enGB.ini" />
+    <None Include="../../localisation\enGB.ini" />
     <None Include="../../Source Code/Core\Headers\Application.inl" />
     <None Include="../../Source Code/Geometry\Material\Headers\Material.inl" />
     <None Include="../../Source Code/Scripting\Headers\Script.inl" />
