@@ -29,7 +29,7 @@ namespace {
 
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
-        U32 g_reflectionBudget = 0;
+        U16 g_reflectionBudget = 0;
 
         inline bool isInBudget() { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
 
@@ -37,11 +37,11 @@ namespace {
 
         inline void updateBudget() { ++g_reflectionBudget; }
 
-        inline U32 currentEntry() { return g_reflectionBudget; }
+        inline U16 currentEntry() { return g_reflectionBudget; }
     };
 
     namespace RefractionUtil {
-        U32 g_refractionBudget = 0;
+        U16 g_refractionBudget = 0;
 
         inline bool isInBudget() { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
 
@@ -49,7 +49,7 @@ namespace {
 
         inline void updateBudget() { ++g_refractionBudget;  }
 
-        inline U32 currentEntry() { return g_refractionBudget; }
+        inline U16 currentEntry() { return g_refractionBudget; }
     };
 
     // This is very hackish but should hold up fine

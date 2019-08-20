@@ -23,30 +23,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../../Source Code/UnitTests\Headers\Defines.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="../../../Source Code/stdafx-test-engine.cpp">
+    <ClCompile Include="../../Source Code/stdafx-test-platform.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\main.cpp" />
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\ByteBufferTests.cpp" />
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\HashTests.cpp" />
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\MathMatrixTests.cpp" />
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\MathVectorTests.cpp" />
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\ScriptingTests.cpp" />
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\StringTests.cpp" />
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\ThreadingTests.cpp" />
-    <ClCompile Include="../../../Source Code/UnitTests\Engine-Tests\Tests\ConversionTests.cpp" />
+    <ClCompile Include="../../Source Code/UnitTests\Platform-Tests\main.cpp" />
+    <ClCompile Include="../../Source Code/UnitTests\Platform-Tests\Tests\FileManagement.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../Source Code/UnitTests\Headers\Defines.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{EF7E2000-C5F8-4345-8082-9F97341F804D}</ProjectGuid>
+    <ProjectGuid>{0F94F3A5-3023-45A4-A003-F427AC82D869}</ProjectGuid>
     <RootNamespace>DivideHardware</RootNamespace>
-    <ProjectName>Test-Engine</ProjectName>
+    <ProjectName>Test-Platform</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -111,7 +104,7 @@
     <OutDir>$(SolutionDir)..\UnitTests\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IntDir>$(Configuration)_Engine-Tests\</IntDir>
+    <IntDir>$(Configuration)_Platform-Tests\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisRuleSet>ExtendedCorrectnessRules.ruleset</CodeAnalysisRuleSet>
@@ -119,7 +112,7 @@
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
-    <IntDir>$(Configuration)_Engine-Tests\</IntDir>
+    <IntDir>$(Configuration)_Platform-Tests\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisRuleSet>ExtendedCorrectnessRules.ruleset</CodeAnalysisRuleSet>
@@ -127,7 +120,7 @@
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_UnityBuild|x64'">
-    <IntDir>$(Configuration)_Engine-Tests\</IntDir>
+    <IntDir>$(Configuration)_Platform-Tests\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisRuleSet>ExtendedCorrectnessRules.ruleset</CodeAnalysisRuleSet>
@@ -141,14 +134,14 @@
     <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IntDir>$(Configuration)_Engine-Tests\</IntDir>
+    <IntDir>$(Configuration)_Platform-Tests\</IntDir>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <IntDir>$(Configuration)_Engine-Tests\</IntDir>
+    <IntDir>$(Configuration)_Platform-Tests\</IntDir>
     <TargetName>$(ProjectName)_p</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -165,8 +158,8 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -205,7 +198,7 @@
       <ShowProgress>NotSet</ShowProgress>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <Profile>false</Profile>
-      <AdditionalOptions>/OPT:NOLBR /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/OPT:NOLBR  /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>Console</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <OptimizeReferences>false</OptimizeReferences>
@@ -219,15 +212,15 @@
     </Lib>
     <PostBuildEvent>
       <Command>cd $(OutDir)
-$(OutDir)Test-Engine_d.exe nopause</Command>
+$(OutDir)Test-Platform_d.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -266,7 +259,7 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <ShowProgress>NotSet</ShowProgress>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <Profile>false</Profile>
-      <AdditionalOptions>/OPT:NOLBR /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/OPT:NOLBR  /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>Console</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <OptimizeReferences>false</OptimizeReferences>
@@ -280,15 +273,15 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
     </Lib>
     <PostBuildEvent>
       <Command>cd $(OutDir)
-$(OutDir)Test-Engine_d.exe nopause</Command>
+$(OutDir)Test-Platform_d.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_UnityBuild|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -323,7 +316,7 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <ShowProgress>NotSet</ShowProgress>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <Profile>false</Profile>
-      <AdditionalOptions>/OPT:NOLBR /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/OPT:NOLBR  /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>Console</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <OptimizeReferences>false</OptimizeReferences>
@@ -337,7 +330,7 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
     </Lib>
     <PostBuildEvent>
       <Command>cd $(OutDir)
-$(OutDir)Test-Engine_d.exe nopause</Command>
+$(OutDir)Test-Platform_d.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -346,8 +339,8 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -377,10 +370,10 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Divide-Recast.lib;Divide-Game.lib;Divide-Platform.lib;Divide-Engine.lib;Divide-Networking.lib;Divide-Core.lib;%(AdditionalDependencies);Divide-Editor.lib</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Game.lib;Divide-Platform.lib;Divide-Networking.lib;Divide-ReCast.lib;Divide-Engine.lib;Divide-Core.lib;%(AdditionalDependencies);Divide-Editor.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../Source Code/Libs/lib\;$(SolutionDir)../3rdParty/assimp\lib\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\Lib\vc15win64\;$(SolutionDir)../3rdParty/sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Console</SubSystem>
-      <AdditionalOptions>/OPT:NOLBR /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/OPT:NOLBR  /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Lib>
@@ -390,7 +383,7 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
     </Lib>
     <PostBuildEvent>
       <Command>cd $(OutDir)
-$(OutDir)Test-Engine.exe nopause</Command>
+$(OutDir)Test-Platform.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
@@ -399,9 +392,9 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/test\;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\include/RepX\;$(SolutionDir)../3rdParty/physx\include/common\;$(SolutionDir)../3rdParty/physx\include/foundation\;$(SolutionDir)../3rdParty/physx\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glfw\include/;$(SolutionDir)../3rdParty/glslopt\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/GLEW\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;%(AdditionalIncludeDirectories);$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -433,11 +426,11 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Divide-Recast_p.lib;Divide-Game_p.lib;Divide-Platform_p.lib;Divide-Engine_p.lib;Divide-Networking_p.lib;Divide-Core_p.lib;%(AdditionalDependencies);Divide-Editor_p.lib</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Game_p.lib;Divide-Platform_p.lib;Divide-Networking_p.lib;Divide-ReCast_p.lib;Divide-Engine_p.lib;Divide-Core_p.lib;%(AdditionalDependencies);Divide-Editor_p.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../Source Code/Libs/lib\;$(SolutionDir)../3rdParty/assimp\lib\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\Lib\vc15win64\;$(SolutionDir)../3rdParty/sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Profile>true</Profile>
       <SubSystem>Console</SubSystem>
-      <AdditionalOptions>/OPT:NOLBR /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/OPT:NOLBR  /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Lib>
@@ -445,7 +438,7 @@ $(OutDir)Test-Engine.exe nopause</Command>
     </Lib>
     <PostBuildEvent>
       <Command>cd $(OutDir)
- $(OutDir)Test-Engine_p.exe nopause</Command>
+$(OutDir)Test-Platform_p.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
