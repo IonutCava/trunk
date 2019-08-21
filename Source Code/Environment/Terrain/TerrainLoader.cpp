@@ -373,8 +373,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
 
         shaderModule._defines.push_back(std::make_pair(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", Terrain::PATCHES_PER_TILE_EDGE), true));
-        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %d", Terrain::VTX_PER_TILE_EDGE), true));
-        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("RECIP_CONTROL_VTX_PER_TILE_EDGE %5.2f", 1.0f / Terrain::VTX_PER_TILE_EDGE), true));
+        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %5.2ff", to_F32(Terrain::VTX_PER_TILE_EDGE)), true));
         shaderModule._defines.push_back(std::make_pair(Util::StringFormat("DETAIL_LEVEL %d", context.config().rendering.terrainDetailLevel), true));
         shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
         shaderModule._defines.push_back(std::make_pair("DATA_IDX " + to_stringImpl(Attorney::TerrainLoader::dataIdx(*terrain)), true));
