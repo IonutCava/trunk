@@ -422,7 +422,7 @@ layout(triangles) in;
 layout(location = 10) in int tes_tessLevel[];
 
 
-#define SHOW_TILE_SCALE
+//#define SHOW_TILE_SCALE
 #if defined(SHOW_TILE_SCALE)
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
@@ -662,8 +662,8 @@ layout(location = 11) smooth in vec2 _waterDetails;
 #define SHADOW_INTENSITY_FACTOR 0.75f
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
-layout(location = 2) in vec3 gs_wireColor;
-layout(location = 3) noperspective in vec3 gs_edgeDist;
+layout(location = 12) in vec3 gs_wireColor;
+layout(location = 13) noperspective in vec3 gs_edgeDist;
 #endif
 
 #if defined(PRE_PASS)
