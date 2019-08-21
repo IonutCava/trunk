@@ -24,6 +24,7 @@
 namespace Divide {
 
 namespace {
+    constexpr U32 g_bufferFrameDelay = 3;
     I32 g_nRings = 0;
 
     vector<U32> g_indices;
@@ -51,11 +52,25 @@ namespace {
 
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
+      _shaderData(nullptr),
       _drawBBoxes(false),
+      _shaderDataDirty(false),
       _vegetationGrassNode(nullptr),
+      _initBufferWriteCounter(0),
+      _drawDistance(0.0f),
       _editorDataDirtyState(EditorDataState::IDLE)
 {
     _nodeDataIndex = RenderPassManager::getUniqueNodeDataIndex();
+
+    TerrainTessellator::Configuration shadowConfig = {};
+    shadowConfig._useCameraDistance = false;
+
+    constexpr U32 passPerLight = ShadowMap::MAX_SHADOW_PASSES / Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
+    for (U32 i = 0; i < ShadowMap::MAX_SHADOW_PASSES; ++i) {
+        if (i % passPerLight > 0) {
+            _shadowTessellators[i].overrideConfig(shadowConfig);
+        }
+    }
 }
 
 Terrain::~Terrain()
@@ -88,6 +103,25 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         vegetationNodeDescriptor._name = Util::StringFormat("Vegetation_chunk_%d", chunk->ID());
         vegParent->addNode(vegetationNodeDescriptor);
     }
+
+    static_assert(MAX_RENDER_NODES * sizeof(TessellatedNodeData) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
+
+    _initBufferWriteCounter = ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
+    _initBufferWriteCounter *= g_bufferFrameDelay;
+
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
+    bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
+    bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
+    bufferDescriptor._separateReadWrite = false;
+    bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+                              
+    //Should be once per frame
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+
+    bufferDescriptor._name = "TERRAIN_RENDER_NODES";
+    _shaderData = _context.newSB(bufferDescriptor);
 
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
     sgn.get<RenderingComponent>()->setDataIndex(_nodeDataIndex);
@@ -192,6 +226,12 @@ void Terrain::frameStarted(SceneGraphNode& sgn) {
 }
 
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
+    _drawDistance = sceneState.renderState().generalVisibility();
+    if (_shaderDataDirty) {
+        _shaderData->incQueue();
+        _shaderDataDirty = false;
+    }
+
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
@@ -202,6 +242,18 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     const U8 stageIndex = to_U8(renderStagePass._stage);
 
+    U32 offset = 0;
+    TerrainTessellator* tessellator = nullptr;
+
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        offset = Terrain::MAX_RENDER_NODES * renderStagePass._passIndex;
+        tessellator = &_shadowTessellators[renderStagePass._passIndex];
+    } else {
+        offset = ShadowMap::MAX_SHADOW_PASSES * Terrain::MAX_RENDER_NODES;
+        offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));
+        tessellator = &_terrainTessellator[stageIndex - 1];
+    }
+
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
@@ -211,6 +263,35 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         pkg.pushConstants(0, constants);
     }
 
+    U16 depth = tessellator->getRenderDepth();
+    if (refreshData) {
+        const Frustum& frustum = camera.getFrustum();
+        const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
+
+        bool update = tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum;
+        if (_initBufferWriteCounter > 0) {
+            update = true;
+            _initBufferWriteCounter--;
+        }
+
+        if (update)
+        {
+            tessellator->createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions(), _descriptor->getTessellationRange().w);
+            U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
+
+            bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(depth, LoD);
+
+            _shaderData->writeData(offset, depth, data);
+            _shaderDataDirty = true;
+        }
+    }
+     
+    GenericDrawCommand cmd = pkg.drawCommand(0, 0);
+    if (cmd._cmd.primCount != depth) {
+        cmd._cmd.primCount = depth;
+        pkg.drawCommand(0, 0, cmd);
+    }
+
     return Object3D::onRender(sgn, camera, renderStagePass, refreshData);
 }
 
@@ -218,7 +299,29 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) {
 
+    U32 offset = 0;
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        offset = Terrain::MAX_RENDER_NODES * renderStagePass._passIndex;
+    } else {
+        const U8 stageIndex = to_U8(renderStagePass._stage);
+        offset = ShadowMap::MAX_SHADOW_PASSES * Terrain::MAX_RENDER_NODES;
+        offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));
+    }
+
+    ShaderBufferBinding buffer = {};
+    buffer._binding = ShaderBufferLocation::TERRAIN_DATA;
+    buffer._buffer = _shaderData;
+    buffer._elementRange = { offset, MAX_RENDER_NODES };
+
+    pkgInOut.addShaderBuffer(0, buffer);
+
+    vec2<F32> tesRange = _descriptor->getTessellationRange().xy();
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        tesRange *= 10.0f;
+    }
+
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, tesRange);
     pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, _descriptor->getTessellatedTriangleWidth());
     pushConstantsCommand._constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
 
@@ -227,6 +330,18 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
     cmd._primitiveType = PrimitiveType::PATCH;
     cmd._patchVertexCount = 4;
+#if 1
+    cmd._sourceBuffer = getGeometryVB();
+    cmd._bufferIndex = renderStagePass.index();
+    cmd._cmd.primCount = Terrain::MAX_RENDER_NODES;
+    cmd._cmd.indexCount = getGeometryVB()->getIndexCount();
+
+    pkgInOut.addPushConstantsCommand(pushConstantsCommand);    
+    GFX::DrawCommand drawCommand = {};
+    drawCommand._drawCommands.push_back(cmd);
+    pkgInOut.addDrawCommand(drawCommand);
+ 
+#else
 
     for (I32 i = 0; i < g_nRings; ++i) {
         pushConstantsCommand._constants.set("g_tileSize", GFX::PushConstantType::FLOAT, _tileRings[i]->tileSize());
@@ -241,6 +356,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         pkgInOut.addDrawCommand(drawCommand);
     }
 
+#endif
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 

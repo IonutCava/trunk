@@ -33,6 +33,7 @@
 #define _TERRAIN_H_
 
 #include "TileRing.h"
+#include "TerrainTessellator.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
@@ -80,6 +81,9 @@ class Terrain : public Object3D {
      static constexpr I32 PATCHES_PER_TILE_EDGE = VTX_PER_TILE_EDGE - 1;
      static constexpr I32 QUAD_LIST_INDEX_COUNT = (VTX_PER_TILE_EDGE - 1) * (VTX_PER_TILE_EDGE - 1) * 4;
      static constexpr F32 WORLD_SCALE = 1.0f;
+
+     static constexpr U32 MAX_RENDER_NODES = 1024;
+     static constexpr size_t NODE_DATA_SIZE = sizeof(TessellatedNodeData) * Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
 
    public:
        struct Vert {
@@ -144,15 +148,25 @@ class Terrain : public Object3D {
         QUEUED,
         IDLE
     };
-    bool _drawBBoxes;
-    U32  _nodeDataIndex = 0;
+
+    F32 _drawDistance;
+    I32 _initBufferWriteCounter = 0;
+    ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
+
+    typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)-1> TessellatorArray;
+    typedef hashMap<I64, bool> CameraUpdateFlagArray;
 
     Quadtree _terrainQuadtree;
     vector<TerrainChunk*> _terrainChunks;
 
+    TessellatorArray _terrainTessellator;
+    std::array<TerrainTessellator, ShadowMap::MAX_SHADOW_PASSES> _shadowTessellators;
     std::array<std::shared_ptr<TileRing>, MAX_RINGS>  _tileRings;
     EditorDataState _editorDataDirtyState;
+    bool _drawBBoxes;
+    U32  _nodeDataIndex = 0;
+    bool _shaderDataDirty;
     SceneGraphNode* _vegetationGrassNode;
     std::shared_ptr<TerrainDescriptor> _descriptor;
 };

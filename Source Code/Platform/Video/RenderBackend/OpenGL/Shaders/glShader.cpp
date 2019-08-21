@@ -21,9 +21,9 @@ namespace {
         if (BitCompare(to_U32(mask), UseProgramStageMask::GL_VERTEX_SHADER_BIT)) {
             return ShaderType::VERTEX;
         } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT)) {
-            return ShaderType::TESSELATION_CTRL;
+            return ShaderType::TESSELLATION_CTRL;
         } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_TESS_EVALUATION_SHADER_BIT)) {
-            return ShaderType::TESSELATION_EVAL;
+            return ShaderType::TESSELLATION_EVAL;
         } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_GEOMETRY_SHADER_BIT)) {
             return ShaderType::GEOMETRY;
         } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_FRAGMENT_SHADER_BIT)) {
@@ -39,8 +39,8 @@ namespace {
     UseProgramStageMask getStageMask(ShaderType type) {
         switch (type) {
             case ShaderType::VERTEX: return UseProgramStageMask::GL_VERTEX_SHADER_BIT;
-            case ShaderType::TESSELATION_CTRL: return UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT;
-            case ShaderType::TESSELATION_EVAL: return UseProgramStageMask::GL_TESS_EVALUATION_SHADER_BIT;
+            case ShaderType::TESSELLATION_CTRL: return UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT;
+            case ShaderType::TESSELLATION_EVAL: return UseProgramStageMask::GL_TESS_EVALUATION_SHADER_BIT;
             case ShaderType::GEOMETRY: return UseProgramStageMask::GL_GEOMETRY_SHADER_BIT;
             case ShaderType::FRAGMENT: return UseProgramStageMask::GL_FRAGMENT_SHADER_BIT;
             case ShaderType::COMPUTE: return UseProgramStageMask::GL_COMPUTE_SHADER_BIT;
@@ -97,6 +97,9 @@ bool glShader::uploadToGPU() {
             for (const stringImpl& it : src) {
                 cstrings.push_back(const_cast<char*>(it.c_str()));
             }
+            if (_programHandle != GLUtil::_invalidObjectID) {
+                GL_API::deleteShaderPrograms(1, &_programHandle);
+            }
 
             _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], (GLsizei)cstrings.size(), cstrings.data());
             if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
@@ -105,7 +108,9 @@ bool glShader::uploadToGPU() {
                 return false;
             }
         } else {
-            _programHandle = glCreateProgram();
+            if (_programHandle == GLUtil::_invalidObjectID) {
+                _programHandle = glCreateProgram();
+            }
             if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
                 _valid = false;

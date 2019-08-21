@@ -312,7 +312,6 @@
     <None Include="../../assets\shaders\GLSL\SMAA.glsl" />
     <None Include="../../assets\shaders\GLSL\SSAOPass.glsl" />
     <None Include="../../assets\shaders\GLSL\terrainPlane.glsl" />
-    <None Include="../../assets\shaders\GLSL\terrainTess.glsl" />
     <None Include="../../assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />
     <None Include="../../assets\shaders\GLSL\vertexAtoms\foliage.vert" />
     <None Include="../../assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert" />
@@ -338,6 +337,8 @@
     <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\vsm.frag" />
     <None Include="..\..\..\assets\shaders\GLSL\instanceCullVegetation.glsl" />
     <None Include="..\..\..\assets\shaders\GLSL\tree.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\terrainTess.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\terrainTessNvidia.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl" />

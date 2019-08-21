@@ -1017,9 +1017,6 @@
     <None Include="../../assets\shaders\GLSL\terrainPlane.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="../../assets\shaders\GLSL\terrainTess.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="../../assets\shaders\GLSL\OITComposition.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
@@ -1064,6 +1061,12 @@
     </None>
     <None Include="..\..\..\assets\shaders\GLSL\common\waterData.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\terrainTess.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\terrainTessNvidia.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

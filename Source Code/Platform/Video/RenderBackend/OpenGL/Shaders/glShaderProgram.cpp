@@ -106,16 +106,16 @@ void glShaderProgram::initStaticData() {
     shaderAtomLocationPrefix[to_base(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
     shaderAtomLocationPrefix[to_base(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
     shaderAtomLocationPrefix[to_base(ShaderType::GEOMETRY)] = locPrefix + Paths::Shaders::GLSL::g_geomAtomLoc;
-    shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
-    shaderAtomLocationPrefix[to_base(ShaderType::TESSELATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::TESSELLATION_CTRL)] = locPrefix + Paths::Shaders::GLSL::g_tescAtomLoc;
+    shaderAtomLocationPrefix[to_base(ShaderType::TESSELLATION_EVAL)] = locPrefix + Paths::Shaders::GLSL::g_teseAtomLoc;
     shaderAtomLocationPrefix[to_base(ShaderType::COMPUTE)] = locPrefix + Paths::Shaders::GLSL::g_compAtomLoc;
     shaderAtomLocationPrefix[to_base(ShaderType::COUNT)] = locPrefix + Paths::Shaders::GLSL::g_comnAtomLoc;
 
     shaderAtomExtensionName[to_base(ShaderType::FRAGMENT)] = Paths::Shaders::GLSL::g_fragAtomExt;
     shaderAtomExtensionName[to_base(ShaderType::VERTEX)] = Paths::Shaders::GLSL::g_vertAtomExt;
     shaderAtomExtensionName[to_base(ShaderType::GEOMETRY)] = Paths::Shaders::GLSL::g_geomAtomExt;
-    shaderAtomExtensionName[to_base(ShaderType::TESSELATION_CTRL)] = Paths::Shaders::GLSL::g_tescAtomExt;
-    shaderAtomExtensionName[to_base(ShaderType::TESSELATION_EVAL)] = Paths::Shaders::GLSL::g_teseAtomExt;
+    shaderAtomExtensionName[to_base(ShaderType::TESSELLATION_CTRL)] = Paths::Shaders::GLSL::g_tescAtomExt;
+    shaderAtomExtensionName[to_base(ShaderType::TESSELLATION_EVAL)] = Paths::Shaders::GLSL::g_teseAtomExt;
     shaderAtomExtensionName[to_base(ShaderType::COMPUTE)] = Paths::Shaders::GLSL::g_compAtomExt;
     shaderAtomExtensionName[to_base(ShaderType::COUNT)] = Paths::Shaders::GLSL::g_comnAtomExt;
 
@@ -188,6 +188,8 @@ void glShaderProgram::rebindStages() {
     for (glShader* shader : _shaderStage) {
         // If a shader exists for said stage, attach it
         assert(shader != nullptr);
+        assert(_handle != GLUtil::_invalidObjectID);
+
         if (shader->uploadToGPU()) {
             glUseProgramStages(
                 _handle,
@@ -467,6 +469,10 @@ bool glShaderProgram::shouldRecompile() const {
 }
 
 bool glShaderProgram::recompileInternal() {
+    // Invalid or not loaded yet
+    if (_handle == GLUtil::_invalidObjectID) {
+        return true;
+    }
     // Remember bind state
     bool wasBound = isBound();
     if (wasBound) {

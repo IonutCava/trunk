@@ -234,11 +234,11 @@ void GL_API::appendToShaderHeader(ShaderType type,
             stage = "Geometry";
             break;
 
-        case ShaderType::TESSELATION_CTRL:
+        case ShaderType::TESSELLATION_CTRL:
             stage = "TessellationC";
             break;
 
-        case ShaderType::TESSELATION_EVAL:
+        case ShaderType::TESSELLATION_EVAL:
             stage = "TessellationE";
             break;
         case ShaderType::COMPUTE:
@@ -298,11 +298,12 @@ bool GL_API::initGLSW(const Configuration& config) {
                                                 "#define int4 ivec4\n"
                                                 "#define float2x2 mat2\n"
                                                 "#define float3x3 mat3\n"
-                                                "#define float4x4 mat4";
+                                                "#define float4x4 mat4\n"
+                                                "#define lerp mix";
 
     auto getPassData = [](ShaderType type) -> stringImpl {
         stringImpl baseString = "     _out.%s = _in[index].%s;";
-        if (type == ShaderType::TESSELATION_CTRL) {
+        if (type == ShaderType::TESSELLATION_CTRL) {
             baseString = "    _out[gl_InvocationID].%s = _in[index].%s;";
         }
 
@@ -354,7 +355,7 @@ bool GL_API::initGLSW(const Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
     
-    //appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define MSAA_SAMPLES %d", config.rendering.msaaSamples), lineOffsets);
 
     // Add current build environment information to the shaders
@@ -371,8 +372,8 @@ bool GL_API::initGLSW(const Configuration& config) {
     appendToShaderHeader(ShaderType::FRAGMENT, "#define FRAG_SHADER", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#define GEOM_SHADER", lineOffsets);
     appendToShaderHeader(ShaderType::COMPUTE,  "#define COMPUTE_SHADER", lineOffsets);
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#define TESS_EVAL_SHADER", lineOffsets);
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#define TESS_CTRL_SHADER", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#define TESS_EVAL_SHADER", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#define TESS_CTRL_SHADER", lineOffsets);
 
     // This line gets replaced in every shader at load with the custom list of defines specified by the material
     appendToShaderHeader(ShaderType::COUNT, "//__CUSTOM_DEFINES__", lineOffsets);
@@ -739,40 +740,40 @@ bool GL_API::initGLSW(const Configuration& config) {
     appendToShaderHeader(ShaderType::VERTEX, "} _out;\n", lineOffsets);
 
     // Tessellation Control shader input
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "in Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets, false);
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets, true);
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#endif", lineOffsets);
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "} _in[];\n", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "in Data {", lineOffsets);
+    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets, false);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets, true);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _in[];\n", lineOffsets);
 
     // Tessellation Control shader output
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "out Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets, false);
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_CTRL, lineOffsets, true);
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#endif", lineOffsets);
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "} _out[];\n", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "out Data {", lineOffsets);
+    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets, false);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets, true);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _out[];\n", lineOffsets);
 
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, getPassData(ShaderType::TESSELATION_CTRL), lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, getPassData(ShaderType::TESSELLATION_CTRL), lineOffsets);
 
     // Tessellation Eval shader input
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "in Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets,false);
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets, true);
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#endif", lineOffsets);
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "} _in[];\n", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "in Data {", lineOffsets);
+    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets,false);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets, true);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _in[];\n", lineOffsets);
 
     // Tessellation Eval shader output
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "out Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets, false);
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::TESSELATION_EVAL, lineOffsets, true);
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#endif", lineOffsets);
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "} _out;\n", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "out Data {", lineOffsets);
+    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets, false);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
+    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets, true);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _out;\n", lineOffsets);
 
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, getPassData(ShaderType::TESSELATION_EVAL), lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, getPassData(ShaderType::TESSELLATION_EVAL), lineOffsets);
 
     // Geometry shader input
     appendToShaderHeader(ShaderType::GEOMETRY, "in Data {", lineOffsets);
@@ -801,8 +802,8 @@ bool GL_API::initGLSW(const Configuration& config) {
     appendToShaderHeader(ShaderType::FRAGMENT, "} _in;\n", lineOffsets);
 
     appendToShaderHeader(ShaderType::VERTEX, "#define VAR _out", lineOffsets);
-    appendToShaderHeader(ShaderType::TESSELATION_CTRL, "#define VAR _in[gl_InvocationID]", lineOffsets);
-    appendToShaderHeader(ShaderType::TESSELATION_EVAL, "#define VAR _in", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#define VAR _in[gl_InvocationID]", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#define VAR _in", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#define VAR _in", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "#define VAR _in", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, drawParams, lineOffsets);
@@ -814,8 +815,8 @@ bool GL_API::initGLSW(const Configuration& config) {
     Attorney::GLAPIShaderProgram::setGlobalLineOffset(lineOffsets[to_base(ShaderType::COUNT)]);
 
     Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::VERTEX,   lineOffsets[to_base(ShaderType::VERTEX)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::TESSELATION_CTRL, lineOffsets[to_base(ShaderType::TESSELATION_CTRL)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::TESSELATION_EVAL, lineOffsets[to_base(ShaderType::TESSELATION_EVAL)]);
+    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::TESSELLATION_CTRL, lineOffsets[to_base(ShaderType::TESSELLATION_CTRL)]);
+    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::TESSELLATION_EVAL, lineOffsets[to_base(ShaderType::TESSELLATION_EVAL)]);
     Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::GEOMETRY, lineOffsets[to_base(ShaderType::GEOMETRY)]);
     Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::FRAGMENT, lineOffsets[to_base(ShaderType::FRAGMENT)]);
     Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::COMPUTE,  lineOffsets[to_base(ShaderType::COMPUTE)]);
