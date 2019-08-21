@@ -206,6 +206,12 @@ void Terrain::postBuild() {
 
     CreateTileQuadListIB(g_indices);
 
+    VertexBuffer* vb = getGeometryVB();
+    vb->resizeVertexCount(SQUARED(Terrain::VTX_PER_TILE_EDGE));
+    vb->addIndices(g_indices, false);
+    vb->keepData(false);
+    vb->create(true);
+
     GenericVertexData::IndexBuffer idxBuff;
     idxBuff.smallIndices = false;
     idxBuff.count = g_indices.size();
@@ -328,13 +334,13 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
+    cmd._bufferIndex = renderStagePass.index();
     cmd._primitiveType = PrimitiveType::PATCH;
     cmd._patchVertexCount = 4;
+    cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
 #if 1
     cmd._sourceBuffer = getGeometryVB();
-    cmd._bufferIndex = renderStagePass.index();
     cmd._cmd.primCount = Terrain::MAX_RENDER_NODES;
-    cmd._cmd.indexCount = getGeometryVB()->getIndexCount();
 
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);    
     GFX::DrawCommand drawCommand = {};
@@ -349,7 +355,6 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
         cmd._cmd.primCount  = _tileRings[i]->nTiles();
         cmd._sourceBuffer   = _tileRings[i]->getBuffer();
-        cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
 
         GFX::DrawCommand drawCommand = {};
         drawCommand._drawCommands.push_back(cmd);

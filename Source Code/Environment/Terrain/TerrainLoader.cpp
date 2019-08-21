@@ -514,7 +514,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     // Generate a render state
     RenderStateBlock terrainRenderState;
     terrainRenderState.setCullMode(CullMode::CW);
-    //terrainRenderState.setFrontFaceCCW(false);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
 
     // Generate a render state for drawing reflections
@@ -522,7 +521,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock terrainRenderStateReflection;
-    //terrainRenderStateReflection.setFrontFaceCCW(false);
     terrainRenderStateReflection.setCullMode(CullMode::CCW);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
@@ -530,7 +528,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
-    //terrainRenderStateDepth.setFrontFaceCCW(false);
     terrainRenderStateDepth.setCullMode(CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setZFunc(ComparisonFunction::LESS);
@@ -677,11 +674,6 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
         terrainCache << terrain->_physicsVerts;
         terrainCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache");
     }
-
-    VertexBuffer* vb = terrain->getGeometryVB();
-    Attorney::TerrainTessellatorLoader::initTessellationPatch(vb);
-    vb->keepData(false);
-    vb->create(true);
 
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::postBuild(*terrain);

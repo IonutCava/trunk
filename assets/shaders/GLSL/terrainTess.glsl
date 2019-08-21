@@ -2,6 +2,8 @@
 
 #include "vbInputData.vert"
 
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
     vec4 _tScale;
@@ -18,18 +20,33 @@ vec2 calcTerrainTexCoord(in vec4 pos)
     return vec2(abs(pos.x - TerrainOrigin.x) / TERRAIN_WIDTH, abs(pos.z - TerrainOrigin.y) / TERRAIN_LENGTH);
 }
 
+float getHeight(in vec2 tex_coord) {
+    return (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, tex_coord).r) + TERRAIN_MIN_HEIGHT;
+}
+
 void main(void)
 {
-    computeDataNoClip();
+    _out.dvd_baseInstance = DATA_IDX;
+    _out.dvd_instanceID = gl_InstanceID;
+    _out.dvd_drawID = gl_DrawIDARB;
 
-    const vec4 posAndTileScaleVert = dvd_TerrainData[VAR.dvd_instanceID]._positionAndTileScale;
-    // Send vertex position along
-    gl_Position = vec4(dvd_Vertex.xyz * posAndTileScaleVert.w + posAndTileScaleVert.xyz, 1.0f);
+    float iv = floor(gl_VertexID * (1.0f / CONTROL_VTX_PER_TILE_EDGE));
+    float iu = gl_VertexID - iv * CONTROL_VTX_PER_TILE_EDGE;
+    float u = (2 * (iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f))) - 1.0f;
+    float v = (2 * (iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f))) - 1.0f;
+    
+    const vec4 posAndTileScaleVert = dvd_TerrainData[_out.dvd_instanceID]._positionAndTileScale;
 
-    VAR._vertexWV = dvd_ViewMatrix * dvd_WorldMatrix(VAR.dvd_baseInstance) * gl_Position;
+    dvd_Vertex = vec4(vec3(u, 0.0f, v) * posAndTileScaleVert.w + posAndTileScaleVert.xyz, 1.0f);
+
+    _out._vertexW = dvd_WorldMatrix(DATA_IDX) * dvd_Vertex;
 
     // Calculate texture coordinates (u,v) relative to entire terrain
-    VAR._texCoord = calcTerrainTexCoord(gl_Position);
+    _out._texCoord = calcTerrainTexCoord(_out._vertexW);
+    _out._vertexW.y = getHeight(_out._texCoord);
+    _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
+    // Send vertex position along
+    gl_Position = _out._vertexW;
 }
 
 --TessellationC
@@ -250,38 +267,41 @@ void main(void)
 #       define tscale_posz scaleFactor[posz]
 
         // Outer tessellation level
-        gl_TessLevelOuter[posx] = getTessLevel(3, 0, sideLen);
-        gl_TessLevelOuter[negz] = getTessLevel(0, 1, sideLen);
-        gl_TessLevelOuter[negx] = getTessLevel(1, 2, sideLen);
-        gl_TessLevelOuter[posz] = getTessLevel(2, 3, sideLen);
+        gl_TessLevelOuter[0] = getTessLevel(0, 1, sideLen);
+        gl_TessLevelOuter[3] = getTessLevel(1, 2, sideLen);
+        gl_TessLevelOuter[2] = getTessLevel(2, 3, sideLen);
+        gl_TessLevelOuter[1] = getTessLevel(3, 0, sideLen);
 
-        if (tscale_negx < 0.55f) {
-            gl_TessLevelOuter[posx] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
-        }
-        if (tscale_negz < 0.55f) {
-            gl_TessLevelOuter[negz] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
-        }
-        if (tscale_posx < 0.55f) {
-            gl_TessLevelOuter[negx] = SmallerNeighbourAdjacencyFix(1, 2, sideLen);
-        }
-        if (tscale_posz < 0.55f) {
-            gl_TessLevelOuter[posz] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
-        }
+        // Edges that need adjacency adjustment are identified by the per-instance ip[0].adjacency 
+        // scalars, in *conjunction* with a patch ID that puts them on the edge of a tile.
+        ivec2 patchXY;
+        patchXY.y = gl_PrimitiveID / PATCHES_PER_TILE_EDGE;
+        patchXY.x = gl_PrimitiveID - patchXY.y * PATCHES_PER_TILE_EDGE;
+ 
+        // Identify patch edges that are adjacent to a patch of a different size.  The size difference
+        // is encoded in _in[n].adjacency, either 0.5, 1.0 or 2.0.
+        // neighbourMinusX refers to our adjacent neighbour in the direction of -ve x.  The value 
+        // is the neighbour's size relative to ours.  Similarly for plus and Y, etc.  You really
+        // need a diagram to make sense of the adjacency conditions in the if statements. :-(
+        // These four ifs deal with neighbours that are smaller.
+        if (tscale_negx < 0.55f && patchXY.x == 0)
+            gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
+        if (tscale_negz < 0.55f && patchXY.y == 0)
+            gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
+        if (tscale_posx < 0.55f && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+            gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
+        if (tscale_posz < 0.55f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+            gl_TessLevelOuter[3] = SmallerNeighbourAdjacencyFix(1, 2, sideLen);
 
         // Deal with neighbours that are larger than us. 
-        // Ionut: But why? We adjusted the other side and because we are using a Quadtree approach instead of the original TileRing, this shouldn't be needed anymore
-        if (tscale_negx > 1) {
-            gl_TessLevelOuter[posx] = LargerNeighbourAdjacencyFix(3, 0, gl_PrimitiveID, sideLen);
-        }
-        if (tscale_negz > 1) {
-            gl_TessLevelOuter[negz] = LargerNeighbourAdjacencyFix(0, 1, gl_PrimitiveID, sideLen);
-        }
-        if (tscale_posx > 1) {
-            gl_TessLevelOuter[negx] = LargerNeighbourAdjacencyFix(1, 2, gl_PrimitiveID, sideLen);
-        }
-        if (tscale_posz > 1) {
-            gl_TessLevelOuter[posz] = LargerNeighbourAdjacencyFix(2, 3, gl_PrimitiveID, sideLen);
-        }
+        if (tscale_negx > 1 && patchXY.x == 0)
+            gl_TessLevelOuter[0] = LargerNeighbourAdjacencyFix(0, 1, patchXY.y, sideLen);
+        if (tscale_negz > 1 && patchXY.y == 0)
+            gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
+        if (tscale_posx > 1 && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+            gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
+        if (tscale_posz > 1 && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+            gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
 
        // Inner tessellation level
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[2]);
@@ -297,7 +317,7 @@ void main(void)
 
 --TessellationE
 
-layout(quads, fractional_even_spacing) in;
+layout(quads, fractional_even_spacing, cw) in;
 
 #include "nodeBufferedInput.cmn"
 #include "waterData.cmn"
@@ -406,7 +426,7 @@ void main()
 #endif //TOGGLE_WIREFRAME
 
 #if !defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
-    LoD = int(log2(MAX_TESS_SCALE / tcs_tessLevel[0]));
+    LoD = 0;// int(log2(MAX_TESS_SCALE / tcs_tessLevel[0]));
 #endif //TOGGLE_WIREFRAME
 
 #endif //SHADOW_PASS
@@ -456,7 +476,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     gl_Position = getWVPPositon(i);
 #if !defined(SHADOW_PASS)
-    LoD = int(log2(MAX_TESS_SCALE / tes_tessLevel[0]));
+    LoD = 0;// int(log2(MAX_TESS_SCALE / tes_tessLevel[0]));
 
 #if !defined(SHOW_TILE_SCALE)
     if (tes_tessLevel[0] == 64) {

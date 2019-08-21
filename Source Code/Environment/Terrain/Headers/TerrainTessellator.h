@@ -40,10 +40,6 @@ namespace Divide {
 class VertexBuffer;
 class TerrainLoader;
 
-namespace Attorney {
-    class TerrainTessellatorLoader;
-};
-
 enum class TessellatedTerrainNodeType : U8 {
     ROOT = 0,
     CHILD_1,
@@ -76,7 +72,6 @@ struct TessellatedNodeData {
 };
 
 class TerrainTessellator {
-    friend class Attorney::TerrainTessellatorLoader;
 public:
     struct Configuration {
         // The size of a patch in meters at which point to stop subdividing a terrain patch once it's width is less than the cutoff
@@ -149,20 +144,6 @@ private:
     U16 _renderDepth = 0;
     U16 _prevRenderDepth = 0;
 }; //TerrainTessellator
-
-namespace Attorney {
-
-class TerrainTessellatorLoader {
-  private:
-
-  static void initTessellationPatch(VertexBuffer* vb) {
-      TerrainTessellator::initTessellationPatch(vb);
-  }
-
-  friend class Divide::TerrainLoader;
-};//class TerrainTessellatorLoader
-
-}; //namespace Attorney
 
 }; //namespace Divide
 #endif
