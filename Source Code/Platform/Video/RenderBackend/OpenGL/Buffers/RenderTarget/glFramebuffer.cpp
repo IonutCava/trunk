@@ -584,7 +584,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     GL_API::pushDebugMessage(("FBO Begin: " + name()).c_str(), _framebufferHandle);
 
     /// Activate FBO
-    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, _framebufferHandle);
+    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, _framebufferHandle);
 
     /// Set the viewport
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
@@ -619,7 +619,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 }
 
 void glFramebuffer::end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth) {
-    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
+    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, 0);
     if (_previousPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
         _context.setViewport(_prevViewport);
     }

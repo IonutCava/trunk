@@ -79,7 +79,7 @@ bool inFrustum(const vec3 pt, const vec3 eyePos, const vec3 viewDir, float margi
 
     if (((patch_screenspace_center.x / patch_screenspace_center.w > -1.0) && (patch_screenspace_center.x / patch_screenspace_center.w < 1.0) &&
         (patch_screenspace_center.y / patch_screenspace_center.w > -1.0) && (patch_screenspace_center.y / patch_screenspace_center.w < 1.0) &&
-        (patch_screenspace_center.w > 0)) || (length(pt - eyePos) < margin))
+        (patch_screenspace_center.w > 0)) || (length(pt - eyePos) >= 0.0f))
     {
         return true;
     }
@@ -218,13 +218,13 @@ void main(void)
     const vec3  centre = 0.25 * (gl_in[0].gl_Position.xyz + gl_in[1].gl_Position.xyz + gl_in[2].gl_Position.xyz + gl_in[3].gl_Position.xyz);
     const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x)); // assume square & uniform
     const float diagLen = sqrt(2 * sideLen * sideLen);
-   /* if (!inFrustum(centre, dvd_cameraPosition.xyz, dvd_cameraForward, diagLen))
+    if (!inFrustum(centre, dvd_cameraPosition.xyz, dvd_cameraForward, diagLen))
     {
         gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
         gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = -1;
         gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
     } 
-    else*/
+    else
     {
         PassData(id);
 
@@ -246,7 +246,7 @@ void main(void)
         // is the neighbour's size relative to ours.  Similarly for plus and Y, etc.  You really
         // need a diagram to make sense of the adjacency conditions in the if statements. :-(
         // These four ifs deal with neighbours that are smaller.
-        /*if (adjacency.neighbourMinusX < 0.55 && patchXY.x == 0)
+        if (adjacency.neighbourMinusX < 0.55 && patchXY.x == 0)
             gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
         if (adjacency.neighbourMinusY < 0.55 && patchXY.y == 0)
             gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
@@ -264,7 +264,7 @@ void main(void)
             gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
         if (adjacency.neighbourPlusY > 1 && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
-        */
+        
        // Inner tessellation level
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[2]);
        gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[1] + gl_TessLevelOuter[3]);

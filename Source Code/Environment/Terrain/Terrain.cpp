@@ -127,21 +127,6 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     sgn.get<RenderingComponent>()->setDataIndex(_nodeDataIndex);
 
     _editorComponent.onChangedCbk([this](EditorComponentField& field) {onEditorChange(field); });
-
-    _editorComponent.registerField(
-        "Tessellation Range",
-        [this](void* dataOut) {
-            std::memcpy(dataOut, _descriptor->getTessellationRange().xy()._v, 2 * sizeof(F32));
-        },
-
-        [this](const void* data) {
-            vec2<F32> newTess = *(vec2<F32>*)data;
-            _descriptor->setTessellationRange(vec4<F32>(newTess, _descriptor->getTessellationRange().z, _descriptor->getTessellationRange().w));
-        },
-        EditorComponentFieldType::PUSH_TYPE,
-        false,
-        GFX::PushConstantType::VEC2);
-
     _editorComponent.registerField(
         "Tessellated Triangle Width",
         &_descriptor->_tessellatedTriangleWidth,
@@ -183,7 +168,7 @@ void Terrain::postBuild() {
     _boundingBox.setMin(-halfWidth, _descriptor->getAltitudeRange().min, -halfWidth);
     _boundingBox.setMax(halfWidth, _descriptor->getAltitudeRange().max, halfWidth);
 
-    U32 chunkSize = to_U32(_descriptor->getTessellationRange().z);
+    U32 chunkSize = to_U32(_descriptor->getTessellationSettings().x);
 
     _terrainQuadtree.build(_context,
         _boundingBox,
@@ -241,6 +226,15 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
+bool Terrain::preRender(SceneGraphNode& sgn,
+                        const Camera& camera,
+                        RenderStagePass renderStagePass,
+                        bool refreshData,
+                        bool& rebuildCommandsOut) {
+    //ToDo: If we swap shaders (e.g. for wireframe debug), mark rebuild as true to rebuild the pipeline
+    return SceneNode::preRender(sgn, camera, renderStagePass, refreshData, rebuildCommandsOut);
+}
+
 bool Terrain::onRender(SceneGraphNode& sgn,
                        const Camera& camera,
                        RenderStagePass renderStagePass,
@@ -263,7 +257,6 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
-        constants.set("tessellationRange", GFX::PushConstantType::VEC2, _descriptor->getTessellationRange().xy());
         constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, _descriptor->getTessellatedTriangleWidth());
         constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
         pkg.pushConstants(0, constants);
@@ -282,7 +275,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
         if (update)
         {
-            tessellator->createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions(), _descriptor->getTessellationRange().w);
+            tessellator->createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions(), _descriptor->getTessellationSettings().y);
             U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
 
             bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(depth, LoD);
@@ -321,13 +314,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     pkgInOut.addShaderBuffer(0, buffer);
 
-    vec2<F32> tesRange = _descriptor->getTessellationRange().xy();
-    if (renderStagePass._stage == RenderStage::SHADOW) {
-        tesRange *= 10.0f;
-    }
-
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("tessellationRange", GFX::PushConstantType::VEC2, tesRange);
     pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, _descriptor->getTessellatedTriangleWidth());
     pushConstantsCommand._constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
 
@@ -338,7 +325,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     cmd._primitiveType = PrimitiveType::PATCH;
     cmd._patchVertexCount = 4;
     cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
-#if 1
+
     cmd._sourceBuffer = getGeometryVB();
     cmd._cmd.primCount = Terrain::MAX_RENDER_NODES;
 
@@ -346,22 +333,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     GFX::DrawCommand drawCommand = {};
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
- 
-#else
 
-    for (I32 i = 0; i < g_nRings; ++i) {
-        pushConstantsCommand._constants.set("g_tileSize", GFX::PushConstantType::FLOAT, _tileRings[i]->tileSize());
-        pkgInOut.addPushConstantsCommand(pushConstantsCommand);
-
-        cmd._cmd.primCount  = _tileRings[i]->nTiles();
-        cmd._sourceBuffer   = _tileRings[i]->getBuffer();
-
-        GFX::DrawCommand drawCommand = {};
-        drawCommand._drawCommands.push_back(cmd);
-        pkgInOut.addDrawCommand(drawCommand);
-    }
-
-#endif
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 

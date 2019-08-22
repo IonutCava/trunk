@@ -14,6 +14,9 @@ layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
     TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
+layout(location = 10) out vec4 adjacency;
+layout(location = 11) out int tileScale;
+
 vec2 calcTerrainTexCoord(in vec4 pos)
 {
     vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5f), -(TERRAIN_LENGTH * 0.5f));
@@ -36,6 +39,9 @@ void main(void)
     float v = (2 * (iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f))) - 1.0f;
     
     const vec4 posAndTileScaleVert = dvd_TerrainData[_out.dvd_instanceID]._positionAndTileScale;
+    tileScale = int(posAndTileScaleVert.w);
+
+    adjacency = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
 
     dvd_Vertex = vec4(vec3(u, 0.0f, v) * posAndTileScaleVert.w + posAndTileScaleVert.xyz, 1.0f);
 
@@ -44,7 +50,6 @@ void main(void)
     // Calculate texture coordinates (u,v) relative to entire terrain
     _out._texCoord = calcTerrainTexCoord(_out._vertexW);
     _out._vertexW.y = getHeight(_out._texCoord);
-    _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
     // Send vertex position along
     gl_Position = _out._vertexW;
 }
@@ -55,45 +60,39 @@ void main(void)
 
 #define id gl_InvocationID
 
-#include "nodeBufferedInput.cmn"
-
-struct TerrainNodeData {
-    vec4 _positionAndTileScale;
-    vec4 _tScale;
-};
-
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
-{
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
-};
-
-
 //
 // Outputs
 //
 layout(vertices = 4) out;
 layout(location = 10) out float tcs_tessLevel[];
+layout(location = 11) out int tcs_tileScale[];
+
+layout(location = 10) in vec4 adjacency[];
+layout(location = 11) in flat int tileScale[];
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 uniform float tessTriangleWidth = 30.0f;
-uniform vec2 tessellationRange;
 
 float saturate(in float val) { return clamp(val, 0.0f, 1.0f); }
 
-bool offscreen(in vec4 vertex) {
-    const vec2 cmp = vec2(1.7f);
+// Lifted from Tim's Island demo code.
+bool inFrustum(const vec3 pt, const vec3 eyePos, const vec3 viewDir, float margin)
+{
+    // conservative frustum culling
+    vec3 eyeToPt = pt - eyePos;
+    vec3 patch_to_camera_direction_vector = viewDir * dot(eyeToPt, viewDir) - eyeToPt;
+    vec3 patch_center_realigned = pt + normalize(patch_to_camera_direction_vector) * min(margin, length(patch_to_camera_direction_vector));
+    vec4 patch_screenspace_center = dvd_ProjectionMatrix * vec4(patch_center_realigned, 1.0);
 
-    return vertex.z < -0.5f ||
-           any(lessThan(vertex.xy, -cmp)) ||
-           any(greaterThan(vertex.xy, cmp));
+    if (((patch_screenspace_center.x / patch_screenspace_center.w > -1.0) && (patch_screenspace_center.x / patch_screenspace_center.w < 1.0) &&
+        (patch_screenspace_center.y / patch_screenspace_center.w > -1.0) && (patch_screenspace_center.y / patch_screenspace_center.w < 1.0) &&
+        (patch_screenspace_center.w > 0)) || (length(pt - eyePos) >= 0.0f))
+    {
+        return true;
+    }
+
+    return false;
 }
-
-vec4 project(in vec4 vertexWV, in mat4 proj) {
-    const vec4 result = proj * vertexWV;
-    return result / result.w;
-}
-
-
 
 float getHeight(in vec2 tex_coord) {
     return (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, tex_coord).r) + TERRAIN_MIN_HEIGHT;
@@ -123,30 +122,13 @@ float SphereToScreenSpaceTessellation(vec3 p0, vec3 p1, in float diameter)
 
     vec4 clip0 = dvd_ProjectionMatrix * view0;
     vec4 clip1 = dvd_ProjectionMatrix * view1;
+
     return ClipToScreenSpaceTessellation(clip0, clip1);
 #else
     return MAX_TESS_SCALE;
 #endif
 }
 
-// Dynamic level of detail using camera distance algorithm.
-float dlodCameraDistance(vec3 p0, vec3 p1, in float diameter)
-{
-#if MAX_TESS_SCALE != MIN_TESS_SCALE
-    const vec4 view0 = dvd_ViewMatrix * vec4(p0, 1.0f);
-    const vec4 view1 = dvd_ViewMatrix * vec4(p1, 1.0f);
-    const float MinDepth = max(tessellationRange.x, 0.0001f);
-    const float MaxDepth = max(MinDepth + 1.0f, tessellationRange.y);
-
-    const float d0 = saturate((abs(view0.z) - MinDepth) / (MaxDepth - MinDepth));
-    const float d1 = saturate((abs(view1.z) - MinDepth) / (MaxDepth - MinDepth));
-    const float t = floor(mix(MAX_TESS_SCALE, MIN_TESS_SCALE, (d0 + d1) * 0.5f));
-    float logTess = ceil(log2(t));
-    return min(pow(2, logTess), uint(MAX_TESS_SCALE));
-#else
-     return MAX_TESS_SCALE;
-#endif
-}
 
 // The adjacency calculations ensure that neighbours have tessellations that agree.
 // However, only power of two sizes *seem* to get correctly tessellated with no cracks.
@@ -229,42 +211,29 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
     vec2 t0 = _in[idx0]._texCoord;
     vec2 t1 = _in[idx1]._texCoord;
 
-#if 0
-    return dlodCameraDistance(p0, p1, diameter);
-#else
     return SphereToScreenSpaceTessellation(p0, p1, diameter);
-#endif
 }
+
+#define neighbourMinusX z
+#define neighbourMinusY y
+#define neighbourPlusX  x
+#define neighbourPlusY  w
 
 void main(void)
 {
-    if (gl_InvocationID == 0 && 
-        all(bvec4(offscreen(project(_in[0]._vertexWV, dvd_ProjectionMatrix)),
-                  offscreen(project(_in[1]._vertexWV, dvd_ProjectionMatrix)),
-                  offscreen(project(_in[2]._vertexWV, dvd_ProjectionMatrix)),
-                  offscreen(project(_in[3]._vertexWV, dvd_ProjectionMatrix)))))
+    const vec3  centre = 0.25 * (gl_in[0].gl_Position.xyz + gl_in[1].gl_Position.xyz + gl_in[2].gl_Position.xyz + gl_in[3].gl_Position.xyz);
+    const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x)); // assume square & uniform
+    const float diagLen = sqrt(2 * sideLen * sideLen);
+
+    if (!inFrustum(centre, dvd_cameraPosition.xyz, dvd_cameraForward, diagLen))
     {
-        gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
-        gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = -1;
-        gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
-    } 
+          gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
+          gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = -1;
+          gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
+    }
     else
     {
         PassData(id);
-
-        // square and uniform patches
-        const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x));
-        const vec4 scaleFactor = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
-
-#       define posz 3
-#       define posx 0
-#       define negz 1
-#       define negx 2
-
-#       define tscale_negx scaleFactor[negx]
-#       define tscale_posx scaleFactor[posx]
-#       define tscale_negz scaleFactor[negz]
-#       define tscale_posz scaleFactor[posz]
 
         // Outer tessellation level
         gl_TessLevelOuter[0] = getTessLevel(0, 1, sideLen);
@@ -284,25 +253,25 @@ void main(void)
         // is the neighbour's size relative to ours.  Similarly for plus and Y, etc.  You really
         // need a diagram to make sense of the adjacency conditions in the if statements. :-(
         // These four ifs deal with neighbours that are smaller.
-        if (tscale_negx < 0.55f && patchXY.x == 0)
+        if (adjacency[0].neighbourMinusX < 0.55f && patchXY.x == 0)
             gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
-        if (tscale_negz < 0.55f && patchXY.y == 0)
+        if (adjacency[0].neighbourMinusY < 0.55f && patchXY.y == 0)
             gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
-        if (tscale_posx < 0.55f && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+        if (adjacency[0].neighbourPlusX < 0.55f && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
-        if (tscale_posz < 0.55f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+        if (adjacency[0].neighbourPlusY < 0.55f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[3] = SmallerNeighbourAdjacencyFix(1, 2, sideLen);
 
         // Deal with neighbours that are larger than us. 
-        if (tscale_negx > 1 && patchXY.x == 0)
+        if (adjacency[0].neighbourMinusX > 1.1f && patchXY.x == 0)
             gl_TessLevelOuter[0] = LargerNeighbourAdjacencyFix(0, 1, patchXY.y, sideLen);
-        if (tscale_negz > 1 && patchXY.y == 0)
+        if (adjacency[0].neighbourMinusY > 1.1f && patchXY.y == 0)
             gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
-        if (tscale_posx > 1 && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+        if (adjacency[0].neighbourPlusX > 1.1f && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
-        if (tscale_posz > 1 && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+        if (adjacency[0].neighbourPlusY > 1.1f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
-
+        
        // Inner tessellation level
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[2]);
        gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[1] + gl_TessLevelOuter[3]);
@@ -313,6 +282,7 @@ void main(void)
 
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[id] = gl_TessLevelOuter[0];
+    tcs_tileScale[id] = tileScale[0];
 }
 
 --TessellationE
@@ -325,9 +295,11 @@ layout(quads, fractional_even_spacing, cw) in;
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 layout(location = 10) in float tcs_tessLevel[];
+layout(location = 11) in flat int tcs_tileScale[];
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 10) out int tes_tessLevel;
+layout(location = 11) out int tes_tileScale;
 #else
 layout(location = 10) out flat int LoD;
 // x = distance, y = depth
@@ -414,6 +386,7 @@ void main()
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     tes_tessLevel = int(tcs_tessLevel[0]);
+    tes_tileScale = tcs_tileScale[0];
     gl_Position = _out._vertexW;
 #else
     gl_Position = dvd_ProjectionMatrix * _out._vertexWV;
@@ -426,7 +399,7 @@ void main()
 #endif //TOGGLE_WIREFRAME
 
 #if !defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
-    LoD = 0;// int(log2(MAX_TESS_SCALE / tcs_tessLevel[0]));
+    LoD = int(log2(max(tcs_tileScale[0], 16)) - 4);
 #endif //TOGGLE_WIREFRAME
 
 #endif //SHADOW_PASS
@@ -440,20 +413,9 @@ void main()
 layout(triangles) in;
 
 layout(location = 10) in int tes_tessLevel[];
-
+layout(location = 11) in int tes_tileScale[];
 
 //#define SHOW_TILE_SCALE
-#if defined(SHOW_TILE_SCALE)
-struct TerrainNodeData {
-    vec4 _positionAndTileScale;
-    vec4 _tScale;
-};
-
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
-{
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
-};
-#endif
 
 #if defined(TOGGLE_NORMALS)
 layout(line_strip, max_vertices = 18) out;
@@ -476,7 +438,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     gl_Position = getWVPPositon(i);
 #if !defined(SHADOW_PASS)
-    LoD = 0;// int(log2(MAX_TESS_SCALE / tes_tessLevel[0]));
+    LoD = int(log2(max(tes_tileScale, 16)) - 4);
 
 #if !defined(SHOW_TILE_SCALE)
     if (tes_tessLevel[0] == 64) {
@@ -495,26 +457,24 @@ void PerVertex(in int i, in vec3 edge_dist) {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }
 #else
-    const int tileScale = int(dvd_TerrainData[_in[i].dvd_instanceID]._positionAndTileScale.w);
-    if (tileScale == 256) {
+    if (tes_tileScale[i] == 256) {
         gs_wireColor = vec3(0.0, 0.0, 1.0);
     }
-    else if (tileScale == 128) {
+    else if (tes_tileScale[i] == 128) {
         gs_wireColor = vec3(0.0, 1.0, 0.0);
     }
-    else if (tileScale == 64) {
+    else if (tes_tileScale[i] == 64) {
         gs_wireColor = vec3(1.0, 0.0, 0.0);
     }
-    else if (tileScale == 32) {
+    else if (tes_tileScale[i] == 32) {
         gs_wireColor = vec3(1.0, 1.0, 0.0);
     }
-    else if (tileScale == 16) {
+    else if (tes_tileScale[i] == 16) {
         gs_wireColor = vec3(1.0, 0.0, 1.0);
     }
-    else if (tileScale == 8) {
+    else if (tes_tileScale[i] == 8) {
         gs_wireColor = vec3(0.0, 1.00, 1.0);
-    }
-    else {
+    } else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }
 #endif

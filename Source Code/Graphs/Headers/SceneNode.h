@@ -101,7 +101,8 @@ class SceneNode : public CachedResource {
     virtual bool preRender(SceneGraphNode& sgn,
                             const Camera& camera,
                             RenderStagePass renderStagePass,
-                            bool refreshData);
+                            bool refreshData,
+                            bool& rebuildCommandsOut);
 
     /// Perform any pre-draw operations POST-command build
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false

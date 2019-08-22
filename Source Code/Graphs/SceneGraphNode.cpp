@@ -479,8 +479,8 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
     }
 }
 
-bool SceneGraphNode::preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
-    return _node->preRender(*this, camera, renderStagePass, refreshData);
+bool SceneGraphNode::preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut) {
+    return _node->preRender(*this, camera, renderStagePass, refreshData, rebuildCommandsOut);
 }
 
 bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {

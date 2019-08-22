@@ -67,7 +67,8 @@ class Sky : public SceneNode {
     bool preRender(SceneGraphNode& sgn,
                    const Camera& camera,
                    RenderStagePass renderStagePass,
-                   bool refreshData) override;
+                   bool refreshData,
+                   bool& rebuildCommandsOut) override;
 
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 

@@ -419,7 +419,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             shaderModule._variant = "Shadow";
         }
         shaderModule._defines.push_back(std::make_pair("SHADOW_PASS", true));
-        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
+        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 16", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
     }
 
@@ -441,7 +441,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 			shaderModule._defines.push_back(std::make_pair("USE_PARALLAX_OCCLUSION_MAPPING", true));
 		}
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
-        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 8", true));
+        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
         shaderModule._defines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
     }
 
@@ -506,7 +506,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
     terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
     terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
-
     terrainMaterial->setShaderProgram(terrainShadowShader, RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS));
 
     terrain->setMaterialTpl(terrainMaterial);
@@ -687,7 +686,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     const U32 terrainWidth = terrainDescriptor->getDimensions().width;
     const U32 terrainHeight = terrainDescriptor->getDimensions().height;
-    U32 chunkSize = to_U32(terrainDescriptor->getTessellationRange().z);
+    U32 chunkSize = to_U32(terrainDescriptor->getTessellationSettings().x);
     U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
 
     U32 maxGrassInstances = 0u, maxTreeInstances = 0u;

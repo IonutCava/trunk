@@ -166,13 +166,14 @@ void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sc
 bool Sky::preRender(SceneGraphNode& sgn,
                    const Camera& camera,
                    RenderStagePass renderStagePass,
-                   bool refreshData) {
+                   bool refreshData,
+                   bool& rebuildCommandsOut) {
     if (_rebuildDrawCommands == RebuildCommandsState::REQUESTED) {
         sgn.get<RenderingComponent>()->queueRebuildCommands(renderStagePass);
         _rebuildDrawCommands = RebuildCommandsState::DONE;
     }
 
-    return SceneNode::preRender(sgn, camera, renderStagePass, refreshData);
+    return SceneNode::preRender(sgn, camera, renderStagePass, refreshData, rebuildCommandsOut);
 }
 
 void Sky::buildDrawCommands(SceneGraphNode& sgn,

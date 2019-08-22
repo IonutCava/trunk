@@ -42,10 +42,8 @@ namespace Divide {
             addVariable("albedoTilingFactor", descTree.get<F32>("albedoTilingFactor", 4.0f));
             setDimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
             setAltitudeRange(vec2<F32>(descTree.get<F32>("altitudeRange.<xmlattr>.min", 0.0f), descTree.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
-            setTessellationRange(vec4<F32>(descTree.get<F32>("tessellationRange.<xmlattr>.min", 10.0f),
-                                           descTree.get<F32>("tessellationRange.<xmlattr>.max", 150.0f),
-                                           descTree.get<F32>("tessellationRange.<xmlattr>.chunkSize", 32.0f),
-                                           descTree.get<F32>("tessellationRange.<xmlattr>.patchSizeInM", 100.0f)));
+            setTessellationSettings(vec2<F32>(descTree.get<F32>("tessellationSettings.<xmlattr>.chunkSize", 32.0f),
+                                              descTree.get<F32>("tessellationSettings.<xmlattr>.patchSizeInM", 100.0f)));
             setTessellatedTriangleWidth(descTree.get<F32>("tessellatedTriangleWidth", 30.0f));
             addVariable("vegetationTextureLocation", descTree.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation));
             addVariable("grassMap", descTree.get<stringImpl>("vegetation.grassMap"));

@@ -498,8 +498,9 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     if (canDraw(renderStagePass, lod, refreshData)) {
         RenderPackage& pkg = getDrawPackage(renderStagePass);
 
-        if (_parentSGN.preRender(camera, renderStagePass, refreshData)) {
-            if (pkg.empty()) {
+        bool rebuildCommandsOut = false;
+        if (_parentSGN.preRender(camera, renderStagePass, refreshData, rebuildCommandsOut)) {
+            if (pkg.empty() || rebuildCommandsOut) {
                 rebuildDrawCommands(renderStagePass);
             }
             if (_parentSGN.prepareRender(camera, renderStagePass, refreshData)) {

@@ -34,6 +34,7 @@
 
 #include "TileRing.h"
 #include "TerrainTessellator.h"
+#include "TerrainDescriptor.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
@@ -121,6 +122,12 @@ class Terrain : public Object3D {
 
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 
+    bool preRender(SceneGraphNode& sgn,
+        const Camera& camera,
+        RenderStagePass renderStagePass,
+        bool refreshData,
+        bool& rebuildCommandsOut) override;
+
     void postBuild();
 
     void buildDrawCommands(SceneGraphNode& sgn,
@@ -168,6 +175,10 @@ class Terrain : public Object3D {
     bool _shaderDataDirty;
     SceneGraphNode* _vegetationGrassNode;
     std::shared_ptr<TerrainDescriptor> _descriptor;
+
+    //0 - normal, 1 - wireframe, 2 - normals
+    std::array<ShaderProgram_ptr, to_base(TerrainDescriptor::WireframeMode::COUNT)> _terrainColourShader;
+    std::array<ShaderProgram_ptr, to_base(TerrainDescriptor::WireframeMode::COUNT)> _terrainPrePassShader;
 };
 
 namespace Attorney {
@@ -204,6 +215,22 @@ class TerrainLoader {
 
     static U32 dataIdx(Terrain& terrain) noexcept {
         return terrain._nodeDataIndex;
+    }
+
+    static void setShaderProgram(Terrain& terrain, const ShaderProgram_ptr& shader, bool prePass, TerrainDescriptor::WireframeMode mode) {
+        if (!prePass) {
+            terrain._terrainColourShader[to_base(mode)] = shader;
+        } else {
+            terrain._terrainPrePassShader[to_base(mode)] = shader;
+        }
+    }
+
+    static const ShaderProgram_ptr& getShaderProgram(Terrain& terrain, bool prePass, TerrainDescriptor::WireframeMode mode) {
+        if (!prePass) {
+            return terrain._terrainColourShader[to_base(mode)];
+        }
+
+        terrain._terrainPrePassShader[to_base(mode)];
     }
 
     friend class Divide::TerrainLoader;
