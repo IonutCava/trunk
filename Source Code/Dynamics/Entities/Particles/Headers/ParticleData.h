@@ -93,10 +93,10 @@ class ParticleData {
         return _isBillboarded;
     }
    public:
-    explicit ParticleData(GFXDevice& context, U32 particleCount, U32 optionsMask);
+    explicit ParticleData(GFXDevice& context, U32 particleCount, U8 optionsMask);
     ~ParticleData();
 
-    void generateParticles(U32 particleCount, U32 optionsMask);
+    void generateParticles(U32 particleCount, U8 optionsMask);
     void kill(U32 index);
     void wake(U32 index);
     void swapData(U32 indexA, U32 indexB);
@@ -110,7 +110,7 @@ class ParticleData {
    protected:
     U32 _totalCount;
     U32 _aliveCount;
-    U32 _optionsMask;
+    U8  _optionsMask;
 
     bool _isBillboarded;
     vector<vec3<F32>> _particleGeometryVertices;

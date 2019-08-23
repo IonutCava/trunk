@@ -171,12 +171,12 @@ class SceneRenderState : public SceneComponent {
        
     vec4<U16> _lod;
     FogDescriptor _fog;
-    U8 _renderPass;
-    U32 _stateMask;
     GizmoState _gizmoState;
     F32 _grassVisibility;
     F32 _treeVisibility;
     F32 _generalVisibility;
+    U16 _stateMask;
+    U8 _renderPass;
 };
 
 class Camera;

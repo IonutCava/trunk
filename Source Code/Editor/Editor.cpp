@@ -249,7 +249,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             winDescriptor.title = "No Title Yet";
             winDescriptor.targetDisplay = g_windowManager->getWindow(0u).currentDisplayIndex();
             winDescriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
-            winDescriptor.flags = to_U32(WindowDescriptor::Flags::HIDDEN) | to_U32(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U32(WindowDescriptor::Flags::CLEAR_DEPTH);
+            winDescriptor.flags = to_U16(WindowDescriptor::Flags::HIDDEN) | to_U16(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U16(WindowDescriptor::Flags::CLEAR_DEPTH);
             // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
             winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED) | to_U32(WindowDescriptor::Flags::RESIZEABLE);
             winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;

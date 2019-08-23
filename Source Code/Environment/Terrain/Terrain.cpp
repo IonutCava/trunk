@@ -326,7 +326,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     cmd._patchVertexCount = 4;
     cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
 
-    cmd._sourceBuffer = getGeometryVB();
+    cmd._sourceBuffer = getGeometryVB()->handle();
     cmd._cmd.primCount = Terrain::MAX_RENDER_NODES;
 
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);    

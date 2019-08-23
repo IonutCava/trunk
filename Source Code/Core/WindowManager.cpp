@@ -393,7 +393,7 @@ void WindowManager::destroyAPISettings(DisplayWindow* window) {
     }
 }
 
-ErrorCode WindowManager::configureAPISettings(U32 descriptorFlags) {
+ErrorCode WindowManager::configureAPISettings(U16 descriptorFlags) {
     Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
 
     if (Config::ENABLE_GPU_VALIDATION) {

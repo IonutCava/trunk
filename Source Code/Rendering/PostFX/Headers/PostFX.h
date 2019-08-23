@@ -66,20 +66,20 @@ public:
 
     inline void pushFilter(FilterType filter) {
         if (!getFilterState(filter)) {
-            SetBit(_filterStack, filter);
+            SetBit(_filterStack, to_U16(filter));
             _filtersDirty = true;
         }
     }
 
     inline void popFilter(FilterType filter) {
         if (getFilterState(filter)) {
-            ClearBit(_filterStack, filter);
+            ClearBit(_filterStack, to_U16(filter));
             _filtersDirty = true;
         }
     }
 
     inline bool getFilterState(FilterType filter) const {
-        return BitCompare(_filterStack, filter);
+        return BitCompare(_filterStack, to_U16(filter));
     }
 
     // fade the screen to the specified colour lerping over the specified time interval
@@ -126,7 +126,7 @@ private:
     DELEGATE_CBK<void> _fadeOutComplete;
     DELEGATE_CBK<void> _fadeInComplete;
 
-    U32 _filterStack = 0;
+    U16 _filterStack = 0;
     bool _filtersDirty = true;
 
     GenericDrawCommand _drawCommand;

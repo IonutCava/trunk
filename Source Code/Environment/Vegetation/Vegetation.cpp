@@ -553,7 +553,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
         GenericDrawCommand cmd;
         cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
         cmd._cmd.indexCount = s_buffer->getIndexCount();
-        cmd._sourceBuffer = s_buffer;
+        cmd._sourceBuffer = s_buffer->handle();
         cmd._cmd.primCount = _instanceCountGrass;
 
         GFX::DrawCommand drawCommand;

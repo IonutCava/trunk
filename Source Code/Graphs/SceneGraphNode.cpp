@@ -122,10 +122,10 @@ void SceneGraphNode::AddMissingComponents(U32 componentMask) {
 
     for (ComponentType::_integral i = 0; i < ComponentType::COUNT; ++i) {
         if (i > 0) {
-            const ComponentType::_integral componentBit = 1 << i;
+            const U16 componentBit = 1 << i;
 
             // Only add new components;
-            if (BitCompare(componentMask, componentBit) && !BitCompare(_componentMask, componentBit)) {
+            if (BitCompare(componentMask, to_U32(componentBit)) && !BitCompare(_componentMask, to_U32(componentBit))) {
                 _componentMask |= componentBit;
                 SGNComponent::make(ComponentType::_from_integral(componentBit), *this);
             }
@@ -297,13 +297,13 @@ void SceneGraphNode::postLoad() {
     SendEvent<EntityPostLoad>(GetEntityID(), getGUID());
 }
 
-bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
+bool SceneGraphNode::isChildOfType(U16 typeMask, bool ignoreRoot) const {
     if (ignoreRoot) {
         ClearBit(typeMask, to_base(SceneNodeType::TYPE_ROOT));
     }
     SceneGraphNode* parent = getParent();
     while (parent != nullptr) {
-        if (BitCompare(typeMask, to_U32(parent->getNode<>().type()))) {
+        if (BitCompare(typeMask, to_base(parent->getNode<>().type()))) {
             return true;
         }
         parent = parent->getParent();

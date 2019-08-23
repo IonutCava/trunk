@@ -46,7 +46,7 @@ class SceneGraphNode;
 class SceneRenderState;
 struct RenderStagePass;
 
-BETTER_ENUM(ComponentType, U32,
+BETTER_ENUM(ComponentType, U16,
     ANIMATION = toBit(1),
     INVERSE_KINEMATICS = toBit(2),
     RAGDOLL = toBit(3),

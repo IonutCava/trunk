@@ -332,61 +332,75 @@ bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) {
     return COORDS_IN_RECT(input_x, input_y, rect.x, rect.y, rect.z, rect.w);
 }
 
-template<typename Type>
+template<typename Mask, typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(const U32 bitMask, const Type bit) {
-    return BitCompare(bitMask, to_base(bit));
+BitCompare(const Mask bitMask, const Type bit) {
+    return BitCompare(bitMask, static_cast<Mask>(bit));
 }
 
-template<typename Type>
+template<typename Mask, typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
-SetBit(U32& bitMask, const Type bit) {
-    SetBit(bitMask, to_base(bit));
+SetBit(Mask& bitMask, const Type bit) {
+    SetBit(bitMask, static_cast<Mask>(bit));
 }
 
-template<typename Type>
+template<typename Mask, typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
-ClearBit(U32& bitMask, const Type bit) {
-    ClearBit(bitMask, to_base(bit));
+ClearBit(Mask& bitMask, const Type bit) {
+    ClearBit(bitMask, static_cast<Mask>(bit));
 }
 
-template<typename Type>
+template<typename Mask, typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
-ToggleBit(U32& bitMask, const Type bit) {
-    ToggleBit(bitMask, to_base(bit));
+ToggleBit(Mask& bitMask, const Type bit) {
+    ToggleBit(bitMask, static_cast<Mask>(bit));
 }
 
-template<typename Type>
+template<typename Mask, typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
-ToggleBit(U32& bitMask, const Type bit, bool state) {
-    ToggleBit(bitMask, to_base(bit), state);
+ToggleBit(Mask& bitMask, const Type bit, bool state) {
+    ToggleBit(bitMask, static_cast<Mask>(bit), state);
 }
 
-constexpr bool AnyCompare(const U32 bitMask, const U32 checkMask) noexcept {
+template<typename Mask>
+constexpr bool AnyCompare(const Mask bitMask, const Mask checkMask) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     return ((bitMask & checkMask) != 0);
 }
 
-constexpr bool AllCompare(const U32 bitMask, const U32 checkMask) noexcept {
+template<typename Mask>
+constexpr bool AllCompare(const Mask bitMask, const Mask checkMask) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     return ((bitMask & checkMask) == checkMask);
 }
 
-constexpr bool BitCompare(const U32 bitMask, const U32 bit) noexcept {
+template<typename Mask>
+constexpr bool BitCompare(const Mask bitMask, const Mask bit) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     return ((bitMask & bit) == bit);
 }
 
-constexpr void SetBit(U32& bitMask, const U32 bit) noexcept {
+template<typename Mask>
+constexpr void SetBit(Mask& bitMask, const Mask bit) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask |= bit;
 }
 
-constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept {
+template<typename Mask>
+constexpr void ClearBit(Mask& bitMask, const Mask bit) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask &= ~(bit);
 }
 
-constexpr void ToggleBit(U32& bitMask, const U32 bit) noexcept {
+template<typename Mask>
+constexpr void ToggleBit(Mask& bitMask, const Mask bit) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask ^= 1 << bit;
 }
 
-constexpr void ToggleBit(U32& bitMask, const U32 bit, bool state) noexcept {
+template<typename Mask>
+constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     if (state) {
         SetBit(bitMask, bit);
     } else {
@@ -394,41 +408,51 @@ constexpr void ToggleBit(U32& bitMask, const U32 bit, bool state) noexcept {
     }
 }
 
-template<typename Type>
+template<typename Mask, typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(const std::atomic_uint bitMask, const Type bit) {
-    return BitCompare(bitmask, to_base(bit));
+BitCompare(typename Mask, const std::atomic<Mask> bitMask, const Type bit) {
+    return BitCompare(bitmask, static_cast<Mask>(bit));
 }
 
-template<typename Type>
+template<typename Mask, typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
-SetBit(std::atomic_uint& bitMask, const Type bit) {
-    SetBit(bitMask, to_base(bit));
+SetBit(std::atomic<Mask>& bitMask, const Type bit) {
+    SetBit(bitMask, static_cast<Mask>(bit));
 }
 
-template<typename Type>
+template<typename Mask, typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
-ClearBit(std::atomic_uint& bitMask, const Type bit) {
-    ClearBit(bitMask, to_base(bit));
+ClearBit(std::atomic<Mask>& bitMask, const Type bit) {
+    ClearBit(bitMask, static_cast<Mask>(bit));
 }
 
-inline bool AnyCompare(const std::atomic_uint bitMask, const U32 checkMask) noexcept {
+template<typename Mask>
+inline bool AnyCompare(const std::atomic<Mask> bitMask, const Mask checkMask) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     return ((bitMask & checkMask) != 0);
 }
 
-inline bool BitCompare(const std::atomic_uint& bitMask, const U32 bit) noexcept {
+template<typename Mask>
+inline bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     return ((bitMask & bit) == bit);
 }
 
-inline void SetBit(std::atomic_uint& bitMask, const U32 bit) noexcept {
+template<typename Mask>
+inline void SetBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask |= bit;
 }
 
-inline void ClearBit(std::atomic_uint& bitMask, const U32 bit) noexcept {
+template<typename Mask>
+inline void ClearBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask &= ~(bit);
 }
 
-inline void ToggleBit(std::atomic_uint& bitMask, const U32 bit) noexcept {
+template<typename Mask>
+inline void ToggleBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
+    static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask ^= 1 << bit;
 }
 

@@ -14,6 +14,7 @@ VertexBuffer::VertexBuffer(GFXDevice& context)
      _staticBuffer(false),
      _keepDataInMemory(false)
 {
+    assert(handle()._id != 0);
     reset();
 }
 

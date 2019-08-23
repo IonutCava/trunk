@@ -40,7 +40,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
     //Attorney::SceneNodeSceneGraph::postLoad(*rootSGN.getNode(), rootSGN);
     onNodeAdd(*_root);
 
-    U32 octreeNodeMask = to_base(SceneNodeType::TYPE_ROOT) |
+    U16 octreeNodeMask = to_base(SceneNodeType::TYPE_ROOT) |
                          to_base(SceneNodeType::TYPE_SKY) |
                          to_base(SceneNodeType::TYPE_INFINITEPLANE) |
                          to_base(SceneNodeType::TYPE_VEGETATION);

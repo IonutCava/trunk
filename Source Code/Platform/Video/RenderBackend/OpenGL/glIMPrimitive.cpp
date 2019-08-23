@@ -76,7 +76,7 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
 
         GenericDrawCommand cmd;
-        cmd._sourceBuffer = const_cast<glIMPrimitive*>(this);
+        cmd._sourceBuffer = handle();
 
         PushConstants pushConstants;
         // Inform the shader if we have (or don't have) a texture

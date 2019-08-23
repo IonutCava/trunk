@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-ParticleData::ParticleData(GFXDevice& context, U32 particleCount, U32 optionsMask)
+ParticleData::ParticleData(GFXDevice& context, U32 particleCount, U8 optionsMask)
     : _context(context)
 {
     _isBillboarded = true;
@@ -29,7 +29,7 @@ ParticleData::~ParticleData()
     generateParticles(0, _optionsMask);
 }
 
-void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
+void ParticleData::generateParticles(U32 particleCount, U8 optionsMask) {
     _totalCount = particleCount;
     _aliveCount = 0;
     _optionsMask = optionsMask;

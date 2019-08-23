@@ -35,15 +35,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
     inline bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option) {
-        return BitCompare(cmd._renderOptions, to_U32(option));
+        return BitCompare(cmd._renderOptions, to_base(option));
     }
 
     inline void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
-        SetBit(cmd._renderOptions, to_U32(option));
+        SetBit(cmd._renderOptions, to_U16(option));
     }
 
     inline void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
-        ClearBit(cmd._renderOptions, to_U32(option));
+        ClearBit(cmd._renderOptions, to_U16(option));
     }
 
     inline void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
@@ -58,12 +58,12 @@ namespace Divide {
         }
     }
 
-    inline void enableOptions(GenericDrawCommand& cmd, U32 optionsMask) {
-        SetBit(cmd._renderOptions, to_U32(optionsMask));
+    inline void enableOptions(GenericDrawCommand& cmd, U16 optionsMask) {
+        SetBit(cmd._renderOptions, optionsMask);
     }
 
-    inline void disableOptions(GenericDrawCommand& cmd, U32 optionsMask) {
-        ClearBit(cmd._renderOptions, to_U32(optionsMask));
+    inline void disableOptions(GenericDrawCommand& cmd, U16 optionsMask) {
+        ClearBit(cmd._renderOptions, optionsMask);
     }
 
 }; //namespace Divide

@@ -67,11 +67,11 @@ struct WindowDescriptor {
     vec2<I16> position;
     vec2<U16> dimensions;
     FColour4 clearColour = DefaultColours::DIVIDE_BLUE;
-    U32 flags = to_U32(Flags::DECORATED) |
-                to_U32(Flags::RESIZEABLE) |
-                to_U32(Flags::ALLOW_HIGH_DPI) |
-                to_U32(Flags::CLEAR_DEPTH) |
-                to_U32(Flags::CLEAR_COLOUR);
+    U16 flags = to_U16(Flags::DECORATED) |
+                to_U16(Flags::RESIZEABLE) |
+                to_U16(Flags::ALLOW_HIGH_DPI) |
+                to_U16(Flags::CLEAR_DEPTH) |
+                to_U16(Flags::CLEAR_COLOUR);
 };
 
 class PlatformContext;
@@ -150,7 +150,7 @@ protected:
 protected:
     friend class DisplayWindow;
     U32 createAPIFlags(RenderAPI api) noexcept;
-    ErrorCode configureAPISettings(U32 descriptorFlags);
+    ErrorCode configureAPISettings(U16 descriptorFlags);
     ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags);
     void destroyAPISettings(DisplayWindow* window);
 

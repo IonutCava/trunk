@@ -211,7 +211,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
-    cmd._sourceBuffer = _sky->getGeometryVB();
+    cmd._sourceBuffer = _sky->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.index();
     cmd._cmd.indexCount = _sky->getGeometryVB()->getIndexCount();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);

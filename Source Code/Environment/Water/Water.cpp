@@ -187,7 +187,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
     cmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();
-    cmd._sourceBuffer = _plane->getGeometryVB();
+    cmd._sourceBuffer = _plane->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.index();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     {

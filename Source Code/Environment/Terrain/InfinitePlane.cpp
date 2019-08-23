@@ -143,7 +143,7 @@ void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
     planeCmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
     planeCmd._cmd.firstIndex = 0;
     planeCmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();
-    planeCmd._sourceBuffer = _plane->getGeometryVB();
+    planeCmd._sourceBuffer = _plane->getGeometryVB()->handle();
     planeCmd._bufferIndex = renderStagePass.index();
     enableOption(planeCmd, CmdRenderOptions::RENDER_INDIRECT);
     {

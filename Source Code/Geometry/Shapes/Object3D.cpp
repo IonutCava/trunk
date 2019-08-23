@@ -146,7 +146,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
     if (pkgInOut.drawCommandCount() == 0) {
         GenericDrawCommand cmd;
         VertexBuffer* const vb = getGeometryVB();
-        cmd._sourceBuffer = vb;
+        cmd._sourceBuffer = vb->handle();
         cmd._bufferIndex = renderStagePass.index();
         cmd._cmd.indexCount = to_U32(vb->getIndexCount());
         cmd._cmd.primCount = sgn.instanceCount();

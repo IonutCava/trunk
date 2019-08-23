@@ -9,6 +9,7 @@ GenericVertexData::GenericVertexData(GFXDevice& context, const U32 ringBufferLen
     RingBuffer(ringBufferLength),
     _name(name == nullptr ? "" : name)
 {
+    assert(handle()._id != 0);
 }
 
 GenericVertexData::~GenericVertexData()

@@ -33,6 +33,8 @@
 #ifndef _VERTEX_DATA_INTERFACE_H_
 #define _VERTEX_DATA_INTERFACE_H_
 
+#include "VDIPool.h"
+
 #include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 
@@ -46,7 +48,16 @@ class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsReso
     virtual ~VertexDataInterface();
 
     virtual void draw(const GenericDrawCommand& command, I32 passIdx = -1) = 0;
+
+    inline VDIHandle handle() const { return _handle; }
+protected:
+    VDIHandle _handle;
+
+    static VDIPool<2048> s_VDIPool;
 };
 
 };  // namespace Divide
+
+#include "VDIPool.inl"
+
 #endif

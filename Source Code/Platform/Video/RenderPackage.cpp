@@ -90,7 +90,7 @@ void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
     }
 }
 
-void RenderPackage::enableOptions(U32 optionMask) {
+void RenderPackage::enableOptions(U16 optionMask) {
     if (AllCompare(_drawCommandOptions, optionMask)) {
         return;
     }
@@ -105,7 +105,7 @@ void RenderPackage::enableOptions(U32 optionMask) {
     }
 }
 
-void RenderPackage::disableOptions(U32 optionMask) {
+void RenderPackage::disableOptions(U16 optionMask) {
     if (!AllCompare(_drawCommandOptions, optionMask)) {
         return;
     }

@@ -112,8 +112,8 @@ public:
     void setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding);
 
     void setDrawOption(CmdRenderOptions option, bool state);
-    void enableOptions(U32 optionMask);
-    void disableOptions(U32 optionMask);
+    void enableOptions(U16 optionMask);
+    void disableOptions(U16 optionMask);
 
     inline bool empty() const { return _commands->empty(); }
 
@@ -128,8 +128,8 @@ protected:
     GFX::CommandBuffer* _commands;
 
 private:
-    U32 _drawCommandOptions;
     I32 _drawCommandCount;
+    U16 _drawCommandOptions;
     MinQuality _qualityRequirement;
     U8 _lodLevel;
 };

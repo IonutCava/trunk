@@ -19,7 +19,7 @@ std::mutex Octree::s_pendingInsertLock;
 std::queue<SceneGraphNode*> Octree::s_pendingInsertion;
 vectorEASTL<SceneGraphNode*> Octree::s_intersectionsObjectCache;
 
-Octree::Octree(U32 nodeMask)
+Octree::Octree(U16 nodeMask)
     : _nodeMask(nodeMask),
       _maxLifespan(MAX_LIFE_SPAN_LIMIT / 8),
       _curLife(-1)
@@ -30,13 +30,13 @@ Octree::Octree(U32 nodeMask)
     _childNodes.fill(nullptr);
 }
 
-Octree::Octree(U32 nodeMask, const BoundingBox& rootAABB)
+Octree::Octree(U16 nodeMask, const BoundingBox& rootAABB)
     : Octree(nodeMask)
 {
     _region.set(rootAABB);
 }
 
-Octree::Octree(U32 nodeMask,
+Octree::Octree(U16 nodeMask,
                const BoundingBox& rootAABB,
                const vectorEASTL<SceneGraphNode*>& nodes)
     :  Octree(nodeMask, rootAABB)
@@ -154,7 +154,7 @@ void Octree::update(const U64 deltaTimeUS) {
 
 bool Octree::addNode(SceneGraphNode* node) {
     if (node && // check for valid node
-        !BitCompare(_nodeMask, to_U32(node->getNode<>().type())) &&  // check for valid type
+        !BitCompare(_nodeMask, to_U16(node->getNode<>().type())) &&  // check for valid type
         !node->isChildOfType(_nodeMask, true)) // parent is valid type as well
     {
         UniqueLock w_lock(s_pendingInsertLock);
@@ -467,7 +467,7 @@ size_t Octree::getTotalObjectCount() const {
 }
 
 /// Gives you a list of all intersection records which intersect or are contained within the given frustum area
-vectorEASTL<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U32 typeFilterMask) const {
+vectorEASTL<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U16 typeFilterMask) const {
 
     vectorEASTL<IntersectionRecord> ret{};
 
@@ -505,7 +505,7 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, 
 }
 
 /// Gives you a list of intersection records for all objects which intersect with the given ray
-vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const {
+vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 start, F32 end, U16 typeFilterMask) const {
 
     vectorEASTL<IntersectionRecord> ret{};
 
@@ -544,7 +544,7 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay,
     return ret;
 }
 
-void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, U32 typeFilterMask)
+void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, U16 typeFilterMask)
 {
     _intersectionsCache.resize(0);
     //assume all parent objects have already been processed for collisions against each other.
@@ -621,7 +621,7 @@ vectorEASTL<IntersectionRecord> Octree::allIntersections(const Ray& intersection
 }
 
 /// This gives you the first object encountered by the intersection ray
-IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
+IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U16 typeFilterMask)
 {
     if (!s_treeReady) {
         updateTree();
@@ -646,7 +646,7 @@ IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 s
 }
 
 /// This gives you a list of all intersections, filtered by a specific type of object
-vectorEASTL<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
+vectorEASTL<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end, U16 typeFilterMask)
 {
     if (!s_treeReady) {
         updateTree();
@@ -656,7 +656,7 @@ vectorEASTL<IntersectionRecord> Octree::allIntersections(const Ray& intersection
 }
 
 /// This gives you a list of all objects which [intersect or are contained within] the given frustum and meet the given object type
-vectorEASTL<IntersectionRecord> Octree::allIntersections(const Frustum& region, U32 typeFilterMask)
+vectorEASTL<IntersectionRecord> Octree::allIntersections(const Frustum& region, U16 typeFilterMask)
 {
     if (!s_treeReady) {
         updateTree();

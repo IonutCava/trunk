@@ -130,6 +130,7 @@
     <ClInclude Include="../../Source Code\Platform\Headers\SDLEventListener.h" />
     <ClInclude Include="../../Source Code\Platform\Input\Headers\Input.h" />
     <ClInclude Include="../../Source Code\Platform\Video\RenderBackend\OpenGL\Headers\GLStateTracker.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VDIPool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Core\MemoryManagement\TrackedObject.cpp" />
@@ -339,6 +340,7 @@
     <None Include="..\..\..\assets\shaders\GLSL\tree.glsl" />
     <None Include="..\..\assets\shaders\GLSL\terrainTess.glsl" />
     <None Include="..\..\assets\shaders\GLSL\terrainTessNvidia.glsl" />
+    <None Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VDIPool.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl" />

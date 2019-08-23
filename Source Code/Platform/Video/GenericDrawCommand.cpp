@@ -8,12 +8,6 @@
 
 namespace Divide {
 
-namespace {
-    inline bool IsSameBuffer(VertexDataInterface* lhs, VertexDataInterface* rhs) {
-        return  (lhs == nullptr && rhs == nullptr) || 
-                ((lhs == nullptr ? 0 : lhs->getGUID()) == (rhs == nullptr ? 0 : rhs->getGUID()));
-    }
-};
 
 namespace GenericDrawCommandResults {
     hashMap<I64, QueryResult> g_queryResults;
@@ -25,7 +19,7 @@ bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) {
         lhs._bufferIndex == rhs._bufferIndex &&
         lhs._primitiveType == rhs._primitiveType &&
         lhs._patchVertexCount == rhs._patchVertexCount &&
-        IsSameBuffer(lhs._sourceBuffer, rhs._sourceBuffer);
+        lhs._sourceBuffer._data == rhs._sourceBuffer._data;
 }
 
 }; //namespace Divide

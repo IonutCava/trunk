@@ -299,7 +299,7 @@ BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE);
 END_COMMAND(DispatchComputeCommand);
 
 BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER);
-    U32 _barrierMask = 0;
+    U8 _barrierMask = 0;
 
     stringImpl toString(U16 indent) const override;
 

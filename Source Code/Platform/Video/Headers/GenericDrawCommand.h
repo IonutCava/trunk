@@ -34,11 +34,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _GENERIC_DRAW_COMMAND_H_
 
 #include "Pipeline.h"
+
 #include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VDIPool.h"
 
 namespace Divide {
 
-class VertexDataInterface;
 enum class PrimitiveType : U8;
 
 namespace GenericDrawCommandResults {
@@ -74,12 +75,12 @@ enum class CmdRenderOptions : U16 {
 
 struct GenericDrawCommand {
     //Data
-    IndirectDrawCommand _cmd = {};                                   // 44 bytes
-    VertexDataInterface* _sourceBuffer = nullptr;                    // 24 bytes
-    U32 _commandOffset = 0;                                          // 16 bytes
-    U32 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 12 bytes
-    U32 _patchVertexCount = 3;                                       // 8  bytes
-    U16 _drawCount = 1;                                              // 4  bytes
+    IndirectDrawCommand _cmd = {};                                   // 35 bytes
+    VDIHandle _sourceBuffer = {};                                    // 15 bytes
+    U32 _commandOffset = 0;                                          // 11 bytes
+    U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 7  bytes
+    U16 _drawCount = 1;                                              // 5  bytes
+    U8  _patchVertexCount = 3;                                       // 3  bytes
     U8  _bufferIndex = 0;                                            // 2  bytes
     PrimitiveType _primitiveType = PrimitiveType::TRIANGLE_STRIP;    // 1  bytes
 };
@@ -89,8 +90,8 @@ void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option);
 void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option);
 void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option);
 void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state);
-void enableOptions(GenericDrawCommand& cmd, U32 optionsMask);
-void disableOptions(GenericDrawCommand& cmd, U32 optionsMask);
+void enableOptions(GenericDrawCommand& cmd, U16 optionsMask);
+void disableOptions(GenericDrawCommand& cmd, U16 optionsMask);
 
 bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs);
 

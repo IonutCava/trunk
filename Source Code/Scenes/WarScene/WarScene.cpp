@@ -602,14 +602,14 @@ bool WarScene::load(const stringImpl& name) {
         const U32 particleCount = Config::Build::IS_DEBUG_BUILD ? 4000 : 20000;
         const F32 emitRate = particleCount / 4;
 
-        std::shared_ptr<ParticleData> particles =
-            std::make_shared<ParticleData>(context().gfx(),
-                particleCount,
-                to_base(ParticleData::Properties::PROPERTIES_POS) |
-                to_base(ParticleData::Properties::PROPERTIES_VEL) |
-                to_base(ParticleData::Properties::PROPERTIES_ACC) |
-                to_base(ParticleData::Properties::PROPERTIES_COLOR) |
-                to_base(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
+        U8 options =
+            to_base(ParticleData::Properties::PROPERTIES_POS) |
+            to_base(ParticleData::Properties::PROPERTIES_VEL) |
+            to_base(ParticleData::Properties::PROPERTIES_ACC) |
+            to_base(ParticleData::Properties::PROPERTIES_COLOR) |
+            to_base(ParticleData::Properties::PROPERTIES_COLOR_TRANS);
+
+        std::shared_ptr<ParticleData> particles = std::make_shared<ParticleData>(context().gfx(), particleCount, options);
         particles->_textureFileName = "particle.DDS";
 
         std::shared_ptr<ParticleSource> particleSource = std::make_shared<ParticleSource>(context().gfx(), emitRate);

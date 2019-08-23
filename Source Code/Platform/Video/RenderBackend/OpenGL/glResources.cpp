@@ -490,21 +490,21 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         //-----------------
 
         if (primitiveQuery != nullptr) {
-            U64& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer->getGUID()]._primitivesGenerated;
+            U64& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._data]._primitivesGenerated;
             glEndQuery(GL_PRIMITIVES_GENERATED);
             glGetQueryObjectui64v(primitiveQuery->readQuery().getID(),
                                   GL_QUERY_RESULT,
                                   &result);
         }
         if (sampleCountQuery != nullptr) {
-            U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer->getGUID()]._samplesPassed;
+            U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._data]._samplesPassed;
             glEndQuery(GL_PRIMITIVES_GENERATED);
             glGetQueryObjectuiv(sampleCountQuery->readQuery().getID(),
                                 GL_QUERY_RESULT,
                                 &result);
         }
         if (anySamplesQuery != nullptr) {
-            U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer->getGUID()]._anySamplesPassed;
+            U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._data]._anySamplesPassed;
             glEndQuery(GL_PRIMITIVES_GENERATED);
             glGetQueryObjectuiv(anySamplesQuery->readQuery().getID(),
                                 GL_QUERY_RESULT,

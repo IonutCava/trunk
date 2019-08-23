@@ -513,9 +513,9 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
                 bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
                 renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
                 if (renderWireframe && renderGeometry) {
-                    pkg.enableOptions(to_U32(CmdRenderOptions::RENDER_GEOMETRY) | to_U32(CmdRenderOptions::RENDER_WIREFRAME));
+                    pkg.enableOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY) | to_base(CmdRenderOptions::RENDER_WIREFRAME));
                 } else if (!renderWireframe && !renderGeometry) {
-                    pkg.disableOptions(to_U32(CmdRenderOptions::RENDER_GEOMETRY) | to_U32(CmdRenderOptions::RENDER_WIREFRAME));
+                    pkg.disableOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY) | to_base(CmdRenderOptions::RENDER_WIREFRAME));
                 } else {
                     pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, renderGeometry);
                     pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);

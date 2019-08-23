@@ -81,7 +81,7 @@ void SceneRenderState::renderMask(U32 mask) {
 }
 
 bool SceneRenderState::isEnabledOption(RenderOptions option) const {
-    return BitCompare(_stateMask, to_U32(option));
+    return BitCompare(_stateMask, option);
 }
 
 void SceneRenderState::enableOption(RenderOptions option) {
@@ -96,7 +96,7 @@ void SceneRenderState::enableOption(RenderOptions option) {
         }
     }
 
-    SetBit(_stateMask, to_U32(option));
+    SetBit(_stateMask, option);
 }
 
 void SceneRenderState::disableOption(RenderOptions option) {
@@ -111,7 +111,7 @@ void SceneRenderState::disableOption(RenderOptions option) {
         }
     }
 
-    ClearBit(_stateMask, to_U32(option));
+    ClearBit(_stateMask, option);
 }
 
 void SceneRenderState::toggleOption(RenderOptions option) {

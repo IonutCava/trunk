@@ -42,9 +42,9 @@ namespace Divide {
 // ref: http://www.gamedev.net/page/resources/_/technical/game-programming/introduction-to-octrees-r3529
 class Octree : public std::enable_shared_from_this<Octree> {
     public:
-        Octree(U32 nodeMask);
-        Octree(U32 nodeMask, const BoundingBox& rootAABB);
-        Octree(U32 nodeMask, const BoundingBox& rootAABB, const vectorEASTL<SceneGraphNode*>& nodes);
+        Octree(U16 nodeMask);
+        Octree(U16 nodeMask, const BoundingBox& rootAABB);
+        Octree(U16 nodeMask, const BoundingBox& rootAABB, const vectorEASTL<SceneGraphNode*>& nodes);
 
         ~Octree();
 
@@ -59,10 +59,10 @@ class Octree : public std::enable_shared_from_this<Octree> {
 
         void updateTree();
 
-        vectorEASTL<IntersectionRecord> allIntersections(const Frustum& region, U32 typeFilterMask);
+        vectorEASTL<IntersectionRecord> allIntersections(const Frustum& region, U16 typeFilterMask);
         vectorEASTL<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end);
-        IntersectionRecord nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask);
-        vectorEASTL<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask);
+        IntersectionRecord nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U16 typeFilterMask);
+        vectorEASTL<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end, U16 typeFilterMask);
         
     private:
         U8 activeNodes() const;
@@ -77,11 +77,11 @@ class Octree : public std::enable_shared_from_this<Octree> {
         createNode(const BoundingBox& region, SceneGraphNode* object);
 
         bool isStatic(const SceneGraphNode& node) const;
-        vectorEASTL<IntersectionRecord> getIntersection(const Frustum& frustum, U32 typeFilterMask) const;
-        vectorEASTL<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const;
+        vectorEASTL<IntersectionRecord> getIntersection(const Frustum& frustum, U16 typeFilterMask) const;
+        vectorEASTL<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U16 typeFilterMask) const;
 
         size_t getTotalObjectCount() const;
-        void updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, U32 typeFilterMask);
+        void updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, U16 typeFilterMask);
         
         void handleIntersection(const IntersectionRecord& intersection) const;
         bool getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const;
@@ -92,7 +92,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
     private:
         //ToDo: make this work in a multi-threaded environment
         //mutable I8 _frustPlaneCache;
-        U32 _nodeMask;
+        U16 _nodeMask;
         I32 _curLife;
         I32 _maxLifespan;
         BoundingBox _region;

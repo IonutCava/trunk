@@ -1036,7 +1036,7 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd, I32 passIdx) {
-    if (cmd._sourceBuffer == nullptr) {
+    if (cmd._sourceBuffer._id == 0) {
         getStateTracker().setActiveVAO(s_dummyVAO);
 
         U32 indexCount = 0;
@@ -1048,7 +1048,9 @@ bool GL_API::draw(const GenericDrawCommand& cmd, I32 passIdx) {
 
         glDrawArrays(GLUtil::glPrimitiveTypeTable[to_U32(cmd._primitiveType)], cmd._cmd.firstIndex, indexCount);
     } else {
-        cmd._sourceBuffer->draw(cmd, passIdx);
+        VertexDataInterface* buffer = VertexDataInterface::s_VDIPool.find(cmd._sourceBuffer);
+        assert(buffer != nullptr);
+        buffer->draw(cmd, passIdx);
     }
 
     return true;
@@ -1226,13 +1228,13 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::MEMORY_BARRIER: {
             const GFX::MemoryBarrierCommand& crtCmd = commandBuffer.get<GFX::MemoryBarrierCommand>(entry);
             MemoryBarrierMask glMask = MemoryBarrierMask::GL_NONE_BIT;
-            U32 barrierMask = crtCmd._barrierMask;
+            U8 barrierMask = crtCmd._barrierMask;
             if (barrierMask != 0) {
                 if (barrierMask == to_base(MemoryBarrierType::ALL)) {
                     glMemoryBarrier(MemoryBarrierMask::GL_ALL_BARRIER_BITS);
                 } else {
                     for (U8 i = 0; i < to_U8(MemoryBarrierType::COUNT); ++i) {
-                        if (BitCompare(barrierMask, 1 << i)) {
+                        if (BitCompare(barrierMask, to_U8(1 << i))) {
                             switch (static_cast<MemoryBarrierType>(1 << i)) {
                                 case MemoryBarrierType::BUFFER:
                                     glMask |= MemoryBarrierMask::GL_BUFFER_UPDATE_BARRIER_BIT;

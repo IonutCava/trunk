@@ -325,7 +325,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
 
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
         cmd._cmd.primCount = to_U32(_particles->_renderingPositions.size());
-        cmd._sourceBuffer = &getDataBuffer(renderStagePass._stage, 0);
+        cmd._sourceBuffer = getDataBuffer(renderStagePass._stage, 0).handle();
         cmd._bufferIndex = renderStagePass.index();
         pkg.drawCommand(0, 0, cmd);
 

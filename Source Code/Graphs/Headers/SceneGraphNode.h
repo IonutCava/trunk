@@ -185,7 +185,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
-    bool isChildOfType(U32 typeMask, bool ignoreRoot) const;
+    bool isChildOfType(U16 typeMask, bool ignoreRoot) const;
     bool isRelated(const SceneGraphNode& target) const;
     bool isChild(const SceneGraphNode& target, bool recursive) const;
 
@@ -242,7 +242,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     }
 
     inline bool getFlag(UpdateFlag flag) const {
-        return BitCompare(_updateFlags, to_U32(flag));
+        return BitCompare(_updateFlags, to_base(flag));
     }
 
     inline void clearUpdateFlag(UpdateFlag flag) {
@@ -333,7 +333,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     T* AddSGNComponent(P&&... param) {
         SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(*this, this->context(), std::forward<P>(param)...));
         _editorComponents.emplace_back(&comp->getEditorComponent());
-        SetBit(_componentMask, comp->type());
+        SetBit(_componentMask, to_U32(comp->type()));
 
         return static_cast<T*>(comp);
     }
@@ -384,7 +384,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SceneGraphNode* _parent;
     vectorEASTL<SceneGraphNode*> _children;
 
-    U32 _updateFlags;
+    U8 _updateFlags;
 
     const U32 _instanceCount = 1;
 

@@ -15,6 +15,7 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
       _texture(nullptr),
       _cmdBufferDirty(true)
 {
+    assert(handle()._id != 0);
     _cmdBuffer = GFX::allocateCommandBuffer();
 }
 

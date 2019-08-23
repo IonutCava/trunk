@@ -292,7 +292,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
 
         // Debug axis form the axis arrow gizmo in the corner of the screen
         // This is toggleable, so check if it's actually requested
-        if (BitCompare(to_U32(sceneRenderState.gizmoState()), to_base(SceneRenderState::GizmoState::SCENE_GIZMO))) {
+        if (BitCompare(to_base(sceneRenderState.gizmoState()), SceneRenderState::GizmoState::SCENE_GIZMO)) {
 
             // Apply the inverse view matrix so that it cancels out in the shader
             // Submit the draw command, rendering it in a tiny viewport in the lower
