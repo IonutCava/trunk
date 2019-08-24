@@ -246,7 +246,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         const Frustum& frustum = camera.getFrustum();
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
-        bool update = false;// tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum;
+        bool update = tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum;
         if (_initBufferWriteCounter > 0) {
             update = true;
             _initBufferWriteCounter--;

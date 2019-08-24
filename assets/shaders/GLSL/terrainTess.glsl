@@ -252,17 +252,18 @@ void main(void)
 
         // Outer tessellation level
         gl_TessLevelOuter[0] = getTessLevel(0, 1, sideLen);
-        gl_TessLevelOuter[3] = getTessLevel(1, 2, sideLen);
-        gl_TessLevelOuter[2] = getTessLevel(2, 3, sideLen);
         gl_TessLevelOuter[1] = getTessLevel(3, 0, sideLen);
+        gl_TessLevelOuter[2] = getTessLevel(2, 3, sideLen);
+        gl_TessLevelOuter[3] = getTessLevel(1, 2, sideLen);
 
         // Edges that need adjacency adjustment are identified by the per-instance ip[0].adjacency 
         // scalars, in *conjunction* with a patch ID that puts them on the edge of a tile.
+        int PatchID = gl_PrimitiveID % 4;
         ivec2 patchXY;
-        patchXY.y = gl_PrimitiveID / PATCHES_PER_TILE_EDGE;
-        patchXY.x = gl_PrimitiveID - patchXY.y * PATCHES_PER_TILE_EDGE;
+        patchXY.y = PatchID / PATCHES_PER_TILE_EDGE;
+        patchXY.x = PatchID - patchXY.y * PATCHES_PER_TILE_EDGE;
  
-        const vec4 adjacency = dvd_TerrainData[_in[0].dvd_instanceID]._tScale;
+        const vec4 adjacency = dvd_TerrainData[_in[id].dvd_instanceID]._tScale;
 
         // Identify patch edges that are adjacent to a patch of a different size.  The size difference
         // is encoded in _in[n].adjacency, either 0.5, 1.0 or 2.0.
@@ -270,35 +271,31 @@ void main(void)
         // is the neighbour's size relative to ours.  Similarly for plus and Y, etc.  You really
         // need a diagram to make sense of the adjacency conditions in the if statements. :-(
         // These four ifs deal with neighbours that are smaller.
-        if (adjacency.neighbourMinusX < 0.55f/* && patchXY.x == 0*/)
+        if (adjacency.neighbourMinusX < 0.55f && patchXY.x == 0)
             gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
-        if (adjacency.neighbourPlusX < 0.55f/* && patchXY.x == PATCHES_PER_TILE_EDGE - 1*/)
-            gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
-
-
-        if (adjacency.neighbourMinusY < 0.55f/* && patchXY.y == 0*/)
+        if (adjacency.neighbourMinusY < 0.55f && patchXY.y == 0)
             gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
-        if (adjacency.neighbourPlusY < 0.55f/* && patchXY.y == PATCHES_PER_TILE_EDGE - 1*/)
+        if (adjacency.neighbourPlusX < 0.55f && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+             gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
+        if (adjacency.neighbourPlusY < 0.55f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[3] = SmallerNeighbourAdjacencyFix(1, 2, sideLen);
 
         // Deal with neighbours that are larger than us. 
-        if (adjacency.neighbourMinusX > 1.1f/* && patchXY.x == 0*/) {
+        if (adjacency.neighbourMinusX > 1.1f && patchXY.x == 0)
             gl_TessLevelOuter[0] = LargerNeighbourAdjacencyFix(0, 1, patchXY.y, sideLen);
-        }
-        if (adjacency.neighbourPlusX > 1.1f/* && patchXY.x == PATCHES_PER_TILE_EDGE - 1*/) {
-            gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
-        }
-
-        if (adjacency.neighbourMinusY > 1.1f/* && patchXY.y == 0*/) {
+        if (adjacency.neighbourMinusY > 1.1f && patchXY.y == 0)
             gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
-        }
-        if (adjacency.neighbourPlusY > 1.1f/* && patchXY.y == PATCHES_PER_TILE_EDGE - 1*/) {
+        if (adjacency.neighbourPlusX > 1.1f && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+            gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
+        if (adjacency.neighbourPlusY > 1.1f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
-        }
         
+        if (patchXY.x == 1) {
+            gl_TessLevelOuter[1] = -1;
+        }
        // Inner tessellation level
-       gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[2]);
-       gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[1] + gl_TessLevelOuter[3]);
+       gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
+       gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
     }
 
     // Pass the patch verts along
