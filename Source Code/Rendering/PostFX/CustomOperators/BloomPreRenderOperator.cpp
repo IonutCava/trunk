@@ -120,8 +120,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     beginRenderPassCmd._name = "DO_BLOOM_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;

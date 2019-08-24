@@ -624,8 +624,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
                 GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
 
                 // Dummy draw command as the full screen quad is generated completely in the vertex shader
-                GFX::DrawCommand drawCmd;
-                drawCmd._drawCommands.push_back(triangleCmd);
+                GFX::DrawCommand drawCmd = { triangleCmd };
                 GFX::EnqueueCommand(cmdBufferInOut, drawCmd);
 
                 GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);

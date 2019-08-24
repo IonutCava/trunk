@@ -556,8 +556,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
         cmd._sourceBuffer = s_buffer->handle();
         cmd._cmd.primCount = _instanceCountGrass;
 
-        GFX::DrawCommand drawCommand;
-        drawCommand._drawCommands.push_back(cmd);
+        GFX::DrawCommand drawCommand = { cmd };
         pkgInOut.addDrawCommand(drawCommand);
     }
 

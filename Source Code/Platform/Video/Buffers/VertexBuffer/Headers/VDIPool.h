@@ -41,6 +41,7 @@ namespace Divide {
 
 class VertexDataInterface;
 
+#pragma pack(push, 1)
 struct VDIHandle {
     U16 _id = 0;
     U8  _generation = 0;
@@ -53,6 +54,7 @@ struct VDIHandle {
         return _id != val._id || _generation != val._generation;
     }
 };
+#pragma pack(pop)
 
 template<size_t N>
 class VDIPool {

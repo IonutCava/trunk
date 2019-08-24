@@ -147,8 +147,7 @@ void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
     planeCmd._bufferIndex = renderStagePass.index();
     enableOption(planeCmd, CmdRenderOptions::RENDER_INDIRECT);
     {
-        GFX::DrawCommand drawCommand;
-        drawCommand._drawCommands.push_back(planeCmd);
+        GFX::DrawCommand drawCommand = { planeCmd };
         pkgInOut.addDrawCommand(drawCommand);
     }
 

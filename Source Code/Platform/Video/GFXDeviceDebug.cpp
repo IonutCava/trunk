@@ -177,8 +177,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
         GFX::SetViewportCommand setViewport = {};
         GFX::SendPushConstantsCommand pushConstants = {};
         GFX::BindPipelineCommand bindPipeline = {};
-        GFX::DrawCommand drawCommand = {};
-        drawCommand._drawCommands.push_back(triangleCmd);
+        GFX::DrawCommand drawCommand = { triangleCmd };
 
         for (I16 idx = 0; idx < to_I16(_debugViews.size()); ++idx) {
             DebugView& view = *_debugViews[idx];

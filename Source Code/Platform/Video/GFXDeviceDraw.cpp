@@ -261,8 +261,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
     // Blit render target to screen
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndDebugScopeCommand endDebugScopeCommand;
@@ -379,8 +378,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, size);
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;

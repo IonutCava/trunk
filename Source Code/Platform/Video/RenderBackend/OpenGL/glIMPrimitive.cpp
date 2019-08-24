@@ -104,8 +104,7 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
             GFX::EnqueueCommand(*_cmdBuffer, setViewportCmd);
         }
 
-        GFX::DrawCommand drawCommand;
-        drawCommand._drawCommands.push_back(cmd);
+        GFX::DrawCommand drawCommand = { cmd };
         GFX::EnqueueCommand(*_cmdBuffer, drawCommand);
 
         _cmdBufferDirty = false;

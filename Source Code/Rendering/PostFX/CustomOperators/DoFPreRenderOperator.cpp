@@ -90,8 +90,7 @@ void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& buf
     beginRenderPassCmd._name = "DO_DOF_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(pointsCmd);
+    GFX::DrawCommand drawCmd = { pointsCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;

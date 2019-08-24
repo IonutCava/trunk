@@ -166,6 +166,13 @@ END_COMMAND(SendPushConstantsCommand);
 
 
 BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS);
+    static_assert(sizeof(GenericDrawCommand) == 32, "Wrong command size! May cause performance issues. Disable assert to continue anyway.");
+
+    DrawCommand() {}
+    DrawCommand(size_t reserveSize) { _drawCommands.reserve(reserveSize); }
+    DrawCommand(const GenericDrawCommand& cmd) : _drawCommands({ cmd }) {}
+    DrawCommand(const vectorEASTLFast<GenericDrawCommand>& cmds) : _drawCommands(cmds) {}
+
     vectorEASTLFast<GenericDrawCommand> _drawCommands;
 
     stringImpl toString(U16 indent) const override;

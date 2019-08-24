@@ -215,8 +215,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     beginRenderPassCmd._name = "DO_SSAO_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;

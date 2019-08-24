@@ -25,9 +25,7 @@ namespace Divide {
 
 namespace {
     constexpr U32 g_bufferFrameDelay = 3;
-    I32 g_nRings = 0;
 
-    vector<U32> g_indices;
     void CreateTileQuadListIB(vector<U32>& indices)
     {
         indices.resize(Terrain::QUAD_LIST_INDEX_COUNT, 0u);
@@ -179,33 +177,14 @@ void Terrain::postBuild() {
     // The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
-    I32 widths[] = { 0, 16, 16, 16, 16 };
-    g_nRings = sizeof(widths) / sizeof(widths[0]) - 1; // widths[0] doesn't define a ring hence -1
-    assert(g_nRings <= MAX_RINGS);
-
-    F32 tileWidth = 0.125f;
-    for (I32 i = 0; i != g_nRings && i != MAX_RINGS; ++i) {
-        _tileRings[i] = std::make_shared<TileRing>(_context, widths[i] / 2, widths[i + 1], tileWidth);
-        tileWidth *= 2.0f;
-    }
-
-    CreateTileQuadListIB(g_indices);
+    vector<U32> indices;
+    CreateTileQuadListIB(indices);
 
     VertexBuffer* vb = getGeometryVB();
     vb->resizeVertexCount(SQUARED(Terrain::VTX_PER_TILE_EDGE));
-    vb->addIndices(g_indices, false);
+    vb->addIndices(indices, false);
     vb->keepData(false);
     vb->create(true);
-
-    GenericVertexData::IndexBuffer idxBuff;
-    idxBuff.smallIndices = false;
-    idxBuff.count = g_indices.size();
-    idxBuff.data = (bufferPtr)(g_indices.data());
-
-    for (I32 i = 0; i != g_nRings && i != MAX_RINGS; ++i) {
-        _tileRings[i]->CreateInputLayout(idxBuff);
-    }
-    g_indices.clear();
 }
 
 void Terrain::frameStarted(SceneGraphNode& sgn) {
@@ -267,7 +246,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         const Frustum& frustum = camera.getFrustum();
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
-        bool update = tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum;
+        bool update = false;// tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum;
         if (_initBufferWriteCounter > 0) {
             update = true;
             _initBufferWriteCounter--;
@@ -328,8 +307,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     cmd._cmd.primCount = Terrain::MAX_RENDER_NODES;
 
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);    
-    GFX::DrawCommand drawCommand = {};
-    drawCommand._drawCommands.push_back(cmd);
+    GFX::DrawCommand drawCommand = {cmd};
     pkgInOut.addDrawCommand(drawCommand);
 
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);

@@ -83,7 +83,7 @@ public:
     typedef vectorEASTL<TessellatedTerrainNode> TreeVector;
     typedef vector<TessellatedNodeData> RenderDataVector;
 
-    static constexpr U32 MAX_TESS_NODES = 1024;
+    static constexpr U32 MAX_TESS_NODES = 2048;
 
 public:
     // Reserves memory for the terrain quadtree and initializes the data structure.
@@ -100,7 +100,7 @@ public:
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
     // n = the current node we are testing
-    TessellatedTerrainNode* find(TessellatedTerrainNode* const n, F32 x, F32 z);
+    TessellatedTerrainNode* find(TessellatedTerrainNode* const n, F32 x, F32 z, bool& found);
 
     const RenderDataVector& renderData() const;
 
@@ -130,9 +130,6 @@ protected:
 
     bool inDivideCheck(TessellatedTerrainNode* node) const;
 
-protected:
-    static void initTessellationPatch(VertexBuffer* vb);
-
 private:
     Frustum _frustumCache;
     TreeVector _tree;
@@ -143,6 +140,7 @@ private:
     I32 _numNodes = 0;
     U16 _renderDepth = 0;
     U16 _prevRenderDepth = 0;
+    I8  _lastFrustumPlaneCache = -1;
 }; //TerrainTessellator
 
 }; //namespace Divide

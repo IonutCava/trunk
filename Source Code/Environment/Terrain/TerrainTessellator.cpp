@@ -24,7 +24,8 @@ namespace {
 TerrainTessellator::TerrainTessellator()
    : _numNodes(0),
      _renderDepth(0),
-     _prevRenderDepth(0)
+     _prevRenderDepth(0),
+     _lastFrustumPlaneCache(-1)
 {
     _tree.reserve(MAX_TESS_NODES);
     _renderData.resize(MAX_RENDER_NODES);
@@ -64,23 +65,29 @@ const TerrainTessellator::RenderDataVector& TerrainTessellator::renderData() con
 }
 
 bool TerrainTessellator::inDivideCheck(TessellatedTerrainNode* node) const {
-    if (!_config._useCameraDistance) {
-        return true;
+    if (_config._useCameraDistance) {
+        // Distance from current origin to camera
+        //F32 d = std::abs(_cameraEyeCache.xz().distanceSquared(node->origin.xz()));
+        F32 d = std::abs(Sqrt(SQUARED(_cameraEyeCache[0] - node->origin[0]) + SQUARED(_cameraEyeCache[2] - node->origin[2])));
+        if (d > 2.5 * Sqrt(SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height)) || node->dim.width < _config._cutoffDistance) {
+            return false;
+        }
+        //return d <= 2.5f * (SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height));
     }
 
-    // Distance from current origin to camera
-    F32 d = std::abs(_cameraEyeCache.xz().distance(node->origin.xz()));
-
-    return d <= 2.5f * Sqrt(SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height));
+    return true;
 }
 
 bool TerrainTessellator::checkDivide(TessellatedTerrainNode* node) {
+    if (_numNodes >= MAX_TESS_NODES - 4) {
+        return false;
+    }
     // Check base case:
     // Distance to camera is greater than twice the length of the diagonal
     // from current origin to corner of current square.
     // OR
     // Max recursion level has been hit
-    return !(node->dim.width < _config._cutoffDistance || !inDivideCheck(node));
+    return inDivideCheck(node);
 }
 
 bool TerrainTessellator::divideNode(TessellatedTerrainNode* node) {
@@ -181,18 +188,18 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
 
     // If all children are null, render this node
     if (!hasChildren(*node)) {
-        // Just in we used a N x sized buffer, we should allow for some margin in frustum culling
-        const F32 radiusAdjustmentFactor = 1.1f;
+        // We used a N x sized buffer, so we should allow for some margin in frustum culling
+        const F32 radiusAdjustmentFactor = 1.25f;
 
         assert(renderDepth < MAX_RENDER_NODES);
 
         // half of the diagonal of the rectangle
-        F32 radius = Sqrt(SQUARED(node->dim.width) + SQUARED(node->dim.height)) * 0.5f;
+        F32 radius = Sqrt(SQUARED(node->dim.width * 0.5f) + SQUARED(node->dim.height * 0.5f));
+        radius *= radiusAdjustmentFactor;
 
         bool inFrustum = true;
         if (_config._useFrustumCulling) {
-            Frustum::FrustCollision result = _frustumCache.ContainsSphere(node->origin, radiusAdjustmentFactor * radius);
-            inFrustum = result != Frustum::FrustCollision::FRUSTUM_OUT;
+            inFrustum = _frustumCache.ContainsSphere(node->origin, radius, _lastFrustumPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT;
         }
 
         calcTessScale(node);
@@ -213,72 +220,52 @@ void TerrainTessellator::calcTessScale(TessellatedTerrainNode* node) {
     TessellatedTerrainNode* t = nullptr;
     TessellatedTerrainNode* const data = _tree.data();
 
-    // Positive Z (north)
-    t = find(data, node->origin.x, node->origin.z + 1 + node->dim.width * 0.5f);
-    node->tscale[3] = CLAMPED(t->dim.width / node->dim.width, 0.5f, 2.0f);
+    bool found = false;
+    // Positive Y (north)
+    t = find(data, node->origin.x, node->origin.z + 1 + node->dim.width * 0.5f, found);
+    node->tscale[3] = found ? (t->dim.width / node->dim.width) : 1.0f;
+    assert(!found || IS_IN_RANGE_INCLUSIVE(node->tscale[3], 0.5f, 2.0f));
 
     // Positive X (east)
-    t = find(data, node->origin.x + 1 + node->dim.width * 0.5f, node->origin.z);
-    node->tscale[0] = CLAMPED(t->dim.width / node->dim.width, 0.5f, 2.0f);
+    t = find(data, node->origin.x + 1 + node->dim.width * 0.5f, node->origin.z, found);
+    node->tscale[0] = found ? (t->dim.width / node->dim.width) : 1.0f;
+    assert(!found || IS_IN_RANGE_INCLUSIVE(node->tscale[0], 0.5f, 2.0f));
 
-    // Negative Z (south)
-    t = find(data, node->origin.x, node->origin.z - 1 - node->dim.width * 0.5f);
+    // Negative Y (south)
+    t = find(data, node->origin.x, node->origin.z - 1 - node->dim.width * 0.5f, found);
     //if (t->dim.width > node->dim.width)
-    node->tscale[1] = CLAMPED(t->dim.width / node->dim.width, 0.5f, 2.0f);
+    node->tscale[1] = found ? (t->dim.width / node->dim.width) : 1.0f;
+    assert(!found || IS_IN_RANGE_INCLUSIVE(node->tscale[1], 0.5f, 2.0f));
 
     // Negative X (west)
-    t = find(data, node->origin.x - 1 - node->dim.width * 0.5f, node->origin.z);
-    node->tscale[2] = CLAMPED(t->dim.width / node->dim.width, 0.5f, 2.0f);
+    t = find(data, node->origin.x - 1 - node->dim.width * 0.5f, node->origin.z, found);
+    node->tscale[2] = found ? (t->dim.width / node->dim.width) : 1.0f;
+    assert(!found || IS_IN_RANGE_INCLUSIVE(node->tscale[2], 0.5f, 2.0f));
 }
 
-TessellatedTerrainNode* TerrainTessellator::find(TessellatedTerrainNode* const n, F32 x, F32 z) {
+TessellatedTerrainNode* TerrainTessellator::find(TessellatedTerrainNode* const n, F32 x, F32 z, bool& found) {
     if (COMPARE(n->origin.x, x) && COMPARE(n->origin.z, z)) {
+        found = true;
         return n;
     }
 
     if (n->c[0] == nullptr && n->c[1] == nullptr && n->c[2] == nullptr && n->c[3] == nullptr) {
+        found = true;
         return n;
     }
 
     if        ((n->origin.x >= x) && (n->origin.z >= z) && n->c[0] != nullptr) {
-        return find(n->c[0], x, z);
+        return find(n->c[0], x, z, found);
     } else if ((n->origin.x <= x) && (n->origin.z >= z) && n->c[1] != nullptr) {
-        return find(n->c[1], x, z);
+        return find(n->c[1], x, z, found);
     } else if ((n->origin.x <= x) && (n->origin.z <= z) && n->c[2] != nullptr) {
-        return find(n->c[2], x, z);
+        return find(n->c[2], x, z, found);
     } else if ((n->origin.x >= x) && (n->origin.z <= z) && n->c[3] != nullptr) {
-        return find(n->c[3], x, z);
+        return find(n->c[3], x, z, found);
     }
 
+    found = false;
     return n;
-}
-
-void TerrainTessellator::initTessellationPatch(VertexBuffer* vb) {
-    vb->resizeVertexCount(4);
-    vb->modifyPositionValue(0, -1.0f, 0.0f, -1.0f);
-    vb->modifyPositionValue(1,  1.0f, 0.0f, -1.0f);
-    vb->modifyPositionValue(2,  1.0f, 0.0f,  1.0f);
-    vb->modifyPositionValue(3, -1.0f, 0.0f,  1.0f);
-
-    vb->modifyColourValue(0, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
-    vb->modifyColourValue(1, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
-    vb->modifyColourValue(2, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
-    vb->modifyColourValue(3, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
-
-    vb->modifyNormalValue(0, 0.0f, 1.0f, 0.0f);
-    vb->modifyNormalValue(1, 0.0f, 1.0f, 0.0f);
-    vb->modifyNormalValue(2, 0.0f, 1.0f, 0.0f);
-    vb->modifyNormalValue(3, 0.0f, 1.0f, 0.0f);
-
-    vb->modifyTexCoordValue(0, 0.0f, 2.0f);
-    vb->modifyTexCoordValue(1, 2.0f, 2.0f);
-    vb->modifyTexCoordValue(2, 2.0f, 0.0f);
-    vb->modifyTexCoordValue(3, 0.0f, 0.0f);
-
-    vb->addIndex(0);
-    vb->addIndex(1);
-    vb->addIndex(2);
-    vb->addIndex(3);
 }
 
 }; //namespace Divide

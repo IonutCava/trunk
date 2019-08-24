@@ -372,8 +372,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         GFX::EndRenderPassCommand endRenderPassCmd = {};
-        GFX::DrawCommand drawCmd = {};
-        drawCmd._drawCommands.push_back(pointsCmd);
+        GFX::DrawCommand drawCmd = { pointsCmd };
 
         // Blur horizontally
         TextureData texData = _drawBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();

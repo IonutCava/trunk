@@ -608,7 +608,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _platformContext->pfx().setAPI(PXDevice::PhysicsAPI::PhysX);
     _platformContext->sfx().setAPI(SFXDevice::AudioAPI::SDL);
     _platformContext->gfx().setAPI(static_cast<RenderAPI>(config.runtime.targetRenderingAPI));
-    
 
     ASIO::SET_LOG_FUNCTION([](const char* msg, bool is_error) {
         is_error ? Console::errorfn(msg) : Console::printfn(msg);

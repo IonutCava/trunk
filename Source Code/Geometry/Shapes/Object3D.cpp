@@ -152,8 +152,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         cmd._cmd.primCount = sgn.instanceCount();
         enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
-        GFX::DrawCommand drawCommand;
-        drawCommand._drawCommands.push_back(cmd);
+        GFX::DrawCommand drawCommand = { cmd };
         pkgInOut.addDrawCommand(drawCommand);
     }
 

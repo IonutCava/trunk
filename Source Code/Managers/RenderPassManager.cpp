@@ -802,8 +802,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         GenericDrawCommand drawCommand;
         drawCommand._primitiveType = PrimitiveType::TRIANGLES;
 
-        GFX::DrawCommand drawCmd;
-        drawCmd._drawCommands.push_back(drawCommand);
+        GFX::DrawCommand drawCmd = { drawCommand };
         GFX::EnqueueCommand(bufferInOut, drawCmd);
 
         GFX::EndRenderPassCommand endRenderPassCompCmd;

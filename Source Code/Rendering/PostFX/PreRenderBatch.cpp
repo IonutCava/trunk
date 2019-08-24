@@ -266,8 +266,7 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
         descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
         GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
-        GFX::DrawCommand drawCmd = {};
-        drawCmd._drawCommands.push_back(triangleCmd);
+        GFX::DrawCommand drawCmd = { triangleCmd };
         GFX::EnqueueCommand(buffer, drawCmd);
 
         GFX::EndRenderPassCommand endRenderPassCmd = {};
@@ -319,8 +318,7 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     pushConstantsCommand._constants = _toneMapConstants;
     GFX::EnqueueCommand(buffer, pushConstantsCommand);
 
-    GFX::DrawCommand drawCmd = {};
-    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(buffer, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd = {};

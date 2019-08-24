@@ -32,7 +32,6 @@
 #ifndef _TERRAIN_H_
 #define _TERRAIN_H_
 
-#include "TileRing.h"
 #include "TerrainTessellator.h"
 #include "TerrainDescriptor.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
@@ -77,7 +76,6 @@ class Terrain : public Object3D {
     friend class Attorney::TerrainLoader;
 
    public:
-     static constexpr I32 MAX_RINGS = 10;
      static constexpr I32 VTX_PER_TILE_EDGE = 3; // overlap => -2
      static constexpr I32 PATCHES_PER_TILE_EDGE = VTX_PER_TILE_EDGE - 1;
      static constexpr I32 QUAD_LIST_INDEX_COUNT = (VTX_PER_TILE_EDGE - 1) * (VTX_PER_TILE_EDGE - 1) * 4;
@@ -168,7 +166,6 @@ class Terrain : public Object3D {
 
     TessellatorArray _terrainTessellator;
     std::array<TerrainTessellator, ShadowMap::MAX_SHADOW_PASSES> _shadowTessellators;
-    std::array<std::shared_ptr<TileRing>, MAX_RINGS>  _tileRings;
     EditorDataState _editorDataDirtyState;
     bool _drawBBoxes;
     U32  _nodeDataIndex = 0;

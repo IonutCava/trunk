@@ -190,8 +190,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     cmd._cmd.indexCount = vb->getIndexCount();
     cmd._sourceBuffer = vb->handle();
 
-    GFX::DrawCommand drawCommand;
-    drawCommand._drawCommands.push_back(cmd);
+    GFX::DrawCommand drawCommand = { cmd };
     GFX::EnqueueCommand(bufferInOut, drawCommand);
 
     bufferInOut.add(_boundingBoxPrimitive->toCommandBuffer());

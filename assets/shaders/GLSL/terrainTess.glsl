@@ -14,8 +14,7 @@ layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
     TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
 };
 
-layout(location = 10) out vec4 adjacency;
-layout(location = 11) out int tileScale;
+layout(location = 10) out int tileScale;
 
 vec2 calcTerrainTexCoord(in vec4 pos)
 {
@@ -41,8 +40,6 @@ void main(void)
     const vec4 posAndTileScaleVert = dvd_TerrainData[_out.dvd_instanceID]._positionAndTileScale;
     tileScale = int(posAndTileScaleVert.w);
 
-    adjacency = dvd_TerrainData[VAR.dvd_instanceID]._tScale;
-
     dvd_Vertex = vec4(vec3(u, 0.0f, v) * posAndTileScaleVert.w + posAndTileScaleVert.xyz, 1.0f);
 
     _out._vertexW = dvd_WorldMatrix(DATA_IDX) * dvd_Vertex;
@@ -67,11 +64,23 @@ layout(vertices = 4) out;
 layout(location = 10) out float tcs_tessLevel[];
 layout(location = 11) out int tcs_tileScale[];
 
-layout(location = 10) in vec4 adjacency[];
-layout(location = 11) in flat int tileScale[];
+//
+// Inputs
+//
+struct TerrainNodeData {
+    vec4 _positionAndTileScale;
+    vec4 _tScale;
+};
+
+layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
+{
+    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
+};
+
+layout(location = 10) in flat int tileScale[];
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
-uniform float tessTriangleWidth = 30.0f;
+uniform float tessTriangleWidth = 25.0f;
 
 float saturate(in float val) { return clamp(val, 0.0f, 1.0f); }
 
@@ -103,13 +112,12 @@ float ClipToScreenSpaceTessellation(vec4 clip0, vec4 clip1)
     clip0 /= clip0.w;
     clip1 /= clip1.w;
 
-    clip0.xy *= dvd_ViewPort.zw;
-    clip1.xy *= dvd_ViewPort.zw;
+    vec2 screen0 = ((clip0.xy + 1.0f) * 0.5f) * dvd_ViewPort.zw;
+    vec2 screen1 = ((clip1.xy + 1.0f) * 0.5f) * dvd_ViewPort.zw;
+    float d = distance(screen0, screen1);
 
-    const float d = distance(clip0, clip1);
-
-    // g_tessellatedTriWidth is desired pixels per tri edge
-    return clamp(d / tessTriangleWidth, MIN_TESS_SCALE, MAX_TESS_SCALE);
+    // tessTriangleWidth is desired pixels per tri edge
+    return clamp(d / tessTriangleWidth, 0, 64);
 }
 
 float SphereToScreenSpaceTessellation(vec3 p0, vec3 p1, in float diameter)
@@ -154,10 +162,12 @@ float LargerNeighbourAdjacencyClamp(float tess) {
     return clamp(t, 2, 32);
 }
 
-void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1, in vec2 t0, in vec2 t1)
+void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1, in vec2 uv0, in vec2 uv1)
 {
-    p0.y = getHeight(t0);
-    p1.y = getHeight(t1);
+    p0.y = getHeight(uv0);
+    p1.y = getHeight(uv1);
+
+    p0.y = p1.y = max(p0.y, p1.y);
 }
 
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
@@ -191,10 +201,11 @@ float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in 
     // +  <----  p0   Us   p1		Move p0
     // |    0    |    1    |		patchIdx % 2 
     //
-    if (patchIdx % 2 != 0)
+    if (patchIdx % 2 != 0) {
         p0 += (p0 - p1);
-    else
+    } else {
         p1 += (p1 - p0);
+    }
 
     // Having moved the vertex in (x,z), its height is no longer correct.
     MakeVertexHeightsAgree(p0, p1, t0, t1);
@@ -208,10 +219,14 @@ float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in 
 float getTessLevel(in int idx0, in int idx1, in float diameter) {
     vec3 p0 = gl_in[idx0].gl_Position.xyz;
     vec3 p1 = gl_in[idx1].gl_Position.xyz;
-    vec2 t0 = _in[idx0]._texCoord;
-    vec2 t1 = _in[idx1]._texCoord;
 
-    return SphereToScreenSpaceTessellation(p0, p1, diameter);
+    float tess = SphereToScreenSpaceTessellation(p0, p1, diameter);
+#if 1
+    float logTess = ceil(log2(tess));
+    return pow(2, logTess);
+#else 
+    return tess;
+#endif
 }
 
 #define neighbourMinusX z
@@ -247,30 +262,39 @@ void main(void)
         patchXY.y = gl_PrimitiveID / PATCHES_PER_TILE_EDGE;
         patchXY.x = gl_PrimitiveID - patchXY.y * PATCHES_PER_TILE_EDGE;
  
+        const vec4 adjacency = dvd_TerrainData[_in[0].dvd_instanceID]._tScale;
+
         // Identify patch edges that are adjacent to a patch of a different size.  The size difference
         // is encoded in _in[n].adjacency, either 0.5, 1.0 or 2.0.
         // neighbourMinusX refers to our adjacent neighbour in the direction of -ve x.  The value 
         // is the neighbour's size relative to ours.  Similarly for plus and Y, etc.  You really
         // need a diagram to make sense of the adjacency conditions in the if statements. :-(
         // These four ifs deal with neighbours that are smaller.
-        if (adjacency[0].neighbourMinusX < 0.55f && patchXY.x == 0)
+        if (adjacency.neighbourMinusX < 0.55f/* && patchXY.x == 0*/)
             gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
-        if (adjacency[0].neighbourMinusY < 0.55f && patchXY.y == 0)
-            gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
-        if (adjacency[0].neighbourPlusX < 0.55f && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+        if (adjacency.neighbourPlusX < 0.55f/* && patchXY.x == PATCHES_PER_TILE_EDGE - 1*/)
             gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
-        if (adjacency[0].neighbourPlusY < 0.55f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+
+
+        if (adjacency.neighbourMinusY < 0.55f/* && patchXY.y == 0*/)
+            gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
+        if (adjacency.neighbourPlusY < 0.55f/* && patchXY.y == PATCHES_PER_TILE_EDGE - 1*/)
             gl_TessLevelOuter[3] = SmallerNeighbourAdjacencyFix(1, 2, sideLen);
 
         // Deal with neighbours that are larger than us. 
-        if (adjacency[0].neighbourMinusX > 1.1f && patchXY.x == 0)
+        if (adjacency.neighbourMinusX > 1.1f/* && patchXY.x == 0*/) {
             gl_TessLevelOuter[0] = LargerNeighbourAdjacencyFix(0, 1, patchXY.y, sideLen);
-        if (adjacency[0].neighbourMinusY > 1.1f && patchXY.y == 0)
-            gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
-        if (adjacency[0].neighbourPlusX > 1.1f && patchXY.x == PATCHES_PER_TILE_EDGE - 1)
+        }
+        if (adjacency.neighbourPlusX > 1.1f/* && patchXY.x == PATCHES_PER_TILE_EDGE - 1*/) {
             gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
-        if (adjacency[0].neighbourPlusY > 1.1f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+        }
+
+        if (adjacency.neighbourMinusY > 1.1f/* && patchXY.y == 0*/) {
+            gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
+        }
+        if (adjacency.neighbourPlusY > 1.1f/* && patchXY.y == PATCHES_PER_TILE_EDGE - 1*/) {
             gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
+        }
         
        // Inner tessellation level
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[2]);
@@ -364,11 +388,11 @@ void main()
     vec3 pos = Bilerp(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz, gl_in[3].gl_Position.xyz, gl_TessCoord.xy);
 
     // Sample the heightmap and offset y position of vertex
-	const vec4 heightOffsets = getHeightOffsets(_out._texCoord);
+    const vec4 heightOffsets = getHeightOffsets(_out._texCoord);
     pos.y = getHeight(heightOffsets);
 
     _out._vertexW = vec4(pos, 1.0f);
-	_out._vertexWV = dvd_ViewMatrix * _out._vertexW;
+     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
 #if !defined(SHADOW_PASS)
     const mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
@@ -415,7 +439,7 @@ layout(triangles) in;
 layout(location = 10) in int tes_tessLevel[];
 layout(location = 11) in int tes_tileScale[];
 
-//#define SHOW_TILE_SCALE
+#define SHOW_TILE_SCALE
 
 #if defined(TOGGLE_NORMALS)
 layout(line_strip, max_vertices = 18) out;
@@ -438,7 +462,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     gl_Position = getWVPPositon(i);
 #if !defined(SHADOW_PASS)
-    LoD = int(log2(max(tes_tileScale, 16)) - 4);
+    LoD = int(log2(max(tes_tileScale[i], 16)) - 4);
 
 #if !defined(SHOW_TILE_SCALE)
     if (tes_tessLevel[0] == 64) {
@@ -458,22 +482,22 @@ void PerVertex(in int i, in vec3 edge_dist) {
     }
 #else
     if (tes_tileScale[i] == 256) {
-        gs_wireColor = vec3(0.0, 0.0, 1.0);
+        gs_wireColor = vec3(0.0, 0.0, 0.0);
     }
     else if (tes_tileScale[i] == 128) {
-        gs_wireColor = vec3(0.0, 1.0, 0.0);
-    }
-    else if (tes_tileScale[i] == 64) {
-        gs_wireColor = vec3(1.0, 0.0, 0.0);
-    }
-    else if (tes_tileScale[i] == 32) {
         gs_wireColor = vec3(1.0, 1.0, 0.0);
     }
+    else if (tes_tileScale[i] == 64) {
+        gs_wireColor = vec3(0.0, 0.0, 1.0);
+    }
+    else if (tes_tileScale[i] == 32) {
+        gs_wireColor = vec3(0.0, 1.0, 0.0);
+    }
     else if (tes_tileScale[i] == 16) {
-        gs_wireColor = vec3(1.0, 0.0, 1.0);
+        gs_wireColor = vec3(1.0, 0.0, 0.0);
     }
     else if (tes_tileScale[i] == 8) {
-        gs_wireColor = vec3(0.0, 1.00, 1.0);
+        gs_wireColor = vec3(1.0, 0.0, 1.0);
     } else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }

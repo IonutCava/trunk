@@ -130,8 +130,7 @@ void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& 
     pushConstantsCommand._constants = _fxaaConstants;
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    GFX::DrawCommand drawCmd;
-    drawCmd._drawCommands.push_back(pointsCmd);
+    GFX::DrawCommand drawCmd = { pointsCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;

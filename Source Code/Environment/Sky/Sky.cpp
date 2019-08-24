@@ -216,8 +216,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     cmd._cmd.indexCount = _sky->getGeometryVB()->getIndexCount();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
-    GFX::DrawCommand drawCommand = {};
-    drawCommand._drawCommands.push_back(cmd);
+    GFX::DrawCommand drawCommand = {cmd};
     pkgInOut.addDrawCommand(drawCommand);
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);

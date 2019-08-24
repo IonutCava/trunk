@@ -196,8 +196,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     bindDescriptorSetsCmd._set._textureData.setTexture(data2, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    GFX::DrawCommand drawCommand;
-    drawCommand._drawCommands.push_back(_drawCommand);
+    GFX::DrawCommand drawCommand = { _drawCommand };
     GFX::EnqueueCommand(bufferInOut, drawCommand);
 
     GFX::EndRenderPassCommand endRenderPassCmd;

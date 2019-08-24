@@ -477,7 +477,7 @@ constexpr typename resolve_uac<A, B>::return_type multiply(const A& a, const B& 
 }
 
 template <typename ToCheck, std::size_t ExpectedSize, std::size_t RealSize = sizeof(ToCheck)>
-void check_size() {
+constexpr void check_size() {
     static_assert(ExpectedSize == RealSize, "Wrong data size!");
 }
 
