@@ -53,14 +53,14 @@ void SceneRenderState::toggleAxisLines() {
     }
 }
 
-void SceneRenderState::renderMask(U32 mask) {
+void SceneRenderState::renderMask(U16 mask) {
     constexpr bool validateRenderMask = false;
 
     if (validateRenderMask) {
-        auto validateMask = [mask]() -> U32 {
-            U32 validMask = 0;
-            for (U32 stateIt = 1; stateIt <= to_base(RenderOptions::COUNT); ++stateIt) {
-                U32 bitState = toBit(stateIt);
+        auto validateMask = [mask]() -> U16 {
+            U16 validMask = 0;
+            for (U16 stateIt = 1; stateIt <= to_base(RenderOptions::COUNT); ++stateIt) {
+                U16 bitState = toBit(stateIt);
 
                 if (BitCompare(mask, bitState)) {
                     DIVIDE_ASSERT(static_cast<RenderOptions>(bitState) != RenderOptions::PLAY_ANIMATIONS,
@@ -71,7 +71,7 @@ void SceneRenderState::renderMask(U32 mask) {
             return validMask;
         };
 
-        U32 parsedMask = validateMask();
+        U16 parsedMask = validateMask();
         DIVIDE_ASSERT(parsedMask != 0 && parsedMask == mask,
                       "SceneRenderState::renderMask error: Invalid state specified!");
         _stateMask = parsedMask;

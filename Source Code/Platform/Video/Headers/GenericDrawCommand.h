@@ -65,25 +65,24 @@ enum class CmdRenderOptions : U16 {
     RENDER_WIREFRAME = toBit(2),
     RENDER_NO_RASTERIZE = toBit(3),
     RENDER_INDIRECT = toBit(4),
-    RENDER_TESSELLATED = toBit(5),
-    CONVERT_TO_INDIRECT = toBit(6),
-    QUERY_PRIMITIVE_COUNT = toBit(7),
-    QUERY_SAMPLE_COUNT = toBit(8),
-    QUERY_ANY_SAMPLE_RENDERED = toBit(9),
-    COUNT = 9
+    CONVERT_TO_INDIRECT = toBit(5),
+    QUERY_PRIMITIVE_COUNT = toBit(6),
+    QUERY_SAMPLE_COUNT = toBit(7),
+    QUERY_ANY_SAMPLE_RENDERED = toBit(8),
+    COUNT = 8
 };
 
+#pragma pack(push, 1)
 struct GenericDrawCommand {
-    //Data
-    IndirectDrawCommand _cmd = {};                                   // 35 bytes
-    VDIHandle _sourceBuffer = {};                                    // 15 bytes
-    U32 _commandOffset = 0;                                          // 11 bytes
-    U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 7  bytes
-    U16 _drawCount = 1;                                              // 5  bytes
-    U8  _patchVertexCount = 3;                                       // 3  bytes
-    U8  _bufferIndex = 0;                                            // 2  bytes
+    IndirectDrawCommand _cmd = {};                                   // 32 bytes
+    VDIHandle _sourceBuffer = {};                                    // 12 bytes
+    I24 _commandOffset = {0};                                        // 9  bytes
+    U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 6  bytes
+    U16 _drawCount = 1;                                              // 4  bytes
+    U8  _bufferIndex  = 0;                                           // 2  bytes
     PrimitiveType _primitiveType = PrimitiveType::TRIANGLE_STRIP;    // 1  bytes
 };
+#pragma pack(pop)
 
 bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option);
 void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option);

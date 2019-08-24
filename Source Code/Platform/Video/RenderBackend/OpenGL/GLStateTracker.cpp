@@ -49,7 +49,6 @@ void GLStateTracker::init(GLStateTracker* base) {
         _currentFrontFace = GL_CCW;
     }
     
-    GLUtil::getGLValue(GL_PATCH_VERTICES, _patchVertexCount);
     _init = true;
 }
 
@@ -160,14 +159,6 @@ void GLStateTracker::togglePrimitiveRestart(bool state) {
         _primitiveRestartEnabled = state;
         state ? glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX)
               : glDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
-    }
-}
-
-void GLStateTracker::setPatchVertexCount(U32 count) {
-    if (_patchVertexCount != count) {
-        _patchVertexCount = count;
-        glPatchParameteri(GL_PATCH_VERTICES, _patchVertexCount);
-        
     }
 }
 
@@ -652,6 +643,11 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
         glPolygonMode(GL_FRONT_AND_BACK,
                       GLUtil::glFillModeTable[to_U32(newBlock.fillMode())]);
     }
+
+    if (oldBlock.tessControlPoints() != newBlock.tessControlPoints()) {
+        glPatchParameteri(GL_PATCH_VERTICES, newBlock.tessControlPoints());
+    }
+
     // Check the depth function
     if (oldBlock.zFunc() != newBlock.zFunc()) {
         glDepthFunc(GLUtil::glCompareFuncTable[to_U32(newBlock.zFunc())]);

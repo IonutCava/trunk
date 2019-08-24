@@ -514,6 +514,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     RenderStateBlock terrainRenderState;
     terrainRenderState.setCullMode(CullMode::CW);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
+    terrainRenderState.setTessControlPoints(4);
 
     // Generate a render state for drawing reflections
     RenderStateBlock terrainRenderStatePrePass = terrainRenderState;
@@ -521,6 +522,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     RenderStateBlock terrainRenderStateReflection;
     terrainRenderStateReflection.setCullMode(CullMode::CCW);
+    terrainRenderStateReflection.setTessControlPoints(4);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
     terrainRenderStatePrePassReflection.setCullMode(CullMode::CCW);
@@ -531,6 +533,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     // terrainDescDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setZFunc(ComparisonFunction::LESS);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
+    terrainRenderStateDepth.setTessControlPoints(4);
 
     terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());
     terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderPassType::PRE_PASS);

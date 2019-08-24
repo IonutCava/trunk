@@ -320,10 +320,8 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
-    enableOption(cmd, CmdRenderOptions::RENDER_TESSELLATED);
     cmd._bufferIndex = renderStagePass.index();
     cmd._primitiveType = PrimitiveType::PATCH;
-    cmd._patchVertexCount = 4;
     cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
 
     cmd._sourceBuffer = getGeometryVB()->handle();

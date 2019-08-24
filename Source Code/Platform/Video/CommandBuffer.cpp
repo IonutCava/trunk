@@ -365,7 +365,7 @@ bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& comma
             if (byBaseInstance) { // Base instance compatibility
                 merge = previousIDC._cmd.baseInstance + previousIDC._drawCount == currentIDC._cmd.baseInstance;
             } else {// Command offset compatibility
-                merge = previousIDC._commandOffset + previousIDC._drawCount == currentIDC._commandOffset;
+                merge = previousIDC._commandOffset + to_I32(previousIDC._drawCount) == currentIDC._commandOffset;
             }
 
             if (merge) {

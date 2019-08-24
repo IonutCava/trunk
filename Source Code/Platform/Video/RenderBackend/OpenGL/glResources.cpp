@@ -352,12 +352,12 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
 
 namespace {
 
-void submitMultiIndirectCommand(U32 cmdOffset,
+void submitMultiIndirectCommand(I24 cmdOffset,
                                 U32 drawCount,
                                 GLenum mode,
                                 GLenum internalFormat,
                                 bool drawIndexed) {
-    const size_t offset = cmdOffset * sizeof(IndirectDrawCommand);
+    const size_t offset = (I32)cmdOffset * sizeof(IndirectDrawCommand);
     if (drawIndexed) {
         glMultiDrawElementsIndirect(mode, internalFormat, (bufferPtr)offset, drawCount, sizeof(IndirectDrawCommand));
     } else {
@@ -366,12 +366,12 @@ void submitMultiIndirectCommand(U32 cmdOffset,
 }
 
 void submitIndirectCommand(const IndirectDrawCommand& cmd,
-                           U32 cmdOffset,
+                           I24 cmdOffset,
                            GLenum mode,
                            GLenum internalFormat,
                            bool drawIndexed) {
     if (drawIndexed) {
-        glDrawElementsIndirect(mode, internalFormat, (bufferPtr)(cmdOffset * sizeof(IndirectDrawCommand)));
+        glDrawElementsIndirect(mode, internalFormat, (bufferPtr)((I32)cmdOffset * sizeof(IndirectDrawCommand)));
     } else {
         // This needs a different command buffer and different IndirectDrawCommand (16byte instead of 20)
         glDrawArraysInstancedBaseInstance(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount, cmd.baseInstance);
@@ -463,10 +463,6 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 
     stateTracker.toggleRasterization(!isEnabledOption(drawCommand, CmdRenderOptions::RENDER_NO_RASTERIZE));
 
-    if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_TESSELLATED)) {
-        stateTracker.setPatchVertexCount(drawCommand._patchVertexCount);
-    }
-
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
         glHardwareQueryRing* primitiveQuery = nullptr;
         glHardwareQueryRing* sampleCountQuery = nullptr;
@@ -490,21 +486,21 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         //-----------------
 
         if (primitiveQuery != nullptr) {
-            U64& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._data]._primitivesGenerated;
+            U64& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._id]._primitivesGenerated;
             glEndQuery(GL_PRIMITIVES_GENERATED);
             glGetQueryObjectui64v(primitiveQuery->readQuery().getID(),
                                   GL_QUERY_RESULT,
                                   &result);
         }
         if (sampleCountQuery != nullptr) {
-            U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._data]._samplesPassed;
+            U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._id]._samplesPassed;
             glEndQuery(GL_PRIMITIVES_GENERATED);
             glGetQueryObjectuiv(sampleCountQuery->readQuery().getID(),
                                 GL_QUERY_RESULT,
                                 &result);
         }
         if (anySamplesQuery != nullptr) {
-            U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._data]._anySamplesPassed;
+            U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._id]._anySamplesPassed;
             glEndQuery(GL_PRIMITIVES_GENERATED);
             glGetQueryObjectuiv(anySamplesQuery->readQuery().getID(),
                                 GL_QUERY_RESULT,

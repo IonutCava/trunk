@@ -42,14 +42,16 @@ namespace Divide {
 class VertexDataInterface;
 
 struct VDIHandle {
-    union {
-        U32 _data = 0u;
+    U16 _id = 0;
+    U8  _generation = 0;
 
-        struct {
-            U16 _id;
-            U16 _generation;
-        };
-    };
+    inline bool operator== (const VDIHandle& val) const {
+        return _id == val._id && _generation == val._generation;
+    }
+
+    inline bool operator!= (const VDIHandle& val) const {
+        return _id != val._id || _generation != val._generation;
+    }
 };
 
 template<size_t N>

@@ -63,6 +63,8 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     bool _frontFaceCCW = true;
     bool _cullEnabled = true;
     bool _scissorTest = false;
+    FillMode _fillMode = FillMode::SOLID;
+    U32  _tessControlPoints = 3;
 
     /// Depth
     bool _depthTestEnabled = true;
@@ -80,8 +82,6 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     StencilOperation _stencilPassOp = StencilOperation::KEEP;
     ComparisonFunction _stencilFunc = ComparisonFunction::NEVER;
 
-    FillMode _fillMode = FillMode::SOLID;
-
     mutable bool _dirty = true;
     static size_t s_defaultCacheValue;
 
@@ -95,6 +95,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     void setDefaultValues();
 
     void setFillMode(FillMode mode);
+    void setTessControlPoints(U32 count);
     void setZBias(F32 zBias, F32 zUnits);
     void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
     void flipCullMode();
@@ -168,6 +169,10 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     }
     inline FillMode fillMode() const {
         return _fillMode;
+    }
+
+    inline U32 tessControlPoints() const {
+        return _tessControlPoints;
     }
 
     size_t getHash() const override;

@@ -39,7 +39,8 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _stencilZFailOp(other._stencilZFailOp),
      _stencilPassOp(other._stencilPassOp),
      _stencilFunc(other._stencilFunc),
-     _fillMode(other._fillMode)
+     _fillMode(other._fillMode),
+     _tessControlPoints(other._tessControlPoints)
 {
 
     _hash = other._hash;
@@ -138,6 +139,13 @@ void RenderStateBlock::setFillMode(FillMode mode) {
     }
 }
 
+void RenderStateBlock::setTessControlPoints(U32 count) {
+    if (_tessControlPoints != count) {
+        _tessControlPoints = count;
+        _dirty = true;
+    }
+}
+
 void RenderStateBlock::setStencilReadWriteMask(U32 read, U32 write) {
     if (_stencilMask != read || _stencilWriteMask != write) {
         _stencilMask = read;
@@ -180,6 +188,7 @@ void RenderStateBlock::setDefaultValues() {
     _cullEnabled = true;
     _frontFaceCCW = true;
     _fillMode = FillMode::SOLID;
+    _tessControlPoints = 3;
     _stencilMask = 0xFFFFFFFF;
     _stencilWriteMask = 0xFFFFFFFF;
     _stencilEnable = false;
@@ -250,6 +259,7 @@ size_t RenderStateBlock::getHash() const {
         Util::Hash_combine(_hash, to_U32(_stencilPassOp));
         Util::Hash_combine(_hash, to_U32(_stencilFunc));
         Util::Hash_combine(_hash, to_U32(_fillMode));
+        Util::Hash_combine(_hash, to_U32(_tessControlPoints));
 
         if (previousCache != _hash) {
             UniqueLockShared w_lock(s_stateBlockMapMutex);

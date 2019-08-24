@@ -45,8 +45,6 @@ glGlobalLockManager& GL_API::getLockManager() {
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) {
-    static GLint defaultPatchCount = GLUtil::getGLValue<GLint>(GL_PATCH_VERTICES);
-
     if (global) {
         stateTracker.bindTextures(0, s_maxTextureUnits, nullptr, nullptr, nullptr);
         stateTracker.setPixelPackUnpackAlignment();
@@ -59,7 +57,6 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
         //stateTracker._activeViewport.set(-1);
     }
     stateTracker._previousStateBlockHash = 0;
-    stateTracker.setPatchVertexCount(defaultPatchCount);
     stateTracker.setActiveVAO(0);
     stateTracker.setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     stateTracker.setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);

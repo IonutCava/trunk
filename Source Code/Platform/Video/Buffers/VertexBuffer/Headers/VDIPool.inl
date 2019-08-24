@@ -67,7 +67,7 @@ void VDIPool<N>::deallocate(VDIHandle handle) {
     VDIHandle& it = _ids[handle._id - 1];
     if (it._generation == handle._generation) {
         _pool[handle._id - 1] = nullptr;
-        it._data = 0;
+        it._id = 0;
         ++it._generation;
         return;
     }

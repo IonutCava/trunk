@@ -77,6 +77,154 @@ typedef union {
     U8  b[8];
 } P64;
 
+const int INT24_MAX = 8388607;
+
+#pragma pack(push, 1)
+class I24
+{
+protected:
+    U8 value[3];
+public:
+    I24() {}
+
+    I24(int val) {
+        *this = val;
+    }
+
+    I24(const I24& val)
+    {
+        *this = val;
+    }
+
+    operator int() const
+    {
+        /* Sign extend negative quantities */
+        if (value[2] & 0x80) {
+            return (0xff << 24)
+                    | (value[2] << 16)
+                    | (value[1] << 8)
+                    | value[0];
+        } else {
+            return (value[2] << 16)
+                    | (value[1] << 8)
+                    | value[0];
+        }
+    }
+
+    I24& operator= (const I24& input)
+    {
+        value[0] = input.value[0];
+        value[1] = input.value[1];
+        value[2] = input.value[2];
+
+        return *this;
+    }
+
+    I24& operator= (const int input)
+    {
+        value[0] = ((U8*)& input)[0];
+        value[1] = ((U8*)& input)[1];
+        value[2] = ((U8*)& input)[2];
+
+        return *this;
+    }
+
+    I24 operator+ (I32 val) const
+    {
+        return I24((int)* this + (int)val);
+    }
+
+    I24 operator+ (const I24& val) const
+    {
+        return I24((int)* this + (int)val);
+    }
+
+    I24 operator- (const I24& val) const
+    {
+        return I24((int)* this - (int)val);
+    }
+
+    I24 operator* (const I24& val) const
+    {
+        return I24((int)* this * (int)val);
+    }
+
+    I24 operator/ (const I24& val) const
+    {
+        return I24((int)* this / (int)val);
+    }
+
+    I24& operator+= (const I24& val)
+    {
+        *this = *this + val;
+        return *this;
+    }
+
+    I24& operator-= (const I24& val)
+    {
+        *this = *this - val;
+        return *this;
+    }
+
+    I24& operator*= (const I24& val)
+    {
+        *this = *this * val;
+        return *this;
+    }
+
+    I24& operator/= (const I24& val)
+    {
+        *this = *this / val;
+        return *this;
+    }
+
+    I24 operator>> (const int val) const
+    {
+        return I24((int)* this >> val);
+    }
+
+    I24 operator<< (const int val) const
+    {
+        return I24((int)* this << val);
+    }
+
+    operator bool() const
+    {
+        return (int)* this != 0;
+    }
+
+    bool operator! () const
+    {
+        return !((int)* this);
+    }
+
+    I24 operator- ()
+    {
+        return I24(-(int)* this);
+    }
+
+    bool operator== (const I24& val) const
+    {
+        return (int)* this == (int)val;
+    }
+
+    bool operator!= (const I24& val) const
+    {
+        return (int)* this != (int)val;
+    }
+
+    bool operator>= (const I24& val) const
+    {
+        return (int)* this >= (int)val;
+    }
+
+    bool operator<= (const I24& val) const
+    {
+        return (int)* this <= (int)val;
+    }
+};
+#pragma pack(pop)
+
 enum class CallbackParam : U8 {
     TYPE_SMALL_INTEGER = 0,
     TYPE_MEDIUM_INTEGER,
@@ -326,6 +474,11 @@ template <typename A, typename B>
 constexpr typename resolve_uac<A, B>::return_type multiply(const A& a, const B& b) noexcept
 {
     return a * b;
+}
+
+template <typename ToCheck, std::size_t ExpectedSize, std::size_t RealSize = sizeof(ToCheck)>
+void check_size() {
+    static_assert(ExpectedSize == RealSize, "Wrong data size!");
 }
 
 }; //namespace Divide;

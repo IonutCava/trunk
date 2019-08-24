@@ -52,8 +52,6 @@ namespace Divide {
         void togglePrimitiveRestart(bool state);
         /// Enable or disable primitive rasterization
         void toggleRasterization(bool state);
-        /// Set the number of vertices per patch used in tessellation
-        void setPatchVertexCount(U32 count);
         /// Switch the currently active vertex array object
         bool setActiveVAO(GLuint ID);
         /// Switch the currently active vertex array object
@@ -189,7 +187,6 @@ namespace Divide {
         /// Boolean value used to verify if primitive restart index is enabled or disabled
         bool _primitiveRestartEnabled = false;
         bool _rasterizationEnabled = true;
-        U32  _patchVertexCount = 4;
 
         size_t _currentStateBlockHash = 0;
         size_t _previousStateBlockHash = 0;

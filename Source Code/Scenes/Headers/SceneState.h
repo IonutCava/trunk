@@ -132,7 +132,7 @@ class SceneRenderState : public SceneComponent {
 
     explicit SceneRenderState(Scene& parentScene);
 
-    void renderMask(U32 mask);
+    void renderMask(U16 mask);
     bool isEnabledOption(RenderOptions option) const;
     void enableOption(RenderOptions option);
     void disableOption(RenderOptions option);
