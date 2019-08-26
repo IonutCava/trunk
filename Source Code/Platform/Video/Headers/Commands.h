@@ -278,7 +278,7 @@ BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
 END_COMMAND(BindDescriptorSetsCommand);
 
 BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
-    eastl::fixed_string<char, 128 + 1, true> _scopeName;
+    eastl::fixed_string<char, 128 + 1, false> _scopeName;
     I32 _scopeID = -1;
 
     stringImpl toString(U16 indent) const override;

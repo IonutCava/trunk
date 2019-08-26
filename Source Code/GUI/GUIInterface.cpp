@@ -160,12 +160,14 @@ GUIText* GUIInterface::addText(U64 guiID,
                                const stringImpl& font,
                                const UColour4& colour,
                                const stringImpl& text,
+                               bool multiLine,
                                U8 fontSize) {
     assert(getGUIElement(guiID) == nullptr);
 
     GUIText* t = MemoryManager_NEW GUIText(guiID,
                                            name,
                                            text,
+                                           multiLine,
                                            position,
                                            font,
                                            colour,
@@ -192,7 +194,7 @@ GUIFlash* GUIInterface::addFlash(U64 guiID,
     return flash;
 }
 
-GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text) {
+GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text, bool multiLine) {
     GUIMap::iterator it = _guiElements[to_base(GUIType::GUI_TEXT)].find(guiID);
 
     if (it == std::cend(_guiElements[to_base(GUIType::GUI_TEXT)])) {
@@ -202,7 +204,7 @@ GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text) {
     GUIText* textElement = static_cast<GUIText*>(it->second.first);
     assert(textElement != nullptr);
 
-    textElement->text(text);
+    textElement->text(text.c_str(), multiLine);
 
     return textElement;
 }

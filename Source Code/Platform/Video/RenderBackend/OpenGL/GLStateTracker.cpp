@@ -561,10 +561,10 @@ void GLStateTracker::setBlending(GLuint drawBufferIdx,const BlendingProperties& 
 }
 
 /// Change the current viewport area. Redundancy check is performed in GFXDevice class
-bool GLStateTracker::setViewport(I32 x, I32 y, I32 width, I32 height) {
-    if (width > 0 && height > 0 && Rect<I32>(x, y, width, height) != _activeViewport) {
-        glViewport(x, y, width, height);
-        _activeViewport.set(x, y, width, height);
+bool GLStateTracker::setViewport(const Rect<I32>& viewport) {
+    if (viewport.z > 0 && viewport.w > 0 && viewport != _activeViewport) {
+        glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+        _activeViewport.set(viewport);
         return true;
     }
 
@@ -581,10 +581,10 @@ bool GLStateTracker::setClearColour(const FColour4& colour) {
     return false;
 }
 
-bool GLStateTracker::setScissor(I32 x, I32 y, I32 width, I32 height) {
-    if (Rect<I32>(x, y, width, height) != _activeScissor) {
-        glScissor(x, y, width, height);
-        _activeScissor.set(x, y, width, height);
+bool GLStateTracker::setScissor(const Rect<I32>& rect) {
+    if (rect != _activeScissor) {
+        glScissor(rect.x, rect.y, rect.z, rect.w);
+        _activeScissor.set(rect);
         return true;
     }
 

@@ -77,7 +77,8 @@ typedef union {
     U8  b[8];
 } P64;
 
-const int INT24_MAX = 8388607;
+//Ref: https://stackoverflow.com/questions/7416699/how-to-define-24bit-data-type-in-c
+const I32 INT24_MAX = 8388607;
 
 #pragma pack(push, 1)
 class I24
@@ -86,33 +87,19 @@ protected:
     U8 value[3];
 public:
     I24() {}
+    I24(I32 val) { *this = val; }
+    I24(const I24& val) { *this = val; }
 
-    I24(int val) {
-        *this = val;
-    }
-
-    I24(const I24& val)
-    {
-        *this = val;
-    }
-
-    operator int() const
-    {
+    operator I32() const {
         /* Sign extend negative quantities */
         if (value[2] & 0x80) {
-            return (0xff << 24)
-                    | (value[2] << 16)
-                    | (value[1] << 8)
-                    | value[0];
-        } else {
-            return (value[2] << 16)
-                    | (value[1] << 8)
-                    | value[0];
+            return (0xff << 24) | (value[2] << 16) | (value[1] << 8) | value[0];
         }
+         
+        return (value[2] << 16) | (value[1] << 8) | value[0];
     }
 
-    I24& operator= (const I24& input)
-    {
+    I24& operator= (const I24& input) {
         value[0] = input.value[0];
         value[1] = input.value[1];
         value[2] = input.value[2];
@@ -120,8 +107,7 @@ public:
         return *this;
     }
 
-    I24& operator= (const int input)
-    {
+    I24& operator= (const I32 input) {
         value[0] = ((U8*)& input)[0];
         value[1] = ((U8*)& input)[1];
         value[2] = ((U8*)& input)[2];
@@ -129,99 +115,28 @@ public:
         return *this;
     }
 
-    I24 operator+ (I32 val) const
-    {
-        return I24((int)* this + (int)val);
-    }
+    I24 operator+   (I32 val)        const { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
+    I24 operator+   (const I24& val) const { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
+    I24 operator-   (const I24& val) const { return I24(static_cast<I32>(*this) - static_cast<I32>(val)); }
+    I24 operator*   (const I24& val) const { return I24(static_cast<I32>(*this) * static_cast<I32>(val)); }
+    I24 operator/   (const I24& val) const { return I24(static_cast<I32>(*this) / static_cast<I32>(val)); }
+    I24& operator+= (const I24& val)       { *this = *this + val; return *this; }
+    I24& operator-= (const I24& val)       { *this = *this - val; return *this; }
+    I24& operator*= (const I24& val)       { *this = *this * val; return *this; }
+    I24& operator/= (const I24& val)       { *this = *this / val; return *this; }
+    I24 operator>>  (const I32 val) const  { return I24(static_cast<I32>(*this) >> val); }
+    I24 operator<<  (const I32 val) const  { return I24(static_cast<I32>(*this) << val); }
 
-    I24 operator+ (const I24& val) const
-    {
-        return I24((int)* this + (int)val);
-    }
+    operator bool()   const { return static_cast<I32>(*this) != 0; }
+    bool operator! () const { return !(static_cast<I32>(*this)); }
+    I24  operator- ()       { return I24(-static_cast<I32>(*this)); }
 
-    I24 operator- (const I24& val) const
-    {
-        return I24((int)* this - (int)val);
-    }
-
-    I24 operator* (const I24& val) const
-    {
-        return I24((int)* this * (int)val);
-    }
-
-    I24 operator/ (const I24& val) const
-    {
-        return I24((int)* this / (int)val);
-    }
-
-    I24& operator+= (const I24& val)
-    {
-        *this = *this + val;
-        return *this;
-    }
-
-    I24& operator-= (const I24& val)
-    {
-        *this = *this - val;
-        return *this;
-    }
-
-    I24& operator*= (const I24& val)
-    {
-        *this = *this * val;
-        return *this;
-    }
-
-    I24& operator/= (const I24& val)
-    {
-        *this = *this / val;
-        return *this;
-    }
-
-    I24 operator>> (const int val) const
-    {
-        return I24((int)* this >> val);
-    }
-
-    I24 operator<< (const int val) const
-    {
-        return I24((int)* this << val);
-    }
-
-    operator bool() const
-    {
-        return (int)* this != 0;
-    }
-
-    bool operator! () const
-    {
-        return !((int)* this);
-    }
-
-    I24 operator- ()
-    {
-        return I24(-(int)* this);
-    }
-
-    bool operator== (const I24& val) const
-    {
-        return (int)* this == (int)val;
-    }
-
-    bool operator!= (const I24& val) const
-    {
-        return (int)* this != (int)val;
-    }
-
-    bool operator>= (const I24& val) const
-    {
-        return (int)* this >= (int)val;
-    }
-
-    bool operator<= (const I24& val) const
-    {
-        return (int)* this <= (int)val;
-    }
+    bool operator== (const I24& val) const { return static_cast<I32>(*this) == static_cast<I32>(val); }
+    bool operator!= (const I24& val) const { return static_cast<I32>(*this) != static_cast<I32>(val); }
+    bool operator>= (const I24& val) const { return static_cast<I32>(*this) >= static_cast<I32>(val); }
+    bool operator<= (const I24& val) const { return static_cast<I32>(*this) <= static_cast<I32>(val); }
+    bool operator>  (const I24& val) const { return static_cast<I32>(*this) >  static_cast<I32>(val); }
+    bool operator<  (const I24& val) const { return static_cast<I32>(*this) <  static_cast<I32>(val); }
 };
 #pragma pack(pop)
 

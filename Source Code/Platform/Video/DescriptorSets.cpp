@@ -6,6 +6,13 @@
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
+    bool BufferCompare(ShaderBuffer* a, ShaderBuffer* b) {
+        if (a != nullptr && b != nullptr) {
+            return a->getGUID() == b->getGUID();
+        }
+
+        return a == nullptr && b == nullptr;
+    }
 
     const ShaderBufferBinding* DescriptorSet::findBinding(ShaderBufferLocation slot) const {
         for (const ShaderBufferBinding& it : _shaderBuffers) {
@@ -185,17 +192,5 @@ namespace Divide {
         }
 
         return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty() && rhs._textureViews.empty() && rhs._images.empty();
-    }
-
-    bool ShaderBufferBinding::operator==(const ShaderBufferBinding& other) const {
-        return _binding == other._binding &&
-               _elementRange == other._elementRange &&
-               _buffer->getGUID() == other._buffer->getGUID();
-    }
-
-    bool ShaderBufferBinding::operator!=(const ShaderBufferBinding& other) const {
-        return _binding != other._binding ||
-               _elementRange != other._elementRange ||
-               _buffer->getGUID() != other._buffer->getGUID();
     }
 }; //namespace Divide

@@ -150,7 +150,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     WindowDescriptor descriptor = {};
     descriptor.position = initialPosition;
     descriptor.dimensions = initialSize;
-    descriptor.targetDisplay = displayIndex;
+    descriptor.targetDisplay = to_U32(displayIndex);
     descriptor.title = _context->config().title;
     descriptor.externalClose = false;
     if (_context->config().runtime.enableVSync) {

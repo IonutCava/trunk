@@ -430,7 +430,6 @@
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/stdafx-game.cpp" />
-    <ClCompile Include="../../Source Code\UnityBuildEngine.cpp" />
     <ClCompile Include="../../Source Code\Environment\Terrain\InfinitePlane.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
@@ -452,6 +451,7 @@
     <ClCompile Include="../../Source Code\Environment\Terrain\TileRing.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/AI\Sensors\Headers\AudioSensor.h">
@@ -697,30 +697,18 @@
     <Xml Include="../../main.xml">
       <Filter>XML</Filter>
     </Xml>
-    <Xml Include="../../XML\config.xml">
-      <Filter>XML</Filter>
-    </Xml>
-    <Xml Include="../../XML\defaultMaterial.xml">
-      <Filter>XML</Filter>
-    </Xml>
-    <Xml Include="../../XML\keyBindings.xml">
-      <Filter>XML</Filter>
-    </Xml>
-    <Xml Include="../../XML\Scenes\defaultScene\musicPlaylist.xml">
-      <Filter>XML\Scenes\defaultScene</Filter>
-    </Xml>
-    <Xml Include="../../XML\Scenes\WarScene\assets.xml">
-      <Filter>XML\Scenes\WarScene</Filter>
-    </Xml>
-    <Xml Include="../../XML\Scenes\defaultScene.xml">
-      <Filter>XML\Scenes\defaultScene</Filter>
-    </Xml>
     <Xml Include="../../XML/Scenes\WarScene.xml">
       <Filter>XML\Scenes</Filter>
     </Xml>
     <Xml Include="../../XML/Editor\Editor.xml">
       <Filter>XML\Editor</Filter>
     </Xml>
+    <Xml Include="../../XML/config.xml" />
+    <Xml Include="../../XML/defaultMaterial.xml" />
+    <Xml Include="../../XML/keyBindings.xml" />
+    <Xml Include="../../XML/Scenes\defaultScene.xml" />
+    <Xml Include="../../XML/Scenes\defaultScene\musicPlaylist.xml" />
+    <Xml Include="../../XML/Scenes\WarScene\assets.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../assets\Scripts\main.chai">
@@ -732,8 +720,6 @@
     <None Include="../../assets\Scripts\atoms\utility.chai">
       <Filter>Scripts\atoms</Filter>
     </None>
-    <None Include="../../XML\Scenes\WarScene\navMeshConfig.ini">
-      <Filter>XML\Scenes\WarScene</Filter>
-    </None>
+    <None Include="../../XML/Scenes\WarScene\navMeshConfig.ini" />
   </ItemGroup>
 </Project>

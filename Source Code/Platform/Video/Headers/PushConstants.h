@@ -43,11 +43,11 @@ struct PushConstants {
     void set(const GFX::PushConstant& constant);
 
     template<typename T>
-    inline void set(const eastl::string& binding,
+    inline void set(const char* binding,
                     GFX::PushConstantType type,
                     const T& value,
                     bool flag = false) {
-        U64 bindingID = _ID(binding.c_str());
+        U64 bindingID = _ID(binding);
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
                 if (constant._type != type) {
@@ -63,12 +63,12 @@ struct PushConstants {
     }
 
     template<typename T>
-    inline void set(const eastl::string& binding,
+    inline void set(const char* binding,
                     GFX::PushConstantType type,
                     const vector<T>& values,
                     bool flag = false) {
 
-        U64 bindingID = _ID(binding.c_str());
+        U64 bindingID = _ID(binding);
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
                 if (constant._type != type) {
@@ -84,12 +84,12 @@ struct PushConstants {
     }
 
     template<typename T>
-    inline void set(const eastl::string& binding,
+    inline void set(const char* binding,
                     GFX::PushConstantType type,
                     const vectorEASTL<T>& values,
                     bool flag = false) {
 
-        U64 bindingID = _ID(binding.c_str());
+        U64 bindingID = _ID(binding);
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
                 if (constant._type != type) {
@@ -105,12 +105,12 @@ struct PushConstants {
     }
 
     template<typename T, size_t N>
-    inline void set(const eastl::string& binding,
+    inline void set(const char* binding,
                     GFX::PushConstantType type,
                     const std::array<T, N>& values,
                     bool flag = false) {
 
-        U64 bindingID = _ID(binding.c_str());
+        U64 bindingID = _ID(binding);
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
                 if (constant._type != type) {

@@ -229,10 +229,8 @@
     <ClCompile Include="../../Source Code/Core\RingBuffer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code\Utility\TextLabel.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp" />
+    <ClCompile Include="../../Source Code/Utility\TextLabel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Core\Headers\cdigginsAny.h">
@@ -396,11 +394,7 @@
     <ClInclude Include="../../Source Code/Core\Headers\Hashable.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code\Core\Math\Headers\Dimension.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code\Core\TemplateLibraries\Headers\PolyContainer.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
+    <ClInclude Include="../../Source Code/Core\Math\Headers\Dimension.h" />
+    <ClInclude Include="../../Source Code/Core\TemplateLibraries\Headers\PolyContainer.h" />
   </ItemGroup>
 </Project>

@@ -68,9 +68,9 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
 
     addSelectionCallback([&](PlayerIndex idx, SceneGraphNode* node) {
         if (node != nullptr) {
-            _GUI->modifyText(_ID("entityState"), node->name().c_str());
+            _GUI->modifyText(_ID("entityState"), node->name().c_str(), false);
         } else {
-            _GUI->modifyText(_ID("entityState"), "");
+            _GUI->modifyText(_ID("entityState"), "", false);
         }
     });
 
@@ -97,14 +97,14 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f. FrameIndex : %d",
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime(),
-                                            _context.gfx().getFrameCount()));
+                                            _context.gfx().getFrameCount()), false);
         _GUI->modifyText(_ID("RenderBinCount"),
             Util::StringFormat("Number of items in Render Bin: %d.",
-                               _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY)));
+                               _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY)), false);
 
         _GUI->modifyText(_ID("camPosition"),
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                                            eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
+                                            eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw), false);
 
         _guiTimersMS[0] = 0.0;
     }
@@ -115,7 +115,7 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
             if (node != nullptr) {
                 AI::AIEntity* entity = findAI(node);
                 if (entity) {
-                    _GUI->modifyText(_ID("entityState"), entity->toString().c_str());
+                    _GUI->modifyText(_ID("entityState"), entity->toString().c_str(), true);
                 }
             }
         }
@@ -141,7 +141,8 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
                                elapsedTimeMilliseconds,
                                limitTimeMinutes,
                                limitTimeSeconds,
-                               limitTimeMilliseconds));
+                               limitTimeMilliseconds),
+                               true);
 
         _guiTimersMS[2] = 0.0;
     }
@@ -846,7 +847,8 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                   pixelPosition(60, 163),
                   Font::DIVIDE_DEFAULT,
                   UColour4(0, 0, 0, 255),
-                  "");
+                  "",
+                  false);
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
 

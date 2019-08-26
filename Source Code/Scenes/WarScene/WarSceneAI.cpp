@@ -143,7 +143,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
         return true;
     }
 
-    return false;
+    //return false;
 }
 
 bool WarScene::removeUnits() {

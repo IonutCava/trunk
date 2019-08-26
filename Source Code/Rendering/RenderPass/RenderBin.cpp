@@ -19,20 +19,20 @@ namespace {
 };
 
 struct RenderQueueDistanceBackToFront {
-    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+    FORCE_INLINE bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
        return a._distanceToCameraSq > b._distanceToCameraSq;
     }
 };
 
 struct RenderQueueDistanceFrontToBack {
-    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+    FORCE_INLINE bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
         return a._distanceToCameraSq < b._distanceToCameraSq;
     }
 };
 
 
 struct RenderQueueWaterFirst {
-    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+    FORCE_INLINE bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
         return a._renderable->getSGN().getNode().type() == SceneNodeType::TYPE_WATER;
     }
 };
@@ -42,7 +42,7 @@ struct RenderQueueWaterFirst {
 /// 3: if shader is identical and state hash is identical, sort by albedo ID
 struct RenderQueueKeyCompare {
     // Sort
-    bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+    FORCE_INLINE bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
         // Sort by shader in all states The sort key is the shader id (for now)
         if (a._sortKeyA != b._sortKeyA) {
             return a._sortKeyA < b._sortKeyA;
@@ -80,28 +80,21 @@ const RenderBinItem& RenderBin::getItem(RenderStage stage, U16 index) const {
 
 void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
     // Lock w_lock(_renderBinGetMutex);
-    U8 stageIndex = to_U8(stage);
+    const U8 stageIndex = to_U8(stage);
+    RenderBinStack& stack = _renderBinStack[stageIndex];
 
     switch (renderOrder) {
         case RenderingOrder::BY_STATE: {
-            eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
-                        eastl::end(_renderBinStack[stageIndex]),
-                        RenderQueueKeyCompare());
+            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueKeyCompare());
         } break;
         case RenderingOrder::BACK_TO_FRONT: {
-            eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
-                        eastl::end(_renderBinStack[stageIndex]),
-                        RenderQueueDistanceBackToFront());
+            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueDistanceBackToFront());
         } break;
         case RenderingOrder::FRONT_TO_BACK: {
-            eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
-                        eastl::end(_renderBinStack[stageIndex]),
-                        RenderQueueDistanceFrontToBack());
+            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueDistanceFrontToBack());
         } break;
         case RenderingOrder::WATER_FIRST: {
-            eastl::sort(eastl::begin(_renderBinStack[stageIndex]),
-                        eastl::end(_renderBinStack[stageIndex]),
-                        RenderQueueWaterFirst());
+            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueWaterFirst());
         } break;
         case RenderingOrder::NONE: {
             // no need to sort

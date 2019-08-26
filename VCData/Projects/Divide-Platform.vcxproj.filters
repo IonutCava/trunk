@@ -1074,6 +1074,9 @@
     <None Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VDIPool.inl">
       <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.inl">
+      <Filter>Video\Buffers\RenderTarget\Headers</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl">

@@ -52,8 +52,8 @@ class RTDrawMask {
     void enableAll();
     void disableAll();
 
-    bool operator==(const RTDrawMask& other) const;
-    bool operator!=(const RTDrawMask& other) const;
+    inline bool operator==(const RTDrawMask& other) const;
+    inline bool operator!=(const RTDrawMask& other) const;
 
   private:
     std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _disabledColours;
@@ -65,8 +65,8 @@ struct RTBlendState {
     UColour4 _blendColour = {};
     BlendingProperties _blendProperties;
 
-    bool operator==(const RTBlendState& other) const;
-    bool operator!=(const RTBlendState& other) const;
+    inline bool operator==(const RTBlendState& other) const;
+    inline bool operator!=(const RTBlendState& other) const;
 };
 
 class RTDrawDescriptor {
@@ -105,8 +105,8 @@ class RTDrawDescriptor {
     void markDirtyLayer(RTAttachmentType type, U8 index, U16 layer);
     std::unordered_set<U16> getDirtyLayers(RTAttachmentType type, U8 index = 0) const;
 
-    bool operator==(const RTDrawDescriptor& other) const;
-    bool operator!=(const RTDrawDescriptor& other) const;
+    inline bool operator==(const RTDrawDescriptor& other) const;
+    inline bool operator!=(const RTDrawDescriptor& other) const;
 
   protected:
 
@@ -125,3 +125,6 @@ class RTDrawDescriptor {
 }; //namespace Divide
 
 #endif //_RENDER_TARGET_DRAW_DESCRIPTOR_H_
+
+
+#include "RTDrawDescriptor.inl"

@@ -239,7 +239,7 @@ void Kernel::onLoop() {
     }
 
     if (frameCount % (Config::TARGET_FRAME_RATE / 4) == 0) {
-        _platformContext->gui().modifyText(_ID("ProfileData"), platformContext().debug().output());
+        _platformContext->gui().modifyText(_ID("ProfileData"), platformContext().debug().output(), true);
     }
 
     // Cap FPS
@@ -734,6 +734,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                     Font::DROID_SERIF_BOLD,                        // Font
                                     UColour4(255,  50, 0, 255),                    // Colour
                                     "PROFILE DATA",                                // Text
+                                    true,                                          // Multiline
                                     12);                                           // Font size
 
     ShadowMap::initShadowMaps(_platformContext->gfx());

@@ -125,6 +125,7 @@ private:
     GFXDevice& _context;
     RenderQueue _renderQueue;
 
+    vectorEASTL<Task*> _renderTasks;
     vectorEASTL<std::shared_ptr<RenderPass>> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
     GFX::CommandBuffer* _postFXCommandBuffer;

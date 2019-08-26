@@ -164,6 +164,9 @@ class glFramebuffer : public RenderTarget,
 
     bool _hasMultisampledColourAttachments;
 
+    std::array<GLenum, MAX_RT_COLOUR_ATTACHMENTS> _targetColourBuffers;
+    std::array<GLenum, MAX_RT_COLOUR_ATTACHMENTS> _activeColourBuffers;
+
     hashMap<GLenum, BindingState> _attachmentState;
     hashMap<GLenum, eastl::set<U16, eastl::greater<U16>>> _attachmentResolvedLayers;
 };

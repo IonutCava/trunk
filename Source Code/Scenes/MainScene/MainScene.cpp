@@ -88,11 +88,11 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
             }
             _GUI->modifyText(_ID("camPosition"),
                              Util::StringFormat("[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f] [TerHght: %5.2f ]",
-                                                 eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw, terrainHeight));
+                                                 eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw, terrainHeight), false);
         } else {
             _GUI->modifyText(_ID("camPosition"),
                              Util::StringFormat("[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                                                eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
+                                                eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw), false);
         }
     }
 
@@ -107,20 +107,20 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
-                                            Time::ApplicationTimer::instance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFrameTime()), false);
         _GUI->modifyText(_ID("underwater"),
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
                                              state().playerState(0).cameraUnderwater() ? "true" : "false",
-                                             state().globalWaterBodies()[0]._heightOffset));
+                                             state().globalWaterBodies()[0]._heightOffset), false);
         _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d.",
-                                            _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY)));
+                                            _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY)), false);
         _guiTimersMS[0] = 0.0;
     }
 
     if (_guiTimersMS[1] >= TimeDisplay) {
         _GUI->modifyText(_ID("timeDisplay"),
-                         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
+                         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()), false);
         _guiTimersMS[1] = 0.0;
     }
 

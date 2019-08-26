@@ -63,6 +63,9 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
     // Everything disabled so that the initial "begin" will override this
     _previousPolicy.drawMask().disableAll();
     _previousPolicy.stateMask(0);
+
+    _targetColourBuffers.fill(GL_NONE);
+    _activeColourBuffers.fill(GL_NONE);
 }
 
 glFramebuffer::~glFramebuffer()
@@ -517,18 +520,20 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTA
     const RTDrawMask& mask = drawPolicy.drawMask();
 
     if (_previousPolicy.drawMask() != mask) {
+        _targetColourBuffers.fill(GL_NONE);
         // handle colour buffers first
-        vector<GLenum> activeColourBuffers(MAX_RT_COLOUR_ATTACHMENTS, GL_NONE);
-
         U8 count = to_U8(std::min((size_t)MAX_RT_COLOUR_ATTACHMENTS, activeAttachments.size()));
         for (U8 j = 0; j < count; ++j) {
             const RTAttachment_ptr& colourAtt = activeAttachments[j];
-            activeColourBuffers[j] =  mask.isEnabled(RTAttachmentType::Colour, j) ? static_cast<GLenum>(colourAtt->binding()) : GL_NONE;
+            _targetColourBuffers[j] =  mask.isEnabled(RTAttachmentType::Colour, j) ? static_cast<GLenum>(colourAtt->binding()) : GL_NONE;
         }
 
-        glNamedFramebufferDrawBuffers(_framebufferHandle,
-                                      static_cast<GLsizei>(activeColourBuffers.size()),
-                                      activeColourBuffers.data());
+        if (_activeColourBuffers != _targetColourBuffers) {
+            glNamedFramebufferDrawBuffers(_framebufferHandle,
+                                          static_cast<GLsizei>(_targetColourBuffers.size()),
+                                          _targetColourBuffers.data());
+            _activeColourBuffers = _targetColourBuffers;
+        }
         queueCheckStatus();
 
         const RTAttachment_ptr& depthAtt = _attachmentPool->get(RTAttachmentType::Depth, 0);
@@ -666,27 +671,26 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const RTAttachment
                 }
 
                 GLint buffer = static_cast<GLint>(binding - static_cast<GLint>(GL_COLOR_ATTACHMENT0));
-                if (!drawPolicy.clearColour(to_U8(buffer))) {
-                    continue;
-                }
 
-                switch (att->texture(false)->getDescriptor().dataType()) {
-                    case GFXDataFormat::FLOAT_16:
-                    case GFXDataFormat::FLOAT_32 :
-                        glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, att->clearColour()._v);
-                        break;
+                if (drawPolicy.clearColour(to_U8(buffer))) {
+                    switch (att->texture(false)->getDescriptor().dataType()) {
+                        case GFXDataFormat::FLOAT_16:
+                        case GFXDataFormat::FLOAT_32 :
+                            glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, att->clearColour()._v);
+                            break;
                     
-                    case GFXDataFormat::SIGNED_BYTE:
-                    case GFXDataFormat::SIGNED_SHORT:
-                    case GFXDataFormat::SIGNED_INT :
-                        glClearNamedFramebufferiv(_framebufferHandle, GL_COLOR, buffer, Util::ToIntColour(att->clearColour())._v);
-                        break;
+                        case GFXDataFormat::SIGNED_BYTE:
+                        case GFXDataFormat::SIGNED_SHORT:
+                        case GFXDataFormat::SIGNED_INT :
+                            glClearNamedFramebufferiv(_framebufferHandle, GL_COLOR, buffer, Util::ToIntColour(att->clearColour())._v);
+                            break;
 
-                    default:
-                        glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, buffer, Util::ToUIntColour(att->clearColour())._v);
-                        break;
+                        default:
+                            glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, buffer, Util::ToUIntColour(att->clearColour())._v);
+                            break;
+                    }
+                    _context.registerDrawCall();
                 }
-                _context.registerDrawCall();
             }
         }
     }

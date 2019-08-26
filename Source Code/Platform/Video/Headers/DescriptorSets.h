@@ -38,8 +38,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
-    class Texture;
+    class ShaderBuffer;
+    bool BufferCompare(ShaderBuffer* a, ShaderBuffer* b);
 
+    class Texture;
     struct TextureView {
         Texture* _texture = nullptr;
         vec2<U16> _mipLevels = {};
@@ -73,7 +75,6 @@ namespace Divide {
         }
     };
 
-    class ShaderBuffer;
     struct ShaderBufferBinding {
         vec2<U32>     _elementRange = {};
         ShaderBuffer* _buffer = nullptr;
@@ -82,8 +83,17 @@ namespace Divide {
         bool set(const ShaderBufferBinding& other);
         bool set(ShaderBufferLocation binding, ShaderBuffer* buffer, const vec2<U32>& elementRange);
 
-        bool operator==(const ShaderBufferBinding& other) const;
-        bool operator!=(const ShaderBufferBinding& other) const;
+        inline bool operator==(const ShaderBufferBinding& other) const {
+            return _binding == other._binding &&
+                   _elementRange == other._elementRange &&
+                   BufferCompare(_buffer, other._buffer);
+        }
+
+        inline bool operator!=(const ShaderBufferBinding& other) const {
+            return _binding != other._binding ||
+                   _elementRange != other._elementRange ||
+                   !BufferCompare(_buffer, other._buffer);
+        }
 
         XALLOCATOR
     };

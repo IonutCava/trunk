@@ -82,6 +82,7 @@ public:
                              const stringImpl& font,
                              const UColour4& colour,
                              const stringImpl& text,
+                             bool multiLine = false,
                              U8 fontSize = 16u);
 
     inline GUIText* addText(const stringImpl& name,
@@ -89,17 +90,16 @@ public:
                             const stringImpl& font,
                             const UColour4& colour,
                             const stringImpl& text,
+                            bool multiLine = false,
                             U8 fontSize = 16u) {
 
-        return addText(_ID(name.c_str()), name, position, font, colour, text, fontSize);
+        return addText(_ID(name.c_str()), name, position, font, colour, text, multiLine, fontSize);
     }
 
-    virtual GUIText* modifyText(U64 guiID,
-                                const stringImpl& text);
+    virtual GUIText* modifyText(U64 guiID, const stringImpl& text, bool multiLine);
 
-    inline GUIText* modifyText(const stringImpl& name,
-                               const stringImpl& text) {
-        return modifyText(_ID(name.c_str()), text);
+    inline GUIText* modifyText(const stringImpl& name, const stringImpl& text, bool multiLine) {
+        return modifyText(_ID(name.c_str()), text, multiLine);
     }
 
     virtual GUIMessageBox* addMsgBox(U64 guiID,

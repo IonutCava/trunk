@@ -119,10 +119,10 @@ namespace Divide {
                               GLintptr offset,
                               GLsizei stride);
 
-        bool setScissor(I32 x, I32 y, I32 width, I32 height);
+        bool setScissor(const Rect<I32>& newScissorRect);
 
-        inline bool setScissor(const Rect<I32>& newScissorRect) {
-            return setScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
+        inline  bool setScissor(I32 x, I32 y, I32 width, I32 height) {
+            return setScissor({ x, y, width, height });
         }
 
         bool setClearColour(const FColour4& colour);
@@ -136,7 +136,12 @@ namespace Divide {
         }
 
         /// Change the current viewport area. Redundancy check is performed in GFXDevice class
-        bool setViewport(I32 x, I32 y, I32 width, I32 height);
+
+        bool setViewport(const Rect<I32>& viewport);
+
+        inline bool setViewport(I32 x, I32 y, I32 width, I32 height) {
+            return setViewport({ x, y, width, height });
+        }
 
         U32 getBoundTextureHandle(U8 slot, TextureType type);
 

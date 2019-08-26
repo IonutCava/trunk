@@ -222,7 +222,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
             GFX::EnqueueCommand(bufferInOut, setViewport);
 
             text._position.d_y.d_offset = entry.second.sizeY - 10.0f;
-            text.text(entry.first);
+            text.text(entry.first.c_str(), false);
             drawText(text, bufferInOut);
         }
     }

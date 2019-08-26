@@ -46,7 +46,8 @@ void PingPongScene::processGUI(const U64 deltaTimeUS) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
-                                            Time::ApplicationTimer::instance().getFrameTime()));
+                                            Time::ApplicationTimer::instance().getFrameTime()),
+                        false);
         _guiTimersMS[0] = 0.0;
     }
     Scene::processGUI(deltaTimeUS);
@@ -89,7 +90,7 @@ void PingPongScene::resetGame() {
 }
 
 void PingPongScene::serveBall(I64 btnGUID) {
-    _GUI->modifyText(_ID("insults"), "");
+    _GUI->modifyText(_ID("insults"), "", false);
     resetGame();
 
     removeTask(*g_gameTaskID);
@@ -215,15 +216,15 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
                 if (b == CallbackParam::TYPE_INTEGER) {
                     I32 quote = a.cast<I32>();
                     if (_score % 3 == 0)
-                        _GUI->modifyText(_ID("insults"), _quotes[quote]);
+                        _GUI->modifyText(_ID("insults"), _quotes[quote], false);
                 }
             } else {
                 message = "You won!";
                 _score++;
             }
 
-            _GUI->modifyText(_ID("Score"), Util::StringFormat("Score: %d", _score));
-            _GUI->modifyText(_ID("Message"), (char*)message.c_str());
+            _GUI->modifyText(_ID("Score"), Util::StringFormat("Score: %d", _score), false);
+            _GUI->modifyText(_ID("Message"), (char*)message.c_str(), false);
             resetGame();
         }
 

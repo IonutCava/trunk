@@ -674,7 +674,7 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
     }
 
     const vec2<U16>& drawableSize = window.getDrawableSize();
-    setViewport(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
+    setViewport(0, 0, drawableSize.width, drawableSize.height);
 
     _api->beginFrame(window, global);
     _api->setStateBlock(_defaultStateBlockHash);

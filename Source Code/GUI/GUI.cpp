@@ -99,8 +99,10 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
         return;
     }
 
-    TextElementBatch textBatch;
-    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
+    const GUIMap& elements = _guiElements[to_base(GUIType::GUI_TEXT)];
+
+    TextElementBatch textBatch(elements.size());
+    for (const GUIMap::value_type& guiStackIterator : elements) {
         const GUIText& textLabel = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (textLabel.isVisible() && !textLabel.text().empty()) {
             textBatch._data.push_back(textLabel);

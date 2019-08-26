@@ -102,7 +102,6 @@ namespace Divide {
 
         U8 renderPassCount = to_U8(_renderPasses.size());
 
-        vector<Task*> tasks(renderPassCount);
         Task* postFXTask = nullptr;
 
         {
@@ -118,14 +117,14 @@ namespace Divide {
                     GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
                     assert(buf->empty());
 
-                    tasks[i] = CreateTask(pool,
-                                          nullptr,
-                                          [pass, buf, &sceneRenderState](const Task & parentTask) {
-                                              pass->render(parentTask, sceneRenderState, *buf);
-                                              buf->batch();
-                                          },
-                                          "Render pass task");
-                    Start(*tasks[i]);
+                    _renderTasks[i] = CreateTask(pool,
+                                                 nullptr,
+                                                 [pass, buf, &sceneRenderState](const Task & parentTask) {
+                                                     pass->render(parentTask, sceneRenderState, *buf);
+                                                     buf->batch();
+                                                 },
+                                                 "Render pass task");
+                    Start(*_renderTasks[i]);
                 }
                 { //PostFX should be pretty fast
                     GFX::CommandBuffer* buf = _postFXCommandBuffer;
@@ -163,7 +162,7 @@ namespace Divide {
                 // For every render pass
                 bool finished = true;
                 for (U8 i = 0; i < renderPassCount; ++i) {
-                    if (completedPasses[i] || !Finished(*tasks[i])) {
+                    if (completedPasses[i] || !Finished(*_renderTasks[i])) {
                         continue;
                     }
 
@@ -238,6 +237,8 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                       return a->sortKey() < b->sortKey();
                 });
 
+    _renderTasks.resize(_renderPasses.size());
+
     return *item;
 }
 
@@ -253,6 +254,8 @@ void RenderPassManager::removeRenderPass(const stringImpl& name) {
             break;
         }
     }
+
+    _renderTasks.resize(_renderPasses.size());
 }
 
 U16 RenderPassManager::getLastTotalBinSize(RenderStage renderStage) const {

@@ -360,9 +360,9 @@ class SceneRenderStateScene {
     static void playAnimations(SceneRenderState& sceneRenderState,
                                bool playAnimations) {
         if (playAnimations) {
-            SetBit(sceneRenderState._stateMask, to_base(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
+            SetBit(sceneRenderState._stateMask, SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
         } else {
-            ClearBit(sceneRenderState._stateMask, to_base(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
+            ClearBit(sceneRenderState._stateMask, SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
         }
     }
     friend class Divide::Scene;

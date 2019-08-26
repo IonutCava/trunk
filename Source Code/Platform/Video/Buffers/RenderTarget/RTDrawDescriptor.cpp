@@ -59,29 +59,6 @@ void RTDrawMask::disableAll() {
     _disabledColours.fill(true);
 }
 
-
-bool RTDrawMask::operator==(const RTDrawMask& other) const {
-    return _disabledDepth   == other._disabledDepth &&
-           _disabledStencil == other._disabledStencil &&
-           _disabledColours == other._disabledColours;
-}
-
-bool RTDrawMask::operator!=(const RTDrawMask& other) const {
-    return _disabledDepth   != other._disabledDepth ||
-           _disabledStencil != other._disabledStencil ||
-           _disabledColours != other._disabledColours;
-}
-
-bool RTBlendState::operator==(const RTBlendState& other) const {
-    return _blendProperties == other._blendProperties &&
-           _blendColour == other._blendColour;
-}
-
-bool RTBlendState::operator!=(const RTBlendState& other) const {
-    return _blendProperties != other._blendProperties ||
-           _blendColour != other._blendColour;
-}
-
 RTDrawDescriptor::RTDrawDescriptor()
     : _stateMask(0)
 {
@@ -128,18 +105,6 @@ void RTDrawDescriptor::disableState(State state) {
 
 bool RTDrawDescriptor::isEnabledState(State state) const {
     return BitCompare(_stateMask, to_U32(state));
-}
-
-bool RTDrawDescriptor::operator==(const RTDrawDescriptor& other) const {
-    return _stateMask == other._stateMask &&
-           _drawMask == other._drawMask &&
-           _blendStates == other._blendStates;
-}
-
-bool RTDrawDescriptor::operator!=(const RTDrawDescriptor& other) const {
-    return _stateMask != other._stateMask ||
-           _drawMask != other._drawMask ||
-           _blendStates != other._blendStates;
 }
 
 void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U16 layer) {

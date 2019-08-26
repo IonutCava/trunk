@@ -86,12 +86,12 @@ namespace GFX {
         PushConstant& operator=(PushConstant&& other) = default;
 
         template<typename T>
-        PushConstant(const eastl::string& binding,
+        PushConstant(const char* binding,
                      U64 bindingHash,
                      PushConstantType type,
                      const T& value,
                      bool flag = false)
-            : _binding(binding.c_str()),
+            : _binding(binding),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -101,12 +101,12 @@ namespace GFX {
         }
 
         template<typename T>
-        PushConstant(const eastl::string& binding,
+        PushConstant(const char* binding,
                      U64 bindingHash,
                      PushConstantType type,
                      const vector<T>& values,
                      bool flag = false)
-            : _binding(binding.c_str()),
+            : _binding(binding),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -118,12 +118,12 @@ namespace GFX {
         }
 
         template<typename T>
-        PushConstant(const eastl::string& binding,
+        PushConstant(const char* binding,
                      U64 bindingHash,
                      PushConstantType type,
                      const vectorEASTL<T>& values,
                      bool flag = false)
-            : _binding(binding.c_str()),
+            : _binding(binding),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -135,12 +135,12 @@ namespace GFX {
         }
 
         template<>
-        PushConstant(const eastl::string& binding,
+        PushConstant(const char* binding,
                      U64 bindingHash,
                      PushConstantType type,
                      const vectorEASTL<bool>& values,
                      bool flag)
-            : _binding(binding.c_str()),
+            : _binding(binding),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -154,12 +154,12 @@ namespace GFX {
         }
 
         template<typename T, size_t N>
-        PushConstant(const eastl::string& binding,
+        PushConstant(const char* binding,
                      U64 bindingHash,
                      PushConstantType type,
                      const std::array<T, N>& values,
                      bool flag = false)
-            : _binding(binding.c_str()),
+            : _binding(binding),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)
@@ -171,12 +171,12 @@ namespace GFX {
         }
 
         template<size_t N>
-        PushConstant(const eastl::string& binding,
+        PushConstant(const char* binding,
                      U64 bindingHash,
                      PushConstantType type,
                      const std::array<bool, N>& values,
                      bool flag)
-            : _binding(binding.c_str()),
+            : _binding(binding),
               _bindingHash(bindingHash),
               _type(type),
               _flag(flag)

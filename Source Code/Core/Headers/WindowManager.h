@@ -61,17 +61,18 @@ struct WindowDescriptor {
         SHARE_CONTEXT = toBit(11)
     };
 
-    bool externalClose = false;
-    U32 targetDisplay = 0u;
     stringImpl title = "";
-    vec2<I16> position;
-    vec2<U16> dimensions;
     FColour4 clearColour = DefaultColours::DIVIDE_BLUE;
-    U16 flags = to_U16(Flags::DECORATED) |
-                to_U16(Flags::RESIZEABLE) |
-                to_U16(Flags::ALLOW_HIGH_DPI) |
-                to_U16(Flags::CLEAR_DEPTH) |
-                to_U16(Flags::CLEAR_COLOUR);
+    vec2<I16> position = {};
+    vec2<U16> dimensions = {};
+    U32 targetDisplay = 0u;
+    U16 flags = to_U16(to_base(Flags::DECORATED) |
+                       to_base(Flags::RESIZEABLE) |
+                       to_base(Flags::ALLOW_HIGH_DPI) |
+                       to_base(Flags::CLEAR_DEPTH) |
+                       to_base(Flags::CLEAR_COLOUR));
+
+    bool externalClose = false;
 };
 
 class PlatformContext;

@@ -167,7 +167,7 @@ void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1, in vec2 uv0, in vec2 u
     p0.y = getHeight(uv0);
     p1.y = getHeight(uv1);
 
-    p0.y = p1.y = max(p0.y, p1.y);
+    p0.y = p1.y = min(p0.y, p1.y);
 }
 
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
@@ -221,7 +221,7 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
     vec3 p1 = gl_in[idx1].gl_Position.xyz;
 
     float tess = SphereToScreenSpaceTessellation(p0, p1, diameter);
-#if 1
+#if 0
     float logTess = ceil(log2(tess));
     return pow(2, logTess);
 #else 
@@ -290,9 +290,9 @@ void main(void)
         if (adjacency.neighbourPlusY > 1.1f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
             gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
         
-        if (patchXY.x == 1) {
-            gl_TessLevelOuter[1] = -1;
-        }
+        //if (adjacency.neighbourPlusY > 1.1f && patchXY.y == PATCHES_PER_TILE_EDGE - 1)
+            //gl_TessLevelOuter[0] = -1;
+            
        // Inner tessellation level
        gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
