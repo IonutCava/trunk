@@ -973,16 +973,27 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                     // User callback (registered via ImDrawList::AddCallback)
                     pcmd->UserCallback(cmd_list, pcmd);
                 } else {
-                    ImVec4 clip_rect = ImVec4(pcmd->ClipRect.x - pos.x, pcmd->ClipRect.y - pos.y, pcmd->ClipRect.z - pos.x, pcmd->ClipRect.w - pos.y);
-                    if (clip_rect.x < s_activeStateTracker->_activeViewport.z && clip_rect.y < s_activeStateTracker->_activeViewport.w && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f) {
-                        getStateTracker().setScissor((I32)clip_rect.x,
-                            (I32)(s_activeStateTracker->_activeViewport.w - clip_rect.w),
-                            (I32)(clip_rect.z - clip_rect.x),
-                            (I32)(clip_rect.w - clip_rect.y));
+                    const Rect<I32>& viewport = s_activeStateTracker->_activeViewport;
+                    Rect<I32> clip_rect = {
+                        pcmd->ClipRect.x - pos.x,
+                        pcmd->ClipRect.y - pos.y,
+                        pcmd->ClipRect.z - pos.x,
+                        pcmd->ClipRect.w - pos.y
+                    };
 
+                    if (clip_rect.x < viewport.z &&
+                        clip_rect.y < viewport.w &&
+                        clip_rect.z >= 0 &&
+                        clip_rect.w >= 0)
+                    {
+                        const I32 tempW = clip_rect.w;
+                        clip_rect.z -= clip_rect.x;
+                        clip_rect.w -= clip_rect.y;
+                        clip_rect.y  = viewport.w - tempW;
+                        getStateTracker().setScissor(clip_rect);
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
 
-                        getStateTracker().bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
+                        s_activeStateTracker->bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
                         buffer->draw(cmd);
                     }
                 }
@@ -1484,7 +1495,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
 }
 
 bool GL_API::setViewport(const Rect<I32>& viewport) {
-    return getStateTracker().setViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+    return getStateTracker().setViewport(viewport);
 }
 
 /// Verify if we have a sampler object created and available for the given
