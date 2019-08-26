@@ -251,6 +251,7 @@ namespace Divide {
 
         bool ret = false;
         switch (field._type) {
+            case EditorComponentFieldType::SLIDER_TYPE:
             case EditorComponentFieldType::PUSH_TYPE: {
                 ret = processBasicField(field);
             }break;
@@ -400,6 +401,8 @@ namespace Divide {
      }
 
      bool PropertyWindow::processBasicField(EditorComponentField& field) {
+         bool isSlider = field._type == EditorComponentFieldType::SLIDER_TYPE;
+         
          ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsDecimal;
          flags |= field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
 
@@ -419,8 +422,20 @@ namespace Divide {
              case GFX::PushConstantType::INT: {
                  I32 val = field.get<I32>();
                  ImGui::SameLine();
-
-                 ret = ImGui::InputInt("", &val, 1, 100, flags);
+                 if (isSlider) {
+                     if (field._readOnly) {
+                         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                     }
+                     ret = ImGui::SliderInt("", &val, to_I32(field._range.min), to_I32(field._range.max));
+                     if (field._readOnly) {
+                         ImGui::PopStyleVar();
+                         ImGui::PopItemFlag();
+                     }
+                 } else {
+                    ret = ImGui::InputInt("", &val, 1, 100, flags);
+                 }
+                 
                  if (ret && !field._readOnly) {
                      field.set<I32>(val);
                  }
@@ -440,7 +455,19 @@ namespace Divide {
              case GFX::PushConstantType::FLOAT: {
                  F32 val = field.get<F32>();
                  ImGui::SameLine();
-                 ret = ImGui::InputFloat("", &val, 0.0f, 0.0f, -1, flags);
+                 if (isSlider) {
+                     if (field._readOnly) {
+                         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                     }
+                     ret = ImGui::SliderFloat("", &val, field._range.min, field._range.max, "%.2f");
+                     if (field._readOnly) {
+                         ImGui::PopStyleVar();
+                         ImGui::PopItemFlag();
+                     }
+                 } else {
+                    ret = ImGui::InputFloat("", &val, 0.0f, 0.0f, -1, flags);
+                 }
                  if (ret && !field._readOnly) {
                      field.set<F32>(val);
                  }

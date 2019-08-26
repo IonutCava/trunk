@@ -22,13 +22,17 @@ namespace Divide {
                                         void* data,
                                         EditorComponentFieldType type,
                                         bool readOnly,
-                                        GFX::PushConstantType basicType) {
+                                        GFX::PushConstantType basicType,
+                                        const vec2<F32>& range,
+                                        F32 step) {
         _fields.push_back({
             basicType,
             type,
             readOnly,
             name, 
-            data
+            data,
+            range,
+            step
          });
     }
 
@@ -37,13 +41,17 @@ namespace Divide {
                                         std::function<void(const void*)> dataSetter,
                                         EditorComponentFieldType type,
                                         bool readOnly,
-                                        GFX::PushConstantType basicType) {
+                                        GFX::PushConstantType basicType,
+                                        const vec2<F32>& range,
+                                        F32 step) {
         _fields.push_back({
             basicType,
             type,
             readOnly,
             name,
             nullptr,
+            range,
+            step,
             dataGetter,
             dataSetter
         });

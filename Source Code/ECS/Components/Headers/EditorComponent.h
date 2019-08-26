@@ -33,7 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SGN_EDITOR_COMPONENT_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-
+#include "Core/Math/Headers/MathVectors.h"
 //Temp
 #include "Platform/Video/Headers/PushConstant.h"
 
@@ -49,6 +49,7 @@ namespace Divide {
 
     enum class EditorComponentFieldType : U8 {
         PUSH_TYPE = 0,
+        SLIDER_TYPE,
         BOUNDING_BOX,
         BOUNDING_SPHERE,
         TRANSFORM,
@@ -63,6 +64,9 @@ namespace Divide {
         bool _readOnly = false;
         stringImpl _name;
         void* _data = nullptr;
+        vec2<F32> _range = { 0.0f, 1.0f }; //< Used only by slider_type
+        F32 _step = 0.1f;
+
         std::function<void(void*)> _dataGetter = {};
         std::function<void(const void*)> _dataSetter = {};
 
@@ -126,7 +130,9 @@ namespace Divide {
                            void* data,
                            EditorComponentFieldType type,
                            bool readOnly,
-                           GFX::PushConstantType basicType = GFX::PushConstantType::COUNT);
+                           GFX::PushConstantType basicType = GFX::PushConstantType::COUNT,
+                           const vec2<F32>& range = {0.0f, 1.0f},
+                           F32 step = 1.0f);
 
 
         void registerField(const stringImpl& name,
@@ -134,7 +140,9 @@ namespace Divide {
                            std::function<void(const void*)> dataSetter,
                            EditorComponentFieldType type,
                            bool readOnly,
-                           GFX::PushConstantType basicType = GFX::PushConstantType::COUNT);
+                           GFX::PushConstantType basicType = GFX::PushConstantType::COUNT,
+                           const vec2<F32>& range = {0.0f, 1.0f},
+                           F32 step = 1.0f);
 
         inline vector<EditorComponentField>& fields() { return _fields; }
         inline const vector<EditorComponentField>& fields() const { return _fields; }

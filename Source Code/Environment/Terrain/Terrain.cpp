@@ -128,10 +128,18 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     _editorComponent.registerField(
         "Tessellated Triangle Width",
         &_descriptor->_tessellatedTriangleWidth,
-        EditorComponentFieldType::PUSH_TYPE,
+        EditorComponentFieldType::SLIDER_TYPE,
         false,
-        GFX::PushConstantType::FLOAT);
-
+        GFX::PushConstantType::FLOAT,
+        {1.0f, 150.0f},
+        1.0f);
+    _editorComponent.registerField(
+        "Parallax Height",
+        &_descriptor->_parallaxHeightScale,
+        EditorComponentFieldType::SLIDER_TYPE,
+        false,
+        GFX::PushConstantType::FLOAT,
+        { 0.01f, 10.0f });
     SceneNode::postLoad(sgn);
 }
 
@@ -236,8 +244,8 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
-        constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, _descriptor->getTessellatedTriangleWidth());
-        constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
+        constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, std::ceil(_descriptor->getTessellatedTriangleWidth()));
+        constants.set("height_scale", GFX::PushConstantType::FLOAT, _descriptor->getParallaxHeightScale());
         pkg.pushConstants(0, constants);
     }
 

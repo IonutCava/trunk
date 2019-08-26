@@ -107,17 +107,21 @@ float getHeight(in vec2 tex_coord) {
     return (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, tex_coord).r) + TERRAIN_MIN_HEIGHT;
 }
 
+vec2 screen_space(vec4 vertex) {
+    return (clamp(vertex.xy, -1.3f, 1.3f) + 1.0f) * (dvd_ViewPort.zw*0.5f);
+}
+
 float ClipToScreenSpaceTessellation(vec4 clip0, vec4 clip1)
 {
     clip0 /= clip0.w;
     clip1 /= clip1.w;
 
-    vec2 screen0 = ((clip0.xy + 1.0f) * 0.5f) * dvd_ViewPort.zw;
-    vec2 screen1 = ((clip1.xy + 1.0f) * 0.5f) * dvd_ViewPort.zw;
+    vec2 screen0 = screen_space(clip0);
+    vec2 screen1 = screen_space(clip1);
     float d = distance(screen0, screen1);
 
     // tessTriangleWidth is desired pixels per tri edge
-    return clamp(d / tessTriangleWidth, 0, 64);
+    return clamp(d / tessTriangleWidth, 1, 64);
 }
 
 float SphereToScreenSpaceTessellation(vec3 p0, vec3 p1, in float diameter)
