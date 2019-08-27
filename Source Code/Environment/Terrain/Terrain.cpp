@@ -130,7 +130,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         &_descriptor->_tessellatedTriangleWidth,
         EditorComponentFieldType::SLIDER_TYPE,
         false,
-        GFX::PushConstantType::FLOAT,
+        GFX::PushConstantType::UINT,
         {1.0f, 150.0f},
         1.0f);
     _editorComponent.registerField(
@@ -244,7 +244,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
-        constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, std::ceil(_descriptor->getTessellatedTriangleWidth()));
+        constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->getTessellatedTriangleWidth()));
         constants.set("height_scale", GFX::PushConstantType::FLOAT, _descriptor->getParallaxHeightScale());
         pkg.pushConstants(0, constants);
     }
@@ -302,7 +302,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addShaderBuffer(0, buffer);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, _descriptor->getTessellatedTriangleWidth());
+    pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->getTessellatedTriangleWidth()));
     pushConstantsCommand._constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
 
     GenericDrawCommand cmd = {};

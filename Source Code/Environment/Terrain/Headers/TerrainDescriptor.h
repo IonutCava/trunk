@@ -68,7 +68,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
     void setTextureLayerCount(U8 count) noexcept { _textureLayers = count; }
     void setDimensions(const vec2<U16>& dim) noexcept { _dimensions = dim; }
     void setAltitudeRange(const vec2<F32>& dim) noexcept { _altitudeRange = dim; }
-    void setTessellatedTriangleWidth(F32 width) noexcept { _tessellatedTriangleWidth = width; }
+    void setTessellatedTriangleWidth(U32 width) noexcept { _tessellatedTriangleWidth = width; }
     void setParallaxHeightScale(F32 scale)      noexcept { _parallaxHeightScale = scale; }
     void setTessellationSettings(const vec2<F32>& chunkAndPatch) noexcept { _tessellationSettings = chunkAndPatch; }
     void setActive(bool active) noexcept { _active = active; }
@@ -82,7 +82,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
 
     const vec2<F32>& getAltitudeRange() const noexcept { return _altitudeRange; }
     const vec2<F32>& getTessellationSettings() const noexcept { return _tessellationSettings; }
-    const F32        getTessellatedTriangleWidth() const noexcept { return _tessellatedTriangleWidth; }
+    const U32        getTessellatedTriangleWidth() const noexcept { return _tessellatedTriangleWidth; }
     const F32        getParallaxHeightScale() const noexcept { return _parallaxHeightScale; }
     const vec2<U16>& getDimensions() const noexcept { return _dimensions; }
 
@@ -129,7 +129,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
         return hash;
     }
 
-    F32 _tessellatedTriangleWidth = 35.0f;
+    U32 _tessellatedTriangleWidth = 35u;
     F32 _parallaxHeightScale = 0.3f;
 
    private:

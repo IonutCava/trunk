@@ -170,10 +170,11 @@ namespace Divide {
                             vector<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
                                 ImGui::Text(field._name.c_str());
-                                ImGui::Spacing();
+                                //ImGui::NewLine();
                                 if (processField(field) && !field._readOnly) {
                                     Attorney::EditorComponentEditor::onChanged(*comp, field);
                                 }
+                                ImGui::Spacing();
                             }
                         }
                     }
@@ -400,19 +401,75 @@ namespace Divide {
          return ret;
      }
 
+     namespace {
+        template<typename T, size_t num_comp, size_t step = 1, size_t step_fast = 100>
+        bool inputOrSlider(bool slider, const char* label, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d", float power = 1.0f) {
+            T val = field.get<T>();
+            T min = T(field._range.min), max = T(field._range.max);
+            T cStep = T(step);
+            T cStepFast = T(step_fast);
+
+            bool ret = false;
+            if (num_comp == 1) {
+                if (slider) {
+                    ret = ImGui::SliderScalar(label, data_type, (void*)&val, (void*)&min, (void*)&max, format, power);
+                } else {
+                    ret = ImGui::InputScalar(label, data_type, (void*)&val, (void*)&cStep, (void*)&cStepFast, format, flags);
+                }
+            } else {
+                if (slider) {
+                    ret = ImGui::SliderScalarN(label, data_type, (void*)&val, num_comp, (void*)&min, (void*)&max, format, power);
+                } else {
+                    ret = ImGui::InputScalarN(label, data_type, (void*)&val, num_comp, (void*)&cStep, (void*)&cStepFast, format, flags);
+                }
+            }
+            if (ret && !field._readOnly) {
+                field.set(val);
+            }
+            return ret;
+         };
+
+        template<typename T, size_t num_rows, size_t step = 1, size_t step_fast = 100>
+        bool inputMatrix(const char* label, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d") {
+            T cStep = T(step);
+            T cStepFast = T(step_fast);
+
+            T mat = field.get<T>();
+            bool ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[0]._v, num_rows, NULL, NULL, format, flags) ||
+                       ImGui::InputScalarN(label, data_type, (void*)mat._vec[1]._v, num_rows, NULL, NULL, format, flags);
+            if (num_rows > 2) {
+                ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[2]._v, num_rows, NULL, NULL, format, flags) || ret;
+                if (num_rows > 3) {
+                    ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[3]._v, num_rows, NULL, NULL, format, flags) || ret;
+                }
+            }
+            if (ret && !field._readOnly) {
+                field.set<>(mat);
+            }
+            return ret;
+        }
+     };
+
      bool PropertyWindow::processBasicField(EditorComponentField& field) {
-         bool isSlider = field._type == EditorComponentFieldType::SLIDER_TYPE;
-         
-         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_CharsDecimal;
-         flags |= field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+         const bool isSlider = field._type == EditorComponentFieldType::SLIDER_TYPE &&
+                               field._basicType != GFX::PushConstantType::BOOL &&
+                               !field.isMatrix();
+
+         const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue |
+                                           ImGuiInputTextFlags_CharsNoBlank |
+                                           ImGuiInputTextFlags_CharsDecimal |
+                                           (field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
 
          const char* name = field._name.c_str();
          ImGui::PushID(name);
+         if (isSlider && field._readOnly) {
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+         }
 
          bool ret = false;
          switch (field._basicType) {
              case GFX::PushConstantType::BOOL: {
-                 ImGui::SameLine();
                  bool val = field.get<bool>();
                  ret = ImGui::Checkbox("", &val);
                  if (ret && !field._readOnly) {
@@ -420,239 +477,99 @@ namespace Divide {
                  }
              }break;
              case GFX::PushConstantType::INT: {
-                 I32 val = field.get<I32>();
-                 ImGui::SameLine();
-                 if (isSlider) {
-                     if (field._readOnly) {
-                         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                     }
-                     ret = ImGui::SliderInt("", &val, to_I32(field._range.min), to_I32(field._range.max));
-                     if (field._readOnly) {
-                         ImGui::PopStyleVar();
-                         ImGui::PopItemFlag();
-                     }
-                 } else {
-                    ret = ImGui::InputInt("", &val, 1, 100, flags);
-                 }
-                 
-                 if (ret && !field._readOnly) {
-                     field.set<I32>(val);
-                 }
+                 ret = inputOrSlider<I32, 1>(isSlider, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UINT: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = inputOrSlider<U32, 1>(isSlider, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::DOUBLE: {
-                 D64 val = field.get<D64>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputDouble("", &val, 0.0, 0.0, "%.6f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<D64>(val);
-                 }
+                 ret = inputOrSlider<D64, 1>(isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::FLOAT: {
-                 F32 val = field.get<F32>();
-                 ImGui::SameLine();
-                 if (isSlider) {
-                     if (field._readOnly) {
-                         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                     }
-                     ret = ImGui::SliderFloat("", &val, field._range.min, field._range.max, "%.2f");
-                     if (field._readOnly) {
-                         ImGui::PopStyleVar();
-                         ImGui::PopItemFlag();
-                     }
-                 } else {
-                    ret = ImGui::InputFloat("", &val, 0.0f, 0.0f, -1, flags);
-                 }
-                 if (ret && !field._readOnly) {
-                     field.set<F32>(val);
-                 }
+                 ret = inputOrSlider<F32, 1>(isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::IVEC2: {
-                 vec2<I32> val = field.get<vec2<I32>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputInt2("", val._v, flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec2<I32>>(val);
-                 }
+                 ret = inputOrSlider<vec2<I32>, 2>(isSlider, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IVEC3: {
-                 vec3<I32> val = field.get<vec3<I32>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputInt3("", val._v, flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec3<I32>>(val);
-                 }
+                 ret = inputOrSlider<vec3<I32>, 3>(isSlider, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IVEC4: {
-                 vec4<I32> val = field.get<vec4<I32>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputInt4("", val._v, flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec4<I32>>(val);
-                 }
+                 ret = inputOrSlider<vec4<I32>, 4>(isSlider, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC2: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = inputOrSlider<vec2<U32>, 2>(isSlider, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC3: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = inputOrSlider<vec3<U32>, 3>(isSlider, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC4: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = inputOrSlider<vec4<U32>, 4>(isSlider, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::VEC2: {
-                 vec2<F32> val = field.get<vec2<F32>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputFloat2("", val._v, "%.3f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec2<F32>>(val);
-                 }
+                 ret = inputOrSlider<vec2<F32>, 2>(isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::VEC3: {
-                 vec3<F32> val = field.get<vec3<F32>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputFloat3("", val._v, "%.3f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec3<F32>>(val);
-                 }
+                 ret = inputOrSlider<vec3<F32>, 3>(isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::VEC4: {
-                 vec4<F32> val = field.get<vec4<F32>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputFloat4("", val._v, "%.3f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec4<F32>>(val);
-                 }
+                 ret = inputOrSlider<vec4<F32>, 4>(isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::DVEC2: {
-                 vec2<D64> val = field.get<vec2<D64>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputDouble2("", val._v, "%.6f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec2<D64>>(val);
-                 }
+                 ret = inputOrSlider<vec2<D64>, 2>(isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DVEC3: {
-                 vec3<D64> val = field.get<vec3<D64>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputDouble3("", val._v, "%.6f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec3<D64>>(val);
-                 }
+                 ret = inputOrSlider<vec3<D64>, 3>(isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DVEC4: {
-                 vec4<D64> val = field.get<vec4<D64>>();
-                 ImGui::SameLine();
-                 ret = ImGui::InputDouble4("", val._v, "%.6f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<vec4<D64>>(val);
-                 }
+                 ret = inputOrSlider<vec4<D64>, 4>(isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::IMAT2: {
-                 mat2<I32> mat = field.get<mat2<I32>>();
-                 ret = ImGui::InputInt2("", mat._vec[0], flags) ||
-                       ImGui::InputInt2("", mat._vec[1], flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat2<I32>>(mat);
-                 }
+                 ret = inputMatrix<mat2<I32>, 2>("", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IMAT3: {
-                 mat3<I32> mat = field.get<mat3<I32>>();
-                 ret = ImGui::InputInt3("", mat._vec[0], flags) ||
-                       ImGui::InputInt3("", mat._vec[1], flags) ||
-                       ImGui::InputInt3("", mat._vec[2], flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat3<I32>>(mat);
-                 }
+                 ret = inputMatrix<mat3<I32>, 3>("", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IMAT4: {
-                 mat4<I32> mat = field.get<mat4<I32>>();
-                 ret = ImGui::InputInt4("", mat._vec[0], flags) ||
-                       ImGui::InputInt4("", mat._vec[1], flags) ||
-                       ImGui::InputInt4("", mat._vec[2], flags) ||
-                       ImGui::InputInt4("", mat._vec[3], flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat4<I32>>(mat);
-                 }
+                 ret = inputMatrix<mat4<I32>, 4>("", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT2: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = inputMatrix<mat2<U32>, 2>("", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT3: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = inputMatrix<mat3<U32>, 3>("", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT4: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = inputMatrix<mat4<U32>, 4>("", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::MAT2: {
-                 mat2<F32> mat = field.get<mat2<F32>>();
-                 ret = ImGui::InputFloat2("", mat._vec[0], "%.3f", flags) ||
-                       ImGui::InputFloat2("", mat._vec[1], "%.3f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat2<F32>>(mat);
-                 }
+                 ret = inputMatrix<mat2<F32>, 2>("", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::MAT3: {
-                 mat3<F32> mat = field.get<mat3<F32>>();
-                 ret = ImGui::InputFloat3("", mat._vec[0], "%.3f", flags) ||
-                       ImGui::InputFloat3("", mat._vec[1], "%.3f", flags) ||
-                       ImGui::InputFloat3("", mat._vec[2], "%.3f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat3<F32>>(mat);
-                 }
+                 ret = inputMatrix<mat3<F32>, 3>("", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::MAT4: {
-                 mat4<F32> mat = field.get<mat4<F32>>();
-                 ret = ImGui::InputFloat4("", mat._vec[0], "%.3f", flags) ||
-                       ImGui::InputFloat4("", mat._vec[1], "%.3f", flags) ||
-                       ImGui::InputFloat4("", mat._vec[2], "%.3f", flags) ||
-                       ImGui::InputFloat4("", mat._vec[3], "%.3f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat4<F32>>(mat);
-                 }
+                 ret = inputMatrix<mat4<F32>, 4>("", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::DMAT2: {
-                 mat2<D64> mat = field.get<mat2<D64>>();
-                 ret = ImGui::InputDouble2("", mat._vec[0], "%.6f", flags) ||
-                       ImGui::InputDouble2("", mat._vec[1], "%.6f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat2<D64>>(mat);
-                 }
+                 ret = inputMatrix<mat2<D64>, 2>("", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DMAT3: {
-                 mat3<D64> mat = field.get<mat3<D64>>();
-                 ret = ImGui::InputDouble3("", mat._vec[0], "%.6f", flags) ||
-                       ImGui::InputDouble3("", mat._vec[1], "%.6f", flags) ||
-                       ImGui::InputDouble3("", mat._vec[2], "%.6f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat3<D64>>(mat);
-                 }
+                 ret = inputMatrix<mat3<D64>, 3>("", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DMAT4: {
-                 mat4<D64> mat = field.get<mat4<D64>>();
-                 ret = ImGui::InputDouble4("", mat._vec[0], "%.6f", flags) ||
-                       ImGui::InputDouble4("", mat._vec[1], "%.6f", flags) ||
-                       ImGui::InputDouble4("", mat._vec[2], "%.6f", flags) ||
-                       ImGui::InputDouble4("", mat._vec[3], "%.6f", flags);
-                 if (ret && !field._readOnly) {
-                     field.set<mat4<D64>>(mat);
-                 }
+                 ret = inputMatrix<mat4<D64>, 4>("", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              default: {
                  ImGui::Text(name);
              }break;
          }
+
+         if (isSlider && field._readOnly) {
+             ImGui::PopStyleVar();
+             ImGui::PopItemFlag();
+         }
+         ImGui::Spacing();
          ImGui::PopID();
 
          return ret;

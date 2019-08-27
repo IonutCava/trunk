@@ -107,6 +107,21 @@ namespace Divide {
                 *static_cast<T*>(_data) = dataIn;
             }
         }
+
+        inline bool isMatrix() const {
+            return _basicType == GFX::PushConstantType::IMAT2 ||
+                   _basicType == GFX::PushConstantType::IMAT3 ||
+                   _basicType == GFX::PushConstantType::IMAT4 ||
+                   _basicType == GFX::PushConstantType::UMAT2 ||
+                   _basicType == GFX::PushConstantType::UMAT3 ||
+                   _basicType == GFX::PushConstantType::UMAT4 ||
+                   _basicType == GFX::PushConstantType::DMAT2 ||
+                   _basicType == GFX::PushConstantType::DMAT3 ||
+                   _basicType == GFX::PushConstantType::DMAT4 ||
+                   _basicType == GFX::PushConstantType::MAT2 ||
+                   _basicType == GFX::PushConstantType::MAT3 ||
+                   _basicType == GFX::PushConstantType::MAT4;
+        }
     };
 
     class EditorComponent : public GUIDWrapper
