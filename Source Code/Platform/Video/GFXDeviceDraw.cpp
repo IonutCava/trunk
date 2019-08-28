@@ -346,8 +346,6 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
                            I32 kernelSize,
                            GFX::CommandBuffer& bufferInOut) const
 {
-    vec2<F32> size;
-    size.set(blurTargetH._rt->getWidth(), blurTargetH._rt->getHeight());
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = get2DStateBlock();
@@ -375,7 +373,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants.set("kernelSize", GFX::PushConstantType::INT, kernelSize);
-    pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, size);
+    pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(blurTargetH._rt->getWidth(), blurTargetH._rt->getHeight()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     GFX::DrawCommand drawCmd = { triangleCmd };
@@ -393,8 +391,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     pipelineCmd._pipeline = newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-    size.set(blurTargetV._rt->getWidth(), blurTargetV._rt->getHeight());
-    pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, size);
+    pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(blurTargetV._rt->getWidth(), blurTargetV._rt->getHeight()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     data = blurTargetH._rt->getAttachment(att, index).texture()->getData();

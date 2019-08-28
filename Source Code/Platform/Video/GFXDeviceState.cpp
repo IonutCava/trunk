@@ -137,12 +137,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // The general purpose render state blocks are both mandatory and must
     // differ from each other at a state hash level
-    assert(_stateDepthOnlyRenderingHash != _state2DRenderingHash &&
-           "GFXDevice error: Invalid default state hash detected!");
-    assert(_state2DRenderingHash != _defaultStateNoDepthHash &&
-           "GFXDevice error: Invalid default state hash detected!");
-    assert(_defaultStateNoDepthHash != _defaultStateBlockHash &&
-           "GFXDevice error: Invalid default state hash detected!");
+    assert(_stateDepthOnlyRenderingHash != _state2DRenderingHash    && "GFXDevice error: Invalid default state hash detected!");
+    assert(_state2DRenderingHash        != _defaultStateNoDepthHash && "GFXDevice error: Invalid default state hash detected!");
+    assert(_defaultStateNoDepthHash     != _defaultStateBlockHash   && "GFXDevice error: Invalid default state hash detected!");
+
     // Activate the default render states
     _api->setStateBlock(_defaultStateBlockHash);
 

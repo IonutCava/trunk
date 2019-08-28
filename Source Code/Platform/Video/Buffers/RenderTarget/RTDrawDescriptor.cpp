@@ -118,15 +118,20 @@ void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U16 layer
     retEntry.push_back(std::make_pair(index, DirtyLayers{ layer }));
 }
 
-std::unordered_set<U16> RTDrawDescriptor::getDirtyLayers(RTAttachmentType type, U8 index) const {
+const std::unordered_set<U16>& RTDrawDescriptor::getDirtyLayers(RTAttachmentType type, U8 index) const {
+    static std::unordered_set<U16> defaultRet = {};
+
     const vectorEASTL<DirtyLayersEntry>& retEntry = _dirtyLayers[to_base(type)];
-    for (const DirtyLayersEntry& entry : retEntry) {
-        if (entry.first == index) {
-            return entry.second;
-        }
+    auto it = eastl::find_if(eastl::cbegin(retEntry),
+                             eastl::cend(retEntry),
+                             [index](const DirtyLayersEntry& entry) {
+                                 return entry.first == index;
+                             });
+    if (it != std::cend(retEntry)) {
+        return it->second;
     }
 
-    return {};
+    return defaultRet;
 }
 
 }; //namespace Divide

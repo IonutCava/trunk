@@ -912,42 +912,6 @@
     <None Include="../../assets\shaders\GLSL\common\nodeDataInput.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
     </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\BRDF.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\lightData.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\materialData.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\shadow_point.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\terrainSplatting.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\texturing.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\utility.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="../../assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
     </None>
@@ -990,9 +954,6 @@
     <None Include="../../assets\shaders\GLSL\SMAA.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\Fxaa3_11.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="../../assets\shaders\GLSL\display.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
@@ -1002,14 +963,8 @@
     <None Include="../../assets\shaders\GLSL\material.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\pbr.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="../../Source Code/Platform\Video\Headers\GFXShaderData.inl">
       <Filter>Video\Headers</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="../../assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
@@ -1038,12 +993,6 @@
     <None Include="../../Source Code\Platform\Headers\PlatformRuntime.inl">
       <Filter>Headers</Filter>
     </None>
-    <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\output.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\vsm.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="..\..\..\assets\shaders\GLSL\tree.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
@@ -1053,14 +1002,8 @@
     <None Include="..\..\..\assets\shaders\GLSL\instanceCullVegetation.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\prePass.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="..\..\..\assets\shaders\GLSL\baseVertexShaders.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
-    <None Include="..\..\..\assets\shaders\GLSL\fragmentAtoms\shadowUtils.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="..\..\..\assets\shaders\GLSL\common\waterData.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
@@ -1076,6 +1019,63 @@
     </None>
     <None Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.inl">
       <Filter>Video\Buffers\RenderTarget\Headers</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\BRDF.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\Fxaa3_11.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\lightData.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\materialData.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\output.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\pbr.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\prePass.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowUtils.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\terrainSplatting.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\utility.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\vsm.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -45,7 +45,8 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
       _statusCheckQueued(false),
       _hasMultisampledColourAttachments(false),
       _framebufferHandle(0),
-      _prevViewport(-1)
+      _prevViewport(-1),
+      _debugMessage(("FBO Begin [ " + name() + " ]").c_str())
 {
     glCreateFramebuffers(1, &_framebufferHandle);
     assert(_framebufferHandle != 0 && "glFramebuffer error: Tried to bind an invalid framebuffer!");
@@ -586,7 +587,7 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
 
 void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     /// Push debug state
-    GL_API::pushDebugMessage(("FBO Begin: " + name()).c_str(), _framebufferHandle);
+    GL_API::pushDebugMessage(_debugMessage, _framebufferHandle);
 
     /// Activate FBO
     GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, _framebufferHandle);

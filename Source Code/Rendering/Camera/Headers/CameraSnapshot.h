@@ -53,9 +53,9 @@ namespace Divide {
                lhs._aspectRatio == rhs._aspectRatio &&
                lhs._zPlanes == rhs._zPlanes &&
                lhs._eye == rhs._eye &&
-               lhs._orientation == rhs._orientation &&
                lhs._viewMatrix == rhs._viewMatrix &&
-               lhs._projectionMatrix == rhs._projectionMatrix;
+               lhs._projectionMatrix == rhs._projectionMatrix &&
+               lhs._orientation == rhs._orientation;
     }
 
     inline bool operator!=(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
@@ -63,9 +63,9 @@ namespace Divide {
                lhs._aspectRatio != rhs._aspectRatio ||
                lhs._zPlanes != rhs._zPlanes ||
                lhs._eye != rhs._eye ||
-               lhs._orientation != rhs._orientation ||
                lhs._viewMatrix != rhs._viewMatrix ||
-               lhs._projectionMatrix != rhs._projectionMatrix;
+               lhs._projectionMatrix != rhs._projectionMatrix ||
+               lhs._orientation != rhs._orientation;
     }
 };
 

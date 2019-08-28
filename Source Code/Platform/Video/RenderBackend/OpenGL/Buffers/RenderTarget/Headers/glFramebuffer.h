@@ -151,24 +151,27 @@ class glFramebuffer : public RenderTarget,
     void queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange);
 
    protected:
-    bool _isLayeredDepth;
-    bool _statusCheckQueued;
-    Rect<I32> _prevViewport;
-    GLuint _framebufferHandle;
-    static bool _zWriteEnabled;
-    glFramebuffer* _parent;
-    glFramebuffer* _resolveBuffer;
     RTDrawDescriptor _previousPolicy;
-
-    bool _activeDepthBuffer;
-
-    bool _hasMultisampledColourAttachments;
 
     std::array<GLenum, MAX_RT_COLOUR_ATTACHMENTS> _targetColourBuffers;
     std::array<GLenum, MAX_RT_COLOUR_ATTACHMENTS> _activeColourBuffers;
 
     hashMap<GLenum, BindingState> _attachmentState;
     hashMap<GLenum, eastl::set<U16, eastl::greater<U16>>> _attachmentResolvedLayers;
+
+    Rect<I32> _prevViewport;
+    const char* _debugMessage;
+    glFramebuffer* _parent;
+    glFramebuffer* _resolveBuffer;
+    GLuint _framebufferHandle;
+
+    bool _isLayeredDepth;
+    bool _statusCheckQueued;
+    bool _activeDepthBuffer;
+    bool _hasMultisampledColourAttachments;
+
+
+    static bool _zWriteEnabled;
 };
 
 namespace Attorney {
