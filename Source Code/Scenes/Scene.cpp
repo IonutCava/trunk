@@ -100,7 +100,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
 
     _loadingTasks.store(0);
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if (!Config::Build::IS_SHIPPING_BUILD) {
         RenderStateBlock primitiveDescriptor;
         _linesPrimitive = _context.gfx().newIMP();
         _linesPrimitive->name("LinesRayPick");
@@ -1290,7 +1290,8 @@ void Scene::processTasks(const U64 deltaTimeUS) {
 }
 
 void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if (!Config::Build::IS_SHIPPING_BUILD)
+    {
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
         if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
@@ -1328,7 +1329,8 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
             }
         }
     }
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if (!Config::Build::IS_SHIPPING_BUILD)
+    {
         bufferInOut.add(_linesPrimitive->toCommandBuffer());
     }
     // Show NavMeshes

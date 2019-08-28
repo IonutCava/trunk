@@ -23,54 +23,53 @@
 <BOUNDS/>
 <RENDERING>
     <Material>
+        <shadingMode>COOK_TORRANCE</shadingMode>
         <colour r="0.5" g="0.5" b="0.5" a="1"/>
         <emissive r="0" g="0" b="0"/>
-        <specular r="0.100000001" g="0.100000001" b="0.100000001"/>
-        <shininess>2</shininess>
+        <metallic>0.200000003</metallic>
+        <reflectivity>0</reflectivity>
+        <roughness>0.800000012</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
-        <shadingMode>BLINN_PHONG</shadingMode>
         <parallaxFactor>1</parallaxFactor>
         <texture>
             <UNIT0>
-                <name>texture.png</name>
-                <path>assets/terrain/Main</path>
-                <flipped>false</flipped>
-                <Map U="CLAMP_TO_EDGE" V="CLAMP_TO_EDGE" W="CLAMP_TO_EDGE"/>
-                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
-                <anisotropy>8</anisotropy>
-            </UNIT0>
-            <UNIT1>
-                <name>terrain_water_caustics.jpg,sandfloor009a.jpg,terrain_detail_NM.png,bruit_gaussien_2.jpg</name>
-                <path>assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images</path>
-                <flipped>true</flipped>
-                <usage>TEX_OP_REPLACE</usage>
-                <Map U="CLAMP_TO_EDGE" V="CLAMP_TO_EDGE" W="CLAMP_TO_EDGE"/>
-                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
-                <anisotropy>8</anisotropy>
-            </UNIT1>
-            <NORMALMAP>
-                <name>common\detail\detailmap_bump.jpg,common\rock\rock1_bump.jpg,common\ground\rocks1_bump.jpg</name>
-                <path>assets/terrain/climates,assets/terrain/climates,assets/terrain/climates,assets/terrain/climates</path>
+                <name>std_grass_steep/Albedo_roughness.png,std_grass/Albedo_roughness.png,std_cliffs/Albedo_roughness.png,std_cliffs_steep/Albedo_roughness.png,std_pebbles/Albedo_roughness.png,std_cliffs_grey/Albedo_roughness.png,std_sand_yellow/Albedo_roughness.png,std_grass_lush/Albedo_roughness.png</name>
+                <path>assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k</path>
                 <flipped>false</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>4</anisotropy>
-            </NORMALMAP>
-            <SPECULAR>
-                <name>normals.png</name>
-                <path>assets/terrain/Main</path>
+            </UNIT0>
+            <UNIT1>
+                <name>std_grass_steep/Normal.jpg,std_grass/Normal.jpg,std_cliffs/Normal.jpg,std_cliffs_steep/Normal.jpg,std_pebbles/Normal.jpg,std_cliffs_grey/Normal.jpg,std_sand_yellow/Normal.jpg,std_grass_lush/Normal.jpg</name>
+                <path>assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k,assets/terrain/climates_05k</path>
+                <flipped>false</flipped>
+                <usage>TEX_OP_REPLACE</usage>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                <anisotropy>4</anisotropy>
+            </UNIT1>
+            <OPACITY>
+                <name>alpha_maps_Alpha1.png,alpha_maps_Alpha2.png</name>
+                <path>assets/terrain/Main,assets/terrain/Main</path>
                 <flipped>false</flipped>
                 <Map U="CLAMP_TO_EDGE" V="CLAMP_TO_EDGE" W="CLAMP_TO_EDGE"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
-                <anisotropy>8</anisotropy>
+                <anisotropy>0</anisotropy>
+            </OPACITY>
+            <SPECULAR>
+                <name>terrain_water_caustics.jpg,sandfloor009a.jpg,terrain_detail_NM.png,bruit_gaussien_2.jpg</name>
+                <path>assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images,assets/misc_images</path>
+                <flipped>true</flipped>
+                <Map U="CLAMP_TO_EDGE" V="CLAMP_TO_EDGE" W="CLAMP_TO_EDGE"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                <anisotropy>0</anisotropy>
             </SPECULAR>
         </texture>
     </Material>
 </RENDERING>
 <NETWORKING/>
 <RIGID_BODY/>
-<TERRAIN>
-    <Tessellation__Range x="4" y="300"/>
-</TERRAIN>
+<TERRAIN/>

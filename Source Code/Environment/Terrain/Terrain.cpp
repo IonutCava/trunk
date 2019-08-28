@@ -257,16 +257,18 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         bool update = tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum;
         if (_initBufferWriteCounter > 0) {
             update = true;
+            //if (renderStagePass._stage == RenderStage::DISPLAY) {
+            //    _context.debugDrawFrustum(&camera.getFrustum());
+            //}
             _initBufferWriteCounter--;
         }
 
         if (update)
         {
-            tessellator->createTree(camera.getEye(), frustum, crtPos, _descriptor->getDimensions(), _descriptor->getTessellationSettings().y);
+            tessellator->createTree(camera.getEye(), crtPos, _descriptor->getDimensions(), _descriptor->getTessellationSettings().y);
             U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
 
-            bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(depth, LoD);
-
+            bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(frustum, depth, LoD);
             _shaderData->writeData(offset, depth, data);
             _shaderDataDirty = true;
         }
@@ -317,6 +319,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);    
     GFX::DrawCommand drawCommand = {cmd};
     pkgInOut.addDrawCommand(drawCommand);
+
 
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

@@ -53,10 +53,6 @@ struct TessellatedTerrainNode {
     vec2<F32> dim = { 0.0f, 0.0f };
     TessellatedTerrainNodeType type = TessellatedTerrainNodeType::ROOT;
 
-    // Tessellation scale
-    // negative x edge (0), positive x edge (1), negative z edge (2), positive z edge (3)
-    vec4<F32> tscale = { 1.0f, 1.0f, 1.0f , 1.0f }; 
-
     TessellatedTerrainNode *p  = nullptr;  // Parent
     TessellatedTerrainNode* c[4] = { nullptr, nullptr, nullptr, nullptr }; // Children
 
@@ -92,10 +88,10 @@ public:
     ~TerrainTessellator();
 
     // Builds a terrain quadtree based on specified parameters and current camera position.
-    void createTree(const vec3<F32>& camPos, const Frustum& frust, const vec3<F32>& origin, const vec2<U16>& terrainDimensions, const F32 patchSizeInMetres);
+    void createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions, const F32 patchSizeInMetres);
 
     // Prepare data to draw the terrain. Returns the final render depth
-    bufferPtr updateAndGetRenderData(U16& renderDepth, U8 LoD);
+    bufferPtr updateAndGetRenderData(const Frustum& frust, U16& renderDepth, U8 LoD);
 
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
@@ -123,7 +119,7 @@ protected:
     TessellatedTerrainNode* createNode(TessellatedTerrainNode* parent, TessellatedTerrainNodeType type, F32 x, F32 y, F32 z, F32 width, F32 height);
 
     // Calculate the tessellation scale factor for a node depending on the neighboring patches.
-    void calcTessScale(TessellatedTerrainNode* node);
+    vec4<F32> calcTessScale(TessellatedTerrainNode* node);
 
     // Traverses the terrain quadtree to draw nodes with no children.
     void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD);

@@ -240,7 +240,7 @@ public:  // Accessors and Mutators
 
     inline GPUState& gpuState() { return _state; }
 
-    inline void debugDrawFrustum(Frustum* frustum) { _debugFrustum = frustum; }
+    inline void debugDrawFrustum(const Frustum* frustum) { _debugFrustum = frustum; }
 
     /// returns the standard state block
     inline size_t getDefaultStateBlock(bool noDepth) const {
@@ -416,7 +416,7 @@ private:
     IMPrimitive     *_axisGizmo;
     vector<Line> _axisLinesTransformed;
 
-    Frustum         *_debugFrustum;
+    const Frustum   *_debugFrustum;
     IMPrimitive     *_debugFrustumPrimitive;
     CameraSnapshot  _activeCameraSnapshot;
 
