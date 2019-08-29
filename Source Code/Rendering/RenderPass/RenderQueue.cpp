@@ -188,26 +188,31 @@ void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePas
 void RenderQueue::sort(RenderStagePass stagePass) {
     // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
     static const U16 threadBias = 64;
-
+    
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
-    Task* sortTask = CreateTask(pool, DELEGATE_CBK<void, Task&>(), "Render queue parent sort task");
+    Task* sortTask = nullptr;
 
     for (RenderBin* renderBin : _renderBins) {
         if (!renderBin->empty(stagePass._stage)) {
             RenderingOrder sortOrder = getSortOrder(stagePass, renderBin->getType());
 
             if (renderBin->getBinSize(stagePass._stage) > threadBias) {
+                if (sortTask == nullptr) {
+                    sortTask = CreateTask(pool, DELEGATE_CBK<void, Task&>(), "Render queue parent sort task");
+                }
                 Start(*CreateTask(pool,
-                           sortTask,
-                            [renderBin, sortOrder, stagePass](const Task& parentTask) {
-                                renderBin->sort(stagePass._stage, sortOrder, parentTask);
-                            },"Render queue sort task"));
+                                   sortTask,
+                                    [renderBin, sortOrder, stagePass](const Task& parentTask) {
+                                        renderBin->sort(stagePass._stage, sortOrder, parentTask);
+                                    },"Render queue sort task"));
             } else {
                 renderBin->sort(stagePass._stage, sortOrder);
             }
         }
     }
-    Wait(Start(*sortTask));
+    if (sortTask != nullptr) {
+        Wait(Start(*sortTask));
+    }
 }
 
 void RenderQueue::refresh(RenderStage stage) {

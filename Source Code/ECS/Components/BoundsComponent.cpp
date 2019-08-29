@@ -59,24 +59,22 @@ void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) {
 }
 
 const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
-    if (_boundingBoxDirty.load()) {
+    bool expected = true;
+    if (_boundingBoxDirty.compare_exchange_strong(expected, false)) {
         UniqueLock w_lock(_bbLock);
 
-        if (_boundingBoxDirty.load()) {
-            _boundingBox.set(_refBoundingBox);
+        _boundingBox.set(_refBoundingBox);
 
-            _parentSGN.forEachChild([this](const SceneGraphNode& child) {
-                _boundingBox.add(child.get<BoundsComponent>()->updateAndGetBoundingBox());
-            });
+        _parentSGN.forEachChild([this](const SceneGraphNode& child) {
+            _boundingBox.add(child.get<BoundsComponent>()->updateAndGetBoundingBox());
+        });
 
-            if (!_ignoreTransform && _tCompCache != nullptr) {
-                _boundingBox.transform(_tCompCache->getWorldMatrix());
-            }
-
-            _boundingSphere.fromBoundingBox(_boundingBox);
-            _parentSGN.SendEvent<BoundsUpdated>(GetOwner(), _parentSGN.getGUID());
-            _boundingBoxDirty.store(false);
+        if (!_ignoreTransform && _tCompCache != nullptr) {
+            _boundingBox.transform(_tCompCache->getWorldMatrix());
         }
+
+        _boundingSphere.fromBoundingBox(_boundingBox);
+        _parentSGN.SendEvent<BoundsUpdated>(GetOwner(), _parentSGN.getGUID());
     }
 
     return _boundingBox;

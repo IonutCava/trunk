@@ -231,9 +231,13 @@ void GFXDevice::drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& 
 }
 
 void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const {
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _displayShader->getGUID();
+    static Pipeline* pipeline = nullptr;
+    if (!pipeline) {
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = get2DStateBlock();
+        pipelineDescriptor._shaderProgramHandle = _displayShader->getGUID();
+        pipeline = newPipeline(pipelineDescriptor);
+    }
 
     GenericDrawCommand triangleCmd;
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
@@ -249,7 +253,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
+    bindPipelineCmd._pipeline = pipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;

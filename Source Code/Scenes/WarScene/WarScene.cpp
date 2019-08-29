@@ -183,7 +183,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
     D64 SunTimer = Time::Milliseconds(33);
     //D64 AnimationTimer1 = Time::SecondsToMilliseconds(5);
     //D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
-    D64 updateLights = Time::Milliseconds(16);
+    D64 updateLights = Time::Milliseconds(32);
 
     if (!_updatedSun && _taskTimers[0] >= SunTimer) {
         g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);
