@@ -60,7 +60,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
 
     const eastl::list<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
+        switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
             case GFX::CommandType::BLIT_RT: {
                 const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.get<GFX::BlitRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
@@ -73,11 +73,22 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
 
                 destination.blitFrom(params);
             } break;
+            case GFX::CommandType::CLEAR_RT: {
+                const GFX::ClearRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ClearRenderTargetCommand>(cmd);
+                RenderTarget& source = renderTargetPool().renderTarget(crtCmd._target);
+                source.clear(crtCmd._descriptor);
+            }break;
             case GFX::CommandType::RESET_RT: {
                 const GFX::ResetRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ResetRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
                 source.setDefaultState(crtCmd._descriptor);
-            }break;
+            } break;
+            case GFX::CommandType::RESET_AND_CLEAR_RT: {
+                const GFX::ResetAndClearRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ResetAndClearRenderTargetCommand>(cmd);
+                RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
+                source.setDefaultState(crtCmd._drawDescriptor);
+                source.clear(crtCmd._clearDescriptor);
+            } break;
             case GFX::CommandType::READ_BUFFER_DATA: {
                 const GFX::ReadBufferDataCommand& crtCmd = commandBuffer.get<GFX::ReadBufferDataCommand>(cmd);
                 if (crtCmd._buffer != nullptr && crtCmd._target != nullptr) {

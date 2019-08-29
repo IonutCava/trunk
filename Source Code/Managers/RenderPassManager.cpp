@@ -496,7 +496,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
 }
 
-bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     // PrePass requires a depth buffer
     bool doPrePass = params._stage != RenderStage::SHADOW &&
                      params._target._usage != RenderTargetUsage::COUNT &&
@@ -508,8 +508,8 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
     GFX::EnqueueCommand(bufferInOut, memCmd);
 
     if (doPrePass) {
-        const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
-        const bool hasLightingTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA));
+        const bool hasNormalsTarget = extraTargets.x;
+        const bool hasLightingTarget = extraTargets.y;
 
         GFX::BeginDebugScopeCommand beginDebugScopeCmd;
         beginDebugScopeCmd._scopeID = 0;
@@ -520,29 +520,20 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         prepareRenderQueues(stagePass, params, nodes, true, bufferInOut);
 
         RTDrawDescriptor normalsAndDepthPolicy = {};
-        normalsAndDepthPolicy.enableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-        normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
         normalsAndDepthPolicy.drawMask().disableAll();
         normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
 
         if (hasLightingTarget) {
-            normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
             normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
         }
-
         if (hasNormalsTarget) {
-            normalsAndDepthPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
             normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
         }
 
         if (params._bindTargets) {
             GFX::BeginRenderPassCommand beginRenderPassCommand;
             beginRenderPassCommand._target = params._target;
-            if (hasNormalsTarget) {
-                beginRenderPassCommand._descriptor = normalsAndDepthPolicy;
-            } else {
-                beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
-            }
+            beginRenderPassCommand._descriptor = normalsAndDepthPolicy;
             beginRenderPassCommand._name = "DO_PRE_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
         }
@@ -563,8 +554,9 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
     return doPrePass;
 }
 
-void RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted) {
+void RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, bool prePassExecuted, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(nodes);
+    ACKNOWLEDGE_UNUSED(extraTargets);
 
     if (params._targetHIZ._usage != RenderTargetUsage::COUNT) {
 
@@ -616,7 +608,7 @@ void RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassPa
     }
 }
 
-void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted) {
+void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, RenderTarget& target, bool prePassExecuted, GFX::CommandBuffer& bufferInOut) {
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = " - MainPass";
@@ -631,27 +623,24 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
     if (params._target._usage != RenderTargetUsage::COUNT) {
         Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, params._target, bufferInOut);
 
-        const bool hasLightingTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA));
+        const bool hasNormalsTarget = extraTargets.x;
+        const bool hasLightingTarget = extraTargets.y;
+
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         if (params._bindTargets) {
-            const bool hasNormalsTarget = target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
-
             // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
-            RTDrawDescriptor drawPolicy =  params._drawPolicy ? *params._drawPolicy
-                                                              : RenderTarget::defaultPolicyNoClear();
-
-            drawPolicy.enableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-            drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
-
-            if (hasLightingTarget) {
-                drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), false);
-                drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), false);
+            RTDrawDescriptor drawPolicy = {};
+            if (params._drawPolicy != nullptr) {
+                drawPolicy = *params._drawPolicy;
+            } else {
+                if (hasLightingTarget) {
+                    drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), false);
+                }
+                if (hasNormalsTarget) {
+                    drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
+                }
             }
-
             if (hasNormalsTarget) {
-                drawPolicy.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
-                drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
-
                 GFX::ResolveRenderTargetCommand resolveCmd = { };
                 resolveCmd._source = params._target;
                 resolveCmd._resolveColour = to_I8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY);
@@ -706,7 +695,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
-void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
     pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getGUID();
@@ -721,6 +710,14 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     if (renderQueueSize(stagePass) > 0) {
+        GFX::ClearRenderTargetCommand clearRTCmd = {};
+        clearRTCmd._target = RenderTargetID(RenderTargetUsage::OIT);
+        // Don't clear our screen target. That would be BAD.
+        clearRTCmd._descriptor.clearColour(to_U8(GFXDevice::ScreenTargets::MODULATE), false);
+        // Don't clear and don't write to depth buffer
+        clearRTCmd._descriptor.clearDepth(false);
+        GFX::EnqueueCommand(bufferInOut, clearRTCmd);
+
         // Step1: Draw translucent items into the accumulation and revealage buffers
         GFX::BeginRenderPassCommand beginRenderPassOitCmd;
         beginRenderPassOitCmd._name = "DO_OIT_PASS_1";
@@ -745,11 +742,6 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
             state2._blendProperties._blendOp = BlendOperation::ADD;*/
         }
 
-        // Don't clear our screen target. That would be BAD.
-        beginRenderPassOitCmd._descriptor.clearColour(to_U8(GFXDevice::ScreenTargets::MODULATE), false);
-
-        // Don't clear and don't write to depth buffer
-        beginRenderPassOitCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
         beginRenderPassOitCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
         GFX::EnqueueCommand(bufferInOut, beginRenderPassOitCmd);
 
@@ -772,8 +764,6 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         GFX::BeginRenderPassCommand beginRenderPassCompCmd;
         beginRenderPassCompCmd._name = "DO_OIT_PASS_2";
         beginRenderPassCompCmd._target = params._target;
-        beginRenderPassCompCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        beginRenderPassCompCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
         beginRenderPassCompCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
         {
             RTBlendState& state0 = beginRenderPassCompCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::ALBEDO));
@@ -835,6 +825,30 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
 
+    vec2<bool> extraTargets = {
+        target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)),
+        target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA))
+    };
+
+    RTClearDescriptor clearDescriptor = {};
+    if (params._clearDescriptor != nullptr) {
+        clearDescriptor = *params._clearDescriptor;
+    } else {
+        clearDescriptor.clearColours(true);
+        clearDescriptor.clearDepth(true);
+        clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
+        if (extraTargets.x) {
+            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+        }
+        if (extraTargets.y) {
+            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+        }
+    }
+    GFX::ClearRenderTargetCommand clearMainTarget = {};
+    clearMainTarget._target = params._target;
+    clearMainTarget._descriptor = clearDescriptor;
+    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 0;
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s )", TypeUtil::renderStageToString(params._stage)).c_str();
@@ -844,18 +858,18 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
-    bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
-    occlusionPass(visibleNodes, params, target, bufferInOut, prePassExecuted);
-    mainPass(visibleNodes, params, target, bufferInOut, prePassExecuted);
+    bool prePassExecuted = prePass(visibleNodes, params, extraTargets, target, bufferInOut);
+    occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
+    mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
 
     if (params._stage != RenderStage::SHADOW) {
 
-        GFX::ResolveRenderTargetCommand resolveCmd = { };
+        GFX::ResolveRenderTargetCommand resolveCmd = {};
         resolveCmd._source = params._target;
         resolveCmd._resolveColours = true;
         GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
-        woitPass(visibleNodes, params, target, bufferInOut);
+        woitPass(visibleNodes, params, extraTargets, target, bufferInOut);
     }
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;

@@ -132,12 +132,6 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
    public:
     virtual ~RenderTarget();
 
-    static const RTDrawDescriptor& defaultPolicy();
-    static const RTDrawDescriptor& defaultPolicyKeepColour();
-    static const RTDrawDescriptor& defaultPolicyKeepDepth();
-    static const RTDrawDescriptor& defaultPolicyDepthOnly();
-    static const RTDrawDescriptor& defaultPolicyNoClear();
-
     /// Init all attachments. Returns false if already called
     virtual bool create();
     virtual void destroy();
@@ -150,6 +144,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true);
     virtual U8 getAttachmentCount(RTAttachmentType type) const;
 
+    virtual void clear(const RTClearDescriptor& descriptor) = 0;
     virtual void setDefaultState(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
     virtual void blitFrom(const RTBlitParams& params) = 0;

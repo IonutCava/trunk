@@ -7,63 +7,6 @@
 
 namespace Divide {
 
-const RTDrawDescriptor& RenderTarget::defaultPolicy() {
-    static RTDrawDescriptor s_policyDefault;
-
-    return s_policyDefault;
-}
-
-const RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
-    static RTDrawDescriptor s_policyKeepDepth;
-    static bool s_policyInitialised = false;
-
-    if (!s_policyInitialised) {
-        s_policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        s_policyInitialised = true;
-    }
-
-    return s_policyKeepDepth;
-}
-
-const RTDrawDescriptor& RenderTarget::defaultPolicyKeepColour() {
-    static RTDrawDescriptor s_policyKeepColour;
-    static bool s_policyInitialised = false;
-
-    if (!s_policyInitialised) {
-        s_policyKeepColour.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-        s_policyInitialised = true;
-    }
-
-    return s_policyKeepColour;
-}
-
-const RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
-    static RTDrawDescriptor s_policyDepthOnly;
-    static bool s_policyInitialised = false;
-
-    if (!s_policyInitialised) {
-        s_policyDepthOnly.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-        s_policyDepthOnly.drawMask().disableAll();
-        s_policyDepthOnly.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
-        s_policyInitialised = true;
-    }
-
-    return s_policyDepthOnly;
-}
-
-const RTDrawDescriptor& RenderTarget::defaultPolicyNoClear() {
-    static RTDrawDescriptor s_policyNoClear;
-    static bool s_policyInitialised = false;
-
-    if (!s_policyInitialised) {
-        s_policyNoClear.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-        s_policyNoClear.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        s_policyInitialised = true;
-    }
-
-    return s_policyNoClear;
-}
-
 RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)
     : GraphicsResource(context, GraphicsResource::Type::RENDER_TARGET, getGUID(), _ID(descriptor._name.c_str())),
      _descriptor(descriptor),

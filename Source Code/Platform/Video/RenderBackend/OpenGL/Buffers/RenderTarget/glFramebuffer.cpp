@@ -46,7 +46,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
       _hasMultisampledColourAttachments(false),
       _framebufferHandle(0),
       _prevViewport(-1),
-      _debugMessage(("FBO Begin [ " + name() + " ]").c_str())
+      _debugMessage(("FBO Begin [ " + name() + " ]"))
 {
     glCreateFramebuffers(1, &_framebufferHandle);
     assert(_framebufferHandle != 0 && "glFramebuffer error: Tried to bind an invalid framebuffer!");
@@ -63,7 +63,6 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
 
     // Everything disabled so that the initial "begin" will override this
     _previousPolicy.drawMask().disableAll();
-    _previousPolicy.stateMask(0);
 
     _targetColourBuffers.fill(GL_NONE);
     _activeColourBuffers.fill(GL_NONE);
@@ -137,7 +136,8 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentS
 
     GLenum binding = static_cast<GLenum>(attachment.binding());
 
-    if (attachment.texture(false)->getNumLayers() == 1) {
+    const Texture_ptr& tex = attachment.texture(false);
+    if (tex->getNumLayers() == 1) {
         layeredRendering = false;
     }
 
@@ -152,7 +152,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentS
             return;
         }
 
-        GLuint handle = attachment.texture(false)->getData().textureHandle();
+        const GLuint handle = tex->getData().textureHandle();
         if (layeredRendering) {
             glNamedFramebufferTextureLayer(_framebufferHandle, binding, handle, bState._writeLevel, bState._writeLayer);
         } else {
@@ -209,10 +209,7 @@ bool glFramebuffer::create() {
         }
     }
 
-    RTDrawDescriptor defaultDescriptor = RenderTarget::defaultPolicy();
-    defaultDescriptor.clearExternalColour(false);
-    defaultDescriptor.clearExternalDepth(false);
-    setDefaultState(defaultDescriptor);
+    setDefaultState(RTDrawDescriptor());
 
     return checkStatus();
 }
@@ -564,6 +561,14 @@ void glFramebuffer::toggleAttachments() {
     }
 }
 
+void glFramebuffer::clear(const RTClearDescriptor& descriptor) {
+    toggleAttachments();
+    const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
+    prepareBuffers({}, colourAttachments);
+    /// Clear the draw buffers
+    clear(descriptor, colourAttachments);
+}
+
 void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
     toggleAttachments();
 
@@ -578,22 +583,19 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
     /// Set the blend states
     setBlendState(drawPolicy, colourAttachments);
 
-    /// Clear the draw buffers
-    clear(drawPolicy, colourAttachments);
-
     /// Check that everything is valid
     checkStatus();
 }
 
 void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     /// Push debug state
-    GL_API::pushDebugMessage(_debugMessage, _framebufferHandle);
+    GL_API::pushDebugMessage(_debugMessage.c_str(), _framebufferHandle);
 
     /// Activate FBO
     GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, _framebufferHandle);
 
     /// Set the viewport
-    if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
+    if (drawPolicy.setViewport()) {
         _prevViewport.set(_context.getViewport());
         _context.setViewport(0, 0, to_I32(getWidth()), to_I32(getHeight()));
     }
@@ -626,7 +628,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
 void glFramebuffer::end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth) {
     GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, 0);
-    if (_previousPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
+    if (_previousPolicy.setViewport()) {
         _context.setViewport(_prevViewport);
     }
 
@@ -661,8 +663,8 @@ void glFramebuffer::queueMipMapRecomputation(const RTAttachment& attachment, con
     }
 }
 
-void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const {
-    if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS) && hasColour()) {
+void glFramebuffer::clear(const RTClearDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const {
+    if (drawPolicy.clearColours() && hasColour()) {
         for (const RTAttachment_ptr& att : activeAttachments) {
             U32 binding = att->binding();
             if (static_cast<GLenum>(binding) != GL_NONE) {
@@ -696,7 +698,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const RTAttachment
         }
     }
 
-    if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER) && hasDepth()) {
+    if (drawPolicy.clearDepth() && hasDepth()) {
         if (drawPolicy.clearExternalDepth() && _attachmentPool->get(RTAttachmentType::Depth, 0)->isExternal()) {
             return;
         }

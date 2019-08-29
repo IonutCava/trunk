@@ -225,10 +225,12 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
 }
 
 void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
-    GFX::ResetRenderTargetCommand resetRenderTargetCommand;
+    GFX::ResetAndClearRenderTargetCommand resetRenderTargetCommand;
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         resetRenderTargetCommand._source = RenderTargetID(RenderTargetUsage::SHADOW, i);
-        resetRenderTargetCommand._descriptor = RenderTarget::defaultPolicy();
+        resetRenderTargetCommand._clearDescriptor = {};
+        resetRenderTargetCommand._drawDescriptor = {};
+
         GFX::EnqueueCommand(bufferInOut, resetRenderTargetCommand);
     }
 }

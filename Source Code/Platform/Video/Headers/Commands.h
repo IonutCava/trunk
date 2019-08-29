@@ -77,17 +77,20 @@ struct CmdAllocator {
     }
 };
 
+#define TO_STR(arg) #arg
+
 #define DEFINE_POOL(Command) \
 decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex; \
 decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool; \
 
 #define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> { \
-typedef Command<Name, Enum> Base;
+typedef Command<Name, Enum> Base; \
+inline const char* commandName() const override { return TO_STR(Enum); }
 
 #define END_COMMAND(Name) \
 }
 
-BETTER_ENUM(CommandType, U8,
+enum class CommandType : U8 {
     BEGIN_RENDER_PASS,
     END_RENDER_PASS,
     BEGIN_PIXEL_BUFFER,
@@ -97,8 +100,10 @@ BETTER_ENUM(CommandType, U8,
     SET_VIEWPORT,
     SET_SCISSOR,
     SET_BLEND,
-    BLIT_RT,
+    CLEAR_RT,
     RESET_RT,
+    RESET_AND_CLEAR_RT,
+    BLIT_RT,
     RESOLVE_RT,
     COPY_TEXTURE,
     COMPUTE_MIPMAPS,
@@ -119,7 +124,7 @@ BETTER_ENUM(CommandType, U8,
     SWITCH_WINDOW,
     EXTERNAL,
     COUNT
-);
+};
 
 class CommandBuffer;
 
@@ -127,9 +132,10 @@ struct CommandBase
 {
     virtual void addToBuffer(CommandBuffer& buffer) const = 0;
     virtual stringImpl toString(U16 indent) const = 0;
+    virtual const char* commandName() const = 0;
 };
 
-template<typename T, CommandType::_enumerated EnumVal>
+template<typename T, CommandType EnumVal>
 struct Command : public CommandBase {
     inline void addToBuffer(CommandBuffer& buffer) const override {
         buffer.add(reinterpret_cast<const T&>(*this));
@@ -137,10 +143,10 @@ struct Command : public CommandBase {
 
     virtual stringImpl toString(U16 indent) const {
         ACKNOWLEDGE_UNUSED(indent);
-        return stringImpl(CommandType::_from_integral(to_base(EType))._to_string());
+        return stringImpl(commandName());
     }
 
-    static const CommandType::_enumerated EType = EnumVal;
+    static const CommandType EType = EnumVal;
 };
 
 BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);
@@ -225,10 +231,21 @@ BEGIN_COMMAND(BlitRenderTargetCommand, CommandType::BLIT_RT);
     RenderTargetID _destination;
 END_COMMAND(BlitRenderTargetCommand);
 
+BEGIN_COMMAND(ClearRenderTargetCommand, CommandType::CLEAR_RT);
+    RenderTargetID _target;
+    RTClearDescriptor _descriptor;
+END_COMMAND(ClearRenderTargetCommand);
+
 BEGIN_COMMAND(ResetRenderTargetCommand, CommandType::RESET_RT);
     RenderTargetID _source;
     RTDrawDescriptor _descriptor;
 END_COMMAND(ResetRenderTargetCommand);
+
+BEGIN_COMMAND(ResetAndClearRenderTargetCommand, CommandType::RESET_AND_CLEAR_RT);
+    RenderTargetID _source;
+    RTDrawDescriptor _drawDescriptor;
+    RTClearDescriptor _clearDescriptor;
+END_COMMAND(ResetAndClearRenderTargetCommand);
 
 BEGIN_COMMAND(ResolveRenderTargetCommand, CommandType::RESOLVE_RT);
     RenderTargetID _source;

@@ -58,14 +58,12 @@ inline bool RTBlendState::operator!=(const RTBlendState& other) const {
 }
 
 inline bool RTDrawDescriptor::operator==(const RTDrawDescriptor& other) const {
-    return _stateMask == other._stateMask &&
-           _drawMask == other._drawMask &&
+    return _drawMask == other._drawMask &&
            _blendStates == other._blendStates;
 }
 
 inline bool RTDrawDescriptor::operator!=(const RTDrawDescriptor& other) const {
-    return _stateMask != other._stateMask ||
-           _drawMask != other._drawMask ||
+    return _drawMask != other._drawMask ||
            _blendStates != other._blendStates;
 }
 }; //namespace Divide

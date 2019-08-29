@@ -8,6 +8,7 @@ RTDrawMask::RTDrawMask()
     : _disabledDepth(false),
       _disabledStencil(false)
 {
+    _disabledColours.fill(false);
 }
 
 bool RTDrawMask::isEnabled(RTAttachmentType type) const {
@@ -35,7 +36,7 @@ bool RTDrawMask::isEnabled(RTAttachmentType type, U8 index) const {
         return !_disabledColours[index];
     }
      
-    return isEnabled(type);;
+    return isEnabled(type);
 }
 
 void RTDrawMask::setEnabled(RTAttachmentType type, U8 index, const bool state) {
@@ -59,52 +60,19 @@ void RTDrawMask::disableAll() {
     _disabledColours.fill(true);
 }
 
-RTDrawDescriptor::RTDrawDescriptor()
-    : _stateMask(0)
+RTClearDescriptor::RTClearDescriptor()
+    : _clearDepth(true),
+      _clearColours(true)
 {
-    enableState(State::CLEAR_COLOUR_BUFFERS);
-    enableState(State::CLEAR_DEPTH_BUFFER);
-    enableState(State::CHANGE_VIEWPORT);
-
-    _drawMask.enableAll();
     _clearColourAttachment.fill(true);
-
     _clearExternalColour = false;
     _clearExternalDepth = false;
 }
 
-void RTDrawDescriptor::stateMask(U32 stateMask) {
-    if (Config::Build::IS_DEBUG_BUILD) {
-        auto validateMask = [stateMask]() -> U32 {
-            U32 validMask = 0;
-            for (U32 stateIt = 1; stateIt <= to_base(State::COUNT); ++stateIt) {
-                U32 bitState = toBit(stateIt);
-                if (BitCompare(stateMask, bitState)) {
-                    SetBit(validMask, bitState);
-                }
-            }
-            return validMask;
-        };
-        
-        U32 parsedMask = validateMask();
-        DIVIDE_ASSERT(parsedMask == stateMask,
-                      "RTDrawDescriptor::stateMask error: Invalid state specified!");
-        _stateMask = parsedMask;
-    } else {
-        _stateMask = stateMask;
-    }
-}
-
-void RTDrawDescriptor::enableState(State state) {
-    SetBit(_stateMask, to_U32(state));
-}
-
-void RTDrawDescriptor::disableState(State state) {
-    ClearBit(_stateMask, to_U32(state));
-}
-
-bool RTDrawDescriptor::isEnabledState(State state) const {
-    return BitCompare(_stateMask, to_U32(state));
+RTDrawDescriptor::RTDrawDescriptor()
+    : _setViewport(true)
+{
+    _drawMask.enableAll();
 }
 
 void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U16 layer) {

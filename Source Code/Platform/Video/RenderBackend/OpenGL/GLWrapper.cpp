@@ -1084,7 +1084,7 @@ namespace {
 };
 
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
-    switch (static_cast<GFX::CommandType::_enumerated>(entry._typeIndex)) {
+    switch (static_cast<GFX::CommandType>(entry._typeIndex)) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
             const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.get<GFX::BeginRenderPassCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));

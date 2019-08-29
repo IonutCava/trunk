@@ -140,7 +140,7 @@ inline bool CommandBuffer::empty() const {
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, DrawCommand* prevCommand, DrawCommand* crtCommand, bool& partial) const {
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawCommand* prevCommand, DrawCommand* crtCommand, bool& partial) const {
     ACKNOWLEDGE_UNUSED(type);
 
     vectorEASTLFast<GenericDrawCommand>& commands = prevCommand->_drawCommands;
@@ -162,21 +162,21 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, 
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand, bool& partial) const {
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand, bool& partial) const {
     ACKNOWLEDGE_UNUSED(type);
 
     return Merge(prevCommand->_set, crtCommand->_set, partial);
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand, bool& partial) const {
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand, bool& partial) const {
     ACKNOWLEDGE_UNUSED(type);
 
     return Merge(prevCommand->_constants, crtCommand->_constants, partial);
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, DrawTextCommand* prevCommand, DrawTextCommand* crtCommand, bool& partial) const {
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawTextCommand* prevCommand, DrawTextCommand* crtCommand, bool& partial) const {
     ACKNOWLEDGE_UNUSED(type);
 
     partial = false;
@@ -187,7 +187,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, 
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, SetScissorCommand* prevCommand, SetScissorCommand* crtCommand, bool& partial) const {
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SetScissorCommand* prevCommand, SetScissorCommand* crtCommand, bool& partial) const {
     ACKNOWLEDGE_UNUSED(type);
 
     partial = false;
@@ -195,7 +195,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, 
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, SetViewportCommand* prevCommand, SetViewportCommand* crtCommand, bool& partial) const {
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SetViewportCommand* prevCommand, SetViewportCommand* crtCommand, bool& partial) const {
     ACKNOWLEDGE_UNUSED(type);
 
     partial = false;
@@ -203,7 +203,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, 
 }
 
 template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, BindPipelineCommand* prevCommand, BindPipelineCommand* crtCommand, bool& partial) const {
+inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, BindPipelineCommand* prevCommand, BindPipelineCommand* crtCommand, bool& partial) const {
     ACKNOWLEDGE_UNUSED(type);
 
     partial = false;
@@ -212,7 +212,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, 
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
-CommandBuffer::tryMergeCommands(GFX::CommandType::_enumerated type, T* prevCommand, T* crtCommand, bool& partial) const {
+CommandBuffer::tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand, bool& partial) const {
     assert(prevCommand != nullptr && crtCommand != nullptr);
     switch (type) {
         case GFX::CommandType::DRAW_COMMANDS:

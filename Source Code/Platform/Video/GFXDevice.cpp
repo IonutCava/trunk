@@ -544,9 +544,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
     RTDrawDescriptor depthOnlyTarget;
-    depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-    depthOnlyTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-    depthOnlyTarget.disableState(RTDrawDescriptor::State::CHANGE_VIEWPORT);
+    depthOnlyTarget.setViewport(false);
     depthOnlyTarget.drawMask().disableAll();
     depthOnlyTarget.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
 

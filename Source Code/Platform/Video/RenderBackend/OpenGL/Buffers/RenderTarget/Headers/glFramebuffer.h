@@ -115,7 +115,6 @@ class glFramebuffer : public RenderTarget,
 
     void setBlendState(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments);
     void prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments);
-    void clear(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const;
 
     void initAttachment(RTAttachmentType type, U8 index);
 
@@ -128,6 +127,7 @@ class glFramebuffer : public RenderTarget,
     void setAttachmentState(GLenum binding, BindingState state);
     BindingState getAttachmentState(GLenum binding) const;
 
+    void clear(const RTClearDescriptor& descriptor) override;
     void setDefaultState(const RTDrawDescriptor& drawPolicy) override;
 
     void toggleAttachments();
@@ -145,6 +145,7 @@ class glFramebuffer : public RenderTarget,
     RTAttachment* getAttachmentInternal(RTAttachmentType type, U8 index);
     RTAttachmentPool::PoolEntry& getAttachmentInternal(RTAttachmentType type);
 
+    void clear(const RTClearDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const;
     void begin(const RTDrawDescriptor& drawPolicy);
     void end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth);
     void queueMipMapRecomputation();
@@ -160,7 +161,7 @@ class glFramebuffer : public RenderTarget,
     hashMap<GLenum, eastl::set<U16, eastl::greater<U16>>> _attachmentResolvedLayers;
 
     Rect<I32> _prevViewport;
-    const char* _debugMessage;
+    stringImpl _debugMessage;
     glFramebuffer* _parent;
     glFramebuffer* _resolveBuffer;
     GLuint _framebufferHandle;

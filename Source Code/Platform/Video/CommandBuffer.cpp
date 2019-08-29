@@ -19,7 +19,9 @@ DEFINE_POOL(EndPixelBufferCommand);
 DEFINE_POOL(BeginRenderSubPassCommand);
 DEFINE_POOL(EndRenderSubPassCommand);
 DEFINE_POOL(BlitRenderTargetCommand);
+DEFINE_POOL(ClearRenderTargetCommand);
 DEFINE_POOL(ResetRenderTargetCommand);
+DEFINE_POOL(ResetAndClearRenderTargetCommand);
 DEFINE_POOL(ResolveRenderTargetCommand);
 DEFINE_POOL(CopyTextureCommand);
 DEFINE_POOL(ComputeMipMapsCommand);
@@ -66,7 +68,7 @@ void CommandBuffer::batch() {
 
             const CommandEntry& cmd = *it;
 
-            auto type = static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex);
+            auto type = static_cast<GFX::CommandType>(cmd._typeIndex);
             CommandBase& crtCommand = get<CommandBase>(cmd);
             CommandBase*& prevCommand = prevCommands[to_U16(type)];
 
@@ -94,15 +96,16 @@ void CommandBuffer::batch() {
             break;
         }
 
-        switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
+        switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
-                // We may just wish to clear the RT
+                // We may just wish to clear some state
                 const BeginRenderPassCommand& crtCmd = get<BeginRenderPassCommand>(cmd);
-                if (crtCmd._descriptor.stateMask() != 0) {
+                if (crtCmd._descriptor.setViewport() != 0) {
                     hasWork = true;
                     break;
                 }
             } break;
+            case GFX::CommandType::CLEAR_RT:
             case GFX::CommandType::READ_BUFFER_DATA:
             case GFX::CommandType::CLEAR_BUFFER_DATA:
             case GFX::CommandType::DISPATCH_COMPUTE:
@@ -156,7 +159,7 @@ void CommandBuffer::clean() {
         skip = false;
         CommandEntry cmd = *it;
 
-        switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
+        switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
             case CommandType::DRAW_COMMANDS :
             {
                 vectorEASTLFast<GenericDrawCommand>& cmds = get<DrawCommand>(cmd)._drawCommands;
@@ -237,9 +240,9 @@ void CommandBuffer::clean() {
     auto entry = eastl::begin(_commandOrder); ++entry;
     for (; entry != eastl::cend(_commandOrder);) {
         auto prev = eastl::prev(entry);
-        GFX::CommandType type = static_cast<GFX::CommandType::_enumerated>(entry->_typeIndex);
+        GFX::CommandType type = static_cast<GFX::CommandType>(entry->_typeIndex);
 
-        if (prev->_typeIndex == type && type._value == CommandType::BIND_PIPELINE) {
+        if (prev->_typeIndex == to_base(type) && type == CommandType::BIND_PIPELINE) {
             entry = _commandOrder.erase(entry);
             --_commandCount[entry->_typeIndex];
         } else {
@@ -259,7 +262,7 @@ bool CommandBuffer::validate() const {
         U32 pushedDebugScope = 0;
 
         for (const CommandEntry& cmd : _commandOrder) {
-            switch (static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex)) {
+            switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
                 case GFX::CommandType::BEGIN_RENDER_PASS: {
                     if (pushedPass) {
                         return false;
@@ -401,7 +404,7 @@ bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& comma
     return startSize - commands.size() > 0;
 }
 
-void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType::_enumerated type, I32& crtIndent, stringImpl& out) const {
+void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out) const {
     auto append = [](stringImpl& target, const stringImpl& text, I32 indent) {
         for (I32 i = 0; i < indent; ++i) {
             target.append("    ");
@@ -434,7 +437,7 @@ stringImpl CommandBuffer::toString() const {
     I32 crtIndent = 0;
     stringImpl out = "\n\n\n\n";
     for (const CommandEntry& cmd : _commandOrder) {
-        toString(get<CommandBase>(cmd), static_cast<GFX::CommandType::_enumerated>(cmd._typeIndex), crtIndent, out);
+        toString(get<CommandBase>(cmd), static_cast<GFX::CommandType>(cmd._typeIndex), crtIndent, out);
         out.append("\n");
     }
     out.append("\n\n\n\n");

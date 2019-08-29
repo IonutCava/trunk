@@ -12,8 +12,6 @@ PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent,
       _operatorType(operatorType)
 {
     ACKNOWLEDGE_UNUSED(cache);
-    _screenOnlyDraw.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-    _screenOnlyDraw.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
     _screenOnlyDraw.drawMask().disableAll();
     _screenOnlyDraw.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 }

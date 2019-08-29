@@ -59,6 +59,7 @@ public:
         // safe to be set to null
         const SceneGraphNode* _sourceNode = nullptr;
         const RTDrawDescriptor* _drawPolicy = nullptr;
+        const RTClearDescriptor* _clearDescriptor = nullptr;
         Camera* _camera = nullptr;
         FrustumClipPlanes _clippingPlanes = {};
         RenderTargetID _target = {};
@@ -104,10 +105,29 @@ public:
 
 private:
     // Returns false if we skipped the pre-pass step
-    bool prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
-    void occlusionPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted);
-    void mainPass(const VisibleNodeList& nodes, const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut, bool prePassExecuted);
-    void woitPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    bool prePass(const VisibleNodeList& nodes,
+                 const PassParams& params,
+                 vec2<bool> extraTargets, 
+                 const RenderTarget& target,
+                 GFX::CommandBuffer& bufferInOut);
+    void occlusionPass(const VisibleNodeList& nodes,
+                       const PassParams& params,
+                       vec2<bool> extraTargets, 
+                       const RenderTarget& target,
+                       bool prePassExecuted,
+                       GFX::CommandBuffer& bufferInOut);
+    void mainPass(const VisibleNodeList& nodes,
+                  const PassParams& params,
+                  vec2<bool> extraTargets,
+                  RenderTarget& target,
+                  bool prePassExecuted,
+                  GFX::CommandBuffer& bufferInOut);
+
+    void woitPass(const VisibleNodeList& nodes,
+                  const PassParams& params,
+                  vec2<bool> extraTargets,
+                  const RenderTarget& target,
+                  GFX::CommandBuffer& bufferInOut);
 
     RenderPass& getPassForStage(RenderStage renderStage);
     const RenderPass& getPassForStage(RenderStage renderStage) const;

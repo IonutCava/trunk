@@ -69,38 +69,46 @@ struct RTBlendState {
     inline bool operator!=(const RTBlendState& other) const;
 };
 
-class RTDrawDescriptor {
-  public: 
-    enum class State : U8 {
-        CLEAR_COLOUR_BUFFERS = toBit(1),
-        CLEAR_DEPTH_BUFFER = toBit(2),
-        CHANGE_VIEWPORT = toBit(3),
-        COUNT = 3
-    };
-
-  public:
-    RTDrawDescriptor();
-
-    void stateMask(U32 stateMask);
-    void enableState(State state);
-    void disableState(State state);
-    bool isEnabledState(State state) const;
-
-    inline RTDrawMask& drawMask() { return _drawMask; }
-    inline const RTDrawMask& drawMask() const { return _drawMask; }
-    inline U32 stateMask() const { return _stateMask; }
-
-    inline RTBlendState& blendState(U8 index) { return _blendStates[index]; }
-    inline const RTBlendState& blendState(U8 index) const{ return _blendStates[index]; }
+class RTClearDescriptor {
+public:
+    RTClearDescriptor();
 
     inline void clearColour(U8 index, const bool state) { _clearColourAttachment[index] = state; }
     inline bool clearColour(U8 index) const { return _clearColourAttachment[index]; }
+
+    void clearColours(bool state) { _clearColours = state; }
+    bool clearColours() const { return _clearColours; }
+
+    void clearDepth(bool state) { _clearDepth = state; }
+    bool clearDepth() const { return _clearDepth; }
 
     void clearExternalColour(bool state) { _clearExternalColour = state; }
     bool clearExternalColour() const { return _clearExternalColour; }
 
     void clearExternalDepth(bool state) { _clearExternalDepth = state; }
     bool clearExternalDepth() const { return _clearExternalDepth; }
+
+protected:
+    std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _clearColourAttachment;
+    bool _clearDepth = true;
+    bool _clearColours = true;
+    bool _clearExternalColour = false;
+    bool _clearExternalDepth = false;
+};
+
+class RTDrawDescriptor {
+  public: 
+  public:
+    RTDrawDescriptor();
+
+    inline bool setViewport() const { return _setViewport; }
+    inline void setViewport(const bool state) { _setViewport = state; }
+
+    inline RTDrawMask& drawMask() { return _drawMask; }
+    inline const RTDrawMask& drawMask() const { return _drawMask; }
+
+    inline RTBlendState& blendState(U8 index) { return _blendStates[index]; }
+    inline const RTBlendState& blendState(U8 index) const{ return _blendStates[index]; }
 
     void markDirtyLayer(RTAttachmentType type, U8 index, U16 layer);
     const std::unordered_set<U16>& getDirtyLayers(RTAttachmentType type, U8 index = 0) const;
@@ -116,10 +124,7 @@ class RTDrawDescriptor {
     RTDrawMask _drawMask;
     std::array<vectorEASTL<DirtyLayersEntry>, to_base(RTAttachmentType::COUNT)> _dirtyLayers;
     std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;
-    std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _clearColourAttachment;
-    U32 _stateMask = 0;
-    bool _clearExternalColour = false;
-    bool _clearExternalDepth = false;
+    bool _setViewport;
 };
 
 }; //namespace Divide

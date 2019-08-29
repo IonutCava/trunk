@@ -168,7 +168,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = params._target;
     beginRenderPassCmd._name = "DO_CSM_PASS";
-    beginRenderPassCmd._descriptor = RenderTarget::defaultPolicy();
+    beginRenderPassCmd._descriptor = {};
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::EndRenderSubPassCommand endRenderSubPassCommand = {};
@@ -401,7 +401,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         beginRenderPassCmd._target = depthMapID;
-        beginRenderPassCmd._descriptor = RenderTarget::defaultPolicyNoClear();
+        beginRenderPassCmd._descriptor = {};
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_VERTICAL";
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 

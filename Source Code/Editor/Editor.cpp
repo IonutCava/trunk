@@ -719,10 +719,17 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     GFX::EnqueueCommand(buffer, beginDebugScopeCmd);
 
     if (overlayOnScene) {
+        RTClearDescriptor clearTarget = {};
+        clearTarget.clearDepth(false);
+        clearTarget.clearColours(false);
+
+        GFX::ClearRenderTargetCommand clearRenderTargetCmd = {};
+        clearRenderTargetCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
+        clearRenderTargetCmd._descriptor = clearTarget;
+        GFX::EnqueueCommand(buffer, clearRenderTargetCmd);
+
         // Draw the gizmos and overlayed graphics to the main render target but don't clear anything
         RTDrawDescriptor screenTarget = {};
-        screenTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        screenTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
         screenTarget.drawMask().disableAll();
         screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
