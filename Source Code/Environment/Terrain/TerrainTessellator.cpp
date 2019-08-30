@@ -222,23 +222,23 @@ vec4<F32> TerrainTessellator::calcTessScale(TessellatedTerrainNode* node) {
     // Positive Y (north)
     t = find(data, node->origin.x, node->origin.z + 1 + node->dim.width * 0.5f, found);
     ret[3] = found ? (t->dim.width / node->dim.width) : 1.0f;
-    assert(!found || IS_IN_RANGE_INCLUSIVE(node->tscale[3], 0.5f, 2.0f));
+    assert(!found || IS_IN_RANGE_INCLUSIVE(ret[3], 0.5f, 2.0f));
 
     // Positive X (east)
     t = find(data, node->origin.x + 1 + node->dim.width * 0.5f, node->origin.z, found);
     ret[0] = found ? (t->dim.width / node->dim.width) : 1.0f;
-    assert(!found || IS_IN_RANGE_INCLUSIVE(node->tscale[0], 0.5f, 2.0f));
+    assert(!found || IS_IN_RANGE_INCLUSIVE(ret[0], 0.5f, 2.0f));
 
     // Negative Y (south)
     t = find(data, node->origin.x, node->origin.z - 1 - node->dim.width * 0.5f, found);
     //if (t->dim.width > node->dim.width)
     ret[1] = found ? (t->dim.width / node->dim.width) : 1.0f;
-    assert(!found || IS_IN_RANGE_INCLUSIVE(node->tscale[1], 0.5f, 2.0f));
+    assert(!found || IS_IN_RANGE_INCLUSIVE(ret[1], 0.5f, 2.0f));
 
     // Negative X (west)
     t = find(data, node->origin.x - 1 - node->dim.width * 0.5f, node->origin.z, found);
     ret[2] = found ? (t->dim.width / node->dim.width) : 1.0f;
-    assert(!found || IS_IN_RANGE_INCLUSIVE(node->tscale[2], 0.5f, 2.0f));
+    assert(!found || IS_IN_RANGE_INCLUSIVE(ret[2], 0.5f, 2.0f));
 
     return ret;
 }

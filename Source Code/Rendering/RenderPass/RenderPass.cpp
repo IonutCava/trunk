@@ -202,6 +202,14 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
+            RTClearDescriptor clearDescriptor = {};
+            clearDescriptor.clearColours(true);
+            clearDescriptor.clearDepth(true);
+            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
+            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+            params._clearDescriptor = &clearDescriptor;
+
             _parent.doCustomPass(params, bufferInOut);
             _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize(_stageFlag);
 

@@ -53,8 +53,6 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     bufferDescriptor._initialData = initData.data();
     _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
-
-    _preRenderPushConstantsCmd._constants.countHint(3);
 }
 
 Renderer::~Renderer()
@@ -89,11 +87,12 @@ void Renderer::preRender(RenderStagePass stagePass,
     bindPipelineCmd._pipeline = pipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
-    
-    _preRenderPushConstantsCmd._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
-    _preRenderPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(rt.getWidth(), rt.getHeight()));
-    _preRenderPushConstantsCmd._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-    GFX::EnqueueCommand(bufferInOut, _preRenderPushConstantsCmd);
+    GFX::SendPushConstantsCommand preRenderPushConstantsCmd;
+    preRenderPushConstantsCmd._constants.countHint(3);
+    preRenderPushConstantsCmd._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
+    preRenderPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(rt.getWidth(), rt.getHeight()));
+    preRenderPushConstantsCmd._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+    GFX::EnqueueCommand(bufferInOut, preRenderPushConstantsCmd);
 
     GFX::DispatchComputeCommand computeCmd = {};
     computeCmd._computeGroupSize.set(

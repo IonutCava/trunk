@@ -833,17 +833,8 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     RTClearDescriptor clearDescriptor = {};
     if (params._clearDescriptor != nullptr) {
         clearDescriptor = *params._clearDescriptor;
-    } else {
-        clearDescriptor.clearColours(true);
-        clearDescriptor.clearDepth(true);
-        clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
-        if (extraTargets.x) {
-            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
-        }
-        if (extraTargets.y) {
-            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
-        }
     }
+
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;
     clearMainTarget._descriptor = clearDescriptor;

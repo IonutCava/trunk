@@ -205,10 +205,12 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     Plane<F32> refractionPlane;
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
 
-    refractionPlane._distance += g_reflectionPlaneCorrectionHeight;
-
+    //Don't clear colour attachment because we'll always draw something for every texel, even if that something is just the sky
+    // This may not hold true forever (e.g. may run into fillrate issues) so this needs checking if rendering changes somehow
     RTClearDescriptor clearDescriptor = {};
-    clearDescriptor.clearDepth(false);
+    clearDescriptor.clearColour(0, false);
+
+    refractionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
     RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
@@ -216,8 +218,8 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params._camera = renderParams._camera;
     params._minExtents.set(0.75f);
     params._stage = RenderStage::REFRACTION;
-    params._target = renderParams._renderTarget;
     params._clearDescriptor = &clearDescriptor;
+    params._target = renderParams._renderTarget;
     params._passIndex = renderParams._passIndex;
     params._clippingPlanes._planes[0] = refractionPlane;
     renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);
@@ -240,8 +242,9 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
 
     reflectionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
+    //Don't clear colour attachment because we'll always draw something for every texel, even if that something is just the sky
     RTClearDescriptor clearDescriptor = {};
-    clearDescriptor.clearDepth(false);
+    clearDescriptor.clearColour(0, false);
 
     RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
@@ -250,8 +253,8 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._minExtents.set(1.25f);
     params._stage = RenderStage::REFLECTION;
     params._target = renderParams._renderTarget;
-    params._clearDescriptor = &clearDescriptor;
     params._passIndex = renderParams._passIndex;
+    params._clearDescriptor = &clearDescriptor;
     params._clippingPlanes._planes[0] = reflectionPlane;
     renderParams._context.parent().renderPassManager().doCustomPass(params, bufferInOut);
 

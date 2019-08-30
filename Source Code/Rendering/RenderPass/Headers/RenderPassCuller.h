@@ -54,7 +54,7 @@ struct NodeCullParams {
     vec3<F32> _minExtents = { 0.0f };
     const Camera* _currentCamera = nullptr;
     F32 _cullMaxDistanceSq = 0.0f;
-    I32 _minLoD = false;
+    I32 _minLoD = -1;
     RenderStage _stage = RenderStage::COUNT;;
     bool _threaded = false;
 };

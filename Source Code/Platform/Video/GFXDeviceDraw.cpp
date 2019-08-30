@@ -173,15 +173,15 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     
     U32 cmdCount = *bufferData._lastCommandCount;
 
-    _HIZPushConstantsCMD._constants.countHint(6);
-
-    _HIZPushConstantsCMD._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
-    _HIZPushConstantsCMD._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
-    _HIZPushConstantsCMD._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->getWidth(), depthBuffer->getHeight()));
-    _HIZPushConstantsCMD._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
-    _HIZPushConstantsCMD._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-    _HIZPushConstantsCMD._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
-    GFX::EnqueueCommand(bufferInOut, _HIZPushConstantsCMD);
+    GFX::SendPushConstantsCommand HIZPushConstantsCMD;
+    HIZPushConstantsCMD._constants.countHint(6);
+    HIZPushConstantsCMD._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
+    HIZPushConstantsCMD._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
+    HIZPushConstantsCMD._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->getWidth(), depthBuffer->getHeight()));
+    HIZPushConstantsCMD._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
+    HIZPushConstantsCMD._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+    HIZPushConstantsCMD._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
+    GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMD);
 
     GFX::DispatchComputeCommand computeCmd = {};
     computeCmd._computeGroupSize.set((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);

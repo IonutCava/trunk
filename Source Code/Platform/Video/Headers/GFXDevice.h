@@ -462,8 +462,6 @@ protected:
     ShaderProgram_ptr _textRenderShader;
     ShaderProgram_ptr _blurShader;
     
-    GFX::SendPushConstantsCommand _HIZPushConstantsCMD;
-
     U32 _horizBlur = 0, _vertBlur = 0;
 
     PushConstants _textRenderConstants;
