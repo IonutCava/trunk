@@ -168,10 +168,7 @@ float LargerNeighbourAdjacencyClamp(float tess) {
 
 void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1, in vec2 uv0, in vec2 uv1)
 {
-    p0.y = getHeight(uv0);
-    p1.y = getHeight(uv1);
-
-    p0.y = p1.y = min(p0.y, p1.y);
+    p0.y = p1.y = getHeight(uv0);
 }
 
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
@@ -225,7 +222,7 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
     vec3 p1 = gl_in[idx1].gl_Position.xyz;
 
     float tess = SphereToScreenSpaceTessellation(p0, p1, diameter);
-#if 0
+#if 1
     float logTess = ceil(log2(tess));
     return pow(2, logTess);
 #else 

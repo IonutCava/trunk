@@ -214,7 +214,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
     albedoDescriptor.setSampler(albedoSampler);
     albedoDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)].size());
-    albedoDescriptor._srgb = true;
+    albedoDescriptor._srgb = false;
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
     normalDescriptor.setSampler(albedoSampler);
