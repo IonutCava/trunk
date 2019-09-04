@@ -203,15 +203,16 @@ void Kernel::onLoop() {
             // Launch the FRAME_STARTED event
             _timingData._keepAlive = frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt);
 
+            U64 deltaTimeUSApp = _timingData.currentTimeDeltaUS(true);
+            U64 deltaTimeUSReal = _timingData.currentTimeDeltaUS(false);
             U64 deltaTimeUS = 0ULL;
             if (!_timingData.freezeTime()) {
-                deltaTimeUS = _platformContext->config().runtime.useFixedTimestep
+                deltaTimeUS =  _platformContext->config().runtime.useFixedTimestep
                                     ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
-                                    : _timingData.currentTimeDeltaUS();
+                                    : deltaTimeUSReal;
             }
-
             // Process the current frame
-            _timingData._keepAlive = mainLoopScene(evt, deltaTimeUS) && _timingData._keepAlive;
+            _timingData._keepAlive = mainLoopScene(evt, deltaTimeUS, deltaTimeUSReal, deltaTimeUSApp) && _timingData._keepAlive;
 
             // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
             _timingData._keepAlive = _timingData._keepAlive && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt);
@@ -260,11 +261,12 @@ void Kernel::onLoop() {
     }
 }
 
-bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
+bool Kernel::mainLoopScene(FrameEvent& evt,
+                           const U64 deltaTimeUS,     //Framerate independent deltaTime. Can be paused. (e.g. used by scene updates)
+                           const U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
+                           const U64 appDeltaTimeUS) //Real app delta time between frames. Can't be paused (e.g. used by editor)
+{
     Time::ScopedTimer timer(_appScenePass);
-
-    // Physics system uses (or should use) its own timestep code
-    U64 realTime = _timingData.currentTimeDeltaUS();
     {
         Time::ScopedTimer timer2(_cameraMgrTimer);
         // Update cameras
@@ -279,7 +281,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     {
         Time::ScopedTimer timer2(_physicsProcessTimer);
         // Process physics
-        _platformContext->pfx().process(realTime);
+        _platformContext->pfx().process(realDeltaTimeUS);
     }
 
     bool fixedTimestep = _platformContext->config().runtime.useFixedTimestep;
@@ -346,7 +348,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     SDLEventManager::pollEvents();
 
     WindowManager& winManager = _platformContext->app().windowManager();
-    winManager.update(realTime);
+    winManager.update(appDeltaTimeUS);
     if (!winManager.anyWindowFocus()) {
         _sceneManager->onLostFocus();
     }
@@ -354,14 +356,14 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     {
         Time::ScopedTimer timer3(_physicsUpdateTimer);
         // Update physics
-        _platformContext->pfx().update(realTime);
+        _platformContext->pfx().update(realDeltaTimeUS);
     }
 
     // Update the graphical user interface
     _platformContext->gui().update(deltaTimeUS);
 
     if (Config::Build::ENABLE_EDITOR) {
-        _platformContext->editor().update(realTime);
+        _platformContext->editor().update(appDeltaTimeUS);
     }
 
     return presentToScreen(evt, deltaTimeUS);

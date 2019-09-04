@@ -247,7 +247,10 @@ class Kernel : public Input::InputAggregatorInterface,
     void shutdown();
     void startSplashScreen();
     void stopSplashScreen();
-    bool mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS);
+    bool mainLoopScene(FrameEvent& evt, 
+                       const U64 deltaTimeUS,     //Framerate independent deltaTime. Can be paused. (e.g. used by scene updates)
+                       const U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
+                       const U64 appDeltaTimeUS); //Real app delta time between frames. Can't be paused (e.g. used by editor)
     bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
     bool setCursorPosition(I32 x, I32 y);
     /// Update all engine components that depend on the current screen size
