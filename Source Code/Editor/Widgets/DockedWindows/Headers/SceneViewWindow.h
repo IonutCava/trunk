@@ -48,13 +48,8 @@ namespace Divide {
 
         const Rect<I32>& sceneRect(bool globalCoords) const;
 
-        inline bool scenePlaying() const { return _scenePlaying; }
-
-        bool step();
-
     protected:
-        U32  _stepQueue = 0;
-        bool _scenePlaying = true;
+        bool      _internalScenePlay;
         Rect<I32> _sceneRect;
         Rect<I32> _sceneRectLocal;
     };

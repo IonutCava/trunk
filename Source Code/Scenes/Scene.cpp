@@ -723,7 +723,7 @@ U16 Scene::registerInputActions() {
     auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
     auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
-    auto select = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), true); };
+    auto select = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), !_context.editor().running()); };
     auto multiselect = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), false); };
     auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
     auto releaseCameraFromMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false); };
@@ -1340,22 +1340,21 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
 }
 
 bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
-    const vectorEASTL<SceneGraphNode*>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
-
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
     const vec3<F32>& eyePos = crtCamera.getEye();
 
+    for (const WaterDetails& water : state().globalWaterBodies())  {
+        if (IS_IN_RANGE_INCLUSIVE(eyePos.y, water._heightOffset - water._depth, water._heightOffset)) {
+            return true;
+        }
+    }
+
+    const vectorEASTL<SceneGraphNode*>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
     if (!waterBodies.empty()) {
         for (SceneGraphNode* node : waterBodies) {
             if (node->getNode<WaterPlane>().pointUnderwater(*node, eyePos)) {
                 return true;
             }
-        }
-    }
-
-    for (const WaterDetails& water : state().globalWaterBodies()) {
-        if (eyePos.y < water._heightOffset) {
-            return true;
         }
     }
 

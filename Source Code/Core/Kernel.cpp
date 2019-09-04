@@ -170,7 +170,7 @@ void Kernel::idle(bool fast) {
     bool freezeLoopTime = ParamHandler::instance().getParam(_ID("freezeLoopTime"), false);
 
     if (Config::Build::ENABLE_EDITOR) {
-        freezeLoopTime |= _platformContext->editor().shouldPauseSimulation();
+        freezeLoopTime |= _platformContext->editor().simulationPauseRequested();
     }
 
     if (_timingData.freezeTime(freezeLoopTime)) {

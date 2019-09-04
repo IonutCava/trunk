@@ -15,21 +15,13 @@
 namespace Divide {
 
     SceneViewWindow::SceneViewWindow(Editor& parent, const Descriptor& descriptor)
-        : DockedWindow(parent, descriptor),
-          _scenePlaying(true)
+        : DockedWindow(parent, descriptor)
+        , _internalScenePlay(true)
     {
     }
 
     SceneViewWindow::~SceneViewWindow()
     {
-    }
-
-    bool SceneViewWindow::step() {
-        if (_scenePlaying) {
-            return true;
-        }
-
-        return _stepQueue > 0 ? _stepQueue-- > 0 : false;
     }
 
     void SceneViewWindow::drawInternal() {
@@ -53,17 +45,21 @@ namespace Divide {
             return ret;
         };
 
-        ImGui::ToggleButton("Play", &_scenePlaying);
+        ImGui::ToggleButton("Play", &_internalScenePlay);
+        if (_internalScenePlay) {
+            Attorney::EditorSceneViewWindow::editorStepQueue(_parent, 2);
+        }
+
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Toggle scene playback");
         }
         ImGui::SameLine();
-        bool enableStepButtons = !_scenePlaying && _stepQueue == 0;
+        bool enableStepButtons = !_internalScenePlay;
         if (button(!enableStepButtons,
                    ">|",
                     "When playback is paused, advanced the simulation by 1 full frame"))
         {
-            _stepQueue = 1;
+            Attorney::EditorSceneViewWindow::editorStepQueue(_parent, 2);
         }
 
         ImGui::SameLine();
@@ -72,13 +68,21 @@ namespace Divide {
                    ">>|",
                    Util::StringFormat("When playback is paused, advanced the simulation by %d full frame", Config::TARGET_FRAME_RATE).c_str()))
         {
-            _stepQueue = Config::TARGET_FRAME_RATE;
+            Attorney::EditorSceneViewWindow::editorStepQueue(_parent, Config::TARGET_FRAME_RATE + 1);
         }
         ImGui::SameLine();
         
         if (ImGui::Button("Save Camera")) {
             Attorney::EditorSceneViewWindow::updateCameraSnapshot(_parent);
         }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Keep the current camera position when closing the editor");
+        }
+        ImGui::SameLine();
+
+        bool autoSaveCamera = Attorney::EditorSceneViewWindow::autoSaveCamera(_parent);
+        ImGui::Checkbox("Auto Save Camera", &autoSaveCamera);
+        Attorney::EditorSceneViewWindow::autoSaveCamera(_parent, autoSaveCamera);
         ImGui::SameLine();
 
         ImGuiWindow* window = ImGui::GetCurrentWindow();

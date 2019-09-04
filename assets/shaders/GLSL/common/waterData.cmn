@@ -45,7 +45,7 @@ vec2 waterDetails(in vec3 vertexW, in float maxDepth) {
         if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
             vertexW.z >= -halfLength && vertexW.z <= halfLength)
         {
-            float depth = -details.y + position.y;
+            float depth = position.y - details.z;
 
             // Distance
             maxDistance = max(maxDistance, 1.0 - smoothstep(position.y - 0.05f, position.y + 0.05f, vertexW.y));

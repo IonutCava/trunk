@@ -102,6 +102,7 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
       _currentDimmedTheme(dimmedTheme),
       _mainWindow(nullptr),
       _running(false),
+      _autoSaveCamera(false),
       _showSampleWindow(false),
       _showMemoryEditor(false),
       _sceneHovered(false),
@@ -109,6 +110,7 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
       _selectedCamera(nullptr),
       _gizmo(nullptr),
       _imguiContext(nullptr),
+      _stepQueue(1),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
@@ -454,21 +456,22 @@ void Editor::toggle(const bool state) {
 
     _running = state;
 
-    _gizmo->enable(state);
+    _gizmo->enable(state || simulationPauseRequested());
 
     if (!state) {
         _sceneHovered = false;
         scenePreviewFocused(false);
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme);
 
-        Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
-        if (playerCam != nullptr) {
-            auto it = _cameraSnapshots.find(playerCam->getGUID());
-            if (it != std::end(_cameraSnapshots)) {
-                playerCam->fromSnapshot(it->second);
+        if (!_autoSaveCamera) {
+            Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+            if (playerCam != nullptr) {
+                auto it = _cameraSnapshots.find(playerCam->getGUID());
+                if (it != std::end(_cameraSnapshots)) {
+                    playerCam->fromSnapshot(it->second);
+                }
             }
         }
-
     } else {
         updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
@@ -477,10 +480,6 @@ void Editor::toggle(const bool state) {
 
 bool Editor::running() const {
     return _running;
-}
-
-bool Editor::shouldPauseSimulation() const {
-    return simulationPauseRequested();
 }
 
 void Editor::update(const U64 deltaTimeUS) {
@@ -646,6 +645,9 @@ bool Editor::framePostRenderEnded(const FrameEvent& evt) {
 
 bool Editor::frameEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
+    if (running() && _stepQueue > 0) {
+        --_stepQueue;
+    }
 
     return true;
 }
@@ -809,11 +811,7 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->onKeyDown(key);
     }
 
@@ -832,11 +830,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->onKeyUp(key);
     }
 
@@ -878,18 +872,14 @@ ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, Displ
 
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if (!running()) {
-        return false;
+    if (!running() || scenePreviewFocused()) {
+        return _gizmo->mouseMoved(arg);
     }
 
     if (!arg.wheelEvent()) {
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
         ImVec2 mousePos = _imguiContext->IO.MousePos;
         _sceneHovered = sceneView->isHovered() && sceneView->sceneRect(true).contains(mousePos.x, mousePos.y);
-    }
-
-    if (scenePreviewFocused()) {
-        return _gizmo->mouseMoved(arg);
     }
 
     ImGuiIO& io = _imguiContext->IO;
@@ -914,12 +904,8 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused() && _gizmo->mouseButtonPressed(arg)) {
-        return true;
+    if (!running() || scenePreviewFocused()) {
+        return _gizmo->mouseButtonPressed(arg);
     }
 
     ImGuiIO& io = _imguiContext->IO;
@@ -936,19 +922,16 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
 /// Mouse button released: return true if input was consumed
 bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused() != _sceneHovered) {
+    if (running() && scenePreviewFocused() != _sceneHovered) {
         ImGui::SetCurrentContext(_imguiContext);
         scenePreviewFocused(_sceneHovered);
         ImGuiStyle& style = ImGui::GetStyle();
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme, style);
+        return true;
     }
 
-    if (scenePreviewFocused() && _gizmo->mouseButtonReleased(arg)) {
-        return true;
+    if (!running() || scenePreviewFocused()) {
+        return _gizmo->mouseButtonReleased(arg);
     }
 
     ImGuiIO& io = _imguiContext->IO;
@@ -963,11 +946,7 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickButtonPressed(arg);
     }
 
@@ -975,11 +954,7 @@ bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickButtonReleased(arg);
     }
 
@@ -987,7 +962,7 @@ bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickAxisMoved(arg);
     }
 
@@ -995,11 +970,7 @@ bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickPovMoved(arg);
     }
 
@@ -1007,11 +978,7 @@ bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickBallMoved(arg);
     }
 
@@ -1019,11 +986,7 @@ bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickAddRemove(arg);
     }
 
@@ -1031,11 +994,7 @@ bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
-    if (!running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
+    if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickRemap(arg);
     }
 
@@ -1129,8 +1088,7 @@ Camera* Editor::getSelectedCamera() const {
 }
 
 bool Editor::simulationPauseRequested() const {
-    SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-    return !sceneView->step();
+    return _stepQueue == 0;
 }
 
 bool Editor::hasUnsavedElements() const {
@@ -1376,6 +1334,8 @@ void Editor::saveToXML() const {
 
     pt.put("showMemEditor", _showMemoryEditor);
     pt.put("showSampleWindow", _showSampleWindow);
+    pt.put("autoSaveCamera", _autoSaveCamera);
+
     createDirectory(editorPath.c_str());
     copyFile(editorPath, g_editorSaveFile, editorPath, g_editorSaveFile + stringImpl(".bak"), true);
     boost::property_tree::write_xml(editorPath + g_editorSaveFile, pt, std::locale(), settings);
@@ -1394,6 +1354,7 @@ void Editor::loadFromXML() {
         boost::property_tree::read_xml(editorPath + g_editorSaveFile, pt);
         _showMemoryEditor = pt.get("showMemEditor", false);
         _showSampleWindow = pt.get("showSampleWindow", false);
+        _autoSaveCamera = pt.get("autoSaveCamera", false);
     }
 }
 }; //namespace Divide

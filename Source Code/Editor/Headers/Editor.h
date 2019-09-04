@@ -125,8 +125,6 @@ class Editor : public PlatformContextComponent,
     void toggle(const bool state);
     bool running() const;
 
-    bool shouldPauseSimulation() const;
-
     void onSizeChange(const SizeChangeParams& params);
     void selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node);
 
@@ -210,6 +208,8 @@ class Editor : public PlatformContextComponent,
     std::unique_ptr<MenuBar> _menuBar;
     std::unique_ptr<Gizmo> _gizmo;
     Rect<I32>         _targetViewport;
+    U32               _stepQueue;
+    bool              _autoSaveCamera;
     bool              _showSampleWindow;
     bool              _showMemoryEditor;
     bool              _running;
@@ -258,6 +258,18 @@ namespace Attorney {
 
         static void updateCameraSnapshot(Editor& editor) {
             editor.updateCameraSnapshot();
+        }
+
+        static void editorStepQueue(Editor& editor, const U32 steps) {
+            editor._stepQueue = steps;
+        }
+
+        static bool autoSaveCamera(const Editor& editor) {
+            return editor._autoSaveCamera;
+        }
+
+        static void autoSaveCamera(Editor& editor, const bool state) {
+            editor._autoSaveCamera = state;
         }
 
         friend class Divide::SceneViewWindow;
