@@ -1,4 +1,5 @@
 # Divide-Framework
 
-Work In Progress: More info to come    
-Website: http://www.divide-studio.com
+* Work In Progress
+* Website: http://www.divide-studio.com
+* ToDo List: https://trello.com/b/mujYqtxR/divide-todo
