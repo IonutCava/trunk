@@ -486,33 +486,34 @@ void WindowManager::captureMouse(bool state) noexcept {
     SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
 }
 
-void WindowManager::setCursorPosition(I32 x, I32 y, bool global) {
-    if (!global) {
-        DisplayWindow* focusedWindow = getFocusedWindow();
-        if (focusedWindow != nullptr) {
-            if (x == -1) {
-                x = SDL_WINDOWPOS_CENTERED_DISPLAY(focusedWindow->currentDisplayIndex());
-            }
-            if (y == -1) {
-                y = SDL_WINDOWPOS_CENTERED_DISPLAY(focusedWindow->currentDisplayIndex());
-            }
-
-            focusedWindow->setCursorPosition(x, y);
-        } else {
-            setCursorPosition(x, y, true);
-        }
-    } else {
-        if (x == -1) {
-            x = SDL_WINDOWPOS_CENTERED_DISPLAY(getMainWindow().currentDisplayIndex());
-        }
-        if (y == -1) {
-            y = SDL_WINDOWPOS_CENTERED_DISPLAY(getMainWindow().currentDisplayIndex());
-        }
-
-        SDL_WarpMouseGlobal(x, y);
+bool WindowManager::setCursorPosition(I32 x, I32 y) {
+    DisplayWindow* focusedWindow = getFocusedWindow();
+    if (focusedWindow == nullptr) {
+        focusedWindow = &getMainWindow();
     }
 
-    Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
+    if (x == -1) {
+        x = SDL_WINDOWPOS_CENTERED_DISPLAY(focusedWindow->currentDisplayIndex());
+    }
+    if (y == -1) {
+        y = SDL_WINDOWPOS_CENTERED_DISPLAY(focusedWindow->currentDisplayIndex());
+    }
+
+    if (focusedWindow->setCursorPosition(x, y)) {
+        Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
+        return true;
+    }
+
+    return false;
+}
+
+bool WindowManager::setGlobalCursorPosition(I32 x, I32 y) {
+    if (SDL_WarpMouseGlobal(x, y) == 0) {
+        Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
+        return true;
+    }
+
+    return false;
 }
 
 void WindowManager::SetCursorStyle(CursorStyle style) {
@@ -545,12 +546,12 @@ void WindowManager::SetCaptureMouse(bool state) noexcept {
 
 void WindowManager::snapCursorToCenter() {
     const DisplayWindow* focusedWindow = getFocusedWindow();
-    if (focusedWindow != nullptr) {
-        const vec2<U16>& center = focusedWindow->getDimensions();
-        setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
-    } else {
-        setCursorPosition(-1, -1, true);
+    if (focusedWindow == nullptr) {
+        focusedWindow = &getMainWindow();
     }
+
+    const vec2<U16>& center = focusedWindow->getDimensions();
+    setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
 }
 
 void WindowManager::hideAll() {

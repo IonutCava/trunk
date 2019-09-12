@@ -194,8 +194,8 @@ class Editor : public PlatformContextComponent,
     void saveElement(I64 elementGUID);
     void toggleMemoryEditor(bool state);
     void updateCameraSnapshot();
-    // Returns true if the modal window was closed
-    bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect);
+    // Returns true if the window was closed
+    bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal);
     // Returns true if the modal window was closed
     bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
     // Return true if the model was spawned as a scene node
@@ -353,8 +353,8 @@ namespace Attorney {
             editor._memoryEditorData = data;
         }
 
-        static bool modalTextureView(Editor& editor, const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect) {
-            return editor.modalTextureView(modalName, tex, dimensions, preserveAspect);
+        static bool modalTextureView(Editor& editor, const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
+            return editor.modalTextureView(modalName, tex, dimensions, preserveAspect, useModal);
         }
 
         static bool modalModelSpawn(Editor& editor, const char* modalName, const Mesh_ptr& mesh) {

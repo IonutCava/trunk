@@ -60,7 +60,7 @@ namespace Divide {
         bool _isMainMenu = true;
         bool _quitPopup = false;
         bool _closePopup = false;
-        Texture_ptr _previewTexture = nullptr;
+        vector<Texture_ptr> _previewTextures;
     };
 }; //namespace Divide
 

@@ -56,6 +56,17 @@ namespace {
 
         ~ImGuiViewportData() { IM_ASSERT(_window == nullptr); }
     };
+
+
+    struct TextureCallbackData {
+        vec4<I32> _colourData = { 1, 1, 1, 1 };
+        vec2<F32> _depthRange = { 0.0f, 1.0f };
+        GFXDevice* _gfxDevice = nullptr;
+        bool _isDepthTexture = false;
+        bool _flip = false;
+    };
+
+    hashMap<I64, TextureCallbackData> g_modalTextureData;
 };
 
 void InitBasicImGUIState(ImGuiIO& io) {
@@ -553,7 +564,7 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
 bool Editor::render(const U64 deltaTime) {
     ACKNOWLEDGE_UNUSED(deltaTime);
 
-    static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None;
+    static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
     // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
     // because it would be confusing to have two docking targets within each others.
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -570,7 +581,9 @@ bool Editor::render(const U64 deltaTime) {
     if (opt_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
         ImGui::SetNextWindowBgAlpha(0.0f);
     }
-
+    if (windowFlags & ImGuiDockNodeFlags_PassthruCentralNode) {
+        windowFlags |= ImGuiWindowFlags_NoBackground;
+    }
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("Editor", NULL, windowFlags);
     ImGui::PopStyleVar();
@@ -872,8 +885,10 @@ ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, Displ
 
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if (!running() || scenePreviewFocused()) {
+    if (!running()) {
         return _gizmo->mouseMoved(arg);
+    } else if (scenePreviewFocused() && _gizmo->mouseMoved(arg)) {
+        return true;
     }
 
     if (!arg.wheelEvent()) {
@@ -1017,19 +1032,25 @@ void Editor::updateMousePosAndButtons() {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseHoveredViewport = 0;
 
+    bool mouseSet = false;
     if (!io.WantSetMousePos) {
         io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+        mouseSet = true;
     } else {
-        g_windowManager->setCursorPosition((I32)io.MousePos.x,
-                                           (I32)io.MousePos.y,
-                                           (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0);
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            mouseSet = g_windowManager->setGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+        } else {
+            mouseSet = g_windowManager->setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+        }
     }
 
-    vec2<I32> mPos(-1);
-    WindowManager::GetMouseState(mPos, false);
+    if (mouseSet) {
+        vec2<I32> mPos(-1);
+        WindowManager::GetMouseState(mPos, false);
 
-    if (ImGuiViewport* viewport = findViewportByPlatformHandle(_imguiContext, g_windowManager->getFocusedWindow())) {
-        io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
+        if (ImGuiViewport * viewport = findViewportByPlatformHandle(_imguiContext, g_windowManager->getFocusedWindow())) {
+            io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
+        }
     }
 
     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
@@ -1114,16 +1135,8 @@ void Editor::toggleMemoryEditor(bool state) {
     _showMemoryEditor = state;
 }
 
-struct TextureCallbackData {
-    vec4<I32> _colourData = {1, 1, 1, 1};
-    vec2<F32> _depthRange = { 0.0f, 1.0f };
-    GFXDevice* _gfxDevice = nullptr;
-    bool _isDepthTexture = false;
-    bool _flip = false;
-};
+bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
 
-bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect) {
-    
     ImDrawCallback toggleColours { [](const ImDrawList* parent_list, const ImDrawCmd* cmd) -> void {
         ACKNOWLEDGE_UNUSED(parent_list);
 
@@ -1144,15 +1157,18 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
         data._gfxDevice->flushCommandBuffer(buffer);
     } };
 
-    bool closed = false;
-    if (ImGui::BeginPopupModal(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+    bool opened = false,  closed = false;
+
+    if (useModal) {
+        ImGui::OpenPopup(modalName);
+        opened = ImGui::BeginPopupModal(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize);
+    } else {
+        opened = ImGui::Begin(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize);
+    }
+
+    if (opened) {
         assert(tex != nullptr);
-
-
         assert(modalName != nullptr);
-        static TextureCallbackData data = {};
-        data._gfxDevice = &_context.gfx();
-        data._flip = false;
 
         static TextureCallbackData defaultData = {};
         defaultData._gfxDevice = &_context.gfx();
@@ -1161,21 +1177,23 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
         static std::array<bool, 4> state = { true, true, true, true };
 
+        TextureCallbackData& data = g_modalTextureData[tex->getGUID()];
+        data._gfxDevice = &_context.gfx();
+        data._flip = false;
         data._isDepthTexture = tex->getDescriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
 
         U8 numChannels = tex->getDescriptor().numChannels();
 
-        if (numChannels > 0) {
-            if (data._isDepthTexture) {
-                data._flip = true; //ToDo: Investigate why - Ionut
-                ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
-                ImGui::SameLine();
-                ImGui::Text("Range: "); ImGui::SameLine();
-                ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
-            }
-            else {
-                ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
-            }
+        assert(numChannels > 0);
+
+        if (data._isDepthTexture) {
+            data._flip = true; //ToDo: Investigate why - Ionut
+            ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
+            ImGui::SameLine();
+            ImGui::Text("Range: "); ImGui::SameLine();
+            ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
+        } else {
+            ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
 
             if (numChannels > 1) {
                 ImGui::SameLine();
@@ -1186,13 +1204,13 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
                     ImGui::Text("B: ");  ImGui::SameLine(); ImGui::ToggleButton("B", &state[2]);
                 }
 
-                if (numChannels > 3)
-                {
+                if (numChannels > 3) {
                     ImGui::SameLine();
                     ImGui::Text("A: ");  ImGui::SameLine(); ImGui::ToggleButton("A", &state[3]);
                 }
             }
         }
+
         const bool nonDefaultColours = data._isDepthTexture || !state[0] || !state[1] || !state[2] || !state[3];
         data._colourData.set(state[0] ? 1 : 0, state[1] ? 1 : 0, state[2] ? 1 : 0, state[3] ? 1 : 0);
 
@@ -1220,12 +1238,20 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
         if (ImGui::Button("Close")) {
             zoom = 1.0f;
             zoomCenter = ImVec2(0.5f, 0.5f);
-            ImGui::CloseCurrentPopup();
+            if (useModal) {
+                ImGui::CloseCurrentPopup();
+            }
+            g_modalTextureData.erase(tex->getGUID());
             closed = true;
         }
 
-
-        ImGui::EndPopup();
+        if (useModal) {
+            ImGui::EndPopup();
+        } else {
+            ImGui::End();
+        }
+    } else if (!useModal) {
+        ImGui::End();
     }
 
     return closed;
@@ -1237,10 +1263,11 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
 
     bool closed = false;
 
+    ImGui::OpenPopup(modalName);
     if (ImGui::BeginPopupModal(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         assert(mesh != nullptr);
         if (inputBuf[0] == '\0') {
-            strcpy_s(&inputBuf[0], std::min(254, to_I32(mesh->resourceName().length())) + 1, mesh->resourceName().c_str());
+            strcpy_s(&inputBuf[0], std::min(to_size(254), mesh->resourceName().length()) + 1, mesh->resourceName().c_str());
         }
         ImGui::Text("Spawn [ %s ]?", mesh->resourceName().c_str());
         ImGui::Separator();

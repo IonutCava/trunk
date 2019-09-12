@@ -44,7 +44,6 @@ namespace {
 MenuBar::MenuBar(PlatformContext& context, bool mainMenu)
     : PlatformContextComponent(context),
       _isMainMenu(mainMenu),
-      _previewTexture(nullptr),
       _quitPopup(false),
       _closePopup(false)
 {
@@ -70,10 +69,11 @@ void MenuBar::draw() {
 
         ImGui::EndMenuBar();
 
-        if (_previewTexture != nullptr) {
-            ImGui::OpenPopup("Image Preview");
-            if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), "Image Preview", _previewTexture, vec2<F32>(512, 512), true)) {
-                _previewTexture = nullptr;
+       for (vector<Texture_ptr>::iterator it = std::begin(_previewTextures); it != std::end(_previewTextures); ) {
+            if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), Util::StringFormat("Image Preview: %s", (*it)->resourceName().c_str()).c_str(), *it, vec2<F32>(512, 512), true, false)) {
+                it = _previewTextures.erase(it);
+            } else {
+                ++it;
             }
         }
 
@@ -241,7 +241,7 @@ void MenuBar::drawToolsMenu() {
                                         const RTAttachment& attachment = rt->getAttachment(type, k);
                                         const Texture_ptr& tex = attachment.texture();
                                         if (tex != nullptr && ImGui::MenuItem(tex->resourceName().c_str())) {
-                                            _previewTexture = tex;
+                                            _previewTextures.push_back(tex);
                                         }
                                     }
                                 }
@@ -256,7 +256,7 @@ void MenuBar::drawToolsMenu() {
             const Texture_ptr& prevDepthBufferTex = _context.gfx().getPrevDepthBuffer();
             if (prevDepthBufferTex != nullptr && ImGui::BeginMenu("Misc")) {
                 if (ImGui::MenuItem(prevDepthBufferTex->resourceName().c_str())) {
-                    _previewTexture = prevDepthBufferTex;
+                    _previewTextures.push_back(prevDepthBufferTex);
                 }
                 ImGui::EndMenu();
             }

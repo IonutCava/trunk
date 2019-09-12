@@ -886,7 +886,7 @@ bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
         if (window != nullptr) {
             window->grabState(hadWindowGrab);
         }
-        _context.app().windowManager().setCursorPosition(lastMousePosition.x, lastMousePosition.y, true);
+        _context.app().windowManager().setCursorPosition(lastMousePosition.x, lastMousePosition.y);
     }
 
     WindowManager::ToggleRelativeMouseMode(lockState);

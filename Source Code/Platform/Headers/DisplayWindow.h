@@ -174,8 +174,8 @@ public:
     inline const FColour4& clearColour(bool &clearColour, bool &clearDepth) const;
 
     /// width and height get adjusted to the closest supported value
-    bool setDimensions(U16& width, U16& height);
-    bool setDimensions(vec2<U16>& dimensions);
+    bool setDimensions(U16 width, U16 height);
+    bool setDimensions(const vec2<U16>& dimensions);
 
     /// Centering is also easier via SDL
     void centerWindowPosition();
@@ -185,6 +185,7 @@ public:
     vec2<U16> getDimensions() const;
     vec2<U16> getPreviousDimensions() const;
 
+    Rect<I32> getBorderSizes() const;
     vec2<U16> getDrawableSize() const;
     vec2<I32> getPosition(bool global = false) const;
 
@@ -196,8 +197,8 @@ public:
 
     WindowHandle handle() const;
 
-    /// Mouse positioning is handled by SDL
-    void setCursorPosition(I32 x, I32 y);
+    /// Mouse positioning is handled by SDL. Returns true on success
+    bool setCursorPosition(I32 x, I32 y);
 
     inline I64 addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void removeEventlistener(WindowEvent windowEvent, I64 listenerGUID);
