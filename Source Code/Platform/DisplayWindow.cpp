@@ -234,6 +234,15 @@ I32 DisplayWindow::currentDisplayIndex() const {
     return displayIndex;
 }
 
+Rect<I32> DisplayWindow::getBorderSizes() const {
+    I32 top = 0, left = 0, bottom = 0, right = 0;
+    if (SDL_GetWindowBordersSize(_sdlWindow, &top, &left, &bottom, &right) != -1) {
+        return { top, left, bottom, right };
+    }
+
+    return {};
+}
+
 vec2<U16> DisplayWindow::getDrawableSize() const {
     if (_type == WindowType::FULLSCREEN || _type == WindowType::FULLSCREEN_WINDOWED) {
         return _parent.getFullscreenResolution();
@@ -289,9 +298,9 @@ void DisplayWindow::centerWindowPosition() {
 }
 
 /// Mouse positioning is handled by SDL
-void DisplayWindow::setCursorPosition(I32 x, I32 y) {
-
+bool DisplayWindow::setCursorPosition(I32 x, I32 y) {
     SDL_WarpMouseInWindow(_sdlWindow, x, y);
+    return true;
 }
 
 void DisplayWindow::decorated(const bool state) {
@@ -399,7 +408,7 @@ vec2<U16> DisplayWindow::getPreviousDimensions() const {
     return _prevDimensions;
 }
 
-bool DisplayWindow::setDimensions(U16& width, U16& height) {
+bool DisplayWindow::setDimensions(U16 width, U16 height) {
     vec2<U16> dim = getDimensions();
     if (dim == vec2<U16>(width, height)) {
         return true;
@@ -435,7 +444,7 @@ bool DisplayWindow::setDimensions(U16& width, U16& height) {
     return false;
 }
 
-bool DisplayWindow::setDimensions(vec2<U16>& dimensions) {
+bool DisplayWindow::setDimensions(const vec2<U16>& dimensions) {
     return setDimensions(dimensions.x, dimensions.y);
 }
 

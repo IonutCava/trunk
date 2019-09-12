@@ -175,6 +175,7 @@ namespace Divide {
     }
 
     void ContentExplorerWindow::drawInternal() {
+
         static Texture_ptr previewTexture = nullptr;
         static Mesh_ptr spawnMesh = nullptr;
 
@@ -257,7 +258,6 @@ namespace Divide {
 
                         if (ImGui::ImageButton((void*)(intptr_t)tex->getData().textureHandle(), ImVec2(64, 64 / aspect))) {
                             previewTexture = tex;
-                            ImGui::OpenPopup("Image Preview");
                         }
                     } else if (mesh != nullptr) {
                         const Texture_ptr& icon = _geometryIcons[to_base(format)];
@@ -267,7 +267,6 @@ namespace Divide {
 
                         if (ImGui::ImageButton((void*)(intptr_t)icon->getData().textureHandle(), ImVec2(64, 64 / aspect))) {
                             spawnMesh = mesh;
-                            ImGui::OpenPopup("Spawn Entity");
                         }
                     } else {
                         const U16 w = _fileIcon->getWidth();
@@ -282,7 +281,7 @@ namespace Divide {
                     }
                     ImGui::Text(file.second.c_str());
 
-                    if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true)) {
+                    if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true, true)) {
                         previewTexture = nullptr;
                     }
                     if (Attorney::EditorGeneralWidget::modalModelSpawn(_parent, "Spawn Entity", spawnMesh)) {

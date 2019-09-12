@@ -59,7 +59,11 @@ namespace Divide {
         io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
         if (io.WantSetMousePos) {
             WindowManager& winMgr = _parent.context().app().windowManager();
-            winMgr.setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y, (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0);
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                winMgr.setGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+            } else {
+                winMgr.setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+            }
         }
     }
 

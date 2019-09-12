@@ -107,7 +107,8 @@ public:
     DisplayWindow& createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex);
     bool destroyWindow(DisplayWindow*& window);
 
-    void setCursorPosition(I32 x, I32 y, bool global = false);
+    bool setGlobalCursorPosition(I32 x, I32 y);
+    bool setCursorPosition(I32 x, I32 y);
     void snapCursorToCenter();
 
     static vec2<I32> GetCursorPosition(bool global);
