@@ -66,7 +66,7 @@
   <IMGUI>
     <multiViewportEnabled>true</multiViewportEnabled>
     <windowDecorationsEnabled>false</windowDecorationsEnabled>
-    <dontMergeFloatingWindows>false</dontMergeFloatingWindows>
+    <dontMergeFloatingWindows>true</dontMergeFloatingWindows>
   </IMGUI>
   <consoleLayoutFile>console.layout</consoleLayoutFile>
   <editorLayoutFile>editor.layout</editorLayoutFile>

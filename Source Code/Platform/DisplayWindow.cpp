@@ -258,31 +258,31 @@ void DisplayWindow::opacity(U8 opacity) {
 }
 
 /// Window positioning is handled by SDL
-void DisplayWindow::setPosition(I32 x, I32 y, bool global) {
+void DisplayWindow::setPosition(I32 x, I32 y, bool global, bool offset) {
     _internalMoveEvent = true;
 
     I32 displayIndex = currentDisplayIndex();
     if (x == -1) {
         x = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
-    } else if (!global) {
+    } else if (!global && offset) {
         x += _parent.monitorData()[displayIndex].viewport.x;
     }
     if (y == -1) {
         y = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
-    } else if (!global) {
+    } else if (!global && offset) {
         y += _parent.monitorData()[displayIndex].viewport.y;
     }
 
     SDL_SetWindowPosition(_sdlWindow, x, y);
 }
 
-vec2<I32> DisplayWindow::getPosition(bool global) const {
+vec2<I32> DisplayWindow::getPosition(bool global, bool offset) const {
     vec2<I32> ret;
     SDL_GetWindowPosition(_sdlWindow, &ret.x, &ret.y);
 
-    if (!global) {
-        vec2<I32> offset = _parent.monitorData()[currentDisplayIndex()].viewport.xy();
-        ret -= offset;
+    if (!global && offset) {
+        vec2<I32> pOffset = _parent.monitorData()[currentDisplayIndex()].viewport.xy();
+        ret -= pOffset;
     }
 
     return ret;

@@ -187,9 +187,9 @@ public:
 
     Rect<I32> getBorderSizes() const;
     vec2<U16> getDrawableSize() const;
-    vec2<I32> getPosition(bool global = false) const;
+    vec2<I32> getPosition(bool global = false, bool offset = false) const;
 
-           void setPosition(I32 x, I32 y, bool global = false);
+           void setPosition(I32 x, I32 y, bool global = false, bool offset = false);
     inline void setPosition(const vec2<I32>& position, bool global = false);
 
     inline const stringImpl& title() const;
