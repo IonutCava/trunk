@@ -62,7 +62,6 @@ namespace Divide {
 
     inline bool DisplayWindow::hasFocus() const {
         return BitCompare(_flags, WindowFlags::HAS_FOCUS);
-        //return (SDL_GetWindowFlags(_sdlWindow) & SDL_WINDOW_INPUT_FOCUS) != 0;
     }
 
     inline U8 DisplayWindow::opacity() const {

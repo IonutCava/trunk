@@ -231,7 +231,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         io.ConfigViewportsNoDecoration = !_context.config().gui.imgui.windowDecorationsEnabled;
         io.ConfigViewportsNoTaskBarIcon = true;
         io.ConfigViewportsNoAutoMerge = _context.config().gui.imgui.dontMergeFloatingWindows;
-
+        io.ConfigDockingTransparentPayload = true;
         io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
         io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
     }
@@ -384,8 +384,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
             // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
             imguiMonitor.MainPos = ImVec2((F32)monitor.viewport.x, (F32)monitor.viewport.y);
-            imguiMonitor.MainSize = ImVec2((F32)monitor.viewport.z, (F32)monitor.viewport.w);
             imguiMonitor.WorkPos = ImVec2((F32)monitor.drawableArea.x, (F32)monitor.drawableArea.y);
+
+            imguiMonitor.MainSize = ImVec2((F32)monitor.viewport.z, (F32)monitor.viewport.w);
             imguiMonitor.WorkSize = ImVec2((F32)monitor.drawableArea.z, (F32)monitor.drawableArea.w);
             imguiMonitor.DpiScale = monitor.dpi / 96.0f;
         }
@@ -1046,10 +1047,11 @@ void Editor::updateMousePosAndButtons() {
 
     if (mouseSet) {
         vec2<I32> mPos(-1);
-        WindowManager::GetMouseState(mPos, false);
+        WindowManager::GetMouseState(mPos, true);
 
         if (ImGuiViewport * viewport = findViewportByPlatformHandle(_imguiContext, g_windowManager->getFocusedWindow())) {
-            io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
+            //io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
+            io.MousePos = ImVec2((F32)mPos.x, (F32)mPos.y);
         }
     }
 
