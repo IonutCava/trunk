@@ -177,7 +177,7 @@ class SceneNode : public CachedResource {
     virtual const char* getResourceTypeName() const override { return "SceneNode"; }
 
    protected:
-     virtual void editorFieldChanged(EditorComponentField& field);
+     virtual void editorFieldChanged(const char* field);
      virtual void onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const;
      virtual void onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const;
 

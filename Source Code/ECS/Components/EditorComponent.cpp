@@ -59,7 +59,7 @@ namespace Divide {
 
     void EditorComponent::onChanged(EditorComponentField& field) {
         if (_onChangedCbk) {
-            _onChangedCbk(field);
+            _onChangedCbk(field._name.c_str());
         }
     }
 

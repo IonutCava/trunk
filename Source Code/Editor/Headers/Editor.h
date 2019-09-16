@@ -65,6 +65,7 @@ namespace Attorney {
 class Gizmo;
 class Camera;
 class MenuBar;
+class UndoManager;
 class DockedWindow;
 class OutputWindow;
 class PanelManager;
@@ -83,6 +84,9 @@ FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 struct SizeChangeParams;
 struct TransformSettings;
+
+template<typename T>
+struct UndoEntry;
 
 void InitBasicImGUIState(ImGuiIO& io);
 
@@ -129,6 +133,11 @@ class Editor : public PlatformContextComponent,
     void selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node);
 
     bool simulationPauseRequested() const;
+
+    template<typename T>
+    void registerUndoEntry(const UndoEntry<T>& entry) {
+        _undoManager->registerUndoEntry(entry);
+    }
 
     void setTransformSettings(const TransformSettings& settings);
     const TransformSettings& getTransformSettings() const;
@@ -177,6 +186,7 @@ class Editor : public PlatformContextComponent,
     void loadFromXML();
 
   protected:
+    bool isInit() const;
     bool render(const U64 deltaTime);
     void updateMousePosAndButtons();
 
@@ -220,6 +230,7 @@ class Editor : public PlatformContextComponent,
     ImGuiContext*     _imguiContext;
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
+    std::unique_ptr<UndoManager>  _undoManager;
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 

@@ -68,6 +68,7 @@
     <ClCompile Include="../../Source Code\Editor\Widgets\DockedWindows\SceneViewWindow.cpp" />
     <ClCompile Include="../../Source Code\Editor\Widgets\Gizmo.cpp" />
     <ClCompile Include="../../Source Code\Editor\Widgets\ImGuiExtensions.cpp" />
+    <ClCompile Include="..\..\Source Code\Editor\UndoManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Editor\Editor.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="../../Source Code\Editor\Widgets\DockedWindows\Headers\SceneViewWindow.h" />
     <ClInclude Include="../../Source Code\Editor\Widgets\Headers\Gizmo.h" />
     <ClInclude Include="../../Source Code\Editor\Widgets\Headers\ImGuiExtensions.h" />
+    <ClInclude Include="..\..\Source Code\Editor\Headers\UndoManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../Source Code/Libs\imgui\addons\imgui_user.inl" />
@@ -247,7 +249,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <PreprocessorDefinitions>WORLDEDITOR;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WORLDEDITOR;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
@@ -298,7 +300,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <PreprocessorDefinitions>WORLDEDITOR;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WORLDEDITOR;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
@@ -354,7 +356,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>WORLDEDITOR;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WORLDEDITOR;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -401,7 +403,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>WORLDEDITOR;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WORLDEDITOR;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>

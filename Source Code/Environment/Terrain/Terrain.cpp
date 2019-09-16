@@ -124,7 +124,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
     sgn.get<RenderingComponent>()->setDataIndex(_nodeDataIndex);
 
-    _editorComponent.onChangedCbk([this](EditorComponentField& field) {onEditorChange(field); });
+    _editorComponent.onChangedCbk([this](const char* field) {onEditorChange(field); });
     _editorComponent.registerField(
         "Tessellated Triangle Width",
         &_descriptor->_tessellatedTriangleWidth,
@@ -143,7 +143,9 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Terrain::onEditorChange(EditorComponentField& field) {
+void Terrain::onEditorChange(const char* field) {
+    ACKNOWLEDGE_UNUSED(field);
+
     _editorDataDirtyState = EditorDataState::QUEUED;
 }
 

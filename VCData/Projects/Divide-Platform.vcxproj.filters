@@ -966,9 +966,6 @@
     <None Include="../../Source Code/Platform\Video\Headers\GFXShaderData.inl">
       <Filter>Video\Headers</Filter>
     </None>
-    <None Include="../../assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="../../Source Code/Platform\File\Headers\FileManagement.inl">
       <Filter>File\Headers</Filter>
     </None>

@@ -23,10 +23,10 @@ namespace Divide {
             _editorComponent.registerField("Transform Offset", &_transformOffset.second, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
         }
 
-        _editorComponent.onChangedCbk([this](EditorComponentField& field) {
-            if (field._name == "Transform") {
+        _editorComponent.onChangedCbk([this](const char* field) {
+            if (strcmp(field, "Transform") == 0) {
                 setTransformDirty(to_base(TransformType::ALL));
-            } else if (field._name == "Position Offset") {
+            } else if (strcmp(field, "Position Offset") == 0) {
                 // view offset stuff
             }
 
