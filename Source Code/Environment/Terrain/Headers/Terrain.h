@@ -139,7 +139,7 @@ class Terrain : public Object3D {
 
     void postLoad(SceneGraphNode& sgn);
 
-    void onEditorChange(EditorComponentField& field);
+    void onEditorChange(const char* field);
 
     const char* getResourceTypeName() const override { return "Terrain"; }
 

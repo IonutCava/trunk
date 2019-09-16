@@ -42,7 +42,7 @@ SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const st
      _editorComponent("")
 {
     getEditorComponent().name(getTypeName());
-    getEditorComponent().onChangedCbk([this](EditorComponentField& field) {
+    getEditorComponent().onChangedCbk([this](const char* field) {
         editorFieldChanged(field);
     });
 
@@ -167,7 +167,7 @@ bool SceneNode::unload() noexcept {
     return true;
 }
 
-void SceneNode::editorFieldChanged(EditorComponentField& field) {
+void SceneNode::editorFieldChanged(const char* field) {
     ACKNOWLEDGE_UNUSED(field);
 }
 

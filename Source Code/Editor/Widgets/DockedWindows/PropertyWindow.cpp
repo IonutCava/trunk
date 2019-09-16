@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 
 #include "Headers/PropertyWindow.h"
+#include "Headers/UndoManager.h"
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
@@ -403,7 +404,9 @@ namespace Divide {
 
      namespace {
         template<typename T, size_t num_comp, size_t step = 1, size_t step_fast = 100>
-        bool inputOrSlider(bool slider, const char* label, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d", float power = 1.0f) {
+        bool inputOrSlider(Editor& parent, bool slider, const char* label, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d", float power = 1.0f) {
+            static UndoEntry<T> undo = {};
+
             T val = field.get<T>();
             T min = T(field._range.min), max = T(field._range.max);
             T cStep = T(step);
@@ -423,14 +426,32 @@ namespace Divide {
                     ret = ImGui::InputScalarN(label, data_type, (void*)&val, num_comp, (void*)&cStep, (void*)&cStepFast, format, flags);
                 }
             }
-            if (ret && !field._readOnly) {
-                field.set(val);
+
+            if (!field._readOnly) {
+                if (ImGui::IsItemActivated()) {
+                    undo.oldVal = field.get<T>();
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    undo._type = field._basicType;
+                    undo._data = field._data;
+                    undo._dataSetter = field._dataSetter;
+                    undo.newVal = val;
+                    parent.registerUndoEntry(undo);
+                }
+
+                if (ret && val != field.get<T>()) {
+                    field.set(val);
+                }
             }
+
             return ret;
          };
 
         template<typename T, size_t num_rows, size_t step = 1, size_t step_fast = 100>
-        bool inputMatrix(const char* label, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d") {
+        bool inputMatrix(Editor & parent, const char* label, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d") {
+            static UndoEntry<T> undo = {};
+
             T cStep = T(step);
             T cStepFast = T(step_fast);
 
@@ -443,8 +464,23 @@ namespace Divide {
                     ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[3]._v, num_rows, NULL, NULL, format, flags) || ret;
                 }
             }
-            if (ret && !field._readOnly) {
-                field.set<>(mat);
+            if (!field._readOnly) {
+                if (ImGui::IsItemActivated()) {
+                    undo.oldVal = field.get<T>();
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    undo._type = field._basicType;
+                    undo._data = field._data;
+                    undo._dataSetter = field._dataSetter;
+                    undo.newVal = mat;
+                    parent.registerUndoEntry(undo);
+                }
+                if (ret && !field._readOnly) {
+                    if (ret && mat != field.get<T>()) {
+                        field.set<>(mat);
+                    }
+                }
             }
             return ret;
         }
@@ -477,88 +513,88 @@ namespace Divide {
                  }
              }break;
              case GFX::PushConstantType::INT: {
-                 ret = inputOrSlider<I32, 1>(isSlider, "", ImGuiDataType_S32, field, flags);
+                 ret = inputOrSlider<I32, 1>(_parent, isSlider, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UINT: {
-                 ret = inputOrSlider<U32, 1>(isSlider, "", ImGuiDataType_U32, field, flags);
+                 ret = inputOrSlider<U32, 1>(_parent, isSlider, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::DOUBLE: {
-                 ret = inputOrSlider<D64, 1>(isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputOrSlider<D64, 1>(_parent, isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::FLOAT: {
-                 ret = inputOrSlider<F32, 1>(isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputOrSlider<F32, 1>(_parent, isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::IVEC2: {
-                 ret = inputOrSlider<vec2<I32>, 2>(isSlider, "", ImGuiDataType_S32, field, flags);
+                 ret = inputOrSlider<vec2<I32>, 2>(_parent, isSlider, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IVEC3: {
-                 ret = inputOrSlider<vec3<I32>, 3>(isSlider, "", ImGuiDataType_S32, field, flags);
+                 ret = inputOrSlider<vec3<I32>, 3>(_parent, isSlider, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IVEC4: {
-                 ret = inputOrSlider<vec4<I32>, 4>(isSlider, "", ImGuiDataType_S32, field, flags);
+                 ret = inputOrSlider<vec4<I32>, 4>(_parent, isSlider, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC2: {
-                 ret = inputOrSlider<vec2<U32>, 2>(isSlider, "", ImGuiDataType_U32, field, flags);
+                 ret = inputOrSlider<vec2<U32>, 2>(_parent, isSlider, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC3: {
-                 ret = inputOrSlider<vec3<U32>, 3>(isSlider, "", ImGuiDataType_U32, field, flags);
+                 ret = inputOrSlider<vec3<U32>, 3>(_parent, isSlider, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC4: {
-                 ret = inputOrSlider<vec4<U32>, 4>(isSlider, "", ImGuiDataType_U32, field, flags);
+                 ret = inputOrSlider<vec4<U32>, 4>(_parent, isSlider, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::VEC2: {
-                 ret = inputOrSlider<vec2<F32>, 2>(isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputOrSlider<vec2<F32>, 2>(_parent, isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::VEC3: {
-                 ret = inputOrSlider<vec3<F32>, 3>(isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputOrSlider<vec3<F32>, 3>(_parent, isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::VEC4: {
-                 ret = inputOrSlider<vec4<F32>, 4>(isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputOrSlider<vec4<F32>, 4>(_parent, isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::DVEC2: {
-                 ret = inputOrSlider<vec2<D64>, 2>(isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputOrSlider<vec2<D64>, 2>(_parent, isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DVEC3: {
-                 ret = inputOrSlider<vec3<D64>, 3>(isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputOrSlider<vec3<D64>, 3>(_parent, isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DVEC4: {
-                 ret = inputOrSlider<vec4<D64>, 4>(isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputOrSlider<vec4<D64>, 4>(_parent, isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::IMAT2: {
-                 ret = inputMatrix<mat2<I32>, 2>("", ImGuiDataType_S32, field, flags);
+                 ret = inputMatrix<mat2<I32>, 2>(_parent, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IMAT3: {
-                 ret = inputMatrix<mat3<I32>, 3>("", ImGuiDataType_S32, field, flags);
+                 ret = inputMatrix<mat3<I32>, 3>(_parent, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IMAT4: {
-                 ret = inputMatrix<mat4<I32>, 4>("", ImGuiDataType_S32, field, flags);
+                 ret = inputMatrix<mat4<I32>, 4>(_parent, "", ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT2: {
-                 ret = inputMatrix<mat2<U32>, 2>("", ImGuiDataType_U32, field, flags);
+                 ret = inputMatrix<mat2<U32>, 2>(_parent, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT3: {
-                 ret = inputMatrix<mat3<U32>, 3>("", ImGuiDataType_U32, field, flags);
+                 ret = inputMatrix<mat3<U32>, 3>(_parent, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT4: {
-                 ret = inputMatrix<mat4<U32>, 4>("", ImGuiDataType_U32, field, flags);
+                 ret = inputMatrix<mat4<U32>, 4>(_parent, "", ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::MAT2: {
-                 ret = inputMatrix<mat2<F32>, 2>("", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputMatrix<mat2<F32>, 2>(_parent, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::MAT3: {
-                 ret = inputMatrix<mat3<F32>, 3>("", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputMatrix<mat3<F32>, 3>(_parent, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::MAT4: {
-                 ret = inputMatrix<mat4<F32>, 4>("", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputMatrix<mat4<F32>, 4>(_parent, "", ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::DMAT2: {
-                 ret = inputMatrix<mat2<D64>, 2>("", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputMatrix<mat2<D64>, 2>(_parent, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DMAT3: {
-                 ret = inputMatrix<mat3<D64>, 3>("", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputMatrix<mat3<D64>, 3>(_parent, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DMAT4: {
-                 ret = inputMatrix<mat4<D64>, 4>("", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputMatrix<mat4<D64>, 4>(_parent, "", ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              default: {
                  ImGui::Text(name);

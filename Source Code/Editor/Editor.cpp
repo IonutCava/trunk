@@ -2,6 +2,7 @@
 
 #include "Headers/Editor.h"
 #include "Headers/Sample.h"
+#include "Headers/UndoManager.h"
 
 #include "Editor/Widgets/Headers/MenuBar.h"
 
@@ -126,6 +127,7 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
     _menuBar = std::make_unique<MenuBar>(context, true);
+    _undoManager = std::make_unique<UndoManager>(25);
 
     _dockedWindows.fill(nullptr);
     g_windowManager = &context.app().windowManager();
@@ -163,10 +165,14 @@ void Editor::idle() {
     }
 }
 
+bool Editor::isInit() const {
+    return _mainWindow != nullptr;
+}
+
 bool Editor::init(const vec2<U16>& renderResolution) {
     ACKNOWLEDGE_UNUSED(renderResolution);
 
-    if (_mainWindow != nullptr) {
+    if (isInit()) {
         // double init
         return false;
     }
@@ -232,6 +238,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         io.ConfigViewportsNoTaskBarIcon = true;
         io.ConfigViewportsNoAutoMerge = _context.config().gui.imgui.dontMergeFloatingWindows;
         io.ConfigDockingTransparentPayload = true;
+
         io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
         io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
     }
@@ -317,7 +324,10 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             const vec2<I32>& pos = data->_window->getPosition();
             return ImVec2((F32)pos.x, (F32)pos.y);
         };
-
+        platform_io.Platform_SetWindowAlpha = [](ImGuiViewport* viewport, float alpha) {
+            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
+            data->_window->opacity(to_U8(alpha * 255));
+        };
         platform_io.Platform_SetWindowSize = [](ImGuiViewport* viewport, ImVec2 size) {
             ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
             U16 w = to_U16(size.x);
@@ -825,6 +835,10 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->onKeyDown(key);
     }
@@ -834,21 +848,43 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
     if (key._text != nullptr) {
         io.AddInputCharactersUTF8(key._text);
     }
-    io.KeyCtrl = key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL;
-    io.KeyShift = key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT;
-    io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
-    io.KeySuper = key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN;
+
+    if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+        io.KeyCtrl = true;
+    }
+    if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+        io.KeyShift = true;
+    }
+    if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+        io.KeyAlt = true;
+    }
+    if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+        io.KeySuper = true;
+    }
 
     return wantsKeyboard();
 }
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->onKeyUp(key);
     }
 
     ImGuiIO& io = _imguiContext->IO;
+
+    if (io.KeyCtrl) {
+        if (key._key == Input::KeyCode::KC_Z) {
+            _undoManager->Undo();
+        } else if (key._key == Input::KeyCode::KC_R) {
+            _undoManager->Redo();
+        }
+    }
+
     io.KeysDown[to_I32(key._key)] = false;
 
     if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
@@ -886,6 +922,10 @@ ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, Displ
 
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running()) {
         return _gizmo->mouseMoved(arg);
     } else if (scenePreviewFocused() && _gizmo->mouseMoved(arg)) {
@@ -920,6 +960,10 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->mouseButtonPressed(arg);
     }
@@ -938,6 +982,10 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
 /// Mouse button released: return true if input was consumed
 bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (running() && scenePreviewFocused() != _sceneHovered) {
         ImGui::SetCurrentContext(_imguiContext);
         scenePreviewFocused(_sceneHovered);
@@ -962,6 +1010,10 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickButtonPressed(arg);
     }
@@ -970,6 +1022,10 @@ bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickButtonReleased(arg);
     }
@@ -978,6 +1034,10 @@ bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickAxisMoved(arg);
     }
@@ -986,6 +1046,10 @@ bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickPovMoved(arg);
     }
@@ -994,6 +1058,10 @@ bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickBallMoved(arg);
     }
@@ -1002,6 +1070,10 @@ bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickAddRemove(arg);
     }
@@ -1010,6 +1082,10 @@ bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running() || scenePreviewFocused()) {
         return _gizmo->joystickRemap(arg);
     }
@@ -1018,14 +1094,26 @@ bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
 }
 
 bool Editor::wantsMouse() const {
+    if (!isInit()) {
+        return false;
+    }
+
     return !scenePreviewFocused() && _imguiContext->IO.WantCaptureMouse;
 }
 
 bool Editor::wantsKeyboard() const {
+    if (!isInit()) {
+        return false;
+    }
+
     return !scenePreviewFocused() && _imguiContext->IO.WantCaptureKeyboard;
 }
 
 bool Editor::wantsGamepad() const {
+    if (!isInit()) {
+        return false;
+    }
+
     return !scenePreviewFocused();
 }
 
@@ -1077,6 +1165,10 @@ void Editor::updateMousePosAndButtons() {
 }
 
 bool Editor::onUTF8(const Input::UTF8Event& arg) {
+    if (!isInit()) {
+        return false;
+    }
+
     if (!running()) {
         return false;
     }
@@ -1088,6 +1180,10 @@ bool Editor::onUTF8(const Input::UTF8Event& arg) {
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
+    if (!isInit()) {
+        return;
+    }
+
     if (!params.isWindowResize) {
         _targetViewport.set(0, 0, params.width, params.height);
     } else if (_mainWindow != nullptr && params.winGUID == _mainWindow->getGUID()) {

@@ -162,7 +162,7 @@ namespace Divide {
         inline vector<EditorComponentField>& fields() { return _fields; }
         inline const vector<EditorComponentField>& fields() const { return _fields; }
 
-        inline void onChangedCbk(const DELEGATE_CBK<void, EditorComponentField&>& cbk) {
+        inline void onChangedCbk(const DELEGATE_CBK<void, const char*> cbk) {
             _onChangedCbk = cbk;
         }
 
@@ -179,7 +179,7 @@ namespace Divide {
 
       protected:
         stringImpl _name;
-        DELEGATE_CBK<void, EditorComponentField&> _onChangedCbk;
+        DELEGATE_CBK<void, const char*> _onChangedCbk;
         vector<EditorComponentField> _fields;
     };
 

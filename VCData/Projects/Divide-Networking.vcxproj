@@ -143,7 +143,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <PreprocessorDefinitions>NETWORKING;_CRT_SECURE_NO_WARNINGS;_DEBUG;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NETWORKING;_CRT_SECURE_NO_WARNINGS;_DEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
@@ -194,7 +194,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <PreprocessorDefinitions>NETWORKING;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NETWORKING;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
@@ -250,7 +250,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>NETWORKING;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NETWORKING;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -297,7 +297,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>NETWORKING;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; </PreprocessorDefinitions>
+      <PreprocessorDefinitions>NETWORKING;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>

@@ -163,7 +163,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EXECUTABLE;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXECUTABLE;_CRT_SECURE_NO_WARNINGS;_DEBUG; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -230,7 +230,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EXECUTABLE;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXECUTABLE;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -295,7 +295,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EXECUTABLE;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; </PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXECUTABLE;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -355,7 +355,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/;</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>EXECUTABLE;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; </PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXECUTABLE;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
