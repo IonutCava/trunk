@@ -324,6 +324,23 @@ class Material : public CachedResource {
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);
 
+const char* getShadingModeName(Material::ShadingMode shadingMode);
+Material::ShadingMode getShadingModeByName(const stringImpl& name);
+
+const char* getTexUsageName(ShaderProgram::TextureUsage texUsage);
+ShaderProgram::TextureUsage getTexUsageByName(const stringImpl& name);
+
+const char* getTextureOperationName(Material::TextureOperation textureOp);
+Material::TextureOperation getTextureOperationByName(const stringImpl& operation);
+
+const char* getBumpMethodName(Material::BumpMethod bumpMethod);
+Material::BumpMethod getBumpMethodByName(const stringImpl& name);
+
+const char* getWrapModeName(TextureWrap wrapMode);
+TextureWrap getWrapModeByName(const stringImpl& wrapMode);
+
+const char* getFilterName(TextureFilter filter);
+TextureFilter getFilterByName(const stringImpl& filter);
 };  // namespace Divide
 
 #endif //_MATERIAL_H_

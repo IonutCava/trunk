@@ -343,19 +343,81 @@ namespace Divide {
         return ret;
      }
 
+     namespace {
+         template<bool HasAlpha>
+         bool colourInput(const char* name, F32* col, bool readOnly) {
+             static UndoEntry<vec4<F32>> undo = {};
+
+             vec4<F32> val(col[0], col[1], col[2], HasAlpha ? col[3] : 1.0f);
+
+             ImGuiColorEditFlags colourFlags = ImGuiColorEditFlags__OptionsDefault;
+             if (!HasAlpha) {
+                 colourFlags |= ImGuiColorEditFlags_NoAlpha;
+             }
+
+             ImGui::PushID(name);
+
+             if (readOnly) {
+                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                 ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+             }
+
+             bool ret =  ImGui::ColorEdit4( readOnly ? "" : name, val._v, colourFlags);
+
+             if (readOnly) {
+                 ImGui::PopStyleVar();
+                 ImGui::PopItemFlag();
+             }
+
+             ImGui::PopID();
+
+             if (!readOnly) {
+                 if (ImGui::IsItemActivated()) {
+                     undo.oldVal = vec4<F32>(col[0], col[1], col[2], HasAlpha ? col[3] : 1.0f);
+                 }
+
+                 if (ImGui::IsItemDeactivatedAfterEdit()) {
+                     //undo._type = field._basicType;
+                     //undo._data = field._data;
+                     //undo._dataSetter = field._dataSetter;
+                     undo.newVal = val;
+                     //parent.registerUndoEntry(undo);
+                 }
+
+                 ret = ret && val != vec4<F32>(col[0], col[1], col[2], HasAlpha ? col[3] : 1.0f);
+                 if (ret) {
+                     std::memcpy(col, val._v, sizeof(F32) * (HasAlpha ? 4 : 3));
+                 }
+             }
+
+             return ret;
+         }
+
+         bool colourInput(const char* name, FColour4& colour, bool readOnly) {
+             return colourInput<true>(name, colour._v, readOnly);
+         }
+
+         bool colourInput(const char* name, FColour3& colour, bool readOnly) {
+             return colourInput<false>(name, colour._v, readOnly);
+         }
+     };
+
      bool PropertyWindow::processMaterial(Material* material, bool readOnly) {
          ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
          flags |= readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
 
          bool ret = false;
          if (material) {
+             
+             ImGui::Text(Util::StringFormat("Shading Mode [ %s ]", getShadingModeName(material->getShadingMode())).c_str());
+
              FColour4 diffuse = material->getColourData().baseColour();
-             if (ImGui::InputFloat4(" - BaseColour", diffuse._v, "%.3f", flags)) {
+             if (colourInput(" - BaseColour", diffuse, readOnly)) {
                  material->getColourData().baseColour(diffuse);
              }
 
-             FColour4 emissive = material->getColourData().emissive();
-             if (ImGui::InputFloat4(" - Emissive", emissive._v, "%.3f", flags)) {
+             FColour3 emissive = material->getColourData().emissive();
+             if (colourInput(" - Emissive", emissive, readOnly)) {
                  material->getColourData().emissive(emissive);
              }
 
@@ -373,8 +435,8 @@ namespace Divide {
                      material->getColourData().roughness(roughness);
                  }
              } else {
-                 FColour4 specular = material->getColourData().specular();
-                 if (ImGui::InputFloat4(" - Specular", specular._v, "%.3f", flags)) {
+                 FColour3 specular = material->getColourData().specular();
+                 if (colourInput(" - Specular", specular, readOnly)) {
                      material->getColourData().specular(specular);
                  }
 
