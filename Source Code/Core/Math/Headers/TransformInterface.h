@@ -57,6 +57,8 @@ class ITransform {
 public:
     /// Set the local X,Y and Z position
     virtual void setPosition(const vec3<F32>& position) = 0;
+    /// Set the local X,Y and Z position
+    virtual void setPosition(const F32 x, const F32 y, const F32 z) = 0;
     /// Set the object's position on the X axis
     virtual void setPositionX(const F32 positionX) = 0;
     /// Set the object's position on the Y axis
@@ -116,10 +118,6 @@ public:
     virtual void rotateY(const Angle::DEGREES<F32> angle) = 0;
     /// Rotate on the Z axis (Axis-Angle used) by the specified angle (either degrees or radians)
     virtual void rotateZ(const Angle::DEGREES<F32> angle) = 0;
-
-    inline void setPosition(F32 x, F32 y, F32 z) {
-        setPosition(vec3<F32>(x, y, z));
-    }
 
     /// Set an uniform scale on all three axis
     inline void setScale(F32 ammount) {

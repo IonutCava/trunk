@@ -106,9 +106,13 @@ namespace Divide {
     }
 
     void TransformComponent::setPosition(const vec3<F32>& position) {
+        setPosition(position.x, position.y, position.z);
+    }
+
+    void TransformComponent::setPosition(const F32 x, const F32 y, const F32 z) {
         {
             UniqueLockShared w_lock(_lock);
-            _transformInterface.setPosition(position);
+            _transformInterface.setPosition(x, y, z);
         }
 
         setTransformDirty(TransformType::TRANSLATION);

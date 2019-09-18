@@ -442,6 +442,21 @@ namespace Divide {
                 pt.put((entryName + ".<xmlattr>.32").c_str(), data.m[3][2]);
                 pt.put((entryName + ".<xmlattr>.33").c_str(), data.m[3][3]);
             } break;
+            case GFX::PushConstantType::FCOLOUR3: {
+                FColour3 data = {};
+                field.get<FColour3>(data);
+                pt.put((entryName + ".<xmlattr>.r").c_str(), data.r);
+                pt.put((entryName + ".<xmlattr>.g").c_str(), data.g);
+                pt.put((entryName + ".<xmlattr>.b").c_str(), data.b);
+            } break;
+            case GFX::PushConstantType::FCOLOUR4: {
+                FColour4 data = {};
+                field.get<FColour4>(data);
+                pt.put((entryName + ".<xmlattr>.r").c_str(), data.r);
+                pt.put((entryName + ".<xmlattr>.g").c_str(), data.g);
+                pt.put((entryName + ".<xmlattr>.b").c_str(), data.b);
+                pt.put((entryName + ".<xmlattr>.a").c_str(), data.a);
+            } break;
         }
     }
 
@@ -747,6 +762,23 @@ namespace Divide {
                 data.m[3][2] = pt.get((entryName + ".<xmlattr>.32").c_str(), data.m[3][2]);
                 data.m[3][3] = pt.get((entryName + ".<xmlattr>.33").c_str(), data.m[3][3]);
                 field.set<mat4<D64>>(data);
+            } break;
+            case GFX::PushConstantType::FCOLOUR3:
+            {
+                FColour3 data = field.get<FColour3>();
+                data.set(pt.get((entryName + ".<xmlattr>.r").c_str(), data.r),
+                         pt.get((entryName + ".<xmlattr>.g").c_str(), data.g),
+                         pt.get((entryName + ".<xmlattr>.b").c_str(), data.b));
+                field.set<FColour3>(data);
+            } break;
+            case GFX::PushConstantType::FCOLOUR4:
+            {
+                FColour4 data = field.get<FColour4>();
+                data.set(pt.get((entryName + ".<xmlattr>.r").c_str(), data.r),
+                         pt.get((entryName + ".<xmlattr>.g").c_str(), data.g),
+                         pt.get((entryName + ".<xmlattr>.b").c_str(), data.b),
+                         pt.get((entryName + ".<xmlattr>.a").c_str(), data.a));
+                field.set<FColour4>(data);
             } break;
         }
     }

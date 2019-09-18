@@ -72,6 +72,8 @@ namespace GFX {
         DMAT2,
         DMAT3,
         DMAT4,
+        FCOLOUR3,
+        FCOLOUR4,
         //MAT_N_x_M,
         COUNT
     };

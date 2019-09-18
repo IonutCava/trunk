@@ -5,6 +5,7 @@
 #include "Headers/UndoManager.h"
 
 #include "Editor/Widgets/Headers/MenuBar.h"
+#include "Editor/Widgets/Headers/StatusBar.h"
 
 #include "Editor/Widgets/DockedWindows/Headers/OutputWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/PropertyWindow.h"
@@ -127,6 +128,7 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
     _menuBar = std::make_unique<MenuBar>(context, true);
+    _statusBar = std::make_unique<StatusBar>(context);
     _undoManager = std::make_unique<UndoManager>(25);
 
     _dockedWindows.fill(nullptr);
@@ -512,6 +514,10 @@ void Editor::update(const U64 deltaTimeUS) {
     ImGuiIO& io = _imguiContext->IO;
     io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
 
+    if (_statusBar) {
+        _statusBar->update(deltaTimeUS);
+    }
+
     if (!running()) {
         return;
     }
@@ -575,6 +581,10 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
 bool Editor::render(const U64 deltaTime) {
     ACKNOWLEDGE_UNUSED(deltaTime);
 
+    F32 statusBarHeight = 0.0f;
+    if (_statusBar) {
+        statusBarHeight = _statusBar->height();
+    }
     static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
     // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
     // because it would be confusing to have two docking targets within each others.
@@ -582,7 +592,7 @@ bool Editor::render(const U64 deltaTime) {
     
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->Pos);
-    ImGui::SetNextWindowSize(viewport->Size);
+    ImGui::SetNextWindowSize(viewport->Size + ImVec2(0.0f, -statusBarHeight));
     ImGui::SetNextWindowViewport(viewport->ID);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -604,6 +614,7 @@ bool Editor::render(const U64 deltaTime) {
     ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), opt_flags);
 
     drawMenuBar();
+    drawStatusBar();
 
     for (DockedWindow* window : _dockedWindows) {
         window->draw();
@@ -679,6 +690,12 @@ bool Editor::frameEnded(const FrameEvent& evt) {
 void Editor::drawMenuBar() {
     if (_menuBar) {
         _menuBar->draw();
+    }
+}
+
+void Editor::drawStatusBar() {
+    if (_statusBar) {
+        _statusBar->draw();
     }
 }
 
@@ -879,9 +896,13 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 
     if (io.KeyCtrl) {
         if (key._key == Input::KeyCode::KC_Z) {
-            _undoManager->Undo();
+            if (_undoManager->Undo() && _statusBar) {
+                _statusBar->showMessage(Util::StringFormat("Undo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
+            }
         } else if (key._key == Input::KeyCode::KC_R) {
-            _undoManager->Redo();
+            if (_undoManager->Redo() && _statusBar) {
+                _statusBar->showMessage(Util::StringFormat("Redo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
+            }
         }
     }
 

@@ -118,7 +118,7 @@ bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginByt
 
     {
         SharedLock r_lock(_lock);
-        for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks); ++it) {
+        for (auto it = eastl::cbegin(_bufferLocks); it != eastl::cend(_bufferLocks); ++it) {
             if (it->second.find(bufferGUID) != std::cend(it->second)) {
                 foundLockedRange = true;
                 break;

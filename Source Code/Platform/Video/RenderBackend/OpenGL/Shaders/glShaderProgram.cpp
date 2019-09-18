@@ -519,12 +519,16 @@ bool glShaderProgram::bind(bool& wasBound) {
 
 /// This is used to set all of the subroutine indices for the specified shader stage for this program
 void glShaderProgram::SetSubroutines(ShaderType type, const vector<U32>& indices) const {
+    if (indices.empty()) {
+        return;
+    }
+
     // The shader must be bound before calling this!
     DIVIDE_ASSERT(isBound() && isValid(),
                   "glShaderProgram error: tried to set subroutines on an "
                   "unbound or unlinked program!");
     // Validate data and send to GPU
-    if (!indices.empty() && indices[0] != GLUtil::_invalidObjectID) {
+    if (indices[0] != GLUtil::_invalidObjectID) {
         glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_U32(type)], (GLsizei)indices.size(), indices.data());
     }
 }

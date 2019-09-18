@@ -41,9 +41,14 @@ bool UndoManager::Redo() {
 bool UndoManager::apply(const std::shared_ptr<IUndoEntry>& entry) {
     if (entry != nullptr && (entry->_data != nullptr || entry->_dataSetter)) {
         entry->apply();
+        _lastActionName = entry->_name;
         return true;
     }
     return false;
 }
 
+
+const stringImpl& UndoManager::lasActionName() const {
+    return _lastActionName;
+}
 }; //namespace Divide 

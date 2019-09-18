@@ -251,9 +251,9 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
             F32 s = i % 2 == 0 ? s1 : s2;
             SceneGraphNode* light = _lightNodes[i];
             TransformComponent* tComp = light->get<TransformComponent>();
-            tComp->setPositionX(radius * c + initPosLight[i].x);
-            tComp->setPositionZ(radius * s + initPosLight[i].z);
-            tComp->setPositionY((radius * 0.5f) * s + initPosLight[i].y);
+            tComp->setPosition(radius * c + initPosLight[i].x,
+                               (radius * 0.5f) * s + initPosLight[i].y,
+                                radius * s + initPosLight[i].z);
         }
 
         /*for (U8 i = 0; i < 80; ++i) {
@@ -335,9 +335,9 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             initPosSet = true;
         }
 
-        tComp->setPositionX(radius * std::cos(phi) + initPos.x);
-        tComp->setPositionZ(radius * std::sin(phi) + initPos.z);
-        tComp->setPositionY((radius * 0.5f) * std::sin(phi) + initPos.y);
+        tComp->setPosition(radius * std::cos(phi) + initPos.x,
+                           (radius * 0.5f) * std::sin(phi) + initPos.y,
+                           radius * std::sin(phi) + initPos.z);
         tComp->rotateY(phi);
     }
     

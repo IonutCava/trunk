@@ -447,11 +447,11 @@ void SceneGraphNode::addToDeleteQueue(U32 idx) {
 }
 
 void SceneGraphNode::frameStarted() {
-    Attorney::SceneNodeSceneGraph::frameStarted(*_node, *this);
+    Attorney::SceneNodeSceneGraph::frameStarted(_node, *this);
 }
 
 void SceneGraphNode::frameEnded() {
-    Attorney::SceneNodeSceneGraph::frameEnded(*_node, *this);
+    Attorney::SceneNodeSceneGraph::frameEnded(_node, *this);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut

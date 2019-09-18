@@ -65,6 +65,7 @@ namespace Attorney {
 class Gizmo;
 class Camera;
 class MenuBar;
+class StatusBar;
 class UndoManager;
 class DockedWindow;
 class OutputWindow;
@@ -198,6 +199,7 @@ class Editor : public PlatformContextComponent,
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
     void drawMenuBar();
+    void drawStatusBar();
     void setSelectedCamera(Camera* camera);
     Camera* getSelectedCamera() const;
     bool hasUnsavedElements() const;
@@ -216,6 +218,7 @@ class Editor : public PlatformContextComponent,
     ImGuiStyleEnum _currentDimmedTheme;
 
     std::unique_ptr<MenuBar> _menuBar;
+    std::unique_ptr<StatusBar> _statusBar;
     std::unique_ptr<Gizmo> _gizmo;
     Rect<I32>         _targetViewport;
     U32               _stepQueue;

@@ -207,12 +207,12 @@ class SceneNodeSceneGraph {
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
     }
-    static void frameStarted(SceneNode& node, SceneGraphNode& sgn) {
-        node.frameStarted(sgn);
+    static void frameStarted(SceneNode_ptr& node, SceneGraphNode& sgn) {
+        node->frameStarted(sgn);
     }
 
-    static void frameEnded(SceneNode& node, SceneGraphNode& sgn) {
-        node.frameEnded(sgn);
+    static void frameEnded(SceneNode_ptr& node, SceneGraphNode& sgn) {
+        node->frameEnded(sgn);
     }
 
     static void sceneUpdate(SceneNode& node, const U64 deltaTimeUS,
