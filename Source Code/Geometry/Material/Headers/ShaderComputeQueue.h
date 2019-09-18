@@ -84,7 +84,7 @@ private:
 
     Time::ProfileTimer& _queueComputeTimer;
 
-    std::mutex _queueLock;
+    SharedMutex _queueLock;
     std::deque<ShaderQueueElement> _shaderComputeQueue;
     U32  _totalShaderComputeCount = 0;
 };

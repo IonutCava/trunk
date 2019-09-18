@@ -505,8 +505,14 @@ void glShader::Uniform(I32 binding, GFX::PushConstantType type, const vectorEAST
         case GFX::PushConstantType::VEC3:
             glProgramUniform3fv(_programHandle, binding, byteCount / (3 * 4), castData<GLfloat, 3, vec3<F32>>(values));
             break;
+        case GFX::PushConstantType::FCOLOUR3:
+            glProgramUniform3fv(_programHandle, binding, byteCount / (3 * 4), castData<GLfloat, 3, FColour3>(values));
+            break;
         case GFX::PushConstantType::VEC4:
             glProgramUniform4fv(_programHandle, binding, byteCount / (4 * 4), castData<GLfloat, 4, vec4<F32>>(values));
+            break;
+        case GFX::PushConstantType::FCOLOUR4:
+            glProgramUniform3fv(_programHandle, binding, byteCount / (4 * 4), castData<GLfloat, 4, FColour4>(values));
             break;
         case GFX::PushConstantType::IMAT2:
             glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<I32>>(values));

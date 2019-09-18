@@ -42,39 +42,45 @@ inline void TransformValues::operator=(const TransformValues& other) {
 
 inline bool TransformValues::operator==(const TransformValues& other) const {
     return _scale.compare(other._scale) &&
-        _orientation.compare(other._orientation) &&
-        _translation.compare(other._translation);
+           _orientation.compare(other._orientation) &&
+           _translation.compare(other._translation);
 }
 
 inline bool TransformValues::operator!=(const TransformValues& other) const {
     return !_scale.compare(other._scale) ||
-        !_orientation.compare(other._orientation) ||
-        !_translation.compare(other._translation);
+           !_orientation.compare(other._orientation) ||
+           !_translation.compare(other._translation);
 }
 
 /// Set the local X,Y and Z position
 inline void Transform::setPosition(const vec3<F32>& position) {
-    _notDirty.clear();
-    _transformValues._translation.set(position);
+    setPosition(position.x, position.y, position.z);
 }
+
+/// Set the local X,Y and Z position
+inline void Transform::setPosition(const F32 x, const F32 y, const F32 z) {
+    _notDirty.clear();
+    _transformValues._translation.set(x, y, z);
+}
+
 /// Set the object's position on the X axis
 inline void Transform::setPositionX(const F32 positionX) {
-    setPosition(vec3<F32>(positionX,
-        _transformValues._translation.y,
-        _transformValues._translation.z));
+    setPosition(positionX,
+                _transformValues._translation.y,
+                _transformValues._translation.z);
 }
 /// Set the object's position on the Y axis
 inline void Transform::setPositionY(const F32 positionY) {
-    setPosition(vec3<F32>(_transformValues._translation.x,
-        positionY,
-        _transformValues._translation.z));
+    setPosition(_transformValues._translation.x,
+                 positionY,
+                 _transformValues._translation.z);
 }
 
 /// Set the object's position on the Z axis
 inline void Transform::setPositionZ(const F32 positionZ) {
-    setPosition(vec3<F32>(_transformValues._translation.x,
-        _transformValues._translation.y,
-        positionZ));
+    setPosition(_transformValues._translation.x,
+                _transformValues._translation.y,
+                positionZ);
 }
 
 /// Set the local X,Y and Z scale factors

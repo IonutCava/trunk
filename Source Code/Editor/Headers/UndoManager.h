@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     struct IUndoEntry {
         GFX::PushConstantType _type = GFX::PushConstantType::COUNT;
-        std::string _name = "";
+        stringImpl _name = "";
         void* _data = nullptr;
         std::function<void(const void*)> _dataSetter = {};
         DELEGATE_CBK<void, const char*> _onChangedCbk;
@@ -81,6 +81,8 @@ namespace Divide {
         bool Undo();
         bool Redo();
 
+        const stringImpl& lasActionName() const;
+
         template<typename T>
         void registerUndoEntry(const UndoEntry<T>& entry) {
             auto entryPtr = std::make_shared<UndoEntry<T>>(entry);
@@ -97,6 +99,7 @@ namespace Divide {
         const U32 _maxSize = 10;
         UndoStack _undoStack;
         UndoStack _redoStack;
+        stringImpl _lastActionName;
     };
 
 }; //namespace Divide

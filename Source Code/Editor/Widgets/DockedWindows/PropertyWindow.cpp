@@ -344,130 +344,82 @@ namespace Divide {
      }
 
      namespace {
-         template<bool HasAlpha>
-         bool colourInput(const char* name, F32* col, bool readOnly) {
-             static UndoEntry<vec4<F32>> undo = {};
+         bool colourInput4(Editor& parent, const char* name, FColour4& col, bool readOnly, std::function<void(const void*)> dataSetter = {}) {
+             static UndoEntry<FColour4> undo = {};
 
-             vec4<F32> val(col[0], col[1], col[2], HasAlpha ? col[3] : 1.0f);
-
-             ImGuiColorEditFlags colourFlags = ImGuiColorEditFlags__OptionsDefault;
-             if (!HasAlpha) {
-                 colourFlags |= ImGuiColorEditFlags_NoAlpha;
-             }
-
-             ImGui::PushID(name);
-
-             if (readOnly) {
-                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                 ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-             }
-
-             bool ret =  ImGui::ColorEdit4( readOnly ? "" : name, val._v, colourFlags);
-
-             if (readOnly) {
-                 ImGui::PopStyleVar();
-                 ImGui::PopItemFlag();
-             }
-
-             ImGui::PopID();
+             FColour4 oldVal = col;
+             bool ret = ImGui::ColorEdit4(readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
 
              if (!readOnly) {
                  if (ImGui::IsItemActivated()) {
-                     undo.oldVal = vec4<F32>(col[0], col[1], col[2], HasAlpha ? col[3] : 1.0f);
+                     undo.oldVal = oldVal;
                  }
 
                  if (ImGui::IsItemDeactivatedAfterEdit()) {
-                     //undo._type = field._basicType;
-                     //undo._data = field._data;
-                     //undo._dataSetter = field._dataSetter;
-                     undo.newVal = val;
-                     //parent.registerUndoEntry(undo);
-                 }
-
-                 ret = ret && val != vec4<F32>(col[0], col[1], col[2], HasAlpha ? col[3] : 1.0f);
-                 if (ret) {
-                     std::memcpy(col, val._v, sizeof(F32) * (HasAlpha ? 4 : 3));
+                     undo._type = GFX::PushConstantType::FCOLOUR4;
+                     undo._name = name;
+                     undo._data = col._v;
+                     undo._dataSetter = dataSetter;
+                     undo.newVal = col;
+                     parent.registerUndoEntry(undo);
                  }
              }
 
              return ret;
          }
 
-         bool colourInput(const char* name, FColour4& colour, bool readOnly) {
-             return colourInput<true>(name, colour._v, readOnly);
+         bool colourInput3(Editor& parent, const char* name, FColour3& col, bool readOnly, std::function<void(const void*)> dataSetter = {}) {
+             static UndoEntry<FColour3> undo = {};
+
+             FColour3 oldVal = col;
+             bool ret =  ImGui::ColorEdit3( readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
+
+             if (!readOnly) {
+                 if (ImGui::IsItemActivated()) {
+                     undo.oldVal = oldVal;
+                 }
+
+                 if (ImGui::IsItemDeactivatedAfterEdit()) {
+                     undo._type = GFX::PushConstantType::FCOLOUR3;
+                     undo._name = name;
+                     undo._data = col._v;
+                     undo._dataSetter = dataSetter;
+                     undo.newVal = col;
+                     parent.registerUndoEntry(undo);
+                 }
+             }
+
+             return ret;
          }
 
-         bool colourInput(const char* name, FColour3& colour, bool readOnly) {
-             return colourInput<false>(name, colour._v, readOnly);
-         }
-     };
-
-     bool PropertyWindow::processMaterial(Material* material, bool readOnly) {
-         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
-         flags |= readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
-
-         bool ret = false;
-         if (material) {
-             
-             ImGui::Text(Util::StringFormat("Shading Mode [ %s ]", getShadingModeName(material->getShadingMode())).c_str());
-
-             FColour4 diffuse = material->getColourData().baseColour();
-             if (colourInput(" - BaseColour", diffuse, readOnly)) {
-                 material->getColourData().baseColour(diffuse);
+         bool colourInput4(Editor& parent, const char* name, EditorComponentField& field) {
+             FColour4 val = field.get<FColour4>();
+             if (colourInput4(parent, name, val, field._readOnly, field._dataSetter) && val != field.get<FColour4>()) {
+                 field.set(val);
+                 return true;
              }
 
-             FColour3 emissive = material->getColourData().emissive();
-             if (colourInput(" - Emissive", emissive, readOnly)) {
-                 material->getColourData().emissive(emissive);
-             }
-
-             if (material->isPBRMaterial()) {
-                 F32 reflectivity = material->getColourData().reflectivity();
-                 if (ImGui::InputFloat(" - Specular", &reflectivity, 0.0f, 0.0f, "%.3f", flags)) {
-                     material->getColourData().reflectivity(reflectivity);
-                 }
-                 F32 metallic = material->getColourData().metallic();
-                 if (ImGui::InputFloat(" - Shininess", &metallic, 0.0f, 0.0f, "%.3f", flags)) {
-                     material->getColourData().metallic(metallic);
-                 }
-                 F32 roughness = material->getColourData().roughness();
-                 if (ImGui::InputFloat(" - Roughness", &roughness, 0.0f, 0.0f, "%.3f", flags)) {
-                     material->getColourData().roughness(roughness);
-                 }
-             } else {
-                 FColour3 specular = material->getColourData().specular();
-                 if (colourInput(" - Specular", specular, readOnly)) {
-                     material->getColourData().specular(specular);
-                 }
-
-                 F32 shininess = material->getColourData().shininess();
-                 if (ImGui::InputFloat(" - Shininess", &shininess, 0.0f, 0.0f, "%.3f", flags)) {
-                     material->getColourData().shininess(shininess);
-                 }
-             }
-             ImGui::SameLine();
-             bool doubleSided = material->isDoubleSided();
-             if (readOnly) {
-                 ImGui::Checkbox("DoubleSided", &doubleSided);
-             }  else {
-                 material->setDoubleSided(ImGui::Checkbox("DoubleSided", &doubleSided));
-             }
-
-             bool receivesShadows = material->receivesShadows();
-             if (readOnly) {
-                 ImGui::Checkbox("ReceivesShadows", &receivesShadows);
-             } else {
-                 material->setReceivesShadows(ImGui::Checkbox("ReceivesShadows", &receivesShadows));
-             }
+             return false;
          }
 
-         return ret;
-     }
+         bool colourInput3(Editor& parent, const char* name, EditorComponentField& field) {
+             FColour3 val = field.get<FColour3>();
+             if (colourInput3(parent, name, val, field._readOnly, field._dataSetter) && val != field.get<FColour3>()) {
+                 field.set(val);
+                 return true;
+             }
 
-     namespace {
+             return false;
+         }
+
         template<typename T, size_t num_comp, size_t step = 1, size_t step_fast = 100>
-        bool inputOrSlider(Editor& parent, bool slider, const char* label, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d", float power = 1.0f) {
+        bool inputOrSlider(Editor& parent, bool slider, const char* label, const char* name, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d", float power = 1.0f) {
             static UndoEntry<T> undo = {};
+
+            if (slider && field._readOnly) {
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+            }
 
             T val = field.get<T>();
             T min = T(field._range.min), max = T(field._range.max);
@@ -496,6 +448,7 @@ namespace Divide {
 
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     undo._type = field._basicType;
+                    undo._name = name;
                     undo._data = field._data;
                     undo._dataSetter = field._dataSetter;
                     undo.newVal = val;
@@ -505,13 +458,16 @@ namespace Divide {
                 if (ret && val != field.get<T>()) {
                     field.set(val);
                 }
+            } else if (slider) {
+                ImGui::PopStyleVar();
+                ImGui::PopItemFlag();
             }
 
             return ret;
          };
 
         template<typename T, size_t num_rows, size_t step = 1, size_t step_fast = 100>
-        bool inputMatrix(Editor & parent, const char* label, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d") {
+        bool inputMatrix(Editor & parent, const char* label, const char* name, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d") {
             static UndoEntry<T> undo = {};
 
             T cStep = T(step);
@@ -533,6 +489,7 @@ namespace Divide {
 
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     undo._type = field._basicType;
+                    undo._name = name;
                     undo._data = field._data;
                     undo._dataSetter = field._dataSetter;
                     undo.newVal = mat;
@@ -548,6 +505,91 @@ namespace Divide {
         }
      };
 
+     bool PropertyWindow::processMaterial(Material* material, bool readOnly) {
+         bool ret = false;
+
+         if (material) {
+
+             if (readOnly) {
+                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                 ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+             }
+
+             ImGui::Text(Util::StringFormat("Shading Mode [ %s ]", getShadingModeName(material->getShadingMode())).c_str());
+
+             auto diffuseSetter = [material](const void* data) {
+                 material->getColourData().baseColour(*(FColour4*)data);
+             };
+             FColour4 diffuse = material->getColourData().baseColour();
+             if (colourInput4(_parent, " - BaseColour", diffuse, readOnly, diffuseSetter)) {
+                 diffuseSetter(diffuse._v);
+                 ret = true;
+             }
+                 
+             auto emissiveSetter = [material](const void* data) {
+                 material->getColourData().emissive(*(FColour3*)data);
+             };
+             FColour3 emissive = material->getColourData().emissive();
+             if (colourInput3(_parent, " - Emissive", emissive, readOnly, emissiveSetter)) {
+                 emissiveSetter(emissive._v);
+                 ret = true;
+             }
+             
+             if (material->isPBRMaterial()) {
+                 F32 reflectivity = material->getColourData().reflectivity();
+                 if (ImGui::SliderFloat(" - Specular", &reflectivity, 0.0f, 1.0f)) {
+                     material->getColourData().reflectivity(reflectivity);
+                     ret = true;
+                 }
+                 F32 metallic = material->getColourData().metallic();
+                 if (ImGui::SliderFloat(" - Shininess", &metallic, 0.0f, 1.0f)) {
+                     material->getColourData().metallic(metallic);
+                     ret = true;
+                 }
+                 F32 roughness = material->getColourData().roughness();
+                 if (ImGui::SliderFloat(" - Roughness", &roughness, 0.0f, 1.0f)) {
+                     material->getColourData().roughness(roughness);
+                     ret = true;
+                 }
+             } else {
+                 auto specularSetter = [material](const void* data) {
+                     material->getColourData().specular(*(FColour3*)data);
+                 };
+                 FColour3 specular = material->getColourData().specular();
+                 if (colourInput3(_parent, " - Specular", specular, readOnly, specularSetter)) {
+                     specularSetter(specular._v);
+                     ret = true;
+                 }
+
+                 F32 shininess = material->getColourData().shininess();
+                 if (ImGui::SliderFloat(" - Shininess", &shininess, 0.0f, 1.0f)) {
+                     material->getColourData().shininess(shininess);
+                     ret = true;
+                 }
+             }
+
+             bool doubleSided = material->isDoubleSided();
+             bool receivesShadows = material->receivesShadows();
+
+             ret = ImGui::Checkbox("DoubleSided", &doubleSided) || ret;
+             ret = ImGui::Checkbox("ReceivesShadows", &receivesShadows) || ret;
+             if (!readOnly) {
+                 material->setDoubleSided(doubleSided);
+                 material->setReceivesShadows(receivesShadows);
+             } else {
+                 ImGui::PopStyleVar();
+                 ImGui::PopItemFlag();
+             }
+
+             if (readOnly) {
+                 ret = false;
+             }
+         }
+
+         return ret;
+     }
+
+
      bool PropertyWindow::processBasicField(EditorComponentField& field) {
          const bool isSlider = field._type == EditorComponentFieldType::SLIDER_TYPE &&
                                field._basicType != GFX::PushConstantType::BOOL &&
@@ -560,10 +602,6 @@ namespace Divide {
 
          const char* name = field._name.c_str();
          ImGui::PushID(name);
-         if (isSlider && field._readOnly) {
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-         }
 
          bool ret = false;
          switch (field._basicType) {
@@ -575,98 +613,100 @@ namespace Divide {
                  }
              }break;
              case GFX::PushConstantType::INT: {
-                 ret = inputOrSlider<I32, 1>(_parent, isSlider, "", ImGuiDataType_S32, field, flags);
+                 ret = inputOrSlider<I32, 1>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UINT: {
-                 ret = inputOrSlider<U32, 1>(_parent, isSlider, "", ImGuiDataType_U32, field, flags);
+                 ret = inputOrSlider<U32, 1>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::DOUBLE: {
-                 ret = inputOrSlider<D64, 1>(_parent, isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputOrSlider<D64, 1>(_parent, isSlider, "", name, ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::FLOAT: {
-                 ret = inputOrSlider<F32, 1>(_parent, isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputOrSlider<F32, 1>(_parent, isSlider, "", name, ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::IVEC2: {
-                 ret = inputOrSlider<vec2<I32>, 2>(_parent, isSlider, "", ImGuiDataType_S32, field, flags);
+                 ret = inputOrSlider<vec2<I32>, 2>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IVEC3: {
-                 ret = inputOrSlider<vec3<I32>, 3>(_parent, isSlider, "", ImGuiDataType_S32, field, flags);
+                 ret = inputOrSlider<vec3<I32>, 3>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IVEC4: {
-                 ret = inputOrSlider<vec4<I32>, 4>(_parent, isSlider, "", ImGuiDataType_S32, field, flags);
+                 ret = inputOrSlider<vec4<I32>, 4>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC2: {
-                 ret = inputOrSlider<vec2<U32>, 2>(_parent, isSlider, "", ImGuiDataType_U32, field, flags);
+                 ret = inputOrSlider<vec2<U32>, 2>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC3: {
-                 ret = inputOrSlider<vec3<U32>, 3>(_parent, isSlider, "", ImGuiDataType_U32, field, flags);
+                 ret = inputOrSlider<vec3<U32>, 3>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UVEC4: {
-                 ret = inputOrSlider<vec4<U32>, 4>(_parent, isSlider, "", ImGuiDataType_U32, field, flags);
+                 ret = inputOrSlider<vec4<U32>, 4>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::VEC2: {
-                 ret = inputOrSlider<vec2<F32>, 2>(_parent, isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputOrSlider<vec2<F32>, 2>(_parent, isSlider, "", name, ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::VEC3: {
-                 ret = inputOrSlider<vec3<F32>, 3>(_parent, isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputOrSlider<vec3<F32>, 3>(_parent, isSlider, "", name, ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::VEC4: {
-                 ret = inputOrSlider<vec4<F32>, 4>(_parent, isSlider, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputOrSlider<vec4<F32>, 4>(_parent, isSlider, "", name, ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::DVEC2: {
-                 ret = inputOrSlider<vec2<D64>, 2>(_parent, isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputOrSlider<vec2<D64>, 2>(_parent, isSlider, "", name, ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DVEC3: {
-                 ret = inputOrSlider<vec3<D64>, 3>(_parent, isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputOrSlider<vec3<D64>, 3>(_parent, isSlider, "", name, ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DVEC4: {
-                 ret = inputOrSlider<vec4<D64>, 4>(_parent, isSlider, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputOrSlider<vec4<D64>, 4>(_parent, isSlider, "", name, ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::IMAT2: {
-                 ret = inputMatrix<mat2<I32>, 2>(_parent, "", ImGuiDataType_S32, field, flags);
+                 ret = inputMatrix<mat2<I32>, 2>(_parent, "", name, ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IMAT3: {
-                 ret = inputMatrix<mat3<I32>, 3>(_parent, "", ImGuiDataType_S32, field, flags);
+                 ret = inputMatrix<mat3<I32>, 3>(_parent, "", name, ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::IMAT4: {
-                 ret = inputMatrix<mat4<I32>, 4>(_parent, "", ImGuiDataType_S32, field, flags);
+                 ret = inputMatrix<mat4<I32>, 4>(_parent, "", name, ImGuiDataType_S32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT2: {
-                 ret = inputMatrix<mat2<U32>, 2>(_parent, "", ImGuiDataType_U32, field, flags);
+                 ret = inputMatrix<mat2<U32>, 2>(_parent, "", name, ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT3: {
-                 ret = inputMatrix<mat3<U32>, 3>(_parent, "", ImGuiDataType_U32, field, flags);
+                 ret = inputMatrix<mat3<U32>, 3>(_parent, "", name, ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::UMAT4: {
-                 ret = inputMatrix<mat4<U32>, 4>(_parent, "", ImGuiDataType_U32, field, flags);
+                 ret = inputMatrix<mat4<U32>, 4>(_parent, "", name, ImGuiDataType_U32, field, flags);
              }break;
              case GFX::PushConstantType::MAT2: {
-                 ret = inputMatrix<mat2<F32>, 2>(_parent, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputMatrix<mat2<F32>, 2>(_parent, "", name, ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::MAT3: {
-                 ret = inputMatrix<mat3<F32>, 3>(_parent, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputMatrix<mat3<F32>, 3>(_parent, "", name, ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::MAT4: {
-                 ret = inputMatrix<mat4<F32>, 4>(_parent, "", ImGuiDataType_Float, field, flags, "%.3f");
+                 ret = inputMatrix<mat4<F32>, 4>(_parent, "", name, ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::DMAT2: {
-                 ret = inputMatrix<mat2<D64>, 2>(_parent, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputMatrix<mat2<D64>, 2>(_parent, "", name, ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DMAT3: {
-                 ret = inputMatrix<mat3<D64>, 3>(_parent, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputMatrix<mat3<D64>, 3>(_parent, "", name, ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::DMAT4: {
-                 ret = inputMatrix<mat4<D64>, 4>(_parent, "", ImGuiDataType_Double, field, flags, "%.6f");
+                 ret = inputMatrix<mat4<D64>, 4>(_parent, "", name, ImGuiDataType_Double, field, flags, "%.6f");
+             }break;
+             case GFX::PushConstantType::FCOLOUR3: {
+                 ret = colourInput3(_parent, "", field);
+             }break;
+             case GFX::PushConstantType::FCOLOUR4: {
+                 ret = colourInput4(_parent, "", field);
              }break;
              default: {
                  ImGui::Text(name);
              }break;
          }
 
-         if (isSlider && field._readOnly) {
-             ImGui::PopStyleVar();
-             ImGui::PopItemFlag();
-         }
          ImGui::Spacing();
          ImGui::PopID();
 

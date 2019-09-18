@@ -225,35 +225,35 @@ private:
     /// should also change display dimensions and position
     void handleChangeWindowType(WindowType newWindowType);
 
+    vec2<U16> getDrawableSizeInternal() const;
 private:
+    typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>> EventListeners;
+    std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
+    DELEGATE_CBK<void> _destroyCbk;
+
+    FColour4  _clearColour;
+    Rect<I32> _renderingViewport;
+
+    stringImpl _title;
+
+    vec2<U16> _prevDimensions;
+    vec2<U16> _drawableSize;
+    U32 _flags = 0;
+    Uint32 _windowID;
+
     WindowManager& _parent;
     SDL_Window* _sdlWindow;
+    void* _userData = nullptr;
 
     /// The current rendering window type
     WindowType _type;
     WindowType _previousType;
     WindowType _queuedType;
-
-    U32 _flags = 0;
-
-    stringImpl _title;
+    U8 _opacity;
+    
     /// Did we generate the window move event?
     bool _internalMoveEvent;
     bool _internalResizeEvent;
-
-    Rect<I32> _renderingViewport;
-
-    U8 _opacity;
-    vec2<U16> _prevDimensions;
-    FColour4  _clearColour;
-    typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>> EventListeners;
-    std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
-
-    Uint32 _windowID;
-
-    DELEGATE_CBK<void> _destroyCbk;
-    
-    void *_userData = nullptr;
 
     static I64 s_cursorWindowGUID;
 

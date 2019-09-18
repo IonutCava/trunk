@@ -67,6 +67,7 @@ namespace Divide {
 
          /// Component <-> Transform interface
          void setPosition(const vec3<F32>& position) override;
+         void setPosition(const F32 x, const F32 y, const F32 z) override;
          void setPositionX(const F32 positionX) override;
          void setPositionY(const F32 positionY) override;
          void setPositionZ(const F32 positionZ) override;

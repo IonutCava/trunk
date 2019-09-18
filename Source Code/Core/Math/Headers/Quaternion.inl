@@ -302,12 +302,8 @@ void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 
 
 template <typename T>
 void Quaternion<T>::fromAxisAngle(const vec3<T>& v, Angle::DEGREES<T> angle) {
-    const Angle::RADIANS<T> angleHAlfRad = Angle::to_RADIANS(angle) * 0.5f;
-
-    vec3<T> vn(v);
-    vn.normalize();
-
-    _elements.set(vn * std::sin(angleHAlfRad), std::cos(angleHAlfRad));
+    const Angle::RADIANS<T> angleHalfRad = Angle::to_RADIANS(angle) * 0.5f;
+    _elements.set(Normalized(v) * std::sin(angleHalfRad), std::cos(angleHalfRad));
 }
 
 template <typename T>

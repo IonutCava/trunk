@@ -35,7 +35,8 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
 {
     SetBit(_flags, WindowFlags::SWAP_BUFFER);
 
-    _prevDimensions.set(1);
+    _prevDimensions.set(1u, 1u);
+    _drawableSize.set(0u, 0u);
 }
 
 DisplayWindow::~DisplayWindow() 
@@ -90,6 +91,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                                   windowFlags);
 
     _windowID = SDL_GetWindowID(_sdlWindow);
+    _drawableSize = getDrawableSize();
 
     // Check if we have a valid window
     if (!_sdlWindow) {
@@ -180,13 +182,14 @@ bool DisplayWindow::onSDLEvent(SDL_Event event) {
             }
             args._flag = fullscreen();
             notifyListeners(WindowEvent::RESIZED, args);
-
+            _drawableSize = getDrawableSizeInternal();
             _internalResizeEvent = false;
             return true;
         };
         case SDL_WINDOWEVENT_SIZE_CHANGED: {
             args._flag = fullscreen();
             notifyListeners(WindowEvent::SIZE_CHANGED, args);
+            _drawableSize = getDrawableSizeInternal();
             return true;
         };
         case SDL_WINDOWEVENT_MOVED: {
@@ -244,6 +247,10 @@ Rect<I32> DisplayWindow::getBorderSizes() const {
 }
 
 vec2<U16> DisplayWindow::getDrawableSize() const {
+    return _drawableSize;
+}
+
+vec2<U16> DisplayWindow::getDrawableSizeInternal() const {
     if (_type == WindowType::FULLSCREEN || _type == WindowType::FULLSCREEN_WINDOWED) {
         return _parent.getFullscreenResolution();
     }
@@ -327,6 +334,7 @@ void DisplayWindow::restore() {
 
     ClearBit(_flags, WindowFlags::MAXIMIZED);
     ClearBit(_flags, WindowFlags::MINIMIZED);
+    _drawableSize = getDrawableSizeInternal();
 }
 
 void DisplayWindow::minimized(const bool state) {

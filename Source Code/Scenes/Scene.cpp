@@ -1217,7 +1217,7 @@ bool Scene::updateCameraControls(PlayerIndex idx) {
     updated = cam.zoom(to_I32(playerState.zoom())) || updated;
 
     playerState.cameraUpdated(updated);
-    playerState.cameraUnderwater(checkCameraUnderwater(idx));
+    playerState.cameraUnderwater(checkCameraUnderwater(cam));
 
     return playerState.cameraUpdated();
 }
@@ -1234,8 +1234,8 @@ void Scene::onStartUpdateLoop(const U8 loopNumber) {
 }
 
 void Scene::onLostFocus() {
-    for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
-        state().playerState(_scenePlayers[i]->index()).resetMovement();
+    for (const Player_ptr& player : _scenePlayers) {
+        state().playerState(player->index()).resetMovement();
     }
 
     //_paramHandler.setParam(_ID("freezeLoopTime"), true);
@@ -1341,7 +1341,11 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
 
 bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
-    const vec3<F32>& eyePos = crtCamera.getEye();
+    return checkCameraUnderwater(crtCamera);
+}
+
+bool Scene::checkCameraUnderwater(const Camera& camera) const {
+    const vec3<F32>& eyePos = camera.getEye();
 
     for (const WaterDetails& water : state().globalWaterBodies())  {
         if (IS_IN_RANGE_INCLUSIVE(eyePos.y, water._heightOffset - water._depth, water._heightOffset)) {

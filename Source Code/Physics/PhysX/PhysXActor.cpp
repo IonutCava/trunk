@@ -18,6 +18,11 @@ namespace Divide {
 
     /// Set the local X,Y and Z position
     void PhysXActor::setPosition(const vec3<F32>& position) {
+        setPosition(position.x, position.y, position.z);
+    }
+
+    /// Set the local X,Y and Z position
+    void PhysXActor::setPosition(const F32 x, const F32 y, const F32 z) {
     }
 
     /// Set the object's position on the X axis

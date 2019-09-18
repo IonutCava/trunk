@@ -184,6 +184,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void onNodeDestroy(SceneGraphNode& node);
     void findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos);
     bool checkCameraUnderwater(PlayerIndex idx) const;
+    bool checkCameraUnderwater(const Camera& camera) const;
     void toggleFlashlight(PlayerIndex idx);
 
     virtual bool save(ByteBuffer& outputBuffer) const;
@@ -264,7 +265,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
        SceneGraphNode* _sun;
 
-       vector<Player_ptr> _scenePlayers;
+       vectorEASTL<Player_ptr> _scenePlayers;
        U64 _sceneTimerUS;
        vector<D64> _taskTimers;
        vector<D64> _guiTimersMS;
