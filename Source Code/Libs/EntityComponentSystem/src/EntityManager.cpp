@@ -33,7 +33,7 @@ namespace ECS
 
 	EntityId EntityManager::AqcuireEntityId(IEntity* entity)
 	{
-		return this->m_EntityHandleTable.AqcuireHandle(entity);
+		return this->m_EntityHandleTable.AcquireHandle(entity);
 	}
 
 	void EntityManager::ReleaseEntityId(EntityId id)

@@ -74,8 +74,6 @@ namespace Divide {
     }
 
     void Gizmo::render(const Camera& camera) {
-        static bool oddFrame = false;
-
         if (!active()) {
             return;
         }
@@ -89,8 +87,6 @@ namespace Divide {
         if (transform == nullptr) {
             return;
         }
-
-        oddFrame = !oddFrame;
 
         const mat4<F32>& cameraView = camera.getViewMatrix();
         const mat4<F32>& cameraProjection = camera.getProjectionMatrix();
@@ -114,7 +110,7 @@ namespace Divide {
                              NULL,
                              _transformSettings.useSnap ? &_transformSettings.snap[0] : NULL);
 
-        if (ImGuizmo::IsUsing() && oddFrame) {
+        if (ImGuizmo::IsUsing()) {
             if (!_wasUsed) {
                 transform->getValues(_undoEntry.oldVal);
             }
@@ -126,7 +122,6 @@ namespace Divide {
             values._orientation.fromMatrix(mat3<F32>(matrix));
             transform->setTransform(values);
 
-            //_undoEntry.oldVal = ;
             _undoEntry.newVal = values;
             _undoEntry._dataSetter = [transform](const void* data) {
                 if (transform != nullptr) {
@@ -198,6 +193,17 @@ namespace Divide {
         }
 
         ImGuiIO& io = _imguiContext->IO;
+
+
+        if (io.KeyCtrl) {
+            if (key._key == Input::KeyCode::KC_Z) {
+                _parent.Undo();
+            }
+            else if (key._key == Input::KeyCode::KC_R) {
+                _parent.Redo();
+            }
+        }
+
         io.KeysDown[to_I32(key._key)] = false;
 
         if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {

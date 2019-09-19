@@ -139,7 +139,8 @@ class Editor : public PlatformContextComponent,
     void registerUndoEntry(const UndoEntry<T>& entry) {
         _undoManager->registerUndoEntry(entry);
     }
-
+    bool Undo();
+    bool Redo();
     void setTransformSettings(const TransformSettings& settings);
     const TransformSettings& getTransformSettings() const;
 

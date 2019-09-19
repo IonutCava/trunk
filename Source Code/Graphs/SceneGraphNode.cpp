@@ -294,7 +294,7 @@ bool SceneGraphNode::removeNode(const SceneGraphNode& node) {
 }
 
 void SceneGraphNode::postLoad() {
-    SendEvent<EntityPostLoad>(GetEntityID(), getGUID());
+    SendEvent<EntityPostLoad>(GetEntityID());
 }
 
 bool SceneGraphNode::isChildOfType(U16 typeMask, bool ignoreRoot) const {
@@ -411,7 +411,7 @@ void SceneGraphNode::lockVisibility(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     if (_active != state) {
         _active = state;
-        SendAndDispatchEvent<EntityActiveStateChange>(GetEntityID(), getGUID(), _active);
+        SendAndDispatchEvent<EntityActiveStateChange>(GetEntityID(), _active);
 
         forEachChild([state](SceneGraphNode& child) {
             child.setActive(state);

@@ -135,7 +135,7 @@ namespace ECS { namespace util {
 		~HandleTable()
 		{}
 
-		Handle AqcuireHandle(T* rawObject)
+		Handle AcquireHandle(T* rawObject)
 		{
 			typename Handle::value_type i = 0;
 			for (; i < this->m_Table.size(); ++i)

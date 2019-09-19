@@ -882,6 +882,22 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
     return wantsKeyboard();
 }
 
+bool Editor::Undo() {
+    bool ret = _undoManager->Undo();
+    if (ret && _statusBar) {
+        _statusBar->showMessage(Util::StringFormat("Undo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
+    }
+
+    return ret;
+}
+bool Editor::Redo() {
+    bool ret = _undoManager->Redo();
+    if (ret && _statusBar) {
+        _statusBar->showMessage(Util::StringFormat("Redo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
+    }
+
+    return ret;
+}
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
     if (!isInit()) {
@@ -896,13 +912,9 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 
     if (io.KeyCtrl) {
         if (key._key == Input::KeyCode::KC_Z) {
-            if (_undoManager->Undo() && _statusBar) {
-                _statusBar->showMessage(Util::StringFormat("Undo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
-            }
+            Undo();
         } else if (key._key == Input::KeyCode::KC_R) {
-            if (_undoManager->Redo() && _statusBar) {
-                _statusBar->showMessage(Util::StringFormat("Redo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
-            }
+            Redo();
         }
     }
 

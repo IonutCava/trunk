@@ -189,7 +189,7 @@ bool SceneGraph::frameEnded(const FrameEvent& evt) {
 
 void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 
-    F32 msTime = Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS);
+    const F32 msTime = Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS);
     GetECSEngine().PreUpdate(msTime);
     GetECSEngine().Update(msTime);
     GetECSEngine().PostUpdate(msTime);
@@ -199,7 +199,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
         node->sceneUpdate(deltaTimeUS, sceneState);
     }
 
-    if (_loadComplete && false) {
+    if (_loadComplete) {
         Start(*CreateTask(parentScene().context(),
             [this, deltaTimeUS](const Task& parentTask) mutable
             {
@@ -210,11 +210,9 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
                 _octree->update(deltaTimeUS);
             },
             "SceneGraph - update octree"), 
-            TaskPriority::DONT_CARE,
-            [this]() mutable
-            {
-                _octreeUpdating = false;
-            });
+            //TaskPriority::DONT_CARE,
+            TaskPriority::REALTIME,
+            [this]() { _octreeUpdating = false; });
     }
 }
 

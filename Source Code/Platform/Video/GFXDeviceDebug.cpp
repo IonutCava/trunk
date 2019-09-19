@@ -286,7 +286,7 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
 /// Render all of our immediate mode primitives. This isn't very optimised and
 /// most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut) {
-    if (!Config::Build::IS_SHIPPING_BUILD) 
+    if (Config::Build::ENABLE_EDITOR)
     {
         drawDebugFrustum(activeCamera.getViewMatrix(), bufferInOut);
 

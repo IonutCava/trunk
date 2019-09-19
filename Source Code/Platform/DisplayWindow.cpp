@@ -91,7 +91,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                                   windowFlags);
 
     _windowID = SDL_GetWindowID(_sdlWindow);
-    _drawableSize = getDrawableSize();
+    //_drawableSize = getDrawableSize();
 
     // Check if we have a valid window
     if (!_sdlWindow) {
