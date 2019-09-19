@@ -33,6 +33,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _EDITOR_GIZMO_H_
 #define _EDITOR_GIZMO_H_
 
+#include "Editor/Headers/UndoManager.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 #include <imgui/addons/imguigizmo/ImGuizmo.h>
@@ -107,9 +109,12 @@ namespace Divide {
         Editor& _parent;
         bool _enabled = false;
         bool _visible = false;
+        bool _wasUsed = false;
+        bool _shouldRegisterUndo = false;
         vector<SceneGraphNode*> _selectedNodes;
         ImGuiContext* _imguiContext = nullptr;
         TransformSettings _transformSettings;
+        UndoEntry<TransformValues> _undoEntry;
     };
 
     namespace Attorney {
