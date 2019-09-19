@@ -4,7 +4,6 @@
 #include "Editor/Headers/Editor.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
-#include "ECS/Components/Headers/TransformComponent.h"
 
 #include <imgui_internal.h>
 
@@ -12,10 +11,12 @@ namespace Divide {
     Gizmo::Gizmo(Editor& parent, ImGuiContext* mainContext, DisplayWindow* mainWindow)
         : _parent(parent),
           _visible(false),
-          _enabled(false)
+          _enabled(false),
+          _wasUsed(false),
+          _shouldRegisterUndo(false)
     {
         _imguiContext = ImGui::CreateContext(mainContext->IO.Fonts);
-
+        _undoEntry._name = "Gizmo Manipulation";
         InitBasicImGUIState(_imguiContext->IO);
         ImGui::SetCurrentContext(_imguiContext);
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
@@ -65,9 +66,16 @@ namespace Divide {
                 winMgr.setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
             }
         }
+
+        if (_shouldRegisterUndo) {
+            _parent.registerUndoEntry(_undoEntry);
+            _shouldRegisterUndo = false;
+        }
     }
 
     void Gizmo::render(const Camera& camera) {
+        static bool oddFrame = false;
+
         if (!active()) {
             return;
         }
@@ -81,6 +89,8 @@ namespace Divide {
         if (transform == nullptr) {
             return;
         }
+
+        oddFrame = !oddFrame;
 
         const mat4<F32>& cameraView = camera.getViewMatrix();
         const mat4<F32>& cameraProjection = camera.getProjectionMatrix();
@@ -104,19 +114,30 @@ namespace Divide {
                              NULL,
                              _transformSettings.useSnap ? &_transformSettings.snap[0] : NULL);
 
-        if (ImGuizmo::IsUsing()) {
+        if (ImGuizmo::IsUsing() && oddFrame) {
+            if (!_wasUsed) {
+                transform->getValues(_undoEntry.oldVal);
+            }
+            _wasUsed = true;
             //ToDo: This seems slow as hell, but it works. Should I bother? -Ionut
             TransformValues values;  vec3<F32> euler;
             ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
             matrix.orthoNormalize();
             values._orientation.fromMatrix(mat3<F32>(matrix));
             transform->setTransform(values);
+
+            //_undoEntry.oldVal = ;
+            _undoEntry.newVal = values;
+            _undoEntry._dataSetter = [transform](const void* data) {
+                if (transform != nullptr) {
+                    transform->setTransform(*(TransformValues*)data);
+                }
+            };
         }
 
         ImGui::Render();
         Attorney::EditorGizmo::renderDrawList(_parent, ImGui::GetDrawData(), true, -1);
     }
-
 
     void Gizmo::updateSelections(SceneGraphNode* node) {
         if (node == nullptr) {
@@ -148,16 +169,30 @@ namespace Divide {
         if (key._text != nullptr) {
             io.AddInputCharactersUTF8(key._text);
         }
-        io.KeyCtrl = key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL;
-        io.KeyShift = key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT;
-        io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
-        io.KeySuper = key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN;
+
+        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+            io.KeyCtrl = true;
+        }
+        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+            io.KeyShift = true;
+        }
+        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+            io.KeyAlt = true;
+        }
+        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+            io.KeySuper = true;
+        }
 
         return io.WantCaptureKeyboard;
     }
 
     /// Key released: return true if input was consumed
     bool Gizmo::onKeyUp(const Input::KeyEvent& key) {
+        if (_wasUsed) {
+            _shouldRegisterUndo = true;
+            _wasUsed = false;
+        }
+
         if (!active()) {
             return false;
         }
@@ -227,6 +262,7 @@ namespace Divide {
     /// Mouse button pressed: return true if input was consumed
     bool Gizmo::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         ACKNOWLEDGE_UNUSED(arg);
+        _wasUsed = false;
 
         if (!active()) {
             return false;
