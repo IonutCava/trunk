@@ -61,8 +61,6 @@ namespace ECS
     void ECSEngine::PostUpdate(f32 tick_ms)
     {
         ECS_SystemManager->PostUpdate(tick_ms);
-		ECS_EventHandler->DispatchEvents();
-
 		// Finalize pending destroyed entities
 		ECS_EntityManager->RemoveDestroyedEntities();
 		ECS_EventHandler->DispatchEvents();

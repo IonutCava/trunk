@@ -47,7 +47,7 @@ void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
 }
 
 void BoundsComponent::onTransformUpdated(const TransformUpdated* evt) {
-    if (_parentSGN.getGUID() == evt->_parentGUID) {
+    if (GetOwner() == evt->ownerID) {
         flagBoundingBoxDirty(true);
     }
 }
@@ -74,7 +74,7 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
         }
 
         _boundingSphere.fromBoundingBox(_boundingBox);
-        _parentSGN.SendEvent<BoundsUpdated>(GetOwner(), _parentSGN.getGUID());
+        _parentSGN.SendEvent<BoundsUpdated>(GetOwner());
     }
 
     return _boundingBox;

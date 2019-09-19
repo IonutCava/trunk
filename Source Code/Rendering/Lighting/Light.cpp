@@ -61,7 +61,7 @@ Light::~Light()
 
 
 void Light::onTransformUpdated(const TransformUpdated* evt) {
-    if (_sgn.getGUID() == evt->_parentGUID) {
+    if (_sgn.GetEntityID() == evt->ownerID) {
         updateCache();
     }
 }

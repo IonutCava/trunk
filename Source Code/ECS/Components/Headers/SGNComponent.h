@@ -158,12 +158,13 @@ class SGNComponent : private PlatformContextComponent,
     void RegisterEventCallbacks();
 
    protected:
+    EditorComponent _editorComponent;
+    /// Pointer to the SGN owning this instance of AnimationComponent
+    SceneGraphNode& _parentSGN;
     ComponentType _type;
     std::atomic_bool _enabled;
     mutable std::atomic_bool _hasChanged;
-    /// Pointer to the SGN owning this instance of AnimationComponent
-    SceneGraphNode& _parentSGN;
-    EditorComponent _editorComponent;
+
 };
 
 template<typename T, ComponentType::_enumerated C>

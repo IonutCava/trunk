@@ -130,13 +130,13 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
         _skeletonPrimitive->pipeline(*pipelineNoZRead);
     }
     
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if (Config::Build::ENABLE_EDITOR) {
         // Red X-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour4(255, 0, 0, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 4, UColour4(255, 0, 0, 255), 10.0f));
         // Green Y-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, UColour4(0, 255, 0, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 4, UColour4(0, 255, 0, 255), 10.0f));
         // Blue Z-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, UColour4(0, 0, 255, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 4, UColour4(0, 0, 255, 255), 10.0f));
         _axisGizmo = _context.newIMP();
         // Prepare it for line rendering
         size_t noDepthStateBlock = _context.getDefaultStateBlock(true);

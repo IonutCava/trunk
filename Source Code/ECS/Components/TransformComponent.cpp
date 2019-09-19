@@ -75,7 +75,7 @@ namespace Divide {
         // Cleanup our dirty transforms
         if (_transformUpdatedMask.exchange(to_U32(TransformType::NONE) != to_U32(TransformType::NONE))) {
             updateWorldMatrix();
-            _parentSGN.SendEvent<TransformUpdated>(GetOwner(), _parentSGN.getGUID());
+            _parentSGN.SendEvent<TransformUpdated>(GetOwner());
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
