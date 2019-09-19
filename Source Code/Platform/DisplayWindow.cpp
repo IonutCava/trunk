@@ -247,7 +247,8 @@ Rect<I32> DisplayWindow::getBorderSizes() const {
 }
 
 vec2<U16> DisplayWindow::getDrawableSize() const {
-    return _drawableSize;
+    //return _drawableSize;
+    return getDrawableSizeInternal();
 }
 
 vec2<U16> DisplayWindow::getDrawableSizeInternal() const {
@@ -334,7 +335,6 @@ void DisplayWindow::restore() {
 
     ClearBit(_flags, WindowFlags::MAXIMIZED);
     ClearBit(_flags, WindowFlags::MINIMIZED);
-    _drawableSize = getDrawableSizeInternal();
 }
 
 void DisplayWindow::minimized(const bool state) {
