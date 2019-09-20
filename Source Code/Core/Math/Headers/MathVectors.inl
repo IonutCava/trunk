@@ -94,16 +94,14 @@ inline vec2<T> Inverse(const vec2<T> &v) {
 
 template <typename T>
 inline vec2<T> Normalize(vec2<T> &vector) {
-    vector.normalize();
-    return vector;
+    return vector.normalize();
 }
 
 template <typename T>
 //[[nodiscard]]
 inline vec2<T> Normalized(const vec2<T> &vector) {
     vec2<T> result(vector);
-    result.normalize();
-    return result;
+    return result.normalize();
 }
 
 /// multiply a vector by a value
@@ -130,16 +128,14 @@ inline void OrthoNormalize(vec2<T> &v1, vec2<T> &v2) {
 
 template <typename T>
 inline vec3<T> Normalize(vec3<T> &vector) {
-    vector.normalize();
-    return vector;
+    return vector.normalize();
 }
 
 template <typename T>
 //[[nodiscard]]
 inline vec3<T> Normalized(const vec3<T> &vector) {
     vec3<T> result(vector);
-    result.normalize();
-    return result;
+    return result.normalize();
 }
 
 /// multiply a vector by a value
@@ -187,16 +183,14 @@ inline vec4<T> Max(const vec4<T> &v1, const vec4<T> &v2) {
 
 template <typename T>
 inline vec4<T> Normalize(vec4<T> &vector) {
-    vector.normalize();
-    return vector;
+    return vector.normalize();
 }
 
 template <typename T>
 //[[nodiscard]]
 inline vec4<T> Normalized(const vec4<T> &vector) {
     vec4<T> result(vector);
-    result.normalize();
-    return result;
+    return result.normalize();
 }
 
 /// multiply a vector by a value
@@ -233,12 +227,14 @@ inline T vec2<T>::distanceSquared(const vec2 &v) const {
 
 /// convert the vector to unit length
 template <typename T>
-inline void vec2<T>::normalize() {
+inline vec2<T>& vec2<T>::normalize() {
     T l = this->length();
 
     if (l >= EPSILON_F32) {
         *this *= 1.0f / l;
     }
+
+    return *this;
 }
 
 /// compare 2 vectors
@@ -367,13 +363,15 @@ inline T vec3<T>::lengthSquared() const noexcept {
 
 /// transform the vector to unit length
 template <typename T>
-inline void vec3<T>::normalize() {
+inline vec3<T>& vec3<T>::normalize() {
     T l = this->length();
 
     if (l >= EPSILON_F32) {
         // multiply by the inverse length
         *this *= (1.0f / l);
     }
+
+    return *this;
 }
 
 /// set this vector to be equal to the cross of the 2 specified vectors
@@ -430,8 +428,7 @@ inline T vec3<T>::angle(vec3 &v) const {
 template <typename T>
 inline vec3<T> vec3<T>::direction(const vec3 &u) const {
     vec3 vector(u.x - this->x, u.y - this->y, u.z - this->z);
-    vector.normalize();
-    return vector;
+    return vector.normalize();
 }
 
 /// project this vector on the line defined by the 2 points(A, B)
@@ -697,18 +694,21 @@ inline T vec4<T>::lengthSquared() const {
 }
 /// transform the vector to unit length
 template <typename T>
-inline void vec4<T>::normalize() {
+inline vec4<T>& vec4<T>::normalize() {
     T l = this->length();
 
     if (l >= EPSILON_F32) {
         // multiply by the inverse length
         *this *= (1.0f / l);
     }
+
+    return *this;
 }
 
 template <>
-inline void vec4<F32>::normalize() {
+inline vec4<F32>& vec4<F32>::normalize() {
     _reg._reg = _mm_mul_ps(_reg._reg, _mm_rsqrt_ps(SIMPLE_DOT(_reg._reg, _reg._reg)));
+    return *this;
 }
 
 /// lerp between this and the specified vector by the specified amount

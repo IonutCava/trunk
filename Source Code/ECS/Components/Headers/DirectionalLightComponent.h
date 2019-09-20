@@ -36,8 +36,8 @@
 
 namespace Divide {
 
-class DirectionalLightComponent : public BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>,
-                                  public Light
+class DirectionalLightComponent final : public BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>,
+                                        public Light
 {
    public:
     using Light::getSGN;

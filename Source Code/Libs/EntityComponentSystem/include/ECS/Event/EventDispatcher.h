@@ -23,10 +23,10 @@ namespace ECS { namespace Event { namespace Internal {
 	{
 		DECLARE_STATIC_LOGGER
 
-		using EventDelegateList			= eastl::list<IEventDelegate*>;
+		using EventDelegateList			= vectorEASTL<IEventDelegate*>;
 
-		//using PendingAddDelegates		= eastl::list<IEventDelegate*>;
-		using PendingRemoveDelegates	= eastl::list<IEventDelegate*>;
+		//using PendingAddDelegates		= vectorEASTL<IEventDelegate*>;
+		using PendingRemoveDelegates	= vectorEASTL<IEventDelegate*>;
 
 		//PendingAddDelegates		m_PendingAddDelegates;
 		PendingRemoveDelegates	m_PendingRemoveDelegates;

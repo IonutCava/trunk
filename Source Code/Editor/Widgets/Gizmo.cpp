@@ -202,6 +202,18 @@ namespace Divide {
             else if (key._key == Input::KeyCode::KC_R) {
                 _parent.Redo();
             }
+        } else {
+            if (_parent.scenePreviewFocused()) {
+                TransformSettings settings = _parent.getTransformSettings();
+                if (key._key == Input::KeyCode::KC_T) {
+                    settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
+                } else if (key._key == Input::KeyCode::KC_R) {
+                    settings.currentGizmoOperation = ImGuizmo::ROTATE;
+                } else if (key._key == Input::KeyCode::KC_S) {
+                    settings.currentGizmoOperation = ImGuizmo::SCALE;
+                }
+                _parent.setTransformSettings(settings);
+            }
         }
 
         io.KeysDown[to_I32(key._key)] = false;

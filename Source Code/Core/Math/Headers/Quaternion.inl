@@ -693,8 +693,9 @@ inline vec3<T> operator*(vec3<T> const & v, Quaternion<T> const & q) {
 
 template <typename T>
 inline vec3<T> Rotate(vec3<T> const & v, Quaternion<T> const & q) {
-    vec3<T> t = Cross(q.XYZ(), v) * 2;
-    return v + q.W() * t + Cross(q.XYZ(), t);
+    const vec3<T> xyz = q.XYZ();
+    const vec3<T> t = Cross(xyz, v) * 2;
+    return v + q.W() * t + Cross(xyz, t);
 }
 
 };  // namespace Divide

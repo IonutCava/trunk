@@ -36,8 +36,8 @@
 
 namespace Divide {
 
-class SpotLightComponent : public BaseComponentType<SpotLightComponent, ComponentType::SPOT_LIGHT>,
-                           public Light
+class SpotLightComponent final : public BaseComponentType<SpotLightComponent, ComponentType::SPOT_LIGHT>,
+                                 public Light
 {
    public:
     explicit SpotLightComponent(SceneGraphNode& sgn, PlatformContext& context);

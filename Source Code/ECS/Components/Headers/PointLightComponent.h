@@ -36,8 +36,8 @@
 
 namespace Divide {
 
-class PointLightComponent : public BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>,
-                            public Light
+class PointLightComponent final : public BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>,
+                                  public Light
 {
    public:
     explicit PointLightComponent(SceneGraphNode& sgn, PlatformContext& context);

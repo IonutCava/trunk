@@ -403,7 +403,7 @@ class vec2 {
     /// compute the vector's squared distance to another specified vector
     inline T distanceSquared(const vec2 &v) const;
     /// convert the vector to unit length
-    inline void normalize();
+    inline vec2& normalize();
     /// round both values
     inline void round();
     /// lerp between this and the specified vector by the specified amount
@@ -752,7 +752,7 @@ class vec3 {
     /// compute the vector's squared distance to another specified vector
     inline T distanceSquared(const vec3 &v) const noexcept;
     /// transform the vector to unit length
-    inline void normalize();
+    inline vec3& normalize();
     /// round all three values
     inline void round();
     /// project this vector on the line defined by the 2 points(A, B)
@@ -1250,7 +1250,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 &iv) noexcept;
     /// transform the vector to unit length
-    inline void normalize();
+    inline vec4& normalize();
     /// calculate the dot product between this vector and the specified one
     inline T dot(const vec4 &v) const;
     /// return the vector's length
