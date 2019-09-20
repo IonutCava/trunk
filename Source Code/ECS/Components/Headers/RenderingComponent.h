@@ -113,7 +113,7 @@ enum class ReflectorType : U8 {
 
 typedef DELEGATE_CBK<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
 
-class RenderingComponent : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
+class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
     friend class Attorney::RenderingCompRenderBin;

@@ -27,9 +27,9 @@ namespace ECS { namespace Event {
 		friend class ECSEngine;
 	
 
-		using EventDispatcherMap = std::unordered_map<EventTypeId, Internal::IEventDispatcher*>;
+		using EventDispatcherMap = hashMap<EventTypeId, Internal::IEventDispatcher*>;
 	
-		using EventStorage = std::vector<IEvent*>;
+		using EventStorage = vectorEASTL<IEvent*>;
 	
 		using EventMemoryAllocator = Memory::Allocator::LinearAllocator;
 	
@@ -58,7 +58,7 @@ namespace ECS { namespace Event {
 			EventDispatcherMap::const_iterator iter = this->m_EventDispatcherMap.find(ETID);
 			if (iter == this->m_EventDispatcherMap.end())
 			{
-				std::pair<EventTypeId, Internal::IEventDispatcher*> kvp(ETID, new Internal::EventDispatcher<E>());
+				eastl::pair<EventTypeId, Internal::IEventDispatcher*> kvp(ETID, new Internal::EventDispatcher<E>());
 	
 				kvp.second->AddEventCallback(eventDelegate);
 	
@@ -130,7 +130,7 @@ namespace ECS { namespace Event {
             void* pMem = this->m_EventMemoryAllocator->allocate(sizeof(E), alignof(E));
             auto event = new (pMem)E(engine, std::forward<ARGS>(eventArgs)...);
             auto it = this->m_EventDispatcherMap.find(event->GetEventTypeID());
-            if (it != this->m_EventDispatcherMap.end()) {
+            if (it != eastl::cend(this->m_EventDispatcherMap)) {
                 it->second->Dispatch(event);
             }
         }
@@ -143,21 +143,18 @@ namespace ECS { namespace Event {
 
 			while (thisIndex < lastIndex)
 			{
-				auto event = this->m_EventStorage[thisIndex++];
-				if (event == nullptr)
-				{
-					LogError("Skip corrupted event.", event->GetEventTypeID());
-					continue;
-				}
-
-				auto it = this->m_EventDispatcherMap.find(event->GetEventTypeID());
-				if (it == this->m_EventDispatcherMap.end())
-					continue;
-	
-				it->second->Dispatch(event);
-
-				// update last index, after dispatch operation there could be new events
-				lastIndex = this->m_EventStorage.size();
+                IEvent* event = this->m_EventStorage[thisIndex++];
+                if (event != nullptr) {
+                    auto it = this->m_EventDispatcherMap.find(event->GetEventTypeID());
+                    if (it != eastl::cend(this->m_EventDispatcherMap)) {
+                        it->second->Dispatch(event);
+                        // update last index, after dispatch operation there could be new events
+                        lastIndex = this->m_EventStorage.size();
+                    }
+                } else {
+                    LogError("Skip corrupted event.", event->GetEventTypeID());
+                    continue;
+                }
 			}
 			
 			// reset

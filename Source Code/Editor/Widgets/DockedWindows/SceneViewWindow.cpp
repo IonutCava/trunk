@@ -94,19 +94,6 @@ namespace Divide {
         static F32 RButtonWidth = 10.0f;
         static F32 SButtonWidth = 10.0f;
         static F32 NButtonWidth = 10.0f;
-        if (_focused && enableGizmo) {
-            if (ImGui::IsKeyPressed(to_I32(Input::KeyCode::KC_T))) {
-                settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
-            }
-
-            if (ImGui::IsKeyPressed(to_I32(Input::KeyCode::KC_R))) {
-                settings.currentGizmoOperation = ImGuizmo::ROTATE;
-            }
-
-            if (ImGui::IsKeyPressed(to_I32(Input::KeyCode::KC_S))) {
-                settings.currentGizmoOperation = ImGuizmo::SCALE;
-            }
-        }
 
         F32 pos = SButtonWidth + ItemSpacing + 25;
         ImGui::SameLine(window->ContentSize.x - pos);

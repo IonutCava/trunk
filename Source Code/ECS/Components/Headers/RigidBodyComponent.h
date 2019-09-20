@@ -49,7 +49,7 @@ namespace Divide {
         GROUP_COUNT
     };
 
-    class RigidBodyComponent : public BaseComponentType<RigidBodyComponent, ComponentType::RIGID_BODY> {
+    class RigidBodyComponent final : public BaseComponentType<RigidBodyComponent, ComponentType::RIGID_BODY> {
       public:
         RigidBodyComponent(SceneGraphNode& parentSGN, PlatformContext& context);
         ~RigidBodyComponent();

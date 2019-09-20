@@ -46,7 +46,7 @@ class AnimEvaluator;
 class SceneAnimator;
 class SceneGraphNode;
 
-class AnimationComponent : public BaseComponentType<AnimationComponent, ComponentType::ANIMATION> {
+class AnimationComponent final : public BaseComponentType<AnimationComponent, ComponentType::ANIMATION> {
    public:
     AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     ~AnimationComponent();

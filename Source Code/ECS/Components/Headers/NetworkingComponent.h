@@ -41,7 +41,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class LocalClient;
-class NetworkingComponent : public BaseComponentType<NetworkingComponent, ComponentType::NETWORKING> {
+class NetworkingComponent final : public BaseComponentType<NetworkingComponent, ComponentType::NETWORKING> {
 public:
     NetworkingComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     ~NetworkingComponent();

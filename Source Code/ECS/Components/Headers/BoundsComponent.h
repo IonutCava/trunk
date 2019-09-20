@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     struct TransformUpdated;
-    class BoundsComponent : public BaseComponentType<BoundsComponent, ComponentType::BOUNDS>{
+    class BoundsComponent final : public BaseComponentType<BoundsComponent, ComponentType::BOUNDS>{
     public:
         BoundsComponent(SceneGraphNode& sgn, PlatformContext& context);
         ~BoundsComponent();

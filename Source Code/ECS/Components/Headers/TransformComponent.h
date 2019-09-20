@@ -50,8 +50,8 @@ namespace Divide {
         COUNT = 4
     };
 
-    class TransformComponent : public BaseComponentType<TransformComponent, ComponentType::TRANSFORM>,
-                               public ITransform
+    class TransformComponent final : public BaseComponentType<TransformComponent, ComponentType::TRANSFORM>,
+                                     public ITransform
     {
         friend class Attorney::TransformComponentSGN;
 
