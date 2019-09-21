@@ -88,9 +88,6 @@ namespace Divide {
             return;
         }
 
-        const mat4<F32>& cameraView = camera.getViewMatrix();
-        const mat4<F32>& cameraProjection = camera.getProjectionMatrix();
-
         ImGui::SetCurrentContext(_imguiContext);
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
@@ -102,8 +99,8 @@ namespace Divide {
         ImGuizmo::SetRect(0.0f, 0.0f, size.width, size.height);
 
         mat4<F32> matrix(transform->getLocalMatrix());
-        ImGuizmo::Manipulate(cameraView,
-                             cameraProjection,
+        ImGuizmo::Manipulate(camera.getViewMatrix(),
+                             camera.getProjectionMatrix(),
                              _transformSettings.currentGizmoOperation,
                              _transformSettings.currentGizmoMode,
                              matrix,

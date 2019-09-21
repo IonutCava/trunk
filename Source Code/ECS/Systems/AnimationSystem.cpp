@@ -19,8 +19,9 @@ namespace Divide {
     void AnimationSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto anim = _engine.GetComponentManager()->begin<AnimationComponent>();
-        auto animEnd = _engine.GetComponentManager()->end<AnimationComponent>();
+        auto container = _compManager->GetComponentContainer<AnimationComponent>();
+        auto anim = container->begin();
+        auto animEnd = container->end();
         for (;anim != animEnd; ++anim)
         {
             anim->PreUpdate(microSec);
@@ -30,8 +31,9 @@ namespace Divide {
     void AnimationSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto anim = _engine.GetComponentManager()->begin<AnimationComponent>();
-        auto animEnd = _engine.GetComponentManager()->end<AnimationComponent>();
+        auto container = _compManager->GetComponentContainer<AnimationComponent>();
+        auto anim = container->begin();
+        auto animEnd = container->end();
         for (; anim != animEnd; ++anim)
         {
             anim->Update(microSec);
@@ -41,8 +43,9 @@ namespace Divide {
     void AnimationSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto anim = _engine.GetComponentManager()->begin<AnimationComponent>();
-        auto animEnd = _engine.GetComponentManager()->end<AnimationComponent>();
+        auto container = _compManager->GetComponentContainer<AnimationComponent>();
+        auto anim = container->begin();
+        auto animEnd = container->end();
         for (; anim != animEnd; ++anim)
         {
             anim->PostUpdate(microSec);
@@ -50,9 +53,9 @@ namespace Divide {
     }
 
     void AnimationSystem::FrameEnded() {
-        auto compManager = _engine.GetComponentManager();
-        auto comp = compManager->begin<AnimationComponent>();
-        auto compEnd = compManager->end<AnimationComponent>();
+        auto container = _compManager->GetComponentContainer<AnimationComponent>();
+        auto comp = container->begin();
+        auto compEnd = container->end();
         for (; comp != compEnd; ++comp) {
             comp->FrameEnded();
         }

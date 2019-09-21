@@ -174,8 +174,7 @@ namespace Divide {
         GLuint _activeShaderPipeline = 0;//GLUtil::_invalidObjectID;
         GLfloat _depthNearVal = .1f;
         GLfloat _depthFarVal = 1.f;
-        BlendingProperties _blendPropertiesGlobal = { false,
-                                                      BlendProperty::ONE,
+        BlendingProperties _blendPropertiesGlobal = { BlendProperty::ONE,
                                                       BlendProperty::ONE,
                                                       BlendOperation::ADD };
         GLboolean _blendEnabledGlobal = GL_FALSE;

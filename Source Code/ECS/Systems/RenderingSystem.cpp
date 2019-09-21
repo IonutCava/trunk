@@ -19,9 +19,9 @@ namespace Divide {
     void RenderingSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto compManager = _engine.GetComponentManager();
-        auto rComp = compManager->begin<RenderingComponent>();
-        auto rCompEnd = compManager->end<RenderingComponent>();
+        auto container = _compManager->GetComponentContainer<RenderingComponent>();
+        auto rComp = container->begin();
+        auto rCompEnd = container->end();
         for (;rComp != rCompEnd; ++rComp)
         {
             rComp->PreUpdate(microSec);
@@ -31,9 +31,9 @@ namespace Divide {
     void RenderingSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto compManager = _engine.GetComponentManager();
-        auto rComp = compManager->begin<RenderingComponent>();
-        auto rCompEnd = compManager->end<RenderingComponent>();
+        auto container = _compManager->GetComponentContainer<RenderingComponent>();
+        auto rComp = container->begin();
+        auto rCompEnd = container->end();
         for (; rComp != rCompEnd; ++rComp)
         {
             rComp->Update(microSec);
@@ -43,9 +43,9 @@ namespace Divide {
     void RenderingSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto compManager = _engine.GetComponentManager();
-        auto rComp = compManager->begin<RenderingComponent>();
-        auto rCompEnd = compManager->end<RenderingComponent>();
+        auto container = _compManager->GetComponentContainer<RenderingComponent>();
+        auto rComp = container->begin();
+        auto rCompEnd = container->end();
         for (; rComp != rCompEnd; ++rComp)
         {
             rComp->PostUpdate(microSec);
@@ -53,9 +53,9 @@ namespace Divide {
     }
 
     void RenderingSystem::FrameEnded() {
-        auto compManager = _engine.GetComponentManager();
-        auto comp = compManager->begin<RenderingComponent>();
-        auto compEnd = compManager->end<RenderingComponent>();
+        auto container = _compManager->GetComponentContainer<RenderingComponent>();
+        auto comp = container->begin();
+        auto compEnd = container->end();
         for (; comp != compEnd; ++comp) {
             comp->FrameEnded();
         }

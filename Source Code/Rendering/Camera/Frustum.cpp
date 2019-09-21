@@ -226,50 +226,44 @@ void Frustum::computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut)
 }
 
 void Frustum::computePlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
-    static const vec4<F32> unitVecs[] = { vec4<F32>(-1, -1, -1, 1),
-                                          vec4<F32>(-1 , 1, -1, 1),
-                                          vec4<F32>(-1, -1,  1, 1),
-                                          vec4<F32>(1, -1, -1, 1),
-                                          vec4<F32>(1,  1, -1, 1),
-                                          vec4<F32>(1, -1,  1, 1),
-                                          vec4<F32>(1,  1,  1, 1) };
+    static const vec4<I32> unitVecs[] = { vec4<I32>(-1, -1, -1, 1),
+                                          vec4<I32>(-1 , 1, -1, 1),
+                                          vec4<I32>(-1, -1,  1, 1),
+                                          vec4<I32>( 1, -1, -1, 1),
+                                          vec4<I32>( 1,  1, -1, 1),
+                                          vec4<I32>( 1, -1,  1, 1),
+                                          vec4<I32>( 1,  1,  1, 1) };
 
     // Get world-space coordinates for clip-space bounds.
-    vec4<F32> lbn(invViewProj * unitVecs[0]);
-    vec4<F32> ltn(invViewProj * unitVecs[1]);
-    vec4<F32> lbf(invViewProj * unitVecs[2]);
-    vec4<F32> rbn(invViewProj * unitVecs[3]);
-    vec4<F32> rtn(invViewProj * unitVecs[4]);
-    vec4<F32> rbf(invViewProj * unitVecs[5]);
-    vec4<F32> rtf(invViewProj * unitVecs[6]);
+    const vec4<F32> lbn(invViewProj * unitVecs[0]);
+    const vec4<F32> ltn(invViewProj * unitVecs[1]);
+    const vec4<F32> lbf(invViewProj * unitVecs[2]);
+    const vec4<F32> rbn(invViewProj * unitVecs[3]);
+    const vec4<F32> rtn(invViewProj * unitVecs[4]);
+    const vec4<F32> rbf(invViewProj * unitVecs[5]);
+    const vec4<F32> rtf(invViewProj * unitVecs[6]);
 
-    vec3<F32> lbn_pos(lbn.xyz() / lbn.w);
-    vec3<F32> ltn_pos(ltn.xyz() / ltn.w);
-    vec3<F32> lbf_pos(lbf.xyz() / lbf.w);
-    vec3<F32> rbn_pos(rbn.xyz() / rbn.w);
-    vec3<F32> rtn_pos(rtn.xyz() / rtn.w);
-    vec3<F32> rbf_pos(rbf.xyz() / rbf.w);
-    vec3<F32> rtf_pos(rtf.xyz() / rtf.w);
+    const vec3<F32> lbn_pos(lbn / lbn.w);
+    const vec3<F32> ltn_pos(ltn / ltn.w);
+    const vec3<F32> lbf_pos(lbf / lbf.w);
+    const vec3<F32> rbn_pos(rbn / rbn.w);
+    const vec3<F32> rtn_pos(rtn / rtn.w);
+    const vec3<F32> rbf_pos(rbf / rbf.w);
+    const vec3<F32> rtf_pos(rtf / rtf.w);
 
     // Get plane equations for all sides of frustum.
-    vec3<F32> left_normal(Cross(lbf_pos - lbn_pos, ltn_pos - lbn_pos));
-    left_normal.normalize();
-    vec3<F32> right_normal(Cross(rtn_pos - rbn_pos, rbf_pos - rbn_pos));
-    right_normal.normalize();
-    vec3<F32> top_normal(Cross(ltn_pos - rtn_pos, rtf_pos - rtn_pos));
-    top_normal.normalize();
-    vec3<F32> bottom_normal(Cross(rbf_pos - rbn_pos, lbn_pos - rbn_pos));
-    bottom_normal.normalize();
-    vec3<F32> near_normal(Cross(ltn_pos - lbn_pos, rbn_pos - lbn_pos));
-    near_normal.normalize();
-    vec3<F32> far_normal(Cross(rtf_pos - rbf_pos, lbf_pos - rbf_pos));
-    far_normal.normalize();
+    const vec3<F32> left_normal(  Normalized(Cross(lbf_pos - lbn_pos, ltn_pos - lbn_pos)));
+    const vec3<F32> right_normal( Normalized(Cross(rtn_pos - rbn_pos, rbf_pos - rbn_pos)));
+    const vec3<F32> top_normal(   Normalized(Cross(ltn_pos - rtn_pos, rtf_pos - rtn_pos)));
+    const vec3<F32> bottom_normal(Normalized(Cross(rbf_pos - rbn_pos, lbn_pos - rbn_pos)));
+    const vec3<F32> near_normal(  Normalized(Cross(ltn_pos - lbn_pos, rbn_pos - lbn_pos)));
+    const vec3<F32> far_normal(   Normalized(Cross(rtf_pos - rbf_pos, lbf_pos - rbf_pos)));
 
-    planesOut[to_base(Frustum::FrustPlane::PLANE_LEFT)].set(left_normal, -Dot(left_normal, lbn_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_RIGHT)].set(right_normal, -Dot(right_normal, rbn_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_NEAR)].set(near_normal, -Dot(near_normal, lbn_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_FAR)].set(far_normal, -Dot(far_normal, lbf_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_TOP)].set(top_normal, -Dot(top_normal, ltn_pos));
+    planesOut[to_base(Frustum::FrustPlane::PLANE_LEFT)].set(  left_normal,   -Dot(left_normal, lbn_pos));
+    planesOut[to_base(Frustum::FrustPlane::PLANE_RIGHT)].set( right_normal,  -Dot(right_normal, rbn_pos));
+    planesOut[to_base(Frustum::FrustPlane::PLANE_NEAR)].set(  near_normal,   -Dot(near_normal, lbn_pos));
+    planesOut[to_base(Frustum::FrustPlane::PLANE_FAR)].set(   far_normal,    -Dot(far_normal, lbf_pos));
+    planesOut[to_base(Frustum::FrustPlane::PLANE_TOP)].set(   top_normal,    -Dot(top_normal, ltn_pos));
     planesOut[to_base(Frustum::FrustPlane::PLANE_BOTTOM)].set(bottom_normal, -Dot(bottom_normal, lbn_pos));
 }
 };

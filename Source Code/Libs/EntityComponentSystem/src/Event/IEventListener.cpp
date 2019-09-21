@@ -11,7 +11,7 @@
 
 namespace ECS { namespace Event {
 
-	IEventListener::IEventListener(ECS::ECSEngine* engine)
+	IEventListener::IEventListener(ECS::ECSEngine& engine)
         : ECS_Engine(engine)
 	{}
 
@@ -26,7 +26,7 @@ namespace ECS { namespace Event {
 		// unsubcribe from all subscribed events
 		for (auto cb : this->m_RegisteredCallbacks)
 		{
-            ECS_Engine->UnsubscribeEvent(cb);
+            ECS_Engine.UnsubscribeEvent(cb);
 		}
 
 		this->m_RegisteredCallbacks.clear();

@@ -124,6 +124,7 @@ class BoundingBox {
 
     inline vec3<F32> getPVertex(const vec3<F32>& normal) const;
     inline vec3<F32> getNVertex(const vec3<F32>& normal) const;
+
    private:
     vec3<F32> _min, _max;
 };

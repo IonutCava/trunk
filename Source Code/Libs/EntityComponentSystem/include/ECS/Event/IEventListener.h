@@ -37,7 +37,7 @@ namespace ECS
 
 		public:
 
-			IEventListener(ECS::ECSEngine* engine);
+			explicit IEventListener(ECS::ECSEngine& engine);
 			virtual ~IEventListener();
 
 			///-------------------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ namespace ECS
 				Internal::IEventDelegate* eventDelegate = new Internal::EventDelegate<C, E>(static_cast<C*>(this), Callback);
 
 				m_RegisteredCallbacks.push_back(eventDelegate);
-                ECS_Engine->SubscribeEvent<E>(eventDelegate);
+                ECS_Engine.SubscribeEvent<E>(eventDelegate);
 			}
 
 			///-------------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ namespace ECS
 							}
 						);
 
-                        ECS_Engine->UnsubscribeEvent(&delegate);
+                        ECS_Engine.UnsubscribeEvent(&delegate);
 						break;
 					}
 				}
@@ -106,7 +106,7 @@ namespace ECS
 
 			void UnregisterAllEventCallbacks();
 
-            ECS::ECSEngine* ECS_Engine;
+            ECS::ECSEngine& ECS_Engine;
 		};
 
 	} // namespace Event

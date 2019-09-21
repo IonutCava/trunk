@@ -54,9 +54,9 @@ SGNRelationshipCache::clasifyNode(I64 GUID) const {
 
 
 void SGNRelationshipCache::updateChildren(U8 level, vector<std::pair<I64, U8>>& cache) const {
-    _parentNode.forEachChild([level, &cache](const SceneGraphNode& child) {
-        cache.push_back(std::make_pair(child.getGUID(), level));
-        child.relationshipCache().updateChildren(level + 1, cache);
+    _parentNode.forEachChild([level, &cache](const SceneGraphNode* child) {
+        cache.push_back(std::make_pair(child->getGUID(), level));
+        child->relationshipCache().updateChildren(level + 1, cache);
     });
 }
 

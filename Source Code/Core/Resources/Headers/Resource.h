@@ -76,18 +76,16 @@ class Resource : public GUIDWrapper
     explicit Resource(ResourceType type,
                       const stringImpl& resourceName);
 
-    /// Name management
-    const stringImpl& resourceName() const noexcept;
-    ResourceType getType() const noexcept;
     ResourceState getState() const noexcept;
+
+    PROPERTY_R(stringImpl, resourceName);
+    PROPERTY_R(ResourceType, resourceType);
 
    protected:
     virtual void setState(ResourceState currentState) noexcept;
     virtual const char* getResourceTypeName() const { return "Resource"; }
 
    protected:
-    stringImpl   _resourceName;
-    ResourceType _resourceType;
     std::atomic<ResourceState> _resourceState;
 };
 

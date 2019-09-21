@@ -79,7 +79,7 @@ void OrbitCamera::update(const U64 deltaTimeUS) {
 
 bool OrbitCamera::zoom(I32 zoomFactor) {
     if (zoomFactor != 0) {
-        curRadius(_curRadius += (zoomFactor * _cameraZoomSpeed * -0.01f));
+        curRadius(_curRadius += (zoomFactor * _speed.zoom * -0.01f));
     }
 
     return Camera::zoom(zoomFactor);

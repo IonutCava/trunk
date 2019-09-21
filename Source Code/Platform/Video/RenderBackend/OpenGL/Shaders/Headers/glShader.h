@@ -109,16 +109,8 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
         return _usedAtoms;
     }
 
-    inline bool isValid() const {
-        return _valid;
-    }
-
-    inline bool shouldRecompile() const {
-        return _shouldRecompile;
-    }
-
     /// Cache uniform/attribute locations for shader programs
-    I32 binding(const char* name);
+    I32 binding(const char* name, U64 bindingHash);
     void reuploadUniforms(bool force);
     void UploadPushConstant(const GFX::PushConstant& constant, bool force);
     I32 cachedValueUpdate(const GFX::PushConstant& constant, bool force);
@@ -133,13 +125,14 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     inline UseProgramStageMask stageMask() const { return _stageMask;  }
 
+    PROPERTY_R(bool, valid);
+    PROPERTY_R(bool, shouldRecompile);
+
    private:
     typedef hashMap<U64, I32> ShaderVarMap;
 
   private:
-    bool _valid;
     bool _loadedFromBinary;
-    bool _shouldRecompile;
 
     GLenum _binaryFormat;
     GLuint _programHandle;

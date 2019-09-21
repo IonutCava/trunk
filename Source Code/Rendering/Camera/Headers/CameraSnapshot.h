@@ -38,14 +38,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     struct CameraSnapshot {
-        Angle::DEGREES<F32> _FoV = 0.0f;
-        F32 _aspectRatio = 0.0f;
-        vec2<F32> _zPlanes;
-        vec3<F32> _eye;
-        F32 _padding_ = 0.0f;
-        Quaternion<F32> _orientation;
         mat4<F32> _viewMatrix;
         mat4<F32> _projectionMatrix;
+        Quaternion<F32> _orientation;
+        vec3<F32> _eye;
+        vec2<F32> _zPlanes;
+        Angle::DEGREES<F32> _FoV = 0.0f;
+        F32 _aspectRatio = 0.0f;
+        F32 _padding_ = 0.0f;
     };
 
     inline bool operator==(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {

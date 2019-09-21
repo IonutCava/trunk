@@ -132,13 +132,13 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
         _ceguiRenderer->endRendering();
 
-        GFX::SetBlendCommand blendCmd;
+        GFX::SetBlendCommand blendCmd = {};
         blendCmd._blendProperties = BlendingProperties{
-            true,
             BlendProperty::SRC_ALPHA,
             BlendProperty::INV_SRC_ALPHA,
             BlendOperation::ADD
         };
+        blendCmd._blendProperties._enabled = true;
         GFX::EnqueueCommand(bufferInOut, blendCmd);
 
         context.drawTextureInRenderWindow(getCEGUIRenderTextureData(), bufferInOut);

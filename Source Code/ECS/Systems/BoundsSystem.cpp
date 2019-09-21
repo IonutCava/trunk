@@ -29,9 +29,9 @@ namespace Divide {
     void BoundsSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto compManager = _engine.GetComponentManager();
-        auto bComp = compManager->begin<BoundsComponent>();
-        auto bCompEnd = compManager->end<BoundsComponent>();
+        auto container = _compManager->GetComponentContainer<BoundsComponent>();
+        auto bComp = container->begin();
+        auto bCompEnd = container->end();
         for (;bComp != bCompEnd; ++bComp)
         {
             SceneGraphNode& sgn = bComp->getSGN();
@@ -48,9 +48,9 @@ namespace Divide {
     void BoundsSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto compManager = _engine.GetComponentManager();
-        auto bComp = compManager->begin<BoundsComponent>();
-        auto bCompEnd = compManager->end<BoundsComponent>();
+        auto container = _compManager->GetComponentContainer<BoundsComponent>();
+        auto bComp = container->begin();
+        auto bCompEnd = container->end();
         for (;bComp != bCompEnd; ++bComp) {
             const SceneNode& sceneNode = bComp->getSGN().getNode();
             if (Attorney::SceneNodeBoundsComponent::boundsChanged(sceneNode)) {
@@ -65,9 +65,9 @@ namespace Divide {
     void BoundsSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto compManager = _engine.GetComponentManager();
-        auto bComp = compManager->begin<BoundsComponent>();
-        auto bCompEnd = compManager->end<BoundsComponent>();
+        auto container = _compManager->GetComponentContainer<BoundsComponent>();
+        auto bComp = container->begin();
+        auto bCompEnd = container->end();
         for (; bComp != bCompEnd; ++bComp) {
             Attorney::SceneNodeBoundsComponent::clearBoundsChanged(bComp->getSGN().getNode());
             bComp->PostUpdate(microSec);
@@ -75,9 +75,10 @@ namespace Divide {
     }
 
     void BoundsSystem::FrameEnded() {
-        auto compManager = _engine.GetComponentManager();
-        auto comp = compManager->begin<BoundsComponent>();
-        auto compEnd = compManager->end<BoundsComponent>();
+
+        auto container = _compManager->GetComponentContainer<BoundsComponent>();
+        auto comp = container->begin();
+        auto compEnd = container->end();
         for (; comp != compEnd; ++comp) {
             comp->FrameEnded();
         }

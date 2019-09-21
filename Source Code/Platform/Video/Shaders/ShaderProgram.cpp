@@ -59,11 +59,11 @@ bool ShaderProgram::unload() noexcept {
 
 
 /// Rebuild the specified shader stages from source code
-bool ShaderProgram::recompile() {
+bool ShaderProgram::recompile(bool force) {
     if (getState() != ResourceState::RES_LOADED) {
         return true;
     }
-    if (recompileInternal()) {
+    if (recompileInternal(force)) {
         _shouldRecompile = false;
         return true;
     }
@@ -76,7 +76,7 @@ void ShaderProgram::idle() {
     // If we don't have any shaders queued for recompilation, return early
     if (!s_recompileQueue.empty()) {
         // Else, recompile the top program from the queue
-        if (!s_recompileQueue.top()->recompile()) {
+        if (!s_recompileQueue.top()->recompile(true)) {
             // error
         }
         //Re-register because the handle is probably different by now
@@ -158,11 +158,14 @@ void ShaderProgram::onShutdown() {
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
     if (!Config::Build::IS_RELEASE_BUILD) {
-        SharedLock r_lock(s_programLock);
-        // Pass the update call to all registered programs
-        for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-            if (it.second.first->shouldRecompile()) {
-                it.second.first->recompile();
+        static bool onOddFrame = false;
+
+        onOddFrame = !onOddFrame;
+        if (onOddFrame) {
+            SharedLock r_lock(s_programLock);
+            // Pass the update call to all registered programs
+            for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+                it.second.first->recompile(false);
             }
         }
     }

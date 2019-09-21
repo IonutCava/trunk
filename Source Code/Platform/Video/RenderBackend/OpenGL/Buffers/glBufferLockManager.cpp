@@ -147,7 +147,7 @@ bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginByt
    return ret;
 }
 
-void glGlobalLockManager::LockBuffers(BufferLockEntries entries, bool flush) {
+void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush) {
     for (auto& it1 : entries) {
         for (auto& it2 : it1.second) {
             WaitForLockedRange(it1.first, it2._startOffset, it2._length, true);

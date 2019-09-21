@@ -17,8 +17,8 @@ NavigationComponent::~NavigationComponent() {}
 void NavigationComponent::navigationContext(const NavigationContext& newContext) {
     _navigationContext = newContext;
     
-    _parentSGN.forEachChild([&newContext](const SceneGraphNode& child) {
-        NavigationComponent* navComp = child.get<NavigationComponent>();
+    _parentSGN.forEachChild([&newContext](const SceneGraphNode* child) {
+        NavigationComponent* navComp = child->get<NavigationComponent>();
         if (navComp != nullptr) {
             navComp->navigationContext(newContext);
         }
@@ -28,8 +28,8 @@ void NavigationComponent::navigationContext(const NavigationContext& newContext)
 void NavigationComponent::navigationDetailOverride(const bool detailOverride) {
     _overrideNavMeshDetail = detailOverride;
 
-    _parentSGN.forEachChild([&detailOverride](const SceneGraphNode& child) {
-        NavigationComponent* navComp = child.get<NavigationComponent>();
+    _parentSGN.forEachChild([&detailOverride](const SceneGraphNode* child) {
+        NavigationComponent* navComp = child->get<NavigationComponent>();
         if (navComp != nullptr) {
             navComp->navigationDetailOverride(detailOverride);
         }

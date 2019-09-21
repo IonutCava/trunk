@@ -194,12 +194,13 @@ void OpenGL3StateChangeWrapper::blendFunc(GLenum sfactor, GLenum dfactor)
     bool callIsRedundant = d_blendFuncParams.equal(sfactor, dfactor);
     if(!callIsRedundant)
     {
-        Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties{
-                                                            true,
-                                                            Divide::getProperty(sfactor),
-                                                            Divide::getProperty(dfactor),
-                                                            Divide::BlendOperation::ADD
-                                                        });
+        Divide::BlendingProperties blend = {
+                                            Divide::getProperty(sfactor),
+                                            Divide::getProperty(dfactor),
+                                            Divide::BlendOperation::ADD
+        };
+        blend._enabled = true;
+        Divide::GL_API::getStateTracker().setBlending(blend);
     }
 }
 
@@ -207,15 +208,17 @@ void OpenGL3StateChangeWrapper::blendFuncSeparate(GLenum sfactorRGB, GLenum dfac
 {
     bool callIsRedundant = d_blendFuncSeperateParams.equal(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
     if (!callIsRedundant) {
-        Divide::GL_API::getStateTracker().setBlending(Divide::BlendingProperties{
-                                                        true,
+        Divide::BlendingProperties blend = {
                                                         Divide::getProperty(sfactorRGB),
                                                         Divide::getProperty(dfactorRGB),
                                                         Divide::BlendOperation::ADD,
                                                         Divide::getProperty(sfactorAlpha),
                                                         Divide::getProperty(dfactorAlpha),
                                                         Divide::BlendOperation::ADD
-                                                    });
+        };
+        blend._enabled = true;
+
+        Divide::GL_API::getStateTracker().setBlending(blend);
     }
 }
 

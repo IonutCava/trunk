@@ -102,8 +102,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void validatePreBind();
     void validatePostBind();
 
-    bool shouldRecompile() const override;
-    bool recompileInternal() override;
+    bool shouldRecompile() const;
+    bool recompileInternal(bool force) override;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
     bool load() override;

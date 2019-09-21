@@ -478,8 +478,8 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
         tComp->setPositionZ(offset.y + offset.w * 0.5f);
         tComp->setScale(_treeScales[meshID]);
 
-        node->forEachChild([ID](SceneGraphNode& child) {
-            RenderingComponent* rComp = child.get<RenderingComponent>();
+        node->forEachChild([ID](SceneGraphNode* child) {
+            RenderingComponent* rComp = child->get<RenderingComponent>();
             // negative value to disable occlusion culling
             rComp->cullFlagValue(ID * -1.0f);
         });

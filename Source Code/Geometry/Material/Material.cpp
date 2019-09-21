@@ -832,7 +832,7 @@ void Material::rebuild() {
 
     for (ShaderProgramInfo& info : _shaderInfo) {
         if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
-           info._shaderRef->recompile();
+           info._shaderRef->recompile(true);
         }
     }
 }

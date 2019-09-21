@@ -50,7 +50,7 @@ void DeleteResource::operator()(CachedResource* res) {
     _context.remove(res);
 
     if (res) {
-        if (res->getType() != ResourceType::GPU_OBJECT) {
+        if (res->resourceType() != ResourceType::GPU_OBJECT) {
             MemoryManager::DELETE(res);
         } else {
             //?
@@ -88,7 +88,7 @@ void ResourceCache::clear() {
         assert(!it->second.expired());
         
         CachedResource_ptr res = it->second.lock();
-        if (res->getType() != ResourceType::GPU_OBJECT) {
+        if (res->resourceType() != ResourceType::GPU_OBJECT) {
             Console::warnfn(Locale::get(_ID("WARN_RESOURCE_LEAKED")), res->resourceName().c_str(), res->getGUID());
         }
     }

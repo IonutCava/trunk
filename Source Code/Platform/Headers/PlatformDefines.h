@@ -85,11 +85,11 @@ constexpr U32 prime_32_const = 0x1000193;
 constexpr U64 val_64_const = 0xcbf29ce484222325;
 constexpr U64 prime_64_const = 0x100000001b3;
 
-inline constexpr U32 _ID_32(const char* const str, const U32 value = val_32_const) noexcept {
+constexpr U32 _ID_32(const char* const str, const U32 value = val_32_const) noexcept {
     return (str[0] == '\0') ? value : _ID_32(&str[1], (value ^ U32(str[0])) * prime_32_const);
 }
 
-inline constexpr U64 _ID(const char* const str, const U64 value = val_64_const) noexcept {
+constexpr U64 _ID(const char* const str, const U64 value = val_64_const) noexcept {
     return (str[0] == '\0') ? value : _ID(&str[1], (value ^ U64(str[0])) * prime_64_const);
 }
 
@@ -959,6 +959,21 @@ struct AtomicWrapper
         return _a == value;
     }
 };
+
+#define PROPERTY_RW(Type, Name) \
+protected: \
+    Type _##Name; \
+public: \
+    inline Type& Name() noexcept { return _##Name; }\
+    inline const Type& ##Name() const noexcept { return _##Name; }\
+    inline void Name(const Type val) noexcept { _##Name = val; }
+
+#define PROPERTY_R(Type, Name) \
+protected: \
+    Type _##Name; \
+public: \
+    inline Type& Name() noexcept { return _##Name; }\
+    inline const Type& Name() const noexcept { return _##Name; }
 };  // namespace Divide
 
 #endif

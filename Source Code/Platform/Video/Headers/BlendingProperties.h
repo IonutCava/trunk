@@ -38,7 +38,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BlendingProperties {
-    bool _enabled = false;
     BlendProperty  _blendSrc = BlendProperty::ONE;
     BlendProperty  _blendDest = BlendProperty::ZERO;
     BlendOperation _blendOp = BlendOperation::ADD;
@@ -46,6 +45,8 @@ struct BlendingProperties {
     BlendProperty  _blendSrcAlpha = BlendProperty::ONE;
     BlendProperty  _blendDestAlpha = BlendProperty::ZERO;
     BlendOperation _blendOpAlpha = BlendOperation::COUNT;
+
+    bool _enabled = false;
 
     inline bool operator==(const BlendingProperties& rhs) const {
         return _enabled == rhs._enabled &&

@@ -37,12 +37,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    struct TransformUpdated: public ECS::Event::Event<TransformUpdated>
+    struct TransformUpdated final : public ECS::Event::Event<TransformUpdated>
     {
-        ECS::EntityId ownerID;
-
-        TransformUpdated(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id) {}
-    };;
+        TransformUpdated(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine, id) {}
+    };
 };
 
 #endif //_TRANSFORM_EVENTS_H_

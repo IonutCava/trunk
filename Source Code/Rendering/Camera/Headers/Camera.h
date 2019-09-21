@@ -110,7 +110,7 @@ class Camera : public Resource {
     /// to change
     /// the orientation
     inline void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> angle) {
-        rotate(Quaternion<F32>(axis, angle * _cameraTurnSpeed));
+        rotate(Quaternion<F32>(axis, angle * _speed.turn));
     }
     /// Yaw, Pitch and Roll call "rotate" with a appropriate quaternion for  each
     /// rotation.
@@ -194,15 +194,15 @@ class Camera : public Resource {
     }
 
     inline void setMoveSpeedFactor(F32 moveSpeedFactor) {
-        _moveSpeedFactor = moveSpeedFactor;
+        _speedFactor.move = moveSpeedFactor;
     }
 
     inline void setTurnSpeedFactor(F32 turnSpeedFactor) {
-        _turnSpeedFactor = turnSpeedFactor;
+        _speedFactor.turn = turnSpeedFactor;
     }
 
     inline void setZoomSpeedFactor(F32 zoomSpeedFactor) {
-        _zoomSpeedFactor = zoomSpeedFactor;
+        _speedFactor.zoom = zoomSpeedFactor;
     }
 
     /// Exactly as in Ogre3D: locks the yaw movement to the specified axis
@@ -214,9 +214,9 @@ class Camera : public Resource {
 
     /// Getter methods.
 
-    inline F32 getMoveSpeedFactor() const { return _moveSpeedFactor; }
-    inline F32 getTurnSpeedFactor() const { return _turnSpeedFactor; }
-    inline F32 getZoomSpeedFactor() const { return _zoomSpeedFactor; }
+    inline F32 getTurnSpeedFactor() const { return _speedFactor.turn; }
+    inline F32 getMoveSpeedFactor() const { return _speedFactor.move; }
+    inline F32 getZoomSpeedFactor() const { return _speedFactor.zoom; }
 
     inline const CameraType& type() const { return _type; }
 
@@ -364,13 +364,10 @@ class Camera : public Resource {
     vec3<Angle::DEGREES<F32>> _euler;
     Angle::DEGREES<F32> _accumPitchDegrees;
 
-    F32 _turnSpeedFactor;
-    F32 _moveSpeedFactor;
+    vec3<F32> _speedFactor;
+    vec3<F32> _speed;
+
     F32 _mouseSensitivity;
-    F32 _zoomSpeedFactor;
-    F32 _cameraMoveSpeed;
-    F32 _cameraTurnSpeed;
-    F32 _cameraZoomSpeed;
     CameraType _type;
 
     bool _projectionDirty;

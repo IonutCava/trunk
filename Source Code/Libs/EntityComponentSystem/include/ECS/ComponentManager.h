@@ -85,27 +85,7 @@ namespace ECS
 
 		ComponentContainerRegistry m_ComponentContainerRegistry;
 
-
-		template<class T>
-		inline ComponentContainer<T>* GetComponentContainer()
-		{
-			ComponentTypeId CID = T::STATIC_COMPONENT_TYPE_ID;
-
-			auto it = this->m_ComponentContainerRegistry.find(CID);
-			ComponentContainer<T>* cc = nullptr;
-
-			if (it == this->m_ComponentContainerRegistry.end())
-			{
-				cc = new ComponentContainer<T>();
-				this->m_ComponentContainerRegistry[CID] = cc;
-			}
-			else
-				cc = static_cast<ComponentContainer<T>*>(it->second);
-
-			assert(cc != nullptr && "Failed to create ComponentContainer<T>!");
-			return cc;
-		}
-
+    
 		using ComponentLookupTable = eastl::vector<IComponent*>;
 		ComponentLookupTable	m_ComponentLUT;
 
@@ -265,6 +245,40 @@ namespace ECS
 
 			return static_cast<T*>(this->m_ComponentLUT[componentId]);
 		}
+
+        ///-------------------------------------------------------------------------------------------------
+        /// Fn:	template<class T> inline ComponentContainer<T> ComponentManager::GetComponentContainer()
+        ///
+        /// Summary:	Returns the collection of all components of type T.
+        ///
+        /// Author:	Tobias Stein
+        ///
+        /// Date:	24/09/2017
+        ///
+        /// Typeparams:
+        /// T - 	Generic type parameter.
+        ///
+        /// Returns:	A ComponentContainer&lt;T&gt;
+        ///-------------------------------------------------------------------------------------------------
+        template<class T>
+        inline ComponentContainer<T>* GetComponentContainer()
+        {
+            ComponentTypeId CID = T::STATIC_COMPONENT_TYPE_ID;
+
+            auto it = this->m_ComponentContainerRegistry.find(CID);
+            ComponentContainer<T>* cc = nullptr;
+
+            if (it == this->m_ComponentContainerRegistry.end())
+            {
+                cc = new ComponentContainer<T>();
+                this->m_ComponentContainerRegistry[CID] = cc;
+            }
+            else
+                cc = static_cast<ComponentContainer<T>*>(it->second);
+
+            assert(cc != nullptr && "Failed to create ComponentContainer<T>!");
+            return cc;
+        }
 
 		///-------------------------------------------------------------------------------------------------
 		/// Fn:	template<class T> inline TComponentIterator<T> ComponentManager::begin()

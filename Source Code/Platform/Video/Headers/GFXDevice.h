@@ -440,7 +440,6 @@ protected:
     size_t _stateDepthOnlyRenderingHash;
     /// The interpolation factor between the current and the last frame
     FrustumClipPlanes _clippingPlanes;
-    vec4<F32> _frustumPlanes[to_base(Frustum::FrustPlane::COUNT)];
 
     bool _2DRendering;
     // number of draw calls (rough estimate)
@@ -479,6 +478,7 @@ protected:
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 
     std::mutex _debugViewLock;
+    bool _debugViewsEnabled;
     vector<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer;

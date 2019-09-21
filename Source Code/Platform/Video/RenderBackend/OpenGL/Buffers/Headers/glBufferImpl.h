@@ -54,6 +54,11 @@ struct BufferImplParams {
 };
 
 struct BufferWriteData {
+    BufferWriteData() : BufferWriteData(-1) {};
+    BufferWriteData(I64 bufferGUID) : BufferWriteData(bufferGUID, 0, 0) {}
+    BufferWriteData(I64 bufferGUID, size_t offset, size_t range) : BufferWriteData(bufferGUID, offset, range, false) {}
+    BufferWriteData(I64 bufferGUID, size_t offset, size_t range, bool flush) : _bufferGUID(bufferGUID), _offset(offset), _range(range), _flush(flush) {}
+
     I64  _bufferGUID = -1;
     size_t _offset = 0;
     size_t _range = 0;

@@ -26,9 +26,9 @@ namespace Divide {
 
 
         vector<TransformComponent*> transforms;
-        auto compManager = _engine.GetComponentManager();
-        auto transform = compManager->begin<TransformComponent>();
-        auto transformEnd = compManager->end<TransformComponent>();
+        auto container = _compManager->GetComponentContainer<TransformComponent>();
+        auto transform = container->begin();
+        auto transformEnd = container->end();
         for (;transform != transformEnd; ++transform)
         {
             //transforms.push_back(transform.operator->());
@@ -51,9 +51,9 @@ namespace Divide {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         //vector<TransformComponent*> transforms;
-        auto compManager = _engine.GetComponentManager();
-        auto transform = compManager->begin<TransformComponent>();
-        auto transformEnd = compManager->end<TransformComponent>();
+        auto container = _compManager->GetComponentContainer<TransformComponent>();
+        auto transform = container->begin();
+        auto transformEnd = container->end();
         for (; transform != transformEnd; ++transform)
         {
             //transforms.push_back(transform.operator->());
@@ -77,9 +77,10 @@ namespace Divide {
     void TransformSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
         //vector<TransformComponent*> transforms;
-        auto compManager = _engine.GetComponentManager();
-        auto transform = compManager->begin<TransformComponent>();
-        auto transformEnd = compManager->end<TransformComponent>();
+
+        auto container = _compManager->GetComponentContainer<TransformComponent>();
+        auto transform = container->begin();
+        auto transformEnd = container->end();
         for (; transform != transformEnd; ++transform)
         {
             //transforms.push_back(transform.operator->());
@@ -101,9 +102,10 @@ namespace Divide {
     }
 
     void TransformSystem::FrameEnded() {
-        auto compManager = _engine.GetComponentManager();
-        auto comp = compManager->begin<TransformComponent>();
-        auto compEnd = compManager->end<TransformComponent>();
+
+        auto container = _compManager->GetComponentContainer<TransformComponent>();
+        auto comp = container->begin();
+        auto compEnd = container->end();
         for (; comp != compEnd; ++comp) {
             comp->FrameEnded();
         }
@@ -111,9 +113,9 @@ namespace Divide {
 
     void TransformSystem::OnUpdateLoop() {
         
-        auto compManager = _engine.GetComponentManager();
-        auto transform = compManager->begin<TransformComponent>();
-        auto transformEnd = compManager->end<TransformComponent>();
+        auto container = _compManager->GetComponentContainer<TransformComponent>();
+        auto transform = container->begin();
+        auto transformEnd = container->end();
         for (; transform != transformEnd; ++transform)
         {
             transform->OnUpdateLoop();

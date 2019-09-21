@@ -127,8 +127,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     ///  Calling recompile will re-create the marked shaders from source files
     ///  and update them in the ShaderManager if needed
-    bool recompile();
-    virtual bool shouldRecompile() const { return false; }
+    bool recompile(bool force);
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline vec_size getFunctionCount(ShaderType shader) {
@@ -206,7 +205,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     const char* getResourceTypeName() const override { return "ShaderProgram"; }
 
    protected:
-     virtual bool recompileInternal() = 0;
+     virtual bool recompileInternal(bool force) = 0;
 
      static void useShaderTextCache(bool state) { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
      static void useShaderBinaryCache(bool state) { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }

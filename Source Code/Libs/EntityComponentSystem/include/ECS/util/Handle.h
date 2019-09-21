@@ -78,6 +78,9 @@ namespace ECS { namespace util {
 			{}
 
 			inline operator value_type() const { return value; }
+
+            inline bool operator==(const Handle& other) const { return this->version == other.version && this->index == other.index; }
+            inline bool operator!=(const Handle& other) const { return this->version != other.version || this->index != other.index; }
 		};
 	} // namespace Internal
 

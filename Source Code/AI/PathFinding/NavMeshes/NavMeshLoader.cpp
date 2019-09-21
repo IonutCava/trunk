@@ -314,13 +314,15 @@ void addTriangle(NavModelData* modelData,
 }
 
 const vec3<F32> borderOffset(BORDER_PADDING);
-bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
-    NavigationComponent* navComp = sgn.get<NavigationComponent>();
+bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
+    assert(sgn != nullptr);
+
+    NavigationComponent* navComp = sgn->get<NavigationComponent>();
     if (navComp && 
         navComp->navigationContext() != NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if specified
         box.getHeight() > 0.05f)  // Skip small objects
     {
-        SceneNode& sn = sgn.getNode();
+        SceneNode& sn = sgn->getNode();
 
         SceneNodeType nodeType = sn.type();
         U32 ignoredNodeType = to_base(SceneNodeType::TYPE_ROOT) |
@@ -359,7 +361,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
             case SceneNodeType::TYPE_OBJECT3D: {
                 // Check if we need to override detail level
                 if (navComp && !navComp->navMeshDetailOverride() &&
-                     sgn.usageContext() == NodeUsageContext::NODE_STATIC) {
+                     sgn->usageContext() == NodeUsageContext::NODE_STATIC) {
                     level = MeshDetailLevel::BOUNDINGBOX;
                 }
                 if (static_cast<const Object3D&>(sn).getObjectType()._value == ObjectType::TERRAIN) {
@@ -373,9 +375,9 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         };
 
         // I should remove this hack - Ionut
-        SceneGraphNode* nodeSGN = &sgn;
+        SceneGraphNode* nodeSGN = sgn;
         if (nodeType == SceneNodeType::TYPE_WATER) {
-            nodeSGN = sgn.findChild("waterPlane");
+            nodeSGN = sgn->findChild("waterPlane");
         }
 
         Console::d_printfn(Locale::get(_ID("NAV_MESH_CURRENT_NODE")),
@@ -446,8 +448,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
 next:
     ;
 
-    return !sgn.forEachChildInterruptible([&outData](SceneGraphNode& child) {
-                if (!parse(child.get<BoundsComponent>()->getBoundingBox(), outData, child)) {
+    return !sgn->forEachChildInterruptible([&outData](SceneGraphNode* child) {
+                if (!parse(child->get<BoundsComponent>()->getBoundingBox(), outData, child)) {
                     return false;
                 }
                 return true;

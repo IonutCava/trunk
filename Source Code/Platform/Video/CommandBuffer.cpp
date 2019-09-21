@@ -163,10 +163,13 @@ void CommandBuffer::clean() {
             case CommandType::DRAW_COMMANDS :
             {
                 vectorEASTLFast<GenericDrawCommand>& cmds = get<DrawCommand>(cmd)._drawCommands;
+                cmds.erase(eastl::remove_if(eastl::begin(cmds),
+                                            eastl::end(cmds),
+                                            [](const GenericDrawCommand& cmd) -> bool {
+                                                return cmd._drawCount == 0u;
+                                            }),
+                           eastl::end(cmds));
 
-                auto beginIt = eastl::begin(cmds);
-                auto endIt = eastl::end(cmds);
-                cmds.erase(eastl::remove_if(beginIt, endIt, [](const GenericDrawCommand& cmd) -> bool { return cmd._drawCount == 0; }), endIt);
                 if (cmds.empty()) {
                     it = _commandOrder.erase(it);
                     --_commandCount[cmd._typeIndex];
@@ -181,11 +184,12 @@ void CommandBuffer::clean() {
                     --_commandCount[cmd._typeIndex];
                     skip = true;
                 }
+                 
                 prevPipeline = pipeline;
             }break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                PushConstants& constants = get<SendPushConstantsCommand>(cmd)._constants;
-                if (constants.data().empty()) {
+                const PushConstants& constants = get<SendPushConstantsCommand>(cmd)._constants;
+                if (constants.empty()) {
                     it = _commandOrder.erase(it);
                     --_commandCount[cmd._typeIndex];
                     skip = true;
@@ -193,27 +197,18 @@ void CommandBuffer::clean() {
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
                 const DescriptorSet& set = get<BindDescriptorSetsCommand>(cmd)._set;
-                if (prevDescriptorSet != nullptr && *prevDescriptorSet == set) {
+                if (set.empty() || (prevDescriptorSet != nullptr && *prevDescriptorSet == set)) {
                     it = _commandOrder.erase(it);
                     --_commandCount[cmd._typeIndex];
                     skip = true;
-                }
-                if (!skip && 
-                    set._shaderBuffers.empty() &&
-                    set._textureData.textures().empty() &&
-                    set._textureViews.empty() &&
-                    set._images.empty())
-                {
-                    it = _commandOrder.erase(it);
-                    --_commandCount[cmd._typeIndex];
-                    skip = true;
-                } else {
+                } 
+                if (set.empty() || skip) {
                     prevDescriptorSet = &set;
                 }
             }break;
             case GFX::CommandType::DRAW_TEXT: {
                 const TextElementBatch& batch = get<DrawTextCommand>(cmd)._batch;
-                bool hasText = !batch._data.empty();
+                bool hasText = !batch.empty();
                 if (hasText) {
                     hasText = false;
                     for (const TextElement& element : batch()) {
@@ -236,13 +231,12 @@ void CommandBuffer::clean() {
     }
 
     // Remove redundant pipeline changes
-
     auto entry = eastl::begin(_commandOrder); ++entry;
     for (; entry != eastl::cend(_commandOrder);) {
         auto prev = eastl::prev(entry);
         GFX::CommandType type = static_cast<GFX::CommandType>(entry->_typeIndex);
 
-        if (prev->_typeIndex == to_base(type) && type == CommandType::BIND_PIPELINE) {
+        if (type == CommandType::BIND_PIPELINE && prev->_typeIndex == to_base(type)) {
             entry = _commandOrder.erase(entry);
             --_commandCount[entry->_typeIndex];
         } else {

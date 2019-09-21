@@ -163,6 +163,10 @@ struct TextElementBatch {
         return _data;
     }
 
+    inline bool empty() const {
+        return _data.empty();
+    }
+
     BatchType _data;
 };
 

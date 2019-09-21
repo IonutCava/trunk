@@ -268,8 +268,8 @@ void RenderingComponent::rebuildMaterial() {
         getMaterialCache()->rebuild();
     }
 
-    _parentSGN.forEachChild([](const SceneGraphNode& child) {
-        RenderingComponent* const renderable = child.get<RenderingComponent>();
+    _parentSGN.forEachChild([](const SceneGraphNode* child) {
+        RenderingComponent* const renderable = child->get<RenderingComponent>();
         if (renderable) {
             renderable->rebuildMaterial();
         }
