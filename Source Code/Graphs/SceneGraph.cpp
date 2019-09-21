@@ -19,8 +19,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
       SceneComponent(parentScene),
      _loadComplete(false),
      _octreeChanged(false),
-     _nodeListChanged(false),
-     _ecsEngine(new ECS::ECSEngine())
+     _nodeListChanged(false)
 {
     _ecsManager = std::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
 
@@ -292,13 +291,13 @@ bool SceneGraph::loadCache(ByteBuffer& inputBuffer) {
 }
 
 namespace {
-    boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode& node) {
+    boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode* node) {
         boost::property_tree::ptree entry;
-        entry.put("<xmlattr>.name", node.name());
-        entry.put("<xmlattr>.type", node.getNode().getTypeName());
+        entry.put("<xmlattr>.name", node->name());
+        entry.put("<xmlattr>.type", node->getNode().getTypeName());
 
-        node.forEachChild([&entry](const SceneGraphNode& child) {
-            if (child.serialize()) {
+        node->forEachChild([&entry](const SceneGraphNode* child) {
+            if (child->serialize()) {
                 entry.add_child("node", dumpSGNtoAssets(child));
             }
         });
@@ -315,14 +314,14 @@ void SceneGraph::saveToXML() const {
 
     {
         boost::property_tree::ptree pt;
-        pt.add_child("entities.node", dumpSGNtoAssets(getRoot()));
+        pt.add_child("entities.node", dumpSGNtoAssets(&getRoot()));
 
         copyFile(sceneLocation + "/", "assets.xml", sceneLocation + "/", "assets.xml.bak", true);
         write_xml((sceneLocation + "/" + "assets.xml").c_str(), pt, std::locale(), settings);
     }
 
-    getRoot().forEachChild([&sceneLocation](const SceneGraphNode& child) {
-        child.saveToXML(sceneLocation);
+    getRoot().forEachChild([&sceneLocation](const SceneGraphNode* child) {
+        child->saveToXML(sceneLocation);
     });
 }
 

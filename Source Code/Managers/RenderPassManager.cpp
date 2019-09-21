@@ -155,14 +155,14 @@ namespace Divide {
         {
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
 
-            vectorEASTL<bool> completedPasses(renderPassCount, false);
+            eastl::fill(eastl::begin(_completedPasses), eastl::end(_completedPasses), false);
 
             bool slowIdle = false;
-            while (!eastl::all_of(eastl::cbegin(completedPasses), eastl::cend(completedPasses), [](bool v) { return v; })) {
+            while (!eastl::all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), [](bool v) { return v; })) {
                 // For every render pass
                 bool finished = true;
                 for (U8 i = 0; i < renderPassCount; ++i) {
-                    if (completedPasses[i] || !Finished(*_renderTasks[i])) {
+                    if (_completedPasses[i] || !Finished(*_renderTasks[i])) {
                         continue;
                     }
 
@@ -179,7 +179,7 @@ namespace Divide {
                         // Try and see if it's running
                         for (U8 j = 0; j < renderPassCount; ++j) {
                             // If it is running, we can't render yet
-                            if (j != i && _renderPasses[j]->sortKey() == dep && !completedPasses[j]) {
+                            if (j != i && _renderPasses[j]->sortKey() == dep && !_completedPasses[j]) {
                                 dependenciesRunning = true;
                                 break;
                             }
@@ -190,7 +190,7 @@ namespace Divide {
                         // No running dependency so we can flush the command buffer and add the pass to the skip list
                         _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
                         _renderPassCommandBuffer[i]->clear(false);
-                        completedPasses[i] = true;
+                        _completedPasses[i] = true;
                     } else {
                         finished = false;
                     }
@@ -238,6 +238,7 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                 });
 
     _renderTasks.resize(_renderPasses.size());
+    _completedPasses.resize(_renderPasses.size(), false);
 
     return *item;
 }
@@ -256,6 +257,7 @@ void RenderPassManager::removeRenderPass(const stringImpl& name) {
     }
 
     _renderTasks.resize(_renderPasses.size());
+    _completedPasses.resize(_renderPasses.size(), false);
 }
 
 U16 RenderPassManager::getLastTotalBinSize(RenderStage renderStage) const {

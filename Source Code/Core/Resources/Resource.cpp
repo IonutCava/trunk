@@ -16,15 +16,6 @@ Resource::Resource(ResourceType type,
 {
 }
 
-/// Name management
-const stringImpl& Resource::resourceName() const noexcept {
-    return _resourceName;
-}
-
-ResourceType Resource::getType() const noexcept {
-    return _resourceType;
-}
-
 ResourceState Resource::getState() const noexcept {
     return _resourceState.load(std::memory_order_relaxed);
 }

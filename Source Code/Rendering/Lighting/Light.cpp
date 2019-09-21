@@ -14,7 +14,7 @@
 namespace Divide {
 
 Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool)
-    : ECS::Event::IEventListener(&sgn.GetECSEngine()), 
+    : ECS::Event::IEventListener(sgn.GetECSEngine()), 
       _parentPool(parentPool),
       _sgn(sgn),
       _type(type),
@@ -61,9 +61,11 @@ Light::~Light()
 
 
 void Light::onTransformUpdated(const TransformUpdated* evt) {
-    if (_sgn.GetEntityID() == evt->ownerID) {
-        updateCache();
+    if (_sgn.GetEntityID() != evt->GetSourceEntityId()) {
+        return;
     }
+
+    updateCache();
 }
 
 void Light::updateCache() {

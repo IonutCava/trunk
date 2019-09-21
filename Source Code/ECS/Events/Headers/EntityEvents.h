@@ -35,21 +35,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    struct EntityPostLoad : public ECS::Event::Event<EntityPostLoad>
+    struct EntityPostLoad final : public ECS::Event::Event<EntityPostLoad>
     {
-        ECS::EntityId ownerID;
-
-        EntityPostLoad(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
-        {}
+        EntityPostLoad(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine, id) {}
     };
 
-    struct EntityActiveStateChange : public ECS::Event::Event<EntityActiveStateChange>
+    struct EntityActiveStateChange final : public ECS::Event::Event<EntityActiveStateChange>
     {
-        ECS::EntityId ownerID;
-        bool _state = false;
+        EntityActiveStateChange(ECS::ECSEngine* engine, ECS::EntityId id, bool state) : Event(engine, id), _state(state) {}
 
-        EntityActiveStateChange(ECS::ECSEngine* engine, ECS::EntityId id, bool state) : Event(engine), ownerID(id), _state(state)
-        {}
+        bool _state = false;
     };
 
 }; //namespace Divide

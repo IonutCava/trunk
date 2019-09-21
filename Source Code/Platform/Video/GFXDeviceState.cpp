@@ -643,6 +643,10 @@ void GFXDevice::closeRenderingAPI() {
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
 /// the screen, so we try to do some processing
 void GFXDevice::idle() {
+    if (Config::ENABLE_GPU_VALIDATION) {
+        _debugViewsEnabled = ParamHandler::instance().getParam<bool>(_ID("rendering.previewDebugViews"), false);
+    }
+
     _api->idle();
 
     _shaderComputeQueue->idle();

@@ -806,6 +806,9 @@ class vec3 {
             T pitch, yaw, roll;
         };
         struct {
+            T turn, move, zoom;
+        };
+        struct {
             T width, height, depth;
         };
         T _v[3];

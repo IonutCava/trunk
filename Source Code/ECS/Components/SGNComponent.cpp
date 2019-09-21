@@ -4,7 +4,7 @@
 
 namespace Divide {
     SGNComponent::SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context)
-        : ECS::Event::IEventListener(&parentSGN.GetECSEngine()),
+        : ECS::Event::IEventListener(parentSGN.GetECSEngine()),
           PlatformContextComponent(context),
           _type(type),
           _parentSGN(parentSGN),

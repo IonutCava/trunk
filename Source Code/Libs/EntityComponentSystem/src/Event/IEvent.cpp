@@ -13,10 +13,10 @@
 
 namespace ECS { namespace Event {
 
-	IEvent::IEvent(ECSEngine* engine, EventTypeId typeId) :
-		m_TypeId(typeId)
+	IEvent::IEvent(ECSEngine* engine, EntityId sourceEntityID, EventTypeId typeId) :
+		m_TypeId(typeId),
+        m_SourceEntityID(sourceEntityID)
 	{
-
         assert(engine != nullptr && "ECS engine not initialized!");
 		this->m_TimeCreated = engine->ECS_EngineTime->GetTimeStamp();
 	}

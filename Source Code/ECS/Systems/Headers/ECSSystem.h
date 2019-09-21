@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _ECS_SYSTEM_H_
 
 #include <ECS.h>
+
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -43,7 +44,9 @@ namespace Divide {
     template<class T>
     class ECSSystem : public ECS::System<T> {
     public:
-        ECSSystem(ECS::ECSEngine& engine) : _engine(engine)
+        explicit ECSSystem(ECS::ECSEngine& engine) 
+            : _engine(engine)
+            , _compManager(engine.GetComponentManager())
         {
         }
 
@@ -65,6 +68,7 @@ namespace Divide {
 
     protected:
         ECS::ECSEngine& _engine;
+        ECS::ComponentManager* _compManager;
     };
 };
 

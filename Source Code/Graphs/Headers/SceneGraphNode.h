@@ -120,13 +120,13 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     template<class E, class... ARGS>
     void SendEvent(ARGS&&... eventArgs)
     {
-        _ecsEngine.SendEvent<E>(std::forward<ARGS>(eventArgs)...);
+        GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...);
     }
 
     template<class E, class... ARGS>
     void SendAndDispatchEvent(ARGS&&... eventArgs)
     {
-        _ecsEngine.SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...);
+        GetECSEngine().SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...);
     }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
@@ -189,20 +189,20 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     bool isRelated(const SceneGraphNode& target) const;
     bool isChild(const SceneGraphNode& target, bool recursive) const;
 
-    void forEachChild(const DELEGATE_CBK<void, SceneGraphNode&>& callback);
-    void forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&>& callback) const;
+    void forEachChild(const DELEGATE_CBK<void, SceneGraphNode*>& callback);
+    void forEachChild(const DELEGATE_CBK<void, const SceneGraphNode*>& callback) const;
 
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&>& callback);
+    bool forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode*>& callback);
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&>& callback) const;
+    bool forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode*>& callback) const;
 
-    void forEachChild(const DELEGATE_CBK<void, SceneGraphNode&, I32>& callback, U32 start, U32 end);
-    void forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const;
+    void forEachChild(const DELEGATE_CBK<void, SceneGraphNode*, I32>& callback, U32 start, U32 end);
+    void forEachChild(const DELEGATE_CBK<void, const SceneGraphNode*, I32>& callback, U32 start, U32 end) const;
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&, I32>& callback, U32 start, U32 end);
+    bool forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode*, I32>& callback, U32 start, U32 end);
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const;
+    bool forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode*, I32>& callback, U32 start, U32 end) const;
 
     inline bool hasChildren() const {
         return getChildCount() > 0;
@@ -342,10 +342,11 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void RemoveSGNComponent() {
         SGNComponent* comp = static_cast<SGNComponent>(GetComponent<T>());
         if (comp) {
+            I64 targetGUID = comp->getEditorComponent().getGUID();
             _editorComponents.erase(
                 std::remove_if(std::begin(_editorComponents), std::end(_editorComponents),
-                               [comp](EditorComponent* editorComp)
-                               -> bool { return comp->getEditorComponent().getGUID() == editorComp->getGUID(); }),
+                               [targetGUID](EditorComponent* editorComp)
+                               -> bool { return editorComp->getGUID() == targetGUID; }),
                 std::end(_editorComponents));
             ClearBit(_componentMask, comp->type());
             RemoveComponent<T>();
@@ -370,7 +371,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    private:
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
-    ECS::ECSEngine& _ecsEngine;
     ECS::ComponentManager* _compManager;
 
     bool _serialize = true;

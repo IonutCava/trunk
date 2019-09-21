@@ -468,28 +468,32 @@ bool glShaderProgram::shouldRecompile() const {
     return false;
 }
 
-bool glShaderProgram::recompileInternal() {
+bool glShaderProgram::recompileInternal(bool force) {
     // Invalid or not loaded yet
     if (_handle == GLUtil::_invalidObjectID) {
         return true;
     }
-    // Remember bind state
-    bool wasBound = isBound();
-    if (wasBound) {
-        GL_API::getStateTracker().setActivePipeline(0u);
+
+    if (force || shouldRecompile()) {
+        // Remember bind state
+        bool wasBound = isBound();
+        if (wasBound) {
+            GL_API::getStateTracker().setActivePipeline(0u);
+        }
+
+        if (resourceName().compare("NULL") == 0) {
+            _validationQueued = false;
+            _handle = 0;
+            return true;
+        }
+
+        threadedLoad(true);
+        // Restore bind state
+        if (wasBound) {
+            bind(wasBound);
+        }
     }
 
-    if (resourceName().compare("NULL") == 0) {
-        _validationQueued = false;
-        _handle = 0;
-        return true;
-    }
-
-    threadedLoad(true);
-    // Restore bind state
-    if (wasBound) {
-        bind(wasBound);
-    }
     return getState() == ResourceState::RES_LOADED;
 }
 
@@ -553,7 +557,7 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) {
     validatePreBind();
     for (glShader* shader : _shaderStage) {
         assert(shader != nullptr);
-        if (shader->isValid() && shader->embedsType(type)) {
+        if (shader->valid() && shader->embedsType(type)) {
             glGetProgramStageiv(shader->getProgramHandle(), GLUtil::glShaderStageTable[to_U32(type)], GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
             break;
         }
@@ -568,7 +572,7 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) {
     validatePreBind();
     for (glShader* shader : _shaderStage) {
         assert(shader != nullptr);
-        if (shader->isValid() && shader->embedsType(type)) {
+        if (shader->valid() && shader->embedsType(type)) {
             return glGetSubroutineIndex(shader->getProgramHandle(), GLUtil::glShaderStageTable[to_U32(type)], name);
         }
     }
@@ -582,7 +586,7 @@ void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
 
     for (glShader* shader : _shaderStage) {
         assert(shader != nullptr);
-        if (shader->isValid()) {
+        if (shader->valid()) {
             shader->UploadPushConstant(constant, false);
         }
     }

@@ -43,25 +43,10 @@ namespace Divide {
 /// Utility class that adds basic GUID management to objects
 class GUIDWrapper {
    public:
-    GUIDWrapper() noexcept : _GUID(generateGUID())
-    {
-    }
-
-    virtual ~GUIDWrapper()
-    {
-    }
-
-    GUIDWrapper(const GUIDWrapper& old)
-        : _GUID(generateGUID())
-    {
-        (void)old;
-    }
-
-    GUIDWrapper(GUIDWrapper&& old)
-        : _GUID(old._GUID)
-    {
-    }
-
+    GUIDWrapper() noexcept : _GUID(generateGUID()) {}
+    GUIDWrapper(const GUIDWrapper& old) : _GUID(generateGUID()) { (void)old; }
+    GUIDWrapper(GUIDWrapper&& old) noexcept : _GUID(old._GUID) {}
+    virtual ~GUIDWrapper() {}
 
     inline I64 getGUID() const  noexcept { return _GUID; }
 
@@ -73,8 +58,6 @@ class GUIDWrapper {
 
    protected:
     const I64 _GUID;
-
-   private:
 };
 
 };  // namespace Divide

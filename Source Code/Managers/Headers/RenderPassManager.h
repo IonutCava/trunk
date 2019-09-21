@@ -146,6 +146,7 @@ private:
     RenderQueue _renderQueue;
 
     vectorEASTL<Task*> _renderTasks;
+    vectorEASTL<bool> _completedPasses;
     vectorEASTL<std::shared_ptr<RenderPass>> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
     GFX::CommandBuffer* _postFXCommandBuffer;

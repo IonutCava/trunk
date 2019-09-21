@@ -15,15 +15,11 @@ Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& 
       _frustumDirty(true),
       _reflectionActive(false),
       _mouseSensitivity(1.0f),
-      _zoomSpeedFactor(35.0f),
-      _moveSpeedFactor(35.0f),
-      _turnSpeedFactor(35.0f),
-      _cameraMoveSpeed(35.0f),
-      _cameraZoomSpeed(35.0f),
-      _cameraTurnSpeed(35.0f),
       _type(type),
       _updateCameraId(0)
 {
+    _speedFactor.set(35.0f);
+    _speed.set(35.0f);
     _yawFixed = false;
     _fixedYawAxis.set(WORLD_Y_AXIS);
     _accumPitchDegrees = 0.0f;
@@ -59,9 +55,8 @@ void Camera::fromCamera(const Camera& camera) {
     lockMovement(camera._movementLocked);
     lockRotation(camera._rotationLocked);
     _mouseSensitivity = camera._mouseSensitivity;
-    _cameraMoveSpeed = camera._cameraMoveSpeed;
-    _cameraTurnSpeed = camera._cameraTurnSpeed;
-    _cameraZoomSpeed = camera._cameraZoomSpeed;
+    _speedFactor = camera._speedFactor;
+    _speed = camera._speed;
     _reflectionPlane = camera._reflectionPlane;
     _reflectionActive = camera._reflectionActive;
 
@@ -100,10 +95,8 @@ void Camera::fromSnapshot(const CameraSnapshot& snapshot) {
 }
 
 void Camera::updateInternal(const U64 deltaTimeUS) {
-    F32 timeFactor = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
-    _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
-    _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
-    _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
+    const F32 timeFactor = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
+    _speed = _speedFactor * timeFactor;
 }
 
 void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
@@ -144,9 +137,10 @@ void Camera::rotate(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::D
         return;
     }
 
-    yaw = -yaw * _cameraTurnSpeed;
-    pitch = -pitch * _cameraTurnSpeed;
-    roll = -roll * _cameraTurnSpeed;
+    const F32 turnSpeed = _speed.turn;
+    yaw = -yaw * turnSpeed;
+    pitch = -pitch * turnSpeed;
+    roll = -roll * turnSpeed;
 
     Quaternion<F32> tempOrientation;
     if (_type == CameraType::FIRST_PERSON) {
@@ -184,25 +178,26 @@ void Camera::rotate(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::D
 }
 
 void Camera::rotateYaw(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _data._orientation * WORLD_Y_AXIS, -angle * _cameraTurnSpeed));
+    rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _data._orientation * WORLD_Y_AXIS, -angle * _speed.turn));
 }
 
 void Camera::rotateRoll(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_data._orientation * WORLD_Z_AXIS, -angle * _cameraTurnSpeed));
+    rotate(Quaternion<F32>(_data._orientation * WORLD_Z_AXIS, -angle * _speed.turn));
 }
 
 void Camera::rotatePitch(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_data._orientation * WORLD_X_AXIS, -angle * _cameraTurnSpeed));
+    rotate(Quaternion<F32>(_data._orientation * WORLD_X_AXIS, -angle * _speed.turn));
 }
 
 void Camera::move(F32 dx, F32 dy, F32 dz) {
     if (_movementLocked || IS_ZERO(dx + dy + dz)) {
         return;
     }
-    
-    dx *= _cameraMoveSpeed;
-    dy *= _cameraMoveSpeed;
-    dz *= _cameraMoveSpeed;
+
+    const F32 moveSpeed = _speed.move;
+    dx *= moveSpeed;
+    dy *= moveSpeed;
+    dz *= moveSpeed;
 
     _data._eye += getRightDir() * dx;
     _data._eye += WORLD_Y_AXIS * dy;
@@ -231,9 +226,10 @@ bool Camera::moveRelative(const vec3<I32>& relMovement) {
 
 bool Camera::rotateRelative(const vec3<I32>& relRotation) {
     if (relRotation.lengthSquared() > 0) {
-        rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _data._orientation * WORLD_Y_AXIS, -relRotation.yaw * _cameraTurnSpeed) *
-               Quaternion<F32>(_data._orientation * WORLD_X_AXIS, -relRotation.pitch * _cameraTurnSpeed) *
-               Quaternion<F32>(_data._orientation * WORLD_Z_AXIS, -relRotation.roll * _cameraTurnSpeed));
+        const F32 turnSpeed = _speed.turn;
+        rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _data._orientation * WORLD_Y_AXIS, -relRotation.yaw * turnSpeed) *
+               Quaternion<F32>(_data._orientation * WORLD_X_AXIS, -relRotation.pitch * turnSpeed) *
+               Quaternion<F32>(_data._orientation * WORLD_Z_AXIS, -relRotation.roll * turnSpeed));
         return true;
     }
     return false;

@@ -124,6 +124,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     LAST_CULL_COUNT = 0;
     // Booleans
     _2DRendering = false;
+    _debugViewsEnabled = false;
     // Enumerated Types
     _API_ID = RenderAPI::COUNT;
     
@@ -155,9 +156,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     flags[to_base(AttribLocation::TANGENT)] = false;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         VertexBuffer::setAttribMask(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)).index(), flags);
-    }
-    for (U8 i = 0; i < to_base(Frustum::FrustPlane::COUNT); ++i) {
-        _frustumPlanes[i].set(0.0f);
     }
 }
 
@@ -497,13 +495,11 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot, RenderSta
             data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
         }
 
-        F32 FoV = cameraSnapshot._FoV;
         data._cameraPosition.set(cameraSnapshot._eye, cameraSnapshot._aspectRatio);
         data._renderProperties.xy(cameraSnapshot._zPlanes);
-        data._renderProperties.z = FoV;
+        data._renderProperties.z = cameraSnapshot._FoV;
 
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
-        Frustum::computePlanes(GetInverse(data._ViewProjectionMatrix), _frustumPlanes);
         _gpuBlock._needsUpload = true;
     }
 }

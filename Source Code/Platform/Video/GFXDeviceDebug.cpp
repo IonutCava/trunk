@@ -24,207 +24,201 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
     static DebugView* HiZPtr = nullptr;
     static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour4(128), 96).getHash();
 
-    // As this is touched once per frame, we'll only enable it in debug builds
-    if (Config::ENABLE_GPU_VALIDATION) {
-        // Early out if we didn't request the preview
-        if (!ParamHandler::instance().getParam<bool>(_ID("rendering.previewDebugViews"), false)) {
-            return;
-        }
 
-        // Lazy-load preview shader
-        if (!_previewDepthMapShader) {
-            ShaderModuleDescriptor vertModule = {};
-            vertModule._moduleType = ShaderType::VERTEX;
-            vertModule._sourceFile = "baseVertexShaders.glsl";
-            vertModule._variant = "FullScreenQuad";
 
-            ShaderModuleDescriptor fragModule = {};
-            fragModule._moduleType = ShaderType::FRAGMENT;
-            fragModule._sourceFile = "fbPreview.glsl";
-            fragModule._variant = "LinearDepth";
+    // Lazy-load preview shader
+    if (!_previewDepthMapShader) {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
 
-            ShaderProgramDescriptor shaderDescriptor = {};
-            shaderDescriptor._modules.push_back(vertModule);
-            shaderDescriptor._modules.push_back(fragModule);
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "fbPreview.glsl";
+        fragModule._variant = "LinearDepth";
 
-            // The LinearDepth variant converts the depth values to linear values between the 2 scene z-planes
-            ResourceDescriptor fbPreview("fbPreviewLinearDepth");
-            fbPreview.setPropertyDescriptor(shaderDescriptor);
-            _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
-            assert(_previewDepthMapShader != nullptr);
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
 
-            DebugView_ptr HiZ = std::make_shared<DebugView>();
-            HiZ->_shader = _previewDepthMapShader;
-            HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
-            HiZ->_name = "Hierarchical-Z";
-            HiZ->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
-            HiZ->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+        // The LinearDepth variant converts the depth values to linear values between the 2 scene z-planes
+        ResourceDescriptor fbPreview("fbPreviewLinearDepth");
+        fbPreview.setPropertyDescriptor(shaderDescriptor);
+        _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
+        assert(_previewDepthMapShader != nullptr);
 
-            DebugView_ptr DepthPreview = std::make_shared<DebugView>();
-            DepthPreview->_shader = _previewDepthMapShader;
-            DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
-            DepthPreview->_name = "Depth Buffer";
-            DepthPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            DepthPreview->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+        DebugView_ptr HiZ = std::make_shared<DebugView>();
+        HiZ->_shader = _previewDepthMapShader;
+        HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+        HiZ->_name = "Hierarchical-Z";
+        HiZ->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
+        HiZ->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
-            DebugView_ptr NormalPreview = std::make_shared<DebugView>();
-            NormalPreview->_shader = _renderTargetDraw;
-            NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
-            NormalPreview->_name = "Normals";
-            NormalPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            NormalPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-            NormalPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 1u);
-            NormalPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        DebugView_ptr DepthPreview = std::make_shared<DebugView>();
+        DepthPreview->_shader = _previewDepthMapShader;
+        DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+        DepthPreview->_name = "Depth Buffer";
+        DepthPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+        DepthPreview->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
-            DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
-            VelocityPreview->_shader = _renderTargetDraw;
-            VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
-            VelocityPreview->_name = "Velocity Map";
-            VelocityPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            VelocityPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-            VelocityPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-            VelocityPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 1u);
+        DebugView_ptr NormalPreview = std::make_shared<DebugView>();
+        NormalPreview->_shader = _renderTargetDraw;
+        NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
+        NormalPreview->_name = "Normals";
+        NormalPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+        NormalPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
+        NormalPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 1u);
+        NormalPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+
+        DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
+        VelocityPreview->_shader = _renderTargetDraw;
+        VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
+        VelocityPreview->_name = "Velocity Map";
+        VelocityPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+        VelocityPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
+        VelocityPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+        VelocityPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 1u);
             
 
-            DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();
-            AlphaAccumulationHigh->_shader = _renderTargetDraw;
-            AlphaAccumulationHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
-            AlphaAccumulationHigh->_name = "Alpha Accumulation High";
-            AlphaAccumulationHigh->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            AlphaAccumulationHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-            AlphaAccumulationHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-            AlphaAccumulationHigh->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();
+        AlphaAccumulationHigh->_shader = _renderTargetDraw;
+        AlphaAccumulationHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
+        AlphaAccumulationHigh->_name = "Alpha Accumulation High";
+        AlphaAccumulationHigh->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+        AlphaAccumulationHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
-            DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
-            AlphaRevealageHigh->_shader = _renderTargetDraw;
-            AlphaRevealageHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
-            AlphaRevealageHigh->_name = "Alpha Revealage High";
-            AlphaRevealageHigh->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            AlphaRevealageHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
-            AlphaRevealageHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-            AlphaRevealageHigh->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
+        AlphaRevealageHigh->_shader = _renderTargetDraw;
+        AlphaRevealageHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
+        AlphaRevealageHigh->_name = "Alpha Revealage High";
+        AlphaRevealageHigh->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+        AlphaRevealageHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
+        AlphaRevealageHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+        AlphaRevealageHigh->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
-            //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
-            //AlphaAccumulationLow->_shader = _renderTargetDraw;
-            //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
-            //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
-            //AlphaAccumulationLow->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            //AlphaAccumulationLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-            //AlphaAccumulationLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-            //AlphaAccumulationLow->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
+        //AlphaAccumulationLow->_shader = _renderTargetDraw;
+        //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
+        //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
+        //AlphaAccumulationLow->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+        //AlphaAccumulationLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+        //AlphaAccumulationLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
+        //AlphaAccumulationLow->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
-            //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
-            //AlphaRevealageLow->_shader = _renderTargetDraw;
-            //AlphaRevealageLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
-            //AlphaRevealageLow->_name = "Alpha Revealage Low";
-            //AlphaRevealageLow->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            //AlphaRevealageLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
-            //AlphaRevealageLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-            //AlphaRevealageLow->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
+        //AlphaRevealageLow->_shader = _renderTargetDraw;
+        //AlphaRevealageLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
+        //AlphaRevealageLow->_name = "Alpha Revealage Low";
+        //AlphaRevealageLow->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+        //AlphaRevealageLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
+        //AlphaRevealageLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+        //AlphaRevealageLow->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
-            HiZPtr = addDebugView(HiZ);
-            addDebugView(DepthPreview);
-            addDebugView(NormalPreview);
-            addDebugView(VelocityPreview);
-            addDebugView(AlphaAccumulationHigh);
-            addDebugView(AlphaRevealageHigh);
-            //addDebugView(AlphaAccumulationLow);
-            //addDebugView(AlphaRevealageLow);
+        HiZPtr = addDebugView(HiZ);
+        addDebugView(DepthPreview);
+        addDebugView(NormalPreview);
+        addDebugView(VelocityPreview);
+        addDebugView(AlphaAccumulationHigh);
+        addDebugView(AlphaRevealageHigh);
+        //addDebugView(AlphaAccumulationLow);
+        //addDebugView(AlphaRevealageLow);
 
-            WAIT_FOR_CONDITION(_previewDepthMapShader->getState() == ResourceState::RES_LOADED);
+        WAIT_FOR_CONDITION(_previewDepthMapShader->getState() == ResourceState::RES_LOADED);
+    }
+
+    if (HiZPtr) {
+        //HiZ preview
+        I32 LoDLevel = 0;
+        RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
+        LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
+        HiZPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
+    }
+
+    constexpr I32 maxViewportColumnCount = 10;
+    I32 viewCount = to_I32(_debugViews.size());
+    for (auto view : _debugViews) {
+        if (!view->_enabled) {
+            --viewCount;
+        }
+    }
+
+    I32 columnCount = std::min(viewCount, maxViewportColumnCount);
+    I32 rowCount = viewCount / maxViewportColumnCount;
+    if (viewCount % maxViewportColumnCount > 0) {
+        rowCount++;
+    }
+
+    I32 screenWidth = targetViewport.z;
+    I32 screenHeight = targetViewport.w;
+    F32 aspectRatio = to_F32(screenWidth) / screenHeight;
+
+    I32 viewportWidth = (screenWidth / columnCount) - targetViewport.x;
+    I32 viewportHeight = to_I32(viewportWidth / aspectRatio) - targetViewport.y;
+    Rect<I32> viewport(screenWidth - viewportWidth, targetViewport.y, viewportWidth, viewportHeight);
+
+    PipelineDescriptor pipelineDesc = {};
+    pipelineDesc._stateHash = _state2DRenderingHash;
+
+    GenericDrawCommand triangleCmd = {};
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
+
+    vectorFast <std::pair<stringImpl, Rect<I32>>> labelStack;
+
+    Rect<I32> crtViewport = getCurrentViewport();
+    GFX::SetViewportCommand setViewport = {};
+    GFX::SendPushConstantsCommand pushConstants = {};
+    GFX::BindPipelineCommand bindPipeline = {};
+    GFX::DrawCommand drawCommand = { triangleCmd };
+
+    for (I16 idx = 0; idx < to_I16(_debugViews.size()); ++idx) {
+        DebugView& view = *_debugViews[idx];
+
+        if (!view._enabled) {
+            continue;
         }
 
-        if (HiZPtr) {
-            //HiZ preview
-            I32 LoDLevel = 0;
-            RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
-            LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
-            HiZPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
+        pipelineDesc._shaderProgramHandle = view._shader->getGUID();
+
+        bindPipeline._pipeline = newPipeline(pipelineDesc);
+        GFX::EnqueueCommand(bufferInOut, bindPipeline);
+
+        pushConstants._constants = view._shaderData;
+        GFX::EnqueueCommand(bufferInOut, pushConstants);
+
+        setViewport._viewport.set(viewport);
+        GFX::EnqueueCommand(bufferInOut, setViewport);
+
+        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
+        bindDescriptorSets._set._textureData.setTexture(view._texture->getData(), view._textureBindSlot);
+        GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+
+        GFX::EnqueueCommand(bufferInOut, drawCommand);
+
+        if (!view._name.empty()) {
+            labelStack.emplace_back(view._name, viewport);
         }
 
-        constexpr I32 maxViewportColumnCount = 10;
-        I32 viewCount = to_I32(_debugViews.size());
-        for (auto view : _debugViews) {
-            if (!view->_enabled) {
-                --viewCount;
-            }
+        if (idx > 0 && idx % (columnCount - 1) == 0) {
+            viewport.y += viewportHeight + targetViewport.y;
+            viewport.x += viewportWidth * columnCount + targetViewport.x * columnCount;
         }
-
-        I32 columnCount = std::min(viewCount, maxViewportColumnCount);
-        I32 rowCount = viewCount / maxViewportColumnCount;
-        if (viewCount % maxViewportColumnCount > 0) {
-            rowCount++;
-        }
-
-        I32 screenWidth = targetViewport.z;
-        I32 screenHeight = targetViewport.w;
-        F32 aspectRatio = to_F32(screenWidth) / screenHeight;
-
-        I32 viewportWidth = (screenWidth / columnCount) - targetViewport.x;
-        I32 viewportHeight = to_I32(viewportWidth / aspectRatio) - targetViewport.y;
-        Rect<I32> viewport(screenWidth - viewportWidth, targetViewport.y, viewportWidth, viewportHeight);
-
-        PipelineDescriptor pipelineDesc = {};
-        pipelineDesc._stateHash = _state2DRenderingHash;
-
-        GenericDrawCommand triangleCmd = {};
-        triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-        triangleCmd._drawCount = 1;
-
-        vectorFast <std::pair<stringImpl, Rect<I32>>> labelStack;
-
-        Rect<I32> crtViewport = getCurrentViewport();
-        GFX::SetViewportCommand setViewport = {};
-        GFX::SendPushConstantsCommand pushConstants = {};
-        GFX::BindPipelineCommand bindPipeline = {};
-        GFX::DrawCommand drawCommand = { triangleCmd };
-
-        for (I16 idx = 0; idx < to_I16(_debugViews.size()); ++idx) {
-            DebugView& view = *_debugViews[idx];
-
-            if (!view._enabled) {
-                continue;
-            }
-
-            pipelineDesc._shaderProgramHandle = view._shader->getGUID();
-
-            bindPipeline._pipeline = newPipeline(pipelineDesc);
-            GFX::EnqueueCommand(bufferInOut, bindPipeline);
-
-            pushConstants._constants = view._shaderData;
-            GFX::EnqueueCommand(bufferInOut, pushConstants);
-
-            setViewport._viewport.set(viewport);
-            GFX::EnqueueCommand(bufferInOut, setViewport);
-
-            GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-            bindDescriptorSets._set._textureData.setTexture(view._texture->getData(), view._textureBindSlot);
-            GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
-
-            GFX::EnqueueCommand(bufferInOut, drawCommand);
-
-            if (!view._name.empty()) {
-                labelStack.emplace_back(view._name, viewport);
-            }
-
-            if (idx > 0 && idx % (columnCount - 1) == 0) {
-                viewport.y += viewportHeight + targetViewport.y;
-                viewport.x += viewportWidth * columnCount + targetViewport.x * columnCount;
-            }
              
-            viewport.x -= viewportWidth + targetViewport.x;
-        }
+        viewport.x -= viewportWidth + targetViewport.x;
+    }
 
-        TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));
-        for (const std::pair<stringImpl, Rect<I32>>& entry : labelStack) {
-            // Draw labels at the end to reduce number of state changes
-            setViewport._viewport.set(entry.second);
-            GFX::EnqueueCommand(bufferInOut, setViewport);
+    TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));
+    for (const std::pair<stringImpl, Rect<I32>>& entry : labelStack) {
+        // Draw labels at the end to reduce number of state changes
+        setViewport._viewport.set(entry.second);
+        GFX::EnqueueCommand(bufferInOut, setViewport);
 
-            text._position.d_y.d_offset = entry.second.sizeY - 10.0f;
-            text.text(entry.first.c_str(), false);
-            drawText(text, bufferInOut);
-        }
+        text._position.d_y.d_offset = entry.second.sizeY - 10.0f;
+        text.text(entry.first.c_str(), false);
+        drawText(text, bufferInOut);
     }
 }
 

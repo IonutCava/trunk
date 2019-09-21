@@ -57,29 +57,19 @@ void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
 }
 
 /// For each listener, notify of current event and check results
-/// If any Listener returns false, the whole manager returns false for this
-/// specific step
+/// If any Listener returns false, the whole manager returns false for this specific step
 /// If the manager returns false at any step, the application exists
 bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
     switch (evt._type) {
-        case FrameEventType::FRAME_EVENT_STARTED:
-            return frameStarted(evt);
-        case FrameEventType::FRAME_PRERENDER_START:
-            return framePreRenderStarted(evt);
-        case FrameEventType::FRAME_PRERENDER_END:
-            return framePreRenderEnded(evt);
-        case FrameEventType::FRAME_SCENERENDER_START:
-            return frameSceneRenderStarted(evt);
-        case FrameEventType::FRAME_SCENERENDER_END:
-            return frameSceneRenderEnded(evt);
-        case FrameEventType::FRAME_POSTRENDER_START:
-            return framePostRenderStarted(evt);
-        case FrameEventType::FRAME_POSTRENDER_END:
-            return framePostRenderEnded(evt);
-        case FrameEventType::FRAME_EVENT_PROCESS:
-            return frameRenderingQueued(evt);
-        case FrameEventType::FRAME_EVENT_ENDED:
-            return frameEnded(evt);
+        case FrameEventType::FRAME_EVENT_STARTED     : return frameStarted(evt);
+        case FrameEventType::FRAME_PRERENDER_START   : return framePreRenderStarted(evt);
+        case FrameEventType::FRAME_PRERENDER_END     : return framePreRenderEnded(evt);
+        case FrameEventType::FRAME_SCENERENDER_START : return frameSceneRenderStarted(evt);
+        case FrameEventType::FRAME_SCENERENDER_END   : return frameSceneRenderEnded(evt);
+        case FrameEventType::FRAME_POSTRENDER_START  : return framePostRenderStarted(evt);
+        case FrameEventType::FRAME_POSTRENDER_END    : return framePostRenderEnded(evt);
+        case FrameEventType::FRAME_EVENT_PROCESS     : return frameRenderingQueued(evt);
+        case FrameEventType::FRAME_EVENT_ENDED       : return frameEnded(evt);
     };
 
     return false;

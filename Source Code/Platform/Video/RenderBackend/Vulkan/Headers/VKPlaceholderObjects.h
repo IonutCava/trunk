@@ -178,7 +178,7 @@ namespace Divide {
         U32 GetSubroutineUniformCount(ShaderType type) override { return 0;  }
 
     protected:
-        bool recompileInternal() override { return true; }
+        bool recompileInternal(bool force) override { ACKNOWLEDGE_UNUSED(force); return true; }
     };
 
 

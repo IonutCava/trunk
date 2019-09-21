@@ -124,13 +124,12 @@ class SceneGraph : private NonCopyable,
 
     ECSManager& GetECSManager() { return *_ecsManager; }
     const ECSManager& GetECSManager() const { return *_ecsManager; }
-    ECS::ECSEngine& GetECSEngine() { return *_ecsEngine; }
-    const ECS::ECSEngine& GetECSEngine() const { return *_ecsEngine; }
+    ECS::ECSEngine& GetECSEngine() { return _ecsEngine; }
+    const ECS::ECSEngine& GetECSEngine() const { return _ecsEngine; }
     ECS::EntityManager* GetEntityManager();
     ECS::EntityManager* GetEntityManager() const;
     ECS::ComponentManager* GetComponentManager();
     ECS::ComponentManager* GetComponentManager() const;
-
 
     bool saveCache(ByteBuffer& outputBuffer) const;
     bool loadCache(ByteBuffer& inputBuffer);
@@ -144,7 +143,7 @@ class SceneGraph : private NonCopyable,
     bool frameEnded(const FrameEvent& evt);
 
    private:
-    std::unique_ptr<ECS::ECSEngine> _ecsEngine;
+    ECS::ECSEngine _ecsEngine;
     std::unique_ptr<ECSManager> _ecsManager;
 
     bool _loadComplete;

@@ -9,8 +9,8 @@ namespace Divide {
 
 void RenderingComponent::toggleRenderOption(RenderOptions option, bool state) {
     if (renderOptionEnabled(option) != state) {
-        _parentSGN.forEachChild([option, state](const SceneGraphNode& child) {
-            RenderingComponent* const renderable = child.get<RenderingComponent>();
+        _parentSGN.forEachChild([option, state](const SceneGraphNode* child) {
+            RenderingComponent* const renderable = child->get<RenderingComponent>();
             if (renderable) {
                 renderable->toggleRenderOption(option, state);
             }

@@ -352,7 +352,7 @@ bool glShader::loadFromBinary() {
 }
 
 void glShader::dumpBinary() {
-    if (!isValid()) {
+    if (!valid()) {
         return;
     }
 
@@ -390,15 +390,14 @@ void glShader::dumpBinary() {
 /// Cache uniform/attribute locations for shader programs
 /// When we call this function, we check our name<->address map to see if we queried the location before
 /// If we didn't, ask the GPU to give us the variables address and save it for later use
-I32 glShader::binding(const char* name) {
+I32 glShader::binding(const char* name, U64 bindingHash) {
     // If the shader can't be used for rendering, just return an invalid address
-    if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID || !isValid()) {
+    if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID || !valid()) {
         return -1;
     }
 
     // Check the cache for the location
-    U64 nameHash = _ID(name);
-    ShaderVarMap::const_iterator it = _shaderVarLocation.find(nameHash);
+    ShaderVarMap::const_iterator it = _shaderVarLocation.find(bindingHash);
     if (it != std::end(_shaderVarLocation)) {
         return it->second;
     }
@@ -407,34 +406,36 @@ I32 glShader::binding(const char* name) {
     GLint location = glGetUniformLocation(_programHandle, name);
 
     // Save it for later reference
-    hashAlg::insert(_shaderVarLocation, nameHash, location);
+    hashAlg::insert(_shaderVarLocation, bindingHash, location);
 
     // Return the location
     return location;
 }
 
 I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, bool force) {
-    if (constant._binding.empty() || constant._type == GFX::PushConstantType::COUNT) {
+    if (constant._type == GFX::PushConstantType::COUNT || constant._bindingHash == 0u) {
         return -1;
     }
+    assert(!constant._binding.empty());
 
-    U64 locationHash = constant._bindingHash;
+    const U64 locationHash = constant._bindingHash;
 
-    I32 bindingLoc = binding(constant._binding.c_str());
+    const I32 bindingLoc = binding(constant._binding.c_str(), locationHash);
 
     if (bindingLoc == -1 || _programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
         return -1;
     }
 
-    UniformsByNameHash::ShaderVarMap::iterator it = _uniformsByNameHash._shaderVars.find(locationHash);
-    if (it != std::end(_uniformsByNameHash._shaderVars)) {
-        if (it->second == constant && !force) {
+    UniformsByNameHash::ShaderVarMap& map = _uniformsByNameHash._shaderVars;
+    UniformsByNameHash::ShaderVarMap::iterator it = map.find(locationHash);
+    if (it != std::cend(map)) {
+        if (!force && it->second == constant) {
             return -1;
         } else {
             it->second = constant;
         }
     } else {
-        hashAlg::emplace(_uniformsByNameHash._shaderVars, locationHash, constant);
+        hashAlg::emplace(map, locationHash, constant);
     }
 
     return bindingLoc;

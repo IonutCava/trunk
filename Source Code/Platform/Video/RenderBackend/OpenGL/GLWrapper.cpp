@@ -875,13 +875,14 @@ void GL_API::drawText(const TextElementBatch& batch) {
 
     pushDebugMessage("OpenGL render text start!", 2);
 
-    getStateTracker().setBlending(0,
-                        BlendingProperties {
-                            true,
-                            BlendProperty::SRC_ALPHA,
-                            BlendProperty::INV_SRC_ALPHA,
-                            BlendOperation::ADD
-                        });
+    BlendingProperties blend = {
+        BlendProperty::SRC_ALPHA,
+        BlendProperty::INV_SRC_ALPHA,
+        BlendOperation::ADD
+    };
+    blend._enabled = true;
+
+    getStateTracker().setBlending(0, blend);
 
     getStateTracker().setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
     I32 width = _context.renderingResolution().w;
@@ -1299,19 +1300,19 @@ void GL_API::lockBuffers(bool flush) {
         }
 
         if (!updatedExisting) {
-            g_bufferLockData.push_back(BufferWriteData{ data._bufferGUID, data._offset, data._range });
+            g_bufferLockData.emplace_back(data._bufferGUID, data._offset, data._range);
             shouldFlush = data._flush || shouldFlush;
         }
     }
 
     bool haveEntries = false;
     for (const BufferWriteData& entry : g_bufferLockData) {
-        entries[entry._bufferGUID].push_back({ entry._offset, entry._range });
+        entries[entry._bufferGUID].emplace_back(entry._offset, entry._range);
         haveEntries = true;
     }
 
     if (haveEntries) {
-        s_globalLockManager.LockBuffers(entries, flush && shouldFlush);
+        s_globalLockManager.LockBuffers(std::move(entries), flush && shouldFlush);
         if (!flush) {
             s_glFlushQueued = shouldFlush;
         }

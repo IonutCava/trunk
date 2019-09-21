@@ -379,7 +379,7 @@ void glVertexArray::draw(const GenericDrawCommand& command, I32 passIdx) {
 
     GLStateTracker& stateTracker = GL_API::getStateTracker();
     // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
-    GLuint vao = _vaoCaches[command._bufferIndex];
+    const GLuint vao = _vaoCaches[command._bufferIndex];
     stateTracker.setActiveVAO(vao);
     stateTracker.togglePrimitiveRestart(_primitiveRestartEnabled);
     // VAOs store vertex formats and are reused by multiple 3d objects, so the Index Buffer and Vertex Buffers need to be double checked

@@ -16,6 +16,7 @@
 #include "Managers/Headers/RenderPassManager.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
@@ -330,26 +331,26 @@ void GFXDevice::renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bu
 }
 
 void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    if (!Config::Build::IS_DEBUG_BUILD) {
-        //return;
-    }
-
     constexpr I32 padding = 5;
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 1234567;
-    beginDebugScopeCmd._scopeName = "Render Debug Views";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    // Early out if we didn't request the preview
+    if (_debugViewsEnabled) {
 
-    renderDebugViews(
-        Rect<I32>(targetViewport.x + padding,
-                  targetViewport.y + padding,
-                  targetViewport.z - padding * 2,
-                  targetViewport.w - padding * 2),
-        bufferInOut);
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+        beginDebugScopeCmd._scopeID = 1234567;
+        beginDebugScopeCmd._scopeName = "Render Debug Views";
+        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+        renderDebugViews(
+            Rect<I32>(targetViewport.x + padding,
+                targetViewport.y + padding,
+                targetViewport.z - padding * 2,
+                targetViewport.w - padding * 2),
+            bufferInOut);
+
+        GFX::EndDebugScopeCommand endDebugScopeCommand = {};
+        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+    }
 }
 
 

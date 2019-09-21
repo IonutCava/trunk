@@ -160,6 +160,13 @@ namespace Divide {
                    _images != other._images;
         }
 
+        inline bool empty() const {
+            return  _shaderBuffers.empty() &&
+                    _textureData.textures().empty() &&
+                    _textureViews.empty() &&
+                    _images.empty();
+        }
+
         XALLOCATOR
     };
 

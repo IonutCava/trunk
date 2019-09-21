@@ -120,8 +120,8 @@ void Character::playAnimation(I32 index) {
         if (anim) {
             anim->playAnimation(index);
         } else {
-            node->forEachChild([index](const SceneGraphNode& child) {
-                AnimationComponent* anim = child.get<AnimationComponent>();
+            node->forEachChild([index](const SceneGraphNode* child) {
+                AnimationComponent* anim = child->get<AnimationComponent>();
                 if (anim) {
                     anim->playAnimation(index);
                 }
@@ -137,8 +137,8 @@ void Character::playNextAnimation() {
         if (anim) {
             anim->playNextAnimation();
         } else {
-            node->forEachChild([](const SceneGraphNode& child) {
-                AnimationComponent* anim = child.get<AnimationComponent>();
+            node->forEachChild([](const SceneGraphNode* child) {
+                AnimationComponent* anim = child->get<AnimationComponent>();
                 if (anim) {
                     anim->playNextAnimation();
                 }
@@ -154,8 +154,8 @@ void Character::playPreviousAnimation() {
         if (anim) {
             anim->playPreviousAnimation();
         } else {
-            node->forEachChild([](const SceneGraphNode& child) {
-                AnimationComponent* anim = child.get<AnimationComponent>();
+            node->forEachChild([](const SceneGraphNode* child) {
+                AnimationComponent* anim = child->get<AnimationComponent>();
                 if (anim) {
                     anim->playPreviousAnimation();
                 }
@@ -171,8 +171,8 @@ void Character::pauseAnimation(bool state) {
         if (anim) {
             anim->playAnimations(state);
         } else {
-            node->forEachChild([state](const SceneGraphNode& child) {
-                AnimationComponent* anim = child.get<AnimationComponent>();
+            node->forEachChild([state](const SceneGraphNode* child) {
+                AnimationComponent* anim = child->get<AnimationComponent>();
                 if (anim) {
                     anim->playAnimations(state);
                 }
