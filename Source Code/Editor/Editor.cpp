@@ -1351,8 +1351,8 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
         F32 aspect = 1.0f;
         if (preserveAspect) {
-            const U16 w = tex->getWidth();
-            const U16 h = tex->getHeight();
+            const U16 w = tex->width();
+            const U16 h = tex->height();
             aspect = w / to_F32(h);
         }
 

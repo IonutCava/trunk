@@ -2232,7 +2232,7 @@ bool FieldInfo::render(int nodeWidth)   {
     ImGui::PushID((const void*) &f);
     static const int precisionStrSize = 16;
     static char precisionStr[precisionStrSize];
-    int precisionLastCharIndex;
+    int precisionLastCharIndex = 1;
     const char* label = (/*f.label &&*/ f.label[0]!='\0') ? &f.label[0] : "##DummyLabel";
     if (f.type!=FT_UNSIGNED && f.type!=FT_INT)  {
         if (f.precision>0) {
@@ -3052,7 +3052,7 @@ static Node* MyNodeFactory(int nt,const ImVec2& pos,const NodeGraphEditor& /*nge
 #   endif //IMGUI_USE_AUTO_BINDING
     default:
     IM_ASSERT(true);    // Missing node type creation
-    return NULL;
+    break;
     }
     return NULL;
 }

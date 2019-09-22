@@ -87,6 +87,18 @@ namespace Divide {
         WAIT_FOR_CONDITION(_OITCompositionShader->getState() == ResourceState::RES_LOADED);
     }
 
+    namespace {
+        inline bool all_of(vectorEASTL<bool>::const_iterator first, vectorEASTL<bool>::const_iterator last, bool state)
+        {
+            for (; first != last; ++first) {
+                if (*first != state) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    };
+
     void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
         if (parentTimer != nullptr && !parentTimer->hasChildTimer(*_renderPassTimer)) {
             parentTimer->addChildTimer(*_renderPassTimer);
@@ -140,9 +152,16 @@ namespace Divide {
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
 
+                                                const Texture_ptr& srcTex = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+                                                const Texture_ptr& dstTex = gfx.getPrevDepthBuffer();
                                                 GFX::CopyTextureCommand copyCmd = {};
-                                                copyCmd._source = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
-                                                copyCmd._destination = gfx.getPrevDepthBuffer();
+                                                copyCmd._source = srcTex->getData();
+                                                copyCmd._destination = dstTex->getData();
+                                                copyCmd._params._dimensions = {
+                                                    dstTex->width(),
+                                                    dstTex->height(),
+                                                    dstTex->numLayers()
+                                                };
                                                 GFX::EnqueueCommand(*buf, copyCmd);
 
                                                 buf->batch();
@@ -158,7 +177,7 @@ namespace Divide {
             eastl::fill(eastl::begin(_completedPasses), eastl::end(_completedPasses), false);
 
             bool slowIdle = false;
-            while (!eastl::all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), [](bool v) { return v; })) {
+            while (!all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), true)) {
                 // For every render pass
                 bool finished = true;
                 for (U8 i = 0; i < renderPassCount; ++i) {

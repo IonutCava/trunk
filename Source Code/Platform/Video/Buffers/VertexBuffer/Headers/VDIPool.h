@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _VDI_POOL_H_
 #define _VDI_POOL_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 

@@ -36,8 +36,6 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
-#include <BetterEnums/include/enum.h>
-
 namespace Divide {
 
 class BoundingBox;

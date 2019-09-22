@@ -34,7 +34,6 @@
 #define _UTILITY_IMAGETOOLS_H
 
 #include "Core/Math/Headers/MathVectors.h"
-#include <mutex>
 
 namespace Divide {
 enum class GFXImageFormat : U8;

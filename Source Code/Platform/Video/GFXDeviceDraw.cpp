@@ -178,7 +178,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     HIZPushConstantsCMD._constants.countHint(6);
     HIZPushConstantsCMD._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
     HIZPushConstantsCMD._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
-    HIZPushConstantsCMD._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->getWidth(), depthBuffer->getHeight()));
+    HIZPushConstantsCMD._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
     HIZPushConstantsCMD._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
     HIZPushConstantsCMD._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
     HIZPushConstantsCMD._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));

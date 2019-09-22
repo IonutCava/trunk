@@ -55,8 +55,6 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
 #include "Utility/Headers/XMLParser.h"
 
-#include <ArenaAllocator/arena_allocator.h>
-
 namespace Divide {
 class Sky;
 class Light;

@@ -134,7 +134,7 @@ void CommandBuffer::batch() {
             } break;
             case GFX::CommandType::COPY_TEXTURE: {
                 const CopyTextureCommand& crtCmd = get<CopyTextureCommand>(cmd);
-                hasWork = crtCmd._source != nullptr && crtCmd._destination != nullptr;
+                hasWork = crtCmd._source.type() != TextureType::COUNT && crtCmd._destination.type() != TextureType::COUNT;
             }break;
         };
     }

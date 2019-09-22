@@ -3,7 +3,6 @@
 #include "Headers/Console.h"
 
 #include "Core/Time/Headers/ApplicationTimer.h"
-#include <iomanip>
 
 namespace Divide {
 

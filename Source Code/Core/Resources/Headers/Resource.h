@@ -79,7 +79,7 @@ class Resource : public GUIDWrapper
     ResourceState getState() const noexcept;
 
     PROPERTY_R(stringImpl, resourceName);
-    PROPERTY_R(ResourceType, resourceType);
+    PROPERTY_R(ResourceType, resourceType, ResourceType::COUNT);
 
    protected:
     virtual void setState(ResourceState currentState) noexcept;

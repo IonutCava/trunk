@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "ECS/Events/Headers/TransformEvents.h"
-#include "ECS/Components/Headers/TransformComponent.h"
 
 #include "Headers/TransformSystem.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -26,9 +25,9 @@ namespace Divide {
 
 
         vector<TransformComponent*> transforms;
-        auto container = _compManager->GetComponentContainer<TransformComponent>();
-        auto transform = container->begin();
-        auto transformEnd = container->end();
+
+        auto transform = _container->begin();
+        auto transformEnd = _container->end();
         for (;transform != transformEnd; ++transform)
         {
             //transforms.push_back(transform.operator->());
@@ -51,9 +50,8 @@ namespace Divide {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         //vector<TransformComponent*> transforms;
-        auto container = _compManager->GetComponentContainer<TransformComponent>();
-        auto transform = container->begin();
-        auto transformEnd = container->end();
+        auto transform = _container->begin();
+        auto transformEnd = _container->end();
         for (; transform != transformEnd; ++transform)
         {
             //transforms.push_back(transform.operator->());
@@ -78,9 +76,8 @@ namespace Divide {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
         //vector<TransformComponent*> transforms;
 
-        auto container = _compManager->GetComponentContainer<TransformComponent>();
-        auto transform = container->begin();
-        auto transformEnd = container->end();
+        auto transform = _container->begin();
+        auto transformEnd = _container->end();
         for (; transform != transformEnd; ++transform)
         {
             //transforms.push_back(transform.operator->());
@@ -103,9 +100,8 @@ namespace Divide {
 
     void TransformSystem::FrameEnded() {
 
-        auto container = _compManager->GetComponentContainer<TransformComponent>();
-        auto comp = container->begin();
-        auto compEnd = container->end();
+        auto comp = _container->begin();
+        auto compEnd = _container->end();
         for (; comp != compEnd; ++comp) {
             comp->FrameEnded();
         }
@@ -113,9 +109,8 @@ namespace Divide {
 
     void TransformSystem::OnUpdateLoop() {
         
-        auto container = _compManager->GetComponentContainer<TransformComponent>();
-        auto transform = container->begin();
-        auto transformEnd = container->end();
+        auto transform = _container->begin();
+        auto transformEnd = _container->end();
         for (; transform != transformEnd; ++transform)
         {
             transform->OnUpdateLoop();
@@ -127,8 +122,8 @@ namespace Divide {
         if (tComp != nullptr && !tComp->saveCache(outputBuffer)) {
             return false;
         }
-         
-        return ECSSystem<TransformSystem>::saveCache(sgn, outputBuffer);
+
+        return Super::saveCache(sgn, outputBuffer);
     }
 
     bool TransformSystem::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
@@ -136,7 +131,7 @@ namespace Divide {
         if (tComp != nullptr && !tComp->loadCache(inputBuffer)) {
             return false;
         }
-           
-        return ECSSystem<TransformSystem>::loadCache(sgn, inputBuffer);
+
+        return Super::loadCache(sgn, inputBuffer);
     }
 }; //namespace Divide

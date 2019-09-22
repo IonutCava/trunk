@@ -38,8 +38,6 @@
 #pragma warning(disable : 4522)  //< multiple assignment operators specified (MSVC 14)
 #pragma warning(disable : 4324)  //< structure was padded due to alignment specifier
 
-#include "Platform/File/Headers/FileWithPath.h"
-
 #ifndef USE_VLD
 //#define USE_VLD
 #endif
@@ -72,6 +70,10 @@
 #ifndef FORCE_INLINE
 #define FORCE_INLINE __forceinline
 #endif //FORCE_INLINE
+
+#ifndef NO_INLINE
+#define NO_INLINE __declspec(noinline)
+#endif //NO_INLINE
 
 #include <windows.h>
 #include <limits.h>

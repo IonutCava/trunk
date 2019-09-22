@@ -40,8 +40,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferLockManager.h"
 
-#include <EASTL/fixed_vector.h>
-
 namespace Divide {
 
 class glGenericVertexData final : public GenericVertexData {

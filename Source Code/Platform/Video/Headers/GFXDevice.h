@@ -52,9 +52,6 @@
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
-#include <stack>
-#include <ArenaAllocator/arena_allocator.h>
-
 class RenderDocManager;
 
 namespace Divide {

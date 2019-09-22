@@ -36,7 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/PlatformContextComponent.h"
 
 #include <ECS.h>
-#include <BetterEnums/include/enum.h>
 
 namespace Divide {
 

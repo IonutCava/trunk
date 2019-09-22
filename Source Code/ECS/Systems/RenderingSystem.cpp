@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/RenderingSystem.h"
-#include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
     RenderingSystem::RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context)
@@ -19,9 +18,8 @@ namespace Divide {
     void RenderingSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto container = _compManager->GetComponentContainer<RenderingComponent>();
-        auto rComp = container->begin();
-        auto rCompEnd = container->end();
+        auto rComp = _container->begin();
+        auto rCompEnd = _container->end();
         for (;rComp != rCompEnd; ++rComp)
         {
             rComp->PreUpdate(microSec);
@@ -31,9 +29,8 @@ namespace Divide {
     void RenderingSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto container = _compManager->GetComponentContainer<RenderingComponent>();
-        auto rComp = container->begin();
-        auto rCompEnd = container->end();
+        auto rComp = _container->begin();
+        auto rCompEnd = _container->end();
         for (; rComp != rCompEnd; ++rComp)
         {
             rComp->Update(microSec);
@@ -43,9 +40,8 @@ namespace Divide {
     void RenderingSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto container = _compManager->GetComponentContainer<RenderingComponent>();
-        auto rComp = container->begin();
-        auto rCompEnd = container->end();
+        auto rComp = _container->begin();
+        auto rCompEnd = _container->end();
         for (; rComp != rCompEnd; ++rComp)
         {
             rComp->PostUpdate(microSec);
@@ -53,9 +49,9 @@ namespace Divide {
     }
 
     void RenderingSystem::FrameEnded() {
-        auto container = _compManager->GetComponentContainer<RenderingComponent>();
-        auto comp = container->begin();
-        auto compEnd = container->end();
+
+        auto comp = _container->begin();
+        auto compEnd = _container->end();
         for (; comp != compEnd; ++comp) {
             comp->FrameEnded();
         }
@@ -67,7 +63,7 @@ namespace Divide {
             return false;
         }
 
-        return ECSSystem<RenderingSystem>::saveCache(sgn, outputBuffer);
+        return Super::saveCache(sgn, outputBuffer);
     }
 
     bool RenderingSystem::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
@@ -76,6 +72,6 @@ namespace Divide {
             return false;
         }
 
-        return ECSSystem<RenderingSystem>::loadCache(sgn, inputBuffer);
+        return Super::loadCache(sgn, inputBuffer);
     }
 }; //namespace Divide

@@ -36,8 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Commands.h"
 #include "Core/TemplateLibraries/Headers/PolyContainer.h"
 
-#include <EASTL/list.h>
-
 namespace Divide {
 
 namespace GFX {

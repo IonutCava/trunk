@@ -35,10 +35,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "ECSSystem.h"
 #include "Core/Headers/PlatformContextComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
     class RenderingSystem : public PlatformContextComponent,
-                            public ECSSystem<RenderingSystem> {
+                            public ECSSystem<RenderingSystem, RenderingComponent> {
         public:
         RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~RenderingSystem();

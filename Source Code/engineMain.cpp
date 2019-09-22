@@ -9,7 +9,6 @@
 #include "Scripting/Headers/Script.h"
 #include "Platform/File/Headers/FileManagement.h"
 
-#include <iostream>
 #include "Core/Headers/TaskPool.h"
 namespace Divide {
 

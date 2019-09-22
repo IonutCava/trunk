@@ -74,12 +74,6 @@
     <Filter Include="Rendering\PostFX\CustomOperators\Headers">
       <UniqueIdentifier>{4fbdb892-cf43-46c2-9b6c-84ae8efd4eb3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering\RenderPass">
-      <UniqueIdentifier>{1aee5e88-bfca-4386-a563-03dc6103e32e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Rendering\RenderPass\Headers">
-      <UniqueIdentifier>{0d72c71e-914c-485c-a1ab-32c473006216}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Languages">
       <UniqueIdentifier>{003c25a0-1e62-4590-abe3-fe1bd5b04614}</UniqueIdentifier>
     </Filter>
@@ -199,6 +193,12 @@
     </Filter>
     <Filter Include="ECS\Events\Headers">
       <UniqueIdentifier>{7d3e677c-8260-4330-b156-805456166f14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\RenderPass">
+      <UniqueIdentifier>{1aee5e88-bfca-4386-a563-03dc6103e32e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\RenderPass\Headers">
+      <UniqueIdentifier>{0d72c71e-914c-485c-a1ab-32c473006216}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -390,9 +390,6 @@
     <ClCompile Include="../../Source Code/Rendering\Camera\CameraPool.cpp">
       <Filter>Rendering\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Rendering\Renderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Core\Kernel.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -441,9 +438,6 @@
     <ClCompile Include="../../Source Code/Geometry\Shapes\Predefined\Sphere3D.cpp">
       <Filter>Geometry\Shapes\Predefined</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Rendering\EnvironmentProbe.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code\ECS\Components\DirectionalLightComponent.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
@@ -459,137 +453,138 @@
     <ClCompile Include="../../Source Code\ECS\Components\SGNComponent.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\SelectionComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\CubeShadowMapGenerator.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\CascadedShadowMapsGenerator.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\SingleShadowMapGenerator.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/ECS\Components\AnimationComponent.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/ECS\Components\BoundsComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\EditorComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\IKComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\NavigationComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\NetworkingComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\RagdollComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\RenderingComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\RenderingComponentState.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\RigidBodyComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\TransformComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Components\UnitComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Systems\AnimationSystem.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/ECS\Systems\BoundsSystem.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ECS\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Systems\ECSManager.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Systems\RenderingSystem.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Systems\TransformSystem.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/ECS\Systems\UpdateSystem.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\API.cpp">
-      <Filter>Rendering</Filter>
+    <ClCompile Include="../../Source Code/ECS\Systems\AnimationSystem.cpp">
+      <Filter>ECS\Systems</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\ComponentManager.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Engine.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\EntityManager.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\EventHandler.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\IEvent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\IEventListener.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\IComponent.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\IEntity.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\ISystem.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Log\Logger.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Log\LoggerManager.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\ECSMM.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\SystemManager.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\util\Timer.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Rendering\Camera\CameraSnapshot.cpp">
+      <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\CascadedShadowMapsGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\CubeShadowMapGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\ECSMM.cpp">
+      <Filter>ECS\ECSLib\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\API.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\NavigationComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\NetworkingComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\RagdollComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\RenderingComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\RenderingComponentState.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\RigidBodyComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\SelectionComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\TransformComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\UnitComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\IComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\EditorComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Components\IKComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Rendering\Renderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp">
-      <Filter>Rendering</Filter>
+    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp" />
+    <ClCompile Include="../../Source Code/ECS\Systems\TransformSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Systems\RenderingSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\SingleShadowMapGenerator.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Engine.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Rendering\EnvironmentProbe.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp">
+      <Filter>ECS\ECSLib\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp">
+      <Filter>ECS\ECSLib\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp">
+      <Filter>ECS\ECSLib\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp">
+      <Filter>ECS\ECSLib\Memory\Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp">
+      <Filter>ECS\ECSLib\util</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\EventHandler.cpp">
+      <Filter>ECS\ECSLib\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\EntityManager.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\IEntity.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\IEvent.cpp">
+      <Filter>ECS\ECSLib\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\IEventListener.cpp">
+      <Filter>ECS\ECSLib\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\SystemManager.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\ISystem.cpp">
+      <Filter>ECS\ECSLib</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Log\Logger.cpp">
+      <Filter>ECS\ECSLib\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Log\LoggerManager.cpp">
+      <Filter>ECS\ECSLib\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/ECS\Systems\ECSManager.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\util\Timer.cpp">
+      <Filter>ECS\ECSLib\util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -626,7 +621,6 @@
     <ClInclude Include="../../Source Code/Graphs\Headers\SceneNode.h">
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/readme.h" />
     <ClInclude Include="../../Source Code/Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
@@ -862,66 +856,184 @@
     <ClInclude Include="../../Source Code\Rendering\Lighting\Headers\Light.h">
       <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\SelectionComponent.h" />
-    <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\CubeShadowMapGenerator.h" />
-    <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMapsGenerator.h" />
-    <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\SingleShadowMapGenerator.h" />
-    <ClInclude Include="../../Source Code/Core\Headers\PlatformContextComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\AnimationComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\BoundsComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\EditorComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\IKComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\NavigationComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\NetworkingComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\RagdollComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\RenderingComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\RigidBodyComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\SGNComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\TransformComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\UnitComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Events\Headers\BoundsEvents.h" />
-    <ClInclude Include="../../Source Code/ECS\Events\Headers\EntityEvents.h" />
-    <ClInclude Include="../../Source Code/ECS\Events\Headers\TransformEvents.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\AnimationSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\BoundsSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\ECSManager.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\ECSSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\RenderingSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\TransformSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\UpdateSystem.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\API.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Component.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ComponentManager.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ECS.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Engine.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Entity.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\EntityManager.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\Event.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventDelegate.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventDispatcher.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventHandler.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEvent.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEventListener.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\IComponent.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\IEntity.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ISystem.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\Logger.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\LoggerMacro.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\LoggerManager.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\ECSMM.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Platform.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\System.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\SystemManager.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\FamilyTypeID.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\Handle.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\Timer.h" />
-    <ClInclude Include="../../Source Code/Rendering\Camera\Headers\CameraSnapshot.h" />
+    <ClInclude Include="../../Source Code/ECS\Systems\Headers\AnimationSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\BoundsComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Events\Headers\BoundsEvents.h">
+      <Filter>ECS\Events\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Systems\Headers\BoundsSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Component.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ComponentManager.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ECS.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\API.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Systems\Headers\ECSManager.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\TransformComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\UnitComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\SelectionComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\RigidBodyComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\RenderingComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\RagdollComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\NetworkingComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\NavigationComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMapsGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\CubeShadowMapGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Rendering\Camera\Headers\CameraSnapshot.h">
+      <Filter>Rendering\Camera\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\AnimationComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\EditorComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Systems\Headers\RenderingSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Systems\Headers\TransformSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\SingleShadowMapGenerator.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\SGNComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\IComponent.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Systems\Headers\ECSSystem.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Components\Headers\IKComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\ECSMM.h">
+      <Filter>ECS\ECSLib\Headers\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\FamilyTypeID.h">
+      <Filter>ECS\ECSLib\Headers\util</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventHandler.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Engine.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Entity.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/ECS\Events\Headers\EntityEvents.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\Event.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventDelegate.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventDispatcher.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\EntityManager.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\Handle.h">
+      <Filter>ECS\ECSLib\Headers\util</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\IEntity.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEvent.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEventListener.h">
+      <Filter>ECS\ECSLib\Headers\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\SystemManager.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ISystem.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\Logger.h">
+      <Filter>ECS\ECSLib\Headers\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\LoggerMacro.h">
+      <Filter>ECS\ECSLib\Headers\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\LoggerManager.h">
+      <Filter>ECS\ECSLib\Headers\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h">
+      <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\System.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Platform.h">
+      <Filter>ECS\ECSLib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/readme.h" />
+    <ClInclude Include="../../Source Code/ECS\Events\Headers\TransformEvents.h">
+      <Filter>ECS\Events\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\Timer.h">
+      <Filter>ECS\ECSLib\Headers\util</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Core\Headers\PlatformContextComponent.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="../../localisation\enGB.ini">
@@ -936,6 +1048,8 @@
     <None Include="../../Source Code/Geometry\Material\Headers\Material.inl">
       <Filter>Geometry\Material\Headers</Filter>
     </None>
-    <None Include="../../Source Code/ECS\Components\Headers\SGNComponent.inl" />
+    <None Include="../../Source Code/ECS\Components\Headers\SGNComponent.inl">
+      <Filter>ECS\Components\Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

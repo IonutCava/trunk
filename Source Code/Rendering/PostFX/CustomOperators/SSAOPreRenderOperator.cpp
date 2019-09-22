@@ -170,7 +170,7 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     _ssaoOutput._rt->resize(width, height);
     _ssaoOutputBlurred._rt->resize(width, height);
 
-    _ssaoGenerateConstants.set("noiseScale", GFX::PushConstantType::VEC2, vec2<F32>(width, height) / to_F32(_noiseTexture->getWidth()));
+    _ssaoGenerateConstants.set("noiseScale", GFX::PushConstantType::VEC2, vec2<F32>(width, height) / to_F32(_noiseTexture->width()));
 
     _ssaoBlurConstants.set("ssaoTexelSize", GFX::PushConstantType::VEC2, vec2<F32>(1.0f / _ssaoOutput._rt->getWidth(),
                                                                                   1.0f / _ssaoOutput._rt->getHeight()));

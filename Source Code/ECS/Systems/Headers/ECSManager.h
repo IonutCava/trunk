@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "TransformSystem.h"
 #include "AnimationSystem.h"
-#include "UpdateSystem.h"
 #include "RenderingSystem.h"
 #include "BoundsSystem.h"
 

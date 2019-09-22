@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_CONTEXT_H_
 #define _PLATFORM_CONTEXT_H_
 
-#include <memory>
-
 namespace Divide {
 
 class GUI;

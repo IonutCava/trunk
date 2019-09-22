@@ -21,14 +21,6 @@
 #include "Core/Headers/EngineTaskPool.h"
 #include "Utility/Headers/Localization.h"
 
-#pragma warning(push)
-#pragma warning(disable:4458)
-#pragma warning(disable:4706)
-#include <boost/wave.hpp>
-#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
-#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
-#pragma warning(pop)
-
 namespace Divide {
 
 namespace {

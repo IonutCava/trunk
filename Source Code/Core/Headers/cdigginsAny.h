@@ -10,8 +10,6 @@
  * http://www.boost.org/LICENSE_1_0.txt
  */
 
-#include <stdexcept>
-
 namespace cdiggins {
 namespace anyimpl {
 struct bad_any_cast {};

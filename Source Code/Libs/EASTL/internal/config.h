@@ -89,8 +89,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef EASTL_VERSION
-	#define EASTL_VERSION   "3.13.05"
-	#define EASTL_VERSION_N  31305
+	#define EASTL_VERSION   "3.14.02"
+	#define EASTL_VERSION_N  31402
 #endif
 
 
@@ -1856,7 +1856,7 @@ typedef EASTL_SSIZE_T eastl_ssize_t; // Signed version of eastl_size_t. Concept 
 /// This feature define allows users to toggle the problematic eastl::pair implicit 
 /// single element constructor.
 #ifndef EASTL_ENABLE_PAIR_FIRST_ELEMENT_CONSTRUCTOR
-	#define EASTL_ENABLE_PAIR_FIRST_ELEMENT_CONSTRUCTOR 1
+	#define EASTL_ENABLE_PAIR_FIRST_ELEMENT_CONSTRUCTOR 0
 #endif
 
 #endif // Header include guard

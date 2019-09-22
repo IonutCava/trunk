@@ -33,8 +33,6 @@
 #ifndef _PLATFORM_DEFINES_UNIX_H_
 #define _PLATFORM_DEFINES_UNIX_H_
 
-#include "Platform/File/Headers/FileWithPath.h"
-
 #ifndef _RESTRICT_
 #define _RESTRICT_ __restrict__
 #endif
@@ -46,6 +44,10 @@
 #ifndef FORCE_INLINE
 #define FORCE_INLINE __attribute__((always_inline))
 #endif //FORCE_INLINE
+
+#ifndef NO_INLINE
+#define NO_INLINE __attribute__ ((noinline))
+#endif //NO_INLINE
 
 #include <sys/time.h>
 #include <X11/Xlib.h>

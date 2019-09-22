@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SCRIPTING_SCRIPT_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-#include <chaiscript/chaiscript.hpp>
 
 namespace FW {
     class FileWatcher;

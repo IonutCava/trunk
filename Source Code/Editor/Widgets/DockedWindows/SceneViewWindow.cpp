@@ -126,8 +126,8 @@ namespace Divide {
         const RenderTarget& rt = _parent.context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::EDITOR));
         const Texture_ptr& gameView = rt.getAttachment(RTAttachmentType::Colour, 0).texture();
 
-        I32 w = (I32)gameView->getWidth();
-        I32 h = (I32)gameView->getHeight();
+        I32 w = (I32)gameView->width();
+        I32 h = (I32)gameView->height();
 
         ImVec2 curPos = ImGui::GetCursorPos();
         const ImVec2 wndSz(ImGui::GetWindowSize().x - curPos.x - 30.0f, ImGui::GetWindowSize().y - curPos.y - 30.0f);

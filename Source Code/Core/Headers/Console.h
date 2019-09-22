@@ -62,55 +62,55 @@ class Console : private NonCopyable {
     static void printCopyrightNotice();
 
     template <typename... T>
-    inline static void printfn(const char* format, T&&... args);
+    NO_INLINE static void printfn(const char* format, T&&... args);
     template <typename... T>
-    inline static void printf(const char* format, T&&... args);
+    NO_INLINE static void printf(const char* format, T&&... args);
     template <typename... T>
-    inline static void warnfn(const char* format, T&&... args);
+    NO_INLINE static void warnfn(const char* format, T&&... args);
     template <typename... T>
-    inline static void warnf(const char* format, T&&... args);
+    NO_INLINE static void warnf(const char* format, T&&... args);
     template <typename... T>
-    inline static void errorfn(const char* format, T&&... args);
+    NO_INLINE static void errorfn(const char* format, T&&... args);
     template <typename... T>
-    inline static void errorf(const char* format, T&&... args);
+    NO_INLINE static void errorf(const char* format, T&&... args);
 
     template <typename... T>
-    inline static void d_printfn(const char* format, T&&... args);
+    NO_INLINE static void d_printfn(const char* format, T&&... args);
     template <typename... T>
-    inline static void d_printf(const char* format, T&&... args);
+    NO_INLINE static void d_printf(const char* format, T&&... args);
     template <typename... T>
-    inline static void d_warnfn(const char* format, T&&... args);
+    NO_INLINE static void d_warnfn(const char* format, T&&... args);
     template <typename... T>
-    inline static void d_warnf(const char* format, T&&... args);
+    NO_INLINE static void d_warnf(const char* format, T&&... args);
     template <typename... T>
-    inline static void d_errorfn(const char* format, T&&... args);
+    NO_INLINE static void d_errorfn(const char* format, T&&... args);
     template <typename... T>
-    inline static void d_errorf(const char* format, T&&... args);
+    NO_INLINE static void d_errorf(const char* format, T&&... args);
 
     template <typename... T>
-    inline static void printfn(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void printfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void printf(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void printf(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void warnfn(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void warnfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void warnf(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void warnf(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void errorfn(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void errorfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void errorf(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void errorf(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void d_printfn(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void d_printfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void d_printf(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void d_printf(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void d_warnfn(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void d_warnfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void d_warnf(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void d_warnf(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void d_errorfn(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void d_errorfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
-    inline static void d_errorf(std::ofstream& outStream, const char* format, T&&... args);
+    NO_INLINE static void d_errorf(std::ofstream& outStream, const char* format, T&&... args);
 
     static bool timeStampsEnabled() noexcept { return _timestamps; }
     static void toggleTimeStamps(const bool state) noexcept { _timestamps = state; }

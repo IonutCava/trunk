@@ -25,7 +25,7 @@ public:
 	typedef typename base::base_type::allocator_type allocator_type;
 	typedef typename base::base_type::insert_return_type insert_return_type;
 	typedef typename base::base_type::iterator iterator;
-	//typedef typename base::base_type::reverse_iterator reverse_iterator;
+//  typedef typename base::base_type::reverse_iterator reverse_iterator;
 	typedef typename base::base_type::const_iterator const_iterator;
 	typedef typename base::base_type::size_type size_type;
 	typedef typename base::base_type::value_type value_type;
@@ -39,23 +39,22 @@ public:
 
 	this_type&			operator=(const this_type& x);
 
-	insert_return_type	insert(const char* key, const T& value);
-	insert_return_type	insert(const char* key);
+	insert_return_type	 insert(const char* key, const T& value);
+	insert_return_type	 insert(const char* key);
 	pair<iterator, bool> insert_or_assign(const char* key, const T& value);
-	iterator			erase(const_iterator position);
-	size_type			erase(const char* key);
-	mapped_type&		operator[](const char* key);
+	iterator			 erase(const_iterator position);
+	size_type			 erase(const char* key);
+	mapped_type&		 operator[](const char* key);
 
 private:
 	char*				strduplicate(const char* str);
 
 	// Not implemented right now
-	//insert_return_type	insert(const value_type& value);
-	//iterator			insert(iterator position, const value_type& value);
-    //reverse_iterator	erase(reverse_iterator position);
-    //reverse_iterator	erase(reverse_iterator first, reverse_iterator last);
+	// insert_return_type	insert(const value_type& value);
+	// iterator				insert(iterator position, const value_type& value);
+    // reverse_iterator		erase(reverse_iterator position);
+    // reverse_iterator		erase(reverse_iterator first, reverse_iterator last);
 };
-
 
 
 template<typename T, typename Hash, typename Predicate, typename Allocator>
@@ -126,7 +125,15 @@ template<typename T, typename Hash, typename Predicate, typename Allocator>
 eastl::pair<typename string_hash_map<T, Hash, Predicate, Allocator>::iterator, bool>
 string_hash_map<T, Hash, Predicate, Allocator>::insert_or_assign(const char* key, const T& value)
 {
-	return base::base_type::insert_or_assign(strduplicate(key), value);
+	iterator i = base::base_type::find(key);
+	if (i != base::base_type::end())
+	{
+		return base::base_type::insert_or_assign(i->first, value);
+	}
+	else
+	{
+		return base::base_type::insert_or_assign(strduplicate(key), value);
+	}
 }
 
 template<typename T, typename Hash, typename Predicate, typename Allocator>

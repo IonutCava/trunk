@@ -35,7 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 #include "fmt/format.h"
 #include "fmt/printf.h"*/
-#include <cstdio>
 
 #ifndef _CORE_STRING_HELPER_INL_
 #define _CORE_STRING_HELPER_INL_

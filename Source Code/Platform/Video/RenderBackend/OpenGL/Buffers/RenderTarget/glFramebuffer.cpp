@@ -99,7 +99,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     if (!attachment->isExternal()) {
         tex = attachment->texture().get();
         // Do we need to resize the attachment?
-        bool shouldResize = tex->getWidth() != getWidth() || tex->getHeight() != getHeight();
+        bool shouldResize = tex->width() != getWidth() || tex->height() != getHeight();
         if (shouldResize) {
             tex->resize(NULL, vec2<U16>(getWidth(), getHeight()));
         }
@@ -137,7 +137,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentS
     GLenum binding = static_cast<GLenum>(attachment.binding());
 
     const Texture_ptr& tex = attachment.texture(false);
-    if (tex->getNumLayers() == 1) {
+    if (tex->numLayers() == 1) {
         layeredRendering = false;
     }
 

@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _UNDO_MANAGER_H_
 
 #include "Platform/Video/Headers/PushConstant.h"
-#include <deque>
 
 namespace Divide {
     struct IUndoEntry {

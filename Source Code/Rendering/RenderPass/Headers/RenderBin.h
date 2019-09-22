@@ -41,8 +41,6 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
-#include <BetterEnums/include/enum.h>
-
 namespace Divide {
 
 struct Task;
