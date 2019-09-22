@@ -38,9 +38,6 @@
 #ifndef TRACKED_OBJECT_H_
 #define TRACKED_OBJECT_H_
 
-#include <list>
-#include <atomic>
-
 namespace Divide {
 
 /// A tracked object takes car of it's own reference counting and knows it's own size

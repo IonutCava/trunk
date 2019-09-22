@@ -35,8 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "WorldPacket.h"
 
-#include <boost/asio/io_service.hpp>
-
 namespace Divide {
 
 #ifndef OPCODE_ENUM

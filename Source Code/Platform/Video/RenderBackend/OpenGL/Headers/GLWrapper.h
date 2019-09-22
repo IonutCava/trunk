@@ -47,8 +47,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVAOPool.h"
 
-#include <unordered_set>
-
 struct glslopt_ctx;
 struct FONScontext;
 struct ImDrawData;

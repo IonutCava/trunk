@@ -35,10 +35,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "ECSSystem.h"
 #include "Core/Headers/PlatformContextComponent.h"
+#include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
     class AnimationSystem : public PlatformContextComponent,
-                            public ECSSystem<AnimationSystem> {
+                            public ECSSystem<AnimationSystem, AnimationComponent> {
       public:
         AnimationSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~AnimationSystem();

@@ -6,8 +6,6 @@
 #define OPCODE_ENUM
 #endif
 
-#include <stdint.h>
-
 namespace Divide {
 
 /// Packet handling requires OPCodes to be defined. Use the following num

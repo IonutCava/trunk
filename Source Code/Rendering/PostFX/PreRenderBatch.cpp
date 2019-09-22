@@ -225,11 +225,23 @@ RenderTargetHandle& PreRenderBatch::outputRT() {
 }
 
 void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& buffer) {
+    static Pipeline *pipelineLumCalc = nullptr, *pipelineToneMap = nullptr, *pipelineToneMapAdaptive = nullptr;
+    if (pipelineLumCalc == nullptr) {
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+
+        pipelineDescriptor._shaderProgramHandle = _luminanceCalc->getGUID();
+        pipelineLumCalc = _context.newPipeline(pipelineDescriptor);
+
+        pipelineDescriptor._shaderProgramHandle = _toneMapAdaptive->getGUID();
+        pipelineToneMapAdaptive = _context.newPipeline(pipelineDescriptor);
+
+        pipelineDescriptor._shaderProgramHandle = _toneMap->getGUID();
+        pipelineToneMap = _context.newPipeline(pipelineDescriptor);
+    }
+
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
-
-    PipelineDescriptor pipelineDescriptor = {};
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
@@ -248,10 +260,9 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
         beginRenderPassCmd._name = "DO_LUMINANCE_PASS";
         GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
-        pipelineDescriptor._shaderProgramHandle = _luminanceCalc->getGUID();
 
         GFX::BindPipelineCommand pipelineCmd = {};
-        pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+        pipelineCmd._pipeline = pipelineLumCalc;
         GFX::EnqueueCommand(buffer, pipelineCmd);
 
         // We don't know if our screen target has been resolved
@@ -294,9 +305,8 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     resolveCmd._resolveDepth = false;
     GFX::EnqueueCommand(buffer, resolveCmd);
 
-    pipelineDescriptor._shaderProgramHandle = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap)->getGUID();
     GFX::BindPipelineCommand pipelineCmd = {};
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _adaptiveExposureControl ? pipelineToneMapAdaptive : pipelineToneMap;
     GFX::EnqueueCommand(buffer, pipelineCmd);
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)

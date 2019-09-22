@@ -37,8 +37,6 @@
 #include "Platform/Video/Buffers/RenderTarget/Headers/RTAttachment.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
-#include <EASTL/set.h>
-
 namespace Divide {
 
 class GL_API;

@@ -74,14 +74,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <assert.h>
 #include <iostream>
 #include <stdarg.h>
-#include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <fstream>
+#include <iomanip>
 #include <cstdarg>
 #include <numeric>
 #include <cstring>
 #include <sstream>
 #include <float.h>
+#include <cstdint>
+#include <string>
 #include <memory>
 #include <bitset>
 #include <limits>
@@ -92,11 +95,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <thread>
 #include <chrono>
 #include <array>
+#include <stack>
 #include <deque>
 #include <regex>
 #include <array>
+#include <queue>
+#include <list>
 #include <set>
 #include <new>
+
 //#include <gsl/gsl>
 
 #if !defined(CPP_17_SUPPORT)
@@ -119,8 +126,30 @@ namespace boost {
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/locks.hpp>
+#include <boost/functional/factory.hpp>
+//ToDo: Replace this with either the C++17 filesystem lib or with custom stuff in PlatformDefines
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/udp.hpp>
+#include <boost/asio/streambuf.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/strand.hpp>
+#include <boost/serialization/vector.hpp>
+#pragma warning(push)
+#pragma warning(disable:4458)
+#pragma warning(disable:4706)
+#include <boost/wave.hpp>
+#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
+#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
+#pragma warning(pop)
 
 #include <simplefilewatcher/includes/FileWatcher.h>
+
+#include <BetterEnums/include/enum.h>
 
 #ifndef BOOST_EXCEPTION_DISABLE
 #define BOOST_EXCEPTION_DISABLE
@@ -136,16 +165,28 @@ namespace boost {
 #include <sdl/include/SDL_mixer.h>
 #include <sdl/include/SDL.h>
 
+#include <EASTL/set.h>
+#include <EASTL/list.h>
+#include <EASTL/array.h>
+#include <EASTL/vector_map.h>
+#include <EASTL/fixed_vector.h>
+
+#include <MemoryPool/StackAlloc.h>
+#include <MemoryPool/C-11/MemoryPool.h>
+
+#include <ArenaAllocator/arena_allocator.h>
 #include <simpleCL.h>
 
+#include <chaiscript/chaiscript.hpp>
 #include <chaiscript/chaiscript_stdlib.hpp>
 #include <chaiscript/utility/utility.hpp>
 
 #include <ConcurrentQueue/concurrentqueue.h>
 #include <ConcurrentQueue/blockingconcurrentqueue.h>
 
-#include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/PlatformDataTypes.h"
+#include "Platform/File/Headers/FileWithPath.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/ConditionalWait.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
@@ -154,6 +195,7 @@ namespace boost {
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 #include "Core/TemplateLibraries/Headers/String.h"
+
 
 #ifndef YES_IMGUIMINIGAMES
 #define YES_IMGUIMINIGAMES

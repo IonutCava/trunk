@@ -4,9 +4,6 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/StringHelper.h"
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-
 namespace Divide {
 
 bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const bufferPtr content, size_t length, FileType fileType) {

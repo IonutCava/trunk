@@ -44,7 +44,6 @@
 using namespace gl46;
 
 #include <glbinding/Binding.h>
-#include <EASTL/array.h>
 
 struct SDL_Window;
 typedef void *SDL_GLContext;

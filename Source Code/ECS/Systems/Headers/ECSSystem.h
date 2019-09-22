@@ -41,12 +41,15 @@ namespace Divide {
     class ByteBuffer;
     class SceneGraphNode;
 
-    template<class T>
+    template<class T, class U>
     class ECSSystem : public ECS::System<T> {
     public:
+        using Super = ECSSystem<T, U>;
+
         explicit ECSSystem(ECS::ECSEngine& engine) 
             : _engine(engine)
             , _compManager(engine.GetComponentManager())
+            , _container(_compManager->GetComponentContainer<U>())
         {
         }
 
@@ -69,6 +72,7 @@ namespace Divide {
     protected:
         ECS::ECSEngine& _engine;
         ECS::ComponentManager* _compManager;
+        ECS::ComponentManager::ComponentContainer<U>* _container;
     };
 };
 

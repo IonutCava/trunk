@@ -94,46 +94,35 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
                           const bufferPtr data,
                           const vec2<U16>& dimensions) = 0;
 
-    // Other must have same size!
-    virtual void copy(const Texture_ptr& other, const CopyTexParams& params) = 0;
-
     /// Specify the sampler descriptor used to sample from this texture in the shaders
     virtual void setCurrentSampler(const SamplerDescriptor& descriptor);
 
     /// Get the sampler descriptor used by this texture
-    inline const SamplerDescriptor& getCurrentSampler() const {
-        return _descriptor._samplerDescriptor;
-    }
-
-    inline const TextureData& getData() const {
-        return _textureData;
-    }
-
-    /// Set/Get the number of layers (used by texture arrays)
-    inline void setNumLayers(U32 numLayers) { _numLayers = numLayers; }
-    inline U32 getNumLayers() const { return _numLayers; }
-    /// Texture width as returned by STB/DDS loader
-    inline U16 getWidth() const { return _width; }
-    /// Texture height depth as returned by STB/DDS loader
-    inline U16 getHeight() const { return _height; }
+    inline const SamplerDescriptor& getCurrentSampler() const { return _descriptor._samplerDescriptor; }
+    inline const TextureDescriptor& getDescriptor() const { return _descriptor; }
+    inline const TextureData& getData() const { return _textureData; }
     /// Texture base mip level
     inline U16 getBaseMipLevel() const { return _descriptor._mipLevels.x; }
     /// Texture max mip level
     inline U16 getMaxMipLevel() const { return _descriptor._mipLevels.y; }
     /// Number of loaded mip levels in VRAM
     inline U16 getMipCount() const { return _descriptor._mipCount; }
-    /// If the texture has an alpha channel and at least one pixel is translucent, return true
-    inline bool hasTranslucency() const { return _hasTranslucency; }
-    /// If the texture has an alpha channel and at least on pixel is fully transparent and no pixels are partially transparent, return true
-    inline bool hasTransparency() const { return _hasTransparency; }
-
-    const TextureDescriptor& getDescriptor() const { return _descriptor; }
-
-    static U16 computeMipCount(U16 width, U16 height);
-
     inline bool automaticMipMapGeneration() const { return _descriptor.automaticMipMapGeneration(); }
 
-    inline bool flipped() const { return _flipped; }
+    /// Set/Get the number of layers (used by texture arrays)
+    PROPERTY_RW(U32, numLayers, 1u);
+    /// Texture width as returned by STB/DDS loader
+    PROPERTY_R(U16, width, 0u);
+    /// Texture height depth as returned by STB/DDS loader
+    PROPERTY_R(U16, height, 0u);
+    /// If the texture has an alpha channel and at least one pixel is translucent, return true
+    PROPERTY_R(bool, hasTranslucency, false);
+    /// If the texture has an alpha channel and at least on pixel is fully transparent and no pixels are partially transparent, return true
+    PROPERTY_R(bool, hasTransparency, false);
+    /// Flipped Y-coord
+    PROPERTY_R(bool, flipped, false);
+
+    static U16 computeMipCount(U16 width, U16 height);
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
@@ -150,12 +139,6 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     const char* getResourceTypeName() const override { return "Texture"; }
 
    protected:
-    U32 _numLayers;
-    U16 _width;
-    U16 _height;
-    bool _flipped;
-    bool _hasTransparency;
-    bool _hasTranslucency;
     bool _asyncLoad;
     TextureData  _textureData;
     TextureDescriptor _descriptor;

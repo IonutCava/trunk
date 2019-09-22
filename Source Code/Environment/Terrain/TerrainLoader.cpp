@@ -356,7 +356,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     Texture_ptr albedoTile = terrainMaterial->getTexture(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE).lock();
     WAIT_FOR_CONDITION(albedoTile->getState() == ResourceState::RES_LOADED);
 
-    const U16 tileMapSize = albedoTile->getWidth();
+    const U16 tileMapSize = albedoTile->width();
     for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
         if (terrainDescriptor->wireframeDebug() == TerrainDescriptor::WireframeMode::EDGES) {
             shaderModule._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));

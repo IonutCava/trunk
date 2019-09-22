@@ -35,11 +35,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "ECSSystem.h"
 #include "Core/Headers/PlatformContextComponent.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
 
 namespace Divide {
-    class BoundsComponent;
+
     class BoundsSystem : public PlatformContextComponent,
-                         public ECSSystem<BoundsSystem> {
+                         public ECSSystem<BoundsSystem, BoundsComponent> {
        public:
         BoundsSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~BoundsSystem();

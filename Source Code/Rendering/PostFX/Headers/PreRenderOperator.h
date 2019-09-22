@@ -6,8 +6,6 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
-#include <BetterEnums/include/enum.h>
-
 namespace Divide {
 
 class Quad3D;

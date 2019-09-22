@@ -40,8 +40,6 @@
 #include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
-#include <stack>
-
 namespace FW {
     class FileWatcher;
 };

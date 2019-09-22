@@ -44,7 +44,8 @@ namespace ECS
 
 			virtual void DestroyComponent(IComponent* object) = 0;
 		};
-		
+
+    public:
 		template<class T>
 		class ComponentContainer : public Memory::MemoryChunkAllocator<T, COMPONENT_T_CHUNK_SIZE>, public IComponentContainer
 		{
@@ -76,7 +77,7 @@ namespace ECS
 
 		}; // class ComponentContainer
 
-
+    private:
 
 		ComponentManager(const ComponentManager&) = delete;
 		ComponentManager& operator=(ComponentManager&) = delete;

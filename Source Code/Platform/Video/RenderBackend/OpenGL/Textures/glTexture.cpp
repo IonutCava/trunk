@@ -385,37 +385,6 @@ void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data
     }
 }
 
-void glTexture::copy(const Texture_ptr& other, const CopyTexParams& params) {
-    _lockManager->Wait(true);
-
-    U32 numFaces = 1;
-    TextureType type = other->getData().type();
-    if (type == TextureType::TEXTURE_CUBE_MAP || type == TextureType::TEXTURE_CUBE_ARRAY) {
-        numFaces = 6;
-    }
-
-    GLuint srcHandle = other->getData().textureHandle();
-    GLuint destHandle = _textureData.textureHandle();
-
-    glCopyImageSubData(//Source
-                       srcHandle,
-                       GLUtil::glTextureTypeTable[to_U32(type)],
-                       params._sourceMipLevel,
-                       params._sourceCoords.x,
-                       params._sourceCoords.y,
-                       params._sourceCoords.z,
-                       //Destination
-                       destHandle,
-                       _type,
-                       params._targetMipLevel,
-                       params._targetCoords.x,
-                       params._targetCoords.y,
-                       params._targetCoords.z,
-                       //Source Dim
-                       other->getWidth(),
-                       other->getHeight(),
-                       other->getNumLayers() * numFaces);
-}
 
 void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     Texture::setCurrentSampler(descriptor);
@@ -428,6 +397,39 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, 
 
     GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor._srgb);
     GL_API::getStateTracker().bindTextureImage(slot, _descriptor.type(), _textureData.textureHandle(), level, layered, layer, access, glInternalFormat);
+}
+
+
+
+/*static*/ void glTexture::copy(const TextureData& source, const TextureData& destination, const CopyTexParams& params) {
+    const TextureType srcType = source.type();
+    const TextureType dstType = destination.type();
+    if (srcType != TextureType::COUNT && dstType != TextureType::COUNT) {
+        U32 numFaces = 1;
+        if (srcType == TextureType::TEXTURE_CUBE_MAP || srcType == TextureType::TEXTURE_CUBE_ARRAY) {
+            numFaces = 6;
+        }
+
+        glCopyImageSubData(
+            //Source
+            source.textureHandle(),
+            GLUtil::glTextureTypeTable[to_U32(srcType)],
+            params._sourceMipLevel,
+            params._sourceCoords.x,
+            params._sourceCoords.y,
+            params._sourceCoords.z,
+            //Destination
+            destination.textureHandle(),
+            GLUtil::glTextureTypeTable[to_U32(dstType)],
+            params._targetMipLevel,
+            params._targetCoords.x,
+            params._targetCoords.y,
+            params._targetCoords.z,
+            //Source Dim
+            params._dimensions.x,
+            params._dimensions.y,
+            params._dimensions.z * numFaces);
+    }
 }
 
 };

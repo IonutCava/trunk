@@ -36,8 +36,6 @@
 #include "Scenes/Headers/Scene.h"
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
-#include <queue>
-
 namespace Divide {
 
 class LoadSave {

@@ -480,7 +480,6 @@
     <ClCompile Include="../../Source Code/ECS\Systems\ECSManager.cpp" />
     <ClCompile Include="../../Source Code/ECS\Systems\RenderingSystem.cpp" />
     <ClCompile Include="../../Source Code/ECS\Systems\TransformSystem.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Systems\UpdateSystem.cpp" />
     <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\API.cpp" />
     <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\ComponentManager.cpp" />
     <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Engine.cpp" />
@@ -628,7 +627,6 @@
     <ClInclude Include="../../Source Code/ECS\Systems\Headers\ECSSystem.h" />
     <ClInclude Include="../../Source Code/ECS\Systems\Headers\RenderingSystem.h" />
     <ClInclude Include="../../Source Code/ECS\Systems\Headers\TransformSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\UpdateSystem.h" />
     <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\API.h" />
     <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Component.h" />
     <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ComponentManager.h" />

@@ -39,8 +39,6 @@
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 
-#include <EASTL/fixed_vector.h>
-
 /// Always bind a shader, even a dummy one when rendering geometry. No more
 /// fixed matrix API means no more VBs or VAs
 /// One VAO contains: one VB for data, one IB for indices and uploads to the

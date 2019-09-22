@@ -38,8 +38,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Rendering/Camera/Headers/CameraSnapshot.h"
 
-#include <BetterEnums/include/enum.h>
-
 struct ImDrawData;
 
 namespace Divide {
@@ -256,8 +254,8 @@ BEGIN_COMMAND(ResolveRenderTargetCommand, CommandType::RESOLVE_RT);
 END_COMMAND(ResolveRenderTargetCommand);
 
 BEGIN_COMMAND(CopyTextureCommand, CommandType::COPY_TEXTURE);
-    Texture_ptr _source = nullptr;
-    Texture_ptr _destination = nullptr;
+    TextureData _source;
+    TextureData _destination;
     CopyTexParams _params;
 END_COMMAND(CopyTextureCommand);
 

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/AnimationSystem.h"
-#include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
     AnimationSystem::AnimationSystem(ECS::ECSEngine& parentEngine, PlatformContext& context)
@@ -19,9 +18,8 @@ namespace Divide {
     void AnimationSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto container = _compManager->GetComponentContainer<AnimationComponent>();
-        auto anim = container->begin();
-        auto animEnd = container->end();
+        auto anim = _container->begin();
+        auto animEnd = _container->end();
         for (;anim != animEnd; ++anim)
         {
             anim->PreUpdate(microSec);
@@ -31,9 +29,8 @@ namespace Divide {
     void AnimationSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto container = _compManager->GetComponentContainer<AnimationComponent>();
-        auto anim = container->begin();
-        auto animEnd = container->end();
+        auto anim = _container->begin();
+        auto animEnd = _container->end();
         for (; anim != animEnd; ++anim)
         {
             anim->Update(microSec);
@@ -43,9 +40,8 @@ namespace Divide {
     void AnimationSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto container = _compManager->GetComponentContainer<AnimationComponent>();
-        auto anim = container->begin();
-        auto animEnd = container->end();
+        auto anim = _container->begin();
+        auto animEnd = _container->end();
         for (; anim != animEnd; ++anim)
         {
             anim->PostUpdate(microSec);
@@ -53,9 +49,9 @@ namespace Divide {
     }
 
     void AnimationSystem::FrameEnded() {
-        auto container = _compManager->GetComponentContainer<AnimationComponent>();
-        auto comp = container->begin();
-        auto compEnd = container->end();
+
+        auto comp = _container->begin();
+        auto compEnd = _container->end();
         for (; comp != compEnd; ++comp) {
             comp->FrameEnded();
         }
@@ -67,7 +63,7 @@ namespace Divide {
             return false;
         }
 
-        return ECSSystem<AnimationSystem>::saveCache(sgn, outputBuffer);
+        return Super::saveCache(sgn, outputBuffer);
     }
 
     bool AnimationSystem::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
@@ -76,6 +72,6 @@ namespace Divide {
             return false;
         }
 
-        return ECSSystem<AnimationSystem>::loadCache(sgn, inputBuffer);
+        return Super::loadCache(sgn, inputBuffer);
     }
 };//namespace Divide

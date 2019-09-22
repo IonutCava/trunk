@@ -36,11 +36,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "ECSSystem.h"
 #include "Core/Headers/PlatformContextComponent.h"
 #include "Platform/Threading/Headers/Task.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 
     class TransformSystem : public PlatformContextComponent,
-                            public ECSSystem<TransformSystem> {
+                            public ECSSystem<TransformSystem, TransformComponent> {
       public:
         TransformSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~TransformSystem();

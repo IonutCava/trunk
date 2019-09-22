@@ -510,7 +510,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
         GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
-        cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->getWidth(), depthTex->getHeight()));
+        cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
         cullConstants._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
         cullConstants._constants.set("viewMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
         cullConstants._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));

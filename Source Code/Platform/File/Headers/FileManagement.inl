@@ -32,8 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_FILE_FILE_MANAGEMENT_INL_
 #define _PLATFORM_FILE_FILE_MANAGEMENT_INL_
 
-#include <fstream>
-
 namespace Divide {
 
 template<typename T>

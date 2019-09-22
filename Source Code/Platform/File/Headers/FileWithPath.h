@@ -33,9 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _FILE_WITH_PATH_H_
 #define _FILE_WITH_PATH_H_
 
-#include <string>
-#include "Platform/Headers/PlatformDataTypes.h"
-
 namespace Divide {
 
 enum FileType : unsigned char {

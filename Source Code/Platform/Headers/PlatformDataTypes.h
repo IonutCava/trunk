@@ -33,9 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_DATA_TYPES_H_
 #define _PLATFORM_DATA_TYPES_H_
 
-#include <cstdint>
-#include <type_traits>
-
 namespace Divide {
 
 // "Exact" number of bits

@@ -12,8 +12,6 @@
 
 #include <imgui/addons/imguifilesystem/imguifilesystem.h>
 
-//ToDo: Replace this with either the C++17 filesystem lib or with custom stuff in PlatformDefines
-#include <boost/filesystem.hpp>
 using namespace boost::filesystem;
 
 namespace Divide {
@@ -252,8 +250,8 @@ namespace Divide {
                     ImGui::PushID(file.second.c_str());
 
                     if (tex != nullptr) {
-                        const U16 w = tex->getWidth();
-                        const U16 h = tex->getHeight();
+                        const U16 w = tex->width();
+                        const U16 h = tex->height();
                         const F32 aspect = w / to_F32(h);
 
                         if (ImGui::ImageButton((void*)(intptr_t)tex->getData().textureHandle(), ImVec2(64, 64 / aspect))) {
@@ -261,16 +259,16 @@ namespace Divide {
                         }
                     } else if (mesh != nullptr) {
                         const Texture_ptr& icon = _geometryIcons[to_base(format)];
-                        const U16 w = icon->getWidth();
-                        const U16 h = icon->getHeight();
+                        const U16 w = icon->width();
+                        const U16 h = icon->height();
                         const F32 aspect = w / to_F32(h);
 
                         if (ImGui::ImageButton((void*)(intptr_t)icon->getData().textureHandle(), ImVec2(64, 64 / aspect))) {
                             spawnMesh = mesh;
                         }
                     } else {
-                        const U16 w = _fileIcon->getWidth();
-                        const U16 h = _fileIcon->getHeight();
+                        const U16 w = _fileIcon->width();
+                        const U16 h = _fileIcon->height();
                         const F32 aspect = w / to_F32(h);
 
                         if (ImGui::ImageButton((void*)(intptr_t)_fileIcon->getData().textureHandle(), ImVec2(64, 64 / aspect))) {

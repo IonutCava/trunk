@@ -34,8 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
 
-#include <stack>
-
 namespace Divide {
     FWD_DECLARE_MANAGED_CLASS(Texture);
     FWD_DECLARE_MANAGED_CLASS(Mesh);
