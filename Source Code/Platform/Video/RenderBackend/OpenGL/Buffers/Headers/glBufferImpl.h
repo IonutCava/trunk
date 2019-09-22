@@ -54,14 +54,14 @@ struct BufferImplParams {
 };
 
 struct BufferWriteData {
-    BufferWriteData() : BufferWriteData(-1) {};
-    BufferWriteData(I64 bufferGUID) : BufferWriteData(bufferGUID, 0, 0) {}
-    BufferWriteData(I64 bufferGUID, size_t offset, size_t range) : BufferWriteData(bufferGUID, offset, range, false) {}
-    BufferWriteData(I64 bufferGUID, size_t offset, size_t range, bool flush) : _bufferGUID(bufferGUID), _offset(offset), _range(range), _flush(flush) {}
+    BufferWriteData() : BufferWriteData(GLUtil::k_invalidObjectID) {};
+    BufferWriteData(GLuint bufferHandle) : BufferWriteData(bufferHandle, 0, 0) {}
+    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range) : BufferWriteData(bufferHandle, offset, range, false) {}
+    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range, bool flush) : _handle(bufferHandle), _offset(offset), _range(range), _flush(flush) {}
 
-    I64  _bufferGUID = -1;
-    size_t _offset = 0;
-    size_t _range = 0;
+    GLuint _handle = GLUtil::k_invalidObjectID;
+    GLintptr _offset = 0;
+    GLsizeiptr _range = 0;
     bool _flush = false;
 };
 
@@ -73,14 +73,14 @@ public:
 
     GLuint bufferID() const;
 
-    bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
-    void lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush);
-    bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
+    bool bindRange(GLuint bindIndex, GLintptr offsetInBytes, size_t rangeInBytes);
+    void lockRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool flush);
+    bool waitRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool blockClient);
 
-    void writeData(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data);
-    void readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data);
-    void clearData(size_t offsetInBytes, size_t rangeInBytes);
-    void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
+    void writeData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bufferPtr data);
+    void readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, const bufferPtr data);
+    void clearData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
+    void zeroMem(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
 
     size_t elementSize() const;
 

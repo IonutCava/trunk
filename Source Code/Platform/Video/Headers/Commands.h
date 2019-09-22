@@ -330,15 +330,15 @@ END_COMMAND(MemoryBarrierCommand);
 BEGIN_COMMAND(ReadBufferDataCommand, CommandType::READ_BUFFER_DATA);
     ShaderBuffer* _buffer = nullptr;
     bufferPtr     _target = nullptr;
-    size_t        _offsetElementCount = 0;
-    size_t        _elementCount = 0;
+    U32           _offsetElementCount = 0;
+    U32           _elementCount = 0;
 END_COMMAND(ReadBufferDataCommand);
 
 
 BEGIN_COMMAND(ClearBufferDataCommand, CommandType::CLEAR_BUFFER_DATA);
     ShaderBuffer* _buffer = nullptr;
-    size_t        _offsetElementCount = 0;
-    size_t        _elementCount = 0;
+    U32           _offsetElementCount = 0;
+    U32           _elementCount = 0;
 END_COMMAND(ClearBufferDataCommand);
 
 BEGIN_COMMAND(ExternalCommand, CommandType::EXTERNAL);

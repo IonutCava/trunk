@@ -76,13 +76,13 @@ void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingPar
 namespace GLUtil {
 
 /*-----------Object Management----*/
-GLuint _invalidObjectID = GL_INVALID_INDEX;
-GLuint _lastQueryResult = GL_INVALID_INDEX;
+GLuint k_invalidObjectID = GL_INVALID_INDEX;
+GLuint s_lastQueryResult = GL_INVALID_INDEX;
 
-const DisplayWindow* _glMainRenderWindow;
-thread_local SDL_GLContext _glSecondaryContext = nullptr;
-std::mutex _driverLock;
-std::mutex _glSecondaryContextMutex;
+const DisplayWindow* s_glMainRenderWindow;
+thread_local SDL_GLContext s_glSecondaryContext = nullptr;
+std::mutex s_driverLock;
+std::mutex s_glSecondaryContextMutex;
 
 std::array<GLenum, to_base(BlendProperty::COUNT)> glBlendTable;
 std::array<GLenum, to_base(BlendOperation::COUNT)> glBlendOpTable;

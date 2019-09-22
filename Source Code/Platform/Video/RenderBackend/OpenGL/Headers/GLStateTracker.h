@@ -152,18 +152,18 @@ namespace Divide {
         glFramebuffer*  _activeRenderTarget = nullptr;
         glPixelBuffer*  _activePixelBuffer = nullptr;
         /// Current active vertex array object's handle
-        GLuint _activeVAOID = GLUtil::_invalidObjectID;
+        GLuint _activeVAOID = GLUtil::k_invalidObjectID;
         /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current write only framebuffer
-        GLuint _activeFBID[3] = { GLUtil::_invalidObjectID,
-                                  GLUtil::_invalidObjectID,
-                                  GLUtil::_invalidObjectID };
+        GLuint _activeFBID[3] = { GLUtil::k_invalidObjectID,
+                                  GLUtil::k_invalidObjectID,
+                                  GLUtil::k_invalidObjectID };
         /// VB, IB, SB, TB, UB, PUB, DIB
-        GLuint _activeBufferID[6] = { GLUtil::_invalidObjectID,
-                                      GLUtil::_invalidObjectID,
-                                      GLUtil::_invalidObjectID,
-                                      GLUtil::_invalidObjectID,
-                                      GLUtil::_invalidObjectID,
-                                      GLUtil::_invalidObjectID };
+        GLuint _activeBufferID[6] = { GLUtil::k_invalidObjectID,
+                                      GLUtil::k_invalidObjectID,
+                                      GLUtil::k_invalidObjectID,
+                                      GLUtil::k_invalidObjectID,
+                                      GLUtil::k_invalidObjectID,
+                                      GLUtil::k_invalidObjectID };
         hashMap<GLuint, GLuint> _activeVAOIB;
 
         GLint  _activePackUnpackAlignments[2] = { 1 , 1 };

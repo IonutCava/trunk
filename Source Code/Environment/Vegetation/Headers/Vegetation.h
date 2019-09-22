@@ -158,9 +158,9 @@ class Vegetation : public SceneNode {
     static std::unordered_set<vec2<F32>> s_treePositions;
     static std::unordered_set<vec2<F32>> s_grassPositions;
 
-    static size_t s_maxChunks;
-    static size_t s_maxTreeInstancesPerChunk;
-    static size_t s_maxGrassInstancesPerChunk;
+    static U32 s_maxChunks;
+    static U32 s_maxTreeInstancesPerChunk;
+    static U32 s_maxGrassInstancesPerChunk;
     static bool s_buffersBound;
 
     static Material_ptr s_treeMaterial;

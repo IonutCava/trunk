@@ -179,13 +179,13 @@ void DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 
 /// Invalid object value. Used to compare handles and determine if they were
 /// properly created
-extern GLuint _invalidObjectID;
-extern GLuint _lastQueryResult;
-extern const DisplayWindow* _glMainRenderWindow;
-extern thread_local SDL_GLContext _glSecondaryContext;
+extern GLuint k_invalidObjectID;
+extern GLuint s_lastQueryResult;
+extern const DisplayWindow* s_glMainRenderWindow;
+extern thread_local SDL_GLContext s_glSecondaryContext;
 
-extern std::mutex _driverLock;
-extern std::mutex _glSecondaryContextMutex;
+extern std::mutex s_driverLock;
+extern std::mutex s_glSecondaryContextMutex;
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool drawIndexed,

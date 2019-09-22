@@ -44,14 +44,14 @@ namespace Divide {
 
 struct BufferRange {
     BufferRange() : BufferRange(0, 0) {}
-    BufferRange(size_t start, size_t length) : _startOffset(start), _length(length) {}
+    BufferRange(GLintptr start, GLsizeiptr length) : _startOffset(start), _length(length) {}
 
-    size_t _startOffset = 0;
-    size_t _length = 0;
+    GLintptr _startOffset = 0;
+    GLsizeiptr _length = 0;
 
     inline bool Overlaps(const BufferRange& _rhs) const {
-        return _startOffset < (_rhs._startOffset + _rhs._length) &&
-               _rhs._startOffset < (_startOffset + _length);
+        return static_cast<GLsizeiptr>(_startOffset) < (_rhs._startOffset + _rhs._length) &&
+               static_cast<GLsizeiptr>(_rhs._startOffset) < (_startOffset + _length);
     }
 };
 
@@ -68,8 +68,8 @@ class glBufferLockManager : public glLockManager {
     ~glBufferLockManager();
 
     // Return true if we found a lock to wait on
-    bool WaitForLockedRange(size_t lockBeginBytes, size_t lockLength, bool blockClient, bool quickCheck = false);
-    void LockRange(size_t lockBeginBytes, size_t lockLength);
+    bool WaitForLockedRange(GLintptr lockBeginBytes, GLsizeiptr lockLength, bool blockClient, bool quickCheck = false);
+    void LockRange(GLintptr lockBeginBytes, GLsizeiptr lockLength);
 
    private:
     mutable std::mutex _lock;
@@ -77,7 +77,7 @@ class glBufferLockManager : public glLockManager {
     vectorEASTL<BufferLock> _swapLocks;
 };
 
-typedef hashMap<I64 /*bufferGUID*/, vectorEASTL<BufferRange> /*ranges*/> BufferLockEntries;
+typedef hashMap<GLuint /*buffer handle*/, vectorEASTL<BufferRange> /*ranges*/> BufferLockEntries;
 
 class glGlobalLockManager : public glLockManager {
 public:
@@ -86,7 +86,7 @@ public:
 
     GLsync syncHere() const;
     // Return true if  we found a lock to wait on
-    bool WaitForLockedRange(I64 bufferGUID, size_t lockBeginBytes, size_t lockLength, bool noWait = false);
+    bool WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait = false);
     void LockBuffers(BufferLockEntries&& entries, bool flush);
 
 protected:

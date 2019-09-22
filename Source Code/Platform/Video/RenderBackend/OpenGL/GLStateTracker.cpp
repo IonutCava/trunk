@@ -310,7 +310,7 @@ bool GLStateTracker::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint I
     // return and then try to bind the queried handle
     // This is, for example, in save/restore FB scenarios. An invalid handle
     // will just reset the buffer binding
-    if (ID == GLUtil::_invalidObjectID) {
+    if (ID == GLUtil::k_invalidObjectID) {
         ID = 0;
     }
     previousID = _activeFBID[to_U32(usage)];

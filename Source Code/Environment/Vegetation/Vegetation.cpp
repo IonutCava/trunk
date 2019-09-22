@@ -56,9 +56,9 @@ ShaderBuffer* Vegetation::s_grassData = nullptr;
 VertexBuffer* Vegetation::s_buffer = nullptr;
 vector<Mesh_ptr> Vegetation::s_treeMeshes;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
-size_t Vegetation::s_maxChunks = 0;
-size_t Vegetation::s_maxTreeInstancesPerChunk = 0;
-size_t Vegetation::s_maxGrassInstancesPerChunk = 0;
+U32 Vegetation::s_maxChunks = 0;
+U32 Vegetation::s_maxTreeInstancesPerChunk = 0;
+U32 Vegetation::s_maxGrassInstancesPerChunk = 0;
 
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
@@ -311,10 +311,10 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     }
 
     if (s_grassData == nullptr) {
-        s_maxTreeInstancesPerChunk = s_treePositions.size();
+        s_maxTreeInstancesPerChunk = to_U32(s_treePositions.size());
         s_maxTreeInstancesPerChunk += s_maxTreeInstancesPerChunk % WORK_GROUP_SIZE;
 
-        s_maxGrassInstancesPerChunk = s_grassPositions.size();
+        s_maxGrassInstancesPerChunk = to_U32(s_grassPositions.size());
         s_maxGrassInstancesPerChunk += s_maxGrassInstancesPerChunk % WORK_GROUP_SIZE;
 
         s_maxChunks = maxChunkCount;
@@ -356,7 +356,12 @@ void Vegetation::uploadVegetationData() {
 
     s_bufferUsage.fetch_add(1);
 
-    _instanceCountGrass = to_U32(std::min(_tempGrassData.size(), s_maxGrassInstancesPerChunk));
+    // clamp max size!
+    if (_tempGrassData.size() > s_maxGrassInstancesPerChunk) {
+        _tempGrassData.resize(s_maxGrassInstancesPerChunk);
+    }
+
+    _instanceCountGrass = to_U32(_tempGrassData.size());
 
     if (!_context.context().config().debug.enableGrassInstances) {
         _instanceCountGrass = 0;
@@ -364,7 +369,7 @@ void Vegetation::uploadVegetationData() {
 
     if (_instanceCountGrass > 0) {
         if (_terrainChunk.ID() < s_maxChunks) {
-            size_t diff = s_maxGrassInstancesPerChunk - _tempGrassData.size();
+            U32 diff = s_maxGrassInstancesPerChunk - _instanceCountGrass;
             if (diff > 0) {
                 _tempGrassData.insert(eastl::end(_tempGrassData), diff, VegetationData{});
             }
@@ -377,16 +382,20 @@ void Vegetation::uploadVegetationData() {
         _tempGrassData.clear();
     }
 
-    _instanceCountTrees = to_U32(std::min(_tempTreeData.size(), s_maxTreeInstancesPerChunk));
+    // clamp max size!
+    if (_tempTreeData.size() > s_maxTreeInstancesPerChunk) {
+        _tempTreeData.resize(s_maxTreeInstancesPerChunk);
+    }
+
+    _instanceCountTrees = to_U32(_tempTreeData.size());
 
     if (!_context.context().config().debug.enableTreeInstances) {
         _instanceCountTrees = 0;
     }
 
     if (_instanceCountTrees > 0) {
-        _instanceCountTrees = to_U32(std::min(_tempTreeData.size(), s_maxTreeInstancesPerChunk));
         if (_terrainChunk.ID() < s_maxChunks) {
-            size_t diff = s_maxTreeInstancesPerChunk - _tempTreeData.size();
+            U32 diff = s_maxTreeInstancesPerChunk - _instanceCountTrees;
             if (diff > 0) {
                 _tempTreeData.insert(eastl::end(_tempTreeData), diff, VegetationData{});
             }

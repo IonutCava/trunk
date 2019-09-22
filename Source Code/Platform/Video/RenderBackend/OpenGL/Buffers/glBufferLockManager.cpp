@@ -29,8 +29,8 @@ glBufferLockManager::~glBufferLockManager() {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
-                                             size_t lockLength,
+bool glBufferLockManager::WaitForLockedRange(GLintptr lockBeginBytes,
+                                             GLsizeiptr lockLength,
                                              bool blockClient,
                                              bool quickCheck) {
 
@@ -61,8 +61,8 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void glBufferLockManager::LockRange(size_t lockBeginBytes,
-                                    size_t lockLength) {
+void glBufferLockManager::LockRange(GLintptr lockBeginBytes,
+                                    GLsizeiptr lockLength) {
 
     if (WaitForLockedRange(lockBeginBytes, lockLength, true, true)) {
         //Console::printfn("Duplicate lock (%p) [%d - %d]", this, lockBeginBytes, lockLength);
@@ -111,15 +111,12 @@ bool glGlobalLockManager::test(GLsync syncObject, vectorEASTL<BufferRange>& rang
     return false;
 }
 
-bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginBytes, size_t lockLength, bool noWait) {
-    bool ret = false;
-    BufferRange testRange{ lockBeginBytes, lockLength };
+bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait) {
     bool foundLockedRange = false;
-
     {
         SharedLock r_lock(_lock);
-        for (auto it = eastl::cbegin(_bufferLocks); it != eastl::cend(_bufferLocks); ++it) {
-            if (it->second.find(bufferGUID) != std::cend(it->second)) {
+        for (const auto& it : _bufferLocks) {
+            if (it.second.find(bufferHandle) != std::cend(it.second)) {
                 foundLockedRange = true;
                 break;
             }
@@ -127,10 +124,14 @@ bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginByt
     }
 
     if (foundLockedRange) {
+        bool ret = false;
+
+        BufferRange testRange{ lockBeginBytes, lockLength };
+
         UniqueLockShared w_lock(_lock);
         // Check again as the range may have been cleared on another thread
         for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-            auto entry = it->second.find(bufferGUID);
+            auto entry = it->second.find(bufferHandle);
             if (entry != std::cend(it->second)) {
                 if (test(it->first, entry->second, testRange, noWait)) {
                     it = _bufferLocks.erase(it);
@@ -142,9 +143,11 @@ bool glGlobalLockManager::WaitForLockedRange(I64 bufferGUID, size_t lockBeginByt
                 ++it;
             }
         }
+
+        return ret;
     }
     
-   return ret;
+   return false;
 }
 
 void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush) {

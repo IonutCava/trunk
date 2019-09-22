@@ -67,11 +67,11 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
     virtual ~ShaderBuffer();
 
-    virtual void clearData(ptrdiff_t offsetElementCount,
-                           ptrdiff_t rangeElementCount) = 0;
+    virtual void clearData(U32 offsetElementCount,
+                           U32 rangeElementCount) = 0;
 
-    virtual void writeData(ptrdiff_t offsetElementCount,
-                           ptrdiff_t rangeElementCount,
+    virtual void writeData(U32 offsetElementCount,
+                           U32 rangeElementCount,
                            const bufferPtr data) = 0;
 
     virtual void writeBytes(ptrdiff_t offsetInBytes,
@@ -80,8 +80,8 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
     virtual void writeData(const bufferPtr data);
 
-    virtual void readData(ptrdiff_t offsetElementCount,
-                          ptrdiff_t rangeElementCount,
+    virtual void readData(U32 offsetElementCount,
+                          U32 rangeElementCount,
                           bufferPtr result) const = 0;
 
     virtual bool bindRange(U8 bindIndex,

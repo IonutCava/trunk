@@ -1288,7 +1288,7 @@ void GL_API::lockBuffers(bool flush) {
 
         bool updatedExisting = false;
         for (BufferWriteData& existingData : g_bufferLockData) {
-            if (existingData._bufferGUID == data._bufferGUID) {
+            if (existingData._handle == data._handle) {
                 existingData._offset = std::min(existingData._offset, data._offset);
                 existingData._range = std::max(existingData._range, data._range);
                 updatedExisting = true;
@@ -1298,14 +1298,14 @@ void GL_API::lockBuffers(bool flush) {
         }
 
         if (!updatedExisting) {
-            g_bufferLockData.emplace_back(data._bufferGUID, data._offset, data._range);
+            g_bufferLockData.emplace_back(data._handle, data._offset, data._range);
             shouldFlush = data._flush || shouldFlush;
         }
     }
 
     bool haveEntries = false;
     for (const BufferWriteData& entry : g_bufferLockData) {
-        entries[entry._bufferGUID].emplace_back(entry._offset, entry._range);
+        entries[entry._handle].emplace_back(entry._offset, entry._range);
         haveEntries = true;
     }
 
@@ -1331,7 +1331,7 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, boo
 void GL_API::registerBufferBind(const BufferWriteData& data) {
     assert(Runtime::isMainThread());
 
-    if (data._bufferGUID == -1 || data._range == 0) {
+    if (data._handle == -1 || data._range == 0) {
         return;
     }
 
