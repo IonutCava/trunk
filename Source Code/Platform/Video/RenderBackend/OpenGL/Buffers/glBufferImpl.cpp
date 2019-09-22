@@ -11,22 +11,27 @@ namespace Divide {
 namespace {
 
     const size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
+    struct BindConfigEntry {
+        U32 _handle = 0;
+        GLintptr _offset = 0;
+        GLsizeiptr _range = 0;
+    };
 
-    typedef std::array<vec3<size_t>, to_base(ShaderBufferLocation::COUNT)> BindConfig;
+    typedef std::array<BindConfigEntry, to_base(ShaderBufferLocation::COUNT)> BindConfig;
     BindConfig g_currentBindConfig;
 
     bool setIfDifferentBindRange(U32 UBOid,
                                  U32 bindIndex,
-                                 size_t offsetInBytes,
-                                 size_t rangeInBytes) {
+                                 GLintptr offsetInBytes,
+                                 GLsizeiptr rangeInBytes) {
 
-        vec3<size_t>& crtConfig = g_currentBindConfig[bindIndex];
+        BindConfigEntry& crtConfig = g_currentBindConfig[bindIndex];
 
-        if (crtConfig.x != to_size(UBOid) ||
-            crtConfig.y != offsetInBytes ||
-            crtConfig.z != rangeInBytes)
+        if (crtConfig._handle != UBOid ||
+            crtConfig._offset != offsetInBytes ||
+            crtConfig._range != rangeInBytes)
         {
-            crtConfig.set(to_size(UBOid), offsetInBytes, rangeInBytes);
+            crtConfig = { UBOid, offsetInBytes, rangeInBytes };
             return true;
         }
 
@@ -118,20 +123,20 @@ glBufferImpl::~glBufferImpl()
     }
 }
 
-bool glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
+bool glBufferImpl::waitRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool blockClient) {
     if (_mappedBuffer != nullptr && !_unsynced) {
         //assert(!GL_API::s_glFlushQueued);
 
-        return GL_API::getLockManager().WaitForLockedRange(getGUID(), offsetInBytes, rangeInBytes);
+        return GL_API::getLockManager().WaitForLockedRange(bufferID(), offsetInBytes, rangeInBytes);
     }
 
     return true;
 }
 
-void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes, bool flush) {
+void glBufferImpl::lockRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool flush) {
     if (_mappedBuffer != nullptr && !_unsynced) {
         BufferWriteData data = {};
-        data._bufferGUID = getGUID();
+        data._handle = bufferID();
         data._offset = offsetInBytes;
         data._range = rangeInBytes;
         data._flush = flush;
@@ -144,7 +149,7 @@ GLuint glBufferImpl::bufferID() const {
     return _handle;
 }
 
-bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes) {
+bool glBufferImpl::bindRange(GLuint bindIndex, GLintptr offsetInBytes, GLsizeiptr rangeInBytes) {
     assert(_handle != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
 
     bool wasBound = true;
@@ -157,7 +162,7 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
     return !wasBound;
 }
 
-void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
+void glBufferImpl::writeData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, const bufferPtr data)
 {
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);
@@ -176,7 +181,7 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
     }
 }
 
-void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
+void glBufferImpl::readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, const bufferPtr data)
 {
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
         glMemoryBarrier(MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT);
@@ -196,7 +201,7 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
     }
 }
 
-void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
+void glBufferImpl::clearData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes) {
     if (_mappedBuffer) {
         if (!waitRange(offsetInBytes, rangeInBytes, true)) {
             //ToDo: wait failed. Now what?
@@ -214,7 +219,7 @@ void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
     }
 }
 
-void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
+void glBufferImpl::zeroMem(GLintptr offsetInBytes, GLsizeiptr rangeInBytes) {
     if (_mappedBuffer) {
         clearData(offsetInBytes, rangeInBytes);
     } else {

@@ -152,7 +152,7 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
       _validated(false),
       _validationQueued(false),
       _descriptor(descriptor),
-      _handle(GLUtil::_invalidObjectID)
+      _handle(GLUtil::k_invalidObjectID)
 {
 }
 
@@ -180,7 +180,7 @@ void glShaderProgram::rebindStages() {
     for (glShader* shader : _shaderStage) {
         // If a shader exists for said stage, attach it
         assert(shader != nullptr);
-        assert(_handle != GLUtil::_invalidObjectID);
+        assert(_handle != GLUtil::k_invalidObjectID);
 
         if (shader->uploadToGPU()) {
             glUseProgramStages(
@@ -462,7 +462,7 @@ bool glShaderProgram::shouldRecompile() const {
 
 bool glShaderProgram::recompileInternal(bool force) {
     // Invalid or not loaded yet
-    if (_handle == GLUtil::_invalidObjectID) {
+    if (_handle == GLUtil::k_invalidObjectID) {
         return true;
     }
 
@@ -492,7 +492,7 @@ bool glShaderProgram::recompileInternal(bool force) {
 /// Check every possible combination of flags to make sure this program can be used for rendering
 bool glShaderProgram::isValid() const {
     // null shader is a valid shader
-    return _handle != GLUtil::_invalidObjectID;
+    return _handle != GLUtil::k_invalidObjectID;
 }
 
 bool glShaderProgram::isBound() const {
@@ -524,7 +524,7 @@ void glShaderProgram::SetSubroutines(ShaderType type, const vector<U32>& indices
                   "glShaderProgram error: tried to set subroutines on an "
                   "unbound or unlinked program!");
     // Validate data and send to GPU
-    if (indices[0] != GLUtil::_invalidObjectID) {
+    if (indices[0] != GLUtil::k_invalidObjectID) {
         glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_U32(type)], (GLsizei)indices.size(), indices.data());
     }
 }
@@ -536,7 +536,7 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
                   "glShaderProgram error: tried to set subroutines on an "
                   "unbound or unlinked program!");
 
-    if (index != GLUtil::_invalidObjectID) {
+    if (index != GLUtil::k_invalidObjectID) {
         U32 value[] = {index};
         glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_U32(type)], 1, value);
     }

@@ -188,13 +188,13 @@ namespace Divide {
         {}
 
 
-        void writeData(ptrdiff_t offsetElementCount, ptrdiff_t rangeElementCount, const bufferPtr data) override {}
+        void writeData(U32 offsetElementCount, U32 rangeElementCount, const bufferPtr data) override {}
         void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, const bufferPtr data) override {}
         void writeData(const bufferPtr data) {}
 
-        void clearData(ptrdiff_t offsetElementCount, ptrdiff_t rangeElementCount) override {}
+        void clearData(U32 offsetElementCount, U32 rangeElementCount) override {}
 
-        void readData(ptrdiff_t offsetElementCount, ptrdiff_t rangeElementCount, bufferPtr result) const override {}
+        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const override {}
 
         bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override { return true; }
 

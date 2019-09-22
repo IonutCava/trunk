@@ -98,7 +98,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     g_ContextPool.init((size_t)HARDWARE_THREAD_COUNT() * 2, window);
 
     SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
-    GLUtil::_glMainRenderWindow = &window;
+    GLUtil::s_glMainRenderWindow = &window;
     _currentContext = std::make_pair(window.getGUID(), window.userData());
 
     glbinding::Binding::initialize([](const char *proc) { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
@@ -448,16 +448,16 @@ void GL_API::dequeueComputeMipMap(GLuint textureHandle) {
 
 void GL_API::onThreadCreated(const std::thread::id& threadID) {
     // Double check so that we don't run into a race condition!
-    UniqueLock lock(GLUtil::_glSecondaryContextMutex);
+    UniqueLock lock(GLUtil::s_glSecondaryContextMutex);
     assert(SDL_GL_GetCurrentContext() == NULL);
 
     // This also makes the context current
-    assert(GLUtil::_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
-    bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
+    assert(GLUtil::s_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
+    bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::s_glSecondaryContext);
     assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
     ACKNOWLEDGE_UNUSED(ctxFound);
 
-    SDL_GL_MakeCurrent(GLUtil::_glMainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
+    SDL_GL_MakeCurrent(GLUtil::s_glMainRenderWindow->getRawWindow(), GLUtil::s_glSecondaryContext);
     glbinding::Binding::initialize([](const char* proc) {
         return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc);
     });
@@ -468,7 +468,7 @@ void GL_API::onThreadCreated(const std::thread::id& threadID) {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         // Debug callback in a separate thread requires a flag to distinguish it
         // from the main thread's callbacks
-        glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
+        glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::s_glSecondaryContext);
     }
 
     if (s_activeStateTracker->_opengl46Supported) {

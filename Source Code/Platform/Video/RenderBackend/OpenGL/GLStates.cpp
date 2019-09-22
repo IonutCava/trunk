@@ -81,12 +81,12 @@ bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
             for (auto it : s_stateTrackers) {
                 for (GLuint& boundBuffer : it.second._activeBufferID) {
                     if (boundBuffer == crtBuffer) {
-                        boundBuffer = GLUtil::_invalidObjectID;
+                        boundBuffer = GLUtil::k_invalidObjectID;
                     }
                 }
                 for (auto boundBuffer : it.second._activeVAOIB) {
                     if (boundBuffer.second == crtBuffer) {
-                        boundBuffer.second = GLUtil::_invalidObjectID;
+                        boundBuffer.second = GLUtil::k_invalidObjectID;
                     }
                 }
             }
@@ -105,7 +105,7 @@ bool GL_API::deleteVAOs(GLuint count, GLuint* vaos) {
         for (GLuint i = 0; i < count; ++i) {
             for (auto it : s_stateTrackers) {
                 if (it.second._activeVAOID == vaos[i]) {
-                    it.second._activeVAOID = GLUtil::_invalidObjectID;
+                    it.second._activeVAOID = GLUtil::k_invalidObjectID;
                     break;
                 }
             }
@@ -124,7 +124,7 @@ bool GL_API::deleteFramebuffers(GLuint count, GLuint* framebuffers) {
             for (auto it : s_stateTrackers) {
                 for (GLuint& activeFB : it.second._activeFBID) {
                     if (activeFB == crtFB) {
-                        activeFB = GLUtil::_invalidObjectID;
+                        activeFB = GLUtil::k_invalidObjectID;
                     }
                 }
             }

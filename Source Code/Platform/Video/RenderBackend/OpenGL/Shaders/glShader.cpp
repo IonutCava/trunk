@@ -63,13 +63,13 @@ glShader::glShader(GFXDevice& context, const stringImpl& name)
       _shouldRecompile(false),
       _loadedFromBinary(false),
       _binaryFormat(GL_NONE),
-      _programHandle(GLUtil::_invalidObjectID),
+      _programHandle(GLUtil::k_invalidObjectID),
       _name(name)
 {
 }
 
 glShader::~glShader() {
-    if (_programHandle != GLUtil::_invalidObjectID) {
+    if (_programHandle != GLUtil::k_invalidObjectID) {
         Console::d_printfn(Locale::get(_ID("SHADER_DELETE")), name().c_str());
         GL_API::deleteShaderPrograms(1, &_programHandle);
     }
@@ -97,21 +97,21 @@ bool glShader::uploadToGPU() {
             for (const stringImpl& it : src) {
                 cstrings.push_back(const_cast<char*>(it.c_str()));
             }
-            if (_programHandle != GLUtil::_invalidObjectID) {
+            if (_programHandle != GLUtil::k_invalidObjectID) {
                 GL_API::deleteShaderPrograms(1, &_programHandle);
             }
 
             _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], (GLsizei)cstrings.size(), cstrings.data());
-            if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
+            if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
                 _valid = false;
                 return false;
             }
         } else {
-            if (_programHandle == GLUtil::_invalidObjectID) {
+            if (_programHandle == GLUtil::k_invalidObjectID) {
                 _programHandle = glCreateProgram();
             }
-            if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
+            if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
                 _valid = false;
                 return false;
@@ -392,7 +392,7 @@ void glShader::dumpBinary() {
 /// If we didn't, ask the GPU to give us the variables address and save it for later use
 I32 glShader::binding(const char* name, U64 bindingHash) {
     // If the shader can't be used for rendering, just return an invalid address
-    if (_programHandle == 0 || _programHandle == GLUtil::_invalidObjectID || !valid()) {
+    if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID || !valid()) {
         return -1;
     }
 
@@ -422,7 +422,7 @@ I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, bool force) {
 
     const I32 bindingLoc = binding(constant._binding.c_str(), locationHash);
 
-    if (bindingLoc == -1 || _programHandle == 0 || _programHandle == GLUtil::_invalidObjectID) {
+    if (bindingLoc == -1 || _programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
         return -1;
     }
 

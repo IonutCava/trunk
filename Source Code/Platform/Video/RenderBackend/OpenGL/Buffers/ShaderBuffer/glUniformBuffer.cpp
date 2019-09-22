@@ -61,13 +61,13 @@ GLuint glUniformBuffer::bufferID() const {
     return _buffer->bufferID();
 }
 
-void glUniformBuffer::clearData(ptrdiff_t offsetElementCount,
-                                ptrdiff_t rangeElementCount) {
+void glUniformBuffer::clearData(U32 offsetElementCount,
+                                U32 rangeElementCount) {
     if (rangeElementCount > 0) {
-        ptrdiff_t rangeInBytes = rangeElementCount * _elementSize;
-        ptrdiff_t offsetInBytes = offsetElementCount * _elementSize;
+        GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
+        GLintptr offsetInBytes = offsetElementCount * _elementSize;
 
-        assert(offsetInBytes + rangeInBytes <= (ptrdiff_t)_allignedBufferSize &&
+        assert(offsetInBytes + rangeInBytes <= _allignedBufferSize &&
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
@@ -84,15 +84,15 @@ void glUniformBuffer::clearData(ptrdiff_t offsetElementCount,
     }
 }
 
-void glUniformBuffer::readData(ptrdiff_t offsetElementCount,
-                               ptrdiff_t rangeElementCount,
+void glUniformBuffer::readData(U32 offsetElementCount,
+                               U32 rangeElementCount,
                                bufferPtr result) const {
 
     if (rangeElementCount > 0) {
-        ptrdiff_t rangeInBytes = rangeElementCount * _elementSize;
-        ptrdiff_t offsetInBytes = offsetElementCount * _elementSize;
+        GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
+        GLintptr offsetInBytes = offsetElementCount * _elementSize;
 
-        assert(offsetInBytes + rangeInBytes <= (ptrdiff_t)_allignedBufferSize &&
+        assert(offsetInBytes + rangeInBytes <= _allignedBufferSize &&
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
@@ -109,12 +109,12 @@ void glUniformBuffer::readData(ptrdiff_t offsetElementCount,
     }
 }
 
-void glUniformBuffer::writeData(ptrdiff_t offsetElementCount,
-                                ptrdiff_t rangeElementCount,
+void glUniformBuffer::writeData(U32 offsetElementCount,
+                                U32 rangeElementCount,
                                 const bufferPtr data) {
 
-    writeBytes(offsetElementCount * _elementSize,
-               rangeElementCount * _elementSize,
+    writeBytes(static_cast<GLintptr>(offsetElementCount * _elementSize),
+               static_cast<GLsizeiptr>(rangeElementCount * _elementSize),
                data);
 }
 
@@ -160,7 +160,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex,
         rangeElementCount = _elementCount;
     }
 
-    dataOut._bufferGUID = bufferImpl()->getGUID();
+    dataOut._handle = bufferImpl()->bufferID();
     dataOut._range = to_size(rangeElementCount * _elementSize);
     dataOut._offset = to_size(offsetElementCount * _elementSize);
     if (queueLength() > 1) {

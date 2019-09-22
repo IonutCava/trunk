@@ -51,15 +51,15 @@ class glUniformBuffer final : public ShaderBuffer {
                     const ShaderBufferDescriptor& descriptor);
     ~glUniformBuffer();
 
-    void clearData(ptrdiff_t offsetElementCount,
-                   ptrdiff_t rangeElementCount) override;
+    void clearData(U32 offsetElementCount,
+                   U32 rangeElementCount) override;
 
-    void readData(ptrdiff_t offsetElementCount,
-                  ptrdiff_t rangeElementCount,
+    void readData(U32 offsetElementCount,
+                  U32 rangeElementCount,
                   bufferPtr result) const override;
 
-    void writeData(ptrdiff_t offsetElementCount,
-                   ptrdiff_t rangeElementCount,
+    void writeData(U32 offsetElementCount,
+                   U32 rangeElementCount,
                    const bufferPtr data) override;
 
     void writeBytes(ptrdiff_t offsetInBytes,
