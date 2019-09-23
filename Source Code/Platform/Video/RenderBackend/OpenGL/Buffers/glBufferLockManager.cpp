@@ -93,7 +93,7 @@ GLsync glGlobalLockManager::syncHere() const {
     return glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
 }
 
-bool glGlobalLockManager::test(GLsync syncObject, vectorEASTL<BufferRange>& ranges, BufferRange testRange, bool noWait) {
+bool glGlobalLockManager::test(GLsync syncObject, const vectorEASTL<BufferRange>& ranges, const BufferRange& testRange, bool noWait) {
     for (const BufferRange& range : ranges) {
         if (testRange.Overlaps(range)) {
             U8 retryCount = 0;
@@ -131,7 +131,7 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
         UniqueLockShared w_lock(_lock);
         // Check again as the range may have been cleared on another thread
         for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-            auto entry = it->second.find(bufferHandle);
+            const auto entry = it->second.find(bufferHandle);
             if (entry != std::cend(it->second)) {
                 if (test(it->first, entry->second, testRange, noWait)) {
                     it = _bufferLocks.erase(it);
@@ -151,12 +151,13 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
 }
 
 void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush) {
+#if 0
     for (auto& it1 : entries) {
         for (auto& it2 : it1.second) {
             WaitForLockedRange(it1.first, it2._startOffset, it2._length, true);
         }
     }
-
+#endif
     {
         UniqueLockShared w_lock(_lock);
         hashAlg::emplace(_bufferLocks, syncHere(), entries);

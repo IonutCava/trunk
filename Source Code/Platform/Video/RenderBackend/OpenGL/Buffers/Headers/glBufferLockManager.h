@@ -43,9 +43,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BufferRange {
-    BufferRange() : BufferRange(0, 0) {}
-    BufferRange(GLintptr start, GLsizeiptr length) : _startOffset(start), _length(length) {}
-
     GLintptr _startOffset = 0;
     GLsizeiptr _length = 0;
 
@@ -90,7 +87,7 @@ public:
     void LockBuffers(BufferLockEntries&& entries, bool flush);
 
 protected:
-    bool test(GLsync syncObject, vectorEASTL<BufferRange>& ranges, BufferRange testRange, bool noWait = false);
+    bool test(GLsync syncObject, const vectorEASTL<BufferRange>& ranges, const BufferRange& testRange, bool noWait = false);
 
 private:
     mutable SharedMutex _lock;
