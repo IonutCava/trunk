@@ -45,7 +45,7 @@ CommandBuffer::add(const T& command) {
     const size_t cmdIndex = _commandCount[index]++;
     _commandOrder.emplace_back(index, cmdIndex);
 
-    T* mem = static_cast<T*>(&_commands.get(index, cmdIndex));
+    T* mem = static_cast<T*>(_commands.getPtr(index, cmdIndex));
     if (mem != nullptr) {
         *mem = command;
     } else {

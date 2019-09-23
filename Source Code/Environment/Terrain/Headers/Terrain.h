@@ -227,7 +227,7 @@ class TerrainLoader {
             return terrain._terrainColourShader[to_base(mode)];
         }
 
-        terrain._terrainPrePassShader[to_base(mode)];
+        return terrain._terrainPrePassShader[to_base(mode)];
     }
 
     friend class Divide::TerrainLoader;
