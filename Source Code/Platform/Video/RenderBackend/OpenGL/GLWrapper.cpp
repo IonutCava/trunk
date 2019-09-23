@@ -1283,16 +1283,19 @@ void GL_API::lockBuffers(bool flush) {
 
     g_bufferLockData.resize(0);
 
-    BufferLockEntries entries;
     while (s_bufferBinds.try_dequeue(data)) {
 
         bool updatedExisting = false;
+        const BufferRange testRange{ data._offset, data._range };
         for (BufferWriteData& existingData : g_bufferLockData) {
             if (existingData._handle == data._handle) {
-                existingData._offset = std::min(existingData._offset, data._offset);
-                existingData._range = std::max(existingData._range, data._range);
-                updatedExisting = true;
-                shouldFlush = data._flush || shouldFlush;
+                const BufferRange existingRange{ existingData._offset, existingData._range };
+                if (testRange.Overlaps(existingRange)) {
+                    existingData._offset = std::min(existingData._offset, data._offset);
+                    existingData._range = std::max(existingData._range, data._range);
+                    updatedExisting = true;
+                    shouldFlush = data._flush || shouldFlush;
+                }
                 break;
             }
         }
@@ -1303,13 +1306,12 @@ void GL_API::lockBuffers(bool flush) {
         }
     }
 
-    bool haveEntries = false;
-    for (const BufferWriteData& entry : g_bufferLockData) {
-        entries[entry._handle].emplace_back(entry._offset, entry._range);
-        haveEntries = true;
-    }
+    if (!g_bufferLockData.empty()) {
+        BufferLockEntries entries;
+        for (const BufferWriteData& entry : g_bufferLockData) {
+            entries[entry._handle].emplace_back(BufferRange{ entry._offset, entry._range });
+        }
 
-    if (haveEntries) {
         s_globalLockManager.LockBuffers(std::move(entries), flush && shouldFlush);
         if (!flush) {
             s_glFlushQueued = shouldFlush;

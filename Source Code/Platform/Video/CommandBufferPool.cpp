@@ -11,7 +11,6 @@ CommandBufferPool::CommandBufferPool()
 
 CommandBufferPool::~CommandBufferPool()
 {
-
 }
 
 CommandBuffer* CommandBufferPool::allocateBuffer() {

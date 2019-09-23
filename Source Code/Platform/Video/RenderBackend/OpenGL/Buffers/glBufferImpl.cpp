@@ -135,13 +135,15 @@ bool glBufferImpl::waitRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bo
 
 void glBufferImpl::lockRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool flush) {
     if (_mappedBuffer != nullptr && !_unsynced) {
-        BufferWriteData data = {};
-        data._handle = bufferID();
-        data._offset = offsetInBytes;
-        data._range = rangeInBytes;
-        data._flush = flush;
-
-        GL_API::registerBufferBind(data);
+        GL_API::registerBufferBind(
+            BufferWriteData
+            {
+                bufferID(),
+                offsetInBytes,
+                rangeInBytes,
+                flush 
+            }
+        );
     }
 }
 
