@@ -112,8 +112,11 @@ bool glGlobalLockManager::test(GLsync syncObject, const vectorEASTL<BufferRange>
 }
 
 bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait) {
-    bool foundLockedRange = false;
-    {
+    constexpr bool USE_PRESCAN = false;
+
+
+    bool foundLockedRange = !USE_PRESCAN;
+    if (USE_PRESCAN) {
         SharedLock r_lock(_lock);
         for (const auto& it : _bufferLocks) {
             if (it.second.find(bufferHandle) != std::cend(it.second)) {
@@ -126,12 +129,12 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
     if (foundLockedRange) {
         bool ret = false;
 
-        BufferRange testRange{ lockBeginBytes, lockLength };
+        const BufferRange testRange{ lockBeginBytes, lockLength };
 
         UniqueLockShared w_lock(_lock);
         // Check again as the range may have been cleared on another thread
         for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-            const auto entry = it->second.find(bufferHandle);
+            const auto& entry = it->second.find(bufferHandle);
             if (entry != std::cend(it->second)) {
                 if (test(it->first, entry->second, testRange, noWait)) {
                     it = _bufferLocks.erase(it);

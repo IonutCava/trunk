@@ -59,6 +59,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #error "Divide Framework requires C++14 support at a minimum!."
 #endif 
 
+#if defined(CPP_17_SUPPORT)
+#define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+#endif
+
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES
@@ -180,6 +184,7 @@ namespace boost {
 #include <chaiscript/chaiscript.hpp>
 #include <chaiscript/chaiscript_stdlib.hpp>
 #include <chaiscript/utility/utility.hpp>
+
 
 #include <ConcurrentQueue/concurrentqueue.h>
 #include <ConcurrentQueue/blockingconcurrentqueue.h>

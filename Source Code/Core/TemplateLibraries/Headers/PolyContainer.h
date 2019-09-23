@@ -87,6 +87,17 @@ struct PolyContainer {
         return *collection[entry];
     }
 
+    inline T* getPtr(vec_size_eastl index, size_t entry) const {
+        assert(index < N);
+
+        const EntryList& collection = _collection[index];
+        if (entry < collection.size()) {
+            return collection[entry].get();
+        }
+        
+        return nullptr;
+    }
+
     inline const T& get(vec_size_eastl index, size_t entry) const {
         assert(index < N);
 
