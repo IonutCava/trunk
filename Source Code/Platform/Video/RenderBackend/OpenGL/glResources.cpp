@@ -541,8 +541,8 @@ void glTexturePool::init(const vectorEASTL<std::pair<GLenum, size_t>>& poolSizes
 }
 
 void glTexturePool::onFrameEnd() {
-    for (GLenum type : _types) {
-        onFrameEndInternal(_pools[type]);
+    for (auto& it : _pools) {
+        onFrameEndInternal(it.second);
     }
 }
 
@@ -585,8 +585,8 @@ void glTexturePool::onFrameEndInternal(poolImpl & impl) {
 }
 
 void glTexturePool::destroy() {
-    for (GLenum type : _types) {
-        poolImpl& impl = _pools[type];
+    for (auto& it : _pools) {
+        poolImpl& impl = it.second;
 
         const size_t entryCount = impl._tempBuffer.size();
         glDeleteTextures((GLsizei)entryCount, impl._handles.data());
