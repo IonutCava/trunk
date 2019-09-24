@@ -113,12 +113,8 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdat
     }
 
     if (indices.count > 0) {
-        _indexBufferUsage = 
-            updateFrequency == BufferUpdateFrequency::ONCE
-                             ? GL_STATIC_DRAW
-                             : updateFrequency == BufferUpdateFrequency::OCASSIONAL
-                                                ? GL_DYNAMIC_DRAW
-                                                : GL_STREAM_DRAW;
+        _indexBufferUsage = glBufferImpl::GetBufferUsage(updateFrequency, BufferUpdateUsage::CPU_W_GPU_R);
+
         // Generate an "Index Buffer Object"
         _indexBufferSize = (GLuint)(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32)));
         _smallIndices = indices.smallIndices;
@@ -179,6 +175,7 @@ void glGenericVertexData::setBuffer(const SetBufferParams& params) {
     paramsOut._elementCount = params._elementCount;
     paramsOut._elementSizeInBytes = params._elementSize;
     paramsOut._frequency = params._updateFrequency;
+    paramsOut._updateUsage = params._updateUsage;
     paramsOut._ringSizeFactor = params._useRingBuffer ? queueLength() : 1;
     paramsOut._data = params._data;
     paramsOut._name = _name.empty() ? nullptr : _name.c_str();

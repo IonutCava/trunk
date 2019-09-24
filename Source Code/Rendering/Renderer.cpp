@@ -49,6 +49,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     bufferDescriptor._elementSize = sizeof(I32);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
+    bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
     bufferDescriptor._name = "PER_TILE_LIGHT_INDEX";
     bufferDescriptor._initialData = initData.data();
     _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);

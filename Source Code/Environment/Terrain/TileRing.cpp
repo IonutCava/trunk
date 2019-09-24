@@ -161,6 +161,7 @@ namespace Divide {
         params._elementSize = sizeof(InstanceData);
         params._useRingBuffer = false;
         params._updateFrequency = BufferUpdateFrequency::ONCE;
+        params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         params._sync = false;
         params._data = vbData.data();
         params._instanceDivisor = 1;

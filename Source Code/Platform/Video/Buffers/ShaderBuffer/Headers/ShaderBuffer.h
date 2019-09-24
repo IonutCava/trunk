@@ -120,6 +120,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     const U32 _flags;
     const Usage _usage;
     const BufferUpdateFrequency _frequency;
+    const BufferUpdateUsage _updateUsage;
 
     stringImpl _name;
 };
@@ -133,6 +134,7 @@ struct ShaderBufferDescriptor {
     bool _separateReadWrite = false; //< Use a separate read/write index based on queue length
     size_t _elementSize = 0; //< Primitive size in bytes
     BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::ONCE;
+    BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferPtr _initialData = NULL;
     stringImpl _name = "";
 };

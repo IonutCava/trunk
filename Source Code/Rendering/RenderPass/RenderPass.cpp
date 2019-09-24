@@ -161,6 +161,7 @@ void RenderPass::initBufferData() {
     
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
     _renderData = _context.newSB(bufferDescriptor);
 
@@ -168,6 +169,7 @@ void RenderPass::initBufferData() {
         bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
         bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._elementCount = 1;
         bufferDescriptor._elementSize = sizeof(U32);
         bufferDescriptor._ringBufferLength = 5;
@@ -177,6 +179,7 @@ void RenderPass::initBufferData() {
 
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES;
     bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
     bufferDescriptor._ringBufferLength = 1;

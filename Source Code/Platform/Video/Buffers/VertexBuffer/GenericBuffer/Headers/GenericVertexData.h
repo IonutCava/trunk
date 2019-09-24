@@ -67,6 +67,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
          bufferPtr _data = nullptr;
          BufferStorageType _storageType = BufferStorageType::AUTO;
          BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::COUNT;
+         BufferUpdateUsage _updateUsage = BufferUpdateUsage::COUNT;
      };
 
    public:

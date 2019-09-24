@@ -356,6 +356,13 @@ enum class BufferStorageType : U8 {
     NORMAL
 };
 
+enum class BufferUpdateUsage : U8 {
+    CPU_W_GPU_R = 0, //DRAW
+    CPU_R_GPU_W = 1, //READ
+    GPU_R_GPU_W = 2, //COPY
+    COUNT
+};
+
 enum class BufferUpdateFrequency : U8 {
     ONCE = 0,       //STATIC
     OCASSIONAL = 1, //DYNAMIC

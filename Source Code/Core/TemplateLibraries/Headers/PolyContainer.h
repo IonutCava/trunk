@@ -33,78 +33,69 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _POLY_CONTAINER_H_
 #define _POLY_CONTAINER_H_
 
+namespace Divide {
+
+#pragma pack(push, 1)
 struct PolyContainerEntry
 {
-    PolyContainerEntry()
-        : PolyContainerEntry(0, 0)
-    {
-    }
-
-    PolyContainerEntry(vec_size_eastl typeIndex, size_t elementIndex) 
-        : _typeIndex(typeIndex),
-          _elementIndex(elementIndex)
-    {
-    }
-
-    vec_size_eastl _typeIndex = 0;
-    size_t _elementIndex = 0;
+    U8 _typeIndex = 0;
+    I24 _elementIndex = 0;
 };
-
-
+#pragma pack(pop)
 
 template<typename T>
 using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
 
-template<typename T, size_t N>
+template<typename T, U8 N>
 struct PolyContainer {
     typedef vectorEASTLFast<deleted_unique_ptr<T>> EntryList;
 
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, PolyContainerEntry>::type
-        insert(vec_size_eastl index, deleted_unique_ptr<T>&& cmd) {
+        insert(U8 index, deleted_unique_ptr<T>&& cmd) {
         assert(index < N);
 
         EntryList& collection = _collection[index];
         collection.push_back(std::move(cmd));
 
-        return PolyContainerEntry{ index, collection.size() - 1 };
+        return PolyContainerEntry{ index, to_I32(collection.size() - 1) };
     }
 
-    inline EntryList& get(vec_size_eastl index) {
+    inline EntryList& get(U8 index) {
         return  _collection[index];
     }
 
-    inline const EntryList& get(vec_size_eastl index) const {
+    inline const EntryList& get(U8 index) const {
         return  _collection[index];
     }
 
-    inline T& get(vec_size_eastl index, size_t entry) {
+    inline T& get(U8 index, I24 entry) {
         assert(index < N);
 
         const EntryList& collection = _collection[index];
         assert(entry < collection.size());
 
-        return *collection[entry];
+        return *collection[to_I32(entry)];
     }
 
-    inline T* getPtr(vec_size_eastl index, size_t entry) const {
+    inline T* getPtr(U8 index, I24 entry) const {
         assert(index < N);
 
         const EntryList& collection = _collection[index];
         if (entry < collection.size()) {
-            return collection[entry].get();
+            return collection[to_I32(entry)].get();
         }
         
         return nullptr;
     }
 
-    inline const T& get(vec_size_eastl index, size_t entry) const {
+    inline const T& get(U8 index, I24 entry) const {
         assert(index < N);
 
         const EntryList& collection = _collection[index];
         assert(entry < collection.size());
 
-        return *collection[entry];
+        return *collection[to_I32(entry)];
     }
 
     inline T& get(const PolyContainerEntry& entry) {
@@ -119,11 +110,11 @@ struct PolyContainer {
         return exists(entry._typeIndex, entry._elementIndex);
     }
 
-    inline bool exists(vec_size_eastl index, size_t entry) const {
+    inline bool exists(U8 index, I24 entry) const {
         return index < N && entry < _collection[index].size();
     }
 
-    inline vec_size_eastl size(vec_size_eastl index) const {
+    inline vec_size_eastl size(U8 index) const {
         assert(index < N);
 
         return _collection[index].size();
@@ -135,7 +126,7 @@ struct PolyContainer {
         }
     }
 
-    inline void reserve(vec_size_eastl index, size_t reserveSize) {
+    inline void reserve(U8 index, size_t reserveSize) {
         assert(index < N);
 
         _collection[index].reserve(reserveSize);
@@ -161,7 +152,7 @@ struct PolyContainer {
         }
     }
 
-    inline void clear(vec_size_eastl index, bool clearMemory = false) {
+    inline void clear(U8 index, bool clearMemory = false) {
         assert(index < N);
 
         if (clearMemory) {
@@ -184,4 +175,5 @@ struct PolyContainer {
     std::array<EntryList, N> _collection;
 };
 
+}; //namespace Divide
 #endif //_POLY_CONTAINER_H_
