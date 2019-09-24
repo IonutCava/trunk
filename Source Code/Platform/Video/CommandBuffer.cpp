@@ -41,6 +41,8 @@ DEFINE_POOL(ClearBufferDataCommand);
 DEFINE_POOL(ExternalCommand);
 
 void CommandBuffer::add(const CommandBuffer& other) {
+    static_assert(sizeof(PolyContainerEntry) == 4, "PolyContainerEntry has the wrong size!");
+
     for (const CommandEntry& cmd : other._commandOrder) {
         other.get<CommandBase>(cmd).addToBuffer(*this);
     }

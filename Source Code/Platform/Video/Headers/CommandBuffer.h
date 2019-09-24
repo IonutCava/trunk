@@ -93,13 +93,13 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-    get(size_t index);
+    get(I24 index);
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
-    get(size_t index) const;
+    get(I24 index) const;
 
-    bool exists(vec_size_eastl typeIndex, size_t index) const;
+    bool exists(U8 typeIndex, I24 index) const;
 
     inline eastl::list<CommandEntry>& operator()();
     inline const eastl::list<CommandEntry>& operator()() const;
@@ -127,7 +127,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
   protected:
     eastl::list<CommandEntry> _commandOrder;
-    std::array<size_t, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
+    std::array<I24, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
 
     PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;
 };

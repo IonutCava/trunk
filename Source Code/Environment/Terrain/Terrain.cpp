@@ -117,6 +117,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                               
     //Should be once per frame
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
 
     bufferDescriptor._name = "TERRAIN_RENDER_NODES";
     _shaderData = _context.newSB(bufferDescriptor);

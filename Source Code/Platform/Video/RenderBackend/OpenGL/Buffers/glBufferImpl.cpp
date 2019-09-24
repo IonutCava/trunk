@@ -48,16 +48,13 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
       _unsynced(params._unsynced),
       _useExplicitFlush(_target == GL_ATOMIC_COUNTER_BUFFER ? false : params._explicitFlush),
       _updateFrequency(params._frequency),
+      _updateUsage(params._updateUsage),
       _elementSize(params._elementSize)
 {
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
         _usage = GL_STREAM_READ;
     } else {
-        _usage = _updateFrequency == BufferUpdateFrequency::ONCE
-                                   ? GL_STATIC_DRAW
-                                   : _updateFrequency == BufferUpdateFrequency::OCASSIONAL
-                                                       ? GL_DYNAMIC_DRAW
-                                                       : GL_STREAM_DRAW;
+        _usage = GetBufferUsage(_updateFrequency, _updateUsage);
     }
 
     bool usePersistentMapping = false;
@@ -71,7 +68,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     }
 
     // Why do we need to map it?
-    if (_updateFrequency == BufferUpdateFrequency::ONCE) {
+    if (_updateFrequency == BufferUpdateFrequency::ONCE || _updateUsage == BufferUpdateUsage::GPU_R_GPU_W) {
         usePersistentMapping = false;
     }
 
@@ -239,4 +236,31 @@ size_t glBufferImpl::elementSize() const {
     return _elementSize;
 }
 
+GLenum glBufferImpl::GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) {
+    switch (frequency) {
+    case BufferUpdateFrequency::ONCE:
+        switch (usage) {
+            case BufferUpdateUsage::CPU_W_GPU_R: return GL_STATIC_DRAW;
+            case BufferUpdateUsage::CPU_R_GPU_W: return GL_STATIC_READ;
+            case BufferUpdateUsage::GPU_R_GPU_W: return GL_STATIC_COPY;
+        };
+        break;
+    case BufferUpdateFrequency::OCASSIONAL:
+        switch (usage) {
+            case BufferUpdateUsage::CPU_W_GPU_R: return GL_DYNAMIC_DRAW;
+            case BufferUpdateUsage::CPU_R_GPU_W: return GL_DYNAMIC_READ;
+            case BufferUpdateUsage::GPU_R_GPU_W: return GL_DYNAMIC_COPY;
+        };
+        break;
+    case BufferUpdateFrequency::OFTEN:
+        switch (usage) {
+            case BufferUpdateUsage::CPU_W_GPU_R: return GL_STREAM_DRAW;
+            case BufferUpdateUsage::CPU_R_GPU_W: return GL_STREAM_READ;
+            case BufferUpdateUsage::GPU_R_GPU_W: return GL_STREAM_COPY;
+        };
+        break;
+    };
+
+    return GL_NONE;
+}
 }; //namespace Divide

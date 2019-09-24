@@ -45,6 +45,7 @@ struct BufferParams {
     GLuint _elementCount = 0;
     size_t _elementSizeInBytes = 0;
     BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
+    BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     BufferStorageType _storageType = BufferStorageType::AUTO;
     const char* _name = "";
     bufferPtr _data = nullptr;

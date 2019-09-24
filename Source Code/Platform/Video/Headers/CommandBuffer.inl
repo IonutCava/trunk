@@ -40,10 +40,10 @@ template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
 CommandBuffer::add(const T& command) {
 
-    const vec_size_eastl index = static_cast<vec_size_eastl>(T::EType);
+    const U8 index = static_cast<vec_size_eastl>(T::EType);
 
-    const size_t cmdIndex = _commandCount[index]++;
-    _commandOrder.emplace_back(index, cmdIndex);
+    const I24 cmdIndex = _commandCount[index]++;
+    _commandOrder.emplace_back(PolyContainerEntry{ index, cmdIndex });
 
     T* mem = static_cast<T*>(_commands.getPtr(index, cmdIndex));
     if (mem != nullptr) {
@@ -91,17 +91,17 @@ inline bool CommandBuffer::exists(const CommandEntry& commandEntry) const {
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-CommandBuffer::get(size_t index) {
-    return get<T>(CommandEntry{to_base(T::EType), index});
+CommandBuffer::get(I24 index) {
+    return get<T>({to_base(T::EType), index});
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
-CommandBuffer::get(size_t index) const {
-    return get<T>(CommandEntry{to_base(T::EType), index });
+CommandBuffer::get(I24 index) const {
+    return get<T>({to_base(T::EType), index });
 }
 
-inline bool CommandBuffer::exists(vec_size_eastl typeIndex, size_t index) const {
+inline bool CommandBuffer::exists(U8 typeIndex, I24 index) const {
     return _commands.exists(typeIndex, index);
 }
 

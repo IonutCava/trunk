@@ -77,6 +77,7 @@ void LightPool::init() {
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) | to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
 
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._name = "LIGHT_BUFFER";
     // NORMAL holds general info about the currently active lights: position, colour, etc.
     _lightShaderBuffer = _context.gfx().newSB(bufferDescriptor);

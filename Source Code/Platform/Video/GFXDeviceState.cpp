@@ -110,6 +110,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._initialData = &_gpuBlock._data;
     bufferDescriptor._name = "DVD_GPU_DATA";
     _gfxDataBuffer = newSB(bufferDescriptor);

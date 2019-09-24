@@ -1286,11 +1286,13 @@ void GL_API::lockBuffers(bool flush) {
     while (s_bufferBinds.try_dequeue(data)) {
 
         bool updatedExisting = false;
-        const BufferRange testRange{ data._offset, data._range };
+        // Buffer locking only happens on the main rendering thread (OpenGL forces us to) so we merge as many locks as possible here
+        // const BufferRange testRange{ data._offset, data._range };
         for (BufferWriteData& existingData : g_bufferLockData) {
             if (existingData._handle == data._handle) {
-                const BufferRange existingRange{ existingData._offset, existingData._range };
-                if (testRange.Overlaps(existingRange)) {
+                //const BufferRange existingRange{ existingData._offset, existingData._range };
+                //if (testRange.Overlaps(existingRange)) 
+                {
                     existingData._offset = std::min(existingData._offset, data._offset);
                     existingData._range = std::max(existingData._range, data._range);
                     updatedExisting = true;
@@ -1380,6 +1382,7 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
         params._elementSize = sizeof(ImDrawVert);
         params._useRingBuffer = true;
         params._updateFrequency = BufferUpdateFrequency::OFTEN;
+        params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         params._storageType = BufferStorageType::NORMAL;
         params._sync = true;
         params._data = NULL;

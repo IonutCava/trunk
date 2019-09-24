@@ -83,11 +83,11 @@ class I24
 protected:
     U8 value[3];
 public:
-    I24() {}
-    I24(I32 val) { *this = val; }
-    I24(const I24& val) { *this = val; }
+    I24() noexcept {}
+    I24(I32 val) noexcept { *this = val; }
+    I24(const I24& val) noexcept { *this = val; }
 
-    operator I32() const {
+    FORCE_INLINE operator I32() const noexcept {
         /* Sign extend negative quantities */
         if (value[2] & 0x80) {
             return (0xff << 24) | (value[2] << 16) | (value[1] << 8) | value[0];
@@ -96,7 +96,7 @@ public:
         return (value[2] << 16) | (value[1] << 8) | value[0];
     }
 
-    I24& operator= (const I24& input) {
+    FORCE_INLINE I24& operator= (const I24& input) noexcept {
         value[0] = input.value[0];
         value[1] = input.value[1];
         value[2] = input.value[2];
@@ -104,7 +104,7 @@ public:
         return *this;
     }
 
-    I24& operator= (const I32 input) {
+    FORCE_INLINE I24& operator= (const I32 input) noexcept {
         value[0] = ((U8*)& input)[0];
         value[1] = ((U8*)& input)[1];
         value[2] = ((U8*)& input)[2];
@@ -112,28 +112,49 @@ public:
         return *this;
     }
 
-    I24 operator+   (I32 val)        const { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
-    I24 operator+   (const I24& val) const { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
-    I24 operator-   (const I24& val) const { return I24(static_cast<I32>(*this) - static_cast<I32>(val)); }
-    I24 operator*   (const I24& val) const { return I24(static_cast<I32>(*this) * static_cast<I32>(val)); }
-    I24 operator/   (const I24& val) const { return I24(static_cast<I32>(*this) / static_cast<I32>(val)); }
-    I24& operator+= (const I24& val)       { *this = *this + val; return *this; }
-    I24& operator-= (const I24& val)       { *this = *this - val; return *this; }
-    I24& operator*= (const I24& val)       { *this = *this * val; return *this; }
-    I24& operator/= (const I24& val)       { *this = *this / val; return *this; }
-    I24 operator>>  (const I32 val) const  { return I24(static_cast<I32>(*this) >> val); }
-    I24 operator<<  (const I32 val) const  { return I24(static_cast<I32>(*this) << val); }
+    FORCE_INLINE I24 operator+   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
+    FORCE_INLINE I24 operator-   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) - static_cast<I32>(val)); }
+    FORCE_INLINE I24 operator+   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
+    FORCE_INLINE I24 operator-   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) - static_cast<I32>(val)); }
+    FORCE_INLINE I24 operator*   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) * static_cast<I32>(val)); }
+    FORCE_INLINE I24 operator/   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) / static_cast<I32>(val)); }
+    FORCE_INLINE I24& operator+= (const I24& val)       noexcept { *this = *this + val; return *this; }
+    FORCE_INLINE I24& operator-= (const I24& val)       noexcept { *this = *this - val; return *this; }
+    FORCE_INLINE I24& operator*= (const I24& val)       noexcept { *this = *this * val; return *this; }
+    FORCE_INLINE I24& operator/= (const I24& val)       noexcept { *this = *this / val; return *this; }
+    FORCE_INLINE I24 operator>>  (const I32 val) const  noexcept { return I24(static_cast<I32>(*this) >> val); }
+    FORCE_INLINE I24 operator<<  (const I32 val) const  noexcept { return I24(static_cast<I32>(*this) << val); }
 
-    operator bool()   const { return static_cast<I32>(*this) != 0; }
-    bool operator! () const { return !(static_cast<I32>(*this)); }
-    I24  operator- ()       { return I24(-static_cast<I32>(*this)); }
+    FORCE_INLINE operator bool()   const noexcept { return static_cast<I32>(*this) != 0; }
+    FORCE_INLINE bool operator! () const noexcept { return !(static_cast<I32>(*this)); }
+    FORCE_INLINE I24  operator- ()       noexcept { return I24(-static_cast<I32>(*this)); }
+    FORCE_INLINE I24& operator++ ()      noexcept { *this = *this + 1; return *this; }
+    FORCE_INLINE I24& operator-- ()      noexcept { *this = *this - 1; return *this; }
 
-    bool operator== (const I24& val) const { return static_cast<I32>(*this) == static_cast<I32>(val); }
-    bool operator!= (const I24& val) const { return static_cast<I32>(*this) != static_cast<I32>(val); }
-    bool operator>= (const I24& val) const { return static_cast<I32>(*this) >= static_cast<I32>(val); }
-    bool operator<= (const I24& val) const { return static_cast<I32>(*this) <= static_cast<I32>(val); }
-    bool operator>  (const I24& val) const { return static_cast<I32>(*this) >  static_cast<I32>(val); }
-    bool operator<  (const I24& val) const { return static_cast<I32>(*this) <  static_cast<I32>(val); }
+    FORCE_INLINE I24  operator++ (I32)                  noexcept { I24 ret = *this; ++(*this); return ret; }
+    FORCE_INLINE I24  operator-- (I32)                  noexcept { I24 ret = *this; --(*this); return ret; }
+    FORCE_INLINE bool operator== (const I24& val) const noexcept { return static_cast<I32>(*this) == static_cast<I32>(val); }
+    FORCE_INLINE bool operator!= (const I24& val) const noexcept { return static_cast<I32>(*this) != static_cast<I32>(val); }
+    FORCE_INLINE bool operator>= (const I24& val) const noexcept { return static_cast<I32>(*this) >= static_cast<I32>(val); }
+    FORCE_INLINE bool operator<= (const I24& val) const noexcept { return static_cast<I32>(*this) <= static_cast<I32>(val); }
+    FORCE_INLINE bool operator>  (const I24& val) const noexcept { return static_cast<I32>(*this) >  static_cast<I32>(val); }
+    FORCE_INLINE bool operator<  (const I24& val) const noexcept { return static_cast<I32>(*this) <  static_cast<I32>(val); }
+    FORCE_INLINE bool operator>  (const size_t& val) const noexcept {
+        const I32 lhs = static_cast<I32>(*this);
+        return lhs >=0 && static_cast<size_t>(lhs) > val;
+    }
+    FORCE_INLINE bool operator<  (const size_t& val) const noexcept { 
+        const I32 lhs = static_cast<I32>(*this);
+        return lhs < 0 || static_cast<size_t>(lhs) < val;
+    }
+    FORCE_INLINE bool operator>  (const U32& val) const noexcept {
+        const I32 lhs = static_cast<I32>(*this);
+        return lhs >= 0 && static_cast<U32>(lhs) > val; 
+    }
+    FORCE_INLINE bool operator<  (const U32& val) const noexcept {
+        const I32 lhs = static_cast<I32>(*this);
+        return lhs < 0 || static_cast<U32>(lhs) < val;
+    }
 };
 #pragma pack(pop)
 

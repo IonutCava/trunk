@@ -51,6 +51,7 @@ struct BufferImplParams {
     bufferPtr _initialData = NULL;
     BufferStorageType _storageType = BufferStorageType::AUTO;
     BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
+    BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
 };
 
 struct BufferWriteData {
@@ -84,6 +85,7 @@ public:
 
     size_t elementSize() const;
 
+    static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage);
 protected:
     GLenum _usage = GL_NONE;
     GLuint _handle = 0;
@@ -95,6 +97,7 @@ protected:
     const bool _unsynced;
     const bool _useExplicitFlush;
     const BufferUpdateFrequency _updateFrequency;
+    const BufferUpdateUsage _updateUsage;
 };
 }; //namespace Divide
 
