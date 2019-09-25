@@ -89,10 +89,14 @@ glGlobalLockManager::~glGlobalLockManager()
 }
 
 void glGlobalLockManager::clean(U32 frameID) {
+    UniqueLockShared w_lock(_lock);
+    cleanLocked(frameID);
+}
+
+void glGlobalLockManager::cleanLocked(U32 frameID) {
     // Delete all locks older than 6 frames  (APP->Driver->GPU x2)
     constexpr U32 LockDeleteFrameThreshold = 6;
 
-    UniqueLockShared w_lock(_lock);
     // Check again as the range may have been cleared on another thread
     for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
         if (frameID - it->second.second > LockDeleteFrameThreshold) {
@@ -168,20 +172,34 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
    return false;
 }
 
+void glGlobalLockManager::quickCheckOldEntries(U32 frameID) {
+    // Needed in order to delete old locks (from binds) that never needed actual waits (from writes). e.g. Terrain render nodes with static camera
+    for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
+        //Entries-FrameID
+        const std::pair<BufferLockEntries, U32>& entriesForCrtBuffer = it->second;
+        // Check how old these entries are. Need to be at least 3 frames old for a fast check.
+        U32 frameAge = frameID - entriesForCrtBuffer.second;
+        if (frameAge < 3) {
+            ++it;
+            continue;
+        }
+        GLsync syncObject = it->first;
+        U8 retryCount = 0;
+        if (frameAge > 5 || wait(&syncObject, true, true, retryCount)) {
+            GL_API::registerSyncDelete(syncObject);
+            it = _bufferLocks.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush, U32 frameID) {
     GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
 
-    // Needed in order to delete old locks (from binds) that never needed actual waits (from writes). e.g. Terrain render nodes with static camera
-    for (const auto& it1 : entries) {
-        const GLuint bufferHandle = it1.first;
-
-        for (const auto& it2 : it1.second) {
-            WaitForLockedRange(bufferHandle, it2._startOffset, it2._length, true);
-        }
-    }
-        
     {
         UniqueLockShared w_lock(_lock);
+        quickCheckOldEntries(frameID);
         hashAlg::emplace(_bufferLocks, sync, std::make_pair(entries, frameID));
     }
 

@@ -74,7 +74,8 @@ class glBufferLockManager : public glLockManager {
     vectorEASTL<BufferLock> _swapLocks;
 };
 
-typedef hashMap<GLuint /*buffer handle*/, vectorEASTL<BufferRange> /*ranges*/> BufferLockEntries;
+using LockEntries = vectorEASTL<BufferRange>;
+using BufferLockEntries = hashMap<GLuint /*buffer handle*/,  LockEntries>;
 
 class glGlobalLockManager : public glLockManager {
 public:
@@ -91,12 +92,15 @@ public:
 
 protected:
     bool test(GLsync syncObject, const vectorEASTL<BufferRange>& ranges, const BufferRange& testRange, bool noWait = false);
+    void quickCheckOldEntries(U32 frameID);
 
+    void cleanLocked(U32 frameID);
 private:
     size_t _lockCount = 0;
 
     mutable SharedMutex _lock;
-    hashMap<GLsync, std::pair<BufferLockEntries, U32>> _bufferLocks;
+    using LockMap = hashMap<GLsync, std::pair<BufferLockEntries, U32>>;
+    LockMap _bufferLocks;
 };
 
 };  // namespace Divide
