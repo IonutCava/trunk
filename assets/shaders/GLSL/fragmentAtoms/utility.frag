@@ -219,12 +219,12 @@ float getDepthValue(vec2 screenNormalisedPos) {
 
 
 float computeDepth(in vec4 posWV) {
-    float near = gl_DepthRange.near;
-    float far = gl_DepthRange.far;
+    const float near = gl_DepthRange.near;
+    const float far = gl_DepthRange.far;
 
-    vec4 clip_space_pos = dvd_ProjectionMatrix * posWV;
+    const vec4 clip_space_pos = dvd_ProjectionMatrix * posWV;
 
-    float ndc_depth = clip_space_pos.z / clip_space_pos.w;
+    const float ndc_depth = clip_space_pos.z / clip_space_pos.w;
 
     return (((far - near) * ndc_depth) + near + far) * 0.5f;
 }

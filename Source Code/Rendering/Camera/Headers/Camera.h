@@ -364,8 +364,8 @@ class Camera : public Resource {
     vec3<Angle::DEGREES<F32>> _euler;
     Angle::DEGREES<F32> _accumPitchDegrees;
 
-    vec3<F32> _speedFactor;
-    vec3<F32> _speed;
+    vec4<F32> _speedFactor;
+    vec4<F32> _speed;
 
     F32 _mouseSensitivity;
     CameraType _type;

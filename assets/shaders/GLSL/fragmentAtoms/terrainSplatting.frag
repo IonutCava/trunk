@@ -1,6 +1,13 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
+uniform int renderStage = 0;
+
+#define STAGE_SHADOW 0
+#define STAGE_REFLECTION 1
+#define STAGE_REFRACTION 2
+#define STAGE_DISPLAY 3
+
 layout(binding = TEXTURE_SPLAT) uniform sampler2DArray texBlendMaps;
 layout(binding = TEXTURE_HELPER_TEXTURES) uniform sampler2DArray helperTextures;
 
@@ -118,6 +125,21 @@ vec3 _getTerrainNormal(in vec2 uv) {
 
     return _getTerrainNormal(_getScaledCoords(uv, blendAmount), blendAmount);
 }
+
+vec3 getMixedNormal(in vec2 uv, in float waterDepth) {
+    const bool underwater = waterDepth < -0.01f;
+    const bool aboveWater = waterDepth > 0.01f;
+
+    /*if (underwater) {
+        return VAR._tbn * _getUnderwaterNormal(uv * UNDERWATER_TILE_SCALE);
+    } else if (aboveWater) {
+        return VAR._tbn * _getTerrainNormal(uv);
+    }*/
+
+    return VAR._tbn * mix(_getUnderwaterNormal(uv * UNDERWATER_TILE_SCALE), 
+                           _getTerrainNormal(uv),
+                          saturate(waterDepth));
+}
 #else //PRE_PASS
 
 vec4 _getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
@@ -152,6 +174,21 @@ vec4 _getTerrainAlbedo(in vec2 uv) {
 
     return _getTerrainAlbedo(_getScaledCoords(uv, blendAmount), blendAmount);
 }
+
+vec4 getMixedAlbedo(in vec2 uv, in float waterDepth, in float waterHeight) {
+    const bool underwater = waterDepth < -0.01f;
+    const bool aboveWater = waterDepth > 0.01f;
+
+    /*if (underwater) {
+        return _getUnderwaterAlbedo(uv * UNDERWATER_TILE_SCALE, waterHeight);
+    } else if (aboveWater) {
+        return _getTerrainAlbedo(uv);
+    }*/
+
+    return mix(_getUnderwaterAlbedo(uv * UNDERWATER_TILE_SCALE, waterHeight),
+               _getTerrainAlbedo(uv),
+                waterDepth);
+}
 #endif // PRE_PASS
 
 TerrainData BuildTerrainData(in vec2 waterDetails) {
@@ -162,9 +199,7 @@ TerrainData BuildTerrainData(in vec2 waterDetails) {
 #   if defined(LOW_QUALITY)
     ret.normal = VAR._normalWV;
 #   else
-    ret.normal = VAR._tbn * mix(_getTerrainNormal(ret.uv),
-                                _getUnderwaterNormal(ret.uv * UNDERWATER_TILE_SCALE),
-                                waterDetails.x);
+    ret.normal = getMixedNormal(ret.uv, 1.0f - waterDetails.x);
 #   endif //LOW_QUALITY
 #else // PRE_PASS
 #   if defined(LOW_QUALITY)
@@ -172,9 +207,7 @@ TerrainData BuildTerrainData(in vec2 waterDetails) {
 #   else //LOW_QUALITY
     ret.normal = getNormal(ret.uv);
 #   endif //LOW_QUALITY
-    ret.albedo = mix(_getTerrainAlbedo(ret.uv),
-                     _getUnderwaterAlbedo(ret.uv * UNDERWATER_TILE_SCALE, waterDetails.y),
-                     waterDetails.x);
+    ret.albedo = getMixedAlbedo(ret.uv, 1.0f - waterDetails.x, waterDetails.y);
 #endif //PRE_PASS
 
     return ret;

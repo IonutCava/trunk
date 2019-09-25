@@ -192,7 +192,7 @@ END_COMMAND(SetViewportCommand);
 BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
-    eastl::fixed_string<char, 128 + 1, false> _name = "";
+    eastl::fixed_string<char, 64 + 1, false> _name = "";
 
     stringImpl toString(U16 indent) const override;
  END_COMMAND(BeginRenderPassCommand);
@@ -293,7 +293,7 @@ BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
 END_COMMAND(BindDescriptorSetsCommand);
 
 BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
-    eastl::fixed_string<char, 128 + 1, false> _scopeName;
+    eastl::fixed_string<char, 64 + 1, false> _scopeName;
     I32 _scopeID = -1;
 
     stringImpl toString(U16 indent) const override;

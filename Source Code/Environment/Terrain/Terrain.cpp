@@ -199,11 +199,14 @@ void Terrain::postBuild() {
 }
 
 void Terrain::frameStarted(SceneGraphNode& sgn) {
-    if (_editorDataDirtyState == EditorDataState::QUEUED) {
-        _editorDataDirtyState = EditorDataState::CHANGED;
-    } else if (_editorDataDirtyState == EditorDataState::CHANGED) {
-        _editorDataDirtyState = EditorDataState::IDLE;
-    }
+    switch (_editorDataDirtyState) {
+        case EditorDataState::QUEUED:
+            _editorDataDirtyState = EditorDataState::CHANGED;
+            break;
+        case EditorDataState::CHANGED:
+            _editorDataDirtyState = EditorDataState::IDLE;
+            break;
+    };
 }
 
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
@@ -249,6 +252,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         PushConstants constants = pkg.pushConstants(0);
         constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->getTessellatedTriangleWidth()));
         constants.set("height_scale", GFX::PushConstantType::FLOAT, _descriptor->getParallaxHeightScale());
+        constants.set("renderStage", GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
         pkg.pushConstants(0, constants);
     }
 
@@ -309,6 +313,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->getTessellatedTriangleWidth()));
     pushConstantsCommand._constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
+    pushConstantsCommand._constants.set("renderStage", GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
 
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);

@@ -148,7 +148,7 @@ private:
     };
 public:
     void onFrameEnd();
-    void init(const vectorEASTL<std::pair<GLenum, size_t>>& poolSizes);
+    void init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes);
     void destroy();
     inline bool typeSupported(GLenum type) const;
     //Use GL_NONE for textures created with glGen instead of glCreate (e.g. for texture views)

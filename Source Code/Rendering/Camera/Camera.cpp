@@ -96,7 +96,8 @@ void Camera::fromSnapshot(const CameraSnapshot& snapshot) {
 
 void Camera::updateInternal(const U64 deltaTimeUS) {
     const F32 timeFactor = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
-    _speed = _speedFactor * timeFactor;
+    _speed = _speedFactor;
+    _speed *= timeFactor;
 }
 
 void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {

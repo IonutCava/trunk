@@ -18,9 +18,10 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     bufferDescriptor._elementSize = sizeof(SceneShaderBufferData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._initialData = &_bufferData;
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    // No need to use threaded writes as we manually update the buffer at the end of the frame. Let the API decide what's best based on data size
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH)/* | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES)*/;
     bufferDescriptor._name = "SCENE_SHADER_DATA";
     _sceneShaderData = _context.newSB(bufferDescriptor);
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);

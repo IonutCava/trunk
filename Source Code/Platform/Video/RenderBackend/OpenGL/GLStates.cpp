@@ -45,6 +45,8 @@ glGlobalLockManager& GL_API::getLockManager() {
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) {
+    static BlendingProperties defaultBlend = {};
+
     if (global) {
         stateTracker.bindTextures(0, s_maxTextureUnits, nullptr, nullptr, nullptr);
         stateTracker.setPixelPackUnpackAlignment();
@@ -63,7 +65,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     stateTracker._activeClearColour.set(window.clearColour());
     const GLuint blendCount = static_cast<GLuint>(stateTracker._blendEnabled.size());
     for (GLuint i = 0; i < blendCount; ++i) {
-        stateTracker.setBlending(i, BlendingProperties());
+        stateTracker.setBlending(i, defaultBlend);
     }
     stateTracker.setBlendColour(UColour4(0u), true);
 

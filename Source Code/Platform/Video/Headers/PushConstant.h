@@ -271,7 +271,7 @@ namespace GFX {
             bool _transpose;
         };
 
-        eastl::fixed_string<char, 128 + 1, false> _binding;
+        eastl::fixed_string<char, 64 + 1, false> _binding;
         vectorEASTL<char> _buffer;
         U64               _bindingHash;
         PushConstantType  _type = PushConstantType::COUNT;

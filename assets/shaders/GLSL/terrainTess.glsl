@@ -2,6 +2,10 @@
 
 #include "vbInputData.vert"
 
+layout(location = 10) out vec4 vtx_adjacency;
+layout(location = 11) out int vtx_tileScale;
+layout(location = 12) out float vtx_height;
+
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 struct TerrainNodeData {
@@ -19,23 +23,26 @@ void main(void)
     _out.dvd_baseInstance = DATA_IDX;
     _out.dvd_instanceID = gl_InstanceID;
     _out.dvd_drawID = gl_DrawIDARB;
+    // Calculate texture coordinates (u,v) relative to entire terrain
+    const vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5f), -(TERRAIN_LENGTH * 0.5f));
 
     float iv = floor(gl_VertexID * (1.0f / CONTROL_VTX_PER_TILE_EDGE));
     float iu = gl_VertexID - iv * CONTROL_VTX_PER_TILE_EDGE;
     float u = (2 * (iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f))) - 1.0f;
     float v = (2 * (iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f))) - 1.0f;
     
-    const vec4 posAndTileScaleVert = dvd_TerrainData[_out.dvd_instanceID]._positionAndTileScale;
+    const TerrainNodeData tData = dvd_TerrainData[_out.dvd_instanceID];
+    const vec4 posAndTileScaleVert = tData._positionAndTileScale;
+    vtx_tileScale = int(posAndTileScaleVert.w);
+    vtx_adjacency = tData._tScale;
 
-    dvd_Vertex = vec4(vec3(u, 0.0f, v) * posAndTileScaleVert.w + posAndTileScaleVert.xyz, 1.0f);
+    dvd_Vertex = vec4(vec3(u, 0.0f, v) * vtx_tileScale + posAndTileScaleVert.xyz, 1.0f);
 
     _out._vertexW = dvd_WorldMatrix(DATA_IDX) * dvd_Vertex;
-
-    // Calculate texture coordinates (u,v) relative to entire terrain
-    const vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5f), -(TERRAIN_LENGTH * 0.5f));
-
     _out._texCoord = vec2(abs(_out._vertexW.x - TerrainOrigin.x) / TERRAIN_WIDTH, abs(_out._vertexW.z - TerrainOrigin.y) / TERRAIN_LENGTH);
-    _out._vertexW.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, _out._texCoord).r) + TERRAIN_MIN_HEIGHT;
+    vtx_height = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, _out._texCoord).r) + TERRAIN_MIN_HEIGHT;
+    _out._vertexW.y = vtx_height;
+
     // Send vertex position along
     gl_Position = _out._vertexW;
 }
@@ -47,46 +54,35 @@ void main(void)
 #define id gl_InvocationID
 
 //
+// Inputs
+//
+layout(location = 10) in vec4 vtx_adjacency[];
+layout(location = 11) in flat int vtx_tileScale[];
+layout(location = 12) in float vtx_height[];
+
+uniform float tessTriangleWidth = 25.0f;
+
+//
 // Outputs
 //
 layout(vertices = 4) out;
 layout(location = 10) out float tcs_tessLevel[];
 layout(location = 11) out int tcs_tileScale[];
 
-//
-// Inputs
-//
-struct TerrainNodeData {
-    vec4 _positionAndTileScale;
-    vec4 _tScale;
-};
-
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
-{
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
-};
-
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
-uniform float tessTriangleWidth = 25.0f;
-
 // Lifted from Tim's Island demo code.
 bool inFrustum(in vec3 pt, in vec3 eyePos, in vec3 viewDir, in float margin)
 {
     // conservative frustum culling
-    vec3 eyeToPt = pt - eyePos;
-    vec3 patch_to_camera_direction_vector = viewDir * dot(eyeToPt, viewDir) - eyeToPt;
-    vec3 patch_center_realigned = pt + normalize(patch_to_camera_direction_vector) * min(margin, length(patch_to_camera_direction_vector));
-    vec4 patch_screenspace_center = dvd_ProjectionMatrix * vec4(patch_center_realigned, 1.0);
+    const vec3 eyeToPt = pt - eyePos;
+    const vec3 patch_to_camera_direction_vector = viewDir * dot(eyeToPt, viewDir) - eyeToPt;
+    const vec3 patch_center_realigned = pt + normalize(patch_to_camera_direction_vector) * min(margin, length(patch_to_camera_direction_vector));
+    const vec4 patch_screenspace_center = dvd_ProjectionMatrix * vec4(patch_center_realigned, 1.0);
 
     const float xDw = patch_screenspace_center.x / patch_screenspace_center.w;
     const float yDw = patch_screenspace_center.y / patch_screenspace_center.w;
     return (((xDw > -1.0f) && (xDw < 1.0f) &&
              (yDw > -1.0f) && (yDw < 1.0f) &&
-             (patch_screenspace_center.w > 0.0f)) || (length(pt - eyePos) >= 0.0f));
-}
-
-vec2 screen_space(in vec4 vertex) {
-    return (clamp(vertex.xy, -1.3f, 1.3f) + 1.0f) * (dvd_ViewPort.zw*0.5f);
+             (patch_screenspace_center.w > 0.0f)) || (length(eyeToPt) >= 0.0f));
 }
 
 float ClipToScreenSpaceTessellation(in vec4 clip0, in vec4 clip1)
@@ -94,8 +90,9 @@ float ClipToScreenSpaceTessellation(in vec4 clip0, in vec4 clip1)
     clip0 /= clip0.w;
     clip1 /= clip1.w;
 
-    vec2 screen0 = screen_space(clip0);
-    vec2 screen1 = screen_space(clip1);
+    vec2 halfViewport = (dvd_ViewPort.zw * 0.5f);
+    vec2 screen0 = (clamp(clip0.xy, -1.3f, 1.3f) + 1.0f) * halfViewport;
+    vec2 screen1 = (clamp(clip1.xy, -1.3f, 1.3f) + 1.0f) * halfViewport;
     float d = distance(screen0, screen1);
 
     // tessTriangleWidth is desired pixels per tri edge
@@ -125,47 +122,32 @@ float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
 float SmallerNeighbourAdjacencyClamp(in float tess) {
     // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
     // Output is [4,64].
-    const float logTess = ceil(log2(tess));
-    const float t = pow(2, logTess);
+    const float t = pow(2, ceil(log2(tess)));
 
     // Our smaller neighbour's min tessellation is pow(2,1) = 2.  As we are twice its size, we can't go below 4.
     return max(4, t);
 }
 
 float LargerNeighbourAdjacencyClamp(in float tess) {
-
     // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
-    const float logTess = ceil(log2(tess));
-    const float t = pow(2, logTess);
+    const float t = pow(2, ceil(log2(tess)));
 
     // Our larger neighbour's max tessellation is 64; as we are half its size, our tessellation must max out
     // at 32, otherwise we could be over-tessellated relative to the neighbour.  Output is [2,32].
     return clamp(t, 2, 32);
 }
 
-void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1, in vec2 uv0, in vec2 uv1)
-{
-    const float height = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, uv0).r) + TERRAIN_MIN_HEIGHT;
-    p0.y = p1.y = height;
-}
-
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
     vec3 p0 = gl_in[idx0].gl_Position.xyz;
     vec3 p1 = gl_in[idx1].gl_Position.xyz;
-    const vec2 t0 = _in[idx0]._texCoord;
-    const vec2 t1 = _in[idx1]._texCoord;
 
     const float t = SphereToScreenSpaceTessellation(p0, p1, diameter);
     return SmallerNeighbourAdjacencyClamp(t);
-
 }
-
 
 float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in float diameter) {
     vec3 p0 = gl_in[idx0].gl_Position.xyz;
     vec3 p1 = gl_in[idx1].gl_Position.xyz;
-    const vec2 t0 = _in[idx0]._texCoord;
-    const vec2 t1 = _in[idx1]._texCoord;
 
     // We move one of the corner vertices in 2D (x,z) to match where the corner vertex is 
     // on our larger neighbour.  We move p0 or p1 depending on the even/odd patch index.
@@ -192,8 +174,8 @@ float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in 
     p1 += (p1 - p0) * (1 - evenPatch);
 #endif
     // Having moved the vertex in (x,z), its height is no longer correct.
-    MakeVertexHeightsAgree(p0, p1, t0, t1);
- 
+    p0.y = p1.y = vtx_height[idx0];
+
     // Half the tessellation because the edge is twice as long.
     const float t = 0.5f * SphereToScreenSpaceTessellation(p0, p1, 2 * diameter);
     return LargerNeighbourAdjacencyClamp(t);
@@ -205,7 +187,6 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
 
     const float tess = SphereToScreenSpaceTessellation(p0, p1, diameter);
     return pow(2, ceil(log2(tess)));
-
 }
 
 #define neighbourMinusX z
@@ -224,7 +205,6 @@ void main(void)
           gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
           gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = -1;
           gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
-          tcs_tileScale[id] = 0;
     }
     else
     {
@@ -243,8 +223,7 @@ void main(void)
         patchXY.y = PatchID / PATCHES_PER_TILE_EDGE;
         patchXY.x = PatchID - patchXY.y * PATCHES_PER_TILE_EDGE;
  
-        const TerrainNodeData tData = dvd_TerrainData[_in[id].dvd_instanceID];
-        const vec4 adjacency = tData._tScale;
+        const vec4 adj = vtx_adjacency[id];
 
         // Identify patch edges that are adjacent to a patch of a different size.  The size difference
         // is encoded in _in[n].adjacency, either 0.5, 1.0 or 2.0.
@@ -252,31 +231,31 @@ void main(void)
         // is the neighbour's size relative to ours.  Similarly for plus and Y, etc.  You really
         // need a diagram to make sense of the adjacency conditions in the if statements. :-(
         if (patchXY.x == 0) {
-            if (adjacency.neighbourMinusX < 0.55f) {
+            if (adj.neighbourMinusX < 0.55f) {
                 // Deal with neighbours that are smaller.
                 gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
-            } else if (adjacency.neighbourMinusX > 1.1f) {
+            } else if (adj.neighbourMinusX > 1.1f) {
                 // Deal with neighbours that are larger than us. 
                 gl_TessLevelOuter[0] = LargerNeighbourAdjacencyFix(0, 1, patchXY.y, sideLen);
             }
         } else if (patchXY.x == PATCHES_PER_TILE_EDGE - 1) {
-            if (adjacency.neighbourPlusX < 0.55f) {
+            if (adj.neighbourPlusX < 0.55f) {
                 gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
-            } else if (adjacency.neighbourPlusX > 1.1f) {
+            } else if (adj.neighbourPlusX > 1.1f) {
                 gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
             }
         }
 
         if (patchXY.y == 0) {
-            if (adjacency.neighbourMinusY < 0.55f) {
+            if (adj.neighbourMinusY < 0.55f) {
                 gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
-            } else if (adjacency.neighbourMinusY > 1.1f) {
+            } else if (adj.neighbourMinusY > 1.1f) {
                 gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
             }
         } else if (patchXY.y == PATCHES_PER_TILE_EDGE - 1) {
-            if (adjacency.neighbourPlusY < 0.55f) {
+            if (adj.neighbourPlusY < 0.55f) {
                 gl_TessLevelOuter[3] = SmallerNeighbourAdjacencyFix(1, 2, sideLen);
-            } else if (adjacency.neighbourPlusY > 1.1f) {
+            } else if (adj.neighbourPlusY > 1.1f) {
                 gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
             }
         }
@@ -284,13 +263,13 @@ void main(void)
        // Inner tessellation level
        gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
-       tcs_tileScale[id] = int(tData._positionAndTileScale.w);
     }
 
     // Pass the patch verts along
     gl_out[id].gl_Position = gl_in[id].gl_Position;
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[id] = gl_TessLevelOuter[0];
+    tcs_tileScale[id] = vtx_tileScale[id];
 
 }
 
@@ -377,7 +356,7 @@ void main()
     pos.y = getHeight(heightOffsets);
 
     _out._vertexW = vec4(pos, 1.0f);
-     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
+    _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
 #if !defined(SHADOW_PASS)
     const mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
