@@ -138,8 +138,8 @@ bool Scene::onShutdown() {
 }
 
 bool Scene::frameStarted() {
-    UniqueLock lk(_perFrameArenaMutex);
-    _perFrameArena.clear();
+    //UniqueLock lk(_perFrameArenaMutex);
+    //_perFrameArena.clear();
     return true;
 }
 

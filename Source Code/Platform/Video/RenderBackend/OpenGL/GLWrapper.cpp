@@ -182,6 +182,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         if (global) {
             _swapBufferTimer.stop();
             s_texturePool.onFrameEnd();
+            s_globalLockManager.clean(_context.getFrameCount());
             processSyncDeleteQeueue();
             s_glFlushQueued = false;
 
@@ -1204,19 +1205,19 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::DRAW_TEXT: {
             const GFX::DrawTextCommand& crtCmd = commandBuffer.get<GFX::DrawTextCommand>(entry);
             drawText(crtCmd._batch);
-            lockBuffers(false);
+            lockBuffers(false, _context.getFrameCount());
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             const GFX::DrawIMGUICommand& crtCmd = commandBuffer.get<GFX::DrawIMGUICommand>(entry);
             drawIMGUI(crtCmd._data, crtCmd._windowGUID);
-            lockBuffers(false);
+            lockBuffers(false, _context.getFrameCount());
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
             const vectorEASTLFast<GenericDrawCommand>& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)._drawCommands;
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                 if (draw(currentDrawCommand)) {
                     // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now
-                    lockBuffers(s_firstCommandInBuffer);
+                    lockBuffers(s_firstCommandInBuffer, _context.getFrameCount());
                     s_firstCommandInBuffer = false;
 
                     if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
@@ -1233,7 +1234,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
             assert(s_activeStateTracker->_activePipeline != nullptr);
             glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
-            lockBuffers(false);
+            lockBuffers(false, _context.getFrameCount());
         }break;
         case GFX::CommandType::MEMORY_BARRIER: {
             const GFX::MemoryBarrierCommand& crtCmd = commandBuffer.get<GFX::MemoryBarrierCommand>(entry);
@@ -1277,7 +1278,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
     };
 }
 
-void GL_API::lockBuffers(bool flush) {
+void GL_API::lockBuffers(bool flush, U32 frameID) {
     BufferWriteData data = {};
     bool shouldFlush = false;
 
@@ -1314,7 +1315,7 @@ void GL_API::lockBuffers(bool flush) {
             entries[entry._handle].emplace_back(BufferRange{ entry._offset, entry._range });
         }
 
-        s_globalLockManager.LockBuffers(std::move(entries), flush && shouldFlush);
+        s_globalLockManager.LockBuffers(std::move(entries), flush && shouldFlush, frameID);
         if (!flush) {
             s_glFlushQueued = shouldFlush;
         }

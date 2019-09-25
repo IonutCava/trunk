@@ -1278,6 +1278,15 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
             T r, g, b, a;
         };
         struct {
+            T pitch, yaw, roll, _pad;
+        };
+        struct {
+            T turn, move, zoom, _pad;
+        };
+        struct {
+            T width, height, depth, _pad;
+        };
+        struct {
             T left, right, bottom, top;
         };
         struct {

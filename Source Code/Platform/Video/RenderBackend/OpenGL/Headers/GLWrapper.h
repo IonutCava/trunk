@@ -176,7 +176,7 @@ public:
     static void registerBufferBind(const BufferWriteData& data);
     static void registerSyncDelete(GLsync syncObject);
 
-    static void lockBuffers(bool flush);
+    static void lockBuffers(bool flush, U32 frameID);
 
 private:
     /// Prepare our shader loading system

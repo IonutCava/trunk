@@ -81,17 +81,22 @@ public:
     glGlobalLockManager() noexcept;
     ~glGlobalLockManager();
 
-    GLsync syncHere() const;
+    void clean(U32 frameID);
+
     // Return true if  we found a lock to wait on
     bool WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait = false);
-    void LockBuffers(BufferLockEntries&& entries, bool flush);
+    void LockBuffers(BufferLockEntries&& entries, bool flush, U32 frameID);
+
+    inline size_t lastTotalLockCount() const noexcept { return _lockCount; }
 
 protected:
     bool test(GLsync syncObject, const vectorEASTL<BufferRange>& ranges, const BufferRange& testRange, bool noWait = false);
 
 private:
+    size_t _lockCount = 0;
+
     mutable SharedMutex _lock;
-    hashMap<GLsync, BufferLockEntries> _bufferLocks;
+    hashMap<GLsync, std::pair<BufferLockEntries, U32>> _bufferLocks;
 };
 
 };  // namespace Divide

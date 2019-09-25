@@ -330,7 +330,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
     }
 
-    vectorEASTL<std::pair<GLenum, size_t>> poolSizes = {
+    vectorEASTL<std::pair<GLenum, U32>> poolSizes = {
         {GL_NONE, 256}, //Generic texture handles (created with glGen instead of glCreate)
         {GL_TEXTURE_2D, 1024}, //Used by most renderable items
         {GL_TEXTURE_2D_ARRAY, 256}, //Used mainly by shadow maps and some materials

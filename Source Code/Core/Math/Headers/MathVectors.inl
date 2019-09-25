@@ -564,8 +564,22 @@ inline const vec4<F32> vec4<F32>::operator-(F32 _f) const noexcept {
 
 template<>
 template<>
+inline vec4<F32>& vec4<F32>::operator-=(F32 _f) noexcept {
+    _reg._reg = _mm_sub_ps(_reg._reg, _mm_set1_ps(_f));
+    return *this;
+}
+
+template<>
+template<>
 inline const vec4<F32> vec4<F32>::operator+(F32 _f) const noexcept {
     return vec4<F32>(_mm_add_ps(_reg._reg, _mm_set1_ps(_f)));
+}
+
+template<>
+template<>
+inline vec4<F32>& vec4<F32>::operator+=(F32 _f) noexcept  {
+    _reg._reg = _mm_add_ps(_reg._reg, _mm_set1_ps(_f));
+    return *this;
 }
 
 template<>
@@ -576,8 +590,22 @@ inline const vec4<F32> vec4<F32>::operator*(F32 _f) const noexcept {
 
 template<>
 template<>
+inline vec4<F32>& vec4<F32>::operator*=(F32 _f) noexcept {
+    _reg._reg = _mm_mul_ps(_reg._reg, _mm_set1_ps(_f));
+    return *this;
+}
+
+template<>
+template<>
 inline const vec4<F32> vec4<F32>::operator/(F32 _f) const noexcept {
     return vec4<F32>(_mm_div_ps(_reg._reg, _mm_set1_ps(_f)));
+}
+
+template<>
+template<>
+inline vec4<F32>& vec4<F32>::operator/=(F32 _f) noexcept {
+    _reg._reg = _mm_div_ps(_reg._reg, _mm_set1_ps(_f));
+    return *this;
 }
 
 template<>
@@ -588,8 +616,22 @@ inline const vec4<F32> vec4<F32>::operator+(const vec4<F32> &v) const noexcept {
 
 template<>
 template<>
+inline vec4<F32>& vec4<F32>::operator+=(const vec4<F32>& v) noexcept {
+    _reg._reg = _mm_add_ps(_reg._reg, v._reg._reg);
+    return *this;
+}
+
+template<>
+template<>
 inline const vec4<F32> vec4<F32>::operator-(const vec4<F32> &v) const noexcept {
     return vec4<F32>(_mm_sub_ps(_reg._reg, v._reg._reg));
+}
+
+template<>
+template<>
+inline vec4<F32>& vec4<F32>::operator-=(const vec4<F32>& v) noexcept {
+    _reg._reg = _mm_sub_ps(_reg._reg, v._reg._reg);
+    return *this;
 }
 
 template<>
@@ -600,8 +642,22 @@ inline const vec4<F32> vec4<F32>::operator/(const vec4<F32> &v) const noexcept {
 
 template<>
 template<>
+inline vec4<F32>& vec4<F32>::operator/=(const vec4<F32>& v) noexcept {
+    _reg._reg = _mm_div_ps(_reg._reg, v._reg._reg);
+    return *this;
+}
+
+template<>
+template<>
 inline const vec4<F32> vec4<F32>::operator*(const vec4<F32>& v) const noexcept {
     return vec4<F32>(_mm_mul_ps(_reg._reg, v._reg._reg));
+}
+
+template<>
+template<>
+inline vec4<F32>& vec4<F32>::operator*=(const vec4<F32>& v) noexcept {
+    _reg._reg = _mm_mul_ps(_reg._reg, v._reg._reg);
+    return *this;
 }
 
 /// compare 2 vectors

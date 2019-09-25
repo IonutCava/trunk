@@ -80,17 +80,28 @@ void glBufferLockManager::LockRange(GLintptr lockBeginBytes,
 }
 
 glGlobalLockManager::glGlobalLockManager() noexcept
+    : _lockCount(0)
 {
-
 }
 
 glGlobalLockManager::~glGlobalLockManager()
 {
-
 }
 
-GLsync glGlobalLockManager::syncHere() const {
-    return glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+void glGlobalLockManager::clean(U32 frameID) {
+    // Delete all locks older than 6 frames  (APP->Driver->GPU x2)
+    constexpr U32 LockDeleteFrameThreshold = 6;
+
+    UniqueLockShared w_lock(_lock);
+    // Check again as the range may have been cleared on another thread
+    for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
+        if (frameID - it->second.second > LockDeleteFrameThreshold) {
+            GL_API::registerSyncDelete(it->first);
+            it = _bufferLocks.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 bool glGlobalLockManager::test(GLsync syncObject, const vectorEASTL<BufferRange>& ranges, const BufferRange& testRange, bool noWait) {
@@ -119,7 +130,7 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
     if (USE_PRESCAN) {
         SharedLock r_lock(_lock);
         for (const auto& it : _bufferLocks) {
-            if (it.second.find(bufferHandle) != std::cend(it.second)) {
+            if (it.second.first.find(bufferHandle) != std::cend(it.second.first)) {
                 foundLockedRange = true;
                 break;
             }
@@ -132,10 +143,14 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
         const BufferRange testRange{ lockBeginBytes, lockLength };
 
         UniqueLockShared w_lock(_lock);
+        _lockCount = 0;
         // Check again as the range may have been cleared on another thread
         for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-            const auto& entry = it->second.find(bufferHandle);
-            if (entry != std::cend(it->second)) {
+            const BufferLockEntries& entries = it->second.first;
+            _lockCount += entries.size();
+
+            const auto& entry = entries.find(bufferHandle);
+            if (entry != std::cend(entries)) {
                 if (test(it->first, entry->second, testRange, noWait)) {
                     it = _bufferLocks.erase(it);
                 } else {
@@ -153,17 +168,21 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
    return false;
 }
 
-void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush) {
-#if 0
-    for (auto& it1 : entries) {
-        for (auto& it2 : it1.second) {
-            WaitForLockedRange(it1.first, it2._startOffset, it2._length, true);
+void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush, U32 frameID) {
+    GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+
+    // Needed in order to delete old locks (from binds) that never needed actual waits (from writes). e.g. Terrain render nodes with static camera
+    for (const auto& it1 : entries) {
+        const GLuint bufferHandle = it1.first;
+
+        for (const auto& it2 : it1.second) {
+            WaitForLockedRange(bufferHandle, it2._startOffset, it2._length, true);
         }
     }
-#endif
+        
     {
         UniqueLockShared w_lock(_lock);
-        hashAlg::emplace(_bufferLocks, syncHere(), entries);
+        hashAlg::emplace(_bufferLocks, sync, std::make_pair(entries, frameID));
     }
 
     if (flush) {

@@ -100,10 +100,11 @@ namespace Divide {
 
     void TransformSystem::FrameEnded() {
 
-        auto comp = _container->begin();
-        auto compEnd = _container->end();
-        for (; comp != compEnd; ++comp) {
-            comp->FrameEnded();
+        auto transform = _container->begin();
+        auto transformEnd = _container->end();
+        for (; transform != transformEnd; ++transform)
+        {
+            transform->FrameEnded();
         }
     }
 
