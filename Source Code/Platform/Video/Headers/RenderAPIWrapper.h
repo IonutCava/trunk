@@ -68,7 +68,7 @@ struct VideoModes {
     I32 BlueBits;
 };
 
-typedef std::array<bool, to_base(AttribLocation::COUNT)> AttribFlags;
+using AttribFlags = std::array<bool, to_base(AttribLocation::COUNT)>;
 
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {

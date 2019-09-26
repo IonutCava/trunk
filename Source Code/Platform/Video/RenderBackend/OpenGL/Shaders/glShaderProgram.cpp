@@ -33,7 +33,7 @@ namespace {
         {
             namespace wave = boost::wave;
 
-            typedef typename ContainerT::const_iterator iterator_type;
+            using iterator_type = typename ContainerT::const_iterator;
             iterator_type it = line.begin();
             wave::token_id id = wave::util::impl::skip_whitespace(it, line.end());
 
@@ -53,12 +53,11 @@ namespace {
     };
 
     stringImpl preProcess(std::string input, const char* name) {
-        typedef boost::wave::cpplexer::lex_token<> token_type;
-        typedef boost::wave::cpplexer::lex_iterator<token_type> lex_iterator_type;
-        typedef boost::wave::context<std::string::iterator, lex_iterator_type,
-                                     boost::wave::iteration_context_policies::load_file_to_string,
-                                     custom_directives_hooks
-                                    > context_type;
+        using token_type = boost::wave::cpplexer::lex_token<>;
+        using lex_iterator_type = boost::wave::cpplexer::lex_iterator<token_type>;
+        using context_type=  boost::wave::context<std::string::iterator, lex_iterator_type,
+                                                  boost::wave::iteration_context_policies::load_file_to_string,
+                                                  custom_directives_hooks>;
 
         context_type ctx(input.begin(), input.end(), name);
 

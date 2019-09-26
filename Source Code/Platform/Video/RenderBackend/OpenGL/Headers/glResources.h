@@ -88,7 +88,7 @@ struct ImageBindSettings {
 
 class VAOBindings {
 public:
-    typedef std::tuple<GLuint, GLintptr, GLsizei> BufferBindingParams;
+    using BufferBindingParams = std::tuple<GLuint, GLintptr, GLsizei>;
 
     VAOBindings() noexcept;
     ~VAOBindings();
@@ -98,7 +98,7 @@ public:
     void bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams);
 
 private:
-    typedef vector<BufferBindingParams> VAOBufferData;
+    using VAOBufferData = vector<BufferBindingParams>;
 
     mutable VAOBufferData* _cachedData = nullptr;
     mutable GLuint _cachedVao = 0;

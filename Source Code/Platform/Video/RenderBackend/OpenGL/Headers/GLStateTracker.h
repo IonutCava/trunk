@@ -196,15 +196,15 @@ namespace Divide {
         size_t _previousStateBlockHash = 0;
 
         /// /*hash: texture slot  - array /*texture handle - texture type*/ hash
-        typedef std::array<std::array<U32, to_base(TextureType::COUNT)>, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
-        textureBoundMapDef _textureBoundMap;
+        using TextureBoundMapDef = std::array<std::array<U32, to_base(TextureType::COUNT)>, MAX_ACTIVE_TEXTURE_SLOTS>;
+        TextureBoundMapDef _textureBoundMap;
 
-        typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
-        imageBoundMapDef _imageBoundMap;
+        using ImageBoundMapDef = std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS>;
+        ImageBoundMapDef _imageBoundMap;
 
         /// /*texture slot*/ /*sampler handle*/
-        typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
-        samplerBoundMapDef _samplerBoundMap;
+        using SamplerBoundMapDef = std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS>;
+        SamplerBoundMapDef _samplerBoundMap;
 
         VAOBindings _vaoBufferData;
         bool _opengl46Supported = false;

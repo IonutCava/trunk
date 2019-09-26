@@ -105,7 +105,7 @@ class glVertexArray final : public VertexBuffer {
     GLsizei _effectiveEntrySize;
     ByteBuffer _smallData;
     AttribFlags _useAttribute;
-    typedef std::array<GLuint, to_base(AttribLocation::COUNT)> AttribValues;
+    using AttribValues = std::array<GLuint, to_base(AttribLocation::COUNT)>;
     AttribValues _attributeOffset;
 
     // Both for forward pass and pre-pass

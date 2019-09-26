@@ -43,7 +43,7 @@ namespace Divide {
 /// It can be used simultaneously in multiple programs/pipelines
 class glShader : public TrackedObject, public GraphicsResource,  public glObject {
    public:
-    typedef ska::bytell_hash_map<U64, glShader*> ShaderMap;
+    using ShaderMap = ska::bytell_hash_map<U64, glShader*>;
 
     // one per shader type!
     struct LoadData {
@@ -53,15 +53,15 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
         vectorEASTL<stringImpl> sourceCode;
     };
 
-    typedef std::array<LoadData, to_base(ShaderType::COUNT)> ShaderLoadData;
+    using ShaderLoadData = std::array<LoadData, to_base(ShaderType::COUNT)>;
 
     template<typename T>
     struct UniformCache {
-        typedef hashMap<T, GFX::PushConstant> ShaderVarMap;
+        using ShaderVarMap = hashMap<T, GFX::PushConstant>;
         inline void clear() { _shaderVars.clear(); }
         ShaderVarMap _shaderVars;
     };
-    typedef UniformCache<U64> UniformsByNameHash;
+    using UniformsByNameHash = UniformCache<U64>;
 
    public:
     /// The shader's name is the period-separated list of properties, type is
@@ -129,7 +129,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     PROPERTY_R(bool, shouldRecompile);
 
    private:
-    typedef hashMap<U64, I32> ShaderVarMap;
+    using ShaderVarMap = hashMap<U64, I32>;
 
   private:
     bool _loadedFromBinary;

@@ -16,17 +16,21 @@ namespace Divide {
 
     const ShaderBufferBinding* DescriptorSet::findBinding(ShaderBufferLocation slot) const {
         for (const ShaderBufferBinding& it : _shaderBuffers) {
-            if (it._binding == slot)
+            if (it._binding == slot) {
                 return &it;
+            }
         }
+
         return nullptr;
     }
 
     const TextureData* DescriptorSet::findTexture(U8 binding) const {
         for (auto& it : _textureData.textures()) {
-            if (it.first == binding)
+            if (it.first == binding) {
                 return &it.second;
+            }
         }
+
         return nullptr;
     }
 

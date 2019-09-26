@@ -70,10 +70,10 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     friend class Attorney::ShaderProgramKernel;
 
    public:
-    typedef std::pair<ShaderProgram*, size_t> ShaderProgramMapEntry;
-    typedef ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry> ShaderProgramMap;
-    typedef ska::bytell_hash_map<U64 /*name hash*/, stringImpl> AtomMap;
-    typedef std::stack<ShaderProgram*, vectorFast<ShaderProgram*> > ShaderQueue;
+    using ShaderProgramMapEntry = std::pair<ShaderProgram*, size_t>;
+    using ShaderProgramMap = ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry>;
+    using AtomMap = ska::bytell_hash_map<U64 /*name hash*/, stringImpl>;
+    using ShaderQueue = std::stack<ShaderProgram*, vectorFast<ShaderProgram*> >;
 
     /// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used
     enum class TextureUsage : U8 {
