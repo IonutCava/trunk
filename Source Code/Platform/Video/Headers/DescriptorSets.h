@@ -112,25 +112,25 @@ namespace Divide {
         U8 _binding = 0;
 
         inline bool operator==(const Image& other) const {
-            return _texture == other._texture &&
-                   _flag == other._flag &&
+            return _flag == other._flag &&
                    _layer == other._layer &&
                    _level == other._level &&
-                   _binding == other._binding;
+                   _binding == other._binding &&
+                   _texture == other._texture;
         }
 
         inline bool operator!=(const Image& other) const {
-            return _texture != other._texture ||
-                   _flag != other._flag ||
+            return _flag != other._flag ||
                    _layer != other._layer ||
                    _level != other._level ||
-                   _binding != other._binding;
+                   _binding != other._binding ||
+                   _texture != other._texture;
         }
     };
 
-    typedef vectorEASTLFast<ShaderBufferBinding> ShaderBufferList;
-    typedef vectorEASTLFast<TextureViewEntry> TextureViews;
-    typedef vectorEASTLFast<Image> Images;
+    using ShaderBufferList = vectorEASTLFast<ShaderBufferBinding>;
+    using TextureViews = vectorEASTLFast<TextureViewEntry>;
+    using Images = vectorEASTLFast<Image>;
 
     struct DescriptorSet {
         //This needs a lot more work!
@@ -172,7 +172,7 @@ namespace Divide {
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
 
-    typedef MemoryPool<DescriptorSet, nextPOW2(sizeof(DescriptorSet) * 256)> DescriptorSetPool;
+    using DescriptorSetPool = MemoryPool<DescriptorSet, nextPOW2(sizeof(DescriptorSet) * 256)>;
 
     struct DeleteDescriptorSet {
         DeleteDescriptorSet(std::mutex& lock, DescriptorSetPool& context)

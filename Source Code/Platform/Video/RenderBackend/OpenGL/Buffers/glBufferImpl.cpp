@@ -17,7 +17,7 @@ namespace {
         GLsizeiptr _range = 0;
     };
 
-    typedef std::array<BindConfigEntry, to_base(ShaderBufferLocation::COUNT)> BindConfig;
+    using BindConfig = std::array<BindConfigEntry, to_base(ShaderBufferLocation::COUNT)>;
     BindConfig g_currentBindConfig;
 
     bool setIfDifferentBindRange(U32 UBOid,

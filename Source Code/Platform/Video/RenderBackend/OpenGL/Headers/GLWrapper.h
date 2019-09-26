@@ -198,7 +198,7 @@ private:
     void deleteFonsContext();
     /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to
     /// all stages
-    typedef std::array<GLint, to_base(ShaderType::COUNT) + 1> ShaderOffsetArray;
+    using ShaderOffsetArray = std::array<GLint, to_base(ShaderType::COUNT) + 1>;
     static void appendToShaderHeader(ShaderType type, const stringImpl& entry, ShaderOffsetArray& inOutOffset);
 
     GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
@@ -237,7 +237,7 @@ private:
     /// Preferred anisotropic filtering level
     static GLuint s_anisoLevel;
     /// A cache of all fonts used
-    typedef hashMap<U64, I32> FontCache;
+    using FontCache = hashMap<U64, I32>;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
 
@@ -256,9 +256,9 @@ private:
     static GLUtil::glVAOPool s_vaoPool;
 
     /// /*sampler hash value*/ /*sampler object*/
-    typedef hashMap<size_t, GLuint> samplerObjectMap;
+    using SamplerObjectMap = hashMap<size_t, GLuint>;
     static std::mutex s_samplerMapLock;
-    static samplerObjectMap s_samplerMap;
+    static SamplerObjectMap s_samplerMap;
 
     I32 _glswState;
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
@@ -271,8 +271,8 @@ private:
     static U8 s_syncDeleteQueueIndexR, s_syncDeleteQueueIndexW;
     static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[s_syncDeleteQueueSize];
 
-    typedef ska::bytell_hash_map<I64, GLStateTracker> stateTrackerMap;
-    static stateTrackerMap s_stateTrackers;
+    using StateTrackerMap = ska::bytell_hash_map<I64, GLStateTracker> ;
+    static StateTrackerMap s_stateTrackers;
     static GLStateTracker* s_activeStateTracker;
 
     static GLUtil::glTexturePool s_texturePool;

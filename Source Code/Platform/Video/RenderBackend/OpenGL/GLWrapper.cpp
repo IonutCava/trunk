@@ -53,7 +53,7 @@ namespace {
 
 GLConfig GL_API::s_glConfig;
 GLStateTracker* GL_API::s_activeStateTracker = nullptr;
-GL_API::stateTrackerMap GL_API::s_stateTrackers;
+GL_API::StateTrackerMap GL_API::s_stateTrackers;
 bool GL_API::s_glFlushQueued = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool GL_API::s_texturePool;
@@ -1528,7 +1528,7 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
         // If we fail to find the sampler object for the given hash, we print an
         // error and return the default OpenGL handle
         UniqueLock r_lock(s_samplerMapLock);
-        samplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
+        SamplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
         if (it != std::cend(s_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
             return it->second;
