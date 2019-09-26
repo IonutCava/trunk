@@ -26,7 +26,7 @@ namespace Divide {
 
     // Set all parent nodes' bbs to dirty if any child changed his bb. This step just sets the flags!
     void BoundsSystem::PreUpdate(F32 dt) {
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto bComp = _container->begin();
         auto bCompEnd = _container->end();
@@ -44,7 +44,7 @@ namespace Divide {
 
     // Grab all of the update bounding boxes where needed. This step does not clear the flags!
     void BoundsSystem::Update(F32 dt) {
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto bComp = _container->begin();
         auto bCompEnd = _container->end();
@@ -60,7 +60,7 @@ namespace Divide {
 
     // Everything should be up-to-date, so we could clear all of the flags. 
     void BoundsSystem::PostUpdate(F32 dt) {
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto bComp = _container->begin();
         auto bCompEnd = _container->end();

@@ -56,8 +56,8 @@ namespace Divide {
         friend class SceneGraph;
         friend class BoundsSystem;
                 
-        void Update(const U64 deltaTimeUS) override;
-        void PostUpdate(const U64 deltaTimeUS) override;
+        void Update(const U64 deltaTimeUS) final;
+        void PostUpdate(const U64 deltaTimeUS) final;
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(bool recursive);

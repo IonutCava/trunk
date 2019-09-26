@@ -81,11 +81,6 @@ namespace Divide {
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
     }
 
-    void TransformComponent::PostUpdate(const U64 deltaTimeUS) {
-        
-        BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::PostUpdate(deltaTimeUS);
-    }
-
     void TransformComponent::OnUpdateLoop() {
         SharedLock r_lock(_lock);
         _transformInterface.getValues(_prevTransformValues);

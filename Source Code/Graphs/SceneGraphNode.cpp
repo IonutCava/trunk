@@ -659,21 +659,21 @@ ECS::ComponentManager* SceneGraphNode::GetComponentManager() const {
     return _compManager;
 }
 
-void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode*>& callback) {
+void SceneGraphNode::forEachChild(DELEGATE_CBK<void, SceneGraphNode*>&& callback) {
     SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         callback(child);
     }
 }
 
-void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode*>& callback) const {
+void SceneGraphNode::forEachChild(DELEGATE_CBK<void, const SceneGraphNode*>&& callback) const {
     SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         callback(child);
     }
 }
 
-bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode*>& callback) {
+bool SceneGraphNode::forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*>&& callback) {
     SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         if (!callback(child)) {
@@ -684,7 +684,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGra
     return true;
 }
 
-bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode*>& callback) const {
+bool SceneGraphNode::forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*>&& callback) const {
     SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         if (!callback(child)) {
@@ -695,7 +695,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const Sc
     return true;
 }
 
-void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode*, I32>& callback, U32 start, U32 end) {
+void SceneGraphNode::forEachChild(DELEGATE_CBK<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
     SharedLock r_lock(_childLock);
     CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
@@ -705,7 +705,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode*, I32>
     }
 }
 
-void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode*, I32>& callback, U32 start, U32 end) const {
+void SceneGraphNode::forEachChild(DELEGATE_CBK<void, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
     SharedLock r_lock(_childLock);
     CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
@@ -715,7 +715,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode*
     }
 }
 
-bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode*, I32>& callback, U32 start, U32 end) {
+bool SceneGraphNode::forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
     SharedLock r_lock(_childLock);
     CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
@@ -729,7 +729,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGra
     return true;
 }
 
-bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode*, I32>& callback, U32 start, U32 end) const {
+bool SceneGraphNode::forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
     SharedLock r_lock(_childLock);
     CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);

@@ -360,10 +360,7 @@ inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff)
         return true;
     }
 
-    A = std::abs(A);
-    B = std::abs(B);
-    const F32 largest = (B > A) ? B : A;
-
+    const F32 largest = std::max(std::abs(A), std::abs(B));
     return (diff <= largest * maxRelDiff);
 }
 
@@ -523,14 +520,29 @@ inline bool COMPARE_TOLERANCE(T X, T Y, T TOLERANCE) noexcept {
     return std::abs(X - Y) <= TOLERANCE;
 }
 
+template<typename T>
+inline bool COMPARE_TOLERANCE_ACCURATE(T X, T Y, T TOLERANCE) noexcept {
+    return std::abs(X - Y) <= TOLERANCE;
+}
+
 template<>
-inline bool COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE) noexcept {
+inline bool COMPARE_TOLERANCE_ACCURATE(F32 X, F32 Y, F32 TOLERANCE) noexcept {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
 template<>
-inline bool COMPARE_TOLERANCE(D64 X, D64 Y, D64 TOLERANCE) noexcept {
+inline bool COMPARE_TOLERANCE_ACCURATE(D64 X, D64 Y, D64 TOLERANCE) noexcept {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
+}
+
+template<>
+inline bool COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE) noexcept {
+    return std::fabs(X - Y) <= TOLERANCE;
+}
+
+template<>
+inline bool COMPARE_TOLERANCE(D64 X, D64 Y, D64 TOLERANCE) noexcept {
+    return std::abs(X - Y) <= TOLERANCE;
 }
 
 template<typename T, typename U>

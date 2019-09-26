@@ -46,14 +46,14 @@ namespace Divide {
         TransformSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~TransformSystem();
 
-        void PreUpdate(F32 dt) override;
-        void Update(F32 dt) override;
-        void PostUpdate(F32 dt) override;
-        void OnUpdateLoop() override;
-        void FrameEnded() override;
+        void PreUpdate(F32 dt) final;
+        void Update(F32 dt) final;
+        void PostUpdate(F32 dt) final;
+        void OnUpdateLoop() final;
+        void FrameEnded() final;
 
-        bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) override;
-        bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) override;
+        bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) final;
+        bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) final;
 
     protected:
         Task* _preUpdateTask = nullptr;

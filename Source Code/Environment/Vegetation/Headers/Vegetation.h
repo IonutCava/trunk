@@ -144,6 +144,8 @@ class Vegetation : public SceneNode {
     bool _shadowMapped;
     U32 _instanceCountGrass;
     U32 _instanceCountTrees;
+    F32 _grassDistance;
+    F32 _treeDistance;
 
     Pipeline* _cullPipelineGrass;
     Pipeline* _cullPipelineTrees;

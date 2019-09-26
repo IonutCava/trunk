@@ -1333,14 +1333,14 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, boo
     }
 }
 
-void GL_API::registerBufferBind(const BufferWriteData& data) {
+void GL_API::registerBufferBind(BufferWriteData&& data) {
     assert(Runtime::isMainThread());
 
     if (data._handle == -1 || data._range == 0) {
         return;
     }
 
-    if (!s_bufferBinds.enqueue(data)) {
+    if (!s_bufferBinds.enqueue(std::move(data))) {
         assert(false && "GL_API::registerBufferBind failure!");
     }
 }

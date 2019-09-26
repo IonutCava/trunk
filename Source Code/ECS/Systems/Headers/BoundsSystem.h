@@ -45,10 +45,10 @@ namespace Divide {
         BoundsSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~BoundsSystem();
 
-        void PreUpdate(F32 dt) override;
-        void Update(F32 dt) override;
-        void PostUpdate(F32 dt) override;
-        void FrameEnded() override;
+        void PreUpdate(F32 dt) final;
+        void Update(F32 dt) final;
+        void PostUpdate(F32 dt) final;
+        void FrameEnded() final;
 
       protected:
         void onBoundsChanged(SceneGraphNode& sgn) const;

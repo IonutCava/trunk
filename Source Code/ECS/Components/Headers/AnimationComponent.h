@@ -101,7 +101,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
 
    protected:
     friend class AnimationSystem;
-    void Update(const U64 deltaTimeUS) override;
+    void Update(const U64 deltaTimeUS) final;
 
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!

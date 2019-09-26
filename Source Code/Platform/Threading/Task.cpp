@@ -43,11 +43,11 @@ bool run(Task& task, TaskPool& pool, TaskPriority priority, bool wait, DELEGATE_
 }
 
 Task& Start(Task& task, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
-    auto job = [&task, priority, onCompletionFunction](bool wait) {
-        return run(task, *task._parentPool, priority, wait, onCompletionFunction);
-    };
-
-    if (!task._parentPool->enqueue(std::move(job), priority)) {
+    if (!task._parentPool->enqueue([&task, priority, onCompletionFunction](bool wait) {
+                                        return run(task, *task._parentPool, priority, wait, onCompletionFunction);
+                                    },
+                                    priority))
+    {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
         run(task, *task._parentPool, priority, true, onCompletionFunction);
     }

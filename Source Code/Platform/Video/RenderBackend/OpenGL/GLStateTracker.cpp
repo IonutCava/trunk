@@ -452,63 +452,64 @@ void GLStateTracker::setBlendColour(const UColour4& blendColour, bool force) {
     }
 }
 
-void GLStateTracker::setBlending(const BlendingProperties& blendingProperties, bool force) {
+void GLStateTracker::setBlending(const BlendingProperties& blendingProperties) {
     bool enable = blendingProperties.blendEnabled();
 
-    if ((_blendEnabledGlobal == GL_TRUE) != enable || force) {
+    if ((_blendEnabledGlobal == GL_TRUE) != enable) {
         enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
         _blendEnabledGlobal = (enable ? GL_TRUE : GL_FALSE);
         std::fill(std::begin(_blendEnabled), std::end(_blendEnabled), _blendEnabledGlobal);
     }
 
-    if (enable || force) {
-        if (_blendPropertiesGlobal != blendingProperties || force)
-        {
-            if (blendingProperties._blendOpAlpha != BlendOperation::COUNT) {
-                if (blendingProperties._blendSrc != _blendPropertiesGlobal._blendSrc ||
-                    blendingProperties._blendDest != _blendPropertiesGlobal._blendDest ||
-                    blendingProperties._blendSrcAlpha != _blendPropertiesGlobal._blendSrcAlpha ||
-                    blendingProperties._blendDestAlpha != _blendPropertiesGlobal._blendDestAlpha || force) {
-                        glBlendFuncSeparate(GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
-                                            GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
-                                            GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
-                                            GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
-                }
+    if (enable && _blendPropertiesGlobal != blendingProperties) {
+        if (blendingProperties._blendOpAlpha != BlendOperation::COUNT) {
+            if (blendingProperties._blendSrc != _blendPropertiesGlobal._blendSrc ||
+                blendingProperties._blendDest != _blendPropertiesGlobal._blendDest ||
+                blendingProperties._blendSrcAlpha != _blendPropertiesGlobal._blendSrcAlpha ||
+                blendingProperties._blendDestAlpha != _blendPropertiesGlobal._blendDestAlpha)
+            {
+                    glBlendFuncSeparate(GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                                        GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
+                                        GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
+                                        GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
+            }
                 
-                if (blendingProperties._blendOp != _blendPropertiesGlobal._blendOp ||
-                    blendingProperties._blendOpAlpha != _blendPropertiesGlobal._blendOpAlpha || force) {
-                        glBlendEquationSeparate(GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
-                                                                                                    ? to_base(blendingProperties._blendOp)
-                                                                                                    : to_base(BlendOperation::ADD)],
-                                                GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
-                }
-            } else {
-                if (blendingProperties._blendSrc != _blendPropertiesGlobal._blendSrc ||
-                    blendingProperties._blendDest != _blendPropertiesGlobal._blendDest || force) {
-                        glBlendFunc(GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
-                                    GLUtil::glBlendTable[to_base(blendingProperties._blendDest)]);
-                }
-                if (blendingProperties._blendOp != _blendPropertiesGlobal._blendOp || force) {
-                    glBlendEquation(GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
-                                                                                        ? to_base(blendingProperties._blendOp)
-                                                                                        : to_base(BlendOperation::ADD)]);
-                }
-
+            if (blendingProperties._blendOp != _blendPropertiesGlobal._blendOp ||
+                blendingProperties._blendOpAlpha != _blendPropertiesGlobal._blendOpAlpha)
+            {
+                    glBlendEquationSeparate(GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
+                                                                                                ? to_base(blendingProperties._blendOp)
+                                                                                                : to_base(BlendOperation::ADD)],
+                                            GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
+            }
+        } else {
+            if (blendingProperties._blendSrc != _blendPropertiesGlobal._blendSrc ||
+                blendingProperties._blendDest != _blendPropertiesGlobal._blendDest)
+            {
+                    glBlendFunc(GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                                GLUtil::glBlendTable[to_base(blendingProperties._blendDest)]);
+            }
+            if (blendingProperties._blendOp != _blendPropertiesGlobal._blendOp)
+            {
+                glBlendEquation(GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
+                                                                                    ? to_base(blendingProperties._blendOp)
+                                                                                    : to_base(BlendOperation::ADD)]);
             }
 
-            _blendPropertiesGlobal = blendingProperties;
-
-            std::fill(std::begin(_blendProperties), std::end(_blendProperties), _blendPropertiesGlobal);
         }
+
+        _blendPropertiesGlobal = blendingProperties;
+
+        std::fill(std::begin(_blendProperties), std::end(_blendProperties), _blendPropertiesGlobal);
     }
 }
 
-void GLStateTracker::setBlending(GLuint drawBufferIdx,const BlendingProperties& blendingProperties, bool force) {
+void GLStateTracker::setBlending(GLuint drawBufferIdx,const BlendingProperties& blendingProperties) {
     bool enable = blendingProperties.blendEnabled();
 
     assert(drawBufferIdx < (GLuint)(GL_API::s_maxFBOAttachments));
 
-    if ((_blendEnabled[drawBufferIdx] == GL_TRUE) != enable || force) {
+    if ((_blendEnabled[drawBufferIdx] == GL_TRUE) != enable) {
         enable ? glEnablei(GL_BLEND, drawBufferIdx) : glDisablei(GL_BLEND, drawBufferIdx);
         _blendEnabled[drawBufferIdx] = (enable ? GL_TRUE : GL_FALSE);
         if (!enable) {
@@ -516,47 +517,62 @@ void GLStateTracker::setBlending(GLuint drawBufferIdx,const BlendingProperties& 
         }
     }
 
-    if (enable || force) {
-        if (_blendProperties[drawBufferIdx] != blendingProperties || force) {
-            if (blendingProperties._blendOpAlpha != BlendOperation::COUNT) {
-                if (blendingProperties._blendSrc != _blendProperties[drawBufferIdx]._blendSrc ||
-                    blendingProperties._blendDest != _blendProperties[drawBufferIdx]._blendDest ||
-                    blendingProperties._blendSrcAlpha != _blendProperties[drawBufferIdx]._blendSrcAlpha ||
-                    blendingProperties._blendDestAlpha != _blendProperties[drawBufferIdx]._blendDestAlpha || force) {
-                        glBlendFuncSeparatei(drawBufferIdx,
-                                             GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
-                                             GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
-                                             GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
-                                             GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
-                }
+    BlendingProperties& crtProperties = _blendProperties[drawBufferIdx];
 
-                if (blendingProperties._blendOp != _blendProperties[drawBufferIdx]._blendOp ||
-                    blendingProperties._blendOpAlpha != _blendProperties[drawBufferIdx]._blendOpAlpha || force) {
-                    glBlendEquationSeparatei(drawBufferIdx, 
-                                             GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
-                                                                                                 ? to_base(blendingProperties._blendOp)
-                                                                                                 : to_base(BlendOperation::ADD)],
-                                             GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
-                }
-            } else {
-                if (blendingProperties._blendSrc != _blendProperties[drawBufferIdx]._blendSrc ||
-                    blendingProperties._blendDest != _blendProperties[drawBufferIdx]._blendDest || force) {
-                        glBlendFunci(drawBufferIdx,
-                                     GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
-                                     GLUtil::glBlendTable[to_base(blendingProperties._blendDest)]);
-                }
+    if (enable && crtProperties != blendingProperties) {
+        if (blendingProperties._blendOpAlpha != BlendOperation::COUNT) {
+            if (blendingProperties._blendSrc != crtProperties._blendSrc ||
+                blendingProperties._blendDest != crtProperties._blendDest ||
+                blendingProperties._blendSrcAlpha != crtProperties._blendSrcAlpha ||
+                blendingProperties._blendDestAlpha != crtProperties._blendDestAlpha)
+            {
+                    glBlendFuncSeparatei(drawBufferIdx,
+                                            GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                                            GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
+                                            GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
+                                            GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
 
-                if (blendingProperties._blendOp != _blendProperties[drawBufferIdx]._blendOp || force) {
-                    glBlendEquationi(drawBufferIdx,
-                                     GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
-                                                                                         ? to_base(blendingProperties._blendOp)
-                                                                                         : to_base(BlendOperation::ADD)]);
-                }
+                    _blendPropertiesGlobal._blendSrc = blendingProperties._blendSrc;
+                    _blendPropertiesGlobal._blendDest = blendingProperties._blendDest;
+                    _blendPropertiesGlobal._blendSrcAlpha = blendingProperties._blendSrcAlpha;
+                    _blendPropertiesGlobal._blendDestAlpha = blendingProperties._blendDestAlpha;
             }
 
-            _blendProperties[drawBufferIdx] = blendingProperties;
-            _blendPropertiesGlobal.reset();
+            if (blendingProperties._blendOp != crtProperties._blendOp ||
+                blendingProperties._blendOpAlpha != crtProperties._blendOpAlpha)
+            {
+                glBlendEquationSeparatei(drawBufferIdx, 
+                                            GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
+                                                                                                ? to_base(blendingProperties._blendOp)
+                                                                                                : to_base(BlendOperation::ADD)],
+                                            GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
+
+                _blendPropertiesGlobal._blendOp = blendingProperties._blendOp;
+                _blendPropertiesGlobal._blendOpAlpha = blendingProperties._blendOpAlpha;
+            }
+        } else {
+            if (blendingProperties._blendSrc != crtProperties._blendSrc ||
+                blendingProperties._blendDest != crtProperties._blendDest)
+            {
+                    glBlendFunci(drawBufferIdx,
+                                    GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                                    GLUtil::glBlendTable[to_base(blendingProperties._blendDest)]);
+
+                    _blendPropertiesGlobal._blendSrc = blendingProperties._blendSrc;
+                    _blendPropertiesGlobal._blendDest = blendingProperties._blendDest;
+            }
+
+            if (blendingProperties._blendOp != crtProperties._blendOp)
+            {
+                glBlendEquationi(drawBufferIdx,
+                                    GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
+                                                                                        ? to_base(blendingProperties._blendOp)
+                                                                                        : to_base(BlendOperation::ADD)]);
+                _blendPropertiesGlobal._blendOp = blendingProperties._blendOp;
+            }
         }
+
+        crtProperties = blendingProperties;
     }
 }
 

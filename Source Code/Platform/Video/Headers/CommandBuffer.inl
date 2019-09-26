@@ -39,8 +39,7 @@ namespace GFX {
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
 CommandBuffer::add(const T& command) {
-
-    const U8 index = static_cast<vec_size_eastl>(T::EType);
+    constexpr U8 index = static_cast<U8>(T::EType);
 
     const I24 cmdIndex = _commandCount[index]++;
     _commandOrder.emplace_back(PolyContainerEntry{ index, cmdIndex });
@@ -50,11 +49,13 @@ CommandBuffer::add(const T& command) {
         *mem = command;
     } else {
         mem = CmdAllocator<T>::allocate(command);
-        _commands.insert<T>(static_cast<vec_size_eastl>(T::EType),
-                            deleted_unique_ptr<CommandBase>(mem,
-                                [](CommandBase * cmd) {
-                                    CmdAllocator<T>::deallocate((T*)cmd);
-                                }));
+        _commands.insert<T>(index,
+                            deleted_unique_ptr<CommandBase>(
+                                mem,
+                                [](CommandBase *& cmd) {
+                                    CmdAllocator<T>::deallocate((T*&)(cmd));
+                                }
+                            ));
     }
 
     return *mem;
@@ -111,11 +112,11 @@ CommandBuffer::count() const {
     return _commands.size(to_base(T::EType));
 }
 
-inline eastl::list<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {
+inline CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() {
     return _commandOrder;
 }
 
-inline const eastl::list<CommandBuffer::CommandEntry>& CommandBuffer::operator()() const {
+inline const CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() const {
     return _commandOrder;
 }
 

@@ -21,10 +21,10 @@ namespace Divide {
     }
 
     void TransformSystem::PreUpdate(F32 dt) {
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
 
-        vector<TransformComponent*> transforms;
+        //vector<TransformComponent*> transforms;
 
         auto transform = _container->begin();
         auto transformEnd = _container->end();
@@ -47,7 +47,7 @@ namespace Divide {
     }
 
     void TransformSystem::Update(F32 dt) {
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         //vector<TransformComponent*> transforms;
         auto transform = _container->begin();
@@ -73,7 +73,7 @@ namespace Divide {
     }
 
     void TransformSystem::PostUpdate(F32 dt) {
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
         //vector<TransformComponent*> transforms;
 
         auto transform = _container->begin();

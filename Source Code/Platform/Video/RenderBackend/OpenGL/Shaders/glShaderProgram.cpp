@@ -462,31 +462,31 @@ bool glShaderProgram::shouldRecompile() const {
 
 bool glShaderProgram::recompileInternal(bool force) {
     // Invalid or not loaded yet
-    if (_handle == GLUtil::k_invalidObjectID) {
-        return true;
+    if (_handle != GLUtil::k_invalidObjectID) {
+        if (force || shouldRecompile()) {
+            // Remember bind state
+            bool wasBound = isBound();
+            if (wasBound) {
+                GL_API::getStateTracker().setActivePipeline(0u);
+            }
+
+            if (resourceName().compare("NULL") == 0) {
+                _validationQueued = false;
+                _handle = 0;
+                return true;
+            }
+
+            threadedLoad(true);
+            // Restore bind state
+            if (wasBound) {
+                bind(wasBound);
+            }
+        }
+
+        return getState() == ResourceState::RES_LOADED;
     }
 
-    if (force || shouldRecompile()) {
-        // Remember bind state
-        bool wasBound = isBound();
-        if (wasBound) {
-            GL_API::getStateTracker().setActivePipeline(0u);
-        }
-
-        if (resourceName().compare("NULL") == 0) {
-            _validationQueued = false;
-            _handle = 0;
-            return true;
-        }
-
-        threadedLoad(true);
-        // Restore bind state
-        if (wasBound) {
-            bind(wasBound);
-        }
-    }
-
-    return getState() == ResourceState::RES_LOADED;
+    return true;
 }
 
 /// Check every possible combination of flags to make sure this program can be used for rendering
