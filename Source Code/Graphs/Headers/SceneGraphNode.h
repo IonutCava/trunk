@@ -189,20 +189,20 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     bool isRelated(const SceneGraphNode& target) const;
     bool isChild(const SceneGraphNode& target, bool recursive) const;
 
-    void forEachChild(const DELEGATE_CBK<void, SceneGraphNode*>& callback);
-    void forEachChild(const DELEGATE_CBK<void, const SceneGraphNode*>& callback) const;
+    void forEachChild(DELEGATE_CBK<void, SceneGraphNode*>&& callback);
+    void forEachChild(DELEGATE_CBK<void, const SceneGraphNode*>&& callback) const;
 
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode*>& callback);
+    bool forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*>&& callback);
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode*>& callback) const;
+    bool forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*>&& callback) const;
 
-    void forEachChild(const DELEGATE_CBK<void, SceneGraphNode*, I32>& callback, U32 start, U32 end);
-    void forEachChild(const DELEGATE_CBK<void, const SceneGraphNode*, I32>& callback, U32 start, U32 end) const;
+    void forEachChild(DELEGATE_CBK<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end);
+    void forEachChild(DELEGATE_CBK<void, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const;
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode*, I32>& callback, U32 start, U32 end);
+    bool forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end);
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode*, I32>& callback, U32 start, U32 end) const;
+    bool forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const;
 
     inline bool hasChildren() const {
         return getChildCount() > 0;

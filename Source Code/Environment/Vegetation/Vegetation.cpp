@@ -80,6 +80,8 @@ Vegetation::Vegetation(GFXDevice& context,
       _treeExtents(VECTOR4_UNIT),
       _instanceCountGrass(0),
       _instanceCountTrees(0),
+      _grassDistance(100.f),
+      _treeDistance(200.f),
       _stateRefreshIntervalBufferUS(0ULL),
       _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
 {
@@ -412,8 +414,8 @@ void Vegetation::uploadVegetationData() {
 }
 
 void Vegetation::sceneUpdate(const U64 deltaTimeUS,
-                             SceneGraphNode& sgn,
-                             SceneState& sceneState) {
+    SceneGraphNode& sgn,
+    SceneState& sceneState) {
     if (!_success && getState() == ResourceState::RES_LOADED) {
         _success = true;
     }
@@ -436,8 +438,17 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
     }
 
     const SceneRenderState& renderState = _context.parent().sceneManager().getActiveScene().renderState();
-    _cullPushConstants.set("dvd_grassVisibilityDistance", GFX::PushConstantType::FLOAT, renderState.grassVisibility());
-    _cullPushConstants.set("dvd_treeVisibilityDistance", GFX::PushConstantType::FLOAT, renderState.treeVisibility());
+
+    const F32 sceneGrassDistance = renderState.grassVisibility();
+    const F32 sceneTreeDistance = renderState.treeVisibility();
+    if (sceneGrassDistance != _grassDistance) {
+        _grassDistance = sceneGrassDistance;
+        _cullPushConstants.set("dvd_grassVisibilityDistance", GFX::PushConstantType::FLOAT, _grassDistance);
+    }
+    if (sceneTreeDistance != _treeDistance) {
+        _treeDistance = sceneTreeDistance;
+        _cullPushConstants.set("dvd_treeVisibilityDistance", GFX::PushConstantType::FLOAT, _treeDistance);
+    }
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }

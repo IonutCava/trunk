@@ -173,7 +173,7 @@ public:
     static bool deleteVAOs(GLuint count, GLuint* vaos);
     static bool deleteFramebuffers(GLuint count, GLuint* framebuffers);
 
-    static void registerBufferBind(const BufferWriteData& data);
+    static void registerBufferBind(BufferWriteData&& data);
     static void registerSyncDelete(GLsync syncObject);
 
     static void lockBuffers(bool flush, U32 frameID);

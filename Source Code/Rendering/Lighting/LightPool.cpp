@@ -274,7 +274,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
                 eastl::end(sortedLights),
                 [&eyePos](Light* a, Light* b) -> bool
                 {
-                    return a->getPosition().distanceSquared(eyePos) < b->getPosition().distanceSquared(eyePos);
+                    return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
                 });
 
     {
@@ -291,7 +291,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         LightType type = static_cast<LightType>(light->getLightType());
         I32 typeIndex = to_I32(type);
 
-        if (!light->getEnabled() || !_lightTypeState[typeIndex]) {
+        if (!light->enabled() || !_lightTypeState[typeIndex]) {
             continue;
         }
         if (totalLightCount++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
@@ -305,9 +305,9 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         // So we need W = 1 for a valid positional transform
         // Directional lights use position for the light direction. 
         // So we need W = 0 for an infinite distance.
-        temp._position.set((viewMatrix * vec4<F32>(light->getPosition(), type == LightType::DIRECTIONAL ? 0.0f : 1.0f)).xyz(), light->getRange());
+        temp._position.set((viewMatrix * vec4<F32>(light->positionCache(), type == LightType::DIRECTIONAL ? 0.0f : 1.0f)).xyz(), light->getRange());
         // spot direction is not considered a point in space, so W = 0
-        temp._direction.set((viewMatrix * vec4<F32>(light->getDirection(), 0.0f)).xyz(), light->getConeAngle());
+        temp._direction.set((viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), light->getConeAngle());
 
         temp._options.x = typeIndex;
         temp._options.y = light->shadowIndex();
@@ -362,28 +362,20 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     eastl::sort(eastl::begin(sortedLights),
                 eastl::end(sortedLights),
                 [&eyePos](Light* a, Light* b) {
-                    return a->getPosition().distanceSquared(eyePos) < b->getPosition().distanceSquared(eyePos);
+                    return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
                 });
     {
         SharedLock r_lock(_lightLock);
         sortedLights.insert(eastl::cbegin(sortedLights), eastl::cbegin(_lights[0]), eastl::cend(_lights[0]));
     }
 
-    eastl::for_each(eastl::begin(sortedLights), eastl::end(sortedLights), [](Light * light) { light->shadowIndex(-1); });
-
     for (Light* light : sortedLights) {
-        if (!light->getEnabled() ||
-            !light->castsShadows() ||
-            !_lightTypeState[to_base(light->getLightType())])
-        {
-            continue;
-        }
-
-        light->shadowIndex(to_I32(_sortedShadowLights.size()));
-        _sortedShadowLights.push_back(light);
-        
-        if (_sortedShadowLights.size() == Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-            break;
+        light->shadowIndex(-1);
+        if (light->enabled() && light->castsShadows() && _lightTypeState[to_base(light->getLightType())]) {
+            if (_sortedShadowLights.size() < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+                light->shadowIndex(to_I32(_sortedShadowLights.size()));
+                _sortedShadowLights.push_back(light);
+            }
         }
     }
 }

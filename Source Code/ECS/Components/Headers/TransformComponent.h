@@ -161,10 +161,9 @@ namespace Divide {
          void setTransformDirty(TransformType type);
          void setTransformDirty(U32 typeMask);
 
-         void PreUpdate(const U64 deltaTimeUS) override;
-         void Update(const U64 deltaTimeUS) override;
-         void PostUpdate(const U64 deltaTimeUS) override;
-         void OnUpdateLoop() override;
+         void PreUpdate(const U64 deltaTimeUS) final;
+         void Update(const U64 deltaTimeUS) final;
+         void OnUpdateLoop() final;
 
          void onParentTransformDirty(U32 transformMask);
          void onParentUsageChanged(NodeUsageContext context);

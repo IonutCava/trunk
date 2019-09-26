@@ -83,11 +83,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     explicit Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool);
     virtual ~Light();
 
-    /// Is the light a shadow caster?
-    inline bool castsShadows() const { return _castsShadows; }
-    /// Does this light cast shadows?
-    inline void castsShadows(const bool state) { _castsShadows = state; }
-
     /// Get light diffuse colour
     inline void getDiffuseColour(FColour3& colourOut) const {
         Util::ToFloatColour(_colour.rgb(), colourOut);
@@ -112,12 +107,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     inline void setSpotCosOuterConeAngle(F32 newCosAngle) { _rangeAndCones.z = newCosAngle; }
 
     /// Light state (on/off)
-    inline void toggleEnabled() { setEnabled(!getEnabled()); }
-
-    inline bool getEnabled() const { return _enabled; }
-
-    /// Turn the light on/off
-    inline void setEnabled(const bool state) { _enabled = state; }
+    inline void toggleEnabled() { enabled(!enabled()); }
 
     /// Get the light type. (see LightType enum)
     inline const LightType& getLightType() const { return _type; }
@@ -182,13 +172,12 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     inline       SceneGraphNode& getSGN()       { return _sgn; }
     inline const SceneGraphNode& getSGN() const { return _sgn; }
 
-    inline const vec3<F32>& getPosition() const {
-        return _positionCache;
-    }
-
-    inline const vec3<F32>& getDirection() const {
-        return _directionCache;
-    }
+    PROPERTY_R(vec3<F32>, positionCache);
+    PROPERTY_R(vec3<F32>, directionCache);
+    /// Does this light cast shadows?
+    PROPERTY_RW(bool, castsShadows);
+    /// Turn the light on/off
+    PROPERTY_RW(bool, enabled);
 
    protected:
      friend class LightPool;
@@ -205,15 +194,10 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
    protected:
     SceneGraphNode& _sgn;
-    vec3<F32> _positionCache;
-    vec3<F32> _directionCache;
-
     /// x - range, y = iner cone, z - cos outer cone
     vec3<F32> _rangeAndCones;
     /// rgb - diffuse, a - reserved
     UColour4  _colour;
-    // does this light casts shadows?
-    bool _castsShadows;
     // Shadow mapping properties
     ShadowProperties _shadowProperties;
 
@@ -222,7 +206,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
    private:
     ShadowCameraPool _shadowCameras;
     LightPool& _parentPool;
-    bool _enabled;
     I32 _shadowIndex = -1;
 };
 

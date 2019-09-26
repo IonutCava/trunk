@@ -44,7 +44,7 @@ struct PolyContainerEntry
 #pragma pack(pop)
 
 template<typename T>
-using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
+using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*&)>>;
 
 template<typename T, U8 N>
 struct PolyContainer {

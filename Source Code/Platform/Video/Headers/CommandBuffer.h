@@ -43,8 +43,14 @@ namespace GFX {
 class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend class CommandBufferPool;
   public:
-      typedef PolyContainerEntry CommandEntry;
-      typedef PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> Container;
+      using CommandEntry = PolyContainerEntry;
+      using Container = PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)>;
+#if 0
+      using CommandOrderContainer = eastl::list<CommandEntry>;
+#else
+      using CommandOrderContainer = vectorEASTLFast<CommandEntry>;
+#endif
+
   public:
     CommandBuffer() = default;
     ~CommandBuffer() = default;
@@ -101,8 +107,8 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     bool exists(U8 typeIndex, I24 index) const;
 
-    inline eastl::list<CommandEntry>& operator()();
-    inline const eastl::list<CommandEntry>& operator()() const;
+    inline CommandOrderContainer& operator()();
+    inline const CommandOrderContainer& operator()() const;
 
     inline vec_size size() const { return _commandOrder.size(); }
     inline void clear(bool clearMemory = true);
@@ -126,10 +132,10 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     bool mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const;
 
   protected:
-    eastl::list<CommandEntry> _commandOrder;
-    std::array<I24, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
+      CommandOrderContainer _commandOrder;
+      std::array<I24, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
 
-    PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;
+      PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;
 };
 
 template<typename T>

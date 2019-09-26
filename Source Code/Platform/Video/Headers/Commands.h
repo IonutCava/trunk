@@ -52,26 +52,11 @@ struct CmdAllocator {
 
     template <class... Args>
     static T* allocate(Args&&... args) {
-#if 1
-        T* ptr = nullptr;
-        {
-            UniqueLock w_lock(s_PoolMutex);
-            ptr = s_Pool.allocate();
-        }
-        s_Pool.construct<T>(ptr, std::forward<Args>(args)...);
-        return ptr;
-#else
-        UniqueLock w_lock(s_PoolMutex);
-        return s_Pool.newElement(std::forward<Args>(args)...);
-#endif
+        return s_Pool.newElement(s_PoolMutex, std::forward<Args>(args)...);
     }
 
-    static void deallocate(T* ptr) {
-        if (ptr != nullptr) {
-            ptr->~T();
-            UniqueLock w_lock(s_PoolMutex);
-            s_Pool.deallocate(ptr);
-        }
+    static void deallocate(T*& ptr) {
+        s_Pool.deleteElement(s_PoolMutex, ptr);
     }
 };
 
@@ -83,7 +68,7 @@ decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool; \
 
 #define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> { \
 typedef Command<Name, Enum> Base; \
-inline const char* commandName() const override { return TO_STR(Enum); }
+inline const char* commandName() const final { return TO_STR(Enum); }
 
 #define END_COMMAND(Name) \
 }
@@ -135,22 +120,22 @@ struct CommandBase
 
 template<typename T, CommandType EnumVal>
 struct Command : public CommandBase {
-    inline void addToBuffer(CommandBuffer& buffer) const override {
+    inline void addToBuffer(CommandBuffer& buffer) const final {
         buffer.add(reinterpret_cast<const T&>(*this));
     }
 
-    virtual stringImpl toString(U16 indent) const {
+    virtual stringImpl toString(U16 indent) const override {
         ACKNOWLEDGE_UNUSED(indent);
         return stringImpl(commandName());
     }
 
-    static const CommandType EType = EnumVal;
+    static constexpr CommandType EType = EnumVal;
 };
 
 BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);
     const Pipeline* _pipeline = nullptr;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(BindPipelineCommand);
 
 
@@ -165,7 +150,7 @@ BEGIN_COMMAND(SendPushConstantsCommand, CommandType::SEND_PUSH_CONSTANTS);
 
     PushConstants _constants;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(SendPushConstantsCommand);
 
 
@@ -179,14 +164,14 @@ BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS);
 
     vectorEASTLFast<GenericDrawCommand> _drawCommands;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(DrawCommand);
 
 
 BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT);
     Rect<I32> _viewport;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(SetViewportCommand);
 
 BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
@@ -194,7 +179,7 @@ BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
     RTDrawDescriptor _descriptor;
     eastl::fixed_string<char, 64 + 1, false> _name = "";
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
  END_COMMAND(BeginRenderPassCommand);
 
 BEGIN_COMMAND(EndRenderPassCommand, CommandType::END_RENDER_PASS);
@@ -267,7 +252,7 @@ END_COMMAND(ComputeMipMapsCommand);
 BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR);
     Rect<I32> _rect;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(SetScissorCommand);
 
 BEGIN_COMMAND(SetBlendCommand, CommandType::SET_BLEND);
@@ -282,13 +267,13 @@ END_COMMAND(SetCameraCommand);
 BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES);
     FrustumClipPlanes _clippingPlanes;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(SetClipPlanesCommand);
 
 BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
     DescriptorSet _set;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 
 END_COMMAND(BindDescriptorSetsCommand);
 
@@ -296,7 +281,7 @@ BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
     eastl::fixed_string<char, 64 + 1, false> _scopeName;
     I32 _scopeID = -1;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(BeginDebugScopeCommand);
 
 BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE);
@@ -305,8 +290,7 @@ END_COMMAND(EndDebugScopeCommand);
 BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT);
     TextElementBatch _batch;
 
-    stringImpl toString(U16 indent) const override;
-
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(DrawTextCommand);
 
 BEGIN_COMMAND(DrawIMGUICommand, CommandType::DRAW_IMGUI);
@@ -317,14 +301,13 @@ END_COMMAND(DrawIMGUICommand);
 BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE);
     vec3<U32> _computeGroupSize;
 
-    stringImpl toString(U16 indent) const override;
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(DispatchComputeCommand);
 
 BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER);
     U8 _barrierMask = 0;
 
-    stringImpl toString(U16 indent) const override;
-
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(MemoryBarrierCommand);
 
 BEGIN_COMMAND(ReadBufferDataCommand, CommandType::READ_BUFFER_DATA);

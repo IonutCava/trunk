@@ -65,15 +65,15 @@ namespace Divide {
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID);
         /// Set a new depth range. Default is 0 - 1 with 0 mapping to the near plane and 1 to the far plane
         void setDepthRange(F32 nearVal, F32 farVal);
-        void setBlending(const BlendingProperties& blendingProperties, bool force = false);
-        inline void setBlending(bool force = false) {
-            setBlending(_blendPropertiesGlobal, force);
+        void setBlending(const BlendingProperties& blendingProperties);
+        inline void resetBlending() {
+            setBlending(_blendPropertiesGlobal);
         }
         /// Set the blending properties for the specified draw buffer
-        void setBlending(GLuint drawBufferIdx, const BlendingProperties& blendingProperties, bool force = false);
+        void setBlending(GLuint drawBufferIdx, const BlendingProperties& blendingProperties);
 
-        inline void setBlending(GLuint drawBufferIdx, bool force = false) {
-            setBlending(drawBufferIdx, _blendProperties[drawBufferIdx], force);
+        inline void resetBlending(GLuint drawBufferIdx) {
+            setBlending(drawBufferIdx, _blendProperties[drawBufferIdx]);
         }
 
         void setBlendColour(const UColour4& blendColour, bool force = false);

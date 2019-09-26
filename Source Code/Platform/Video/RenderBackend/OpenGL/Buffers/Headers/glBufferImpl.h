@@ -80,12 +80,14 @@ public:
 
     void writeData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bufferPtr data);
     void readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, const bufferPtr data);
-    void clearData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
     void zeroMem(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
 
     size_t elementSize() const;
 
     static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage);
+protected:
+    void invalidateData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
+
 protected:
     GLenum _usage = GL_NONE;
     GLuint _handle = 0;

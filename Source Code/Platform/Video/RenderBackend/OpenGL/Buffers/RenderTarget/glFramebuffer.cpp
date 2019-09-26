@@ -46,6 +46,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, glFramebuffer* parent, const Re
       _hasMultisampledColourAttachments(false),
       _framebufferHandle(0),
       _prevViewport(-1),
+      _activeReadBuffer(GL_NONE),
       _debugMessage(("FBO Begin [ " + name() + " ]"))
 {
     glCreateFramebuffers(1, &_framebufferHandle);
@@ -275,9 +276,10 @@ void glFramebuffer::fastBlit(GLuint inputFB,
                              GLenum colourAttOut,
                              ClearBufferMask mask)
 {
-    if (colourAttIn != GL_NONE) {
-        assert(colourAttOut != GL_NONE);
+    if (colourAttOut != GL_NONE) {
         glNamedFramebufferDrawBuffer(_framebufferHandle, colourAttOut);
+    }
+    if (colourAttIn != GL_NONE) {
         glNamedFramebufferReadBuffer(inputFB, colourAttIn);
     }
 
@@ -338,7 +340,25 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
             queueMipMapRecomputation(*outAtt, vec2<U32>(0, entry._outputLayer));
         }
 
-        fastBlit(input->_framebufferHandle, inputDim, outputDim, colourAttIn, colourAttOut, clearMask);
+        GLenum drawBuffer = GL_NONE;
+        bool set = _activeColourBuffers[0] != colourAttOut;
+        if (!set) {
+            for (size_t i = 1; i < _activeColourBuffers.size(); ++i) {
+                if (_activeColourBuffers[i] != GL_NONE) {
+                    set = true;
+                    break;
+                }
+            }
+        }
+        if (set) {
+            drawBuffer = colourAttOut;
+        }
+        GLenum readBuffer = GL_NONE;
+        if (input->_activeReadBuffer != colourAttIn) {
+            input->_activeReadBuffer = colourAttIn;
+            readBuffer = colourAttIn;
+        }
+        fastBlit(input->_framebufferHandle, inputDim, outputDim, readBuffer, drawBuffer, clearMask);
         
         return;
     }
@@ -358,14 +378,32 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
             const RTAttachment_ptr& outAtt = outputAttachments[entry._outputIndex];
 
             GLuint crtReadAtt = inAtt->binding();
-            if (prevReadAtt != crtReadAtt) {
-                glNamedFramebufferReadBuffer(input->_framebufferHandle, static_cast<GLenum>(crtReadAtt));
+            GLenum readBuffer = static_cast<GLenum>(crtReadAtt);
+            if (prevReadAtt != readBuffer) {
+                if (readBuffer != input->_activeReadBuffer) {
+                    input->_activeReadBuffer = readBuffer;
+                    glNamedFramebufferReadBuffer(input->_framebufferHandle, readBuffer);
+                }
                 prevReadAtt = crtReadAtt;
             }
 
             GLuint crtWriteAtt = outAtt->binding();
             if (prevWriteAtt != crtWriteAtt) {
-                glNamedFramebufferDrawBuffer(this->_framebufferHandle, static_cast<GLenum>(crtWriteAtt));
+                GLenum colourAttOut = static_cast<GLenum>(crtWriteAtt);
+                bool set = _activeColourBuffers[0] != colourAttOut;
+                if (!set) {
+                    for (size_t i = 1; i < _activeColourBuffers.size(); ++i) {
+                        if (_activeColourBuffers[i] != GL_NONE) {
+                            set = true;
+                            break;
+                        }
+                    }
+                }
+                if (set) {
+                    glNamedFramebufferDrawBuffer(this->_framebufferHandle, colourAttOut);
+                }
+
+                
                 prevWriteAtt = crtWriteAtt;
             }
 
