@@ -451,7 +451,7 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
     ShaderBufferBinding cmdBuffer = {};
     cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;
     cmdBuffer._buffer = bufferData._cmdBuffer;
-    cmdBuffer._elementRange = { 0u, cmdCount };
+    cmdBuffer._elementRange = { bufferData._cmdBufferElementOffset, cmdCount };
 
     ShaderBufferBinding dataBuffer = {};
     dataBuffer._binding = ShaderBufferLocation::NODE_INFO;

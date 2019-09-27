@@ -72,6 +72,7 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
       _prevSizeString(0),
       _prevWidthNode(0),
       _prevWidthString(0),
+      _commandBufferOffset(0u),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
       _glswState(-1),
@@ -144,10 +145,6 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
     // Clears are registered as draw calls by most software, so we do the same
     // to stay in sync with third party software
     _context.registerDrawCall();
-
-    if (global) {
-        stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-    }
 
     s_stateTrackers[window.getGUID()].init(&stateTracker);
 
@@ -996,7 +993,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
 
                         s_activeStateTracker->bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
-                        buffer->draw(cmd);
+                        buffer->draw(cmd, 0);
                     }
                 }
                 cmd._cmd.firstIndex += pcmd->ElemCount;
@@ -1048,7 +1045,7 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     static_cast<glShaderProgram&>(program).UploadPushConstants(pushConstants);
 }
 
-bool GL_API::draw(const GenericDrawCommand& cmd, I32 passIdx) {
+bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) {
     if (cmd._sourceBuffer._id == 0) {
         getStateTracker().setActiveVAO(s_dummyVAO);
 
@@ -1063,7 +1060,7 @@ bool GL_API::draw(const GenericDrawCommand& cmd, I32 passIdx) {
     } else {
         VertexDataInterface* buffer = VertexDataInterface::s_VDIPool.find(cmd._sourceBuffer);
         assert(buffer != nullptr);
-        buffer->draw(cmd, passIdx);
+        buffer->draw(cmd, cmdBufferOffset);
     }
 
     return true;
@@ -1150,6 +1147,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
                 if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
                     getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->bufferID());
+                    _commandBufferOffset = shaderBufCmd._elementRange.x;
                 } else {
                     buffer->bindRange(to_U8(shaderBufCmd._binding), shaderBufCmd._elementRange.x, shaderBufCmd._elementRange.y);
                 }
@@ -1213,9 +1211,10 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             lockBuffers(false, _context.getFrameCount());
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
-            const vectorEASTLFast<GenericDrawCommand>& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)._drawCommands;
+            const GFX::DrawCommand& crtCmd = commandBuffer.get<GFX::DrawCommand>(entry);
+            const vectorEASTLFast<GenericDrawCommand>& drawCommands = crtCmd._drawCommands;
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
-                if (draw(currentDrawCommand)) {
+                if (draw(currentDrawCommand, _commandBufferOffset)) {
                     // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now
                     lockBuffers(s_firstCommandInBuffer, _context.getFrameCount());
                     s_firstCommandInBuffer = false;

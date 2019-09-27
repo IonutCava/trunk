@@ -53,12 +53,12 @@ enum class RenderStage : U8;
 class RenderPass : private NonCopyable {
    public:
        struct BufferData {
-           U32 _renderDataElementOffset = 0;
            ShaderBuffer* _renderData = nullptr;
            ShaderBuffer* _cullCounter = nullptr;
-
-           U32* _lastCommandCount = nullptr;
            ShaderBuffer* _cmdBuffer = nullptr;
+           U32* _lastCommandCount = nullptr;
+           U32 _renderDataElementOffset = 0;
+           U32 _cmdBufferElementOffset = 0;
        };
   public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list

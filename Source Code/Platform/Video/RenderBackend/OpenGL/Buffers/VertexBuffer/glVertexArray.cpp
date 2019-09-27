@@ -295,10 +295,7 @@ bool glVertexArray::refresh() {
     return true;
 }
 
-void glVertexArray::upload(I32 passIdx) {
-
-    ACKNOWLEDGE_UNUSED(passIdx);
-
+void glVertexArray::upload() {
     Console::printfn("VAO HASHES: ");
 
     vectorEASTL<GLuint> vaos;
@@ -357,7 +354,8 @@ bool glVertexArray::createInternal() {
 }
 
 /// Render the current buffer data using the specified command
-void glVertexArray::draw(const GenericDrawCommand& command, I32 passIdx) {
+void glVertexArray::draw(const GenericDrawCommand& command, U32 cmdBufferOffset) {
+
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
     if (_IBid == 0) {
@@ -374,7 +372,7 @@ void glVertexArray::draw(const GenericDrawCommand& command, I32 passIdx) {
     }
 
     if (_uploadQueued) {
-        upload(passIdx);
+        upload();
     }
 
     GLStateTracker& stateTracker = GL_API::getStateTracker();
@@ -387,10 +385,10 @@ void glVertexArray::draw(const GenericDrawCommand& command, I32 passIdx) {
     stateTracker.bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
     if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
-        GLUtil::submitRenderCommand(command, true, true, _formatInternal);
+        GLUtil::submitRenderCommand(command, true, true, cmdBufferOffset, _formatInternal);
     } else {
         rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
-        GLUtil::submitRenderCommand(command, true, false, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
+        GLUtil::submitRenderCommand(command, true, false, cmdBufferOffset, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 }
 
