@@ -17,15 +17,16 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
 
 #define dvd_dataFlag(X) int(dvd_Matrices[X]._colourMatrix[3].w)
 
-layout(location = 0) uniform uint dvd_numEntities;
-layout(location = 1) uniform float dvd_nearPlaneDistance;
+layout(location = 0) uniform uint dvd_numEntities = 0;
+layout(location = 1) uniform float dvd_nearPlaneDistance = 0.1f;
+layout(location = 2) uniform uint dvd_commandOffset = 0;
 
 layout(local_size_x = 64) in;
 
 
 void cullNode(const in uint idx) {
     atomicCounterIncrement(culledCount);
-    dvd_drawCommands[idx].instanceCount = 0;
+    dvd_drawCommands[dvd_commandOffset + idx].instanceCount = 0;
 }
 
 void main()
@@ -37,7 +38,7 @@ void main()
         return;
     }
     
-    uint nodeIndex = dvd_drawCommands[ident].baseInstance;
+    uint nodeIndex = dvd_drawCommands[dvd_commandOffset + ident].baseInstance;
     // Skip occlusion cull if the flag is negative
     if (dvd_dataFlag(nodeIndex) < 0) {
         return;

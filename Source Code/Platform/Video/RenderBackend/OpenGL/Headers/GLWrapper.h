@@ -122,7 +122,7 @@ protected:
     void drawText(const TextElementBatch& batch);
     void drawIMGUI(ImDrawData* data, I64 windowGUID);
 
-    bool draw(const GenericDrawCommand& cmd, I32 passIdx = -1);
+    bool draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset);
 
     /// Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash) override;
@@ -264,6 +264,7 @@ private:
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
     hashMap<I64, GenericVertexData*> _IMGUIBuffers;
     Time::ProfileTimer& _swapBufferTimer;
+    U32 _commandBufferOffset = 0;
 
     static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
 

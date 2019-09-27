@@ -47,7 +47,7 @@ class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsReso
     VertexDataInterface(GFXDevice& context);
     virtual ~VertexDataInterface();
 
-    virtual void draw(const GenericDrawCommand& command, I32 passIdx = -1) = 0;
+    virtual void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) = 0;
 
     inline VDIHandle handle() const { return _handle; }
 protected:

@@ -147,6 +147,9 @@ RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIn
     ret._cmdBuffer = _cmdBuffers[idx].first;
     ret._lastCommandCount = &_cmdBuffers[idx].second;
 
+    STUBBED("ToDo: Use '_cmdBufferElementOffset' as an element offset into the draw indirect command buffer! -Ionut");
+    ret._cmdBufferElementOffset = 0u;
+
     return ret;
 }
 

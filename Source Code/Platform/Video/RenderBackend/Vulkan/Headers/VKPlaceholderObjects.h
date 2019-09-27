@@ -66,7 +66,7 @@ namespace Divide {
             : IMPrimitive(context)
         {}
 
-        void draw(const GenericDrawCommand& cmd, I32 passIdx = -1) override {}
+        void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override {}
 
         void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) override {}
 
@@ -93,7 +93,7 @@ namespace Divide {
             : VertexBuffer(context)
         {}
 
-        void draw(const GenericDrawCommand& command, I32 passIdx = -1) override {}
+        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {}
         bool queueRefresh() override { return refresh(); }
 
       protected:
@@ -127,7 +127,7 @@ namespace Divide {
 
         void create(U8 numBuffers = 1) override {}
 
-        void draw(const GenericDrawCommand& command, I32 passIdx = -1) override {}
+        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {}
 
         void setBuffer(const SetBufferParams& params) override {}
 

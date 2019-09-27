@@ -352,12 +352,12 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
 
 namespace {
 
-void submitMultiIndirectCommand(I24 cmdOffset,
+void submitMultiIndirectCommand(U32 cmdOffset,
                                 U32 drawCount,
                                 GLenum mode,
                                 GLenum internalFormat,
                                 bool drawIndexed) {
-    const size_t offset = (I32)cmdOffset * sizeof(IndirectDrawCommand);
+    const size_t offset = cmdOffset * sizeof(IndirectDrawCommand);
     if (drawIndexed) {
         glMultiDrawElementsIndirect(mode, internalFormat, (bufferPtr)offset, drawCount, sizeof(IndirectDrawCommand));
     } else {
@@ -366,12 +366,12 @@ void submitMultiIndirectCommand(I24 cmdOffset,
 }
 
 void submitIndirectCommand(const IndirectDrawCommand& cmd,
-                           I24 cmdOffset,
+                           U32 cmdOffset,
                            GLenum mode,
                            GLenum internalFormat,
                            bool drawIndexed) {
     if (drawIndexed) {
-        glDrawElementsIndirect(mode, internalFormat, (bufferPtr)((I32)cmdOffset * sizeof(IndirectDrawCommand)));
+        glDrawElementsIndirect(mode, internalFormat, (bufferPtr)(cmdOffset * sizeof(IndirectDrawCommand)));
     } else {
         // This needs a different command buffer and different IndirectDrawCommand (16byte instead of 20)
         glDrawArraysInstancedBaseInstance(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount, cmd.baseInstance);
@@ -431,6 +431,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          GLenum mode,
                          bool drawIndexed,
                          bool useIndirectBuffer,
+                         GLuint cmdBufferOffset,
                          GLenum internalFormat,
                          GLsizei* countData,
                          bufferPtr indexData) {
@@ -438,9 +439,9 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     if (useIndirectBuffer) {
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
         if (drawCommand._drawCount > 1) {
-            submitMultiIndirectCommand(drawCommand._commandOffset, drawCommand._drawCount, mode, internalFormat, drawIndexed);
+            submitMultiIndirectCommand(to_I32(drawCommand._commandOffset) + cmdBufferOffset, drawCommand._drawCount, mode, internalFormat, drawIndexed);
         } else if (drawCommand._drawCount == 1) {
-            submitIndirectCommand(drawCommand._cmd, drawCommand._commandOffset, mode, internalFormat, drawIndexed);
+            submitIndirectCommand(drawCommand._cmd, to_I32(drawCommand._commandOffset) + cmdBufferOffset, mode, internalFormat, drawIndexed);
         }
     } else {
         submitDirectMultiCommand(drawCommand._cmd, drawCommand._drawCount, mode, internalFormat, drawIndexed, countData, indexData);
@@ -452,6 +453,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool drawIndexed,
                          bool useIndirectBuffer,
+                         GLuint cmdBufferOffset,
                          GLenum internalFormat,
                          GLsizei* countData,
                          bufferPtr indexData)
@@ -482,7 +484,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         }
 
         //----- DRAW ------
-        submitRenderCommand(drawCommand, glPrimitiveTypeTable[to_base(drawCommand._primitiveType)], drawIndexed, useIndirectBuffer, internalFormat, countData, indexData);
+        submitRenderCommand(drawCommand, glPrimitiveTypeTable[to_base(drawCommand._primitiveType)], drawIndexed, useIndirectBuffer, cmdBufferOffset, internalFormat, countData, indexData);
         //-----------------
 
         if (primitiveQuery != nullptr) {
@@ -509,7 +511,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     }
 
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
-        submitRenderCommand(drawCommand, GL_LINE_LOOP, drawIndexed, useIndirectBuffer, internalFormat, countData, indexData);
+        submitRenderCommand(drawCommand, GL_LINE_LOOP, drawIndexed, useIndirectBuffer, cmdBufferOffset, internalFormat, countData, indexData);
     }
 }
 
