@@ -129,14 +129,14 @@ void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
 
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
-    immediateModeShader.setThreadedLoading(false);
-    immediateModeShader.setPropertyDescriptor(shaderDescriptor);
+    immediateModeShader.threaded(false);
+    immediateModeShader.propertyDescriptor(shaderDescriptor);
     s_imShader = CreateResource<ShaderProgram>(parentCache, immediateModeShader);
     assert(s_imShader != nullptr);
 
     shaderDescriptor._modules.clear();
     ResourceDescriptor shaderDesc("NULL");
-    shaderDesc.setPropertyDescriptor(shaderDescriptor);
+    shaderDesc.propertyDescriptor(shaderDescriptor);
     // Create a null shader (basically telling the API to not use any shaders when bound)
     s_nullShader = CreateResource<ShaderProgram>(parentCache, shaderDesc);
     // The null shader should never be nullptr!!!!
@@ -157,18 +157,18 @@ void ShaderProgram::onShutdown() {
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
-    if (!Config::Build::IS_RELEASE_BUILD) {
-        static bool onOddFrame = false;
+    static bool onOddFrame = false;
 
-        onOddFrame = !onOddFrame;
-        if (onOddFrame) {
-            SharedLock r_lock(s_programLock);
-            // Pass the update call to all registered programs
-            for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-                it.second.first->recompile(false);
-            }
+    onOddFrame = !onOddFrame;
+    SharedLock r_lock(s_programLock);
+    // Pass the update call to all registered programs
+    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+        if (!Config::Build::IS_RELEASE_BUILD && onOddFrame) {
+            it.second.first->recompile(false);
         }
+        it.second.first->update(deltaTimeUS);
     }
+
     return true;
 }
 

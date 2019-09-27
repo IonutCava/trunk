@@ -191,7 +191,7 @@ void Camera::rotatePitch(Angle::DEGREES<F32> angle) {
 }
 
 void Camera::move(F32 dx, F32 dy, F32 dz) {
-    if (_movementLocked || IS_ZERO(dx + dy + dz)) {
+    if (_movementLocked) {
         return;
     }
 

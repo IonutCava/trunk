@@ -11,7 +11,7 @@ template<>
 CachedResource_ptr ImplResourceLoader<SubMesh>::operator()() {
     SubMesh_ptr ptr;
 
-    if (_descriptor.getEnumValue() == to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+    if (_descriptor.enumValue() == to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
         ptr.reset(MemoryManager_NEW SkinnedSubMesh(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName()), DeleteResource(_cache));
     } else {
         ptr.reset(MemoryManager_NEW SubMesh(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName()), DeleteResource(_cache));
@@ -20,7 +20,7 @@ CachedResource_ptr ImplResourceLoader<SubMesh>::operator()() {
     if (!load(ptr)) {
         ptr.reset();
     } else {
-        ptr->setID(_descriptor.getID());
+        ptr->setID(_descriptor.ID());
     }
 
     return ptr;

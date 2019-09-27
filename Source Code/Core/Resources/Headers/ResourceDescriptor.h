@@ -75,6 +75,8 @@ FWD_DECLARE_MANAGED_CLASS(CachedResource);
 
 class ResourceDescriptor : public Hashable {
    public:
+       using CBK = DELEGATE_CBK<void, CachedResource_wptr>;
+
     ///resourceName is the name of the resource instance, not an actual asset name! Use "assetName" for that
     explicit ResourceDescriptor(const stringImpl& resourceName);
 
@@ -84,83 +86,34 @@ class ResourceDescriptor : public Hashable {
     ResourceDescriptor& operator=(ResourceDescriptor const& old);
     ResourceDescriptor(ResourceDescriptor&& old) noexcept;
 
-    inline const stringImpl& resourceName() const { return _resourceName; }
-    inline void resourceName(const stringImpl& name) { _resourceName = name; }
+    template <typename T>
+    inline typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, const std::shared_ptr<T>>::type
+    propertyDescriptor() const { return std::dynamic_pointer_cast<T>(_propertyDescriptor); }
 
     template <typename T>
-    inline const std::shared_ptr<T> getPropertyDescriptor() const {
-        static_assert(std::is_base_of<PropertyDescriptor, T>::value, "Invalid Property Descriptor");
-        return std::dynamic_pointer_cast<T>(_propertyDescriptor);
-    }
+    inline typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, void>::type
+    propertyDescriptor(const T& descriptor) { _propertyDescriptor.reset(new T(descriptor)); }
 
-    inline bool hasPropertyDescriptor() const {
-        return _propertyDescriptor != nullptr;
-    }
-    inline const stringImpl& assetName() const { return _assetName; }
-    inline const stringImpl& assetLocation() const { return _assetLocation; }
-
-    inline bool getFlag() const { return _flag; }
-    inline bool getThreaded() const { return _threaded; }
-    inline U32  getEnumValue() const { return _enumValue; }
-    inline U32  getID() const { return _ID; }
-    inline P32  getMask() const { return _mask; }
-    inline const vec3<U16>& getData() const { return _data; }
-    inline bool waitForReady() const { return _waitForReady; }
-
-    FORCE_INLINE const DELEGATE_CBK<void, CachedResource_wptr>& waitForReadyCbk() const { return _waitForReadyCbk; }
-    FORCE_INLINE const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback() const { return _onLoadCallback; }
-
-    inline void assetLocation(const stringImpl& assetLocation) {
-        _assetLocation = assetLocation;
-        while (_assetLocation.back() == '/') {
-            _assetLocation.pop_back();
-        }
-    }
-
-    inline void setEnumValue(U32 enumValue) { _enumValue = enumValue; }
-    inline void assetName(const stringImpl& name) { _assetName = name; }
-    inline void setFlag(bool flag) { _flag = flag; }
-    inline void setID(U32 ID) { _ID = ID; }
-    inline void setBoolMask(P32 mask) { _mask = mask; }
-    inline void setData(const vec3<U16>& data) { _data.set(data); }
-    inline void waitForReady(bool state) { _waitForReady = state; }
-
-    inline void setThreadedLoading(const bool threaded) {
-        _threaded = threaded;
-    }
-
-    template <typename T>
-    inline void setPropertyDescriptor(const T& descriptor) {
-        static_assert(std::is_base_of<PropertyDescriptor, T>::value, "Invalid Property Descriptor");
-        _propertyDescriptor.reset(new T(descriptor));
-    }
-
-    FORCE_INLINE void waitForReadyCbk(const DELEGATE_CBK<void, CachedResource_wptr>& cbk) { _waitForReadyCbk = cbk; }
-    FORCE_INLINE void setOnLoadCallback(const DELEGATE_CBK<void, CachedResource_wptr>& callback) { _onLoadCallback = callback; }
+    inline bool hasPropertyDescriptor() const { return _propertyDescriptor != nullptr; }
 
     size_t getHash() const override;
 
+    PROPERTY_RW(stringImpl, assetName); //< Resource instance name (for lookup)
+    PROPERTY_RW(stringImpl, assetLocation);
+    PROPERTY_RW(stringImpl, resourceName);
+    PROPERTY_RW(bool, flag, false);
+    PROPERTY_RW(bool, threaded, true);
+    PROPERTY_RW(bool, waitForReady, true);
+    PROPERTY_RW(U32, enumValue, 0);
+    PROPERTY_RW(U32, ID, 0);
+    PROPERTY_RW(P32, mask); //< 4 bool values representing  ... anything ...
+    PROPERTY_RW(vec3<U16>, data); //< general data
+    PROPERTY_RW(CBK, waitForReadyCbk);
+    PROPERTY_RW(CBK, onLoadCallback); //< Callback to use when the resource finished loading (includes threaded loading)
+
    private:
-    /// Resource instance name (for lookup)
-    stringImpl _resourceName;
-    /// Asset file name
-    stringImpl _assetName;
-    /// Asset file location
-    stringImpl _assetLocation;
-    bool _flag = false;
-    bool _threaded = true;
-    bool _waitForReady = true;
-    DELEGATE_CBK<void, CachedResource_wptr> _waitForReadyCbk;
-    U32 _ID = 0;
-    /// 4 bool values representing  ... anything ...
-    P32 _mask;
-    U32 _enumValue = 0;
     /// Use for extra resource properties: textures, samplers, terrain etc.
     std::shared_ptr<PropertyDescriptor> _propertyDescriptor;
-    /// Callback to use when the resource finished loading (includes threaded loading)
-    DELEGATE_CBK<void, CachedResource_wptr> _onLoadCallback;
-    /// general data
-    vec3<U16> _data;
 };
 
 };  // namespace Divide

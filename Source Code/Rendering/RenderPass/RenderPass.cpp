@@ -109,14 +109,6 @@ namespace {
 
         return ret;
     }
-
-    U32 getCmdBufferIndex(RenderStage stage, I32 passIndex) {
-        U32 ret = 0;
-        if (stage == RenderStage::SHADOW) {
-            ret = passIndex;
-        }
-        return ret;
-    }
 };
 
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag, const vector<U8>& dependencies, bool performanceCounters)
@@ -137,18 +129,16 @@ RenderPass::~RenderPass()
 }
 
 RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIndex) const {
-    U32 idx = getCmdBufferIndex(_stageFlag, passIndex);
-    idx += getCmdBufferCount(_stageFlag) * (_context.FRAME_COUNT % g_cmdBufferFrameCount);
+    U32 idx = _stageFlag == RenderStage::DISPLAY ? 0 : passIndex;
+    U32 frameOffset = _context.FRAME_COUNT % g_cmdBufferFrameCount;
 
     BufferData ret = {};
     ret._renderDataElementOffset = getBufferOffset(_stageFlag, type, passIndex);
     ret._renderData = _renderData;
 	ret._cullCounter = _cullCounter;
-    ret._cmdBuffer = _cmdBuffers[idx].first;
-    ret._lastCommandCount = &_cmdBuffers[idx].second;
-
-    STUBBED("ToDo: Use '_cmdBufferElementOffset' as an element offset into the draw indirect command buffer! -Ionut");
-    ret._cmdBufferElementOffset = 0u;
+    ret._cmdBuffer = _cmdBuffers[idx];
+    ret._lastCommandCount = &_lastNodeCount[idx * frameOffset];
+    ret._cmdBufferElementOffset = Config::MAX_VISIBLE_NODES * frameOffset;
 
     return ret;
 }
@@ -183,17 +173,18 @@ void RenderPass::initBufferData() {
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES;
+    bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES * g_cmdBufferFrameCount;
     bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._separateReadWrite = false;
 
-    U32 cmdCount = getCmdBufferCount(_stageFlag) * g_cmdBufferFrameCount;
+    U32 cmdCount = getCmdBufferCount(_stageFlag);
     _cmdBuffers.reserve(cmdCount);
+    _lastNodeCount.resize(cmdCount, 0u);
 
     for (U32 i = 0; i < cmdCount; ++i) {
         bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s_%d", TypeUtil::renderStageToString(_stageFlag), i).c_str();
-        _cmdBuffers.emplace_back(std::make_pair(_context.newSB(bufferDescriptor), 0));
+        _cmdBuffers.emplace_back(_context.newSB(bufferDescriptor));
     }
 }
 

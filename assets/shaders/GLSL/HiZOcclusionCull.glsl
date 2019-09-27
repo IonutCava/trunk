@@ -10,9 +10,22 @@ struct NodeData {
     mat4 _colourMatrix;
 };
 
+struct IndirectDrawCommand {
+    uint count;
+    uint instanceCount;
+    uint firstIndex;
+    uint baseVertex;
+    uint baseInstance;
+};
+
 layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
 {
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
+};
+
+layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
+{
+    IndirectDrawCommand dvd_drawCommands[];
 };
 
 #define dvd_dataFlag(X) int(dvd_Matrices[X]._colourMatrix[3].w)

@@ -242,10 +242,10 @@ namespace Import {
         for (const Import::SubMeshData& subMeshData : dataIn._subMeshData) {
             // Submesh is created as a resource when added to the scenegraph
             ResourceDescriptor submeshdesc(subMeshData._name);
-            submeshdesc.setFlag(true);
-            submeshdesc.setID(subMeshData._index);
+            submeshdesc.flag(true);
+            submeshdesc.ID(subMeshData._index);
             if (subMeshData._boneCount > 0) {
-                submeshdesc.setEnumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+                submeshdesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
             }
 
             tempSubMesh = CreateResource<SubMesh>(cache, submeshdesc);
@@ -283,7 +283,7 @@ namespace Import {
     Material_ptr MeshImporter::loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned) {
         ResourceDescriptor materialDesc(importData._name);
         if (skinned) {
-            materialDesc.setEnumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+            materialDesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
 
         bool wasInCache = false;
@@ -313,8 +313,8 @@ namespace Import {
                 ResourceDescriptor texture(tex._textureName);
                 texture.assetName(tex._textureName);
                 texture.assetLocation(tex._texturePath);
-                texture.setPropertyDescriptor(textureDescriptor);
-                texture.setThreadedLoading(false);
+                texture.propertyDescriptor(textureDescriptor);
+                texture.threaded(false);
                 Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
                 assert(textureRes != nullptr);
 
@@ -331,7 +331,7 @@ namespace Import {
                 //These should not be needed. We should be able to just find the resource in cache!
                 opacityDesc.assetName(diffuse->assetName());
                 opacityDesc.assetLocation(diffuse->assetLocation());
-                opacityDesc.setPropertyDescriptor(diffuse->getDescriptor());
+                opacityDesc.propertyDescriptor(diffuse->getDescriptor());
 
                 Texture_ptr textureRes = CreateResource<Texture>(cache, opacityDesc);
                 tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, Material::TextureOperation::REPLACE);

@@ -127,6 +127,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     ///  and update them in the ShaderManager if needed
     bool recompile(bool force);
 
+    virtual void update(const U64 deltaTimeUS) = 0;
+
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline vec_size getFunctionCount(ShaderType shader) {
         return _functionIndex[to_U32(shader)].size();
@@ -201,6 +203,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static I32 shaderProgramCount() { return s_shaderCount.load(std::memory_order_relaxed); }
 
     const char* getResourceTypeName() const override { return "ShaderProgram"; }
+
+    PROPERTY_RW(bool, highPriority, true);
 
    protected:
      virtual bool recompileInternal(bool force) = 0;

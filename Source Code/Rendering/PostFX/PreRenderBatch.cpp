@@ -154,8 +154,8 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         mapDescriptor1._modules.push_back(fragModule);
 
         ResourceDescriptor toneMap("toneMap");
-        toneMap.setThreadedLoading(false);
-        toneMap.setPropertyDescriptor(mapDescriptor1);
+        toneMap.threaded(false);
+        toneMap.propertyDescriptor(mapDescriptor1);
 
         _toneMap = CreateResource<ShaderProgram>(_resCache, toneMap);
     
@@ -170,8 +170,8 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         toneMapAdaptiveDescriptor._modules.push_back(fragModule);
 
         ResourceDescriptor toneMapAdaptive("toneMap.Adaptive");
-        toneMapAdaptive.setThreadedLoading(false);
-        toneMapAdaptive.setPropertyDescriptor(toneMapAdaptiveDescriptor);
+        toneMapAdaptive.threaded(false);
+        toneMapAdaptive.propertyDescriptor(toneMapAdaptiveDescriptor);
 
         _toneMapAdaptive = CreateResource<ShaderProgram>(_resCache, toneMapAdaptive);
     }
@@ -190,8 +190,8 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         calcDescriptor._modules.push_back(fragModule);
 
         ResourceDescriptor luminanceCalc("luminanceCalc");
-        luminanceCalc.setThreadedLoading(false);
-        luminanceCalc.setPropertyDescriptor(calcDescriptor);
+        luminanceCalc.threaded(false);
+        luminanceCalc.propertyDescriptor(calcDescriptor);
         _luminanceCalc = CreateResource<ShaderProgram>(_resCache, luminanceCalc);
     }
 

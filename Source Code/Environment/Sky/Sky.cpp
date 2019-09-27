@@ -69,16 +69,16 @@ bool Sky::load() {
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.assetName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");
     skyboxTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    skyboxTextures.setPropertyDescriptor(skyboxTexture);
+    skyboxTextures.propertyDescriptor(skyboxTexture);
     skyboxTextures.waitForReady(false);
     _skybox = CreateResource<Texture>(_parentCache, skyboxTextures);
 
     F32 radius = _diameter * 0.5f;
 
     ResourceDescriptor skybox("SkyBox");
-    skybox.setFlag(true);  // no default material;
-    skybox.setID(4); // resolution
-    skybox.setEnumValue(to_U32(radius)); // radius
+    skybox.flag(true);  // no default material;
+    skybox.ID(4); // resolution
+    skybox.enumValue(to_U32(radius)); // radius
     _sky = CreateResource<Sphere3D>(_parentCache, skybox);
     _sky->renderState().setDrawState(false);
 
@@ -97,7 +97,7 @@ bool Sky::load() {
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor skyShaderDescriptor("sky_Display");
-    skyShaderDescriptor.setPropertyDescriptor(shaderDescriptor);
+    skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
     skyShaderDescriptor.waitForReady(false);
     _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor);
 
@@ -109,7 +109,7 @@ bool Sky::load() {
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky_PrePass");
     skyShaderPrePassDescriptor.waitForReady(false);
-    skyShaderPrePassDescriptor.setPropertyDescriptor(shaderDescriptor);
+    skyShaderPrePassDescriptor.propertyDescriptor(shaderDescriptor);
     _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor);
 
     assert(_skyShader && _skyShaderPrePass);

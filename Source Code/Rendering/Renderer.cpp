@@ -30,8 +30,8 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     cullDescritpor._modules.push_back(computeDescriptor);
 
     ResourceDescriptor cullShaderDesc("lightCull");
-    cullShaderDesc.setThreadedLoading(false);
-    cullShaderDesc.setPropertyDescriptor(cullDescritpor);
+    cullShaderDesc.threaded(false);
+    cullShaderDesc.propertyDescriptor(cullDescritpor);
 
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
 

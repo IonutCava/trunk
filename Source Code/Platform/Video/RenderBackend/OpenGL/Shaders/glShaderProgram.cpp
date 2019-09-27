@@ -24,6 +24,8 @@
 namespace Divide {
 
 namespace {
+    constexpr U32 s_maxShaderUploadsPerFrame = 3;
+
     //ref: https://stackoverflow.com/questions/14858017/using-boost-wave
     class custom_directives_hooks : public boost::wave::context_policies::default_preprocessing_hooks
     {
@@ -86,6 +88,7 @@ namespace {
 SharedMutex glShaderProgram::s_atomLock;
 ShaderProgram::AtomMap glShaderProgram::s_atoms;
 I64 glShaderProgram::s_shaderFileWatcherID = -1;
+GLuint glShaderProgram::s_shadersUploadedThisFrame = 0;
 std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 stringImpl glShaderProgram::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
 U64 glShaderProgram::shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
@@ -192,6 +195,10 @@ void glShaderProgram::rebindStages() {
 }
 
 void glShaderProgram::validatePreBind() {
+    if (!_highPriority && s_shadersUploadedThisFrame++ > s_maxShaderUploadsPerFrame) {
+        return;
+    }
+
     if (!isValid()) {
         assert(getState() == ResourceState::RES_LOADED);
         glCreateProgramPipelines(1, &_handle);
@@ -457,6 +464,14 @@ bool glShaderProgram::shouldRecompile() const {
     }
 
     return false;
+}
+
+void glShaderProgram::update(const U64 deltaTimeUS) {
+    ACKNOWLEDGE_UNUSED(deltaTimeUS);
+
+    if (s_shadersUploadedThisFrame > 0u) {
+        s_shadersUploadedThisFrame = 0u;
+    }
 }
 
 bool glShaderProgram::recompileInternal(bool force) {

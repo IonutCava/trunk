@@ -59,7 +59,7 @@ bool InfinitePlane::load() {
     ResourceDescriptor textureWaterCaustics("Plane Water Caustics");
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     textureWaterCaustics.assetName("terrain_water_caustics.jpg");
-    textureWaterCaustics.setPropertyDescriptor(miscTexDescriptor);
+    textureWaterCaustics.propertyDescriptor(miscTexDescriptor);
 
     planeMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics));
 
@@ -79,7 +79,7 @@ bool InfinitePlane::load() {
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor terrainShader("terrainPlane_Colour");
-    terrainShader.setPropertyDescriptor(shaderDescriptor);
+    terrainShader.propertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(_parentCache, terrainShader);
 
     planeMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY);
@@ -92,15 +92,15 @@ bool InfinitePlane::load() {
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor terrainShaderPrePass("terrainPlane_PrePass");
-    terrainShaderPrePass.setPropertyDescriptor(shaderDescriptor);
+    terrainShaderPrePass.propertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(_parentCache, terrainShaderPrePass);
     planeMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);
 
     setMaterialTpl(planeMaterial);
 
     ResourceDescriptor infinitePlane("infinitePlane");
-    infinitePlane.setFlag(true);  // No default material
-    infinitePlane.setThreadedLoading(false);
+    infinitePlane.flag(true);  // No default material
+    infinitePlane.threaded(false);
 
     _plane = CreateResource<Quad3D>(_parentCache, infinitePlane);
     

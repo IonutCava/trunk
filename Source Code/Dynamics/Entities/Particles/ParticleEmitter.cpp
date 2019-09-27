@@ -134,7 +134,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor particleShader(useTexture ? "particles_WithTexture" : "particles_NoTexture");
-    particleShader.setPropertyDescriptor(shaderDescriptor);
+    particleShader.propertyDescriptor(shaderDescriptor);
     _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShader);
 
     fragModule._variant = "Shadow";
@@ -144,7 +144,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles_Shadow");
-    particleDepthShaderDescriptor.setPropertyDescriptor(shaderDescriptor);
+    particleDepthShaderDescriptor.propertyDescriptor(shaderDescriptor);
     _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
 
     if (_particleShader != nullptr) {
@@ -219,7 +219,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
         textureDescriptor._srgb = true;
 
         ResourceDescriptor texture(_particles->_textureFileName);
-        texture.setPropertyDescriptor(textureDescriptor);
+        texture.propertyDescriptor(textureDescriptor);
 
         _particleTexture = CreateResource<Texture>(_parentCache, texture);
     }

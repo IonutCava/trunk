@@ -188,7 +188,7 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
     ResourceDescriptor music(name);
     music.assetName(musicFile);
     music.assetLocation(musicFilePath);
-    music.setFlag(true);
+    music.flag(true);
     hashAlg::insert(state().music(type),
                     _ID(name.c_str()),
                     CreateResource<AudioDescriptor>(_resCache, music));
@@ -327,7 +327,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
             if (!modelName.empty()) {
                 _loadingTasks.fetch_add(1);
                 ResourceDescriptor item(sceneNode.name);
-                item.setOnLoadCallback(loadModelComplete);
+                item.onLoadCallback(loadModelComplete);
                 item.assetName(modelName);
                 item.waitForReadyCbk(waitForReasoureTask);
                 //item.waitForReady(waitForReady);
@@ -340,7 +340,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
                     P32 quadMask;
                     quadMask.i = 0;
                     quadMask.b[0] = 1;
-                    item.setBoolMask(quadMask);
+                    item.mask(quadMask);
                     ret = CreateResource<Quad3D>(_resCache, item);
                     static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
                     static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
@@ -387,11 +387,11 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
                 ResourceDescriptor model(modelName);
                 model.assetLocation(Paths::g_assetsLocation + "models");
                 model.assetName(modelName);
-                model.setFlag(true);
-                model.setThreadedLoading(false);
+                model.flag(true);
+                model.threaded(false);
                 model.waitForReady(waitForReady);
                 model.waitForReadyCbk(waitForReasoureTask);
-                model.setOnLoadCallback(loadModelComplete);
+                model.onLoadCallback(loadModelComplete);
                 ret = CreateResource<Mesh>(_resCache, model);
             }
 
@@ -513,10 +513,10 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     };
 
     ResourceDescriptor descriptor(ter->getVariable("terrainName"));
-    descriptor.setPropertyDescriptor(*ter);
-    descriptor.setThreadedLoading(true);
-    descriptor.setOnLoadCallback(registerTerrain);
-    descriptor.setFlag(ter->getActive());
+    descriptor.propertyDescriptor(*ter);
+    descriptor.threaded(true);
+    descriptor.onLoadCallback(registerTerrain);
+    descriptor.flag(ter->getActive());
     descriptor.waitForReady(false);
     CreateResource<Terrain>(_resCache, descriptor);
 }
@@ -556,7 +556,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
 
 SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
-    skyDescriptor.setID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
+    skyDescriptor.ID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
@@ -605,8 +605,8 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
     };
 
     ResourceDescriptor waterDescriptor("Water_" + nodeName);
-    waterDescriptor.setThreadedLoading(true);
-    waterDescriptor.setOnLoadCallback(registerWater);
+    waterDescriptor.threaded(true);
+    waterDescriptor.onLoadCallback(registerWater);
     waterDescriptor.waitForReady(false);
     CreateResource<WaterPlane>(_resCache, waterDescriptor);
 }
@@ -621,8 +621,8 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
 
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
 
-    planeDescriptor.setID(to_U32(baseCamera->getZPlanes().max));
-    planeDescriptor.setOnLoadCallback(registerPlane);
+    planeDescriptor.ID(to_U32(baseCamera->getZPlanes().max));
+    planeDescriptor.onLoadCallback(registerPlane);
 
     std::shared_ptr<InfinitePlane> planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
     DIVIDE_ASSERT(planeItem != nullptr, "Scene::addInfPlane error: Could not create infinite plane resource!");

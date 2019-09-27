@@ -100,8 +100,8 @@ Vegetation::Vegetation(GFXDevice& context,
             {
                 ResourceDescriptor model("Tree");
                 model.assetLocation(Paths::g_assetsLocation + "models");
-                model.setFlag(true);
-                model.setThreadedLoading(false); //< we need the extents asap!
+                model.flag(true);
+                model.threaded(false); //< we need the extents asap!
                 model.assetName(meshName);
                 Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
                 meshPtr->setMaterialTpl(s_treeMaterial);
@@ -116,7 +116,7 @@ Vegetation::Vegetation(GFXDevice& context,
     }
 
     ResourceDescriptor instanceCullShaderGrass("instanceCullVegetation_Grass");
-    instanceCullShaderGrass.setThreadedLoading(true);
+    instanceCullShaderGrass.threaded(true);
     assert(s_maxGrassInstancesPerChunk != 0u && "Vegetation error: call \"precomputeStaticData\" first!");
 
     ShaderModuleDescriptor compModule = {};
@@ -129,8 +129,8 @@ Vegetation::Vegetation(GFXDevice& context,
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(compModule);
 
-    instanceCullShaderGrass.setPropertyDescriptor(shaderDescriptor);
-    instanceCullShaderGrass.setOnLoadCallback([this](CachedResource_wptr res) {
+    instanceCullShaderGrass.propertyDescriptor(shaderDescriptor);
+    instanceCullShaderGrass.onLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getGUID();
         _cullPipelineGrass = _context.newPipeline(pipeDesc);
@@ -146,9 +146,9 @@ Vegetation::Vegetation(GFXDevice& context,
     shaderDescriptor._modules.push_back(compModule);
 
     ResourceDescriptor instanceCullShaderTrees("instanceCullVegetation_Trees");
-    instanceCullShaderTrees.setThreadedLoading(true);
-    instanceCullShaderTrees.setPropertyDescriptor(shaderDescriptor);
-    instanceCullShaderTrees.setOnLoadCallback([this](CachedResource_wptr res) {
+    instanceCullShaderTrees.threaded(true);
+    instanceCullShaderTrees.propertyDescriptor(shaderDescriptor);
+    instanceCullShaderTrees.onLoadCallback([this](CachedResource_wptr res) {
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = std::static_pointer_cast<ShaderProgram>(res.lock())->getGUID();
         _cullPipelineTrees = _context.newPipeline(pipeDesc);

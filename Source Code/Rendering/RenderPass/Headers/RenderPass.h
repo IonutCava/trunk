@@ -93,7 +93,8 @@ class RenderPass : private NonCopyable {
     ShaderBuffer* _renderData = nullptr;
 	ShaderBuffer* _cullCounter = nullptr;
 	const bool _performanceCounters;
-    mutable vectorEASTL<std::pair<ShaderBuffer*, U32>> _cmdBuffers;
+    mutable vectorEASTL<ShaderBuffer*> _cmdBuffers;
+    mutable vectorEASTL<U32> _lastNodeCount;
 };
 
 };  // namespace Divide
