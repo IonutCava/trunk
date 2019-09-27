@@ -26,7 +26,7 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
         _descriptor.assetLocation(Paths::g_assetsLocation + Paths::g_shadersLocation);
     }
 
-    const std::shared_ptr<ShaderProgramDescriptor>& shaderDescriptor = _descriptor.getPropertyDescriptor<ShaderProgramDescriptor>();
+    const std::shared_ptr<ShaderProgramDescriptor>& shaderDescriptor = _descriptor.propertyDescriptor<ShaderProgramDescriptor>();
     assert(shaderDescriptor != nullptr);
 
     ShaderProgram_ptr ptr(_context.gfx().newShaderProgram(_loadingDescriptorHash,
@@ -34,7 +34,7 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
                                                           _descriptor.assetName(),
                                                           _descriptor.assetLocation(),
                                                           *shaderDescriptor,
-                                                          USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
+                                                          USE_THREADED_SHADER_LOAD ? _descriptor.threaded()
                                                                                    : false),
                           DeleteResource(_cache));
 

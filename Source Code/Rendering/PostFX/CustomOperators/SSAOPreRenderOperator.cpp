@@ -69,7 +69,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     noiseDescriptor.setSampler(noiseSampler);
 
     ResourceDescriptor textureAttachment(attachmentName);
-    textureAttachment.setPropertyDescriptor(noiseDescriptor);
+    textureAttachment.propertyDescriptor(noiseDescriptor);
     _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
    
@@ -122,7 +122,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ssaoShaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor ssaoGenerate("SSAOCalc");
-    ssaoGenerate.setPropertyDescriptor(ssaoShaderDescriptor);
+    ssaoGenerate.propertyDescriptor(ssaoShaderDescriptor);
     ssaoGenerate.waitForReady(false);
     _ssaoGenerateShader = CreateResource<ShaderProgram>(cache, ssaoGenerate);
 
@@ -135,7 +135,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ssaoShaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor ssaoBlur("SSAOBlur");
-    ssaoBlur.setPropertyDescriptor(ssaoShaderDescriptor);
+    ssaoBlur.propertyDescriptor(ssaoShaderDescriptor);
     ssaoBlur.waitForReady(false);
     _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
     
@@ -147,7 +147,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ssaoShaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor ssaoApply("SSAOApply");
-    ssaoApply.setPropertyDescriptor(ssaoShaderDescriptor);
+    ssaoApply.propertyDescriptor(ssaoShaderDescriptor);
     ssaoApply.waitForReady(false);
     _ssaoApplyShader = CreateResource<ShaderProgram>(cache, ssaoApply);
 

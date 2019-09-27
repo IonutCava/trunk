@@ -109,8 +109,8 @@ void LightPool::init() {
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
-    lightImpostorShader.setThreadedLoading(false);
-    lightImpostorShader.setPropertyDescriptor(shaderDescriptor);
+    lightImpostorShader.threaded(false);
+    lightImpostorShader.propertyDescriptor(shaderDescriptor);
     lightImpostorShader.waitForReady(false);
     _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader);
 
@@ -127,10 +127,10 @@ void LightPool::init() {
     iconDescriptor._srgb = true;
 
     ResourceDescriptor iconImage("LightIconTexture");
-    iconImage.setThreadedLoading(false);
+    iconImage.threaded(false);
     iconImage.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     iconImage.assetName("lightIcons.png");
-    iconImage.setPropertyDescriptor(iconDescriptor);
+    iconImage.propertyDescriptor(iconDescriptor);
 
     _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);
 

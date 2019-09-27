@@ -62,8 +62,8 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     postFXShaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor postFXShader("postProcessing");
-    postFXShader.setThreadedLoading(false);
-    postFXShader.setPropertyDescriptor(postFXShaderDescriptor);
+    postFXShader.threaded(false);
+    postFXShader.propertyDescriptor(postFXShaderDescriptor);
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
     _drawConstants.set("_noiseTile", GFX::PushConstantType::FLOAT, 0.1f);
     _drawConstants.set("_noiseFactor", GFX::PushConstantType::FLOAT, 0.02f);
@@ -89,22 +89,22 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.assetName("terrain_water_NM.jpg");
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    textureWaterCaustics.setPropertyDescriptor(texDescriptor);
-    textureWaterCaustics.setThreadedLoading(false);
+    textureWaterCaustics.propertyDescriptor(texDescriptor);
+    textureWaterCaustics.threaded(false);
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
     ResourceDescriptor noiseTexture("noiseTexture");
     noiseTexture.assetName("bruit_gaussien.jpg");
     noiseTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    noiseTexture.setPropertyDescriptor(texDescriptor);
-    noiseTexture.setThreadedLoading(false);
+    noiseTexture.propertyDescriptor(texDescriptor);
+    noiseTexture.threaded(false);
     _noise = CreateResource<Texture>(cache, noiseTexture);
 
     ResourceDescriptor borderTexture("borderTexture");
     borderTexture.assetName("vignette.jpeg");
     borderTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    borderTexture.setPropertyDescriptor(texDescriptor);
-    borderTexture.setThreadedLoading(false);
+    borderTexture.propertyDescriptor(texDescriptor);
+    borderTexture.threaded(false);
     _screenBorder = CreateResource<Texture>(cache, borderTexture);
 
     PipelineDescriptor pipelineDescriptor;

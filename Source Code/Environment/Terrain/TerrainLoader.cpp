@@ -65,25 +65,25 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     // Blend maps
     ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name);
     textureBlendMap.assetLocation(terrainLocation);
-    textureBlendMap.setFlag(true);
+    textureBlendMap.flag(true);
     textureBlendMap.waitForReadyCbk(waitForReasoureTask);
 
     // Albedo maps and roughness
     ResourceDescriptor textureAlbedoMaps("Terrain Albedo Maps_" + name);
     textureAlbedoMaps.assetLocation(climatesLocation(textureQuality));
-    textureAlbedoMaps.setFlag(true);
+    textureAlbedoMaps.flag(true);
     textureAlbedoMaps.waitForReadyCbk(waitForReasoureTask);
 
     // Normals
     ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
     textureNormalMaps.assetLocation(climatesLocation(textureQuality));
-    textureNormalMaps.setFlag(true);
+    textureNormalMaps.flag(true);
     textureNormalMaps.waitForReadyCbk(waitForReasoureTask);
 
     // AO and displacement
     ResourceDescriptor textureExtraMaps("Terrain Extra Maps_" + name);
     textureExtraMaps.assetLocation(climatesLocation(textureQuality));
-    textureExtraMaps.setFlag(true);
+    textureExtraMaps.flag(true);
     textureExtraMaps.waitForReadyCbk(waitForReasoureTask);
 
     //temp data
@@ -227,16 +227,16 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     extraDescriptor._srgb = false;
 
     textureBlendMap.assetName(blendMapArray);
-    textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
+    textureBlendMap.propertyDescriptor(blendMapDescriptor);
 
     textureAlbedoMaps.assetName(albedoMapArray);
-    textureAlbedoMaps.setPropertyDescriptor(albedoDescriptor);
+    textureAlbedoMaps.propertyDescriptor(albedoDescriptor);
 
     textureNormalMaps.assetName(normalMapArray);
-    textureNormalMaps.setPropertyDescriptor(normalDescriptor);
+    textureNormalMaps.propertyDescriptor(normalDescriptor);
 
     textureExtraMaps.assetName(extraMapArray);
-    textureExtraMaps.setPropertyDescriptor(extraDescriptor);
+    textureExtraMaps.propertyDescriptor(extraDescriptor);
 
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
     Material_ptr terrainMaterial = CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
@@ -296,7 +296,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ResourceDescriptor textureWaterCaustics("Terrain Helper Textures_" + name);
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     textureWaterCaustics.assetName(helperTextures);
-    textureWaterCaustics.setPropertyDescriptor(helperTexDescriptor);
+    textureWaterCaustics.propertyDescriptor(helperTexDescriptor);
     textureWaterCaustics.waitForReadyCbk(waitForReasoureTask);
 
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
@@ -307,9 +307,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_SHORT);
     heightMapDescriptor.setSampler(heightMapSampler);
     heightMapDescriptor.automaticMipMapGeneration(false);
-    heightMapTexture.setPropertyDescriptor(heightMapDescriptor);
+    heightMapTexture.propertyDescriptor(heightMapDescriptor);
 
-    heightMapTexture.setFlag(true);
+    heightMapTexture.flag(true);
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_SPLAT, CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps));
@@ -424,7 +424,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     ResourceDescriptor terrainShaderShadow("Terrain_Shadow-" + name);
-    terrainShaderShadow.setPropertyDescriptor(shadowDescriptor);
+    terrainShaderShadow.propertyDescriptor(shadowDescriptor);
     terrainShaderShadow.waitForReadyCbk(waitForReasoureTask);
 
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
@@ -446,7 +446,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name);
-    terrainShaderColour.setPropertyDescriptor(colourDescriptor);
+    terrainShaderColour.propertyDescriptor(colourDescriptor);
     terrainShaderColour.waitForReadyCbk(waitForReasoureTask);
 
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
@@ -458,7 +458,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name);
-    terrainShaderPrePass.setPropertyDescriptor(prePassDescriptor);
+    terrainShaderPrePass.propertyDescriptor(prePassDescriptor);
     terrainShaderPrePass.waitForReadyCbk(waitForReasoureTask);
 
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
@@ -476,7 +476,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     ResourceDescriptor terrainShaderPrePassLQ("Terrain_PrePass_LowQuality-" + name);
-    terrainShaderPrePassLQ.setPropertyDescriptor(prePassDescriptorLQ);
+    terrainShaderPrePassLQ.propertyDescriptor(prePassDescriptorLQ);
     terrainShaderPrePassLQ.waitForReadyCbk(waitForReasoureTask);
 
     ShaderProgram_ptr terrainPrePassShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePassLQ);
@@ -495,7 +495,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name);
-    terrainShaderColourLQ.setPropertyDescriptor(lowQualityDescriptor);
+    terrainShaderColourLQ.propertyDescriptor(lowQualityDescriptor);
     terrainShaderColourLQ.waitForReadyCbk(waitForReasoureTask);
 
     ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColourLQ);
@@ -768,7 +768,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("vegetationTextureLocation"));
     textureDetailMaps.assetName(textureName);
-    textureDetailMaps.setPropertyDescriptor(grassTexDescriptor);
+    textureDetailMaps.propertyDescriptor(grassTexDescriptor);
     
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
 
@@ -805,7 +805,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor grassColourShader("GrassColour");
-    grassColourShader.setPropertyDescriptor(shaderDescriptor);
+    grassColourShader.propertyDescriptor(shaderDescriptor);
     grassColourShader.waitForReady(false);
     ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader);
 
@@ -814,7 +814,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
 
     ResourceDescriptor grassColourOITShader("grassColourOIT");
-    grassColourOITShader.setPropertyDescriptor(shaderOitDescriptor);
+    grassColourOITShader.propertyDescriptor(shaderOitDescriptor);
     grassColourOITShader.waitForReady(false);
     ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader);
 
@@ -824,7 +824,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor grassPrePassShader("grassPrePass");
-    grassPrePassShader.setPropertyDescriptor(shaderDescriptor);
+    grassPrePassShader.propertyDescriptor(shaderDescriptor);
     grassPrePassShader.waitForReady(false);
     ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader);
 
@@ -834,7 +834,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor grassShadowShader("grassShadow");
-    grassShadowShader.setPropertyDescriptor(shaderDescriptor);
+    grassShadowShader.propertyDescriptor(shaderDescriptor);
     grassShadowShader.waitForReady(false);
     ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
 

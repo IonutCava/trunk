@@ -90,8 +90,8 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
 
     ResourceDescriptor textureAttachment(texName);
     textureAttachment.assetName(texName);
-    textureAttachment.setThreadedLoading(false);
-    textureAttachment.setPropertyDescriptor(descriptor._texDescriptor);
+    textureAttachment.threaded(false);
+    textureAttachment.propertyDescriptor(descriptor._texDescriptor);
 
     GFXDevice& context = _parent.context();
     ResourceCache& parentCache = context.parent().resourceCache();

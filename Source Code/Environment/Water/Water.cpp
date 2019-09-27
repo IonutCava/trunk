@@ -60,12 +60,12 @@ bool WaterPlane::load() {
     ResourceDescriptor waterTexture("waterTexture_" + name);
     waterTexture.assetName("terrain_water_NM.jpg");
     waterTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    waterTexture.setPropertyDescriptor(texDescriptor);
+    waterTexture.propertyDescriptor(texDescriptor);
 
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
     waterTextureDUDV.assetName("water_dudv.jpg");
     waterTextureDUDV.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    waterTextureDUDV.setPropertyDescriptor(texDescriptor);
+    waterTextureDUDV.propertyDescriptor(texDescriptor);
 
     Texture_ptr waterNM = CreateResource<Texture>(_parentCache, waterTexture);
     assert(waterNM != nullptr);
@@ -101,7 +101,7 @@ bool WaterPlane::load() {
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor waterColourShader("water");
-    waterColourShader.setPropertyDescriptor(shaderDescriptor);
+    waterColourShader.propertyDescriptor(shaderDescriptor);
     waterColourShader.waitForReady(false);
     ShaderProgram_ptr waterColour = CreateResource<ShaderProgram>(_parentCache, waterColourShader);
 
@@ -114,7 +114,7 @@ bool WaterPlane::load() {
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor waterPrePassShader("waterPrePass");
-    waterPrePassShader.setPropertyDescriptor(shaderDescriptor);
+    waterPrePassShader.propertyDescriptor(shaderDescriptor);
     waterPrePassShader.waitForReady(false);
     ShaderProgram_ptr waterPrePass = CreateResource<ShaderProgram>(_parentCache, waterPrePassShader);
 
@@ -125,8 +125,8 @@ bool WaterPlane::load() {
     setMaterialTpl(waterMat);
     
     ResourceDescriptor waterPlane("waterPlane");
-    waterPlane.setFlag(true);  // No default material
-    waterPlane.setThreadedLoading(false);
+    waterPlane.flag(true);  // No default material
+    waterPlane.threaded(false);
 
     _plane = CreateResource<Quad3D>(_parentCache, waterPlane);
     

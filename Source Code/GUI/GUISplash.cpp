@@ -30,10 +30,10 @@ GUISplash::GUISplash(ResourceCache& cache,
     splashDescriptor.setSampler(splashSampler);
 
     ResourceDescriptor splashImage("SplashScreen Texture");
-    splashImage.setThreadedLoading(false);
+    splashImage.threaded(false);
     splashImage.assetName(splashImageName);
     splashImage.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    splashImage.setPropertyDescriptor(splashDescriptor);
+    splashImage.propertyDescriptor(splashDescriptor);
 
     _splashImage = CreateResource<Texture>(cache, splashImage);
 
@@ -51,8 +51,8 @@ GUISplash::GUISplash(ResourceCache& cache,
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor splashShader("fbPreview");
-    splashShader.setPropertyDescriptor(shaderDescriptor);
-    splashShader.setThreadedLoading(false);
+    splashShader.propertyDescriptor(shaderDescriptor);
+    splashShader.threaded(false);
     _splashShader = CreateResource<ShaderProgram>(cache, splashShader);
 }
 

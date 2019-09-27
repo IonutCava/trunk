@@ -165,7 +165,7 @@ bool MainScene::load(const stringImpl& name) {
                                   to_base(ComponentType::NAVIGATION);
 
     ResourceDescriptor infiniteWater("waterEntity");
-    infiniteWater.setData(vec3<U16>(baseCamera->getZPlanes().y));
+    infiniteWater.data(vec3<U16>(baseCamera->getZPlanes().y));
     WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
 
     SceneGraphNodeDescriptor waterNodeDescriptor;
@@ -202,7 +202,7 @@ bool MainScene::load(const stringImpl& name) {
         ResourceDescriptor beepSound("beep sound");
         beepSound.assetName("beep.wav");
         beepSound.assetLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
-        beepSound.setFlag(false);
+        beepSound.flag(false);
         _beep = CreateResource<AudioDescriptor>(_resCache, beepSound);
 
         return true;

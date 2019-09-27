@@ -13,15 +13,15 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
                                                              _cache,
                                                              _loadingDescriptorHash,
                                                              _descriptor.resourceName(),
-                                                             _descriptor.getEnumValue() == 0
-                                                                                         ? 1.0f
-                                                                                         : to_F32(_descriptor.getEnumValue()),
-                                                             _descriptor.getID() == 0 
-                                                                                  ? 32 
-                                                                                  : _descriptor.getID()),
+                                                             _descriptor.enumValue() == 0
+                                                                                      ? 1.0f
+                                                                                      : to_F32(_descriptor.enumValue()),
+                                                             _descriptor.ID() == 0 
+                                                                               ? 32 
+                                                                               : _descriptor.ID()),
                                   DeleteResource(_cache));
 
-    if (!_descriptor.getFlag()) {
+    if (!_descriptor.flag()) {
         ResourceDescriptor matDesc("Material_" + _descriptor.resourceName());
         Material_ptr matTemp = CreateResource<Material>(_cache, matDesc);
         matTemp->setShadingMode(Material::ShadingMode::BLINN_PHONG);

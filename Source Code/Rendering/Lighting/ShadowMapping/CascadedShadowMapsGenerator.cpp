@@ -58,8 +58,8 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor blurDepthMapShader(Util::StringFormat("GaussBlur_%d_invocations", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
-    blurDepthMapShader.setThreadedLoading(false);
-    blurDepthMapShader.setPropertyDescriptor(shaderDescriptor);
+    blurDepthMapShader.threaded(false);
+    blurDepthMapShader.propertyDescriptor(shaderDescriptor);
 
     _blurDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), blurDepthMapShader);
     _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);

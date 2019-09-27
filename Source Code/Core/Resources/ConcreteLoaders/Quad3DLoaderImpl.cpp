@@ -13,7 +13,7 @@ CachedResource_ptr ImplResourceLoader<Quad3D>::operator()() {
                                                          _cache,
                                                          _loadingDescriptorHash,
                                                          _descriptor.resourceName(),
-                                                         _descriptor.getMask().b[0] == 0),
+                                                         _descriptor.mask().b[0] == 0),
                                 DeleteResource(_cache));
 
     if (!load(ptr)) {

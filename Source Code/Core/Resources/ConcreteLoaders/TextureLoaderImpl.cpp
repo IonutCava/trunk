@@ -25,7 +25,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     // Samplers are not optional!
     assert(_descriptor.hasPropertyDescriptor());
 
-    const std::shared_ptr<TextureDescriptor>& texDescriptor = _descriptor.getPropertyDescriptor<TextureDescriptor>();
+    const std::shared_ptr<TextureDescriptor>& texDescriptor = _descriptor.propertyDescriptor<TextureDescriptor>();
 
     if (Texture::s_missingTextureFileName == nullptr) {
         Texture::s_missingTextureFileName = "missing_texture.jpg";
@@ -64,8 +64,8 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
                                               _descriptor.resourceName(),
                                               _descriptor.assetName(),
                                               _descriptor.assetLocation(),
-                                              !_descriptor.getFlag(),
-                                              _descriptor.getThreaded(),
+                                              !_descriptor.flag(),
+                                              _descriptor.threaded(),
                                               *texDescriptor),
                     DeleteResource(_cache));
 

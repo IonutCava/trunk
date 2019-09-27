@@ -176,6 +176,7 @@ namespace Divide {
         U32 GetSubroutineIndex(ShaderType type, const char* name) override { return 0; }
         U32 GetSubroutineUniformCount(ShaderType type) override { return 0;  }
 
+        void update(const U64 deltaTimeUS) override { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
     protected:
         bool recompileInternal(bool force) override { ACKNOWLEDGE_UNUSED(force); return true; }
     };

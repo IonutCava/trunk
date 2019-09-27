@@ -14,7 +14,7 @@ CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
     std::shared_ptr<ImpostorSphere> ptr(MemoryManager_NEW ImpostorSphere(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), 1.0f),
                                         DeleteResource(_cache));
 
-    if (!_descriptor.getFlag()) {
+    if (!_descriptor.flag()) {
         Material_ptr matTemp = CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.resourceName()));
 
         RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS))));
@@ -38,7 +38,7 @@ CachedResource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
     std::shared_ptr<ImpostorBox> ptr(MemoryManager_NEW ImpostorBox(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), 1.0f),
                                      DeleteResource(_cache));
 
-    if (!_descriptor.getFlag()) {
+    if (!_descriptor.flag()) {
         Material_ptr matTemp = CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.resourceName()));
 
         RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS))));

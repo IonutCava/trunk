@@ -88,6 +88,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                                          vector<stringImpl>& foundAtoms,
                                          bool lock);
 
+    void update(const U64 deltaTimeUS) override;
    protected:
 
     vector<stringImpl> loadSourceCode(ShaderType stage,
@@ -140,6 +141,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static SharedMutex s_atomLock;
     static AtomMap s_atoms;
 
+    static GLuint s_shadersUploadedThisFrame;
     //extra entry for "common" location
     static stringImpl shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
     static stringImpl shaderAtomExtensionName[to_base(ShaderType::COUNT) + 1];

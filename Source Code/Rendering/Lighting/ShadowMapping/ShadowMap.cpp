@@ -385,8 +385,8 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 shaderDescriptor._modules.push_back(fragModule);
 
                 ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
-                shadowPreviewShader.setPropertyDescriptor(shaderDescriptor);
-                shadowPreviewShader.setThreadedLoading(false);
+                shadowPreviewShader.propertyDescriptor(shaderDescriptor);
+                shadowPreviewShader.threaded(false);
                 ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
                 U8 splitCount = static_cast<DirectionalLightComponent&>(light).csmSplitCount();
@@ -408,8 +408,8 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 shaderDescriptor._modules.push_back(fragModule);
 
                 ResourceDescriptor shadowPreviewShader("fbPreview.Single.LinearDepth");
-                shadowPreviewShader.setPropertyDescriptor(shaderDescriptor);
-                shadowPreviewShader.setThreadedLoading(false);
+                shadowPreviewShader.propertyDescriptor(shaderDescriptor);
+                shadowPreviewShader.threaded(false);
                 ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
                 DebugView_ptr shadow = std::make_shared<DebugView>(to_I16(std::numeric_limits<I16>::max() - 1));
@@ -428,8 +428,8 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 shaderDescriptor._modules.push_back(fragModule);
 
                 ResourceDescriptor shadowPreviewShader("fbPreview.Cube.LinearDepth.ScenePlanes");
-                shadowPreviewShader.setPropertyDescriptor(shaderDescriptor);
-                shadowPreviewShader.setThreadedLoading(false);
+                shadowPreviewShader.propertyDescriptor(shaderDescriptor);
+                shadowPreviewShader.threaded(false);
                 ShaderProgram_ptr previewCubeDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
                 for (U32 i = 0; i < 6; ++i) {

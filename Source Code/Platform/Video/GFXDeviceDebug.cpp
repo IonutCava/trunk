@@ -44,7 +44,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
 
         // The LinearDepth variant converts the depth values to linear values between the 2 scene z-planes
         ResourceDescriptor fbPreview("fbPreviewLinearDepth");
-        fbPreview.setPropertyDescriptor(shaderDescriptor);
+        fbPreview.propertyDescriptor(shaderDescriptor);
         _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
         assert(_previewDepthMapShader != nullptr);
 

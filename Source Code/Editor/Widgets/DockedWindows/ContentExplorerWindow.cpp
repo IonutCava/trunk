@@ -315,11 +315,11 @@ namespace Divide {
         texturePreviewDescriptor.setSampler(texturePreviewSampler);
 
         ResourceDescriptor textureResource(textureName);
-        textureResource.setThreadedLoading(true);
-        textureResource.setFlag(true);
+        textureResource.threaded(true);
+        textureResource.flag(true);
         textureResource.assetName(textureName);
         textureResource.assetLocation(Paths::g_assetsLocation + texturePath);
-        textureResource.setPropertyDescriptor(texturePreviewDescriptor);
+        textureResource.propertyDescriptor(texturePreviewDescriptor);
 
         return CreateResource<Texture>(_parent.context().kernel().resourceCache(), textureResource);
     }
@@ -328,8 +328,8 @@ namespace Divide {
         ResourceDescriptor model(modelName);
         model.assetLocation(Paths::g_assetsLocation + modelPath);
         model.assetName(modelName);
-        model.setFlag(true);
-        model.setThreadedLoading(true);
+        model.flag(true);
+        model.threaded(true);
         
         return CreateResource<Mesh>(_parent.context().kernel().resourceCache(), model);
     }

@@ -40,7 +40,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor dof("DepthOfField");
-    dof.setPropertyDescriptor(shaderDescriptor);
+    dof.propertyDescriptor(shaderDescriptor);
     _dofShader = CreateResource<ShaderProgram>(cache, dof);
 }
 

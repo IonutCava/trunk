@@ -587,8 +587,8 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor shaderRedDescriptor(shaderName);
-    shaderRedDescriptor.setPropertyDescriptor(shaderDescriptor);
-    shaderRedDescriptor.setThreadedLoading(true);
+    shaderRedDescriptor.propertyDescriptor(shaderDescriptor);
+    shaderRedDescriptor.threaded(true);
 
     setShaderProgramInternal(shaderRedDescriptor, renderStagePass, false);
 
@@ -1035,9 +1035,9 @@ Texture_ptr loadTextureXML(ResourceCache& targetCache,
     ResourceDescriptor texture(pathName + "/" + img_name);
     texture.assetName(img_name);
     texture.assetLocation(pathName);
-    texture.setPropertyDescriptor(texDesc);
+    texture.propertyDescriptor(texDesc);
     texture.waitForReady(false);
-    texture.setFlag(!pt.get(textureNode + ".flipped", false));
+    texture.flag(!pt.get(textureNode + ".flipped", false));
 
     return CreateResource<Texture>(targetCache, texture);
 }

@@ -59,7 +59,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor bloomCalc("BloomCalc");
-    bloomCalc.setPropertyDescriptor(shaderDescriptor);
+    bloomCalc.propertyDescriptor(shaderDescriptor);
     _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
 
     fragModule._variant = "BloomApply";
@@ -68,7 +68,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor bloomApply("BloomApply");
-    bloomApply.setPropertyDescriptor(shaderDescriptor);
+    bloomApply.propertyDescriptor(shaderDescriptor);
     _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
 }
 

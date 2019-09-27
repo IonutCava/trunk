@@ -45,7 +45,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     aaShaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor fxaa("FXAA");
-    fxaa.setPropertyDescriptor(aaShaderDescriptor);
+    fxaa.propertyDescriptor(aaShaderDescriptor);
     fxaa.waitForReady(false);
     _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
 
@@ -64,7 +64,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     aaShaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor smaa("SMAA");
-    smaa.setPropertyDescriptor(aaShaderDescriptor);
+    smaa.propertyDescriptor(aaShaderDescriptor);
     smaa.waitForReady(false);
     _smaa = CreateResource<ShaderProgram>(cache, smaa);
 }

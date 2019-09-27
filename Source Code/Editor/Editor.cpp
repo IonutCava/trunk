@@ -200,9 +200,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     texDescriptor.setSampler(sampler);
 
     ResourceDescriptor resDescriptor("IMGUI_font_texture");
-    resDescriptor.setThreadedLoading(false);
-    resDescriptor.setFlag(true);
-    resDescriptor.setPropertyDescriptor(texDescriptor);
+    resDescriptor.threaded(false);
+    resDescriptor.flag(true);
+    resDescriptor.propertyDescriptor(texDescriptor);
 
     ResourceCache& parentCache = _context.kernel().resourceCache();
     _fontTexture = CreateResource<Texture>(parentCache, resDescriptor);
@@ -224,8 +224,8 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor shaderResDescriptor("IMGUI");
-    shaderResDescriptor.setPropertyDescriptor(shaderDescriptor);
-    shaderResDescriptor.setThreadedLoading(false);
+    shaderResDescriptor.propertyDescriptor(shaderDescriptor);
+    shaderResDescriptor.threaded(false);
     _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderResDescriptor);
 
     // Store our identifier

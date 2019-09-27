@@ -61,7 +61,7 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor shaderResDesc("ImmediateModeEmulation.EnvironmentProbe");
-    shaderResDesc.setPropertyDescriptor(shaderDescriptor);
+    shaderResDesc.propertyDescriptor(shaderDescriptor);
 
     _impostorShader = CreateResource<ShaderProgram>(parentScene.resourceCache(), shaderResDesc);
 }

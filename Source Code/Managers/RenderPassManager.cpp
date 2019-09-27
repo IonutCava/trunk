@@ -66,7 +66,7 @@ namespace Divide {
         shaderDescriptor._modules.push_back(fragModule);
 
         ResourceDescriptor shaderResDesc("OITComposition");
-        shaderResDesc.setPropertyDescriptor(shaderDescriptor);
+        shaderResDesc.propertyDescriptor(shaderDescriptor);
         shaderResDesc.waitForReady(false);
         _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderResDesc);
 
@@ -439,7 +439,7 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
     *bufferData._lastCommandCount = cmdCount;
 
     bufferData._cmdBuffer->writeData(
-        0,
+        bufferData._cmdBufferElementOffset,
         cmdCount,
         (bufferPtr)g_drawCommands.data());
 
