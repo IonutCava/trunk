@@ -198,7 +198,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static bool useShaderTexCache() { return s_useShaderTextCache; }
     static bool useShaderBinaryCache() { return s_useShaderBinaryCache; }
 
-    static stringImpl getDefinesHash(const ModuleDefines& defines);
+    static size_t definesHash(const ModuleDefines& defines);
 
     static I32 shaderProgramCount() { return s_shaderCount.load(std::memory_order_relaxed); }
 
@@ -257,11 +257,11 @@ namespace Attorney {
 }
 
 struct ShaderModuleDescriptor {
-    bool _batchSameFile = true;
-    ShaderType _moduleType = ShaderType::COUNT;
-    stringImpl _sourceFile;
-    stringImpl _variant;
     ModuleDefines _defines;
+    stringImpl _variant;
+    stringImpl _sourceFile;
+    ShaderType _moduleType = ShaderType::COUNT;
+    bool _batchSameFile = true;
 };
 
 class ShaderProgramDescriptor final : public PropertyDescriptor {
@@ -271,10 +271,21 @@ public:
 
     }
 
-    void clone(std::shared_ptr<PropertyDescriptor>& target) const override {
+    void clone(std::shared_ptr<PropertyDescriptor>& target) const final {
         target.reset(new ShaderProgramDescriptor(*this));
     }
 
+    inline size_t getHash() const final {
+        _hash = PropertyDescriptor::getHash();
+        for (const ShaderModuleDescriptor& desc : _modules) {
+            Util::Hash_combine(_hash, ShaderProgram::definesHash(desc._defines));
+            Util::Hash_combine(_hash, desc._variant);
+            Util::Hash_combine(_hash, desc._sourceFile);
+            Util::Hash_combine(_hash, desc._moduleType);
+            Util::Hash_combine(_hash, desc._batchSameFile);
+        }
+        return _hash;
+    }
     vectorEASTL<ShaderModuleDescriptor> _modules;
     
 };

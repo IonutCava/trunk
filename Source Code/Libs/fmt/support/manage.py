@@ -5,6 +5,9 @@
 Usage:
   manage.py release [<branch>]
   manage.py site
+
+For the release command $FMT_TOKEN should contain a GitHub personal access token
+obtained from https://github.com/settings/tokens.
 """
 
 from __future__ import print_function
@@ -142,6 +145,7 @@ def update_site(env):
                 b.data = b.data.replace('std::FILE*', 'std::FILE *')
                 b.data = b.data.replace('unsigned int', 'unsigned')
                 b.data = b.data.replace('operator""_', 'operator"" _')
+                b.data = b.data.replace(', size_t', ', std::size_t')
         # Fix a broken link in index.rst.
         index = os.path.join(target_doc_dir, 'index.rst')
         with rewrite(index) as b:
@@ -152,7 +156,9 @@ def update_site(env):
         if os.path.exists(html_dir):
             shutil.rmtree(html_dir)
         include_dir = env.fmt_repo.dir
-        if LooseVersion(version) >= LooseVersion('3.0.0'):
+        if LooseVersion(version) >= LooseVersion('5.0.0'):
+            include_dir = os.path.join(include_dir, 'include', 'fmt')
+        elif LooseVersion(version) >= LooseVersion('3.0.0'):
             include_dir = os.path.join(include_dir, 'fmt')
         import build
         build.build_docs(version, doc_dir=target_doc_dir,
@@ -243,12 +249,12 @@ def release(args):
     id = r.json()['id']
     uploads_url = 'https://uploads.github.com/repos/fmtlib/fmt/releases'
     package = 'fmt-{}.zip'.format(version)
-    with open('build/fmt/' + package, 'rb') as f:
-        r = requests.post(
-            '{}/{}/assets?name={}'.format(uploads_url, id, package),
-            params=params, files={package: f})
-        if r.status_code != 201:
-            raise Exception('Failed to upload an asset ' + str(r))
+    r = requests.post(
+        '{}/{}/assets?name={}'.format(uploads_url, id, package),
+        headers={'Content-Type': 'application/zip'},
+        params=params, data=open('build/fmt/' + package, 'rb'))
+    if r.status_code != 201:
+        raise Exception('Failed to upload an asset ' + str(r))
 
 
 if __name__ == '__main__':

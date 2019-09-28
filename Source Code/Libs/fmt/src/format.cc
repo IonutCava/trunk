@@ -9,40 +9,51 @@
 
 #include "fmt/format-inl.h"
 
-namespace fmt {
+FMT_BEGIN_NAMESPACE
+template struct FMT_API internal::basic_data<void>;
 
-template struct internal::basic_data<void>;
+// Workaround a bug in MSVC2013 that prevents instantiation of grisu_format.
+bool (*instantiate_grisu_format)(double, internal::buffer<char>&, int, unsigned,
+                                 int&) = internal::grisu_format;
+
+#ifndef FMT_STATIC_THOUSANDS_SEPARATOR
+template FMT_API internal::locale_ref::locale_ref(const std::locale& loc);
+template FMT_API std::locale internal::locale_ref::get<std::locale>() const;
+#endif
 
 // Explicit instantiations for char.
 
-template FMT_API char internal::thousands_sep(locale_provider *lp);
+template FMT_API char internal::thousands_sep_impl(locale_ref);
+template FMT_API char internal::decimal_point_impl(locale_ref);
 
-template void basic_fixed_buffer<char>::grow(std::size_t);
+template FMT_API void internal::buffer<char>::append(const char*, const char*);
 
-template void internal::arg_map<format_context>::init(
-    const basic_format_args<format_context> &args);
+template FMT_API void internal::arg_map<format_context>::init(
+    const basic_format_args<format_context>& args);
 
-template FMT_API int internal::char_traits<char>::format_float(
-    char *buffer, std::size_t size, const char *format,
-    unsigned width, int precision, double value);
+template FMT_API std::string internal::vformat<char>(
+    string_view, basic_format_args<format_context>);
 
-template FMT_API int internal::char_traits<char>::format_float(
-    char *buffer, std::size_t size, const char *format,
-    unsigned width, int precision, long double value);
+template FMT_API format_context::iterator internal::vformat_to(
+    internal::buffer<char>&, string_view, basic_format_args<format_context>);
+
+template FMT_API char* internal::sprintf_format(double, internal::buffer<char>&,
+                                                sprintf_specs);
+template FMT_API char* internal::sprintf_format(long double,
+                                                internal::buffer<char>&,
+                                                sprintf_specs);
 
 // Explicit instantiations for wchar_t.
 
-template FMT_API wchar_t internal::thousands_sep(locale_provider *lp);
+template FMT_API wchar_t internal::thousands_sep_impl(locale_ref);
+template FMT_API wchar_t internal::decimal_point_impl(locale_ref);
 
-template void basic_fixed_buffer<wchar_t>::grow(std::size_t);
+template FMT_API void internal::buffer<wchar_t>::append(const wchar_t*,
+                                                        const wchar_t*);
 
-template void internal::arg_map<wformat_context>::init(const wformat_args &args);
+template FMT_API void internal::arg_map<wformat_context>::init(
+    const basic_format_args<wformat_context>&);
 
-template FMT_API int internal::char_traits<wchar_t>::format_float(
-    wchar_t *buffer, std::size_t size, const wchar_t *format,
-    unsigned width, int precision, double value);
-
-template FMT_API int internal::char_traits<wchar_t>::format_float(
-    wchar_t *buffer, std::size_t size, const wchar_t *format,
-    unsigned width, int precision, long double value);
-}  // namespace fmt
+template FMT_API std::wstring internal::vformat<wchar_t>(
+    wstring_view, basic_format_args<wformat_context>);
+FMT_END_NAMESPACE

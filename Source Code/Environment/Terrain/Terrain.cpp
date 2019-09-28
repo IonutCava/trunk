@@ -151,8 +151,8 @@ void Terrain::onEditorChange(const char* field) {
 }
 
 void Terrain::postBuild() {
-    const U16 terrainWidth = _descriptor->getDimensions().width;
-    const U16 terrainHeight = _descriptor->getDimensions().height;
+    const U16 terrainWidth = _descriptor->dimensions().width;
+    const U16 terrainHeight = _descriptor->dimensions().height;
 
     reserveTriangleCount((terrainWidth - 1) * (terrainHeight - 1) * 2);
 
@@ -174,14 +174,14 @@ void Terrain::postBuild() {
 
     // Approximate bounding box
     F32 halfWidth = terrainWidth * 0.5f;
-    _boundingBox.setMin(-halfWidth, _descriptor->getAltitudeRange().min, -halfWidth);
-    _boundingBox.setMax(halfWidth, _descriptor->getAltitudeRange().max, halfWidth);
+    _boundingBox.setMin(-halfWidth, _descriptor->altitudeRange().min, -halfWidth);
+    _boundingBox.setMax(halfWidth, _descriptor->altitudeRange().max, halfWidth);
 
-    U32 chunkSize = to_U32(_descriptor->getTessellationSettings().x);
+    U32 chunkSize = to_U32(_descriptor->tessellationSettings().x);
 
     _terrainQuadtree.build(_context,
         _boundingBox,
-        _descriptor->getDimensions(),
+        _descriptor->dimensions(),
         chunkSize,
         this);
 
@@ -250,8 +250,8 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
-        constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->getTessellatedTriangleWidth()));
-        constants.set("height_scale", GFX::PushConstantType::FLOAT, _descriptor->getParallaxHeightScale());
+        constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
+        constants.set("height_scale", GFX::PushConstantType::FLOAT, _descriptor->parallaxHeightScale());
         constants.set("renderStage", GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
         pkg.pushConstants(0, constants);
     }
@@ -272,7 +272,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
         if (update)
         {
-            tessellator->createTree(camera.getEye(), crtPos, _descriptor->getDimensions(), _descriptor->getTessellationSettings().y);
+            tessellator->createTree(camera.getEye(), crtPos, _descriptor->dimensions(), _descriptor->tessellationSettings().y);
             U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
 
             bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(frustum, depth, LoD);
@@ -311,7 +311,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addShaderBuffer(0, buffer);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->getTessellatedTriangleWidth()));
+    pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
     pushConstantsCommand._constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
     pushConstantsCommand._constants.set("renderStage", GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
 
@@ -335,10 +335,10 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z, bool smooth) const {
     x -= _boundingBox.getCenter().x;
     z -= _boundingBox.getCenter().z;
-    F32 xClamp = (0.5f * _descriptor->getDimensions().x) + x;
-    F32 zClamp = (0.5f * _descriptor->getDimensions().y) - z;
-    xClamp /= _descriptor->getDimensions().x;
-    zClamp /= _descriptor->getDimensions().y;
+    F32 xClamp = (0.5f * _descriptor->dimensions().x) + x;
+    F32 zClamp = (0.5f * _descriptor->dimensions().y) - z;
+    xClamp /= _descriptor->dimensions().x;
+    zClamp /= _descriptor->dimensions().y;
     zClamp = 1 - zClamp;
     vec3<F32> temp = getPosition(xClamp, zClamp, smooth);
 
@@ -356,7 +356,7 @@ Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf, bool smooth) const {
 Terrain::Vert Terrain::getSmoothVert(F32 x_clampf, F32 z_clampf) const {
     assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
-    const vec2<U16>& dim = _descriptor->getDimensions();
+    const vec2<U16>& dim = _descriptor->dimensions();
     const vec3<F32>& bbMin = _boundingBox.getMin();
     const vec3<F32>& bbMax = _boundingBox.getMax();
 
@@ -422,7 +422,7 @@ Terrain::Vert Terrain::getSmoothVert(F32 x_clampf, F32 z_clampf) const {
 Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf) const {
     assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
-    const vec2<U16>& dim = _descriptor->getDimensions();
+    const vec2<U16>& dim = _descriptor->dimensions();
     vec2<I32> posI(to_I32(x_clampf * dim.x), to_I32(z_clampf * dim.y));
 
     if (posI.x >= (I32)dim.x - 1) {
@@ -460,11 +460,11 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf, bool smooth) const {
 }
 
 vec2<U16> Terrain::getDimensions() const {
-    return _descriptor->getDimensions();
+    return _descriptor->dimensions();
 }
 
 vec2<F32> Terrain::getAltitudeRange() const {
-    return _descriptor->getAltitudeRange();
+    return _descriptor->altitudeRange();
 }
 
 void Terrain::saveToXML(boost::property_tree::ptree& pt) const {

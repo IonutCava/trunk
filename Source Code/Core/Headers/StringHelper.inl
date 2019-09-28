@@ -29,12 +29,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-/*#ifndef FMT_HEADER_ONLY
-#define FMT_HEADER_ONLY
+#ifndef FMT_EXCEPTIONS
 #define FMT_EXCEPTIONS 0
 #endif
+
 #include "fmt/format.h"
-#include "fmt/printf.h"*/
+#include "fmt/printf.h"
 
 #ifndef _CORE_STRING_HELPER_INL_
 #define _CORE_STRING_HELPER_INL_
@@ -44,11 +44,13 @@ namespace Util {
 
 template <typename... Args>
 stringImpl StringFormat(const char *const format, Args&&... args) {
-    //return fmt::sprintf(format, std::forward<Args>(args)...);
+    return fmt::sprintf(format, std::forward<Args>(args)...);
+#if 0 //Ref
     int sz = snprintf(nullptr, 0, format, std::forward<Args>(args)...);
     vectorEASTL<char> buf(vec_size_eastl(sz) + 1, '\0');
     snprintf(&buf[0], buf.size(), format, std::forward<Args>(args)...);
     return stringImpl(buf.data(), buf.size() - 1);
+#endif
 }
 
 template<typename T_vec, typename T_str>

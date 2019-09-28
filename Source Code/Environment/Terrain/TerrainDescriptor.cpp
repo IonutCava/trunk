@@ -8,6 +8,8 @@
 namespace Divide {
     TerrainDescriptor::TerrainDescriptor(const stringImpl& name) noexcept
         : PropertyDescriptor(PropertyDescriptor::DescriptorType::DESCRIPTOR_TERRAIN_INFO)
+        , _altitudeRange(0.f, 1.f)
+        , _tessellationSettings(32.f, 100.f)
     {
     }
 
@@ -22,10 +24,13 @@ namespace Divide {
             return false;
         }
         
+        ParallaxMode pMode = static_cast<ParallaxMode>(CLAMPED(to_I32(to_U8(pt.get<I32>("parallaxMappingMode", 0))), 0, 2));
+        WireframeMode wMode = static_cast<WireframeMode>(CLAMPED(to_I32(to_U8(pt.get<I32>("wireframeDebugMode", 0))), 0, 2));
+
         addVariable("terrainName", name.c_str());
         addVariable("descriptor", terrainDescriptor.c_str());
-        setWireframeDebug(to_U8(pt.get<I32>("wireframeDebugMode", 0)));
-		setParallaxMode(to_U8(pt.get<I32>("parallaxMappingMode", 0)));
+        wireframeDebug(wMode);
+        parallaxMode(pMode);
         addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
         addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture", "sandfloor009a.jpg"));
         addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture", "terrain_detail_NM.png"));
@@ -40,11 +45,11 @@ namespace Divide {
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
             addVariable("horizontalScale", descTree.get<F32>("horizontalScale", 1.0f));
             addVariable("albedoTilingFactor", descTree.get<F32>("albedoTilingFactor", 4.0f));
-            setDimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
-            setAltitudeRange(vec2<F32>(descTree.get<F32>("altitudeRange.<xmlattr>.min", 0.0f), descTree.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
-            setTessellationSettings(vec2<F32>(descTree.get<F32>("tessellationSettings.<xmlattr>.chunkSize", 32.0f),
+            dimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
+            altitudeRange(vec2<F32>(descTree.get<F32>("altitudeRange.<xmlattr>.min", 0.0f), descTree.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
+            tessellationSettings(vec2<F32>(descTree.get<F32>("tessellationSettings.<xmlattr>.chunkSize", 32.0f),
                                               descTree.get<F32>("tessellationSettings.<xmlattr>.patchSizeInM", 100.0f)));
-            setTessellatedTriangleWidth(descTree.get<U32>("tessellatedTriangleWidth", 30));
+            tessellatedTriangleWidth(descTree.get<U32>("tessellatedTriangleWidth", 30));
             addVariable("vegetationTextureLocation", descTree.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation));
             addVariable("grassMap", descTree.get<stringImpl>("vegetation.grassMap"));
             addVariable("treeMap", descTree.get<stringImpl>("vegetation.treeMap"));
@@ -74,7 +79,7 @@ namespace Divide {
             if (numLayers == 0 || numImages == 0) {
                 return false;
             }
-            setTextureLayerCount(numLayers);
+            textureLayers(numLayers);
 
             const stringImpl imageListNode = "AlphaData.ImageList";
             I32 i = 0;

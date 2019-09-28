@@ -20,85 +20,107 @@ using fmt::format_error;
 const unsigned BIG_NUM = INT_MAX + 1u;
 
 // Makes format string argument positional.
-std::string make_positional(fmt::string_view format) {
+static std::string make_positional(fmt::string_view format) {
   std::string s(format.data(), format.size());
   s.replace(s.find('%'), 1, "%1$");
   return s;
 }
 
-#define EXPECT_PRINTF(expected_output, format, arg) \
-  EXPECT_EQ(expected_output, fmt::sprintf(format, arg)) \
-    << "format: " << format; \
+static std::wstring make_positional(fmt::wstring_view format) {
+  std::wstring s(format.data(), format.size());
+  s.replace(s.find(L'%'), 1, L"%1$");
+  return s;
+}
+
+// A wrapper around fmt::sprintf to workaround bogus warnings about invalid
+// format strings in MSVC.
+template <typename... Args>
+std::string test_sprintf(fmt::string_view format, const Args&... args) {
+  return fmt::sprintf(format, args...);
+}
+template <typename... Args>
+std::wstring test_sprintf(fmt::wstring_view format, const Args&... args) {
+  return fmt::sprintf(format, args...);
+}
+
+#define EXPECT_PRINTF(expected_output, format, arg)     \
+  EXPECT_EQ(expected_output, test_sprintf(format, arg)) \
+      << "format: " << format;                          \
   EXPECT_EQ(expected_output, fmt::sprintf(make_positional(format), arg))
 
 TEST(PrintfTest, NoArgs) {
-  EXPECT_EQ("test", fmt::sprintf("test"));
+  EXPECT_EQ("test", test_sprintf("test"));
+  EXPECT_EQ(L"test", fmt::sprintf(L"test"));
 }
 
 TEST(PrintfTest, Escape) {
-  EXPECT_EQ("%", fmt::sprintf("%%"));
-  EXPECT_EQ("before %", fmt::sprintf("before %%"));
-  EXPECT_EQ("% after", fmt::sprintf("%% after"));
-  EXPECT_EQ("before % after", fmt::sprintf("before %% after"));
-  EXPECT_EQ("%s", fmt::sprintf("%%s"));
+  EXPECT_EQ("%", test_sprintf("%%"));
+  EXPECT_EQ("before %", test_sprintf("before %%"));
+  EXPECT_EQ("% after", test_sprintf("%% after"));
+  EXPECT_EQ("before % after", test_sprintf("before %% after"));
+  EXPECT_EQ("%s", test_sprintf("%%s"));
+  EXPECT_EQ(L"%", fmt::sprintf(L"%%"));
+  EXPECT_EQ(L"before %", fmt::sprintf(L"before %%"));
+  EXPECT_EQ(L"% after", fmt::sprintf(L"%% after"));
+  EXPECT_EQ(L"before % after", fmt::sprintf(L"before %% after"));
+  EXPECT_EQ(L"%s", fmt::sprintf(L"%%s"));
 }
 
 TEST(PrintfTest, PositionalArgs) {
-  EXPECT_EQ("42", fmt::sprintf("%1$d", 42));
-  EXPECT_EQ("before 42", fmt::sprintf("before %1$d", 42));
-  EXPECT_EQ("42 after", fmt::sprintf("%1$d after",42));
-  EXPECT_EQ("before 42 after", fmt::sprintf("before %1$d after", 42));
-  EXPECT_EQ("answer = 42", fmt::sprintf("%1$s = %2$d", "answer", 42));
-  EXPECT_EQ("42 is the answer",
-      fmt::sprintf("%2$d is the %1$s", "answer", 42));
-  EXPECT_EQ("abracadabra", fmt::sprintf("%1$s%2$s%1$s", "abra", "cad"));
+  EXPECT_EQ("42", test_sprintf("%1$d", 42));
+  EXPECT_EQ("before 42", test_sprintf("before %1$d", 42));
+  EXPECT_EQ("42 after", test_sprintf("%1$d after", 42));
+  EXPECT_EQ("before 42 after", test_sprintf("before %1$d after", 42));
+  EXPECT_EQ("answer = 42", test_sprintf("%1$s = %2$d", "answer", 42));
+  EXPECT_EQ("42 is the answer", test_sprintf("%2$d is the %1$s", "answer", 42));
+  EXPECT_EQ("abracadabra", test_sprintf("%1$s%2$s%1$s", "abra", "cad"));
 }
 
 TEST(PrintfTest, AutomaticArgIndexing) {
-  EXPECT_EQ("abc", fmt::sprintf("%c%c%c", 'a', 'b', 'c'));
+  EXPECT_EQ("abc", test_sprintf("%c%c%c", 'a', 'b', 'c'));
 }
 
 TEST(PrintfTest, NumberIsTooBigInArgIndex) {
-  EXPECT_THROW_MSG(fmt::sprintf(format("%{}$", BIG_NUM)),
-      format_error, "number is too big");
-  EXPECT_THROW_MSG(fmt::sprintf(format("%{}$d", BIG_NUM)),
-      format_error, "number is too big");
+  EXPECT_THROW_MSG(test_sprintf(format("%{}$", BIG_NUM)), format_error,
+                   "number is too big");
+  EXPECT_THROW_MSG(test_sprintf(format("%{}$d", BIG_NUM)), format_error,
+                   "number is too big");
 }
 
 TEST(PrintfTest, SwitchArgIndexing) {
-  EXPECT_THROW_MSG(fmt::sprintf("%1$d%", 1, 2),
-      format_error, "cannot switch from manual to automatic argument indexing");
-  EXPECT_THROW_MSG(fmt::sprintf(format("%1$d%{}d", BIG_NUM), 1, 2),
-      format_error, "number is too big");
-  EXPECT_THROW_MSG(fmt::sprintf("%1$d%d", 1, 2),
-      format_error, "cannot switch from manual to automatic argument indexing");
+  EXPECT_THROW_MSG(test_sprintf("%1$d%", 1, 2), format_error,
+                   "cannot switch from manual to automatic argument indexing");
+  EXPECT_THROW_MSG(test_sprintf(format("%1$d%{}d", BIG_NUM), 1, 2),
+                   format_error, "number is too big");
+  EXPECT_THROW_MSG(test_sprintf("%1$d%d", 1, 2), format_error,
+                   "cannot switch from manual to automatic argument indexing");
 
-  EXPECT_THROW_MSG(fmt::sprintf("%d%1$", 1, 2),
-      format_error, "cannot switch from automatic to manual argument indexing");
-  EXPECT_THROW_MSG(fmt::sprintf(format("%d%{}$d", BIG_NUM), 1, 2),
-      format_error, "number is too big");
-  EXPECT_THROW_MSG(fmt::sprintf("%d%1$d", 1, 2),
-      format_error, "cannot switch from automatic to manual argument indexing");
+  EXPECT_THROW_MSG(test_sprintf("%d%1$", 1, 2), format_error,
+                   "cannot switch from automatic to manual argument indexing");
+  EXPECT_THROW_MSG(test_sprintf(format("%d%{}$d", BIG_NUM), 1, 2), format_error,
+                   "number is too big");
+  EXPECT_THROW_MSG(test_sprintf("%d%1$d", 1, 2), format_error,
+                   "cannot switch from automatic to manual argument indexing");
 
   // Indexing errors override width errors.
-  EXPECT_THROW_MSG(fmt::sprintf(format("%d%1${}d", BIG_NUM), 1, 2),
-      format_error, "number is too big");
-  EXPECT_THROW_MSG(fmt::sprintf(format("%1$d%{}d", BIG_NUM), 1, 2),
-      format_error, "number is too big");
+  EXPECT_THROW_MSG(test_sprintf(format("%d%1${}d", BIG_NUM), 1, 2),
+                   format_error, "number is too big");
+  EXPECT_THROW_MSG(test_sprintf(format("%1$d%{}d", BIG_NUM), 1, 2),
+                   format_error, "number is too big");
 }
 
 TEST(PrintfTest, InvalidArgIndex) {
-  EXPECT_THROW_MSG(fmt::sprintf("%0$d", 42), format_error,
-      "argument index out of range");
-  EXPECT_THROW_MSG(fmt::sprintf("%2$d", 42), format_error,
-      "argument index out of range");
-  EXPECT_THROW_MSG(fmt::sprintf(format("%{}$d", INT_MAX), 42),
-      format_error, "argument index out of range");
+  EXPECT_THROW_MSG(test_sprintf("%0$d", 42), format_error,
+                   "argument index out of range");
+  EXPECT_THROW_MSG(test_sprintf("%2$d", 42), format_error,
+                   "argument index out of range");
+  EXPECT_THROW_MSG(test_sprintf(format("%{}$d", INT_MAX), 42), format_error,
+                   "argument index out of range");
 
-  EXPECT_THROW_MSG(fmt::sprintf("%2$", 42),
-      format_error, "argument index out of range");
-  EXPECT_THROW_MSG(fmt::sprintf(format("%{}$d", BIG_NUM), 42),
-      format_error, "number is too big");
+  EXPECT_THROW_MSG(test_sprintf("%2$", 42), format_error,
+                   "argument index out of range");
+  EXPECT_THROW_MSG(test_sprintf(format("%{}$d", BIG_NUM), 42), format_error,
+                   "number is too big");
 }
 
 TEST(PrintfTest, DefaultAlignRight) {
@@ -152,8 +174,8 @@ TEST(PrintfTest, HashFlag) {
 
   EXPECT_PRINTF("0x42", "%#x", 0x42);
   EXPECT_PRINTF("0X42", "%#X", 0x42);
-  EXPECT_PRINTF(
-        fmt::format("0x{:x}", static_cast<unsigned>(-0x42)), "%#x", -0x42);
+  EXPECT_PRINTF(fmt::format("0x{:x}", static_cast<unsigned>(-0x42)), "%#x",
+                -0x42);
   EXPECT_PRINTF("0", "%#x", 0);
 
   EXPECT_PRINTF("0x0042", "%#06x", 0x42);
@@ -184,24 +206,24 @@ TEST(PrintfTest, Width) {
   EXPECT_PRINTF("  abc", "%5s", "abc");
 
   // Width cannot be specified twice.
-  EXPECT_THROW_MSG(fmt::sprintf("%5-5d", 42), format_error,
-      "invalid type specifier");
+  EXPECT_THROW_MSG(test_sprintf("%5-5d", 42), format_error,
+                   "invalid type specifier");
 
-  EXPECT_THROW_MSG(fmt::sprintf(format("%{}d", BIG_NUM), 42),
-      format_error, "number is too big");
-  EXPECT_THROW_MSG(fmt::sprintf(format("%1${}d", BIG_NUM), 42),
-      format_error, "number is too big");
+  EXPECT_THROW_MSG(test_sprintf(format("%{}d", BIG_NUM), 42), format_error,
+                   "number is too big");
+  EXPECT_THROW_MSG(test_sprintf(format("%1${}d", BIG_NUM), 42), format_error,
+                   "number is too big");
 }
 
 TEST(PrintfTest, DynamicWidth) {
-  EXPECT_EQ("   42", fmt::sprintf("%*d", 5, 42));
-  EXPECT_EQ("42   ", fmt::sprintf("%*d", -5, 42));
-  EXPECT_THROW_MSG(fmt::sprintf("%*d", 5.0, 42), format_error,
-      "width is not integer");
-  EXPECT_THROW_MSG(fmt::sprintf("%*d"), format_error,
-      "argument index out of range");
-  EXPECT_THROW_MSG(fmt::sprintf("%*d", BIG_NUM, 42), format_error,
-      "number is too big");
+  EXPECT_EQ("   42", test_sprintf("%*d", 5, 42));
+  EXPECT_EQ("42   ", test_sprintf("%*d", -5, 42));
+  EXPECT_THROW_MSG(test_sprintf("%*d", 5.0, 42), format_error,
+                   "width is not integer");
+  EXPECT_THROW_MSG(test_sprintf("%*d"), format_error,
+                   "argument index out of range");
+  EXPECT_THROW_MSG(test_sprintf("%*d", BIG_NUM, 42), format_error,
+                   "number is too big");
 }
 
 TEST(PrintfTest, IntPrecision) {
@@ -230,8 +252,7 @@ TEST(PrintfTest, FloatPrecision) {
   safe_sprintf(buffer, "%.3e", 1234.5678);
   EXPECT_PRINTF(buffer, "%.3e", 1234.5678);
   EXPECT_PRINTF("1234.568", "%.3f", 1234.5678);
-  safe_sprintf(buffer, "%.3g", 1234.5678);
-  EXPECT_PRINTF(buffer, "%.3g", 1234.5678);
+  EXPECT_PRINTF("1.23e+03", "%.3g", 1234.5678);
   safe_sprintf(buffer, "%.3a", 1234.5678);
   EXPECT_PRINTF(buffer, "%.3a", 1234.5678);
 }
@@ -241,27 +262,25 @@ TEST(PrintfTest, IgnorePrecisionForNonNumericArg) {
 }
 
 TEST(PrintfTest, DynamicPrecision) {
-  EXPECT_EQ("00042", fmt::sprintf("%.*d", 5, 42));
-  EXPECT_EQ("42", fmt::sprintf("%.*d", -5, 42));
-  EXPECT_THROW_MSG(fmt::sprintf("%.*d", 5.0, 42), format_error,
-      "precision is not integer");
-  EXPECT_THROW_MSG(fmt::sprintf("%.*d"), format_error,
-      "argument index out of range");
-  EXPECT_THROW_MSG(fmt::sprintf("%.*d", BIG_NUM, 42), format_error,
-      "number is too big");
+  EXPECT_EQ("00042", test_sprintf("%.*d", 5, 42));
+  EXPECT_EQ("42", test_sprintf("%.*d", -5, 42));
+  EXPECT_THROW_MSG(test_sprintf("%.*d", 5.0, 42), format_error,
+                   "precision is not integer");
+  EXPECT_THROW_MSG(test_sprintf("%.*d"), format_error,
+                   "argument index out of range");
+  EXPECT_THROW_MSG(test_sprintf("%.*d", BIG_NUM, 42), format_error,
+                   "number is too big");
   if (sizeof(long long) != sizeof(int)) {
     long long prec = static_cast<long long>(INT_MIN) - 1;
-    EXPECT_THROW_MSG(fmt::sprintf("%.*d", prec, 42), format_error,
-        "number is too big");
- }
+    EXPECT_THROW_MSG(test_sprintf("%.*d", prec, 42), format_error,
+                     "number is too big");
+  }
 }
 
-template <typename T>
-struct make_signed { typedef T type; };
+template <typename T> struct make_signed { typedef T type; };
 
 #define SPECIALIZE_MAKE_SIGNED(T, S) \
-  template <> \
-  struct make_signed<T> { typedef S type; }
+  template <> struct make_signed<T> { typedef S type; }
 
 SPECIALIZE_MAKE_SIGNED(char, signed char);
 SPECIALIZE_MAKE_SIGNED(unsigned char, signed char);
@@ -272,7 +291,7 @@ SPECIALIZE_MAKE_SIGNED(unsigned long long, long long);
 
 // Test length format specifier ``length_spec``.
 template <typename T, typename U>
-void TestLength(const char *length_spec, U value) {
+void TestLength(const char* length_spec, U value) {
   long long signed_value = 0;
   unsigned long long unsigned_value = 0;
   // Apply integer promotion to the argument.
@@ -312,8 +331,7 @@ void TestLength(const char *length_spec, U value) {
   EXPECT_PRINTF(os.str(), fmt::format("%{}X", length_spec), value);
 }
 
-template <typename T>
-void TestLength(const char *length_spec) {
+template <typename T> void TestLength(const char* length_spec) {
   T min = std::numeric_limits<T>::min(), max = std::numeric_limits<T>::max();
   TestLength<T>(length_spec, 42);
   TestLength<T>(length_spec, -42);
@@ -349,8 +367,8 @@ TEST(PrintfTest, Length) {
   TestLength<std::size_t>("z");
   TestLength<std::ptrdiff_t>("t");
   long double max = std::numeric_limits<long double>::max();
-  EXPECT_PRINTF(fmt::format("{}", max), "%g", max);
-  EXPECT_PRINTF(fmt::format("{}", max), "%Lg", max);
+  EXPECT_PRINTF(fmt::format("{:.6}", max), "%g", max);
+  EXPECT_PRINTF(fmt::format("{:.6}", max), "%Lg", max);
 }
 
 TEST(PrintfTest, Bool) {
@@ -388,6 +406,8 @@ TEST(PrintfTest, Float) {
   EXPECT_PRINTF(buffer, "%E", 392.65);
   EXPECT_PRINTF("392.65", "%g", 392.65);
   EXPECT_PRINTF("392.65", "%G", 392.65);
+  EXPECT_PRINTF("392", "%g", 392.0);
+  EXPECT_PRINTF("392", "%G", 392.0);
   safe_sprintf(buffer, "%a", -392.65);
   EXPECT_EQ(buffer, format("{:a}", -392.65));
   safe_sprintf(buffer, "%A", -392.65);
@@ -398,7 +418,7 @@ TEST(PrintfTest, Inf) {
   double inf = std::numeric_limits<double>::infinity();
   for (const char* type = "fega"; *type; ++type) {
     EXPECT_PRINTF("inf", fmt::format("%{}", *type), inf);
-    char upper = std::toupper(*type);
+    char upper = static_cast<char>(std::toupper(*type));
     EXPECT_PRINTF("INF", fmt::format("%{}", upper), inf);
   }
 }
@@ -407,29 +427,43 @@ TEST(PrintfTest, Char) {
   EXPECT_PRINTF("x", "%c", 'x');
   int max = std::numeric_limits<int>::max();
   EXPECT_PRINTF(fmt::format("{}", static_cast<char>(max)), "%c", max);
-  //EXPECT_PRINTF("x", "%lc", L'x');
-  // TODO: test wchar_t
+  // EXPECT_PRINTF("x", "%lc", L'x');
+  EXPECT_PRINTF(L"x", L"%c", L'x');
+  EXPECT_PRINTF(fmt::format(L"{}", static_cast<wchar_t>(max)), L"%c", max);
 }
 
 TEST(PrintfTest, String) {
   EXPECT_PRINTF("abc", "%s", "abc");
-  const char *null_str = 0;
+  const char* null_str = nullptr;
   EXPECT_PRINTF("(null)", "%s", null_str);
   EXPECT_PRINTF("    (null)", "%10s", null_str);
-  // TODO: wide string
+  EXPECT_PRINTF(L"abc", L"%s", L"abc");
+  const wchar_t* null_wstr = nullptr;
+  EXPECT_PRINTF(L"(null)", L"%s", null_wstr);
+  EXPECT_PRINTF(L"    (null)", L"%10s", null_wstr);
 }
 
 TEST(PrintfTest, Pointer) {
   int n;
-  void *p = &n;
+  void* p = &n;
   EXPECT_PRINTF(fmt::format("{}", p), "%p", p);
-  p = 0;
+  p = nullptr;
   EXPECT_PRINTF("(nil)", "%p", p);
   EXPECT_PRINTF("     (nil)", "%10p", p);
-  const char *s = "test";
+  const char* s = "test";
   EXPECT_PRINTF(fmt::format("{:p}", s), "%p", s);
-  const char *null_str = 0;
+  const char* null_str = nullptr;
   EXPECT_PRINTF("(nil)", "%p", null_str);
+
+  p = &n;
+  EXPECT_PRINTF(fmt::format(L"{}", p), L"%p", p);
+  p = nullptr;
+  EXPECT_PRINTF(L"(nil)", L"%p", p);
+  EXPECT_PRINTF(L"     (nil)", L"%10p", p);
+  const wchar_t* w = L"test";
+  EXPECT_PRINTF(fmt::format(L"{:p}", w), L"%p", w);
+  const wchar_t* null_wstr = nullptr;
+  EXPECT_PRINTF(L"(nil)", L"%p", null_wstr);
 }
 
 TEST(PrintfTest, Location) {
@@ -438,33 +472,29 @@ TEST(PrintfTest, Location) {
 
 enum E { A = 42 };
 
-TEST(PrintfTest, Enum) {
-  EXPECT_PRINTF("42", "%d", A);
-}
+TEST(PrintfTest, Enum) { EXPECT_PRINTF("42", "%d", A); }
 
 #if FMT_USE_FILE_DESCRIPTORS
 TEST(PrintfTest, Examples) {
-  const char *weekday = "Thursday";
-  const char *month = "August";
+  const char* weekday = "Thursday";
+  const char* month = "August";
   int day = 21;
   EXPECT_WRITE(stdout, fmt::printf("%1$s, %3$d %2$s", weekday, month, day),
                "Thursday, 21 August");
 }
 
 TEST(PrintfTest, PrintfError) {
-  fmt::File read_end, write_end;
-  fmt::File::pipe(read_end, write_end);
+  fmt::file read_end, write_end;
+  fmt::file::pipe(read_end, write_end);
   int result = fmt::fprintf(read_end.fdopen("r").get(), "test");
   EXPECT_LT(result, 0);
 }
 #endif
 
-TEST(PrintfTest, WideString) {
-  EXPECT_EQ(L"abc", fmt::sprintf(L"%s", L"abc"));
-}
+TEST(PrintfTest, WideString) { EXPECT_EQ(L"abc", fmt::sprintf(L"%s", L"abc")); }
 
 TEST(PrintfTest, PrintfCustom) {
-  EXPECT_EQ("abc", fmt::sprintf("%s", TestString("abc")));
+  EXPECT_EQ("abc", test_sprintf("%s", TestString("abc")));
 }
 
 TEST(PrintfTest, OStream) {
@@ -472,4 +502,111 @@ TEST(PrintfTest, OStream) {
   int ret = fmt::fprintf(os, "Don't %s!", "panic");
   EXPECT_EQ("Don't panic!", os.str());
   EXPECT_EQ(12, ret);
+}
+
+TEST(PrintfTest, VPrintf) {
+  fmt::format_arg_store<fmt::printf_context, int> as{42};
+  fmt::basic_format_args<fmt::printf_context> args(as);
+  EXPECT_EQ(fmt::vsprintf("%d", args), "42");
+  EXPECT_WRITE(stdout, fmt::vprintf("%d", args), "42");
+  EXPECT_WRITE(stdout, fmt::vfprintf(stdout, "%d", args), "42");
+  EXPECT_WRITE(stdout, fmt::vfprintf(std::cout, "%d", args), "42");
+}
+
+template <typename... Args>
+void check_format_string_regression(fmt::string_view s, const Args&... args) {
+  fmt::sprintf(s, args...);
+}
+
+TEST(PrintfTest, CheckFormatStringRegression) {
+  check_format_string_regression("%c%s", 'x', "");
+}
+
+TEST(PrintfTest, FixedLargeExponent) {
+  EXPECT_EQ("1000000000000000000000", fmt::sprintf("%.*f", -13, 1e21));
+}
+
+TEST(PrintfTest, VSPrintfMakeArgsExample) {
+  fmt::format_arg_store<fmt::printf_context, int, const char*> as{42,
+                                                                  "something"};
+  fmt::basic_format_args<fmt::printf_context> args(as);
+  EXPECT_EQ("[42] something happened", fmt::vsprintf("[%d] %s happened", args));
+  auto as2 = fmt::make_printf_args(42, "something");
+  fmt::basic_format_args<fmt::printf_context> args2(as2);
+  EXPECT_EQ("[42] something happened",
+            fmt::vsprintf("[%d] %s happened", args2));
+  // The older gcc versions can't cast the return value.
+#if !defined(__GNUC__) || (__GNUC__ > 4)
+  EXPECT_EQ("[42] something happened",
+            fmt::vsprintf("[%d] %s happened",
+                          {fmt::make_printf_args(42, "something")}));
+#endif
+}
+
+TEST(PrintfTest, VSPrintfMakeWArgsExample) {
+  fmt::format_arg_store<fmt::wprintf_context, int, const wchar_t*> as{
+      42, L"something"};
+  fmt::basic_format_args<fmt::wprintf_context> args(as);
+  EXPECT_EQ(L"[42] something happened",
+            fmt::vsprintf(L"[%d] %s happened", args));
+  auto as2 = fmt::make_wprintf_args(42, L"something");
+  fmt::basic_format_args<fmt::wprintf_context> args2(as2);
+  EXPECT_EQ(L"[42] something happened",
+            fmt::vsprintf(L"[%d] %s happened", args2));
+  // the older gcc versions can't cast the return value
+#if !defined(__GNUC__) || (__GNUC__ > 4)
+  EXPECT_EQ(L"[42] something happened",
+            fmt::vsprintf(L"[%d] %s happened",
+                          {fmt::make_wprintf_args(42, L"something")}));
+#endif
+}
+
+typedef fmt::printf_arg_formatter<fmt::internal::buffer_range<char>>
+    formatter_t;
+typedef fmt::basic_printf_context<formatter_t::iterator, char> context_t;
+
+// A custom printf argument formatter that doesn't print `-` for floating-point
+// values rounded to 0.
+class custom_printf_arg_formatter : public formatter_t {
+ public:
+  using formatter_t::iterator;
+
+  custom_printf_arg_formatter(formatter_t::iterator iter,
+                              formatter_t::format_specs& specs, context_t& ctx)
+      : formatter_t(iter, specs, ctx) {}
+
+  using formatter_t::operator();
+
+#if FMT_MSC_VER > 0 && FMT_MSC_VER <= 1804
+  template <typename T, FMT_ENABLE_IF(std::is_floating_point<T>::value)>
+  iterator operator()(T value){
+#else
+  iterator operator()(double value) {
+#endif
+      // Comparing a float to 0.0 is safe.
+      if (round(value * pow(10, specs()->precision)) == 0.0) value = 0;
+  return formatter_t::operator()(value);
+}
+}
+;
+
+typedef fmt::basic_format_args<context_t> format_args_t;
+
+std::string custom_vformat(fmt::string_view format_str, format_args_t args) {
+  fmt::memory_buffer buffer;
+  fmt::vprintf<custom_printf_arg_formatter>(buffer, format_str, args);
+  return std::string(buffer.data(), buffer.size());
+}
+
+template <typename... Args>
+std::string custom_format(const char* format_str, const Args&... args) {
+  auto va = fmt::make_printf_args(args...);
+  return custom_vformat(format_str, {va});
+}
+
+TEST(PrintfTest, CustomFormat) {
+  EXPECT_EQ("0.00", custom_format("%.2f", -.00001));
+  EXPECT_EQ("0.00", custom_format("%.2f", .00001));
+  EXPECT_EQ("1.00", custom_format("%.2f", 1.00001));
+  EXPECT_EQ("-1.00", custom_format("%.2f", -1.00001));
 }

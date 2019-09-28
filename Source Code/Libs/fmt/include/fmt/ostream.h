@@ -1,6 +1,6 @@
 // Formatting library for C++ - std::ostream support
 //
-// Copyright (c) 2012 - 2016, Victor Zverovich
+// Copyright (c) 2012 - present, Victor Zverovich
 // All rights reserved.
 //
 // For the license information refer to format.h.
@@ -8,23 +8,21 @@
 #ifndef FMT_OSTREAM_H_
 #define FMT_OSTREAM_H_
 
-#include "format.h"
 #include <ostream>
+#include "format.h"
 
-namespace fmt {
-
+FMT_BEGIN_NAMESPACE
 namespace internal {
 
-template <class Char>
-class FormatBuf : public std::basic_streambuf<Char> {
+template <class Char> class formatbuf : public std::basic_streambuf<Char> {
  private:
-  typedef typename std::basic_streambuf<Char>::int_type int_type;
-  typedef typename std::basic_streambuf<Char>::traits_type traits_type;
+  using int_type = typename std::basic_streambuf<Char>::int_type;
+  using traits_type = typename std::basic_streambuf<Char>::traits_type;
 
-  basic_buffer<Char> &buffer_;
+  buffer<Char>& buffer_;
 
  public:
-  FormatBuf(basic_buffer<Char> &buffer) : buffer_(buffer) {}
+  formatbuf(buffer<Char>& buf) : buffer_(buf) {}
 
  protected:
   // The put-area is actually always empty. This makes the implementation
@@ -40,90 +38,81 @@ class FormatBuf : public std::basic_streambuf<Char> {
     return ch;
   }
 
-  std::streamsize xsputn(const Char *s, std::streamsize count) FMT_OVERRIDE {
+  std::streamsize xsputn(const Char* s, std::streamsize count) FMT_OVERRIDE {
     buffer_.append(s, s + count);
     return count;
   }
 };
 
-template <typename Char>
-struct test_stream : std::basic_ostream<Char> {
+template <typename Char> struct test_stream : std::basic_ostream<Char> {
  private:
   struct null;
   // Hide all operator<< from std::basic_ostream<Char>.
   void operator<<(null);
 };
 
-// Disable conversion to int if T has an overloaded operator<< which is a free
-// function (not a member of std::ostream).
-template <typename T, typename Char>
-class convert_to_int<T, Char, true> {
+// Checks if T has a user-defined operator<< (e.g. not a member of
+// std::ostream).
+template <typename T, typename Char> class is_streamable {
  private:
   template <typename U>
-  static decltype(
-    internal::declval<test_stream<Char>&>()
-      << internal::declval<U>(), std::true_type()) test(int);
+  static decltype((void)(std::declval<test_stream<Char>&>()
+                         << std::declval<U>()),
+                  std::true_type())
+  test(int);
 
-  template <typename>
-  static std::false_type test(...);
+  template <typename> static std::false_type test(...);
 
-  typedef decltype(test<T>(0)) result;
+  using result = decltype(test<T>(0));
 
  public:
-  static const bool value = !result::value;
+  static const bool value = result::value;
 };
 
 // Write the content of buf to os.
 template <typename Char>
-void write(std::basic_ostream<Char> &os, basic_buffer<Char> &buf) {
-  const Char *data = buf.data();
-  typedef std::make_unsigned<std::streamsize>::type UnsignedStreamSize;
-  UnsignedStreamSize size = buf.size();
-  UnsignedStreamSize max_size =
-      internal::to_unsigned((std::numeric_limits<std::streamsize>::max)());
+void write(std::basic_ostream<Char>& os, buffer<Char>& buf) {
+  const Char* buf_data = buf.data();
+  using unsigned_streamsize = std::make_unsigned<std::streamsize>::type;
+  unsigned_streamsize size = buf.size();
+  unsigned_streamsize max_size =
+      to_unsigned((std::numeric_limits<std::streamsize>::max)());
   do {
-    UnsignedStreamSize n = size <= max_size ? size : max_size;
-    os.write(data, static_cast<std::streamsize>(n));
-    data += n;
+    unsigned_streamsize n = size <= max_size ? size : max_size;
+    os.write(buf_data, static_cast<std::streamsize>(n));
+    buf_data += n;
     size -= n;
   } while (size != 0);
 }
 
 template <typename Char, typename T>
-void format_value(basic_buffer<Char> &buffer, const T &value) {
-  internal::FormatBuf<Char> format_buf(buffer);
+void format_value(buffer<Char>& buf, const T& value) {
+  formatbuf<Char> format_buf(buf);
   std::basic_ostream<Char> output(&format_buf);
   output.exceptions(std::ios_base::failbit | std::ios_base::badbit);
   output << value;
-  buffer.resize(buffer.size());
+  buf.resize(buf.size());
 }
-
-// Disable builtin formatting of enums and use operator<< instead.
-template <typename T>
-struct format_enum<T,
-    typename std::enable_if<std::is_enum<T>::value>::type> : std::false_type {};
-}  // namespace internal
 
 // Formats an object of type T that has an overloaded ostream operator<<.
 template <typename T, typename Char>
-struct formatter<T, Char,
-    typename std::enable_if<!internal::format_type<
-      typename buffer_context<Char>::type, T>::value>::type>
+struct fallback_formatter<T, Char, enable_if_t<is_streamable<T, Char>::value>>
     : formatter<basic_string_view<Char>, Char> {
-
   template <typename Context>
-  auto format(const T &value, Context &ctx) -> decltype(ctx.begin()) {
+  auto format(const T& value, Context& ctx) -> decltype(ctx.out()) {
     basic_memory_buffer<Char> buffer;
-    internal::format_value(buffer, value);
+    format_value(buffer, value);
     basic_string_view<Char> str(buffer.data(), buffer.size());
-    formatter<basic_string_view<Char>, Char>::format(str, ctx);
-    return ctx.begin();
+    return formatter<basic_string_view<Char>, Char>::format(str, ctx);
   }
 };
+}  // namespace internal
 
-inline void vprint(std::ostream &os, string_view format_str, format_args args) {
-  memory_buffer buffer;
-  vformat_to(buffer, format_str, args);
+template <typename Char>
+void vprint(std::basic_ostream<Char>& os, basic_string_view<Char> format_str,
+            basic_format_args<buffer_context<Char>> args) {
+  basic_memory_buffer<Char> buffer;
+  internal::vformat_to(buffer, format_str, args);
   internal::write(os, buffer);
 }
 
@@ -136,11 +125,12 @@ inline void vprint(std::ostream &os, string_view format_str, format_args args) {
     fmt::print(cerr, "Don't {}!", "panic");
   \endrst
  */
-template <typename... Args>
-inline void print(std::ostream &os, string_view format_str,
-                  const Args & ... args) {
-  vprint(os, format_str, make_format_args(args...));
+template <typename S, typename... Args,
+          typename Char = enable_if_t<internal::is_string<S>::value, char_t<S>>>
+void print(std::basic_ostream<Char>& os, const S& format_str, Args&&... args) {
+  vprint(os, to_string_view(format_str),
+         {internal::make_args_checked<Args...>(format_str, args...)});
 }
-}  // namespace fmt
+FMT_END_NAMESPACE
 
 #endif  // FMT_OSTREAM_H_

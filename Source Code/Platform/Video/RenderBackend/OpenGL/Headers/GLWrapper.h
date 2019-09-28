@@ -256,7 +256,7 @@ private:
     static GLUtil::glVAOPool s_vaoPool;
 
     /// /*sampler hash value*/ /*sampler object*/
-    using SamplerObjectMap = hashMap<size_t, GLuint>;
+    using SamplerObjectMap = hashMap<size_t, GLuint, NoHash<size_t>>;
     static std::mutex s_samplerMapLock;
     static SamplerObjectMap s_samplerMap;
 

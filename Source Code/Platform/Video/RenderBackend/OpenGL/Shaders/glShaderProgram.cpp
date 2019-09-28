@@ -387,7 +387,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
                 programName.append("." + shaderDescriptor._variant);
             }
             if (!shaderDescriptor._defines.empty()) {
-                programName.append("." + ShaderProgram::getDefinesHash(shaderDescriptor._defines));
+                programName.append(Util::StringFormat(".%zu",ShaderProgram::definesHash(shaderDescriptor._defines)));
             }
 
             stringImpl header = "";

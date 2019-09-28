@@ -8,7 +8,7 @@
 #include "util.h"
 #include <cstring>
 
-void increment(char *s) {
+void increment(char* s) {
   for (int i = static_cast<int>(std::strlen(s)) - 1; i >= 0; --i) {
     if (s[i] != '9') {
       ++s[i];
@@ -30,15 +30,14 @@ std::string get_system_error(int error_code) {
 #endif
 }
 
-const char *const FILE_CONTENT = "Don't panic!";
+const char* const FILE_CONTENT = "Don't panic!";
 
-fmt::BufferedFile open_buffered_file(FILE **fp) {
-  fmt::File read_end, write_end;
-  fmt::File::pipe(read_end, write_end);
+fmt::buffered_file open_buffered_file(FILE** fp) {
+  fmt::file read_end, write_end;
+  fmt::file::pipe(read_end, write_end);
   write_end.write(FILE_CONTENT, std::strlen(FILE_CONTENT));
   write_end.close();
-  fmt::BufferedFile f = read_end.fdopen("r");
-  if (fp)
-    *fp = f.get();
+  fmt::buffered_file f = read_end.fdopen("r");
+  if (fp) *fp = f.get();
   return f;
 }

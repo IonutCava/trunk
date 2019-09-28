@@ -562,11 +562,11 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     fragDefines.insert(std::cend(fragDefines), std::cbegin(globalDefines), std::cend(globalDefines));
 
     if (!vertDefines.empty()) {
-        shaderName.append("_" + ShaderProgram::getDefinesHash(vertDefines));
+        shaderName.append(Util::StringFormat("_%zu", ShaderProgram::definesHash(vertDefines)));
     }
 
     if (!fragDefines.empty()) {
-        shaderName.append("_" + ShaderProgram::getDefinesHash(fragDefines));
+        shaderName.append(Util::StringFormat("_%zu", ShaderProgram::definesHash(fragDefines)));
     }
 
     ShaderModuleDescriptor vertModule = {};

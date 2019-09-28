@@ -2,21 +2,15 @@
 Usage
 *****
 
-To use the fmt library, add :file:`format.h` and :file:`format.cc` from
-a `release archive <https://github.com/fmtlib/fmt/releases/latest>`_
-or the `Git repository <https://github.com/fmtlib/fmt>`_ to your project.
+To use the {fmt} library, add :file:`fmt/core.h`, :file:`fmt/format.h`,
+:file:`fmt/format-inl.h`, :file:`src/format.cc` and optionally other headers
+from a `release archive <https://github.com/fmtlib/fmt/releases/latest>`_ or
+the `Git repository <https://github.com/fmtlib/fmt>`_ to your project.
 Alternatively, you can :ref:`build the library with CMake <building>`.
-
-If you are using Visual C++ with precompiled headers, you might need to add
-the line ::
-
-   #include "stdafx.h"
-
-before other includes in :file:`format.cc`.
 
 .. _building:
 
-Building the library
+Building the Library
 ====================
 
 The included `CMake build script`__ can be used to build the fmt
@@ -31,7 +25,7 @@ workflow starts with::
 
   mkdir build          # Create a directory to hold the build output.
   cd build
-  cmake <path/to/fmt>  # Generate native build scripts.
+  cmake ..  # Generate native build scripts.
 
 where :file:`{<path/to/fmt>}` is a path to the ``fmt`` repository.
 
@@ -45,7 +39,7 @@ You can control generation of the make ``test`` target with the ``FMT_TEST``
 CMake option. This can be useful if you include fmt as a subdirectory in
 your project but don't want to add fmt's tests to your ``test`` target.
 
-If you use Windows and have Visual Studio installed, a :file:`FORMAT.sln`
+If you use Windows and have Visual Studio installed, a :file:`FMT.sln`
 file and several :file:`.vcproj` files will be created. You can then build them
 using Visual Studio or msbuild.
 
@@ -58,8 +52,14 @@ To build a `shared library`__ set the ``BUILD_SHARED_LIBS`` CMake variable to
 
 __ http://en.wikipedia.org/wiki/Library_%28computing%29#Shared_libraries
 
-Header-only usage with CMake
-============================
+Installing the Library
+======================
+
+After building the library you can install it on a Unix-like system by running
+:command:`sudo make install`.
+
+Usage with CMake
+================
 
 You can add the ``fmt`` library directory into your project and include it in
 your ``CMakeLists.txt`` file::
@@ -67,17 +67,23 @@ your ``CMakeLists.txt`` file::
    add_subdirectory(fmt)
 
 or
+
 ::
 
    add_subdirectory(fmt EXCLUDE_FROM_ALL)
 
 to exclude it from ``make``, ``make all``, or ``cmake --build .``.
 
-Settting up your target to use a header-only version of ``fmt`` is equaly easy::
+You can detect and use an installed version of {fmt} as follows::
 
-   target_link_libraries(<your-target> PRIVATE fmt-header-only)
+   find_package(fmt)
+   target_link_libraries(<your-target> fmt::fmt)
 
-Building the documentation
+Setting up your target to use a header-only version of ``fmt`` is equally easy::
+
+   target_link_libraries(<your-target> PRIVATE fmt::fmt-header-only)
+
+Building the Documentation
 ==========================
 
 To build the documentation you need the following software installed on your
