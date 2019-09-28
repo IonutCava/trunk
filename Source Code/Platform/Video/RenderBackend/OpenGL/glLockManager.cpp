@@ -40,7 +40,7 @@ void glLockManager::Wait(bool blockClient) {
 void glLockManager::Lock(bool flush) {
     UniqueLockShared lock(_syncMutex);
     assert(_defaultSync == nullptr);
-    _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+    _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     // A glFlush call is needed after creating a new fence to make sure we don't end up with an infinite wait issue
     if (flush) {
         glFlush();
@@ -74,7 +74,7 @@ bool glLockManager::wait(GLsync* syncObj, bool blockClient, bool quickCheck, U8&
             }
         }
     } else {
-        glWaitSync(*syncObj, UnusedMask::GL_UNUSED_BIT, GL_TIMEOUT_IGNORED);
+        glWaitSync(*syncObj, 0, GL_TIMEOUT_IGNORED);
     }
 
     return true;

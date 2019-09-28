@@ -63,7 +63,7 @@ inline void getGLValue(GLenum param, F32& value, GLint index) {
 }
 
 template<>
-inline void getGLValue(GLenum param, GLboolean& value, GLint index) {
+inline void getGLValue(GLenum param, gl::GLboolean& value, GLint index) {
     if (index < 0) {
         glGetBooleanv(param, &value);
     } else {

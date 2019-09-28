@@ -157,25 +157,25 @@ void OpenGLTexture::initInternalPixelFormatFields(const PixelFormat fmt)
         break;
 
     case PF_RGB_DXT1:
-        d_format = gl::GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+        d_format = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         d_subpixelFormat = GL_UNSIGNED_BYTE; // not used.
         d_isCompressed = true;
         break;
 
     case PF_RGBA_DXT1:
-        d_format = gl::GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        d_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         d_subpixelFormat = GL_UNSIGNED_BYTE; // not used.
         d_isCompressed = true;
         break;
 
     case PF_RGBA_DXT3:
-        d_format = gl::GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+        d_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
         d_subpixelFormat = GL_UNSIGNED_BYTE; // not used.
         d_isCompressed = true;
         break;
 
     case PF_RGBA_DXT5:
-        d_format = gl::GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        d_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
         d_subpixelFormat = GL_UNSIGNED_BYTE; // not used.
         d_isCompressed = true;
         break;
@@ -302,8 +302,8 @@ void OpenGLTexture::loadCompressedTextureBuffer(const Rectf& dest_area,
 GLsizei OpenGLTexture::getCompressedTextureSize(const Sizef& pixel_size) const
 {
     GLsizei blocksize = 16;
-    if (d_format == gl::GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
-        d_format == gl::GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
+    if (d_format == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
+        d_format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
     {
         blocksize = 8;
     }

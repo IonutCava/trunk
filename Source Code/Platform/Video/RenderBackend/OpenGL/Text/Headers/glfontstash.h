@@ -89,7 +89,7 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
         }
 
         BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT;
-        BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT;
+        MapBufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT;
         
         if (USE_EXPLICIT_FLUSH) {
             accessMask |= GL_MAP_FLUSH_EXPLICIT_BIT;

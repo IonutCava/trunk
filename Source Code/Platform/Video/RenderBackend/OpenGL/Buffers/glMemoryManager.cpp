@@ -182,7 +182,7 @@ void clearVBOs() {
 bufferPtr allocPersistentBuffer(GLuint bufferId,
                                 GLsizeiptr bufferSize,
                                 BufferStorageMask storageMask,
-                                BufferAccessMask accessMask,
+                                MapBufferAccessMask accessMask,
                                 const bufferPtr data) {
     glNamedBufferStorage(bufferId, bufferSize, data, storageMask);
     bufferPtr ptr = glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
@@ -192,7 +192,7 @@ bufferPtr allocPersistentBuffer(GLuint bufferId,
 
 bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
                                          BufferStorageMask storageMask,
-                                         BufferAccessMask accessMask,
+                                         MapBufferAccessMask accessMask,
                                          GLuint& bufferIdOut,
                                          bufferPtr const data,
                                          const char* name) {

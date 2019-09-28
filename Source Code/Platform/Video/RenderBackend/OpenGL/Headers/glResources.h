@@ -41,9 +41,8 @@
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 #include <glbinding/gl46/gl.h>
-using namespace gl46;
-
-#include <glbinding/Binding.h>
+#include <glbinding/gl/gl.h>
+using namespace gl;
 
 struct SDL_Window;
 typedef void *SDL_GLContext;

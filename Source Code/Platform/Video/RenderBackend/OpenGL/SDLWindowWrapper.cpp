@@ -30,6 +30,8 @@
 #define HAVE_M_PI
 #include <SDL.h>
 
+#include <glbinding/Binding.h>
+
 namespace Divide {
 namespace {
     constexpr bool g_useAALines = true;

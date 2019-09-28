@@ -129,15 +129,15 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 
         bool shouldClearColour = false, shouldClearDepth = false;
         stateTracker.setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
-        ClearBufferMask mask = GL_NONE_BIT;
+        ClearBufferMask mask = ClearBufferMask::GL_NONE_BIT;
         if (shouldClearColour) {
-            mask |= GL_COLOR_BUFFER_BIT;
+            mask |= ClearBufferMask::GL_COLOR_BUFFER_BIT;
         }
         if (shouldClearDepth) {
-            mask |= GL_DEPTH_BUFFER_BIT;
+            mask |= ClearBufferMask::GL_DEPTH_BUFFER_BIT;
         }
         if (false) {
-            mask |= GL_STENCIL_BUFFER_BIT;
+            mask |= ClearBufferMask::GL_STENCIL_BUFFER_BIT;
         }
 
         glClear(mask);

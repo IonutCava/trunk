@@ -74,7 +74,7 @@ public:
 
     GLuint bufferID() const;
 
-    bool bindRange(GLuint bindIndex, GLintptr offsetInBytes, size_t rangeInBytes);
+    bool bindRange(GLuint bindIndex, GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
     void lockRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool flush);
     bool waitRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool blockClient);
 
@@ -94,7 +94,7 @@ protected:
     bufferPtr _mappedBuffer = nullptr;
     GFXDevice& _context;
     const size_t _elementSize;
-    const size_t _alignedSize;
+    const GLsizeiptr _alignedSize;
     const GLenum _target;
     const bool _unsynced;
     const bool _useExplicitFlush;

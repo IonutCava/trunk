@@ -75,7 +75,7 @@ void glBufferLockManager::LockRange(GLintptr lockBeginBytes,
                 lockBeginBytes,
                 lockLength
             },
-            glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT)
+            glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
         });
 }
 
@@ -195,7 +195,7 @@ void glGlobalLockManager::quickCheckOldEntries(U32 frameID) {
 }
 
 void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush, U32 frameID) {
-    GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+    GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
     {
         UniqueLockShared w_lock(_lock);
