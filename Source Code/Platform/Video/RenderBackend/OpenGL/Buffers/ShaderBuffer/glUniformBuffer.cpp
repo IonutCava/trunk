@@ -172,7 +172,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex,
     }
     dataOut._flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
 
-    assert(dataOut._range <= _maxSize &&
+    assert(static_cast<size_t>(dataOut._range) <= _maxSize &&
            "glUniformBuffer::bindRange: attempted to bind a larger shader block than is allowed on the current platform");
 
     assert(dataOut._offset % req == 0);

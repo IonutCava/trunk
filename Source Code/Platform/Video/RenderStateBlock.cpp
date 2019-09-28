@@ -226,7 +226,6 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool&
     RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
     if(it != std::cend(s_stateBlockMap) ) {
         blockFound = true;
-        size_t count = s_stateBlockMap.size();
         return it->second;
     }
 

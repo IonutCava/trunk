@@ -904,11 +904,11 @@ bool glFramebuffer::checkStatus() {
                 Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
                 return false;
             }
-            case gl::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
+            case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
                 Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
                 return false;
             }
-            case gl::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
+            case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
                  Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
                  return false;
             }

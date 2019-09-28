@@ -75,8 +75,8 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     if (!usePersistentMapping) {
         GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);
     } else {
-        gl::BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
-        gl::BufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT;
+        BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
+        MapBufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT;
 
         switch (_updateFrequency) {
             case BufferUpdateFrequency::ONCE:{
@@ -196,7 +196,7 @@ void glBufferImpl::readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, con
             std::memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
         }
     } else {
-        void* bufferData = glMapNamedBufferRange(_handle, offsetInBytes, rangeInBytes, BufferAccessMask::GL_MAP_READ_BIT);
+        void* bufferData = glMapNamedBufferRange(_handle, offsetInBytes, rangeInBytes, MapBufferAccessMask::GL_MAP_READ_BIT);
         if (bufferData != nullptr) {
             std::memcpy(data, ((Byte*)(bufferData)+offsetInBytes), rangeInBytes);
         }

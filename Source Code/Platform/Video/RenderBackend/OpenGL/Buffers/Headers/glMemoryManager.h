@@ -100,12 +100,12 @@ namespace GLUtil {
     bufferPtr allocPersistentBuffer(GLuint bufferId,
                                     GLsizeiptr bufferSize,
                                     BufferStorageMask storageMask,
-                                    BufferAccessMask accessMask,
+                                    MapBufferAccessMask accessMask,
                                     const bufferPtr data);
 
     bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
                                              BufferStorageMask storageMask,
-                                             BufferAccessMask accessMask,
+                                             MapBufferAccessMask accessMask,
                                              GLuint& bufferIdOut,
                                              const bufferPtr data,
                                              const char* name = nullptr);
