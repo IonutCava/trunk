@@ -200,6 +200,21 @@
     <Filter Include="Rendering\RenderPass\Headers">
       <UniqueIdentifier>{0d72c71e-914c-485c-a1ab-32c473006216}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libs">
+      <UniqueIdentifier>{8bbd2786-d9da-4206-b9d5-60e26dd175c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libs\fmt">
+      <UniqueIdentifier>{254722bb-31a5-4099-bc59-78a5be93949c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libs\fmt\include">
+      <UniqueIdentifier>{c785120e-0b64-42a3-8789-b623dceb780e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libs\fmt\include\fmt">
+      <UniqueIdentifier>{7920c651-1a98-4d1c-9a87-b91beed6edb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libs\fmt\src">
+      <UniqueIdentifier>{666021c9-3c3f-4838-bdc4-35e938180b48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Rendering\Camera\Camera.cpp">
@@ -585,6 +600,12 @@
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\util\Timer.cpp">
       <Filter>ECS\ECSLib\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\fmt\src\format.cc">
+      <Filter>Libs\fmt\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\fmt\src\posix.cc">
+      <Filter>Libs\fmt\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1033,6 +1054,45 @@
     </ClInclude>
     <ClInclude Include="../../Source Code/Core\Headers\PlatformContextComponent.h">
       <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\chrono.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\color.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\compile.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\core.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format-inl.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\locale.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ostream.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\posix.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\printf.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ranges.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\safe-duration-cast.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\time.h">
+      <Filter>Libs\fmt\include\fmt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -41,7 +41,7 @@ namespace Divide {
 
 class RenderStateBlock : public GUIDWrapper, public Hashable {
    public:
-      using RenderStateMap = hashMap<size_t, RenderStateBlock>;
+      using RenderStateMap = hashMap<size_t, RenderStateBlock, NoHash<size_t>>;
       static RenderStateMap s_stateBlockMap;
    private:
       static SharedMutex s_stateBlockMapMutex;

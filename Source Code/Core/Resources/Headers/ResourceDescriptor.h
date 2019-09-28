@@ -58,7 +58,7 @@ class PropertyDescriptor : public Hashable {
     {
     }
 
-    virtual size_t getHash() const;
+    virtual size_t getHash() const override;
 
    protected:
     friend class ResourceDescriptor;
@@ -96,7 +96,7 @@ class ResourceDescriptor : public Hashable {
 
     inline bool hasPropertyDescriptor() const { return _propertyDescriptor != nullptr; }
 
-    size_t getHash() const override;
+    size_t getHash() const final;
 
     PROPERTY_RW(stringImpl, assetName); //< Resource instance name (for lookup)
     PROPERTY_RW(stringImpl, assetLocation);

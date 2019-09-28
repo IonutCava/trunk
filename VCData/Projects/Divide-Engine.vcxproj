@@ -512,6 +512,8 @@
     <ClCompile Include="../../Source Code\ECS\Components\SGNComponent.cpp" />
     <ClCompile Include="../../Source Code\ECS\Components\SpotLightComponent.cpp" />
     <ClCompile Include="../../Source Code\Rendering\Lighting\Light.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\fmt\src\format.cc" />
+    <ClCompile Include="..\..\Source Code\Libs\fmt\src\posix.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Core\Headers\Application.h" />
@@ -664,6 +666,19 @@
     <ClInclude Include="../../Source Code\ECS\Components\Headers\PointLightComponent.h" />
     <ClInclude Include="../../Source Code\ECS\Components\Headers\SpotLightComponent.h" />
     <ClInclude Include="../../Source Code\Rendering\Lighting\Headers\Light.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\chrono.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\color.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\compile.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\core.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format-inl.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\locale.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ostream.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\posix.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\printf.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ranges.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\safe-duration-cast.h" />
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\time.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../localisation\enGB.ini" />

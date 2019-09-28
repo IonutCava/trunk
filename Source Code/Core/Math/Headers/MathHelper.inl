@@ -876,11 +876,17 @@ constexpr T SecondsToNanoseconds(const U a) noexcept {
 };  // namespace Time
 
 namespace Util {
+
 /// a la Boost
 template <typename T>
-void Hash_combine(size_t& seed, const T& v) {
+FORCE_INLINE void Hash_combine(size_t& seed, const T& v) {
     std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    Hash_combine<size_t>(seed, hasher(v));
+}
+
+template<>
+FORCE_INLINE void Hash_combine(size_t& seed, const size_t& hash) {
+    seed ^= hash + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
 inline void ReplaceStringInPlace(stringImpl& subject, 

@@ -90,7 +90,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     stringImpl layerOffsetStr;
     stringImpl currentMaterial;
 
-    U8 layerCount = terrainDescriptor->getTextureLayerCount();
+    U8 layerCount = terrainDescriptor->textureLayers();
 
     const vector<std::pair<stringImpl, TerrainTextureChannel>> channels = {
         {"red", TerrainTextureChannel::TEXTURE_RED_CHANNEL},
@@ -242,8 +242,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     Material_ptr terrainMaterial = CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
     terrainMaterial->ignoreXMLData(true);
 
-    const vec2<U16> & terrainDimensions = terrainDescriptor->getDimensions();
-    const vec2<F32> & altitudeRange = terrainDescriptor->getAltitudeRange();
+    const vec2<U16> & terrainDimensions = terrainDescriptor->dimensions();
+    const vec2<F32> & altitudeRange = terrainDescriptor->altitudeRange();
 
     Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
@@ -558,10 +558,10 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     stringImpl terrainMapLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
     stringImpl terrainRawFile(terrainDescriptor->getVariable("heightfield"));
 
-    const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
+    const vec2<U16>& terrainDimensions = terrainDescriptor->dimensions();
     
-    F32 minAltitude = terrainDescriptor->getAltitudeRange().x;
-    F32 maxAltitude = terrainDescriptor->getAltitudeRange().y;
+    F32 minAltitude = terrainDescriptor->altitudeRange().x;
+    F32 maxAltitude = terrainDescriptor->altitudeRange().y;
     BoundingBox& terrainBB = Attorney::TerrainLoader::boundingBox(*terrain);
     terrainBB.set(vec3<F32>(-terrainDimensions.x * 0.5f, minAltitude, -terrainDimensions.y * 0.5f),
                   vec3<F32>( terrainDimensions.x * 0.5f, maxAltitude,  terrainDimensions.y * 0.5f));
@@ -687,9 +687,9 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
 
-    const U32 terrainWidth = terrainDescriptor->getDimensions().width;
-    const U32 terrainHeight = terrainDescriptor->getDimensions().height;
-    U32 chunkSize = to_U32(terrainDescriptor->getTessellationSettings().x);
+    const U32 terrainWidth = terrainDescriptor->dimensions().width;
+    const U32 terrainHeight = terrainDescriptor->dimensions().height;
+    U32 chunkSize = to_U32(terrainDescriptor->tessellationSettings().x);
     U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
 
     U32 maxGrassInstances = 0u, maxTreeInstances = 0u;

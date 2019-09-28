@@ -76,7 +76,7 @@ The general form of a *standard format specifier* is:
 
 .. productionlist:: sf
    format_spec: [[`fill`]`align`][`sign`]["#"]["0"][`width`]["." `precision`][`type`]
-   fill: <a character other than '{' or '}'>
+   fill: <a character other than '{', '}' or '\0'>
    align: "<" | ">" | "=" | "^"
    sign: "+" | "-" | " "
    width: `integer` | "{" `arg_id` "}"
@@ -84,11 +84,11 @@ The general form of a *standard format specifier* is:
    type: `int_type` | "a" | "A" | "c" | "e" | "E" | "f" | "F" | "g" | "G" | "p" | "s"
    int_type: "b" | "B" | "d" | "n" | "o" | "x" | "X"
 
-The *fill* character can be any character other than '{' or '}'.  The presence
-of a fill character is signaled by the character following it, which must be
-one of the alignment options.  If the second character of *format_spec* is not
-a valid alignment option, then it is assumed that both the fill character and
-the alignment option are absent.
+The *fill* character can be any character other than '{', '}' or '\\0'. The
+presence of a fill character is signaled by the character following it, which
+must be one of the alignment options.  If the second character of *format_spec*
+is not a valid alignment option, then it is assumed that both the fill character
+and the alignment option are absent.
 
 The meaning of the various alignment options is as follows:
 
@@ -244,7 +244,7 @@ The available presentation types for floating-point values are:
 |         | notation using the letter 'e' to indicate the exponent.  |
 +---------+----------------------------------------------------------+
 | ``'E'`` | Exponent notation. Same as ``'e'`` except it uses an     |
-|         | upper-case 'E' as the separator character.               |
+|         | upper-case ``'E'`` as the separator character.           |
 +---------+----------------------------------------------------------+
 | ``'f'`` | Fixed point. Displays the number as a fixed-point        |
 |         | number.                                                  |
@@ -264,10 +264,15 @@ The available presentation types for floating-point values are:
 |         | ``'E'`` if the number gets too large. The                |
 |         | representations of infinity and NaN are uppercased, too. |
 +---------+----------------------------------------------------------+
-| none    | The same as ``'g'``.                                     |
+| ``'%'`` | Fixed point as a percentage. This is similar to ``'f'``, |
+|         | but the argument is multiplied by 100 and a percent sign |
+|         | ``%`` is appended.                                       |
 +---------+----------------------------------------------------------+
-
-Floating-point formatting is locale-dependent.
+| none    | Similar to ``'g'``, except that fixed-point notation,    |
+|         | when used, has at least one digit past the decimal       |
+|         | point. The default precision is as high as needed to     |
+|         | represent the particular value.                          |
++---------+----------------------------------------------------------+
 
 .. ifconfig:: False
 
@@ -303,7 +308,7 @@ The available presentation types for pointers are:
 
 .. _formatexamples:
 
-Format examples
+Format Examples
 ===============
 
 This section contains examples of the format syntax and comparison with
@@ -356,6 +361,13 @@ Replacing ``%+f``, ``%-f``, and ``% f`` and specifying a sign::
    // Result: " 3.140000; -3.140000"
    format("{:-f}; {:-f}", 3.14, -3.14);  // show only the minus -- same as '{:f}; {:f}'
    // Result: "3.140000; -3.140000"
+
+As a percentage::
+
+   format("{0:f} or {0:%}", .635);
+   // Result: "0.635000 or 63.500000%"
+   format("{:*^{}.{}%}", 1., 15, 2); // With fill, dynamic width and dynamic precision.
+   // Result: "****100.00%****"
 
 Replacing ``%x`` and ``%o`` and converting the value to different bases::
 
@@ -412,4 +424,3 @@ Padded hex byte with prefix and always prints both hex characters::
           9     9    11  1001
          10     A    12  1010
          11     B    13  1011
-

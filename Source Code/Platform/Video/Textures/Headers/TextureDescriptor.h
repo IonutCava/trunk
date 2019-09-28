@@ -130,7 +130,7 @@ class TextureDescriptor final : public PropertyDescriptor {
     {
     }
 
-    void clone(std::shared_ptr<PropertyDescriptor>& target) const {
+    void clone(std::shared_ptr<PropertyDescriptor>& target) const final {
         return target.reset(new TextureDescriptor(*this));
     }
 

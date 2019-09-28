@@ -52,6 +52,7 @@ template <typename Key>
 using HashType = EnumHash<Key>;
 namespace hashAlg = eastl;
 
+
 template <typename K, typename V, typename HashFun = HashType<K> >
 using hashMap = hashAlg::unordered_map<K, V, HashFun>;
 
@@ -80,6 +81,13 @@ template<class T>
 struct EnumHash {
     inline size_t operator()(const T& elem) const {
         return hasher<T, hashAlg::is_enum<T>::value>()(elem);
+    }
+};
+
+template<class T>
+struct NoHash {
+    inline size_t operator()(const T& elem) const {
+        return static_cast<size_t>(elem);
     }
 };
 

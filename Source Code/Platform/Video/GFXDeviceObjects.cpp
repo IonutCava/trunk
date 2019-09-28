@@ -220,7 +220,7 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
     size_t hash = descriptor.getHash();
 
     UniqueLock lock(_pipelineCacheLock);
-    hashMap<size_t, Pipeline>::iterator it = _pipelineCache.find(hash);
+    hashMap<size_t, Pipeline, NoHash<size_t>>::iterator it = _pipelineCache.find(hash);
     if (it == std::cend(_pipelineCache)) {
         return &hashAlg::insert(_pipelineCache, hash, Pipeline(descriptor)).first->second;
     }

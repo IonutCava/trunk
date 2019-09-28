@@ -487,7 +487,7 @@ protected:
     mutable DescriptorSetPool _descriptorSetPool;
     
     mutable std::mutex _pipelineCacheLock;
-    mutable hashMap<size_t, Pipeline> _pipelineCache;
+    mutable hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
     mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;

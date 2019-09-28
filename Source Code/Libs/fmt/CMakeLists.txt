@@ -1,12 +1,18 @@
-message(STATUS "CMake version: ${CMAKE_VERSION}")
+cmake_minimum_required(VERSION 3.1.0)
 
-cmake_minimum_required(VERSION 2.8.12)
+# Use newer policies if available, up to most recent tested version of CMake.
+if(${CMAKE_VERSION} VERSION_LESS 3.11)
+  cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+else()
+  cmake_policy(VERSION 3.11)
+endif()
 
 # Determine if fmt is built as a subproject (using add_subdirectory)
 # or if it is the master project.
 set(MASTER_PROJECT OFF)
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(MASTER_PROJECT ON)
+  message(STATUS "CMake version: ${CMAKE_VERSION}")
 endif ()
 
 # Joins arguments and places the results in ${result_var}.
@@ -21,21 +27,23 @@ endfunction()
 # Set the default CMAKE_BUILD_TYPE to Release.
 # This should be done before the project command since the latter can set
 # CMAKE_BUILD_TYPE itself (it does so for nmake).
-if (NOT CMAKE_BUILD_TYPE)
+if (MASTER_PROJECT AND NOT CMAKE_BUILD_TYPE)
   join(doc "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or "
            "CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.")
   set(CMAKE_BUILD_TYPE Release CACHE STRING ${doc})
 endif ()
 
 option(FMT_PEDANTIC "Enable extra warnings and expensive tests." OFF)
+option(FMT_WERROR "Halt the compilation with an error on compiler warnings."
+       OFF)
 
 # Options that control generation of various targets.
 option(FMT_DOC "Generate the doc target." ${MASTER_PROJECT})
 option(FMT_INSTALL "Generate the install target." ${MASTER_PROJECT})
 option(FMT_TEST "Generate the test target." ${MASTER_PROJECT})
-option(FMT_USE_CPP14 "Enable the addition of C++14 compiler flags." ON)
+option(FMT_FUZZ "Generate the fuzz target." OFF)
 
-project(FMT)
+project(FMT CXX)
 
 # Get version from core.h
 file(READ include/fmt/core.h core_h)
@@ -58,9 +66,50 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
   "${CMAKE_CURRENT_SOURCE_DIR}/support/cmake")
 
 include(cxx14)
+include(CheckCXXCompilerFlag)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
-  set(PEDANTIC_COMPILE_FLAGS -Wall -Wextra -Wshadow -pedantic)
+set(FMT_REQUIRED_FEATURES cxx_auto_type cxx_variadic_templates)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(PEDANTIC_COMPILE_FLAGS -pedantic-errors -Wall -Wextra -pedantic
+      -Wold-style-cast -Wundef
+      -Wredundant-decls -Wwrite-strings -Wpointer-arith
+      -Wcast-qual -Wformat=2 -Wmissing-include-dirs
+      -Wcast-align -Wnon-virtual-dtor
+      -Wctor-dtor-privacy -Wdisabled-optimization
+      -Winvalid-pch -Woverloaded-virtual
+      -Wconversion
+      -Wno-ctor-dtor-privacy -Wno-format-nonliteral -Wno-shadow)
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
+      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wnoexcept
+         -Wno-dangling-else -Wno-unused-local-typedefs)
+  endif ()
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wdouble-promotion
+          -Wtrampolines -Wzero-as-null-pointer-constant -Wuseless-cast
+          -Wvector-operation-performance -Wsized-deallocation)
+  endif ()
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
+      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wshift-overflow=2
+          -Wnull-dereference -Wduplicated-cond)
+  endif ()
+  set(WERROR_FLAG -Werror)
+endif ()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(PEDANTIC_COMPILE_FLAGS -Wall -Wextra -pedantic -Wconversion
+      -Wno-sign-conversion)
+  check_cxx_compiler_flag(-Wzero-as-null-pointer-constant HAS_NULLPTR_WARNING)
+  if (HAS_NULLPTR_WARNING)
+    set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS}
+        -Wzero-as-null-pointer-constant)
+  endif ()
+  set(WERROR_FLAG -Werror)
+endif ()
+
+if (MSVC)
+  set(PEDANTIC_COMPILE_FLAGS /W3)
+  set(WERROR_FLAG /WX)
 endif ()
 
 if (MASTER_PROJECT AND CMAKE_GENERATOR MATCHES "Visual Studio")
@@ -79,11 +128,18 @@ if (MASTER_PROJECT AND CMAKE_GENERATOR MATCHES "Visual Studio")
     ${CMAKE_MAKE_PROGRAM} -p:FrameworkPathOverride=\"${netfxpath}\" %*")
 endif ()
 
+set(strtod_l_headers stdlib.h)
+if (APPLE)
+  set(strtod_l_headers ${strtod_l_headers} xlocale.h)
+endif ()
+
 include(CheckSymbolExists)
 if (WIN32)
   check_symbol_exists(open io.h HAVE_OPEN)
+  check_symbol_exists(_strtod_l "${strtod_l_headers}" HAVE_STRTOD_L)
 else ()
   check_symbol_exists(open fcntl.h HAVE_OPEN)
+  check_symbol_exists(strtod_l "${strtod_l_headers}" HAVE_STRTOD_L)
 endif ()
 
 function(add_headers VAR)
@@ -95,8 +151,9 @@ function(add_headers VAR)
 endfunction()
 
 # Define the fmt library, its includes and the needed defines.
-add_headers(FMT_HEADERS core.h format.h format-inl.h locale.h ostream.h printf.h
-                        time.h)
+add_headers(FMT_HEADERS chrono.h color.h compile.h core.h format.h format-inl.h
+                        locale.h ostream.h printf.h ranges.h
+                        safe-duration-cast.h)
 set(FMT_SOURCES src/format.cc)
 if (HAVE_OPEN)
   add_headers(FMT_HEADERS posix.h)
@@ -106,12 +163,18 @@ endif ()
 add_library(fmt ${FMT_SOURCES} ${FMT_HEADERS} README.rst ChangeLog.rst)
 add_library(fmt::fmt ALIAS fmt)
 
-# Starting with CMake 3.1 the CXX_STANDARD property can be used instead.
-# Don't export -std since it may break projects that use other standards.
-target_compile_options(fmt PRIVATE ${CPP14_FLAG})
+if (HAVE_STRTOD_L)
+  target_compile_definitions(fmt PUBLIC FMT_LOCALE)
+endif ()
+
+if (FMT_WERROR)
+  target_compile_options(fmt PRIVATE ${WERROR_FLAG})
+endif ()
 if (FMT_PEDANTIC)
   target_compile_options(fmt PRIVATE ${PEDANTIC_COMPILE_FLAGS})
 endif ()
+
+target_compile_features(fmt INTERFACE ${FMT_REQUIRED_FEATURES})
 
 target_include_directories(fmt PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -129,27 +192,30 @@ if (BUILD_SHARED_LIBS)
   endif ()
   target_compile_definitions(fmt PRIVATE FMT_EXPORT INTERFACE FMT_SHARED)
 endif ()
+if (FMT_SAFE_DURATION_CAST)
+  target_compile_definitions(fmt PUBLIC FMT_SAFE_DURATION_CAST)
+endif()
 
-# Additionally define a header-only library when CMake is new enough.
-if (CMAKE_VERSION VERSION_GREATER 3.1.0 OR CMAKE_VERSION VERSION_EQUAL 3.1.0)
-  add_library(fmt-header-only INTERFACE)
-  add_library(fmt::fmt-header-only ALIAS fmt-header-only)
+add_library(fmt-header-only INTERFACE)
+add_library(fmt::fmt-header-only ALIAS fmt-header-only)
 
-  target_compile_definitions(fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
+target_compile_definitions(fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
 
-  target_include_directories(fmt-header-only INTERFACE
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
-endif ()
+target_compile_features(fmt-header-only INTERFACE ${FMT_REQUIRED_FEATURES})
+
+target_include_directories(fmt-header-only INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
 
 # Install targets.
 if (FMT_INSTALL)
   include(GNUInstallDirs)
   include(CMakePackageConfigHelpers)
   set(FMT_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/fmt CACHE STRING
-    "Installation directory for cmake files, relative to ${CMAKE_INSTALL_PREFIX}.")
+      "Installation directory for cmake files, relative to ${CMAKE_INSTALL_PREFIX}.")
   set(version_config ${PROJECT_BINARY_DIR}/fmt-config-version.cmake)
   set(project_config ${PROJECT_BINARY_DIR}/fmt-config.cmake)
+  set(pkgconfig ${PROJECT_BINARY_DIR}/fmt.pc)
   set(targets_export_name fmt-targets)
 
   set (INSTALL_TARGETS fmt)
@@ -163,11 +229,18 @@ if (FMT_INSTALL)
   set(FMT_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR}/fmt CACHE STRING
       "Installation directory for include files, relative to ${CMAKE_INSTALL_PREFIX}.")
 
+  set(FMT_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH
+      "Installation directory for pkgconfig (.pc) files, relative to ${CMAKE_INSTALL_PREFIX}.")
+
   # Generate the version, config and target files into the build directory.
   write_basic_package_version_file(
     ${version_config}
     VERSION ${FMT_VERSION}
     COMPATIBILITY AnyNewerVersion)
+  configure_file(
+    "${PROJECT_SOURCE_DIR}/support/cmake/fmt.pc.in"
+    "${pkgconfig}"
+    @ONLY)
   configure_package_config_file(
     ${PROJECT_SOURCE_DIR}/support/cmake/fmt-config.cmake.in
     ${project_config}
@@ -187,7 +260,11 @@ if (FMT_INSTALL)
   # Install the library and headers.
   install(TARGETS ${INSTALL_TARGETS} EXPORT ${targets_export_name}
           DESTINATION ${FMT_LIB_DIR})
+
+  install(FILES $<TARGET_PDB_FILE:${INSTALL_TARGETS}>
+          DESTINATION ${FMT_LIB_DIR} OPTIONAL)
   install(FILES ${FMT_HEADERS} DESTINATION ${FMT_INC_DIR})
+  install(FILES "${pkgconfig}" DESTINATION "${FMT_PKGCONFIG_DIR}")
 endif ()
 
 if (FMT_DOC)
@@ -197,6 +274,11 @@ endif ()
 if (FMT_TEST)
   enable_testing()
   add_subdirectory(test)
+endif ()
+
+# Control fuzzing independent of the unit tests.
+if (FMT_FUZZ)
+  add_subdirectory(test/fuzzing)
 endif ()
 
 set(gitignore ${PROJECT_SOURCE_DIR}/.gitignore)

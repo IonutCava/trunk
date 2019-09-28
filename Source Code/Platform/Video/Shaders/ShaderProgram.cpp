@@ -301,13 +301,13 @@ vector<stringImpl> ShaderProgram::getAllAtomLocations() {
     return atomLocations;
 }
 
-stringImpl ShaderProgram::getDefinesHash(const ModuleDefines& defines) {
+size_t ShaderProgram::definesHash(const ModuleDefines& defines) {
     size_t hash = 499;
-    for (auto entry : defines) {
+    for (const auto& entry : defines) {
         Util::Hash_combine(hash, _ID(entry.first.c_str()));
         Util::Hash_combine(hash, entry.second);
     }
-    return to_stringImpl(hash);
+    return hash;
 }
 
 };

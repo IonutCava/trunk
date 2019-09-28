@@ -39,53 +39,28 @@ namespace Divide {
 
 class TerrainDescriptor final : public PropertyDescriptor {
    public:
-	   enum class WireframeMode : U8 {
-		   NONE = 0,
-		   EDGES,
-		   NORMALS,
-           COUNT
-	   };
+        enum class WireframeMode : U8 {
+            NONE = 0,
+            EDGES,
+            NORMALS,
+            COUNT
+        };
 
-	   enum class ParallaxMode : U8 {
-		   NONE = 0,
-		   NORMAL,
-		   OCCLUSION,
-           COUNT
-	   };
+        enum class ParallaxMode : U8 {
+            NONE = 0,
+            NORMAL,
+            OCCLUSION,
+            COUNT
+        };
    public:
     explicit TerrainDescriptor(const stringImpl& name) noexcept;
-
-    ~TerrainDescriptor();
+    virtual ~TerrainDescriptor();
 
     bool loadFromXML(const boost::property_tree::ptree& pt, const stringImpl& name);
-
     void clone(std::shared_ptr<PropertyDescriptor>& target) const override;
 
     void addVariable(const stringImpl& name, const stringImpl& value);
-
     void addVariable(const stringImpl& name, F32 value);
-
-    void setTextureLayerCount(U8 count) noexcept { _textureLayers = count; }
-    void setDimensions(const vec2<U16>& dim) noexcept { _dimensions = dim; }
-    void setAltitudeRange(const vec2<F32>& dim) noexcept { _altitudeRange = dim; }
-    void setTessellatedTriangleWidth(U32 width) noexcept { _tessellatedTriangleWidth = width; }
-    void setParallaxHeightScale(F32 scale)      noexcept { _parallaxHeightScale = scale; }
-    void setTessellationSettings(const vec2<F32>& chunkAndPatch) noexcept { _tessellationSettings = chunkAndPatch; }
-    void setActive(bool active) noexcept { _active = active; }
-    void setWireframeDebug(U8 state) noexcept { _wireframeDebug = static_cast<WireframeMode>(CLAMPED(to_I32(state), 0, 2)); }
-	void setParallaxMode(U8 state) noexcept { _parallaxMode = static_cast<ParallaxMode>(CLAMPED(to_I32(state), 0, 2)); }
-
-    U8 getTextureLayerCount() const noexcept { return _textureLayers; }
-    bool getActive() const noexcept { return _active; }
-	WireframeMode wireframeDebug() const noexcept { return _wireframeDebug; }
-	ParallaxMode parallaxMode() const noexcept { return _parallaxMode; }
-
-    const vec2<F32>& getAltitudeRange() const noexcept { return _altitudeRange; }
-    const vec2<F32>& getTessellationSettings() const noexcept { return _tessellationSettings; }
-    const U32        getTessellatedTriangleWidth() const noexcept { return _tessellatedTriangleWidth; }
-    const F32        getParallaxHeightScale() const noexcept { return _parallaxHeightScale; }
-    const vec2<U16>& getDimensions() const noexcept { return _dimensions; }
-
     stringImpl getVariable(const stringImpl& name) const {
         const hashMap<U64, stringImpl>::const_iterator it = _variables.find(_ID(name.c_str()));
         if (it != std::end(_variables)) {
@@ -102,46 +77,49 @@ class TerrainDescriptor final : public PropertyDescriptor {
         return 0.0f;
     }
 
-    inline size_t getHash() const override {
-        size_t hash = 17;
+    inline size_t getHash() const final {
+        _hash = PropertyDescriptor::getHash();
         for (hashMap<U64, stringImpl>::value_type it : _variables) {
-            Util::Hash_combine(hash, it.first);
-            Util::Hash_combine(hash, it.second);
+            Util::Hash_combine(_hash, it.first);
+            Util::Hash_combine(_hash, it.second);
         }
         for (hashMap<U64, F32>::value_type it : _variablesf) {
-            Util::Hash_combine(hash, it.first);
-            Util::Hash_combine(hash, it.second);
+            Util::Hash_combine(_hash, it.first);
+            Util::Hash_combine(_hash, it.second);
         }
-        Util::Hash_combine(hash, _active);
-        Util::Hash_combine(hash, _textureLayers);
-        Util::Hash_combine(hash, _altitudeRange.x);
-        Util::Hash_combine(hash, _altitudeRange.y);
-        Util::Hash_combine(hash, _tessellationSettings.x);
-        Util::Hash_combine(hash, _tessellationSettings.y);
-        Util::Hash_combine(hash, _tessellatedTriangleWidth);
-        Util::Hash_combine(hash, _parallaxHeightScale);
-        Util::Hash_combine(hash, _dimensions.x);
-        Util::Hash_combine(hash, _dimensions.y);
-		Util::Hash_combine(hash, to_base(_wireframeDebug));
-		Util::Hash_combine(hash, to_base(_parallaxMode));
-        Util::Hash_combine(hash, PropertyDescriptor::getHash());
+        Util::Hash_combine(_hash, _active);
+        Util::Hash_combine(_hash, _textureLayers);
+        Util::Hash_combine(_hash, _altitudeRange.x);
+        Util::Hash_combine(_hash, _altitudeRange.y);
+        Util::Hash_combine(_hash, _tessellationSettings.x);
+        Util::Hash_combine(_hash, _tessellationSettings.y);
+        Util::Hash_combine(_hash, _tessellatedTriangleWidth);
+        Util::Hash_combine(_hash, _parallaxHeightScale);
+        Util::Hash_combine(_hash, _dimensions.x);
+        Util::Hash_combine(_hash, _dimensions.y);
+        Util::Hash_combine(_hash, to_base(_wireframeDebug));
+        Util::Hash_combine(_hash, to_base(_parallaxMode));
 
-        return hash;
+        return _hash;
     }
 
-    U32 _tessellatedTriangleWidth = 35u;
-    F32 _parallaxHeightScale = 0.3f;
-
-   private:
+private:
     hashMap<U64, stringImpl> _variables;
     hashMap<U64, F32> _variablesf;
-    vec2<F32> _tessellationSettings = { 32.0f, 100.0f };
-    vec2<F32> _altitudeRange = { 0.f, 1.f };
-    vec2<U16> _dimensions = { 1.f, 1.f };
-    U8 _textureLayers = 1;
-	WireframeMode _wireframeDebug = WireframeMode::NONE;
-	ParallaxMode _parallaxMode = ParallaxMode::NONE;
-    bool _active = false;
+
+protected:
+    friend class Terrain;
+
+    PROPERTY_RW(vec2<F32>, tessellationSettings);
+    PROPERTY_RW(vec2<F32>, altitudeRange);
+    PROPERTY_RW(vec2<U16>, dimensions, { 1 });
+    PROPERTY_RW(U32, tessellatedTriangleWidth, 35u);
+    PROPERTY_RW(F32, parallaxHeightScale, 0.3f);
+    PROPERTY_RW(WireframeMode, wireframeDebug, WireframeMode::NONE);
+    PROPERTY_RW(ParallaxMode, parallaxMode, ParallaxMode::NONE);
+    PROPERTY_RW(U8, textureLayers, 1u);
+    PROPERTY_RW(bool, active, false);
+
 };
 
 };  // namespace Divide
