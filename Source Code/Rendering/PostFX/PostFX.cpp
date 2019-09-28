@@ -79,12 +79,12 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     _shaderFunctionSelection.resize(_postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
 
     SamplerDescriptor defaultSampler = {};
-    defaultSampler._wrapU = TextureWrap::REPEAT;
-    defaultSampler._wrapV = TextureWrap::REPEAT;
-    defaultSampler._wrapW = TextureWrap::REPEAT;
+    defaultSampler.wrapU(TextureWrap::REPEAT);
+    defaultSampler.wrapV(TextureWrap::REPEAT);
+    defaultSampler.wrapW(TextureWrap::REPEAT);
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
-    texDescriptor.setSampler(defaultSampler);
+    texDescriptor.samplerDescriptor(defaultSampler);
 
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.assetName("terrain_water_NM.jpg");
@@ -163,12 +163,12 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     _preRenderBatch->execute(camera, _filterStack, bufferInOut);
 
     TextureData output = _preRenderBatch->getOutput();
-    TextureData data0 = _underwaterTexture->getData();
-    TextureData data1 = _noise->getData();
-    TextureData data2 = _screenBorder->getData();
+    TextureData data0 = _underwaterTexture->data();
+    TextureData data1 = _noise->data();
+    TextureData data2 = _screenBorder->data();
 
     RenderTarget& screenRT = _gfx->renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    TextureData depthData = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
+    TextureData depthData = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->data();
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);

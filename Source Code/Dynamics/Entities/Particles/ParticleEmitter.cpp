@@ -215,8 +215,8 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
         SamplerDescriptor textureSampler = {};
 
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
-        textureDescriptor.setSampler(textureSampler);
-        textureDescriptor._srgb = true;
+        textureDescriptor.samplerDescriptor(textureSampler);
+        textureDescriptor.srgb(true);
 
         ResourceDescriptor texture(_particles->_textureFileName);
         texture.propertyDescriptor(textureDescriptor);
@@ -263,7 +263,7 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addDrawCommand(drawCommand);
 
     if (_particleTexture) {
-        pkgInOut.setTexture(0, _particleTexture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        pkgInOut.setTexture(0, _particleTexture->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     }
 
     const Pipeline* pipeline = pkgInOut.pipeline(0);

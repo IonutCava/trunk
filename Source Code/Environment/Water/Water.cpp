@@ -48,14 +48,14 @@ bool WaterPlane::load() {
     const stringImpl& name = resourceName();
 
     SamplerDescriptor defaultSampler = {};
-    defaultSampler._wrapU = TextureWrap::REPEAT;
-    defaultSampler._wrapV = TextureWrap::REPEAT;
-    defaultSampler._wrapW = TextureWrap::REPEAT;
-    defaultSampler._minFilter = TextureFilter::LINEAR;
-    defaultSampler._magFilter = TextureFilter::LINEAR;
+    defaultSampler.wrapU(TextureWrap::REPEAT);
+    defaultSampler.wrapV(TextureWrap::REPEAT);
+    defaultSampler.wrapW(TextureWrap::REPEAT);
+    defaultSampler.minFilter(TextureFilter::LINEAR);
+    defaultSampler.magFilter(TextureFilter::LINEAR);
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
-    texDescriptor.setSampler(defaultSampler);
+    texDescriptor.samplerDescriptor(defaultSampler);
 
     ResourceDescriptor waterTexture("waterTexture_" + name);
     waterTexture.assetName("terrain_water_NM.jpg");

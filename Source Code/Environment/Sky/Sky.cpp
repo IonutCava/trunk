@@ -55,16 +55,16 @@ bool Sky::load() {
     }
 
     SamplerDescriptor skyboxSampler = {};
-    skyboxSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    skyboxSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    skyboxSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    skyboxSampler._minFilter = TextureFilter::LINEAR;
-    skyboxSampler._magFilter = TextureFilter::LINEAR;
-    skyboxSampler._anisotropyLevel = 0;
+    skyboxSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    skyboxSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    skyboxSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    skyboxSampler.minFilter(TextureFilter::LINEAR);
+    skyboxSampler.magFilter(TextureFilter::LINEAR);
+    skyboxSampler.anisotropyLevel(0);
 
     TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
-    skyboxTexture.setSampler(skyboxSampler);
-    skyboxTexture._srgb = true;
+    skyboxTexture.samplerDescriptor(skyboxSampler);
+    skyboxTexture.srgb(true);
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.assetName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");
@@ -201,7 +201,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addPipelineCommand(pipelineCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
-    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     pkgInOut.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};

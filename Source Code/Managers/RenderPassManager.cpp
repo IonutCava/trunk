@@ -155,8 +155,8 @@ namespace Divide {
                                                 const Texture_ptr& srcTex = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
                                                 const Texture_ptr& dstTex = gfx.getPrevDepthBuffer();
                                                 GFX::CopyTextureCommand copyCmd = {};
-                                                copyCmd._source = srcTex->getData();
-                                                copyCmd._destination = dstTex->getData();
+                                                copyCmd._source = srcTex->data();
+                                                copyCmd._destination = dstTex->data();
                                                 copyCmd._params._dimensions = {
                                                     dstTex->width(),
                                                     dstTex->height(),
@@ -611,7 +611,7 @@ void RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassPa
 
         // Bind the HiZ target as our depth texture
         GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-        bindDescriptorSets._set._textureData.setTexture(HiZTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        bindDescriptorSets._set._textureData.setTexture(HiZTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
         GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
     } else {
         GFX::ResolveRenderTargetCommand resolveCmd = { };
@@ -624,7 +624,7 @@ void RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassPa
         const Texture_ptr& DepthTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
 
         GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-        bindDescriptorSets._set._textureData.setTexture(DepthTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        bindDescriptorSets._set._textureData.setTexture(DepthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
         GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
     }
 }
@@ -667,7 +667,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
                 resolveCmd._resolveColour = to_I8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY);
                 GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
-                const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY))->texture()->getData();
+                const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY))->texture()->data();
                 constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::NORMALMAP);
                 descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
             }
@@ -689,7 +689,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             resolveCmd._resolveColour = to_I8(GFXDevice::ScreenTargets::EXTRA);
             GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
-            const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->getData();
+            const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->data();
             constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::PREPASS_SHADOWS);
 
             descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
@@ -805,8 +805,8 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
         RenderTarget& oitTarget = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT));
-        TextureData accum = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
-        TextureData revealage = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
+        TextureData accum = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->data();
+        TextureData revealage = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->data();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.setTexture(accum, to_base(ShaderProgram::TextureUsage::UNIT0));
@@ -867,7 +867,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-    bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
+    bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
     bool prePassExecuted = prePass(visibleNodes, params, extraTargets, target, bufferInOut);

@@ -181,50 +181,50 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     removeLastChar(extraMapArray);
 
     SamplerDescriptor heightMapSampler = {};
-    heightMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    heightMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    heightMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    heightMapSampler._minFilter = TextureFilter::LINEAR;
-    heightMapSampler._magFilter = TextureFilter::LINEAR;
-    heightMapSampler._anisotropyLevel = 0;
+    heightMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    heightMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    heightMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    heightMapSampler.minFilter(TextureFilter::LINEAR);
+    heightMapSampler.magFilter(TextureFilter::LINEAR);
+    heightMapSampler.anisotropyLevel(0);
 
     SamplerDescriptor blendMapSampler = {};
-    blendMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    blendMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    blendMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    blendMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-    blendMapSampler._magFilter = TextureFilter::LINEAR;
-    blendMapSampler._anisotropyLevel = 0;
+    blendMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    blendMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    blendMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    blendMapSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    blendMapSampler.magFilter(TextureFilter::LINEAR);
+    blendMapSampler.anisotropyLevel(0);
 
     SamplerDescriptor albedoSampler = {};
     if (false) {
-        albedoSampler._wrapU = TextureWrap::MIRROR_REPEAT;
-        albedoSampler._wrapV = TextureWrap::MIRROR_REPEAT;
-        albedoSampler._wrapW = TextureWrap::MIRROR_REPEAT;
+        albedoSampler.wrapU(TextureWrap::MIRROR_REPEAT);
+        albedoSampler.wrapV(TextureWrap::MIRROR_REPEAT);
+        albedoSampler.wrapW(TextureWrap::MIRROR_REPEAT);
     }
-    albedoSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-    albedoSampler._magFilter = TextureFilter::LINEAR;
-    albedoSampler._anisotropyLevel = 4;
+    albedoSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    albedoSampler.magFilter(TextureFilter::LINEAR);
+    albedoSampler.anisotropyLevel(4);
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    blendMapDescriptor.setSampler(blendMapSampler);
-    blendMapDescriptor._layerCount = to_U32(splatTextures.size());
-    blendMapDescriptor._srgb = false;
+    blendMapDescriptor.samplerDescriptor(blendMapSampler);
+    blendMapDescriptor.layerCount(to_U32(splatTextures.size()));
+    blendMapDescriptor.srgb(false);
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    albedoDescriptor.setSampler(albedoSampler);
-    albedoDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)].size());
-    albedoDescriptor._srgb = false;
+    albedoDescriptor.samplerDescriptor(albedoSampler);
+    albedoDescriptor.layerCount(to_U32(textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)].size()));
+    albedoDescriptor.srgb(false);
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    normalDescriptor.setSampler(albedoSampler);
-    normalDescriptor._layerCount = to_U32(textures[to_base(TerrainTextureType::NORMAL)].size());
-    normalDescriptor._srgb = false;
+    normalDescriptor.samplerDescriptor(albedoSampler);
+    normalDescriptor.layerCount(to_U32(textures[to_base(TerrainTextureType::NORMAL)].size()));
+    normalDescriptor.srgb(false);
 
     TextureDescriptor extraDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    extraDescriptor.setSampler(albedoSampler);
-    extraDescriptor._layerCount = extraMapCount;
-    extraDescriptor._srgb = false;
+    extraDescriptor.samplerDescriptor(albedoSampler);
+    extraDescriptor.layerCount(extraMapCount);
+    extraDescriptor.srgb(false);
 
     textureBlendMap.assetName(blendMapArray);
     textureBlendMap.propertyDescriptor(blendMapDescriptor);
@@ -291,7 +291,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                                 terrainDescriptor->getVariable("tileNoiseTexture");
 
     TextureDescriptor helperTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    helperTexDescriptor.setSampler(blendMapSampler);
+    helperTexDescriptor.samplerDescriptor(blendMapSampler);
 
     ResourceDescriptor textureWaterCaustics("Terrain Helper Textures_" + name);
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
@@ -305,8 +305,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapTexture.waitForReadyCbk(waitForReasoureTask);
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_SHORT);
-    heightMapDescriptor.setSampler(heightMapSampler);
-    heightMapDescriptor.automaticMipMapGeneration(false);
+    heightMapDescriptor.samplerDescriptor(heightMapSampler);
+    heightMapDescriptor.autoMipMaps(false);
     heightMapTexture.propertyDescriptor(heightMapDescriptor);
 
     heightMapTexture.flag(true);
@@ -754,16 +754,16 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     }
 
     SamplerDescriptor grassSampler = {};
-    grassSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    grassSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    grassSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    grassSampler._anisotropyLevel = 8;
+    grassSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    grassSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    grassSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    grassSampler.anisotropyLevel(8);
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    grassTexDescriptor._layerCount = textureCount;
-    grassTexDescriptor.setSampler(grassSampler);
-    grassTexDescriptor._srgb = true;
-    grassTexDescriptor.automaticMipMapGeneration(true);
+    grassTexDescriptor.layerCount(textureCount);
+    grassTexDescriptor.samplerDescriptor(grassSampler);
+    grassTexDescriptor.srgb(true);
+    grassTexDescriptor.autoMipMaps(true);
 
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("vegetationTextureLocation"));

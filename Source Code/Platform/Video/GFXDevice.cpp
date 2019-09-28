@@ -190,11 +190,11 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     bool isValidFB = true;
     if (hasColour) {
         // We only need the colour attachment
-        isValidFB = (colourAttachment.texture()->getDescriptor().isCubeTexture());
+        isValidFB = (colourAttachment.texture()->descriptor().isCubeTexture());
     } else {
         // We don't have a colour attachment, so we require a cube map depth
         // attachment
-        isValidFB = hasDepth && depthAttachment.texture()->getDescriptor().isCubeTexture();
+        isValidFB = hasDepth && depthAttachment.texture()->descriptor().isCubeTexture();
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -285,10 +285,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     bool isValidFB = true;
     if (hasColour) {
         // We only need the colour attachment
-        isValidFB = colourAttachment.texture()->getDescriptor().isArrayTexture();
+        isValidFB = colourAttachment.texture()->descriptor().isArrayTexture();
     } else {
         // We don't have a colour attachment, so we require a cube map depth attachment
-        isValidFB = hasDepth && depthAttachment.texture()->getDescriptor().isArrayTexture();
+        isValidFB = hasDepth && depthAttachment.texture()->descriptor().isArrayTexture();
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -567,7 +567,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     GFX::EnqueueCommand(cmdBufferInOut, blitDepthBufferCmd);
 
     const Texture_ptr& hizDepthTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
-    if (!hizDepthTex->getDescriptor().automaticMipMapGeneration()) {
+    if (!hizDepthTex->descriptor().autoMipMaps()) {
 
         GFX::BeginRenderPassCommand beginRenderPassCmd;
         beginRenderPassCmd._target = HiZTarget;
@@ -590,7 +590,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
         triangleCmd._drawCount = 1;
 
-        TextureData hizData = hizDepthTex->getData();
+        TextureData hizData = hizDepthTex->data();
         // for i > 0, use texture views?
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.setTexture(hizData, to_U8(ShaderProgram::TextureUsage::DEPTH));

@@ -983,12 +983,20 @@ struct AtomicWrapper
 
 #define PROPERTY_GET_SET(ReadAccess, Type, Name) \
 ReadAccess: \
-    inline void Name(const Type val) noexcept { _##Name = val; } \
+    FORCE_INLINE void Name(const Type& val) noexcept { _##Name = val; } \
 public: \
-    inline const Type& Name() const noexcept { return _##Name; }
+    FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
+
+#define POINTER_GET_SET(ReadAccess, Type, Name) \
+ReadAccess: \
+    FORCE_INLINE void Name(Type* const val) noexcept { _##Name = val; } \
+public: \
+    FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
 
 #define PROPERTY_R_1_ARGS(Type) 
 #define PROPERTY_RW_1_ARGS(Type) 
+#define POINTER_R_1_ARGS(Type) 
+#define POINTER_RW_1_ARGS(Type) 
 
 #define PROPERTY_R_3_ARGS(Type, Name, Val) \
 protected: \
@@ -1011,13 +1019,45 @@ protected: \
     Type _##Name; \
     PROPERTY_GET_SET(public, Type, Name)
 
+
+#define POINTER_R_3_ARGS(Type, Name, Val) \
+protected: \
+    Type* _##Name = Val; \
+    POINTER_GET_SET(protected, Type, Name)
+
+#define POINTER_RW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type* _##Name = Val; \
+    POINTER_GET_SET(public, Type, Name)
+
+
+#define POINTER_R_2_ARGS(Type, Name) \
+protected: \
+    Type* _##Name; \
+    POINTER_GET_SET(protected, Type, Name)
+
+#define POINTER_RW_2_ARGS(Type, Name) \
+protected: \
+    Type* _##Name; \
+    POINTER_GET_SET(public, Type, Name)
+
 #define ___DETAIL_PROPERTY_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_R_3_ARGS, PROPERTY_R_2_ARGS, PROPERTY_R_1_ARGS, ))
 #define ___DETAIL_PROPERTY_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_RW_3_ARGS, PROPERTY_RW_2_ARGS, PROPERTY_RW_1_ARGS, ))
+
+#define ___DETAIL_POINTER_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_R_3_ARGS, POINTER_R_2_ARGS, POINTER_R_1_ARGS, ))
+#define ___DETAIL_POINTER_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_RW_3_ARGS, POINTER_RW_2_ARGS, POINTER_RW_1_ARGS, ))
 
 /// Convenience method to add a class member with public read access but protected write access
 #define PROPERTY_R(...) EXP(___DETAIL_PROPERTY_R(__VA_ARGS__)(__VA_ARGS__))
 /// RW properties are no better (actully a little worse) than just making the member public, but we need it to keep the same interface with read-only properties
 /// A _R can become a _RW and vice-versa depending on needs, but that shouldn't affect other parts of the implementation
 #define PROPERTY_RW(...) EXP(___DETAIL_PROPERTY_RW(__VA_ARGS__)(__VA_ARGS__))
+
+
+/// Convenience method to add a class member with public read access but protected write access
+#define POINTER_R(...) EXP(___DETAIL_POINTER_R(__VA_ARGS__)(__VA_ARGS__))
+/// RW properties are no better (actully a little worse) than just making the member public, but we need it to keep the same interface with read-only properties
+/// A _R can become a _RW and vice-versa depending on needs, but that shouldn't affect other parts of the implementation
+#define POINTER_RW(...) EXP(___DETAIL_POINTER_RW(__VA_ARGS__)(__VA_ARGS__))
 #endif
 };  // namespace Divide

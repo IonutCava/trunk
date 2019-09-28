@@ -19,15 +19,15 @@ GUISplash::GUISplash(ResourceCache& cache,
     : _dimensions(dimensions)
 {
     SamplerDescriptor splashSampler = {};
-    splashSampler._wrapU = TextureWrap::CLAMP;
-    splashSampler._wrapV = TextureWrap::CLAMP;
-    splashSampler._wrapW = TextureWrap::CLAMP;
-    splashSampler._minFilter = TextureFilter::NEAREST;
-    splashSampler._magFilter = TextureFilter::NEAREST;
-    splashSampler._anisotropyLevel = 0;
+    splashSampler.wrapU(TextureWrap::CLAMP);
+    splashSampler.wrapV(TextureWrap::CLAMP);
+    splashSampler.wrapW(TextureWrap::CLAMP);
+    splashSampler.minFilter(TextureFilter::NEAREST);
+    splashSampler.magFilter(TextureFilter::NEAREST);
+    splashSampler.anisotropyLevel(0);
     
     TextureDescriptor splashDescriptor(TextureType::TEXTURE_2D);
-    splashDescriptor.setSampler(splashSampler);
+    splashDescriptor.samplerDescriptor(splashSampler);
 
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.threaded(false);
@@ -78,7 +78,7 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
     GFX::EnqueueCommand(buffer, viewportCommand);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(_splashImage->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(_splashImage->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
     GenericDrawCommand triangleCmd;

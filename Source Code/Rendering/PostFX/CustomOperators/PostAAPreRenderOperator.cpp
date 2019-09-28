@@ -20,7 +20,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
       _idleCount(0)
 {
     vector<RTAttachmentDescriptor> att = {
-        { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
+        { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
     };
 
     RenderTargetDescriptor desc = {};
@@ -111,7 +111,7 @@ void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& 
     blitRTCommand._blitColours.emplace_back();
     GFX::EnqueueCommand(bufferInOut, blitRTCommand);
 
-    TextureData data0 = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    TextureData data0 = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.setTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);

@@ -100,7 +100,7 @@ bool SceneAnimator::init(PlatformContext& context) {
 }
 
 /// This will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
-bool SceneAnimator::init(PlatformContext& context, Bone* skeleton, const vector<Bone*>& bones) {
+bool SceneAnimator::init(PlatformContext& context, Bone* const skeleton, const vector<Bone*>& bones) {
     release(false);
     _skeleton = skeleton;
     _bones = bones;

@@ -53,8 +53,8 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
                                         _cache,
                                         _loadingDescriptorHash,
                                         _descriptor.resourceName(),
-                                        tempMeshData._modelName,
-                                        tempMeshData._modelPath),
+                                        tempMeshData.modelName(),
+                                        tempMeshData.modelPath()),
                                 DeleteResource(_cache));
 
     if (ptr) {

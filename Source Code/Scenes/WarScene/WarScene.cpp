@@ -291,7 +291,6 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         return;
     }
 
-
     if (_terrainMode) {
         if (g_terrain == nullptr) {
             auto objects = sceneGraph().getNodesByType(SceneNodeType::TYPE_OBJECT3D);
@@ -312,9 +311,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             }
         }
     }
-
-    return;
-
+#if 0
     if (_resetUnits) {
         resetUnits();
         _resetUnits = false;
@@ -375,6 +372,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         _elapsedGameTime += deltaTimeUS;
         checkGameCompletion();
     }
+#endif
 }
 
 bool WarScene::load(const stringImpl& name) {

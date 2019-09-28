@@ -43,65 +43,46 @@ namespace Divide {
     class VertexBuffer;
     namespace Import {
         struct TextureEntry {
-            TextureEntry()
-              : _srgbSpace(false),
-                _wrapU(TextureWrap::REPEAT),
-                _wrapV(TextureWrap::REPEAT),
-                _wrapW(TextureWrap::REPEAT),
-                _operation(Material::TextureOperation::NONE)
-            {
-            }
-
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
 
-            stringImpl _textureName;
-            stringImpl _texturePath;
+            PROPERTY_RW(stringImpl, textureName);
+            PROPERTY_RW(stringImpl, texturePath);
 
             // Only Albedo/Diffuse should be sRGB
             // Normals, specular, etc should be in linear space
-            bool _srgbSpace;
-            TextureWrap _wrapU, _wrapV, _wrapW;
-            Material::TextureOperation _operation;
+            PROPERTY_RW(bool, srgb, false);
+            PROPERTY_RW(TextureWrap, wrapU, TextureWrap::REPEAT);
+            PROPERTY_RW(TextureWrap, wrapV, TextureWrap::REPEAT);
+            PROPERTY_RW(TextureWrap, wrapW, TextureWrap::REPEAT);
+            PROPERTY_RW(Material::TextureOperation, operation, Material::TextureOperation::NONE);
         };
 
         struct MaterialData {
-            MaterialData()
-            {
-                _ignoreAlpha = false;
-                _doubleSided = true;
-                _shadingMode = Material::ShadingMode::FLAT;
-                _bumpMethod = Material::BumpMethod::NONE;
-                _textures.fill(TextureEntry());
-            }
-
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
 
-            bool _ignoreAlpha;
-            bool _doubleSided;
-            stringImpl _name;
-            Material::ColourData   _colourData;
-            Material::ShadingMode  _shadingMode;
-            Material::BumpMethod   _bumpMethod;
+            PROPERTY_RW(bool, ignoreAlpha, false);
+            PROPERTY_RW(bool, doubleSided, true);
+            PROPERTY_RW(stringImpl, name);
+            PROPERTY_RW(Material::ShadingMode, shadingMode, Material::ShadingMode::FLAT);
+            PROPERTY_RW(Material::BumpMethod,  bumpMethod, Material::BumpMethod::NONE);
+
+            Material::ColourData _colourData;
             std::array<TextureEntry, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
         };
 
         struct SubMeshData {
-            SubMeshData()
-            {
-                _boneCount = _index = 0;
-                _partitionOffset = 0;
-            }
-
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
 
-            stringImpl _name;
-            U32 _index;
-            U32 _boneCount;
-            U32 _partitionOffset;
-            vec3<F32> _minPos, _maxPos;
+            PROPERTY_RW(stringImpl, name);
+            PROPERTY_RW(U32, index, 0u);
+            PROPERTY_RW(U32, boneCount, 0u);
+            PROPERTY_RW(U32, partitionOffset, 0u);
+            PROPERTY_RW(vec3<F32>, minPos);
+            PROPERTY_RW(vec3<F32>, maxPos);
+
             vectorEASTL<vec3<U32>> _triangles;
             MaterialData _material;
         };
@@ -122,20 +103,20 @@ namespace Divide {
             bool loadFromFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName);
 
             // Was it loaded from file, or just created?
-            bool _loadedFromFile;
+            PROPERTY_RW(bool, loadedFromFile, false);
             // Geometry
-            VertexBuffer* _vertexBuffer;
-            // Submeshes
-            vector<SubMeshData> _subMeshData;
+            POINTER_RW(VertexBuffer, vertexBuffer, nullptr);
             // Animations
-            Bone* _skeleton;
-            vector<Bone*> _bones;
-            vector<std::shared_ptr<AnimEvaluator>> _animations;
-            bool _hasAnimations;
+            POINTER_RW(Bone, skeleton, nullptr);
+            PROPERTY_RW(bool, hasAnimations, false);
 
             // Name and path
-            stringImpl _modelName;
-            stringImpl _modelPath;
+            PROPERTY_RW(stringImpl, modelName);
+            PROPERTY_RW(stringImpl, modelPath);
+
+            vector<Bone*> _bones;
+            vector<SubMeshData> _subMeshData;
+            vector<std::shared_ptr<AnimEvaluator>> _animations;
         };
     };
 

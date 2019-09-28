@@ -19,8 +19,8 @@ namespace Divide {
 
 template<>
 CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
-    assert(_descriptor.getEnumValue() >= to_base(TextureType::TEXTURE_1D) &&
-           _descriptor.getEnumValue() < to_base(TextureType::COUNT));
+    assert(_descriptor.enumValue() >= to_base(TextureType::TEXTURE_1D) &&
+           _descriptor.enumValue() < to_base(TextureType::COUNT));
 
     // Samplers are not optional!
     assert(_descriptor.hasPropertyDescriptor());
@@ -40,8 +40,8 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
                                            std::cend(resourceLocation),
                                            ',');
 
-    if (texDescriptor->_layerCount < numCommas + 1) {
-        texDescriptor->setLayerCount(to_U32(numCommas + 1));
+    if (texDescriptor->layerCount() < numCommas + 1) {
+        texDescriptor->layerCount(to_U32(numCommas + 1));
     }
 
     if (crtNumCommas < numCommas ) {

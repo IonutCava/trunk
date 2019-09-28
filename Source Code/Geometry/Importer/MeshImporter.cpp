@@ -147,7 +147,7 @@ namespace Import {
     bool TextureEntry::serialize(ByteBuffer& dataOut) const {
         dataOut << _textureName;
         dataOut << _texturePath;
-        dataOut << _srgbSpace;
+        dataOut << _srgb;
         dataOut << to_U32(_wrapU);
         dataOut << to_U32(_wrapV);
         dataOut << to_U32(_wrapW);
@@ -159,7 +159,7 @@ namespace Import {
         U32 data = 0;
         dataIn >> _textureName;
         dataIn >> _texturePath;
-        dataIn >> _srgbSpace;
+        dataIn >> _srgb;
         dataIn >> data;
         _wrapU = static_cast<TextureWrap>(data);
         dataIn >> data;
@@ -176,25 +176,25 @@ namespace Import {
         importTimer.start();
 
         bool success = false;
-        if (!context.config().debug.useGeometryCache || !dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut._modelName)) {
-            Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), dataOut._modelName.c_str());
+        if (!context.config().debug.useGeometryCache || !dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut.modelName())) {
+            Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), dataOut.modelName().c_str());
 
             DVDConverter converter(context, dataOut, success);
             if (success) {
-                if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut._modelName)) {
-                    Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), dataOut._modelName.c_str());
+                if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut.modelName())) {
+                    Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), dataOut.modelName().c_str());
                 } else {
-                    Console::printfn(Locale::get(_ID("MESH_NOT_SAVED_TO_FILE")), dataOut._modelName.c_str());
+                    Console::printfn(Locale::get(_ID("MESH_NOT_SAVED_TO_FILE")), dataOut.modelName().c_str());
                 }
             }
         } else {
-            Console::printfn(Locale::get(_ID("MESH_LOADED_FROM_FILE")), dataOut._modelName.c_str());
+            Console::printfn(Locale::get(_ID("MESH_LOADED_FROM_FILE")), dataOut.modelName().c_str());
             success = true;
         }
 
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("LOAD_MESH_TIME")),
-                           dataOut._modelName.c_str(),
+                           dataOut.modelName().c_str(),
                            Time::MicrosecondsToMilliseconds<F32>(importTimer.get()));
 
         return success;
@@ -205,22 +205,22 @@ namespace Import {
         importTimer.start();
 
         std::shared_ptr<SceneAnimator> animator;
-        if (dataIn._hasAnimations) {
+        if (dataIn.hasAnimations()) {
             mesh->setObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
             ByteBuffer tempBuffer;
             animator.reset(new SceneAnimator());
             if (tempBuffer.loadFromFile(Paths::g_cacheLocation + Paths::g_geometryCacheLocation,
-                                        dataIn._modelName + "." + g_parsedAssetAnimationExt))
+                                        dataIn.modelName() + "." + g_parsedAssetAnimationExt))
             {
                 animator->load(context, tempBuffer);
             } else {
-                if (!dataIn._loadedFromFile) {
+                if (!dataIn.loadedFromFile()) {
                     Attorney::SceneAnimatorMeshImporter::registerAnimations(*animator, dataIn._animations);
-                    animator->init(context, dataIn._skeleton, dataIn._bones);
+                    animator->init(context, dataIn.skeleton(), dataIn._bones);
                     animator->save(context, tempBuffer);
                     if (!tempBuffer.dumpToFile(Paths::g_cacheLocation + Paths::g_geometryCacheLocation,
-                                               dataIn._modelName + "." + g_parsedAssetAnimationExt))
+                                               dataIn.modelName() + "." + g_parsedAssetAnimationExt))
                     {
                         //handle error
                         DIVIDE_UNEXPECTED_CALL();
@@ -235,16 +235,16 @@ namespace Import {
         }
 
         mesh->renderState().setDrawState(true);
-        mesh->getGeometryVB()->fromBuffer(*dataIn._vertexBuffer);
+        mesh->getGeometryVB()->fromBuffer(*dataIn.vertexBuffer());
         mesh->setGeometryVBDirty();
 
         SubMesh_ptr tempSubMesh;
         for (const Import::SubMeshData& subMeshData : dataIn._subMeshData) {
             // Submesh is created as a resource when added to the scenegraph
-            ResourceDescriptor submeshdesc(subMeshData._name);
+            ResourceDescriptor submeshdesc(subMeshData.name());
             submeshdesc.flag(true);
-            submeshdesc.ID(subMeshData._index);
-            if (subMeshData._boneCount > 0) {
+            submeshdesc.ID(subMeshData.index());
+            if (subMeshData.boneCount() > 0) {
                 submeshdesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
             }
 
@@ -255,13 +255,13 @@ namespace Import {
             // it may already be loaded
             if (!tempSubMesh->getParentMesh()) {
                 tempSubMesh->addTriangles(subMeshData._triangles);
-                tempSubMesh->setGeometryPartitionID(subMeshData._partitionOffset);
+                tempSubMesh->setGeometryPartitionID(subMeshData.partitionOffset());
                 Attorney::SubMeshMeshImporter::setGeometryLimits(*tempSubMesh,
-                                                                 subMeshData._minPos,
-                                                                 subMeshData._maxPos);
+                                                                 subMeshData.minPos(),
+                                                                 subMeshData.maxPos());
 
                 if (!tempSubMesh->getMaterialTpl()) {
-                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(context, cache, subMeshData._material, subMeshData._boneCount > 0));
+                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(context, cache, subMeshData._material, subMeshData.boneCount() > 0));
                 }
             }
 
@@ -273,7 +273,7 @@ namespace Import {
 
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")),
-                           dataIn._modelName.c_str(),
+                           dataIn.modelName().c_str(),
                            Time::MicrosecondsToMilliseconds(importTimer.get()));
 
         return true;
@@ -281,7 +281,7 @@ namespace Import {
 
     /// Load the material for the current SubMesh
     Material_ptr MeshImporter::loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned) {
-        ResourceDescriptor materialDesc(importData._name);
+        ResourceDescriptor materialDesc(importData.name());
         if (skinned) {
             materialDesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
@@ -292,9 +292,9 @@ namespace Import {
             return tempMaterial;
         }
         tempMaterial->setColourData(importData._colourData);
-        tempMaterial->setShadingMode(importData._shadingMode);
-        tempMaterial->setBumpMethod(importData._bumpMethod);
-        tempMaterial->setDoubleSided(importData._doubleSided);
+        tempMaterial->setShadingMode(importData.shadingMode());
+        tempMaterial->setBumpMethod(importData.bumpMethod());
+        tempMaterial->setDoubleSided(importData.doubleSided());
 
         SamplerDescriptor textureSampler = {};
 
@@ -302,36 +302,36 @@ namespace Import {
 
         for (U32 i = 0; i < to_base(ShaderProgram::TextureUsage::COUNT); ++i) {
             const Import::TextureEntry& tex = importData._textures[i];
-            if (!tex._textureName.empty()) {
-                textureSampler._wrapU = tex._wrapU;
-                textureSampler._wrapV = tex._wrapV;
-                textureSampler._wrapW = tex._wrapW;
+            if (!tex.textureName().empty()) {
+                textureSampler.wrapU(tex.wrapU());
+                textureSampler.wrapV(tex.wrapV());
+                textureSampler.wrapW(tex.wrapW());
 
-                textureDescriptor.setSampler(textureSampler);
-                textureDescriptor._srgb = tex._srgbSpace;
+                textureDescriptor.samplerDescriptor(textureSampler);
+                textureDescriptor.srgb(tex.srgb());
 
-                ResourceDescriptor texture(tex._textureName);
-                texture.assetName(tex._textureName);
-                texture.assetLocation(tex._texturePath);
+                ResourceDescriptor texture(tex.textureName());
+                texture.assetName(tex.textureName());
+                texture.assetLocation(tex.texturePath());
                 texture.propertyDescriptor(textureDescriptor);
                 texture.threaded(false);
                 Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
                 assert(textureRes != nullptr);
 
-                tempMaterial->setTexture(static_cast<ShaderProgram::TextureUsage>(i), textureRes, tex._operation);
+                tempMaterial->setTexture(static_cast<ShaderProgram::TextureUsage>(i), textureRes, tex.operation());
             }
         }
 
         // If we don't have a valid opacity map, try to find out whether the diffuse texture has any non-opaque pixels.
         // If we find a few, use it as opacity texture
-        if (!importData._ignoreAlpha && importData._textures[to_base(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
+        if (!importData.ignoreAlpha() && importData._textures[to_base(ShaderProgram::TextureUsage::OPACITY)].textureName().empty()) {
             Texture_ptr diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
             if (diffuse && diffuse->hasTransparency()) {
                 ResourceDescriptor opacityDesc(diffuse->resourceName());
                 //These should not be needed. We should be able to just find the resource in cache!
                 opacityDesc.assetName(diffuse->assetName());
                 opacityDesc.assetLocation(diffuse->assetLocation());
-                opacityDesc.propertyDescriptor(diffuse->getDescriptor());
+                opacityDesc.propertyDescriptor(diffuse->descriptor());
 
                 Texture_ptr textureRes = CreateResource<Texture>(cache, opacityDesc);
                 tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, Material::TextureOperation::REPLACE);

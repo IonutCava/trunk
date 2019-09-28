@@ -20,7 +20,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     {
         vector<RTAttachmentDescriptor> att = {
-            { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(), RTAttachmentType::Colour },
+            { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
         };
 
         RenderTargetDescriptor desc = {};
@@ -56,17 +56,17 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
     
     SamplerDescriptor noiseSampler = {};
-    noiseSampler._wrapU = TextureWrap::REPEAT;
-    noiseSampler._wrapV = TextureWrap::REPEAT;
-    noiseSampler._wrapW = TextureWrap::REPEAT;
-    noiseSampler._minFilter = TextureFilter::NEAREST;
-    noiseSampler._magFilter = TextureFilter::NEAREST;
-    noiseSampler._anisotropyLevel = 0;
+    noiseSampler.wrapU(TextureWrap::REPEAT);
+    noiseSampler.wrapV(TextureWrap::REPEAT);
+    noiseSampler.wrapW(TextureWrap::REPEAT);
+    noiseSampler.minFilter(TextureFilter::NEAREST);
+    noiseSampler.magFilter(TextureFilter::NEAREST);
+    noiseSampler.anisotropyLevel(0);
 
     stringImpl attachmentName("SSAOPreRenderOperator_NoiseTexture");
 
     TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
-    noiseDescriptor.setSampler(noiseSampler);
+    noiseDescriptor.samplerDescriptor(noiseSampler);
 
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.propertyDescriptor(noiseDescriptor);
@@ -78,15 +78,15 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
                             vec2<U16>(ssaoNoiseSize));
 
     SamplerDescriptor screenSampler = {};
-    screenSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    screenSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    screenSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    screenSampler._minFilter = TextureFilter::LINEAR;
-    screenSampler._magFilter = TextureFilter::LINEAR;
-    screenSampler._anisotropyLevel = 0;
+    screenSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.minFilter(TextureFilter::LINEAR);
+    screenSampler.magFilter(TextureFilter::LINEAR);
+    screenSampler.anisotropyLevel(0);
 
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::UNSIGNED_SHORT);
-    outputDescriptor.setSampler(screenSampler);
+    outputDescriptor.samplerDescriptor(screenSampler);
 
     {
         vector<RTAttachmentDescriptor> att = {
@@ -195,14 +195,14 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-    TextureData data = _noiseTexture->getData();
+    TextureData data = _noiseTexture->data();
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
 
-    data = screen._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
+    data = screen._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
-    data = screen._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->getData();
+    data = screen._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->data();
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::NORMALMAP));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -226,7 +226,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-    data = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // AO texture
+    data = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();  // AO texture
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -251,10 +251,10 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-    data = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // screen
+    data = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();  // screen
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
 
-    data = _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // AO texture
+    data = _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();  // AO texture
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -271,7 +271,7 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
 }
 
 TextureData SSAOPreRenderOperator::getDebugOutput() const {
-    return _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    return _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
 }
 
 };

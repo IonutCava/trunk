@@ -47,15 +47,15 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     const RenderTarget& rt = *inputRT()._rt;
 
     SamplerDescriptor screenSampler = {};
-    screenSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    screenSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    screenSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    screenSampler._minFilter = TextureFilter::LINEAR;
-    screenSampler._magFilter = TextureFilter::LINEAR;
-    screenSampler._anisotropyLevel = 0;
+    screenSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.minFilter(TextureFilter::LINEAR);
+    screenSampler.magFilter(TextureFilter::LINEAR);
+    screenSampler.anisotropyLevel(0);
 
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
-    outputDescriptor.setSampler(screenSampler);
+    outputDescriptor.samplerDescriptor(screenSampler);
     
     {
         //Colour0 holds the LDR screen texture
@@ -73,15 +73,15 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     }
 
     SamplerDescriptor lumaSampler = {};
-    lumaSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    lumaSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    lumaSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    lumaSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-    lumaSampler._magFilter = TextureFilter::LINEAR;
+    lumaSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    lumaSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    lumaSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    lumaSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    lumaSampler.magFilter(TextureFilter::LINEAR);
 
     TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
-    lumaDescriptor.setSampler(lumaSampler);
-    lumaDescriptor.automaticMipMapGeneration(true);
+    lumaDescriptor.samplerDescriptor(lumaSampler);
+    lumaDescriptor.autoMipMaps(true);
     {
         // make the texture square sized and power of two
         U16 lumaRez = to_U16(nextPOW2(to_U32(rt.getWidth() / 3.0f)));
@@ -99,10 +99,10 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         _currentLuminance = _context.renderTargetPool().allocateRT(desc);
     }
 
-    lumaSampler._minFilter = TextureFilter::LINEAR;
-    lumaSampler._anisotropyLevel = 0;
+    lumaSampler.minFilter(TextureFilter::LINEAR);
+    lumaSampler.anisotropyLevel(0);
 
-    lumaDescriptor.setSampler(lumaSampler);
+    lumaDescriptor.samplerDescriptor(lumaSampler);
     {
         vector<RTAttachmentDescriptor> att = {
             {
@@ -203,7 +203,7 @@ TextureData PreRenderBatch::getOutput() {
         return _debugOperator->getDebugOutput();
     }
 
-    return _postFXOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    return _postFXOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
 }
 
 void PreRenderBatch::idle(const Configuration& config) {
@@ -248,12 +248,12 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     triangleCmd._drawCount = 1;
 
 
-    TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
 
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
-        TextureData data1 = _previousLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        TextureData data1 = _previousLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
 
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
         beginRenderPassCmd._target = _currentLuminance._targetID;
@@ -314,7 +314,7 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     descriptorSetCmd._set._textureData.setTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
 
     if (_adaptiveExposureControl) {
-        TextureData data1 = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        TextureData data1 = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
         descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
     }
     GFX::EnqueueCommand(buffer, descriptorSetCmd);

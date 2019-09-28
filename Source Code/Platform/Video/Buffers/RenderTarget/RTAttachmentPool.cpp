@@ -48,7 +48,7 @@ void RTAttachmentPool::copy(const RTAttachmentPool& other) {
                 descriptor._clearColour = att->clearColour();
                 descriptor._index = j;
                 descriptor._type = static_cast<RTAttachmentType>(i);
-                descriptor._texDescriptor = att->texture()->getDescriptor();
+                descriptor._texDescriptor = att->texture()->descriptor();
 
                 update(descriptor);
             }

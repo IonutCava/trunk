@@ -287,7 +287,7 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass, bool refreshD
     for (U8 i = 0; i < 4; ++i) {
         const Texture_ptr& crtTexture = _externalTextures[i];
         if (crtTexture != nullptr) {
-            textures.setTexture(crtTexture->getData(), to_base(g_texUsage[i].second));
+            textures.setTexture(crtTexture->data(), to_base(g_texUsage[i].second));
         }
     }
 }

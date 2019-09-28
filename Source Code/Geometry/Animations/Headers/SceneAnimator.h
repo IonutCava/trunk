@@ -67,7 +67,7 @@ class SceneAnimator {
     ~SceneAnimator();
 
     /// This must be called to fill the SceneAnimator with valid data
-    bool init(PlatformContext& context, Bone* skeleton, const vector<Bone*>& bones);
+    bool init(PlatformContext& context, Bone* const skeleton, const vector<Bone*>& bones);
     /// Frees all memory and initializes everything to a default state
     void release(bool releaseAnimations = true);
     void save(PlatformContext& context, ByteBuffer& dataOut) const;

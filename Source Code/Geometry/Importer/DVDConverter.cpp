@@ -139,8 +139,8 @@ DVDConverter::~DVDConverter()
 }
 
 bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
-    const stringImpl& filePath = target._modelPath;
-    const stringImpl& fileName = target._modelName;
+    const stringImpl& filePath = target.modelPath();
+    const stringImpl& fileName = target.modelName();
 
     Assimp::Importer importer;
 
@@ -162,17 +162,17 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
         return false;
     }
 
-    target._hasAnimations = aiScenePointer->HasAnimations();
-    if (target._hasAnimations) {
-        target._skeleton = createBoneTree(aiScenePointer->mRootNode, nullptr);
-        target._bones.reserve(to_I32(target._skeleton->hierarchyDepth()));
+    target.hasAnimations(aiScenePointer->HasAnimations());
+    if (target.hasAnimations()) {
+        target.skeleton(createBoneTree(aiScenePointer->mRootNode, nullptr));
+        target._bones.reserve(to_I32(target.skeleton()->hierarchyDepth()));
 
         for (U16 meshPointer = 0; meshPointer < aiScenePointer->mNumMeshes; ++meshPointer) {
             const aiMesh* mesh = aiScenePointer->mMeshes[meshPointer];
             for (U32 n = 0; n < mesh->mNumBones; ++n) {
                 const aiBone* bone = mesh->mBones[n];
 
-                Bone* found = target._skeleton->find(bone->mName.data);
+                Bone* found = target.skeleton()->find(bone->mName.data);
                 if (found != nullptr) {
                     AnimUtils::TransformMatrix(bone->mOffsetMatrix, found->_offsetMatrix);
                     target._bones.push_back(found);
@@ -193,9 +193,9 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
         vertCount += aiScenePointer->mMeshes[n]->mNumVertices;
     }
 
-    target._vertexBuffer = context.gfx().newVB();
-    target._vertexBuffer->useLargeIndices(vertCount + 1 > std::numeric_limits<U16>::max());
-    target._vertexBuffer->setVertexCount(vertCount);
+    target.vertexBuffer(context.gfx().newVB());
+    target.vertexBuffer()->useLargeIndices(vertCount + 1 > std::numeric_limits<U16>::max());
+    target.vertexBuffer()->setVertexCount(vertCount);
 
     U8 submeshBoneOffset = 0;
     U32 previousOffset = 0;
@@ -212,22 +212,23 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
 
         Import::SubMeshData subMeshTemp;
 
-        subMeshTemp._name = currentMesh->mName.C_Str();
-        if (Util::CompareIgnoreCase(subMeshTemp._name, "defaultobject")) {
-            subMeshTemp._name.append("_" + fileName);
+        stringImpl name = currentMesh->mName.C_Str();
+        if (Util::CompareIgnoreCase(subMeshTemp.name(), "defaultobject")) {
+            name.append("_" + fileName);
         }
-        subMeshTemp._index = to_U32(n);
-        if (subMeshTemp._name.empty()) {
-            subMeshTemp._name = Util::StringFormat("%s-submesh-%d", fileName.c_str(), n);
+        subMeshTemp.name(name);
+        subMeshTemp.index(to_U32(n));
+        if (subMeshTemp.name().empty()) {
+            subMeshTemp.name(Util::StringFormat("%s-submesh-%d", fileName.c_str(), n));
         }
-        if (subMeshTemp._name == prevName) {
-            subMeshTemp._name += "_" + to_stringImpl(n);
+        if (subMeshTemp.name() == prevName) {
+            subMeshTemp.name(prevName + "_" + to_stringImpl(n));
         }
 
-        prevName = subMeshTemp._name;
-        subMeshTemp._boneCount = currentMesh->mNumBones;
+        prevName = subMeshTemp.name();
+        subMeshTemp.boneCount(currentMesh->mNumBones);
         loadSubMeshGeometry(currentMesh, 
-                            target._vertexBuffer,
+                            target.vertexBuffer(),
                             subMeshTemp,
                             submeshBoneOffset,
                             previousOffset);
@@ -235,8 +236,8 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
         loadSubMeshMaterial(subMeshTemp._material,
                             aiScenePointer,
                             to_U16(currentMesh->mMaterialIndex),
-                            subMeshTemp._name + "_material",
-                            subMeshTemp._boneCount > 0);
+                            subMeshTemp.name() + "_material",
+                            subMeshTemp.boneCount() > 0);
                             
 
         target._subMeshData.push_back(subMeshTemp);
@@ -267,8 +268,8 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         importBB.add(targetBuffer->getPosition(idx));
     }
     
-    subMeshData._minPos = importBB.getMin();
-    subMeshData._maxPos = importBB.getMax();
+    subMeshData.minPos(importBB.getMin());
+    subMeshData.maxPos(importBB.getMax());
 
     if (source->mTextureCoords[0] != nullptr) {
         for (U32 j = 0; j < source->mNumVertices; ++j) {
@@ -286,7 +287,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
                                              source->mTangents[j].z);
         }
     } else {
-        Console::d_printfn(Locale::get(_ID("SUBMESH_NO_TANGENT")), subMeshData._name.c_str());
+        Console::d_printfn(Locale::get(_ID("SUBMESH_NO_TANGENT")), subMeshData.name().c_str());
     }
 
     if (source->mNumBones > 0) {
@@ -336,7 +337,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         subMeshData._triangles.push_back(triangleTemp);
     }
 
-    subMeshData._partitionOffset = to_U32(targetBuffer->partitionBuffer());
+    subMeshData.partitionOffset(to_U32(targetBuffer->partitionBuffer()));
 }
 
 void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
@@ -347,16 +348,16 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
 
     const aiMaterial* mat = source->mMaterials[materialIndex];
 
-    material._name = materialName;
+    material.name(materialName);
     Material::ColourData& data = material._colourData;
 
     // default shading model
     I32 shadingModel = to_base(Material::ShadingMode::PHONG);
     // Load shading model
     aiGetMaterialInteger(mat, AI_MATKEY_SHADING_MODEL, &shadingModel);
-    material._shadingMode = aiShadingModeInternalTable[shadingModel];
+    material.shadingMode(aiShadingModeInternalTable[shadingModel]);
 
-    bool isPBRMaterial = !(material._shadingMode != Material::ShadingMode::OREN_NAYAR && material._shadingMode != Material::ShadingMode::COOK_TORRANCE);
+    bool isPBRMaterial = !(material.shadingMode() != Material::ShadingMode::OREN_NAYAR && material.shadingMode() != Material::ShadingMode::COOK_TORRANCE);
     
     // Load material opacity value
     F32 alpha = 1.0f;
@@ -423,7 +424,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     // check if material is two sided
     I32 two_sided = 0;
     aiGetMaterialInteger(mat, AI_MATKEY_TWOSIDED, &two_sided);
-    material._doubleSided = two_sided != 0;
+    material.doubleSided(two_sided != 0);
 
     aiString tName;
     aiTextureMapping mapping;
@@ -476,17 +477,17 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
             {
-                texture._wrapU = aiTextureMapModeTable[mode[0]];
-                texture._wrapV = aiTextureMapModeTable[mode[1]];
-                texture._wrapW = aiTextureMapModeTable[mode[2]];
+                texture.wrapU(aiTextureMapModeTable[mode[0]]);
+                texture.wrapV(aiTextureMapModeTable[mode[1]]);
+                texture.wrapW(aiTextureMapModeTable[mode[2]]);
             }
 
-            texture._textureName = img_name;
-            texture._texturePath = img_path;
+            texture.textureName(img_name);
+            texture.texturePath(img_path);
             // The first texture is always "Replace"
-            texture._operation = count == 0 ? Material::TextureOperation::NONE
-                                            : aiTextureOperationTable[op];
-            texture._srgbSpace = true;
+            texture.operation(count == 0 ? Material::TextureOperation::NONE
+                                         : aiTextureOperationTable[op]);
+            texture.srgb(true);
             material._textures[to_U32(usage)] = texture;
                                                                 
         }  // endif
@@ -515,17 +516,17 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
             {
-                texture._wrapU = aiTextureMapModeTable[mode[0]];
-                texture._wrapV = aiTextureMapModeTable[mode[1]];
-                texture._wrapW = aiTextureMapModeTable[mode[2]];
+                texture.wrapU(aiTextureMapModeTable[mode[0]]);
+                texture.wrapV(aiTextureMapModeTable[mode[1]]);
+                texture.wrapW(aiTextureMapModeTable[mode[2]]);
             }
-            texture._textureName = img_name;
-            texture._texturePath = img_path;
-            texture._operation = aiTextureOperationTable[op];
-            texture._srgbSpace = false;
+            texture.textureName(img_name);
+            texture.texturePath(img_path);
+            texture.operation(aiTextureOperationTable[op]);
+            texture.srgb(false);
 
             material._textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
-            material._bumpMethod = Material::BumpMethod::NORMAL;
+            material.bumpMethod(Material::BumpMethod::NORMAL);
         }  // endif
     } // endif
 
@@ -544,23 +545,23 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
             {
-                texture._wrapU = aiTextureMapModeTable[mode[0]];
-                texture._wrapV = aiTextureMapModeTable[mode[1]];
-                texture._wrapW = aiTextureMapModeTable[mode[2]];
+                texture.wrapU(aiTextureMapModeTable[mode[0]]);
+                texture.wrapV(aiTextureMapModeTable[mode[1]]);
+                texture.wrapW(aiTextureMapModeTable[mode[2]]);
             }
-            texture._textureName = img_name;
-            texture._texturePath = img_path;
-            texture._operation = aiTextureOperationTable[op];
-            texture._srgbSpace = false;
+            texture.textureName(img_name);
+            texture.texturePath(img_path);
+            texture.operation(aiTextureOperationTable[op]);
+            texture.srgb(false);
             material._textures[to_base(ShaderProgram::TextureUsage::HEIGHTMAP)] = texture;
         }  // endif
     } // endif
 
     I32 flags = 0;
     aiGetMaterialInteger(mat, AI_MATKEY_TEXFLAGS_DIFFUSE(0), &flags);
-    material._ignoreAlpha = (flags & aiTextureFlags_IgnoreAlpha) != 0;
+    material.ignoreAlpha((flags & aiTextureFlags_IgnoreAlpha) != 0);
 
-    if (!material._ignoreAlpha) {
+    if (!material.ignoreAlpha()) {
         result = mat->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
         if (result == AI_SUCCESS) {
             stringImpl path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.data);
@@ -576,16 +577,16 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                     IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                     IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
                 {
-                    texture._wrapU = aiTextureMapModeTable[mode[0]];
-                    texture._wrapV = aiTextureMapModeTable[mode[1]];
-                    texture._wrapW = aiTextureMapModeTable[mode[2]];
+                    texture.wrapU(aiTextureMapModeTable[mode[0]]);
+                    texture.wrapV(aiTextureMapModeTable[mode[1]]);
+                    texture.wrapW(aiTextureMapModeTable[mode[2]]);
                 }
-                texture._textureName = img_name;
-                texture._texturePath = img_path;
-                texture._operation = aiTextureOperationTable[op];
-                texture._srgbSpace = false;
+                texture.textureName(img_name);
+                texture.texturePath(img_path);
+                texture.operation(aiTextureOperationTable[op]);
+                texture.srgb(false);
+                material.doubleSided(true);
                 material._textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = texture;
-                material._doubleSided = true;
             }  // endif
         } 
     }
@@ -608,14 +609,14 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
             {
-                texture._wrapU = aiTextureMapModeTable[mode[0]];
-                texture._wrapV = aiTextureMapModeTable[mode[1]];
-                texture._wrapW = aiTextureMapModeTable[mode[2]];
+                texture.wrapU(aiTextureMapModeTable[mode[0]]);
+                texture.wrapV(aiTextureMapModeTable[mode[1]]);
+                texture.wrapW(aiTextureMapModeTable[mode[2]]);
             }
-            texture._textureName = img_name;
-            texture._texturePath = img_path;
-            texture._operation = aiTextureOperationTable[op];
-            texture._srgbSpace = false;
+            texture.textureName(img_name);
+            texture.texturePath(img_path);
+            texture.operation(aiTextureOperationTable[op]);
+            texture.srgb(false);
 
             material._textures[to_base(ShaderProgram::TextureUsage::SPECULAR)] = texture;
         }
