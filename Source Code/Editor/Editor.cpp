@@ -193,11 +193,11 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.Fonts->GetTexDataAsRGBA32(&pPixels, &iWidth, &iHeight);
 
     SamplerDescriptor sampler = {};
-    sampler._minFilter = TextureFilter::LINEAR;
-    sampler._magFilter = TextureFilter::LINEAR;
+    sampler.minFilter(TextureFilter::LINEAR);
+    sampler.magFilter(TextureFilter::LINEAR);
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
-    texDescriptor.setSampler(sampler);
+    texDescriptor.samplerDescriptor(sampler);
 
     ResourceDescriptor resDescriptor("IMGUI_font_texture");
     resDescriptor.threaded(false);
@@ -229,7 +229,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderResDescriptor);
 
     // Store our identifier
-    io.Fonts->TexID = (void *)(intptr_t)_fontTexture->getData().textureHandle();
+    io.Fonts->TexID = (void *)(intptr_t)_fontTexture->data().textureHandle();
 
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
@@ -1311,9 +1311,9 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
         TextureCallbackData& data = g_modalTextureData[tex->getGUID()];
         data._gfxDevice = &_context.gfx();
         data._flip = false;
-        data._isDepthTexture = tex->getDescriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
+        data._isDepthTexture = tex->descriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
 
-        U8 numChannels = tex->getDescriptor().numChannels();
+        U8 numChannels = tex->descriptor().numChannels();
 
         assert(numChannels > 0);
 
@@ -1358,7 +1358,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
         static F32 zoom = 1.0f;
         static ImVec2 zoomCenter(0.5f, 0.5f);
-        ImGui::ImageZoomAndPan((void*)(intptr_t)tex->getData().textureHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
+        ImGui::ImageZoomAndPan((void*)(intptr_t)tex->data().textureHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
 
         if (nonDefaultColours) {
             ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);

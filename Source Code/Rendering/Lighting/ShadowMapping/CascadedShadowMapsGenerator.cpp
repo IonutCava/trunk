@@ -81,16 +81,16 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     _blurDepthMapConstants.set("blurSizes", GFX::PushConstantType::VEC2, blurSizes);
 
     SamplerDescriptor sampler = {};
-    sampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    sampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    sampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    sampler._minFilter = TextureFilter::LINEAR;
-    sampler._magFilter = TextureFilter::LINEAR;
-    sampler._anisotropyLevel = 0;
+    sampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    sampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    sampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    sampler.minFilter(TextureFilter::LINEAR);
+    sampler.magFilter(TextureFilter::LINEAR);
+    sampler.anisotropyLevel(0);
 
     RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(ShadowType::LAYERED));
     const RenderTarget& rt = _context.renderTargetPool().renderTarget(depthMapID);
-    const TextureDescriptor& texDescriptor = rt.getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor();
+    const TextureDescriptor& texDescriptor = rt.getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor();
     // Draw FBO
     {
         // MSAA rendering is supported
@@ -98,12 +98,12 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
 
         TextureDescriptor depthMapDescriptor(texType, texDescriptor.baseFormat(), texDescriptor.dataType());
         depthMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-        depthMapDescriptor.setSampler(sampler);
+        depthMapDescriptor.samplerDescriptor(sampler);
         depthMapDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
 
         TextureDescriptor depthDescriptor(texType, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
         depthDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-        depthDescriptor.setSampler(sampler);
+        depthDescriptor.samplerDescriptor(sampler);
         depthDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
 
         vector<RTAttachmentDescriptor> att = {
@@ -124,7 +124,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     {
         TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY, texDescriptor.baseFormat(), texDescriptor.dataType());
         blurMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-        blurMapDescriptor.setSampler(sampler);
+        blurMapDescriptor.samplerDescriptor(sampler);
 
         vector<RTAttachmentDescriptor> att = {
             { blurMapDescriptor, RTAttachmentType::Colour }
@@ -375,7 +375,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::DrawCommand drawCmd = { pointsCmd };
 
         // Blur horizontally
-        TextureData texData = _drawBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        TextureData texData = _drawBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
         descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -396,7 +396,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
         // Blur vertically
-        texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
         descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 

@@ -222,7 +222,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     {
         bool isOpacity = true;
         if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0) {
-            _textureKeyCache = texture == nullptr ? -1 : texture->getData().textureHandle();
+            _textureKeyCache = texture == nullptr ? -1 : texture->data().textureHandle();
             isOpacity = false;
         }
 
@@ -230,7 +230,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         const Texture_ptr& otherTex = _textures[isOpacity ? to_base(ShaderProgram::TextureUsage::UNIT0)
                                                           : to_base(ShaderProgram::TextureUsage::OPACITY)];
 
-        if (otherTex != nullptr && texture != nullptr && otherTex->getData() == texture->getData()) {
+        if (otherTex != nullptr && texture != nullptr && otherTex->data() == texture->data()) {
             _textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = nullptr;
         }
 
@@ -601,7 +601,7 @@ bool Material::getTextureData(ShaderProgram::TextureUsage slot, TextureDataConta
     SharedLock r_lock(_textureLock);
     const Texture_ptr& crtTexture = _textures[slotValue];
 
-    return crtTexture != nullptr && container.setTexture(crtTexture->getData(), slotValue, force) != TextureDataContainer::UpdateState::NOTHING;
+    return crtTexture != nullptr && container.setTexture(crtTexture->data(), slotValue, force) != TextureDataContainer::UpdateState::NOTHING;
 }
 
 bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
@@ -657,7 +657,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
         SharedLock r_lock(_textureLock);
         const Texture_ptr& crtHeightTexture = _textures[heightSlot];
         if (crtHeightTexture != nullptr) {
-            textures[heightSlot] = crtHeightTexture->getData();
+            textures[heightSlot] = crtHeightTexture->data();
             ret = true;
         }
     }
@@ -666,7 +666,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
         SharedLock r_lock(_textureLock);
         const Texture_ptr& crtProjectionTexture = _textures[projectionSlot];
         if (crtProjectionTexture != nullptr) {
-            textures[projectionSlot] = crtProjectionTexture->getData();
+            textures[projectionSlot] = crtProjectionTexture->data();
             ret = true;
         }
     }
@@ -677,7 +677,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
             if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
                 const Texture_ptr& crtTexture = _textures[slot];
                 if (crtTexture != nullptr) {
-                    textures[slot] = crtTexture->getData();
+                    textures[slot] = crtTexture->data();
                     ret = true;
                 }
             }
@@ -690,7 +690,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
             if (!depthStage || _textureUseForDepth[slot]) {
                 const Texture_ptr& crtTexture = _textures[slot];
                 if (crtTexture != nullptr) {
-                    textures[slot] = crtTexture->getData();
+                    textures[slot] = crtTexture->data();
                     ret = true;
                 }
             }
@@ -701,7 +701,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
         constexpr U8 normalSlot = to_base(ShaderProgram::TextureUsage::NORMALMAP);
         const Texture_ptr& crtNormalTexture = _textures[normalSlot];
         if (crtNormalTexture != nullptr) {
-            textures[normalSlot] = crtNormalTexture->getData();
+            textures[normalSlot] = crtNormalTexture->data();
             ret = true;
         }
     }
@@ -1022,15 +1022,15 @@ Texture_ptr loadTextureXML(ResourceCache& targetCache,
 
     SamplerDescriptor sampDesc = {};
 
-    sampDesc._wrapU = getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.U", "REPEAT"));
-    sampDesc._wrapV = getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.V", "REPEAT"));
-    sampDesc._wrapW = getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.W", "REPEAT"));
-    sampDesc._minFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.min", "LINEAR"));
-    sampDesc._magFilter = getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.mag", "LINEAR"));
-    sampDesc._anisotropyLevel = to_U8(pt.get(textureNode + ".anisotropy", 0U));
+    sampDesc.wrapU(getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.U", "REPEAT")));
+    sampDesc.wrapV(getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.V", "REPEAT")));
+    sampDesc.wrapW(getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.W", "REPEAT")));
+    sampDesc.minFilter(getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.min", "LINEAR")));
+    sampDesc.magFilter(getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.mag", "LINEAR")));
+    sampDesc.anisotropyLevel(to_U8(pt.get(textureNode + ".anisotropy", 0U)));
 
     TextureDescriptor texDesc(TextureType::TEXTURE_2D);
-    texDesc.setSampler(sampDesc);
+    texDesc.samplerDescriptor(sampDesc);
 
     ResourceDescriptor texture(pathName + "/" + img_name);
     texture.assetName(img_name);
@@ -1095,12 +1095,12 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
             if (usage == ShaderProgram::TextureUsage::UNIT1) {
                 pt.put(textureNode + ".usage", getTextureOperationName(_operation));
             }
-            pt.put(textureNode + ".Map.<xmlattr>.U", getWrapModeName(sampler._wrapU));
-            pt.put(textureNode + ".Map.<xmlattr>.V", getWrapModeName(sampler._wrapV));
-            pt.put(textureNode + ".Map.<xmlattr>.W", getWrapModeName(sampler._wrapW));
-            pt.put(textureNode + ".Filter.<xmlattr>.min", getFilterName(sampler._minFilter));
-            pt.put(textureNode + ".Filter.<xmlattr>.mag", getFilterName(sampler._magFilter));
-            pt.put(textureNode + ".anisotropy", to_U32(sampler._anisotropyLevel));
+            pt.put(textureNode + ".Map.<xmlattr>.U", getWrapModeName(sampler.wrapU()));
+            pt.put(textureNode + ".Map.<xmlattr>.V", getWrapModeName(sampler.wrapV()));
+            pt.put(textureNode + ".Map.<xmlattr>.W", getWrapModeName(sampler.wrapW()));
+            pt.put(textureNode + ".Filter.<xmlattr>.min", getFilterName(sampler.minFilter()));
+            pt.put(textureNode + ".Filter.<xmlattr>.mag", getFilterName(sampler.magFilter()));
+            pt.put(textureNode + ".anisotropy", to_U32(sampler.anisotropyLevel()));
         }
     }
 }

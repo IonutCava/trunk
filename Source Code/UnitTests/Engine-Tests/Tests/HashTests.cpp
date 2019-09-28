@@ -23,10 +23,10 @@ TEST(HashCombineStr)
 TEST(HashCombineResourceDescriptors)
 {
     ResourceDescriptor inputA("testDescriptor");
-    inputA.setFlag(true);
+    inputA.flag(true);
 
     ResourceDescriptor inputB("testDescriptor");
-    inputB.setFlag(true);
+    inputB.flag(true);
 
     size_t result1 = inputA.getHash();
     size_t result2 = inputB.getHash();
@@ -36,7 +36,7 @@ TEST(HashCombineResourceDescriptors)
     P32 testMask;
     testMask.i = 0;
     testMask.b[2] = true;
-    inputB.setBoolMask(testMask);
+    inputB.mask(testMask);
     result2 = inputB.getHash();
 
     CHECK_NOT_EQUAL(result1, result2);

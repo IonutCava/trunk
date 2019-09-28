@@ -40,7 +40,7 @@ const Texture_ptr& RTAttachment::texture(bool autoResolve) const {
 void RTAttachment::setTexture(const Texture_ptr& tex) {
     _texture = tex;
     if (tex != nullptr) {
-        _descriptor._texDescriptor = tex->getDescriptor();
+        _descriptor._texDescriptor = tex->descriptor();
     }
     _changed = true;
 }
@@ -56,7 +56,7 @@ bool RTAttachment::isExternal() const {
 
 bool RTAttachment::mipWriteLevel(U16 level) {
     //ToDo: Investigate why this isn't working ... -Ionut
-    if (/*_descriptor._texDescriptor._mipLevels > level && */_mipWriteLevel != level) {
+    if (/*_descriptor._texDescriptor.mipLevels() > level && */_mipWriteLevel != level) {
         _mipWriteLevel = level;
         return true;
     }
@@ -82,7 +82,7 @@ U16 RTAttachment::writeLayer() const {
 }
 
 U16 RTAttachment::numLayers() const {
-    return to_U16(_descriptor._texDescriptor._layerCount);
+    return to_U16(_descriptor._texDescriptor.layerCount());
 }
 bool RTAttachment::changed() const {
     return _changed;
@@ -98,14 +98,6 @@ const FColour4& RTAttachment::clearColour() const {
 
 void RTAttachment::clearChanged() {
     _changed = false;
-}
-
-U32 RTAttachment::binding() const {
-    return _binding;
-}
-
-void RTAttachment::binding(U32 binding) {
-    _binding = binding;
 }
 
 const RTAttachmentDescriptor& RTAttachment::descriptor() const {

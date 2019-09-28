@@ -254,7 +254,7 @@ namespace Divide {
                         const U16 h = tex->height();
                         const F32 aspect = w / to_F32(h);
 
-                        if (ImGui::ImageButton((void*)(intptr_t)tex->getData().textureHandle(), ImVec2(64, 64 / aspect))) {
+                        if (ImGui::ImageButton((void*)(intptr_t)tex->data().textureHandle(), ImVec2(64, 64 / aspect))) {
                             previewTexture = tex;
                         }
                     } else if (mesh != nullptr) {
@@ -263,7 +263,7 @@ namespace Divide {
                         const U16 h = icon->height();
                         const F32 aspect = w / to_F32(h);
 
-                        if (ImGui::ImageButton((void*)(intptr_t)icon->getData().textureHandle(), ImVec2(64, 64 / aspect))) {
+                        if (ImGui::ImageButton((void*)(intptr_t)icon->data().textureHandle(), ImVec2(64, 64 / aspect))) {
                             spawnMesh = mesh;
                         }
                     } else {
@@ -271,7 +271,7 @@ namespace Divide {
                         const U16 h = _fileIcon->height();
                         const F32 aspect = w / to_F32(h);
 
-                        if (ImGui::ImageButton((void*)(intptr_t)_fileIcon->getData().textureHandle(), ImVec2(64, 64 / aspect))) {
+                        if (ImGui::ImageButton((void*)(intptr_t)_fileIcon->data().textureHandle(), ImVec2(64, 64 / aspect))) {
                         }
                     }
                     if (ImGui::IsItemHovered()) {
@@ -304,15 +304,15 @@ namespace Divide {
 
     Texture_ptr ContentExplorerWindow::getTextureForPath(const stringImpl& texturePath, const stringImpl& textureName) {
         SamplerDescriptor texturePreviewSampler = {};
-        texturePreviewSampler._wrapU = TextureWrap::CLAMP;
-        texturePreviewSampler._wrapV = TextureWrap::CLAMP;
-        texturePreviewSampler._wrapW = TextureWrap::CLAMP;
-        texturePreviewSampler._minFilter = TextureFilter::NEAREST;
-        texturePreviewSampler._magFilter = TextureFilter::NEAREST;
-        texturePreviewSampler._anisotropyLevel = 0;
+        texturePreviewSampler.wrapU(TextureWrap::CLAMP);
+        texturePreviewSampler.wrapV(TextureWrap::CLAMP);
+        texturePreviewSampler.wrapW(TextureWrap::CLAMP);
+        texturePreviewSampler.minFilter(TextureFilter::NEAREST);
+        texturePreviewSampler.magFilter(TextureFilter::NEAREST);
+        texturePreviewSampler.anisotropyLevel(0);
 
         TextureDescriptor texturePreviewDescriptor(TextureType::TEXTURE_2D);
-        texturePreviewDescriptor.setSampler(texturePreviewSampler);
+        texturePreviewDescriptor.samplerDescriptor(texturePreviewSampler);
 
         ResourceDescriptor textureResource(textureName);
         textureResource.threaded(true);

@@ -156,7 +156,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     ShaderBufferBinding shaderBuffer = {};
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
     shaderBuffer._buffer = bufferData._cmdBuffer;
-    shaderBuffer._elementRange.set(0, to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
+    shaderBuffer._elementRange.set(to_U16(bufferData._cmdBufferElementOffset), to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
     bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
@@ -169,7 +169,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
         bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
     }
 
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
     
     U32 cmdCount = *bufferData._lastCommandCount;
@@ -177,7 +177,6 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     GFX::SendPushConstantsCommand HIZPushConstantsCMD;
     HIZPushConstantsCMD._constants.countHint(6);
     HIZPushConstantsCMD._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
-    HIZPushConstantsCMD._constants.set("dvd_commandOffset", GFX::PushConstantType::UINT, bufferData._cmdBufferElementOffset);
     HIZPushConstantsCMD._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
     HIZPushConstantsCMD._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
     HIZPushConstantsCMD._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
@@ -310,7 +309,7 @@ void GFXDevice::blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer
     GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
     RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
+    TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->data();
 
     drawTextureInViewport(texData, targetViewport, bufferInOut);
     renderUI(targetViewport, bufferInOut);
@@ -378,7 +377,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     beginRenderPassCmd._name = "BLUR_RENDER_TARGET_HORIZONTAL";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    TextureData data = blurSource._rt->getAttachment(att, index).texture()->getData();
+    TextureData data = blurSource._rt->getAttachment(att, index).texture()->data();
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
@@ -411,7 +410,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(blurTargetV._rt->getWidth(), blurTargetV._rt->getHeight()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    data = blurTargetH._rt->getAttachment(att, index).texture()->getData();
+    data = blurTargetH._rt->getAttachment(att, index).texture()->data();
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 

@@ -121,6 +121,7 @@ bool glShader::uploadToGPU() {
             for (U8 i = 0; i < to_base(ShaderType::COUNT); ++i) {
                 const vectorEASTL<stringImpl>& src = _sourceCode[i];
                 if (!src.empty()) {
+                    cstrings.resize(0);
                     cstrings.reserve(src.size());
                     eastl::transform(eastl::cbegin(src), eastl::cend(src),
                                      eastl::back_inserter(cstrings), std::mem_fn(&stringImpl::c_str));

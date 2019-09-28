@@ -79,9 +79,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
     /// Change the texture's mip levels. This can be called at any time
-    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) {
-        _descriptor._mipLevels.set(base, max);
-    }
+    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) { _descriptor.mipLevels({ base, max }); }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const bufferPtr ptr,
                         const vec2<U16>& dimensions) = 0;
@@ -98,17 +96,17 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     virtual void setCurrentSampler(const SamplerDescriptor& descriptor);
 
     /// Get the sampler descriptor used by this texture
-    inline const SamplerDescriptor& getCurrentSampler() const { return _descriptor._samplerDescriptor; }
-    inline const TextureDescriptor& getDescriptor() const { return _descriptor; }
-    inline const TextureData& getData() const { return _textureData; }
+    inline const SamplerDescriptor& getCurrentSampler() const { return _descriptor.samplerDescriptor(); }
     /// Texture base mip level
-    inline U16 getBaseMipLevel() const { return _descriptor._mipLevels.x; }
+    inline U16 getBaseMipLevel() const { return _descriptor.mipLevels().x; }
     /// Texture max mip level
-    inline U16 getMaxMipLevel() const { return _descriptor._mipLevels.y; }
+    inline U16 getMaxMipLevel() const { return _descriptor.mipLevels().y; }
     /// Number of loaded mip levels in VRAM
     inline U16 getMipCount() const { return _descriptor._mipCount; }
-    inline bool automaticMipMapGeneration() const { return _descriptor.automaticMipMapGeneration(); }
+    inline bool automaticMipMapGeneration() const { return _descriptor.autoMipMaps(); }
 
+    PROPERTY_R(TextureDescriptor, descriptor);
+    PROPERTY_R(TextureData, data);
     /// Set/Get the number of layers (used by texture arrays)
     PROPERTY_RW(U32, numLayers, 1u);
     /// Texture width as returned by STB/DDS loader
@@ -133,15 +131,13 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     virtual void validateDescriptor();
 
-    inline void setTextureHandle(U32 handle) { _textureData._textureHandle = handle; }
-    inline void setSamplerHandle(U32 handle) { _textureData._samplerHandle = handle; }
+    inline void setTextureHandle(U32 handle) { _data._textureHandle = handle; }
+    inline void setSamplerHandle(U32 handle) { _data._samplerHandle = handle; }
 
     const char* getResourceTypeName() const override { return "Texture"; }
 
    protected:
     bool _asyncLoad;
-    TextureData  _textureData;
-    TextureDescriptor _descriptor;
 
   protected:
     static const char* s_missingTextureFileName;

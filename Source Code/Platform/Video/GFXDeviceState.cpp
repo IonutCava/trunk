@@ -157,22 +157,22 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
     SamplerDescriptor defaultSampler = {};
-    defaultSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    defaultSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    defaultSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    defaultSampler._minFilter = TextureFilter::NEAREST;
-    defaultSampler._magFilter = TextureFilter::NEAREST;
+    defaultSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    defaultSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    defaultSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    defaultSampler.minFilter(TextureFilter::NEAREST);
+    defaultSampler.magFilter(TextureFilter::NEAREST);
 
-    screenDescriptor.setSampler(defaultSampler);
+    screenDescriptor.samplerDescriptor(defaultSampler);
     screenDescriptor.msaaSamples(msaaSamples);
 
-    depthDescriptor.setSampler(defaultSampler);
+    depthDescriptor.samplerDescriptor(defaultSampler);
     depthDescriptor.msaaSamples(msaaSamples);
 
-    normalAndVelocityDescriptor.setSampler(defaultSampler);
+    normalAndVelocityDescriptor.samplerDescriptor(defaultSampler);
     normalAndVelocityDescriptor.msaaSamples(msaaSamples);
 
-    lightingDetails.setSampler(defaultSampler);
+    lightingDetails.samplerDescriptor(defaultSampler);
     lightingDetails.msaaSamples(msaaSamples);
 
     {
@@ -208,14 +208,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
     SamplerDescriptor hiZSampler = {};
-    hiZSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    hiZSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    hiZSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    hiZSampler._minFilter = TextureFilter::NEAREST_MIPMAP_NEAREST;
-    hiZSampler._magFilter = TextureFilter::NEAREST;
+    hiZSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    hiZSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    hiZSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
+    hiZSampler.magFilter(TextureFilter::NEAREST);
 
-    hiZDescriptor.setSampler(hiZSampler);
-    hiZDescriptor.automaticMipMapGeneration(false);
+    hiZDescriptor.samplerDescriptor(hiZSampler);
+    hiZDescriptor.autoMipMaps(false);
 
     vector<RTAttachmentDescriptor> hiZAttachments = {
         { hiZDescriptor, RTAttachmentType::Depth }
@@ -239,15 +239,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     if (Config::Build::ENABLE_EDITOR) {
         SamplerDescriptor editorSampler = {};
-        editorSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-        editorSampler._magFilter = TextureFilter::LINEAR;
-        editorSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-        editorSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-        editorSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-        editorSampler._anisotropyLevel = 0;
+        editorSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+        editorSampler.magFilter(TextureFilter::LINEAR);
+        editorSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+        editorSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+        editorSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+        editorSampler.anisotropyLevel(0);
 
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
-        editorDescriptor.setSampler(editorSampler);
+        editorDescriptor.samplerDescriptor(editorSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
             { editorDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
@@ -263,21 +263,21 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     {
         SamplerDescriptor accumulationSampler = {};
-        accumulationSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-        accumulationSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-        accumulationSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-        accumulationSampler._minFilter = TextureFilter::NEAREST;
-        accumulationSampler._magFilter = TextureFilter::NEAREST;
+        accumulationSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+        accumulationSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+        accumulationSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+        accumulationSampler.minFilter(TextureFilter::NEAREST);
+        accumulationSampler.magFilter(TextureFilter::NEAREST);
 
         TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
         accumulationDescriptor.msaaSamples(msaaSamples);
-        accumulationDescriptor.automaticMipMapGeneration(false);
-        accumulationDescriptor.setSampler(accumulationSampler);
+        accumulationDescriptor.autoMipMaps(false);
+        accumulationDescriptor.samplerDescriptor(accumulationSampler);
 
         TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
         revealageDescriptor.msaaSamples(msaaSamples);
-        revealageDescriptor.automaticMipMapGeneration(false);
-        revealageDescriptor.setSampler(accumulationSampler);
+        revealageDescriptor.autoMipMaps(false);
+        revealageDescriptor.samplerDescriptor(accumulationSampler);
 
         vector<RTAttachmentDescriptor> attachments = {
             { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
@@ -305,19 +305,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler = {};
-    reflectionSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    reflectionSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    reflectionSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    reflectionSampler._minFilter = TextureFilter::NEAREST;
-    reflectionSampler._magFilter = TextureFilter::NEAREST;
+    reflectionSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.minFilter(TextureFilter::NEAREST);
+    reflectionSampler.magFilter(TextureFilter::NEAREST);
 
     {
         // A could be used for anything. E.G. depth
         TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
-        environmentDescriptorPlanar.setSampler(reflectionSampler);
+        environmentDescriptorPlanar.samplerDescriptor(reflectionSampler);
 
         TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-        depthDescriptorPlanar.setSampler(reflectionSampler);
+        depthDescriptorPlanar.samplerDescriptor(reflectionSampler);
 
         RenderTargetDescriptor hizRTDesc = {};
         hizRTDesc._resolution = reflectRes;
@@ -352,14 +352,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
     {
         TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
-        environmentDescriptorCube.setSampler(reflectionSampler);
+        environmentDescriptorCube.samplerDescriptor(reflectionSampler);
 
         TextureDescriptor hiZDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-        hiZDescriptorCube.setSampler(hiZSampler);
-        hiZDescriptorCube.automaticMipMapGeneration(false);
+        hiZDescriptorCube.samplerDescriptor(hiZSampler);
+        hiZDescriptorCube.autoMipMaps(false);
 
         TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-        depthDescriptorCube.setSampler(reflectionSampler);
+        depthDescriptorCube.samplerDescriptor(reflectionSampler);
 
         
         vector<RTAttachmentDescriptor> attachments = {

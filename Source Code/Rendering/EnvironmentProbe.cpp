@@ -76,20 +76,20 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
     s_availableSlices.resize(g_maxEnvironmentProbes, false);
     // Reflection Targets
     SamplerDescriptor reflectionSampler = {};
-    reflectionSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-    reflectionSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-    reflectionSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-    reflectionSampler._minFilter = TextureFilter::NEAREST;
-    reflectionSampler._magFilter = TextureFilter::NEAREST;
+    reflectionSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.minFilter(TextureFilter::NEAREST);
+    reflectionSampler.magFilter(TextureFilter::NEAREST);
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
-    environmentDescriptor.setSampler(reflectionSampler);
+    environmentDescriptor.samplerDescriptor(reflectionSampler);
     environmentDescriptor.setLayerCount(g_maxEnvironmentProbes);
 
 
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
-    depthDescriptor.setSampler(reflectionSampler);
+    depthDescriptor.samplerDescriptor(reflectionSampler);
 
     vector<RTAttachmentDescriptor> att = {
         { environmentDescriptor, RTAttachmentType::Colour, 0, DefaultColours::WHITE },
@@ -176,7 +176,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(reflectTex->getData(), to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE));
+    descriptorSetCmd._set._textureData.setTexture(reflectTex->data(), to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::SendPushConstantsCommand pushConstants;

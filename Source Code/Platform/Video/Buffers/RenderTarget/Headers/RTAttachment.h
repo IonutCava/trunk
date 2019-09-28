@@ -89,9 +89,6 @@ class RTAttachment {
         const Texture_ptr& texture(bool autoResolve = true) const;
         void setTexture(const Texture_ptr& tex);
 
-        U32 binding() const;
-        void binding(U32 binding);
-
         U16 numLayers() const;
 
         const RTAttachmentDescriptor& descriptor() const;
@@ -100,15 +97,16 @@ class RTAttachment {
         const RTAttachmentPool& parent() const;
 
         const RTAttachment_ptr& getExternal() const;
+
     protected:
-        bool _changed;
-        U32  _binding;
+        RTAttachmentDescriptor _descriptor;
+        Texture_ptr _texture;
+        RTAttachment_ptr _externalAttachment;
+        RTAttachmentPool& _parent;
+        PROPERTY_RW(U32, binding, 0u);
         U16  _mipWriteLevel;
         U16  _writeLayer;
-        Texture_ptr _texture;
-        RTAttachmentPool& _parent;
-        RTAttachment_ptr _externalAttachment;
-        RTAttachmentDescriptor _descriptor;
+        bool _changed;
 };
 
 FWD_DECLARE_MANAGED_CLASS(RTAttachment);

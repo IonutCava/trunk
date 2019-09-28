@@ -74,19 +74,19 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
         switch (static_cast<ShadowType>(i)) {
             case ShadowType::SINGLE: {
                 SamplerDescriptor depthMapSampler = {};
-                depthMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._minFilter = TextureFilter::LINEAR;
-                depthMapSampler._magFilter = TextureFilter::LINEAR;
-                depthMapSampler._anisotropyLevel = 0;
-                depthMapSampler._useRefCompare = true;
-                depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;
+                depthMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.minFilter(TextureFilter::LINEAR);
+                depthMapSampler.magFilter(TextureFilter::LINEAR);
+                depthMapSampler.anisotropyLevel(0);
+                depthMapSampler.useRefCompare(true);
+                depthMapSampler.cmpFunc(ComparisonFunction::LEQUAL);
 
                 // Default filters, LINEAR is OK for this
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-                depthMapDescriptor.setSampler(depthMapSampler);
+                depthMapDescriptor.samplerDescriptor(depthMapSampler);
 
                 vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Depth },
@@ -106,17 +106,17 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
             case ShadowType::LAYERED: {
 
                 SamplerDescriptor depthMapSampler = {};
-                depthMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-                depthMapSampler._magFilter = TextureFilter::LINEAR;
-                depthMapSampler._anisotropyLevel = settings.anisotropicFilteringLevel;
+                depthMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+                depthMapSampler.magFilter(TextureFilter::LINEAR);
+                depthMapSampler.anisotropyLevel(settings.anisotropicFilteringLevel);
 
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT * Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS);
-                depthMapDescriptor.setSampler(depthMapSampler);
-                depthMapDescriptor.automaticMipMapGeneration(false);
+                depthMapDescriptor.samplerDescriptor(depthMapSampler);
+                depthMapDescriptor.autoMipMaps(false);
 
                 vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Colour }
@@ -136,17 +136,17 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
             case ShadowType::CUBEMAP: {
                 // Default filters, LINEAR is OK for this
                 SamplerDescriptor depthMapSampler = {};
-                depthMapSampler._wrapU = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._wrapV = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._wrapW = TextureWrap::CLAMP_TO_EDGE;
-                depthMapSampler._minFilter = TextureFilter::LINEAR;
-                depthMapSampler._magFilter = TextureFilter::LINEAR;
-                depthMapSampler._anisotropyLevel = 0;
-                depthMapSampler._useRefCompare = true;  //< Use compare function
-                depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal
+                depthMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+                depthMapSampler.minFilter(TextureFilter::LINEAR);
+                depthMapSampler.magFilter(TextureFilter::LINEAR);
+                depthMapSampler.anisotropyLevel(0);
+                depthMapSampler.useRefCompare(true);
+                depthMapSampler.cmpFunc(ComparisonFunction::LEQUAL);
 
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-                depthMapDescriptor.setSampler(depthMapSampler);
+                depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
                 vector<RTAttachmentDescriptor> att = {
@@ -207,14 +207,14 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
         U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
         RTAttachment& shadowTexture = getDepthMap(lightType)._rt->getAttachment(attachment, 0);
 
-        const TextureData& data = shadowTexture.texture()->getData();
+        const TextureData& data = shadowTexture.texture()->data();
         const TextureDescriptor& texDescriptor = shadowTexture.descriptor()._texDescriptor;
 
-        if (useCount > 0 && useCount < texDescriptor._layerCount) {
+        if (useCount > 0 && useCount < texDescriptor.layerCount()) {
             TextureViewEntry entry = {};
             entry._binding = bindSlot;
             entry._view._texture = shadowTexture.texture().get();
-            entry._view._mipLevels.set(texDescriptor._mipLevels.min, texDescriptor._mipLevels.max);
+            entry._view._mipLevels.set(texDescriptor.mipLevels().min, texDescriptor.mipLevels().max);
             entry._view._layerRange.set(0, useCount);
             descriptorSetCmd._set._textureViews.push_back(entry);
         } else {

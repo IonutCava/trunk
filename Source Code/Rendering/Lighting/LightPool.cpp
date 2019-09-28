@@ -115,16 +115,16 @@ void LightPool::init() {
     _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader);
 
     SamplerDescriptor iconSampler = {};
-    iconSampler._wrapU = TextureWrap::REPEAT;
-    iconSampler._wrapV = TextureWrap::REPEAT;
-    iconSampler._wrapW = TextureWrap::REPEAT;
-    iconSampler._minFilter = TextureFilter::LINEAR;
-    iconSampler._magFilter = TextureFilter::LINEAR;
-    iconSampler._anisotropyLevel = 0;
+    iconSampler.wrapU(TextureWrap::REPEAT);
+    iconSampler.wrapV(TextureWrap::REPEAT);
+    iconSampler.wrapW(TextureWrap::REPEAT);
+    iconSampler.minFilter(TextureFilter::LINEAR);
+    iconSampler.magFilter(TextureFilter::LINEAR);
+    iconSampler.anisotropyLevel(0);
 
     TextureDescriptor iconDescriptor(TextureType::TEXTURE_2D);
-    iconDescriptor.setSampler(iconSampler);
-    iconDescriptor._srgb = true;
+    iconDescriptor.samplerDescriptor(iconSampler);
+    iconDescriptor.srgb(true);
 
     ResourceDescriptor iconImage("LightIconTexture");
     iconImage.threaded(false);
@@ -416,7 +416,7 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
         GFX::EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.setTexture(_lightIconsTexture->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(_lightIconsTexture->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DrawCommand drawCommand = { pointsCmd };

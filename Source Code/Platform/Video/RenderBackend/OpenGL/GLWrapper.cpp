@@ -1178,13 +1178,13 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::COMPUTE_MIPMAPS: {
             const GFX::ComputeMipMapsCommand& crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
             if (crtCmd._layerRange.x == 0 && crtCmd._layerRange.y <= 1) {
-                glGenerateTextureMipmap(crtCmd._texture->getData().textureHandle());
+                glGenerateTextureMipmap(crtCmd._texture->data().textureHandle());
             } else {
 
                 Texture* tex = crtCmd._texture;
-                TextureData data = tex->getData();
-                const TextureDescriptor& descriptor = tex->getDescriptor();
-                GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
+                TextureData data = tex->data();
+                const TextureDescriptor& descriptor = tex->descriptor();
+                GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
                 GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
                 GLuint handle = s_texturePool.allocate(GL_NONE);
@@ -1192,8 +1192,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     type,
                     data.textureHandle(),
                     glInternalFormat,
-                    (GLuint)descriptor._mipLevels.x,
-                    (GLuint)descriptor._mipLevels.y,
+                    (GLuint)descriptor.mipLevels().x,
+                    (GLuint)descriptor.mipLevels().y,
                     (GLuint)crtCmd._layerRange.x,
                     (GLuint)crtCmd._layerRange.y);
                 glGenerateTextureMipmap(handle);
@@ -1476,9 +1476,9 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
 
     for (auto it : textureViews) {
         Texture* tex = it._view._texture;
-        TextureData data = tex->getData();
-        const TextureDescriptor& descriptor = tex->getDescriptor();
-        GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor._srgb);
+        const TextureData& data = tex->data();
+        const TextureDescriptor& descriptor = tex->descriptor();
+        GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
         GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
         GLuint handle = s_texturePool.allocate(GL_NONE);

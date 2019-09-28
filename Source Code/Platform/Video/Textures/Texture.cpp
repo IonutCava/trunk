@@ -26,7 +26,7 @@ Texture::Texture(GFXDevice& context,
                  const TextureDescriptor& texDescriptor)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
       GraphicsResource(context, GraphicsResource::Type::TEXTURE, getGUID(), _ID(name.c_str())),
-      _textureData(0u, 0u, TextureType::COUNT),
+      _data(0u, 0u, TextureType::COUNT),
       _descriptor(texDescriptor),
       _numLayers(texDescriptor._layerCount),
       _hasTransparency(false),
@@ -48,7 +48,7 @@ Texture::Texture(GFXDevice& context,
     }
 
     _width = _height = 0;
-    _textureData._textureType = _descriptor.type();
+    _data._textureType = _descriptor.type();
 }
 
 Texture::~Texture()
@@ -107,7 +107,7 @@ void Texture::threadedLoad() {
             }
 
             info._layerIndex++;
-            if (_textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+            if (_data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
                 if (info._layerIndex == 6) {
                     info._layerIndex = 0;
                     info._cubeMapCount++;
@@ -120,8 +120,8 @@ void Texture::threadedLoad() {
     _descriptor._sourceFileList.shrink_to_fit();
 
     if (loadFromFile) {
-        if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
-            _textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (_data._textureType == TextureType::TEXTURE_CUBE_MAP ||
+            _data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
             if (info._layerIndex != 6) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
@@ -130,8 +130,8 @@ void Texture::threadedLoad() {
             }
         }
 
-        if (_textureData._textureType == TextureType::TEXTURE_2D_ARRAY ||
-            _textureData._textureType == TextureType::TEXTURE_2D_ARRAY_MS) {
+        if (_data._textureType == TextureType::TEXTURE_2D_ARRAY ||
+            _data._textureType == TextureType::TEXTURE_2D_ARRAY_MS) {
             if (info._layerIndex != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
@@ -140,7 +140,7 @@ void Texture::threadedLoad() {
             }
         }
 
-        if (_textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (_data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
             if (info._cubeMapCount != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
@@ -161,7 +161,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                           _descriptor.dataType() == GFXDataFormat::UNSIGNED_SHORT);
         
         // Save file contents in  the "img" object
-        ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor._srgb, fileData);
+        ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor.srgb(), fileData);
 
         bufferPtr data = fileData.is16Bit() ? fileData.data16() : fileData.isHDR() ? fileData.dataf() : fileData.data();
         // Validate data
@@ -174,7 +174,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
             // Missing texture fallback.
             fileData.flip(false);
             // missing_texture.jpg must be something that really stands out
-            ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, _width, _height, _descriptor._srgb, fileData);
+            ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, _width, _height, _descriptor.srgb(), fileData);
 
         }
 
@@ -239,14 +239,14 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 
     // Create a new Rendering API-dependent texture object
     if (info._layerIndex == 0) {
-        _descriptor._type = _textureData._textureType;
+        _descriptor._type = _data._textureType;
         _descriptor._mipLevels.max = to_U16(fileData.mipCount());
-        _descriptor._mipCount = _descriptor._mipLevels.max;
+        _descriptor._mipCount = _descriptor.mipLevels().max;
         _descriptor._compressed = fileData.compressed();
         _descriptor.baseFormat(fileData.format());
         _descriptor.dataType(fileData.dataType());
     } else {
-        DIVIDE_ASSERT(_descriptor._type == _textureData._textureType, "Texture::loadFile error: Texture Layer with different type detected!");
+        DIVIDE_ASSERT(_descriptor._type == _data._textureType, "Texture::loadFile error: Texture Layer with different type detected!");
     }
     // Uploading to the GPU dependents on the rendering API
     loadData(info, fileData.imageLayers());
@@ -258,7 +258,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 
 void Texture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     // This can be called at any time
-    _descriptor.setSampler(descriptor);
+    _descriptor.samplerDescriptor(descriptor);
 }
 
 void Texture::validateDescriptor() {
@@ -269,7 +269,7 @@ void Texture::validateDescriptor() {
         _descriptor.baseFormat() == GFXImageFormat::DEPTH_COMPONENT)             
     {
         // We only support 8 bit per pixel - 3 & 4 channel textures
-        assert(!_descriptor._srgb);
+        assert(!_descriptor.srgb());
     }
 
     switch (_descriptor.baseFormat()) {
@@ -291,12 +291,12 @@ void Texture::validateDescriptor() {
         if (_descriptor._samplerDescriptor.generateMipMaps()) {
             if (_descriptor._mipLevels.max <= 1) {
                 _descriptor._mipLevels.max = computeMipCount(_width, _height) + 1;
-                _descriptor._mipCount = _descriptor._mipLevels.max;
+                _descriptor._mipCount = _descriptor.mipLevels().max;
             }
         }
     }
 
-    _textureData._textureType = _descriptor.type();
+    _data._textureType = _descriptor.type();
 }
 
 U16 Texture::computeMipCount(U16 width, U16 height) {

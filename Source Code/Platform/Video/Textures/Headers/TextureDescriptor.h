@@ -45,26 +45,6 @@ struct SamplerDescriptor : public Hashable {
     SamplerDescriptor() = default;
     ~SamplerDescriptor() = default;
 
-    /// Texture filtering mode
-    TextureFilter _minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-    TextureFilter _magFilter = TextureFilter::LINEAR;
-    /// Texture wrap mode (Or S-R-T)
-    TextureWrap _wrapU = TextureWrap::REPEAT;
-    TextureWrap _wrapV = TextureWrap::REPEAT;
-    TextureWrap _wrapW = TextureWrap::REPEAT;
-
-    bool _useRefCompare = false;  ///<use red channel as comparison (e.g. for shadows)
-    ComparisonFunction _cmpFunc = ComparisonFunction::LEQUAL;  ///<Used by RefCompare
-    /// The value must be in the range [0...255] and is automatically clamped by the max HW supported level
-    U8 _anisotropyLevel = 255;
-    /// OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
-    F32 _minLOD = -1000.f;
-    F32 _maxLOD = 1000.f;
-    /// OpenGL eg: used by TEXTURE_LOD_BIAS
-    F32 _biasLOD = 0.f;
-    /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
-    FColour4 _borderColour = DefaultColours::BLACK;
-
     inline size_t getHash() const override {
         _hash = 23;
         Util::Hash_combine(_hash, to_U32(_cmpFunc));
@@ -86,10 +66,31 @@ struct SamplerDescriptor : public Hashable {
     }
 
     inline bool generateMipMaps() const {
-        return _minFilter != TextureFilter::LINEAR &&
-               _minFilter != TextureFilter::NEAREST &&
-               _minFilter != TextureFilter::COUNT;
+        return minFilter() != TextureFilter::LINEAR &&
+               minFilter() != TextureFilter::NEAREST &&
+               minFilter() != TextureFilter::COUNT;
     }
+
+    /// Texture filtering mode
+    PROPERTY_RW(TextureFilter, minFilter, TextureFilter::LINEAR_MIPMAP_LINEAR);
+    PROPERTY_RW(TextureFilter, magFilter, TextureFilter::LINEAR);
+    /// Texture wrap mode (Or S-R-T)
+    PROPERTY_RW(TextureWrap, wrapU, TextureWrap::REPEAT);
+    PROPERTY_RW(TextureWrap, wrapV, TextureWrap::REPEAT);
+    PROPERTY_RW(TextureWrap, wrapW, TextureWrap::REPEAT);
+    ///use red channel as comparison (e.g. for shadows)
+    PROPERTY_RW(bool, useRefCompare, false);
+    ///Used by RefCompare
+    PROPERTY_RW(ComparisonFunction, cmpFunc, ComparisonFunction::LEQUAL);
+    /// The value must be in the range [0...255] and is automatically clamped by the max HW supported level
+    PROPERTY_RW(U8, anisotropyLevel, 255);
+    /// OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
+    PROPERTY_RW(F32, minLOD, -1000.f);
+    PROPERTY_RW(F32, maxLOD, 1000.f);
+    /// OpenGL eg: used by TEXTURE_LOD_BIAS
+    PROPERTY_RW(F32, biasLOD, 0.f);
+    /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
+    PROPERTY_RW(FColour4, borderColour, DefaultColours::BLACK);
 };
 
 /// Use to define a texture with details such as type, image formats, etc
@@ -150,45 +151,6 @@ class TextureDescriptor final : public PropertyDescriptor {
         return _type == TextureType::TEXTURE_2D_MS ||
                _type == TextureType::TEXTURE_2D_ARRAY_MS;
     }
-    /// A TextureDescriptor will always have a sampler, even if it is the
-    /// default one
-    inline void setSampler(const SamplerDescriptor& descriptor) {
-        _samplerDescriptor = descriptor;
-    }
-
-    inline const SamplerDescriptor& getSampler() const {
-        return _samplerDescriptor;
-    }
-
-    inline GFXDataFormat dataType() const {
-        assert(_dataType != GFXDataFormat::COUNT);
-        return _dataType;
-    }
-
-    inline void dataType(GFXDataFormat type) {
-        _dataType = type;
-    }
-
-    inline GFXImageFormat baseFormat() const {
-        assert(_baseFormat != GFXImageFormat::COUNT);
-        return _baseFormat;
-    }
-
-    inline void baseFormat(GFXImageFormat format) {
-        _baseFormat = format;
-    }
-
-    inline void type(TextureType type) { _type = type; }
-
-    inline TextureType type() const { return _type; }
-
-    inline I16 msaaSamples() const { return _msaaSamples; }
-
-    inline void msaaSamples(I16 sampleCount) { _msaaSamples = sampleCount; }
-
-    inline bool automaticMipMapGeneration() const { return _autoMipMaps; }
-
-    inline void automaticMipMapGeneration(const bool state) { _autoMipMaps = state; }
 
     inline U8 numChannels() const {
         switch (baseFormat()) {
@@ -207,28 +169,23 @@ class TextureDescriptor final : public PropertyDescriptor {
 
         return 0;
     }
-
-    /// Use SRGB colour space
-    bool _srgb = false;
-    U32 _layerCount = 1;
-    TextureType _type = TextureType::TEXTURE_2D;
-    bool _compressed = false;
-    /// Automatically compute mip mpas (overwrites any manual mipmap computation)
-    bool _autoMipMaps = true;
-    /// The sampler used to initialize this texture with
-    SamplerDescriptor _samplerDescriptor = {};
-    /// Mip levels
-    vec2<U16> _mipLevels = {0u, 1u};
-    U16 _mipCount = 1;
-
-    /// How many MSAA samples to use: -1 (default) = max available, 0 = disabled
-    I16 _msaaSamples = -1;
-
     const vector<stringImpl>& sourceFileList() const { return _sourceFileList; }
 
-  private:
-     GFXImageFormat _baseFormat = GFXImageFormat::RGB;
-     GFXDataFormat  _dataType = GFXDataFormat::UNSIGNED_BYTE;
+    /// A TextureDescriptor will always have a sampler, even if it is the default one
+    PROPERTY_RW(SamplerDescriptor, samplerDescriptor);
+    PROPERTY_RW(U32, layerCount, 1);
+    PROPERTY_RW(vec2<U16>, mipLevels);
+    PROPERTY_RW(U16, mipCount, 1);
+    /// How many MSAA samples to use: -1 (default) = max available, 0 = disabled
+    PROPERTY_RW(I16, msaaSamples, -1);
+    PROPERTY_RW(GFXDataFormat, dataType, GFXDataFormat::COUNT);
+    PROPERTY_RW(GFXImageFormat, baseFormat, GFXImageFormat::COUNT);
+    PROPERTY_RW(TextureType, type, TextureType::COUNT);
+    /// Automatically compute mip maps (overwrites any manual mipmap computation)
+    PROPERTY_RW(bool, autoMipMaps, true);
+    /// Use SRGB colour space
+    PROPERTY_RW(bool, srgb, false);
+    PROPERTY_RW(bool, compressed, false);
 
    private:
      friend class Texture;

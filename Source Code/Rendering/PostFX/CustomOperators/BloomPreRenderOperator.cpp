@@ -23,7 +23,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
 
     vector<RTAttachmentDescriptor> att = {
         {
-            parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getDescriptor(),
+            parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(),
             RTAttachmentType::Colour,
             0,
             DefaultColours::BLACK
@@ -102,7 +102,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     triangleCmd._drawCount = 1;
 
     RenderTargetHandle screen = _parent.inputRT();
-    TextureData data = screen._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //screen
+    TextureData data = screen._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //screen
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
@@ -142,8 +142,8 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     blitRTCommand._blitColours.emplace_back();
     GFX::EnqueueCommand(bufferInOut, blitRTCommand);
 
-    TextureData data0 = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Screen
-    TextureData data1 = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Bloom
+    TextureData data0 = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //Screen
+    TextureData data1 = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //Bloom
 
     descriptorSetCmd._set._textureData.setTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
     descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
@@ -170,7 +170,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
 }
 
 TextureData BloomPreRenderOperator::getDebugOutput() const {
-    return _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Bloom
+    return _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //Bloom
 }
 
 };

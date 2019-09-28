@@ -116,7 +116,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     if (type == RTAttachmentType::Depth) {
         attachmentEnum = GL_DEPTH_ATTACHMENT;
 
-        TextureType texType = tex->getData().type();
+        TextureType texType = tex->data().type();
         _isLayeredDepth = (texType == TextureType::TEXTURE_2D_ARRAY ||
                            texType == TextureType::TEXTURE_2D_ARRAY_MS ||
                            texType == TextureType::TEXTURE_CUBE_MAP ||
@@ -124,7 +124,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
                            texType == TextureType::TEXTURE_3D);
     } else {
         attachmentEnum = GLenum((U32)GL_COLOR_ATTACHMENT0 + index);
-        if (tex->getDescriptor().isMultisampledTexture()) {
+        if (tex->descriptor().isMultisampledTexture()) {
             _hasMultisampledColourAttachments = true;
         }
     }
@@ -153,7 +153,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentS
             return;
         }
 
-        const GLuint handle = tex->getData().textureHandle();
+        const GLuint handle = tex->data().textureHandle();
         if (layeredRendering) {
             glNamedFramebufferTextureLayer(_framebufferHandle, binding, handle, bState._writeLevel, bState._writeLayer);
         } else {
@@ -187,9 +187,9 @@ bool glFramebuffer::create() {
                 RTAttachment* att = _attachmentPool->get(static_cast<RTAttachmentType>(i), j).get();
                 if (att->used()) {
                     RTAttachmentDescriptor descriptor = {};
-                    descriptor._texDescriptor = att->texture(false)->getDescriptor();
-                    descriptor._texDescriptor._type = GetNonMSType(descriptor._texDescriptor._type);
-                    descriptor._texDescriptor._msaaSamples = 0;
+                    descriptor._texDescriptor = att->texture(false)->descriptor();
+                    descriptor._texDescriptor.type(GetNonMSType(descriptor._texDescriptor.type()));
+                    descriptor._texDescriptor.msaaSamples(0);
                     descriptor._clearColour = att->clearColour();
                     descriptor._index = j;
                     descriptor._type = static_cast<RTAttachmentType>(i);
@@ -684,20 +684,20 @@ void glFramebuffer::queueMipMapRecomputation() {
     if (hasColour()) {
         const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
         for (const RTAttachment_ptr& att : colourAttachments) {
-            queueMipMapRecomputation(*att, vec2<U32>(0, att->descriptor()._texDescriptor._layerCount));
+            queueMipMapRecomputation(*att, vec2<U32>(0, att->descriptor()._texDescriptor.layerCount()));
         }
     }
 
     if (hasDepth()) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
-        queueMipMapRecomputation(*attDepth, vec2<U32>(0, attDepth->descriptor()._texDescriptor._layerCount));
+        queueMipMapRecomputation(*attDepth, vec2<U32>(0, attDepth->descriptor()._texDescriptor.layerCount()));
     }
 }
 
 void glFramebuffer::queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange) {
     const Texture_ptr& texture = attachment.texture(false);
     if (attachment.used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
-        GL_API::queueComputeMipMap(texture->getData().textureHandle());
+        GL_API::queueComputeMipMap(texture->data().textureHandle());
     }
 }
 
@@ -714,7 +714,7 @@ void glFramebuffer::clear(const RTClearDescriptor& drawPolicy, const RTAttachmen
                 GLint buffer = static_cast<GLint>(binding - static_cast<GLint>(GL_COLOR_ATTACHMENT0));
 
                 if (drawPolicy.clearColour(to_U8(buffer))) {
-                    switch (att->texture(false)->getDescriptor().dataType()) {
+                    switch (att->texture(false)->descriptor().dataType()) {
                         case GFXDataFormat::FLOAT_16:
                         case GFXDataFormat::FLOAT_32 :
                             glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, att->clearColour()._v);
@@ -753,7 +753,7 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
 
     const RTAttachment_ptr& att = _attachmentPool->get(params._type, params._index);
 
-    GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->texture(false)->getData().type())];
+    GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->texture(false)->data().type())];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
     if (textureType != GL_TEXTURE_2D_ARRAY &&
         textureType != GL_TEXTURE_CUBE_MAP_ARRAY &&
@@ -799,7 +799,7 @@ void glFramebuffer::setMipLevel(U16 writeLevel, bool validate) {
 
         for (const RTAttachment_ptr& attachment : attachments) {
             const Texture_ptr& texture = attachment->texture(false);
-            if (texture->getMaxMipLevel() > writeLevel && !texture->getDescriptor().isMultisampledTexture())
+            if (texture->getMaxMipLevel() > writeLevel && !texture->descriptor().isMultisampledTexture())
             {
                 const BindingState& state = getAttachmentState(static_cast<GLenum>(attachment->binding()));
                 attachment->mipWriteLevel(writeLevel);

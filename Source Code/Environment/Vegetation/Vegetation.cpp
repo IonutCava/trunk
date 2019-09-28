@@ -522,7 +522,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         // This will always lag one frame
         Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.setTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         //Cull grass

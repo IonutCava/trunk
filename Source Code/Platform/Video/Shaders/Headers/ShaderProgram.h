@@ -204,8 +204,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     const char* getResourceTypeName() const override { return "ShaderProgram"; }
 
-    PROPERTY_RW(bool, highPriority, true);
-
    protected:
      virtual bool recompileInternal(bool force) = 0;
 
@@ -225,19 +223,22 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static SharedMutex s_programLock;
 
-   protected:
-    template <typename T>
-    friend class ImplResourceLoader;
-    bool _shouldRecompile;
-    bool _asyncLoad;
+    private:
+        std::array<vector<U32>, to_base(ShaderType::COUNT)> _functionIndex;
+        std::array<vector<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
 
-    static bool s_useShaderTextCache;
-    static bool s_useShaderBinaryCache;
-    static std::atomic_int s_shaderCount;
+    protected:
+        template <typename T>
+        friend class ImplResourceLoader;
 
-   private:
-    std::array<vector<U32>, to_base(ShaderType::COUNT)> _functionIndex;
-    std::array<vector<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
+        PROPERTY_RW(bool, highPriority, true);
+
+        bool _shouldRecompile;
+        bool _asyncLoad;
+
+        static bool s_useShaderTextCache;
+        static bool s_useShaderBinaryCache;
+        static std::atomic_int s_shaderCount;
 };
 
 namespace Attorney {

@@ -45,16 +45,16 @@ bool InfinitePlane::load() {
     planeMaterial->getColourData().shininess(20.0f);
 
     SamplerDescriptor albedoSampler = {};
-    albedoSampler._wrapU = TextureWrap::REPEAT;
-    albedoSampler._wrapV = TextureWrap::REPEAT;
-    albedoSampler._wrapW = TextureWrap::REPEAT;
-    albedoSampler._minFilter = TextureFilter::LINEAR;
-    albedoSampler._magFilter = TextureFilter::LINEAR;
-    albedoSampler._anisotropyLevel = 8;
+    albedoSampler.wrapU(TextureWrap::REPEAT);
+    albedoSampler.wrapV(TextureWrap::REPEAT);
+    albedoSampler.wrapW(TextureWrap::REPEAT);
+    albedoSampler.minFilter(TextureFilter::LINEAR);
+    albedoSampler.magFilter(TextureFilter::LINEAR);
+    albedoSampler.anisotropyLevel(8);
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
-    miscTexDescriptor.setSampler(albedoSampler);
-    miscTexDescriptor._srgb = true;
+    miscTexDescriptor.samplerDescriptor(albedoSampler);
+    miscTexDescriptor.srgb(true);
 
     ResourceDescriptor textureWaterCaustics("Plane Water Caustics");
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
