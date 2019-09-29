@@ -33,7 +33,7 @@
 #pragma comment(lib, "libpng_d.lib")
 #pragma comment(lib, "jpeg_d.lib")
 #pragma comment(lib, "libmng_d.lib")
-#pragma comment(lib, "zlib_d.lib")
+#pragma comment(lib, "zlibd.lib")
 #pragma comment(lib, "pcre_d.lib")
 #pragma comment(lib, "freetype_d.lib")
 #pragma comment(lib, "FreeImage_d.lib")
