@@ -165,10 +165,10 @@ void fillEnumTables() {
     glImageFormatTable[to_base(GFXImageFormat::BGRA)] = GL_BGRA;
     glImageFormatTable[to_base(GFXImageFormat::RGBA)] = GL_RGBA;
     glImageFormatTable[to_base(GFXImageFormat::DEPTH_COMPONENT)] = GL_DEPTH_COMPONENT;
-    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGB_DXT1)] = gl::GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT1)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT3)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT5)] = gl::GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGB_DXT1)] = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT1)] = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT3)] = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+    glImageFormatTable[to_base(GFXImageFormat::COMPRESSED_RGBA_DXT5)] = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
     
     glPrimitiveTypeTable[to_base(PrimitiveType::API_POINTS)] = GL_POINTS;
     glPrimitiveTypeTable[to_base(PrimitiveType::LINES)] = GL_LINES;
@@ -316,7 +316,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
         case GFXImageFormat::COMPRESSED_RGB_DXT1:
         {
             if (srgb) {
-                return gl::GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
+                return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
             }
 
             return glImageFormatTable[to_base(baseFormat)];
@@ -324,7 +324,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
         case GFXImageFormat::COMPRESSED_RGBA_DXT1:
         {
             if (srgb) {
-                return gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+                return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
             }
 
             return glImageFormatTable[to_base(baseFormat)];
@@ -332,7 +332,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
         case GFXImageFormat::COMPRESSED_RGBA_DXT3:
         {
             if (srgb) {
-                return gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
+                return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
             }
 
             return glImageFormatTable[to_base(baseFormat)];
@@ -340,7 +340,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
         case GFXImageFormat::COMPRESSED_RGBA_DXT5:
         {
             if (srgb) {
-                return gl::GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+                return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
             }
 
             return glImageFormatTable[to_base(baseFormat)];

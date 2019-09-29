@@ -15,33 +15,33 @@ WaypointGraph::WaypointGraph() {
 WaypointGraph::~WaypointGraph() { _waypoints.clear(); }
 
 void WaypointGraph::addWaypoint(Waypoint* wp) {
-    if (_waypoints.find(wp->getID()) != std::end(_waypoints)) {
+    if (_waypoints.find(wp->ID()) != std::end(_waypoints)) {
         return;
     }
 
-    hashAlg::insert(_waypoints, wp->getID(), wp);
+    hashAlg::insert(_waypoints, wp->ID(), wp);
     updateGraph();
 }
 
 void WaypointGraph::removeWaypoint(Waypoint* wp) {
-    if (_waypoints.find(wp->getID()) != std::end(_waypoints)) {
-        _waypoints.erase(wp->getID());
+    if (_waypoints.find(wp->ID()) != std::end(_waypoints)) {
+        _waypoints.erase(wp->ID());
         updateGraph();
     } else {
-        Console::printfn(Locale::get(_ID("WARN_WAYPOINT_NOT_FOUND")), wp->getID(),
+        Console::printfn(Locale::get(_ID("WARN_WAYPOINT_NOT_FOUND")), wp->ID(),
                          getID());
     }
 }
 
 void WaypointGraph::updateGraph() {
     typedef hashMap<U32, Waypoint*> wp;
-    _positions.clear();
-    _rotations.clear();
-    _times.clear();
+    _positions.resize(0);
+    _rotations.resize(0);
+    _times.resize(0);
     for (wp::value_type& waypoint : _waypoints) {
-        _positions.push_back((waypoint.second)->_position);
-        _rotations.push_back((waypoint.second)->_orientation);
-        _times.push_back((waypoint.second)->_time);
+        _positions.push_back((waypoint.second)->position());
+        _rotations.push_back((waypoint.second)->orientation());
+        _times.push_back((waypoint.second)->time());
     }
 }
 };

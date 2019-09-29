@@ -39,36 +39,21 @@ namespace Divide {
 namespace Navigation {
 
 /// A point in space that AI units can navigate to
-class Waypoint {
-   public:
-    Waypoint();
-    ~Waypoint();
-
-    inline U32 getID() const { return _id; }
-
-   public:
-    vec3<F32> _position;
-    Quaternion<F32> _orientation;
-    U32 _time;
-
-   private:
-    U32 _id;
+struct Waypoint {
+    PROPERTY_RW(Quaternion<F32>, orientation);
+    PROPERTY_RW(vec3<F32>, position);
+    PROPERTY_R(U32, time, 0u);
+    PROPERTY_R(U32, ID, 0xFFFFFFFF);
 };
 
 /// A straight line between 2 waypoints
-///
-class WaypointPath {
-   public:
-    WaypointPath(Waypoint* first, Waypoint* second);
-    ~WaypointPath();
-
-   private:
-    Waypoint* _first;
-    Waypoint* _second;
+struct WaypointPath {
+    POINTER_RW(Waypoint, first, nullptr);
+    POINTER_RW(Waypoint, second, nullptr);
     /// If the path intersects an object in the scene, is the path still valid?
-    bool _throughObjects;
+    PROPERTY_RW(bool, throughObjects, false);
     /// ray used for collision detection
-    Ray _collisionRay;
+    PROPERTY_RW(Ray, collisionRay);
 };
 
 };  // namespace Navigation
