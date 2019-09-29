@@ -74,7 +74,7 @@ class NavMeshDebugDraw : public duDebugDraw {
     inline bool isDirty() const { return _dirty; }
     inline bool paused() const { return _paused; }
     inline void cancelOverride() { _overrideColour = false; }
-    inline void texture(bool state) {}
+    inline void texture(bool state) { ACKNOWLEDGE_UNUSED(state); }
     inline void vertex(const F32* pos, U32 colour) {
         vertex(pos[0], pos[1], pos[2], colour);
     }

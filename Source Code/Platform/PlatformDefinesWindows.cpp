@@ -27,7 +27,7 @@
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "glbindingd.lib")
 #pragma comment(lib, "glbinding-auxd.lib")
-#pragma comment(lib, "assimp-vc141-mt_d.lib")
+#pragma comment(lib, "assimp_d.lib")
 #pragma comment(lib, "IL_d.lib")
 #pragma comment(lib, "ILU_d.lib")
 #pragma comment(lib, "libpng_d.lib")
@@ -41,7 +41,6 @@
 #pragma comment(lib, "SDL2d.lib")
 #pragma comment(lib, "SDL2_mixer_d.lib")
 
-#pragma comment(lib, "CEGUI-GLRenderer_d.lib")
 #pragma comment(lib, "CEGUIBase-0_d.lib")
 #pragma comment(lib, "CEGUIDevILImageCodec_d.lib")
 #pragma comment(lib, "CEGUICoreWindowRendererSet_d.lib")
@@ -65,6 +64,7 @@
 #pragma comment(lib, "pcre.lib")
 #pragma comment(lib, "freetype.lib")
 #pragma comment(lib, "FreeImage.lib")
+#pragma comment(lib, "SDL2.lib")
 #pragma comment(lib, "SDL2_mixer.lib")
 #pragma comment(lib, "libexpat.lib")
 #pragma comment(lib, "CEGUIBase-0.lib")
@@ -72,31 +72,24 @@
 #pragma comment(lib, "CEGUICoreWindowRendererSet.lib")
 #pragma comment(lib, "CEGUICommonDialogs-0.lib")
 #pragma comment(lib, "CEGUIExpatParser.lib")
+#pragma comment(lib, "assimp.lib")
+#pragma comment(lib, "glbinding.lib")
+#pragma comment(lib, "glbinding-aux.lib")
 
 #if defined(_PROFILE)
-    #pragma comment(lib, "SDL2p.lib")
-    #pragma comment(lib, "glbindingp.lib")
-    #pragma comment(lib, "glbinding-auxp.lib")
-    #pragma comment(lib, "assimp-vc141-mt_p.lib")
     #pragma comment(lib, "PhysX3CookingPROFILE_x64.lib")
     #pragma comment(lib, "PhysX3PROFILE_x64.lib")
     #pragma comment(lib, "PhysX3CommonPROFILE_x64.lib")
     #pragma comment(lib, "PhysX3ExtensionsPROFILE.lib")
     #pragma comment(lib, "PxPvdSDKPROFILE_x64.lib")
     #pragma comment(lib, "PxFoundationPROFILE_x64.lib")
-    #pragma comment(lib, "CEGUI-GLRenderer_p.lib")
 #else
-    #pragma comment(lib, "SDL2.lib")
-    #pragma comment(lib, "glbinding.lib")
-    #pragma comment(lib, "glbinding-aux.lib")
-    #pragma comment(lib, "assimp-vc141-mt.lib")
     #pragma comment(lib, "PhysX3Cooking_x64.lib")
     #pragma comment(lib, "PhysX3_x64.lib")
     #pragma comment(lib, "PhysX3Common_x64.lib")
     #pragma comment(lib, "PhysX3Extensions.lib")
     #pragma comment(lib, "PxPvdSDK_x64.lib")
     #pragma comment(lib, "PxFoundation_x64.lib")
-    #pragma comment(lib, "CEGUI-GLRenderer.lib")
 #endif
 
 #endif  //_DEBUG
@@ -112,7 +105,6 @@ extern "C" {
     _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
     _declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 }
-
 #endif
 
 void* malloc_aligned(const size_t size, size_t alignment) {
@@ -120,7 +112,7 @@ void* malloc_aligned(const size_t size, size_t alignment) {
 }
 
 void  malloc_free(void*& ptr) {
-	_aligned_free(ptr);
+    _aligned_free(ptr);
 }
 
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {

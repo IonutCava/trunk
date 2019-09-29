@@ -82,7 +82,7 @@ inline ByteBuffer& ByteBuffer::operator>>(stringImpl& value) {
 template <typename U>
 inline ByteBuffer& ByteBuffer::operator>>(vectorEASTL<U>& value) {
     U32 count = read<U32>();
-    value = vectorEASTL<U>(count, {});
+    value = vectorEASTL<U>(count, U{});
 
     read((Byte*)value.data(), count * sizeof(U));
     return *this;

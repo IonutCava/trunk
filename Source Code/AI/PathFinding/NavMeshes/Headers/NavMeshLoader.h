@@ -72,7 +72,9 @@ class NavModelData {
           _triangleCount(0),
           _triangleCapacity(0),
           _triangles(0),
-          _valid(false) {}
+          _valid(false)
+    {
+    }
 
     void clear(bool del = true) {
         _valid = false;
