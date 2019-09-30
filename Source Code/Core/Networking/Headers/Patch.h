@@ -42,8 +42,8 @@ struct FileData {
 };
 
 struct PatchData {
-    stringImpl sceneName;
-    U32 size;
+    stringImpl sceneName = "";
+    U32 size = 0u;
     vector<stringImpl> name, modelName;
 };
 

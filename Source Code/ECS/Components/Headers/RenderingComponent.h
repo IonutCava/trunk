@@ -113,6 +113,12 @@ enum class ReflectorType : U8 {
 
 typedef DELEGATE_CBK<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
 
+constexpr std::pair<RenderTargetUsage, ShaderProgram::TextureUsage> g_texUsage[] = {
+    { RenderTargetUsage::REFLECTION_PLANAR, ShaderProgram::TextureUsage::REFLECTION_PLANAR},
+    { RenderTargetUsage::REFRACTION_PLANAR, ShaderProgram::TextureUsage::REFRACTION_PLANAR},
+    { RenderTargetUsage::REFLECTION_CUBE, ShaderProgram::TextureUsage::REFLECTION_CUBE }
+};
+
 class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
@@ -270,7 +276,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
 
-    std::array<Texture_ptr, 4> _externalTextures;
+    std::array<Texture_ptr, (sizeof(g_texUsage) / sizeof(g_texUsage[0]))> _externalTextures;
 
     static hashMap<U32, DebugView*> s_debugViews[2];
 };

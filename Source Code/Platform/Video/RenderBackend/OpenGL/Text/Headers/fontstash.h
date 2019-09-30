@@ -287,7 +287,11 @@ static void* fons__tmpalloc(size_t size, void* up);
 static void fons__tmpfree(void* ptr, void* up);
 #define STBTT_malloc(x,u)    fons__tmpalloc(x,u)
 #define STBTT_free(x,u)      fons__tmpfree(x,u)
+
+#pragma warning(push)
+#pragma warning(disable:4505) //unreferenced local function has been removed
 #include <STB/stb_truetype.h>
+#pragma warning(pop)
 
 struct FONSttFontImpl {
 	stbtt_fontinfo font;

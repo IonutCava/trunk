@@ -20,6 +20,7 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
     _smallIndices = false;
     _idxBufferDirty = false;
     _vertexArray = 0;
+    _countData.fill(0);
 }
 
 glGenericVertexData::~glGenericVertexData()

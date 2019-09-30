@@ -42,7 +42,7 @@ uniform vec2 _noiseFactor;
 const float Eta = 0.15f; //water
 
 float Fresnel(in vec3 viewDir, in vec3 normal) {
-    return mix(Eta + (1.0 - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f), 1.0f, _underwater * 1.0f);
+    return Eta + (1.0 - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f);
 }
 #endif
 
@@ -83,12 +83,15 @@ void main()
     //normalWV = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
 
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
+    vec4 refractionColour = texture(texRefractPlanar, uvFinalReflect);
 
-    vec4 texColour = mix(texture(texRefractPlanar, uvFinalReflect),
-                         texture(texReflectPlanar, uvFinalRefract),
-                         saturate(Fresnel(incident, VAR._normalWV)));
-    
+    vec4 texColour = mix(mix(refractionColour, texture(texReflectPlanar, uvFinalRefract), saturate(Fresnel(incident, VAR._normalWV))),
+                         refractionColour,
+                         _underwater);
+
+
     writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
+    
     //writeOutput(vec4(texture(texReflectPlanar, uvFinalReflect).rgb, 1.0f));
     //writeOutput(texColour);
 #endif

@@ -6,6 +6,10 @@
 #ifndef IMGUI_USER_ADDONS_H_
 #define IMGUI_USER_ADDONS_H_
 
+#pragma warning(push)
+#pragma warning(disable:4267) //conversion from X to Y possible loss of data
+#pragma warning(disable:4458) //declaration of X hides class member
+
 #ifndef IMGUI_INCLUDE_IMGUI_USER_INL
 //#warning IMGUI_INCLUDE_IMGUI_USER_INL should be defined
 #define IMGUI_INCLUDE_IMGUI_USER_INL
@@ -261,6 +265,6 @@ inline void operator delete(void*, ImImplPlacementNewDummy, void*) {}
 #include "./imguiyesaddons/imguiminigames.h" // ...but mini games could be enhanced by having sound...
 #endif //YES_IMGUIMINIGAMES
 
-
+#pragma warning(pop)
 #endif //IMGUI_USER_ADDONS_H_
 

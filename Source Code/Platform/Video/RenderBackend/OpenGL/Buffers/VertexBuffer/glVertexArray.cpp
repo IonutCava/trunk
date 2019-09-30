@@ -120,7 +120,7 @@ glVertexArray::glVertexArray(GFXDevice& context)
     _lastIndexCount = 0;
     _lastFirstIndex = 0;
     _vaoCaches.fill(0);
-
+    _countData.fill(0);
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
 }

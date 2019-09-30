@@ -170,6 +170,10 @@ bool Object3D::computeTriangleList() {
     DIVIDE_ASSERT(geometry != nullptr,
                   "Object3D error: Please specify a valid VertexBuffer before "
                   "calculating the triangle list!");
+    // We can't have a VB without vertex positions
+    DIVIDE_ASSERT(!geometry->getVertices().empty(),
+                  "Object3D error: computeTriangleList called with no position "
+                  "data available!");
 
     U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = geometry->getPartitionIndexCount(_geometryPartitionID);
@@ -177,10 +181,6 @@ bool Object3D::computeTriangleList() {
                           _geometryType._value == ObjectType::SUBMESH
                               ? PrimitiveType::TRIANGLES
                               : PrimitiveType::TRIANGLE_STRIP);
-    // We can't have a VB without vertex positions
-    DIVIDE_ASSERT(!geometry->getVertices().empty(),
-                  "Object3D error: computeTriangleList called with no position "
-                  "data available!");
 
     if (!_geometryTriangles.empty()) {
         _geometryTriangles.resize(0);

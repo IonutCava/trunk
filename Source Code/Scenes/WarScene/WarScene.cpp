@@ -53,6 +53,7 @@ namespace {
 
 WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
    : Scene(context, cache, parent, name),
+    _flag{ nullptr, nullptr },
     _infoBox(nullptr),
     _sceneReady(false),
     _terrainMode(false),
@@ -88,7 +89,8 @@ WarScene::~WarScene()
 }
 
 void WarScene::processGUI(const U64 deltaTimeUS) {
-    D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+    constexpr D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+
     if (_guiTimersMS[0] >= FpsDisplay) {
         const Camera& cam = _scenePlayers.front()->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
@@ -180,10 +182,10 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         return;
     }
 
-    D64 SunTimer = Time::Milliseconds(33);
-    //D64 AnimationTimer1 = Time::SecondsToMilliseconds(5);
-    //D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
-    D64 updateLights = Time::Milliseconds(32);
+    constexpr D64 SunTimer = Time::Milliseconds(33);
+    constexpr D64 AnimationTimer1 = Time::SecondsToMilliseconds(5);
+    constexpr D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
+    constexpr D64 updateLights = Time::Milliseconds(32);
 
     if (!_updatedSun && _taskTimers[0] >= SunTimer) {
         g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);

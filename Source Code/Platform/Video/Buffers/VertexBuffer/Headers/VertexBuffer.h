@@ -50,14 +50,14 @@ namespace Divide {
 class NOINITVTABLE VertexBuffer : public VertexDataInterface {
    public:
     struct Vertex {
+        UColour4  _colour;
         vec3<F32> _position;
         vec2<F32> _texcoord;
-        F32       _normal;
-        F32       _tangent;
-        UColour4  _colour;
-        P32       _weights;
-        P32       _indices;
-        
+        P32       _weights = {0u};
+        P32       _indices = {0u};
+        F32       _normal = 0.f;
+        F32       _tangent = 0.f;
+
         inline bool operator==(const Vertex& other) const {
             return _position == other._position &&
                    _normal == other._normal &&
@@ -77,7 +77,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                    _weights.i != other._weights.i ||
                    _indices.i != other._indices.i;
         }
-
     };
 
     VertexBuffer(GFXDevice& context);

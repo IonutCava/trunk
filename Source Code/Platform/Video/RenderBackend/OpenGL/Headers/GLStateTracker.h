@@ -181,8 +181,8 @@ namespace Divide {
 
         vector<BlendingProperties> _blendProperties;
         vector<gl::GLboolean> _blendEnabled;
-        GLenum    _currentCullMode;
-        GLenum    _currentFrontFace;
+        GLenum    _currentCullMode = GL_BACK;
+        GLenum    _currentFrontFace = GL_CCW;
         UColour4  _blendColour = UColour4(0, 0, 0, 0);
         Rect<I32> _activeViewport = Rect<I32>(-1);
         Rect<I32> _activeScissor = Rect<I32>(-1);

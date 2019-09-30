@@ -32,15 +32,8 @@ namespace Divide {
 namespace {
     constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
 
-    constexpr std::pair<RenderTargetUsage, ShaderProgram::TextureUsage> g_texUsage[] = {
-        { RenderTargetUsage::REFLECTION_PLANAR, ShaderProgram::TextureUsage::REFLECTION_PLANAR},
-        { RenderTargetUsage::REFRACTION_PLANAR, ShaderProgram::TextureUsage::REFRACTION_PLANAR},
-        { RenderTargetUsage::REFLECTION_CUBE, ShaderProgram::TextureUsage::REFLECTION_CUBE }
-    };
-
-
     I32 getUsageIndex(RenderTargetUsage usage) {
-        for (I32 i = 0; i < 4; ++i) {
+        for (I32 i = 0; i < (sizeof(g_texUsage) / sizeof(g_texUsage[0])); ++i) {
             if (g_texUsage[i].first == usage) {
                 return i;
             }
@@ -284,7 +277,7 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass, bool refreshD
         getMaterialCache()->getTextureData(renderStagePass, textures);
     }
 
-    for (U8 i = 0; i < 4; ++i) {
+    for (U8 i = 0; i < _externalTextures.size(); ++i) {
         const Texture_ptr& crtTexture = _externalTextures[i];
         if (crtTexture != nullptr) {
             textures.setTexture(crtTexture->data(), to_base(g_texUsage[i].second));

@@ -57,8 +57,8 @@ FWD_DECLARE_MANAGED_CLASS(Terrain);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 struct VegetationDetails {
-    U16 billboardCount;
-    stringImpl name;
+    U16 billboardCount = 0;
+    stringImpl name = "";
     std::shared_ptr<ImageTools::ImageData> grassMap;
     std::shared_ptr<ImageTools::ImageData> treeMap;
     std::weak_ptr<Terrain> parentTerrain;

@@ -193,7 +193,8 @@ void glBufferImpl::readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, con
             if (_target != GL_ATOMIC_COUNTER_BUFFER) {
                 glMemoryBarrier(MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
             }
-            std::memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
+            Byte* src = ((Byte*)(_mappedBuffer)+offsetInBytes);
+            std::memcpy(data, src, rangeInBytes);
         }
     } else {
         void* bufferData = glMapNamedBufferRange(_handle, offsetInBytes, rangeInBytes, MapBufferAccessMask::GL_MAP_READ_BIT);

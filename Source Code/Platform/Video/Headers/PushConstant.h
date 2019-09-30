@@ -84,8 +84,8 @@ namespace GFX {
 
         PushConstant(const PushConstant& other) = default;
         PushConstant& operator=(const PushConstant& other) = default;
-        PushConstant(PushConstant&& other) = default;
-        PushConstant& operator=(PushConstant&& other) = default;
+        PushConstant(PushConstant&& other) noexcept = default;
+        PushConstant& operator=(PushConstant&& other) noexcept = default;
 
         template<typename T>
         PushConstant(const char* binding,

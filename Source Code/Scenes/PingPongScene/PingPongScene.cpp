@@ -41,7 +41,8 @@ PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, Sce
 }
 
 void PingPongScene::processGUI(const U64 deltaTimeUS) {
-    D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+    constexpr D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+
     if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
