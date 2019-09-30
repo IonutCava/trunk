@@ -43,7 +43,8 @@ class StateTracker {
         bool initialized;
 
         optionalValue()
-            : initialized(false)
+            : value((T)0),
+              initialized(false)
         {
         }
     };

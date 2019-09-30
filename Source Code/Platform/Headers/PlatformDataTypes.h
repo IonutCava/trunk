@@ -83,7 +83,7 @@ class I24
 protected:
     U8 value[3];
 public:
-    I24() noexcept {}
+    I24() noexcept : I24(0) {}
     I24(I32 val) noexcept { *this = val; }
     I24(const I24& val) noexcept { *this = val; }
 

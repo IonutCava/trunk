@@ -22,7 +22,8 @@ tcp_session_tpl::tcp_session_tpl(boost::asio::io_service& io_service, channel& c
       _inputDeadline(io_service),
       _nonEmptyOutputQueue(io_service),
       _outputDeadline(io_service),
-      _strand(io_service)
+      _strand(io_service),
+      _header(0)
 {
     _inputDeadline.expires_at(boost::posix_time::pos_infin);
     _outputDeadline.expires_at(boost::posix_time::pos_infin);

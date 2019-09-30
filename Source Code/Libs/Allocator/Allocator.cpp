@@ -11,6 +11,7 @@ Allocator::Allocator(size_t size, UINT objects, CHAR* memory, const CHAR* name) 
     m_objectSize(size),
     m_maxObjects(objects),
     m_pHead(NULL),
+    m_pPool(NULL),
     m_poolIndex(0),
     m_blockCnt(0),
     m_blocksInUse(0),

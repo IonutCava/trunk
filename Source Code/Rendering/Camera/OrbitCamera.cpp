@@ -14,7 +14,8 @@ OrbitCamera::OrbitCamera(const stringImpl& name, const CameraType& type, const v
       _maxRadius(10.0f),
       _minRadius(0.1f),
       _curRadius(8.0f),
-      _rotationDirty(true)
+      _rotationDirty(true),
+      _targetNode(nullptr)
 {
     setMouseSensitivity(0.5f);
 }

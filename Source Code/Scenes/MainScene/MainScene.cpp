@@ -100,8 +100,8 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 }
 
 void MainScene::processGUI(const U64 deltaTimeUS) {
-    D64 FpsDisplay = Time::SecondsToMilliseconds(0.5);
-    D64 TimeDisplay = Time::SecondsToMilliseconds(1.0);
+    constexpr D64 FpsDisplay = Time::SecondsToMilliseconds(0.5);
+    constexpr D64 TimeDisplay = Time::SecondsToMilliseconds(1.0);
 
     if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
@@ -129,7 +129,9 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
 
 void MainScene::processTasks(const U64 deltaTimeUS) {
     updateLights();
-    D64 SunDisplay = Time::SecondsToMilliseconds(1.50);
+
+    constexpr D64 SunDisplay = Time::SecondsToMilliseconds(1.50);
+
     if (_taskTimers[0] >= SunDisplay) {
         _sunAngle.y += 0.0005f;
         _sunvector = vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),

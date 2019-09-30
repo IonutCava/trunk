@@ -66,7 +66,7 @@ class Plane {
         NEGATIVE_SIDE
     };
 
-    Plane() : _distance(0)
+    Plane() : Plane(WORLD_Y_AXIS, (T)0)
     {
     }
 
@@ -175,8 +175,8 @@ class Plane {
 
      union {
           struct {
-          vec3<T> _normal;
-          T _distance;
+              vec3<T> _normal;
+              T _distance;
           };
 
           vec4<T> _equation;

@@ -1,3 +1,6 @@
+#pragma warning(disable:4244) //conversion from X to Y possible loss of data
+#pragma warning(disable:4267) //conversion from X to Y possible loss of data
+
 //- Common Code For All Addons needed just to ease inclusion as separate files in user code ----------------------
 #include <imgui.h>
 #undef IMGUI_DEFINE_MATH_OPERATORS

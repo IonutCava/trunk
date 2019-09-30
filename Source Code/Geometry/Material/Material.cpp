@@ -32,7 +32,7 @@ namespace {
         ShaderProgram::TextureUsage::SPECULAR,
     };
 
-    constexpr U32 g_materialTexturesCount = 5;
+    constexpr U32 g_materialTexturesCount = sizeof(g_materialTextures) / sizeof(g_materialTextures[0]);
 };
 
 SharedMutex Material::s_shaderDBLock;
@@ -586,11 +586,12 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
 
-    ResourceDescriptor shaderRedDescriptor(shaderName);
-    shaderRedDescriptor.propertyDescriptor(shaderDescriptor);
-    shaderRedDescriptor.threaded(true);
+    ResourceDescriptor shaderResDescriptor(shaderName);
+    shaderResDescriptor.propertyDescriptor(shaderDescriptor);
+    shaderResDescriptor.threaded(true);
+    shaderResDescriptor.flag(true);
 
-    setShaderProgramInternal(shaderRedDescriptor, renderStagePass, false);
+    setShaderProgramInternal(shaderResDescriptor, renderStagePass, false);
 
     return false;
 }
@@ -1076,7 +1077,7 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
     pt.put(entryName + ".parallaxFactor", getParallaxFactor());
 
 
-    for (U8 i = 0; i <= g_materialTexturesCount; ++i) {
+    for (U8 i = 0; i < g_materialTexturesCount; ++i) {
         ShaderProgram::TextureUsage usage = g_materialTextures[i];
 
         Texture_wptr tex = getTexture(usage);
@@ -1149,7 +1150,7 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
 
     STUBBED("ToDo: Set texture is currently disabled!");
 
-    for (U8 i = 0; i <= g_materialTexturesCount; ++i) {
+    for (U8 i = 0; i < g_materialTexturesCount; ++i) {
         ShaderProgram::TextureUsage usage = g_materialTextures[i];
 
         if (auto child = pt.get_child_optional(((entryName + ".texture.") + getTexUsageName(usage)) + ".name")) {

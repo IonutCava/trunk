@@ -7,7 +7,9 @@ namespace Divide {
 
 IntersectionRecord::IntersectionRecord() :
     _distance(std::numeric_limits<D64>::max()),
-    _hasHit(false)
+    _hasHit(false),
+    _intersectedObject1(nullptr),
+    _intersectedObject2(nullptr)
 {
 }
 
@@ -19,14 +21,17 @@ IntersectionRecord::IntersectionRecord(const vec3<F32>& hitPos,
     _normal(hitNormal),
     _ray(ray),
     _distance(distance),
-    _hasHit(true)
+    _hasHit(true),
+    _intersectedObject1(nullptr),
+    _intersectedObject2(nullptr)
 {
 }
 
 /// Creates a new intersection record indicating whether there was a hit or not and the object which was hit.
 IntersectionRecord::IntersectionRecord(SceneGraphNode* hitObject) :
     _intersectedObject1(hitObject),
-    _distance(0.0),
+    _intersectedObject2(nullptr),
+    _distance(std::numeric_limits<D64>::max()),
     _hasHit(hitObject != nullptr)
 {
 }

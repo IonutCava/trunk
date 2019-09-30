@@ -9,6 +9,10 @@
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#pragma warning(push)
+#pragma warning(disable:4505) //unreferenced local function has been removed
+#pragma warning(disable:4189) //local variable is initialized but not referenced
+#pragma warning(disable:4244) //conversion from X to Y possible loss of data
 #include "stb_image.h"
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb_image_resize.h"
@@ -19,6 +23,7 @@
 #undef _UNICODE
 #include <IL/il.h>
 #include <IL/ilu.h>
+#pragma warning(pop)
 
 namespace Divide {
 namespace ImageTools {
@@ -114,7 +119,7 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
     if (refWidth != 0 && refHeight != 0 && (refWidth != width || refHeight != height)) {
         I32 ret = 0;
         if (is16Bit()) {
-            data162.resize(refWidth * refHeight * comp, 0);
+            data162.resize(to_size(refWidth) * refHeight * comp, 0);
             ret = stbir_resize_uint16_generic(data16, width, height, 0,
                                               data162.data(), refWidth, refHeight, 0,
                                               comp, -1, 0,
@@ -125,14 +130,14 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
                 data16 = nullptr;
             }
         } else if (isHDR()) {
-            dataF2.resize(refWidth * refHeight * comp, 0);
+            dataF2.resize(to_size(refWidth) * refHeight * comp, 0);
             ret = stbir_resize_float(dataf, width, height, 0, dataF2.data(), refWidth, refHeight, 0, comp);
             if (ret == 1) {
                 stbi_image_free(dataf);
                 dataf = nullptr;
             }
         } else {
-            data2.resize(refWidth * refHeight * comp, 0);
+            data2.resize(to_size(refWidth) * refHeight * comp, 0);
             if (srgb) {
                 ret = stbir_resize_uint8_srgb(data, width, height, 0, data2.data(), refWidth, refHeight, 0, comp, -1, 0);
             } else {
@@ -278,7 +283,7 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
         const ILint width = ilGetInteger(IL_IMAGE_WIDTH);
         const ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
         const ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
-        _decompressedData.resize(width * height * depth * 4);
+        _decompressedData.resize(to_size(width) * height * depth * 4);
 
         ilCopyPixels(0, 0, 0, width, height, depth, IL_RGBA, IL_UNSIGNED_BYTE, _decompressedData.data());
         assert(ilGetError() == IL_NO_ERROR);
@@ -379,7 +384,7 @@ bool ImageData::loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringI
     _dataType = GFXDataFormat::UNSIGNED_BYTE;
 
     const U32 numMips = image.get_num_mipmaps();
-    _data.resize(numMips + 1);
+    _data.resize(to_size(numMips) + 1);
     ImageLayer& base = _data[0];
     base._dimensions.set(image.get_width(),
                          image.get_height(),
@@ -418,14 +423,14 @@ void ImageData::getRed(I32 x, I32 y, U8& r, U32 mipLevel) const {
 void ImageData::getGreen(I32 x, I32 y, U8& g, U32 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
 
-    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     g = _compressed ? _decompressedData[idx + 1] : _data[mipLevel]._data[idx + 1];
 }
 
 void ImageData::getBlue(I32 x, I32 y, U8& b, U32 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
 
-    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     b = _compressed ? _decompressedData[idx + 2] : _data[mipLevel]._data[idx + 2];
 }
 
@@ -434,7 +439,7 @@ void ImageData::getAlpha(I32 x, I32 y, U8& a, U32 mipLevel) const {
 
     a = 255;
     if (_alpha) {
-        const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+        const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
         a = _compressed ? _decompressedData[idx + 3] : _data[mipLevel]._data[idx + 3];
     }
 }
@@ -497,7 +502,7 @@ I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDe
         }
 
     // save the image data
-    fwrite(imageData, sizeof(U8), width * height * mode, file);
+    fwrite(imageData, sizeof(U8), to_size(width) * height * mode, file);
     fclose(file);
     return 0;
 }

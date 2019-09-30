@@ -81,6 +81,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
       PlatformContextComponent(context),
       _parent(parent),
       _resCache(cache),
+      _currentSky(nullptr),
       _LRSpeedFactor(5.0f),
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
@@ -972,9 +973,10 @@ bool Scene::load(const stringImpl& name) {
             _sun = &dirLights.front()->getSGN();
         }
     }
-
-    // We always add at least one light
-    _sun->get<DirectionalLightComponent>()->castsShadows(true);
+    if (_sun != nullptr) {
+        // We always add at least one light
+        _sun->get<DirectionalLightComponent>()->castsShadows(true);
+    }
     _loadComplete = true;
 
     return _loadComplete;

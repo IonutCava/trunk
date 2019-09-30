@@ -10,6 +10,7 @@ namespace Divide {
 
 Unit::Unit(UnitType type)
     : FrameListener(),
+      _node(nullptr),
       _type(type),
       _moveSpeed(Metric::Base(1.0f)),
       _acceleration(Metric::Base(1.0f)),

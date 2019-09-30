@@ -79,11 +79,14 @@ bool glShader::embedsType(ShaderType type) const {
     return BitCompare(to_U32(stageMask()), getStageMask(type));
 }
 
-bool glShader::uploadToGPU() {
+bool glShader::uploadToGPU(bool& previouslyUploaded) {
     // prevent double load
     if (_valid) {
+        previouslyUploaded = true;
         return true;
     }
+
+    previouslyUploaded = false;
 
     Console::d_printfn(Locale::get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
     if (!loadFromBinary()) {
@@ -241,8 +244,12 @@ bool glShader::load(const ShaderLoadData& data) {
         return false;
     }
 
-    //return uploadToGPU();
+#if 0
+    bool previouslyUploaded = false;
+    return uploadToGPU(previouslyUploaded);
+#else
     return true;
+#endif
 }
 
 // ============================ static data =========================== //

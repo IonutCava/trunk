@@ -91,7 +91,7 @@ class MyStruct
 	: public slist_base_hook<>
 {
 public:
-	int indx_;
+	int indx_ = 0;
 };
 
 typedef slist<MyStruct> AList;

@@ -177,36 +177,40 @@ bool glShaderProgram::unload() noexcept {
     return ShaderProgram::unload();
 }
 
-void glShaderProgram::rebindStages() {
+bool glShaderProgram::rebindStages() {
     _stageMask = UseProgramStageMask::GL_NONE_BIT;
     for (glShader* shader : _shaderStage) {
         // If a shader exists for said stage, attach it
         assert(shader != nullptr);
         assert(_handle != GLUtil::k_invalidObjectID);
 
-        if (shader->uploadToGPU()) {
+        bool previouslyUploaded = false;
+        if (shader->uploadToGPU(previouslyUploaded)) {
             glUseProgramStages(
                 _handle,
                 shader->stageMask(),
                 shader->getProgramHandle());
             _stageMask |= shader->stageMask();
+            if (!previouslyUploaded && !_highPriority) {
+                return false;
+            }
         }
     }
+    return true;
 }
 
 void glShaderProgram::validatePreBind() {
     if (!_highPriority && s_shadersUploadedThisFrame++ > s_maxShaderUploadsPerFrame) {
-        return;
+        //return;
     }
 
     if (!isValid()) {
         assert(getState() == ResourceState::RES_LOADED);
         glCreateProgramPipelines(1, &_handle);
         glObjectLabel(GL_PROGRAM_PIPELINE, _handle, -1, resourceName().c_str());
-        rebindStages();
     }
 
-    if (!_validated) {
+    if (!_validated && rebindStages()) {
         _validationQueued = true;
     }
 }
@@ -517,14 +521,13 @@ bool glShaderProgram::isBound() const {
 bool glShaderProgram::bind(bool& wasBound) {
     validatePreBind();
     // If the shader isn't ready or failed to link, stop here
-    if (!isValid()) {
-        return false;
+    if (_validated || _validationQueued) {
+        // Set this program as the currently active one
+        wasBound = GL_API::getStateTracker().setActivePipeline(_handle);
+        validatePostBind();
+        return true;
     }
-    // Set this program as the currently active one
-    wasBound = GL_API::getStateTracker().setActivePipeline(_handle);
-    validatePostBind();
-
-    return true;
+    return false;
 }
 
 /// This is used to set all of the subroutine indices for the specified shader stage for this program

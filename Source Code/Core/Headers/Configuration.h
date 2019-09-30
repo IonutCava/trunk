@@ -52,7 +52,7 @@ public:
         /// If true, load shader source code from cache files
         /// If false, materials recompute shader source code from shader atoms
         /// If true, clear shader cache to apply changes to shader atom source code
-        I32 flushCommandBuffersOnFrame;
+        I32 flushCommandBuffersOnFrame = -1;
         bool enableRenderAPIDebugging;
         bool enableDebugMsgGroups;
         bool useGeometryCache;
@@ -82,7 +82,7 @@ public:
         vec2<U16> splashScreenSize;
         vec2<U16> windowSize;
         vec2<U16> resolution;
-        F32 simSpeed;
+        F32 simSpeed = 1.f;
         F32 zNear;
         F32 zFar;
         U8  verticalFOV;
@@ -90,20 +90,20 @@ public:
 
     struct GUI {
         struct CEGUI {
-            bool enabled;
-            bool extraStates;
-            bool skipRendering;
-            bool showDebugCursor;
-            stringImpl defaultGUIScheme;
-        } cegui;
+            bool enabled = true;
+            bool extraStates = false;
+            bool skipRendering = false;
+            bool showDebugCursor = false;
+            stringImpl defaultGUIScheme = "";
+        } cegui = {};
         struct IMGUI {
-            bool multiViewportEnabled;
-            bool windowDecorationsEnabled;
-            bool dontMergeFloatingWindows;
-        } imgui;
-        stringImpl consoleLayoutFile;
-        stringImpl editorLayoutFile;
-    } gui;
+            bool multiViewportEnabled = true;
+            bool windowDecorationsEnabled = true;
+            bool dontMergeFloatingWindows = true;
+        } imgui = {};
+        stringImpl consoleLayoutFile = "";
+        stringImpl editorLayoutFile = "";
+    } gui = {};
 
     struct Rendering {
         U8 msaaSamples;
@@ -117,28 +117,28 @@ public:
         vec3<F32> fogColour;
         vec4<U16> lodThresholds;
         struct PostFX {
-            stringImpl postAAType;
-            U8 postAASamples;
-            bool enableDepthOfField;
-            bool enableBloom;
-            F32 bloomFactor;
-            bool enableSSAO;
-        } postFX;
+            stringImpl postAAType = "";
+            U8 postAASamples = 0;
+            bool enableDepthOfField = false;
+            bool enableBloom = false;
+            F32 bloomFactor = 0.f;
+            bool enableSSAO = false;
+        } postFX = {};
         struct ShadowMapping {
-            bool enabled;
-            U32 shadowMapResolution;
-            U8 msaaSamples;
-            U8 anisotropicFilteringLevel;
-            bool enableBlurring;
-            U8 defaultCSMSplitCount;
-            F32 softness;
-            F32 splitLambda;
-        } shadowMapping;
-    } rendering;
+            bool enabled = true;
+            U32 shadowMapResolution = 512;
+            U8 msaaSamples = 0;
+            U8 anisotropicFilteringLevel = 0;
+            bool enableBlurring = true;
+            U8 defaultCSMSplitCount = 3;
+            F32 softness = 0.f;
+            F32 splitLambda = 0.95f;
+        } shadowMapping = {};
+    } rendering = {};
 
-    stringImpl title;
-    stringImpl defaultTextureLocation;
-    stringImpl defaultShadersLocation;
+    stringImpl title = "No Title";
+    stringImpl defaultTextureLocation = "";
+    stringImpl defaultShadersLocation = "";
 };
 }; //namespace Divide
 

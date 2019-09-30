@@ -16,6 +16,8 @@ namespace Divide {
 
 InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const vec2<U16>& dimensions)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_INFINITEPLANE),
+      _planeRenderStateHash(0),
+      _planeRenderStateHashPrePass(0),
       _context(context),
       _dimensions(dimensions),
       _plane(nullptr)

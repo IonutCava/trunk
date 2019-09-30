@@ -99,7 +99,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                                       bool reloadExisting,
                                       std::pair<bool, stringImpl>& sourceCodeOut);
 
-    void rebindStages();
+    bool rebindStages();
     void validatePreBind();
     void validatePostBind();
 

@@ -41,6 +41,8 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
 
     if (!load(ptr)) {
         ptr.reset();
+    } else {
+        ptr->highPriority(!_descriptor.flag());
     }
 
     return ptr;

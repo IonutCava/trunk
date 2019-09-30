@@ -137,6 +137,9 @@ namespace FW
 		WatchStruct* pWatch;
 		size_t ptrsize = sizeof(*pWatch);
 		pWatch = static_cast<WatchStruct*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, ptrsize));
+        if (!pWatch) {
+            return NULL;
+        }
 
 		pWatch->mDirHandle = CreateFile(szDirectory, FILE_LIST_DIRECTORY,
 			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, 
@@ -153,7 +156,9 @@ namespace FW
 			}
 			else
 			{
-				CloseHandle(pWatch->mOverlapped.hEvent);
+                if (pWatch->mOverlapped.hEvent != 0) {
+                    CloseHandle(pWatch->mOverlapped.hEvent);
+                }
 				CloseHandle(pWatch->mDirHandle);
 			}
 		}

@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#pragma warning(disable:4505) //unreferenced local function has been removed
+
 // The MIT License(MIT)
 //
 // Copyright(c) 2016 Cedric Guillemet

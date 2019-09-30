@@ -14,7 +14,8 @@ namespace Divide {
 
 ASIO::LOG_CBK ASIO::_logCBK;
 
-ASIO::ASIO() : _connected(false),
+ASIO::ASIO() : _thread(nullptr),
+               _connected(false),
                _debugOutput(true),
                _localClient(nullptr)
 {

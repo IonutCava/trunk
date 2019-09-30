@@ -80,7 +80,7 @@ GUIElement* GUIInterface::getGUIElementImpl(I64 elementID, GUIType type) const {
         for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
             for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
                 element = guiStackIterator.second.first;
-                if (element->getGUID() == elementID) {
+                if (element != nullptr && element->getGUID() == elementID) {
                     ret = element;
                     break;
                 }
@@ -92,7 +92,7 @@ GUIElement* GUIInterface::getGUIElementImpl(I64 elementID, GUIType type) const {
     } else {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[to_U32(type)]) {
             element = guiStackIterator.second.first;
-            if (element->getGUID() == elementID) {
+            if (element != nullptr && element->getGUID() == elementID) {
                 ret = element;
                 break;
             }

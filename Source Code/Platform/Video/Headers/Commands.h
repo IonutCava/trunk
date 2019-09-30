@@ -245,7 +245,7 @@ BEGIN_COMMAND(CopyTextureCommand, CommandType::COPY_TEXTURE);
 END_COMMAND(CopyTextureCommand);
 
 BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);
-    Texture* _texture;
+    Texture* _texture = nullptr;
     vec2<U32> _layerRange = { 0, 1 };
 END_COMMAND(ComputeMipMapsCommand);
 

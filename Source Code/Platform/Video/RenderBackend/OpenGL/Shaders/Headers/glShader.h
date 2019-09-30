@@ -116,7 +116,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     I32 cachedValueUpdate(const GFX::PushConstant& constant, bool force);
     void Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const;
 
-    bool uploadToGPU();
+    bool uploadToGPU(bool& previouslyUploaded);
 
     /// Add a define to the shader. The defined must not have been added previously
     void addShaderDefine(const stringImpl& define, bool appendPrefix);

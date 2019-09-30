@@ -131,7 +131,7 @@ struct dtCrowdAgent
     dtLocalBoundary boundary;
     
     /// Time since the agent's path corridor was optimized.
-    float topologyOptTime;
+    float topologyOptTime = 0.f;
     
     /// The known neighbors of the agent.
     dtCrowdNeighbour neis[DT_CROWDAGENT_MAX_NEIGHBOURS];

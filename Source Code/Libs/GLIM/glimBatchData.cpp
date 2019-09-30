@@ -157,8 +157,8 @@ void glimBatchData::Reset(bool reserveBuffers, unsigned int vertexCount, unsigne
         m_PositionData.reserve(vertexCount);
         m_IndexBuffer_Points.reserve(vertexCount / 4);
         m_IndexBuffer_Lines.reserve(vertexCount / 2);
-        m_IndexBuffer_Triangles.reserve(vertexCount * 2);
-        m_IndexBuffer_Wireframe.reserve(vertexCount * 2);
+        m_IndexBuffer_Triangles.reserve((size_t)(vertexCount) * 2);
+        m_IndexBuffer_Wireframe.reserve((size_t)(vertexCount) * 2);
     }
 #ifdef AE_RENDERAPI_D3D11
     if (m_pVertexBuffer) {
@@ -533,7 +533,7 @@ void glimBatchData::UploadOGL(Divide::I64 uiCurrentProgram) {
     }
 
     glNamedBufferData(m_uiVertexBufferID,
-                      uiVertices * uiVertexDataSize,
+                      (size_t)uiVertices * uiVertexDataSize,
                       m_bufferData.data(),
                       GL_STREAM_DRAW);
     // the buffer in RAM can be cleared now
