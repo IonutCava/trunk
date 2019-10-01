@@ -37,118 +37,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class Line {
-    public:
-    Line() noexcept
-        : _widthStart(1.0f),
-          _widthEnd(1.0f)
-    {
-    }
-
-    Line(const vec3<F32> &startPoint,
-         const vec3<F32> &endPoint,
-         const UColour4& colour) noexcept
-        : Line(startPoint, endPoint, colour, colour)
-    {
-    }
-
-    Line(const vec3<F32> &startPoint,
-         const vec3<F32> &endPoint,
-         const UColour4& colour,
-         F32 width)
-        : Line(startPoint, endPoint, colour, colour, width)
-    {
-    }
-
-    Line(const vec3<F32> &startPoint,
-         const vec3<F32> &endPoint,
-         const UColour4& colourStart,
-         const UColour4& colourEnd)
-        : Line(startPoint, endPoint, colourStart, colourEnd, 1.0f)
-    {
-    }
-
-    Line(const vec3<F32> &startPoint,
-         const vec3<F32> &endPoint,
-         const UColour4& colourStart,
-         const UColour4& colourEnd,
-         F32 width)
-        : Line(startPoint, endPoint, colourStart, colourEnd, width, width)
-    {
-    }
-
-    Line(const vec3<F32> &startPoint,
-         const vec3<F32> &endPoint,
-         const UColour4& colourStart,
-         const UColour4& colourEnd,
-         F32 widthStart,
-         F32 widthEnd)
-        : _startPoint(startPoint),
-          _endPoint(endPoint),
-          _colourStart(colourStart),
-          _colourEnd(colourEnd),
-          _widthStart(widthStart),
-          _widthEnd(widthEnd)
-    {
-    }
-
-    inline void colour(U8 r, U8 g, U8 b, U8 a) {
-        colour(r, g, b, a,
-              r, g, b, a);
-    }
-
-    inline void colour(U8 startR, U8 startG, U8 startB, U8 startA,
-                      U8 endR,   U8 endG,   U8 endB,   U8 endA) {
-        _colourStart.set(startR, startG, startB, startA);
-        _colourEnd.set(endR, endG, endB, endA);
-    }
-
-    inline void width(F32 w) {
-        width(w, w);
-    }
-
-    inline void width(F32 widthStart, F32 widthEnd) {
-        _widthStart = widthStart;
-        _widthEnd = widthEnd;
-    }
-
-    void segment(F32 startX, F32 startY, F32 startZ,
-                 F32 endX, F32 endY, F32 endZ) {
-        _startPoint.set(startX, startY, startZ);
-        _endPoint.set(endX, endY, endZ);
-    }
-
-    inline const vec3<F32>& startPoint() const {
-        return _startPoint;
-    }
-
-    inline const vec3<F32>& endPoint() const {
-        return _endPoint;
-    }
-
-    inline const UColour4& colourStart() const {
-        return _colourStart;
-    }
-
-    inline const UColour4& colourEnd() const {
-        return _colourEnd;
-    }
-
-    inline F32 widthStart() const {
-        return _widthStart;
-    }
-
-    inline F32 widthEnd() const {
-        return _widthEnd;
-    }
-
-public:
-    vec3<F32> _startPoint;
-    vec3<F32> _endPoint;
-    UColour4  _colourStart;
-    UColour4  _colourEnd;
-    F32       _widthStart;
-    F32       _widthEnd;
+struct Line {
+    PROPERTY_RW(UColour4, colourStart);
+    PROPERTY_RW(UColour4, colourEnd);
+    PROPERTY_RW(vec3<F32>, pointStart);
+    PROPERTY_RW(vec3<F32>, pointEnd);
+    PROPERTY_RW(F32, widthStart, 1.0f);
+    PROPERTY_RW(F32, widthEnd, 1.0f);
 };
 
 }; //namespace Divide

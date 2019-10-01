@@ -53,11 +53,11 @@ namespace Divide {
             : RenderTarget(context, descriptor)
         {}
 
-        bool resize(U16 width, U16 height) override { return true; }
-        void clear(const RTClearDescriptor& descriptor) override {}
-        void setDefaultState(const RTDrawDescriptor& drawPolicy) override {}
-        void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) override {}
-        void blitFrom(const RTBlitParams& params) override {}
+        bool resize(U16 width, U16 height) final { return true; }
+        void clear(const RTClearDescriptor& descriptor) final {}
+        void setDefaultState(const RTDrawDescriptor& drawPolicy) final {}
+        void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) final {}
+        void blitFrom(const RTBlitParams& params) final {}
     };
 
     class noIMPrimitive final : public IMPrimitive {
@@ -66,22 +66,22 @@ namespace Divide {
             : IMPrimitive(context)
         {}
 
-        void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override {}
+        void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) final {}
 
-        void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) override {}
+        void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) final {}
 
-        void begin(PrimitiveType type) override {}
-        void vertex(F32 x, F32 y, F32 z) override {}
+        void begin(PrimitiveType type) final {}
+        void vertex(F32 x, F32 y, F32 z) final {}
 
-        void attribute1i(U32 attribLocation, I32 value) override {}
-        void attribute1f(U32 attribLocation, F32 value) override {}
-        void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) override {}
-        void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) override {}
+        void attribute1i(U32 attribLocation, I32 value) final {}
+        void attribute1f(U32 attribLocation, F32 value) final {}
+        void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) final {}
+        void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) final {}
 
-        void end() override {}
-        void endBatch() override {}
-
-        GFX::CommandBuffer& toCommandBuffer() const override { return *_cmdBuffer; }
+        void end() final {}
+        void endBatch() final {}
+        void clearBatch() final {}
+        GFX::CommandBuffer& toCommandBuffer() const final { return *_cmdBuffer; }
 
     private:
         GFX::CommandBuffer* _cmdBuffer = nullptr;
@@ -93,11 +93,11 @@ namespace Divide {
             : VertexBuffer(context)
         {}
 
-        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {}
-        bool queueRefresh() override { return refresh(); }
+        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) final {}
+        bool queueRefresh() final { return refresh(); }
 
       protected:
-        bool refresh() override { return true; }
+        bool refresh() final { return true; }
     };
 
 
@@ -110,12 +110,12 @@ namespace Divide {
         bool create(
             U16 width, U16 height, U16 depth = 0,
             GFXImageFormat formatEnum = GFXImageFormat::RGBA,
-            GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) override
+            GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) final
         {
             return true;
         }
 
-        void updatePixels(const F32* const pixels, U32 pixelCount) override {}
+        void updatePixels(const F32* const pixels, U32 pixelCount) final {}
     };
 
 
@@ -125,18 +125,18 @@ namespace Divide {
             : GenericVertexData(context, ringBufferLength, name)
         {}
 
-        void create(U8 numBuffers = 1) override {}
+        void create(U8 numBuffers = 1) final {}
 
-        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {}
+        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) final {}
 
-        void setBuffer(const SetBufferParams& params) override {}
+        void setBuffer(const SetBufferParams& params) final {}
 
         void updateBuffer(U32 buffer,
             U32 elementCount,
             U32 elementCountOffset,
-            const bufferPtr data) override {}
+            const bufferPtr data) final {}
 
-        void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override {}
+        void setBufferBindOffset(U32 buffer, U32 elementCountOffset) final {}
 
         void incQueryQueue() {}
     };
@@ -154,10 +154,10 @@ namespace Divide {
             : Texture(context, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor)
         {}
 
-        void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override {}
-        void resize(const bufferPtr ptr, const vec2<U16>& dimensions) override {}
-        void loadData(const TextureLoadInfo& info, const vector<ImageTools::ImageLayer>& imageLayers) override {}
-        void loadData(const TextureLoadInfo& info, const bufferPtr data, const vec2<U16>& dimensions) override {}
+        void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) final {}
+        void resize(const bufferPtr ptr, const vec2<U16>& dimensions) final {}
+        void loadData(const TextureLoadInfo& info, const vector<ImageTools::ImageLayer>& imageLayers) final {}
+        void loadData(const TextureLoadInfo& info, const bufferPtr data, const vec2<U16>& dimensions) final {}
     };
 
     class noShaderProgram final : public ShaderProgram {
@@ -171,14 +171,14 @@ namespace Divide {
             : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad)
         {}
 
-        bool isValid() const override { return true; }
+        bool isValid() const final { return true; }
 
-        U32 GetSubroutineIndex(ShaderType type, const char* name) override { return 0; }
-        U32 GetSubroutineUniformCount(ShaderType type) override { return 0;  }
+        U32 GetSubroutineIndex(ShaderType type, const char* name) final { return 0; }
+        U32 GetSubroutineUniformCount(ShaderType type) final { return 0;  }
 
-        void update(const U64 deltaTimeUS) override { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
+        void update(const U64 deltaTimeUS) final { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
     protected:
-        bool recompileInternal(bool force) override { ACKNOWLEDGE_UNUSED(force);  return true; }
+        bool recompileInternal(bool force) final { ACKNOWLEDGE_UNUSED(force);  return true; }
     };
 
 
@@ -189,16 +189,16 @@ namespace Divide {
         {}
 
 
-        void writeData(U32 offsetElementCount, U32 rangeElementCount, const bufferPtr data) override {}
-        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, const bufferPtr data) override {}
-        void writeData(const bufferPtr data) override {}
+        void writeData(U32 offsetElementCount, U32 rangeElementCount, const bufferPtr data) final {}
+        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, const bufferPtr data) final {}
+        void writeData(const bufferPtr data) final {}
 
-        void clearData(U32 offsetElementCount, U32 rangeElementCount) override {}
-        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const override {}
+        void clearData(U32 offsetElementCount, U32 rangeElementCount) final {}
+        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const final {}
 
-        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override { return true; }
+        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) final { return true; }
 
-        bool bind(U8 bindIndex) override { return true; }
+        bool bind(U8 bindIndex) final { return true; }
     };
 };  // namespace Divide
 #endif //_NONE_PLACEHOLDER_OBJECTS_H_

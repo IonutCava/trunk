@@ -70,8 +70,7 @@ typename vector<T, A>::iterator insert_sorted(vector<T, A>& vec, T const& item, 
 template<typename T, typename A>
 void insert_unique(vector<T, A>& target, const T& item)
 {
-    if (std::find(std::cbegin(target), std::cend(target), item) != std::cend(target))
-    {
+    if (std::find(std::cbegin(target), std::cend(target), item) == std::cend(target)) {
         target.push_back(item);
     }
 }

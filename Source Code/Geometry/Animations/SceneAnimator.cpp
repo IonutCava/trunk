@@ -180,12 +180,15 @@ I32 SceneAnimator::createSkeleton(Bone* piNode,
 
     if (piNode->_parent) {
         Line line;
-        line.colour(255, 0, 0, 255);
-        line.width(2.0f);
+        line.colourStart({ 255, 0, 0, 255 });
+        line.colourEnd({ 255, 0, 0, 255 });
+        line.widthStart(2.0f);
+        line.widthEnd(2.0f);
 
         vec3<F32> start = parent.getRow(3).xyz();
         vec3<F32> end = me.getRow(3).xyz();
-        line.segment(start.x, start.y, start.z, end.x, end.y, end.z);
+        line.pointStart({ start.x, start.y, start.z });
+        line.pointEnd({ end.x, end.y, end.z });
         lines.emplace_back(line);
     }
 

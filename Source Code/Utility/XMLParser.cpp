@@ -38,16 +38,36 @@ const ptree& empty_ptree() {
 }
 
 void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
-    actions.actionID(PressReleaseActions::Action::PRESS, attributes.get<U16>("actionDown", 0u));
-    actions.actionID(PressReleaseActions::Action::RELEASE, attributes.get<U16>("actionUp", 0u));
-    actions.actionID(PressReleaseActions::Action::LEFT_CTRL_PRESS, attributes.get<U16>("actionLCtrlDown", 0u));
-    actions.actionID(PressReleaseActions::Action::LEFT_CTRL_RELEASE, attributes.get<U16>("actionLCtrlUp", 0u));
-    actions.actionID(PressReleaseActions::Action::RIGHT_CTRL_PRESS, attributes.get<U16>("actionRCtrlDown", 0u));
-    actions.actionID(PressReleaseActions::Action::RIGHT_CTRL_RELEASE, attributes.get<U16>("actionRCtrlUp", 0u));
-    actions.actionID(PressReleaseActions::Action::LEFT_ALT_PRESS, attributes.get<U16>("actionLAltDown", 0u));
-    actions.actionID(PressReleaseActions::Action::LEFT_ALT_RELEASE, attributes.get<U16>("actionLAtlUp", 0u));
-    actions.actionID(PressReleaseActions::Action::RIGHT_ALT_PRESS, attributes.get<U16>("actionRAltDown", 0u));
-    actions.actionID(PressReleaseActions::Action::RIGHT_ALT_RELEASE, attributes.get<U16>("actionRAltUp", 0u));
+    constexpr std::pair<PressReleaseActions::Action, const char*> actionNames[10] = {
+        {PressReleaseActions::Action::PRESS, "actionDown"},
+        {PressReleaseActions::Action::RELEASE, "actionUp"},
+        {PressReleaseActions::Action::LEFT_CTRL_PRESS, "actionLCtrlDown"},
+        {PressReleaseActions::Action::LEFT_CTRL_RELEASE, "actionLCtrlUp"},
+        {PressReleaseActions::Action::RIGHT_CTRL_PRESS, "actionRCtrlDown"},
+        {PressReleaseActions::Action::RIGHT_CTRL_RELEASE, "actionRCtrlUp"},
+        {PressReleaseActions::Action::LEFT_ALT_PRESS, "actionLAltDown"},
+        {PressReleaseActions::Action::LEFT_ALT_RELEASE, "actionLAtlUp"},
+        {PressReleaseActions::Action::RIGHT_ALT_PRESS, "actionRAltDown"},
+        {PressReleaseActions::Action::RIGHT_ALT_RELEASE, "actionRAltUp"}
+    };
+
+    actions.clear();
+
+    U16 id = 0;
+    vector<std::string> actionsOut;
+    for (auto it : actionNames) {
+        const std::string actionList = attributes.get<std::string>(it.second, "");
+        Util::Split<vector<std::string>, std::string>(actionList.c_str(), ',', actionsOut);
+        for (const std::string& it2 : actionsOut) {
+            if (!it2.empty()) {
+                std::stringstream ss(Util::Trim(it2));
+                ss >> id;
+                if (!ss.fail()) {
+                    actions.insertActionID(it.first, id);
+                }
+            }
+        }
+    }
 }
 
 void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {

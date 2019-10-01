@@ -141,7 +141,7 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
                     break;
             };
             arg.numCliks = to_U8(event.button.clicks);
-            arg.relPosition.set(event.button.x, event.button.y);
+            arg.absPosition.set(event.button.x, event.button.y);
 
             if (arg.pressed) {
                 _eventListener.mouseButtonPressed(arg);

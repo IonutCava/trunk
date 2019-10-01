@@ -587,8 +587,8 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
 void GFXDevice::closeRenderingAPI() {
     assert(_api != nullptr && "GFXDevice error: closeRenderingAPI called without init!");
     if (_axisGizmo) {
-        _axisGizmo->clear();
-        _debugFrustumPrimitive->clear();
+        _axisGizmo->reset();
+        _debugFrustumPrimitive->reset();
         _debugViews.clear();
     }
 

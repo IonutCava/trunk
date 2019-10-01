@@ -83,50 +83,42 @@ public:
         COUNT
     };
 
-    PressReleaseActions();
-    PressReleaseActions(U16 onPressAction,
-                        U16 onReleaseAction);
-    PressReleaseActions(U16 onPressAction,
-                        U16 onReleaseAction,
-                        U16 onLCtrlPressAction,
-                        U16 onLCtrlReleaseAction = 0u,
-                        U16 onRCtrlPressAction = 0u,
-                        U16 onRCtrlReleaseAction = 0u,
-                        U16 onLAltPressAction = 0u,
-                        U16 onLAltReleaseAction = 0u,
-                        U16 onRAltPressAction = 0u,
-                        U16 onRAltReleaseAction = 0u);
-
     inline void clear() {
-        _actions.fill(0);
+        for (auto& entries : _actions) {
+            entries.resize(0);
+        }
     }
 
     inline bool merge(const PressReleaseActions& other) {
         bool conflict = false;
 
         for (U8 i = 0; i < to_U8(Action::COUNT); ++i) {
-            if (other._actions[i] != 0) {
-                if (_actions[i] != 0) {
+            if (!other._actions[i].empty()) {
+                if (!_actions[i].empty()) {
                     conflict = true;
                 }
-                _actions[i] = other._actions[i];
+                insert_unique(_actions[i], other._actions[i]);
             }
         }
 
         return conflict;
     }
 
-    inline U16 actionID(Action action) const {
+    inline const vector<U16>& getActionIDs(Action action) const {
         return _actions[to_base(action)];
     }
 
-    inline void actionID(Action action, U16 ID) {
-        _actions[to_base(action)] = ID;
+    inline void insertActionID(Action action, U16 ID) {
+        insert_unique(_actions[to_base(action)], ID);
+    }
+
+    inline void insertActionIDs(Action action, const vector<U16>& IDs) {
+        _actions[to_base(action)] = IDs;
     }
 
 private:
-    // key only
-    std::array<U16, to_base(Action::COUNT)> _actions;
+    // keys only
+    std::array<vector<U16>, to_base(Action::COUNT)> _actions;
 };
 
 struct InputAction {

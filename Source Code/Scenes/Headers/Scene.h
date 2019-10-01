@@ -77,6 +77,12 @@ namespace Attorney {
     class SceneInput;
 };
 
+struct DragSelectData {
+    bool _isDragging = false;
+    vec2<I32> _startDragPos;
+    vec2<I32> _endDragPos;
+};
+
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2 states:
 /// one for game information and one for rendering information
 
@@ -145,7 +151,10 @@ class Scene : public Resource, public PlatformContextComponent {
         return {};
     }
 
-    void findSelection(PlayerIndex idx, bool clearOld);
+    bool findSelection(PlayerIndex idx, bool clearOld);
+    void beginDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos);
+    void endDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos);
+    bool isDragSelecting(PlayerIndex idx);
 
     inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -252,6 +261,9 @@ class Scene : public Resource, public PlatformContextComponent {
 
     const char* getResourceTypeName() const override { return "Scene"; }
 
+
+    void updateSelectionRect(PlayerIndex idx, const DragSelectData& data);
+
    protected:
        /// Global info
        SceneManager& _parent;
@@ -275,6 +287,7 @@ class Scene : public Resource, public PlatformContextComponent {
        /// Current selection
        hashMap<PlayerIndex, vector<I64>> _currentSelection;
        hashMap<PlayerIndex, I64> _currentHoverTarget;
+       hashMap<PlayerIndex, DragSelectData> _dragSelectData;
 
        SceneGraphNode* _currentSky;
        hashMap<PlayerIndex, SceneGraphNode*> _flashLight;

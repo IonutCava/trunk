@@ -39,17 +39,17 @@
 <action id="32" name="toggle fullscreen"/>
 <action id="33" name="toggle flashlight"/>
 <action id="34" name="toggle octree region rendering"/>
-<action id="35" name="select"/>
-<action id="36" name="multi-select"/>
-<action id="37" name="lock camera to mouse"/>
-<action id="38" name="release camera from mouse"/>
-<action id="39" name="renderer debug view"/>
-<action id="40" name="shutdown"/>
-<action id="41" name="pov navigation"/>
-<action id="42" name="axis navigation"/>
-<action id="43" name="toggle debug interface" />
-<action id="44" name="toggle editor" />
-<action id="45" name="toggle console" />
+<action id="35" name="lock camera to mouse"/>
+<action id="36" name="release camera from mouse"/>
+<action id="37" name="renderer debug view"/>
+<action id="38" name="shutdown"/>
+<action id="39" name="pov navigation"/>
+<action id="40" name="axis navigation"/>
+<action id="41" name="toggle debug interface" />
+<action id="42" name="toggle editor" />
+<action id="43" name="toggle console" />
+<action id="44" name="drag select begin" />
+<action id="45" name="drag select end" />
 </actions>
 
 <!--
@@ -67,7 +67,7 @@
 <key actionDown="7" actionUp="8">S</key>
 <key actionDown="9" actionUp="11">A</key>
 <key actionDown="10" actionUp="11">D</key>
-<key actionDown="12" actionUp="14" actionLCtrlUp="40">Q</key>
+<key actionDown="12" actionUp="14" actionLCtrlUp="38">Q</key>
 <key actionDown="13" actionUp="14">E</key>
 <key actionDown="15" actionUp="17">LEFT</key>
 <key actionDown="16" actionUp="17">RIGHT</key>
@@ -81,22 +81,22 @@
 <key actionUp="26">F6</key>
 <key actionUp="27">F7</key>
 <key actionUp="28">F8</key>
-<key actionUp="39">F9</key>
+<key actionUp="37">F9</key>
 <key actionUp="30">F10</key>
 <key actionUp="29">B</key>
 <key actionUp="31">SYSREQ</key>
 <key actionLAtlUp="32">RETURN</key>
 <key actionUp="33">F</key>
 <key actionUp="34">Y</key>
-<key actionLCtrlUp="44" actionUp="43">F11</key>
-<key actionUp="45">`</key>
+<key actionLCtrlUp="42" actionUp="41">F11</key>
+<key actionUp="43">`</key>
 </keys>
 
 <!-- Only a single mouse is supported (and a maximum of 8 buttons)! -->
 <mouseButtons>
 <!-- Allowed mouse button names: LEFT, RIGHT, MIDDLE, Button3, Button4, Button5, Button6, Button7 -->
-<button actionUp="35" actionLCtrlUp = "36" actionRCtrlUp =" 36">LEFT</button>
-<button actionDown="37" actionUp="38">RIGHT</button>
+<button actionDown="44" actionUp="45" actionLCtrlUp="36" actionRCtrlUp="36">LEFT</button>
+<button actionDown="35" actionUp="36">RIGHT</button>
 </mouseButtons>
 
 <!-- A maximum of 4 devices -->
@@ -107,8 +107,8 @@
     iff actionModDown exists else
  action(Mod)Down = action(Mod)Up-->
 <joystick1>
-<button actionDown="41">POV</button>
-<button actionDown="42">AXIS</button>
+<button actionDown="39">POV</button>
+<button actionDown="40">AXIS</button>
 <button actionUp="29">BUTTON_0</button>
 <button actionUp="30">BUTTON_1</button>
 <button actionUp="33">BUTTON_2</button>

@@ -51,25 +51,27 @@ class glIMPrimitive final : public IMPrimitive {
    public:
     /// Begins defining one piece of geometry that can later be rendered with
     /// one set of states.
-    void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount);
+    void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) final;
     /// Ends defining the batch. After this call "RenderBatch" can be called to
     /// actually render it.
-    void endBatch();
+    void endBatch() final;
+    /// Resets the batch so that the primitive has nothing left to draw
+    void clearBatch() final;
     /// Begins gathering information about the given type of primitives.
-    void begin(PrimitiveType type);
+    void begin(PrimitiveType type) final;
     /// Ends gathering information about the primitives.
-    void end();
+    void end() final;
     /// Specify the position of a vertex belonging to this primitive
-    void vertex(F32 x, F32 y, F32 z);
+    void vertex(F32 x, F32 y, F32 z) final;
     /// Specify each attribute at least once(even with dummy values) before
     /// calling begin!
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute1i(U32 attribLocation, I32 value);
-    void attribute1f(U32 attribLocation, F32 value);
+    void attribute1i(U32 attribLocation, I32 value) final;
+    void attribute1f(U32 attribLocation, F32 value) final;
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w);
+    void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) final;
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w);
+    void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) final;
     /// Submit the created batch to the GPU for rendering
     void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override;
     void pipeline(const Pipeline& pipeline) override;

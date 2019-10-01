@@ -53,7 +53,7 @@ struct MouseButtonEvent : public InputEvent {
     bool pressed = false;
     MouseButton button = MouseButton::MB_Left;
     U8 numCliks = 0;
-    vec2<I32> relPosition = vec2<I32>(-1);
+    vec2<I32> absPosition = vec2<I32>(-1);
 };
 
 struct MouseMoveEvent : public InputEvent {

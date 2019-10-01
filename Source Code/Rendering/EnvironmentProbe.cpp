@@ -69,7 +69,7 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
 EnvironmentProbe::~EnvironmentProbe()
 {
     s_availableSlices[_currentArrayIndex] = false;
-    _boundingBoxPrimitive->clear();
+    _boundingBoxPrimitive->reset();
 }
 
 void EnvironmentProbe::onStartup(GFXDevice& context) {

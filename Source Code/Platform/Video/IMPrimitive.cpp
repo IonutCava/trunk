@@ -21,16 +21,17 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
 
 IMPrimitive::~IMPrimitive() 
 {
-    clear();
+    reset();
     GFX::deallocateCommandBuffer(_cmdBuffer);
 }
 
-void IMPrimitive::clear() {
+void IMPrimitive::reset() {
     _worldMatrix.identity();
     _texture = nullptr;
     _descriptorSet._textureData.clear();
     _cmdBufferDirty = true;
     _viewport.set(-1);
+    clearBatch();
 }
 
 void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UColour4& colour) {
@@ -115,17 +116,6 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
 }
 
 void IMPrimitive::fromLines(const vector<Line>& lines) {
-    fromLines(lines, Rect<I32>(), false);
-}
-
-void IMPrimitive::fromLines(const vector<Line>& lines,
-                            const Rect<I32>& viewport) {
-    fromLines(lines, viewport, true);
-}
-
-void IMPrimitive::fromLines(const vector<Line>& lines,
-                            const Rect<I32>& viewport,
-                            const bool inViewport) {
     static const vec3<F32> vertices[] = {
         vec3<F32>(-1.0f, -1.0f,  1.0f),
         vec3<F32>(1.0f, -1.0f,  1.0f),
@@ -147,36 +137,25 @@ void IMPrimitive::fromLines(const vector<Line>& lines,
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
     if (!lines.empty()) {
-        FColour4 tempFloatColour = {};
-        // If we need to render it into a specific viewport, set the pre and post
-        // draw functions to set up the
-        // needed viewport rendering (e.g. axis lines)
-        if (inViewport) {
-            _viewport.set(viewport);
-            _cmdBufferDirty = true;
-        }
         // Create the object containing all of the lines
         beginBatch(true, to_U32(lines.size()) * 2 * 14, 1);
-        Util::ToFloatColour(lines[0]._colourStart, tempFloatColour);
-        attribute4f(to_base(AttribLocation::COLOR), tempFloatColour);
+        attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(lines[0].colourStart()));
         // Set the mode to line rendering
         //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
         begin(PrimitiveType::LINES);
         //vec3<F32> tempVertex;
         // Add every line in the list to the batch
         for (const Line& line : lines) {
-            Util::ToFloatColour(line._colourStart, tempFloatColour);
-            attribute4f(to_base(AttribLocation::COLOR), tempFloatColour);
+            attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
             /*for (U16 idx : indices) {
             tempVertex.set(line._startPoint * vertices[idx]);
             tempVertex *= line._widthStart;
 
             vertex(tempVertex);
             }*/
-            vertex(line._startPoint);
+            vertex(line.pointStart());
 
-            Util::ToFloatColour(line._colourEnd, tempFloatColour);
-            attribute4f(to_base(AttribLocation::COLOR), tempFloatColour);
+            attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourEnd()));
             /*for (U16 idx : indices) {
             tempVertex.set(line._endPoint * vertices[idx]);
             tempVertex *= line._widthEnd;
@@ -184,7 +163,7 @@ void IMPrimitive::fromLines(const vector<Line>& lines,
             vertex(tempVertex);
             }*/
 
-            vertex(line._endPoint);
+            vertex(line.pointEnd());
 
         }
         end();

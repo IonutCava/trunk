@@ -30,7 +30,7 @@ NavMeshDebugDraw::NavMeshDebugDraw(GFXDevice& context)
 
 NavMeshDebugDraw::~NavMeshDebugDraw()
 {
-	_primitive->clear();
+	_primitive->reset();
 }
 
 void NavMeshDebugDraw::paused(bool state) {

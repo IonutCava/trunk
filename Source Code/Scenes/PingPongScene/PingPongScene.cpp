@@ -343,7 +343,7 @@ U16 PingPongScene::registerInputActions() {
     PressReleaseActions actions;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall(-1);});
-    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
+    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
 
     _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElementType::BUTTON_PRESS, 0, actions);
     actionID++;
@@ -356,7 +356,7 @@ U16 PingPongScene::registerInputActions() {
             state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(nullptr);
         }
     });
-    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
+    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
 
     return actionID++;

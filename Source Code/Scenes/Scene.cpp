@@ -101,19 +101,14 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
 
     _loadingTasks.store(0);
 
-    if (!Config::Build::IS_SHIPPING_BUILD) {
-        RenderStateBlock primitiveDescriptor;
-        _linesPrimitive = _context.gfx().newIMP();
-        _linesPrimitive->name("LinesRayPick");
-        PipelineDescriptor pipeDesc;
-        pipeDesc._stateHash = primitiveDescriptor.getHash();
-        pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+    RenderStateBlock primitiveDescriptor;
+    _linesPrimitive = _context.gfx().newIMP();
+    _linesPrimitive->name("GenericLinePrimitive");
+    PipelineDescriptor pipeDesc;
+    pipeDesc._stateHash = primitiveDescriptor.getHash();
+    pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
 
-        _linesPrimitive->pipeline(*_context.gfx().newPipeline(pipeDesc));
-    } else {
-        _linesPrimitive = nullptr;
-    }
-
+    _linesPrimitive->pipeline(*_context.gfx().newPipeline(pipeDesc));
 }
 
 Scene::~Scene()
@@ -724,8 +719,6 @@ U16 Scene::registerInputActions() {
     auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
     auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
-    auto select = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), !_context.editor().running()); };
-    auto multiselect = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), false); };
     auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
     auto releaseCameraFromMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false); };
     auto rendererDebugView = [this](InputParams param) { ACKNOWLEDGE_UNUSED(param); };
@@ -814,6 +807,14 @@ U16 Scene::registerInputActions() {
         }
     };
 
+    auto dragSelectBegin = [this](InputParams param) {
+        beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), !_context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
+    };
+
+    auto dragSelectEnd = [this](InputParams param) {
+        endDragSelection(getPlayerIndexForDevice(param._deviceIndex), !_context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
+    };
+
     U16 actionID = 0;
     InputActionList& actions = _input->actionList();
     actions.registerInputAction(actionID++, none);
@@ -851,8 +852,6 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(actionID++, toggleFullScreen);
     actions.registerInputAction(actionID++, toggleFlashLight);
     actions.registerInputAction(actionID++, toggleOctreeRegionRendering);
-    actions.registerInputAction(actionID++, select);
-    actions.registerInputAction(actionID++, multiselect);
     actions.registerInputAction(actionID++, lockCameraToMouse);
     actions.registerInputAction(actionID++, releaseCameraFromMouse);
     actions.registerInputAction(actionID++, rendererDebugView);
@@ -862,7 +861,9 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(actionID++, toggleDebugInterface);
     actions.registerInputAction(actionID++, toggleEditor);
     actions.registerInputAction(actionID++, toggleConsole);
-    
+    actions.registerInputAction(actionID++, dragSelectBegin);
+    actions.registerInputAction(actionID++, dragSelectEnd);
+
     return actionID;
 }
 
@@ -1191,12 +1192,18 @@ void Scene::clearObjects() {
 bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!arg.wheelEvent()) {
         PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
-        if (!state().playerState(idx).cameraLockedToMouse()) {
-            findHoverTarget(idx, arg.absolutePos());
-        } else if (Config::Build::ENABLE_EDITOR) {
-            Editor& editor = _context.editor();
-            if (editor.running() && !editor.scenePreviewHovered()) {
-                lockCameraToPlayerMouse(idx, false);
+        DragSelectData& data = _dragSelectData[idx];
+        if (data._isDragging) {
+            data._endDragPos = arg.absolutePos();
+            updateSelectionRect(idx, data);
+        } else {
+            if (!state().playerState(idx).cameraLockedToMouse()) {
+                findHoverTarget(idx, arg.absolutePos());
+            } else if (Config::Build::ENABLE_EDITOR) {
+                Editor& editor = _context.editor();
+                if (editor.running() && !editor.scenePreviewHovered()) {
+                    lockCameraToPlayerMouse(idx, false);
+                }
             }
         }
     }
@@ -1291,6 +1298,66 @@ void Scene::processTasks(const U64 deltaTimeUS) {
                    std::bind1st(std::plus<D64>(), delta));
 }
 
+void Scene::updateSelectionRect(PlayerIndex idx, const DragSelectData& data) {
+    static vector<Line> s_lines(1/*4*/);
+
+    const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
+    const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
+    const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
+    //Rect<I32> viewport(0, 0, displaySize.width, displaySize.height);
+
+    vec2<I32> startPos = data._startDragPos;
+    vec2<I32> endPos = data._endDragPos;
+    if (Config::Build::ENABLE_EDITOR) {
+        if (_context.editor().running() && _context.editor().scenePreviewFocused()) {
+            const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
+            if (sceneRect.contains(startPos)) {
+                startPos = COORD_REMAP(startPos, sceneRect, viewport);
+            }
+            if (sceneRect.contains(endPos)) {
+                endPos = COORD_REMAP(endPos, sceneRect, viewport);
+            }
+        }
+    }
+
+    F32 startX = to_F32(startPos.x);
+    F32 startY = displaySize.height - to_F32(startPos.y) - 1;
+    F32 endX = to_F32(endPos.x);
+    F32 endY = displaySize.height - to_F32(endPos.y) - 1;
+    const vec2<F32>& zPlanes = crtCamera.getZPlanes();
+
+    vec3<F32> start = crtCamera.unProject(startX, startY, 1.f, viewport);
+    vec3<F32> end = crtCamera.unProject(endX, endY, 1.f, viewport);
+    start.z += 20;
+    end.z += 20;
+    s_lines[0].pointStart(start);
+    s_lines[0].pointEnd(end);
+    s_lines[0].widthStart(2.0f);
+    s_lines[0].widthEnd(1.0f);
+    s_lines[0].colourStart({ 0, 255, 0, 255 });
+    s_lines[0].colourEnd({ 0, 255, 0, 255 });
+    /*s_lines[1].pointStart(start);
+    s_lines[1].pointEnd(end);
+    s_lines[1].widthStart(2.0f);
+    s_lines[1].widthEnd(1.0f);
+    s_lines[1].colourStart({ 0, 255, 0, 255 });
+    s_lines[1].colourEnd({ 0, 255, 0, 255 });
+    s_lines[2].pointStart(start);
+    s_lines[2].pointEnd(end);
+    s_lines[2].widthStart(2.0f);
+    s_lines[2].widthEnd(1.0f);
+    s_lines[2].colourStart({ 0, 255, 0, 255 });
+    s_lines[2].colourEnd({ 0, 255, 0, 255 });
+    s_lines[3].pointStart(start);
+    s_lines[3].pointEnd(end);
+    s_lines[3].widthStart(2.0f);
+    s_lines[3].widthEnd(1.0f);
+    s_lines[3].colourStart({ 0, 255, 0, 255 });
+    s_lines[3].colourEnd({ 0, 255, 0, 255 });*/
+   _linesPrimitive->fromLines(s_lines);
+   //_linesPrimitive->worldMatrix(crtCamera.getViewMatrix().getInverse());
+}
+
 void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     if (!Config::Build::IS_SHIPPING_BUILD)
     {
@@ -1306,9 +1373,7 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
                 }
             }
         }
-        if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES)) {
-            bufferInOut.add(_linesPrimitive->toCommandBuffer());
-        }
+
         if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS)) {
             _octreeBoundingBoxes.resize(0);
             sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
@@ -1331,10 +1396,9 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
             }
         }
     }
-    if (!Config::Build::IS_SHIPPING_BUILD)
-    {
-        bufferInOut.add(_linesPrimitive->toCommandBuffer());
-    }
+
+    bufferInOut.add(_linesPrimitive->toCommandBuffer());
+
     // Show NavMeshes
     _aiManager->debugDraw(bufferInOut, false);
     _lightPool->drawLightImpostors(stagePass._stage, bufferInOut);
@@ -1474,7 +1538,7 @@ void Scene::setSelected(PlayerIndex idx, SceneGraphNode& sgn) {
     }
 }
 
-void Scene::findSelection(PlayerIndex idx, bool clearOld) {
+bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
     // Clear old selection
     if (clearOld) {
         _parent.resetSelection(idx);
@@ -1483,14 +1547,14 @@ void Scene::findSelection(PlayerIndex idx, bool clearOld) {
     I64 hoverGUID = _currentHoverTarget[idx];
     // No hover target
     if (hoverGUID == -1) {
-        return;
+        return false;
     }
 
     vector<I64>& selections = _currentSelection[idx];
     if (!selections.empty()) {
         if (std::find(std::cbegin(selections), std::cend(selections), hoverGUID) != std::cend(selections)) {
             //Already selected
-            return;
+            return true;
         }
     }
 
@@ -1498,8 +1562,28 @@ void Scene::findSelection(PlayerIndex idx, bool clearOld) {
     if (selectedNode != nullptr) {
         _parent.setSelected(idx, *selectedNode);
     }
+    return selectedNode != nullptr;
 }
 
+void Scene::beginDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos) {
+    if (!findSelection(idx, clearOld)) {
+        DragSelectData& data = _dragSelectData[idx];
+        data._isDragging = true;
+        data._startDragPos = mousePos;
+        data._endDragPos = mousePos;
+    }
+}
+
+void Scene::endDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos) {
+    DragSelectData& data =_dragSelectData[idx];
+    data._isDragging = false;
+    data._endDragPos = mousePos;
+    _linesPrimitive->clearBatch();
+}
+
+bool Scene::isDragSelecting(PlayerIndex idx) {
+    return _dragSelectData[idx]._isDragging;
+}
 bool Scene::save(ByteBuffer& outputBuffer) const {
     U8 playerCount = to_U8(_scenePlayers.size());
     outputBuffer << playerCount;

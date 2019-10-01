@@ -124,12 +124,29 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     }
     
     if (Config::Build::ENABLE_EDITOR) {
+        Line temp;
+        temp.widthStart(10.0f);
+        temp.widthEnd(10.0f);
+        temp.pointStart(VECTOR3_ZERO);
+
         // Red X-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 4, UColour4(255, 0, 0, 255), 10.0f));
+        temp.pointEnd(WORLD_X_AXIS * 4);
+        temp.colourStart(UColour4(255, 0, 0, 255));
+        temp.colourEnd(UColour4(255, 0, 0, 255));
+        _axisLines.push_back(temp);
+
         // Green Y-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 4, UColour4(0, 255, 0, 255), 10.0f));
+        temp.pointEnd(WORLD_Y_AXIS * 4);
+        temp.colourStart(UColour4(0, 255, 0, 255));
+        temp.colourEnd(UColour4(0, 255, 0, 255));
+        _axisLines.push_back(temp);
+
         // Blue Z-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 4, UColour4(0, 0, 255, 255), 10.0f));
+        temp.pointEnd(WORLD_Z_AXIS * 4);
+        temp.colourStart(UColour4(0, 0, 255, 255));
+        temp.colourEnd(UColour4(0, 0, 255, 255));
+        _axisLines.push_back(temp);
+
         _axisGizmo = _context.newIMP();
         // Prepare it for line rendering
         size_t noDepthStateBlock = _context.getDefaultStateBlock(true);
@@ -140,14 +157,14 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
         _axisGizmo->pipeline(*_context.newPipeline(pipelineDescriptor));
         // Create the object containing all of the lines
         _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);
-        _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
+        _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(_axisLines[0].colourStart()));
         // Set the mode to line rendering
         _axisGizmo->begin(PrimitiveType::LINES);
         // Add every line in the list to the batch
         for (const Line& line : _axisLines) {
-            _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line._colourStart));
-            _axisGizmo->vertex(line._startPoint);
-            _axisGizmo->vertex(line._endPoint);
+            _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
+            _axisGizmo->vertex(line.pointStart());
+            _axisGizmo->vertex(line.pointEnd());
         }
         _axisGizmo->end();
         // Finish our object
@@ -159,16 +176,16 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
 
 RenderingComponent::~RenderingComponent()
 {
-    _boundingBoxPrimitive[0]->clear();
-    _boundingBoxPrimitive[1]->clear();
-    _boundingSpherePrimitive->clear();
+    _boundingBoxPrimitive[0]->reset();
+    _boundingBoxPrimitive[1]->reset();
+    _boundingSpherePrimitive->reset();
 
     if (_skeletonPrimitive != nullptr) {
-        _skeletonPrimitive->clear();
+        _skeletonPrimitive->reset();
     }
 
     if (Config::Build::IS_DEBUG_BUILD) {
-        _axisGizmo->clear();
+        _axisGizmo->reset();
     }
 }
 

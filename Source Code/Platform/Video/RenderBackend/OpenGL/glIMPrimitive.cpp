@@ -26,6 +26,10 @@ void glIMPrimitive::beginBatch(bool reserveBuffers, U32 vertexCount, U32 attribu
     _imInterface->BeginBatch(reserveBuffers, vertexCount, attributeCount);
 }
 
+void glIMPrimitive::clearBatch() {
+    _imInterface->Clear(true, 64 * 3, 1);
+}
+
 void glIMPrimitive::begin(PrimitiveType type) {
     _imInterface->Begin(GLUtil::glimPrimitiveType[to_U32(type)]);
 }
@@ -100,7 +104,7 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
             GFX::EnqueueCommand(*_cmdBuffer, descriptorSetCmd);
         }
 
-        if (_viewport != vec4<I32>(-1)) {
+        if (_viewport != Rect<I32>(-1)) {
             GFX::SetViewportCommand setViewportCmd;
             setViewportCmd._viewport = _viewport;
             GFX::EnqueueCommand(*_cmdBuffer, setViewportCmd);

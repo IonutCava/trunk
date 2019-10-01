@@ -85,7 +85,7 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
 
 WarScene::~WarScene()
 {
-	_targetLines->clear();
+    _targetLines->reset();
 }
 
 void WarScene::processGUI(const U64 deltaTimeUS) {
@@ -718,22 +718,22 @@ U16 WarScene::registerInputActions() {
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
     _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {toggleCamera(param); });
-    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
+    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_TAB, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(0u, ""); });
-    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
+    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_1, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(1u, ""); });
-    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
+    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_2, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [](InputParams param) {DIVIDE_ASSERT(false, "Test Assert"); });
-    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
+    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_5, actions);
     actionID++;
 
@@ -758,7 +758,7 @@ U16 WarScene::registerInputActions() {
             _lightPool->toggleLightType(LightType::POINT, true);
         }
     });
-    actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
+    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
 
 

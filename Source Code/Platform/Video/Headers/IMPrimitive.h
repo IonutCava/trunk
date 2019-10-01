@@ -88,8 +88,8 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
     virtual void end() = 0;
     virtual void endBatch() = 0;
-
-    void clear();
+    virtual void clearBatch() = 0;
+    void reset();
 
     inline void forceWireframe(bool state) { _forceWireframe = state; }
     inline bool forceWireframe() const { return _forceWireframe; }
@@ -101,6 +101,16 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     }
     inline void resetWorldMatrix() {
         _worldMatrix.identity();
+        _cmdBufferDirty = true;
+    }
+
+    inline void viewport(const Rect<I32>& viewport) {
+        _viewport.set(viewport);
+        _cmdBufferDirty = true;
+    }
+
+    inline void resetViewport() {
+        _viewport.set(-1);
         _cmdBufferDirty = true;
     }
 
@@ -121,12 +131,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
                     F32 radius,
                     const UColour4& colour = DefaultColours::WHITE);
     void fromLines(const vector<Line>& lines);
-    void fromLines(const vector<Line>& lines,
-                   const Rect<I32>& viewport);
-   protected:
-    void fromLines(const vector<Line>& lines,
-                   const Rect<I32>& viewport,  //<only for ortho mode
-                   const bool inViewport);
+
    protected:
     mutable bool _cmdBufferDirty = true;
     GFX::CommandBuffer* _cmdBuffer = nullptr;

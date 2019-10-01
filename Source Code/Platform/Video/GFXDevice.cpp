@@ -133,15 +133,28 @@ GFXDevice::GFXDevice(Kernel& parent)
     _lastCommandCount.fill(0);
     _lastNodeCount.fill(0);
 
+    Line temp;
+    temp.widthStart(3.0f);
+    temp.widthEnd(3.0f);
+    temp.pointStart(VECTOR3_ZERO);
+
     // Red X-axis
-    _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour4(255, 0, 0, 255), 3.0f));
+    temp.pointEnd(WORLD_X_AXIS * 2);
+    temp.colourStart(UColour4(255, 0, 0, 255));
+    temp.colourEnd(UColour4(255, 0, 0, 255));
+    _axisLines.push_back(temp);
+
     // Green Y-axis
-    _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, UColour4(0, 255, 0, 255), 3.0f));
+    temp.pointEnd(WORLD_Y_AXIS * 2);
+    temp.colourStart(UColour4(0, 255, 0, 255));
+    temp.colourEnd(UColour4(0, 255, 0, 255));
+    _axisLines.push_back(temp);
+
     // Blue Z-axis
-    _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, UColour4(0, 0, 255, 255), 3.0f));
+    temp.pointEnd(WORLD_Z_AXIS * 2);
+    temp.colourStart(UColour4(0, 0, 255, 255));
+    temp.colourEnd(UColour4(0, 0, 255, 255));
+    _axisLines.push_back(temp);
 
     AttribFlags flags;
     flags.fill(true);

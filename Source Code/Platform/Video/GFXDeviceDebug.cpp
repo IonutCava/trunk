@@ -262,14 +262,26 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
         std::array<vec3<F32>, 8> corners;
         _debugFrustum->getCornersViewSpace(viewMatrix, corners);
 
+        Line temp;
         vector<Line> lines;
         for (U8 i = 0; i < 4; ++i) {
             // Draw Near Plane
-            lines.emplace_back(corners[i], corners[(i + 1) % 4], DefaultColours::RED_U8);
+            temp.pointStart(corners[i]);
+            temp.pointEnd(corners[(i + 1) % 4]);
+            temp.colourStart(DefaultColours::RED_U8);
+            temp.colourEnd(temp.colourStart());
+            lines.emplace_back(temp);
+
+            temp.pointStart(corners[i + 4]);
+            temp.pointEnd(corners[(i + 4 + 1) % 4]);
             // Draw Far Plane
-            lines.emplace_back(corners[i + 4], corners[(i + 4 + 1) % 4], DefaultColours::RED_U8);
+            lines.emplace_back(temp);
             // Connect Near Plane with Far Plane
-            lines.emplace_back(corners[i], corners[(i + 4) % 8], DefaultColours::GREEN_U8);
+            temp.pointStart(corners[i]);
+            temp.pointEnd(corners[(i + 4) % 8]);
+            temp.colourStart(DefaultColours::GREEN_U8);
+            temp.colourEnd(temp.colourStart());
+            lines.emplace_back(temp);
         }
 
         _debugFrustumPrimitive->fromLines(lines);
@@ -292,7 +304,8 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // Submit the draw command, rendering it in a tiny viewport in the lower
             // right corner
             U16 windowWidth = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
-            _axisGizmo->fromLines(_axisLines, Rect<I32>(windowWidth - 120, 8, 128, 128));
+            _axisGizmo->viewport(Rect<I32>(windowWidth - 120, 8, 128, 128));
+            _axisGizmo->fromLines(_axisLines);
         
             // We need to transform the gizmo so that it always remains axis aligned
             // Create a world matrix using a look at function with the eye position
