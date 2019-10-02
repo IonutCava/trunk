@@ -61,7 +61,7 @@ struct NodeCullParams {
 
 struct VisibleNode {
     F32 _distanceToCameraSq = 0.0f;
-    const SceneGraphNode* _node = nullptr;
+    SceneGraphNode* _node = nullptr;
 };
 
 typedef vectorEASTL<VisibleNode> VisibleNodeList;
@@ -106,12 +106,12 @@ class RenderPassCuller {
 
     // return true if the node is not currently visible
     void frustumCullNode(const Task& parentTask,
-                         const SceneGraphNode& node,
+                         SceneGraphNode& node,
                          const NodeCullParams& params,
                          bool clearList,
                          VisibleNodeList& nodes) const;
 
-    void addAllChildren(const SceneGraphNode& currentNode,
+    void addAllChildren(SceneGraphNode& currentNode,
                         const NodeCullParams& params,
                         VisibleNodeList& nodes) const;
 

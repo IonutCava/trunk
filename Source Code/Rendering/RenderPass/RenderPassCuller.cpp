@@ -123,7 +123,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 /// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
 void RenderPassCuller::frustumCullNode(const Task& task,
-                                       const SceneGraphNode& currentNode,
+                                       SceneGraphNode& currentNode,
                                        const NodeCullParams& params,
                                        bool clearList,
                                        VisibleNodeList& nodes) const
@@ -176,7 +176,7 @@ void RenderPassCuller::frustumCullNode(const Task& task,
     }
 }
 
-void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
+void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
     bool castsShadows = currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
 
     vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();

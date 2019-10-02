@@ -26,6 +26,8 @@
 #include "Core/Debugging/Headers/DebugInterface.h"
 
 #include "ECS/Components/Headers/UnitComponent.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/SelectionComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
@@ -362,12 +364,43 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
     }
 }
 
-vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect) const {
+vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera) const {
+    auto IsNodeInRect = [&screenRect, &camera](const SceneGraphNode* node) {
+        assert(node != nullptr);
+        if (node->getNode().type() == SceneNodeType::TYPE_OBJECT3D)
+        {
+            U8 objectType = node->getNode<Object3D>().getObjectType()._value;
+            while (objectType == ObjectType::SUBMESH) {
+                node = node->getParent();
+                if (node) {
+                    objectType = node->getNode<Object3D>().getObjectType()._value;
+                } else {
+                    return false;
+                }
+            }
+
+            if (node->get<SelectionComponent>() &&
+                node->get<SelectionComponent>()->enabled() &&
+                objectType != ObjectType::DECAL &&
+                objectType != ObjectType::SUBMESH &&
+                objectType != ObjectType::TERRAIN)
+            {
+                BoundsComponent* bComp = node->get<BoundsComponent>();
+                if (bComp != nullptr) {
+                    vec3<F32> center = bComp->getBoundingBox().getCenter();
+                    center = camera.project(center);
+                    return screenRect.contains(center.xy());
+                }
+            }
+        }
+        return false;
+    };
+
     vectorEASTL<SceneGraphNode*> ret;
     const VisibleNodeList& visNodes = _renderPassCuller->getNodeCache(RenderStage::DISPLAY);
     for (auto& it : visNodes) {
-        if (false) {
-            //ret.push_back(it._node);
+        if (IsNodeInRect(it._node)) {
+            ret.push_back(it._node);
         }
     }
     return ret;

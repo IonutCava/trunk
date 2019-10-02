@@ -80,17 +80,9 @@ Object3D::~Object3D()
 
 
 const char* Object3D::getTypeName() const {
-    switch (_geometryType) {
-        case ObjectType::SPHERE_3D: return "SPHERE_3D";
-        case ObjectType::BOX_3D: return "BOX_3D";
-        case ObjectType::QUAD_3D: return "QUAD_3D";
-        case ObjectType::PATCH_3D: return "PATCH_3D";
-        case ObjectType::MESH: return "MESH";
-        case ObjectType::SUBMESH: return "SUBMESH";
-        case ObjectType::TERRAIN: return "TERRAIN";
-        case ObjectType::DECAL: return "DECAL";
-
-    };
+    if (_geometryType._value != ObjectType::COUNT) {
+        return _geometryType._to_string();
+    }
 
     return SceneNode::getTypeName();
 }

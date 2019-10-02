@@ -1335,17 +1335,17 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
     F32 endX = to_F32(endPos.x);
     F32 endY = viewport.w - to_F32(endPos.y) - 1;
 
-    data._selectionRect = {
+    Rect<F32> selectionRect = {
         std::min(startX, endX),
         std::min(startY, endY),
         std::max(startX, endX),
         std::max(startY, endY)
     };
 
-    startX = data._selectionRect.x;
-    startY = data._selectionRect.y;
-    endX = data._selectionRect.z;
-    endY = data._selectionRect.w;
+    startX = selectionRect.x;
+    startY = selectionRect.y;
+    endX = selectionRect.z;
+    endY = selectionRect.w;
 
     { //X0, Y0 -> X1, Y0
         s_lines[0].pointStart({ startX, startY, 0 });
@@ -1364,15 +1364,16 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
         s_lines[3].pointEnd(s_lines[0].pointStart());
     }
 
-   _linesPrimitive->fromLines(s_lines);
+    _linesPrimitive->fromLines(s_lines);
 
-   _currentHoverTarget[idx] = -1;
-   _parent.resetSelection(idx);
+    _currentHoverTarget[idx] = -1;
+    _parent.resetSelection(idx);
 
-   VisibleNodeList& nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, data._selectionRect);
-   for (auto& it : nodes) {
-       //_parent.setSelected(idx, *it._node);
-   }
+    const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
+    vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera);
+    for (SceneGraphNode* node : nodes) {
+        _parent.setSelected(idx, * node);
+    }
 }
 
 void Scene::drawCustomUI(GFX::CommandBuffer& bufferInOut) {

@@ -78,7 +78,6 @@ namespace Attorney {
 };
 
 struct DragSelectData {
-    Rect<F32> _selectionRect;
     vec2<I32> _startDragPos;
     vec2<I32> _endDragPos;
     bool _isDragging = false;

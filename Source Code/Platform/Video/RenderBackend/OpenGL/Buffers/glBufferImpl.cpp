@@ -186,7 +186,7 @@ void glBufferImpl::readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, con
         glMemoryBarrier(MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT);
     }
 
-    if (_mappedBuffer == nullptr) {
+    if (_mappedBuffer != nullptr) {
         if (!waitRange(offsetInBytes, rangeInBytes, true)) {
             //ToDo: now what?
         } else {
