@@ -197,7 +197,7 @@ protected:
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
     void removePlayer(Scene& parentScene, Player_ptr& player, bool queue);
-    VisibleNodeList& getNodesInScreenRect(const Rect<F32>& screenRect) const;
+    vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<F32>& screenRect) const;
 
 protected:
     bool frameStarted(const FrameEvent& evt) override;
@@ -314,7 +314,7 @@ private:
         manager.removePlayer(parentScene, player, queue);
     }
 
-    static VisibleNodeList& getNodesInScreenRect(const Divide::SceneManager& manager, const Rect<F32>& screenRect) {
+    static vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Divide::SceneManager& manager, const Rect<F32>& screenRect) {
         return manager.getNodesInScreenRect(screenRect);
     }
 

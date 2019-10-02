@@ -1369,7 +1369,6 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
    _currentHoverTarget[idx] = -1;
    _parent.resetSelection(idx);
 
-
    VisibleNodeList& nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, data._selectionRect);
    for (auto& it : nodes) {
        //_parent.setSelected(idx, *it._node);
