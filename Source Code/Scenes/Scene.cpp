@@ -104,11 +104,13 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
     RenderStateBlock primitiveDescriptor;
     _linesPrimitive = _context.gfx().newIMP();
     _linesPrimitive->name("GenericLinePrimitive");
+
     PipelineDescriptor pipeDesc;
     pipeDesc._stateHash = primitiveDescriptor.getHash();
     pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
 
-    _linesPrimitive->pipeline(*_context.gfx().newPipeline(pipeDesc));
+    Pipeline* pipeline = _context.gfx().newPipeline(pipeDesc);
+    _linesPrimitive->pipeline(*pipeline);
 }
 
 Scene::~Scene()
@@ -1195,7 +1197,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
         DragSelectData& data = _dragSelectData[idx];
         if (data._isDragging) {
             data._endDragPos = arg.absolutePos();
-            updateSelectionRect(idx, data);
+            updateSelectionData(idx, data);
         } else {
             if (!state().playerState(idx).cameraLockedToMouse()) {
                 findHoverTarget(idx, arg.absolutePos());
@@ -1298,16 +1300,24 @@ void Scene::processTasks(const U64 deltaTimeUS) {
                    std::bind1st(std::plus<D64>(), delta));
 }
 
-void Scene::updateSelectionRect(PlayerIndex idx, const DragSelectData& data) {
-    static vector<Line> s_lines(1/*4*/);
-
-    const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
-    const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
+void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
+    static vector<Line> s_lines(4);
+    static bool s_linesSet = false;
+    if (!s_linesSet) {
+        for (Line& line : s_lines) {
+            line.widthStart(2.0f);
+            line.widthEnd(1.0f);
+            line.colourStart({ 0, 255, 0, 255 });
+            line.colourEnd({ 0, 255, 0, 255 });
+        }
+        s_linesSet = true;
+    }
     const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
-    //Rect<I32> viewport(0, 0, displaySize.width, displaySize.height);
+    const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
 
-    vec2<I32> startPos = data._startDragPos;
-    vec2<I32> endPos = data._endDragPos;
+    vec2<I32> startPos = COORD_REMAP(data._startDragPos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
+    vec2<I32> endPos = COORD_REMAP(data._endDragPos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
+
     if (Config::Build::ENABLE_EDITOR) {
         if (_context.editor().running() && _context.editor().scenePreviewFocused()) {
             const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
@@ -1321,41 +1331,55 @@ void Scene::updateSelectionRect(PlayerIndex idx, const DragSelectData& data) {
     }
 
     F32 startX = to_F32(startPos.x);
-    F32 startY = displaySize.height - to_F32(startPos.y) - 1;
+    F32 startY = viewport.w - to_F32(startPos.y) - 1;
     F32 endX = to_F32(endPos.x);
-    F32 endY = displaySize.height - to_F32(endPos.y) - 1;
-    const vec2<F32>& zPlanes = crtCamera.getZPlanes();
+    F32 endY = viewport.w - to_F32(endPos.y) - 1;
 
-    vec3<F32> start = crtCamera.unProject(startX, startY, 1.f, viewport);
-    vec3<F32> end = crtCamera.unProject(endX, endY, 1.f, viewport);
-    start.z += 20;
-    end.z += 20;
-    s_lines[0].pointStart(start);
-    s_lines[0].pointEnd(end);
-    s_lines[0].widthStart(2.0f);
-    s_lines[0].widthEnd(1.0f);
-    s_lines[0].colourStart({ 0, 255, 0, 255 });
-    s_lines[0].colourEnd({ 0, 255, 0, 255 });
-    /*s_lines[1].pointStart(start);
-    s_lines[1].pointEnd(end);
-    s_lines[1].widthStart(2.0f);
-    s_lines[1].widthEnd(1.0f);
-    s_lines[1].colourStart({ 0, 255, 0, 255 });
-    s_lines[1].colourEnd({ 0, 255, 0, 255 });
-    s_lines[2].pointStart(start);
-    s_lines[2].pointEnd(end);
-    s_lines[2].widthStart(2.0f);
-    s_lines[2].widthEnd(1.0f);
-    s_lines[2].colourStart({ 0, 255, 0, 255 });
-    s_lines[2].colourEnd({ 0, 255, 0, 255 });
-    s_lines[3].pointStart(start);
-    s_lines[3].pointEnd(end);
-    s_lines[3].widthStart(2.0f);
-    s_lines[3].widthEnd(1.0f);
-    s_lines[3].colourStart({ 0, 255, 0, 255 });
-    s_lines[3].colourEnd({ 0, 255, 0, 255 });*/
+    data._selectionRect = {
+        std::min(startX, endX),
+        std::min(startY, endY),
+        std::max(startX, endX),
+        std::max(startY, endY)
+    };
+
+    startX = data._selectionRect.x;
+    startY = data._selectionRect.y;
+    endX = data._selectionRect.z;
+    endY = data._selectionRect.w;
+
+    { //X0, Y0 -> X1, Y0
+        s_lines[0].pointStart({ startX, startY, 0 });
+        s_lines[0].pointEnd({ endX, startY, 0 });
+    }
+    { //X1 , Y0 -> X1, Y1
+        s_lines[1].pointStart({ endX, startY, 0 });
+        s_lines[1].pointEnd({ endX, endY, 0 });
+    }
+    { //X1, Y1 -> X0, Y1
+        s_lines[2].pointStart(s_lines[1].pointEnd());
+        s_lines[2].pointEnd({ startX, endY, 0 });
+    }
+    { //X0, Y1 -> X0, Y0
+        s_lines[3].pointStart(s_lines[2].pointEnd());
+        s_lines[3].pointEnd(s_lines[0].pointStart());
+    }
+
    _linesPrimitive->fromLines(s_lines);
-   //_linesPrimitive->worldMatrix(crtCamera.getViewMatrix().getInverse());
+
+   _currentHoverTarget[idx] = -1;
+   _parent.resetSelection(idx);
+
+
+   VisibleNodeList& nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, data._selectionRect);
+   for (auto& it : nodes) {
+       //_parent.setSelected(idx, *it._node);
+   }
+}
+
+void Scene::drawCustomUI(GFX::CommandBuffer& bufferInOut) {
+    if (_linesPrimitive->hasBatch()) {
+        bufferInOut.add(_linesPrimitive->toCommandBuffer());
+    }
 }
 
 void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
@@ -1397,8 +1421,6 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
         }
     }
 
-    bufferInOut.add(_linesPrimitive->toCommandBuffer());
-
     // Show NavMeshes
     _aiManager->debugDraw(bufferInOut, false);
     _lightPool->drawLightImpostors(stagePass._stage, bufferInOut);
@@ -1434,9 +1456,11 @@ bool Scene::checkCameraUnderwater(const Camera& camera) const {
 void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
 
-    vec2<I32> aimPos(aimPosIn);
     const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
     const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
+
+    vec2<I32> aimPos = COORD_REMAP(aimPosIn, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
+
     if (Config::Build::ENABLE_EDITOR) {
         if (_context.editor().running() && _context.editor().scenePreviewFocused()) {
             const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);

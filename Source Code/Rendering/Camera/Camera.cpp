@@ -42,6 +42,12 @@ const CameraSnapshot& Camera::snapshot() {
     return _data;
 }
 
+const CameraSnapshot& Camera::snapshot() const {
+    assert(!_frustumDirty);
+
+    return _data;
+}
+
 void Camera::fromCamera(Camera& camera) {
     camera.updateLookAt();
     fromCamera(static_cast<const Camera&>(camera));
@@ -465,6 +471,10 @@ vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, cons
     temp /= temp.w;
 
     return temp.xyz();
+}
+
+vec3<F32> Camera::project(const vec3<F32>& worldCoords) const {
+    return (getViewMatrix() * getProjectionMatrix()).transformHomogeneous(worldCoords);
 }
 
 };

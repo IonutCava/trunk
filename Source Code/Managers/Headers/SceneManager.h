@@ -197,6 +197,7 @@ protected:
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
     void removePlayer(Scene& parentScene, Player_ptr& player, bool queue);
+    VisibleNodeList& getNodesInScreenRect(const Rect<F32>& screenRect) const;
 
 protected:
     bool frameStarted(const FrameEvent& evt) override;
@@ -205,6 +206,7 @@ protected:
     void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void preRenderAllPasses(const Camera& playerCamera);
     void postRenderAllPasses(const Camera& playerCamera);
+    void drawCustomUI(GFX::CommandBuffer& bufferInOut);
     void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void prepareLightData(RenderStage stage, const Camera& camera);
     void generateShadowMaps(GFX::CommandBuffer& bufferInOut);
@@ -312,6 +314,10 @@ private:
         manager.removePlayer(parentScene, player, queue);
     }
 
+    static VisibleNodeList& getNodesInScreenRect(const Divide::SceneManager& manager, const Rect<F32>& screenRect) {
+        return manager.getNodesInScreenRect(screenRect);
+    }
+
     friend class Divide::Scene;
 };
 
@@ -389,6 +395,10 @@ class SceneManagerRenderPass {
 
     static void debugDraw(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
         mgr.debugDraw(stagePass, camera, bufferInOut);
+    }
+
+    static void drawCustomUI(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {
+        mgr.drawCustomUI(bufferInOut);
     }
 
     static void generateShadowMaps(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {

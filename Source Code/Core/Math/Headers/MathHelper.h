@@ -201,6 +201,11 @@ vec2<T> COORD_REMAP(vec2<T> input, const Rect<T>& in_rect, const Rect<T>& out_re
 }
 
 template <typename T>
+vec3<T> COORD_REMAP(vec3<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) {
+    return vec3<T>(COORD_REMAP(input.xy(), in_rect, out_rect), input.z);
+}
+
+template <typename T>
 T NORMALIZE(T input, const T range_min, const T range_max) {
     return MAP<T>(input, range_min, range_max, T(0), T(1));
 }

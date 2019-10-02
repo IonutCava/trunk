@@ -370,7 +370,6 @@ protected:
     void stepResolution(bool increment);
 
 protected:
-    void renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
@@ -520,10 +519,6 @@ namespace Attorney {
 
         static void blitToRenderTarget(GFXDevice& device, RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
             device.blitToRenderTarget(targetID, targetViewport, bufferInOut);
-        }
-
-        static void renderUI(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-            device.renderUI(targetViewport, bufferInOut);
         }
 
         static void renderDebugUI(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {

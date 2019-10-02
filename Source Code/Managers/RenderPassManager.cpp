@@ -875,7 +875,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
 
     if (params._stage != RenderStage::SHADOW) {
-
+        
         GFX::ResolveRenderTargetCommand resolveCmd = {};
         resolveCmd._source = params._target;
         resolveCmd._resolveColours = true;
@@ -888,6 +888,28 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
+void RenderPassManager::renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+    beginDebugScopeCmd._scopeID = 123456;
+    beginDebugScopeCmd._scopeName = "Render GUI";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
+    //Set a 2D camera for rendering
+    GFX::SetCameraCommand setCameraCommand;
+    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+
+    GFX::SetViewportCommand viewportCommand;
+    viewportCommand._viewport.set(targetViewport);
+    GFX::EnqueueCommand(bufferInOut, viewportCommand);
+
+    Attorney::SceneManagerRenderPass::drawCustomUI(_parent.sceneManager(), bufferInOut);
+
+    _parent.platformContext().gui().draw(_context, bufferInOut);
+
+    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+}
 
 // TEMP
 U32 RenderPassManager::renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement) const {

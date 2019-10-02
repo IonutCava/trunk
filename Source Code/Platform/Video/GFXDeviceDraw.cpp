@@ -312,19 +312,6 @@ void GFXDevice::blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer
     TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->data();
 
     drawTextureInViewport(texData, targetViewport, bufferInOut);
-    renderUI(targetViewport, bufferInOut);
-
-    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
-}
-
-void GFXDevice::renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 123456;
-    beginDebugScopeCmd._scopeName = "Render GUI";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
-
-    _parent.platformContext().gui().draw(*this, bufferInOut);
 
     GFX::EndDebugScopeCommand endDebugScopeCommand = {};
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);

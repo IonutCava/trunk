@@ -362,6 +362,17 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
     }
 }
 
+vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect) const {
+    vectorEASTL<SceneGraphNode*> ret;
+    const VisibleNodeList& visNodes = _renderPassCuller->getNodeCache(RenderStage::DISPLAY);
+    for (auto& it : visNodes) {
+        if (false) {
+            //ret.push_back(it._node);
+        }
+    }
+    return ret;
+}
+
 bool SceneManager::frameStarted(const FrameEvent& evt) {
     _sceneData->uploadToGPU();
 
@@ -446,13 +457,16 @@ void SceneManager::postRenderAllPasses(const Camera& playerCamera) {
     getActiveScene().lightPool().postRenderAllPasses(playerCamera);
 }
 
+void SceneManager::drawCustomUI(GFX::CommandBuffer& bufferInOut) {
+    Attorney::SceneManager::drawCustomUI(getActiveScene(), bufferInOut);
+}
+
 void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     Scene& activeScene = getActiveScene();
-    SceneRenderState& activeSceneRenderState = activeScene.renderState();
 
     Attorney::SceneManager::debugDraw(activeScene, camera, stagePass, bufferInOut);
     // Draw bounding boxes, skeletons, axis gizmo, etc.
-    _platformContext->gfx().debugDraw(activeSceneRenderState, camera, bufferInOut);
+    _platformContext->gfx().debugDraw(activeScene.renderState(), camera, bufferInOut);
 }
 
 void SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {

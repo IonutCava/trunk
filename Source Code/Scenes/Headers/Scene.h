@@ -78,9 +78,10 @@ namespace Attorney {
 };
 
 struct DragSelectData {
-    bool _isDragging = false;
+    Rect<F32> _selectionRect;
     vec2<I32> _startDragPos;
     vec2<I32> _endDragPos;
+    bool _isDragging = false;
 };
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2 states:
@@ -223,6 +224,8 @@ class Scene : public Resource, public PlatformContextComponent {
     bool updateCameraControls(PlayerIndex idx);
     /// Draw debug entities
     virtual void debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
+    /// Draw custom ui elements
+    virtual void drawCustomUI(GFX::CommandBuffer& bufferInOut);
 
     //Return true if input was consumed
     virtual bool mouseMoved(const Input::MouseMoveEvent& arg);
@@ -262,7 +265,7 @@ class Scene : public Resource, public PlatformContextComponent {
     const char* getResourceTypeName() const override { return "Scene"; }
 
 
-    void updateSelectionRect(PlayerIndex idx, const DragSelectData& data);
+    void updateSelectionData(PlayerIndex idx, DragSelectData& data);
 
    protected:
        /// Global info
@@ -346,6 +349,10 @@ class SceneManager {
     /// Draw debug entities
     static void debugDraw(Scene& scene, const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
         scene.debugDraw(activeCamera, stagePass, bufferInOut);
+    }
+
+    static void drawCustomUI(Scene& scene, GFX::CommandBuffer& bufferInOut) {
+        scene.drawCustomUI(bufferInOut);
     }
 
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }

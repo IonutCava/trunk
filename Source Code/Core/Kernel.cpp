@@ -531,12 +531,16 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
             GFX::CommandBuffer& buffer = sBuffer();
 
+            Rect<I32> targetViewport = _targetViewports[i];
             if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
+                targetViewport = _editorViewports[i];
                 Attorney::GFXDeviceKernel::blitToRenderTarget(_platformContext->gfx(), RenderTargetID(RenderTargetUsage::EDITOR), _editorViewports[i], buffer);
             } else {
                 Attorney::GFXDeviceKernel::blitToBuffer(_platformContext->gfx(), _targetViewports[i], buffer);
             }
-
+            // Use game viewport
+            _renderPassManager->renderUI(targetViewport, buffer);
+            // Use full window viewport
             Attorney::GFXDeviceKernel::renderDebugUI(_platformContext->gfx(), _platformContext->activeWindow().windowViewport(), buffer);
 
             _platformContext->gfx().flushCommandBuffer(buffer);

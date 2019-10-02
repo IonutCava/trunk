@@ -68,6 +68,7 @@ class Camera : public Resource {
     virtual void fromSnapshot(const CameraSnapshot& snapshot);
 
     const CameraSnapshot& snapshot();
+    const CameraSnapshot& snapshot() const;
 
     // Return true if the cached camera state wasn't up-to-date
     bool updateLookAt();
@@ -334,6 +335,8 @@ class Camera : public Resource {
     }
 
     vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const Rect<I32>& viewport) const;
+
+    vec3<F32> project(const vec3<F32>& worldCoords) const;
 
     virtual bool moveRelative(const vec3<I32>& relMovement);
     virtual bool rotateRelative(const vec3<I32>& relRotation);

@@ -30,6 +30,10 @@ void glIMPrimitive::clearBatch() {
     _imInterface->Clear(true, 64 * 3, 1);
 }
 
+bool glIMPrimitive::hasBatch() const {
+    return !_imInterface->isCleared();
+}
+
 void glIMPrimitive::begin(PrimitiveType type) {
     _imInterface->Begin(GLUtil::glimPrimitiveType[to_U32(type)]);
 }

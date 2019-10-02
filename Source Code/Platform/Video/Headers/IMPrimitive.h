@@ -89,6 +89,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     virtual void end() = 0;
     virtual void endBatch() = 0;
     virtual void clearBatch() = 0;
+    virtual bool hasBatch() const = 0;
     void reset();
 
     inline void forceWireframe(bool state) { _forceWireframe = state; }

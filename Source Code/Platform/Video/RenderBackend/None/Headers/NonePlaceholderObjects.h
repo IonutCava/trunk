@@ -81,6 +81,8 @@ namespace Divide {
         void end() final {}
         void endBatch() final {}
         void clearBatch() final {}
+        bool hasBatch() const final { return false; }
+
         GFX::CommandBuffer& toCommandBuffer() const final { return *_cmdBuffer; }
 
     private:
