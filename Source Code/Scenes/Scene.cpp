@@ -1370,7 +1370,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
     _parent.resetSelection(idx);
 
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
-    vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera);
+    vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera, viewport);
     for (SceneGraphNode* node : nodes) {
         _parent.setSelected(idx, * node);
     }

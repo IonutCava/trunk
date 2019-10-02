@@ -364,8 +364,8 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
     }
 }
 
-vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera) const {
-    auto IsNodeInRect = [&screenRect, &camera](const SceneGraphNode* node) {
+vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const {
+    auto IsNodeInRect = [&screenRect, &camera, &viewport](const SceneGraphNode* node) {
         assert(node != nullptr);
         if (node->getNode().type() == SceneNodeType::TYPE_OBJECT3D)
         {
@@ -387,9 +387,8 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>&
             {
                 BoundsComponent* bComp = node->get<BoundsComponent>();
                 if (bComp != nullptr) {
-                    vec3<F32> center = bComp->getBoundingBox().getCenter();
-                    center = camera.project(center);
-                    return screenRect.contains(center.xy());
+                    const vec3<F32>& center = bComp->getBoundingBox().getCenter();
+                    return screenRect.contains(camera.project(center, viewport));
                 }
             }
         }
@@ -400,6 +399,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>&
     const VisibleNodeList& visNodes = _renderPassCuller->getNodeCache(RenderStage::DISPLAY);
     for (auto& it : visNodes) {
         if (IsNodeInRect(it._node)) {
+            //ToDo: Add parent for submeshes!
             ret.push_back(it._node);
         }
     }

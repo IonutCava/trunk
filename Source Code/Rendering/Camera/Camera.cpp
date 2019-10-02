@@ -473,8 +473,12 @@ vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, cons
     return temp.xyz();
 }
 
-vec3<F32> Camera::project(const vec3<F32>& worldCoords) const {
-    return (getViewMatrix() * getProjectionMatrix()).transformHomogeneous(worldCoords);
+vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const {
+    vec2<F32> ret = (getViewMatrix() * getProjectionMatrix()).transformHomogeneous(worldCoords).xy();
+    ret = ((ret + 1.0f) * 0.5f);
+    ret *= viewport.zw();
+    ret += viewport.xy();
+    return ret;
 }
 
 };
