@@ -645,9 +645,10 @@ U16 Scene::registerInputActions() {
     auto none = [](InputParams param) {};
     auto deleteSelection = [this](InputParams param) { 
         PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
-        if (!_currentSelection[idx].empty()) {
-            _sceneGraph->removeNode(_currentSelection[idx].front());
+        for (auto selection : _currentSelection[idx]) {
+            _sceneGraph->removeNode(selection);
         }
+        _currentSelection[idx].clear();
     };
     auto increaseCameraSpeed = [this](InputParams param){
         Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
@@ -1371,9 +1372,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
 
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
     vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera, viewport);
-    for (SceneGraphNode* node : nodes) {
-        _parent.setSelected(idx, * node);
-    }
+    _parent.setSelected(idx, nodes);
 }
 
 void Scene::drawCustomUI(GFX::CommandBuffer& bufferInOut) {
@@ -1458,7 +1457,6 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
 
     const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
     const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
-
     vec2<I32> aimPos = COORD_REMAP(aimPosIn, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
 
     if (Config::Build::ENABLE_EDITOR) {
@@ -1472,12 +1470,12 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
 
     F32 aimX = to_F32(aimPos.x);
-    F32 aimY = displaySize.height - to_F32(aimPos.y) - 1;
+    F32 aimY = viewport.w - to_F32(aimPos.y) - 1;
 
     vec3<F32> startRay = crtCamera.unProject(aimX, aimY, 0.0f, viewport);
     vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
     // see if we select another one
-    _sceneSelectionCandidates.clear();
+    _sceneSelectionCandidates.resize(0);
 
     // Cast the picking ray and find items between the nearPlane and far Plane
     Ray mouseRay(startRay, startRay.direction(endRay));
@@ -1508,8 +1506,8 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
         }
 
         _currentHoverTarget[idx] = target->getGUID();
-        if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
-            target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
+        if (target->getSelectionFlag() == SceneGraphNode::SelectionFlag::NONE) {
+            target->setSelectionFlag(SceneGraphNode::SelectionFlag::HOVER);
         }
     } else {
         SceneGraphNode* target = _sceneGraph->findNode(_currentHoverTarget[idx]);
@@ -1517,8 +1515,8 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
             return;
         }
 
-        if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
-            target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
+        if (target->getSelectionFlag() == SceneGraphNode::SelectionFlag::HOVER) {
+            target->setSelectionFlag(SceneGraphNode::SelectionFlag::NONE);
         }
     }
 }
@@ -1543,22 +1541,24 @@ void Scene::resetSelection(PlayerIndex idx) {
     for (I64 selectionGUID : _currentSelection[idx]) {
         SceneGraphNode* node = sceneGraph().findNode(selectionGUID);
         if (node != nullptr) {
-            node->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
+            node->setSelectionFlag(SceneGraphNode::SelectionFlag::NONE);
         }
     }
 
     _currentSelection[idx].clear();
 
-    for (DELEGATE_CBK<void, U8, SceneGraphNode*>& cbk : _selectionChangeCallbacks) {
-        cbk(idx, nullptr);
+    for (auto& cbk : _selectionChangeCallbacks) {
+        cbk(idx, {});
     }
 }
 
-void Scene::setSelected(PlayerIndex idx, SceneGraphNode& sgn) {
-    _currentSelection[idx].push_back(sgn.getGUID());
-    sgn.setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
-    for (DELEGATE_CBK<void, U8, SceneGraphNode*>& cbk : _selectionChangeCallbacks) {
-        cbk(idx, &sgn);
+void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
+    for (SceneGraphNode* sgn : sgns) {
+        _currentSelection[idx].push_back(sgn->getGUID());
+        sgn->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTED);
+    }
+    for (auto& cbk : _selectionChangeCallbacks) {
+        cbk(idx, sgns);
     }
 }
 
@@ -1584,9 +1584,11 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
 
     SceneGraphNode* selectedNode = _sceneGraph->findNode(hoverGUID);
     if (selectedNode != nullptr) {
-        _parent.setSelected(idx, *selectedNode);
+        _parent.setSelected(idx, { selectedNode });
+        return true;
     }
-    return selectedNode != nullptr;
+    _parent.resetSelection(idx);
+    return false;
 }
 
 void Scene::beginDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos) {

@@ -45,15 +45,20 @@ namespace Divide {
 
 class Scene;
 class Camera;
+class Player;
 class SceneGraph;
 class SceneState;
 class WorldPacket;
 class RenderPackage;
 class SceneRenderState;
-
 class BoundsSystem;
 class BoundsComponent;
 class NetworkingComponent;
+
+class Light;
+class SpotLightComponent;
+class PointLightComponent;
+class DirectionalLightComponent;
 
 struct RenderStagePass;
 
@@ -61,7 +66,9 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 FWD_DECLARE_MANAGED_CLASS(Material);
 
 namespace Attorney {
+    class SceneNodePlayer;
     class SceneNodeSceneGraph;
+    class SceneNodeLightComponent;
     class SceneNodeBoundsComponent;
     class SceneNodeNetworkComponent;
 };
@@ -87,7 +94,9 @@ enum class SceneNodeType : U16 {
 };
 
 class SceneNode : public CachedResource {
+    friend class Attorney::SceneNodePlayer;
     friend class Attorney::SceneNodeSceneGraph;
+    friend class Attorney::SceneNodeLightComponent;
     friend class Attorney::SceneNodeBoundsComponent;
     friend class Attorney::SceneNodeNetworkComponent;
 
@@ -157,8 +166,6 @@ class SceneNode : public CachedResource {
     virtual void loadFromXML(const boost::property_tree::ptree& pt);
 
    protected:
-    friend class BoundsSystem;
-
     virtual void frameStarted(SceneGraphNode& sgn);
     virtual void frameEnded(SceneGraphNode& sgn);
     /// Called from SceneGraph "sceneUpdate"
@@ -263,6 +270,10 @@ class SceneNodeNetworkComponent {
 
 class SceneNodeBoundsComponent {
   private:
+    static void setBounds(SceneNode& node, const BoundingBox& aabb) {
+        node.setBounds(aabb);
+    }
+
     static bool boundsChanged(const SceneNode& node) {
         return node._boundsChanged;
     }
@@ -277,6 +288,27 @@ class SceneNodeBoundsComponent {
 
     friend class Divide::BoundsComponent;
     friend class Divide::BoundsSystem;
+};
+
+class SceneNodeLightComponent {
+private:
+    static void setBounds(SceneNode& node, const BoundingBox& aabb) {
+        node.setBounds(aabb);
+    }
+
+    friend class Divide::Light;
+    friend class Divide::SpotLightComponent;
+    friend class Divide::PointLightComponent;
+    friend class Divide::DirectionalLightComponent;
+};
+
+class SceneNodePlayer {
+private:
+    static void setBounds(SceneNode& node, const BoundingBox& aabb) {
+        node.setBounds(aabb);
+    }
+
+    friend class Divide::Player;
 };
 
 };  // namespace Attorney

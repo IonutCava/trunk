@@ -138,7 +138,7 @@ RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIn
 	ret._cullCounter = _cullCounter;
     ret._cmdBuffer = _cmdBuffers[idx];
     ret._lastCommandCount = &_lastNodeCount[idx * frameOffset];
-    ret._cmdBufferElementOffset = Config::MAX_VISIBLE_NODES * frameOffset;
+    ret._cmdBufferElementOffset = Config::MAX_VISIBLE_NODES* frameOffset;
 
     return ret;
 }

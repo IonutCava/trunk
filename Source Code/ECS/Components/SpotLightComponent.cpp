@@ -18,6 +18,11 @@ SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, PlatformContext& con
     _shadowProperties._lightDetails.z = 0.05f;
 
     getEditorComponent().registerField("Range and Cone", &_rangeAndCones, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
+
+    BoundingBox bb;
+    bb.setMin(-1.0f);
+    bb.setMax(1.0f);
+    Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
 }
 
 };

@@ -100,7 +100,7 @@ namespace Divide {
     protected:
         void update(const U64 deltaTimeUS);
         void render(const Camera& camera);
-        void updateSelections(SceneGraphNode* node);
+        void updateSelections(const vectorEASTL<SceneGraphNode*>& node);
         void setTransformSettings(const TransformSettings& settings);
         const TransformSettings& getTransformSettings() const;
         void onSizeChange(const SizeChangeParams& params, const vec2<U16>& displaySize);
@@ -124,8 +124,8 @@ namespace Divide {
                 gizmo.render(camera);
             }
 
-            static void updateSelection(Gizmo& gizmo, SceneGraphNode* node) {
-                gizmo.updateSelections(node);
+            static void updateSelection(Gizmo& gizmo, const vectorEASTL<SceneGraphNode*>& nodes) {
+                gizmo.updateSelections(nodes);
             }
 
             static void update(Gizmo& gizmo, const U64 deltaTimeUS) {

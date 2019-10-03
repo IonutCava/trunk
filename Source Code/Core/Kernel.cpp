@@ -763,8 +763,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         if (!_platformContext->editor().init(config.runtime.resolution)) {
             return ErrorCode::EDITOR_INIT_ERROR;
         }
-        _sceneManager->addSelectionCallback([&](PlayerIndex idx, SceneGraphNode* node) {
-            _platformContext->editor().selectionChangeCallback(idx, node);
+        _sceneManager->addSelectionCallback([&](PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) {
+            _platformContext->editor().selectionChangeCallback(idx, nodes);
         });
     }
 

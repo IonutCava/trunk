@@ -79,10 +79,10 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    public:
 
     enum class SelectionFlag : U8 {
-        SELECTION_NONE = 0,
-        SELECTION_HOVER,
-        SELECTION_SELECTED,
-        SELECTION_COUNT
+        NONE = 0,
+        HOVER,
+        SELECTED,
+        COUNT
     };
 
     enum class UpdateFlag : U8 {

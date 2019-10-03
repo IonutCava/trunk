@@ -365,7 +365,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
 }
 
 vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const {
-    auto IsNodeInRect = [&screenRect, &camera, &viewport](const SceneGraphNode* node) {
+    auto IsNodeInRect = [&screenRect, &camera, &viewport](SceneGraphNode* node) -> SceneGraphNode* {
         assert(node != nullptr);
         if (node->getNode().type() == SceneNodeType::TYPE_OBJECT3D)
         {
@@ -375,7 +375,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>&
                 if (node) {
                     objectType = node->getNode<Object3D>().getObjectType()._value;
                 } else {
-                    return false;
+                    return nullptr;
                 }
             }
 
@@ -388,19 +388,22 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>&
                 BoundsComponent* bComp = node->get<BoundsComponent>();
                 if (bComp != nullptr) {
                     const vec3<F32>& center = bComp->getBoundingBox().getCenter();
-                    return screenRect.contains(camera.project(center, viewport));
+                    if (screenRect.contains(camera.project(center, viewport))) {
+                        return node;
+                    }
                 }
             }
         }
-        return false;
+        return nullptr;
     };
 
     vectorEASTL<SceneGraphNode*> ret;
     const VisibleNodeList& visNodes = _renderPassCuller->getNodeCache(RenderStage::DISPLAY);
     for (auto& it : visNodes) {
-        if (IsNodeInRect(it._node)) {
+        SceneGraphNode* parsedNode = IsNodeInRect(it._node);
+        if (parsedNode != nullptr) {
             //ToDo: Add parent for submeshes!
-            ret.push_back(it._node);
+            insert_unique(ret, parsedNode);
         }
     }
     return ret;
@@ -675,15 +678,15 @@ void SceneManager::onLostFocus() {
 
 void SceneManager::resetSelection(PlayerIndex idx) {
     Attorney::SceneManager::resetSelection(getActiveScene(), idx);
-    for (DELEGATE_CBK<void, U8, SceneGraphNode*>& cbk : _selectionChangeCallbacks) {
-        cbk(idx, nullptr);
+    for (auto& cbk : _selectionChangeCallbacks) {
+        cbk(idx, {});
     }
 }
 
-void SceneManager::setSelected(PlayerIndex idx, SceneGraphNode& sgn) {
-    Attorney::SceneManager::setSelected(getActiveScene(), idx, sgn);
-    for (DELEGATE_CBK<void, U8, SceneGraphNode*>& cbk : _selectionChangeCallbacks) {
-        cbk(idx, &sgn);
+void SceneManager::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
+    Attorney::SceneManager::setSelected(getActiveScene(), idx, sgns);
+    for (auto& cbk : _selectionChangeCallbacks) {
+        cbk(idx, sgns);
     }
 }
 

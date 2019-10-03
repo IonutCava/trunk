@@ -131,7 +131,7 @@ class Editor : public PlatformContextComponent,
     bool running() const;
 
     void onSizeChange(const SizeChangeParams& params);
-    void selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node);
+    void selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node);
 
     bool simulationPauseRequested() const;
 

@@ -67,12 +67,14 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
 
     _resetUnits = false;
 
-    addSelectionCallback([&](PlayerIndex idx, SceneGraphNode* node) {
-        if (node != nullptr) {
-            _GUI->modifyText(_ID("entityState"), node->name().c_str(), false);
-        } else {
-            _GUI->modifyText(_ID("entityState"), "", false);
+    addSelectionCallback([&](PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node) {
+        stringImpl selectionText = "";
+        for (SceneGraphNode* it : node) {
+            selectionText.append("\n");
+            selectionText.append(it->name());
         }
+
+        _GUI->modifyText(_ID("entityState"), selectionText.c_str(), false);
     });
 
     _targetLines = _context.gfx().newIMP();
@@ -112,14 +114,20 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
     }
 
     if (_guiTimersMS[1] >= Time::SecondsToMilliseconds(1)) {
-        if (!_currentSelection[0].empty()) {
-            SceneGraphNode* node = sceneGraph().findNode(_currentSelection[0].front());
+        stringImpl selectionText = "";
+        auto& selections = _currentSelection[0];
+        for (auto selection : selections) {
+            SceneGraphNode* node = sceneGraph().findNode(selection);
             if (node != nullptr) {
                 AI::AIEntity* entity = findAI(node);
                 if (entity) {
-                    _GUI->modifyText(_ID("entityState"), entity->toString().c_str(), true);
+                    selectionText.append("\n");
+                    selectionText.append(entity->toString());
                 }
             }
+        }
+        if (!selectionText.empty()) {
+            _GUI->modifyText(_ID("entityState"), selectionText.c_str(), true);
         }
     }
 

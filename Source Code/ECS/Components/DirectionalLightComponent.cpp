@@ -32,6 +32,11 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
                                         EditorComponentFieldType::PUSH_TYPE,
                                         true,
                                         GFX::PushConstantType::VEC3);
+
+    BoundingBox bb;
+    bb.setMin(-g_defaultLightDistance * 0.5f);
+    bb.setMax(-g_defaultLightDistance * 0.5f);
+    Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
 }
 
 DirectionalLightComponent::~DirectionalLightComponent()

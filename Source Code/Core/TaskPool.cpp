@@ -10,7 +10,7 @@ namespace Divide {
 namespace {
     std::atomic_uint g_taskIDCounter = 0u;
     thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
-    thread_local U32  g_allocatedTasks = 0u;
+    thread_local U64  g_allocatedTasks = 0u;
 };
 
 TaskPool::TaskPool()

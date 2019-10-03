@@ -38,9 +38,12 @@ SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const st
      _materialTemplate(nullptr),
      _type(type),
      _sgnParentCount(0),
-     _boundsChanged(true),
+     _boundsChanged(false),
      _editorComponent("")
 {
+    _boundingBox.setMin(-1.0f);
+    _boundingBox.setMax(1.0f);
+
     getEditorComponent().name(getTypeName());
     getEditorComponent().onChangedCbk([this](const char* field) {
         editorFieldChanged(field);

@@ -95,11 +95,11 @@ public:
 
     inline U8 getActivePlayerCount() const { return _activePlayerCount; }
 
-    inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
+    inline void addSelectionCallback(const DELEGATE_CBK<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
     void resetSelection(PlayerIndex idx);
-    void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
+    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns);
 
     // cull the scenegraph against the current view frustum
     const VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD, const vec3<F32>& minExtents);
@@ -241,7 +241,7 @@ private:
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;
 
-    vector<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
+    vector<DELEGATE_CBK<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
 
     struct SwitchSceneTarget {
         SwitchSceneTarget() noexcept

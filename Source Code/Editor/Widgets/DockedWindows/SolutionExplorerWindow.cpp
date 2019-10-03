@@ -50,7 +50,7 @@ namespace Divide {
     void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, bool open) {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | (open ? ImGuiTreeNodeFlags_DefaultOpen : 0);
 
-        if (sgn.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+        if (sgn.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTED) {
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
 
@@ -60,7 +60,7 @@ namespace Divide {
         bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.name().c_str());
         if (ImGui::IsItemClicked()) {
             sceneManager.resetSelection(0);
-            sceneManager.setSelected(0, sgn);
+            sceneManager.setSelected(0, { &sgn });
             Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
         }
         

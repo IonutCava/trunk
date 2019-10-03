@@ -28,6 +28,11 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
     _shadowProperties._lightDetails.z = 0.05f;
 
     getEditorComponent().registerField("Range and Cone", &_rangeAndCones, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
+
+    BoundingBox bb;
+    bb.setMin(-10.0f);
+    bb.setMax(10.0f);
+    Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
 }
 
 };

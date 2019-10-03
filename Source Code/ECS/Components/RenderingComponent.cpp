@@ -354,9 +354,9 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
 void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
     const bool shadowMappingEnabled = _config.rendering.shadowMapping.enabled;
 
-    propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
+    propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTED
                                                      ? -1.0f
-                                                     : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
+                                                     : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::HOVER
                                                                                       ? 1.0f
                                                                                       : 0.0f,
                       (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
@@ -388,7 +388,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
             } break;
             case SceneRenderState::GizmoState::SELECTED_GIZMO: {
                 switch (_parentSGN.getSelectionFlag()) {
-                    case SceneGraphNode::SelectionFlag::SELECTION_SELECTED : {
+                    case SceneGraphNode::SelectionFlag::SELECTED : {
                         drawDebugAxis();
                         bufferInOut.add(_axisGizmo->toCommandBuffer());
                     } break;
@@ -404,7 +404,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB);
     renderBBox = renderBBox || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
 
-    bool renderBSphere = _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED;
+    bool renderBSphere = _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTED;
     renderBSphere = renderBSphere || renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
 
 

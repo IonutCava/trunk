@@ -32,6 +32,12 @@ const Camera& Player::getCamera() const {
 
 void Player::setParentNode(SceneGraphNode* node) {
     Character::setParentNode(node);
+    if (node != nullptr) {
+        BoundingBox bb;
+        bb.setMin(-0.5f);
+        bb.setMax(0.5f);
+        Attorney::SceneNodePlayer::setBounds(node->getNode(), bb);
+    }
 }
 
 };

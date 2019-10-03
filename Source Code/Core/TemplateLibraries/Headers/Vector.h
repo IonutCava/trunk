@@ -88,8 +88,7 @@ void insert_unique(vector<T, A>& target, const vector<T, A>& source)
 template<typename T>
 void insert_unique(vectorEASTL<T>& target, const T& item)
 {
-    if (eastl::find(eastl::cbegin(target), eastl::cend(target), item) != eastl::cend(target))
-    {
+    if (eastl::find(eastl::cbegin(target), eastl::cend(target), item) == eastl::cend(target)) {
         target.push_back(item);
     }
 

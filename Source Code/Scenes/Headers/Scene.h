@@ -156,7 +156,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void endDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos);
     bool isDragSelecting(PlayerIndex idx);
 
-    inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
+    inline void addSelectionCallback(const DELEGATE_CBK<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
 
@@ -257,7 +257,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void currentPlayerPass(PlayerIndex idx);
 
     void resetSelection(PlayerIndex idx);
-    void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
+    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgn);
 
     bool lockCameraToPlayerMouse(PlayerIndex index, bool lockState);
 
@@ -305,7 +305,7 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorEASTL<Task*> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
-       vector<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
+       vector<DELEGATE_CBK<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
        vector<SGNRayResult> _sceneSelectionCandidates;
 
    protected:
@@ -400,8 +400,8 @@ class SceneManager {
         scene.resetSelection(idx);
     }
 
-    static void setSelected(Scene& scene, PlayerIndex idx, SceneGraphNode& sgn) {
-        scene.setSelected(idx, sgn);
+    static void setSelected(Scene& scene, PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
+        scene.setSelected(idx, sgns);
     }
 
     friend class Divide::SceneManager;

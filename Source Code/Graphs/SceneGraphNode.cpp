@@ -65,7 +65,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _instanceCount(to_U32(descriptor._instanceCount)),
       _componentMask(0),
       _usageContext(descriptor._usageContext),
-      _selectionFlag(SelectionFlag::SELECTION_NONE),
+      _selectionFlag(SelectionFlag::NONE),
       _parent(nullptr),
       //_frustPlaneCache(-1),
       _elapsedTimeUS(0ULL),

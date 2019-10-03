@@ -842,12 +842,12 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     _context.gfx().flushCommandBuffer(buffer);
 }
 
-void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
+void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) {
     if (idx != 0) {
         return;
     }
 
-    Attorney::GizmoEditor::updateSelection(*_gizmo, node);
+    Attorney::GizmoEditor::updateSelection(*_gizmo, nodes);
 }
 
 /// Key pressed: return true if input was consumed
