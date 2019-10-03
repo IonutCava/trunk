@@ -213,7 +213,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
         Import::SubMeshData subMeshTemp;
 
         stringImpl name = currentMesh->mName.C_Str();
-        if (Util::CompareIgnoreCase(subMeshTemp.name(), "defaultobject")) {
+        if (Util::CompareIgnoreCase(name, "defaultobject")) {
             name.append("_" + fileName);
         }
         subMeshTemp.name(name);
