@@ -75,10 +75,10 @@ class glIMPrimitive final : public IMPrimitive {
     /// Specify an attribute that will be applied to all vertex calls after this
     void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) final;
     /// Submit the created batch to the GPU for rendering
-    void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override;
-    void pipeline(const Pipeline& pipeline) override;
+    void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) final;
+    void pipeline(const Pipeline& pipeline) final;
 
-    GFX::CommandBuffer& toCommandBuffer() const override;
+    GFX::CommandBuffer& toCommandBuffer() const final;
    protected:
     /// Rendering API specific implementation
     NS_GLIM::GLIM_BATCH* _imInterface;

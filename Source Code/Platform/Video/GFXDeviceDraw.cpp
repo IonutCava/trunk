@@ -291,6 +291,7 @@ void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& tar
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     blitToBuffer(targetViewport, bufferInOut);
+    parent().renderPassManager().renderUI(targetViewport, bufferInOut);
 
     GFX::EndRenderPassCommand endRenderPassCmd = {};
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
@@ -312,6 +313,8 @@ void GFXDevice::blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer
     TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->data();
 
     drawTextureInViewport(texData, targetViewport, bufferInOut);
+
+    parent().renderPassManager().renderUI(targetViewport, bufferInOut);
 
     GFX::EndDebugScopeCommand endDebugScopeCommand = {};
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);

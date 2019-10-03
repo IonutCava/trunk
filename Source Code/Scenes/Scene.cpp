@@ -1313,23 +1313,22 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
         }
         s_linesSet = true;
     }
+
+    const Editor& editor = _context.editor();
+    bool editorRunning = Config::Build::ENABLE_EDITOR && editor.running() && editor.scenePreviewFocused();
+
     const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
     const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
 
     vec2<I32> startPos = COORD_REMAP(data._startDragPos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
     vec2<I32> endPos = COORD_REMAP(data._endDragPos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
 
-    if (Config::Build::ENABLE_EDITOR) {
-        if (_context.editor().running() && _context.editor().scenePreviewFocused()) {
-            const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
-            if (sceneRect.contains(startPos)) {
-                startPos = COORD_REMAP(startPos, sceneRect, viewport);
-            }
-            if (sceneRect.contains(endPos)) {
-                endPos = COORD_REMAP(endPos, sceneRect, viewport);
-            }
-        }
-    }
+    if (editorRunning) {
+        const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
+        endPos = sceneRect.clamp(endPos);
+        startPos = COORD_REMAP(startPos, sceneRect, viewport);
+        endPos = COORD_REMAP(endPos, sceneRect, viewport);
+    } 
 
     F32 startX = to_F32(startPos.x);
     F32 startY = viewport.w - to_F32(startPos.y) - 1;
@@ -1348,21 +1347,34 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
     endX = selectionRect.z;
     endY = selectionRect.w;
 
-    { //X0, Y0 -> X1, Y0
-        s_lines[0].pointStart({ startX, startY, 0 });
-        s_lines[0].pointEnd({ endX, startY, 0 });
+    if (editorRunning) {
+        const Rect<I32>& targetViewport = _context.editor().getTargetViewport();
+        vec2<I32> tempStart = COORD_REMAP(vec2<I32>{startX, startY}, viewport, targetViewport);
+        vec2<I32> tempEnd = COORD_REMAP(vec2<I32>{endX, endY}, viewport, targetViewport);
+
+        startX = to_F32(tempStart.x);
+        startY = to_F32(tempStart.y);
+        endX = to_F32(tempEnd.x);
+        endY = to_F32(tempEnd.y);
     }
-    { //X1 , Y0 -> X1, Y1
-        s_lines[1].pointStart({ endX, startY, 0 });
-        s_lines[1].pointEnd({ endX, endY, 0 });
-    }
-    { //X1, Y1 -> X0, Y1
-        s_lines[2].pointStart(s_lines[1].pointEnd());
-        s_lines[2].pointEnd({ startX, endY, 0 });
-    }
-    { //X0, Y1 -> X0, Y0
-        s_lines[3].pointStart(s_lines[2].pointEnd());
-        s_lines[3].pointEnd(s_lines[0].pointStart());
+
+    {
+        { //X0, Y0 -> X1, Y0
+            s_lines[0].pointStart({ startX, startY, 0 });
+            s_lines[0].pointEnd({ endX, startY, 0 });
+        }
+        { //X1 , Y0 -> X1, Y1
+            s_lines[1].pointStart({ endX, startY, 0 });
+            s_lines[1].pointEnd({ endX, endY, 0 });
+        }
+        { //X1, Y1 -> X0, Y1
+            s_lines[2].pointStart(s_lines[1].pointEnd());
+            s_lines[2].pointEnd({ startX, endY, 0 });
+        }
+        { //X0, Y1 -> X0, Y0
+            s_lines[3].pointStart(s_lines[2].pointEnd());
+            s_lines[3].pointEnd(s_lines[0].pointStart());
+        }
     }
 
     _linesPrimitive->fromLines(s_lines);
@@ -1375,7 +1387,9 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
     _parent.setSelected(idx, nodes);
 }
 
-void Scene::drawCustomUI(GFX::CommandBuffer& bufferInOut) {
+void Scene::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(targetViewport);
+
     if (_linesPrimitive->hasBatch()) {
         bufferInOut.add(_linesPrimitive->toCommandBuffer());
     }
@@ -1481,6 +1495,13 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
     Ray mouseRay(startRay, startRay.direction(endRay));
     sceneGraph().intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates);
 
+    if (_currentHoverTarget[idx] != -1) {
+        SceneGraphNode* target = _sceneGraph->findNode(_currentHoverTarget[idx]);
+        if (target != nullptr && target->getSelectionFlag() == SceneGraphNode::SelectionFlag::HOVER) {
+            target->setSelectionFlag(SceneGraphNode::SelectionFlag::NONE);
+        }
+    }
+
     _currentHoverTarget[idx] = -1;
     if (!_sceneSelectionCandidates.empty()) {
         // If we don't force selections, remove all of the nodes that lack a SelectionComponent
@@ -1508,15 +1529,6 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
         _currentHoverTarget[idx] = target->getGUID();
         if (target->getSelectionFlag() == SceneGraphNode::SelectionFlag::NONE) {
             target->setSelectionFlag(SceneGraphNode::SelectionFlag::HOVER);
-        }
-    } else {
-        SceneGraphNode* target = _sceneGraph->findNode(_currentHoverTarget[idx]);
-        if (target == nullptr) {
-            return;
-        }
-
-        if (target->getSelectionFlag() == SceneGraphNode::SelectionFlag::HOVER) {
-            target->setSelectionFlag(SceneGraphNode::SelectionFlag::NONE);
         }
     }
 }
@@ -1594,6 +1606,17 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
 void Scene::beginDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos) {
     if (!findSelection(idx, clearOld)) {
         DragSelectData& data = _dragSelectData[idx];
+        const Editor& editor = _context.editor();
+        if (Config::Build::ENABLE_EDITOR && editor.running() && editor.scenePreviewFocused()) {
+            const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
+            const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
+            vec2<I32> aimPos = COORD_REMAP(mousePos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
+            const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
+            if (!sceneRect.contains(aimPos)) {
+                return;
+            }
+        }
+
         data._isDragging = true;
         data._startDragPos = mousePos;
         data._endDragPos = mousePos;

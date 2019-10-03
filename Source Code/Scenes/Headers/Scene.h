@@ -224,7 +224,7 @@ class Scene : public Resource, public PlatformContextComponent {
     /// Draw debug entities
     virtual void debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     /// Draw custom ui elements
-    virtual void drawCustomUI(GFX::CommandBuffer& bufferInOut);
+    virtual void drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
     //Return true if input was consumed
     virtual bool mouseMoved(const Input::MouseMoveEvent& arg);
@@ -350,8 +350,8 @@ class SceneManager {
         scene.debugDraw(activeCamera, stagePass, bufferInOut);
     }
 
-    static void drawCustomUI(Scene& scene, GFX::CommandBuffer& bufferInOut) {
-        scene.drawCustomUI(bufferInOut);
+    static void drawCustomUI(Scene& scene, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+        scene.drawCustomUI(targetViewport, bufferInOut);
     }
 
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }

@@ -493,8 +493,8 @@ void SceneManager::postRenderAllPasses(const Camera& playerCamera) {
     getActiveScene().lightPool().postRenderAllPasses(playerCamera);
 }
 
-void SceneManager::drawCustomUI(GFX::CommandBuffer& bufferInOut) {
-    Attorney::SceneManager::drawCustomUI(getActiveScene(), bufferInOut);
+void SceneManager::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    Attorney::SceneManager::drawCustomUI(getActiveScene(), targetViewport, bufferInOut);
 }
 
 void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {

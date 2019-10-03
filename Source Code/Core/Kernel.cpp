@@ -538,8 +538,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             } else {
                 Attorney::GFXDeviceKernel::blitToBuffer(_platformContext->gfx(), _targetViewports[i], buffer);
             }
-            // Use game viewport
-            _renderPassManager->renderUI(targetViewport, buffer);
+            _platformContext->gui().draw(_platformContext->gfx(), buffer);
             // Use full window viewport
             Attorney::GFXDeviceKernel::renderDebugUI(_platformContext->gfx(), _platformContext->activeWindow().windowViewport(), buffer);
 

@@ -206,7 +206,7 @@ protected:
     void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void preRenderAllPasses(const Camera& playerCamera);
     void postRenderAllPasses(const Camera& playerCamera);
-    void drawCustomUI(GFX::CommandBuffer& bufferInOut);
+    void drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void prepareLightData(RenderStage stage, const Camera& camera);
     void generateShadowMaps(GFX::CommandBuffer& bufferInOut);
@@ -397,8 +397,8 @@ class SceneManagerRenderPass {
         mgr.debugDraw(stagePass, camera, bufferInOut);
     }
 
-    static void drawCustomUI(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {
-        mgr.drawCustomUI(bufferInOut);
+    static void drawCustomUI(Divide::SceneManager& mgr, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+        mgr.drawCustomUI(targetViewport, bufferInOut);
     }
 
     static void generateShadowMaps(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {

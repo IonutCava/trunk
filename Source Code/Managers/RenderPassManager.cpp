@@ -889,11 +889,6 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 }
 
 void RenderPassManager::renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 123456;
-    beginDebugScopeCmd._scopeName = "Render GUI";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
-
     //Set a 2D camera for rendering
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
@@ -903,12 +898,7 @@ void RenderPassManager::renderUI(const Rect<I32>& targetViewport, GFX::CommandBu
     viewportCommand._viewport.set(targetViewport);
     GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
-    Attorney::SceneManagerRenderPass::drawCustomUI(_parent.sceneManager(), bufferInOut);
-
-    _parent.platformContext().gui().draw(_context, bufferInOut);
-
-    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+    Attorney::SceneManagerRenderPass::drawCustomUI(_parent.sceneManager(), targetViewport, bufferInOut);
 }
 
 // TEMP

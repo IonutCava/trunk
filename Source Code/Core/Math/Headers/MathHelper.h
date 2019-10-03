@@ -211,6 +211,15 @@ T NORMALIZE(T input, const T range_min, const T range_max) {
 }
 
 template<typename T>
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, T rect_x, T rect_y, T rect_z, T rect_w);
+
+template<typename T>
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, const Rect<T>& rect);
+
+template<typename T>
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, const vec4<T>& rect);
+
+template<typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w);
 
 template<typename T>

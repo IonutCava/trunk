@@ -1213,13 +1213,12 @@ bool Editor::onUTF8(const Input::UTF8Event& arg) {
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
-    if (!isInit()) {
-        return;
-    }
-
     if (!params.isWindowResize) {
         _targetViewport.set(0, 0, params.width, params.height);
     } else if (_mainWindow != nullptr && params.winGUID == _mainWindow->getGUID()) {
+        if (!isInit()) {
+            return;
+        }
 
         vec2<U16> displaySize = _mainWindow->getDrawableSize();
 

@@ -1368,6 +1368,15 @@ class Rect : public vec4<T> {
     inline bool contains(U _x, U _y) const {
         return COORDS_IN_RECT(static_cast<T>(_x), static_cast<T>(_y), *this);
     }
+
+    inline vec2<T> clamp(T _x, T _y) const {
+        CLAMP_IN_RECT(_x, _y, *this);
+        return vec2<T>(_x, _y);
+    }
+
+    inline vec2<T> clamp(const vec2<T>& coords) const {
+        return clamp(coords.x, coords.y);
+    }
 };
 
 };  // namespace Divide

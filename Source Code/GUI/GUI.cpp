@@ -99,6 +99,16 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
         return;
     }
 
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+    beginDebugScopeCmd._scopeID = 123456;
+    beginDebugScopeCmd._scopeName = "Render GUI";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
+    //Set a 2D camera for rendering
+    GFX::SetCameraCommand setCameraCommand;
+    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+
     const GUIMap& elements = _guiElements[to_base(GUIType::GUI_TEXT)];
 
     TextElementBatch textBatch(elements.size());
@@ -143,6 +153,10 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
         context.drawTextureInRenderWindow(getCEGUIRenderTextureData(), bufferInOut);
     }
+
+
+    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 }
 
 void GUI::update(const U64 deltaTimeUS) {

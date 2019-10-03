@@ -316,6 +316,22 @@ T SIGNED_SQUARED(T input) {
     return std::copysign(SQUARED(input), input);
 }
 
+template<typename T>
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, T rect_x, T rect_y, T rect_z, T rect_w) {
+    CLAMP(inout_x, rect_x, rect_z);
+    CLAMP(inout_y, rect_y, rect_w);
+}
+
+template<typename T>
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, const Rect<T>& rect) {
+    CLAMP_IN_RECT(inout_x, inout_y, rect.x, rect.y, rect.z, rect.w);
+}
+
+template<typename T>
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, const vec4<T>& rect) {
+    CLAMP_IN_RECT(inout_x, inout_y, rect.x, rect.y, rect.z, rect.w);
+}
+
 template <typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) {
     return IS_IN_RANGE_INCLUSIVE(input_x, rect_x, rect_z) &&

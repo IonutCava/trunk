@@ -474,11 +474,10 @@ vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, cons
 }
 
 vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const {
-    vec2<F32> ret = (getViewMatrix() * getProjectionMatrix()).transformHomogeneous(worldCoords).xy();
-    ret = ((ret + 1.0f) * 0.5f);
-    ret *= viewport.zw();
-    ret += viewport.xy();
-    return ret;
+    vec4<F32> clipSpace = getProjectionMatrix() * (getViewMatrix() * vec4<F32>(worldCoords, 1.0f));
+    vec3<F32> ndcSpace = clipSpace.xyz() / std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
+    vec2<F32> winSpace = ((ndcSpace.xy() + 1.0f) * 0.5f) * viewport.zw() + viewport.xy();
+    return winSpace;
 }
 
 };
