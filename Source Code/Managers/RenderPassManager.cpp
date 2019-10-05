@@ -888,17 +888,31 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
-void RenderPassManager::renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    //Set a 2D camera for rendering
-    GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
-    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+void RenderPassManager::createFrameBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    PlatformContext& context = parent().platformContext();
+    GFXDevice& gfx = _context;
+    const GFXRTPool& pool = gfx.renderTargetPool();
+    const RenderTarget& screen = pool.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    const TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
 
-    GFX::SetViewportCommand viewportCommand;
-    viewportCommand._viewport.set(targetViewport);
-    GFX::EnqueueCommand(bufferInOut, viewportCommand);
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+    beginDebugScopeCmd._scopeID = 12345;
+    beginDebugScopeCmd._scopeName = "Flush Display";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
+    GFX::ResolveRenderTargetCommand resolveCmd = { };
+    resolveCmd._source = RenderTargetID(RenderTargetUsage::SCREEN);
+    resolveCmd._resolveColours = true;
+    resolveCmd._resolveDepth = false;
+    GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
+    gfx.drawTextureInViewport(texData, targetViewport, bufferInOut);
     Attorney::SceneManagerRenderPass::drawCustomUI(_parent.sceneManager(), targetViewport, bufferInOut);
+    context.gui().draw(gfx, targetViewport, bufferInOut);
+    gfx.renderDebugUI(targetViewport, bufferInOut);
+
+    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 }
 
 // TEMP

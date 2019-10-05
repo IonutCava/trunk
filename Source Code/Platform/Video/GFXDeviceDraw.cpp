@@ -284,42 +284,6 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 }
 
-void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-    beginRenderPassCmd._target = targetID;
-    beginRenderPassCmd._name = "BLIT_TO_RENDER_TARGET";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
-
-    blitToBuffer(targetViewport, bufferInOut);
-    parent().renderPassManager().renderUI(targetViewport, bufferInOut);
-
-    GFX::EndRenderPassCommand endRenderPassCmd = {};
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
-}
-
-void GFXDevice::blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 12345;
-    beginDebugScopeCmd._scopeName = "Flush Display";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
-
-    GFX::ResolveRenderTargetCommand resolveCmd = { };
-    resolveCmd._source = RenderTargetID(RenderTargetUsage::SCREEN);
-    resolveCmd._resolveColours = true;
-    resolveCmd._resolveDepth = false;
-    GFX::EnqueueCommand(bufferInOut, resolveCmd);
-
-    RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->data();
-
-    drawTextureInViewport(texData, targetViewport, bufferInOut);
-
-    parent().renderPassManager().renderUI(targetViewport, bufferInOut);
-
-    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
-}
-
 void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     constexpr I32 padding = 5;
 
@@ -336,6 +300,7 @@ void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffe
                 targetViewport.y + padding,
                 targetViewport.z - padding * 2,
                 targetViewport.w - padding * 2),
+            padding,
             bufferInOut);
 
         GFX::EndDebugScopeCommand endDebugScopeCommand = {};

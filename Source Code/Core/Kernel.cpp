@@ -71,7 +71,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _cameraMgrTimer(Time::ADD_TIMER("Camera Manager Update Timer")),
       _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer")),
       _preRenderTimer(Time::ADD_TIMER("Pre-render Timer")),
-      _postRenderTimer(Time::ADD_TIMER("Post-render Timer"))
+      _postRenderTimer(Time::ADD_TIMER("Post-render Timer")),
+      _blitToDisplayTimer(Time::ADD_TIMER("Flush Buffers Timer"))
 {
     _platformContext->init();
 
@@ -87,6 +88,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _appScenePass.addChildTimer(_flushToScreenTimer);
     _flushToScreenTimer.addChildTimer(_preRenderTimer);
     _flushToScreenTimer.addChildTimer(_postRenderTimer);
+    _flushToScreenTimer.addChildTimer(_blitToDisplayTimer);
     _sceneUpdateTimer.addChildTimer(_sceneUpdateLoopTimer);
 
     _resCache = std::make_unique<ResourceCache>(*_platformContext);
@@ -479,7 +481,6 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     Time::ScopedTimer time(_flushToScreenTimer);
 
     FrameListenerManager& frameMgr = FrameListenerManager::instance();
-
     {
         Time::ScopedTimer time1(_preRenderTimer);
         if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_START, evt)) {
@@ -496,7 +497,8 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         }
     }
 
-    U8 playerCount = _sceneManager->getActivePlayerCount();
+    const U8 playerCount = _sceneManager->getActivePlayerCount();
+    const bool editorRunning = Config::Build::ENABLE_EDITOR && _platformContext->editor().running();
 
     Rect<I32> mainViewport = _platformContext->activeWindow().renderingViewport();
     
@@ -506,51 +508,51 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         _prevPlayerCount = playerCount;
     }
 
-    if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
+    if (editorRunning) {
         computeViewports(_platformContext->editor().getTargetViewport(), _editorViewports, playerCount);
     }
 
-    for (U8 i = 0; i < playerCount; ++i) {
-        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
-            return false;
-        }
+    {
+        GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
+        GFX::CommandBuffer& buffer = sBuffer();
 
-        Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
-        {
-            Time::ProfileTimer& timer = getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer");
-            Time::ScopedTimer time2(timer);
-            _renderPassManager->render(_sceneManager->getActiveScene().renderState(), &timer);
-        }
-
-        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
-            return false;
-        }
-        {
-            Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
-
-            GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
-            GFX::CommandBuffer& buffer = sBuffer();
-
-            Rect<I32> targetViewport = _targetViewports[i];
-            if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
-                targetViewport = _editorViewports[i];
-                Attorney::GFXDeviceKernel::blitToRenderTarget(_platformContext->gfx(), RenderTargetID(RenderTargetUsage::EDITOR), _editorViewports[i], buffer);
-            } else {
-                Attorney::GFXDeviceKernel::blitToBuffer(_platformContext->gfx(), _targetViewports[i], buffer);
+        for (U8 i = 0; i < playerCount; ++i) {
+            if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
+                return false;
             }
-            _platformContext->gui().draw(_platformContext->gfx(), buffer);
-            // Use full window viewport
-            Attorney::GFXDeviceKernel::renderDebugUI(_platformContext->gfx(), _platformContext->activeWindow().windowViewport(), buffer);
 
+            Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
+            {
+                Time::ProfileTimer& timer = getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer");
+                Time::ScopedTimer time2(timer);
+                _renderPassManager->render(_sceneManager->getActiveScene().renderState(), &timer);
+            }
+
+            if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
+                return false;
+            }
+            {
+                Rect<I32> targetViewport = _targetViewports[i];
+                if (editorRunning) {
+                    targetViewport = _editorViewports[i];
+                    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+                    beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::EDITOR);
+                    beginRenderPassCmd._name = "BLIT_TO_RENDER_TARGET";
+                    GFX::EnqueueCommand(buffer, beginRenderPassCmd);
+                }
+
+                renderPassManager().createFrameBuffer(targetViewport, buffer);
+
+                if (editorRunning){
+                    GFX::EndRenderPassCommand endRenderPassCmd = {};
+                    GFX::EnqueueCommand(buffer, endRenderPassCmd);
+                }
+            }
+        }
+        {
+            Time::ScopedTimer time4(_blitToDisplayTimer);
             _platformContext->gfx().flushCommandBuffer(buffer);
         }
-    }
-
-    for (U32 i = playerCount; i < to_U32(_renderTimer.size()); ++i) {
-        Time::ProfileTimer::removeTimer(*_renderTimer[i]);
-        Time::ProfileTimer::removeTimer(*_blitToDisplayTimer[i]);
-        _renderTimer.erase(std::begin(_renderTimer) + i);
-        _blitToDisplayTimer.erase(std::begin(_blitToDisplayTimer) + i);
     }
 
     {
@@ -562,6 +564,11 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_END, evt)) {
             return false;
         }
+    }
+
+    for (U32 i = playerCount; i < to_U32(_renderTimer.size()); ++i) {
+        Time::ProfileTimer::removeTimer(*_renderTimer[i]);
+        _renderTimer.erase(std::begin(_renderTimer) + i);
     }
 
     return true;

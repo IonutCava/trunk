@@ -78,9 +78,11 @@ namespace Attorney {
 };
 
 struct DragSelectData {
+    Rect<I32> _targetViewport;
     vec2<I32> _startDragPos;
     vec2<I32> _endDragPos;
     bool _isDragging = false;
+    bool _inEditor = false;
 };
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2 states:

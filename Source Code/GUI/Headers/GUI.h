@@ -78,7 +78,7 @@ public:
     bool init(PlatformContext& context, ResourceCache& cache);
     void destroy();
 
-    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
+    void draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut);
 
     void onSizeChange(const SizeChangeParams& params);
     void onChangeScene(Scene* newScene);

@@ -85,7 +85,7 @@ public:
     /// Call every renderqueue's render function in order
     void render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer = nullptr);
     /// Draw all of the 2D game elements in the target viewport
-    void renderUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+    void createFrameBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     /// Add a new pass that will run once for each of the RenderStages specified
     RenderPass& addRenderPass(const stringImpl& renderPassName,
                               U8 orderKey,

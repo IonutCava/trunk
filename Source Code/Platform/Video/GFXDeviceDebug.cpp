@@ -20,10 +20,9 @@
 
 namespace Divide {
 
-void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut) {
     static DebugView* HiZPtr = nullptr;
     static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour4(128), 96).getHash();
-
 
 
     // Lazy-load preview shader
@@ -151,12 +150,12 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
         rowCount++;
     }
 
-    I32 screenWidth = targetViewport.z;
-    I32 screenHeight = targetViewport.w;
+    I32 screenWidth = targetViewport.z - targetViewport.x;
+    I32 screenHeight = targetViewport.w - targetViewport.y;
     F32 aspectRatio = to_F32(screenWidth) / screenHeight;
 
-    I32 viewportWidth = (screenWidth / columnCount) - targetViewport.x;
-    I32 viewportHeight = to_I32(viewportWidth / aspectRatio) - targetViewport.y;
+    I32 viewportWidth = (screenWidth / columnCount) - padding;
+    I32 viewportHeight = to_I32(viewportWidth / aspectRatio) - padding;
     Rect<I32> viewport(screenWidth - viewportWidth, targetViewport.y, viewportWidth, viewportHeight);
 
     PipelineDescriptor pipelineDesc = {};
@@ -168,7 +167,6 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBu
 
     vectorFast <std::pair<stringImpl, Rect<I32>>> labelStack;
 
-    Rect<I32> crtViewport = getCurrentViewport();
     GFX::SetViewportCommand setViewport = {};
     GFX::SendPushConstantsCommand pushConstants = {};
     GFX::BindPipelineCommand bindPipeline = {};

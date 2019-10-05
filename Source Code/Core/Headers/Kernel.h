@@ -284,8 +284,8 @@ class Kernel : public Input::InputAggregatorInterface,
     Time::ProfileTimer& _flushToScreenTimer;
     Time::ProfileTimer& _preRenderTimer;
     Time::ProfileTimer& _postRenderTimer;
+    Time::ProfileTimer& _blitToDisplayTimer;
     vector<Time::ProfileTimer*> _renderTimer;
-    vector<Time::ProfileTimer*> _blitToDisplayTimer;
 
     // Command line arguments
     I32 _argc;

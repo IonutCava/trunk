@@ -364,7 +364,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
     }
 }
 
-vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) const {
+vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) const {
     const SceneGraph& sceneGraph = getActiveScene().sceneGraph();
 
     auto CheckPointLoS = [&camera, &sceneGraph](const vec3<F32>& point) -> bool {
@@ -535,6 +535,15 @@ void SceneManager::postRenderAllPasses(const Camera& playerCamera) {
 }
 
 void SceneManager::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    //Set a 2D camera for rendering
+    GFX::SetCameraCommand setCameraCommand;
+    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+
+    GFX::SetViewportCommand viewportCommand;
+    viewportCommand._viewport.set(targetViewport);
+    GFX::EnqueueCommand(bufferInOut, viewportCommand);
+
     Attorney::SceneManager::drawCustomUI(getActiveScene(), targetViewport, bufferInOut);
 }
 

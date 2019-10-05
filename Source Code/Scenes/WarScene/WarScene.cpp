@@ -74,7 +74,7 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
             selectionText.append(it->name());
         }
 
-        _GUI->modifyText(_ID("entityState"), selectionText.c_str(), false);
+        _GUI->modifyText(_ID("entityState"), selectionText.c_str(), true);
     });
 
     _targetLines = _context.gfx().newIMP();

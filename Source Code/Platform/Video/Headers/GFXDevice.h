@@ -365,14 +365,12 @@ protected:
 
     void onSizeChange(const SizeChangeParams& params);
 
-    void renderDebugViews(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+    void renderDebugViews(const Rect<I32>& targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut);
     
     void stepResolution(bool increment);
 
 protected:
     void renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
-    void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
-    void blitToBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
 protected:
     friend class SceneManager;
@@ -513,18 +511,6 @@ namespace Attorney {
 
     class GFXDeviceKernel {
     private:
-        static void blitToBuffer(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-            device.blitToBuffer(targetViewport, bufferInOut);
-        }
-
-        static void blitToRenderTarget(GFXDevice& device, RenderTargetID targetID, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-            device.blitToRenderTarget(targetID, targetViewport, bufferInOut);
-        }
-
-        static void renderDebugUI(GFXDevice& device, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-            device.renderDebugUI(targetViewport, bufferInOut);
-        }
-
         static void onSizeChange(GFXDevice& device, const SizeChangeParams& params) {
             device.onSizeChange(params);
         }

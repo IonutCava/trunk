@@ -94,7 +94,7 @@ void GUI::onUnloadScene(Scene* const scene) {
     }
 }
 
-void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
+void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) {
     if (!_init || !_activeScene) {
         return;
     }
@@ -108,6 +108,10 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+
+    GFX::SetViewportCommand viewportCommand;
+    viewportCommand._viewport.set(viewport);
+    GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
     const GUIMap& elements = _guiElements[to_base(GUIType::GUI_TEXT)];
 
@@ -151,7 +155,7 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
         blendCmd._blendProperties._enabled = true;
         GFX::EnqueueCommand(bufferInOut, blendCmd);
 
-        context.drawTextureInRenderWindow(getCEGUIRenderTextureData(), bufferInOut);
+        context.drawTextureInViewport(getCEGUIRenderTextureData(), viewport, bufferInOut);
     }
 
 
