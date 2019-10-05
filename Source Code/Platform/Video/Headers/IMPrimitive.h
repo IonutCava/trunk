@@ -133,6 +133,8 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
                     const UColour4& colour = DefaultColours::WHITE);
     void fromLines(const vector<Line>& lines);
 
+    PROPERTY_RW(bool, skipPostFX, false);
+
    protected:
     mutable bool _cmdBufferDirty = true;
     GFX::CommandBuffer* _cmdBuffer = nullptr;

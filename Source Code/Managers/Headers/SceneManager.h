@@ -197,7 +197,7 @@ protected:
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
     void removePlayer(Scene& parentScene, Player_ptr& player, bool queue);
-    vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const;
+    vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) const;
 
 protected:
     bool frameStarted(const FrameEvent& evt) override;
@@ -314,8 +314,8 @@ private:
         manager.removePlayer(parentScene, player, queue);
     }
 
-    static vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Divide::SceneManager& manager, const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport) {
-        return manager.getNodesInScreenRect(screenRect, camera, viewport);
+    static vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Divide::SceneManager& manager, const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) {
+        return manager.getNodesInScreenRect(screenRect, camera, viewport, editorRunning);
     }
 
     friend class Divide::Scene;

@@ -565,10 +565,12 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
 
     Pipeline* primitivePipeline = newPipeline(pipelineDesc);
     _axisGizmo->pipeline(*primitivePipeline);
+    _axisGizmo->skipPostFX(true);
 
     _debugFrustumPrimitive = newIMP();
     _debugFrustumPrimitive->name("DebugFrustum");
     _debugFrustumPrimitive->pipeline(*primitivePipeline);
+    _debugFrustumPrimitive->skipPostFX(true);
 
     SizeChangeParams params;
     params.width = _rtPool->renderTarget(RenderTargetUsage::SCREEN).getWidth();

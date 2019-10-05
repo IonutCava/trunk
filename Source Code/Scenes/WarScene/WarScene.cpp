@@ -856,7 +856,7 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                   Font::DIVIDE_DEFAULT,
                   UColour4(0, 0, 0, 255),
                   "",
-                  false);
+                  true);
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
 

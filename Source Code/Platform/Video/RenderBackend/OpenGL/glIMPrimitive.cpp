@@ -91,6 +91,8 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
         PushConstants pushConstants;
         // Inform the shader if we have (or don't have) a texture
         pushConstants.set("useTexture", GFX::PushConstantType::BOOL, _texture != nullptr);
+        // Inform shader to write all of the extra stuff it needs in order for PostFX to skip affected fragments (usually a high alpha value)
+        pushConstants.set("skipPostFX", GFX::PushConstantType::BOOL, skipPostFX());
         // Upload the primitive's world matrix to the shader
         pushConstants.set("dvd_WorldMatrix", GFX::PushConstantType::MAT4, worldMatrix());
 

@@ -19,7 +19,8 @@ void main(){
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
-uniform bool useTexture;
+uniform bool useTexture = false;
+uniform bool skipPostFX = false;
 
 layout(location = 0) in  vec4 _colour;
 layout(location = TARGET_ALBEDO) out vec4 _colourOut;
@@ -30,6 +31,9 @@ void main(){
     }else{
         _colourOut = texture(texDiffuse0, VAR._texCoord);
         _colourOut.rgb += _colour.rgb;
+    }
+    if (skipPostFX) {
+        _colourOut.a = 10.0f;
     }
 }
 

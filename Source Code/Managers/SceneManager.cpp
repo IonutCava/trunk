@@ -364,8 +364,42 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
     }
 }
 
-vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const {
-    auto IsNodeInRect = [&screenRect, &camera, &viewport](SceneGraphNode* node) -> SceneGraphNode* {
+vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) const {
+    const SceneGraph& sceneGraph = getActiveScene().sceneGraph();
+
+    auto CheckPointLoS = [&camera, &sceneGraph](const vec3<F32>& point) -> bool {
+        const vec3<F32>& eye = camera.getEye();
+        const vec2<F32>& zPlanes = camera.getZPlanes();
+        const F32 distanceToPoint = eye.distance(point);
+
+        Ray cameraRay(point, point.direction(eye));
+        vector<SGNRayResult> rayResults;
+        sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, rayResults);
+        for (SGNRayResult& result : rayResults) {
+            if (std::get<1>(result) < distanceToPoint) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    auto HasLoSToCamera = [&](const BoundingBox& bb) -> bool {
+        // Quick raycast to camera
+        if (CheckPointLoS(bb.getCenter())) {
+            return true;
+        }
+        // This is gonna hurt. The raycast failed, but the node might still be visible
+        auto points = bb.getPoints();
+        for (auto& point : points) {
+            if (CheckPointLoS(point)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    auto IsNodeInRect = [editorRunning, &screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node) -> SceneGraphNode* {
         assert(node != nullptr);
         if (node->getNode().type() == SceneNodeType::TYPE_OBJECT3D)
         {
@@ -383,11 +417,12 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>&
                 node->get<SelectionComponent>()->enabled() &&
                 objectType != ObjectType::DECAL &&
                 objectType != ObjectType::SUBMESH &&
-                objectType != ObjectType::TERRAIN)
+                (editorRunning || objectType != ObjectType::TERRAIN))
             {
                 BoundsComponent* bComp = node->get<BoundsComponent>();
                 if (bComp != nullptr) {
-                    const vec3<F32>& center = bComp->getBoundingBox().getCenter();
+                    const BoundingBox& bb = bComp->getBoundingBox();
+                    const vec3<F32>& center = bb.getCenter();
                     if (screenRect.contains(camera.project(center, viewport))) {
                         return node;
                     }
@@ -402,10 +437,16 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<F32>&
     for (auto& it : visNodes) {
         SceneGraphNode* parsedNode = IsNodeInRect(it._node);
         if (parsedNode != nullptr) {
-            //ToDo: Add parent for submeshes!
-            insert_unique(ret, parsedNode);
+            // submeshes will usually return their parent mesh as a result so we try and avoid having the same mesh multiple times
+            if (eastl::find(eastl::cbegin(ret), eastl::cend(ret), parsedNode) == eastl::cend(ret)) {
+                const BoundingBox& bb = parsedNode->get<BoundsComponent>()->getBoundingBox();
+                if (HasLoSToCamera(bb)) {
+                    ret.push_back(parsedNode);
+                }
+            }
         }
     }
+
     return ret;
 }
 

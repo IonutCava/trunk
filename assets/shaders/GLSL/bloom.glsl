@@ -21,7 +21,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 
 void main() {    
     vec4 screenColour = texture(texScreen, VAR._texCoord);
-    if (luminance(screenColour.rgb) > 0.75f) {
+    if (screenColour.a < 1.1f && luminance(screenColour.rgb) > 0.75f) {
         _bloomOut = screenColour;
     }
 }

@@ -1319,15 +1319,14 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
 
     const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
     const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
+    Rect<I32> displayViewport(0, 0, displaySize.width, displaySize.height);
 
-    vec2<I32> startPos = COORD_REMAP(data._startDragPos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
-    vec2<I32> endPos = COORD_REMAP(data._endDragPos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
+    vec2<I32> startPos = data._startDragPos;
+    vec2<I32> endPos = COORD_REMAP(data._endDragPos, displayViewport, viewport);
 
     if (editorRunning) {
         const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
-        endPos = sceneRect.clamp(endPos);
-        startPos = COORD_REMAP(startPos, sceneRect, viewport);
-        endPos = COORD_REMAP(endPos, sceneRect, viewport);
+        endPos = COORD_REMAP(sceneRect.clamp(endPos), sceneRect, viewport);
     } 
 
     F32 startX = to_F32(startPos.x);
@@ -1383,7 +1382,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
     _parent.resetSelection(idx);
 
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
-    vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera, viewport);
+    vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera, viewport, editorRunning);
     _parent.setSelected(idx, nodes);
 }
 
@@ -1607,14 +1606,17 @@ void Scene::beginDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePo
     if (!findSelection(idx, clearOld)) {
         DragSelectData& data = _dragSelectData[idx];
         const Editor& editor = _context.editor();
+
+        const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
+        const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
+
+        mousePos = COORD_REMAP(mousePos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
         if (Config::Build::ENABLE_EDITOR && editor.running() && editor.scenePreviewFocused()) {
-            const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
-            const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
-            vec2<I32> aimPos = COORD_REMAP(mousePos, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
             const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
-            if (!sceneRect.contains(aimPos)) {
+            if (!sceneRect.contains(mousePos)) {
                 return;
             }
+            mousePos = COORD_REMAP(mousePos, sceneRect, viewport);
         }
 
         data._isDragging = true;
@@ -1630,9 +1632,14 @@ void Scene::endDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos)
     _linesPrimitive->clearBatch();
 }
 
-bool Scene::isDragSelecting(PlayerIndex idx) {
-    return _dragSelectData[idx]._isDragging;
+bool Scene::isDragSelecting(PlayerIndex idx) const {
+    auto it = _dragSelectData.find(idx);
+    if (it != std::cend(_dragSelectData)) {
+        return it->second._isDragging;
+    }
+    return false;
 }
+
 bool Scene::save(ByteBuffer& outputBuffer) const {
     U8 playerCount = to_U8(_scenePlayers.size());
     outputBuffer << playerCount;

@@ -103,14 +103,17 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
     _boundingBoxPrimitive[0] = _context.newIMP();
     _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.name());
     _boundingBoxPrimitive[0]->pipeline(*pipeline);
+    _boundingBoxPrimitive[0]->skipPostFX(true);
 
     _boundingBoxPrimitive[1] = _context.newIMP();
     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.name());
     _boundingBoxPrimitive[1]->pipeline(*pipeline);
+    _boundingBoxPrimitive[1]->skipPostFX(true);
 
     _boundingSpherePrimitive = _context.newIMP();
     _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.name());
     _boundingSpherePrimitive->pipeline(*pipeline);
+    _boundingSpherePrimitive->skipPostFX(true);
 
     if (nodeSkinned) {
         RenderStateBlock primitiveStateBlockNoZRead;
@@ -119,6 +122,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
         Pipeline* pipelineNoZRead = _context.newPipeline(pipelineDescriptor);
 
         _skeletonPrimitive = _context.newIMP();
+        _skeletonPrimitive->skipPostFX(true);
         _skeletonPrimitive->name("Skeleton_" + parentSGN.name());
         _skeletonPrimitive->pipeline(*pipelineNoZRead);
     }
@@ -154,6 +158,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
 
         pipelineDescriptor._stateHash = stateBlock.getHash();
         _axisGizmo->name("AxisGizmo_" + parentSGN.name());
+        _axisGizmo->skipPostFX(true);
         _axisGizmo->pipeline(*_context.newPipeline(pipelineDescriptor));
         // Create the object containing all of the lines
         _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);

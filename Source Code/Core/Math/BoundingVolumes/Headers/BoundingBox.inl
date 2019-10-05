@@ -233,14 +233,14 @@ inline void BoundingBox::reset() noexcept {
 inline std::array<vec3<F32>, 8> BoundingBox::getPoints() const noexcept {
     return std::array<vec3<F32>, 8>
     {
-        (_min.x, _min.y, _min.z),
-        (_min.x, _min.y, _max.z),
-        (_min.x, _max.y, _min.z),
-        (_min.x, _max.y, _max.z),
-        (_max.x, _min.y, _min.z),
-        (_max.x, _min.y, _max.z),
-        (_max.x, _max.y, _min.z),
-        (_max.x, _max.y, _max.z)
+        vec3<F32>{_min.x, _min.y, _min.z},
+        vec3<F32>{_min.x, _min.y, _max.z},
+        vec3<F32>{_min.x, _max.y, _min.z},
+        vec3<F32>{_min.x, _max.y, _max.z},
+        vec3<F32>{_max.x, _min.y, _min.z},
+        vec3<F32>{_max.x, _min.y, _max.z},
+        vec3<F32>{_max.x, _max.y, _min.z},
+        vec3<F32>{_max.x, _max.y, _max.z}
     };
 }
 

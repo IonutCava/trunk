@@ -135,7 +135,8 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
     if (tz_max < t_max) {
         t_max = tz_max;
     }
-    return std::make_tuple(((t_min < t1) && (t_max > t0)), t_min, t_max);
+
+    return std::make_tuple(IS_IN_RANGE_INCLUSIVE(t_min, t0, t1)  && IS_IN_RANGE_INCLUSIVE(t_max, t0, t1), t_min, t_max);
 }
 
 void BoundingBox::transform(const mat4<F32>& mat) {
