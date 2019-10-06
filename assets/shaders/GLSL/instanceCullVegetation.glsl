@@ -8,7 +8,7 @@
 
 uniform float dvd_treeVisibilityDistance;
 uniform float dvd_grassVisibilityDistance;
-uniform uint offset;
+uniform uint dvd_terrainChunkOffset;
 
 layout(local_size_x = WORK_GROUP_SIZE) in;
 
@@ -39,7 +39,7 @@ void main(void) {
         return;
     }
 
-    uint idx = offset * MAX_INSTANCES + gl_GlobalInvocationID.x;
+    uint idx = dvd_terrainChunkOffset * MAX_INSTANCES + gl_GlobalInvocationID.x;
 
     VegetationData instance = Data[idx];
     Data[idx].data.z = 1.0f;

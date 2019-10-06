@@ -135,20 +135,31 @@ void RenderPassCuller::frustumCullNode(const Task& task,
     if (!currentNode.isActive()) {
         return;
     }
+
+    bool isTransformNode = false;
+    Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
+
+    SceneNode& sceneNode = currentNode.getNode();
     // If it fails the culling test, stop
-    if (_cullingFunction[to_U32(params._stage)](currentNode, currentNode.getNode())) {
-        return;
+    if (_cullingFunction[to_U32(params._stage)](currentNode, sceneNode)) {
+        // unless this is just a transform node and we should check children anyway
+        if (sceneNode.type() == SceneNodeType::TYPE_EMPTY || sceneNode.type() == SceneNodeType::TYPE_TRANSFORM) {
+            isTransformNode = true;
+            collisionResult = Frustum::FrustCollision::FRUSTUM_INTERSECT;
+        } else {
+            return;
+        }
     }
 
     F32 distanceSqToCamera = 0.0f;
-    Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
 
     // Internal node cull (check against camera frustum and all that ...)
-    bool isVisible = !currentNode.cullNode(params, collisionResult, distanceSqToCamera);
+    bool isVisible = isTransformNode || !currentNode.cullNode(params, collisionResult, distanceSqToCamera);
 
     if (isVisible && !StopRequested(task)) {
-        nodes.emplace_back(VisibleNode{ distanceSqToCamera, &currentNode });
-
+        if (!isTransformNode) {
+            nodes.emplace_back(VisibleNode{ distanceSqToCamera, &currentNode });
+        }
         // Parent node intersects the view, so check children
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
 

@@ -1,6 +1,9 @@
 -- Vertex
 
+uniform uint dvd_dataIdx;
+
 #include "vbInputData.vert"
+#include "lightingDefaults.vert"
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
 
@@ -11,7 +14,7 @@ void computeFoliageMovementGrass(inout vec4 vertex, in float heightExtent) {
     float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
-    float halfScale = 0.5f * heightExtent;
+    float halfScale = 0.25f * heightExtent;
     vertex.x += (halfScale * cos(timeGrass) * cosX * sinX) *dvd_windDetails.x;
     vertex.z += (halfScale * sin(timeGrass) * cosX * sinX) *dvd_windDetails.z;
 }
@@ -33,8 +36,8 @@ void main()
 #endif
     }
 
-    if (dvd_Vertex.y > 0.75) {
-        //computeFoliageMovementGrass(dvd_Vertex, data.data.w);
+    if (dvd_Vertex.y > 0.5f) {
+        computeFoliageMovementGrass(dvd_Vertex, data.data.w * 0.5f);
     }
 
     _arrayLayerFrag = int(data.data.x);
@@ -49,7 +52,6 @@ void main()
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * /*rotate_vertex_position(dvd_Normal, data.orientationQuad)*/ -dvd_Normal);
 
-    //computeLightVectors();
 #if !defined(SHADOW_PASS)
     setClipPlanes(VAR._vertexW);
 #endif
@@ -60,6 +62,7 @@ void main()
 -- Fragment.Colour
 
 layout(early_fragment_tests) in;
+uniform uint dvd_dataIdx;
 
 #define USE_SHADING_BLINN_PHONG
 #define NO_SPECULAR
@@ -87,6 +90,7 @@ void main (void){
 
 --Fragment.PrePass
 
+uniform uint dvd_dataIdx;
 #include "prePass.frag"
 
 layout(location = 0) flat in int _arrayLayerFrag;
@@ -110,6 +114,7 @@ void main() {
 
 --Fragment.Shadow
 
+uniform uint dvd_dataIdx;
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) flat in float _alphaFactor;
 

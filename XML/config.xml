@@ -8,7 +8,7 @@
   <useGeometryCache>true</useGeometryCache>
   <useVegetationCache>true</useVegetationCache>
   <enableTreeInstances>false</enableTreeInstances>
-  <enableGrassInstances>false</enableGrassInstances>
+  <enableGrassInstances>true</enableGrassInstances>
   <!-- this is only taken into consideration if binary cache is disabled-->
   <useShaderTextCache>false</useShaderTextCache>
   <useShaderBinaryCache>false</useShaderBinaryCache>

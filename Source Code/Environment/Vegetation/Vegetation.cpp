@@ -138,7 +138,7 @@ Vegetation::Vegetation(GFXDevice& context,
 
     _cullShaderGrass = CreateResource<ShaderProgram>(context.parent().resourceCache(), instanceCullShaderGrass);
 
-    _cullPushConstants.set("offset", GFX::PushConstantType::UINT, _terrainChunk.ID());
+    _cullPushConstants.set("dvd_terrainChunkOffset", GFX::PushConstantType::UINT, _terrainChunk.ID());
     _cullPushConstants.set("grassExtents", GFX::PushConstantType::VEC4, _grassExtents);
 
     compModule._defines.push_back(std::make_pair("CULL_TREES", true));
@@ -564,6 +564,14 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
                           RenderStagePass renderStagePass,
                           bool refreshData) {
 
+    RenderingComponent* rComp = sgn.get<RenderingComponent>();
+    U32 idx = 0;
+    rComp->getDataIndex(idx);
+    RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
+    PushConstants constants = pkg.pushConstants(0);
+    constants.set("dvd_dataIdx", GFX::PushConstantType::UINT, idx);
+    pkg.pushConstants(0, constants);
+
     return SceneNode::onRender(sgn, camera, renderStagePass, refreshData);
 }
 
@@ -571,6 +579,11 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
     if (_render && renderStagePass._passIndex == 0) {
+
+        GFX::SendPushConstantsCommand pushConstantsCommand = {};
+        pushConstantsCommand._constants.set("dvd_dataIdx", GFX::PushConstantType::UINT, 0);
+        pkgInOut.addPushConstantsCommand(pushConstantsCommand);
+
         GenericDrawCommand cmd;
         cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
         cmd._cmd.indexCount = s_buffer->getIndexCount();

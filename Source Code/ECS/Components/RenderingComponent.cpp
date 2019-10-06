@@ -53,7 +53,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _lodLocked(false),
       _cullFlagValue(1.0f),
       _renderMask(0),
-      _dataIndex(-1),
+      _dataIndex({-1, false}),
       _reflectionIndex(-1),
       _refractionIndex(-1),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
@@ -237,8 +237,6 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
             pushConstantsCommand._constants = _globalPushConstants;
             pkg.addPushConstantsCommand(pushConstantsCommand);
         }
-    } else {
-        assert(_globalPushConstants.empty());
     }
 
     _parentSGN.getNode().buildDrawCommands(_parentSGN, stagePass, pkg);
@@ -308,15 +306,13 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass, bool refreshD
 }
 
 void RenderingComponent::setDataIndex(U32 idx) {
-    _dataIndex = to_I64(idx);
+    _dataIndex.first = to_I64(idx);
+    _dataIndex.second = true;
 }
 
 bool RenderingComponent::getDataIndex(U32& idxOut) {
-    if (_dataIndex == -1) {
-        return false;
-    }
-    idxOut = to_U32(_dataIndex);
-    return true;
+    idxOut = to_U32(_dataIndex.first);
+    return _dataIndex.second;
 }
 
 bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams) {
@@ -324,6 +320,10 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
     I32 drawCommandCount = pkg.drawCommandCount();
 
     if (drawCommandCount > 0) {
+        if (!_dataIndex.second) {
+            _dataIndex.first = to_I64(refreshParams._dataIdx);
+        }
+
         if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
             Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()));
         } else {

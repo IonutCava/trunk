@@ -542,17 +542,18 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
     if (threadedLoading) {
-        Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor](const Task & parent) {
-            loadThreadedResources(terrain, std::move(terrainDescriptor));
+        Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, &context](const Task & parent) {
+            loadThreadedResources(terrain, context, std::move(terrainDescriptor));
         }, ("TerrainLoader::loadTerrain [ " + name + " ]").c_str()));
     } else {
-        loadThreadedResources(terrain, std::move(terrainDescriptor));
+        loadThreadedResources(terrain, context, std::move(terrainDescriptor));
     }
 
     return true;
 }
 
 bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
+                                          PlatformContext& context,
                                           const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
 
     stringImpl terrainMapLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
@@ -677,7 +678,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
         terrainCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache");
     }
 
-    initializeVegetation(terrain, terrainDescriptor);
+    initializeVegetation(terrain, context, terrainDescriptor);
     Attorney::TerrainLoader::postBuild(*terrain);
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->resourceName().c_str());
@@ -685,6 +686,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 }
 
 void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
+                                         PlatformContext& context,
                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
 
     const U32 terrainWidth = terrainDescriptor->dimensions().width;
@@ -791,6 +793,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     //vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
     vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
+    vertModule._defines.push_back(std::make_pair("DATA_IDX dvd_dataIdx", true));
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
@@ -798,6 +801,10 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     fragModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
     fragModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
     fragModule._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
+    fragModule._defines.push_back(std::make_pair("DATA_IDX dvd_dataIdx", true));
+    if (!context.config().rendering.shadowMapping.enabled) {
+        fragModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+    }
     fragModule._variant = "Colour";
 
     ShaderProgramDescriptor shaderDescriptor = {};

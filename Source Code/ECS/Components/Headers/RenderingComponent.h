@@ -241,7 +241,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     Material_ptr _materialInstance;
     Material* _materialInstanceCache;
 
-    I64 _dataIndex;
+    std::pair<I64, bool> _dataIndex;
     F32 _cullFlagValue;
     U32 _renderMask;
     bool _lodLocked;
