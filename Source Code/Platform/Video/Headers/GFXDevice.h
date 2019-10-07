@@ -162,6 +162,8 @@ public:
         mat4<F32> _colourMatrix = MAT4_ZERO;
     };
 
+    using ObjectArena = MyArena<Config::REQUIRED_RAM_SIZE / 4>;
+
 public:  // GPU interface
     explicit GFXDevice(Kernel& parent);
     ~GFXDevice();
@@ -298,6 +300,10 @@ public:  // Accessors and Mutators
     static GPURenderer getGPURenderer() { return s_GPURenderer; }
 
 public:
+    void              lockObjectArena();
+    void              unlockObjectArena();
+    ObjectArena&      objectArena();
+
     IMPrimitive*       newIMP() const;
     VertexBuffer*      newVB() const;
     PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D, const char* name = nullptr) const;
@@ -487,7 +493,7 @@ protected:
     mutable hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
-    mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;
+    mutable ObjectArena _gpuObjectArena;
 
     static D64 s_interpolationFactor;
     static GPUVendor s_GPUVendor;

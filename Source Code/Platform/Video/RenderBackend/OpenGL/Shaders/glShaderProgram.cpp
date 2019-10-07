@@ -279,8 +279,13 @@ void glShaderProgram::threadedLoad(bool reloadExisting) {
         registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
     }
 
-    reloadShaders(reloadExisting);
-    
+    // NULL shader means use shaderProgram(0), so bypass the normal loading routine
+    if (resourceName().compare("NULL") == 0) {
+        _validationQueued = false;
+        _handle = 0;
+    } else {
+        reloadShaders(reloadExisting);
+    }
     // Pass the rest of the loading steps to the parent class
     if (!reloadExisting) {
         ShaderProgram::load();
@@ -343,13 +348,6 @@ vector<stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
 
 /// Creation of a new shader piepline. Pass in a shader token and use glsw to load the corresponding effects
 bool glShaderProgram::load() {
-    // NULL shader means use shaderProgram(0), so bypass the normal loading routine
-    if (resourceName().compare("NULL") == 0) {
-        _validationQueued = false;
-        _handle = 0;
-        return ShaderProgram::load();
-    }
-
     if (_asyncLoad) {
         Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
             [this](const Task & parent) {

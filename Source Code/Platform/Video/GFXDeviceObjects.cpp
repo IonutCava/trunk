@@ -24,6 +24,19 @@ namespace {
     }
 };
 
+
+void GFXDevice::lockObjectArena() {
+    _gpuObjectArenaMutex.lock();
+}
+
+void GFXDevice::unlockObjectArena() {
+    _gpuObjectArenaMutex.unlock();
+}
+
+GFXDevice::ObjectArena& GFXDevice::objectArena() {
+    return _gpuObjectArena;
+}
+
 RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) const {
     RenderTarget* temp = nullptr;
     {
