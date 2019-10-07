@@ -21,7 +21,6 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
 
 IMPrimitive::~IMPrimitive() 
 {
-    reset();
     GFX::deallocateCommandBuffer(_cmdBuffer);
 }
 
