@@ -23,6 +23,7 @@ SFXDevice::SFXDevice(Kernel& parent)
 
 SFXDevice::~SFXDevice()
 {
+    closeAudioAPI();
 }
 
 ErrorCode SFXDevice::initAudioAPI(PlatformContext& context) {

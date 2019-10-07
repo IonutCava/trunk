@@ -98,8 +98,10 @@ SceneGraphNode::~SceneGraphNode()
 {
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), name().c_str(), _node->resourceName().c_str());
 
+    Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
+    Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, this);
     if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
-        assert(_node.use_count() == Attorney::SceneNodeSceneGraph::maxReferenceCount(*_node));
+        assert(_node.use_count() <= Attorney::SceneNodeSceneGraph::maxReferenceCount(*_node));
 
         _node.reset();
     }
@@ -112,22 +114,17 @@ SceneGraphNode::~SceneGraphNode()
 
     UnregisterAllEventCallbacks();
     RemoveAllSGNComponents();
-
-    Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
-    Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, this);
 }
 
 void SceneGraphNode::AddMissingComponents(U32 componentMask) {
 
-    for (ComponentType::_integral i = 0; i < ComponentType::COUNT; ++i) {
-        if (i > 0) {
-            const U16 componentBit = 1 << i;
+    for (ComponentType::_integral i = 1; i < ComponentType::COUNT; ++i) {
+        const U16 componentBit = 1 << i;
 
-            // Only add new components;
-            if (BitCompare(componentMask, to_U32(componentBit)) && !BitCompare(_componentMask, to_U32(componentBit))) {
-                _componentMask |= componentBit;
-                SGNComponent::make(ComponentType::_from_integral(componentBit), *this);
-            }
+        // Only add new components;
+        if (BitCompare(componentMask, to_U32(componentBit)) && !BitCompare(_componentMask, to_U32(componentBit))) {
+            _componentMask |= componentBit;
+            SGNComponent::make(ComponentType::_from_integral(componentBit), *this);
         }
     };
 
@@ -135,7 +132,6 @@ void SceneGraphNode::AddMissingComponents(U32 componentMask) {
 
 void SceneGraphNode::RegisterEventCallbacks()
 {
-    
 }
 
 void SceneGraphNode::onBoundsUpdated() {
@@ -505,8 +501,8 @@ bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderS
     return _node->onRender(*this, camera, renderStagePass, refreshData);
 }
 
-void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-    _node->onRefreshNodeData(*this, renderStagePass, camera, bufferInOut);
+void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {
+    _node->onRefreshNodeData(*this, renderStagePass, camera, quick, bufferInOut);
 }
 
 bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {

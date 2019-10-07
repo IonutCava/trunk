@@ -21,58 +21,47 @@
 namespace Divide {
 
 PlatformContext::PlatformContext(Application& app, Kernel& kernel)
-  : _app(app),
-    _kernel(kernel)
+  :  _app(app)
+  ,  _kernel(kernel)
+  ,  _gfx(MemoryManager_NEW GFXDevice(_kernel))        // Video
+  ,  _sfx(MemoryManager_NEW SFXDevice(_kernel))        // Audio
+  ,  _pfx(MemoryManager_NEW PXDevice(_kernel))         // Physics
+  ,  _gui(MemoryManager_NEW GUI(_kernel))              // Graphical User Interface
+  ,  _entryData(MemoryManager_NEW XMLEntryData())      // Initial XML data
+  ,  _config(MemoryManager_NEW Configuration())        // XML based configuration
+  ,  _client(MemoryManager_NEW LocalClient(_kernel))  // Network client
+  ,  _debug(MemoryManager_NEW DebugInterface(_kernel)) // Debug Interface
+  ,  _inputHandler(MemoryManager_NEW Input::InputHandler(_kernel, _app))
+  ,  _editor(Config::Build::ENABLE_EDITOR ? MemoryManager_NEW Editor(*this) : nullptr)
 {
+    for (U8 i = 0; i < to_U8(TaskPoolType::COUNT); ++i) {
+        _taskPool[i] = MemoryManager_NEW TaskPool();
+    }
 }
+
 
 PlatformContext::~PlatformContext()
 {
-}
-
-void PlatformContext::init() {
-    for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
-        _taskPool[i] = std::make_unique<TaskPool>();
-    }
-    _gfx = std::make_unique<GFXDevice>(_kernel);        // Video
-    _sfx = std::make_unique<SFXDevice>(_kernel);        // Audio
-    _pfx = std::make_unique<PXDevice>(_kernel);         // Physics
-    _gui = std::make_unique<GUI>(_kernel);              // Graphical User Interface
-    _entryData = std::make_unique<XMLEntryData>();      // Initial XML data
-    _config = std::make_unique<Configuration>();        // XML based configuration
-    _client = std::make_unique<LocalClient>(_kernel);   // Network client
-    _debug = std::make_unique<DebugInterface>(_kernel); // Debug Interface
-    _inputHandler = std::make_unique<Input::InputHandler>(_kernel, _app);
-
-    if (Config::Build::ENABLE_EDITOR) {
-        _editor = std::make_unique<Editor>(*this);
-    }
+    assert(_gfx == nullptr);
 }
 
 void PlatformContext::terminate() {
     for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
-        _taskPool[i]->shutdown();
-        _taskPool[i].reset();
+        MemoryManager::DELETE(_taskPool[i]);
     }
-    _editor.reset();
-    _inputHandler.reset();
-    _entryData.reset();
-    _config.reset();
-    _client.reset();
-    _debug.reset();
-    _gui->destroy(); 
-    _gui.reset();
-
-    Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
-    _pfx->closePhysicsAPI();
-    _pfx.reset();
+    MemoryManager::DELETE(_editor);
+    MemoryManager::DELETE(_inputHandler);
+    MemoryManager::DELETE(_entryData);
+    MemoryManager::DELETE(_config);
+    MemoryManager::DELETE(_client);
+    MemoryManager::DELETE(_debug);
+    MemoryManager::DELETE(_gui);
+    MemoryManager::DELETE(_pfx);
 
     Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
-    _sfx->closeAudioAPI();
-    _sfx.reset();
 
-    _gfx->closeRenderingAPI();
-    _gfx.reset();
+    MemoryManager::DELETE(_sfx);
+    MemoryManager::DELETE(_gfx);
 }
 
 void PlatformContext::beginFrame(U32 componentMask) {

@@ -161,7 +161,11 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
 glShaderProgram::~glShaderProgram()
 {
     // delete shader program
+#if 0
     assert(_shaderStage.empty());
+#else
+    unload();
+#endif
 
     GL_API::deleteShaderPipelines(1, &_handle);
 }

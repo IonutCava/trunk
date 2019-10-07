@@ -25,7 +25,7 @@ PXDevice::PXDevice(Kernel& parent)
 
 PXDevice::~PXDevice() 
 {
-    assert(_api == nullptr);
+    closePhysicsAPI();
 }
 
 ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
@@ -52,6 +52,7 @@ bool PXDevice::closePhysicsAPI() {
         return false;
     }
 
+    Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
     bool state = _api->closePhysicsAPI();
     _api.reset();
 

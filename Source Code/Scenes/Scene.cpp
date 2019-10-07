@@ -148,7 +148,7 @@ bool Scene::frameEnded() {
 bool Scene::idle() {  // Called when application is idle
     _sceneGraph->idle();
 
-    Attorney::SceneRenderStateScene::playAnimations(renderState(), _context.configPtr()->debug.mesh.playAnimations);
+    Attorney::SceneRenderStateScene::playAnimations(renderState(), _context.config().debug.mesh.playAnimations);
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
@@ -1121,10 +1121,8 @@ void Scene::addPlayerInternal(bool queue) {
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |
-                                              to_base(ComponentType::NAVIGATION) |
                                               to_base(ComponentType::TRANSFORM) |
                                               to_base(ComponentType::BOUNDS) |
-                                              to_base(ComponentType::RENDERING) |
                                               to_base(ComponentType::NETWORKING);
 
         playerSGN = root.addNode(playerNodeDescriptor);

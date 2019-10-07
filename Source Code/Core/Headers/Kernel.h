@@ -34,6 +34,7 @@
 #define _CORE_KERNEL_H_
 
 #include "EngineTaskPool.h"
+#include "PlatformContext.h"
 #include "Core/Headers/Application.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
@@ -212,13 +213,11 @@ class Kernel : public Input::InputAggregatorInterface,
     }
 
     PlatformContext& platformContext() {
-        assert(_platformContext != nullptr);
-        return *_platformContext;
+        return _platformContext;
     }
 
     const PlatformContext& platformContext() const {
-        assert(_platformContext != nullptr);
-        return *_platformContext;
+        return _platformContext;
     }
 
     SceneManager& sceneManager() {
@@ -254,7 +253,7 @@ class Kernel : public Input::InputAggregatorInterface,
     bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
     bool setCursorPosition(I32 x, I32 y);
     /// Update all engine components that depend on the current screen size
-    void onSizeChange(const SizeChangeParams& params) const;
+    void onSizeChange(const SizeChangeParams& params);
 
    private:
 
@@ -262,12 +261,11 @@ class Kernel : public Input::InputAggregatorInterface,
     Rect<I32> _prevViewport;
     vector<Rect<I32>> _editorViewports;
     vector<Rect<I32>> _targetViewports;
+    PlatformContext   _platformContext;
 
     Task* _splashTask = nullptr;
     std::atomic_bool _splashScreenUpdating;
-
     std::unique_ptr<ResourceCache>     _resCache;
-    std::unique_ptr<PlatformContext>   _platformContext;
     std::unique_ptr<SceneManager>      _sceneManager;
     std::unique_ptr<RenderPassManager> _renderPassManager;
     LoopTimingData _timingData;
@@ -303,7 +301,7 @@ namespace Attorney {
             kernel.shutdown();
         }
 
-        static void onSizeChange(const Kernel& kernel, const SizeChangeParams& params) {
+        static void onSizeChange(Kernel& kernel, const SizeChangeParams& params) {
             kernel.onSizeChange(params);
         }
 

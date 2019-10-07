@@ -118,7 +118,6 @@ public:
 
     inline Configuration& config() { return *_config; }
     inline const Configuration& config() const { return *_config; }
-    inline const std::unique_ptr<Configuration>& configPtr() noexcept { return _config; }
 
     inline LocalClient& client() { return *_client; }
     inline const LocalClient& client() const { return *_client; }
@@ -150,26 +149,26 @@ public:
     Kernel& _kernel;
 
     /// Task pools
-    std::unique_ptr<TaskPool> _taskPool[to_base(TaskPoolType::COUNT)];
+    std::array<TaskPool*, to_base(TaskPoolType::COUNT)> _taskPool;
     /// Access to the GPU
-    std::unique_ptr<GFXDevice> _gfx;
+    GFXDevice* _gfx;
     /// The graphical user interface
-    std::unique_ptr<GUI> _gui;
+    GUI* _gui;
     /// Access to the audio device
-    std::unique_ptr<SFXDevice> _sfx;
+    SFXDevice* _sfx;
     /// Access to the physics system
-    std::unique_ptr<PXDevice> _pfx;
+    PXDevice* _pfx;
     /// XML configuration data
-    std::unique_ptr<XMLEntryData>  _entryData;
-    std::unique_ptr<Configuration> _config;
+    XMLEntryData* _entryData;
+    Configuration* _config;
     /// Networking client
-    std::unique_ptr<LocalClient> _client;
+    LocalClient* _client;
     /// Debugging interface: read only / editable variables
-    std::unique_ptr<DebugInterface> _debug;
+    DebugInterface* _debug;
     /// Game editor
-    std::unique_ptr<Editor> _editor;
+    Editor* _editor;
     /// Input handler
-    std::unique_ptr<Input::InputHandler> _inputHandler;
+    Input::InputHandler* _inputHandler;
 };
 
 namespace Attorney {

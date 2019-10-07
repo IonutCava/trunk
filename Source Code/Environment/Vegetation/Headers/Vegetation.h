@@ -88,35 +88,32 @@ class Vegetation : public SceneNode {
 
     void buildDrawCommands(SceneGraphNode& sgn,
                            RenderStagePass renderStagePass,
-                           RenderPackage& pkgInOut) override;
+                           RenderPackage& pkgInOut) final;
 
     //ToDo: Multiple terrains will NOT support this! To fix! -Ionut
     static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount, U32& maxGrassInstances, U32& maxTreeInstances);
 
 
   protected:
-    void postLoad(SceneGraphNode& sgn)  override;
+    void postLoad(SceneGraphNode& sgn)  final;
 
     void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,
-                     SceneState& sceneState) override;
+                     SceneState& sceneState) final;
 
     void onRefreshNodeData(SceneGraphNode& sgn,
                            RenderStagePass renderStagePass,
                            const Camera& camera,
-                           GFX::CommandBuffer& bufferInOut) override;
-    bool onRender(SceneGraphNode& sgn,
-                  const Camera& camera,
-                  RenderStagePass renderStagePass,
-                  bool refreshData) override;
+                           bool quick,
+                           GFX::CommandBuffer& bufferInOut) final;
 
-    bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const override;
+    bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const final;
 
    private:
     void uploadVegetationData();
     void computeVegetationTransforms(const Task& parentTask, bool treeData);
 
-    const char* getResourceTypeName() const override { return "Vegetation"; }
+    const char* getResourceTypeName() const final { return "Vegetation"; }
 
    private:
     GFXDevice& _context;
@@ -147,6 +144,7 @@ class Vegetation : public SceneNode {
     F32 _grassDistance;
     F32 _treeDistance;
 
+    std::array<U32, to_base(RenderStage::COUNT)> _drawDataIdx;
     Pipeline* _cullPipelineGrass;
     Pipeline* _cullPipelineTrees;
     vectorEASTL<VegetationData> _tempGrassData;

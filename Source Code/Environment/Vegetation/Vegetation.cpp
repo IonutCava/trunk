@@ -85,6 +85,8 @@ Vegetation::Vegetation(GFXDevice& context,
       _stateRefreshIntervalBufferUS(0ULL),
       _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
 {
+    _drawDataIdx.fill(0u);
+
     _treeMap = details.treeMap;
     _grassMap = details.grassMap;
     
@@ -516,63 +518,62 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut){
+void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut){
     if (_render && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
-
-        // This will always lag one frame
-        Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-        //Cull grass
-        GFX::BindPipelineCommand pipelineCmd;
-        pipelineCmd._pipeline = _cullPipelineGrass;
-        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
-        GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
-        cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
-        cullConstants._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-        cullConstants._constants.set("viewMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
-        cullConstants._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
-        GFX::EnqueueCommand(bufferInOut, cullConstants);
-
-        GFX::DispatchComputeCommand computeCmd;
-
-        if (_instanceCountGrass > 0) {
-            computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
-            GFX::EnqueueCommand(bufferInOut, computeCmd);
+        RenderingComponent* rComp = sgn.get<RenderingComponent>();
+        if (!quick) {
+            rComp->getDataIndex(_drawDataIdx[to_base(renderStagePass._stage)]);
         }
 
-        if (_instanceCountTrees > 0) {
-            // Cull trees
-            pipelineCmd._pipeline = _cullPipelineTrees;
+        if (getDrawState(sgn, renderStagePass, 0)) {
+            RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
+            if (!pkg.empty()) {
+                PushConstants constants = pkg.pushConstants(0);
+                constants.set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[to_base(renderStagePass._stage)]);
+                pkg.pushConstants(0, constants);
+            }
+        }
+        
+        if (!quick) {
+            // This will always lag one frame
+            Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+            GFX::BindDescriptorSetsCommand descriptorSetCmd;
+            descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+            //Cull grass
+            GFX::BindPipelineCommand pipelineCmd;
+            pipelineCmd._pipeline = _cullPipelineGrass;
             GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
+            GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
+            cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
+            cullConstants._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+            cullConstants._constants.set("viewMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
+            cullConstants._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
             GFX::EnqueueCommand(bufferInOut, cullConstants);
 
-            computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
-            GFX::EnqueueCommand(bufferInOut, computeCmd);
+            GFX::DispatchComputeCommand computeCmd;
+
+            if (_instanceCountGrass > 0) {
+                computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
+                GFX::EnqueueCommand(bufferInOut, computeCmd);
+            }
+
+            if (_instanceCountTrees > 0) {
+                // Cull trees
+                pipelineCmd._pipeline = _cullPipelineTrees;
+                GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+
+                GFX::EnqueueCommand(bufferInOut, cullConstants);
+
+                computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
+                GFX::EnqueueCommand(bufferInOut, computeCmd);
+            }
         }
     }
 
-    SceneNode::onRefreshNodeData(sgn, renderStagePass, camera, bufferInOut);
-}
-
-bool Vegetation::onRender(SceneGraphNode& sgn,
-                          const Camera& camera,
-                          RenderStagePass renderStagePass,
-                          bool refreshData) {
-
-    RenderingComponent* rComp = sgn.get<RenderingComponent>();
-    U32 idx = 0;
-    rComp->getDataIndex(idx);
-    RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
-    PushConstants constants = pkg.pushConstants(0);
-    constants.set("dvd_dataIdx", GFX::PushConstantType::UINT, idx);
-    pkg.pushConstants(0, constants);
-
-    return SceneNode::onRender(sgn, camera, renderStagePass, refreshData);
+    SceneNode::onRefreshNodeData(sgn, renderStagePass, camera, quick, bufferInOut);
 }
 
 void Vegetation::buildDrawCommands(SceneGraphNode& sgn,

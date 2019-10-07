@@ -189,7 +189,7 @@ RenderingComponent::~RenderingComponent()
         _skeletonPrimitive->reset();
     }
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if (Config::Build::ENABLE_EDITOR) {
         _axisGizmo->reset();
     }
 }
@@ -315,6 +315,11 @@ bool RenderingComponent::getDataIndex(U32& idxOut) {
     return _dataIndex.second;
 }
 
+bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams) {
+    _parentSGN.onRefreshNodeData(refreshParams._stagePass, *refreshParams._camera, true, refreshParams._bufferInOut);
+    return true;
+}
+
 bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams) {
     RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
     I32 drawCommandCount = pkg.drawCommandCount();
@@ -341,7 +346,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
             }
         }
 
-        _parentSGN.onRefreshNodeData(refreshParams._stagePass, *refreshParams._camera, refreshParams._bufferInOut);
+        _parentSGN.onRefreshNodeData(refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
         return true;
     }
 

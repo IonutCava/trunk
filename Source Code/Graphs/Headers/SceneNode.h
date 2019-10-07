@@ -123,6 +123,7 @@ class SceneNode : public CachedResource {
     virtual void onRefreshNodeData(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    const Camera& camera,
+                                   bool quick,
                                    GFX::CommandBuffer& bufferInOut);
 
     virtual bool getDrawState(const SceneGraphNode& sgn, U8 LoD) const {

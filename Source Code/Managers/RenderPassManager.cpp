@@ -377,8 +377,23 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                                         const SceneRenderState& renderState,
                                         const Camera& camera,
                                         const RenderQueue::SortedQueues& sortedQueues,
+                                        bool fullRefresh,
                                         GFX::CommandBuffer& bufferInOut)
 {
+    if (!fullRefresh) {
+        RefreshNodeDataParams params(g_drawCommands, bufferInOut);
+        params._camera = &camera;
+        params._stagePass = stagePass;
+
+        for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
+            for (SceneGraphNode* node : queue) {
+                RenderingComponent& renderable = *node->get<RenderingComponent>();
+                Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(renderable, params);
+            }
+        }
+        return;
+    }
+
     bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
     g_usedIndices.clear();
     g_freeCounter = 0;
@@ -485,9 +500,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
         }
     }
 
-    if (refresh) {
-        buildBufferData(stagePass, sceneRenderState, *params._camera, g_sortedQueues, bufferInOut);
-    }
+    buildBufferData(stagePass, sceneRenderState, *params._camera, g_sortedQueues, refresh, bufferInOut);
 }
 
 void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {

@@ -196,6 +196,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
   protected:
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
+    bool onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams);
+
     bool canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData);
 
     /// Called after the parent node was rendered
@@ -331,6 +333,11 @@ class RenderingCompRenderPass {
         static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams) {
             return renderable.onRefreshNodeData(refreshParams);
         }
+
+        static bool onQuickRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams) {
+            return renderable.onQuickRefreshNodeData(refreshParams);
+        }
+
 
     friend class Divide::RenderPass;
     friend class Divide::RenderPassManager;

@@ -145,15 +145,12 @@ void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
 
 void ShaderProgram::onShutdown() {
     // Make sure we unload all shaders
-    {
-        //Lock w_lock(_programLock);
-        s_shaderPrograms.clear();
-    }
     s_nullShader.reset();
     s_imShader.reset();
     while (!s_recompileQueue.empty()) {
         s_recompileQueue.pop();
     }
+    s_shaderPrograms.clear();
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {

@@ -3,7 +3,6 @@
 uniform uint dvd_dataIdx;
 
 #include "vbInputData.vert"
-#include "lightingDefaults.vert"
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
 

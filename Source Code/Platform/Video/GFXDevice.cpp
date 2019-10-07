@@ -174,6 +174,7 @@ GFXDevice::GFXDevice(Kernel& parent)
 
 GFXDevice::~GFXDevice()
 {
+    closeRenderingAPI();
 }
 
 /// Generate a cube texture and store it in the provided RenderTarget
