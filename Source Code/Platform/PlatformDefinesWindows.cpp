@@ -19,7 +19,6 @@
 
 #pragma comment(lib, "OpenAL32.lib")
 #pragma comment(lib, "Winmm.lib")
-#pragma comment(lib, "OpenCL.lib")
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 

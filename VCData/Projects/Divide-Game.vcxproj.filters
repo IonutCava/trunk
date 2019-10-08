@@ -16,9 +16,6 @@
     <Filter Include="AI\ActionInterface\Headers">
       <UniqueIdentifier>{a5695f6d-257e-4bc9-a2a8-ebecd0c17863}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AI\ActionInterface\CPPGOAP">
-      <UniqueIdentifier>{6bd60f9b-f6cf-47fe-bd0a-9ed1071e46ce}</UniqueIdentifier>
-    </Filter>
     <Filter Include="AI\Headers">
       <UniqueIdentifier>{3634be58-c719-4956-8114-974253807fdf}</UniqueIdentifier>
     </Filter>
@@ -227,18 +224,6 @@
     </ClCompile>
     <ClCompile Include="../../Source Code/AI\ActionInterface\GOAPInterface.cpp">
       <Filter>AI\ActionInterface</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/CPPGoap\Action.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/CPPGoap\Node.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/CPPGoap\Planner.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/CPPGoap\WorldState.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/AI\PathFinding\DivideCrowd.cpp">
       <Filter>AI\PathFinding</Filter>
@@ -451,7 +436,6 @@
     <ClCompile Include="../../Source Code\Environment\Terrain\TileRing.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/AI\Sensors\Headers\AudioSensor.h">
@@ -471,18 +455,6 @@
     </ClInclude>
     <ClInclude Include="../../Source Code/AI\ActionInterface\Headers\GOAPInterface.h">
       <Filter>AI\ActionInterface\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/CPPGoap\Action.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/CPPGoap\Node.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/CPPGoap\Planner.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/CPPGoap\WorldState.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/AI\Headers\AIEntity.h">
       <Filter>AI\Headers</Filter>

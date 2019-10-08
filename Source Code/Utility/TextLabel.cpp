@@ -4,11 +4,11 @@
 
 namespace Divide {
 
-TextLabelStyle::TextLabelStyleMap TextLabelStyle::s_textLabelStyleMap;
-SharedMutex TextLabelStyle::s_textLableStyleMapMutex;
+TextLabelStyle::TextLabelStyleMap TextLabelStyle::s_textLabelStyle;
+SharedMutex TextLabelStyle::s_textLableStyleMutex;
 size_t TextLabelStyle::s_defaultCacheValue = 0;
 
-TextLabelStyle::FontNameHashMap TextLabelStyle::s_fontNameMap;
+TextLabelStyle::FontNameHashMap TextLabelStyle::s_fontName;
 
 TextLabelStyle::TextLabelStyle(const char* font,
                                const UColour4& colour,
@@ -28,12 +28,12 @@ TextLabelStyle::TextLabelStyle(const char* font,
     if (s_defaultCacheValue == 0) {
         s_defaultCacheValue = getHash();
 
-        s_fontNameMap[_ID(Font::DIVIDE_DEFAULT)] = Font::DIVIDE_DEFAULT;
-        s_fontNameMap[_ID(Font::BATANG)] = Font::BATANG;
-        s_fontNameMap[_ID(Font::DEJA_VU)] = Font::DEJA_VU;
-        s_fontNameMap[_ID(Font::DROID_SERIF)] = Font::DROID_SERIF;
-        s_fontNameMap[_ID(Font::DROID_SERIF_ITALIC)] = Font::DROID_SERIF_ITALIC;
-        s_fontNameMap[_ID(Font::DROID_SERIF_BOLD)] = Font::DROID_SERIF_BOLD;
+        s_fontName[_ID(Font::DIVIDE_DEFAULT)] = Font::DIVIDE_DEFAULT;
+        s_fontName[_ID(Font::BATANG)] = Font::BATANG;
+        s_fontName[_ID(Font::DEJA_VU)] = Font::DEJA_VU;
+        s_fontName[_ID(Font::DROID_SERIF)] = Font::DROID_SERIF;
+        s_fontName[_ID(Font::DROID_SERIF_ITALIC)] = Font::DROID_SERIF_ITALIC;
+        s_fontName[_ID(Font::DROID_SERIF_BOLD)] = Font::DROID_SERIF_BOLD;
     }
 }
 
@@ -56,8 +56,8 @@ size_t TextLabelStyle::getHash() const {
         Util::Hash_combine(_hash, _italic);
 
         if (previousCache != _hash) {
-            UniqueLockShared w_lock(s_textLableStyleMapMutex);
-            hashAlg::insert(s_textLabelStyleMap, _hash, *this);
+            UniqueLockShared w_lock(s_textLableStyleMutex);
+            hashAlg::insert(s_textLabelStyle, _hash, *this);
         }
         _dirty = false;
     }
@@ -75,19 +75,19 @@ const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash) {
 const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash, bool& styleFound) {
     styleFound = false;
 
-    SharedLock r_lock(s_textLableStyleMapMutex);
+    SharedLock r_lock(s_textLableStyleMutex);
     // Find the render state block associated with the received hash value
-    const TextLabelStyleMap::const_iterator it = s_textLabelStyleMap.find(textLabelStyleHash);
-    if (it != std::cend(s_textLabelStyleMap)) {
+    const TextLabelStyleMap::const_iterator it = s_textLabelStyle.find(textLabelStyleHash);
+    if (it != std::cend(s_textLabelStyle)) {
         styleFound = true;
         return it->second;
     }
 
-    return s_textLabelStyleMap.find(s_defaultCacheValue)->second;
+    return s_textLabelStyle.find(s_defaultCacheValue)->second;
 }
 
 const stringImpl& TextLabelStyle::fontName(size_t fontNameHash) {
-    return s_fontNameMap[fontNameHash];
+    return s_fontName[fontNameHash];
 }
 
 }; //namespace Divide

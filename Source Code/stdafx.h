@@ -179,11 +179,10 @@ namespace boost {
 #include <MemoryPool/C-11/MemoryPool.h>
 
 #include <ArenaAllocator/arena_allocator.h>
-#include <simpleCL.h>
 
-#include <chaiscript/chaiscript.hpp>
-#include <chaiscript/chaiscript_stdlib.hpp>
-#include <chaiscript/utility/utility.hpp>
+#include <chaiscript/include/chaiscript/chaiscript.hpp>
+#include <chaiscript/include/chaiscript/chaiscript_stdlib.hpp>
+#include <chaiscript/include/chaiscript/utility/utility.hpp>
 
 
 #include <ConcurrentQueue/concurrentqueue.h>

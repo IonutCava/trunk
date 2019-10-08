@@ -4,11 +4,11 @@
 
 namespace Divide {
 
-InputAction::InputAction()
-{
-}
+namespace {
+    static DELEGATE_CBK<void, InputParams> no_op = [](InputParams) {};
+};
 
-InputAction::InputAction(DELEGATE_CBK<void, InputParams>& action)
+InputAction::InputAction(const DELEGATE_CBK<void, InputParams>& action)
     : _action(action)
 {
 }
@@ -18,14 +18,14 @@ void InputAction::displayName(const stringImpl& name) {
 }
 
 InputActionList::InputActionList()
+    :_noOPAction(no_op)
 {
     _noOPAction.displayName("no-op");
 }
 
-bool InputActionList::registerInputAction(U16 id, DELEGATE_CBK<void, InputParams> action) {
+bool InputActionList::registerInputAction(U16 id, const DELEGATE_CBK<void, InputParams>& action) {
     if (_inputActions.find(id) == std::cend(_inputActions)) {
-        hashAlg::emplace(_inputActions, id, action);
-        return true;
+        return _inputActions.emplace(id, action).second;
     }
 
     return false;

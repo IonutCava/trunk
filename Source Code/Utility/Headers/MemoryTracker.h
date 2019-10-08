@@ -110,7 +110,7 @@ class MemoryTracker {
         if (!_locked) {
             UniqueLock w_lock(_mutex);
             MemoryTracker::Lock lock(*this);
-            hashAlg::emplace(_map, p, file, line, size);
+            hashAlg::emplace(_allocations, p, file, line, size);
         }
     }
 
@@ -119,9 +119,9 @@ class MemoryTracker {
             if (!MemoryTracker::LogAllAllocations) {
                 UniqueLock w_lock(_mutex);
                 MemoryTracker::Lock lock(*this);
-                hashMap<void*, Entry>::iterator it = _map.find(p);
-                if (it != std::cend(_map)) {
-                    _map.erase(it);
+                hashMap<void*, Entry>::iterator it = _allocations.find(p);
+                if (it != std::cend(_allocations)) {
+                    _allocations.erase(it);
                 } else {
                     //assert(false && "Called custom delete on non-custom allocated pointer!");
                 }
@@ -136,17 +136,17 @@ class MemoryTracker {
 
         MemoryTracker::Lock lock(*this);
         UniqueLock w_lock(_mutex);
-        if (!_map.empty()) {
+        if (!_allocations.empty()) {
             stringImpl msg = "";
             if (MemoryTracker::LogAllAllocations) {
                 msg = "memory allocations detected";
             } else {
                 msg = "memory leaks detected";
             }
-            output.append(Util::StringFormat("%d %s\n", _map.size(), msg.c_str()));
+            output.append(Util::StringFormat("%d %s\n", _allocations.size(), msg.c_str()));
             size_t totalUsage = 0;
-            for (hashMap<void*, Entry>::const_iterator it = std::cbegin(_map);
-                           it != std::cend(_map);
+            for (hashMap<void*, Entry>::const_iterator it = std::cbegin(_allocations);
+                           it != std::cend(_allocations);
                            ++it)
             {
                 const Entry& entry = it->second;
@@ -160,7 +160,7 @@ class MemoryTracker {
                 sizeLeaked += entry.Size();
             }
             leakDetected = true;
-            _map.clear();
+            _allocations.clear();
         }
         if (!MemoryTracker::LogAllAllocations && sizeLeaked > 0) {
             output.append("Total leaked bytes: ");
@@ -186,7 +186,7 @@ class MemoryTracker {
 
    private:
     mutable std::mutex _mutex;
-    hashMap<void*, Entry> _map;
+    hashMap<void*, Entry> _allocations;
     std::atomic_bool _locked;
 };
 

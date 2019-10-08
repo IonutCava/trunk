@@ -58,8 +58,8 @@ STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {             \
 #define INIT_SCENE_FACTORY \
     namespace { \
         typedef std::function<Scene*(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)> SceneConstructor; \
-        typedef hashMap<stringImpl, SceneConstructor> SceneFactory; \
-        SceneFactory g_sceneFactory; \
+        typedef hashMap<stringImpl, SceneConstructor> SceneFactoryMap; \
+        SceneFactoryMap g_sceneFactory; \
     };\
     REGISTER_SCENE(DefaultScene)\
     REGISTER_SCENE(MainScene)\

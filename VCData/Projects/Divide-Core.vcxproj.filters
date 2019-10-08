@@ -91,26 +91,11 @@
     <Filter Include="Core\Time\Headers">
       <UniqueIdentifier>{df7025d2-9fd1-4201-972d-b5dfbc00888f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\ArenaAllocator">
-      <UniqueIdentifier>{743b3139-27c6-46c2-9070-ff4785ac2438}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utility">
       <UniqueIdentifier>{b3b0b828-496d-4c89-82e5-6e3074e1bfc4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utility\Headers">
       <UniqueIdentifier>{1ee6e075-1f9f-4ffa-85c4-43bb113f6080}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\SimpleINI">
-      <UniqueIdentifier>{1bcb46bf-d4b1-4611-b448-e2f1ce94b9aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\SimpleINI\Headers">
-      <UniqueIdentifier>{dc07dba4-d924-4eee-88ea-b6769d059349}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\NV_DDS">
-      <UniqueIdentifier>{676a0104-2fcc-402a-90a6-87bad6ce4bc6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\NV_DDS\Headers">
-      <UniqueIdentifier>{6cfcf30b-6a58-468c-9902-04334a5baa8c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -195,9 +180,6 @@
     <ClCompile Include="../../Source Code/Core\Time\ProfileTimer.cpp">
       <Filter>Core\Time</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/ArenaAllocator\arena_allocator.cpp">
-      <Filter>Core\ArenaAllocator</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Utility\CommandParser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -216,12 +198,6 @@
     <ClCompile Include="../../Source Code/Utility\XMLParser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/SimpleINI\src\ConvertUTF.cpp">
-      <Filter>Utility\SimpleINI</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/nv_dds\nv_dds.cpp">
-      <Filter>Utility\NV_DDS</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Core\ByteBuffer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -229,8 +205,9 @@
     <ClCompile Include="../../Source Code/Core\RingBuffer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp" />
-    <ClCompile Include="../../Source Code/Utility\TextLabel.cpp" />
+    <ClCompile Include="../../Source Code/Utility\TextLabel.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Core\Headers\cdigginsAny.h">
@@ -341,9 +318,6 @@
     <ClInclude Include="../../Source Code/Core\Time\Headers\ProfileTimer.h">
       <Filter>Core\Time\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/ArenaAllocator\arena_allocator.h">
-      <Filter>Core\ArenaAllocator</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code/Utility\Headers\Colours.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
@@ -371,15 +345,6 @@
     <ClInclude Include="../../Source Code/Utility\Headers\XMLParser.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/SimpleINI\include/ConvertUTF.h">
-      <Filter>Utility\SimpleINI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/SimpleINI\include/SimpleIni.h">
-      <Filter>Utility\SimpleINI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/nv_dds\nv_dds.h">
-      <Filter>Utility\NV_DDS\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code/config.h" />
     <ClInclude Include="../../Source Code/Core\Headers\ErrorCodes.h">
       <Filter>Core\Headers</Filter>
@@ -394,7 +359,11 @@
     <ClInclude Include="../../Source Code/Core\Headers\Hashable.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/Core\Math\Headers\Dimension.h" />
-    <ClInclude Include="../../Source Code/Core\TemplateLibraries\Headers\PolyContainer.h" />
+    <ClInclude Include="../../Source Code/Core\TemplateLibraries\Headers\PolyContainer.h">
+      <Filter>Core\TemplateLibraries</Filter>
+    </ClInclude>
+    <ClInclude Include="../../Source Code/Core\Math\Headers\Dimension.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

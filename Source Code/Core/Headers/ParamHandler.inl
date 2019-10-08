@@ -136,8 +136,8 @@ inline void ParamHandler::setParam(U64 paramID, const stringImpl& value) {
     UniqueLockShared w_lock(_mutex);
     const ParamStringMap::iterator it = _paramsStr.find(paramID);
     if (it == std::end(_paramsStr)) {
-        DIVIDE_ASSERT(hashAlg::emplace(_paramsStr, paramID, value).second,
-                      "ParamHandler error: can't add specified value to map!");
+        bool result = hashAlg::insert(_paramsStr, paramID, value).second;
+        DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
     }
@@ -180,8 +180,8 @@ inline void ParamHandler::setParam(U64 paramID, const bool& value) {
     UniqueLockShared w_lock(_mutex);
     const ParamBoolMap::iterator it = _paramBool.find(paramID);
     if (it == std::end(_paramBool)) {
-        DIVIDE_ASSERT(hashAlg::emplace(_paramBool, paramID, value).second,
-                      "ParamHandler error: can't add specified value to map!");
+        bool result = hashAlg::emplace(_paramBool, paramID, value).second;
+        DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
     }
@@ -223,8 +223,8 @@ inline void ParamHandler::setParam(U64 paramID, const F32& value) {
     UniqueLockShared w_lock(_mutex);
     const ParamFloatMap::iterator it = _paramsFloat.find(paramID);
     if (it == std::end(_paramsFloat)) {
-        DIVIDE_ASSERT(hashAlg::emplace(_paramsFloat, paramID, value).second,
-                      "ParamHandler error: can't add specified value to map!");
+        bool result = hashAlg::emplace(_paramsFloat, paramID, value).second;
+        DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
     }

@@ -10,6 +10,6 @@ CommandParser::CommandParser() noexcept
 
 CommandParser::~CommandParser()
 {
-    _commandMap.clear();
+    _commands.clear();
 }
 };  // namespace Divide

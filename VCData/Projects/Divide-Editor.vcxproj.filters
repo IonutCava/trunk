@@ -5,74 +5,11 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="3rdParty">
-      <UniqueIdentifier>{6d62067a-bc78-429e-99b0-2667aa3abd1b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI">
-      <UniqueIdentifier>{75c82187-537f-4e48-bd91-39e446c309b0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\extra_fonts">
-      <UniqueIdentifier>{6eed0359-8768-4634-b587-3a08b3bb59d7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Widgets">
       <UniqueIdentifier>{39b105f0-04b0-47f3-9cb7-e03647203d6f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Widgets\Headers">
       <UniqueIdentifier>{990dfe38-f074-4a79-9a69-e33478edf2f9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons">
-      <UniqueIdentifier>{cf26d84c-0824-434b-9470-3d52dbaff655}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imgui_freetype">
-      <UniqueIdentifier>{d9b09419-68b3-4dfc-a9b2-05c599fe3893}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imgui_memory_editor">
-      <UniqueIdentifier>{5a9e5a65-424c-4fd3-a023-7fe2758b8c59}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguibindings">
-      <UniqueIdentifier>{5265bf53-af2e-4d03-9395-f1587e1d406f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguicodeeditor">
-      <UniqueIdentifier>{d155d3d5-25e9-48c4-b3ae-6f95de27134d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguidatechooser">
-      <UniqueIdentifier>{1f7b44a6-23e1-4043-9591-26aac1776cd8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguifilesystem">
-      <UniqueIdentifier>{46b80529-a517-4822-bb2c-379b689b27e7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguihelper">
-      <UniqueIdentifier>{8da72eef-d691-4cbe-9255-0a7d47f62e57}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguilistview">
-      <UniqueIdentifier>{b89656cc-1764-4a4f-9cda-c557128895cb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguinodegrapheditor">
-      <UniqueIdentifier>{c519a381-4f71-4c84-8804-a016e988e4b9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguistring">
-      <UniqueIdentifier>{15390a71-95f0-4af3-8531-2cbb2c2128d0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguistyleserializer">
-      <UniqueIdentifier>{91075a97-cb6d-4d13-b1f3-43d302a84969}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguitoolbar">
-      <UniqueIdentifier>{ad7a9b23-3ff0-4c9e-8fac-2af5d9b47f76}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguivariouscontrols">
-      <UniqueIdentifier>{793c9c5c-83d0-4f82-bcc1-4f22f1dcb234}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguiyesaddons">
-      <UniqueIdentifier>{e0b55ad6-86ab-4de6-bc96-67b1f3641eeb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguifilesystem\minizip">
-      <UniqueIdentifier>{d5379037-53c2-4d71-b389-36bb9e0d9e20}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imguiyesaddons\imguiimageeditor_plugins">
-      <UniqueIdentifier>{b95797b2-d83f-4129-ab7b-738839cb42ff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\imgui_gizmo">
-      <UniqueIdentifier>{3c1642a7-f6bf-42b2-bc51-957ad2fd3677}</UniqueIdentifier>
     </Filter>
     <Filter Include="Widgets\DockedWindows">
       <UniqueIdentifier>{aa791e14-3773-4e0e-a9d2-5917fa6c8430}</UniqueIdentifier>
@@ -80,27 +17,9 @@
     <Filter Include="Widgets\DockedWindows\Headers">
       <UniqueIdentifier>{74483a26-a31a-4036-bd91-8c76ab823316}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\metrics_gui">
-      <UniqueIdentifier>{ff3df4bd-cdd2-4894-a655-0cbd3ad26cae}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdParty/ImGUI\addons\metrics_gui\portable">
-      <UniqueIdentifier>{1c558177-c0e4-4688-801d-24011ea5e9d5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/stdafx-editor.cpp" />
-    <ClCompile Include="../../Source Code/Libs/imgui\extra_fonts\binary_to_compressed_c.cpp">
-      <Filter>3rdParty/ImGUI\extra_fonts</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/imgui\imgui.cpp">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/imgui\imgui_demo.cpp">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/imgui\imgui_draw.cpp">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code\Editor\Widgets\DockedWindows\SceneViewWindow.cpp">
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
@@ -114,7 +33,6 @@
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Editor\ImguiExtras.cpp" />
-    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp" />
     <ClCompile Include="../../Source Code/Editor\Editor.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\UndoManager.cpp" />
     <ClCompile Include="../../Source Code/Editor\Widgets\DockedWindows\SolutionExplorerWindow.cpp">
@@ -135,59 +53,8 @@
     <ClCompile Include="..\..\Source Code\Editor\Widgets\StatusBar.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\imgui_widgets.cpp">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\metrics_gui\ProggyTiny.cpp">
-      <Filter>3rdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\stb_vorbis.c">
-      <Filter>3rdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\imguifilesystem\minizip\unzip.c">
-      <Filter>3rdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\imguifilesystem\minizip\zip.c">
-      <Filter>3rdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp">
-      <Filter>3rdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
-      <Filter>3rdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\imguigizmo\ImGuizmo.cpp">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp">
-      <Filter>3rdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\metrics_gui\metrics_gui.cpp">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs\imgui\addons\imguigizmo\ImSequencer.cpp">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../Source Code/Libs/imgui\imconfig.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/imgui\imgui.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/imgui\imgui_internal.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/imgui\stb_rect_pack.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/imgui\stb_textedit.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs/imgui\stb_truetype.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code\Editor\Widgets\DockedWindows\Headers\SceneViewWindow.h">
       <Filter>Widgets\DockedWindows\Headers</Filter>
     </ClInclude>
@@ -202,159 +69,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Editor\Headers\UndoManager.h">
       <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\metrics_gui\portable\countof.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguifilesystem\minizip\crypt.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguifilesystem\dirent_portable.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Editor\Headers\Editor.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguibindings\edtaa3func.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imgui_freetype\imgui_freetype.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imgui_memory_editor\imgui_memory_editor.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\imgui_user.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imgui_user.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguibindings\imguibindings.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguibz2.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguicodeeditor\imguicodeeditor.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguidatechooser\imguidatechooser.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiemscriptenpersistentfolder.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguifilesystem\imguifilesystem.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguifreetype.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguihelper\imguihelper.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiimageeditor.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguilistview\imguilistview.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiminigames.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguipdfviewer.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguisdf.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguisoloud.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguisqlite3.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguistring\imguistring.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguistringifier.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguistyleserializer\imguistyleserializer.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguitoolbar\imguitoolbar.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguigizmo\ImGuizmo.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguibindings\ImImpl_Binding_Direct3D9.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguibindings\ImImpl_Binding_Glfw3.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguibindings\ImImpl_Binding_Glut.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguibindings\ImImpl_Binding_SDL2.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguibindings\ImImpl_Binding_WinAPI.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguigizmo\ImSequencer.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguifilesystem\minizip\ioapi.h">
-      <Filter>3rdParty/ImGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\metrics_gui\metrics_gui.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\metrics_gui\portable\perf_timer.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguibindings\stb_image.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_resize.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_write.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_ico.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_jpeg.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguifilesystem\minizip\unzip.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguicodeeditor\utf8helper.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\imguifilesystem\minizip\zip.h">
-      <Filter>3rdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Libs\imgui\addons\metrics_gui\portable\snprintf.h">
-      <Filter>3rdParty</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Editor\Widgets\Headers\MenuBar.h">
       <Filter>Widgets\Headers</Filter>
@@ -374,13 +88,5 @@
     <ClInclude Include="../../Source Code/Editor\Widgets\DockedWindows\Headers\SolutionExplorerWindow.h">
       <Filter>Widgets\DockedWindows\Headers</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="../../Source Code/Libs\imgui\addons\imgui_user.inl">
-      <Filter>3rdParty/ImGUI</Filter>
-    </None>
-    <None Include="../../Source Code/Libs\imgui\imgui_user.inl">
-      <Filter>3rdParty/ImGUI</Filter>
-    </None>
   </ItemGroup>
 </Project>

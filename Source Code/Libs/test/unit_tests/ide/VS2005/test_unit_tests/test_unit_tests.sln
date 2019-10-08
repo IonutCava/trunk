@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_unit_tests", "test_unit_tests.vcproj", "{F30EC10E-860E-49DD-A775-B0AB7C6DFE87}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{307251B8-8935-4280-BFD7-4966534DB88C}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\..\StdioTestLog.hpp = ..\..\..\..\StdioTestLog.hpp
+		..\..\..\..\Test.hpp = ..\..\..\..\Test.hpp
+		..\..\..\..\TestClass.hpp = ..\..\..\..\TestClass.hpp
+		..\..\..\..\TestClassCheckFunctions.inl = ..\..\..\..\TestClassCheckFunctions.inl
+		..\..\..\..\TestClassHelperFunctions.inl = ..\..\..\..\TestClassHelperFunctions.inl
+		..\..\..\..\TestClassSharedData.hpp = ..\..\..\..\TestClassSharedData.hpp
+		..\..\..\..\TestClassSharedFunctions.inl = ..\..\..\..\TestClassSharedFunctions.inl
+		..\..\..\..\TestCompare.hpp = ..\..\..\..\TestCompare.hpp
+		..\..\..\..\TestConverterUtility.hpp = ..\..\..\..\TestConverterUtility.hpp
+		..\..\..\..\TestLog.hpp = ..\..\..\..\TestLog.hpp
+		..\..\..\..\TestMacros.hpp = ..\..\..\..\TestMacros.hpp
+		..\..\..\..\TestMemoryUtility.hpp = ..\..\..\..\TestMemoryUtility.hpp
+		..\..\..\..\TestNumericUtility.hpp = ..\..\..\..\TestNumericUtility.hpp
+		..\..\..\..\TestString.hpp = ..\..\..\..\TestString.hpp
+		..\..\..\..\TestStringUtility.hpp = ..\..\..\..\TestStringUtility.hpp
+		..\..\..\..\TestTime.hpp = ..\..\..\..\TestTime.hpp
+		..\..\..\..\TestTypeInfo.hpp = ..\..\..\..\TestTypeInfo.hpp
+		..\..\..\..\TestTypes.hpp = ..\..\..\..\TestTypes.hpp
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F30EC10E-860E-49DD-A775-B0AB7C6DFE87}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F30EC10E-860E-49DD-A775-B0AB7C6DFE87}.Debug|Win32.Build.0 = Debug|Win32
+		{F30EC10E-860E-49DD-A775-B0AB7C6DFE87}.Release|Win32.ActiveCfg = Release|Win32
+		{F30EC10E-860E-49DD-A775-B0AB7C6DFE87}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

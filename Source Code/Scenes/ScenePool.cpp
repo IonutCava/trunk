@@ -137,7 +137,7 @@ bool ScenePool::deleteScene(Scene*& scene) {
 
 vector<stringImpl> ScenePool::sceneNameList(bool sorted) const {
     vector<stringImpl> scenes;
-    for (SceneFactory::value_type it : g_sceneFactory) {
+    for (SceneFactoryMap::value_type it : g_sceneFactory) {
         scenes.push_back(it.first);
     }
 

@@ -26,15 +26,15 @@ GUIConsoleCommandParser::GUIConsoleCommandParser(PlatformContext& context, Resou
       _resCache(cache),
       _sound(nullptr)
 {
-    _commandMap[_ID("say")] = [this](const stringImpl& args) { handleSayCommand(args); };
-    _commandMap[_ID("quit")] = [this](const stringImpl& args) { handleQuitCommand(args); };
-    _commandMap[_ID("help")] = [this](const stringImpl& args) { handleHelpCommand(args); };
-    _commandMap[_ID("editparam")] = [this](const stringImpl& args) { handleEditParamCommand(args); };
-    _commandMap[_ID("playsound")] = [this](const stringImpl& args) { handlePlaySoundCommand(args); };
-    _commandMap[_ID("createnavmesh")] = [this](const stringImpl& args) { handleNavMeshCommand(args); };
-    _commandMap[_ID("setfov")] = [this](const stringImpl& args) { handleFOVCommand(args); };
-    _commandMap[_ID("invalidcommand")] = [this](const stringImpl& args) { handleInvalidCommand(args); };
-    _commandMap[_ID("recompileshader")] = [this](const stringImpl& args) { handleShaderRecompileCommand(args); };
+    _commands[_ID("say")] = [this](const stringImpl& args) { handleSayCommand(args); };
+    _commands[_ID("quit")] = [this](const stringImpl& args) { handleQuitCommand(args); };
+    _commands[_ID("help")] = [this](const stringImpl& args) { handleHelpCommand(args); };
+    _commands[_ID("editparam")] = [this](const stringImpl& args) { handleEditParamCommand(args); };
+    _commands[_ID("playsound")] = [this](const stringImpl& args) { handlePlaySoundCommand(args); };
+    _commands[_ID("createnavmesh")] = [this](const stringImpl& args) { handleNavMeshCommand(args); };
+    _commands[_ID("setfov")] = [this](const stringImpl& args) { handleFOVCommand(args); };
+    _commands[_ID("invalidcommand")] = [this](const stringImpl& args) { handleInvalidCommand(args); };
+    _commands[_ID("recompileshader")] = [this](const stringImpl& args) { handleShaderRecompileCommand(args); };
 
     _commandHelp[_ID("say")] = Locale::get(_ID("CONSOLE_SAY_COMMAND_HELP"));
     _commandHelp[_ID("quit")] = Locale::get(_ID("CONSOLE_QUIT_COMMAND_HELP"));
@@ -68,12 +68,12 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
             for (stringImpl::size_type i = 0; i < command.length(); i++) {
                 command[i] = static_cast<char>(tolower(command[i]));
             }
-            if (_commandMap.find(_ID(command.c_str())) != std::end(_commandMap)) {
+            if (_commands.find(_ID(command.c_str())) != std::end(_commands)) {
                 // we have a valid command
-                _commandMap[_ID(command.c_str())](commandArgs);
+                _commands[_ID(command.c_str())](commandArgs);
             } else {
                 // invalid command
-                _commandMap[_ID("invalidcommand")](command);
+                _commands[_ID("invalidcommand")](command);
             }
         } else {
             // no commands, just output what was typed
@@ -99,7 +99,7 @@ void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args) {
 void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args) {
     if (args.empty()) {
         Console::printfn(Locale::get(_ID("HELP_CONSOLE_COMMAND")));
-        for (const CommandMap::value_type& it : _commandMap) {
+        for (const CommandMap::value_type& it : _commands) {
             if (it.first != _ID("invalidhelp") &&
                 it.first != _ID("invalidcommand")) {
                 Console::printfn("%s", _commandHelp[it.first]);

@@ -146,7 +146,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <CompileAs>CompileAsCpp</CompileAs>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/Chaiscript/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
@@ -207,7 +207,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <CompileAs>CompileAsCpp</CompileAs>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/Chaiscript/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
@@ -269,7 +269,7 @@
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/Chaiscript/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -331,7 +331,7 @@
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <OmitFramePointers>
       </OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/ReCast\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/Chaiscript/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/physx\PhysX_3.4/Source\foundation\include;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -428,7 +428,6 @@
     <ClCompile Include="../../Source Code/Rendering\Renderer.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Camera\Camera.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Lighting\LightPool.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\SelectionComponent.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\CubeShadowMapGenerator.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\CascadedShadowMapsGenerator.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\ShadowMap.cpp" />
@@ -463,57 +462,50 @@
     <ClCompile Include="../../Source Code/Scripting\GameScript.cpp" />
     <ClCompile Include="../../Source Code/Scripting\Script.cpp" />
     <ClCompile Include="../../Source Code/Scripting\ScriptBindings.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\AnimationComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\BoundsComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\EditorComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\IKComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\NavigationComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\NetworkingComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\RagdollComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\RenderingComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\RenderingComponentState.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\RigidBodyComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\TransformComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Components\UnitComponent.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Systems\AnimationSystem.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Systems\BoundsSystem.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Systems\ECSManager.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Systems\RenderingSystem.cpp" />
-    <ClCompile Include="../../Source Code/ECS\Systems\TransformSystem.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\API.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\ComponentManager.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Engine.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\EntityManager.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\EventHandler.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\IEvent.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Event\IEventListener.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\IComponent.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\IEntity.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\ISystem.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Log\Logger.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Log\LoggerManager.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\Memory\ECSMM.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\SystemManager.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp" />
-    <ClCompile Include="../../Source Code/Libs\EntityComponentSystem\src\util\Timer.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Camera\CameraSnapshot.cpp" />
-    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code\ECS\Components\DirectionalLightComponent.cpp" />
-    <ClCompile Include="../../Source Code\ECS\Components\PointLightComponent.cpp" />
-    <ClCompile Include="../../Source Code\ECS\Components\SGNComponent.cpp" />
-    <ClCompile Include="../../Source Code\ECS\Components\SpotLightComponent.cpp" />
     <ClCompile Include="../../Source Code\Rendering\Lighting\Light.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\fmt\src\format.cc" />
-    <ClCompile Include="..\..\Source Code\Libs\fmt\src\posix.cc" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\AnimationComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\BoundsComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\DirectionalLightComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\EditorComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\IKComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\NavigationComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\NetworkingComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\PointLightComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\RagdollComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponentState.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\RigidBodyComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\SelectionComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\SGNComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\SpotLightComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\TransformComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\UnitComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Systems\AnimationSystem.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Systems\BoundsSystem.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Systems\ECSManager.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Systems\RenderingSystem.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Systems\TransformSystem.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\API.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\ComponentManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Engine.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\EntityManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\EventHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\IEvent.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\IEventListener.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\IComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\IEntity.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\ISystem.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Log\Logger.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Log\LoggerManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\ECSMM.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\SystemManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Core\Headers\Application.h" />
@@ -581,7 +573,6 @@
     <ClInclude Include="../../Source Code/Rendering\Headers\FrameListener.h" />
     <ClInclude Include="../../Source Code/Rendering\Headers\Renderer.h" />
     <ClInclude Include="../../Source Code/Rendering\Lighting\Headers\LightPool.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\SelectionComponent.h" />
     <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\CubeShadowMapGenerator.h" />
     <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMapsGenerator.h" />
     <ClInclude Include="../../Source Code/Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h" />
@@ -608,84 +599,72 @@
     <ClInclude Include="../../Source Code/Scripting\Headers\Script.h" />
     <ClInclude Include="../../Source Code/Scripting\Headers\ScriptBindings.h" />
     <ClInclude Include="../../Source Code/Core\Headers\PlatformContextComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\AnimationComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\BoundsComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\EditorComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\IKComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\NavigationComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\NetworkingComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\RagdollComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\RenderingComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\RigidBodyComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\SGNComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\TransformComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Components\Headers\UnitComponent.h" />
-    <ClInclude Include="../../Source Code/ECS\Events\Headers\BoundsEvents.h" />
-    <ClInclude Include="../../Source Code/ECS\Events\Headers\EntityEvents.h" />
-    <ClInclude Include="../../Source Code/ECS\Events\Headers\TransformEvents.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\AnimationSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\BoundsSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\ECSManager.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\ECSSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\RenderingSystem.h" />
-    <ClInclude Include="../../Source Code/ECS\Systems\Headers\TransformSystem.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\API.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Component.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ComponentManager.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ECS.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Engine.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Entity.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\EntityManager.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\Event.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventDelegate.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventDispatcher.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\EventHandler.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEvent.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Event\IEventListener.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\IComponent.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\IEntity.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\ISystem.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\Logger.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\LoggerMacro.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Log\LoggerManager.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\ECSMM.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\Platform.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\System.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\SystemManager.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\FamilyTypeID.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\Handle.h" />
-    <ClInclude Include="../../Source Code/Libs\EntityComponentSystem\include\ECS\util\Timer.h" />
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\CameraSnapshot.h" />
-    <ClInclude Include="../../Source Code\ECS\Components\Headers\DirectionalLightComponent.h" />
-    <ClInclude Include="../../Source Code\ECS\Components\Headers\PointLightComponent.h" />
-    <ClInclude Include="../../Source Code\ECS\Components\Headers\SpotLightComponent.h" />
     <ClInclude Include="../../Source Code\Rendering\Lighting\Headers\Light.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\chrono.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\color.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\compile.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\core.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format-inl.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\locale.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ostream.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\posix.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\printf.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ranges.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\safe-duration-cast.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\time.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\AnimationComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\BoundsComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\DirectionalLightComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EditorComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\IKComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\NavigationComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\NetworkingComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\PointLightComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RagdollComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RenderingComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RigidBodyComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SelectionComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SpotLightComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\TransformComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\UnitComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\BoundsEvents.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\EntityEvents.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\TransformEvents.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\AnimationSystem.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\BoundsSystem.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSManager.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\RenderingSystem.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\TransformSystem.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\API.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Component.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ComponentManager.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ECS.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Engine.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Entity.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\EntityManager.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\Event.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventDelegate.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventDispatcher.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventHandler.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEvent.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEventListener.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\IComponent.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\IEntity.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ISystem.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\Logger.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\LoggerMacro.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\LoggerManager.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\ECSMM.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Platform.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\System.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\SystemManager.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\FamilyTypeID.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Handle.h" />
+    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../localisation\enGB.ini" />
     <None Include="../../Source Code/Core\Headers\Application.inl" />
     <None Include="../../Source Code/Geometry\Material\Headers\Material.inl" />
     <None Include="../../Source Code/Scripting\Headers\Script.inl" />
-    <None Include="../../Source Code/ECS\Components\Headers\SGNComponent.inl" />
+    <None Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

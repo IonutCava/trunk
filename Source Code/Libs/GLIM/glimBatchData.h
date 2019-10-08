@@ -70,7 +70,7 @@ namespace NS_GLIM
         void Reset(bool reserveBuffers = false, unsigned int vertexCount = 64 * 3, unsigned int attributeCount = 1);
 
         // Uploads the data onto the GPU
-        void Upload (Divide::I64 uiCurrentProgram);
+        void Upload ();
         // Binds the vertex arrays for rendering.
         void Bind (Divide::I64 uiCurrentProgram);
         // Unbinds all data after rendering.
@@ -78,7 +78,7 @@ namespace NS_GLIM
 
 #ifdef AE_RENDERAPI_OPENGL
         // Uploads the data onto the GPU
-        void UploadOGL (Divide::I64 uiCurrentProgram);
+        void UploadOGL ();
         // Binds the vertex arrays for rendering.
         void BindOGL (Divide::I64 uiCurrentProgram);
         // Unbinds all data after rendering.

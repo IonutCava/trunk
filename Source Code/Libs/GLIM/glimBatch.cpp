@@ -30,7 +30,7 @@ namespace NS_GLIM
     void GLIM_BATCH::Clear (bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount)
     {
         m_PrimitiveType = GLIM_ENUM::GLIM_NOPRIMITIVE;
-        m_Data.Reset (true, vertexCount, attributeCount);
+        m_Data.Reset (reserveBuffers, vertexCount, attributeCount);
     }
 
     void GLIM_BATCH::getBatchAABB (float& out_fMinX, float& out_fMaxX, float& out_fMinY, float& out_fMaxY, float& out_fMinZ, float& out_fMaxZ)
@@ -92,7 +92,7 @@ namespace NS_GLIM
         // get the currently active shader program
         GLIM_CHECK (m_Data.m_ShaderProgramHandle > 0, "GLIM_BATCH::RenderBatch: Currently no shader is bound or the shader has an error.");
 
-        m_Data.Upload ( m_Data.m_ShaderProgramHandle);
+        m_Data.Upload ();
 
         // if this happens the array is simply empty
         if (!m_Data.m_bUploadedToGPU)

@@ -200,7 +200,7 @@ void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush, U
     {
         UniqueLockShared w_lock(_lock);
         quickCheckOldEntries(frameID);
-        hashAlg::emplace(_bufferLocks, sync, std::make_pair(entries, frameID));
+        hashAlg::emplace(_bufferLocks, sync, entries, frameID);
     }
 
     if (flush) {

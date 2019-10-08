@@ -1,108 +1,753 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
+    <Filter Include="CEGUIOpenglRenderer">
+      <UniqueIdentifier>{cb9e78b0-a1dd-4d53-9611-28cfab37aa22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CEGUIOpenglRenderer\Source Files">
       <UniqueIdentifier>{C5B801D0-33D4-350E-AFFD-7365798CD673}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="CEGUIOpenglRenderer\Header Files">
       <UniqueIdentifier>{5E7CE934-1723-31D9-B91D-FB20576C58B6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EASTL">
+      <UniqueIdentifier>{a83b405e-1172-4e80-96aa-18a97a801de3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ArenaAllocator">
+      <UniqueIdentifier>{25ebc078-960a-4089-b678-ca15376eb847}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NV_DDS">
+      <UniqueIdentifier>{1e932686-4894-4f87-8f31-bbd1867810bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NV_DDS\Headers">
+      <UniqueIdentifier>{62ffafcb-2355-4c51-804e-34ab078d7e0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SimpleINI">
+      <UniqueIdentifier>{abe16649-f174-4468-99b8-6587498ef0a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SimpleINI\Headers">
+      <UniqueIdentifier>{c27b0cd2-581c-4abc-8bce-3089cafee399}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty">
+      <UniqueIdentifier>{0b160133-51a1-426b-9a8c-0da208fba76a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI">
+      <UniqueIdentifier>{5140371f-d715-4392-a2aa-d2d51c04b0a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\extra_fonts">
+      <UniqueIdentifier>{9e51fc9e-c29d-4980-b0d6-04fbd3b27e3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons">
+      <UniqueIdentifier>{eed78dbd-be06-439c-9349-5b65530d7cde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imgui_freetype">
+      <UniqueIdentifier>{dcb280dc-de02-4b06-a6a0-99330e857cb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imgui_memory_editor">
+      <UniqueIdentifier>{a1f08b92-c470-4577-9720-aec52cc25c10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguibindings">
+      <UniqueIdentifier>{25e47f1b-6452-4224-82f3-05c6636de3b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguicodeeditor">
+      <UniqueIdentifier>{149ac849-9cde-417c-9fb1-e3c46c15988f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguidatechooser">
+      <UniqueIdentifier>{fabe8966-4beb-4f23-9104-bb9a218db7a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguifilesystem">
+      <UniqueIdentifier>{d6887ba9-3b31-4460-9961-2b456cb81adc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguifilesystem\minizip">
+      <UniqueIdentifier>{82933c3c-7d56-4425-b732-8873b56ebe1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguihelper">
+      <UniqueIdentifier>{d7a021e0-16ca-4664-9aaf-d4d14e6c8418}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguilistview">
+      <UniqueIdentifier>{5fedf9d2-8391-4a4b-bdfa-6989ac65b9d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguinodegrapheditor">
+      <UniqueIdentifier>{b05d5344-802f-4668-adcd-a89973c8b951}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguistring">
+      <UniqueIdentifier>{0053c487-fa16-489c-a9ff-3b08df7a0e98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguistyleserializer">
+      <UniqueIdentifier>{75c8f032-df61-4fa2-89c5-8abd397d43e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguitoolbar">
+      <UniqueIdentifier>{32410691-8417-48f4-ae9a-babad4c14cf7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguivariouscontrols">
+      <UniqueIdentifier>{9cea9798-0f0f-4bec-87c0-8a21e7dfbc3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguiyesaddons">
+      <UniqueIdentifier>{1aa69485-5007-442c-80fe-5c32cca4ba07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imguiyesaddons\imguiimageeditor_plugins">
+      <UniqueIdentifier>{73ae5be2-c9b4-4aaa-928a-087a6e9edc1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imgui_gizmo">
+      <UniqueIdentifier>{aca9a72a-c6ab-485a-bee1-96711a017e35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\metrics_gui">
+      <UniqueIdentifier>{2cdb5f35-21fc-41f1-b00e-7e63190216bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\metrics_gui\portable">
+      <UniqueIdentifier>{384b4d0a-c240-40c6-b9f1-d9cdc9b7885a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fmt">
+      <UniqueIdentifier>{fef029a6-0be0-4e40-8dc1-09e4c37fb3e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fmt\include">
+      <UniqueIdentifier>{cdba8717-2738-4dd4-89b9-2f364a738132}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fmt\include\fmt">
+      <UniqueIdentifier>{393dccd7-a224-4e4d-9b85-9af48a5dae87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fmt\src">
+      <UniqueIdentifier>{088e6d75-86fb-4a73-909d-35719a0c2721}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="meshoptimizer">
+      <UniqueIdentifier>{1efd7d9b-051d-4128-967d-de3f58db418e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="meshoptimizer\src">
+      <UniqueIdentifier>{9614f100-9f98-4ead-a0b3-55a256d3ec58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="meshoptimizer\tools">
+      <UniqueIdentifier>{58a6ba17-8e5c-4c22-8ee4-9472287a8380}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="chaiscript">
+      <UniqueIdentifier>{b3e0c945-e176-4cf7-b3e7-9defee78bdec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CPPGOAP">
+      <UniqueIdentifier>{2df87724-10e3-43e5-b7bf-37baf192c761}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FileWatcher">
+      <UniqueIdentifier>{a8ce16b4-a95e-4ed0-86dc-38620e7066db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Allocator">
+      <UniqueIdentifier>{7a044cbb-52fc-42e9-93ae-58f9a2a63b27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GLIM">
+      <UniqueIdentifier>{1d99f45e-946d-4502-91a1-41aa5f3dbc30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GLIM\Headers">
+      <UniqueIdentifier>{e8737832-8a2f-4724-9c2b-8a6d598c648d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glsw">
+      <UniqueIdentifier>{432ae35f-0ccc-43b1-8697-8542566720a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glsw\Headers">
+      <UniqueIdentifier>{eb2651e4-0115-4dda-bb81-fdf449bfe717}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderDocManager">
+      <UniqueIdentifier>{0ddc93b0-9938-4d27-aa86-1d65bbb0666b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fontstash">
+      <UniqueIdentifier>{3ebce056-8e4a-4f71-919c-eb61a5752e56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fontstash\Headers">
+      <UniqueIdentifier>{b1409af1-b903-4433-bc32-62ca0de9a8cb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GeometryBufferBase.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3FBOTextureTarget.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3GeometryBuffer.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3Renderer.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GlmPimpl.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/RendererBase.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/RenderTarget.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/Shader.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/ShaderManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StandardShaderFrag.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StandardShaderVert.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StateChangeWrapper.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/Texture.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/TextureTarget.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/ViewportTarget.h">
-      <Filter>Header Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.h">
+      <Filter>ArenaAllocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\nv_dds\nv_dds.h">
+      <Filter>NV_DDS\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\ConvertUTF.h">
+      <Filter>SimpleINI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h">
+      <Filter>SimpleINI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\stb_image.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\utf8helper.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_resize.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_write.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_ico.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_jpeg.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\metrics_gui.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\perf_timer.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\snprintf.h">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Headers\Editor.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imconfig.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_internal.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_rect_pack.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_textedit.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\stb_truetype.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\edtaa3func.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\imguibindings.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Direct3D9.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Glfw3.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Glut.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_SDL2.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_WinAPI.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\dirent_portable.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\crypt.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguistring\imguistring.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiemscriptenpersistentfolder.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguifreetype.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguipdfviewer.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisdf.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisoloud.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisqlite3.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_freetype\imgui_freetype.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_memory_editor\imgui_memory_editor.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_user.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\countof.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_user.h">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\chrono.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\color.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\compile.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\core.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format-inl.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\locale.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ostream.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\posix.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\printf.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ranges.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\safe-duration-cast.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\time.h">
+      <Filter>fmt\include\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\src\meshoptimizer.h">
+      <Filter>meshoptimizer\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\tools\fast_obj.h">
+      <Filter>meshoptimizer\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\tools\cgltf.h">
+      <Filter>meshoptimizer\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ChaiScript\src\sha3.h">
+      <Filter>chaiscript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Action.h">
+      <Filter>CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Node.h">
+      <Filter>CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Planner.h">
+      <Filter>CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\WorldState.h">
+      <Filter>CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\Allocator.h">
+      <Filter>Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\DataTypes.h">
+      <Filter>Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\Fault.h">
+      <Filter>Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\stl_allocator.h">
+      <Filter>Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Allocator\xallocator.h">
+      <Filter>Allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\Declarations.h">
+      <Filter>GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glim.h">
+      <Filter>GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatch.h">
+      <Filter>GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatchData.h">
+      <Filter>GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimInterface.h">
+      <Filter>GLIM\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\Headers\bstrlib.h">
+      <Filter>glsw\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\Headers\glsw.h">
+      <Filter>glsw\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.h">
+      <Filter>RenderDocManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\renderdoc_app.h">
+      <Filter>RenderDocManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Text\Headers\fontstash.h">
+      <Filter>fontstash\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Text\Headers\glfontstash.h">
+      <Filter>fontstash\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GeometryBufferBase.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3FBOTextureTarget.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3GeometryBuffer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3Renderer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\RendererBase.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\Shader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\ShaderManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\StateChangeWrapper.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\Texture.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\TextureTarget.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\ViewportTarget.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\stdafx-cegui-renderer-opengl.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.cpp">
+      <Filter>ArenaAllocator</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp">
+      <Filter>NV_DDS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp">
+      <Filter>SimpleINI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
+      <Filter>3rdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.c">
+      <Filter>3rdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.c">
+      <Filter>3rdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp">
+      <Filter>3rdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp">
+      <Filter>3rdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\stb_vorbis.c">
+      <Filter>3rdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\ProggyTiny.cpp">
+      <Filter>3rdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui.cpp">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_demo.cpp">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_draw.cpp">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.cpp">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.cpp">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\metrics_gui.cpp">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_widgets.cpp">
+      <Filter>3rdParty/ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\extra_fonts\binary_to_compressed_c.cpp">
+      <Filter>3rdParty/ImGUI\extra_fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\stdafx-third-party-libs.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\fmt\src\format.cc">
+      <Filter>fmt\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\fmt\src\posix.cc">
+      <Filter>fmt\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\indexcodec.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\indexgenerator.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\overdrawanalyzer.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\overdrawoptimizer.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\simplifier.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\stripifier.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vcacheanalyzer.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vcacheoptimizer.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vertexcodec.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vfetchanalyzer.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vfetchoptimizer.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\allocator.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\clusterizer.cpp">
+      <Filter>meshoptimizer\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\tools\gltfpack.cpp">
+      <Filter>meshoptimizer\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\tools\meshloader.cpp">
+      <Filter>meshoptimizer\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\allocator_eastl.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\assert.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\fixed_pool.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\hashtable.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\intrusive_list.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\numeric_limits.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\red_black_tree.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\string.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\thread_support.cpp">
+      <Filter>EASTL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\stl_extra.cpp">
+      <Filter>chaiscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\test_module.cpp">
+      <Filter>chaiscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\chaiscript_stdlib_module.cpp">
+      <Filter>chaiscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\libfuzzer_client.cpp">
+      <Filter>chaiscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\sha3.cpp">
+      <Filter>chaiscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Action.cpp">
+      <Filter>CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Node.cpp">
+      <Filter>CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Planner.cpp">
+      <Filter>CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\WorldState.cpp">
+      <Filter>CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcher.cpp">
+      <Filter>FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcherLinux.cpp">
+      <Filter>FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcherOSX.cpp">
+      <Filter>FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcherWin32.cpp">
+      <Filter>FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\Fault.cpp">
+      <Filter>Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\xallocator.cpp">
+      <Filter>Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatch.cpp">
+      <Filter>GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchAttributes.cpp">
+      <Filter>GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchData.cpp">
+      <Filter>GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimD3D11.cpp">
+      <Filter>GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\GLIM\Stuff.cpp">
+      <Filter>GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\bstrlib.c">
+      <Filter>glsw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\glsw.c">
+      <Filter>glsw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.cpp">
+      <Filter>RenderDocManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator_.cpp">
+      <Filter>Allocator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\RenderTarget.inl">
-      <Filter>Source Files</Filter>
+      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
+    </None>
+    <None Include="..\..\Source Code\Libs\imgui\addons\imgui_user.inl">
+      <Filter>3rdParty/ImGUI</Filter>
+    </None>
+    <None Include="..\..\Source Code\Libs\imgui\imgui_user.inl">
+      <Filter>3rdParty/ImGUI</Filter>
     </None>
   </ItemGroup>
 </Project>

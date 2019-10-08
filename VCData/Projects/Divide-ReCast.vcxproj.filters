@@ -210,6 +210,5 @@
       <Filter>ReCastContrib</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/stdafx-recast.cpp" />
-    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp" />
   </ItemGroup>
 </Project>

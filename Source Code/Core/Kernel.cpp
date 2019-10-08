@@ -31,7 +31,6 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Platform/File/Headers/FileWatcherManager.h"
-#include "Platform/Compute/Headers/OpenCLInterface.h"
 
 namespace Divide {
 
@@ -92,7 +91,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _resCache = std::make_unique<ResourceCache>(_platformContext);
 
     FrameListenerManager::instance();
-    //OpenCLInterface::instance();
 }
 
 Kernel::~Kernel()
@@ -575,7 +573,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
-    static const U8 warmupLoopCount = 2;
+    static const U8 warmupLoopCount = 0;
 
     ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
     for (U8 i = 0; i < warmupLoopCount; ++i) {
@@ -700,10 +698,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
-    /*initError = OpenCLInterface::instance().init();
-    if (initError != ErrorCode::NO_ERR) {
-        return initError;
-    }*/
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
     _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext.gfx());
@@ -792,7 +786,6 @@ void Kernel::shutdown() {
     ECS::Terminate();
 
     ShadowMap::destroyShadowMaps(_platformContext.gfx());
-    //OpenCLInterface::instance().deinit();
     _renderPassManager.reset();
 
     Camera::destroyPool();

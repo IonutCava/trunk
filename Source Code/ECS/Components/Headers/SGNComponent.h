@@ -68,7 +68,7 @@ template <class Base, class... Args>
 class Factory {
 public:
     template <class ... T>
-    static void make(ComponentType type, SceneGraphNode& node, T&&... args) {
+    static void construct(ComponentType type, SceneGraphNode& node, T&&... args) {
         data().at(type)(node, std::forward<T>(args)...);
     }
 

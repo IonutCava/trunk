@@ -36,24 +36,6 @@
 
 namespace Divide {
 
-namespace {
-    template<std::size_t N>
-    struct num { static const constexpr auto value = N; };
-
-    template <class F, std::size_t... Is>
-    constexpr void for_(F func, std::index_sequence<Is...>) {
-        using expander = int[];
-        (void)expander {
-            0, ((void)func(num<Is>{}), 0)...
-        };
-    }
-
-    template <std::size_t N, typename F>
-    constexpr void for_(F func) {
-        for_(func, std::make_index_sequence<N>());
-    }
-};
-
 SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor)
     : GUIDWrapper(),
       ECS::Event::IEventListener(sceneGraph.GetECSEngine()),
@@ -124,7 +106,7 @@ void SceneGraphNode::AddMissingComponents(U32 componentMask) {
         // Only add new components;
         if (BitCompare(componentMask, to_U32(componentBit)) && !BitCompare(_componentMask, to_U32(componentBit))) {
             _componentMask |= componentBit;
-            SGNComponent::make(ComponentType::_from_integral(componentBit), *this);
+            SGNComponent::construct(ComponentType::_from_integral(componentBit), *this);
         }
     };
 
@@ -208,11 +190,10 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneGraphNodeDescriptor& descript
     // If we did not supply a custom name use the SceneNode's name
 
     SceneGraphNode* sceneGraphNode = parentGraph().createSceneGraphNode(_sceneGraph, descriptor);
+    assert(sceneGraphNode != nullptr && sceneGraphNode->_node->getState() != ResourceState::RES_CREATED);
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
-
-    assert(sceneGraphNode->_node->getState() != ResourceState::RES_CREATED);
 
     if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
         postLoad(*sceneGraphNode->_node, *sceneGraphNode);

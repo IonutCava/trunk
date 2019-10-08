@@ -295,7 +295,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
        SceneGraphNode* _currentSky;
        hashMap<PlayerIndex, SceneGraphNode*> _flashLight;
-       hashMap<PlayerIndex, U32> _cameraUpdateMap;
+       hashMap<PlayerIndex, U32> _cameraUpdateListeners;
        /// Scene::load must be called by every scene. Add a load flag to make sure!
        bool _loadComplete;
        /// Schedule a scene graph parse with the physics engine to recreate/recheck

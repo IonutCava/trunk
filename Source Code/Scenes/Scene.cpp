@@ -537,7 +537,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
 
         hashAlg::insert(_flashLight, idx, flashLight);
 
-        _cameraUpdateMap[idx] = playerCamera(idx)->addUpdateListener([this, idx](const Camera& cam) { 
+        _cameraUpdateListeners[idx] = playerCamera(idx)->addUpdateListener([this, idx](const Camera& cam) {
             if (idx < _scenePlayers.size() && idx < _flashLight.size() && _flashLight[idx]) {
                 if (cam.getGUID() == _scenePlayers[getSceneIndexForPlayer(idx)]->getCamera().getGUID()) {
                     TransformComponent* tComp = _flashLight[idx]->get<TransformComponent>();
@@ -1149,7 +1149,7 @@ void Scene::onPlayerRemove(const Player_ptr& player) {
 
     input().onPlayerRemove(idx);
     state().onPlayerRemove(idx);
-    _cameraUpdateMap[idx] = 0u;
+    _cameraUpdateListeners[idx] = 0u;
     if (_flashLight.size() > idx) {
         SceneGraphNode* flashLight = _flashLight[idx];
         if (flashLight) {

@@ -20,26 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Core\MemoryManagement\Headers\TrackedObject.h" />
-    <ClInclude Include="../../Source Code/Libs/Allocator\Allocator.h" />
-    <ClInclude Include="../../Source Code/Libs/Allocator\DataTypes.h" />
-    <ClInclude Include="../../Source Code/Libs/Allocator\Fault.h" />
-    <ClInclude Include="../../Source Code/Libs/Allocator\stl_allocator.h" />
-    <ClInclude Include="../../Source Code/Libs/Allocator\xallocator.h" />
-    <ClInclude Include="../../Source Code/Libs/GLIM\Declarations.h" />
-    <ClInclude Include="../../Source Code/Libs/GLIM\glim.h" />
-    <ClInclude Include="../../Source Code/Libs/GLIM\glimBatch.h" />
-    <ClInclude Include="../../Source Code/Libs/GLIM\glimBatchData.h" />
-    <ClInclude Include="../../Source Code/Libs/GLIM\glimInterface.h" />
-    <ClInclude Include="../../Source Code/Libs/RenderDoc-Manager\RenderDocManager.h" />
-    <ClInclude Include="../../Source Code/Libs/RenderDoc-Manager\renderdoc_app.h" />
-    <ClInclude Include="../../Source Code/Libs/SimpleCL\include/simpleCL.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\fmod\Headers\FmodWrapper.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\Headers\AudioAPIWrapper.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\Headers\AudioDescriptor.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\Headers\SFXDevice.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\openAl\Headers\ALWrapper.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\sdl_mixer\Headers\SDLWrapper.h" />
-    <ClInclude Include="../../Source Code/Platform\Compute\Headers\OpenCLInterface.h" />
     <ClInclude Include="../../Source Code/Platform\File\Headers\FileManagement.h" />
     <ClInclude Include="../../Source Code/Platform\File\Headers\FileUpdateMonitor.h" />
     <ClInclude Include="../../Source Code/Platform\File\Headers\FileWithPath.h" />
@@ -102,8 +88,6 @@
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVAOPool.h" />
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVertexArray.h" />
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVAOCache.h" />
-    <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\Headers\bstrlib.h" />
-    <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glHardwareQuery.h" />
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glHardwareQueryPool.h" />
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glIMPrimitive.h" />
@@ -114,8 +98,6 @@
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glShaderProgram.h" />
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\Headers\glSamplerObject.h" />
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Textures\Headers\glTexture.h" />
-    <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\fontstash.h" />
-    <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Text\Headers\glfontstash.h" />
     <ClInclude Include="../../Source Code/Platform\Video\Shaders\Headers\ShaderProgram.h" />
     <ClInclude Include="../../Source Code/Platform\Video\Textures\Headers\Texture.h" />
     <ClInclude Include="../../Source Code/Platform\Video\Textures\Headers\TextureDescriptor.h" />
@@ -134,29 +116,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Core\MemoryManagement\TrackedObject.cpp" />
-    <ClCompile Include="../../Source Code/Libs/Allocator\Allocator.cpp" />
-    <ClCompile Include="../../Source Code/Libs/Allocator\Fault.cpp" />
-    <ClCompile Include="../../Source Code/Libs/Allocator\xallocator.cpp" />
-    <ClCompile Include="../../Source Code/Libs/GLIM\glimBatch.cpp" />
-    <ClCompile Include="../../Source Code/Libs/GLIM\glimBatchAttributes.cpp" />
-    <ClCompile Include="../../Source Code/Libs/GLIM\glimBatchData.cpp" />
-    <ClCompile Include="../../Source Code/Libs/GLIM\glimD3D11.cpp" />
-    <ClCompile Include="../../Source Code/Libs/GLIM\Stuff.cpp" />
-    <ClCompile Include="../../Source Code/Libs/RenderDoc-Manager\RenderDocManager.cpp" />
-    <ClCompile Include="../../Source Code/Libs/SimpleCL\src\simpleCL.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/simplefilewatcher/Source\FileWatcher.cpp" />
-    <ClCompile Include="../../Source Code/Libs/simplefilewatcher/Source\FileWatcherLinux.cpp" />
-    <ClCompile Include="../../Source Code/Libs/simplefilewatcher/Source\FileWatcherOSX.cpp" />
-    <ClCompile Include="../../Source Code/Libs/simplefilewatcher/Source\FileWatcherWin32.cpp" />
     <ClCompile Include="../../Source Code/Platform\Audio\openAl\ALWrapper.cpp" />
     <ClCompile Include="../../Source Code/Platform\Audio\sdl_mixer\SDLWrapper.cpp" />
     <ClCompile Include="../../Source Code/Platform\Audio\SFXDevice.cpp" />
-    <ClCompile Include="../../Source Code/Platform\Compute\OpenCLInterface.cpp" />
     <ClCompile Include="../../Source Code/Platform\DisplayWindow.cpp" />
     <ClCompile Include="../../Source Code/Platform\File\FileManagementFunctions.cpp" />
     <ClCompile Include="../../Source Code/Platform\File\FileManagementPaths.cpp" />
@@ -210,20 +172,6 @@
     <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\glLockManager.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\glResources.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\GLStates.cpp" />
-    <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\bstrlib.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\glsw\glsw.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsCpp</CompileAs>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\GLWrapper.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\SDLWindowWrapper.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Shaders\glShader.cpp" />
@@ -254,12 +202,6 @@
     <ClCompile Include="../../Source Code\Platform\Video\PushConstants.cpp" />
     <ClCompile Include="../../Source Code\Platform\Video\RenderAPIWrapper.cpp" />
     <ClCompile Include="../../Source Code\Platform\Video\RenderBackend\Vulkan\VKWrapper.cpp" />
-    <ClCompile Include="../../Source Code\UnityBuildEngine.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="../../Source Code\Platform\Input\Input.cpp" />
     <ClCompile Include="../../Source Code\Platform\SDLEventListener.cpp" />
     <ClCompile Include="../../Source Code\Platform\SDLEventManager.cpp" />
@@ -443,7 +385,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM;_CRT_SECURE_NO_WARNINGS;_DEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -495,7 +437,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -549,7 +491,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -597,7 +539,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/cegui-deps\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/OpenAL\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>PLATFORM;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>

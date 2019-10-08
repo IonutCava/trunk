@@ -297,7 +297,6 @@
 #include "Platform\Audio\sdl_mixer\SDLWrapper.cpp"
 #include "Platform\Audio\SFXDevice.cpp"
 #include "Platform\Compute\OpenCLInterface.cpp"
-#include "Libs\SimpleCL\src\simpleCL.c"
 #include "Libs\simplefilewatcher\source\FileWatcher.cpp"
 #include "Libs\simplefilewatcher\source\FileWatcherLinux.cpp"
 #include "Libs\simplefilewatcher\source\FileWatcherOSX.cpp"

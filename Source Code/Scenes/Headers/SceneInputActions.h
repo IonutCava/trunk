@@ -122,8 +122,7 @@ private:
 };
 
 struct InputAction {
-    InputAction();
-    InputAction(DELEGATE_CBK<void, InputParams>& action);
+    InputAction(const DELEGATE_CBK<void, InputParams>& action);
 
     DELEGATE_CBK<void, InputParams> _action;
     // This will be usefull for menus and the like (defined in XML)
@@ -136,7 +135,7 @@ class InputActionList {
    public:
     InputActionList();
 
-    bool registerInputAction(U16 id, DELEGATE_CBK<void, InputParams> action);
+    bool registerInputAction(U16 id, const DELEGATE_CBK<void, InputParams>& action);
     InputAction& getInputAction(U16 id);
     const InputAction& getInputAction(U16 id) const;
 

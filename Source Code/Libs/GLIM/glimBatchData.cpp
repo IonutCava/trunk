@@ -73,9 +73,9 @@ void GlimArrayData::PushElement(void) {
     }
 }
 
-void glimBatchData::Upload(Divide::I64 uiCurrentProgram) {
+void glimBatchData::Upload() {
 #ifdef AE_RENDERAPI_OPENGL
-    UploadOGL(uiCurrentProgram);
+    UploadOGL();
 #else
     UploadD3D11();
 #endif
@@ -445,7 +445,7 @@ void glimBatchData::BindOGL(Divide::I64 uiCurrentProgram) {
     glVertexAttribPointer(m_VertAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 }
 
-void glimBatchData::UploadOGL(Divide::I64 uiCurrentProgram) {
+void glimBatchData::UploadOGL() {
     if (m_bUploadedToGPU) return;
 
     if (m_PositionData.empty()) return;

@@ -106,15 +106,6 @@
     <ClCompile Include="../../Source Code/Core\WindowManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/ArenaAllocator\arena_allocator.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/nv_dds\nv_dds.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Libs/SimpleINI\src\ConvertUTF.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="../../Source Code/stdafx-core.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
@@ -138,12 +129,6 @@
     </ClCompile>
     <ClCompile Include="../../Source Code/Utility\XMLParser.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/UnityBuildEngine.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="../../Source Code/Utility\TextLabel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
@@ -190,10 +175,6 @@
     <ClInclude Include="../../Source Code/Core\Time\Headers\ApplicationTimer.h" />
     <ClInclude Include="../../Source Code/Core\Time\Headers\FrameRateHandler.h" />
     <ClInclude Include="../../Source Code/Core\Time\Headers\ProfileTimer.h" />
-    <ClInclude Include="../../Source Code/Libs/ArenaAllocator\arena_allocator.h" />
-    <ClInclude Include="../../Source Code/Libs/nv_dds\nv_dds.h" />
-    <ClInclude Include="../../Source Code/Libs/SimpleINI\include/ConvertUTF.h" />
-    <ClInclude Include="../../Source Code/Libs/SimpleINI\include/SimpleIni.h" />
     <ClInclude Include="../../Source Code/stdafx.h" />
     <ClInclude Include="../../Source Code/Utility\Headers\Colours.h" />
     <ClInclude Include="../../Source Code/Utility\Headers\CommandParser.h" />
@@ -322,7 +303,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/nv_dds\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/nv_dds/;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/sdl/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/DevIL/include/;$(SolutionDir)../3rdParty/cegui/include/;$(SolutionDir)../3rdParty/physx/include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>CORE;_CRT_SECURE_NO_WARNINGS;_DEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -374,7 +355,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/nv_dds\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/nv_dds/;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/sdl/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/DevIL/include/;$(SolutionDir)../3rdParty/cegui/include/;$(SolutionDir)../3rdParty/physx/include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>CORE;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -428,7 +409,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/nv_dds\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/nv_dds/;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/sdl/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/DevIL/include/;$(SolutionDir)../3rdParty/cegui/include/;$(SolutionDir)../3rdParty/physx/include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>CORE;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -476,7 +457,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB\;$(SolutionDir)../Source Code/Libs/nv_dds\;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/physx\include/;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/STB/;$(SolutionDir)../Source Code/Libs/imgui/;$(SolutionDir)../Source Code/Libs/nv_dds/;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/sdl/include/;$(SolutionDir)../3rdParty/OIS/include/;$(SolutionDir)../3rdParty/DevIL/include/;$(SolutionDir)../3rdParty/cegui/include/;$(SolutionDir)../3rdParty/physx/include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript/include/</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>CORE;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
