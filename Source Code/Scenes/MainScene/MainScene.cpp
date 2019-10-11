@@ -114,7 +114,7 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
                                              state().globalWaterBodies()[0]._heightOffset), false);
         _GUI->modifyText(_ID("RenderBinCount"),
                          Util::StringFormat("Number of items in Render Bin: %d.",
-                                            _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY)), false);
+                                            _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
         _guiTimersMS[0] = 0.0;
     }
 

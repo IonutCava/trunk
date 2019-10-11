@@ -495,6 +495,15 @@ constexpr U32 nextPOW2(U32 n) noexcept {
     return ++n;
 }
 
+constexpr U32 prevPOW2(U32 n) noexcept {
+    n = n | (n >> 1);
+    n = n | (n >> 2);
+    n = n | (n >> 4);
+    n = n | (n >> 8);
+    n = n | (n >> 16);
+    return n - (n >> 1);
+}
+
 constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept {
     U32 result = 1;
     while (result * result < elementCount) {

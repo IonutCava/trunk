@@ -89,14 +89,15 @@ class Mesh : public Object3D {
 
    protected:
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTimeUS,
-                             SceneGraphNode& sgn,
-                             SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTimeUS,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) final;
 
     const char* getResourceTypeName() const override { return "Mesh"; }
 
    protected:
     bool _visibleToNetwork;
+    U64 _lastTimeStamp = 0ull;
     /// Animation player to animate the mesh if necessary
     std::shared_ptr<SceneAnimator> _animator;
     vector<SubMesh_ptr> _subMeshList;

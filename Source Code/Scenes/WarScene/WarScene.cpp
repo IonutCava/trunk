@@ -104,7 +104,7 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
                                             _context.gfx().getFrameCount()), false);
         _GUI->modifyText(_ID("RenderBinCount"),
             Util::StringFormat("Number of items in Render Bin: %d.",
-                               _context.kernel().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY)), false);
+                               _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
 
         _GUI->modifyText(_ID("camPosition"),
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",

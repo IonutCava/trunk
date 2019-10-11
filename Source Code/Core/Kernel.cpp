@@ -56,6 +56,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _resCache(nullptr),
       _prevViewport(-1),
       _prevPlayerCount(0),
+      _sceneManager(nullptr),
       _renderPassManager(nullptr),
       _splashScreenUpdating(false),
       _platformContext(PlatformContext(parentApp, *this)),
@@ -537,7 +538,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
                     GFX::EnqueueCommand(buffer, beginRenderPassCmd);
                 }
 
-                renderPassManager().createFrameBuffer(targetViewport, buffer);
+                renderPassManager()->createFrameBuffer(targetViewport, buffer);
 
                 if (editorRunning){
                     GFX::EndRenderPassCommand endRenderPassCmd = {};

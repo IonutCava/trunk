@@ -172,7 +172,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void usageContext(const NodeUsageContext& newContext);
 
     inline U64 getElapsedTimeUS() const { return _elapsedTimeUS; }
-
+    inline U64 getLastDeltaTimeUS() const { return _lastDeltaTimeUS; }
+    
     template <typename T>
     inline T* get() const {
         // ToDo: Optimise this -Ionut
@@ -378,6 +379,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     //ToDo: make this work in a multi-threaded environment
     //mutable I8 _frustPlaneCache;
     U64 _elapsedTimeUS;
+    U64 _lastDeltaTimeUS;
     U32 _componentMask;
     stringImpl _name;
     SceneNode_ptr _node;

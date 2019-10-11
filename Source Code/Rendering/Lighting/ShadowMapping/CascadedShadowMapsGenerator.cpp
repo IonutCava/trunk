@@ -180,7 +180,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     drawParams._type = RTAttachmentType::Colour;
     drawParams._index = 0;
 
-    RenderPassManager& rpm = _context.parent().renderPassManager();
+    auto& rpm = _context.parent().renderPassManager();
 
     bool renderLastSplit = true;//_context.getFrameCount() % 2 == 0;
     I16 i = to_I16(numSplits) - (renderLastSplit ? 1 : 2);
@@ -200,7 +200,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         //params._minLoD = i > 1 ? 1 : -1;
         params._minExtents.set(i > 1 ? 3.5f : (i > 0 ? 2.5f : 0.5f));
 
-        rpm.doCustomPass(params, bufferInOut);
+        rpm->doCustomPass(params, bufferInOut);
 
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);

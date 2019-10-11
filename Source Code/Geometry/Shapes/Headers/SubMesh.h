@@ -89,6 +89,9 @@ class SubMesh : public Object3D {
 
     virtual const char* getResourceTypeName() const override { return "SubMesh"; }
 
+    void sceneUpdate(const U64 deltaTimeUS,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) override;
     // SGN node + parent mesh
     size_t maxReferenceCount() const noexcept override { return 2; }
    protected:

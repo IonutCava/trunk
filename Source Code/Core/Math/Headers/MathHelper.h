@@ -229,6 +229,7 @@ template<typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect);
 
 constexpr U32 nextPOW2(U32 n) noexcept;
+constexpr U32 prevPOW2(U32 n) noexcept;
 
 // Calculate the smalles NxN matrix that can hold the specified
 // number of elements. Returns N

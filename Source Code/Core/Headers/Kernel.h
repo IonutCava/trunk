@@ -203,12 +203,10 @@ class Kernel : public Input::InputAggregatorInterface,
     bool onUTF8(const Input::UTF8Event& arg) override;
 
     ResourceCache& resourceCache() {
-        assert(_resCache != nullptr);
         return *_resCache;
     }
 
     const ResourceCache& resourceCache() const {
-        assert(_resCache != nullptr);
         return *_resCache;
     }
 
@@ -221,23 +219,15 @@ class Kernel : public Input::InputAggregatorInterface,
     }
 
     SceneManager& sceneManager() {
-        assert(_sceneManager != nullptr);
         return *_sceneManager;
     }
 
     const SceneManager& sceneManager() const {
-        assert(_sceneManager != nullptr);
         return *_sceneManager;
     }
 
-    RenderPassManager& renderPassManager() {
-        assert(_renderPassManager != nullptr);
-        return *_renderPassManager;
-    }
-
-    const RenderPassManager& renderPassManager() const {
-        assert(_renderPassManager != nullptr);
-        return *_renderPassManager;
+    const std::unique_ptr<RenderPassManager>& renderPassManager() const {
+        return _renderPassManager;
     }
 
    private:

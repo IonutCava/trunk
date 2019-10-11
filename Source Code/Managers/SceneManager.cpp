@@ -523,7 +523,7 @@ void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, Re
 
 void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
-    parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
+    parent().renderPassManager()->getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
 }
 
 void SceneManager::preRenderAllPasses(const Camera& playerCamera) {

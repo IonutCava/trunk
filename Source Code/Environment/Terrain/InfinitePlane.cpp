@@ -131,9 +131,8 @@ void InfinitePlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, Scen
     TransformComponent* tComp = sgn.get<TransformComponent>();
 
     const vec3<F32>& newEye = sceneState.parentScene().playerCamera()->getEye();
-    
-    tComp->setPositionX(newEye.x);
-    tComp->setPositionZ(newEye.z);
+
+    tComp->setPosition(newEye.x, tComp->getPosition().y, newEye.z);
 }
 
 void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,

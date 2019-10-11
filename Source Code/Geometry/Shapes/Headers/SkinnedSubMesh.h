@@ -59,6 +59,9 @@ class SkinnedSubMesh : public SubMesh {
     void onAnimationChange(SceneGraphNode& sgn, I32 newIndex) override;
     const char* getResourceTypeName() const override { return "SkinnedSubMesh"; }
 
+    void sceneUpdate(const U64 deltaTimeUS,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) final;
    private:
     void computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex);
     void buildBoundingBoxesForAnim(const Task& parentTask,

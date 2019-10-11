@@ -239,7 +239,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
 
-    RenderPassManager& passMgr = parent().renderPassManager();
+    auto& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
     params._camera = camera;
@@ -267,7 +267,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         camera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
         params._passIndex = i;
-        passMgr.doCustomPass(params, bufferInOut);
+        passMgr->doCustomPass(params, bufferInOut);
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
     }
 
@@ -314,7 +314,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     // Set a 90 degree vertical FoV perspective projection
     camera->setProjection(1.0f, 180.0f, zPlanes);
 
-    RenderPassManager& passMgr = parent().renderPassManager();
+    auto& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
     params._camera = camera;
@@ -348,7 +348,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         // And generated required matrices
         // Pass our render function to the renderer
         params._passIndex = i;
-        passMgr.doCustomPass(params, bufferInOut);
+        passMgr->doCustomPass(params, bufferInOut);
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
     }
     GFX::EndRenderPassCommand endRenderPassCmd;

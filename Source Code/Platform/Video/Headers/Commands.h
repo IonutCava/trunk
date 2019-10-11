@@ -43,12 +43,12 @@ struct ImDrawData;
 namespace Divide {
 namespace GFX {
 
-constexpr size_t g_commandPoolSizeFactor = 512;
+constexpr size_t g_commandPoolSizeFactor = 256;
 
 template<typename T>
 struct CmdAllocator {
     static std::mutex s_PoolMutex;
-    static MemoryPool<T, nextPOW2(sizeof(T) * g_commandPoolSizeFactor)> s_Pool;
+    static MemoryPool<T, prevPOW2(sizeof(T) * g_commandPoolSizeFactor)> s_Pool;
 
     template <class... Args>
     static T* allocate(Args&&... args) {

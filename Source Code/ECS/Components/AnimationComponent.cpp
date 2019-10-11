@@ -24,6 +24,10 @@ AnimationComponent::~AnimationComponent()
 {
 }
 
+void AnimationComponent::setParentTimeStamp(const U64 timestamp) {
+    _parentTimeStamp = timestamp;
+}
+
 void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
     _parentTimeStamp += timestamp;
 }

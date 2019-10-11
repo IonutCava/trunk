@@ -93,6 +93,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
 
     void resetTimers();
     void incParentTimeStamp(const U64 timestamp);
+    void setParentTimeStamp(const U64 timestamp);
 
     const vector<Line>& skeletonLines() const;
 

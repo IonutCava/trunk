@@ -51,6 +51,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _parent(nullptr),
       //_frustPlaneCache(-1),
       _elapsedTimeUS(0ULL),
+      _lastDeltaTimeUS(0ULL),
       _updateFlags(0U),
       _active(true),
       _visibilityLocked(false),
@@ -434,6 +435,7 @@ void SceneGraphNode::frameEnded() {
 void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     // update local time
     _elapsedTimeUS += deltaTimeUS;
+    _lastDeltaTimeUS = deltaTimeUS;
 
     if (!_relationshipCache.isValid()) {
         _relationshipCache.rebuild();

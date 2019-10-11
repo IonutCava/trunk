@@ -30,7 +30,7 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     shadowCameras[0]->lookAt(light.getSGN().get<TransformComponent>()->getPosition(), light.getSGN().get<TransformComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
     shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(1.0, light.getRange()));
 
-    RenderPassManager& passMgr = _context.parent().renderPassManager();
+    auto& passMgr = _context.parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = &light.getSGN();
     params._camera = shadowCameras[0];
@@ -40,7 +40,7 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     params._passIndex = (lightIndex * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
     params._passVariant = to_U8(light.getLightType());
 
-    passMgr.doCustomPass(params, bufferInOut);
+    passMgr->doCustomPass(params, bufferInOut);
 }
 
 };
