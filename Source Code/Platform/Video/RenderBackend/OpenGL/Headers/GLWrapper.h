@@ -98,17 +98,18 @@ public:
     ~GL_API();
 
 protected:
-    /// Try and create a valid OpenGL context taking in account the specified
-    /// command line arguments
-    ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
-    /// Clear everything that was setup in initRenderingAPI()
-    void closeRenderingAPI() override;
+    RenderAPI renderAPI() const final;
 
-    void idle() override;
+    /// Try and create a valid OpenGL context taking in account the specified command line arguments
+    ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;
+    /// Clear everything that was setup in initRenderingAPI()
+    void closeRenderingAPI() final;
+
+    void idle() final;
     /// Prepare the GPU for rendering a frame
-    void beginFrame(DisplayWindow& window, bool global = false) override;
+    void beginFrame(DisplayWindow& window, bool global = false) final;
     /// Finish rendering the current frame
-    void endFrame(DisplayWindow& window, bool global = false) override;
+    void endFrame(DisplayWindow& window, bool global = false) final;
 
     /// Verify if we have a sampler object created and available for the given
     /// descriptor
@@ -125,23 +126,23 @@ protected:
     bool draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset);
 
     /// Sets the current state block to the one passed as a param
-    size_t setStateBlock(size_t stateBlockHash) override;
+    size_t setStateBlock(size_t stateBlockHash) final;
 
-    void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
+    void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
 
-    void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
-    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) override;
+    void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
+    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) final;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
-    F32 getFrameDurationGPU() const override;
+    F32 getFrameDurationGPU() const final;
 
     /// Return the size in pixels that we can render to. This differs from the window size on Retina displays
-    vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
+    vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
 
-    U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
+    U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const final;
 
-    void onThreadCreated(const std::thread::id& threadID) override;
+    void onThreadCreated(const std::thread::id& threadID) final;
 
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
@@ -152,7 +153,7 @@ protected:
     bool makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews);
     bool makeImagesResident(const vectorEASTLFast<Image>& images);
 
-    bool setViewport(const Rect<I32>& viewport) override;
+    bool setViewport(const Rect<I32>& viewport) final;
 
 public:
     static GLStateTracker& getStateTracker();
@@ -280,7 +281,6 @@ private:
     static glGlobalLockManager s_globalLockManager;
 
     std::pair<I64, SDL_GLContext> _currentContext;
-
 };
 
 };  // namespace Divide

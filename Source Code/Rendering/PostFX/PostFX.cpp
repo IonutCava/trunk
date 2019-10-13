@@ -4,6 +4,7 @@
 #include "Headers/PreRenderOperator.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -15,8 +16,9 @@
 
 namespace Divide {
 
-PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
-    : _preRenderBatch(nullptr),
+PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
+    : PlatformContextComponent(context),
+      _preRenderBatch(nullptr),
       _screenBorder(nullptr),
       _noise(nullptr),
       _randomNoiseCoefficient(0.0f),
@@ -25,7 +27,6 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
       _tickInterval(1),
       _postProcessingShader(nullptr),
       _underwaterTexture(nullptr),
-      _gfx(nullptr),
       _drawPipeline(nullptr),
       _filtersDirty(true),
       _filterStack(0),
@@ -41,8 +42,7 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
     Console::printfn(Locale::get(_ID("START_POST_FX")));
-    _gfx = &context;
-    _preRenderBatch = MemoryManager_NEW PreRenderBatch(context, cache);
+    _preRenderBatch = MemoryManager_NEW PreRenderBatch(context.gfx(), cache);
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -108,12 +108,12 @@ PostFX::PostFX(GFXDevice& context, ResourceCache& cache)
     _screenBorder = CreateResource<Texture>(cache, borderTexture);
 
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = context.get2DStateBlock();
+    pipelineDescriptor._stateHash = context.gfx().get2DStateBlock();
     pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getGUID();
 
     _drawCommand._primitiveType = PrimitiveType::TRIANGLES;
     _drawCommand._drawCount = 1;
-    _drawPipeline = context.newPipeline(pipelineDescriptor);
+    _drawPipeline = context.gfx().newPipeline(pipelineDescriptor);
 
     _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
 
@@ -152,7 +152,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
 
         PipelineDescriptor desc = _drawPipeline->descriptor();
         desc._shaderFunctions[to_base(ShaderType::FRAGMENT)] = _shaderFunctionSelection;
-        _drawPipeline = _gfx->newPipeline(desc);
+        _drawPipeline = context().gfx().newPipeline(desc);
         _filtersDirty = false;
     }
 
@@ -167,7 +167,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     TextureData data1 = _noise->data();
     TextureData data2 = _screenBorder->data();
 
-    RenderTarget& screenRT = _gfx->renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& screenRT = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     TextureData depthData = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->data();
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;

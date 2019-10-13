@@ -68,7 +68,6 @@ class DX_API;
 
 class Light;
 class Camera;
-class PostFX;
 class Quad3D;
 class Texture;
 class Object3D;
@@ -101,10 +100,13 @@ namespace Attorney {
 };
 
 namespace TypeUtil {
-    const char* renderStageToString(RenderStage stage);
-    const char* renderPassTypeToString(RenderPassType pass);
-    RenderStage stringToRenderStage(const char* stage);
-    RenderPassType stringToRenderPassType(const char* pass);
+    const char* GraphicResourceTypeToName(GraphicsResource::Type type);
+
+    const char* RenderStageToString(RenderStage stage);
+    RenderStage StringToRenderStage(const char* stage);
+
+    const char* RenderPassTypeToString(RenderPassType pass);
+    RenderPassType StringToRenderPassType(const char* pass);
 };
 
 struct DebugView : public GUIDWrapper {
@@ -171,12 +173,9 @@ public:  // GPU interface
     static const U32 MaxFrameQueueSize = 2;
     static_assert(MaxFrameQueueSize > 0, "FrameQueueSize is invalid!");
 
-    ErrorCode initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution);
+    ErrorCode initRenderingAPI(I32 argc, char** argv, RenderAPI API, const vec2<U16>& renderResolution);
     ErrorCode postInitRenderingAPI();
     void closeRenderingAPI();
-
-    inline void setAPI(RenderAPI API) { _API_ID = API; }
-    inline RenderAPI getAPI() const { return _API_ID; }
 
     void idle();
     void beginFrame(DisplayWindow& window, bool global);
@@ -229,68 +228,39 @@ public:  // GPU interface
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);
 
-    Renderer& getRenderer() const;
-
     ShaderComputeQueue& shaderComputeQueue();
     const ShaderComputeQueue& shaderComputeQueue() const;
 
 public:  // Accessors and Mutators
-    inline const GPUState& gpuState() const { return _state; }
-
-    inline GPUState& gpuState() { return _state; }
-
-    inline void debugDrawFrustum(const Frustum* frustum) { _debugFrustum = frustum; }
-
+    inline Renderer& getRenderer() const;
+    inline const GPUState& gpuState() const;
+    inline GPUState& gpuState();
+    inline void debugDrawFrustum(const Frustum* frustum);
     /// returns the standard state block
-    inline size_t getDefaultStateBlock(bool noDepth) const {
-        return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash;
-    }
-
-    inline size_t get2DStateBlock() const {
-        return _state2DRenderingHash;
-    }
-
-    inline const Texture_ptr& getPrevDepthBuffer() const {
-        return _prevDepthBuffer;
-    }
-
-    inline GFXRTPool& renderTargetPool() {
-        return *_rtPool;
-    }
-
-    inline const GFXRTPool& renderTargetPool() const {
-        return *_rtPool;
-    }
-    
-    inline const ShaderProgram_ptr& getRTPreviewShader(bool depthOnly) const {
-        return depthOnly ? _previewRenderTargetDepth : _previewRenderTargetColour;
-    }
-
-    inline PostFX& postFX() {
-        return *_postFX;
-    }
-
-    inline const PostFX& postFX() const {
-        return *_postFX;
-    }
-
-    inline U32 getFrameCount() const { return FRAME_COUNT; }
-
-    inline I32 getDrawCallCount() const { return FRAME_DRAW_CALLS_PREV; }
-
+    inline size_t getDefaultStateBlock(bool noDepth) const;
+    inline size_t get2DStateBlock() const;
+    inline const Texture_ptr& getPrevDepthBuffer() const;
+    inline GFXRTPool& renderTargetPool();
+    inline const GFXRTPool& renderTargetPool() const;
+    inline const ShaderProgram_ptr& getRTPreviewShader(bool depthOnly) const;
+    inline U32 getFrameCount() const;
+    inline I32 getDrawCallCount() const;
     /// Return the last number of HIZ culled items
-    inline U32 getLastCullCount() const { _queueCullRead = true; return LAST_CULL_COUNT; }
-
-    inline Arena::Statistics getObjectAllocStats() const { return _gpuObjectArena.statistics_; }
-
-    inline void registerDrawCall() { registerDrawCalls(1); }
-
-    inline void registerDrawCalls(U32 count) { FRAME_DRAW_CALLS += count; }
-
-    inline const Rect<I32>& getCurrentViewport() const { return _viewport; }
+    inline U32 getLastCullCount() const;
+    inline Arena::Statistics getObjectAllocStats() const;
+    inline void registerDrawCall();
+    inline void registerDrawCalls(U32 count);
+    inline const Rect<I32>& getCurrentViewport() const;
 
     DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
+
+    /// In milliseconds
+    inline F32 getFrameDurationGPU() const;
+    inline vec2<U16> getDrawableSize(const DisplayWindow& window) const;
+    inline U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const;
+    inline void onThreadCreated(const std::thread::id& threadID);
+    inline RenderAPI getRenderAPI() const;
 
     static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
@@ -300,39 +270,49 @@ public:  // Accessors and Mutators
     static GPURenderer getGPURenderer() { return s_GPURenderer; }
 
 public:
-    void              lockObjectArena();
-    void              unlockObjectArena();
+    std::mutex&       objectArenaMutex();
     ObjectArena&      objectArena();
 
-    IMPrimitive*       newIMP() const;
-    VertexBuffer*      newVB() const;
-    PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D, const char* name = nullptr) const;
-    GenericVertexData* newGVD(const U32 ringBufferLength, const char* name = nullptr) const;
+    /// Create and return a new immediate mode emulation primitive.
+    IMPrimitive*       newIMP();
+    /// Create and return a new vertex array (VAO + VB + IB).
+    VertexBuffer*      newVB();
+    /// Create and return a new pixel buffer using the requested format.
+    PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D, const char* name = nullptr);
+    /// Create and return a new generic vertex data object
+    GenericVertexData* newGVD(const U32 ringBufferLength, const char* name = nullptr);
+    /// Create and return a new texture.
     Texture*           newTexture(size_t descriptorHash,
                                   const stringImpl& name,
                                   const stringImpl& resourceName,
                                   const stringImpl& resourceLocation,
                                   bool isFlipped,
                                   bool asyncLoad,
-                                  const TextureDescriptor& texDescriptor) const;
+                                  const TextureDescriptor& texDescriptor);
+
+    /// Create and return a new shader program.
     ShaderProgram*     newShaderProgram(size_t descriptorHash,
                                         const stringImpl& name,
                                         const stringImpl& resourceName,
                                         const stringImpl& resourceLocation,
                                         const ShaderProgramDescriptor& descriptor,
-                                        bool asyncLoad) const;
-    ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor) const;
-
-    Pipeline*          newPipeline(const PipelineDescriptor& descriptor) const;
+                                        bool asyncLoad);
+    /// Create and return a new shader buffer. 
+    /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false
+    /// or a 'Shader Storage Block Object' otherwise
+    /// The shader buffer can also be persistently mapped, if requested
+    ShaderBuffer*      newSB(const ShaderBufferDescriptor& descriptor);
+    /// Create and return a new graphics pipeline. This is only used for caching and doesn't use the object arena
+    Pipeline*          newPipeline(const PipelineDescriptor& descriptor);
 
     // Shortcuts
     void drawText(const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) const;
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
 
     // Render the texture over the full window dimensions regardless of the actual active rendering viewport 
-    void drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) const;
+    void drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut);
     // Render the texture using a custom viewport
-    void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
+    void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut);
 
     void blurTarget(RenderTargetHandle& blurSource, 
                     RenderTargetHandle& blurTargetH,
@@ -340,28 +320,11 @@ public:
                     RTAttachmentType att,
                     U8 index,
                     I32 kernelSize,
-                    GFX::CommandBuffer& bufferInOut) const;
-
-public:  // Direct API calls
-    // In milliseconds
-    inline F32 getFrameDurationGPU() const {
-        return _api->getFrameDurationGPU();
-    }
-
-    inline vec2<U16> getDrawableSize(const DisplayWindow& window) const {
-        return _api->getDrawableSize(window);
-    }
-
-    inline U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
-        return _api->getHandleFromCEGUITexture(textureIn);
-    }
-
-    inline void onThreadCreated(const std::thread::id& threadID) {
-        _api->onThreadCreated(threadID);
-    }
+                    GFX::CommandBuffer& bufferInOut);
 
 protected:
-    RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
+    /// Create and return a new framebuffer.
+    RenderTarget* newRT(const RenderTargetDescriptor& descriptor);
 
     void drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut);
 
@@ -389,7 +352,7 @@ protected:
                        GFX::CommandBuffer& bufferInOut);
 
     // Returns the HiZ texture that can be sent directly to occlusionCull
-    const Texture_ptr& constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) const;
+    const Texture_ptr& constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut);
 
     void updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut);
 
@@ -402,66 +365,61 @@ private:
     void setClipPlanes(const FrustumClipPlanes& clipPlanes);
     void renderFromCamera(const CameraSnapshot& cameraSnapshot, RenderStage stage);
 
-    ErrorCode createAPIInstance();
+    ErrorCode createAPIInstance(RenderAPI api);
 
 private:
-    std::unique_ptr<RenderAPIWrapper> _api;
-    std::unique_ptr<PostFX> _postFX;
-    std::unique_ptr<Renderer> _renderer;
+    std::unique_ptr<RenderAPIWrapper> _api = nullptr;
+    std::unique_ptr<Renderer> _renderer = nullptr;
 
-    /// Pointer to a shader creation queue
-    ShaderComputeQueue* _shaderComputeQueue;
+    ShaderComputeQueue* _shaderComputeQueue = nullptr;
 
     vector<Line> _axisLines;
-    IMPrimitive     *_axisGizmo;
+    IMPrimitive* _axisGizmo = nullptr;
     vector<Line> _axisLinesTransformed;
 
-    const Frustum   *_debugFrustum;
-    IMPrimitive     *_debugFrustumPrimitive;
+    const Frustum*  _debugFrustum = nullptr;
+    IMPrimitive*    _debugFrustumPrimitive = nullptr;
+
     CameraSnapshot  _activeCameraSnapshot;
 
-protected:
-    RenderAPI _API_ID;
     GPUState _state;
-    /* Rendering buffers.*/
-    GFXRTPool* _rtPool;
+    GFXRTPool* _rtPool = nullptr;
 
     std::pair<vec2<U16>, bool> _resolutionChangeQueued;
 
-    Texture_ptr _prevDepthBuffer;
-
-    /*State management */
-    bool _stateBlockByDescription;
-    size_t _defaultStateBlockHash;
+    Texture_ptr _prevDepthBuffer = nullptr;
+    size_t _defaultStateBlockHash = 0;
     /// The default render state buth with depth testing disabled
-    size_t _defaultStateNoDepthHash;
+    size_t _defaultStateNoDepthHash = 0;
     /// Special render state for 2D rendering
-    size_t _state2DRenderingHash;
-    size_t _stateDepthOnlyRenderingHash;
+    size_t _state2DRenderingHash = 0;
+    size_t _stateDepthOnlyRenderingHash = 0;
     /// The interpolation factor between the current and the last frame
     FrustumClipPlanes _clippingPlanes;
 
-    bool _2DRendering;
     // number of draw calls (rough estimate)
-    I32 FRAME_DRAW_CALLS;
-    U32 FRAME_DRAW_CALLS_PREV;
-    U32 FRAME_COUNT;
+    I32 FRAME_DRAW_CALLS = 0;
+    U32 FRAME_DRAW_CALLS_PREV = 0u;
+    U32 FRAME_COUNT = 0u;
 
     mutable bool _queueCullRead = false;
     U32 LAST_CULL_COUNT = 0;
 
     /// shader used to preview the depth buffer
-    ShaderProgram_ptr _previewDepthMapShader;
-    ShaderProgram_ptr _previewRenderTargetColour;
-    ShaderProgram_ptr _previewRenderTargetDepth;
-    ShaderProgram_ptr _renderTargetDraw;
-    ShaderProgram_ptr _HIZConstructProgram;
-    ShaderProgram_ptr _HIZCullProgram;
-    ShaderProgram_ptr _displayShader;
-    ShaderProgram_ptr _textRenderShader;
-    ShaderProgram_ptr _blurShader;
+    ShaderProgram_ptr _previewDepthMapShader = nullptr;
+    ShaderProgram_ptr _previewRenderTargetColour = nullptr;
+    ShaderProgram_ptr _previewRenderTargetDepth = nullptr;
+    ShaderProgram_ptr _renderTargetDraw = nullptr;
+    ShaderProgram_ptr _HIZConstructProgram = nullptr;
+    ShaderProgram_ptr _HIZCullProgram = nullptr;
+    ShaderProgram_ptr _displayShader = nullptr;
+    ShaderProgram_ptr _textRenderShader = nullptr;
+    ShaderProgram_ptr _blurShader = nullptr;
     
-    U32 _horizBlur = 0, _vertBlur = 0;
+    Pipeline* _HIZPipeline = nullptr;
+
+    U32 _horizBlur = 0u;
+    U32 _vertBlur = 0u;
 
     PushConstants _textRenderConstants;
     Pipeline* _textRenderPipeline = nullptr;
@@ -478,22 +436,23 @@ protected:
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 
     std::mutex _debugViewLock;
-    bool _debugViewsEnabled;
+    bool _debugViewsEnabled = false;
     vector<DebugView_ptr> _debugViews;
     
-    ShaderBuffer* _gfxDataBuffer;
+    ShaderBuffer* _gfxDataBuffer = nullptr;
     GenericDrawCommand _defaultDrawCmd;
 
     MemoryPool<GenericDrawCommand> _commandPool;
 
-    mutable std::mutex _descriptorSetPoolLock;
-    mutable DescriptorSetPool _descriptorSetPool;
+    std::mutex _descriptorSetPoolLock;
+    DescriptorSetPool _descriptorSetPool;
     
-    mutable std::mutex _pipelineCacheLock;
-    mutable hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
-    std::shared_ptr<RenderDocManager> _renderDocManager;
-    mutable std::mutex _gpuObjectArenaMutex;
-    mutable ObjectArena _gpuObjectArena;
+    std::mutex _pipelineCacheLock;
+    hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
+    std::shared_ptr<RenderDocManager> _renderDocManager = nullptr;
+    
+    std::mutex _gpuObjectArenaMutex;
+    ObjectArena _gpuObjectArena;
 
     static D64 s_interpolationFactor;
     static GPUVendor s_GPUVendor;

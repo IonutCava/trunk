@@ -199,9 +199,7 @@ bool glVertexArray::create(bool staticDraw) {
     if (!staticDraw) {
         // OpenGLES support isn't added, but this check doesn't break anything,
         // so I'll just leave it here -Ionut
-        GLenum usage = (_context.getAPI() == RenderAPI::OpenGLES)
-                           ? GL_STREAM_DRAW
-                           : GL_DYNAMIC_DRAW;
+        GLenum usage = (GL_API::s_glConfig._glES ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW);
         if (usage != _usage) {
             _usage = usage;
             _refreshQueued = true;
@@ -320,7 +318,7 @@ void glVertexArray::upload() {
             }
         }
 
-        Console::printfn("      %s : %zu (pass: %s)", TypeUtil::renderStageToString(RenderStagePass::stage(i)), crtHash, TypeUtil::renderPassTypeToString(RenderStagePass::pass(i)));
+        Console::printfn("      %s : %zu (pass: %s)", TypeUtil::RenderStageToString(RenderStagePass::stage(i)), crtHash, TypeUtil::RenderPassTypeToString(RenderStagePass::pass(i)));
     }
 
     _uploadQueued = false;

@@ -26,6 +26,10 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(global);
     }
 
+    RenderAPI VK_API::renderAPI() const {
+        return RenderAPI::Vulkan;
+    }
+
     ErrorCode VK_API::initRenderingAPI(I32 argc, char** argv, Configuration& config) {
         ACKNOWLEDGE_UNUSED(argc);
         ACKNOWLEDGE_UNUSED(argv);

@@ -266,8 +266,8 @@ void Material::waitForShader(const ShaderProgram_ptr& shader, RenderStagePass st
         Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
             oldShader->resourceName().c_str(),
             newShader != nullptr ? newShader : "NULL",
-            TypeUtil::renderStageToString(stagePass._stage),
-            TypeUtil::renderPassTypeToString(stagePass._passType));
+            TypeUtil::RenderStageToString(stagePass._stage),
+            TypeUtil::RenderPassTypeToString(stagePass._passType));
     }
 }
 
@@ -304,8 +304,8 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
         Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
             info._shaderRef->resourceName().c_str(), 
             shaderDescriptor.resourceName().c_str(),
-            TypeUtil::renderStageToString(renderStagePass._stage),
-            TypeUtil::renderPassTypeToString(renderStagePass._passType));
+            TypeUtil::RenderStageToString(renderStagePass._stage),
+            TypeUtil::RenderPassTypeToString(renderStagePass._passType));
     }
 
     //UniqueLockShared w_lock(s_shaderDBLock);

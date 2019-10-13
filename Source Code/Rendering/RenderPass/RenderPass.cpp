@@ -155,12 +155,12 @@ void RenderPass::initBufferData() {
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
+    bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
     _renderData = _context.newSB(bufferDescriptor);
 
     if (_performanceCounters) {
         bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
-        bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::renderStageToString(_stageFlag)).c_str();
+        bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._elementCount = 1;
@@ -183,7 +183,7 @@ void RenderPass::initBufferData() {
     _lastNodeCount.resize(cmdCount, 0u);
 
     for (U32 i = 0; i < cmdCount; ++i) {
-        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s_%d", TypeUtil::renderStageToString(_stageFlag), i).c_str();
+        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s_%d", TypeUtil::RenderStageToString(_stageFlag), i).c_str();
         _cmdBuffers.emplace_back(_context.newSB(bufferDescriptor));
     }
 }

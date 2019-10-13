@@ -72,6 +72,7 @@ vec2<U16> WindowManager::getFullscreenResolution() const {
 }
 
 ErrorCode WindowManager::init(PlatformContext& context,
+                              RenderAPI renderingAPI,
                               const vec2<I16>& initialPosition,
                               const vec2<U16>& initialSize,
                               WindowMode windowMode,
@@ -87,8 +88,6 @@ ErrorCode WindowManager::init(PlatformContext& context,
     }
     
     _context = &context;
-
-    const RenderAPI api = _context->gfx().getAPI();
 
     _monitors.resize(0);
     const I32 displayCount = SDL_GetNumVideoDisplays();
@@ -117,7 +116,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     systemInfo._systemResolutionWidth = displayMode.w;
     systemInfo._systemResolutionHeight = displayMode.h;
 
-    _apiFlags = createAPIFlags(api);
+    _apiFlags = createAPIFlags(renderingAPI);
 
     // Toggle multi-sampling if requested.
     const I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
@@ -153,6 +152,8 @@ ErrorCode WindowManager::init(PlatformContext& context,
     descriptor.targetDisplay = to_U32(displayIndex);
     descriptor.title = _context->config().title;
     descriptor.externalClose = false;
+    descriptor.targetAPI = renderingAPI;
+
     if (_context->config().runtime.enableVSync) {
         SetBit(descriptor.flags, WindowDescriptor::Flags::VSYNC);
     }
@@ -272,7 +273,7 @@ DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descriptor, E
     }
 
     if (err == ErrorCode::NO_ERR) {
-        err = configureAPISettings(descriptor.flags);
+        err = configureAPISettings(descriptor.targetAPI, descriptor.flags);
     }
 
     err = window->init(mainWindowFlags,
@@ -393,7 +394,7 @@ void WindowManager::destroyAPISettings(DisplayWindow* window) {
     }
 }
 
-ErrorCode WindowManager::configureAPISettings(U16 descriptorFlags) {
+ErrorCode WindowManager::configureAPISettings(RenderAPI api, U16 descriptorFlags) {
     Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
 
     if (Config::ENABLE_GPU_VALIDATION) {
@@ -422,7 +423,7 @@ ErrorCode WindowManager::configureAPISettings(U16 descriptorFlags) {
 
     // OpenGL ES is not yet supported, but when added, it will need to mirror
     // OpenGL functionality 1-to-1
-    if (_context->gfx().getAPI() == RenderAPI::OpenGLES) {
+    if (api == RenderAPI::OpenGLES) {
         validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1));
         validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES));
         validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3));

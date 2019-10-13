@@ -37,6 +37,7 @@
 
 namespace Divide {
 
+class PostFX;
 class LightPool;
 class ResourceCache;
 class PlatformContext;
@@ -53,12 +54,20 @@ class Renderer : public PlatformContextComponent {
                    const Camera& camera,
                    GFX::CommandBuffer& bufferInOut);
 
+    void idle();
+
+    void updateResolution(U16 newWidth, U16 newHeight);
+
+    inline PostFX& postFX() { return *_postFX; }
+
+    inline const PostFX& postFX() const { return *_postFX; }
+
   private:
     ResourceCache& _resCache;
 
     ShaderProgram_ptr _lightCullComputeShader;
     ShaderBuffer*     _perTileLightIndexBuffer;
-
+    std::unique_ptr<PostFX> _postFX = nullptr;
 };
 
 };  // namespace Divide

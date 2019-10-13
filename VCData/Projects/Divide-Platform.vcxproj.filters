@@ -291,12 +291,6 @@
     <ClCompile Include="../../Source Code/Platform\Video\GFXDevice.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Platform\Video\GFXDeviceDebug.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Platform\Video\GFXDeviceState.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Platform\Video\IMPrimitive.cpp">
       <Filter>Video</Filter>
     </ClCompile>
@@ -369,9 +363,6 @@
     <ClCompile Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\glMemoryManager.cpp">
       <Filter>Video\RenderBackend\OpenGL\Buffers</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Platform\Video\GFXDeviceDraw.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Platform\Video\Buffers\ShaderBuffer\ShaderBuffer.cpp">
       <Filter>Video\Buffers\ShaderBuffer</Filter>
     </ClCompile>
@@ -420,9 +411,6 @@
       <Filter>Video\Buffers\VertexBuffer\GenericBuffer</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Platform\Video\GFXRTPool.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Platform\Video\GFXDeviceObjects.cpp">
       <Filter>Video</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Platform\Video\GenericDrawCommand.cpp">

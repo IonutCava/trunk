@@ -26,6 +26,10 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(global);
     }
 
+    RenderAPI NONE_API::renderAPI() const {
+        return RenderAPI::None;
+    }
+
     ErrorCode NONE_API::initRenderingAPI(I32 argc, char** argv, Configuration& config) {
         ACKNOWLEDGE_UNUSED(argc);
         ACKNOWLEDGE_UNUSED(argv);

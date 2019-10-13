@@ -9,6 +9,7 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
@@ -144,7 +145,7 @@ namespace Divide {
 
                     Time::ProfileTimer& timer = *_postFxRenderTimer;
                     GFXDevice& gfx = parent().platformContext().gfx();
-                    PostFX& postFX = gfx.postFX();
+                    PostFX& postFX = gfx.getRenderer().postFX();
 
                     postFXTask = CreateTask(pool,
                                             nullptr,
@@ -876,7 +877,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 0;
-    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s )", TypeUtil::renderStageToString(params._stage)).c_str();
+    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s )", TypeUtil::RenderStageToString(params._stage)).c_str();
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSets = {};

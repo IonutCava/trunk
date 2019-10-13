@@ -313,7 +313,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
             // Update the scene state based on current time (e.g. animation matrices)
             _sceneManager->updateSceneState(deltaTimeUS);
             // Update visual effect timers as well
-            _platformContext.gfx().postFX().update(deltaTimeUS);
+            _platformContext.gfx().getRenderer().postFX().update(deltaTimeUS);
 
             if (loopCount == 0) {
                 _sceneUpdateLoopTimer.stop();
@@ -619,7 +619,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _platformContext.app().setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     _platformContext.pfx().setAPI(PXDevice::PhysicsAPI::PhysX);
     _platformContext.sfx().setAPI(SFXDevice::AudioAPI::SDL);
-    _platformContext.gfx().setAPI(static_cast<RenderAPI>(config.runtime.targetRenderingAPI));
 
     ASIO::SET_LOG_FUNCTION([](const char* msg, bool is_error) {
         is_error ? Console::errorfn(msg) : Console::printfn(msg);
@@ -638,8 +637,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
 
+    RenderAPI renderingAPI = static_cast<RenderAPI>(config.runtime.targetRenderingAPI);
+
     WindowManager& winManager = _platformContext.app().windowManager();
     ErrorCode initError = winManager.init(_platformContext,
+                                          renderingAPI,
                                           vec2<I16>(-1),
                                           config.runtime.windowSize,
                                           static_cast<WindowMode>(config.runtime.windowedMode),
@@ -651,7 +653,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Camera::initPool();
 
-    initError = _platformContext.gfx().initRenderingAPI(_argc, _argv, config.runtime.resolution);
+    initError = _platformContext.gfx().initRenderingAPI(_argc, _argv, renderingAPI, config.runtime.resolution);
 
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {

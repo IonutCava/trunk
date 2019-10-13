@@ -6,8 +6,11 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+
+#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
+
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
@@ -22,6 +25,8 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     : PlatformContextComponent(context),
       _resCache(cache)
 {
+    Configuration& config = context.config();
+
     ShaderModuleDescriptor computeDescriptor = {};
     computeDescriptor._moduleType = ShaderType::COMPUTE;
     computeDescriptor._sourceFile = "lightCull.glsl";
@@ -54,10 +59,35 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     bufferDescriptor._initialData = initData.data();
     _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
+
+    _postFX = std::make_unique<PostFX>(context, cache);
+    if (config.rendering.postFX.postAASamples > 0) {
+        _postFX->pushFilter(FilterType::FILTER_SS_ANTIALIASING);
+    }
+    if (false) {
+        _postFX->pushFilter(FilterType::FILTER_SS_REFLECTIONS);
+    }
+    if (config.rendering.postFX.enableSSAO) {
+        _postFX->pushFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
+    }
+    if (config.rendering.postFX.enableDepthOfField) {
+        _postFX->pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
+    }
+    if (false) {
+        _postFX->pushFilter(FilterType::FILTER_MOTION_BLUR);
+    }
+    if (config.rendering.postFX.enableBloom) {
+        _postFX->pushFilter(FilterType::FILTER_BLOOM);
+    }
+    if (false) {
+        _postFX->pushFilter(FilterType::FILTER_LUT_CORECTION);
+    }
 }
 
 Renderer::~Renderer()
 {
+    // Destroy our post processing system
+    Console::printfn(Locale::get(_ID("STOP_POST_FX")));
 }
 
 void Renderer::preRender(RenderStagePass stagePass,
@@ -107,4 +137,11 @@ void Renderer::preRender(RenderStagePass stagePass,
     GFX::EnqueueCommand(bufferInOut, memCmd);
 }
 
+void Renderer::idle() {
+    _postFX->idle(_context.config());
+}
+
+void Renderer::updateResolution(U16 newWidth, U16 newHeight) {
+    _postFX->updateResolution(newWidth, newHeight);
+}
 };

@@ -72,8 +72,8 @@ using AttribFlags = std::array<bool, to_base(AttribLocation::COUNT)>;
 
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
-  protected:
-   friend class GFXDevice;
+protected:
+    friend class GFXDevice;
     virtual void idle() = 0;
 
     /*Application display frame*/
@@ -82,6 +82,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     /// Clear shaders, restore active texture units, etc
     virtual void endFrame(DisplayWindow& window, bool global = false) = 0;
 
+    virtual RenderAPI renderAPI() const = 0;
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;
 

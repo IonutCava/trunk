@@ -82,13 +82,13 @@ const Scene& SceneManager::getActiveScene() const {
 
 void SceneManager::idle() {
     if (_sceneSwitchTarget.isSet()) {
-        _parent.platformContext().gfx().postFX().setFadeOut(UColour3(0), 1000.0, 0.0);
+        _parent.platformContext().gfx().getRenderer().postFX().setFadeOut(UColour3(0), 1000.0, 0.0);
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
                     _sceneSwitchTarget.targetViewRect(),
                     _sceneSwitchTarget.loadInSeparateThread());
         WaitForAllTasks(getActiveScene().context(), true, true, false);
-        _parent.platformContext().gfx().postFX().setFadeIn(2750.0);
+        _parent.platformContext().gfx().getRenderer().postFX().setFadeIn(2750.0);
     } else {
         while (!_playerAddQueue.empty()) {
             std::pair<Scene*, SceneGraphNode*>& playerToAdd = _playerAddQueue.front();

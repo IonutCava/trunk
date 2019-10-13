@@ -81,6 +81,7 @@ namespace NS_GLIM
             return;
 
         assert(false && szErrorMsg);
+        (void)szErrorMsg;
     }
 
 }

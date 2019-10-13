@@ -690,7 +690,7 @@ U16 Scene::registerInputActions() {
         par.setParam(_ID("freezeLoopTime"), !par.getParam(_ID("freezeLoopTime"), false));
     };
     auto toggleDepthOfField = [this](InputParams param) {
-        PostFX& postFX = _context.gfx().postFX();
+        PostFX& postFX = _context.gfx().getRenderer().postFX();
         if (postFX.getFilterState(FilterType::FILTER_DEPTH_OF_FIELD)) {
             postFX.popFilter(FilterType::FILTER_DEPTH_OF_FIELD);
         } else {
@@ -698,7 +698,7 @@ U16 Scene::registerInputActions() {
         }
     };
     auto toggleBloom = [this](InputParams param) {
-        PostFX& postFX = _context.gfx().postFX();
+        PostFX& postFX = _context.gfx().getRenderer().postFX();
         if (postFX.getFilterState(FilterType::FILTER_BLOOM)) {
             postFX.popFilter(FilterType::FILTER_BLOOM);
         } else {
@@ -1062,9 +1062,9 @@ void Scene::currentPlayerPass(PlayerIndex idx) {
     state().playerPass(idx);
 
     if (state().playerState().cameraUnderwater()) {
-        _context.gfx().postFX().pushFilter(FilterType::FILTER_UNDERWATER);
+        _context.gfx().getRenderer().postFX().pushFilter(FilterType::FILTER_UNDERWATER);
     } else {
-        _context.gfx().postFX().popFilter(FilterType::FILTER_UNDERWATER);
+        _context.gfx().getRenderer().postFX().popFilter(FilterType::FILTER_UNDERWATER);
     }
 }
 

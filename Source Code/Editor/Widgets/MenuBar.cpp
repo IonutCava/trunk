@@ -12,6 +12,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
+#include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
@@ -282,15 +283,15 @@ void MenuBar::drawPostFXMenu() {
     if (ImGui::BeginMenu("PostFX"))
     {
         for (FilterType f : FilterType::_values()) {
-            bool filterEnabled = _context.gfx().postFX().getFilterState(f);
+            bool filterEnabled = _context.gfx().getRenderer().postFX().getFilterState(f);
             if (f._value == FilterType::FILTER_COUNT) {
                 continue;
             }
             if (ImGui::MenuItem(f._to_string(), NULL, &filterEnabled)) {
                 if (filterEnabled) {
-                    _context.gfx().postFX().pushFilter(f);
+                    _context.gfx().getRenderer().postFX().pushFilter(f);
                 } else {
-                    _context.gfx().postFX().popFilter(f);
+                    _context.gfx().getRenderer().postFX().popFilter(f);
                 }
             }
         }

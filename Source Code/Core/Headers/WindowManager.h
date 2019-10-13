@@ -71,7 +71,7 @@ struct WindowDescriptor {
                        to_base(Flags::ALLOW_HIGH_DPI) |
                        to_base(Flags::CLEAR_DEPTH) |
                        to_base(Flags::CLEAR_COLOUR));
-
+    RenderAPI targetAPI;
     bool externalClose = false;
 };
 
@@ -89,6 +89,7 @@ public:
     ~WindowManager();
 
     ErrorCode init(PlatformContext& context,
+                   RenderAPI renderingAPI,
                    const vec2<I16>& initialPosition,
                    const vec2<U16>& initialSize,
                    WindowMode windowMode,
@@ -152,7 +153,7 @@ protected:
 protected:
     friend class DisplayWindow;
     U32 createAPIFlags(RenderAPI api) noexcept;
-    ErrorCode configureAPISettings(U16 descriptorFlags);
+    ErrorCode configureAPISettings(RenderAPI api, U16 descriptorFlags);
     ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags);
     void destroyAPISettings(DisplayWindow* window);
 

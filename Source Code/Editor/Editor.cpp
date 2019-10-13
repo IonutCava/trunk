@@ -267,9 +267,10 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             ImGuiViewportData* data = IM_NEW(ImGuiViewportData)();
             viewport->PlatformUserData = data;
 
+            const DisplayWindow& window = g_windowManager->getWindow(0u);
             WindowDescriptor winDescriptor = {};
             winDescriptor.title = "No Title Yet";
-            winDescriptor.targetDisplay = to_U32(g_windowManager->getWindow(0u).currentDisplayIndex());
+            winDescriptor.targetDisplay = to_U32(window.currentDisplayIndex());
             winDescriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
             winDescriptor.flags = to_U16(WindowDescriptor::Flags::HIDDEN) | to_U16(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U16(WindowDescriptor::Flags::CLEAR_DEPTH);
             // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
@@ -280,6 +281,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             winDescriptor.dimensions.set(viewport->Size.x, viewport->Size.y);
             winDescriptor.position.set(viewport->Pos.x, viewport->Pos.y);
             winDescriptor.externalClose = true;
+            winDescriptor.targetAPI = window.context().gfx().getRenderAPI();
 
             data->_window = &g_windowManager->createWindow(winDescriptor);
             data->_window->hidden(false);

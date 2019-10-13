@@ -293,11 +293,9 @@ glShader* glShader::loadShader(GFXDevice& context,
     // If we do, and don't need a recompile, just return it
     if (shader == nullptr) {
         // If we can't find it, we create a new one
-        context.lockObjectArena();
+        UniqueLock w_lock(context.objectArenaMutex());
         shader = new (context.objectArena()) glShader(context, name);
         context.objectArena().DTOR(shader);
-        context.unlockObjectArena();
-
         newShader = true;
     }
 

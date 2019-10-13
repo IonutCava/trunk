@@ -89,6 +89,10 @@ namespace {
     } g_ContextPool;
 };
 
+RenderAPI GL_API::renderAPI() const {
+    return (s_glConfig._glES ? RenderAPI::OpenGLES : RenderAPI::OpenGL);
+}
+
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
 ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& config) {
     s_enabledDebugMSGGroups = config.debug.enableDebugMsgGroups;

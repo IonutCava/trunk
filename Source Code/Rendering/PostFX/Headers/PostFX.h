@@ -34,6 +34,7 @@
 
 #include "PreRenderBatch.h"
 #include "Core/Math/Headers/MathVectors.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
 
@@ -43,7 +44,7 @@ class GFXDevice;
 class ShaderProgram;
 class Texture;
 
-class PostFX {
+class PostFX : public PlatformContextComponent {
 private:
     enum class TexOperatorBindPoint : U8 {
         TEX_BIND_POINT_SCREEN = to_base(ShaderProgram::TextureUsage::UNIT0),
@@ -54,7 +55,7 @@ private:
     };
 
 public:
-    explicit PostFX(GFXDevice& context, ResourceCache& cache);
+    explicit PostFX(PlatformContext& context, ResourceCache& cache);
     ~PostFX();
 
     void apply(const Camera& camera, GFX::CommandBuffer& bufferInOut);
@@ -110,7 +111,6 @@ private:
 
     ShaderProgram_ptr _postProcessingShader;
     Texture_ptr _underwaterTexture;
-    GFXDevice* _gfx = nullptr;
     vec2<U16> _resolutionCache;
     vector<U32> _shaderFunctionSelection;
     vector<I32> _shaderFunctionList;

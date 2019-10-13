@@ -40,6 +40,119 @@ GFXDevice::renderingData() const {
     return _gpuBlock._data;
 }
 
+inline Renderer& 
+GFXDevice::getRenderer() const {
+    DIVIDE_ASSERT(_renderer != nullptr, "GFXDevice error: Renderer requested but not created!");
+    return *_renderer;
+}
+
+inline const GPUState&
+GFXDevice::gpuState() const {
+    return _state;
+}
+
+inline GPUState&
+GFXDevice::gpuState() {
+    return _state;
+}
+
+inline void
+GFXDevice::debugDrawFrustum(const Frustum* frustum) {
+    _debugFrustum = frustum;
+}
+
+/// returns the standard state block
+inline size_t
+GFXDevice::getDefaultStateBlock(bool noDepth) const {
+    return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash;
+}
+
+inline size_t
+GFXDevice::get2DStateBlock() const {
+    return _state2DRenderingHash;
+}
+
+inline const Texture_ptr&
+GFXDevice::getPrevDepthBuffer() const {
+    return _prevDepthBuffer;
+}
+
+inline GFXRTPool&
+GFXDevice::renderTargetPool() {
+    return *_rtPool;
+}
+
+inline const GFXRTPool&
+GFXDevice::renderTargetPool() const {
+    return *_rtPool;
+}
+
+inline const ShaderProgram_ptr&
+GFXDevice::getRTPreviewShader(bool depthOnly) const {
+    return depthOnly ? _previewRenderTargetDepth : _previewRenderTargetColour;
+}
+
+inline U32
+GFXDevice::getFrameCount() const {
+    return FRAME_COUNT;
+}
+
+inline I32
+GFXDevice::getDrawCallCount() const {
+    return FRAME_DRAW_CALLS_PREV;
+}
+
+/// Return the last number of HIZ culled items
+inline U32
+GFXDevice::getLastCullCount() const {
+    _queueCullRead = true; return LAST_CULL_COUNT;
+}
+
+inline Arena::Statistics
+GFXDevice::getObjectAllocStats() const {
+    return _gpuObjectArena.statistics_;
+}
+
+inline void
+GFXDevice::registerDrawCall() {
+    registerDrawCalls(1);
+}
+
+inline void
+GFXDevice::registerDrawCalls(U32 count) {
+    FRAME_DRAW_CALLS += count;
+}
+
+inline const Rect<I32>&
+GFXDevice::getCurrentViewport() const {
+    return _viewport;
+}
+
+inline F32
+GFXDevice::getFrameDurationGPU() const {
+    return _api->getFrameDurationGPU();
+}
+
+inline vec2<U16>
+GFXDevice::getDrawableSize(const DisplayWindow& window) const {
+    return _api->getDrawableSize(window);
+}
+
+inline U32
+GFXDevice::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
+    return _api->getHandleFromCEGUITexture(textureIn);
+}
+
+inline void
+GFXDevice::onThreadCreated(const std::thread::id& threadID) {
+    _api->onThreadCreated(threadID);
+}
+
+inline RenderAPI
+GFXDevice::getRenderAPI() const {
+    return _api->renderAPI();
+}
+
 inline const vec2<U16>& 
 GFXDevice::renderingResolution() const {
     return _renderingResolution;

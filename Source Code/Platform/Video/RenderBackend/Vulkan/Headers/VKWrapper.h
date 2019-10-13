@@ -45,20 +45,21 @@ class VK_API final : public RenderAPIWrapper {
     ~VK_API();
 
   protected:
-      void idle() override;
-      void beginFrame(DisplayWindow& window, bool global = false) override;
-      void endFrame(DisplayWindow& window, bool global = false) override;
-      ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
-      void closeRenderingAPI() override;
-      F32 getFrameDurationGPU() const override;
-      size_t setStateBlock(size_t stateBlockHash) override;
-      void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
-      void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
-      void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) override;
-      vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
-      U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
-      bool setViewport(const Rect<I32>& newViewport) override;
-      void onThreadCreated(const std::thread::id& threadID) override;
+      void idle() final;
+      void beginFrame(DisplayWindow& window, bool global = false) final;
+      void endFrame(DisplayWindow& window, bool global = false) final;
+      RenderAPI renderAPI() const final;
+      ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;
+      void closeRenderingAPI() final;
+      F32 getFrameDurationGPU() const final;
+      size_t setStateBlock(size_t stateBlockHash) final;
+      void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
+      void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
+      void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) final;
+      vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
+      U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const final;
+      bool setViewport(const Rect<I32>& newViewport) final;
+      void onThreadCreated(const std::thread::id& threadID) final;
 };
 
 };  // namespace Divide
