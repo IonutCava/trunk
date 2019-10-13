@@ -73,6 +73,15 @@ namespace Divide {
         };
 
         struct SubMeshData {
+            struct Vertex {
+                vec3<F32> position = {0.f, 0.f, 0.f };
+                vec3<F32> normal = {0.f, 0.f, 0.f };
+                vec4<F32> tangent = { 0.f, 0.f, 0.f, 0.f };
+                vec3<F32> texcoord = { 0.f, 0.f, 0.f };
+                vec4<F32> weights;
+                P32       indices;
+            };
+
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
 
@@ -84,6 +93,9 @@ namespace Divide {
             PROPERTY_RW(vec3<F32>, maxPos);
 
             vectorEASTL<vec3<U32>> _triangles;
+            vectorEASTL<U32> _indices;
+            vectorEASTL<Vertex> _vertices;
+
             MaterialData _material;
         };
 

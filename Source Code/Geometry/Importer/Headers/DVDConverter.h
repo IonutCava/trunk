@@ -93,10 +93,7 @@ class DVDConverter {
    private:
 
     void loadSubMeshGeometry(const aiMesh* source, 
-                             VertexBuffer* targetBuffer,
-                             Import::SubMeshData& subMeshData,
-                             U8& submeshBoneOffsetOut,
-                             U32& previousVertOffset);
+                             Import::SubMeshData& subMeshData);
 
     void loadSubMeshMaterial(Import::MaterialData& material,
                              const aiScene* source,
