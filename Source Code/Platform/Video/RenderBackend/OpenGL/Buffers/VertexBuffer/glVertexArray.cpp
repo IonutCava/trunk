@@ -214,12 +214,9 @@ bool glVertexArray::refresh() {
     // Dynamic LOD elements (such as terrain) need dynamic indices
     // We can manually override index usage (again, used by the Terrain
     // rendering system)
-    assert(!_hardwareIndicesL.empty() || !_hardwareIndicesS.empty() &&
-           "glVertexArray::refresh error: Invalid index data on Refresh()!");
+    assert(!_indices.empty() && "glVertexArray::refresh error: Invalid index data on Refresh()!");
 
-    GLsizei nSizeIndices =
-        (GLsizei)(usesLargeIndices() ? _hardwareIndicesL.size() * sizeof(U32)
-                                     : _hardwareIndicesS.size() * sizeof(U16));
+    GLsizei nSizeIndices = (GLsizei)(_indices.size() * (usesLargeIndices() ? sizeof(U32) : sizeof(U16)));
 
     bool indicesChanged = (nSizeIndices != _prevSizeIndices);
     _prevSizeIndices = nSizeIndices;
@@ -278,11 +275,21 @@ bool glVertexArray::refresh() {
 
     // Check if we need to update the IBO (will be true for the first Refresh() call)
     if (indicesChanged) {
-        bufferPtr data = usesLargeIndices()
-                             ? static_cast<bufferPtr>(_hardwareIndicesL.data())
-                             : static_cast<bufferPtr>(_hardwareIndicesS.data());
-        // Update our IB
-        glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
+        if (usesLargeIndices()) {
+            bufferPtr data = static_cast<bufferPtr>(_indices.data());
+            // Update our IB
+            glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
+        } else {
+            vectorBest<U16> smallIndices; 
+            smallIndices.reserve(getIndexCount());
+            std::transform(std::cbegin(_indices),
+                           std::cend(_indices),
+                           std::back_inserter(smallIndices),
+                           static_caster<U32, U16>());
+            bufferPtr data = static_cast<bufferPtr>(smallIndices.data());
+            // Update our IB
+            glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
+        }
     }
 
     // Possibly clear client-side buffer for all non-required attributes?

@@ -158,13 +158,7 @@ void VertexBuffer::fromBuffer(VertexBuffer& other) {
     _partitions = other._partitions;
     _primitiveRestartEnabled = other._primitiveRestartEnabled;
     _attribDirty = other._attribDirty;
-
-    //_hardwareIndicesL = other._hardwareIndicesL;
-    //_hardwareIndicesS = other._hardwareIndicesS;
-    //_data = other._data;
-
-    unchecked_copy(_hardwareIndicesL, other._hardwareIndicesL);
-    unchecked_copy(_hardwareIndicesS, other._hardwareIndicesS);
+    unchecked_copy(_indices, other._indices);
     unchecked_copy(_data, other._data);
 }
 
@@ -181,8 +175,7 @@ bool VertexBuffer::deserialize(ByteBuffer& dataIn) {
         dataIn >> format;
         _format = static_cast<GFXDataFormat>(format);
         dataIn >> _partitions;
-        dataIn >> _hardwareIndicesL;
-        dataIn >> _hardwareIndicesS;
+        dataIn >> _indices;
         dataIn >> _data;
         dataIn >> _attribDirty;
         dataIn >> _primitiveRestartEnabled;
@@ -200,8 +193,7 @@ bool VertexBuffer::serialize(ByteBuffer& dataOut) const {
         dataOut << _keepDataInMemory;
         dataOut << to_U32(_format);
         dataOut << _partitions;
-        dataOut << _hardwareIndicesL;
-        dataOut << _hardwareIndicesS;
+        dataOut << _indices;
         dataOut << _data;
         dataOut << _attribDirty;
         dataOut << _primitiveRestartEnabled;

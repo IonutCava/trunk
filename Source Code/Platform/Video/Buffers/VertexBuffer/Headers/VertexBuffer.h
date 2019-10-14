@@ -46,7 +46,6 @@ namespace Divide {
 /// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER / D3DVERTEXBUFFER
 /// It is only a "buffer" for "vertex info" abstract of implementation. (e.g.:
 /// OGL uses a vertex array object for this)
-
 class NOINITVTABLE VertexBuffer : public VertexDataInterface {
    public:
     struct Vertex {
@@ -87,9 +86,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) = 0;
 
     inline void useLargeIndices(bool state = true) {
-        assert(_hardwareIndicesL.empty() && _hardwareIndicesS.empty() &&
-               "VertexBuffer error: Index format type specified before "
-               "buffer creation!");
+        assert(_indices.empty() && "VertexBuffer error: Index format type specified before buffer creation!");
+
         _format = state ? GFXDataFormat::UNSIGNED_INT
                         : GFXDataFormat::UNSIGNED_SHORT;
     }
@@ -107,8 +105,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     inline void reserveIndexCount(U32 size) {
-        usesLargeIndices() ? _hardwareIndicesL.reserve(size)
-                           : _hardwareIndicesS.reserve(size);
+        _indices.reserve(size);
     }
 
     inline void resizeVertexCount(U32 size, const Vertex& defaultValue = Vertex()) {
@@ -166,45 +163,29 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     inline U32 getIndexCount() const {
-        return to_U32(usesLargeIndices() ? _hardwareIndicesL.size()
-                                          : _hardwareIndicesS.size());
+        return to_U32(_indices.size());
     }
 
     inline U32 getIndex(U32 index) const {
         assert(index < getIndexCount());
-
-        return usesLargeIndices() ? _hardwareIndicesL[index]
-                                  : _hardwareIndicesS[index];
+        return _indices[index];
     }
 
-    template<typename T>
-    const vectorBest<T>& getIndices() const {
-        static_assert(false, "VertexBuffer::getIndices error: Need valid index data type!");
+    const vectorBest<U32>& getIndices() const {
+        return _indices;
     }
 
-    template <typename T>
-    inline void addIndex(T index) {
-        if (usesLargeIndices()) {
-            _hardwareIndicesL.push_back(to_U32(index));
-        } else {
-            _hardwareIndicesS.push_back(to_U16(index));
-        }
+    inline void addIndex(U32 index) {
+        assert(usesLargeIndices() || index <= std::numeric_limits<U16>::max());
+        _indices.push_back(index);
     }
 
     template <typename T>
     inline void addIndices(const vectorBest<T>& indices, bool containsRestartIndex) {
-        if (usesLargeIndices()) {
-            std::transform(std::cbegin(indices),
-                           std::cend(indices),
-                           std::back_inserter(_hardwareIndicesL),
-                           static_caster<T, U32>());
-                           
-        } else {
-            std::transform(std::cbegin(indices),
-                           std::cend(indices),
-                           std::back_inserter(_hardwareIndicesS),
-                           static_caster<T, U16>());
-        }
+        std::transform(std::cbegin(indices),
+                        std::cend(indices),
+                        std::back_inserter(_indices),
+                        static_caster<T, U32>());
 
         if (containsRestartIndex) {
             hasRestartIndex(true);
@@ -217,12 +198,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     inline void addRestartIndex() {
         hasRestartIndex(true);
-        if (usesLargeIndices()) {
-            addIndex(Config::PRIMITIVE_RESTART_INDEX_L);
-        } else {
-            addIndex(Config::PRIMITIVE_RESTART_INDEX_S);
-        }
-    }
+        addIndex((usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L : Config::PRIMITIVE_RESTART_INDEX_S));
+     }
 
     inline void modifyPositionValues(U32 indexOffset, const vector<vec3<F32>>& newValues) {
        assert(indexOffset + newValues.size() - 1 < _data.size());
@@ -373,8 +350,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _primitiveRestartEnabled = false;
         _partitions.clear();
         _data.clear();
-        _hardwareIndicesL.clear();
-        _hardwareIndicesS.clear();
+        _indices.clear();
         _attribDirty.fill(false);
     }
 
@@ -411,24 +387,13 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     GFXDataFormat _format;
     // first: offset, second: count
     vector<std::pair<U32, U32> > _partitions;
-    /// Used for creating an "IB". If it's empty, then an outside source should
-    /// provide the indices
-    vectorBest<U32> _hardwareIndicesL;
-    vectorBest<U16> _hardwareIndicesS;
+    /// Used for creating an "IB". If it's empty, then an outside source should provide the indices
+    vectorBest<U32> _indices;
     vector<Vertex> _data;
     /// Cache system to update only required data
     std::array<bool, to_base(AttribLocation::COUNT)> _attribDirty;
     bool _primitiveRestartEnabled;
 };
 
-template<>
-inline const vectorBest<U32>& VertexBuffer::getIndices<U32>() const {
-    return _hardwareIndicesL;
-}
-
-template<>
-inline const vectorBest<U16>& VertexBuffer::getIndices<U16>() const {
-    return _hardwareIndicesS;
-}
 };  // namespace Divide
 #endif

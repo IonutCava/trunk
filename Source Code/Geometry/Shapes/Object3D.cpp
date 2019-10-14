@@ -200,50 +200,28 @@ bool Object3D::computeTriangleList() {
     }
 
     U32 indiceCount = partitionCount;
-    bool largeIndices = geometry->usesLargeIndices();
     if (type == PrimitiveType::TRIANGLE_STRIP) {
         U32 indiceStart = 2 + partitionOffset;
         U32 indiceEnd = indiceCount + partitionOffset;
         vec3<U32> curTriangle;
         _geometryTriangles.reserve(indiceCount / 2);
-        if (largeIndices) {
-            const vectorBest<U32>& indices = geometry->getIndices<U32>();
-            for (U32 i = indiceStart; i < indiceEnd; i++) {
-                curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
-                // Check for correct winding
-                if (i % 2 != 0) {
-                    std::swap(curTriangle.y, curTriangle.z);
-                }
-                _geometryTriangles.push_back(curTriangle);
+        const vectorBest<U32>& indices = geometry->getIndices();
+        for (U32 i = indiceStart; i < indiceEnd; i++) {
+            curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
+            // Check for correct winding
+            if (i % 2 != 0) {
+                std::swap(curTriangle.y, curTriangle.z);
             }
-        } else {
-            const vectorBest<U16>& indices = geometry->getIndices<U16>();
-            for (U32 i = indiceStart; i < indiceEnd; i++) {
-                curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
-                // Check for correct winding
-                if (i % 2 != 0) {
-                    std::swap(curTriangle.y, curTriangle.z);
-                }
-                _geometryTriangles.push_back(curTriangle);
-            }
+            _geometryTriangles.push_back(curTriangle);
         }
     } else if (type == PrimitiveType::TRIANGLES) {
         indiceCount /= 3;
         _geometryTriangles.reserve(indiceCount);
-        if (largeIndices) {
-            const vectorBest<U32>& indices = geometry->getIndices<U32>();
-            for (U32 i = 0; i < indiceCount; i += 3) {
-                _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
-                                                       indices[i + 1],
-                                                       indices[i + 2]));
-            }
-        } else {
-            const vectorBest<U16>& indices = geometry->getIndices<U16>();
-            for (U32 i = 0; i < indiceCount; i += 3) {
-                _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
-                                                       indices[i + 1],
-                                                       indices[i + 2]));
-            }
+        const vectorBest<U32>& indices = geometry->getIndices();
+        for (U32 i = 0; i < indiceCount; i += 3) {
+            _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
+                                                    indices[i + 1],
+                                                    indices[i + 2]));
         }
     }
 

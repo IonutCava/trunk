@@ -197,12 +197,12 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
             continue;
         }
 
-        Import::SubMeshData subMeshTemp;
-
         stringImpl name = currentMesh->mName.C_Str();
         if (Util::CompareIgnoreCase(name, "defaultobject")) {
             name.append("_" + fileName);
         }
+
+        Import::SubMeshData subMeshTemp;
         subMeshTemp.name(name);
         subMeshTemp.index(to_U32(n));
         if (subMeshTemp.name().empty()) {
@@ -214,14 +214,13 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
 
         prevName = subMeshTemp.name();
         subMeshTemp.boneCount(currentMesh->mNumBones);
-        loadSubMeshGeometry(currentMesh,
-            subMeshTemp);
+        loadSubMeshGeometry(currentMesh, subMeshTemp);
 
         loadSubMeshMaterial(subMeshTemp._material,
-            aiScenePointer,
-            to_U16(currentMesh->mMaterialIndex),
-            subMeshTemp.name() + "_material",
-            subMeshTemp.boneCount() > 0);
+                            aiScenePointer,
+                            to_U16(currentMesh->mMaterialIndex),
+                            subMeshTemp.name() + "_material",
+                            subMeshTemp.boneCount() > 0);
 
 
         target._subMeshData.push_back(subMeshTemp);
@@ -235,18 +234,15 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
     target.vertexBuffer(context.gfx().newVB());
     VertexBuffer* vb = target.vertexBuffer();
 
-    U32 indexCount = 0, vertexCount = 0, maxVertCount = 0;
+    U32 indexCount = 0, vertexCount = 0;
     for (U8 lod = 0; lod < Import::MAX_LOD_LEVELS; ++lod) {
         for (Import::SubMeshData& data : target._subMeshData) {
             indexCount += to_U32(data._indices[lod].size());
             vertexCount += to_U32(data._vertices[lod].size());
         }
-        if (lod == 0) {
-            maxVertCount = vertexCount;
-        }
     }
 
-    vb->useLargeIndices(maxVertCount + 1 > std::numeric_limits<U16>::max());
+    vb->useLargeIndices(vertexCount + 1 > std::numeric_limits<U16>::max());
     vb->setVertexCount(vertexCount);
     vb->reserveIndexCount(indexCount);
 
