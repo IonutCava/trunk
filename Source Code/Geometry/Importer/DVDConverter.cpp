@@ -256,6 +256,7 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
             size_t idxCount = data._indices[lod].size();
             if (idxCount == 0) {
                 assert(lod > 0);
+                submeshBoneOffset += to_U8(data.boneCount());
                 data._partitionIDs[lod] = data._partitionIDs[lod - 1];
                 continue;
             }
@@ -277,20 +278,23 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
             const auto& vertices = data._vertices[lod];
             U32 vertCount = to_U32(vertices.size());
 
+            const bool hasBones = data.boneCount() > 0;
+            const bool hasTexCoord = !IS_ZERO(vertices[0].texcoord.z);
+            const bool hasTangent = !IS_ZERO(vertices[0].tangent.w);
+
             for (U32 i = 0; i < vertCount; ++i) {
                 const Import::SubMeshData::Vertex& vert = vertices[i];
 
                 vb->modifyPositionValue(i + previousOffset, vert.position);
                 vb->modifyNormalValue(i + previousOffset, vert.normal);
 
-                if (!IS_ZERO(vert.texcoord.z)) {
+                if (hasTexCoord) {
                     vb->modifyTexCoordValue(i + previousOffset, vert.texcoord.xy());
                 }
-                if (!IS_ZERO(vert.tangent.w)) {
+                if (hasTangent) {
                     vb->modifyTangentValue(i + previousOffset, vert.tangent.xyz());
                 }
-
-                if (data.boneCount() > 0) {
+                if (hasBones) {
                     P32 boneIndices = vert.indices;
                     for (auto& idx : boneIndices.b) {
                         idx += submeshBoneOffset;
