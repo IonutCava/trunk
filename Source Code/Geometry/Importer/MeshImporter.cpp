@@ -85,10 +85,12 @@ namespace Import {
         dataOut << _name;
         dataOut << _index;
         dataOut << _boneCount;
-        dataOut << _partitionOffset;
+        dataOut << _partitionIDs;
         dataOut << _minPos;
         dataOut << _maxPos;
-        dataOut << _triangles;
+        for (U8 i = 0; i < MAX_LOD_LEVELS; ++i) {
+            dataOut << _triangles[i];
+        }
         return _material.serialize(dataOut);
     }
 
@@ -96,10 +98,12 @@ namespace Import {
         dataIn >> _name;
         dataIn >> _index;
         dataIn >> _boneCount;
-        dataIn >> _partitionOffset;
+        dataIn >> _partitionIDs;
         dataIn >> _minPos;
         dataIn >> _maxPos;
-        dataIn >> _triangles;
+        for (U8 i = 0; i < MAX_LOD_LEVELS; ++i) {
+            dataIn >> _triangles[i];
+        }
         return _material.deserialize(dataIn);
     }
 
@@ -254,8 +258,10 @@ namespace Import {
             }
             // it may already be loaded
             if (!tempSubMesh->getParentMesh()) {
-                tempSubMesh->addTriangles(subMeshData._triangles);
-                tempSubMesh->setGeometryPartitionID(subMeshData.partitionOffset());
+                tempSubMesh->addTriangles(subMeshData._triangles[0]);
+                for (U8 i = 0; i < Import::MAX_LOD_LEVELS; ++i) {
+                    tempSubMesh->setGeometryPartitionID(i, subMeshData._partitionIDs[i]);
+                }
                 Attorney::SubMeshMeshImporter::setGeometryLimits(*tempSubMesh,
                                                                  subMeshData.minPos(),
                                                                  subMeshData.maxPos());

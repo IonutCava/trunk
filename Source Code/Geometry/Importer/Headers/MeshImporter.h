@@ -42,6 +42,8 @@ namespace Divide {
     class ByteBuffer;
     class VertexBuffer;
     namespace Import {
+        constexpr U8 MAX_LOD_LEVELS = 3;
+
         struct TextureEntry {
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
@@ -88,13 +90,13 @@ namespace Divide {
             PROPERTY_RW(stringImpl, name);
             PROPERTY_RW(U32, index, 0u);
             PROPERTY_RW(U32, boneCount, 0u);
-            PROPERTY_RW(U32, partitionOffset, 0u);
             PROPERTY_RW(vec3<F32>, minPos);
             PROPERTY_RW(vec3<F32>, maxPos);
 
-            vectorEASTL<vec3<U32>> _triangles;
-            vectorEASTL<U32> _indices;
-            vectorEASTL<Vertex> _vertices;
+            std::array<U16, MAX_LOD_LEVELS> _partitionIDs = {0u, 0u, 0u};
+            vectorEASTL<vec3<U32>> _triangles[MAX_LOD_LEVELS];
+            vectorEASTL<U32> _indices[MAX_LOD_LEVELS];
+            vectorEASTL<Vertex> _vertices[MAX_LOD_LEVELS];
 
             MaterialData _material;
         };

@@ -138,7 +138,7 @@ void InfinitePlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, Scen
 void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
                                       RenderStagePass renderStagePass,
                                       RenderPackage& pkgInOut) {
-   
+
     //infinite plane
     GenericDrawCommand planeCmd = {};
     planeCmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;

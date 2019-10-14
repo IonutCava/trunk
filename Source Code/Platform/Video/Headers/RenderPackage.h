@@ -117,6 +117,10 @@ public:
 
     inline bool empty() const { return _commands->empty(); }
 
+    void setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount);
+
+    PROPERTY_RW(bool, autoIndexBuffer, false);
+
 protected:
     void setLoDLevel(U8 LoD);
 
@@ -128,6 +132,7 @@ protected:
     GFX::CommandBuffer* _commands;
 
 private:
+    std::array<std::pair<U32, U32>, 4> _lodIndexOffsets;
     I32 _drawCommandCount;
     U16 _drawCommandOptions;
     MinQuality _qualityRequirement;

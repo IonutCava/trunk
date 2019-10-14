@@ -14,6 +14,7 @@ RenderPackage::RenderPackage()
       _qualityRequirement(MinQuality::FULL),
       _lodLevel(0u)
 {
+    _lodIndexOffsets.fill({ 0u, 0u });
 }
 
 RenderPackage::~RenderPackage()
@@ -32,6 +33,12 @@ void RenderPackage::clear() {
 void RenderPackage::set(const RenderPackage& other) {
     _commands->clear();
     _commands->add(*other._commands);
+}
+
+void RenderPackage::setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount) {
+    if (lodIndex < _lodIndexOffsets.size()) {
+        _lodIndexOffsets[lodIndex] = std::make_pair(indexOffset, indexCount);
+    }
 }
 
 size_t RenderPackage::getSortKeyHash() const {
@@ -208,7 +215,7 @@ U8 RenderPackage::lodLevel() const {
 }
 
 void RenderPackage::setLoDLevel(U8 LoD) {
-    _lodLevel = LoD;
+    _lodLevel = std::min(LoD, to_U8(_lodIndexOffsets.size() - 1));
 }
 
 void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
@@ -220,6 +227,13 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
                 drawCmd._cmd.baseInstance = dataIndex;
             }
             drawCmd._commandOffset = startOffset++;
+            if (autoIndexBuffer()) {
+                const std::pair<U32, U32>& idxData = _lodIndexOffsets[_lodLevel];
+                if (idxData.first != 0u || idxData.second != 0u) {
+                    drawCmd._cmd.firstIndex = idxData.first;
+                    drawCmd._cmd.indexCount = idxData.second;
+                }
+            }
         }
     }
 }

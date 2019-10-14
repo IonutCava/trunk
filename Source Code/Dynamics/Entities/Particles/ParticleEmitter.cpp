@@ -246,7 +246,6 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
 void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
                                         RenderStagePass renderStagePass,
                                         RenderPackage& pkgInOut) {
-
     U32 indexCount = to_U32(_particles->particleGeometryIndices().size());
     if (indexCount == 0) {
         indexCount = to_U32(_particles->particleGeometryVertices().size());

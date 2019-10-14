@@ -344,12 +344,12 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::BONE_WEIGHT)] = true;
     }
 
-    inline size_t partitionBuffer() {
+    inline U16 partitionBuffer() {
         U32 previousIndexCount = _partitions.empty() ? 0 : _partitions.back().second;
         U32 previousOffset = _partitions.empty() ? 0 : _partitions.back().first;
         U32 partitionedIndexCount = previousIndexCount + previousOffset;
         _partitions.push_back(std::make_pair(partitionedIndexCount, getIndexCount() - partitionedIndexCount));
-        return _partitions.size() - 1;
+        return to_U16(_partitions.size() - 1);
     }
 
     inline U32 getPartitionIndexCount(U16 partitionID) {

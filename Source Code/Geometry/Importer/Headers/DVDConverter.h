@@ -102,6 +102,8 @@ class DVDConverter {
                              bool skinned);
 
   private:
+    void   buildGeometryBuffers(PlatformContext& context, Import::ImportData& target);
+
     static hashMap<U32, TextureWrap> fillTextureWrapMap();
     static hashMap<U32, Material::ShadingMode> fillShadingModeMap();
     static hashMap<U32, Material::TextureOperation> fillTextureOperationMap();

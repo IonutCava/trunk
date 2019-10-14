@@ -146,16 +146,12 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
 
     Assimp::Importer importer;
 
-    importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
-                                g_removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT
-                                                       : 0);
-
+    importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, g_removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0);
     //importer.SetPropertyInteger(AI_CONFIG_IMPORT_FBX_SEARCH_EMBEDDED_TEXTURES, 1);
     importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
     importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 
-    U32 ppsteps = aiProcessPreset_TargetRealtime_MaxQuality |
-                  aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
+    U32 ppsteps = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
 
     const aiScene* aiScenePointer = importer.ReadFile((filePath + "/" + fileName).c_str(), ppsteps);
 
@@ -190,7 +186,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
         }
     }
 
-    U32 numMeshes = aiScenePointer->mNumMeshes;
+    const U32 numMeshes = aiScenePointer->mNumMeshes;
     target._subMeshData.reserve(numMeshes);
 
     stringImpl prevName = "";
@@ -218,81 +214,110 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
 
         prevName = subMeshTemp.name();
         subMeshTemp.boneCount(currentMesh->mNumBones);
-        loadSubMeshGeometry(currentMesh, 
-                            subMeshTemp);
+        loadSubMeshGeometry(currentMesh,
+            subMeshTemp);
 
         loadSubMeshMaterial(subMeshTemp._material,
-                            aiScenePointer,
-                            to_U16(currentMesh->mMaterialIndex),
-                            subMeshTemp.name() + "_material",
-                            subMeshTemp.boneCount() > 0);
-                            
+            aiScenePointer,
+            to_U16(currentMesh->mMaterialIndex),
+            subMeshTemp.name() + "_material",
+            subMeshTemp.boneCount() > 0);
+
 
         target._subMeshData.push_back(subMeshTemp);
     }
 
-    size_t indexCount = 0;
-    U32 vertexCount = 0;
-    for (Import::SubMeshData& data : target._subMeshData) {
-        indexCount += data._indices.size();
-        vertexCount += to_U32(data._vertices.size());
-    }
+    buildGeometryBuffers(context, target);
+    return true;
+}
 
+void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::ImportData& target) {
     target.vertexBuffer(context.gfx().newVB());
     VertexBuffer* vb = target.vertexBuffer();
-    vb->useLargeIndices(vertexCount + 1 > std::numeric_limits<U16>::max());
-    vb->setVertexCount(vertexCount);
 
-    U8 submeshBoneOffset = 0;
+    U32 indexCount = 0, vertexCount = 0, maxVertCount = 0;
+    for (U8 lod = 0; lod < Import::MAX_LOD_LEVELS; ++lod) {
+        for (Import::SubMeshData& data : target._subMeshData) {
+            indexCount += to_U32(data._indices[lod].size());
+            vertexCount += to_U32(data._vertices[lod].size());
+        }
+        if (lod == 0) {
+            maxVertCount = vertexCount;
+        }
+    }
+
+    vb->useLargeIndices(maxVertCount + 1 > std::numeric_limits<U16>::max());
+    vb->setVertexCount(vertexCount);
+    vb->reserveIndexCount(indexCount);
+
     U32 previousOffset = 0;
 
     vec3<U32> triangleTemp;
-    for (Import::SubMeshData& data : target._subMeshData) {
-        BoundingBox importBB;
-        size_t idxCount = data._indices.size();
-        data._triangles.reserve(idxCount / 3);
-        for (size_t i = 0; i < idxCount; i += 3) {
-            for (U8 j = 0; j < 3; ++j) {
-                triangleTemp[j] = data._indices[i + j];
-                vb->addIndex(triangleTemp[j] + previousOffset);
-            }
-            data._triangles.push_back(triangleTemp);
-        }
-        
-        U32 vertCount = to_U32(data._vertices.size());
-        for (U32 i = 0; i < vertCount; ++i) {
-            Import::SubMeshData::Vertex& vert = data._vertices[i];
-
-            vb->modifyPositionValue(i + previousOffset, vert.position);
-            vb->modifyNormalValue(i + previousOffset, vert.normal);
-
-            if (!IS_ZERO(vert.texcoord.z)) {
-                vb->modifyTexCoordValue(i + previousOffset, vert.texcoord.xy());
-            }
-            if (!IS_ZERO(vert.tangent.w)) {
-                vb->modifyTangentValue(i + previousOffset, vert.tangent.xyz());
+    for (U8 lod = 0; lod < Import::MAX_LOD_LEVELS; ++lod) {
+        U8 submeshBoneOffset = 0;
+        for (Import::SubMeshData& data : target._subMeshData) {
+            BoundingBox importBB;
+            size_t idxCount = data._indices[lod].size();
+            if (idxCount == 0) {
+                assert(lod > 0);
+                data._partitionIDs[lod] = data._partitionIDs[lod - 1];
+                continue;
             }
 
-            if (data.boneCount() > 0) {
-                for (auto& idx : vert.indices.b) {
-                    idx += submeshBoneOffset;
+            data._triangles[lod].reserve(idxCount / 3);
+            const auto& indices = data._indices[lod];
+            for (size_t i = 0; i < idxCount; i += 3) {
+                triangleTemp.set(
+                    indices[i + 0] + previousOffset,
+                    indices[i + 1] + previousOffset,
+                    indices[i + 2] + previousOffset);
+                data._triangles[lod].push_back(triangleTemp);
+
+                vb->addIndex(triangleTemp.x);
+                vb->addIndex(triangleTemp.y);
+                vb->addIndex(triangleTemp.z);
+            }
+
+            const auto& vertices = data._vertices[lod];
+            U32 vertCount = to_U32(vertices.size());
+
+            for (U32 i = 0; i < vertCount; ++i) {
+                const Import::SubMeshData::Vertex& vert = vertices[i];
+
+                vb->modifyPositionValue(i + previousOffset, vert.position);
+                vb->modifyNormalValue(i + previousOffset, vert.normal);
+
+                if (!IS_ZERO(vert.texcoord.z)) {
+                    vb->modifyTexCoordValue(i + previousOffset, vert.texcoord.xy());
+                }
+                if (!IS_ZERO(vert.tangent.w)) {
+                    vb->modifyTangentValue(i + previousOffset, vert.tangent.xyz());
                 }
 
-                vb->modifyBoneIndices(i + previousOffset, vert.indices);
-                vb->modifyBoneWeights(i + previousOffset, vert.weights);
+                if (data.boneCount() > 0) {
+                    P32 boneIndices = vert.indices;
+                    for (auto& idx : boneIndices.b) {
+                        idx += submeshBoneOffset;
+                    }
+
+                    vb->modifyBoneIndices(i + previousOffset, boneIndices);
+                    vb->modifyBoneWeights(i + previousOffset, vert.weights);
+                }
+                if (lod == 0) {
+                    importBB.add(vert.position);
+                }
+            }//vertCount
+
+            if (lod == 0) {
+                data.minPos(importBB.getMin());
+                data.maxPos(importBB.getMax());
             }
 
-            importBB.add(vert.position);
-        }
-        data.minPos(importBB.getMin());
-        data.maxPos(importBB.getMax());
-
-        submeshBoneOffset += to_U8(data.boneCount());
-        previousOffset += to_U32(data._vertices.size());
-        data.partitionOffset(to_U32(vb->partitionBuffer()));
-    }
-
-    return true;
+            submeshBoneOffset += to_U8(data.boneCount());
+            previousOffset += to_U32(vertices.size());
+            data._partitionIDs[lod] = vb->partitionBuffer();
+        } //submesh data
+    } //lod
 }
 
 void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
@@ -305,7 +330,6 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
             input_indices.push_back(source->mFaces[k].mIndices[m]);
         }
     }
-    subMeshData._indices.resize(input_indices.size());
 
     vectorEASTL<Import::SubMeshData::Vertex> vertices(source->mNumVertices);
 
@@ -354,13 +378,18 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         }
     }
 
+    auto& target_indices = subMeshData._indices[0];
+    auto& target_vertices = subMeshData._vertices[0];
+
+    const size_t index_count = input_indices.size();
+    target_indices.resize(index_count);
+
     size_t vertex_count = 0;
-    vectorEASTL<Import::SubMeshData::Vertex>& target_vertices = subMeshData._vertices;
     { //Remap VB & IB
         vectorEASTL<U32> remap(source->mNumVertices);
         vertex_count = meshopt_generateVertexRemap(&remap[0], input_indices.data(), input_indices.size(), &vertices[0], source->mNumVertices, sizeof(Import::SubMeshData::Vertex));
 
-        meshopt_remapIndexBuffer(&subMeshData._indices[0], &input_indices[0], input_indices.size(), &remap[0]);
+        meshopt_remapIndexBuffer(&target_indices[0], &input_indices[0], input_indices.size(), &remap[0]);
         input_indices.clear();
 
         target_vertices.resize(vertex_count);
@@ -369,19 +398,55 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         remap.clear();
     }
     { // Optimise VB & IB
-        size_t index_count = subMeshData._indices.size();
-
-        meshopt_optimizeVertexCache(&subMeshData._indices[0], &subMeshData._indices[0], index_count, vertex_count);
+        meshopt_optimizeVertexCache(&target_indices[0], &target_indices[0], index_count, vertex_count);
 
         // reorder indices for overdraw, balancing overdraw and vertex cache efficiency
         const F32 kThreshold = 1.01f; // allow up to 1% worse ACMR to get more reordering opportunities for overdraw
-        meshopt_optimizeOverdraw(&subMeshData._indices[0], &subMeshData._indices[0], index_count, &target_vertices[0].position.x, target_vertices.size(), sizeof(Import::SubMeshData::Vertex), kThreshold);
+        meshopt_optimizeOverdraw(&target_indices[0], &target_indices[0], index_count, &target_vertices[0].position.x, target_vertices.size(), sizeof(Import::SubMeshData::Vertex), kThreshold);
 
         // vertex fetch optimization should go last as it depends on the final index order
-        meshopt_optimizeVertexFetch(&target_vertices[0], &subMeshData._indices[0], index_count, &target_vertices[0], target_vertices.size(), sizeof(Import::SubMeshData::Vertex));
+        meshopt_optimizeVertexFetch(&target_vertices[0], &target_indices[0], index_count, &target_vertices[0], target_vertices.size(), sizeof(Import::SubMeshData::Vertex));
     }
     { // Generate LoD data and place inside VB & IB with proper offsets
-        //ToDo: Create LoDs with meshoptimizer and store them all in the same buffers but with offsets
+
+        F32 threshold = 0.75f;
+        size_t prevIndexCount = index_count;
+        for (U8 i = 1; i < Import::MAX_LOD_LEVELS; ++i) {
+            threshold = pow(threshold, to_F32(i));
+            assert(threshold >= 0.0f);
+
+            size_t target_index_count = size_t(index_count * threshold) / 3 * 3;
+
+            auto& source_indices = subMeshData._indices[i - 1];
+            auto& source_vertices = subMeshData._vertices[i - 1];
+
+            vertex_count = source_vertices.size();
+
+            auto& lod_indices = subMeshData._indices[i];
+            auto& lod_vertices = subMeshData._vertices[i];
+
+            if (source_indices.size() < target_index_count) {
+                target_index_count = source_indices.size();
+            }
+#if 0
+            lod_indices.resize(target_index_count); // note: simplifySloppy, unlike simplify, is guaranteed to output results that don't exceed the requested target_index_count
+            lod_indices.resize(meshopt_simplifySloppy(&lod_indices[0], &source_indices[0], index_count, &source_vertices[0].position.x, vertex_count, sizeof(Import::SubMeshData::Vertex), target_index_count));
+#else
+            const F32 target_error = 1e-2f;
+            lod_indices.resize(source_indices.size());
+            lod_indices.resize(meshopt_simplify(&lod_indices[0], &source_indices[0], source_indices.size(), &source_vertices[0].position.x, vertex_count, sizeof(Import::SubMeshData::Vertex), target_index_count, target_error));
+#endif
+            if (lod_indices.size() == prevIndexCount) {
+                lod_indices.clear();
+                continue;
+            }
+
+            lod_vertices.resize(lod_indices.size() < vertex_count ? lod_indices.size() : vertex_count); // note: this is just to reduce the cost of resize()
+            lod_vertices.resize(meshopt_optimizeVertexFetch(&lod_vertices[0], &lod_indices[0], lod_indices.size(), &source_vertices[0], vertex_count, sizeof(Import::SubMeshData::Vertex)));
+            meshopt_optimizeOverdraw(&lod_indices[0], &lod_indices[0], lod_indices.size(), &source_vertices[0].position.x, vertex_count, sizeof(Import::SubMeshData::Vertex), 1.0f);
+
+            prevIndexCount = lod_indices.size();
+        }
     }
 }
 

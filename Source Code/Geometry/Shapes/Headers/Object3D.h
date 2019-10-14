@@ -104,8 +104,10 @@ class Object3D : public SceneNode {
     /// (and all subobjects) on or off
     virtual void playAnimations(const SceneGraphNode& sgn, const bool state);
 
-    inline void setGeometryPartitionID(size_t ID) {
-        _geometryPartitionID = to_U16(ID);
+    inline void setGeometryPartitionID(U8 lodIndex, U16 ID) {
+        if (lodIndex < _geometryPartitionIDs.size()) {
+            _geometryPartitionIDs[lodIndex] = ID;
+        }
     }
 
     // Procedural geometry deformation support?
@@ -161,8 +163,8 @@ class Object3D : public SceneNode {
 
    protected:
     GFXDevice& _context;
+    std::array<U16, 4> _geometryPartitionIDs;
     U32 _geometryFlagMask;
-    U16 _geometryPartitionID;
     ObjectType _geometryType;
     RigidBodyShape _rigidBodyShape;
     /// 3 indices, pointing to position values, that form a triangle in the mesh.

@@ -34,9 +34,11 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descri
     _geometryDirty(true),
     _buffer(nullptr),
     _geometryType(type),
-    _geometryFlagMask(flagMask),
-    _geometryPartitionID(0U)
+    _geometryFlagMask(flagMask)
 {
+    _geometryPartitionIDs.fill(std::numeric_limits<U16>::max());
+    _geometryPartitionIDs[0] = 0u;
+
     if (!getObjectFlag(ObjectFlag::OBJECT_FLAG_NO_VB)) {
         _buffer = context.newVB();
     }
@@ -135,17 +137,32 @@ bool Object3D::onRender(SceneGraphNode& sgn,
 void Object3D::buildDrawCommands(SceneGraphNode& sgn,
                                  RenderStagePass renderStagePass,
                                  RenderPackage& pkgInOut) {
+    VertexBuffer* const vb = getGeometryVB();
     if (pkgInOut.drawCommandCount() == 0) {
+        const U16 partitionID = _geometryPartitionIDs[0];
         GenericDrawCommand cmd;
-        VertexBuffer* const vb = getGeometryVB();
         cmd._sourceBuffer = vb->handle();
         cmd._bufferIndex = renderStagePass.index();
-        cmd._cmd.indexCount = to_U32(vb->getIndexCount());
+        cmd._cmd.indexCount = vb->getPartitionIndexCount(partitionID);
+        cmd._cmd.firstIndex = vb->getPartitionOffset(partitionID);
         cmd._cmd.primCount = sgn.instanceCount();
         enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
         GFX::DrawCommand drawCommand = { cmd };
         pkgInOut.addDrawCommand(drawCommand);
+    }
+
+    if (pkgInOut.autoIndexBuffer()) {
+        U16 prevID = 0;
+        for (U8 i = 0; i < _geometryPartitionIDs.size(); ++i) {
+            U16 id = _geometryPartitionIDs[i];
+            if (id == std::numeric_limits<U16>::max()) {
+                assert(i > 0);
+                id = prevID;
+            }
+            pkgInOut.setLoDIndexOffset(i, vb->getPartitionOffset(id), vb->getPartitionIndexCount(id));
+            prevID = id;
+        }
     }
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
@@ -167,8 +184,8 @@ bool Object3D::computeTriangleList() {
                   "Object3D error: computeTriangleList called with no position "
                   "data available!");
 
-    U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionID);
-    U32 partitionCount = geometry->getPartitionIndexCount(_geometryPartitionID);
+    U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionIDs[0]);
+    U32 partitionCount = geometry->getPartitionIndexCount(_geometryPartitionIDs[0]);
     PrimitiveType type = (_geometryType._value == ObjectType::MESH ||
                           _geometryType._value == ObjectType::SUBMESH
                               ? PrimitiveType::TRIANGLES
@@ -194,8 +211,9 @@ bool Object3D::computeTriangleList() {
             for (U32 i = indiceStart; i < indiceEnd; i++) {
                 curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
                 // Check for correct winding
-                if (i % 2 != 0)
+                if (i % 2 != 0) {
                     std::swap(curTriangle.y, curTriangle.z);
+                }
                 _geometryTriangles.push_back(curTriangle);
             }
         } else {
@@ -203,8 +221,9 @@ bool Object3D::computeTriangleList() {
             for (U32 i = indiceStart; i < indiceEnd; i++) {
                 curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
                 // Check for correct winding
-                if (i % 2 != 0)
+                if (i % 2 != 0) {
                     std::swap(curTriangle.y, curTriangle.z);
+                }
                 _geometryTriangles.push_back(curTriangle);
             }
         }
@@ -213,17 +232,17 @@ bool Object3D::computeTriangleList() {
         _geometryTriangles.reserve(indiceCount);
         if (largeIndices) {
             const vectorBest<U32>& indices = geometry->getIndices<U32>();
-            for (U32 i = 0; i < indiceCount; i++) {
-                _geometryTriangles.push_back(vec3<U32>(indices[i * 3 + 0],
-                                                       indices[i * 3 + 1],
-                                                       indices[i * 3 + 2]));
+            for (U32 i = 0; i < indiceCount; i += 3) {
+                _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
+                                                       indices[i + 1],
+                                                       indices[i + 2]));
             }
         } else {
             const vectorBest<U16>& indices = geometry->getIndices<U16>();
-            for (U32 i = 0; i < indiceCount; i++) {
-                _geometryTriangles.push_back(vec3<U32>(indices[i * 3 + 0],
-                                                       indices[i * 3 + 1],
-                                                       indices[i * 3 + 2]));
+            for (U32 i = 0; i < indiceCount; i += 3) {
+                _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
+                                                       indices[i + 1],
+                                                       indices[i + 2]));
             }
         }
     }

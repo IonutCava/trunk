@@ -33,12 +33,15 @@ void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
                                 RenderStagePass renderStagePass,
                                 RenderPackage& pkgInOut) {
 
+    pkgInOut.autoIndexBuffer(true);
+
+
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLES,
-    cmd._cmd.firstIndex = getGeometryVB()->getPartitionOffset(_geometryPartitionID);
-    cmd._cmd.indexCount = getGeometryVB()->getPartitionIndexCount(_geometryPartitionID);
+    cmd._sourceBuffer = getGeometryVB()->handle();
+    cmd._cmd.firstIndex = getGeometryVB()->getPartitionOffset(_geometryPartitionIDs[0]);
+    cmd._cmd.indexCount = getGeometryVB()->getPartitionIndexCount(_geometryPartitionIDs[0]);
     cmd._cmd.primCount = sgn.instanceCount();
-    cmd._sourceBuffer = _parentMesh->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.index();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
