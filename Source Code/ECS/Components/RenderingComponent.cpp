@@ -61,6 +61,8 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _materialInstanceCache(nullptr),
       _skeletonPrimitive(nullptr)
 {
+    _lodLevels.fill(0u);
+
     _renderRange.min = -1.0f * g_renderRangeLimit;
     _renderRange.max =  1.0f* g_renderRangeLimit;
 
@@ -474,16 +476,12 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 }
 
 U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStage renderStage, const vec4<U16>& lodThresholds) {
-    U8 lodLevel = 0;
-    // ToDo: Hack for lower LoD rendering in reflection and refraction passes
-    if (renderStage == RenderStage::REFLECTION || renderStage == RenderStage::REFRACTION) {
-        lodLevel = 1;
-    }
+    U8 lodLevel = 0u;
 
     if (_lodLocked) {
         return lodLevel;
-    
     }
+
     const vec3<F32>& eyePos = camera.getEye();
     BoundsComponent* bounds = _parentSGN.get<BoundsComponent>();
 
@@ -505,6 +503,11 @@ U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStage renderStage
         }
     }
 
+    // ToDo: Hack for lower LoD rendering in reflection and refraction passes
+    if (lodLevel < 4 && (renderStage == RenderStage::REFLECTION || renderStage == RenderStage::REFRACTION)) {
+        lodLevel += 1;
+    }
+
     return lodLevel;
 }
 
@@ -513,7 +516,10 @@ void RenderingComponent::queueRebuildCommands(RenderStagePass renderStagePass) {
 }
 
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData) {
-    U8 lod = getLoDLevel(camera, renderStagePass._stage, sceneRenderState.lodThresholds());
+    U8& lod = _lodLevels[to_base(renderStagePass._stage)];
+    if (refreshData) {
+        lod = getLoDLevel(camera, renderStagePass._stage, sceneRenderState.lodThresholds());
+    }
 
     if (canDraw(renderStagePass, lod, refreshData)) {
         RenderPackage& pkg = getDrawPackage(renderStagePass);
