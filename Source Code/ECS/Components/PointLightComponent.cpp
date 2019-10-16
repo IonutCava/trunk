@@ -27,7 +27,15 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
 
     _shadowProperties._lightDetails.z = 0.05f;
 
-    getEditorComponent().registerField("Range and Cone", &_rangeAndCones, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
+
+    EditorComponentField rangeAndConeField = {};
+    rangeAndConeField._name = "Range and Cone";
+    rangeAndConeField._data = &_rangeAndCones;
+    rangeAndConeField._type = EditorComponentFieldType::PUSH_TYPE;
+    rangeAndConeField._readOnly = false;
+    rangeAndConeField._basicType = GFX::PushConstantType::VEC3;
+
+    getEditorComponent().registerField(std::move(rangeAndConeField));
 
     BoundingBox bb;
     bb.setMin(-10.0f);

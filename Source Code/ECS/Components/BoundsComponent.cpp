@@ -21,9 +21,26 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     _boundingBoxDirty.store(true);
 
     RegisterEventCallback(&BoundsComponent::onTransformUpdated);
-    _editorComponent.registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
-    _editorComponent.registerField("Ref BoundingBox", &_refBoundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
-    _editorComponent.registerField("BoundingSphere", &_boundingSphere, EditorComponentFieldType::BOUNDING_SPHERE, true);
+    EditorComponentField bbField = {};
+    bbField._name = "Bounding Box";
+    bbField._data = &_boundingBox;
+    bbField._type = EditorComponentFieldType::BOUNDING_BOX;
+    bbField._readOnly = true;
+    _editorComponent.registerField(std::move(bbField));
+
+    EditorComponentField rbbField = {};
+    rbbField._name = "Ref Bounding Box";
+    rbbField._data = &_refBoundingBox;
+    rbbField._type = EditorComponentFieldType::BOUNDING_BOX;
+    rbbField._readOnly = true;
+    _editorComponent.registerField(std::move(rbbField));
+
+    EditorComponentField bsField = {};
+    bsField._name = "Bounding Sphere";
+    bsField._data = &_boundingSphere;
+    bsField._type = EditorComponentFieldType::BOUNDING_SPHERE;
+    bsField._readOnly = true;
+    _editorComponent.registerField(std::move(bsField));
 }
 
 BoundsComponent::~BoundsComponent()

@@ -24,14 +24,25 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     _shadowProperties._lightDetails.y = to_F32(_csmSplitCount);
     _shadowProperties._lightDetails.z = 0.0f;
     csmSplitCount(context.config().rendering.shadowMapping.defaultCSMSplitCount);
-    getEditorComponent().registerField("Range and Cone", &_rangeAndCones, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
 
-    getEditorComponent().registerField("Direction",
-                                        [this](void* dataOut) { static_cast<vec3<F32>*>(dataOut)->set(directionCache()); },
-                                        [this](const void* data) { /*NOP*/ ACKNOWLEDGE_UNUSED(data); },
-                                        EditorComponentFieldType::PUSH_TYPE,
-                                        true,
-                                        GFX::PushConstantType::VEC3);
+    EditorComponentField rangeAndConeField = {};
+    rangeAndConeField._name = "Range and Cone";
+    rangeAndConeField._data = &_rangeAndCones;
+    rangeAndConeField._type = EditorComponentFieldType::PUSH_TYPE;
+    rangeAndConeField._readOnly = false;
+    rangeAndConeField._basicType = GFX::PushConstantType::VEC3;
+
+    getEditorComponent().registerField(std::move(rangeAndConeField));
+
+    EditorComponentField directionField = {};
+    directionField._name = "Direction";
+    directionField._dataGetter = [this](void* dataOut) { static_cast<vec3<F32>*>(dataOut)->set(directionCache()); };
+    directionField._dataSetter = [this](const void* data) { /*NOP*/ ACKNOWLEDGE_UNUSED(data); }; 
+    directionField._type = EditorComponentFieldType::PUSH_TYPE;
+    directionField._readOnly = true;
+    rangeAndConeField._basicType = GFX::PushConstantType::VEC3;
+
+    getEditorComponent().registerField(std::move(directionField));
 
     BoundingBox bb;
     bb.setMin(-g_defaultLightDistance * 0.5f);

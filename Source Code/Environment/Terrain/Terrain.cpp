@@ -126,21 +126,28 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     sgn.get<RenderingComponent>()->setDataIndex(_nodeDataIndex);
 
     _editorComponent.onChangedCbk([this](const char* field) {onEditorChange(field); });
-    _editorComponent.registerField(
-        "Tessellated Triangle Width",
-        &_descriptor->_tessellatedTriangleWidth,
-        EditorComponentFieldType::SLIDER_TYPE,
-        false,
-        GFX::PushConstantType::UINT,
-        {1.0f, 150.0f},
-        1.0f);
-    _editorComponent.registerField(
-        "Parallax Height",
-        &_descriptor->_parallaxHeightScale,
-        EditorComponentFieldType::SLIDER_TYPE,
-        false,
-        GFX::PushConstantType::FLOAT,
-        { 0.01f, 10.0f });
+
+    EditorComponentField tessTriangleWidthField = {};
+    tessTriangleWidthField._name = "Tessellated Triangle Width";
+    tessTriangleWidthField._data = &_descriptor->_tessellatedTriangleWidth;
+    tessTriangleWidthField._type = EditorComponentFieldType::SLIDER_TYPE;
+    tessTriangleWidthField._readOnly = false;
+    tessTriangleWidthField._basicType = GFX::PushConstantType::UINT;
+    tessTriangleWidthField._range = { 1.0f, 150.0f };
+    tessTriangleWidthField._step = 1.0f;
+
+    _editorComponent.registerField(std::move(tessTriangleWidthField));
+
+    EditorComponentField parallaxHeightField = {};
+    parallaxHeightField._name = "Parallax Height";
+    parallaxHeightField._data = &_descriptor->_parallaxHeightScale;
+    parallaxHeightField._type = EditorComponentFieldType::SLIDER_TYPE;
+    parallaxHeightField._readOnly = false;
+    parallaxHeightField._basicType = GFX::PushConstantType::FLOAT;
+    parallaxHeightField._range = { 0.01f, 10.0f };
+
+    _editorComponent.registerField(std::move(parallaxHeightField));
+
     SceneNode::postLoad(sgn);
 }
 

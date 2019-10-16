@@ -87,10 +87,15 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
 
     if (_materialInstance != nullptr) {
         assert(!_materialInstance->resourceName().empty());
-        _editorComponent.registerField("Material", 
-                                       _materialInstance.get(),
-                                       EditorComponentFieldType::MATERIAL,
-                                       false);
+
+        EditorComponentField materialField = {};
+        materialField._name = "Range and Cone";
+        materialField._data = _materialInstance.get();
+        materialField._type = EditorComponentFieldType::MATERIAL;
+        materialField._readOnly = false;
+
+        _editorComponent.registerField(std::move(materialField));
+
         _materialInstanceCache = _materialInstance.get();
     }
 

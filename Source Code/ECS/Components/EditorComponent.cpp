@@ -18,43 +18,8 @@ namespace Divide {
     {
     }
 
-    void EditorComponent::registerField(const stringImpl& name,
-                                        void* data,
-                                        EditorComponentFieldType type,
-                                        bool readOnly,
-                                        GFX::PushConstantType basicType,
-                                        const vec2<F32>& range,
-                                        F32 step) {
-        _fields.push_back({
-            basicType,
-            type,
-            readOnly,
-            name, 
-            data,
-            range,
-            step
-         });
-    }
-
-    void EditorComponent::registerField(const stringImpl& name,
-                                        std::function<void(void*)> dataGetter,
-                                        std::function<void(const void*)> dataSetter,
-                                        EditorComponentFieldType type,
-                                        bool readOnly,
-                                        GFX::PushConstantType basicType,
-                                        const vec2<F32>& range,
-                                        F32 step) {
-        _fields.push_back({
-            basicType,
-            type,
-            readOnly,
-            name,
-            nullptr,
-            range,
-            step,
-            dataGetter,
-            dataSetter
-        });
+    void EditorComponent::registerField(EditorComponentField&& field) {
+        _fields.push_back(field);
     }
 
     void EditorComponent::onChanged(EditorComponentField& field) {

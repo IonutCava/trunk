@@ -50,6 +50,7 @@ namespace Divide {
     enum class EditorComponentFieldType : U8 {
         PUSH_TYPE = 0,
         SLIDER_TYPE,
+        DROPDOWN_TYPE,
         BOUNDING_BOX,
         BOUNDING_SPHERE,
         TRANSFORM,
@@ -59,16 +60,19 @@ namespace Divide {
 
     struct EditorComponentField
     {
-        GFX::PushConstantType _basicType = GFX::PushConstantType::COUNT;
-        EditorComponentFieldType _type = EditorComponentFieldType::COUNT;
-        bool _readOnly = false;
-        stringImpl _name;
-        void* _data = nullptr;
-        vec2<F32> _range = { 0.0f, 1.0f }; //< Used only by slider_type
-        F32 _step = 0.1f;
-
         std::function<void(void*)> _dataGetter = {};
         std::function<void(const void*)> _dataSetter = {};
+        void* _data = nullptr;
+        stringImpl _name;
+        stringImpl _tooltip;
+
+        vec2<F32> _range = { 0.0f, 1.0f }; //< Used by slider_type as a min / max range or dropdown as selected_index / count
+
+        GFX::PushConstantType _basicType = GFX::PushConstantType::COUNT;
+        EditorComponentFieldType _type = EditorComponentFieldType::COUNT;
+
+        F32 _step = 0.1f;
+        bool _readOnly = false;
 
         template<typename T>
         T* getPtr() const {
@@ -138,26 +142,14 @@ namespace Divide {
         inline const stringImpl& name() const { return _name; }
 
         inline void addHeader(const stringImpl& name) {
-            registerField(name, nullptr, EditorComponentFieldType::PUSH_TYPE, true);
+            EditorComponentField field = {};
+            field._name = name;
+            field._type = EditorComponentFieldType::PUSH_TYPE;
+            field._readOnly = true;
+            registerField(std::move(field));
         }
 
-        void registerField(const stringImpl& name, 
-                           void* data,
-                           EditorComponentFieldType type,
-                           bool readOnly,
-                           GFX::PushConstantType basicType = GFX::PushConstantType::COUNT,
-                           const vec2<F32>& range = {0.0f, 1.0f},
-                           F32 step = 1.0f);
-
-
-        void registerField(const stringImpl& name,
-                           std::function<void(void*)> dataGetter,
-                           std::function<void(const void*)> dataSetter,
-                           EditorComponentFieldType type,
-                           bool readOnly,
-                           GFX::PushConstantType basicType = GFX::PushConstantType::COUNT,
-                           const vec2<F32>& range = {0.0f, 1.0f},
-                           F32 step = 1.0f);
+        void registerField(EditorComponentField&& field);
 
         inline vector<EditorComponentField>& fields() { return _fields; }
         inline const vector<EditorComponentField>& fields() const { return _fields; }
