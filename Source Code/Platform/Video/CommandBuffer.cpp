@@ -28,6 +28,8 @@ DEFINE_POOL(ComputeMipMapsCommand);
 DEFINE_POOL(SetScissorCommand);
 DEFINE_POOL(SetBlendCommand);
 DEFINE_POOL(SetCameraCommand);
+DEFINE_POOL(PushCameraCommand);
+DEFINE_POOL(PopCameraCommand);
 DEFINE_POOL(SetClipPlanesCommand);
 DEFINE_POOL(BindDescriptorSetsCommand);
 DEFINE_POOL(BeginDebugScopeCommand);
@@ -122,6 +124,8 @@ void CommandBuffer::batch() {
             case GFX::CommandType::SEND_PUSH_CONSTANTS:
             case GFX::CommandType::BEGIN_PIXEL_BUFFER:
             case GFX::CommandType::SET_CAMERA:
+            case GFX::CommandType::PUSH_CAMERA:
+            case GFX::CommandType::POP_CAMERA:
             case GFX::CommandType::SET_CLIP_PLANES:
             case GFX::CommandType::SET_SCISSOR:
             case GFX::CommandType::SET_BLEND:

@@ -811,7 +811,7 @@ void GFXDevice::endFrame(DisplayWindow& window, bool global) {
         FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
         FRAME_DRAW_CALLS = 0;
     }
-
+    DIVIDE_ASSERT(_cameraSnapshots.empty(), "Not all camera snapshots have been cleared properly! Check command buffers for missmatched push/pop!");
     // Activate the default render states
     _api->endFrame(window, global);
 
@@ -1222,8 +1222,12 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     }
 }
 
-void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot, RenderStage stage) {
+void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot, bool push) {
     // Tell the Rendering API to draw from our desired PoV
+    if (push) {
+        _cameraSnapshots.push(_activeCameraSnapshot);
+    }
+
     if (_activeCameraSnapshot != cameraSnapshot) {
         _activeCameraSnapshot = cameraSnapshot;
 
@@ -1332,9 +1336,15 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
             case GFX::CommandType::SET_VIEWPORT:
                 setViewport(commandBuffer.get<GFX::SetViewportCommand>(cmd)._viewport);
                 break;
+            case GFX::CommandType::PUSH_CAMERA:
             case GFX::CommandType::SET_CAMERA: {
                 const GFX::SetCameraCommand& crtCmd = commandBuffer.get<GFX::SetCameraCommand>(cmd);
-                renderFromCamera(crtCmd._cameraSnapshot, crtCmd._stage);
+                renderFromCamera(crtCmd._cameraSnapshot, static_cast<GFX::CommandType>(cmd._typeIndex) == GFX::CommandType::PUSH_CAMERA);
+            } break;
+            case GFX::CommandType::POP_CAMERA: {
+                DIVIDE_ASSERT(!_cameraSnapshots.empty(), "Missing matching PushCameraCommand!");
+                renderFromCamera(_cameraSnapshots.top(), false);
+                _cameraSnapshots.pop();
             } break;
             case GFX::CommandType::SET_CLIP_PLANES:
                 setClipPlanes(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
@@ -1392,7 +1402,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
     GFX::ClearRenderTargetCommand clearRenderTargetCmd = {};
     clearRenderTargetCmd._target = HiZTarget;
-    clearRenderTargetCmd._descriptor = {};
+    clearRenderTargetCmd._descriptor = clearTarget;
     GFX::EnqueueCommand(cmdBufferInOut, clearRenderTargetCmd);
 
     // Blit the depth buffer to the HiZ target
@@ -1400,7 +1410,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
         GFX::BeginRenderPassCommand beginRenderPassCmd;
         beginRenderPassCmd._target = HiZTarget;
-        beginRenderPassCmd._descriptor = colourOnlyTarget;
+        beginRenderPassCmd._descriptor = {};
         beginRenderPassCmd._name = "CONSTRUCT_HI_Z_COLOUR";
         GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
@@ -1408,7 +1418,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         const Texture_ptr& depthTex = depthSource.getAttachment(RTAttachmentType::Depth, 0).texture();
 
         Rect<I32> viewport(0, 0, renderTarget.getWidth(), renderTarget.getHeight());
-        drawTextureInViewport(depthTex->data(), viewport, cmdBufferInOut);
+        drawTextureInViewport(depthTex->data(), viewport, false, cmdBufferInOut);
 
         GFX::EndRenderPassCommand endRenderPassCmd;
         GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);
@@ -1592,11 +1602,14 @@ void GFXDevice::drawText(const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bu
     pushConstantsCommand._constants = _textRenderConstants;
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
-    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+    GFX::PushCameraCommand pushCameraCommand;
+    pushCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+    GFX::EnqueueCommand(bufferInOut, pushCameraCommand);
     
     GFX::EnqueueCommand(bufferInOut, cmd);
+
+    GFX::PopCameraCommand popCameraCommand;
+    GFX::EnqueueCommand(bufferInOut, popCameraCommand);
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch) {
@@ -1615,19 +1628,7 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
     flushCommandBuffer(sBuffer());
 }
 
-void GFXDevice::drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut) {
-    Rect<I32> drawRect(0, 0, 1, 1);
-
-    if (Config::Build::ENABLE_EDITOR && context().editor().running()) {
-        drawRect.zw(context().editor().getTargetViewport().zw());
-    } else {
-        drawRect.zw(context().app().windowManager().getMainWindow().getDimensions());
-    }
-
-    drawTextureInViewport(data, drawRect, bufferInOut);
-}
-
-void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) {
+void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, GFX::CommandBuffer& bufferInOut) {
     static Pipeline* pipeline = nullptr;
     if (!pipeline) {
         PipelineDescriptor pipelineDescriptor;
@@ -1645,9 +1646,9 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     beginDebugScopeCmd._scopeName = "Draw Fullscreen Texture";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
-    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+    GFX::PushCameraCommand pushCameraCommand;
+    pushCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+    GFX::EnqueueCommand(bufferInOut, pushCameraCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = pipeline;
@@ -1661,9 +1662,16 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     viewportCommand._viewport.set(viewport);
     GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants.set("srgb", GFX::PushConstantType::BOOL, convertToSrgb);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+
     // Blit render target to screen
     GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
+
+    GFX::PopCameraCommand popCameraCommand;
+    GFX::EnqueueCommand(bufferInOut, popCameraCommand);
 
     GFX::EndDebugScopeCommand endDebugScopeCommand;
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);

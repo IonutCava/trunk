@@ -309,10 +309,8 @@ public:
     void drawText(const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) const;
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
 
-    // Render the texture over the full window dimensions regardless of the actual active rendering viewport 
-    void drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& bufferInOut);
     // Render the texture using a custom viewport
-    void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut);
+    void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, GFX::CommandBuffer& bufferInOut);
 
     void blurTarget(RenderTargetHandle& blurSource, 
                     RenderTargetHandle& blurTargetH,
@@ -363,7 +361,7 @@ private:
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
     void uploadGPUBlock();
     void setClipPlanes(const FrustumClipPlanes& clipPlanes);
-    void renderFromCamera(const CameraSnapshot& cameraSnapshot, RenderStage stage);
+    void renderFromCamera(const CameraSnapshot& cameraSnapshot, bool push);
 
     ErrorCode createAPIInstance(RenderAPI api);
 
@@ -450,7 +448,9 @@ private:
     std::mutex _pipelineCacheLock;
     hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager = nullptr;
-    
+
+    std::stack<CameraSnapshot> _cameraSnapshots;
+
     std::mutex _gpuObjectArenaMutex;
     ObjectArena _gpuObjectArena;
 

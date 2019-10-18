@@ -788,7 +788,6 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
 
         GFX::SetCameraCommand setCameraCommand;
         setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
-        setCameraCommand._stage = params._stage;
         GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
         GFX::BeginRenderPassCommand beginRenderPassCompCmd;
@@ -840,13 +839,12 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
 void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {
     Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), params._stage, *params._camera);
 
-        // Cull the scene and grab the visible nodes
+    // Cull the scene and grab the visible nodes
     const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), params._stage, *params._camera, params._minLoD, params._minExtents);
 
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._cameraSnapshot = params._camera->snapshot();
-    setCameraCommand._stage = params._stage;
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::SetClipPlanesCommand setClipPlanesCommand;
@@ -889,7 +887,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
         hasHiZ = occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
     }
-     
+
     mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, hasHiZ, bufferInOut);
 
     if (params._stage != RenderStage::SHADOW) {
@@ -924,7 +922,7 @@ void RenderPassManager::createFrameBuffer(const Rect<I32>& targetViewport, GFX::
     resolveCmd._resolveDepth = false;
     GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
-    gfx.drawTextureInViewport(texData, targetViewport, bufferInOut);
+    gfx.drawTextureInViewport(texData, targetViewport, true, bufferInOut);
     Attorney::SceneManagerRenderPass::drawCustomUI(_parent.sceneManager(), targetViewport, bufferInOut);
     context.gui().draw(gfx, targetViewport, bufferInOut);
     gfx.renderDebugUI(targetViewport, bufferInOut);

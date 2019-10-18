@@ -91,6 +91,8 @@ enum class CommandType : U8 {
     COPY_TEXTURE,
     COMPUTE_MIPMAPS,
     SET_CAMERA,
+    PUSH_CAMERA,
+    POP_CAMERA,
     SET_CLIP_PLANES,
     BIND_PIPELINE,
     BIND_DESCRIPTOR_SETS,
@@ -261,8 +263,14 @@ END_COMMAND(SetBlendCommand);
 
 BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA);
     CameraSnapshot _cameraSnapshot;
-    RenderStage _stage = RenderStage::COUNT;
-END_COMMAND(SetCameraCommand);
+END_COMMAND(PushCameraCommand);
+
+BEGIN_COMMAND(PushCameraCommand, CommandType::PUSH_CAMERA);
+    CameraSnapshot _cameraSnapshot;
+END_COMMAND(PushCameraCommand);
+
+BEGIN_COMMAND(PopCameraCommand, CommandType::POP_CAMERA);
+END_COMMAND(PopCameraCommand);
 
 BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES);
     FrustumClipPlanes _clippingPlanes;
