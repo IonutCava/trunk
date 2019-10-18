@@ -172,8 +172,8 @@ namespace Divide {
         GLint  _activePackUnpackSkipRows[2] = {0 , 0};
         GLuint _activeShaderProgram = 0; //GLUtil::_invalidObjectID;
         GLuint _activeShaderPipeline = 0;//GLUtil::_invalidObjectID;
-        GLfloat _depthNearVal = .1f;
-        GLfloat _depthFarVal = 1.f;
+        GLfloat _depthNearVal = -1.f;
+        GLfloat _depthFarVal = -1.f;
         BlendingProperties _blendPropertiesGlobal = { BlendProperty::ONE,
                                                       BlendProperty::ONE,
                                                       BlendOperation::ADD };

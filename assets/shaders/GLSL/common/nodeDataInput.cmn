@@ -53,12 +53,13 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     mat4  dvd_ViewProjectionMatrix;
     ///xyz - position, w - aspect ratio
     vec4  dvd_cameraPosition; 
-    //x - nearPlane, y - farPlane, z - FoV, w - reserved
+    //x - nearPlane, y - farPlane, z - FoV, w - lightTilesX
     vec4  dvd_renderProperties;
     vec4  dvd_ViewPort;
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
 
+#define dvd_numTilesX uint(dvd_renderProperties.w)
 #define dvd_cameraForward vec3(dvd_ViewMatrix[3].xyz)
 #define windowWidth int(dvd_ViewPort.z)
 #define windowHeight int(dvd_ViewPort.w)

@@ -153,7 +153,7 @@ namespace Divide {
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
 
-                                                const Texture_ptr& srcTex = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+                                                const Texture_ptr& srcTex = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
                                                 const Texture_ptr& dstTex = gfx.getPrevDepthBuffer();
                                                 GFX::CopyTextureCommand copyCmd = {};
                                                 copyCmd._source = srcTex->data();
@@ -589,7 +589,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
     return doPrePass;
 }
 
-void RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, bool prePassExecuted, GFX::CommandBuffer& bufferInOut) {
+bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, bool prePassExecuted, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(nodes);
     ACKNOWLEDGE_UNUSED(extraTargets);
 
@@ -623,40 +623,32 @@ void RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassPa
             GFX::EnqueueCommand(bufferInOut, memCmd);
         }
 
-        // Bind the HiZ target as our depth texture
-        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-        bindDescriptorSets._set._textureData.setTexture(HiZTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-        GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
-    } else {
-        GFX::ResolveRenderTargetCommand resolveCmd = { };
-        resolveCmd._source = params._target;
-        resolveCmd._resolveDepth = true;
-        GFX::EnqueueCommand(bufferInOut, resolveCmd);
-
-        // Bind the regular depth buffer as our depth texture
-        const RenderTarget& renderTarget = _context.renderTargetPool().renderTarget(params._target);
-        const Texture_ptr& DepthTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
-
-        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-        bindDescriptorSets._set._textureData.setTexture(DepthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-        GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+        return true;
     }
+     
+    return false; // no HIZ!
 }
 
-void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, RenderTarget& target, bool prePassExecuted, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, RenderTarget& target, bool prePassExecuted, bool hasHiZ, GFX::CommandBuffer& bufferInOut) {
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = " - MainPass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
-
-    SceneManager& sceneManager = parent().sceneManager();
 
     RenderStagePass stagePass(params._stage, RenderPassType::MAIN_PASS, params._passVariant, params._passIndex);
 
     prepareRenderQueues(stagePass, params, nodes, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
-        Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, params._target, bufferInOut);
+        SceneManager& sceneManager = parent().sceneManager();
+
+        Texture_ptr hizTex = nullptr;
+        if (hasHiZ) {
+            const RenderTarget& hizTarget = _context.renderTargetPool().renderTarget(params._targetHIZ);
+            hizTex = hizTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
+        }
+         
+        Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, hizTex, bufferInOut);
 
         const bool hasNormalsTarget = extraTargets.x;
         const bool hasLightingTarget = extraTargets.y;
@@ -675,6 +667,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
                     drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
                 }
             }
+
             if (hasNormalsTarget) {
                 GFX::ResolveRenderTargetCommand resolveCmd = { };
                 resolveCmd._source = params._target;
@@ -688,25 +681,27 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
             if (prePassExecuted) {
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+                TextureData depthData = hasHiZ ? hizTex->data() 
+                                               : target.getAttachment(RTAttachmentType::Depth, 0).texture()->data();
+                descriptorSetCmd._set._textureData.setTexture(depthData, to_base(ShaderProgram::TextureUsage::DEPTH));
             }
-            
+            if (hasLightingTarget) {
+                GFX::ResolveRenderTargetCommand resolveCmd = { };
+                resolveCmd._source = params._target;
+                resolveCmd._resolveColour = to_I8(GFXDevice::ScreenTargets::EXTRA);
+                GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
+                const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->data();
+                constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::PREPASS_SHADOWS);
+
+                descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
+            }
+
             GFX::BeginRenderPassCommand beginRenderPassCommand;
             beginRenderPassCommand._target = params._target;
             beginRenderPassCommand._descriptor = drawPolicy;
             beginRenderPassCommand._name = "DO_MAIN_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
-        }
-
-        if (hasLightingTarget) {
-            GFX::ResolveRenderTargetCommand resolveCmd = { };
-            resolveCmd._source = params._target;
-            resolveCmd._resolveColour = to_I8(GFXDevice::ScreenTargets::EXTRA);
-            GFX::EnqueueCommand(bufferInOut, resolveCmd);
-
-            const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->data();
-            constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::PREPASS_SHADOWS);
-
-            descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
         }
 
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
@@ -885,8 +880,17 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
     bool prePassExecuted = prePass(visibleNodes, params, extraTargets, target, bufferInOut);
-    occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
-    mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
+    bool hasHiZ = false;
+    if (prePassExecuted) {
+        GFX::ResolveRenderTargetCommand resolveCmd = { };
+        resolveCmd._source = params._target;
+        resolveCmd._resolveDepth = true;
+        GFX::EnqueueCommand(bufferInOut, resolveCmd);
+
+        hasHiZ = occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
+    }
+     
+    mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, hasHiZ, bufferInOut);
 
     if (params._stage != RenderStage::SHADOW) {
         

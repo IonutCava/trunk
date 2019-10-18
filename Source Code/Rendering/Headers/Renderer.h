@@ -49,7 +49,7 @@ class Renderer : public PlatformContextComponent {
     ~Renderer();
 
     void preRender(RenderStagePass stagePass,
-                   RenderTargetID target,
+                   const Texture_ptr& hizColourTexture,
                    LightPool& lightPool,
                    const Camera& camera,
                    GFX::CommandBuffer& bufferInOut);

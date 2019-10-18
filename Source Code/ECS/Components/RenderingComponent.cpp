@@ -482,8 +482,8 @@ U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStage renderStage
 
     if (_lodLocked) {
         return lodLevel;
-    
     }
+
     const vec3<F32>& eyePos = camera.getEye();
     BoundsComponent* bounds = _parentSGN.get<BoundsComponent>();
 

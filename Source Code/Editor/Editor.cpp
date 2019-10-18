@@ -62,7 +62,7 @@ namespace {
 
     struct TextureCallbackData {
         vec4<I32> _colourData = { 1, 1, 1, 1 };
-        vec2<F32> _depthRange = { 0.0f, 1.0f };
+        vec2<F32> _depthRange = { 0.f, 1.f };
         GFXDevice* _gfxDevice = nullptr;
         bool _isDepthTexture = false;
         bool _flip = false;
@@ -1323,7 +1323,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
             ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
             ImGui::SameLine();
             ImGui::Text("Range: "); ImGui::SameLine();
-            ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.0f, 1.0f);
+            ImGui::DragFloatRange2("", &data._depthRange[0], &data._depthRange[1], 0.005f, 0.f, 1.f);
         } else {
             ImGui::Text("R: ");  ImGui::SameLine(); ImGui::ToggleButton("R", &state[0]);
 

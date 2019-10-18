@@ -517,8 +517,8 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     }
 }
 
-void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, RenderTargetID target, GFX::CommandBuffer& bufferInOut) {
-    _platformContext->gfx().getRenderer().preRender(stagePass, target, getActiveScene().lightPool(), camera, bufferInOut);
+void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
+    _platformContext->gfx().getRenderer().preRender(stagePass, hizColourTexture, getActiveScene().lightPool(), camera, bufferInOut);
 }
 
 void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {

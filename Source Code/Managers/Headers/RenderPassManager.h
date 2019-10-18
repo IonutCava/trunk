@@ -112,7 +112,7 @@ private:
                  vec2<bool> extraTargets, 
                  const RenderTarget& target,
                  GFX::CommandBuffer& bufferInOut);
-    void occlusionPass(const VisibleNodeList& nodes,
+    bool occlusionPass(const VisibleNodeList& nodes,
                        const PassParams& params,
                        vec2<bool> extraTargets, 
                        const RenderTarget& target,
@@ -123,6 +123,7 @@ private:
                   vec2<bool> extraTargets,
                   RenderTarget& target,
                   bool prePassExecuted,
+                  bool hasHiZ,
                   GFX::CommandBuffer& bufferInOut);
 
     void woitPass(const VisibleNodeList& nodes,

@@ -18,7 +18,13 @@
 namespace Divide {
 
 namespace {
-    constexpr U32 g_numberOfTiles = Config::Lighting::ForwardPlus::NUM_TILES_X * Config::Lighting::ForwardPlus::NUM_TILES_Y;
+    constexpr unsigned short MAX_HEIGHT = 2160u;
+    constexpr unsigned short MAX_WIDTH = 3840u;
+
+    constexpr unsigned int NUM_TILES_X = (MAX_WIDTH + (MAX_WIDTH % Config::Lighting::ForwardPlus::TILE_RES)) / Config::Lighting::ForwardPlus::TILE_RES;
+    constexpr unsigned int NUM_TILES_Y = (MAX_HEIGHT + (MAX_HEIGHT % Config::Lighting::ForwardPlus::TILE_RES)) / Config::Lighting::ForwardPlus::TILE_RES;
+
+    constexpr U32 g_maxNumberOfTiles = NUM_TILES_X * NUM_TILES_Y;
 };
 
 Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
@@ -46,7 +52,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     } else {
         CLAMP(numLightsPerTile, 0, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
     }
-    vectorEASTL<I32> initData(numLightsPerTile * g_numberOfTiles, -1);
+    vectorEASTL<I32> initData(numLightsPerTile * g_maxNumberOfTiles, -1);
 
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
@@ -91,7 +97,7 @@ Renderer::~Renderer()
 }
 
 void Renderer::preRender(RenderStagePass stagePass,
-                         RenderTargetID target,
+                         const Texture_ptr& hizColourTexture,
                          LightPool& lightPool,
                          const Camera& camera,
                          GFX::CommandBuffer& bufferInOut) {
@@ -106,35 +112,57 @@ void Renderer::preRender(RenderStagePass stagePass,
     if (stagePass._stage == RenderStage::SHADOW) {
         return;
     }
-
     lightPool.uploadLightData(stagePass._stage, bufferInOut);
+    if (!hizColourTexture) {
+        return;
+    }
 
-    const RenderTarget& rt = _context.gfx().renderTargetPool().renderTarget(target);
-    GFX::SetViewportCommand viewportCommand = {};
-    viewportCommand._viewport.set(Rect<I32>(0, 0, rt.getWidth(), rt.getHeight()));
-    GFX::EnqueueCommand(bufferInOut, viewportCommand);
+    const vec2<U16> renderTargetRes(hizColourTexture->width(), hizColourTexture->height());
+    const Rect<I32> viewport(0u, 0u, renderTargetRes.x, renderTargetRes.y);
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = to_I32(stagePass.index());
+    beginDebugScopeCmd._scopeName = "Renderer PrePass";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::BindPipelineCommand bindPipelineCmd = {};
     bindPipelineCmd._pipeline = pipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
+    Image depthImage = {};
+    depthImage._texture = hizColourTexture.get();
+    depthImage._flag = Image::Flag::READ;
+    depthImage._binding = to_U8(ShaderProgram::TextureUsage::DEPTH);
+    depthImage._layer = 0u;
+    depthImage._level = 0u;
+
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
+    bindDescriptorSetsCmd._set._images.push_back(depthImage);
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+
     GFX::SendPushConstantsCommand preRenderPushConstantsCmd;
-    preRenderPushConstantsCmd._constants.countHint(3);
+    preRenderPushConstantsCmd._constants.countHint(5);
     preRenderPushConstantsCmd._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
-    preRenderPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(rt.getWidth(), rt.getHeight()));
+    preRenderPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(renderTargetRes));
     preRenderPushConstantsCmd._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+    preRenderPushConstantsCmd._constants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix().getInverse());
+    preRenderPushConstantsCmd._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
     GFX::EnqueueCommand(bufferInOut, preRenderPushConstantsCmd);
 
+    constexpr U32 tileRes = Config::Lighting::ForwardPlus::TILE_RES;
+    const U32 workGroupsX = (renderTargetRes.x + (renderTargetRes.x % tileRes)) / tileRes;
+    const U32 workGroupsY = (renderTargetRes.y + (renderTargetRes.y % tileRes)) / tileRes;
+
     GFX::DispatchComputeCommand computeCmd = {};
-    computeCmd._computeGroupSize.set(
-        Config::Lighting::ForwardPlus::NUM_TILES_X,
-        Config::Lighting::ForwardPlus::NUM_TILES_Y,
-        1);
+    computeCmd._computeGroupSize.set(workGroupsX, workGroupsY, 1);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 
     GFX::MemoryBarrierCommand memCmd = {};
     memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
     GFX::EnqueueCommand(bufferInOut, memCmd);
+
+    GFX::EndDebugScopeCommand endDebugScopeCmd;
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
 void Renderer::idle() {

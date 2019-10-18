@@ -335,7 +335,7 @@ bool GL_API::initGLSW(const Configuration& config) {
     if (numLightsPerTile < 0) {
         numLightsPerTile = to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE);
     } else {
-        CLAMP(numLightsPerTile, 0, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
+        numLightsPerTile = std::min(numLightsPerTile, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
     }
 
     ShaderOffsetArray lineOffsets = { 0 };
@@ -520,14 +520,8 @@ bool GL_API::initGLSW(const Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define MAX_NUM_LIGHTS_PER_TILE " + 
+        "#define MAX_LIGHTS_PER_TILE " + 
         to_stringImpl(numLightsPerTile),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define LIGHT_NUM_TILES_X " +
-        to_stringImpl(Config::Lighting::ForwardPlus::NUM_TILES_X),
         lineOffsets);
 
     appendToShaderHeader(

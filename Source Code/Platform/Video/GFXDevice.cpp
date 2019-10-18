@@ -339,7 +339,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     Texture::TextureLoadInfo info;
     _prevDepthBuffer->loadData(info, NULL, renderResolution);
 
-    TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
+    TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_32);
+
     SamplerDescriptor hiZSampler = {};
     hiZSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
@@ -351,7 +352,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     hiZDescriptor.autoMipMaps(false);
 
     vector<RTAttachmentDescriptor> hiZAttachments = {
-        { hiZDescriptor, RTAttachmentType::Depth }
+        { hiZDescriptor, RTAttachmentType::Colour, 0, VECTOR4_ZERO },
     };
 
     {
@@ -445,7 +446,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     reflectionSampler.magFilter(TextureFilter::NEAREST);
 
     {
-        // A could be used for anything. E.G. depth
+        // A could be used for anything (e.g. depth(
         TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
         environmentDescriptorPlanar.samplerDescriptor(reflectionSampler);
 
@@ -1249,6 +1250,10 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     if (_api->setViewport(viewport)) {
     // Update the buffer with the new value
         _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
+        constexpr U32 tileRes = Config::Lighting::ForwardPlus::TILE_RES;
+        const U32 viewportWidth = to_U32(viewport.z);
+        const U32 workGroupsX = (viewportWidth + (viewportWidth % tileRes)) / tileRes;
+        _gpuBlock._data._renderProperties.w = to_F32(workGroupsX);
         _gpuBlock._needsUpload = true;
         _viewport.set(viewport);
 
@@ -1356,15 +1361,15 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) {
+    assert(depthBuffer != HiZTarget);
 
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
     // disables depth testing but allows depth writes
-    // Set the depth buffer as the currently active render target
-    RTDrawDescriptor depthOnlyTarget;
-    depthOnlyTarget.setViewport(false);
-    depthOnlyTarget.drawMask().disableAll();
-    depthOnlyTarget.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+    RTDrawDescriptor colourOnlyTarget;
+    colourOnlyTarget.setViewport(false);
+    colourOnlyTarget.drawMask().disableAll();
+    colourOnlyTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
     // The depth buffer's resolution should be equal to the screen's resolution
     RenderTarget& renderTarget = _rtPool->renderTarget(HiZTarget);
@@ -1381,19 +1386,40 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     beginDebugScopeCmd._scopeName = "Construct Hi-Z";
     GFX::EnqueueCommand(cmdBufferInOut, beginDebugScopeCmd);
 
-    // Blit the depth buffer to the HiZ target
-    GFX::BlitRenderTargetCommand blitDepthBufferCmd;
-    blitDepthBufferCmd._source = depthBuffer;
-    blitDepthBufferCmd._destination = HiZTarget;
-    blitDepthBufferCmd._blitDepth.emplace_back();
-    GFX::EnqueueCommand(cmdBufferInOut, blitDepthBufferCmd);
+    RTClearDescriptor clearTarget = {};
+    clearTarget.clearDepth(true);
+    clearTarget.clearColours(true);
 
-    const Texture_ptr& hizDepthTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
-    if (!hizDepthTex->descriptor().autoMipMaps()) {
+    GFX::ClearRenderTargetCommand clearRenderTargetCmd = {};
+    clearRenderTargetCmd._target = HiZTarget;
+    clearRenderTargetCmd._descriptor = {};
+    GFX::EnqueueCommand(cmdBufferInOut, clearRenderTargetCmd);
+
+    // Blit the depth buffer to the HiZ target
+    { // Copy depth buffer to the colour target for compute shaders to use later on
 
         GFX::BeginRenderPassCommand beginRenderPassCmd;
         beginRenderPassCmd._target = HiZTarget;
-        beginRenderPassCmd._descriptor = depthOnlyTarget;
+        beginRenderPassCmd._descriptor = colourOnlyTarget;
+        beginRenderPassCmd._name = "CONSTRUCT_HI_Z_COLOUR";
+        GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
+
+        RenderTarget& depthSource = _rtPool->renderTarget(depthBuffer);
+        const Texture_ptr& depthTex = depthSource.getAttachment(RTAttachmentType::Depth, 0).texture();
+
+        Rect<I32> viewport(0, 0, renderTarget.getWidth(), renderTarget.getHeight());
+        drawTextureInViewport(depthTex->data(), viewport, cmdBufferInOut);
+
+        GFX::EndRenderPassCommand endRenderPassCmd;
+        GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);
+    }
+
+    const Texture_ptr& hizDepthTex = renderTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
+    TextureData hizData = hizDepthTex->data();
+    if (!hizDepthTex->descriptor().autoMipMaps()) {
+        GFX::BeginRenderPassCommand beginRenderPassCmd;
+        beginRenderPassCmd._target = HiZTarget;
+        beginRenderPassCmd._descriptor = colourOnlyTarget;
         beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
         GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
@@ -1412,7 +1438,6 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
         triangleCmd._drawCount = 1;
 
-        TextureData hizData = hizDepthTex->data();
         // for i > 0, use texture views?
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.setTexture(hizData, to_U8(ShaderProgram::TextureUsage::DEPTH));
@@ -1474,9 +1499,9 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 }
 
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
-    const Texture_ptr& depthBuffer,
-    const Camera& camera,
-    GFX::CommandBuffer& bufferInOut) {
+                              const Texture_ptr& depthBuffer,
+                              const Camera& camera,
+                              GFX::CommandBuffer& bufferInOut) {
 
     static Pipeline* pipeline = nullptr;
     if (pipeline == nullptr) {
@@ -1699,7 +1724,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
 
         DebugView_ptr HiZ = std::make_shared<DebugView>();
         HiZ->_shader = _previewDepthMapShader;
-        HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+        HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Colour, 0).texture();
         HiZ->_name = "Hierarchical-Z";
         HiZ->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
         HiZ->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
@@ -1782,7 +1807,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         //HiZ preview
         I32 LoDLevel = 0;
         RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
-        LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
+        LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Colour, 0).texture()->getMaxMipLevel() - 1);
         HiZPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
     }
 

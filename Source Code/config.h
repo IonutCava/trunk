@@ -166,13 +166,7 @@ constexpr unsigned short MAX_POSSIBLE_LIGHTS = 1024;
 namespace ForwardPlus {
     /// The following parameters control the behaviour of the Forward+ renderer
     constexpr unsigned short TILE_RES = 16u;
-    constexpr unsigned short MAX_LIGHTS_PER_TILE = 512u;
-
-    constexpr unsigned short MAX_HEIGHT = 1080u;
-    constexpr unsigned short MAX_WIDTH = 1920u;
-
-    constexpr unsigned int NUM_TILES_X = (MAX_WIDTH + (MAX_WIDTH % TILE_RES)) / TILE_RES;
-    constexpr unsigned int NUM_TILES_Y = (MAX_HEIGHT + (MAX_HEIGHT % TILE_RES)) / TILE_RES;
+    constexpr unsigned short MAX_LIGHTS_PER_TILE = 1024u;
 };
 };  // namespace Lighting
 

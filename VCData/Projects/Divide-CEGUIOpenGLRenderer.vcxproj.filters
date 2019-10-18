@@ -34,9 +34,6 @@
     <Filter Include="3rdParty/ImGUI">
       <UniqueIdentifier>{5140371f-d715-4392-a2aa-d2d51c04b0a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdParty/ImGUI\extra_fonts">
-      <UniqueIdentifier>{9e51fc9e-c29d-4980-b0d6-04fbd3b27e3d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3rdParty/ImGUI\addons">
       <UniqueIdentifier>{eed78dbd-be06-439c-9349-5b65530d7cde}</UniqueIdentifier>
     </Filter>
@@ -584,9 +581,6 @@
     <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_widgets.cpp">
       <Filter>3rdParty/ImGUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\extra_fonts\binary_to_compressed_c.cpp">
-      <Filter>3rdParty/ImGUI\extra_fonts</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\stdafx-third-party-libs.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\fmt\src\format.cc">
       <Filter>fmt\src</Filter>
@@ -632,9 +626,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\clusterizer.cpp">
       <Filter>meshoptimizer\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\tools\gltfpack.cpp">
-      <Filter>meshoptimizer\tools</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\tools\meshloader.cpp">
       <Filter>meshoptimizer\tools</Filter>

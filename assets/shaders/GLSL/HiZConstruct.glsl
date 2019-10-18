@@ -3,6 +3,7 @@
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTex;
 
 uniform ivec2 depthInfo;
+out float _depthOut;
 
 void main() {
     
@@ -58,7 +59,7 @@ void main() {
         }
     }
 
-    gl_FragDepth = depth;
+    _depthOut = depth;
 
     /*-----------------------------------------------------------------------
     Copyright (c) 2014, NVIDIA. All rights reserved.
@@ -95,6 +96,8 @@ uniform int faceIndex = 0;
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
 #endif
 
+out float _depthOut;
+
 void main(void)
 {
     ivec2 LastMipSize = ivec2(dvd_ViewPort.z, dvd_ViewPort.w);
@@ -127,5 +130,5 @@ void main(void)
         maxZ = max(maxZ, max(extra.x, extra.y));
     }
 
-    gl_FragDepth = maxZ;
+    _depthOut = maxZ;
 }

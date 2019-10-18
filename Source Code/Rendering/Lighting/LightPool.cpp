@@ -404,7 +404,7 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
 
     if (totalLightCount > 0) {
         PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);
+        pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(false);
         pipelineDescriptor._shaderProgramHandle = _lightImpostorShader->getGUID();
 
         GenericDrawCommand pointsCmd;

@@ -59,6 +59,16 @@ struct RenderTargetID {
 
     U16 _index = 0;
     RenderTargetUsage _usage = RenderTargetUsage::COUNT;
+
+    inline bool operator==(const RenderTargetID& other) const noexcept {
+        return _index == other._index &&
+               _usage == other._usage;
+    }
+
+    inline bool operator!=(const RenderTargetID& other) const noexcept {
+        return _index != other._index ||
+               _usage != other._usage;
+    }
 };
 
 
@@ -101,7 +111,7 @@ struct RenderTargetDescriptor {
     ExternalRTAttachmentDescriptor* _externalAttachments = nullptr;
 
     F32 _depthValue = 1.0f;
-    vec2<F32> _depthRange = vec2<F32>(0.0f, 1.0f);
+    vec2<F32> _depthRange = vec2<F32>(0.f, 1.f);
 };
 
 class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
