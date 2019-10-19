@@ -36,7 +36,10 @@ namespace Divide {
 
 namespace {
     constexpr U32 g_printTimerBase = 15u;
+    constexpr U8 g_warmupLoopCount = 1u;
+
     U32 g_printTimer = g_printTimerBase;
+
 };
 
 LoopTimingData::LoopTimingData() : _updateLoops(0),
@@ -574,10 +577,9 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
-    static const U8 warmupLoopCount = 0;
 
     ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
-    for (U8 i = 0; i < warmupLoopCount; ++i) {
+    for (U8 i = 0; i < g_warmupLoopCount; ++i) {
         onLoop();
     }
     ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);

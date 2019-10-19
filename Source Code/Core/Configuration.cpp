@@ -61,6 +61,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     rendering.terrainDetailLevel = 3;
     rendering.terrainTextureQuality = 0;
     rendering.numLightsPerScreenTile = -1;
+    rendering.lightThreadGroupSize = 1;
     rendering.enableFog = true;
     rendering.fogDensity = 0.01f; 
     rendering.fogColour.set(0.2f);
@@ -140,6 +141,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.terrainDetailLevel);
         GET_PARAM(rendering.terrainTextureQuality);
         GET_PARAM(rendering.numLightsPerScreenTile);
+        GET_PARAM(rendering.lightThreadGroupSize);
         GET_PARAM(rendering.enableFog);
         GET_PARAM(rendering.fogDensity);
         GET_PARAM_ATTRIB(rendering.fogColour, r);
@@ -224,6 +226,7 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(rendering.terrainDetailLevel);
     PUT_PARAM(rendering.terrainTextureQuality);
     PUT_PARAM(rendering.numLightsPerScreenTile);
+    PUT_PARAM(rendering.lightThreadGroupSize);
     PUT_PARAM(rendering.enableFog);
     PUT_PARAM(rendering.fogDensity);
     PUT_PARAM_ATTRIB(rendering.fogColour, r);

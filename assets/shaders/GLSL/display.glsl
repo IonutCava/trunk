@@ -3,13 +3,13 @@
 #include "utility.frag"
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D tex;
-uniform bool srgb = true;
+uniform uint convertToSRGB = 1u;
 
 out vec4 _colourOut;
 
 void main(void){
     vec4 colour = texture(tex, VAR._texCoord);
-    if (srgb) {
+    if (convertToSRGB == 1) {
         colour = ToSRGB(colour);
     }
     _colourOut = colour;

@@ -67,6 +67,7 @@ class Renderer : public PlatformContextComponent {
 
     ShaderProgram_ptr _lightCullComputeShader;
     ShaderBuffer*     _perTileLightIndexBuffer;
+    Pipeline*         _lightCullPipeline = nullptr;
     std::unique_ptr<PostFX> _postFX = nullptr;
 };
 

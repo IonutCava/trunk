@@ -342,11 +342,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_32);
 
     SamplerDescriptor hiZSampler = {};
-    hiZSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    hiZSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    hiZSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    hiZSampler.wrapU(TextureWrap::CLAMP_TO_BORDER);
+    hiZSampler.wrapV(TextureWrap::CLAMP_TO_BORDER);
+    hiZSampler.wrapW(TextureWrap::CLAMP_TO_BORDER);
     hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
     hiZSampler.magFilter(TextureFilter::NEAREST);
+    hiZSampler.borderColour(DefaultColours::WHITE);
 
     hiZDescriptor.samplerDescriptor(hiZSampler);
     hiZDescriptor.autoMipMaps(false);
@@ -670,6 +671,17 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         pipelineDesc._stateHash = HiZState.getHash();
         pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getGUID();
         _HIZPipeline = newPipeline(pipelineDesc);
+    }
+    {
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getGUID();
+        _HIZCullPipeline = newPipeline(pipelineDescriptor);
+    }
+    {
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = get2DStateBlock();
+        pipelineDescriptor._shaderProgramHandle = _displayShader->getGUID();
+        _DrawFSTexturePipeline = newPipeline(pipelineDescriptor);
     }
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
 
@@ -1254,7 +1266,7 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     if (_api->setViewport(viewport)) {
     // Update the buffer with the new value
         _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
-        constexpr U32 tileRes = Config::Lighting::ForwardPlus::TILE_RES;
+        const U8 tileRes = Light::GetThreadGroupSize(context().config().rendering.lightThreadGroupSize);
         const U32 viewportWidth = to_U32(viewport.z);
         const U32 workGroupsX = (viewportWidth + (viewportWidth % tileRes)) / tileRes;
         _gpuBlock._data._renderProperties.w = to_F32(workGroupsX);
@@ -1292,7 +1304,8 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
 
     const GFX::CommandBuffer::CommandOrderContainer& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
+        const GFX::CommandType cmdType = static_cast<GFX::CommandType>(cmd._typeIndex);
+        switch (cmdType) {
             case GFX::CommandType::BLIT_RT: {
                 const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.get<GFX::BlitRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
@@ -1336,10 +1349,13 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
             case GFX::CommandType::SET_VIEWPORT:
                 setViewport(commandBuffer.get<GFX::SetViewportCommand>(cmd)._viewport);
                 break;
-            case GFX::CommandType::PUSH_CAMERA:
             case GFX::CommandType::SET_CAMERA: {
                 const GFX::SetCameraCommand& crtCmd = commandBuffer.get<GFX::SetCameraCommand>(cmd);
-                renderFromCamera(crtCmd._cameraSnapshot, static_cast<GFX::CommandType>(cmd._typeIndex) == GFX::CommandType::PUSH_CAMERA);
+                renderFromCamera(crtCmd._cameraSnapshot, false);
+            } break;
+            case GFX::CommandType::PUSH_CAMERA: {
+                const GFX::PushCameraCommand& crtCmd = commandBuffer.get<GFX::PushCameraCommand>(cmd);
+                renderFromCamera(crtCmd._cameraSnapshot, true);
             } break;
             case GFX::CommandType::POP_CAMERA: {
                 DIVIDE_ASSERT(!_cameraSnapshots.empty(), "Missing matching PushCameraCommand!");
@@ -1365,6 +1381,8 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
         }
     }
     _api->postFlushCommandBuffer(commandBuffer, submitToGPU);
+
+    DIVIDE_ASSERT(_cameraSnapshots.empty(), "Mismatched {Push/Pop}CameraCommand!");
 }
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
@@ -1513,13 +1531,6 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
                               const Camera& camera,
                               GFX::CommandBuffer& bufferInOut) {
 
-    static Pipeline* pipeline = nullptr;
-    if (pipeline == nullptr) {
-        PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getGUID();
-        pipeline = newPipeline(pipelineDescriptor);
-    }
-
     constexpr U32 GROUP_SIZE_AABB = 64;
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
@@ -1528,7 +1539,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::BindPipelineCommand bindPipelineCmd = {};
-    bindPipelineCmd._pipeline = pipeline;
+    bindPipelineCmd._pipeline = _HIZCullPipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     ShaderBufferBinding shaderBuffer = {};
@@ -1629,14 +1640,6 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 }
 
 void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, GFX::CommandBuffer& bufferInOut) {
-    static Pipeline* pipeline = nullptr;
-    if (!pipeline) {
-        PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = get2DStateBlock();
-        pipelineDescriptor._shaderProgramHandle = _displayShader->getGUID();
-        pipeline = newPipeline(pipelineDescriptor);
-    }
-
     GenericDrawCommand triangleCmd;
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
@@ -1651,7 +1654,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, pushCameraCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = pipeline;
+    bindPipelineCmd._pipeline = _DrawFSTexturePipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
@@ -1663,7 +1666,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("srgb", GFX::PushConstantType::BOOL, convertToSrgb);
+    pushConstantsCommand._constants.set("convertToSRGB", GFX::PushConstantType::UINT, convertToSrgb ? 1u : 0u);
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     // Blit render target to screen

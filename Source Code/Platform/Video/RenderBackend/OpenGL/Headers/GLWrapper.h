@@ -185,7 +185,7 @@ private:
     /// Revert everything that was set up in "initShaders()"
     static bool deInitShaders();
 
-    static bool initGLSW(const Configuration& config);
+    static bool initGLSW(Configuration& config);
     static bool deInitGLSW();
 
     bool bindPipeline(const Pipeline& pipeline);

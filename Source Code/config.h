@@ -161,13 +161,12 @@ constexpr unsigned short MAX_CSM_SPLITS_PER_LIGHT = 4;
 static_assert(MAX_CSM_SPLITS_PER_LIGHT <= 6, "Too many CSM splits. Max = 6 (number of cube faces))");
 
 /// Used mainly for caching/memory efficiency reasons
-constexpr unsigned short MAX_POSSIBLE_LIGHTS = 1024;
+constexpr unsigned short MAX_POSSIBLE_LIGHTS = 4096u;
 
 namespace ForwardPlus {
-    /// The following parameters control the behaviour of the Forward+ renderer
-    constexpr unsigned short TILE_RES = 16u;
     constexpr unsigned short MAX_LIGHTS_PER_TILE = 512u;
 };
+
 };  // namespace Lighting
 
 namespace Networking {

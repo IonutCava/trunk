@@ -82,6 +82,8 @@
   <!-- 0 - low, 1 - med, 2 - high -->
   <terrainTextureQuality>0</terrainTextureQuality>
   <numLightsPerScreenTile>-1</numLightsPerScreenTile>
+  <!-- 0 - 8x8, 1 - 16x16, 2 - 32x32 -->
+  <lightThreadGroupSize>1</lightThreadGroupSize>
   <enableFog>true</enableFog>
   <fogDensity>0.001</fogDensity>
   <fogColour r="0.5" g="0.5" b="0.55"/>

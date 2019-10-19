@@ -112,6 +112,7 @@ public:
         I32 terrainDetailLevel;
         I32 terrainTextureQuality;
         I32 numLightsPerScreenTile;
+        U8 lightThreadGroupSize;
         bool enableFog;
         F32 fogDensity;
         vec3<F32> fogColour;

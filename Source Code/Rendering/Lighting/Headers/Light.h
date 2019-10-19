@@ -60,6 +60,10 @@ class SceneRenderState;
 class Light : public GUIDWrapper, public ECS::Event::IEventListener
 {
    public:
+       static U8 GetThreadGroupSize(U8 optionIn) {
+           return (optionIn == 0 ? 8 : optionIn == 1 ? 16 : 32);
+       }
+
        //Note: 6 - cube faces. CSM splits must always be less than 6!
        struct ShadowProperties {
            /// light viewProjection matrices

@@ -415,6 +415,8 @@ private:
     ShaderProgram_ptr _blurShader = nullptr;
     
     Pipeline* _HIZPipeline = nullptr;
+    Pipeline* _HIZCullPipeline = nullptr;
+    Pipeline* _DrawFSTexturePipeline = nullptr;
 
     U32 _horizBlur = 0u;
     U32 _vertBlur = 0u;

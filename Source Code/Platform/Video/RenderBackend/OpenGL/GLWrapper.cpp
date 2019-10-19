@@ -269,7 +269,7 @@ bool GL_API::initShaders() {
     return true;
 }
 
-bool GL_API::initGLSW(const Configuration& config) {
+bool GL_API::initGLSW(Configuration& config) {
     static const std::pair<stringImpl, stringImpl>  shaderVaryings[] =
     {
         { "vec4"       , "_vertexW"},
@@ -337,6 +337,10 @@ bool GL_API::initGLSW(const Configuration& config) {
     } else {
         numLightsPerTile = std::min(numLightsPerTile, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
     }
+    config.rendering.numLightsPerScreenTile = numLightsPerTile;
+
+    CLAMP(config.rendering.lightThreadGroupSize, to_U8(0), to_U8(2));
+    const U8 tileSize = Light::GetThreadGroupSize(config.rendering.lightThreadGroupSize);
 
     ShaderOffsetArray lineOffsets = { 0 };
 
@@ -515,7 +519,7 @@ bool GL_API::initGLSW(const Configuration& config) {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + 
-        to_stringImpl(Config::Lighting::ForwardPlus::TILE_RES),
+        to_stringImpl(tileSize),
         lineOffsets);
 
     appendToShaderHeader(

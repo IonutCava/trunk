@@ -643,11 +643,15 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
         SceneManager& sceneManager = parent().sceneManager();
 
         Texture_ptr hizTex = nullptr;
+        Texture_ptr depthTex = nullptr;
         if (hasHiZ) {
             const RenderTarget& hizTarget = _context.renderTargetPool().renderTarget(params._targetHIZ);
             hizTex = hizTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
         }
-         
+        if (prePassExecuted) {
+            depthTex = target.getAttachment(RTAttachmentType::Depth, 0).texture();
+        }
+
         Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, hizTex, bufferInOut);
 
         const bool hasNormalsTarget = extraTargets.x;
@@ -681,8 +685,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
             if (prePassExecuted) {
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
-                TextureData depthData = hasHiZ ? hizTex->data() 
-                                               : target.getAttachment(RTAttachmentType::Depth, 0).texture()->data();
+                TextureData depthData = hasHiZ ? hizTex->data() : depthTex->data();
                 descriptorSetCmd._set._textureData.setTexture(depthData, to_base(ShaderProgram::TextureUsage::DEPTH));
             }
             if (hasLightingTarget) {

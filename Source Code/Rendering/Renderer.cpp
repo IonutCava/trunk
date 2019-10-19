@@ -18,13 +18,25 @@
 namespace Divide {
 
 namespace {
-    constexpr unsigned short MAX_HEIGHT = 2160u;
-    constexpr unsigned short MAX_WIDTH = 3840u;
+    constexpr bool g_useImageLoadStore = false;
 
-    constexpr unsigned int NUM_TILES_X = (MAX_WIDTH + (MAX_WIDTH % Config::Lighting::ForwardPlus::TILE_RES)) / Config::Lighting::ForwardPlus::TILE_RES;
-    constexpr unsigned int NUM_TILES_Y = (MAX_HEIGHT + (MAX_HEIGHT % Config::Lighting::ForwardPlus::TILE_RES)) / Config::Lighting::ForwardPlus::TILE_RES;
+    constexpr U16 MAX_HEIGHT = 2160u;
+    constexpr U16 MAX_WIDTH = 3840u;
 
-    constexpr U32 g_maxNumberOfTiles = NUM_TILES_X * NUM_TILES_Y;
+    vec2<U32> GetNumTiles(U8 threadGroupSize) {
+        const U8  TILE_RES = Light::GetThreadGroupSize(threadGroupSize);
+
+        return
+        {
+            (MAX_WIDTH + (MAX_WIDTH % TILE_RES)) / TILE_RES,
+            (MAX_HEIGHT + (MAX_HEIGHT % TILE_RES)) / TILE_RES 
+        };
+    }
+
+    U64 GetMaxNumTiles(U8 threadGroupSize) {
+        vec2<U32> tileCount = GetNumTiles(threadGroupSize);
+        return to_U64(tileCount.x) * tileCount.y;
+    }
 };
 
 Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
@@ -36,6 +48,9 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     ShaderModuleDescriptor computeDescriptor = {};
     computeDescriptor._moduleType = ShaderType::COMPUTE;
     computeDescriptor._sourceFile = "lightCull.glsl";
+    if (g_useImageLoadStore) {
+        computeDescriptor._defines.push_back(std::make_pair("USE_IMAGE_LOAD_STORE", true));
+    }
 
     ShaderProgramDescriptor cullDescritpor = {};
     cullDescritpor._modules.push_back(computeDescriptor);
@@ -46,13 +61,14 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
 
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
 
-    I32 numLightsPerTile = context.config().rendering.numLightsPerScreenTile;
-    if (numLightsPerTile < 0) {
-        numLightsPerTile = to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE);
-    } else {
-        CLAMP(numLightsPerTile, 0, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
-    }
-    vectorEASTL<I32> initData(numLightsPerTile * g_maxNumberOfTiles, -1);
+    PipelineDescriptor pipelineDescriptor = {};
+    pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
+    _lightCullPipeline = _context.gfx().newPipeline(pipelineDescriptor);
+
+    U64 totalLights = static_cast<U64>(context.config().rendering.numLightsPerScreenTile);
+    totalLights *= GetMaxNumTiles(config.rendering.lightThreadGroupSize);
+
+    vectorEASTL<I32> initData(totalLights, -1);
 
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
@@ -102,16 +118,10 @@ void Renderer::preRender(RenderStagePass stagePass,
                          const Camera& camera,
                          GFX::CommandBuffer& bufferInOut) {
 
-    static Pipeline* pipeline = nullptr;
-    if (pipeline == nullptr) {
-        PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
-        pipeline = _context.gfx().newPipeline(pipelineDescriptor);
-    }
-
     if (stagePass._stage == RenderStage::SHADOW) {
         return;
     }
+
     lightPool.uploadLightData(stagePass._stage, bufferInOut);
     if (!hizColourTexture) {
         return;
@@ -126,30 +136,34 @@ void Renderer::preRender(RenderStagePass stagePass,
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::BindPipelineCommand bindPipelineCmd = {};
-    bindPipelineCmd._pipeline = pipeline;
+    bindPipelineCmd._pipeline = _lightCullPipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
-    Image depthImage = {};
-    depthImage._texture = hizColourTexture.get();
-    depthImage._flag = Image::Flag::READ;
-    depthImage._binding = to_U8(ShaderProgram::TextureUsage::DEPTH);
-    depthImage._layer = 0u;
-    depthImage._level = 0u;
-
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    bindDescriptorSetsCmd._set._images.push_back(depthImage);
+    if (g_useImageLoadStore) {
+        Image depthImage = {};
+        depthImage._texture = hizColourTexture.get();
+        depthImage._flag = Image::Flag::READ;
+        depthImage._binding = to_U8(ShaderProgram::TextureUsage::DEPTH);
+        depthImage._layer = 0u;
+        depthImage._level = 0u;
+
+        bindDescriptorSetsCmd._set._images.push_back(depthImage);
+    } else {
+        bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+    }
+
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::SendPushConstantsCommand preRenderPushConstantsCmd;
-    preRenderPushConstantsCmd._constants.countHint(5);
+    preRenderPushConstantsCmd._constants.countHint(4);
     preRenderPushConstantsCmd._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
-    preRenderPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(renderTargetRes));
     preRenderPushConstantsCmd._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-    preRenderPushConstantsCmd._constants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix().getInverse());
     preRenderPushConstantsCmd._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
+    preRenderPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(renderTargetRes));
     GFX::EnqueueCommand(bufferInOut, preRenderPushConstantsCmd);
 
-    constexpr U32 tileRes = Config::Lighting::ForwardPlus::TILE_RES;
+    const U8  tileRes = Light::GetThreadGroupSize(_context.config().rendering.lightThreadGroupSize);
     const U32 workGroupsX = (renderTargetRes.x + (renderTargetRes.x % tileRes)) / tileRes;
     const U32 workGroupsY = (renderTargetRes.y + (renderTargetRes.y % tileRes)) / tileRes;
 

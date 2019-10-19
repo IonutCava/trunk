@@ -14,7 +14,7 @@ SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, PlatformContext& con
 {
     setRange(2.0f);
     setConeAngle(35.0f);
-    setSpotCosOuterConeAngle(0.65f); // 49.5 degrees
+    setSpotCosOuterConeAngle(std::cos(Angle::to_RADIANS(49.5f)));
     _shadowProperties._lightDetails.z = 0.05f;
 
     getEditorComponent().registerField("Range and Cone", &_rangeAndCones, EditorComponentFieldType::PUSH_TYPE, false, GFX::PushConstantType::VEC3);
