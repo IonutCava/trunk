@@ -117,25 +117,25 @@ namespace Divide {
                 ImGui::Text("View Matrix");
                 ImGui::Spacing();
                 mat4<F32> viewMatrix = selectedCamera->getViewMatrix();
-                EditorComponentField worldMatrixField = {
-                    GFX::PushConstantType::MAT4,
-                    EditorComponentFieldType::PUSH_TYPE,
-                    true,
-                    "View Matrix",
-                    &viewMatrix
-                };
+                EditorComponentField worldMatrixField;
+                worldMatrixField._name = "View Matrix";
+                worldMatrixField._basicType = GFX::PushConstantType::MAT4;
+                worldMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
+                worldMatrixField._readOnly = true;
+                worldMatrixField._data = &viewMatrix;
+                
                 processBasicField(worldMatrixField);
 
                 ImGui::Text("Projection Matrix");
                 ImGui::Spacing();
                 mat4<F32> projMatrix = selectedCamera->getProjectionMatrix();
-                EditorComponentField projMatrixField = {
-                    GFX::PushConstantType::MAT4,
-                    EditorComponentFieldType::PUSH_TYPE,
-                    true,
-                    "Projection Matrix",
-                    &projMatrix
-                };
+                EditorComponentField projMatrixField;
+                projMatrixField._basicType = GFX::PushConstantType::MAT4;
+                projMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
+                projMatrixField._readOnly = true;
+                projMatrixField._name = "Projection Matrix";
+                projMatrixField._data = &projMatrix;
+                
                 processBasicField(projMatrixField);
             }
         } else if (hasSelections) {
@@ -257,6 +257,20 @@ namespace Divide {
             case EditorComponentFieldType::PUSH_TYPE: {
                 ret = processBasicField(field);
             }break;
+            case EditorComponentFieldType::DROPDOWN_TYPE: {
+                const U32 crtIndex = to_U32(field._range.x);
+                const U32 entryCount = to_U32(field._range.y);
+
+                if (field._dataSetter && field._dataGetter && entryCount > 0) {
+                    ret = ImGui::BeginCombo(field._name.c_str(), "");
+                    if (ret) {
+                        for (U32 n = 0; n < entryCount; ++n) {
+
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+            }break;
             case EditorComponentFieldType::BOUNDING_BOX: {
                 BoundingBox bb = {};
                 field.get<BoundingBox>(bb);
@@ -290,7 +304,9 @@ namespace Divide {
                 ret = processMaterial(field.getPtr<Material>(), field._readOnly);
             }break;
         };
-
+        if (!field._tooltip.empty() && ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(field._tooltip.c_str());
+        }
         return ret;
      }
 

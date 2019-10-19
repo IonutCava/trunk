@@ -249,9 +249,11 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     bool _lodLocked;
     vec2<F32> _renderRange;
 
+    std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
+
     typedef std::array<RenderPackage, to_base(RenderPassType::COUNT)> RenderPackagesPerPassType;
     std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT) - 1> _renderPackagesNormal;
-    
+
     typedef std::array<RenderPackage, 6> RenderPacakgesPerSplit;
     std::array<RenderPacakgesPerSplit, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _renderPackagesShadow;
 

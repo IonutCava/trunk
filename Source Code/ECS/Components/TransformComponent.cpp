@@ -14,13 +14,34 @@ namespace Divide {
     {
         _transformUpdatedMask.store(to_base(TransformType::ALL));
 
-        _editorComponent.registerField("Transform",
-                                       this,
-                                       EditorComponentFieldType::TRANSFORM,
-                                       false);
-        _editorComponent.registerField("WorldMat", &_worldMatrix, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
+
+        EditorComponentField transformField = {};
+        transformField._name = "Transform";
+        transformField._data = this;
+        transformField._type = EditorComponentFieldType::TRANSFORM;
+        transformField._readOnly = false;
+
+        _editorComponent.registerField(std::move(transformField));
+
+
+        EditorComponentField worldMatField = {};
+        worldMatField._name = "WorldMat";
+        worldMatField._data = &_worldMatrix;
+        worldMatField._type = EditorComponentFieldType::PUSH_TYPE;
+        worldMatField._readOnly = true;
+        worldMatField._basicType = GFX::PushConstantType::MAT4;
+
+        _editorComponent.registerField(std::move(worldMatField));
+
         if (_transformOffset.first) {
-            _editorComponent.registerField("Transform Offset", &_transformOffset.second, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::MAT4);
+            EditorComponentField transformOffsetField = {};
+            transformOffsetField._name = "Transform Offset";
+            transformOffsetField._data = _transformOffset.second;
+            transformOffsetField._type = EditorComponentFieldType::PUSH_TYPE;
+            transformOffsetField._readOnly = true;
+            transformOffsetField._basicType = GFX::PushConstantType::MAT4;
+
+            _editorComponent.registerField(std::move(transformOffsetField));
         }
 
         _editorComponent.onChangedCbk([this](const char* field) {
@@ -52,6 +73,7 @@ namespace Divide {
     void TransformComponent::reset() {
         _worldMatrix.identity();
         _prevTransformValues._translation.set(0.0f);
+
         _prevTransformValues._scale.set(1.0f);
         _prevTransformValues._orientation.identity();
         while (!_transformStack.empty()) {
