@@ -21,11 +21,6 @@
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/AnimationComponent.h"
 
-
-#ifndef USE_COLOUR_WOIT
-//#define USE_COLOUR_WOIT
-#endif
-
 namespace Divide {
 
     namespace {
@@ -46,6 +41,7 @@ namespace Divide {
         : KernelComponent(parent),
         _renderQueue(parent),
         _context(context),
+        _OITCompositionPipeline(nullptr),
         _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
         _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
         _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
@@ -86,6 +82,11 @@ namespace Divide {
 
     void RenderPassManager::postInit() {
         WAIT_FOR_CONDITION(_OITCompositionShader->getState() == ResourceState::RES_LOADED);
+
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+        pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getGUID();
+        _OITCompositionPipeline = _context.newPipeline(pipelineDescriptor);
     }
 
     namespace {
@@ -729,10 +730,6 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 }
 
 void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getGUID();
-    Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
 
     RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS, params._passVariant, params._passIndex);
     prepareRenderQueues(stagePass, params, nodes, false, bufferInOut);
@@ -745,8 +742,10 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
     if (renderQueueSize(stagePass) > 0) {
         GFX::ClearRenderTargetCommand clearRTCmd = {};
         clearRTCmd._target = RenderTargetID(RenderTargetUsage::OIT);
-        // Don't clear our screen target. That would be BAD.
-        clearRTCmd._descriptor.clearColour(to_U8(GFXDevice::ScreenTargets::MODULATE), false);
+        if (Config::USE_COLOURED_WOIT) {
+            // Don't clear our screen target. That would be BAD.
+            clearRTCmd._descriptor.clearColour(to_U8(GFXDevice::ScreenTargets::MODULATE), false);
+        }
         // Don't clear and don't write to depth buffer
         clearRTCmd._descriptor.clearDepth(false);
         GFX::EnqueueCommand(bufferInOut, clearRTCmd);
@@ -768,11 +767,13 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
             state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
             state1._blendProperties._blendOp = BlendOperation::ADD;
 
-            /*RTBlendState& state2 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::EXTRA));
-            state2._blendProperties._enabled = true;
-            state2._blendProperties._blendSrc = BlendProperty::ONE;
-            state2._blendProperties._blendDest = BlendProperty::ONE;
-            state2._blendProperties._blendOp = BlendOperation::ADD;*/
+            if (Config::USE_COLOURED_WOIT) {
+                RTBlendState& state2 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::EXTRA));
+                state2._blendProperties._enabled = true;
+                state2._blendProperties._blendSrc = BlendProperty::ONE;
+                state2._blendProperties._blendDest = BlendProperty::ONE;
+                state2._blendProperties._blendOp = BlendOperation::ADD;
+            }
         }
 
         beginRenderPassOitCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
@@ -801,18 +802,18 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
             RTBlendState& state0 = beginRenderPassCompCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::ALBEDO));
             state0._blendProperties._enabled = true;
             state0._blendProperties._blendOp = BlendOperation::ADD;
-#if defined(USE_COLOUR_WOIT)
-            state0._blendProperties._blendSrc = BlendProperty::INV_SRC_ALPHA;
-            state0._blendProperties._blendDest = BlendProperty::ONE;
-#else
-            state0._blendProperties._blendSrc = BlendProperty::SRC_ALPHA;
-            state0._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
-#endif
+            if (Config::USE_COLOURED_WOIT) {
+                state0._blendProperties._blendSrc = BlendProperty::INV_SRC_ALPHA;
+                state0._blendProperties._blendDest = BlendProperty::ONE;
+            } else {
+                state0._blendProperties._blendSrc = BlendProperty::SRC_ALPHA;
+                state0._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
+            }
         }
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCompCmd);
 
         GFX::BindPipelineCommand bindPipelineCmd;
-        bindPipelineCmd._pipeline = pipeline;
+        bindPipelineCmd._pipeline = _OITCompositionPipeline;
         GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
         RenderTarget& oitTarget = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT));
@@ -890,6 +891,10 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
         hasHiZ = occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
     }
+
+    GFX::MemoryBarrierCommand memCmd;
+    memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET);
+    GFX::EnqueueCommand(bufferInOut, memCmd);
 
     mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, hasHiZ, bufferInOut);
 

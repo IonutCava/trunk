@@ -41,7 +41,6 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterCaustics;
 
 
 void main(void) {
-    discard;
     vec4 colourOut = (texture(texWaterCaustics, _scrollingUV.st) +
                       texture(texWaterCaustics, _scrollingUV.pq)) * 0.5;
 

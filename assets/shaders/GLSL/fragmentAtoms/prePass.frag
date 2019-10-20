@@ -18,7 +18,8 @@ layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
 void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
 #if defined(USE_ALPHA_DISCARD)
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    if (getAlbedo(colourMatrix, uv).a * alphaFactor < 1.0f - Z_TEST_SIGMA) {
+    float alpha = getAlbedo(colourMatrix, uv).a;
+    if (alpha * alphaFactor < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 #endif

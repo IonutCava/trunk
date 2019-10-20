@@ -154,6 +154,8 @@ private:
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
     GFX::CommandBuffer* _postFXCommandBuffer;
 
+    Pipeline* _OITCompositionPipeline = nullptr;
+
     ShaderProgram_ptr _OITCompositionShader;
     Time::ProfileTimer* _renderPassTimer;
     Time::ProfileTimer* _buildCommandBufferTimer;

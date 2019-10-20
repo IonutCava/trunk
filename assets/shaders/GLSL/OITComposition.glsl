@@ -1,11 +1,6 @@
 --Fragment
 
-#ifndef USE_COLOURED_WOIT
-//#define USE_COLOURED_WOIT
-#endif //USE_COLOURED_WOIT
-
-
-#include "Utility.frag"
+#include "utility.frag"
 
 /* sum(rgb * a, a) */
 layout(binding = TEXTURE_UNIT0) uniform sampler2D accumTexture;
@@ -31,14 +26,13 @@ void main() {
     }
 
     // dst' =  (accum.rgb / accum.a) * (1 - revealage) + dst
-    // [dst has already been modulated by the transmission colors and coverage and the blend mode
-    // inverts revealage for us] 
+    // [dst has already been modulated by the transmission colors and coverage and the blend mode inverts revealage for us] 
     vec3 averageColor = accum.rgb / max(accum.a, 0.00001f);
-#ifdef USE_COLOURED_WOIT
-    _colourOut = vec4(averageColor, revealage);
-#else
-    _colourOut = vec4(averageColor, 1.0f - revealage);
+
+#if !defined(USE_COLOURED_WOIT)
+    revealage = 1.0f - revealage;
 #endif
+    _colourOut = vec4(averageColor, revealage);
 }
 
 

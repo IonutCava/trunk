@@ -88,7 +88,8 @@ class Material : public CachedResource {
 
     enum class TranslucencySource : U8 {
         ALBEDO,
-        OPACITY_MAP,
+        OPACITY_MAP_R, //single channel
+        OPACITY_MAP_A, //rgba texture
         COUNT
     };
     
@@ -161,6 +162,8 @@ class Material : public CachedResource {
 
     static bool onStartup();
     static bool onShutdown();
+
+    static void ApplyDefaultStateBlocks(Material& target);
 
     /// Return a new instance of this material with the name composed of the
     /// base material's name and the give name suffix.

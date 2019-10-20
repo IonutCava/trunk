@@ -416,18 +416,22 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
         vector<RTAttachmentDescriptor> attachments = {
             { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
-            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), DefaultColours::WHITE}
+            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
         };
 
         const RenderTarget& screenTarget = _rtPool->renderTarget(RenderTargetUsage::SCREEN);
-        const RTAttachment_ptr& screenAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
-
+        
         vector<ExternalRTAttachmentDescriptor> externalAttachments = {
-            { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) },
-            { screenDepthAttachment,  RTAttachmentType::Depth }
+                { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
+        if (Config::USE_COLOURED_WOIT) {
+            const RTAttachment_ptr& screenAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
+            externalAttachments.push_back(
+                { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) }
+            );
+        }
         RenderTargetDescriptor oitDesc = {};
         oitDesc._name = "OIT_FULL_RES";
         oitDesc._resolution = renderResolution;

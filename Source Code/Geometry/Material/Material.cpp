@@ -48,6 +48,58 @@ bool Material::onShutdown() {
     return true;
 }
 
+void Material::ApplyDefaultStateBlocks(Material& target) {
+    /// Normal state for final rendering
+    RenderStateBlock stateDescriptor;
+    stateDescriptor.setZFunc(ComparisonFunction::EQUAL);
+
+    RenderStateBlock oitDescriptor(stateDescriptor);
+    oitDescriptor.setZFunc(ComparisonFunction::LEQUAL);
+    oitDescriptor.depthTestEnabled(true);
+
+    /// the reflection descriptor is the same as the normal descriptor
+    RenderStateBlock reflectorDescriptor(stateDescriptor);
+    RenderStateBlock reflectorOitDescriptor(oitDescriptor);
+    //reflectorOitDescriptor.depthTestEnabled(false);
+
+    /// the z-pre-pass descriptor does not process colours
+    RenderStateBlock zPrePassDescriptor(stateDescriptor);
+    zPrePassDescriptor.setColourWrites(true, true, true, true);
+    zPrePassDescriptor.setZFunc(ComparisonFunction::LEQUAL);
+
+    /// A descriptor used for rendering to depth map
+    RenderStateBlock shadowDescriptor(stateDescriptor);
+
+    shadowDescriptor.setCullMode(CullMode::CCW);
+    shadowDescriptor.setZFunc(ComparisonFunction::LESS);
+    /// set a polygon offset
+    shadowDescriptor.setZBias(1.0f, 1.0f);
+
+    RenderStateBlock shadowDescriptorNoColour(shadowDescriptor);
+    shadowDescriptorNoColour.setColourWrites(false, false, false, false);
+
+    RenderStateBlock shadowDescriptorCSM(shadowDescriptor);
+    shadowDescriptorCSM.setCullMode(CullMode::CW);
+    shadowDescriptorCSM.setZFunc(ComparisonFunction::LESS);
+    shadowDescriptorCSM.setColourWrites(true, true, false, false);
+
+    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
+    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
+    target.setRenderStateBlock(reflectorDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
+
+    target.setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStage::SHADOW, to_base(LightType::POINT));
+    target.setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStage::SHADOW, to_base(LightType::SPOT));
+    target.setRenderStateBlock(shadowDescriptorCSM.getHash(), RenderStage::SHADOW, to_base(LightType::DIRECTIONAL));
+
+    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
+    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::OIT_PASS));
+    target.setRenderStateBlock(reflectorOitDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::OIT_PASS));
+
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS));
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
+}
+
 Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
@@ -80,54 +132,7 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
 
     _operation = TextureOperation::NONE;
 
-    /// Normal state for final rendering
-    RenderStateBlock stateDescriptor;
-    stateDescriptor.setZFunc(ComparisonFunction::EQUAL);
-
-    RenderStateBlock oitDescriptor(stateDescriptor);
-    oitDescriptor.depthTestEnabled(true);
-
-    /// the reflection descriptor is the same as the normal descriptor
-    RenderStateBlock reflectorDescriptor(stateDescriptor);
-    RenderStateBlock reflectorOitDescriptor(stateDescriptor);
-    //reflectorOitDescriptor.depthTestEnabled(false);
-
-    /// the z-pre-pass descriptor does not process colours
-    RenderStateBlock zPrePassDescriptor(stateDescriptor);
-    zPrePassDescriptor.setColourWrites(true, true, true, true);
-    zPrePassDescriptor.setZFunc(ComparisonFunction::LEQUAL);
-
-    /// A descriptor used for rendering to depth map
-    RenderStateBlock shadowDescriptor(stateDescriptor);
-
-    shadowDescriptor.setCullMode(CullMode::CCW);
-    shadowDescriptor.setZFunc(ComparisonFunction::LESS);
-    /// set a polygon offset
-    shadowDescriptor.setZBias(1.0f, 1.0f);
-
-    RenderStateBlock shadowDescriptorNoColour(shadowDescriptor);
-    shadowDescriptorNoColour.setColourWrites(false, false, false, false);
-
-    RenderStateBlock shadowDescriptorCSM(shadowDescriptor);
-    shadowDescriptorCSM.setCullMode(CullMode::CW);
-    shadowDescriptorCSM.setZFunc(ComparisonFunction::LESS);
-    shadowDescriptorCSM.setColourWrites(true, true, false, false);
-
-    setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
-    setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
-    setRenderStateBlock(reflectorDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
-
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStage::SHADOW, to_base(LightType::POINT));
-    setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStage::SHADOW, to_base(LightType::SPOT));
-    setRenderStateBlock(shadowDescriptorCSM.getHash(), RenderStage::SHADOW, to_base(LightType::DIRECTIONAL));
-
-    setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
-    setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::OIT_PASS));
-    setRenderStateBlock(reflectorOitDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::OIT_PASS));
-
-    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS));
-    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
-    setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
+    ApplyDefaultStateBlocks(*this);
 }
 
 Material::~Material()
@@ -493,9 +498,15 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     switch (_translucencySource) {
-        case TranslucencySource::OPACITY_MAP: {
-            shaderName += ".OpacityMap";
+        case TranslucencySource::OPACITY_MAP_A:
+        case TranslucencySource::OPACITY_MAP_R: {
             fragDefines.push_back(std::make_pair("USE_OPACITY_MAP", true));
+            if (_translucencySource == TranslucencySource::OPACITY_MAP_R) {
+                shaderName += ".OpacityMapR";
+                fragDefines.push_back(std::make_pair("USE_OPACITY_MAP_RED_CHANNEL", true));
+            } else {
+                shaderName += ".OpacityMapA";
+            }
         } break;
         case TranslucencySource::ALBEDO: {
             shaderName += ".AlbedoAlpha";
@@ -770,29 +781,35 @@ void Material::updateTranslucency() {
         _translucent = true;
     }
 
+    bool usingAlbedoTexAlpha = false;
     // base texture is translucent
     Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
     if (albedo && albedo->hasTransparency()) {
         _translucencySource = TranslucencySource::ALBEDO;
         _translucent = albedo->hasTranslucency();
 
-        if (oldSource != _translucencySource) {
-            const U16 baseLevel = albedo->getBaseMipLevel();
-            const U16 maxLevel = albedo->getMaxMipLevel();
-            const U16 baseOffset = maxLevel > g_numMipsToKeepFromAlphaTextures ? g_numMipsToKeepFromAlphaTextures : maxLevel;
-
-            STUBBED("HACK! Limit mip range for textures that have alpha values used by the material -Ionut");
-            if (albedo->getMipCount() == maxLevel) {
-                albedo->setMipMapRange(baseLevel, baseOffset);
-            }
-        }
+        usingAlbedoTexAlpha = oldSource != _translucencySource;
     }
 
     // opacity map
     const Texture_ptr& opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
     if (opacity && opacity->hasTransparency()) {
-        _translucencySource = TranslucencySource::OPACITY_MAP;
+        const U8 channelCount = opacity->descriptor().numChannels();
+        DIVIDE_ASSERT(channelCount == 1 || channelCount == 4, "Material::updateTranslucency: Opacity textures must be either single-channel or RGBA!");
+
+        _translucencySource = channelCount == 4 ? TranslucencySource::OPACITY_MAP_A : TranslucencySource::OPACITY_MAP_R;
         _translucent = opacity->hasTranslucency();
+        usingAlbedoTexAlpha = false;
+    }
+
+    if (usingAlbedoTexAlpha) {
+        const U16 baseLevel = albedo->getBaseMipLevel();
+        const U16 maxLevel = albedo->getMaxMipLevel();
+        const U16 baseOffset = maxLevel > g_numMipsToKeepFromAlphaTextures ? g_numMipsToKeepFromAlphaTextures : maxLevel;
+        /*STUBBED("HACK! Limit mip range for textures that have alpha values used by the material -Ionut");
+        if (albedo->getMipCount() == maxLevel) {
+            albedo->setMipMapRange(baseLevel, baseOffset);
+        }*/
     }
 
     if (oldSource != _translucencySource || wasTranslucent != _translucent) {

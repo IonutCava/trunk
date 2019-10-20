@@ -392,6 +392,9 @@ bool GL_API::initGLSW(Configuration& config) {
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option unroll all", lineOffsets);
     }
 
+    if (Config::USE_COLOURED_WOIT) {
+        appendToShaderHeader(ShaderType::COUNT, "#define USE_COLOURED_WOIT", lineOffsets);
+    }
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + to_stringImpl(Config::Lighting::MAX_POSSIBLE_LIGHTS), lineOffsets);

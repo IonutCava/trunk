@@ -175,12 +175,17 @@ vec3 getSpecular(mat4 colourMatrix, in vec2 uv) {
 float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
 #if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_MAP)
-    return texture(texOpacityMap, uv).r;
+#       if defined(USE_OPACITY_MAP_RED_CHANNEL)
+            return texture(texOpacityMap, uv).r;
+#       else
+            return texture(texOpacityMap, uv).a;
+#       endif
+#   else
+        return albedoAlpha;
 #   endif
-    return albedoAlpha;
-#endif
-
+#else
     return 1.0;
+#endif
 }
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
@@ -226,10 +231,10 @@ vec4 getTextureColour(in vec2 uv) {
 
 vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
 
-#if defined(SKIP_TEXTURES)
     vec4 albedo = colourMatrix[0];
-#else
-    vec4 albedo = getTextureColour(uv);
+
+#if !defined(SKIP_TEXTURES)
+    albedo = getTextureColour(uv);
 #endif
 
     albedo.a = getOpacity(colourMatrix, albedo.a, uv);

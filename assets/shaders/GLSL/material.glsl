@@ -13,8 +13,9 @@ void main (void) {
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     vec4 albedo = getAlbedo(colourMatrix, TexCoords);
   
-#if defined(USE_ALPHA_DISCARD)
-    if (albedo.a < 1.0 - Z_TEST_SIGMA) {
+#if !defined(OIT_PASS) && defined(USE_ALPHA_DISCARD)
+    float alpha = albedo.a;
+    if (alpha < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 #endif

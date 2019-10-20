@@ -786,6 +786,8 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vegMaterial->getColourData().shininess(5.0f);
     vegMaterial->setDoubleSided(false);
 
+    Material::ApplyDefaultStateBlocks(*vegMaterial);
+
     ShaderModuleDescriptor vertModule = {};
     vertModule._batchSameFile = false;
     vertModule._moduleType = ShaderType::VERTEX;

@@ -100,6 +100,9 @@ constexpr unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
 /// Maximum number of players we support locally
 constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
 
+/// Use the coloured version of WOIT as detailed here: http://casual-effects.blogspot.com/2015/03/colored-blended-order-independent.html (Note: Not yet working!)
+constexpr bool USE_COLOURED_WOIT = false;
+
 /// Compute related options
 namespace Compute {
 

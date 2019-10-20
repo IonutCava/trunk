@@ -61,6 +61,7 @@ void main()
 -- Fragment.Colour
 
 layout(early_fragment_tests) in;
+
 uniform uint dvd_dataIdx;
 
 #define USE_SHADING_BLINN_PHONG
@@ -97,13 +98,16 @@ layout(location = 1) flat in float _alphaFactor;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
+// This is needed so that the inner "outputNoVelocity" discards don't take place
+// We still manually alpha-discard in main
 #if defined(USE_ALPHA_DISCARD)
 #undef USE_ALPHA_DISCARD
 #endif
 
 void main() {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
-    if (colour.a * _alphaFactor < 1.0 - Z_TEST_SIGMA) {
+    float alpha = colour.a * _alphaFactor;
+    if (alpha <= 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 
@@ -125,7 +129,8 @@ out vec2 _colourOut;
 
 void main(void) {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
-    if (colour.a * _alphaFactor < 1.0 - Z_TEST_SIGMA) {
+    float alpha = colour.a * _alphaFactor;
+    if (alpha <= 1.0f - Z_TEST_SIGMA) {
         discard;
     }
 
