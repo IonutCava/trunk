@@ -53,7 +53,7 @@ class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsReso
 protected:
     VDIHandle _handle;
 
-    static VDIPool<2048> s_VDIPool;
+    static VDIPool<4096> s_VDIPool;
 };
 
 };  // namespace Divide

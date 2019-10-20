@@ -136,6 +136,7 @@ class Vegetation : public SceneNode {
     ShaderProgram_ptr _cullShaderGrass;
     ShaderProgram_ptr _cullShaderTrees;
 
+    SceneGraphNode* _treeParentNode;
     PushConstants _cullPushConstants;
 
     bool _shadowMapped;
@@ -144,7 +145,6 @@ class Vegetation : public SceneNode {
     F32 _grassDistance;
     F32 _treeDistance;
 
-    std::array<U32, to_base(RenderStage::COUNT)> _drawDataIdx;
     Pipeline* _cullPipelineGrass;
     Pipeline* _cullPipelineTrees;
     vectorEASTL<VegetationData> _tempGrassData;

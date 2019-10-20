@@ -793,9 +793,9 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "grass.glsl";
 
-    //vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
+    vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
     vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
-    vertModule._defines.push_back(std::make_pair("DATA_IDX dvd_dataIdx", true));
+    vertModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
@@ -803,7 +803,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     fragModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
     fragModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
     fragModule._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
-    fragModule._defines.push_back(std::make_pair("DATA_IDX dvd_dataIdx", true));
+    fragModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
     if (!context.config().rendering.shadowMapping.enabled) {
         fragModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }

@@ -40,10 +40,14 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 #define dvd_NormalMatrixW(index) mat3(dvd_Matrices[index]._normalMatrixW)
 #define dvd_NormalMatrixWV(index) (mat3(dvd_ViewMatrix) * dvd_NormalMatrixW(index))
 
-#if !defined(DATA_IDX)
-#define DATA_IDX VAR.dvd_baseInstance
+#if defined(OVERRIDE_DATA_IDX)
+uniform uint dvd_dataIdx = 0u;
+#define DATA_IDX dvd_dataIdx
+#else
+#   if !defined(DATA_IDX)
+#       define DATA_IDX VAR.dvd_baseInstance
+#   endif
 #endif
-
 #if defined(VERT_SHADER)
 #define dvd_boneCount     uint(dvd_Matrices[DATA_IDX]._normalMatrixW[0][3])
 #endif

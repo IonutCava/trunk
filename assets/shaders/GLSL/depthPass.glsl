@@ -7,6 +7,7 @@ void main() {
 }
 
 -- Fragment.Shadow
+
 #if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
 #   define HAS_TRANSPARENCY
 #endif

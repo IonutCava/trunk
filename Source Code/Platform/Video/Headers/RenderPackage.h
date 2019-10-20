@@ -94,6 +94,7 @@ public:
     const FrustumClipPlanes& clipPlanes(I32 index) const;
     void clipPlanes(I32 index, const FrustumClipPlanes& pipeline);
 
+    PushConstants& pushConstants(I32 index);
     const PushConstants& pushConstants(I32 index) const;
     void pushConstants(I32 index, const PushConstants& constants);
 

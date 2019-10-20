@@ -4,10 +4,10 @@
   <!-- requires a build with ENABLE_GPU_VALIDATION set-->
   <flushCommandBuffersOnFrame>-1</flushCommandBuffersOnFrame>
   <enableRenderAPIDebugging>true</enableRenderAPIDebugging>
-  <enableDebugMsgGroups>false</enableDebugMsgGroups>
+  <enableDebugMsgGroups>true</enableDebugMsgGroups>
   <useGeometryCache>true</useGeometryCache>
   <useVegetationCache>true</useVegetationCache>
-  <enableTreeInstances>false</enableTreeInstances>
+  <enableTreeInstances>true</enableTreeInstances>
   <enableGrassInstances>true</enableGrassInstances>
   <!-- this is only taken into consideration if binary cache is disabled-->
   <useShaderTextCache>false</useShaderTextCache>

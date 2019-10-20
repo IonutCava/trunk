@@ -1,7 +1,6 @@
 --Vertex
 
 #include "vbInputData.vert"
-#include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
 
 void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
@@ -14,8 +13,6 @@ void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
 }
 
 void main(void){
-
-    computeDataNoClip();
 
     const VegetationData data = TreeData(VAR.dvd_instanceID);
 
@@ -30,12 +27,12 @@ void main(void){
 #endif
     }
 
+    computeDataMinimal();
+
+    dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
     if (LoDValue < 1.1f && dvd_Vertex.y * scale > 0.85f) {
         //computeFoliageMovementTree(dvd_Vertex, data.data.w);
     }
-
-    dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz, data.orientationQuad) * scale;
-    
 
     VAR._vertexW = (dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f));
 

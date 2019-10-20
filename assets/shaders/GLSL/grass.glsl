@@ -1,7 +1,5 @@
 -- Vertex
 
-uniform uint dvd_dataIdx;
-
 #include "vbInputData.vert"
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
@@ -35,10 +33,6 @@ void main()
 #endif
     }
 
-    if (dvd_Vertex.y > 0.5f) {
-        computeFoliageMovementGrass(dvd_Vertex, data.data.w * 0.5f);
-    }
-
     _arrayLayerFrag = int(data.data.x);
     _alphaFactor = min(1.0f - LoD, 1.0f);
     if (_alphaFactor > 0.5f) {
@@ -46,6 +40,10 @@ void main()
     }
     
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
+    if (dvd_Vertex.y > 0.5f) {
+        computeFoliageMovementGrass(dvd_Vertex, data.data.w * 0.5f);
+    }
+
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
@@ -61,8 +59,6 @@ void main()
 -- Fragment.Colour
 
 layout(early_fragment_tests) in;
-
-uniform uint dvd_dataIdx;
 
 #define USE_SHADING_BLINN_PHONG
 #define NO_SPECULAR
@@ -90,7 +86,6 @@ void main (void){
 
 --Fragment.PrePass
 
-uniform uint dvd_dataIdx;
 #include "prePass.frag"
 
 layout(location = 0) flat in int _arrayLayerFrag;
@@ -117,7 +112,6 @@ void main() {
 
 --Fragment.Shadow
 
-uniform uint dvd_dataIdx;
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) flat in float _alphaFactor;
 

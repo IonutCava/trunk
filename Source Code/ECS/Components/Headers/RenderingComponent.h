@@ -194,9 +194,12 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     bool getDataIndex(U32& idxOut);
     void setDataIndex(U32 idx);
 
+    PROPERTY_RW(bool, useDataIndexAsUniform, false);
+
   protected:
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
     bool onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams);
+    void uploadDataIndexAsUniform(RenderStagePass stagePass);
 
     bool canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData);
 
@@ -250,6 +253,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     vec2<F32> _renderRange;
 
     std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
+    std::array<U32, to_base(RenderStage::COUNT)> _drawDataIdx;
 
     typedef std::array<RenderPackage, to_base(RenderPassType::COUNT)> RenderPackagesPerPassType;
     std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT) - 1> _renderPackagesNormal;
@@ -262,13 +266,13 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
     IMPrimitive* _skeletonPrimitive;
+    IMPrimitive* _axisGizmo;
 
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;
 
     EnvironmentProbeList _envProbes;
     vector<Line> _axisLines;
-    IMPrimitive* _axisGizmo;
 
     ReflectorType _reflectorType;
     

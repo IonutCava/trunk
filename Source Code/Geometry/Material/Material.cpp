@@ -782,6 +782,7 @@ void Material::updateTranslucency() {
     }
 
     bool usingAlbedoTexAlpha = false;
+    bool usingOpacityTexAlpha = false;
     // base texture is translucent
     Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
     if (albedo && albedo->hasTransparency()) {
@@ -800,16 +801,19 @@ void Material::updateTranslucency() {
         _translucencySource = channelCount == 4 ? TranslucencySource::OPACITY_MAP_A : TranslucencySource::OPACITY_MAP_R;
         _translucent = opacity->hasTranslucency();
         usingAlbedoTexAlpha = false;
+        usingOpacityTexAlpha = oldSource != _translucencySource || wasTranslucent != _translucent;
     }
 
-    if (usingAlbedoTexAlpha) {
-        const U16 baseLevel = albedo->getBaseMipLevel();
-        const U16 maxLevel = albedo->getMaxMipLevel();
+    if (usingAlbedoTexAlpha || usingOpacityTexAlpha) {
+        Texture* tex = (usingOpacityTexAlpha ? opacity.get() : albedo.get());
+
+        const U16 baseLevel = tex->getBaseMipLevel();
+        const U16 maxLevel = tex->getMaxMipLevel();
         const U16 baseOffset = maxLevel > g_numMipsToKeepFromAlphaTextures ? g_numMipsToKeepFromAlphaTextures : maxLevel;
-        /*STUBBED("HACK! Limit mip range for textures that have alpha values used by the material -Ionut");
-        if (albedo->getMipCount() == maxLevel) {
-            albedo->setMipMapRange(baseLevel, baseOffset);
-        }*/
+        STUBBED("HACK! Limit mip range for textures that have alpha values used by the material -Ionut");
+        if (tex->getMipCount() == maxLevel) {
+            tex->setMipMapRange(baseLevel, baseOffset);
+        }
     }
 
     if (oldSource != _translucencySource || wasTranslucent != _translucent) {

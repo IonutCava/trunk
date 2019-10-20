@@ -74,6 +74,7 @@ Vegetation::Vegetation(GFXDevice& context,
       _render(false),
       _success(false),
       _shadowMapped(true),
+      _treeParentNode(nullptr),
       _cullPipelineGrass(nullptr),
       _cullPipelineTrees(nullptr),
       _grassExtents(VECTOR4_UNIT),
@@ -85,8 +86,6 @@ Vegetation::Vegetation(GFXDevice& context,
       _stateRefreshIntervalBufferUS(0ULL),
       _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
 {
-    _drawDataIdx.fill(0u);
-
     _treeMap = details.treeMap;
     _grassMap = details.grassMap;
     
@@ -291,7 +290,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         }
     }
 
-    PointRadius = 5.0f;
+    PointRadius = 3.5f;
     dR = 2.5f * PointRadius; // Distance between concentric rings
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
@@ -352,7 +351,8 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);
     s_treeMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     s_treeMaterial->setBaseShaderData(treeShaderData);
-    //s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "USE_CULL_DISTANCE", true);
+    s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "USE_CULL_DISTANCE", true);
+    s_treeMaterial->addShaderDefine(ShaderType::COUNT, "OVERRIDE_DATA_IDX", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstancesPerChunk).c_str(), true);
 }
 
@@ -466,7 +466,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
                                to_base(ComponentType::RENDERING);
 
     U32 ID = _terrainChunk.ID();
-
+    
     SceneGraphNodeDescriptor nodeDescriptor = {};
     nodeDescriptor._componentMask = normalMask;
     nodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
@@ -492,84 +492,69 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
 
         nodeDescriptor._node = crtMesh;
         nodeDescriptor._name = Util::StringFormat("Trees_chunk_%d", ID);
-        SceneGraphNode* node = sgn.addNode(nodeDescriptor);
-        node->lockVisibility(true);
+        _treeParentNode = sgn.addNode(nodeDescriptor);
+        _treeParentNode->lockVisibility(true);
 
-        TransformComponent* tComp = node->get<TransformComponent>();
+        TransformComponent* tComp = _treeParentNode->get<TransformComponent>();
         const vec4<F32>& offset = _terrainChunk.getOffsetAndSize();
         tComp->setPositionX(offset.x + offset.z * 0.5f);
         tComp->setPositionZ(offset.y + offset.w * 0.5f);
         tComp->setScale(_treeScales[meshID]);
 
-        node->forEachChild([ID](SceneGraphNode* child) {
+        _treeParentNode->forEachChild([ID](SceneGraphNode* child) {
             RenderingComponent* rComp = child->get<RenderingComponent>();
             // negative value to disable occlusion culling
             rComp->cullFlagValue(ID * -1.0f);
+            rComp->useDataIndexAsUniform(true);
         });
 
-        const vec3<F32>& extents = node->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
+        const vec3<F32>& extents = _treeParentNode->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
         _treeExtents.set(extents, 0);
         _cullPushConstants.set("treeExtents", GFX::PushConstantType::VEC4, _treeExtents);
     }
 
     // positive value to keep occlusion culling happening
     sgn.get<RenderingComponent>()->cullFlagValue(ID * 1.0f);
-
+    sgn.get<RenderingComponent>()->useDataIndexAsUniform(true);
     SceneNode::postLoad(sgn);
 }
 
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut){
-    if (_render && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
-        RenderingComponent* rComp = sgn.get<RenderingComponent>();
-        if (!quick) {
-            rComp->getDataIndex(_drawDataIdx[to_base(renderStagePass._stage)]);
+    if (!quick && _render && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
+        // This will always lag one frame
+        Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Colour, 0).texture();
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+        //Cull grass
+        GFX::BindPipelineCommand pipelineCmd;
+        pipelineCmd._pipeline = _cullPipelineGrass;
+        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+
+        GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
+        cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
+        cullConstants._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+        cullConstants._constants.set("viewMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
+        cullConstants._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
+        GFX::EnqueueCommand(bufferInOut, cullConstants);
+
+        GFX::DispatchComputeCommand computeCmd;
+
+        if (_instanceCountGrass > 0) {
+            computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
+            GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
 
-        if (getDrawState(sgn, renderStagePass, 0)) {
-            RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
-            if (!pkg.empty()) {
-                PushConstants constants = pkg.pushConstants(0);
-                constants.set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[to_base(renderStagePass._stage)]);
-                pkg.pushConstants(0, constants);
-            }
-        }
-        
-        if (!quick) {
-            // This will always lag one frame
-            Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Colour, 0).texture();
-            GFX::BindDescriptorSetsCommand descriptorSetCmd;
-            descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
-            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-            //Cull grass
-            GFX::BindPipelineCommand pipelineCmd;
-            pipelineCmd._pipeline = _cullPipelineGrass;
+        if (_instanceCountTrees > 0) {
+            // Cull trees
+            pipelineCmd._pipeline = _cullPipelineTrees;
             GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
-            GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
-            cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
-            cullConstants._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-            cullConstants._constants.set("viewMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
-            cullConstants._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
             GFX::EnqueueCommand(bufferInOut, cullConstants);
 
-            GFX::DispatchComputeCommand computeCmd;
-
-            if (_instanceCountGrass > 0) {
-                computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
-                GFX::EnqueueCommand(bufferInOut, computeCmd);
-            }
-
-            if (_instanceCountTrees > 0) {
-                // Cull trees
-                pipelineCmd._pipeline = _cullPipelineTrees;
-                GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
-                GFX::EnqueueCommand(bufferInOut, cullConstants);
-
-                computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
-                GFX::EnqueueCommand(bufferInOut, computeCmd);
-            }
+            computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
+            GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
     }
 
@@ -580,10 +565,6 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
     if (_render && renderStagePass._passIndex == 0) {
-
-        GFX::SendPushConstantsCommand pushConstantsCommand = {};
-        pushConstantsCommand._constants.set("dvd_dataIdx", GFX::PushConstantType::UINT, 0);
-        pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
         GenericDrawCommand cmd;
         cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;

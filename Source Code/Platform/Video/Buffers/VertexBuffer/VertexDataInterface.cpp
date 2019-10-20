@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-VDIPool<2048> VertexDataInterface::s_VDIPool;
+VDIPool<4096> VertexDataInterface::s_VDIPool;
 
 VertexDataInterface::VertexDataInterface(GFXDevice& context)
   : GraphicsResource(context, GraphicsResource::Type::VERTEX_BUFFER, getGUID(), 0u)

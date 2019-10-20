@@ -155,6 +155,11 @@ void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPl
     _commands->add(clipPlanes);
 }
 
+PushConstants& RenderPackage::pushConstants(I32 index) {
+    DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::SendPushConstantsCommand>()), "RenderPackage::pushConstants error: Invalid push constants index!");
+    return _commands->get<GFX::SendPushConstantsCommand>(index)._constants;
+}
+
 const PushConstants& RenderPackage::pushConstants(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::SendPushConstantsCommand>()), "RenderPackage::pushConstants error: Invalid push constants index!");
     return _commands->get<GFX::SendPushConstantsCommand>(index)._constants;

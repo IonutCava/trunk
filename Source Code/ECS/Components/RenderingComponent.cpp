@@ -45,8 +45,7 @@ namespace {
 
 hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
 
-RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
-                                       PlatformContext& context)
+RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContext& context) 
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
       _context(context.gfx()),
       _config(context.config()),
@@ -62,6 +61,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
       _skeletonPrimitive(nullptr)
 {
     _lodLevels.fill(0u);
+    _drawDataIdx.fill(0u);
 
     _renderRange.min = -1.0f * g_renderRangeLimit;
     _renderRange.max =  1.0f* g_renderRangeLimit;
@@ -222,6 +222,10 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     RenderPackage& pkg = getDrawPackage(stagePass);
     pkg.clear();
 
+    if (useDataIndexAsUniform()) {
+        _globalPushConstants.set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[to_base(stagePass._stage)]);
+    }
+
     // The following commands are needed for material rendering
     // In the absence of a material, use the SceneNode buildDrawCommands to add all of the needed commands
     if (getMaterialCache() != nullptr) {
@@ -238,12 +242,12 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
             bindDescriptorSetsCommand._set.addShaderBuffer(binding);
         }
         pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
+    }
 
-        if (!_globalPushConstants.empty()) {
-            GFX::SendPushConstantsCommand pushConstantsCommand = {};
-            pushConstantsCommand._constants = _globalPushConstants;
-            pkg.addPushConstantsCommand(pushConstantsCommand);
-        }
+    if (!_globalPushConstants.empty()) {
+        GFX::SendPushConstantsCommand pushConstantsCommand = {};
+        pushConstantsCommand._constants = _globalPushConstants;
+        pkg.addPushConstantsCommand(pushConstantsCommand);
     }
 
     _parentSGN.getNode().buildDrawCommands(_parentSGN, stagePass, pkg);
@@ -322,7 +326,22 @@ bool RenderingComponent::getDataIndex(U32& idxOut) {
     return _dataIndex.second;
 }
 
+void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
+    if (!useDataIndexAsUniform()) {
+        return;
+    }
+
+    const U8 lod = _lodLevels[to_base(stagePass._stage)];
+    if (_parentSGN.getDrawState(stagePass, lod)) {
+        RenderPackage& pkg = getDrawPackage(stagePass);
+        if (!pkg.empty()) {
+            pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[to_base(stagePass._stage)]);
+        }
+    }
+}
+
 bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams) {
+    uploadDataIndexAsUniform(refreshParams._stagePass);
     _parentSGN.onRefreshNodeData(refreshParams._stagePass, *refreshParams._camera, true, refreshParams._bufferInOut);
     return true;
 }
@@ -353,6 +372,8 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
             }
         }
 
+        _drawDataIdx[to_base(refreshParams._stagePass._stage)] = to_U32(_dataIndex.first);
+        uploadDataIndexAsUniform(refreshParams._stagePass);
         _parentSGN.onRefreshNodeData(refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
         return true;
     }
