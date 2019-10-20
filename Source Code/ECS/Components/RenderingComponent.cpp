@@ -89,7 +89,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN,
         assert(!_materialInstance->resourceName().empty());
 
         EditorComponentField materialField = {};
-        materialField._name = "Range and Cone";
+        materialField._name = "Material";
         materialField._data = _materialInstance.get();
         materialField._type = EditorComponentFieldType::MATERIAL;
         materialField._readOnly = false;
