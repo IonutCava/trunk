@@ -2,34 +2,7 @@
 #define _UTILITY_FRAG_
 
 #include "nodeBufferedInput.cmn"
-
-
-#define PRECISION 0.000001
-
-//ref: http://theorangeduck.com/page/avoiding-shader-conditionals
-#define when_eq(x, y) (1.0f - abs(sign(x - y)))
-#define when_neq(x, y) abs(sign(x - y))
-#define when_gt(x, y)  max(sign(x - y), 0.0f)
-#define when_lt(x, y)  max(sign(y - x), 0.0f)
-#define when_ge(x, y) (1.0f - when_lt(x, y))
-#define when_le(x, y) (1.0f - when_gt(x, y))
-#define AND(a, b) (a * b)
-#define OR(a, b) min(a + b, 1.0f)
-#define XOR(a, b) ((a + b) % 2.0f)
-#define NOT(a) (1.0f - a)
-
-float DIST_TO_ZERO(float val) {
-    return 1.0 - (step(-PRECISION, val) * (1.0 - step(PRECISION, val)));
-}
-
-float saturate(float v) { return clamp(v, 0.0, 1.0); }
-vec2  saturate(vec2 v)  { return clamp(v, 0.0, 1.0); }
-vec3  saturate(vec3 v)  { return clamp(v, 0.0, 1.0); }
-vec4  saturate(vec4 v)  { return clamp(v, 0.0, 1.0); }
-
-float maxComponent(vec2 v) { return max(v.x, v.y); }
-float maxComponent(vec3 v) { return max(maxComponent(v.xy), v.z); }
-float maxComponent(vec4 v) { return max(maxComponent(v.xyz), v.w); }
+#include "utility.cmn"
 
 float ToLinearDepth(in float depthIn);
 float ToLinearDepth(in float depthIn, in vec2 depthRange);
@@ -159,31 +132,6 @@ float ToSRGB(float v) { return pow(v, invGamma); }
 vec3  ToSRGB(vec3 v)  { return pow(v, invGammaVec); }
 vec4  ToSRGB(vec4 v)  { return vec4(pow(v.rgb, invGammaVec), v.a);}
 
-//ref: https://aras-p.info/texts/CompactNormalStorage.html#method08ppview
-vec3 unpackNormal(vec2 enc)
-{
-#if 1
-    vec2 fenc = enc * 4 - 2;
-    float f = dot(fenc, fenc);
-    float g = sqrt(1 - f * 0.25f);
-    return vec3(fenc * g, 1 - f * 0.5f);
-#else
-    vec3 ret;
-    ret.xy = enc * 2 - 1;
-    ret.z = sqrt(1 - dot(ret.xy, ret.xy));
-    return ret;
-#endif
-}
-
-vec2 packNormal(vec3 n)
-{
-#if 1
-    float f = sqrt(8 * n.z + 8);
-    return n.xy / f + 0.5f;
-#else
-    return n.xy * 0.5f + 0.5f;
-#endif
-}
 
 float Gloss(vec3 bump)
 {

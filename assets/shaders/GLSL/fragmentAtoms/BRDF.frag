@@ -103,7 +103,6 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     // Apply all lighting contributions (.a = reflectionCoeff)
     vec4 lightColour = vec4(0.0f);
     getDirectionalLightContribution(albedo, data, normalWV, viewDirNorm, lightColour);
-
     if (dvd_lodLevel < 2)
     {
         getOtherLightContribution(albedo, data, normalWV, viewDirNorm, lightColour);

@@ -254,13 +254,13 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     }
 
     //ref: http://mollyrocket.com/casey/stream_0016.html
-    F32 PointRadius = 1.0f;
+    F32 PointRadius = 0.95f;
     F32 ArBase = 1.0f; // Starting radius of circle A
     F32 BrBase = 1.0f; // Starting radius of circle B
     F32 dR = 2.5f * PointRadius; // Distance between concentric rings
 
-    s_grassPositions.reserve(chunkSize * chunkSize);
-    s_treePositions.reserve(chunkSize * chunkSize);
+    s_grassPositions.reserve(to_size(chunkSize) * chunkSize);
+    s_treePositions.reserve(to_size(chunkSize) * chunkSize);
 
     F32 posOffset = to_F32(chunkSize * 2);
 
@@ -290,7 +290,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         }
     }
 
-    PointRadius = 3.5f;
+    PointRadius = 5.0f;
     dR = 2.5f * PointRadius; // Distance between concentric rings
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
@@ -351,7 +351,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);
     s_treeMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     s_treeMaterial->setBaseShaderData(treeShaderData);
-    s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "USE_CULL_DISTANCE", true);
+    //s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "USE_CULL_DISTANCE", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, "OVERRIDE_DATA_IDX", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstancesPerChunk).c_str(), true);
 }
@@ -374,13 +374,8 @@ void Vegetation::uploadVegetationData() {
 
     if (_instanceCountGrass > 0) {
         if (_terrainChunk.ID() < s_maxChunks) {
-            U32 diff = s_maxGrassInstancesPerChunk - _instanceCountGrass;
-            if (diff > 0) {
-                _tempGrassData.insert(eastl::end(_tempGrassData), diff, VegetationData{});
-            }
-
-            s_grassData->writeData(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, s_maxGrassInstancesPerChunk, (bufferPtr)_tempGrassData.data());
-            _render = true;
+            s_grassData->writeData(_terrainChunk.ID() * s_maxGrassInstancesPerChunk, _instanceCountGrass, (bufferPtr)_tempGrassData.data());
+            _render = _instanceCountTrees == 0;
         } else {
             Console::errorfn("Vegetation::uploadGrassData: insufficient buffer space for grass data");
         }
@@ -400,12 +395,8 @@ void Vegetation::uploadVegetationData() {
 
     if (_instanceCountTrees > 0) {
         if (_terrainChunk.ID() < s_maxChunks) {
-            U32 diff = s_maxTreeInstancesPerChunk - _instanceCountTrees;
-            if (diff > 0) {
-                _tempTreeData.insert(eastl::end(_tempTreeData), diff, VegetationData{});
-            }
-
-            s_treeData->writeData(_terrainChunk.ID() * s_maxTreeInstancesPerChunk, s_maxTreeInstancesPerChunk, (bufferPtr)_tempTreeData.data());
+            s_treeData->writeData(_terrainChunk.ID() * s_maxTreeInstancesPerChunk, _instanceCountTrees, (bufferPtr)_tempTreeData.data());
+            _render = true;
         } else {
             Console::errorfn("Vegetation::uploadGrassData: insufficient buffer space for tree data");
         }

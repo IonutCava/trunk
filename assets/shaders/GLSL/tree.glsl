@@ -2,6 +2,7 @@
 
 #include "vbInputData.vert"
 #include "vegetationData.cmn"
+#include "utility.cmn"
 
 void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
     float time = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
@@ -14,20 +15,21 @@ void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
 
 void main(void){
 
+    computeDataMinimal();
+
     const VegetationData data = TreeData(VAR.dvd_instanceID);
 
     float scale = data.positionAndScale.w;
 
     const float LoDValue = data.data.z;
-    if (LoDValue > 2.1f) {
 #if defined(USE_CULL_DISTANCE)
+    if (LoDValue > 2.1f) {
         gl_CullDistance[0] = -0.01f;
-#else
-        scale = 0.0f;
-#endif
     }
+#else
+    scale -= scale * when_gt(LoDValue, 2.1f);
+#endif
 
-    computeDataMinimal();
 
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
     if (LoDValue < 1.1f && dvd_Vertex.y * scale > 0.85f) {

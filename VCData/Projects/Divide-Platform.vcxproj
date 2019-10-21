@@ -277,6 +277,7 @@
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\vsm.frag" />
     <None Include="../../assets/shaders\GLSL\terrainTess.glsl" />
     <None Include="../../assets/shaders\GLSL\terrainTessNvidia.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\common\utility.cmn" />
     <None Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.inl" />
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,7 @@
 #include "vbInputData.vert"
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
+#include "utility.cmn"
 
 layout(location = 0) flat out int _arrayLayerFrag;
 layout(location = 1) flat out float _alphaFactor;
@@ -25,13 +26,13 @@ void main()
     float LoD = data.data.z;
     float scale = data.positionAndScale.w;
 
-    if (LoD > 2.0f) {
 #if defined(USE_CULL_DISTANCE)
+    if (LoD > 2.1f) {
         gl_CullDistance[0] = -0.01f;
-#else
-        scale = 0.0f;
-#endif
     }
+#else
+    scale -= scale * when_gt(LoD, 2.1f);
+#endif
 
     _arrayLayerFrag = int(data.data.x);
     _alphaFactor = min(1.0f - LoD, 1.0f);
