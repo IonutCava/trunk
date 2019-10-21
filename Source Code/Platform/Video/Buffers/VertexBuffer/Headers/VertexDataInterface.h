@@ -33,7 +33,7 @@
 #ifndef _VERTEX_DATA_INTERFACE_H_
 #define _VERTEX_DATA_INTERFACE_H_
 
-#include "VDIPool.h"
+#include "Core/Headers/ObjectPool.h"
 
 #include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
@@ -49,15 +49,16 @@ class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsReso
 
     virtual void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) = 0;
 
-    inline VDIHandle handle() const { return _handle; }
-protected:
-    VDIHandle _handle;
+    PROPERTY_R(PoolHandle, handle);
 
-    static VDIPool<4096> s_VDIPool;
+protected:
+    typedef ObjectPool<VertexDataInterface, 4096> VDIPool;
+
+    // We only need this pool in order to get a valid handle to pass around to command buffers instead of using raw pointers
+    static VDIPool s_VDIPool;
 };
 
 };  // namespace Divide
 
-#include "VDIPool.inl"
 
 #endif

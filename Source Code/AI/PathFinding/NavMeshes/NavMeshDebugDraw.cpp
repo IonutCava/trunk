@@ -30,7 +30,9 @@ NavMeshDebugDraw::NavMeshDebugDraw(GFXDevice& context)
 
 NavMeshDebugDraw::~NavMeshDebugDraw()
 {
-	_primitive->reset();
+    if (_primitive) {
+        _context.destroyIMP(_primitive);
+    }
 }
 
 void NavMeshDebugDraw::paused(bool state) {

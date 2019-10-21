@@ -652,36 +652,6 @@ VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, Ren
     return _renderPassCuller->toVisibleNodes(camera, allNodes);
 }
 
-namespace {
-    // Return true if the node type is capable of generating draw commands
-    FORCE_INLINE bool generatesDrawCommands(SceneNodeType nodeType) {
-        return nodeType != SceneNodeType::TYPE_ROOT &&
-               nodeType != SceneNodeType::TYPE_TRANSFORM &&
-               nodeType != SceneNodeType::TYPE_TRIGGER &&
-               nodeType != SceneNodeType::TYPE_EMPTY;
-    }
-
-    // Return true if this node should be removed from a shadow pass
-    bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node, const SceneNode& sceneNode) {
-        if (stage == RenderStage::SHADOW) {
-            SceneNodeType type = sceneNode.type();
-            if (type == SceneNodeType::TYPE_SKY || 
-                type == SceneNodeType::TYPE_WATER ||
-                type == SceneNodeType::TYPE_INFINITEPLANE) {
-                return true;
-            }
-            if (type == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(sceneNode).getObjectType()._value == ObjectType::DECAL) {
-                return true;
-            }
-            RenderingComponent* rComp = node.get<RenderingComponent>();
-            assert(rComp != nullptr);
-            return !rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
-        }
-
-        return false;
-    }
-};
-
 const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents) {
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
 
@@ -702,16 +672,6 @@ const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Cam
     if (stage != RenderStage::SHADOW) {
         cullParams._visibilityDistanceSq = SQUARED(sceneState.renderState().generalVisibility());
     }
-
-    // Cull everything except 3D objects
-    cullParams._cullFunction = [stage](const SceneGraphNode& node, const SceneNode& sceneNode) -> bool {
-        if (generatesDrawCommands(sceneNode.type())) {
-            // only checks nodes and can return true for a shadow stage
-            return doesNotCastShadows(stage, node, sceneNode);
-        }
-
-        return true;
-    };
 
     return _renderPassCuller->frustumCull(cullParams);
 }

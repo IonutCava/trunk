@@ -10,31 +10,52 @@
 
 namespace Divide {
 
-Quadtree::Quadtree() : _parentVB(nullptr),
-                       _bbPrimitive(nullptr)
+Quadtree::Quadtree(GFXDevice& context)
+    : _context(context),
+      _parentVB(nullptr),
+      _bbPrimitive(nullptr),
+      _bbPipeline(nullptr),
+      _drawBBoxes(false)
 {
-    _root = std::make_unique<QuadtreeNode>();
+    _root = std::make_unique<QuadtreeNode>(context);
     _chunkCount = 0;
 }
 
 Quadtree::~Quadtree()
 {
+    if (_bbPrimitive) {
+        _context.destroyIMP(_bbPrimitive);
+    }
 }
 
-void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
-    assert(_root);
-    _root->drawBBox(context, packageOut);
-    
-    if (!_bbPrimitive) {
-        _bbPrimitive = context.newIMP();
+void Quadtree::toggleBoundingBoxes() {
+    _drawBBoxes = !_drawBBoxes;
+    if (_drawBBoxes) {
+        if (!_bbPipeline) {
+            RenderStateBlock primitiveRenderState;
+            PipelineDescriptor pipeDesc;
+            pipeDesc._stateHash = primitiveRenderState.getHash();
+            pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+            _bbPipeline = _context.newPipeline(pipeDesc);
+        }
+        _bbPrimitive = _context.newIMP();
         _bbPrimitive->name("QuadtreeBoundingBox");
-        RenderStateBlock primitiveRenderState;
-        PipelineDescriptor pipeDesc;
-        pipeDesc._stateHash = primitiveRenderState.getHash();
-        pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-        _bbPrimitive->pipeline(*context.newPipeline(pipeDesc));
+        _bbPrimitive->pipeline(*_bbPipeline);
+    } else {
+        _context.destroyIMP(_bbPrimitive);
     }
 
+    _root->toggleBoundingBoxes(_bbPipeline);
+}
+
+void Quadtree::drawBBox(RenderPackage& packageOut) {
+    if (!_drawBBoxes) {
+        return;
+    }
+
+    assert(_root && _bbPrimitive);
+    _root->drawBBox(packageOut);
+ 
     _bbPrimitive->fromBox(_root->getBoundingBox().getMin(),
                           _root->getBoundingBox().getMax(),
                           UColour4(0, 64, 255, 255));
@@ -66,14 +87,13 @@ QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {
     return node;
 }
 
-void Quadtree::build(GFXDevice& context,
-                     BoundingBox& terrainBBox,
+void Quadtree::build(BoundingBox& terrainBBox,
                      const vec2<U16>& HMsize,
                      U32 targetChunkDimension,
                      Terrain* const terrain) {
 
     _root->setBoundingBox(terrainBBox);
-    _root->build(context, 0, vec2<U16>(0u), HMsize, targetChunkDimension, terrain, _chunkCount);
+    _root->build(0, vec2<U16>(0u), HMsize, targetChunkDimension, terrain, _chunkCount);
 }
 
 const BoundingBox& Quadtree::computeBoundingBox() {

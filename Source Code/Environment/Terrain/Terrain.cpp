@@ -50,8 +50,9 @@ namespace {
 
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
+      _terrainQuadtree(context),
       _shaderData(nullptr),
-      _drawBBoxes(false),
+      _drawCommandsDirty(false),
       _shaderDataDirty(false),
       _vegetationGrassNode(nullptr),
       _initBufferWriteCounter(0),
@@ -186,11 +187,7 @@ void Terrain::postBuild() {
 
     U32 chunkSize = to_U32(_descriptor->tessellationSettings().x);
 
-    _terrainQuadtree.build(_context,
-        _boundingBox,
-        _descriptor->dimensions(),
-        chunkSize,
-        this);
+    _terrainQuadtree.build(_boundingBox, _descriptor->dimensions(), chunkSize, this);
 
     // The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
@@ -216,6 +213,11 @@ void Terrain::frameStarted(SceneGraphNode& sgn) {
     };
 }
 
+void Terrain::toggleBoundingBoxes() {
+    _terrainQuadtree.toggleBoundingBoxes();
+    _drawCommandsDirty = true;
+}
+
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     _drawDistance = sceneState.renderState().generalVisibility();
     if (_shaderDataDirty) {
@@ -231,6 +233,10 @@ bool Terrain::preRender(SceneGraphNode& sgn,
                         RenderStagePass renderStagePass,
                         bool refreshData,
                         bool& rebuildCommandsOut) {
+    if (_drawCommandsDirty) {
+        rebuildCommandsOut = true;
+        _drawCommandsDirty = false;
+    }
     //ToDo: If we swap shaders (e.g. for wireframe debug), mark rebuild as true to rebuild the pipeline
     return SceneNode::preRender(sgn, camera, renderStagePass, refreshData, rebuildCommandsOut);
 }
@@ -335,6 +341,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     GFX::DrawCommand drawCommand = {cmd};
     pkgInOut.addDrawCommand(drawCommand);
 
+    _terrainQuadtree.drawBBox(pkgInOut);
 
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

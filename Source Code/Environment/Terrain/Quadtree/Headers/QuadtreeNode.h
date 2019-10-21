@@ -59,12 +59,11 @@ class QuadtreeChildren;
 
 class QuadtreeNode {
    public:
-     QuadtreeNode();
+     QuadtreeNode(GFXDevice& context);
      ~QuadtreeNode();
 
     /// recursive node building function
-    void build(GFXDevice& context,
-               const U8 depth,
+    void build(const U8 depth,
                const vec2<U16>& pos,
                const vec2<U16>& HMsize,
                U32 targetChunkDimension,
@@ -73,7 +72,8 @@ class QuadtreeNode {
 
     bool computeBoundingBox(BoundingBox& parentBB);
     
-    void drawBBox(GFXDevice& context, RenderPackage& packageOut);
+    void drawBBox(RenderPackage& packageOut);
+    void toggleBoundingBoxes(Pipeline* pipeline);
 
     inline bool isALeaf() const { return _children[0] == nullptr; }
     inline U8 LoD() const { return _LoD; }
@@ -89,15 +89,17 @@ class QuadtreeNode {
     bool isInView(const Camera& camera, F32 maxDistance, U8& LoD) const;
 
    private:
+    BoundingBox _boundingBox;                    //< Node BoundingBox
+    BoundingSphere _boundingSphere;              //< Node BoundingSphere
+    std::array<QuadtreeNode*, 4> _children;      //< Node children
+    std::unique_ptr<TerrainChunk> _terrainChunk; //< Terrain Chunk contained in node
+    GFXDevice&    _context;
+    IMPrimitive*  _bbPrimitive;
+    U32 _targetChunkDimension;
     //ToDo: make this work in a multi-threaded environment
     //mutable I8 _frustPlaneCache;
     U8 _LoD;
-    U32 _targetChunkDimension;
-    BoundingBox _boundingBox;        ///< Node BoundingBox
-    BoundingSphere _boundingSphere;  ///< Node BoundingSphere
-    IMPrimitive*  _bbPrimitive;
-    std::array<QuadtreeNode*, 4> _children;      ///< Node children
-    std::unique_ptr<TerrainChunk> _terrainChunk;     ///< Terrain Chunk contained in node
+    bool _drawBBoxes;
 };
 
 };  // namespace Divide

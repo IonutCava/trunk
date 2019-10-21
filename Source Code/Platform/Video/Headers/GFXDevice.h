@@ -275,6 +275,8 @@ public:
 
     /// Create and return a new immediate mode emulation primitive.
     IMPrimitive*       newIMP();
+    bool               destroyIMP(IMPrimitive*& primitive);
+
     /// Create and return a new vertex array (VAO + VB + IB).
     VertexBuffer*      newVB();
     /// Create and return a new pixel buffer using the requested format.
@@ -417,6 +419,7 @@ private:
     Pipeline* _HIZPipeline = nullptr;
     Pipeline* _HIZCullPipeline = nullptr;
     Pipeline* _DrawFSTexturePipeline = nullptr;
+    Pipeline* _AxisGizmoPipeline = nullptr;
 
     U32 _horizBlur = 0u;
     U32 _vertBlur = 0u;
@@ -454,6 +457,8 @@ private:
     std::stack<CameraSnapshot> _cameraSnapshots;
 
     std::mutex _gpuObjectArenaMutex;
+    std::mutex _imprimitiveMutex;
+
     ObjectArena _gpuObjectArena;
 
     static D64 s_interpolationFactor;

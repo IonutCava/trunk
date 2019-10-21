@@ -187,6 +187,7 @@
     <ClInclude Include="../../Source Code/Utility\Headers\XMLParser.h" />
     <ClInclude Include="../../Source Code/Core\Math\Headers\Dimension.h" />
     <ClInclude Include="../../Source Code/Core\TemplateLibraries\Headers\PolyContainer.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\ObjectPool.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../Source Code/Core\Headers\ByteBuffer.inl" />
@@ -204,6 +205,7 @@
     <None Include="../../Source Code/Core\Time\Headers\ApplicationTimer.inl" />
     <None Include="../../Source Code/Core\Time\Headers\FrameRateHandler.inl" />
     <None Include="../../Source Code/Core\Time\Headers\ProfileTimer.inl" />
+    <None Include="..\..\Source Code\Core\Headers\ObjectPool.inl" />
     <None Include="cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

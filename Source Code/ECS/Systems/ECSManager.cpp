@@ -1,6 +1,10 @@
 #include "stdafx.h"
 
 #include "Headers/ECSManager.h"
+#include "ECS/Systems/Headers/TransformSystem.h"
+#include "ECS/Systems/Headers/AnimationSystem.h"
+#include "ECS/Systems/Headers/RenderingSystem.h"
+#include "ECS/Systems/Headers/BoundsSystem.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {

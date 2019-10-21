@@ -93,6 +93,7 @@ class GL_API final : public RenderAPIWrapper {
     friend class glGenericVertexData;
 
     friend struct GLStateTracker;
+
 public:
     GL_API(GFXDevice& context, const bool glES);
     ~GL_API();
@@ -179,6 +180,10 @@ public:
 
     static void lockBuffers(bool flush, U32 frameID);
 
+    using IMPrimitivePool = MemoryPool<glIMPrimitive, 1024>;
+
+    static IMPrimitive* newIMP(std::mutex& lock, GFXDevice& parent);
+    static bool destroyIMP(std::mutex& lock, IMPrimitive*& primitive);
 private:
     /// Prepare our shader loading system
     static bool initShaders();
@@ -279,6 +284,8 @@ private:
 
     static GLUtil::glTexturePool s_texturePool;
     static glGlobalLockManager s_globalLockManager;
+
+    static IMPrimitivePool s_IMPrimitivePool;
 
     std::pair<I64, SDL_GLContext> _currentContext;
 };

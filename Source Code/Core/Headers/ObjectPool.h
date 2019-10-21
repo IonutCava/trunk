@@ -30,53 +30,59 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#ifndef _VDI_POOL_H_
-#define _VDI_POOL_H_
+#ifndef _OBJECT_POOL_H_
+#define _OBJECT_POOL_H_
 
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 
 namespace Divide {
 
-class VertexDataInterface;
-
 #pragma pack(push, 1)
-struct VDIHandle {
+struct PoolHandle {
     U16 _id = 0;
     U8  _generation = 0;
 
-    inline bool operator== (const VDIHandle& val) const {
+    inline bool operator== (const PoolHandle& val) const {
         return _id == val._id && _generation == val._generation;
     }
 
-    inline bool operator!= (const VDIHandle& val) const {
+    inline bool operator!= (const PoolHandle& val) const {
         return _id != val._id || _generation != val._generation;
     }
 };
 #pragma pack(pop)
 
-template<size_t N>
-class VDIPool {
+template<typename T, size_t N>
+class ObjectPool {
 public:
-    VDIPool()
+    ObjectPool()
     {
         _ids.fill({ 0u });
         _pool.fill(nullptr);
     }
 
-    VDIHandle allocate(VertexDataInterface& vdi);
-    void deallocate(VDIHandle handle);
+    template<typename... Args>
+    PoolHandle allocate(void* mem, Args... args);
+    void deallocate(void* mem, PoolHandle handle);
 
-    VertexDataInterface* find(VDIHandle handle) const;
+    template<typename... Args>
+    PoolHandle allocate(Args... args);
+    void deallocate(PoolHandle handle);
+
+    PoolHandle registerExisting(T& object);
+    void unregisterExisting(PoolHandle handle);
+
+    T* find(PoolHandle handle) const;
 
 protected:
     mutable SharedMutex _poolLock;
-    std::array<VDIHandle, N> _ids;
-    std::array<VertexDataInterface*, N> _pool;
+    std::array<PoolHandle, N> _ids;
+    std::array<T*, N> _pool;
 };
 
 }; //namespace Divide
 
-#endif //_VDI_POOL_H_
+#endif //_OBJECT_POOL_H_
 
-#include "VDIPool.inl"
+#include "ObjectPool.inl"

@@ -50,11 +50,10 @@ class SceneRenderState;
 
 class Quadtree {
   public:
-    Quadtree();
+    Quadtree(GFXDevice& context);
     ~Quadtree();
 
-    void build(GFXDevice& context, 
-               BoundingBox& terrainBBox,
+    void build(BoundingBox& terrainBBox,
                const vec2<U16>& HMSize,
                U32 targetChunkDimension,
                Terrain* const terrain);
@@ -62,15 +61,19 @@ class Quadtree {
 
     inline U32 getChunkCount() const noexcept { return _chunkCount; }
 
-    void drawBBox(GFXDevice& context, RenderPackage& packageOut);
+    void drawBBox(RenderPackage& packageOut);
+    void toggleBoundingBoxes();
 
     QuadtreeNode* findLeaf(const vec2<F32>& pos);
 
    private:
-    U32 _chunkCount;
+    std::unique_ptr<QuadtreeNode> _root;
+    GFXDevice&    _context;
     VertexBuffer* _parentVB;  //<Pointer to the terrain VB
     IMPrimitive*  _bbPrimitive;
-    std::unique_ptr<QuadtreeNode> _root;
+    Pipeline*     _bbPipeline;
+    U32 _chunkCount;
+    bool _drawBBoxes;
 };
 
 };  // namespace Divide

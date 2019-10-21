@@ -32,12 +32,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ECS_MANAGER_H_
 #define _ECS_MANAGER_H_
 
-#include "TransformSystem.h"
-#include "AnimationSystem.h"
-#include "RenderingSystem.h"
-#include "BoundsSystem.h"
-
 #include "Core/Headers/PlatformContextComponent.h"
+
+namespace ECS {
+    class ECSEngine;
+};
 
 namespace Divide {
     class ByteBuffer;

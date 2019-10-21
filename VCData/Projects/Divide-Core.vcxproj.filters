@@ -44,6 +44,9 @@
       <Filter>Core\Headers</Filter>
     </None>
     <None Include="cpp.hint" />
+    <None Include="..\..\Source Code\Core\Headers\ObjectPool.inl">
+      <Filter>Core\Headers</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Core">
@@ -364,6 +367,9 @@
     </ClInclude>
     <ClInclude Include="../../Source Code/Core\Math\Headers\Dimension.h">
       <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\ObjectPool.h">
+      <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

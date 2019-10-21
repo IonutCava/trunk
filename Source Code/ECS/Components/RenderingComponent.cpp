@@ -56,9 +56,13 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
       _reflectionIndex(-1),
       _refractionIndex(-1),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
+      _primitivePipeline{nullptr, nullptr, nullptr},
       _materialInstance(nullptr),
       _materialInstanceCache(nullptr),
-      _skeletonPrimitive(nullptr)
+      _boundingBoxPrimitive{ nullptr, nullptr },
+      _boundingSpherePrimitive(nullptr),
+      _skeletonPrimitive(nullptr),
+      _axisGizmo(nullptr)
 {
     _lodLevels.fill(0u);
     _drawDataIdx.fill(0u);
@@ -105,99 +109,44 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
 
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
     pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-    Pipeline* pipeline = _context.newPipeline(pipelineDescriptor);
-
-    _boundingBoxPrimitive[0] = _context.newIMP();
-    _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.name());
-    _boundingBoxPrimitive[0]->pipeline(*pipeline);
-    _boundingBoxPrimitive[0]->skipPostFX(true);
-
-    _boundingBoxPrimitive[1] = _context.newIMP();
-    _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.name());
-    _boundingBoxPrimitive[1]->pipeline(*pipeline);
-    _boundingBoxPrimitive[1]->skipPostFX(true);
-
-    _boundingSpherePrimitive = _context.newIMP();
-    _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.name());
-    _boundingSpherePrimitive->pipeline(*pipeline);
-    _boundingSpherePrimitive->skipPostFX(true);
+    _primitivePipeline[0] = _context.newPipeline(pipelineDescriptor);
 
     if (nodeSkinned) {
         RenderStateBlock primitiveStateBlockNoZRead;
         primitiveStateBlockNoZRead.depthTestEnabled(false);
         pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
-        Pipeline* pipelineNoZRead = _context.newPipeline(pipelineDescriptor);
-
-        _skeletonPrimitive = _context.newIMP();
-        _skeletonPrimitive->skipPostFX(true);
-        _skeletonPrimitive->name("Skeleton_" + parentSGN.name());
-        _skeletonPrimitive->pipeline(*pipelineNoZRead);
+        _primitivePipeline[1] = _context.newPipeline(pipelineDescriptor);
     }
     
     if (Config::Build::ENABLE_EDITOR) {
-        Line temp;
-        temp.widthStart(10.0f);
-        temp.widthEnd(10.0f);
-        temp.pointStart(VECTOR3_ZERO);
-
-        // Red X-axis
-        temp.pointEnd(WORLD_X_AXIS * 4);
-        temp.colourStart(UColour4(255, 0, 0, 255));
-        temp.colourEnd(UColour4(255, 0, 0, 255));
-        _axisLines.push_back(temp);
-
-        // Green Y-axis
-        temp.pointEnd(WORLD_Y_AXIS * 4);
-        temp.colourStart(UColour4(0, 255, 0, 255));
-        temp.colourEnd(UColour4(0, 255, 0, 255));
-        _axisLines.push_back(temp);
-
-        // Blue Z-axis
-        temp.pointEnd(WORLD_Z_AXIS * 4);
-        temp.colourStart(UColour4(0, 0, 255, 255));
-        temp.colourEnd(UColour4(0, 0, 255, 255));
-        _axisLines.push_back(temp);
-
-        _axisGizmo = _context.newIMP();
         // Prepare it for line rendering
         size_t noDepthStateBlock = _context.getDefaultStateBlock(true);
         RenderStateBlock stateBlock(RenderStateBlock::get(noDepthStateBlock));
 
         pipelineDescriptor._stateHash = stateBlock.getHash();
-        _axisGizmo->name("AxisGizmo_" + parentSGN.name());
-        _axisGizmo->skipPostFX(true);
-        _axisGizmo->pipeline(*_context.newPipeline(pipelineDescriptor));
-        // Create the object containing all of the lines
-        _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);
-        _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(_axisLines[0].colourStart()));
-        // Set the mode to line rendering
-        _axisGizmo->begin(PrimitiveType::LINES);
-        // Add every line in the list to the batch
-        for (const Line& line : _axisLines) {
-            _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
-            _axisGizmo->vertex(line.pointStart());
-            _axisGizmo->vertex(line.pointEnd());
-        }
-        _axisGizmo->end();
-        // Finish our object
-        _axisGizmo->endBatch();
-    } else {
-        _axisGizmo = nullptr;
+        _primitivePipeline[2] = _context.newPipeline(pipelineDescriptor);
     }
 }
 
 RenderingComponent::~RenderingComponent()
 {
-    _boundingBoxPrimitive[0]->reset();
-    _boundingBoxPrimitive[1]->reset();
-    _boundingSpherePrimitive->reset();
-
-    if (_skeletonPrimitive != nullptr) {
-        _skeletonPrimitive->reset();
+    if (_boundingBoxPrimitive[0]) {
+        _context.destroyIMP(_boundingBoxPrimitive[0]);
+    }
+    if (_boundingBoxPrimitive[1]) {
+        _context.destroyIMP(_boundingBoxPrimitive[1]);
+    }
+    if (_boundingSpherePrimitive) {
+        _context.destroyIMP(_boundingSpherePrimitive);
+    }
+    if (_skeletonPrimitive) {
+        _context.destroyIMP(_skeletonPrimitive);
     }
 
     if (Config::Build::ENABLE_EDITOR) {
-        _axisGizmo->reset();
+        if (_axisGizmo) {
+            _context.destroyIMP(_axisGizmo);
+        }
     }
 }
 
@@ -432,6 +381,11 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                     } break;
                 }
             } break;
+            case SceneRenderState::GizmoState::NO_GIZMO: {
+                if (_axisGizmo) {
+                    _context.destroyIMP(_axisGizmo);
+                }
+            } break;
         }
     }
 
@@ -447,6 +401,14 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
 
     if (renderBBox) {
+        if (!_boundingBoxPrimitive[0]) {
+            _boundingBoxPrimitive[0] = _context.newIMP();
+            _boundingBoxPrimitive[0]->name("BoundingBox_" + _parentSGN.name());
+            _boundingBoxPrimitive[0]->pipeline(*_primitivePipeline[0]);
+            _boundingBoxPrimitive[0]->skipPostFX(true);
+        }
+
+
         const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
         _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour4(0, 0, 255, 255));
         bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
@@ -457,19 +419,42 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
             bool renderParentBB = parentStates.getTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED,
                                    renderParentBBFlagInitialized);
             if (!renderParentBB || !renderParentBBFlagInitialized) {
+                if (!_boundingBoxPrimitive[1]) {
+                    _boundingBoxPrimitive[1] = _context.newIMP();
+                    _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + _parentSGN.name());
+                    _boundingBoxPrimitive[1]->pipeline(*_primitivePipeline[0]);
+                    _boundingBoxPrimitive[1]->skipPostFX(true);
+                }
+
                 const BoundingBox& bbGrandParent = grandParent->get<BoundsComponent>()->getBoundingBox();
                 _boundingBoxPrimitive[1]->fromBox(
                                      bbGrandParent.getMin() - vec3<F32>(0.0025f),
                                      bbGrandParent.getMax() + vec3<F32>(0.0025f),
                                      UColour4(255, 0, 0, 255));
                 bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
+            } else {
+                if (_boundingBoxPrimitive[1]) {
+                    _context.destroyIMP(_boundingBoxPrimitive[1]);
+                }
             }
         }
 
         if (renderBSphere) {
+            if (!_boundingSpherePrimitive) {
+                _boundingSpherePrimitive = _context.newIMP();
+                _boundingSpherePrimitive->name("BoundingSphere_" + _parentSGN.name());
+                _boundingSpherePrimitive->pipeline(*_primitivePipeline[0]);
+                _boundingSpherePrimitive->skipPostFX(true);
+            }
             const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
             _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), UColour4(0, 255, 0, 255));
             bufferInOut.add(_boundingSpherePrimitive->toCommandBuffer());
+        } else {
+            _context.destroyIMP(_boundingSpherePrimitive);
+        }
+    } else {
+        if (_boundingBoxPrimitive[0]) {
+            _context.destroyIMP(_boundingBoxPrimitive[0]);
         }
     }
 
@@ -482,6 +467,12 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         // Continue only for skinned 3D objects
         if (_parentSGN.getNode<Object3D>().getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
         {
+            if (_skeletonPrimitive) {
+                _skeletonPrimitive = _context.newIMP();
+                _skeletonPrimitive->skipPostFX(true);
+                _skeletonPrimitive->name("Skeleton_" + _parentSGN.name());
+                _skeletonPrimitive->pipeline(*_primitivePipeline[1]);
+            }
             //bool renderSkeletonFlagInitialized = false;
             //bool renderParentSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, renderSkeletonFlagInitialized);
             //if (!renderParentSkeleton || !renderSkeletonFlagInitialized) {
@@ -497,6 +488,9 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
                 bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
             //}
+        }
+        else if (_skeletonPrimitive) {
+            _context.destroyIMP(_skeletonPrimitive);
         }
     }
 }
@@ -800,6 +794,51 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
 void RenderingComponent::drawDebugAxis() {
     if (!Config::Build::IS_DEBUG_BUILD) {
         return;
+    }
+
+    if (!_axisGizmo) {
+        Line temp;
+        temp.widthStart(10.0f);
+        temp.widthEnd(10.0f);
+        temp.pointStart(VECTOR3_ZERO);
+
+        Line axisLines[3];
+        // Red X-axis
+        temp.pointEnd(WORLD_X_AXIS * 4);
+        temp.colourStart(UColour4(255, 0, 0, 255));
+        temp.colourEnd(UColour4(255, 0, 0, 255));
+        axisLines[0] = temp;
+
+        // Green Y-axis
+        temp.pointEnd(WORLD_Y_AXIS * 4);
+        temp.colourStart(UColour4(0, 255, 0, 255));
+        temp.colourEnd(UColour4(0, 255, 0, 255));
+        axisLines[1] = temp;
+
+        // Blue Z-axis
+        temp.pointEnd(WORLD_Z_AXIS * 4);
+        temp.colourStart(UColour4(0, 0, 255, 255));
+        temp.colourEnd(UColour4(0, 0, 255, 255));
+        axisLines[2] = temp;
+
+        _axisGizmo = _context.newIMP();
+        _axisGizmo->name("AxisGizmo_" + _parentSGN.name());
+        _axisGizmo->skipPostFX(true);
+        _axisGizmo->pipeline(*_primitivePipeline[2]);
+        // Create the object containing all of the lines
+        _axisGizmo->beginBatch(true, 3 * 2, 1);
+        _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(axisLines[0].colourStart()));
+        // Set the mode to line rendering
+        _axisGizmo->begin(PrimitiveType::LINES);
+        // Add every line in the list to the batch
+        for (const Line& line : axisLines) {
+            _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
+            _axisGizmo->vertex(line.pointStart());
+            _axisGizmo->vertex(line.pointEnd());
+        }
+        _axisGizmo->end();
+        // Finish our object
+        _axisGizmo->endBatch();
     }
 
     TransformComponent* const transform = _parentSGN.get<TransformComponent>();

@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class Scene;
+class Pipeline;
 class GFXDevice;
 class IMPrimitive;
 class ShaderProgram;
@@ -86,6 +87,7 @@ protected:
     U8 _currentUpdateCall;
     U16 _currentArrayIndex;
     BoundingBox _aabb;
+    Pipeline*    _bbPipeline;
     IMPrimitive* _boundingBoxPrimitive;
     std::shared_ptr<ImpostorSphere> _impostor;
     std::shared_ptr<ShaderProgram> _impostorShader;

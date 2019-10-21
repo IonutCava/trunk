@@ -67,57 +67,40 @@ struct VisibleNode {
 typedef vectorEASTL<VisibleNode> VisibleNodeList;
 
 class RenderPassCuller {
-   public:
-    //Should return true if the node is not inside the frustum
-    typedef std::function<bool(const SceneGraphNode&, const SceneNode&)> CullingFunction;
+    public:
+        struct CullParams {
+            vec3<F32> _minExtents = { 0.0f };
+            PlatformContext* _context = nullptr;
+            const SceneGraph* _sceneGraph = nullptr;
+            const Camera* _camera = nullptr;
+            const SceneState* _sceneState = nullptr;
+            F32 _visibilityDistanceSq = std::numeric_limits<F32>::max();
+            I32 _minLoD = -1;
+            RenderStage _stage = RenderStage::COUNT;
+            bool _threaded = true;
 
-    struct CullParams {
-        CullingFunction _cullFunction;
-        vec3<F32> _minExtents = { 0.0f };
-        PlatformContext* _context = nullptr;
-        const SceneGraph* _sceneGraph = nullptr;
-        const Camera* _camera = nullptr;
-        const SceneState* _sceneState = nullptr;
-        F32 _visibilityDistanceSq = std::numeric_limits<F32>::max();
-        I32 _minLoD = -1;
-        RenderStage _stage = RenderStage::COUNT;
-        bool _threaded = true;
+        };
 
-    };
+    public:
+        RenderPassCuller() = default;
+        ~RenderPassCuller() = default;
 
-   public:
-    RenderPassCuller();
-    ~RenderPassCuller();
+        void clear();
 
-    // flush all caches
-    void clear();
+        VisibleNodeList& frustumCull(const CullParams& params);
 
-    VisibleNodeList& getNodeCache(RenderStage stage);
-    const VisibleNodeList& getNodeCache(RenderStage stage) const;
+        VisibleNodeList frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const;
+        VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;
 
-    VisibleNodeList& frustumCull(const CullParams& params);
+        inline VisibleNodeList& getNodeCache(RenderStage stage) { return _visibleNodes[to_U32(stage)]; }
+        inline const VisibleNodeList& getNodeCache(RenderStage stage) const { return _visibleNodes[to_U32(stage)]; }
 
-    VisibleNodeList frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const;
-    VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;
+    protected:
+        void frustumCullNode(const Task& parentTask, SceneGraphNode& node, const NodeCullParams& params, VisibleNodeList& nodes) const;
+        void addAllChildren(SceneGraphNode& currentNode, const NodeCullParams& params,  VisibleNodeList& nodes) const;
 
-    bool wasNodeInView(I64 GUID, RenderStage stage) const;
-
-   protected:
-
-    // return true if the node is not currently visible
-    void frustumCullNode(const Task& parentTask,
-                         SceneGraphNode& node,
-                         const NodeCullParams& params,
-                         bool clearList,
-                         VisibleNodeList& nodes) const;
-
-    void addAllChildren(SceneGraphNode& currentNode,
-                        const NodeCullParams& params,
-                        VisibleNodeList& nodes) const;
-
-   protected:
-    std::array<CullingFunction, to_base(RenderStage::COUNT)> _cullingFunction;
-    std::array<VisibleNodeList, to_base(RenderStage::COUNT)> _visibleNodes;
+    protected:
+        std::array<VisibleNodeList, to_base(RenderStage::COUNT)> _visibleNodes;
 };
 
 };  // namespace Divide

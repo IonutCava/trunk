@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Pipeline.h"
 
 #include "Platform/Headers/PlatformDefines.h"
-#include "Platform/Video/Buffers/VertexBuffer/Headers/VDIPool.h"
+#include "Core/Headers/ObjectPool.h"
 
 namespace Divide {
 
@@ -75,7 +75,7 @@ enum class CmdRenderOptions : U16 {
 #pragma pack(push, 1)
 struct GenericDrawCommand {
     IndirectDrawCommand _cmd = {};                                   // 32 bytes
-    VDIHandle _sourceBuffer = {};                                    // 12 bytes
+    PoolHandle _sourceBuffer = {};                                   // 12 bytes
     I24 _commandOffset = {0};                                        // 9  bytes
     U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 6  bytes
     U16 _drawCount = 1;                                              // 4  bytes

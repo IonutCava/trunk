@@ -110,22 +110,13 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         return static_cast<const T&>(*_node);
     }
 
-    ECS::ECSEngine& GetECSEngine();
-    const ECS::ECSEngine& GetECSEngine() const;
-    ECS::EntityManager* GetEntityManager();
-    ECS::EntityManager* GetEntityManager() const;
-    ECS::ComponentManager* GetComponentManager();
-    ECS::ComponentManager* GetComponentManager() const;
-
     template<class E, class... ARGS>
-    void SendEvent(ARGS&&... eventArgs)
-    {
+    void SendEvent(ARGS&&... eventArgs) {
         GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...);
     }
 
     template<class E, class... ARGS>
-    void SendAndDispatchEvent(ARGS&&... eventArgs)
-    {
+    void SendAndDispatchEvent(ARGS&&... eventArgs) {
         GetECSEngine().SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...);
     }
     /// Add node increments the node's ref counter if the node was already added
@@ -267,13 +258,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     void postLoad();
 
-    inline SceneGraph& parentGraph() {
-        return _sceneGraph;
-    }
-
-    inline const SceneGraph& parentGraph() const {
-        return _sceneGraph;
-    }
+    inline SceneGraph& parentGraph() { return _sceneGraph; }
+    inline const SceneGraph& parentGraph() const { return _sceneGraph; }
 
     inline bool serialize() const { return _serialize; }
 
@@ -318,6 +304,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void setParentTransformDirty(U32 transformMask);
     void onBoundsUpdated();
     void postLoad(SceneNode& sceneNode, SceneGraphNode& sgn);
+    ECS::ECSEngine& GetECSEngine();
 
    private:
     void addToDeleteQueue(U32 idx);
@@ -355,7 +342,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     }
 
     void RemoveAllSGNComponents() {
-        GetComponentManager()->RemoveAllComponents(GetEntityID());
+        _compManager->RemoveAllComponents(GetEntityID());
         _editorComponents.clear();
         _componentMask = 0;
     }

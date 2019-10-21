@@ -1,10 +1,11 @@
 #include "stdafx.h"
 
 #include "Headers/SGNComponent.h"
+#include "Graphs/Headers/SceneGraph.h"
 
 namespace Divide {
     SGNComponent::SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context)
-        : ECS::Event::IEventListener(parentSGN.GetECSEngine()),
+        : ECS::Event::IEventListener(parentSGN.parentGraph().GetECSEngine()),
           PlatformContextComponent(context),
           _type(type),
           _parentSGN(parentSGN),

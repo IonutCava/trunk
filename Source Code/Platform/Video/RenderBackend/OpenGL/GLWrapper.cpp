@@ -58,7 +58,7 @@ bool GL_API::s_glFlushQueued = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool GL_API::s_texturePool;
 glGlobalLockManager GL_API::s_globalLockManager;
-
+GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool;
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
 
 U8 GL_API::s_syncDeleteQueueIndexR = 1;
@@ -1540,6 +1540,20 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
 
 U32 GL_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
     return to_U32(static_cast<const CEGUI::OpenGLTexture&>(textureIn).getOpenGLTexture());
+}
+
+IMPrimitive* GL_API::newIMP(std::mutex& lock, GFXDevice& parent) {
+    return s_IMPrimitivePool.newElement(lock, parent);
+}
+
+bool GL_API::destroyIMP(std::mutex& lock, IMPrimitive*& primitive) {
+    if (primitive != nullptr) {
+        s_IMPrimitivePool.deleteElement(lock, static_cast<glIMPrimitive*>(primitive));
+        primitive = nullptr;
+        return true;
+    }
+
+    return false;
 }
 
 };

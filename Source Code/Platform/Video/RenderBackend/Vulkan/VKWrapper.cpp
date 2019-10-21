@@ -86,4 +86,5 @@ namespace Divide {
     void VK_API::onThreadCreated(const std::thread::id& threadID) {
         ACKNOWLEDGE_UNUSED(threadID);
     }
+
 }; //namespace Divide

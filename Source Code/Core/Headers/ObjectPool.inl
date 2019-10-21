@@ -30,13 +30,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#ifndef _VDI_POOL_INL_
-#define _VDI_POOL_INL_
+#ifndef _OBJECT_POOL_INL_
+#define _OBJECT_POOL_INL_
 
 namespace Divide {
 
-template<size_t N>
-VertexDataInterface* VDIPool<N>::find(VDIHandle handle) const {
+template<typename T, size_t N>
+T* ObjectPool<T, N>::find(PoolHandle handle) const {
     SharedLock r_lock(_poolLock);
     if (_ids[handle._id - 1]._generation == handle._generation) {
         return _pool[handle._id - 1];
@@ -45,13 +45,43 @@ VertexDataInterface* VDIPool<N>::find(VDIHandle handle) const {
     return nullptr;
 }
 
-template<size_t N>
-VDIHandle VDIPool<N>::allocate(VertexDataInterface& vdi) {
+template<typename T, size_t N>
+template<typename... Args>
+PoolHandle ObjectPool<T, N>::allocate(Args... args) {
+    T* obj = new T(std::forward<Args>(args)...);
+    return registerExisting(*obj);
+}
+
+template<typename T, size_t N>
+void ObjectPool<T, N>::deallocate(PoolHandle handle) {
+    T* obj = find(handle);
+    MemoryManager::SAFE_DELETE(obj);
+    unregisterExisting(handle);
+}
+
+template<typename T, size_t N>
+template<typename... Args>
+PoolHandle ObjectPool<T, N>::allocate(void* mem, Args... args) {
+    T* obj = new(mem) T(std::forward<Args>(args)...);
+    return registerExisting(*obj);
+}
+
+template<typename T, size_t N>
+void ObjectPool<T, N>::deallocate(void* mem, PoolHandle handle) {
+    T* obj = find(handle);
+    if (obj) {
+        obj->~T();
+    }
+    unregisterExisting(handle);
+}
+
+template<typename T, size_t N>
+PoolHandle ObjectPool<T, N>::registerExisting(T& object) {
     UniqueLockShared w_lock(_poolLock);
     for (size_t i = 0; i < N; ++i) {
-        VDIHandle& handle = _ids[i];
+        PoolHandle& handle = _ids[i];
         if (handle._id == 0) {
-            _pool[i] = &vdi;
+            _pool[i] = &object;
             handle._id = to_U16(i) + 1;
             return handle;
         }
@@ -61,10 +91,10 @@ VDIHandle VDIPool<N>::allocate(VertexDataInterface& vdi) {
     return {};
 }
 
-template<size_t N>
-void VDIPool<N>::deallocate(VDIHandle handle) {
+template<typename T, size_t N>
+void ObjectPool<T, N>::unregisterExisting(PoolHandle handle) {
     UniqueLockShared w_lock(_poolLock);
-    VDIHandle& it = _ids[handle._id - 1];
+    PoolHandle& it = _ids[handle._id - 1];
     if (it._generation == handle._generation) {
         _pool[handle._id - 1] = nullptr;
         it._id = 0;
@@ -77,4 +107,4 @@ void VDIPool<N>::deallocate(VDIHandle handle) {
 
 }; //namespace Divide
 
-#endif //_VDI_POOL_INL_
+#endif //_OBJECT_POOL_INL_

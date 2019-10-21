@@ -124,8 +124,7 @@ class SceneGraph : private NonCopyable,
 
     ECSManager& GetECSManager() { return *_ecsManager; }
     const ECSManager& GetECSManager() const { return *_ecsManager; }
-    ECS::ECSEngine& GetECSEngine() { return _ecsEngine; }
-    const ECS::ECSEngine& GetECSEngine() const { return _ecsEngine; }
+
     ECS::EntityManager* GetEntityManager();
     ECS::EntityManager* GetEntityManager() const;
     ECS::ComponentManager* GetComponentManager();
@@ -133,6 +132,9 @@ class SceneGraph : private NonCopyable,
 
     bool saveCache(ByteBuffer& outputBuffer) const;
     bool loadCache(ByteBuffer& inputBuffer);
+
+    inline ECS::ECSEngine& GetECSEngine() { return _ecsEngine; }
+    inline const ECS::ECSEngine& GetECSEngine() const { return _ecsEngine; }
 
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
@@ -162,6 +164,7 @@ class SceneGraph : private NonCopyable,
     hashMap<SceneGraphNode*, vector<vec_size>> _pendingDeletion;
 
     mutable std::mutex _nodeCreateMutex;
+
 };
 
 namespace Attorney {

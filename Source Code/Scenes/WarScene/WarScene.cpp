@@ -58,6 +58,7 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
     _sceneReady(false),
     _terrainMode(false),
     _lastNavMeshBuildTime(0UL),
+    _targetLines(nullptr),
     _firstPersonWeapon(nullptr)
 {
 
@@ -77,8 +78,6 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
         _GUI->modifyText(_ID("entityState"), selectionText.c_str(), true);
     });
 
-    _targetLines = _context.gfx().newIMP();
-
     _runCount = 0;
     _timeLimitMinutes = 5;
     _scoreLimit = 3;
@@ -87,7 +86,9 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
 
 WarScene::~WarScene()
 {
-    _targetLines->reset();
+    if (_targetLines) {
+        _context.gfx().destroyIMP(_targetLines);
+    }
 }
 
 void WarScene::processGUI(const U64 deltaTimeUS) {
@@ -179,7 +180,13 @@ void WarScene::toggleTerrainMode() {
 
 void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES)) {
-        bufferInOut.add(_targetLines->toCommandBuffer());
+        if (!_targetLines) {
+            _targetLines = _context.gfx().newIMP();
+        } else {
+            bufferInOut.add(_targetLines->toCommandBuffer());
+        }
+    } else if (_targetLines) {
+        _context.gfx().destroyIMP(_targetLines);
     }
     Scene::debugDraw(activeCamera, stagePass, bufferInOut);
 }
@@ -312,7 +319,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             }
         } else {
             vec3<F32> camPos = playerCamera()->getEye();
-            if (g_terrain->get<BoundsComponent>()->getBoundingBox().containsPoint(camPos)) {   
+            if (g_terrain->get<BoundsComponent>()->getBoundingBox().containsPoint(camPos)) {
                 const Terrain& ter = g_terrain->getNode<Terrain>();
 
                 F32 headHeight = state().playerState(state().playerPass()).headHeight();
@@ -329,7 +336,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 
     SceneGraphNode* particles = _particleEmitter;
     const F32 radius = 20;
-    
+
     if (particles) {
         phi += 0.001f;
         if (phi > 360.0f) {
@@ -343,21 +350,21 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         }
 
         tComp->setPosition(radius * std::cos(phi) + initPos.x,
-                           (radius * 0.5f) * std::sin(phi) + initPos.y,
-                           radius * std::sin(phi) + initPos.z);
+            (radius * 0.5f) * std::sin(phi) + initPos.y,
+            radius * std::sin(phi) + initPos.z);
         tComp->rotateY(phi);
     }
-    
+
 
 
     if (!_aiManager->getNavMesh(_armyNPCs[0][0]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
         return;
     }
-    
+
     // renderState().drawDebugLines(true);
     vec3<F32> tempDestination;
-    UColour4 redLine(255,0,0,128);
-    UColour4 blueLine(0,0,255,128);
+    UColour4 redLine(255, 0, 0, 128);
+    UColour4 blueLine(0, 0, 255, 128);
     vector<Line> paths;
     paths.reserve(_armyNPCs[0].size() + _armyNPCs[1].size());
     for (U8 i = 0; i < 2; ++i) {
@@ -376,7 +383,9 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             }
         }
     }
-    _targetLines->fromLines(paths);
+    if (_targetLines) {
+        _targetLines->fromLines(paths);
+    }
 
     if (!_aiManager->updatePaused()) {
         _elapsedGameTime += deltaTimeUS;

@@ -27,6 +27,7 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
     _type(type),
     _updateRate(1),
     _currentUpdateCall(0),
+    _bbPipeline(nullptr),
     _aabb(vec3<F32>(-1), vec3<F32>(1))
 {
     assert(!s_availableSlices.empty());
@@ -38,10 +39,7 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
     pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-
-    _boundingBoxPrimitive = _context.newIMP();
-    _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
-    _boundingBoxPrimitive->pipeline(*_context.newPipeline(pipelineDescriptor));
+    _bbPipeline = _context.newPipeline(pipelineDescriptor);
 
     _impostor = CreateResource<ImpostorSphere>(parentScene.resourceCache(), ResourceDescriptor(Util::StringFormat("EnvironmentProbeImpostor_%d", getGUID())));
     _impostor->setRadius(1.0f);
@@ -69,7 +67,9 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
 EnvironmentProbe::~EnvironmentProbe()
 {
     s_availableSlices[_currentArrayIndex] = false;
-    _boundingBoxPrimitive->reset();
+    if (_boundingBoxPrimitive) {
+        _context.destroyIMP(_boundingBoxPrimitive);
+    }
 }
 
 void EnvironmentProbe::onStartup(GFXDevice& context) {
@@ -193,11 +193,19 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     GFX::DrawCommand drawCommand = { cmd };
     GFX::EnqueueCommand(bufferInOut, drawCommand);
 
+    if (!_boundingBoxPrimitive) {
+        _boundingBoxPrimitive = _context.newIMP();
+        _boundingBoxPrimitive->name(Util::StringFormat("EnvironmentProbe_%d", getGUID()));
+        _boundingBoxPrimitive->pipeline(*_bbPipeline);
+    }
+
     bufferInOut.add(_boundingBoxPrimitive->toCommandBuffer());
 }
 
 void EnvironmentProbe::updateInternal() {
-    _boundingBoxPrimitive->fromBox(_aabb.getMin(), _aabb.getMax(), UColour4(255, 255, 255, 255));
+    if (_boundingBoxPrimitive) {
+        _boundingBoxPrimitive->fromBox(_aabb.getMin(), _aabb.getMax(), UColour4(255, 255, 255, 255));
+    }
 }
 
 }; //namespace Divide

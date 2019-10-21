@@ -99,6 +99,10 @@ SceneGraphNode::~SceneGraphNode()
     RemoveAllSGNComponents();
 }
 
+ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
+    return parentGraph().GetECSEngine();
+}
+
 void SceneGraphNode::AddMissingComponents(U32 componentMask) {
 
     for (ComponentType::_integral i = 1; i < ComponentType::COUNT; ++i) {
@@ -612,30 +616,6 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
             }
         });
     }
-}
-
-ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
-    return ECS_Engine;
-}
-
-const ECS::ECSEngine& SceneGraphNode::GetECSEngine() const {
-    return ECS_Engine;
-}
-
-ECS::EntityManager* SceneGraphNode::GetEntityManager() {
-    return GetECSEngine().GetEntityManager();
-}
-
-ECS::EntityManager* SceneGraphNode::GetEntityManager() const {
-    return GetECSEngine().GetEntityManager();
-}
-
-ECS::ComponentManager* SceneGraphNode::GetComponentManager() {
-    return _compManager;
-}
-
-ECS::ComponentManager* SceneGraphNode::GetComponentManager() const {
-    return _compManager;
 }
 
 void SceneGraphNode::forEachChild(DELEGATE_CBK<void, SceneGraphNode*>&& callback) {

@@ -96,7 +96,7 @@ class Terrain : public Object3D {
 
     bool unload() noexcept override;
 
-    inline void toggleBoundingBoxes() noexcept { _drawBBoxes = !_drawBBoxes; }
+    void toggleBoundingBoxes();
 
     Vert getVert(F32 x_clampf, F32 z_clampf, bool smooth) const;
 
@@ -167,9 +167,9 @@ class Terrain : public Object3D {
     TessellatorArray _terrainTessellator;
     std::array<TerrainTessellator, ShadowMap::MAX_SHADOW_PASSES> _shadowTessellators;
     EditorDataState _editorDataDirtyState;
-    bool _drawBBoxes;
     U32  _nodeDataIndex = 0;
     bool _shaderDataDirty;
+    bool _drawCommandsDirty;
     SceneGraphNode* _vegetationGrassNode;
     std::shared_ptr<TerrainDescriptor> _descriptor;
 

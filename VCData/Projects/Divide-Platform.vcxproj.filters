@@ -277,9 +277,6 @@
     <ClInclude Include="../../Source Code\Platform\Input\Headers\InputHandler.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VDIPool.h">
-      <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code/Platform\Video\Headers\OcclusionQuery.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
@@ -852,9 +849,6 @@
     </None>
     <None Include="../../assets/shaders\GLSL\terrainTessNvidia.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
-    <None Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VDIPool.inl">
-      <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
     </None>
     <None Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.inl">
       <Filter>Video\Buffers\RenderTarget\Headers</Filter>

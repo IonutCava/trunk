@@ -108,9 +108,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
     PipelineDescriptor pipeDesc;
     pipeDesc._stateHash = primitiveDescriptor.getHash();
     pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-
-    Pipeline* pipeline = _context.gfx().newPipeline(pipeDesc);
-    _linesPrimitive->pipeline(*pipeline);
+    _linesPrimitive->pipeline(*_context.gfx().newPipeline(pipeDesc));
 }
 
 Scene::~Scene()
@@ -123,7 +121,10 @@ Scene::~Scene()
     MemoryManager::DELETE(_envProbePool);
     MemoryManager::DELETE(_GUI);
     for (IMPrimitive*& prim : _octreePrimitives) {
-        MemoryManager::DELETE(prim);
+        _context.gfx().destroyIMP(prim);
+    }
+    if (_linesPrimitive) {
+        _context.gfx().destroyIMP(_linesPrimitive);
     }
 }
 
@@ -1308,21 +1309,7 @@ void Scene::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bu
 }
 
 void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
-    if (!Config::Build::IS_SHIPPING_BUILD)
-    {
-        const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
-
-        if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
-            for (auto iter : _currentSelection) {
-                for (I64 selection : iter.second) {
-                    SceneGraphNode* node = sceneGraph().findNode(selection);
-                    if (node != nullptr) {
-                        node->get<RenderingComponent>()->drawDebugAxis();
-                    }
-                }
-            }
-        }
-
+    if (!Config::Build::IS_SHIPPING_BUILD) {
         if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS)) {
             _octreeBoundingBoxes.resize(0);
             sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);

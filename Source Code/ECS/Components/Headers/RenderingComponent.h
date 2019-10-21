@@ -263,6 +263,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     PushConstants _globalPushConstants;
 
+    Pipeline*    _primitivePipeline[3];
     IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
     IMPrimitive* _skeletonPrimitive;
@@ -272,7 +273,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     RenderCallback _refractionCallback;
 
     EnvironmentProbeList _envProbes;
-    vector<Line> _axisLines;
 
     ReflectorType _reflectorType;
     

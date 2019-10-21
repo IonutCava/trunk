@@ -691,21 +691,10 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
 
     PipelineDescriptor pipelineDesc;
 
-    _axisGizmo = newIMP();
-    _axisGizmo->name("GFXDeviceAxisGizmo");
     RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
     pipelineDesc._stateHash = primitiveDescriptor.getHash();
     pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-
-    Pipeline* primitivePipeline = newPipeline(pipelineDesc);
-    _axisGizmo->pipeline(*primitivePipeline);
-    _axisGizmo->skipPostFX(true);
-
-    _debugFrustumPrimitive = newIMP();
-    _debugFrustumPrimitive->name("DebugFrustum");
-    _debugFrustumPrimitive->pipeline(*primitivePipeline);
-    _debugFrustumPrimitive->skipPostFX(true);
-
+    _AxisGizmoPipeline = newPipeline(pipelineDesc);
     _renderer = std::make_unique<Renderer>(context(), cache);
 
     SizeChangeParams params;
@@ -724,10 +713,13 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
 void GFXDevice::closeRenderingAPI() {
     assert(_api != nullptr && "GFXDevice error: closeRenderingAPI called without init!");
     if (_axisGizmo) {
-        _axisGizmo->reset();
-        _debugFrustumPrimitive->reset();
-        _debugViews.clear();
+        destroyIMP(_axisGizmo);
     }
+    if (_debugFrustumPrimitive) {
+        destroyIMP(_debugFrustumPrimitive);
+    }
+
+    _debugViews.clear();
 
     // Delete the renderer implementation
     Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
@@ -1972,8 +1964,17 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
             lines.emplace_back(temp);
         }
 
+        if (!_debugFrustumPrimitive) {
+            _debugFrustumPrimitive = newIMP();
+            _debugFrustumPrimitive->name("DebugFrustum");
+            _debugFrustumPrimitive->pipeline(*_AxisGizmoPipeline);
+            _debugFrustumPrimitive->skipPostFX(true);
+        }
+
         _debugFrustumPrimitive->fromLines(lines);
         bufferInOut.add(_debugFrustumPrimitive->toCommandBuffer());
+    } else if (_debugFrustumPrimitive) {
+        destroyIMP(_debugFrustumPrimitive);
     }
 }
 
@@ -1987,6 +1988,12 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
         // Debug axis form the axis arrow gizmo in the corner of the screen
         // This is toggleable, so check if it's actually requested
         if (BitCompare(to_base(sceneRenderState.gizmoState()), SceneRenderState::GizmoState::SCENE_GIZMO)) {
+            if (!_axisGizmo) {
+                _axisGizmo = newIMP();
+                _axisGizmo->name("GFXDeviceAxisGizmo");
+                _axisGizmo->pipeline(*_AxisGizmoPipeline);
+                _axisGizmo->skipPostFX(true);
+            }
 
             // Apply the inverse view matrix so that it cancels out in the shader
             // Submit the draw command, rendering it in a tiny viewport in the lower
@@ -2002,6 +2009,8 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
                                                VECTOR3_ZERO,
                                                activeCamera.getUpDir()) * activeCamera.getWorldMatrix());
             bufferInOut.add(_axisGizmo->toCommandBuffer());
+        } else if (_axisGizmo) {
+            destroyIMP(_axisGizmo);
         }
     }
 }
@@ -2053,30 +2062,43 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) {
 
 IMPrimitive* GFXDevice::newIMP() {
 
-    UniqueLock w_lock(objectArenaMutex());
-
-    IMPrimitive* temp = nullptr;
     switch (getRenderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            temp = new (objectArena()) glIMPrimitive(*this);
+            return GL_API::newIMP(_imprimitiveMutex , *this);
         } break;
         case RenderAPI::Vulkan: {
-            temp = new (objectArena()) vkIMPrimitive(*this);
+            return nullptr;
         } break;
         case RenderAPI::None: {
-            temp = new (objectArena()) noIMPrimitive(*this);
+            return nullptr;
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    if (temp != nullptr) {
-        objectArena().DTOR(temp);
-    }
+    return nullptr;
+}
 
-    return temp;
+bool GFXDevice::destroyIMP(IMPrimitive*& primitive) {
+    switch (getRenderAPI()) {
+        case RenderAPI::OpenGL:
+        case RenderAPI::OpenGLES: {
+            return GL_API::destroyIMP(_imprimitiveMutex , primitive);
+        } break;
+        case RenderAPI::Vulkan: {
+            return false;
+        } break;
+        case RenderAPI::None: {
+            return false;
+        } break;
+        default: {
+            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+        } break;
+    };
+
+    return false;
 }
 
 VertexBuffer* GFXDevice::newVB() {

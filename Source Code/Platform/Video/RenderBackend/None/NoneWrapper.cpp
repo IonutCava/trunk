@@ -85,6 +85,6 @@ namespace Divide {
 
     void NONE_API::onThreadCreated(const std::thread::id& threadID) {
         ACKNOWLEDGE_UNUSED(threadID);
-
     }
+
 }; //namespace Divide
