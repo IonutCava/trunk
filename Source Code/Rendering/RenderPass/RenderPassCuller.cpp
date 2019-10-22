@@ -17,6 +17,41 @@ namespace Divide {
 
 namespace {
     static const U32 g_nodesPerCullingPartition = 16u;
+    //Worst case scenario: one per each node
+    std::array<NodeListContainer, Config::MAX_VISIBLE_NODES> g_tempContainers = {};
+    std::array<bool, Config::MAX_VISIBLE_NODES> g_freeList;
+    bool g_freeListInitialized = false;
+    std::mutex g_tempContainersLock;
+
+    // This would be messy to return as a pair (std::reference_wrapper and the like)
+    NodeListContainer& GetAvailableContainer(U32& idxOut) {
+        idxOut = 0;
+        UniqueLock w_lock(g_tempContainersLock);
+        if (g_freeListInitialized) {
+            while(true) {
+                if (g_freeList[idxOut]) {
+                    g_freeList[idxOut] = false;
+                    return g_tempContainers[idxOut];
+                }
+                (++idxOut) %= Config::MAX_VISIBLE_NODES;
+                if (Config::Build::IS_DEBUG_BUILD && idxOut == 0) {
+                    DIVIDE_ASSERT(false, "RenderPassCuller::GetAvailableContainer looped! Please resize container array");
+                }
+            }
+        } else {
+            g_freeList.fill(true);
+            g_freeListInitialized = true;
+            g_freeList[0] = false;
+            return g_tempContainers[idxOut];
+        }
+    };
+
+    void FreeContainer(NodeListContainer& container, const U32 idx) {
+        UniqueLock w_lock(g_tempContainersLock);
+        assert(!g_freeList[idx]);
+        g_tempContainers[idx].resize(0); //< keep memory allocated
+        g_freeList[idx] = true;
+    }
 
     // Return true if the node type is capable of generating draw commands
     FORCE_INLINE bool generatesDrawCommands(SceneNodeType nodeType, ObjectType objType) {
@@ -64,9 +99,6 @@ namespace {
     }
 };
 
-std::mutex RenderPassCuller::s_nodeListContainerMutex;
-MemoryPool<NodeListContainer, NodeListContainerSizeInBytes> RenderPassCuller::s_nodeListContainer;
-
 void RenderPassCuller::clear() {
     for (VisibleNodeList& cache : _visibleNodes) {
         cache.clear();
@@ -96,11 +128,14 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         vectorEASTL<SceneGraphNode*> rootChildren = params._sceneGraph->getRoot().getChildrenLocked();
         nodeCache.reserve(rootChildren.size());
             
-        vectorEASTL<VisibleNodeList> nodes(rootChildren.size());
+        U32 containerIdx = 0;
+        NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
+        tempContainer.resize(rootChildren.size());
+
         parallel_for(*params._context,
-                     [this, &rootChildren, &nodeParams, &nodes](const Task& parentTask, U32 start, U32 end) {
+                     [this, &rootChildren, &nodeParams, &tempContainer](const Task& parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
-                            frustumCullNode(parentTask, *rootChildren[i], nodeParams, nodes[i]);
+                            frustumCullNode(parentTask, *rootChildren[i], nodeParams, tempContainer[i]);
                         }
                      },
                      to_U32(rootChildren.size()),
@@ -110,9 +145,10 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
                      true,
                      "Frustum cull task");
         
-        for (const VisibleNodeList& nodeListEntry : nodes) {
+        for (const VisibleNodeList& nodeListEntry : tempContainer) {
             nodeCache.insert(eastl::end(nodeCache), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
         }
+        FreeContainer(tempContainer, containerIdx);
     }
 
     return nodeCache;
@@ -151,13 +187,15 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
 
             // A very good use-case for ranges :-<
             vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
-            NodeListContainer* nodesTemp = s_nodeListContainer.newElement(s_nodeListContainerMutex);
-            nodesTemp->resize(children.size());
+
+            U32 containerIdx = 0;
+            NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
+            tempContainer.resize(children.size());
 
             parallel_for(*task._parentPool,
-                         [this, &children, &params, &nodesTemp](const Task & parentTask, U32 start, U32 end) {
+                         [this, &children, &params, &tempContainer](const Task & parentTask, U32 start, U32 end) {
                              for (U32 i = start; i < end; ++i) {
-                                frustumCullNode(parentTask, *children[i], params, (*nodesTemp)[i]);
+                                frustumCullNode(parentTask, *children[i], params, tempContainer[i]);
                              }
                          },
                          to_U32(children.size()),
@@ -166,10 +204,10 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
                          false,
                          true,
                          "Frustum cull node task");
-            for (const VisibleNodeList& nodeListEntry : *nodesTemp) {
+            for (const VisibleNodeList& nodeListEntry : tempContainer) {
                 nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
             }
-            s_nodeListContainer.deleteElement(s_nodeListContainerMutex, nodesTemp);
+            FreeContainer(tempContainer, containerIdx);
         } else {
             // All nodes are in view entirely
             addAllChildren(currentNode, params, nodes);

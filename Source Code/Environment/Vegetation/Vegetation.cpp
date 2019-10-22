@@ -570,6 +570,8 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         if (s_grassData != nullptr) {
             s_grassData->bind(ShaderBufferLocation::GRASS_DATA);
         }
+        s_treePositions.clear();
+        s_grassPositions.clear();
         s_buffersBound = true;
     }
 
@@ -799,12 +801,6 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
             };
 
             container.push_back(entry);
-        }
-
-        if (treeData) {
-            s_treePositions.clear();
-        } else {
-            s_grassPositions.clear();
         }
 
         container.shrink_to_fit();
