@@ -3,6 +3,7 @@
 #include "vbInputData.vert"
 #include "vegetationData.cmn"
 #include "utility.cmn"
+#include "lightingDefaults.vert"
 
 void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
     float time = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
@@ -23,9 +24,7 @@ void main(void){
 
     const float LoDValue = data.data.z;
 #if defined(USE_CULL_DISTANCE)
-    if (LoDValue > 2.1f) {
-        gl_CullDistance[0] = -0.01f;
-    }
+    gl_CullDistance[0] = -0.01f * when_gt(LoDValue, 2.1f);
 #else
     scale -= scale * when_gt(LoDValue, 2.1f);
 #endif
@@ -41,7 +40,7 @@ void main(void){
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
 
 #if !defined(SHADOW_PASS)
-    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * dvd_Normal);
+    computeLightVectors(mat3(dvd_ViewMatrix));
     setClipPlanes(VAR._vertexW);
 #endif
 

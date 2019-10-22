@@ -39,100 +39,47 @@ namespace Divide {
 struct PushConstants {
     vectorEASTL<GFX::PushConstant> _data;
 
-    void countHint(size_t count);
     void set(const GFX::PushConstant& constant);
 
     template<typename T>
-    inline void set(const char* binding,
-                    GFX::PushConstantType type,
-                    const T& value,
-                    bool flag = false) {
+    inline void set(const char* binding, GFX::PushConstantType type, const T* values, size_t count, bool flag = false) {
         U64 bindingID = _ID(binding);
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingID) {
-                if (constant._type != type) {
-                    constant = GFX::PushConstant{ binding, bindingID, type, value, flag };
-                } else {
-                    constant.set(value, flag);
-                }
+                assert(constant._type == type);
+                constant.set(values, count, flag);
                 return;
             }
         }
 
-        _data.emplace_back(binding, bindingID, type, value, flag);
+        _data.emplace_back(binding, bindingID, type, values, count, flag);
     }
 
     template<typename T>
-    inline void set(const char* binding,
-                    GFX::PushConstantType type,
-                    const vector<T>& values,
-                    bool flag = false) {
-
-        U64 bindingID = _ID(binding);
-        for (GFX::PushConstant& constant : _data) {
-            if (constant._bindingHash == bindingID) {
-                if (constant._type != type) {
-                    constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
-                } else {
-                    constant.set(values, flag);
-                }
-                return;
-            }
-        }
-
-        _data.emplace_back(binding, bindingID, type, values, flag );
+    inline void set(const char* binding, GFX::PushConstantType type, const T& value, bool flag = false) {
+        set(binding, type, &value, 1, flag);
     }
 
     template<typename T>
-    inline void set(const char* binding,
-                    GFX::PushConstantType type,
-                    const vectorEASTL<T>& values,
-                    bool flag = false) {
+    inline void set(const char* binding, GFX::PushConstantType type, const vector<T>& values, bool flag = false) {
+        set(binding, type, values.data(), values.size(), flag);
+    }
 
-        U64 bindingID = _ID(binding);
-        for (GFX::PushConstant& constant : _data) {
-            if (constant._bindingHash == bindingID) {
-                if (constant._type != type) {
-                    constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
-                } else {
-                    constant.set(values, flag);
-                }
-                return;
-            }
-        }
-
-        _data.emplace_back(binding, bindingID, type, values, flag );
+    template<typename T>
+    inline void set(const char* binding, GFX::PushConstantType type, const vectorEASTL<T>& values, bool flag = false) {
+        set(binding, type, values.data(), values.size(), flag);
     }
 
     template<typename T, size_t N>
-    inline void set(const char* binding,
-                    GFX::PushConstantType type,
-                    const std::array<T, N>& values,
-                    bool flag = false) {
-
-        U64 bindingID = _ID(binding);
-        for (GFX::PushConstant& constant : _data) {
-            if (constant._bindingHash == bindingID) {
-                if (constant._type != type) {
-                    constant = GFX::PushConstant{ binding, bindingID, type, values, flag };
-                } else {
-                    constant.set(values, flag);
-                }
-                return;
-            }
-        }
-
-        _data.emplace_back(binding, bindingID, type, values, flag);
+    inline void set(const char* binding, GFX::PushConstantType type, const std::array<T, N>& values, bool flag = false) {
+        set(binding, type, values.data(), N, flag);
     }
 
-    inline void clear() {
-        _data.clear();
-    }
-
+    inline void clear() { _data.clear(); }
     inline bool empty() const { return _data.empty(); }
+    inline void countHint(size_t count) { _data.reserve(count); }
 
     inline vectorEASTL<GFX::PushConstant>& data() { return _data; }
-
     inline const vectorEASTL<GFX::PushConstant>& data() const { return _data; }
 };
 

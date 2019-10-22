@@ -10,7 +10,7 @@ void main(void)
 {
     computeData();
     
-    computeLightVectors();
+    computeLightVectors(dvd_NormalMatrixWV(DATA_IDX));
 
     _vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;

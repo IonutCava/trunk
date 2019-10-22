@@ -19,6 +19,13 @@ namespace Divide {
     }
 
     void EditorComponent::registerField(EditorComponentField&& field) {
+        _fields.erase(
+            std::remove_if(std::begin(_fields), std::end(_fields),
+                [&field](const EditorComponentField& it)
+                -> bool { return it._name == field._name &&
+                                 it._type == field._type; }),
+            std::end(_fields));
+
         _fields.push_back(field);
     }
 

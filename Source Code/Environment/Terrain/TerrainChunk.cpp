@@ -81,10 +81,12 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     bbInOut.setMin(bbInOut.getMin().x, tempMin, bbInOut.getMin().z);
     bbInOut.setMax(bbInOut.getMax().x, tempMax, bbInOut.getMax().z);
 
-    _vegetation.reset(new Vegetation(_context, *this, Attorney::TerrainChunk::vegetationDetails(parent())));
     Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
 }
 
+void TerrainChunk::initializeVegetation(const VegetationDetails& vegDetails) {
+    _vegetation.reset(new Vegetation(_context, *this, vegDetails));
+}
 
 const BoundingBox& TerrainChunk::bounds() const {
     return _quadtreeNode.getBoundingBox();

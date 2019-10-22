@@ -70,7 +70,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     _renderRange.min = -1.0f * g_renderRangeLimit;
     _renderRange.max =  1.0f* g_renderRangeLimit;
 
-    _materialInstance = parentSGN.getNode().getMaterialTpl();
+    setMaterialTpl(parentSGN.getNode().getMaterialTpl());
 
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
@@ -88,20 +88,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     const Object3D& node = parentSGN.getNode<Object3D>();
 
     bool nodeSkinned = node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
-
-    if (_materialInstance != nullptr) {
-        assert(!_materialInstance->resourceName().empty());
-
-        EditorComponentField materialField = {};
-        materialField._name = "Material";
-        materialField._data = _materialInstance.get();
-        materialField._type = EditorComponentFieldType::MATERIAL;
-        materialField._readOnly = false;
-
-        _editorComponent.registerField(std::move(materialField));
-
-        _materialInstanceCache = _materialInstance.get();
-    }
 
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
@@ -147,6 +133,23 @@ RenderingComponent::~RenderingComponent()
         if (_axisGizmo) {
             _context.destroyIMP(_axisGizmo);
         }
+    }
+}
+
+void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
+    _materialInstance = material;
+    if (_materialInstance != nullptr) {
+        assert(!_materialInstance->resourceName().empty());
+
+        EditorComponentField materialField = {};
+        materialField._name = "Material";
+        materialField._data = _materialInstance.get();
+        materialField._type = EditorComponentFieldType::MATERIAL;
+        materialField._readOnly = false;
+        // should override any existing entry
+        _editorComponent.registerField(std::move(materialField));
+
+        _materialInstanceCache = _materialInstance.get();
     }
 }
 
@@ -280,11 +283,12 @@ void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
         return;
     }
 
-    const U8 lod = _lodLevels[to_base(stagePass._stage)];
+    const U8 stage = to_U8(stagePass._stage);
+    const U8 lod = _lodLevels[stage];
     if (_parentSGN.getDrawState(stagePass, lod)) {
         RenderPackage& pkg = getDrawPackage(stagePass);
         if (!pkg.empty()) {
-            pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[to_base(stagePass._stage)]);
+            pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[stage]);
         }
     }
 }
@@ -495,24 +499,23 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     }
 }
 
-U8 RenderingComponent::getLoDLevel(const Camera& camera, RenderStage renderStage, const vec4<U16>& lodThresholds) {
+U8 RenderingComponent::getLoDLevel(const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
     U8 lodLevel = 0u;
 
     if (_lodLocked) {
         return lodLevel;
     }
 
-    const vec3<F32>& eyePos = camera.getEye();
     BoundsComponent* bounds = _parentSGN.get<BoundsComponent>();
 
     const BoundingSphere& bSphere = bounds->getBoundingSphere();
-    if (bSphere.getCenter().distanceSquared(eyePos) <= SQUARED(lodThresholds.x)) {
+    if (bSphere.getCenter().distanceSquared(cameraEye) <= SQUARED(lodThresholds.x)) {
         return lodLevel;
     }
 
     lodLevel += 1;
 
-    const F32 cameraDistanceSQ = bounds->getBoundingBox().nearestDistanceFromPointSquared(eyePos);
+    const F32 cameraDistanceSQ = bounds->getBoundingBox().nearestDistanceFromPointSquared(cameraEye);
     if (cameraDistanceSQ > SQUARED(lodThresholds.y)) {
         lodLevel += 1;
         if (cameraDistanceSQ > SQUARED(lodThresholds.z)) {
@@ -538,7 +541,7 @@ void RenderingComponent::queueRebuildCommands(RenderStagePass renderStagePass) {
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData) {
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
     if (refreshData) {
-        lod = getLoDLevel(camera, renderStagePass._stage, sceneRenderState.lodThresholds());
+        lod = getLoDLevel(camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds());
     }
 
     if (canDraw(renderStagePass, lod, refreshData)) {

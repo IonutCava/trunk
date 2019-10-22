@@ -456,10 +456,12 @@ void glShader::reuploadUniforms(bool force) {
 }
 
 void glShader::Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const {
-    GLsizei byteCount = (GLsizei)values.size();
+    const GLboolean transpose = (flag ? GL_TRUE : GL_FALSE);
+    const GLsizei byteCount = (GLsizei)values.size();
+
     switch (type) {
         case GFX::PushConstantType::BOOL:
-            glProgramUniform1iv(_programHandle, binding, byteCount / (1 * sizeof(GLbyte)), (GLint*)castData<GLbyte, 1, char>(values));
+            glProgramUniform1iv(_programHandle, binding, byteCount / (1 * sizeof(GLint)), castData<GLint, 1, I32>(values));
             break;
         case GFX::PushConstantType::INT:
             glProgramUniform1iv(_programHandle, binding, byteCount / (1 * sizeof(GLint)), castData<GLint, 1, I32>(values));
@@ -501,55 +503,55 @@ void glShader::Uniform(I32 binding, GFX::PushConstantType type, const vectorEAST
             glProgramUniform4dv(_programHandle, binding, byteCount / (4 * sizeof(GLdouble)), castData<GLdouble, 4, vec4<D64>>(values));
             break;
         case GFX::PushConstantType::VEC2:
-            glProgramUniform2fv(_programHandle, binding, byteCount / (2 * 4), castData<GLfloat, 2, vec2<F32>>(values));
+            glProgramUniform2fv(_programHandle, binding, byteCount / (2 * sizeof(GLfloat)), castData<GLfloat, 2, vec2<F32>>(values));
             break;
         case GFX::PushConstantType::VEC3:
-            glProgramUniform3fv(_programHandle, binding, byteCount / (3 * 4), castData<GLfloat, 3, vec3<F32>>(values));
+            glProgramUniform3fv(_programHandle, binding, byteCount / (3 * sizeof(GLfloat)), castData<GLfloat, 3, vec3<F32>>(values));
             break;
         case GFX::PushConstantType::FCOLOUR3:
-            glProgramUniform3fv(_programHandle, binding, byteCount / (3 * 4), castData<GLfloat, 3, FColour3>(values));
+            glProgramUniform3fv(_programHandle, binding, byteCount / (3 * sizeof(GLfloat)), castData<GLfloat, 3, FColour3>(values));
             break;
         case GFX::PushConstantType::VEC4:
-            glProgramUniform4fv(_programHandle, binding, byteCount / (4 * 4), castData<GLfloat, 4, vec4<F32>>(values));
+            glProgramUniform4fv(_programHandle, binding, byteCount / (4 * sizeof(GLfloat)), castData<GLfloat, 4, vec4<F32>>(values));
             break;
         case GFX::PushConstantType::FCOLOUR4:
-            glProgramUniform3fv(_programHandle, binding, byteCount / (4 * 4), castData<GLfloat, 4, FColour4>(values));
+            glProgramUniform3fv(_programHandle, binding, byteCount / (4 * sizeof(GLfloat)), castData<GLfloat, 4, FColour4>(values));
             break;
         case GFX::PushConstantType::IMAT2:
-            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<I32>>(values));
+            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), transpose, castData<GLfloat, 4, mat2<I32>>(values));
             break;
         case GFX::PushConstantType::IMAT3:
-            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<I32>>(values));
+            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), transpose, castData<GLfloat, 9, mat3<I32>>(values));
             break;
         case GFX::PushConstantType::IMAT4:
-            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<I32>>(values));
+            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), transpose, castData<GLfloat, 16, mat4<I32>>(values));
             break;
         case GFX::PushConstantType::UMAT2:
-            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<U32>>(values));
+            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), transpose, castData<GLfloat, 4, mat2<U32>>(values));
             break;
         case GFX::PushConstantType::UMAT3:
-            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<U32>>(values));
+            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), transpose, castData<GLfloat, 9, mat3<U32>>(values));
             break;
         case GFX::PushConstantType::UMAT4:
-            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<U32>>(values));
+            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), transpose, castData<GLfloat, 16, mat4<U32>>(values));
             break;
         case GFX::PushConstantType::MAT2:
-            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<F32>>(values));
+            glProgramUniformMatrix2fv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLfloat)), transpose, castData<GLfloat, 4, mat2<F32>>(values));
             break;
         case GFX::PushConstantType::MAT3:
-            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<F32>>(values));
+            glProgramUniformMatrix3fv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLfloat)), transpose, castData<GLfloat, 9, mat3<F32>>(values));
             break;
         case GFX::PushConstantType::MAT4:
-            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<F32>>(values));
+            glProgramUniformMatrix4fv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLfloat)), transpose, castData<GLfloat, 16, mat4<F32>>(values));
             break;
         case GFX::PushConstantType::DMAT2:
-            glProgramUniformMatrix2dv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 4, mat2<D64>>(values));
+            glProgramUniformMatrix2dv(_programHandle, binding, byteCount / (2 * 2 * sizeof(GLdouble)), transpose, castData<GLdouble, 4, mat2<D64>>(values));
             break;
         case GFX::PushConstantType::DMAT3:
-            glProgramUniformMatrix3dv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 9, mat3<D64>>(values));
+            glProgramUniformMatrix3dv(_programHandle, binding, byteCount / (3 * 3 * sizeof(GLdouble)), transpose, castData<GLdouble, 9, mat3<D64>>(values));
             break;
         case GFX::PushConstantType::DMAT4:
-            glProgramUniformMatrix4dv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLdouble)), flag ? GL_TRUE : GL_FALSE, castData<GLdouble, 16, mat4<D64>>(values));
+            glProgramUniformMatrix4dv(_programHandle, binding, byteCount / (4 * 4 * sizeof(GLdouble)), transpose, castData<GLdouble, 16, mat4<D64>>(values));
             break;
         default:
             DIVIDE_ASSERT(false, "glShaderProgram::Uniform error: Unhandled data type!");

@@ -64,6 +64,9 @@ namespace {
     }
 };
 
+std::mutex RenderPassCuller::s_nodeListContainerMutex;
+MemoryPool<NodeListContainer, NodeListContainerSizeInBytes> RenderPassCuller::s_nodeListContainer;
+
 void RenderPassCuller::clear() {
     for (VisibleNodeList& cache : _visibleNodes) {
         cache.clear();
@@ -146,12 +149,15 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
         // Parent node intersects the view, so check children
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
 
+            // A very good use-case for ranges :-<
             vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
-            vectorEASTL<VisibleNodeList> nodesTemp(children.size());
+            NodeListContainer* nodesTemp = s_nodeListContainer.newElement(s_nodeListContainerMutex);
+            nodesTemp->resize(children.size());
+
             parallel_for(*task._parentPool,
                          [this, &children, &params, &nodesTemp](const Task & parentTask, U32 start, U32 end) {
                              for (U32 i = start; i < end; ++i) {
-                                frustumCullNode(parentTask, *children[i], params, nodesTemp[i]);
+                                frustumCullNode(parentTask, *children[i], params, (*nodesTemp)[i]);
                              }
                          },
                          to_U32(children.size()),
@@ -160,9 +166,10 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
                          false,
                          true,
                          "Frustum cull node task");
-            for (const VisibleNodeList& nodeListEntry : nodesTemp) {
+            for (const VisibleNodeList& nodeListEntry : *nodesTemp) {
                 nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
             }
+            s_nodeListContainer.deleteElement(s_nodeListContainerMutex, nodesTemp);
         } else {
             // All nodes are in view entirely
             addAllChildren(currentNode, params, nodes);

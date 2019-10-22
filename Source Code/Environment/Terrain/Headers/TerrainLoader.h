@@ -42,6 +42,8 @@ enum class TerrainTextureType : U8 {
 };
 
 class TerrainDescriptor;
+struct VegetationDetails;
+
 FWD_DECLARE_MANAGED_CLASS(Terrain);
 class TerrainLoader : private NonCopyable {
    public:
@@ -64,9 +66,9 @@ class TerrainLoader : private NonCopyable {
                                      PlatformContext& context,
                                       const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
 
-    static void initializeVegetation(Terrain_ptr terrain,
-                                     PlatformContext& context,
-                                     const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
+    static VegetationDetails& initializeVegetationDetails(Terrain_ptr terrain,
+                                                          PlatformContext& context,
+                                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
 };
 
 };  // namespace Divide

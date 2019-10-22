@@ -21,6 +21,8 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
 #include "Environment/Water/Headers/Water.h"
+#include "Environment/Vegetation/Headers/Vegetation.h"
+
 #include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
@@ -132,6 +134,7 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
 
 void SceneManager::destroy() {
     if (_init) {
+        Vegetation::destroyStaticData();
         MemoryManager::SAFE_DELETE(_sceneData);
         UNREGISTER_FRAME_LISTENER(this);
         Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));

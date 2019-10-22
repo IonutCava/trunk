@@ -64,7 +64,9 @@ struct VisibleNode {
     SceneGraphNode* _node = nullptr;
 };
 
-typedef vectorEASTL<VisibleNode> VisibleNodeList;
+using VisibleNodeList = vectorEASTL<VisibleNode>;
+using NodeListContainer = vectorEASTL<VisibleNodeList>;
+constexpr size_t NodeListContainerSizeInBytes = prevPOW2(Config::MAX_VISIBLE_NODES * sizeof(NodeListContainer) * to_base(RenderStage::COUNT));
 
 class RenderPassCuller {
     public:
@@ -101,6 +103,9 @@ class RenderPassCuller {
 
     protected:
         std::array<VisibleNodeList, to_base(RenderStage::COUNT)> _visibleNodes;
+
+        static std::mutex s_nodeListContainerMutex;
+        static MemoryPool<NodeListContainer, NodeListContainerSizeInBytes> s_nodeListContainer;
 };
 
 };  // namespace Divide

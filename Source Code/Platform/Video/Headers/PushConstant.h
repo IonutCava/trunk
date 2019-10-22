@@ -79,203 +79,62 @@ namespace GFX {
     };
 
     struct PushConstant {
-        PushConstant() = default;
-        ~PushConstant() = default;
-
-        PushConstant(const PushConstant& other) = default;
-        PushConstant& operator=(const PushConstant& other) = default;
-        PushConstant(PushConstant&& other) noexcept = default;
-        PushConstant& operator=(PushConstant&& other) noexcept = default;
-
         template<typename T>
-        PushConstant(const char* binding,
-                     U64 bindingHash,
-                     PushConstantType type,
-                     const T& value,
-                     bool flag = false)
+        PushConstant(const char* binding, U64 bindingHash, PushConstantType type, const T* data, const size_t count, bool flag = false)
             : _binding(binding),
               _bindingHash(bindingHash),
-              _type(type),
-              _flag(flag)
+              _type(type)
         {
-            _buffer.resize(sizeof(T));
-            std::memcpy(_buffer.data(), &value, _buffer.size());
+            set(data, count, flag);
         }
 
         template<typename T>
-        PushConstant(const char* binding,
-                     U64 bindingHash,
-                     PushConstantType type,
-                     const vector<T>& values,
-                     bool flag = false)
-            : _binding(binding),
-              _bindingHash(bindingHash),
-              _type(type),
-              _flag(flag)
-        {
-            if (!values.empty()) {
-                _buffer.resize(values.size() * (sizeof(T)));
-                std::memcpy(_buffer.data(), values.data(), _buffer.size());
-            }
-        }
-
-        template<typename T>
-        PushConstant(const char* binding,
-                     U64 bindingHash,
-                     PushConstantType type,
-                     const vectorEASTL<T>& values,
-                     bool flag = false)
-            : _binding(binding),
-              _bindingHash(bindingHash),
-              _type(type),
-              _flag(flag)
-        {
-            if (!values.empty()) {
-                _buffer.resize(values.size() * (sizeof(T)));
-                std::memcpy(_buffer.data(), values.data(), _buffer.size());
+        inline void set(const T* data, const size_t count, bool flag = false) {
+            _flag = flag;
+            if (count > 0) {
+                _buffer.resize(count * sizeof(T));
+                std::memcpy(_buffer.data(), data, count * sizeof(T));
+            } else {
+                _buffer.clear();
             }
         }
 
         template<>
-        PushConstant(const char* binding,
-                     U64 bindingHash,
-                     PushConstantType type,
-                     const vectorEASTL<bool>& values,
-                     bool flag)
-            : _binding(binding),
-              _bindingHash(bindingHash),
-              _type(type),
-              _flag(flag)
-        {
-            if (!values.empty()) {
-                _buffer.reserve(values.size());
-                std::transform(std::cbegin(values), std::cend(values),
-                               std::back_inserter(_buffer),
-                               [](bool e) {return to_byte(e ? 1 : 0);});
+        inline void set(const bool* values, const size_t count, bool flag) {
+            if (count == 1) { //fast path
+                I32 value = (*values ? 1 : 0);
+                set(&value, 1, flag);
+            } else {
+                //Slooow. Avoid using in the rendering loop. Try caching
+                vector<I32> temp(count);
+                std::transform(values, values + count, std::back_inserter(temp), [](bool e) { return (e ? 1 : 0); });
+                set(temp.data(), count, flag);
             }
         }
-
-        template<typename T, size_t N>
-        PushConstant(const char* binding,
-                     U64 bindingHash,
-                     PushConstantType type,
-                     const std::array<T, N>& values,
-                     bool flag = false)
-            : _binding(binding),
-              _bindingHash(bindingHash),
-              _type(type),
-              _flag(flag)
-        {
-            if (!values.empty()) {
-                _buffer.resize(values.size() * (sizeof(T)));
-                std::memcpy(_buffer.data(), values.data(), _buffer.size());
-            }
-        }
-
-        template<size_t N>
-        PushConstant(const char* binding,
-                     U64 bindingHash,
-                     PushConstantType type,
-                     const std::array<bool, N>& values,
-                     bool flag)
-            : _binding(binding),
-              _bindingHash(bindingHash),
-              _type(type),
-              _flag(flag)
-        {
-            if (!values.empty()) {
-                _buffer.reserve(N);
-                std::transform(std::cbegin(values), std::cend(values),
-                               std::back_inserter(_buffer),
-                               [](bool e) {return to_byte(e ? 1 : 0);});
-            }
-        }
-
-        template<typename T>
-        inline void set(const T& value, bool flag = false) {
-            _flag = flag;
-            std::memcpy(_buffer.data(), &value, _buffer.size());
-        }
-
-        template<typename T>
-        inline void set(const vector<T>& values, bool flag = false) {
-            _flag = flag;
-            if (values.empty()) {
-                _buffer.resize(values.size() * (sizeof(T)));
-                std::memcpy(_buffer.data(), values.data(), _buffer.size());
-            }
-        }
-
-        template<typename T>
-        inline void set(const vectorEASTL<T>& values, bool flag = false) {
-            _flag = flag;
-            if (!values.empty()) {
-                _buffer.resize(values.size() * (sizeof(T)));
-                std::memcpy(_buffer.data(), values.data(), _buffer.size());
-            }
-        }
-
-        template<>
-        inline void set(const vectorEASTL<bool>& values, bool flag) {
-            _flag = flag;
-
-            if (!values.empty()) {
-                _buffer.reserve(values.size());
-                std::transform(std::cbegin(values), std::cend(values),
-                    std::back_inserter(_buffer),
-                    [](bool e) {return to_byte(e ? 1 : 0); });
-            }
-        }
-
-        template<typename T, size_t N>
-        inline void set(const std::array<T, N>& values, bool flag = false){
-            _flag = flag;
-
-            if (!values.empty()) {
-                _buffer.resize(values.size() * (sizeof(T)));
-                std::memcpy(_buffer.data(), values.data(), _buffer.size());
-            }
-        }
-
-        template<size_t N>
-        inline void set(const std::array<bool, N>& values, bool flag) {
-            _flag = flag;
-
-            if (!values.empty()) {
-                _buffer.reserve(N);
-                std::transform(std::cbegin(values), std::cend(values),
-                    std::back_inserter(_buffer),
-                    [](bool e) {return to_byte(e ? 1 : 0); });
-            }
-        }
-
 
         void clear();
-
-        inline bool operator==(const PushConstant& rhs) const {
-            return _type == rhs._type &&
-                   _flag == rhs._flag &&
-                   _bindingHash == rhs._bindingHash &&
-                   _buffer == rhs._buffer;
-        }
-
-        inline bool operator!=(const PushConstant& rhs) const {
-            return _type != rhs._type || 
-                   _flag != rhs._flag ||
-                   _bindingHash != rhs._bindingHash ||
-                   _buffer != rhs._buffer;
-        }
-
-        union {
-            bool _flag = false;
-            bool _transpose;
-        };
 
         eastl::fixed_string<char, 64 + 1, false> _binding;
         vectorEASTL<char> _buffer;
         U64               _bindingHash;
         PushConstantType  _type = PushConstantType::COUNT;
+        bool _flag = false;
     };
+
+    inline bool operator==(const PushConstant& lhs, const PushConstant& rhs) {
+        return lhs._type == rhs._type &&
+               lhs._flag == rhs._flag &&
+               lhs._bindingHash == rhs._bindingHash &&
+               lhs._buffer == rhs._buffer;
+    }
+
+    inline bool operator!=(const PushConstant& lhs, const PushConstant& rhs) {
+        return lhs._type != rhs._type ||
+               lhs._flag != rhs._flag ||
+               lhs._bindingHash != rhs._bindingHash ||
+               lhs._buffer != rhs._buffer;
+    }
+
 }; //namespace GFX
 }; //namespace Divide
 #endif //_PUSH_CONSTANT_H_

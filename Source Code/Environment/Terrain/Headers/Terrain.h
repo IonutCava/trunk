@@ -108,6 +108,10 @@ class Terrain : public Object3D {
     vec2<F32> getAltitudeRange() const;
 
     inline const Quadtree& getQuadtree() const noexcept { return _terrainQuadtree; }
+    void getVegetationStats(U32& maxGrassInstances, U32& maxTreeInstances) const;
+
+    inline const vector<TerrainChunk*>& terrainChunks() const { return _terrainChunks; }
+    const std::shared_ptr<TerrainDescriptor>& descriptor() const { return _descriptor; }
 
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
@@ -121,10 +125,10 @@ class Terrain : public Object3D {
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 
     bool preRender(SceneGraphNode& sgn,
-        const Camera& camera,
-        RenderStagePass renderStagePass,
-        bool refreshData,
-        bool& rebuildCommandsOut) override;
+                   const Camera& camera,
+                   RenderStagePass renderStagePass,
+                   bool refreshData,
+                   bool& rebuildCommandsOut) override;
 
     void postBuild();
 

@@ -4,10 +4,6 @@
 
 namespace Divide {
 
-void PushConstants::countHint(size_t count) {
-    _data.reserve(count);
-}
-
 void PushConstants::set(const GFX::PushConstant& constant) {
     for (GFX::PushConstant& iter : _data) {
         if (iter._bindingHash == constant._bindingHash) {

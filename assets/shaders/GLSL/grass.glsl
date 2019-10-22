@@ -27,9 +27,7 @@ void main()
     float scale = data.positionAndScale.w;
 
 #if defined(USE_CULL_DISTANCE)
-    if (LoD > 2.1f) {
-        gl_CullDistance[0] = -0.01f;
-    }
+    gl_CullDistance[0] = -0.01f * when_gt(LoD, 2.1f);
 #else
     scale -= scale * when_gt(LoD, 2.1f);
 #endif

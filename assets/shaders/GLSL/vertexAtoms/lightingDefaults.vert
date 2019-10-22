@@ -3,9 +3,7 @@
 
 #include "lightInput.cmn"
 
-void computeLightVectors() {
-    mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
-
+void computeLightVectors(in mat3 normalMatrixWV) {
     VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
 #if defined(COMPUTE_TBN)
     vec3 tangent = normalize(normalMatrixWV * dvd_Tangent);

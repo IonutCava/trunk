@@ -166,7 +166,7 @@ void Terrain::postBuild() {
 
     // Generate index buffer
     vectorEASTL<vec3<U32>>& triangles = getTriangles();
-    triangles.resize(terrainHeight * terrainWidth * 2u);
+    triangles.resize(to_size(terrainHeight) * terrainWidth * 2u);
 
     // ToDo: Use parallel_for for this
     I32 vectorIndex = 0;
@@ -479,6 +479,15 @@ vec2<U16> Terrain::getDimensions() const {
 
 vec2<F32> Terrain::getAltitudeRange() const {
     return _descriptor->altitudeRange();
+}
+
+void Terrain::getVegetationStats(U32& maxGrassInstances, U32& maxTreeInstances) const {
+    for (TerrainChunk* chunk : _terrainChunks) {
+        U32 grassInstanceCount = 0u, treeInstanceCount = 0u;
+        Attorney::TerrainChunkTerrain::getVegetation(*chunk)->getStats(grassInstanceCount, treeInstanceCount);
+        maxGrassInstances = std::max(maxGrassInstances, grassInstanceCount);
+        maxTreeInstances = std::max(maxTreeInstances, treeInstanceCount);
+    }
 }
 
 void Terrain::saveToXML(boost::property_tree::ptree& pt) const {

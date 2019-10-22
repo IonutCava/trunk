@@ -543,10 +543,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     if (threadedLoading) {
         Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, &context](const Task & parent) {
-            loadThreadedResources(terrain, context, std::move(terrainDescriptor));
+            loadThreadedResources(terrain, context, terrainDescriptor);
         }, ("TerrainLoader::loadTerrain [ " + name + " ]").c_str()));
     } else {
-        loadThreadedResources(terrain, context, std::move(terrainDescriptor));
+        loadThreadedResources(terrain, context, terrainDescriptor);
     }
 
     return true;
@@ -577,7 +577,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
     if (terrain->_physicsVerts.empty()) {
 
-        vector<char> data(terrainDimensions.width * terrainDimensions.height * (sizeof(U16) / sizeof(char)), NULL);
+        vector<char> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), NULL);
         readFile(terrainMapLocation + "/", terrainRawFile, data, FileType::BINARY);
 
         constexpr F32 ushortMax = std::numeric_limits<U16>::max() + 1.0f;
@@ -585,7 +585,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
         I32 terrainWidth = to_I32(terrainDimensions.x);
         I32 terrainHeight = to_I32(terrainDimensions.y);
 
-        terrain->_physicsVerts.resize(terrainWidth * terrainHeight);
+        terrain->_physicsVerts.resize(to_size(terrainWidth) * terrainHeight);
 
         // scale and translate all heights by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
         F32 altitudeRange = maxAltitude - minAltitude;
@@ -678,26 +678,27 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
         terrainCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache");
     }
 
-    initializeVegetation(terrain, context, terrainDescriptor);
+    // Do this first in case we have any threaded loads
+    VegetationDetails& vegDetails = initializeVegetationDetails(terrain, context, terrainDescriptor);
+    // Then compute quadtree and all additional terrain-related structures
     Attorney::TerrainLoader::postBuild(*terrain);
+    Vegetation::createAndUploadGPUData(context.gfx(), terrain, vegDetails);
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->resourceName().c_str());
     return terrain->load();
 }
 
-void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
-                                         PlatformContext& context,
-                                         const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
+VegetationDetails& TerrainLoader::initializeVegetationDetails(std::shared_ptr<Terrain> terrain,
+                                                              PlatformContext& context,
+                                                              const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
+    VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
 
     const U32 terrainWidth = terrainDescriptor->dimensions().width;
     const U32 terrainHeight = terrainDescriptor->dimensions().height;
     U32 chunkSize = to_U32(terrainDescriptor->tessellationSettings().x);
     U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
 
-    U32 maxGrassInstances = 0u, maxTreeInstances = 0u;
-    Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount, maxGrassInstances, maxTreeInstances);
-
-    VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
+    Vegetation::precomputeStaticData(terrain->getGeometryVB()->context(), chunkSize, maxChunkCount);
 
     for (I32 i = 1; i < 5; ++i) {
         stringImpl currentMesh = terrainDescriptor->getVariable(Util::StringFormat("treeMesh%d", i));
@@ -723,138 +724,33 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
         terrainDescriptor->getVariablef("treeScale2"),
         terrainDescriptor->getVariablef("treeScale3"),
         terrainDescriptor->getVariablef("treeScale4"));
-    
-    
-    U8 textureCount = 0;
-    stringImpl textureName;
+ 
     stringImpl currentImage = terrainDescriptor->getVariable("grassBillboard1");
     if (!currentImage.empty()) {
-        textureName += currentImage;
-        textureCount++;
+        vegDetails.billboardTextureArray += currentImage;
+        vegDetails.billboardCount++;
     }
 
     currentImage = terrainDescriptor->getVariable("grassBillboard2");
     if (!currentImage.empty()) {
-        textureName += "," + currentImage;
-        textureCount++;
+        vegDetails.billboardTextureArray += "," + currentImage;
+        vegDetails.billboardCount++;
     }
 
     currentImage = terrainDescriptor->getVariable("grassBillboard3");
     if (!currentImage.empty()) {
-        textureName += "," + currentImage;
-        textureCount++;
+        vegDetails.billboardTextureArray += "," + currentImage;
+        vegDetails.billboardCount++;
     }
 
     currentImage = terrainDescriptor->getVariable("grassBillboard4");
     if (!currentImage.empty()) {
-        textureName += "," + currentImage;
-        textureCount++;
+        vegDetails.billboardTextureArray += "," + currentImage;
+        vegDetails.billboardCount++;
     }
 
-    if (textureCount == 0){
-        return;
-    }
-
-    SamplerDescriptor grassSampler = {};
-    grassSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    grassSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    grassSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
-    grassSampler.anisotropyLevel(8);
-
-    TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    grassTexDescriptor.layerCount(textureCount);
-    grassTexDescriptor.samplerDescriptor(grassSampler);
-    grassTexDescriptor.srgb(true);
-    grassTexDescriptor.autoMipMaps(true);
-
-    ResourceDescriptor textureDetailMaps("Vegetation Billboards");
-    textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrainDescriptor->getVariable("vegetationTextureLocation"));
-    textureDetailMaps.assetName(textureName);
-    textureDetailMaps.propertyDescriptor(grassTexDescriptor);
-    
-    Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
-
-    vegDetails.billboardCount = textureCount;
     vegDetails.name = terrain->resourceName() + "_vegetation";
     vegDetails.parentTerrain = terrain;
-
-    ResourceDescriptor vegetationMaterial("grassMaterial");
-    Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
-    vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    vegMaterial->getColourData().baseColour(DefaultColours::WHITE);
-    vegMaterial->getColourData().specular(FColour3(0.1f, 0.1f, 0.1f));
-    vegMaterial->getColourData().shininess(5.0f);
-    vegMaterial->setDoubleSided(false);
-
-    Material::ApplyDefaultStateBlocks(*vegMaterial);
-
-    ShaderModuleDescriptor vertModule = {};
-    vertModule._batchSameFile = false;
-    vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "grass.glsl";
-
-    //vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
-    vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
-    vertModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
-
-    ShaderModuleDescriptor fragModule = {};
-    fragModule._moduleType = ShaderType::FRAGMENT;
-    fragModule._sourceFile = "grass.glsl";
-    fragModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-    fragModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", maxGrassInstances).c_str(), true));
-    fragModule._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
-    fragModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
-    if (!context.config().rendering.shadowMapping.enabled) {
-        fragModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
-    }
-    fragModule._variant = "Colour";
-
-    ShaderProgramDescriptor shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-
-    ResourceDescriptor grassColourShader("GrassColour");
-    grassColourShader.propertyDescriptor(shaderDescriptor);
-    grassColourShader.waitForReady(false);
-    ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader);
-
-    ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
-    shaderOitDescriptor._modules.back()._defines.push_back(std::make_pair("OIT_PASS", true));
-    shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
-
-    ResourceDescriptor grassColourOITShader("grassColourOIT");
-    grassColourOITShader.propertyDescriptor(shaderOitDescriptor);
-    grassColourOITShader.waitForReady(false);
-    ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader);
-
-    fragModule._variant = "PrePass";
-    shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-
-    ResourceDescriptor grassPrePassShader("grassPrePass");
-    grassPrePassShader.propertyDescriptor(shaderDescriptor);
-    grassPrePassShader.waitForReady(false);
-    ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader);
-
-    fragModule._variant = "Shadow";
-    shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-
-    ResourceDescriptor grassShadowShader("grassShadow");
-    grassShadowShader.propertyDescriptor(shaderDescriptor);
-    grassShadowShader.waitForReady(false);
-    ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
-
-    vegMaterial->setShaderProgram(grassColour);
-    vegMaterial->setShaderProgram(grassColourOIT, RenderPassType::OIT_PASS);
-    vegMaterial->setShaderProgram(grassPrePass, RenderPassType::PRE_PASS);
-    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW);
-
-    vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
-    vegDetails.vegetationMaterialPtr = vegMaterial;
-
 
     stringImpl terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
 
@@ -867,6 +763,8 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     ImageTools::ImageDataInterface::CreateImageData(terrainLocation + "/" + terrainDescriptor->getVariable("treeMap"),
                                                     0, 0, false,
                                                     *vegDetails.treeMap);
+
+    return vegDetails;
 }
 
 bool TerrainLoader::Save(const char* fileName) { return true; }

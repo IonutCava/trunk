@@ -46,6 +46,7 @@ class ShaderProgram;
 class SceneGraphNode;
 class SceneRenderState;
 struct FileData;
+struct VegetationDetails;
 
 FWD_DECLARE_MANAGED_CLASS(Vegetation);
 
@@ -76,9 +77,12 @@ class TerrainChunk {
 
     U8 LoD() const;
 
+
    protected:
     const Vegetation_ptr& getVegetation() const { return _vegetation; }
 
+    friend class Vegetation;
+    void initializeVegetation(const VegetationDetails& vegDetails);
    private:
     GFXDevice& _context;
     const QuadtreeNode& _quadtreeNode;

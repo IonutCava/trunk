@@ -59,13 +59,13 @@ FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 struct VegetationDetails {
     U16 billboardCount = 0;
     stringImpl name = "";
+    stringImpl billboardTextureArray = "";
     std::shared_ptr<ImageTools::ImageData> grassMap;
     std::shared_ptr<ImageTools::ImageData> treeMap;
     std::weak_ptr<Terrain> parentTerrain;
     vectorEASTL<stringImpl> treeMeshes;
     vec4<F32> grassScales, treeScales;
     std::array<vec3<F32>, 4> treeRotations;
-    Material_ptr vegetationMaterialPtr;
 };
 
 struct VegetationData {
@@ -90,11 +90,16 @@ class Vegetation : public SceneNode {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) final;
 
-    //ToDo: Multiple terrains will NOT support this! To fix! -Ionut
-    static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount, U32& maxGrassInstances, U32& maxTreeInstances);
+    void getStats(U32& maxGrassInstances, U32& maxTreeInstances) const;
 
+    //ToDo: Multiple terrains will NOT support this! To fix! -Ionut
+    static void destroyStaticData();
+    static void precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount);
+    static void createAndUploadGPUData(GFXDevice& gfxDevice, const Terrain_ptr& terrain, const VegetationDetails& vegDetails);
 
   protected:
+    static void createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_ptr& terrain, const VegetationDetails& vegDetails);
+
     void postLoad(SceneGraphNode& sgn)  final;
 
     void sceneUpdate(const U64 deltaTimeUS,
@@ -110,7 +115,7 @@ class Vegetation : public SceneNode {
     bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const final;
 
    private:
-    void uploadVegetationData();
+    void uploadVegetationData(SceneGraphNode& sgn);
     void computeVegetationTransforms(const Task& parentTask, bool treeData);
 
     const char* getResourceTypeName() const final { return "Vegetation"; }
@@ -120,7 +125,6 @@ class Vegetation : public SceneNode {
     TerrainChunk& _terrainChunk;
     // variables
     bool _render;  ///< Toggle vegetation rendering On/Off
-    bool _success;
     std::weak_ptr<Terrain> _terrain;
     U16 _billboardCount;  ///< Vegetation cumulated density
     F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f, _time = 0.0f;
@@ -133,8 +137,6 @@ class Vegetation : public SceneNode {
     vectorEASTL<stringImpl> _treeMeshNames;
     std::shared_ptr<ImageTools::ImageData> _grassMap;  ///< Dispersion map for grass placement
     std::shared_ptr<ImageTools::ImageData> _treeMap;  ///< Dispersion map for tree placement
-    ShaderProgram_ptr _cullShaderGrass;
-    ShaderProgram_ptr _cullShaderTrees;
 
     SceneGraphNode* _treeParentNode;
     PushConstants _cullPushConstants;
@@ -145,25 +147,31 @@ class Vegetation : public SceneNode {
     F32 _grassDistance;
     F32 _treeDistance;
 
+    Task* _buildTask = nullptr;
+
     Pipeline* _cullPipelineGrass;
     Pipeline* _cullPipelineTrees;
     vectorEASTL<VegetationData> _tempGrassData;
     vectorEASTL<VegetationData> _tempTreeData;
 
+    static U32 s_maxGrassInstances;
+    static U32 s_maxTreeInstances;
+    static ShaderProgram_ptr s_cullShaderGrass;
+    static ShaderProgram_ptr s_cullShaderTrees;
     static std::atomic_uint s_bufferUsage;
     static VertexBuffer* s_buffer;
     static ShaderBuffer* s_treeData;
     static ShaderBuffer* s_grassData;
     static vector<Mesh_ptr> s_treeMeshes;
+
     static std::unordered_set<vec2<F32>> s_treePositions;
     static std::unordered_set<vec2<F32>> s_grassPositions;
 
     static U32 s_maxChunks;
-    static U32 s_maxTreeInstancesPerChunk;
-    static U32 s_maxGrassInstancesPerChunk;
     static bool s_buffersBound;
 
     static Material_ptr s_treeMaterial;
+    static Material_ptr s_vegetationMaterial;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);

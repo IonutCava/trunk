@@ -163,6 +163,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline bool lodLocked() const { return _lodLocked; }
 
     void useUniqueMaterialInstance();
+    void setMaterialTpl(const Material_ptr& material);
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
@@ -184,7 +185,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void drawDebugAxis();
     void onRender(RenderStagePass renderStagePass, bool refreshData);
 
-    U8 getLoDLevel(const Camera& camera, RenderStage renderStage, const vec4<U16>& lodThresholds);
+    U8 getLoDLevel(const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
     inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
     inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }

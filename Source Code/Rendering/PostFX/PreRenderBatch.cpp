@@ -350,7 +350,7 @@ void PreRenderBatch::reshape(U16 width, U16 height) {
     _previousLuminance._rt->resize(1, 1);
 
     _toneMapConstants.set("luminanceMipLevel",
-                          GFX::PushConstantType::UINT,
+                          GFX::PushConstantType::INT,
                           _currentLuminance
                           ._rt
                           ->getAttachment(RTAttachmentType::Colour, 0)

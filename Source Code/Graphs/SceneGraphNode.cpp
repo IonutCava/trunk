@@ -511,49 +511,43 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
 bool SceneGraphNode::preCullNode(const NodeCullParams& params,
                                  F32& distanceToClosestPointSQ) const {
     // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
-    if (getFlag(UpdateFlag::LOADING)) {
-        return true;
-    }
+    if (!getFlag(UpdateFlag::LOADING)) {
+        // Use the bounding primitives to do camera/frustum checks
+        BoundsComponent* bComp = get<BoundsComponent>();
+        const BoundingSphere& sphere = bComp->getBoundingSphere();
 
-    // Use the bounding primitives to do camera/frustum checks
-    BoundsComponent* bComp = get<BoundsComponent>();
-    const BoundingSphere& sphere = bComp->getBoundingSphere();
+        // Get camera info
+        const vec3<F32>& eye = params._currentCamera->getEye();
 
-    // Get camera info
-    const vec3<F32>& eye = params._currentCamera->getEye();
+        // Check distance to sphere edge (center - radius)
+        F32 radius = sphere.getRadius();
+        const vec3<F32>& center = sphere.getCenter();
+        distanceToClosestPointSQ = center.distanceSquared(eye) - SQUARED(radius);
+        if (distanceToClosestPointSQ < params._cullMaxDistanceSq || !getNode().isInView()) {
+            if (params._minExtents.lengthSquared() > 0.0f) {
+                const BoundingBox& boundingBox = bComp->getBoundingBox();
+                vec3<F32> diff(boundingBox.getExtent() - params._minExtents);
+                if (diff.x < 0.0f || diff.y < 0.0f || diff.z < 0.0f) {
+                    return true;
+                }
+            }
 
-    // Check distance to sphere edge (center - radius)
-    F32 radius = sphere.getRadius();
-    const vec3<F32>& center = sphere.getCenter();
-    distanceToClosestPointSQ = center.distanceSquared(eye) - SQUARED(radius);
-    if (distanceToClosestPointSQ > params._cullMaxDistanceSq || !getNode().isInView()) {
-        return true;
-    }
+            RenderingComponent* rComp = get<RenderingComponent>();
+            const vec2<F32>& renderRange = rComp->renderRange();
+            if (IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
+                if (params._minLoD > -1 && rComp != nullptr) {
+                    U8 lodLevel = rComp->getLoDLevel(eye, params._stage, params._lodThresholds);
+                    if (lodLevel > params._minLoD) {
+                        return true;
+                    }
+                }
 
-    if (params._minExtents.lengthSquared() > 0.0f) {
-        const BoundingBox& boundingBox = bComp->getBoundingBox();
-        vec3<F32> diff(boundingBox.getExtent() - params._minExtents);
-        if (diff.x < 0.0f || diff.y < 0.0f || diff.z < 0.0f) {
-            return true;
-        }
-    }
-
-    RenderingComponent* rComp = get<RenderingComponent>();
-    const vec2<F32>& renderRange = rComp->renderRange();
-    if (!IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
-        return true;
-    }
-
-    if (params._minLoD > -1) {
-        if (rComp != nullptr) {
-            U8 lodLevel = rComp->getLoDLevel(*params._currentCamera, params._stage, params._lodThresholds);
-            if (lodLevel > params._minLoD) {
-                return true;
+                return false;
             }
         }
     }
 
-    return false;
+    return true;
 }
 
 bool SceneGraphNode::cullNode(const NodeCullParams& params,
