@@ -178,7 +178,7 @@ bool MainScene::load(const stringImpl& name) {
                                          to_base(ComponentType::BOUNDS) |
                                          to_base(ComponentType::RENDERING) |
                                          to_base(ComponentType::NETWORKING);
-    SceneGraphNode* waterGraphNode = _sceneGraph->getRoot().addNode(waterNodeDescriptor);
+    SceneGraphNode* waterGraphNode = _sceneGraph->getRoot().addChildNode(waterNodeDescriptor);
     
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<TransformComponent>()->setPositionY(state().globalWaterBodies()[0]._heightOffset);

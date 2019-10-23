@@ -52,7 +52,7 @@ void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
     _boundingBoxDirty.store(true);
 
     if (recursive) {
-        SceneGraphNode* parent = _parentSGN.getParent();
+        SceneGraphNode* parent = _parentSGN.parent();
         if (parent != nullptr) {
             BoundsComponent* bounds = parent->get<BoundsComponent>();
             // We stop if the parent sgn doesn't have a bounds component.
@@ -81,7 +81,7 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     bool expected = true;
     if (_boundingBoxDirty.compare_exchange_strong(expected, false)) {
         BoundingBox tempBB(_refBoundingBox);
-        _parentSGN.forEachChild([&tempBB](const SceneGraphNode* child) {
+        _parentSGN.forEachChild([&tempBB](const SceneGraphNode* child, I32 /*childIdx*/) {
             tempBB.add(child->get<BoundsComponent>()->updateAndGetBoundingBox());
         });
 

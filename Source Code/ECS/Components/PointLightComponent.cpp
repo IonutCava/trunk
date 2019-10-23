@@ -9,7 +9,7 @@
 namespace Divide {
 
 PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& context)
-     : Light(sgn, 20.0f, LightType::POINT, sgn.parentGraph().parentScene().lightPool()),
+     : Light(sgn, 20.0f, LightType::POINT, sgn.sceneGraph().parentScene().lightPool()),
        BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>(sgn, context)
 {
     // +x

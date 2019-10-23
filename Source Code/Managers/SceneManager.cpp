@@ -408,7 +408,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         {
             U8 objectType = node->getNode<Object3D>().getObjectType()._value;
             while (objectType == ObjectType::SUBMESH) {
-                node = node->getParent();
+                node = node->parent();
                 if (node) {
                     objectType = node->getNode<Object3D>().getObjectType()._value;
                 } else {

@@ -84,7 +84,7 @@ class SceneGraph : private NonCopyable,
             return _root;
         }
 
-        return _root->findChild(guid, true);
+        return _root->findChild(guid, false, true);
     }
 
     inline Octree& getOctree() {
@@ -100,7 +100,8 @@ class SceneGraph : private NonCopyable,
     void onStartUpdateLoop(const U8 loopNumber);
     void idle();
 
-    void intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const;
+    // Return true if intersections is not empty. Just shorthand ...
+    bool intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const;
 
     SceneGraphNode* createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
 

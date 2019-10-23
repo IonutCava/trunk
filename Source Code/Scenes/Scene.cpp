@@ -432,7 +432,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
                 }
             }
 
-            crtNode = parent->addNode(nodeDescriptor);
+            crtNode = parent->addChildNode(nodeDescriptor);
             crtNode->loadFromXML(nodeTree);
         }
     }
@@ -472,7 +472,7 @@ SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
                                             to_base(ComponentType::NETWORKING) |
                                             to_base(ComponentType::SELECTION);
 
-    return parentNode.addNode(particleNodeDescriptor);
+    return parentNode.addChildNode(particleNodeDescriptor);
 }
 
 void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& name) {
@@ -498,7 +498,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
 
         terrainNodeDescriptor._node->loadFromXML(pt);
 
-        SceneGraphNode* terrainTemp = parentNode.addNode(terrainNodeDescriptor);
+        SceneGraphNode* terrainTemp = parentNode.addChildNode(terrainNodeDescriptor);
 
 
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
@@ -531,7 +531,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
                                              to_base(ComponentType::BOUNDS) |
                                              to_base(ComponentType::NETWORKING) |
                                              to_base(ComponentType::SPOT_LIGHT);
-        flashLight = _sceneGraph->getRoot().addNode(lightNodeDescriptor);
+        flashLight = _sceneGraph->getRoot().addChildNode(lightNodeDescriptor);
         SpotLightComponent* spotLight = flashLight->get<SpotLightComponent>();
         spotLight->castsShadows(true);
         spotLight->setDiffuseColour(DefaultColours::WHITE.rgb());
@@ -570,8 +570,8 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
                                        to_base(ComponentType::RENDERING) |
                                        to_base(ComponentType::NETWORKING);
 
-    SceneGraphNode* skyNode = parentNode.addNode(skyNodeDescriptor);
-    skyNode->lockVisibility(true);
+    SceneGraphNode* skyNode = parentNode.addChildNode(skyNodeDescriptor);
+    skyNode->setFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED);
     skyNode->loadFromXML(pt);
 
     return skyNode;
@@ -592,7 +592,7 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
 
         waterNodeDescriptor._node->loadFromXML(pt);
 
-        SceneGraphNode* waterNode = parentNode.addNode(waterNodeDescriptor);
+        SceneGraphNode* waterNode = parentNode.addChildNode(waterNodeDescriptor);
 
 
         NavigationComponent* nComp = waterNode->get<NavigationComponent>();
@@ -635,7 +635,7 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
                                          to_base(ComponentType::BOUNDS) |
                                          to_base(ComponentType::RENDERING);
 
-    auto ret = parentNode.addNode(planeNodeDescriptor);
+    SceneGraphNode* ret = parentNode.addChildNode(planeNodeDescriptor);
     ret->loadFromXML(pt);
     return ret;
 }
@@ -1126,7 +1126,7 @@ void Scene::addPlayerInternal(bool queue) {
                                               to_base(ComponentType::BOUNDS) |
                                               to_base(ComponentType::NETWORKING);
 
-        playerSGN = root.addNode(playerNodeDescriptor);
+        playerSGN = root.addChildNode(playerNodeDescriptor);
     }
 
     Attorney::SceneManagerScene::addPlayer(_parent, *this, playerSGN, queue);
@@ -1154,11 +1154,11 @@ void Scene::onPlayerRemove(const Player_ptr& player) {
     if (_flashLight.size() > idx) {
         SceneGraphNode* flashLight = _flashLight[idx];
         if (flashLight) {
-            _sceneGraph->getRoot().removeNode(*flashLight);
+            _sceneGraph->getRoot().removeChildNode(*flashLight);
             _flashLight[idx] = nullptr;
         }
     }
-    _sceneGraph->getRoot().removeNode(*player->getBoundNode());
+    _sceneGraph->getRoot().removeChildNode(*player->getBoundNode());
 
     _scenePlayers.erase(std::cbegin(_scenePlayers) + getSceneIndexForPlayer(idx));
 }
@@ -1396,8 +1396,8 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
 
     if (_currentHoverTarget[idx] != -1) {
         SceneGraphNode* target = _sceneGraph->findNode(_currentHoverTarget[idx]);
-        if (target != nullptr && target->getSelectionFlag() == SceneGraphNode::SelectionFlag::HOVER) {
-            target->setSelectionFlag(SceneGraphNode::SelectionFlag::NONE);
+        if (target != nullptr) {
+            target->clearFlag(SceneGraphNode::Flags::HOVERED);
         }
     }
 
@@ -1426,8 +1426,8 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
         }
 
         _currentHoverTarget[idx] = target->getGUID();
-        if (target->getSelectionFlag() == SceneGraphNode::SelectionFlag::NONE) {
-            target->setSelectionFlag(SceneGraphNode::SelectionFlag::HOVER);
+        if (!target->hasFlag(SceneGraphNode::Flags::SELECTED)) {
+            target->setFlag(SceneGraphNode::Flags::HOVERED);
         }
     }
 }
@@ -1452,7 +1452,8 @@ void Scene::resetSelection(PlayerIndex idx) {
     for (I64 selectionGUID : _currentSelection[idx]) {
         SceneGraphNode* node = sceneGraph().findNode(selectionGUID);
         if (node != nullptr) {
-            node->setSelectionFlag(SceneGraphNode::SelectionFlag::NONE);
+            node->clearFlag(SceneGraphNode::Flags::HOVERED);
+            node->clearFlag(SceneGraphNode::Flags::SELECTED);
         }
     }
 
@@ -1466,7 +1467,7 @@ void Scene::resetSelection(PlayerIndex idx) {
 void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
     for (SceneGraphNode* sgn : sgns) {
         _currentSelection[idx].push_back(sgn->getGUID());
-        sgn->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTED);
+        sgn->setFlag(SceneGraphNode::Flags::SELECTED);
     }
     for (auto& cbk : _selectionChangeCallbacks) {
         cbk(idx, sgns);

@@ -147,9 +147,13 @@ namespace Divide {
             for (I64 nodeGUID : crtSelections) {
                 SceneGraphNode* sgnNode = node(nodeGUID);
                 if (sgnNode != nullptr) {
-                    bool enabled = sgnNode->isActive();
+                    bool enabled = sgnNode->hasFlag(SceneGraphNode::Flags::ACTIVE);
                     if (ImGui::Checkbox(sgnNode->name().c_str(), &enabled)) {
-                        sgnNode->setActive(enabled);
+                        if (enabled) {
+                            sgnNode->setFlag(SceneGraphNode::Flags::ACTIVE);
+                        } else {
+                            sgnNode->clearFlag(SceneGraphNode::Flags::ACTIVE);
+                        }
                     }
                     ImGui::Separator();
 

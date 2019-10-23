@@ -273,7 +273,7 @@ void Object3D::playAnimations(const SceneGraphNode& sgn, const bool state) {
         if (animComp != nullptr) {
             animComp->playAnimations(state);
         }
-        sgn.forEachChild([state](const SceneGraphNode* child) {
+        sgn.forEachChild([state](const SceneGraphNode* child, I32 /*childIdx*/) {
             AnimationComponent* animComp = child->get<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
             if (animComp != nullptr) {

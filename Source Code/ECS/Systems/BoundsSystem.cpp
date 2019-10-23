@@ -17,7 +17,7 @@ namespace Divide {
 
     // Recures all the way up to the root
     void BoundsSystem::onBoundsChanged(SceneGraphNode& sgn) const {
-        SceneGraphNode* parent = sgn.getParent();
+        SceneGraphNode* parent = sgn.parent();
         if (parent != nullptr) {
             Attorney::SceneNodeBoundsComponent::setBoundsChanged(parent->getNode());
             onBoundsChanged(*parent);

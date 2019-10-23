@@ -192,7 +192,7 @@ bool WarSceneAIProcessor::DIE() {
 
     currentTeam->removeTeamMember(_entity);
 
-    _entity->getUnitRef()->getBoundNode()->setActive(false);
+    _entity->getUnitRef()->getBoundNode()->clearFlag(SceneGraphNode::Flags::ACTIVE);
     
     return true;
 }

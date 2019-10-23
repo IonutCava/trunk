@@ -448,7 +448,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 next:
     ;
 
-    return !sgn->forEachChildInterruptible([&outData](SceneGraphNode* child) {
+    return !sgn->forEachChildInterruptible([&outData](SceneGraphNode* child, I32 /*childIdx*/) {
                 if (!parse(child->get<BoundsComponent>()->getBoundingBox(), outData, child)) {
                     return false;
                 }

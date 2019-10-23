@@ -82,7 +82,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
             subMeshDescriptor._componentMask |= to_base(ComponentType::RIGID_BODY);
         }
         subMeshDescriptor._name = Util::StringFormat("%s_%d", sgn.name().c_str(), submesh->getID());
-        SceneGraphNode* subSGN = sgn.addNode(subMeshDescriptor);
+        SceneGraphNode* subSGN = sgn.addChildNode(subMeshDescriptor);
 
         if (BitCompare(subMeshDescriptor._componentMask, ComponentType::RIGID_BODY)) {
             subSGN->get<RigidBodyComponent>()->physicsGroup(sgn.get<RigidBodyComponent>()->physicsGroup());

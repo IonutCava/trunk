@@ -522,8 +522,8 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
         nodeDescriptor._instanceCount = _instanceCountTrees;
         nodeDescriptor._node = crtMesh;
         nodeDescriptor._name = Util::StringFormat("Trees_chunk_%d", ID);
-        _treeParentNode = sgn.addNode(nodeDescriptor);
-        _treeParentNode->lockVisibility(true);
+        _treeParentNode = sgn.addChildNode(nodeDescriptor);
+        _treeParentNode->setFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED);
 
         TransformComponent* tComp = _treeParentNode->get<TransformComponent>();
         const vec4<F32>& offset = _terrainChunk.getOffsetAndSize();
@@ -531,7 +531,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
         tComp->setPositionZ(offset.y + offset.w * 0.5f);
         tComp->setScale(_treeScales[meshID]);
 
-        _treeParentNode->forEachChild([ID](SceneGraphNode* child) {
+        _treeParentNode->forEachChild([ID](SceneGraphNode* child, I32 /*childIdx*/) {
             RenderingComponent* rComp = child->get<RenderingComponent>();
             // negative value to disable occlusion culling
             rComp->cullFlagValue(ID * -1.0f);

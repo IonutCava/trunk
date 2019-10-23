@@ -309,7 +309,7 @@ bool PingPongScene::load(const stringImpl& name) {
         to_base(ComponentType::RIGID_BODY) |
         to_base(ComponentType::NAVIGATION) |
         to_base(ComponentType::NETWORKING);
-    _ballSGN = _sceneGraph->getRoot().addNode(ballNodeDescriptor);
+    _ballSGN = _sceneGraph->getRoot().addChildNode(ballNodeDescriptor);
     _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
     _ballSGN->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_KINEMATIC);
     // Add some taunts

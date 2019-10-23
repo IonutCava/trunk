@@ -9,7 +9,7 @@
 namespace Divide {
 
 SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, PlatformContext& context)
-     : Light(sgn, 30.0f, LightType::SPOT, sgn.parentGraph().parentScene().lightPool()),
+     : Light(sgn, 30.0f, LightType::SPOT, sgn.sceneGraph().parentScene().lightPool()),
        BaseComponentType<SpotLightComponent, ComponentType::SPOT_LIGHT>(sgn, context)
 {
     setRange(2.0f);

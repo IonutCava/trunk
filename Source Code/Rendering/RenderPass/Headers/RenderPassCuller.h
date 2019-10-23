@@ -64,8 +64,8 @@ struct VisibleNode {
     SceneGraphNode* _node = nullptr;
 };
 
-using VisibleNodeList = vectorEASTL<VisibleNode>;
-using NodeListContainer = vectorEASTL<VisibleNodeList>;
+using VisibleNodeList = vectorEASTLFast<VisibleNode>;
+using NodeListContainer = vectorEASTLFast<VisibleNodeList>;
 
 class RenderPassCuller {
     public:

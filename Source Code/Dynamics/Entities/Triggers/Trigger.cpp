@@ -40,13 +40,13 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                                                        to_base(ComponentType::NETWORKING);
             triggerImpostorDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
 
-            sgn.addNode(triggerImpostorDescriptor);
+            sgn.addChildNode(triggerImpostorDescriptor);
         }
         /// update dummy position if it is so
         sgn.getChild(0).get<TransformComponent>()->setPosition(_triggerPosition);
         _triggerImpostor->setRadius(_radius);
         _triggerImpostor->renderState().setDrawState(true);
-        sgn.getChild(0).setActive(true);
+        sgn.getChild(0).setFlag(SceneGraphNode::Flags::ACTIVE);
     } else {
         if (_triggerImpostor) {
             _triggerImpostor->renderState().setDrawState(false);

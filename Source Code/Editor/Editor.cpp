@@ -1445,7 +1445,7 @@ bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const s
     nodeDescriptor._node = mesh;
 
     Scene& activeScene = _context.kernel().sceneManager().getActiveScene();
-    const SceneGraphNode* node = activeScene.sceneGraph().getRoot().addNode(nodeDescriptor);
+    const SceneGraphNode* node = activeScene.sceneGraph().getRoot().addChildNode(nodeDescriptor);
     if (node != nullptr) {
         const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
 

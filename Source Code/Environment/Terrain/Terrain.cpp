@@ -87,7 +87,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     vegetationParentNode._name = "Vegetation";
     vegetationParentNode._usageContext = NodeUsageContext::NODE_STATIC;
     vegetationParentNode._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
-    SceneGraphNode* vegParent = sgn.addNode(vegetationParentNode);
+    SceneGraphNode* vegParent = sgn.addChildNode(vegetationParentNode);
     assert(vegParent != nullptr);
 
     SceneGraphNodeDescriptor vegetationNodeDescriptor;
@@ -100,7 +100,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     for (TerrainChunk* chunk : _terrainChunks) {
         vegetationNodeDescriptor._node = Attorney::TerrainChunkTerrain::getVegetation(*chunk);
         vegetationNodeDescriptor._name = Util::StringFormat("Vegetation_chunk_%d", chunk->ID());
-        vegParent->addNode(vegetationNodeDescriptor);
+        vegParent->addChildNode(vegetationNodeDescriptor);
     }
 
     static_assert(MAX_RENDER_NODES * sizeof(TessellatedNodeData) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");

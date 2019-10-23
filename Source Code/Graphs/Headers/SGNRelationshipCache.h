@@ -40,7 +40,7 @@ namespace Divide {
 class SceneGraphNode;
 class SGNRelationshipCache {
 public:
-    enum class RelationShipType : U8 {
+    enum class RelationshipType : U8 {
         GRANDPARENT = 0, //<applies for all levels above 0
         PARENT,
         CHILD,
@@ -55,7 +55,7 @@ public:
     bool rebuild();
 
     // this will issue a rebuild if the cache is invalid
-    RelationShipType clasifyNode(I64 GUID) const;
+    RelationshipType clasifyNode(I64 GUID) const;
 protected:
     void updateChildren(U8 level, vector<std::pair<I64, U8>>& cache) const;
     void updateParents(U8 level, vector<std::pair<I64, U8>>& cache) const;

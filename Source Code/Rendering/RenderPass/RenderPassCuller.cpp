@@ -19,18 +19,17 @@ namespace {
     static const U32 g_nodesPerCullingPartition = 16u;
     //Worst case scenario: one per each node
     std::array<NodeListContainer, Config::MAX_VISIBLE_NODES> g_tempContainers = {};
-    std::array<bool, Config::MAX_VISIBLE_NODES> g_freeList;
-    bool g_freeListInitialized = false;
+    std::array<std::atomic_bool, Config::MAX_VISIBLE_NODES> g_freeList;
+    std::atomic_bool g_freeListInitialized = false;
     std::mutex g_tempContainersLock;
 
     // This would be messy to return as a pair (std::reference_wrapper and the like)
     NodeListContainer& GetAvailableContainer(U32& idxOut) {
         idxOut = 0;
-        UniqueLock w_lock(g_tempContainersLock);
-        if (g_freeListInitialized) {
+        if (g_freeListInitialized.load()) {
             while(true) {
-                if (g_freeList[idxOut]) {
-                    g_freeList[idxOut] = false;
+                bool expected = true;
+                if (g_freeList[idxOut].compare_exchange_strong(expected, false)) {
                     return g_tempContainers[idxOut];
                 }
                 (++idxOut) %= Config::MAX_VISIBLE_NODES;
@@ -39,18 +38,25 @@ namespace {
                 }
             }
         } else {
-            g_freeList.fill(true);
-            g_freeListInitialized = true;
-            g_freeList[0] = false;
+            UniqueLock w_lock(g_tempContainersLock);
+            // Check again after lock
+            if (!g_freeListInitialized.load()) {
+                for (auto& x : g_freeList) {
+                    std::atomic_init(&x, true);
+                }
+                g_freeListInitialized = true;
+                g_freeList[0] = false;
+                g_freeListInitialized.store(true);
+            }
             return g_tempContainers[idxOut];
         }
     };
 
     void FreeContainer(NodeListContainer& container, const U32 idx) {
-        UniqueLock w_lock(g_tempContainersLock);
-        assert(!g_freeList[idx]);
-        g_tempContainers[idx].resize(0); //< keep memory allocated
-        g_freeList[idx] = true;
+        assert(!g_freeList[idx].load());
+        // Don't use clear(). Keep memory allocated
+        g_tempContainers[idx].resize(0); 
+        g_freeList[idx].store(true);
     }
 
     // Return true if the node type is capable of generating draw commands
@@ -135,7 +141,9 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         parallel_for(*params._context,
                      [this, &rootChildren, &nodeParams, &tempContainer](const Task& parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
-                            frustumCullNode(parentTask, *rootChildren[i], nodeParams, tempContainer[i]);
+                            auto& temp = tempContainer[i];
+                            temp.resize(0);
+                            frustumCullNode(parentTask, *rootChildren[i], nodeParams, temp);
                         }
                      },
                      to_U32(rootChildren.size()),
@@ -157,7 +165,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 /// This method performs the visibility check on the given node and all of its children and adds them to the RenderQueue
 void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
     // Early out for inactive nodes
-    if (!currentNode.isActive()) {
+    if (!currentNode.hasFlag(SceneGraphNode::Flags::ACTIVE)) {
         return;
     }
 
@@ -176,7 +184,7 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
     F32 distanceSqToCamera = 0.0f;
 
     // Internal node cull (check against camera frustum and all that ...)
-    bool isVisible = isTransformNode || !currentNode.cullNode(params, collisionResult, distanceSqToCamera);
+    bool isVisible = isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera);
 
     if (isVisible && !StopRequested(task)) {
         if (!isTransformNode) {
@@ -191,7 +199,6 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
             U32 containerIdx = 0;
             NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
             tempContainer.resize(children.size());
-
             parallel_for(*task._parentPool,
                          [this, &children, &params, &tempContainer](const Task & parentTask, U32 start, U32 end) {
                              for (U32 i = start; i < end; ++i) {
@@ -220,12 +227,14 @@ void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, const NodeCul
 
     vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
     for (SceneGraphNode* child : children) {
-        if (child->isActive() && (params._stage != RenderStage::SHADOW || castsShadows || child->visibilityLocked())) {
+        if (child->hasFlag(SceneGraphNode::Flags::ACTIVE) &&
+            (params._stage != RenderStage::SHADOW || castsShadows || child->hasFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED)))
+        {
             bool isTransformNode = false;
             bool shouldCull = shouldCullNode(params._stage, *child, isTransformNode) && !isTransformNode;
             if (!shouldCull) {
                 F32 distanceSqToCamera = std::numeric_limits<F32>::max();
-                if (!child->preCullNode(params, distanceSqToCamera)) {
+                if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(*child, params, distanceSqToCamera)) {
                     nodes.emplace_back(VisibleNode{ distanceSqToCamera, child });
                     addAllChildren(*child, params, nodes);
                 }
@@ -242,7 +251,7 @@ VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, cons
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
     for (SceneGraphNode* node : nodes) {
         // Internal node cull (check against camera frustum and all that ...)
-        if (!node->cullNode(params, collisionResult, distanceSqToCamera)) {
+        if (!Attorney::SceneGraphNodeRenderPassCuller::cullNode(*node, params, collisionResult, distanceSqToCamera)) {
             ret.emplace_back(VisibleNode{ distanceSqToCamera, node });
         }
     }

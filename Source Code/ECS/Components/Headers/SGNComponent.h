@@ -81,7 +81,7 @@ public:
 
         static bool registerComponentType() {
             Factory::data()[C] = [](SceneGraphNode& node, Args... args) -> void {
-                 AddSGNComponent<T>(node, std::forward<Args>(args)...);
+                node.AddSGNComponent<T>(std::forward<Args>(args)...);
             };
             return true;
         }

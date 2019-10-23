@@ -35,7 +35,6 @@
 
 #include "SceneNode.h"
 #include "SGNRelationshipCache.h"
-#include "Utility/Headers/StateTracker.h"
 
 #include "ECS/Components/Headers/EditorComponent.h"
 #include "ECS/Components/Headers/SGNComponent.h"
@@ -46,10 +45,11 @@ class SceneGraph;
 class SceneState;
 class PropertyWindow;
 class BoundsComponent;
+class RenderPassCuller;
+class RenderingComponent;
 class TransformComponent;
 
 struct NodeCullParams;
-struct TransformDirty;
 
 struct SceneGraphNodeDescriptor {
     SceneNode_ptr    _node = nullptr;
@@ -63,344 +63,253 @@ struct SceneGraphNodeDescriptor {
 namespace Attorney {
     class SceneGraphNodeEditor;
     class SceneGraphNodeComponent;
+    class SceneGraphNodeSceneGraph;
+    class SceneGraphNodeRenderPassCuller;
+    class SceneGraphNodeRelationshipCache;
 };
 
-typedef std::tuple<I64, F32/*min*/, F32/*max*/> SGNRayResult;
+using SGNRayResult = std::tuple<I64, F32/*min*/, F32/*max*/>;
 
-class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
-                       protected ECS::Event::IEventListener,
-                       public GUIDWrapper,
-                       public PlatformContextComponent
+class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
+                             private ECS::Event::IEventListener,
+                             public GUIDWrapper,
+                             public PlatformContextComponent
 {
-    static const size_t INITIAL_CHILD_COUNT = 128;
-
     friend class Attorney::SceneGraphNodeEditor;
     friend class Attorney::SceneGraphNodeComponent;
-   public:
+    friend class Attorney::SceneGraphNodeSceneGraph;
+    friend class Attorney::SceneGraphNodeRenderPassCuller;
+    friend class Attorney::SceneGraphNodeRelationshipCache;
 
-    enum class SelectionFlag : U8 {
-        NONE = 0,
-        HOVER,
-        SELECTED,
-        COUNT
-    };
+    public:
 
-    enum class UpdateFlag : U8 {
-        SPATIAL_PARTITION_UPDATE_QUEUED = toBit(1),
-        LOADING = toBit(2),
-        COUNT = 2
-    };
+        enum class Flags : U16 {
+            SPATIAL_PARTITION_UPDATE_QUEUED = toBit(1),
+            LOADING = toBit(2),
+            HOVERED = toBit(3),
+            SELECTED = toBit(4),
+            ACTIVE = toBit(5),
+            VISIBILITY_LOCKED = toBit(6),
+            BOUNDING_BOX_RENDERED = toBit(7),
+            SKELETON_RENDERED = toBit(8),
+            COUNT = 8
+        };
 
-    /// Called from SceneGraph "sceneUpdate"
-    void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
-    void frameStarted();
-    void frameEnded();
-    /*Node Management*/
-    /// Always use the level of redirection needed to reduce virtual function overhead
-    /// Use getNode<SceneNode> if you need material properties for ex. or getNode<SubMesh> for animation transforms
-    template <typename T = SceneNode>
-    inline T& getNode() {
-        static_assert(std::is_base_of<SceneNode, T>::value, "SceneGraphNode::getNode error: Invalid target node type!");
-        return static_cast<T&>(*_node);
-    }
+    public:
+        /// Avoid creating SGNs directly. Use the "addChildNode" on an existing node (even root) or "addNode" on the existing SceneGraph
+        explicit SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
+        ~SceneGraphNode();
 
-    template <typename T = SceneNode>
-    inline const T& getNode() const {
-        static_assert(std::is_base_of<SceneNode, T>::value, "SceneGraphNode::getNode error: Invalid target node type!");
-        return static_cast<const T&>(*_node);
-    }
+        /// Return a reference to the parent graph. Operator= should be disabled
+        inline SceneGraph& sceneGraph() { return _sceneGraph; }
 
-    template<class E, class... ARGS>
-    void SendEvent(ARGS&&... eventArgs) {
-        GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...);
-    }
+        /// Add child node increments the node's ref counter if the node was already added to the scene graph
+        SceneGraphNode* addChildNode(const SceneGraphNodeDescriptor& descriptor);
 
-    template<class E, class... ARGS>
-    void SendAndDispatchEvent(ARGS&&... eventArgs) {
-        GetECSEngine().SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...);
-    }
-    /// Add node increments the node's ref counter if the node was already added
-    /// to the scene graph
-    SceneGraphNode* addNode(const SceneGraphNodeDescriptor& descriptor);
-    SceneGraphNode* registerNode(SceneGraphNode* node);
+        /// If this function returns true, the node will no longer be part of the scene hierarchy.
+        /// If the node is not a child of the calling node, we will recursively look in all of its children for a match
+        bool removeChildNode(const SceneGraphNode& node, bool recursive = true);
 
-    /// If this function returns true, the node will no longer be part of the scene hierarchy.
-    /// If the node is not a child of the calling node, we will recursively look in all of its children for a match
-    bool removeNode(const SceneGraphNode& node);
-    /// If this function returns true, at least one node of the specified type was removed.
-    bool removeNodesByType(SceneNodeType nodeType);
+        /// Find a child Node using the given name (either SGN name or SceneNode name)
+        SceneGraphNode* findChild(const stringImpl& name, bool sceneNodeName = false, bool recursive = false) const;
 
-    /// Find a child Node using the given name (either SGN name or SceneNode name)
-    SceneGraphNode* findChild(const stringImpl& name, bool sceneNodeName = false, bool recursive = false) const;
-    /// Find a child using the give GUID
-    SceneGraphNode* findChild(I64 GUID, bool recursive = false) const;
+        /// Find a child using the given SGNN or SceneNode GUID
+        SceneGraphNode* findChild(I64 GUID, bool sceneNodeGuid = false, bool recursive = false) const;
 
-    /// Find the graph nodes whom's bounding boxes intersects the given ray
-    void intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const;
+        /// If this function returns true, at least one node of the specified type was removed.
+        bool removeNodesByType(SceneNodeType nodeType);
 
-    /// Selection helper functions
-    void setSelectionFlag(SelectionFlag flag);
-    inline SelectionFlag getSelectionFlag() const { return _selectionFlag; }
+        /// Changing a node's parent means removing this node from the current parent's child list and appending it to the new parent's list
+        void setParent(SceneGraphNode& parent);
 
-    void lockVisibility(const bool state);
-    inline bool visibilityLocked() const { return _visibilityLocked; }
+        /// Checks if we have a parent matching the typeMask. We check recursively until we hit the top node (if ignoreRoot is false, top node is Root)
+        bool isChildOfType(U16 typeMask, bool ignoreRoot) const;
 
-    const stringImpl& name() const { return _name; }
-    /*Node Management*/
+        /// Returns true if the current node is related somehow to the specified target node (see RelationshipType enum for more details)
+        bool isRelated(const SceneGraphNode& target) const;
 
-    /*Parent <-> Children*/
-    inline SceneGraphNode* getParent() const {
-        return _parent;
-    }
+        /// Returns true if the specified target node is a parent or grandparent(if recursive == true) of the current node
+        bool isChild(const SceneGraphNode& target, bool recursive) const;
 
-    void setParent(SceneGraphNode& parent);
+        /// Recursively call the delegate function on all children. Use start and end to only affect a range (useful for parallel algorithms)
+        void forEachChild(DELEGATE_CBK<void, SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u);
 
-    /*Node State*/
-    void setActive(const bool state);
-    inline bool isActive() const { return _active; }
+        /// Recursively call the delegate function on all children. Use start and end to only affect a range (useful for parallel algorithms)
+        void forEachChild(DELEGATE_CBK<void, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
 
-    inline const NodeUsageContext& usageContext() const { return _usageContext; }
-    void usageContext(const NodeUsageContext& newContext);
+        /// Recursively call the delegate function on all children. Returns false if the loop was interrupted. Use start and end to only affect a range (useful for parallel algorithms)
+        bool forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u);
 
-    inline U64 getElapsedTimeUS() const { return _elapsedTimeUS; }
-    inline U64 getLastDeltaTimeUS() const { return _lastDeltaTimeUS; }
-    
-    template <typename T>
-    inline T* get() const {
-        // ToDo: Optimise this -Ionut
-        return _compManager->GetComponent<T>(GetEntityID());
-    }
+        /// Recursively call the delegate function on all children. Returns false if the loop was interrupted. Use start and end to only affect a range (useful for parallel algorithms)
+        bool forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
 
-    inline void lockToCamera(U64 cameraNameHash) { _lockToCamera = cameraNameHash; }
+        /// A "locked" call assumes that either access is guaranteed thread-safe or that the child lock is already aquired
+        inline const vectorEASTL<SceneGraphNode*>& getChildrenLocked() const { return _children; }
 
-    inline U32 componentMask() const { return _componentMask; }
+        /// A "locked" call assumes that either access is guaranteed thread-safe or that the child lock is already aquired
+        inline U32 getChildCountLocked() const { return to_U32(_children.size()); }
 
-    inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
-
-    bool isChildOfType(U16 typeMask, bool ignoreRoot) const;
-    bool isRelated(const SceneGraphNode& target) const;
-    bool isChild(const SceneGraphNode& target, bool recursive) const;
-
-    void forEachChild(DELEGATE_CBK<void, SceneGraphNode*>&& callback);
-    void forEachChild(DELEGATE_CBK<void, const SceneGraphNode*>&& callback) const;
-
-    //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*>&& callback);
-    //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*>&& callback) const;
-
-    void forEachChild(DELEGATE_CBK<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end);
-    void forEachChild(DELEGATE_CBK<void, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const;
-    //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end);
-    //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const;
-
-    inline bool hasChildren() const {
-        return getChildCount() > 0;
-    }
-
-    inline void lockChildren() {
-        _childLock.lock();
-    }
-
-    inline void unlockChildren() {
-        _childLock.unlock();
-    }
-
-    inline const vectorEASTL<SceneGraphNode*>& getChildrenLocked() const {
-        return _children;
-    }
-
-    inline SceneGraphNode& getChild(U32 idx) {
-        SharedLock r_lock(_childLock);
-        assert(idx <  getChildCountLocked());
-        return *_children.at(idx);
-    }
-
-    inline const SceneGraphNode& getChild(U32 idx) const {
-        SharedLock r_lock(_childLock);
-        assert(idx <  getChildCountLocked());
-        return *_children.at(idx);
-    }
-
-    inline U32 getChildCount() const {
-        SharedLock r_lock(_childLock);
-        return getChildCountLocked();
-    }
-
-    inline U32 getChildCountLocked() const {
-        return to_U32(_children.size());
-    }
-
-    inline bool getFlag(UpdateFlag flag) const {
-        return BitCompare(_updateFlags, to_base(flag));
-    }
-
-    inline void clearUpdateFlag(UpdateFlag flag) {
-        ClearBit(_updateFlags, to_base(flag));
-    }
-
-    inline U32 instanceCount() const {
-        return _instanceCount;
-    }
-
-   /*protected:
-    SET_DELETE_FRIEND
-    SET_SAFE_UPDATE_FRIEND
-    SET_DELETE_VECTOR_FRIEND
-    SET_DELETE_HASHMAP_FRIEND
-
-    friend class SceneGraph;
-    friend class std::shared_ptr<SceneGraphNode> ;*/
-    explicit SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
-    ~SceneGraphNode();
-
-    void postLoad();
-
-    inline SceneGraph& parentGraph() { return _sceneGraph; }
-    inline const SceneGraph& parentGraph() const { return _sceneGraph; }
-
-    inline bool serialize() const { return _serialize; }
-
-    void saveToXML(const stringImpl& sceneLocation) const;
-    void loadFromXML(const boost::property_tree::ptree& pt);
-
-   protected:
-    friend class RenderPassCuller;
-
-    // Returns true if the node should be culled (is not visible for the current stage)
-    bool cullNode(const NodeCullParams& params,
-                  Frustum::FrustCollision& collisionTypeOut,
-                  F32& distanceToClosestPointSQ) const;
-
-    bool preCullNode(const NodeCullParams& params,
-                     F32& distanceToClosestPointSQ) const;
-
-   protected:
-    friend class RenderingComponent;
-    bool preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut);
-    bool prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData);
-    void onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut);
-    bool getDrawState(RenderStagePass stagePass, U8 LoD) const;
-
-   protected:
-    friend class SceneGraph;
-    void onNetworkSend(U32 frameCount);
-
-    inline void setUpdateFlag(UpdateFlag flag) {
-        SetBit(_updateFlags, to_base(flag));
-    }
-
-    void getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList);
-
-    void processDeleteQueue(vector<vec_size>& childList);
-
-    bool saveCache(ByteBuffer& outputBuffer) const;
-    bool loadCache(ByteBuffer& inputBuffer);
-
-   protected:
-    void setTransformDirty(U32 transformMask);
-    void setParentTransformDirty(U32 transformMask);
-    void onBoundsUpdated();
-    void postLoad(SceneNode& sceneNode, SceneGraphNode& sgn);
-    ECS::ECSEngine& GetECSEngine();
-
-   private:
-    void addToDeleteQueue(U32 idx);
-
-    inline void name(const stringImpl& name) { 
-        _name = name;
-    }
-
-    void RegisterEventCallbacks();
-
-
-   public:
-    template<class T, class ...P>
-    T* AddSGNComponent(P&&... param) {
-        SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(*this, this->context(), std::forward<P>(param)...));
-        _editorComponents.emplace_back(&comp->getEditorComponent());
-        SetBit(_componentMask, to_U32(comp->type()));
-
-        return static_cast<T*>(comp);
-    }
-
-    template<class T>
-    void RemoveSGNComponent() {
-        SGNComponent* comp = static_cast<SGNComponent>(GetComponent<T>());
-        if (comp) {
-            I64 targetGUID = comp->getEditorComponent().getGUID();
-            _editorComponents.erase(
-                std::remove_if(std::begin(_editorComponents), std::end(_editorComponents),
-                               [targetGUID](EditorComponent* editorComp)
-                               -> bool { return editorComp->getGUID() == targetGUID; }),
-                std::end(_editorComponents));
-            ClearBit(_componentMask, comp->type());
-            RemoveComponent<T>();
+        /// Return a specific child by indes. Does not recurse.
+        inline SceneGraphNode& getChild(U32 idx) {
+            SharedLock r_lock(_childLock);
+            assert(idx <  getChildCountLocked());
+            return *_children.at(idx);
         }
-    }
 
-    void RemoveAllSGNComponents() {
-        _compManager->RemoveAllComponents(GetEntityID());
-        _editorComponents.clear();
-        _componentMask = 0;
-    }
+        /// Return a specific child by indes. Does not recurse.
+        inline const SceneGraphNode& getChild(U32 idx) const {
+            SharedLock r_lock(_childLock);
+            assert(idx <  getChildCountLocked());
+            return *_children.at(idx);
+        }
 
-    void AddMissingComponents(U32 componentMask);
+        /// Return the current number of children that the current node has
+        inline U32 getChildCount() const {
+            SharedLock r_lock(_childLock);
+            return getChildCountLocked();
+        }
 
-   private:
-    friend class SGNRelationshipCache;
-    inline const SGNRelationshipCache& relationshipCache() const {
-        return _relationshipCache;
-    }
-    void invalidateRelationshipCache(SceneGraphNode *source = nullptr);
+        /// Called from parent SceneGraph
+        void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
 
-   private:
-    // An SGN doesn't exist outside of a scene graph
-    SceneGraph& _sceneGraph;
-    ECS::ComponentManager* _compManager;
+        /// Called from parent SceneGraph
+        void frameStarted();
 
-    bool _serialize = true;
-    U64 _lockToCamera = 0;
-    //ToDo: make this work in a multi-threaded environment
-    //mutable I8 _frustPlaneCache;
-    U64 _elapsedTimeUS;
-    U64 _lastDeltaTimeUS;
-    U32 _componentMask;
-    stringImpl _name;
-    SceneNode_ptr _node;
-    SceneGraphNode* _parent;
-    vectorEASTL<SceneGraphNode*> _children;
+        /// Called from parent SceneGraph
+        void frameEnded();
 
-    U8 _updateFlags;
+        /// Invoked by the contained SceneNode when it finishes all of its internal loading and is ready for processing
+        void postLoad();
 
-    const U32 _instanceCount = 1;
+        /// Find the graph nodes whom's bounding boxes intersects the given ray
+        bool intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const;
 
-    mutable SharedMutex _childLock;
-    std::atomic_bool _active;
-    std::atomic_bool _visibilityLocked;
+        void changeUsageContext(const NodeUsageContext& newContext);
 
-    SelectionFlag _selectionFlag;
+        /// General purpose flag management. Certain flags propagate to children (e.g. selection)!
+        void setFlag(Flags flag);
+        /// Clearing a flag might propagate to child nodes (e.g. selection).
+        void clearFlag(Flags flag);
+        /// Returns true only if the currrent node has the specified flag. Does not check children!
+        bool hasFlag(Flags flag) const;
 
-    NodeUsageContext _usageContext;
+        /// Always use the level of redirection needed to reduce virtual function overhead.
+        /// Use getNode<SceneNode> if you need material properties for ex. or getNode<SkinnedSubMesh> for animation transforms
+        template <typename T = SceneNode>
+        typename std::enable_if<std::is_base_of<SceneNode, T>::value, T&>::type
+        getNode() { return static_cast<T&>(*_node); }
 
-    StateTracker<bool> _trackedBools;
+        /// Always use the level of redirection needed to reduce virtual function overhead.
+        /// Use getNode<SceneNode> if you need material properties for ex. or getNode<SkinnedSubMesh> for animation transforms
+        template <typename T = SceneNode>
+        typename std::enable_if<std::is_base_of<SceneNode, T>::value, const T&>::type
+        getNode() const { return static_cast<const T&>(*_node); }
 
-    SGNRelationshipCache _relationshipCache;
+        /// Returns a pointer to a specific component. Returns null if the SGN doesn't have the component requested
+        template <typename T>
+        inline T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } //< ToDo: Optimise this -Ionut
 
-    // ToDo: Remove this HORRIBLE hack -Ionut
-    vectorFast<EditorComponent*> _editorComponents;
+        /// Sends a global event but dispatched is handled between update steps
+        template<class E, class... ARGS>
+        inline void SendEvent(ARGS&&... eventArgs) { GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...); }
+        /// Sends a global event with dispatched happening immediately. Avoid using often. Bad for performance.
+        template<class E, class... ARGS>
+        inline void SendAndDispatchEvent(ARGS&&... eventArgs) { GetECSEngine().SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...); }
+
+        /// Emplacement call for an ECS component. Pass in the component's constructor parameters. Can only add one component of a single type. 
+        /// This may be bad for scripts, but there are workarounds
+        template<class T, class ...P>
+        typename std::enable_if<std::is_base_of<SGNComponent, T>::value, T*>::type
+        AddSGNComponent(P&&... param) {
+            SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(*this, this->context(), std::forward<P>(param)...));
+            _editorComponents.emplace_back(&comp->getEditorComponent());
+            SetBit(_componentMask, to_U32(comp->type()));
+
+            return static_cast<T*>(comp);
+        }
+
+        /// Remove a component by type (if any). Because we have a limit of one component type per node, this works as expected
+        template<class T>
+        typename std::enable_if<std::is_base_of<SGNComponent, T>::value, void>::type
+        RemoveSGNComponent() {
+            SGNComponent* comp = static_cast<SGNComponent>(GetComponent<T>());
+            if (comp) {
+                I64 targetGUID = comp->getEditorComponent().getGUID();
+                _editorComponents.erase(
+                    std::remove_if(std::begin(_editorComponents), std::end(_editorComponents),
+                        [targetGUID](EditorComponent* editorComp)
+                        -> bool { return editorComp->getGUID() == targetGUID; }),
+                    std::end(_editorComponents));
+                ClearBit(_componentMask, comp->type());
+                RemoveComponent<T>();
+            }
+        }
+
+        void AddMissingComponents(U32 componentMask);
+        /// Serialization: save to XML file
+        void saveToXML(const stringImpl& sceneLocation) const;
+        /// Serialization: load from XML file (expressed as a boost property_tree)
+        void loadFromXML(const boost::property_tree::ptree& pt);
+
+    private:
+        /// Returns true if the node should be culled (is not visible for the current stage). Calls "preCullNode" internally.
+        bool cullNode(const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) const;
+        /// Fast distance-to-camera and min-LoD checks. Part of the cullNode call but usefull for quick visibility checks elsewhere
+        bool preCullNode(const NodeCullParams& params, F32& distanceToClosestPointSQ) const;
+        /// Called for every single stage of every render pass. Useful for checking materials, doing compute events, etc
+        bool preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut);
+        /// Called after preRender and after we rebuild our command buffers. Useful for modifying the command buffer that's going to be used for this RenderStagePass
+        bool prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData);
+        /// Called every time we are about to upload or validate our render data to the GPU. Perfect time for some more compute or verifying push constants.
+        void onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut);
+        /// Returns true if this node should be drawn based on the specified parameters. Does not do any culling. Just a "if it were to be in view, it would draw".
+        bool getDrawState(RenderStagePass stagePass, U8 LoD) const;
+        /// Called whenever we send a networking packet from our NetworkingComponent (if any). FrameCount is the frame ID sent with the packet.
+        void onNetworkSend(U32 frameCount);
+        /// Returns a bottom-up list(leafs -> root) of all of the nodes parented under the current one.
+        void getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList);
+        /// Destructs all of the nodes specified in the list and removes them from the _children container.
+        void processDeleteQueue(vector<vec_size>& childList);
+        /// Similar to the saveToXML call but is geared towards temporary state (e.g. save game)
+        bool saveCache(ByteBuffer& outputBuffer) const;
+        /// Similar to the loadFromXML call but is geared towards temporary state (e.g. save game)
+        bool loadCache(ByteBuffer& inputBuffer);
+        /// Called by the TransformComponent whenever the transform changed. Useful for Octree updates for example.
+        void setTransformDirty(U32 transformMask);
+        /// As opposed to "postLoad()" that's called when the SceneNode is ready for processing, this call is used as a callback for when the SceneNode finishes loading as a Resource. postLoad() is called after this always.
+        void postLoad(SceneNode& sceneNode, SceneGraphNode& sgn);
+        /// This indirect is used to avoid including ECS headers in this file, but we still need the ECS engine for templated methods
+        ECS::ECSEngine& GetECSEngine();
+        /// Only called from withing "setParent()" (which is also called from "addChildNode()"). Used to mark the existing relationship cache as invalid.
+        void invalidateRelationshipCache(SceneGraphNode *source = nullptr);
+
+    private:
+        SGNRelationshipCache _relationshipCache;
+        vectorEASTL<SceneGraphNode*> _children;
+        // ToDo: Remove this HORRIBLE hack -Ionut
+        vectorFast<EditorComponent*> _editorComponents;
+        mutable SharedMutex _childLock;
+
+        REFERENCE_R(SceneGraph, sceneGraph);
+        PROPERTY_R(SceneNode_ptr, node);
+        POINTER_R(ECS::ComponentManager, compManager, nullptr);
+        POINTER_R(SceneGraphNode, parent, nullptr);
+        PROPERTY_R(stringImpl, name, "");
+        PROPERTY_RW(U64, lockToCamera, 0u);
+        PROPERTY_R(U64, elapsedTimeUS, 0u);
+        PROPERTY_R(U64, lastDeltaTimeUS, 0u);
+        PROPERTY_R(U32, componentMask, 0u);
+        PROPERTY_R(U32, nodeFlags, 0u);
+        PROPERTY_R(U32, instanceCount, 1u);
+        PROPERTY_R(bool, serialize, true);
+        PROPERTY_RW(NodeUsageContext, usageContext, NodeUsageContext::NODE_STATIC);
+        //ToDo: make this work in a multi-threaded environment
+        //mutable I8 _frustPlaneCache;
 };
-
-template<typename T, class ... Args>
-void AddSGNComponent(SceneGraphNode& parentSGN, Args&&... args) {
-    parentSGN.AddSGNComponent<T>(std::forward<Args>(args)...);
-}
 
 namespace Attorney {
     class SceneGraphNodeEditor {
-        private:
+    private:
         static vectorFast<EditorComponent*>& editorComponents(SceneGraphNode& node) {
             return node._editorComponents;
         }
@@ -412,14 +321,51 @@ namespace Attorney {
         friend class Divide::PropertyWindow;
     };
 
+    class SceneGraphNodeSceneGraph {
+    private:
+        static void onNetworkSend(SceneGraphNode& node, U32 frameCount) {
+            node.onNetworkSend(frameCount);
+        }
+
+        static void getOrderedNodeList(SceneGraphNode& node, vectorEASTL<SceneGraphNode*>& nodeList) {
+            node.getOrderedNodeList(nodeList);
+        }
+
+        static void processDeleteQueue(SceneGraphNode& node, vector<vec_size>& childList) {
+            node.processDeleteQueue(childList);
+        }
+
+        static bool saveCache(const SceneGraphNode& node, ByteBuffer& outputBuffer) {
+            return node.saveCache(outputBuffer);
+        }
+
+        static bool loadCache(SceneGraphNode& node, ByteBuffer& inputBuffer) {
+            return node.loadCache(inputBuffer);
+        }
+
+        friend class Divide::SceneGraph;
+    };
+
     class SceneGraphNodeComponent {
     private:
         static void setTransformDirty(SceneGraphNode& node, U32 transformMask) {
             node.setTransformDirty(transformMask);
         }
 
-        static void onBoundsUpdated(SceneGraphNode& node) {
-            node.onBoundsUpdated();
+        static bool preRender(SceneGraphNode& node, const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut) {
+            return node.preRender(camera, renderStagePass, refreshData, rebuildCommandsOut);
+        }
+
+        static bool prepareRender(SceneGraphNode& node, const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
+            return node.prepareRender(camera, renderStagePass, refreshData);
+        }
+
+        static void onRefreshNodeData(SceneGraphNode& node, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {
+            node.onRefreshNodeData(renderStagePass, camera, quick, bufferInOut);
+        }
+
+        static bool getDrawState(const SceneGraphNode& node, RenderStagePass stagePass, U8 LoD) {
+            return node.getDrawState(stagePass, LoD);
         }
 
         friend class Divide::BoundsComponent;
@@ -427,6 +373,30 @@ namespace Attorney {
         friend class Divide::TransformComponent;
     };
 
+    class SceneGraphNodeRenderPassCuller {
+    private:
+
+        // Returns true if the node should be culled (is not visible for the current stage)
+        static bool cullNode(const SceneGraphNode& node, const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) {
+            return node.cullNode(params, collisionTypeOut, distanceToClosestPointSQ);
+        }
+
+        static bool preCullNode(const SceneGraphNode& node, const NodeCullParams& params, F32& distanceToClosestPointSQ) {
+            return node.preCullNode(params, distanceToClosestPointSQ);
+        }
+
+        friend class Divide::RenderPassCuller;
+    };
+
+    class SceneGraphNodeRelationshipCache {
+    private:
+        static const SGNRelationshipCache& relationshipCache(const SceneGraphNode& node) {
+            return node._relationshipCache;
+        }
+
+        friend class Divide::SGNRelationshipCache;
+    };
+    
 };  // namespace Attorney
 
 

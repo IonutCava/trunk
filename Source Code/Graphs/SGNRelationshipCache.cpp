@@ -27,8 +27,7 @@ bool SGNRelationshipCache::rebuild() {
     return true;
 }
 
-SGNRelationshipCache::RelationShipType
-SGNRelationshipCache::clasifyNode(I64 GUID) const {
+SGNRelationshipCache::RelationshipType SGNRelationshipCache::clasifyNode(I64 GUID) const {
     assert(isValid());
 
     if (GUID != _parentNode.getGUID()) {
@@ -36,36 +35,36 @@ SGNRelationshipCache::clasifyNode(I64 GUID) const {
         for (const std::pair<I64, U8>& entry : _childrenRecursiveCache) {
             if (entry.first == GUID) {
                 return entry.second > 0 
-                                    ? RelationShipType::GRANDCHILD
-                                    : RelationShipType::CHILD;
+                                    ? RelationshipType::GRANDCHILD
+                                    : RelationshipType::CHILD;
             }
         }
         for (const std::pair<I64, U8>& entry : _parentRecursiveCache) {
             if (entry.first == GUID) {
                 return entry.second > 0
-                    ? RelationShipType::GRANDPARENT
-                    : RelationShipType::PARENT;
+                    ? RelationshipType::GRANDPARENT
+                    : RelationshipType::PARENT;
             }
         }
     }
 
-    return RelationShipType::COUNT;
+    return RelationshipType::COUNT;
 }
 
 
 void SGNRelationshipCache::updateChildren(U8 level, vector<std::pair<I64, U8>>& cache) const {
-    _parentNode.forEachChild([level, &cache](const SceneGraphNode* child) {
+    _parentNode.forEachChild([level, &cache](const SceneGraphNode* child, I32 /*childIdx*/) {
         cache.push_back(std::make_pair(child->getGUID(), level));
-        child->relationshipCache().updateChildren(level + 1, cache);
+        Attorney::SceneGraphNodeRelationshipCache::relationshipCache(*child).updateChildren(level + 1, cache);
     });
 }
 
 void SGNRelationshipCache::updateParents(U8 level, vector<std::pair<I64, U8>>& cache) const {
-    SceneGraphNode* parent = _parentNode.getParent();
+    SceneGraphNode* parent = _parentNode.parent();
     // We ignore the root note when considering grandparent status
-    if (parent && parent->getParent()) {
+    if (parent && parent->parent()) {
         cache.push_back(std::make_pair(parent->getGUID(), level));
-        parent->relationshipCache().updateParents(level + 1, cache);
+        Attorney::SceneGraphNodeRelationshipCache::relationshipCache(*parent).updateParents(level + 1, cache);
     }
 }
 

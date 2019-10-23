@@ -76,7 +76,7 @@ void Octree::update(const U64 deltaTimeUS) {
                                     eastl::end(_objects),
                                     [](SceneGraphNode* crtNode) -> bool {
                                         SceneGraphNode* node = crtNode;
-                                        return !node || !node->isActive();
+                                        return !node || !node->hasFlag(SceneGraphNode::Flags::ACTIVE);
                                     }),
         eastl::end(_objects));
 
@@ -85,9 +85,9 @@ void Octree::update(const U64 deltaTimeUS) {
     for (SceneGraphNode* crtNode : _objects) {
         SceneGraphNode* node = crtNode;
         //we should figure out if an object actually moved so that we know whether we need to update this node in the tree.
-        if (node->getFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION_UPDATE_QUEUED)) {
+        if (node->hasFlag(SceneGraphNode::Flags::SPATIAL_PARTITION_UPDATE_QUEUED)) {
             _movedObjects.push_back(crtNode);
-            node->clearUpdateFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION_UPDATE_QUEUED);
+            node->clearFlag(SceneGraphNode::Flags::SPATIAL_PARTITION_UPDATE_QUEUED);
         }
     }
 

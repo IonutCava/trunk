@@ -14,7 +14,7 @@
 namespace Divide {
 
 Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool)
-    : ECS::Event::IEventListener(sgn.parentGraph().GetECSEngine()), 
+    : ECS::Event::IEventListener(sgn.sceneGraph().GetECSEngine()), 
       _parentPool(parentPool),
       _sgn(sgn),
       _type(type),

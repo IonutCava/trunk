@@ -39,7 +39,7 @@ void SkinnedSubMesh::sceneUpdate(const U64 deltaTimeUS,
                                  SceneGraphNode& sgn,
                                  SceneState& sceneState) {
     // keep all animators in the same mesh in sync by using the Mesh's SGN deltatime update
-    sgn.get<AnimationComponent>()->incParentTimeStamp(sgn.getParent()->getLastDeltaTimeUS());
+    sgn.get<AnimationComponent>()->incParentTimeStamp(sgn.parent()->lastDeltaTimeUS());
     SubMesh::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 

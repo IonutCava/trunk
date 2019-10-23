@@ -47,17 +47,17 @@ namespace Divide {
         }
     }
 
-    void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, bool open) {
+    void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open) {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | (open ? ImGuiTreeNodeFlags_DefaultOpen : 0);
 
-        if (sgn.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTED) {
+        if (sgn.hasFlag(SceneGraphNode::Flags::SELECTED)) {
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
 
-        if (!sgn.hasChildren()) {
+        if (sgn.getChildCount() == 0u) {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;//| ImGuiTreeNodeFlags_NoTreePushOnOpen; 
         }
-        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.name().c_str());
+        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
         if (ImGui::IsItemClicked()) {
             sceneManager.resetSelection(0);
             sceneManager.setSelected(0, { &sgn });
@@ -65,8 +65,8 @@ namespace Divide {
         }
         
         if (node_open) {
-            sgn.forEachChild([this, &sceneManager](SceneGraphNode* child) {
-                printSceneGraphNode(sceneManager, *child, false);
+            sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
+                printSceneGraphNode(sceneManager, *child, childIdx, false);
             });
 
             ImGui::TreePop();
@@ -86,7 +86,7 @@ namespace Divide {
             for (PlayerIndex i = 0; i < static_cast<PlayerIndex>(Config::MAX_LOCAL_PLAYER_COUNT); ++i) {
                 printCameraNode(sceneManager, Attorney::SceneManagerCameraAccessor::playerCamera(sceneManager, i));
             }
-            printSceneGraphNode(sceneManager, root, true);
+            printSceneGraphNode(sceneManager, root, 0, true);
             ImGui::PopStyleVar();
             ImGui::TreePop();
         }

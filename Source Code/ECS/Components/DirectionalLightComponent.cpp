@@ -16,7 +16,7 @@ namespace {
 
 DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, PlatformContext& context)
     : BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>(sgn, context), 
-      Light(sgn, -1, LightType::DIRECTIONAL, sgn.parentGraph().parentScene().lightPool()),
+      Light(sgn, -1, LightType::DIRECTIONAL, sgn.sceneGraph().parentScene().lightPool()),
       _csmSplitCount(3),
       _csmNearClipOffset(100.0f)
 {

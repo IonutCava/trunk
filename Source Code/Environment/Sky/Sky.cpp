@@ -131,7 +131,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
                                        to_base(ComponentType::BOUNDS) |
                                        to_base(ComponentType::RENDERING) |
                                        to_base(ComponentType::NAVIGATION);
-    sgn.addNode(skyNodeDescriptor);
+    sgn.addChildNode(skyNodeDescriptor);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     if (renderable) {

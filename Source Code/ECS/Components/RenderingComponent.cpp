@@ -212,11 +212,10 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 
     const Object3D& node = _parentSGN.getNode<Object3D>();
     if (node.getObjectType()._value == ObjectType::SUBMESH) {
-        StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
-        parentStates.setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
+        _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
 
         if (node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
-            parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
+            _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::SKELETON_RENDERED);
         }
     }
 
@@ -228,7 +227,7 @@ void RenderingComponent::FrameEnded() {
 }
 
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
-    if (_parentSGN.getDrawState(renderStagePass, LoD)) {
+    if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, renderStagePass, LoD)) {
         Material* matCache = getMaterialCache();
         // Can we render without a material? Maybe. IDK.
         if (matCache == nullptr || matCache->canDraw(renderStagePass)) {
@@ -244,7 +243,7 @@ void RenderingComponent::rebuildMaterial() {
         getMaterialCache()->rebuild();
     }
 
-    _parentSGN.forEachChild([](const SceneGraphNode* child) {
+    _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
         RenderingComponent* const renderable = child->get<RenderingComponent>();
         if (renderable) {
             renderable->rebuildMaterial();
@@ -285,7 +284,7 @@ void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
 
     const U8 stage = to_U8(stagePass._stage);
     const U8 lod = _lodLevels[stage];
-    if (_parentSGN.getDrawState(stagePass, lod)) {
+    if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, stagePass, lod)) {
         RenderPackage& pkg = getDrawPackage(stagePass);
         if (!pkg.empty()) {
             pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[stage]);
@@ -295,7 +294,7 @@ void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
 
 bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams) {
     uploadDataIndexAsUniform(refreshParams._stagePass);
-    _parentSGN.onRefreshNodeData(refreshParams._stagePass, *refreshParams._camera, true, refreshParams._bufferInOut);
+    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, true, refreshParams._bufferInOut);
     return true;
 }
 
@@ -327,7 +326,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
 
         _drawDataIdx[to_base(refreshParams._stagePass._stage)] = to_U32(_dataIndex.first);
         uploadDataIndexAsUniform(refreshParams._stagePass);
-        _parentSGN.onRefreshNodeData(refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
+        Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
         return true;
     }
 
@@ -345,9 +344,9 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
 void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
     const bool shadowMappingEnabled = _config.rendering.shadowMapping.enabled;
 
-    propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTED
+    propertiesOut.set(_parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED)
                                                      ? -1.0f
-                                                     : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::HOVER
+                                                     : _parentSGN.hasFlag(SceneGraphNode::Flags::HOVERED)
                                                                                       ? 1.0f
                                                                                       : 0.0f,
                       (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
@@ -378,11 +377,9 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 }
             } break;
             case SceneRenderState::GizmoState::SELECTED_GIZMO: {
-                switch (_parentSGN.getSelectionFlag()) {
-                    case SceneGraphNode::SelectionFlag::SELECTED : {
-                        drawDebugAxis();
-                        bufferInOut.add(_axisGizmo->toCommandBuffer());
-                    } break;
+                if (_parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED)) {
+                    drawDebugAxis();
+                    bufferInOut.add(_axisGizmo->toCommandBuffer());
                 }
             } break;
             case SceneRenderState::GizmoState::NO_GIZMO: {
@@ -393,14 +390,13 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         }
     }
 
-    SceneGraphNode* grandParent = _parentSGN.getParent();
-    StateTracker<bool>& parentStates = grandParent->getTrackedBools();
+    SceneGraphNode* grandParent = _parentSGN.parent();
 
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
     bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB);
     renderBBox = renderBBox || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
 
-    bool renderBSphere = _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTED;
+    bool renderBSphere = _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED);
     renderBSphere = renderBSphere || renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
 
 
@@ -419,10 +415,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
         bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
         if (isSubMesh) {
-            bool renderParentBBFlagInitialized = false;
-            bool renderParentBB = parentStates.getTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED,
-                                   renderParentBBFlagInitialized);
-            if (!renderParentBB || !renderParentBBFlagInitialized) {
+            if (!grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED)) {
                 if (!_boundingBoxPrimitive[1]) {
                     _boundingBoxPrimitive[1] = _context.newIMP();
                     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + _parentSGN.name());
@@ -436,6 +429,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                                      bbGrandParent.getMax() + vec3<F32>(0.0025f),
                                      UColour4(255, 0, 0, 255));
                 bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
+                grandParent->setFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
             } else {
                 if (_boundingBoxPrimitive[1]) {
                     _context.destroyIMP(_boundingBoxPrimitive[1]);
@@ -477,9 +471,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 _skeletonPrimitive->name("Skeleton_" + _parentSGN.name());
                 _skeletonPrimitive->pipeline(*_primitivePipeline[1]);
             }
-            //bool renderSkeletonFlagInitialized = false;
-            //bool renderParentSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, renderSkeletonFlagInitialized);
-            //if (!renderParentSkeleton || !renderSkeletonFlagInitialized) {
+            if (!grandParent->hasFlag(SceneGraphNode::Flags::SKELETON_RENDERED)) {
                 // Get the animation component of any submesh. They should be synced anyway.
                 AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
                 // Get the skeleton lines from the submesh's animation component
@@ -487,11 +479,10 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 _skeletonPrimitive->worldMatrix(_parentSGN.get<TransformComponent>()->getWorldMatrix());
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->fromLines(skeletonLines);
-                parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, true);
-
-
                 bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
-            //}
+
+                grandParent->setFlag(SceneGraphNode::Flags::SKELETON_RENDERED);
+            }
         }
         else if (_skeletonPrimitive) {
             _context.destroyIMP(_skeletonPrimitive);
@@ -548,11 +539,11 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
         RenderPackage& pkg = getDrawPackage(renderStagePass);
 
         bool rebuildCommandsOut = false;
-        if (_parentSGN.preRender(camera, renderStagePass, refreshData, rebuildCommandsOut)) {
+        if (Attorney::SceneGraphNodeComponent::preRender(_parentSGN, camera, renderStagePass, refreshData, rebuildCommandsOut)) {
             if (pkg.empty() || rebuildCommandsOut) {
                 rebuildDrawCommands(renderStagePass);
             }
-            if (_parentSGN.prepareRender(camera, renderStagePass, refreshData)) {
+            if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, camera, renderStagePass, refreshData)) {
 
                 Attorney::RenderPackageRenderingComponent::setLoDLevel(pkg, lod);
 

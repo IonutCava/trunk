@@ -119,7 +119,7 @@ void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
 
 void SceneGraph::onNodeTransform(SceneGraphNode& node) {
     if (_loadComplete) {
-        node.setUpdateFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION_UPDATE_QUEUED);
+        node.setFlag(SceneGraphNode::Flags::SPATIAL_PARTITION_UPDATE_QUEUED);
     }
 }
 
@@ -137,9 +137,9 @@ bool SceneGraph::removeNode(I64 guid) {
 
 bool SceneGraph::removeNode(SceneGraphNode* node) {
     if (node) {
-        SceneGraphNode* parent = node->getParent();
+        SceneGraphNode* parent = node->parent();
         if (parent) {
-            if (!parent->removeNode(*node)) {
+            if (!parent->removeChildNode(*node, true)) {
                 return false;
             }
         }
@@ -155,7 +155,7 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) {
     if (!_pendingDeletion.empty()) {
         for (auto entry : _pendingDeletion) {
             if (entry.first != nullptr) {
-                entry.first->processDeleteQueue(entry.second);
+                Attorney::SceneGraphNodeSceneGraph::processDeleteQueue(*entry.first, entry.second);
             }
         }
         _pendingDeletion.clear();
@@ -165,7 +165,7 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) {
     if (_nodeListChanged)
     {
         _orderedNodeList.resize(0);
-        _root->getOrderedNodeList(_orderedNodeList);
+        Attorney::SceneGraphNodeSceneGraph::getOrderedNodeList(*_root, _orderedNodeList);
         _nodeListChanged = false;
     }
 
@@ -222,11 +222,11 @@ void SceneGraph::onStartUpdateLoop(const U8 loopNumber) {
 }
 
 void SceneGraph::onNetworkSend(U32 frameCount) {
-    _root->onNetworkSend(frameCount);
+    Attorney::SceneGraphNodeSceneGraph::onNetworkSend(*_root, frameCount);
 }
 
-void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const {
-    _root->intersect(ray, start, end, intersections);
+bool SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const {
+    return _root->intersect(ray, start, end, intersections);
 
     /*if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
@@ -283,11 +283,11 @@ ECS::ComponentManager* SceneGraph::GetComponentManager() const {
 }
 
 bool SceneGraph::saveCache(ByteBuffer& outputBuffer) const {
-    return _root->saveCache(outputBuffer);
+    return Attorney::SceneGraphNodeSceneGraph::saveCache(*_root, outputBuffer);
 }
 
 bool SceneGraph::loadCache(ByteBuffer& inputBuffer) {
-    return _root->loadCache(inputBuffer);
+    return Attorney::SceneGraphNodeSceneGraph::loadCache(*_root, inputBuffer);
 }
 
 namespace {
@@ -296,7 +296,7 @@ namespace {
         entry.put("<xmlattr>.name", node->name());
         entry.put("<xmlattr>.type", node->getNode().getTypeName());
 
-        node->forEachChild([&entry](const SceneGraphNode* child) {
+        node->forEachChild([&entry](const SceneGraphNode* child, I32 /*childIdx*/) {
             if (child->serialize()) {
                 entry.add_child("node", dumpSGNtoAssets(child));
             }
@@ -320,7 +320,7 @@ void SceneGraph::saveToXML() const {
         write_xml((sceneLocation + "/" + "assets.xml").c_str(), pt, std::locale(), settings);
     }
 
-    getRoot().forEachChild([&sceneLocation](const SceneGraphNode* child) {
+    getRoot().forEachChild([&sceneLocation](const SceneGraphNode* child, I32 /*childIdx*/) {
         child->saveToXML(sceneLocation);
     });
 }
