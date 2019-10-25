@@ -33,25 +33,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define FMT_EXCEPTIONS 0
 #endif
 
-#include "fmt/format.h"
-#include "fmt/printf.h"
-
 #ifndef _CORE_STRING_HELPER_INL_
 #define _CORE_STRING_HELPER_INL_
 
 namespace Divide {
 namespace Util {
-
-template <typename... Args>
-stringImpl StringFormat(const char *const format, Args&&... args) {
-    return fmt::sprintf(format, std::forward<Args>(args)...);
-#if 0 //Ref
-    int sz = snprintf(nullptr, 0, format, std::forward<Args>(args)...);
-    vectorEASTL<char> buf(vec_size_eastl(sz) + 1, '\0');
-    snprintf(&buf[0], buf.size(), format, std::forward<Args>(args)...);
-    return stringImpl(buf.data(), buf.size() - 1);
-#endif
-}
 
 template<typename T_vec, typename T_str>
 typename std::enable_if<std::is_same<T_vec, typename vector<T_str>>::value ||
@@ -92,25 +78,145 @@ Split(const char* input, char delimiter) {
     return Split<T_vec, T_str>(input, delimiter, elems);
 }
 
+template<typename T_str>
+bool IsNumber(const T_str& s) {
+    return IsNumber(s.c_str());
+}
+
+template<typename T_str>
+void GetPermutations(const T_str& inputString, vector<T_str>& permutationContainer) {
+    permutationContainer.clear();
+    T_str tempCpy(inputString);
+    std::sort(std::begin(tempCpy), std::end(tempCpy));
+    do {
+        permutationContainer.push_back(inputString);
+    } while (std::next_permutation(std::begin(tempCpy), std::end(tempCpy)));
+}
+
+template<typename T_str>
+inline void ReplaceStringInPlace(T_str& subject,
+                                 const stringImpl& search,
+                                 const stringImpl& replace,
+                                 bool recursive) {
+    bool changed = true;
+    while (changed) {
+        changed = false;
+
+        size_t pos = 0;
+        while ((pos = subject.find(search.c_str(), pos)) != T_str::npos) {
+            subject.replace(pos, search.length(), replace.c_str());
+            pos += replace.length();
+            changed = true;
+        }
+
+        if (!recursive) {
+            break;
+        }
+    }
+}
+
+template<typename T_str>
+inline T_str ReplaceString(const T_str& subject,
+                           const stringImpl& search,
+                           const stringImpl& replace,
+                           bool recursive)
+{
+    T_str ret = subject;
+    ReplaceStringInPlace(ret, search, replace, recursive);
+    return ret;
+}
+
+template<typename T_str>
+T_str GetTrailingCharacters(const T_str& input, size_t count) {
+    const size_t inputLength = input.length();
+    count = std::min(inputLength, count);
+    assert(count > 0);
+    return input.substr(inputLength - count, inputLength);
+}
+
+template<typename T_str>
+T_str GetStartingCharacters(const T_str& input, size_t count) {
+    const size_t inputLength = input.length();
+    count = std::min(inputLength, count);
+    assert(count > 0);
+    return input.substr(0, inputLength - count);
+}
+
+
+inline bool CompareIgnoreCase(const char* a, const char* b) {
+    assert(a != nullptr && b != nullptr);
+    return strcasecmp(a, b) == 0;
+}
+
+template<typename T_strA>
+inline bool CompareIgnoreCase(const T_strA& a, const char* b) {
+    if (b != nullptr && !a.empty()) {
+        return CompareIgnoreCase(a.c_str(), b);
+    }
+    return false;
+}
+
+template<>
+inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
+    if (a.length() == b.length()) {
+        return std::equal(std::cbegin(b),
+                          std::cend(b),
+                          std::cbegin(a),
+            [](unsigned char a, unsigned char b) {
+                return a == b || std::tolower(a) == std::tolower(b);
+            });
+    }
+
+    return false;
+}
+
+template<>
+inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) {
+    if (a.length() == b.length()) {
+        return std::equal(std::cbegin(b),
+                          std::cend(b),
+                          std::cbegin(a),
+            [](unsigned char a, unsigned char b) {
+                return a == b || std::tolower(a) == std::tolower(b);
+            });
+    }
+
+    return false;
+}
+
+template<typename T_strA, typename T_strB>
+inline bool CompareIgnoreCase(const T_strA& a, const T_strB& b) {
+    return a.comparei(b.c_str()) == 0;
+}
+
+template<typename T_str>
+U32 LineCount(const T_str& str) {
+    return to_U32(std::count(std::cbegin(str), std::cend(str), '\n')) + 1;
+}
+
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-inline stringImpl Ltrim(const stringImpl& s) {
-    stringImpl temp(s);
+template<typename T_str>
+inline T_str Ltrim(const T_str& s) {
+    T_str temp(s);
     return Ltrim(temp);
 }
 
-inline stringImpl& Ltrim(stringImpl& s) {
+template<typename T_str>
+inline T_str& Ltrim(T_str& s) {
     s.erase(std::begin(s),
         std::find_if(std::begin(s), std::end(s),
             std::not1(std::ptr_fun<int, int>(std::isspace))));
     return s;
 }
 
-inline stringImpl Rtrim(const stringImpl& s) {
-    stringImpl temp(s);
+template<typename T_str>
+inline T_str Rtrim(const T_str& s) {
+    T_str temp(s);
     return Rtrim(temp);
 }
 
-inline stringImpl& Rtrim(stringImpl& s) {
+template<typename T_str>
+inline T_str& Rtrim(T_str& s) {
     s.erase(
         std::find_if(std::rbegin(s), std::rend(s),
             std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
@@ -118,12 +224,14 @@ inline stringImpl& Rtrim(stringImpl& s) {
     return s;
 }
 
-inline stringImpl& Trim(stringImpl& s) {
+template<typename T_str>
+inline T_str& Trim(T_str& s) {
     return Ltrim(Rtrim(s));
 }
 
-inline stringImpl Trim(const stringImpl& s) {
-    stringImpl temp(s);
+template<typename T_str>
+inline T_str Trim(const T_str& s) {
+    T_str temp(s);
     return Trim(temp);
 }
 

@@ -53,7 +53,7 @@ enum class RebuildCommandsState : U8 {
 
 class Sky : public SceneNode {
    public:
-    explicit Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter);
+    explicit Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name, U32 diameter);
     ~Sky();
 
     void enableSun(bool state, const FColour3& sunColour, const vec3<F32>& sunVector);

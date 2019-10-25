@@ -58,7 +58,7 @@ public:
 private:
     FileUpdateCbk _cbk;
     vector<char> _ignoredEndingCharacters;
-    vector<stringImpl> _ignoredExtensions;
+    vector<Str8> _ignoredExtensions;
 
 };
 

@@ -47,10 +47,10 @@ class WarSceneOrder;
 
 class WarScene : public Scene {
    public:
-    explicit WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
+    explicit WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name);
     ~WarScene();
 
-    bool load(const stringImpl& name) override;
+    bool load(const Str64& name) override;
     bool unload() override;
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
     void processTasks(const U64 deltaTimeUS) override;

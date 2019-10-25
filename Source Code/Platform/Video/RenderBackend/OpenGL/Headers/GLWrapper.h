@@ -146,7 +146,7 @@ protected:
     void onThreadCreated(const std::thread::id& threadID) final;
 
     /// Try to find the requested font in the font cache. Load on cache miss.
-    I32 getFont(const stringImpl& fontName);
+    I32 getFont(const Str64& fontName);
 
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global);
@@ -245,7 +245,7 @@ private:
     /// A cache of all fonts used
     using FontCache = hashMap<U64, I32>;
     FontCache _fonts;
-    hashAlg::pair<stringImpl, I32> _fontCache;
+    hashAlg::pair<Str64, I32> _fontCache;
 
     static bool s_enabledDebugMSGGroups;
     /// Hardware query objects used for performance measurements

@@ -31,7 +31,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
         Texture::s_missingTextureFileName = "missing_texture.jpg";
     }
 
-    stringImpl resourceLocation = _descriptor.assetLocation();
+    stringImpl resourceLocation = _descriptor.assetLocation().c_str();
 
     const size_t numCommas = std::count(std::cbegin(_descriptor.assetName()),
                                         std::cend(_descriptor.assetName()),
@@ -50,7 +50,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
             stringstreamImpl textureLocationList(resourceLocation);
             while (std::getline(textureLocationList, resourceLocation, ',')) {}
         }  else {
-            resourceLocation = Paths::g_assetsLocation + Paths::g_texturesLocation;
+            resourceLocation = (Paths::g_assetsLocation + Paths::g_texturesLocation).c_str();
         }
 
         for (size_t i = crtNumCommas; i < numCommas; ++i) {

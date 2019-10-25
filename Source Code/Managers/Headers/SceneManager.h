@@ -83,7 +83,7 @@ public:
 
     void idle();
 
-    vector<stringImpl> sceneNameList(bool sorted = true) const;
+    vector<Str64> sceneNameList(bool sorted = true) const;
 
     Scene& getActiveScene();
     const Scene& getActiveScene() const;
@@ -171,7 +171,7 @@ public:  /// Input
 
     bool onUTF8(const Input::UTF8Event& arg) override;
 
-    bool switchScene(const stringImpl& name, 
+    bool switchScene(const Str64& name, 
                      bool unloadPrevious,
                      const Rect<U16>& targetRenderViewport,
                      bool threaded = true);
@@ -181,7 +181,7 @@ protected:
 
 protected:
     void initPostLoadState();
-    Scene* load(stringImpl name);
+    Scene* load(const Str64& name);
     bool   unloadScene(Scene* scene);
 
     // Add a new player to the simulation
@@ -265,7 +265,7 @@ private:
             return _isSet;
         }
 
-        inline void set(const stringImpl& targetSceneName,
+        inline void set(const Str64& targetSceneName,
             const Rect<U16>& targetViewRect,
             bool unloadPreviousScene,
             bool loadInSeparateThread)
@@ -277,7 +277,7 @@ private:
             _isSet = true;
         }
 
-        inline const stringImpl& targetSceneName() const {
+        inline const Str64& targetSceneName() const {
             return _targetSceneName;
         }
 
@@ -294,7 +294,7 @@ private:
         }
 
     private:
-        stringImpl _targetSceneName;
+        Str64 _targetSceneName;
         Rect<U16> _targetViewRect;
         bool _unloadPreviousScene;
         bool _loadInSeparateThread;

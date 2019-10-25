@@ -40,7 +40,7 @@ namespace Divide {
 
     struct Directory {
         stringImpl _path;
-        vectorFast<std::pair<std::string, std::string>> _files;
+        vectorFast<std::pair<Str256, Str64>> _files;
         vectorFast<std::shared_ptr<Directory>> _children;
     };
 
@@ -65,11 +65,11 @@ namespace Divide {
         void update(const U64 deltaTimeUS);
 
     private:
-        void getDirectoryStructureForPath(const stringImpl& directoryPath, Directory& directoryOut);
+        void getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut);
         void printDirectoryStructure(const Directory& dir, bool open) const;
 
-        Texture_ptr getTextureForPath(const stringImpl& texturePath, const stringImpl& textureName);
-        Mesh_ptr getModelForPath(const stringImpl& modelPath, const stringImpl& modelName);
+        Texture_ptr getTextureForPath(const Str256& texturePath, const Str64& textureName);
+        Mesh_ptr getModelForPath(const Str256& modelPath, const Str64& modelName);
         
     private:
         Texture_ptr _fileIcon;
@@ -81,10 +81,10 @@ namespace Divide {
         hashMap<size_t, Mesh_ptr> _loadedModels;
 
         bool _textureLoadQueueLocked = false;
-        std::stack<std::pair<std::string, std::string>> _textureLoadQueue;
+        std::stack<std::pair<Str256, Str64>> _textureLoadQueue;
 
         bool _modelLoadQueueLocked = false;
-        std::stack<std::pair<std::string, std::string>> _modelLoadQueue;
+        std::stack<std::pair<Str256, Str64>> _modelLoadQueue;
     };
 }; //namespace Divide
 

@@ -148,8 +148,8 @@ namespace Divide {
     public:
         vkTexture(GFXDevice& context,
                   size_t descriptorHash,
-                  const stringImpl& name,
-                  const stringImpl& resourceName,
+                  const Str64& name,
+                  const Str64& resourceName,
                   const stringImpl& resourceLocation,
                   bool isFlipped,
                   bool asyncLoad,
@@ -166,8 +166,8 @@ namespace Divide {
     class vkShaderProgram final : public ShaderProgram {
     public:
         vkShaderProgram(GFXDevice& context, size_t descriptorHash,
-                        const stringImpl& name,
-                        const stringImpl& resourceName,
+                        const Str64& name,
+                        const Str64& resourceName,
                         const stringImpl& resourceLocation,
                         const ShaderProgramDescriptor& descriptor,
                         bool asyncLoad)

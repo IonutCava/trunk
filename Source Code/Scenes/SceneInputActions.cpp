@@ -13,7 +13,7 @@ InputAction::InputAction(const DELEGATE_CBK<void, InputParams>& action)
 {
 }
 
-void InputAction::displayName(const stringImpl& name) {
+void InputAction::displayName(const Str64& name) {
     _displayName = name;
 }
 

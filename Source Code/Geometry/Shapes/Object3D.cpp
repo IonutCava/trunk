@@ -13,22 +13,22 @@
 
 namespace Divide {
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, ObjectType type, ObjectFlag flag)
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name, ObjectType type, ObjectFlag flag)
     : Object3D(context, parentCache, descriptorHash, name, name, "", type, to_U32(flag))
 {
 }
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, ObjectType type, U32 flagMask)
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name, ObjectType type, U32 flagMask)
     : Object3D(context, parentCache, descriptorHash, name, name, "", type, flagMask)
 {
 }
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name, const Str64& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
     : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, type, to_U32(flag))
 {
 }
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name, const Str64& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
     : SceneNode(parentCache, descriptorHash, name, resourceName, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
     _context(context),
     _geometryDirty(true),
@@ -286,7 +286,7 @@ void Object3D::saveToXML(boost::property_tree::ptree& pt) const {
     if (static_cast<const Object3D*>(this)->isPrimitive()) {
         pt.put("model", static_cast<const Object3D*>(this)->getObjectType()._to_string());
     } else {
-        pt.put("model", resourceName());
+        pt.put("model", resourceName().c_str());
     }
 
     SceneNode::saveToXML(pt);

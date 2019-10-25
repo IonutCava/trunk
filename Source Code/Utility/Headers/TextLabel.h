@@ -56,13 +56,13 @@ class TextLabelStyle : public Hashable {
     static SharedMutex s_textLableStyleMutex;
     static size_t s_defaultCacheValue;
 
-    typedef hashMap<size_t, stringImpl> FontNameHashMap;
+    typedef hashMap<size_t, Str64> FontNameHashMap;
     static FontNameHashMap s_fontName;
 
   public:
     static const TextLabelStyle& get(size_t textLabelStyleHash);
     static const TextLabelStyle& get(size_t textLabelStyleHash, bool& styleFound);
-    static const stringImpl& fontName(size_t fontNameHash);
+    static const Str64& fontName(size_t fontNameHash);
 
   public:
    TextLabelStyle(const char* font,

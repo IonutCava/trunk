@@ -27,7 +27,7 @@ namespace {
     Task* g_boxMoveTaskID = nullptr;
 };
 
-MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name)
    : Scene(context, cache, parent, name),
     _beep(nullptr),
     _freeflyCamera(true/*false*/),
@@ -151,7 +151,7 @@ void MainScene::processTasks(const U64 deltaTimeUS) {
     Scene::processTasks(deltaTimeUS);
 }
 
-bool MainScene::load(const stringImpl& name) {
+bool MainScene::load(const Str64& name) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name);
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);

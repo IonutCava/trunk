@@ -86,7 +86,7 @@ const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash, bool& style
     return s_textLabelStyle.find(s_defaultCacheValue)->second;
 }
 
-const stringImpl& TextLabelStyle::fontName(size_t fontNameHash) {
+const Str64& TextLabelStyle::fontName(size_t fontNameHash) {
     return s_fontName[fontNameHash];
 }
 

@@ -26,8 +26,8 @@ std::atomic_int ShaderProgram::s_shaderCount;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, 
                              size_t descriptorHash,
-                             const stringImpl& shaderName,
-                             const stringImpl& shaderFileName,
+                             const Str64& shaderName,
+                             const Str64& shaderFileName,
                              const stringImpl& shaderFileLocation,
                              const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad)
@@ -54,7 +54,7 @@ bool ShaderProgram::load() {
 
 bool ShaderProgram::unload() noexcept {
     // Unregister the program from the manager
-    return unregisterShaderProgram(getDescriptorHash());
+    return unregisterShaderProgram(descriptorHash());
 }
 
 
@@ -87,7 +87,7 @@ void ShaderProgram::idle() {
 
 /// Calling this will force a recompilation of all shader stages for the program
 /// that matches the name specified
-bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
+bool ShaderProgram::recompileShaderProgram(const Str64& name) {
     bool state = false;
     SharedLock r_lock(s_programLock);
 
@@ -96,9 +96,9 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
         const ShaderProgramMapEntry& shader = it.second;
         
         ShaderProgram* program = shader.first;
-        const stringImpl& shaderName = program->resourceName();
+        const Str64& shaderName = program->resourceName();
         // Check if the name matches any of the program's name components    
-        if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
+        if (shaderName.find(name) != Str64::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue
             s_recompileQueue.push(program);
             // Mark as found
@@ -172,7 +172,7 @@ bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
 
 /// Whenever a new program is created, it's registered with the manager
 void ShaderProgram::registerShaderProgram(ShaderProgram* shaderProgram) {
-    size_t shaderHash = shaderProgram->getDescriptorHash();
+    size_t shaderHash = shaderProgram->descriptorHash();
     unregisterShaderProgram(shaderHash);
 
     UniqueLockShared w_lock(s_programLock);
@@ -244,9 +244,9 @@ void ShaderProgram::rebuildAllShaders() {
     }
 }
 
-vector<stringImpl> ShaderProgram::getAllAtomLocations() {
-    static vector<stringImpl> atomLocations;
-        if (atomLocations.empty()) {
+vector<Str256> ShaderProgram::getAllAtomLocations() {
+    static vector<Str256> atomLocations;
+    if (atomLocations.empty()) {
         // General
         atomLocations.emplace_back(Paths::g_assetsLocation +
                                    Paths::g_shadersLocation);

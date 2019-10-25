@@ -13,7 +13,7 @@
 
 namespace Divide {
 
-Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter)
+Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name, U32 diameter)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_SKY),
       _context(context),
       _enableSun(true),

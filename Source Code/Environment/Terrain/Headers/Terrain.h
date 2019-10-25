@@ -91,7 +91,7 @@ class Terrain : public Object3D {
        };
 
    public:
-    explicit Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
+    explicit Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name);
     virtual ~Terrain();
 
     bool unload() noexcept override;

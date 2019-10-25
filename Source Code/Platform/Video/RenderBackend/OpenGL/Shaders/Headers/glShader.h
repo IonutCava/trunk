@@ -48,7 +48,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     // one per shader type!
     struct LoadData {
         ShaderType _type = ShaderType::COUNT;
-        stringImpl _name = "";
+        Str64 _name = "";
         std::unordered_set<U64> atoms;
         vectorEASTL<stringImpl> sourceCode;
     };
@@ -66,7 +66,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
    public:
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for
-    explicit glShader(GFXDevice& context, const stringImpl& name);
+    explicit glShader(GFXDevice& context, const Str64& name);
     ~glShader();
 
     bool load(const ShaderLoadData& data);
@@ -75,7 +75,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     /// The shader's name is a period-separated list of strings used to define
     /// the main shader file and the properties to load
-    inline const stringImpl& name() const { return _name; }
+    inline const Str64& name() const { return _name; }
 
     bool embedsType(ShaderType type) const;
 
@@ -87,11 +87,11 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     /// Remove a shader from the cache
     static void removeShader(glShader* s);
     /// Return a new shader reference
-    static glShader* getShader(const stringImpl& name);
+    static glShader* getShader(const Str64& name);
 
     /// Add or refresh a shader from the cache
     static glShader* loadShader(GFXDevice& context,
-                                const stringImpl& name,
+                                const Str64& name,
                                 const ShaderLoadData& data);
 
     static glShader* loadShader(GFXDevice& context,
@@ -140,7 +140,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     U8 _stageCount;
     UseProgramStageMask _stageMask;
 
-    stringImpl _name;
+    Str64 _name;
     std::unordered_set<U64> _usedAtoms;
     std::array<vectorEASTL<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
 

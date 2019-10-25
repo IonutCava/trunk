@@ -78,6 +78,7 @@
 #include <windows.h>
 #include <limits.h>
 #include <xmmintrin.h>
+#include <string.h>
 
 #ifdef DELETE
 #undef DELETE
@@ -108,6 +109,9 @@
 #ifndef HAS_CPP17
 #define HAS_CPP17 _HAS_CXX17
 #endif
+
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
 
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

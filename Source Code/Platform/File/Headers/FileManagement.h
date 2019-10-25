@@ -49,72 +49,72 @@ enum class CacheType : U8 {
 struct SysInfo;
 class PlatformContext;
 namespace Paths {
-    extern stringImpl g_exePath;
-    extern stringImpl g_logPath;
-    extern stringImpl g_assetsLocation;
-    extern stringImpl g_shadersLocation;
-    extern stringImpl g_texturesLocation;
-    extern stringImpl g_heightmapLocation;
-    extern stringImpl g_climatesLowResLocation;
-    extern stringImpl g_climatesMedResLocation;
-    extern stringImpl g_climatesHighResLocation;
-    extern stringImpl g_imagesLocation;
-    extern stringImpl g_materialsLocation;
-    extern stringImpl g_soundsLocation;
-    extern stringImpl g_xmlDataLocation;
-    extern stringImpl g_navMeshesLocation;
-    extern stringImpl g_scenesLocation;
-    extern stringImpl g_saveLocation;
-    extern stringImpl g_GUILocation;
-    extern stringImpl g_fontsPath;
-    extern stringImpl g_localisationPath;
-    extern stringImpl g_cacheLocation;
-    extern stringImpl g_terrainCacheLocation;
-    extern stringImpl g_geometryCacheLocation;
+    extern Str256 g_exePath;
+    extern Str256 g_logPath;
+    extern Str256 g_assetsLocation;
+    extern Str256 g_shadersLocation;
+    extern Str256 g_texturesLocation;
+    extern Str256 g_heightmapLocation;
+    extern Str256 g_climatesLowResLocation;
+    extern Str256 g_climatesMedResLocation;
+    extern Str256 g_climatesHighResLocation;
+    extern Str256 g_imagesLocation;
+    extern Str256 g_materialsLocation;
+    extern Str256 g_soundsLocation;
+    extern Str256 g_xmlDataLocation;
+    extern Str256 g_navMeshesLocation;
+    extern Str256 g_scenesLocation;
+    extern Str256 g_saveLocation;
+    extern Str256 g_GUILocation;
+    extern Str256 g_fontsPath;
+    extern Str256 g_localisationPath;
+    extern Str256 g_cacheLocation;
+    extern Str256 g_terrainCacheLocation;
+    extern Str256 g_geometryCacheLocation;
 
     namespace Editor {
-        extern stringImpl g_saveLocation;
-        extern stringImpl g_tabLayoutFile;
-        extern stringImpl g_panelLayoutFile;
+        extern Str256 g_saveLocation;
+        extern Str256 g_tabLayoutFile;
+        extern Str256 g_panelLayoutFile;
     };
 
     namespace Scripts {
-        extern stringImpl g_scriptsLocation;
-        extern stringImpl g_scriptsAtomsLocation;
+        extern Str256 g_scriptsLocation;
+        extern Str256 g_scriptsAtomsLocation;
     };
 
     namespace Textures {
-        extern stringImpl g_metadataLocation;
+        extern Str256 g_metadataLocation;
     };
 
     namespace Shaders {
-        extern stringImpl g_cacheLocation;
-        extern stringImpl g_cacheLocationText;
-        extern stringImpl g_cacheLocationBin;
+        extern Str256 g_cacheLocation;
+        extern Str256 g_cacheLocationText;
+        extern Str256 g_cacheLocationBin;
 
         namespace GLSL {
             // these must match the last 4 characters of the atom file
-            extern stringImpl g_fragAtomExt;
-            extern stringImpl g_vertAtomExt;
-            extern stringImpl g_geomAtomExt;
-            extern stringImpl g_tescAtomExt;
-            extern stringImpl g_teseAtomExt;
-            extern stringImpl g_compAtomExt;
-            extern stringImpl g_comnAtomExt;
+            extern Str8 g_fragAtomExt;
+            extern Str8 g_vertAtomExt;
+            extern Str8 g_geomAtomExt;
+            extern Str8 g_tescAtomExt;
+            extern Str8 g_teseAtomExt;
+            extern Str8 g_compAtomExt;
+            extern Str8 g_comnAtomExt;
 
             // Shader subfolder name that contains shader files for OpenGL
-            extern stringImpl g_parentShaderLoc;
+            extern Str256 g_parentShaderLoc;
             // Atom folder names in parent shader folder
-            extern stringImpl g_fragAtomLoc;
-            extern stringImpl g_vertAtomLoc;
-            extern stringImpl g_geomAtomLoc;
-            extern stringImpl g_tescAtomLoc;
-            extern stringImpl g_teseAtomLoc;
-            extern stringImpl g_compAtomLoc;
-            extern stringImpl g_comnAtomLoc;
+            extern Str256 g_fragAtomLoc;
+            extern Str256 g_vertAtomLoc;
+            extern Str256 g_geomAtomLoc;
+            extern Str256 g_tescAtomLoc;
+            extern Str256 g_teseAtomLoc;
+            extern Str256 g_compAtomLoc;
+            extern Str256 g_comnAtomLoc;
         }; //namespace GLSL
         namespace HLSL {
-            extern stringImpl g_parentShaderLoc;
+            extern Str256 g_parentShaderLoc;
         }; //namespace HLSL
     }; //namespace Shaders
 
@@ -137,14 +137,14 @@ bool createFile(const char* filePathAndName, bool overwriteExisting);
 bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
 
 template<typename T /*requirement: has_assign<T> == true*/>
-bool readFile(const stringImpl& filePath, const stringImpl& fileName, T& contentOut, FileType fileType);
-bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const bufferPtr content, size_t length, FileType fileType);
-bool deleteFile(const stringImpl& filePath, const stringImpl& fileName);
-bool copyFile(const stringImpl& sourcePath, const stringImpl& sourceName, const stringImpl& targetPath, const stringImpl& targetName, bool overwrite);
-bool findFile(const stringImpl& filePath, const stringImpl& fileName, stringImpl& foundPath);
+bool readFile(const Str256& filePath, const Str64& fileName, T& contentOut, FileType fileType);
+bool writeFile(const Str256& filePath, const Str64& fileName, const bufferPtr content, size_t length, FileType fileType);
+bool deleteFile(const Str256& filePath, const Str64& fileName);
+bool copyFile(const Str256& sourcePath, const Str64& sourceName, const Str256& targetPath, const Str64& targetName, bool overwrite);
+bool findFile(const Str256& filePath, const Str64& fileName, Str256& foundPath);
 
 /// will add '.' automatically at the start of 'extension'
-bool hasExtension(const stringImpl& filePath, const stringImpl& extension);
+bool hasExtension(const Str256& filePath, const Str8& extension);
 
 stringImpl stripQuotes(const stringImpl& input);
 FileWithPath splitPathToNameAndLocation(const stringImpl& input);

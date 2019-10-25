@@ -91,7 +91,7 @@ inline void ParamHandler::setParam(const char* name, const T& value) {
 
 template <typename T>
 inline void ParamHandler::setParam(U64 nameID, const T& value) {
-    Lock w_lock(_mutex);
+    UniqueLockShared w_lock(_mutex);
     ParamMap::iterator it = _params.find(nameID);
     if (it == std::end(_params)) {
         bool result = hashAlg::emplace(_params, nameID, value).second;
@@ -109,7 +109,7 @@ inline void ParamHandler::delParam(const char* name) {
 template <typename T>
 inline void ParamHandler::delParam(U64 nameID) {
     if (isParam<T>(nameID)) {
-        Lock w_lock(_mutex);
+        UniqueLockShared w_lock(_mutex);
         _params.erase(nameID);
         if (_logState) {
             Console::printfn(Locale::get(_ID("PARAM_REMOVE")), nameID);

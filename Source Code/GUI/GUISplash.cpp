@@ -14,7 +14,7 @@
 namespace Divide {
 
 GUISplash::GUISplash(ResourceCache& cache,
-                     const stringImpl& splashImageName,
+                     const Str64& splashImageName,
                      const vec2<U16>& dimensions) 
     : _dimensions(dimensions)
 {

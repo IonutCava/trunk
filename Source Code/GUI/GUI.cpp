@@ -187,7 +187,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache) {
     _defaultGUIScheme = context.config().gui.cegui.defaultGUIScheme;
 
     if (Config::Build::IS_DEBUG_BUILD) {
-        CEGUI::Logger::getSingleton().setLogFilename(Paths::g_logPath + "CEGUI.log", false);
+        CEGUI::Logger::getSingleton().setLogFilename(stringImpl(Paths::g_logPath.c_str()) + "CEGUI.log", false);
         CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
     }
 

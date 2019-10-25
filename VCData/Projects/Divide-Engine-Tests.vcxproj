@@ -426,7 +426,7 @@ $(OutDir)Test-Platform.exe nopause</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Divide-Recast_p.lib;Divide-Game_p.lib;Divide-Platform_p.lib;Divide-Engine_p.lib;Divide-Networking_p.lib;Divide-Core_p.lib;Divide-Editor_p.lib;Divide-ThirdPartyLibs_p.lib</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Recast_p.lib;Divide-Game_p.lib;Divide-Platform_p.lib;Divide-Engine_p.lib;Divide-Networking_p.lib;Divide-Core_p.lib;Divide-Editor_p.lib;Divide-ThirdPartyLibs_p.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../Source Code/Libs/lib\;$(SolutionDir)../3rdParty/assimp\lib\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\Lib\vc15win64\;$(SolutionDir)../3rdParty/sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Profile>true</Profile>
       <SubSystem>Console</SubSystem>

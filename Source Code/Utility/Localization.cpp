@@ -13,7 +13,7 @@ namespace Locale {
 
 namespace detail {
     /// Default language can be set at compile time
-    stringImpl g_localeFile;
+    Str64 g_localeFile;
 
     std::unique_ptr<LanguageData> g_data = nullptr;
 
@@ -51,7 +51,7 @@ void LanguageData::changeLanguage(const char* newLanguage) {
 }
 
 const char* LanguageData::get(U64 key, const char* defaultValue) {
-    typedef hashMap<U64, stringImpl>::const_iterator citer;
+    typedef hashMap<U64, Str64>::const_iterator citer;
     // When we ask for a string for the given key, we check our language cache first
     const citer entry = _languageTable.find(key);
     if (entry != std::cend(_languageTable)) {
@@ -77,7 +77,7 @@ ErrorCode init(const char* newLanguage) {
             detail::g_LanguageFileWatcher.reset(new FW::FileWatcher());
             detail::g_fileWatcherListener.addIgnoredEndCharacter('~');
             detail::g_fileWatcherListener.addIgnoredExtension("tmp");
-            detail::g_LanguageFileWatcher->addWatch(Paths::g_exePath + Paths::g_localisationPath.c_str(), &detail::g_fileWatcherListener);
+            detail::g_LanguageFileWatcher->addWatch((Paths::g_exePath + Paths::g_localisationPath).c_str(), &detail::g_fileWatcherListener);
         }
     }
 
@@ -91,10 +91,10 @@ ErrorCode init(const char* newLanguage) {
     // Use SimpleIni library for cross-platform INI parsing
     CSimpleIni languageFile(true, false, true);
 
-    detail::g_localeFile = stringImpl(newLanguage);
+    detail::g_localeFile = newLanguage;
     assert(!detail::g_localeFile.empty());
 
-    stringImpl file = Paths::g_localisationPath + detail::g_localeFile + g_languageFileExtension;
+    Str256 file = (Paths::g_localisationPath + detail::g_localeFile) + g_languageFileExtension;
 
     if (languageFile.LoadFile(file.c_str()) != SI_OK) {
         return ErrorCode::NO_LANGUAGE_INI;
@@ -148,7 +148,7 @@ void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new langua
     detail::g_data->addLanguageChangeCallback(cbk);
 }
 
-const stringImpl& currentLanguage() noexcept {
+const Str64& currentLanguage() noexcept {
     return detail::g_localeFile;
 }
 

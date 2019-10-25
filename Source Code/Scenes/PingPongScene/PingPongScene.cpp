@@ -24,7 +24,7 @@ namespace {
     Task* g_gameTaskID = nullptr;
 };
 
-PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name)
     : Scene(context, cache, parent, name)
 {
     _sideDrift = 0;
@@ -284,7 +284,7 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     Scene::processInput(idx, deltaTimeUS);
 }
 
-bool PingPongScene::load(const stringImpl& name) {
+bool PingPongScene::load(const Str64& name) {
     _freeFly = false;
     _wasInFreeFly = false;
 

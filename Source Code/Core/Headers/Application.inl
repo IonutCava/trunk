@@ -169,7 +169,7 @@ inline const WindowManager& Application::windowManager() const noexcept {
     return _windowManager;
 }
 
-inline void Application::setMemoryLogFile(const stringImpl& fileName) {
+inline void Application::setMemoryLogFile(const Str256& fileName) {
     _memLogBuffer = fileName;
 }
 

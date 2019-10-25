@@ -93,16 +93,16 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
 
 
 struct SceneNode {
-    stringImpl name;
-    stringImpl type;
+    Str256 name;
+    Str32 type;
 
     vector<SceneNode> children;
 };
 
-void loadScene(const stringImpl& scenePath, const stringImpl& sceneName, Scene* scene, const Configuration& config);
+void loadScene(const Str256& scenePath, const Str64& sceneName, Scene* scene, const Configuration& config);
 
-void loadSceneGraph(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene);
-void loadMusicPlaylist(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene, const Configuration& config);
+void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene* const scene);
+void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config);
 
 };  // namespace XML
 };  // namespace Divide

@@ -8,7 +8,14 @@
 #include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
-    EditorComponent::EditorComponent(const stringImpl& name)
+    namespace {
+        FORCE_INLINE stringImpl GetFullFieldName(const Str128& componentName, Str32 fieldName) {
+            Util::ReplaceStringInPlace(fieldName, " ", "__");
+            return Util::StringFormat("%s.%s", componentName.c_str(), fieldName.c_str());
+        }
+    };
+
+    EditorComponent::EditorComponent(const Str128& name)
         : GUIDWrapper(),
           _name(name)
     {
@@ -48,12 +55,10 @@ namespace Divide {
 
 
     void EditorComponent::saveToXML(boost::property_tree::ptree& pt) const {
-        pt.put(_name, "");
+        pt.put(_name.c_str(), "");
 
         for (const EditorComponentField& field : _fields) {
-            stringImpl fieldName = field._name;
-            Util::ReplaceStringInPlace(fieldName, " ", "__");
-            stringImpl entryName = _name + "." + fieldName;
+            auto entryName = GetFullFieldName(_name, field._name);
 
             switch(field._type) {
                 case EditorComponentFieldType::PUSH_TYPE: {
@@ -95,12 +100,9 @@ namespace Divide {
     }
 
     void EditorComponent::loadFromXML(const boost::property_tree::ptree& pt) {
-        if (!pt.get(_name, "").empty()) {
+        if (!pt.get(_name.c_str(), "").empty()) {
             for (EditorComponentField& field : _fields) {
-                stringImpl fieldName = field._name;
-                Util::ReplaceStringInPlace(fieldName, " ", "__");
-
-                stringImpl entryName = _name + "." + fieldName;
+                auto entryName = GetFullFieldName(_name, field._name);
 
                 switch (field._type) {
                     case EditorComponentFieldType::PUSH_TYPE: {
@@ -146,10 +148,8 @@ namespace Divide {
     }
 
     void EditorComponent::saveFieldToXML(const EditorComponentField& field, boost::property_tree::ptree& pt) const {
-        stringImpl fieldName = field._name;
-        Util::ReplaceStringInPlace(fieldName, " ", "__");
+        auto entryName = GetFullFieldName(_name, field._name);
 
-        stringImpl entryName = _name + "." + fieldName;
         switch (field._basicType) {
             case GFX::PushConstantType::BOOL: {
                 pt.put(entryName.c_str(), field.get<bool>());
@@ -433,9 +433,7 @@ namespace Divide {
     }
 
     void EditorComponent::loadFieldFromXML(EditorComponentField& field, const boost::property_tree::ptree& pt) {
-        stringImpl fieldName = field._name;
-        Util::ReplaceStringInPlace(fieldName, " ", "__");
-        stringImpl entryName = _name + "." + fieldName;
+        auto entryName = GetFullFieldName(_name, field._name);
 
         switch (field._basicType) {
             case GFX::PushConstantType::BOOL:

@@ -99,7 +99,7 @@ std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
 std::array<UseProgramStageMask, to_base(ShaderType::COUNT) + 1> glProgramStageMask;
-std::array<stringImpl, to_base(ShaderType::COUNT)> glShaderStageNameTable;
+std::array<Str16, to_base(ShaderType::COUNT)> glShaderStageNameTable;
 std::array<GLenum, to_base(QueryType::COUNT)> glQueryTypeTable;
 
 void fillEnumTables() {

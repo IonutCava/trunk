@@ -93,7 +93,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
         populatePressRelease(actions, attributes);
 
-        Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data().c_str()).c_str());
+        Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data()).c_str());
         scene->input().addKeyMapping(key, actions);
     }
 
@@ -106,7 +106,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
         populatePressRelease(actions, attributes);
 
-        Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data().c_str()).c_str());
+        Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()).c_str());
 
         scene->input().addMouseMapping(btn, actions);
     }
@@ -124,20 +124,20 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
             const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
             populatePressRelease(actions, attributes);
 
-            Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data().c_str()).c_str());
+            Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()).c_str());
 
             scene->input().addJoystickMapping(joystick, element._type, element._elementIndex, actions);
         }
     }
 }
 
-void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* scene, const Configuration& config) {
+void loadScene(const Str256& scenePath, const Str64&sceneName, Scene* scene, const Configuration& config) {
     ParamHandler &par = ParamHandler::instance();
     
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
-    stringImpl sceneLocation(scenePath + "/" + sceneName.c_str());
-    stringImpl sceneDataFile(sceneLocation + ".xml");
+    Str256 sceneLocation(scenePath + "/" + sceneName);
+    Str256 sceneDataFile(sceneLocation + ".xml");
 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
@@ -223,7 +223,7 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     loadMusicPlaylist(sceneLocation, pt.get("musicPlaylist", ""), scene, config);
 }
 
-void loadMusicPlaylist(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene, const Configuration& config) {
+void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config) {
     stringImpl file = scenePath + "/" + fileName;
 
     if (!fileExists(file.c_str())) {
@@ -238,11 +238,11 @@ void loadMusicPlaylist(const stringImpl& scenePath, const stringImpl& fileName, 
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
         scene->addMusic(MusicType::TYPE_BACKGROUND,
                         attributes.get<stringImpl>("name", "").c_str(),
-                         Paths::g_assetsLocation + attributes.get<stringImpl>("src", "").c_str());
+                        Paths::g_assetsLocation + attributes.get<stringImpl>("src", "").c_str());
     }
 }
 
-void loadSceneGraph(const stringImpl& scenePath, const stringImpl& fileName, Scene *const scene) {
+void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const scene) {
     stringImpl file = scenePath + "/" + fileName;
     if (!fileExists(file.c_str())) {
         return;

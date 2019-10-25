@@ -45,7 +45,7 @@ class ShaderProgram;
 
 class WaterPlane : public SceneNode {
    public:
-    explicit WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
+    explicit WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const Str64& name);
     ~WaterPlane();
 
     bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);

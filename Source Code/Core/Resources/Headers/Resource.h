@@ -74,11 +74,11 @@ class Resource : public GUIDWrapper
 {
    public:
     explicit Resource(ResourceType type,
-                      const stringImpl& resourceName);
+                      const Str64& resourceName);
 
     ResourceState getState() const noexcept;
 
-    PROPERTY_R(stringImpl, resourceName);
+    PROPERTY_R(Str64, resourceName);
     PROPERTY_R(ResourceType, resourceType, ResourceType::COUNT);
 
    protected:
@@ -100,43 +100,34 @@ class CachedResource : public Resource,
 public:
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const stringImpl& resourceName);
+                            const Str64& resourceName);
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const stringImpl& resourceName,
-                            const stringImpl& assetName);
+                            const Str64& resourceName,
+                            const Str64& assetName);
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const stringImpl& resourceName,
-                            const stringImpl& assetName,
+                            const Str64& resourceName,
+                            const Str64& assetName,
                             const stringImpl& assetLocation);
 
     /// Loading and unloading interface
     virtual bool load();
     virtual bool unload() noexcept;
 
-    size_t getDescriptorHash() const noexcept;
-    /// Physical file location
-    const stringImpl& assetLocation() const noexcept;
-    /// Physical file name
-    const stringImpl& assetName() const noexcept;
-
-    inline stringImpl assetPath() const { return assetLocation() + "/" + assetName(); }
-
+    inline stringImpl assetPath() const { return stringImpl(assetLocation().c_str()) + "/" + assetName().c_str(); }
     void setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk);
 
 protected:
     void setState(ResourceState currentState) noexcept override;
-    void assetName(const stringImpl& name);
-    void assetLocation(const stringImpl& location);
     virtual const char* getResourceTypeName() const override { return "Cached Resource"; }
 
 protected:
-    size_t _descriptorHash;
-    stringImpl   _assetLocation;  ///< Physical file location
-    stringImpl   _assetName;      ///< Physical file name
     std::array<DELEGATE_CBK<void, Resource_wptr>, to_base(ResourceState::COUNT)> _loadingCallbacks;
     mutable std::mutex _callbackLock;
+    PROPERTY_RW(stringImpl, assetLocation);
+    PROPERTY_RW(Str64, assetName);
+    PROPERTY_R(size_t, descriptorHash);
 };
 
 struct TerrainInfo {

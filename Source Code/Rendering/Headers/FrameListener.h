@@ -69,7 +69,7 @@ struct FrameEvent {
 class FrameListener : public GUIDWrapper {
    public:
     /// Either give it a name
-    FrameListener(const stringImpl& name) 
+    FrameListener(const Str64& name)
         : GUIDWrapper(),
           _callOrder(0)
     {
@@ -86,7 +86,7 @@ class FrameListener : public GUIDWrapper {
     {
     }
 
-    inline const stringImpl& getListenerName() const {
+    inline const Str64& getListenerName() const {
         return _listenerName;
     }
 
@@ -96,7 +96,7 @@ class FrameListener : public GUIDWrapper {
 
    protected:
     friend class FrameListenerManager;
-    inline void name(const stringImpl& name) { _listenerName = name; }
+    inline void name(const Str64& name) { _listenerName = name; }
     inline void setCallOrder(U32 order) { _callOrder = order; }
     /// Adapter patern instead of pure interface for the same reason as the Ogre
     /// boys pointed out:
@@ -127,7 +127,7 @@ class FrameListener : public GUIDWrapper {
 
    private:
     /// not _name so that it doesn't conflict with Resource base class
-    stringImpl _listenerName;
+    Str64 _listenerName;
     /// if multiple frame listeners are handling the same event, this call order
     /// variable is used for sorting
     U32 _callOrder;

@@ -100,7 +100,7 @@ void ResourceCache::add(CachedResource_wptr res) {
     DIVIDE_ASSERT(!res.expired(), Locale::get(_ID("ERROR_RESOURCE_CACHE_LOAD_RES")));
 
     CachedResource_ptr resource = res.lock();
-    const size_t hash = resource->getDescriptorHash();
+    const size_t hash = resource->descriptorHash();
     DIVIDE_ASSERT(hash != 0, "ResourceCache add error: Invalid resource hash!");
 
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getResourceTypeName(), resource->getGUID(), hash);
@@ -124,8 +124,8 @@ CachedResource_ptr ResourceCache::find(const size_t descriptorHash) {
 void ResourceCache::remove(CachedResource* resource) {
     WAIT_FOR_CONDITION(resource->getState() != ResourceState::RES_LOADING);
 
-    const size_t resourceHash = resource->getDescriptorHash();
-    const stringImpl& name = resource->resourceName();
+    const size_t resourceHash = resource->descriptorHash();
+    const Str64& name = resource->resourceName();
     const I64 guid = resource->getGUID();
 
     DIVIDE_ASSERT(resourceHash != 0, Locale::get(_ID("ERROR_RESOURCE_CACHE_INVALID_NAME")));

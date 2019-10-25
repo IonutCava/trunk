@@ -143,21 +143,21 @@ class Material : public CachedResource {
     };
 
     struct ShaderData {
-        stringImpl _depthShaderVertSource = "baseVertexShaders";
-        stringImpl _depthShaderVertVariant = "BasicLightData";
+        Str64 _depthShaderVertSource = "baseVertexShaders";
+        Str32 _depthShaderVertVariant = "BasicLightData";
 
-        stringImpl _colourShaderVertSource = "baseVertexShaders";
-        stringImpl _colourShaderVertVariant = "BasicLightData";
+        Str64 _colourShaderVertSource = "baseVertexShaders";
+        Str32 _colourShaderVertVariant = "BasicLightData";
 
-        stringImpl _depthShaderFragSource = "depthPass";
-        stringImpl _depthShaderFragVariant = "";
+        Str64 _depthShaderFragSource = "depthPass";
+        Str32 _depthShaderFragVariant = "";
 
-        stringImpl _colourShaderFragSource = "material";
-        stringImpl _colourShaderFragVariant = "";
+        Str64 _colourShaderFragSource = "material";
+        Str32 _colourShaderFragVariant = "";
     };
 
    public:
-    explicit Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
+    explicit Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name);
     ~Material();
 
     static bool onStartup();
@@ -168,7 +168,7 @@ class Material : public CachedResource {
     /// Return a new instance of this material with the name composed of the
     /// base material's name and the give name suffix.
     /// clone calls CreateResource internally!)
-    Material_ptr clone(const stringImpl& nameSuffix);
+    Material_ptr clone(const Str64& nameSuffix);
     bool unload() noexcept override;
     void update(const U64 deltaTimeUS);
 
@@ -257,11 +257,11 @@ class Material : public CachedResource {
     const ShaderData& getBaseShaderData() const;
 
     // type == ShaderType::Count = add to all stages
-    void addShaderDefine(ShaderType type, const stringImpl& define, bool addPrefix);
+    void addShaderDefine(ShaderType type, const Str128& define, bool addPrefix);
     const ModuleDefines& shaderDefines(ShaderType type) const;
 
    private:
-    void addShaderDefineInternal(ShaderType type, const stringImpl& define, bool addPrefix);
+    void addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix);
 
     void updateTranslucency();
 

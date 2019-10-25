@@ -62,7 +62,7 @@ private:
     /// Each string key in the map matches a key in the language ini file
     /// each string value in the map matches the value in the ini file for the given key
     /// Basically, the hashMap is a direct copy of the [language] section of the give ini file
-    hashMap<U64, stringImpl> _languageTable;
+    hashMap<U64, Str64> _languageTable;
     LangCallbacks _languageChangeCallbacks;
 };
 
@@ -78,7 +78,7 @@ void changeLanguage(const char* newLanguage);
 /// Add a function to be called on each language change
 void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk);
 /// Query the current language code to detect changes
-const stringImpl& currentLanguage() noexcept;
+const Str64& currentLanguage() noexcept;
 /// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the language key we want
 /// and "X" is a default string in case the key does not exist in the INI file
 const char* get(U64 key, const char* defaultValue);

@@ -48,13 +48,13 @@ void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
 
 template<>
 CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
-    Import::ImportData tempMeshData(_descriptor.assetLocation(), _descriptor.assetName());
+    Import::ImportData tempMeshData(_descriptor.assetLocation().c_str(), _descriptor.assetName());
     Mesh_ptr ptr(MemoryManager_NEW Mesh(_context.gfx(),
                                         _cache,
                                         _loadingDescriptorHash,
                                         _descriptor.resourceName(),
                                         tempMeshData.modelName(),
-                                        tempMeshData.modelPath()),
+                                        tempMeshData.modelPath().c_str()),
                                 DeleteResource(_cache));
 
     if (ptr) {
@@ -65,7 +65,7 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
     if (_descriptor.threaded()) {
         Start(*CreateTask(_context, [this, tempMeshData, loadingData](const Task & parent) {
             threadedMeshLoad(loadingData, tempMeshData);
-        }, (stringImpl("Mesh load task: [") + _descriptor.assetName() + "]").c_str()));
+        }, ("Mesh load task: [" + _descriptor.assetName() + "]").c_str()));
     } else {
         threadedMeshLoad(loadingData, tempMeshData);
     }

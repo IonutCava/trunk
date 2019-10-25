@@ -83,7 +83,7 @@ class Application : public SDLEventListener {
 
     void mainThreadTask(const DELEGATE_CBK<void>& task, bool wait = true);
 
-    inline void setMemoryLogFile(const stringImpl& fileName);
+    inline void setMemoryLogFile(const Str256& fileName);
 
     inline bool mainLoopActive() const noexcept;
     inline void mainLoopActive(bool state) noexcept;
@@ -119,7 +119,7 @@ class Application : public SDLEventListener {
     Kernel* _kernel;
     /// buffer to register all of the memory allocations recorded via
     /// "MemoryManager_NEW"
-    stringImpl _memLogBuffer;
+    Str256 _memLogBuffer;
     /// A list of callback functions that get called when the application instance
     /// is destroyed
     vector<DELEGATE_CBK<void> > _shutdownCallback;

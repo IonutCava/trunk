@@ -48,8 +48,8 @@ namespace Divide {
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
 
-            PROPERTY_RW(stringImpl, textureName);
-            PROPERTY_RW(stringImpl, texturePath);
+            PROPERTY_RW(Str64, textureName);
+            PROPERTY_RW(Str256, texturePath);
 
             // Only Albedo/Diffuse should be sRGB
             // Normals, specular, etc should be in linear space
@@ -66,7 +66,7 @@ namespace Divide {
 
             PROPERTY_RW(bool, ignoreAlpha, false);
             PROPERTY_RW(bool, doubleSided, true);
-            PROPERTY_RW(stringImpl, name);
+            PROPERTY_RW(Str64, name);
             PROPERTY_RW(Material::ShadingMode, shadingMode, Material::ShadingMode::FLAT);
             PROPERTY_RW(Material::BumpMethod,  bumpMethod, Material::BumpMethod::NONE);
 
@@ -87,7 +87,7 @@ namespace Divide {
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
 
-            PROPERTY_RW(stringImpl, name);
+            PROPERTY_RW(Str64, name);
             PROPERTY_RW(U32, index, 0u);
             PROPERTY_RW(U32, boneCount, 0u);
             PROPERTY_RW(vec3<F32>, minPos);
@@ -102,7 +102,7 @@ namespace Divide {
         };
 
         struct ImportData {
-            ImportData(const stringImpl& modelPath, const stringImpl& modelName)
+            ImportData(const Str256& modelPath, const Str64& modelName)
                 : _modelPath(modelPath),
                   _modelName(modelName)
             {
@@ -113,8 +113,8 @@ namespace Divide {
             }
             ~ImportData();
 
-            bool saveToFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName);
-            bool loadFromFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName);
+            bool saveToFile(PlatformContext& context, const Str256& path, const Str64& fileName);
+            bool loadFromFile(PlatformContext& context, const Str256& path, const Str64& fileName);
 
             // Was it loaded from file, or just created?
             PROPERTY_RW(bool, loadedFromFile, false);
@@ -125,8 +125,8 @@ namespace Divide {
             PROPERTY_RW(bool, hasAnimations, false);
 
             // Name and path
-            PROPERTY_RW(stringImpl, modelName);
-            PROPERTY_RW(stringImpl, modelPath);
+            PROPERTY_RW(Str64, modelName);
+            PROPERTY_RW(Str256, modelPath);
 
             vector<Bone*> _bones;
             vector<SubMeshData> _subMeshData;

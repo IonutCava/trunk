@@ -49,8 +49,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
    public:
     explicit glShaderProgram(GFXDevice& context,
                              size_t descriptorHash,
-                             const stringImpl& name,
-                             const stringImpl& resourceName,
+                             const Str64& name,
+                             const Str64& resourceName,
                              const stringImpl& resourceLocation,
                              const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad);
@@ -60,7 +60,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static void destroyStaticData();
     static void onStartup(GFXDevice& context, ResourceCache& parentCache);
     static void onShutdown();
-    static stringImpl decorateFileName(const stringImpl& name);
+    static Str64 decorateFileName(const Str64& name);
 
     /// Make sure this program is ready for deletion
     bool unload() noexcept override;
@@ -77,27 +77,28 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void UploadPushConstants(const PushConstants& constants);
 
     static void onAtomChange(const char* atomName, FileUpdateEvent evt);
-    static const stringImpl& shaderFileRead(const stringImpl& filePath, const stringImpl& atomName, bool recurse, U32 level, vector<stringImpl>& foundAtoms, bool& wasParsed);
-    static const stringImpl& shaderFileReadLocked(const stringImpl& filePath, const stringImpl& atomName, bool recurse, U32 level, vector<stringImpl>& foundAtoms, bool& wasParsed);
+    static const stringImpl& shaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed);
+    static const stringImpl& shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed);
 
-    static void shaderFileRead(const stringImpl& filePath, const stringImpl& fileName, stringImpl& sourceCodeOut);
-    static void shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode);
-    static stringImpl preprocessIncludes(const stringImpl& name,
+    static void shaderFileRead(const Str256& filePath, const Str64& fileName, stringImpl& sourceCodeOut);
+    static void shaderFileWrite(const Str256& filePath, const Str64& fileName, const char* sourceCode);
+    static stringImpl preprocessIncludes(const Str64& name,
                                          const stringImpl& source,
                                          GLint level,
-                                         vector<stringImpl>& foundAtoms,
+                                         vector<Str64>& foundAtoms,
                                          bool lock);
 
     void update(const U64 deltaTimeUS) override;
    protected:
 
-    vector<stringImpl> loadSourceCode(ShaderType stage,
-                                      const stringImpl& stageName,
-                                      const stringImpl& extension,
-                                      const stringImpl& header,
-                                      U32 lineOffset,
-                                      bool reloadExisting,
-                                      std::pair<bool, stringImpl>& sourceCodeOut);
+    /// return a list of atom names
+    vector<Str64> loadSourceCode(ShaderType stage,
+                                 const Str64& stageName,
+                                 const Str8& extension,
+                                 const stringImpl& header,
+                                 U32 lineOffset,
+                                 bool reloadExisting,
+                                 std::pair<bool, stringImpl>& sourceCodeOut);
 
     bool rebindStages();
     void validatePreBind();
@@ -143,8 +144,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     static GLuint s_shadersUploadedThisFrame;
     //extra entry for "common" location
-    static stringImpl shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
-    static stringImpl shaderAtomExtensionName[to_base(ShaderType::COUNT) + 1];
+    static Str256 shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
+    static Str8 shaderAtomExtensionName[to_base(ShaderType::COUNT) + 1];
     static U64 shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
 };
 

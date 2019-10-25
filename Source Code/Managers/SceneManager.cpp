@@ -148,7 +148,7 @@ void SceneManager::destroy() {
     }
 }
 
-Scene* SceneManager::load(stringImpl sceneName) {
+Scene* SceneManager::load(const Str64& sceneName) {
     bool foundInCache = false;
     Scene* loadingScene = _scenePool->getOrCreateScene(*_platformContext, parent().resourceCache(), *this, sceneName, foundInCache);
 
@@ -157,7 +157,7 @@ Scene* SceneManager::load(stringImpl sceneName) {
         return nullptr;
     }
 
-    ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
+    ParamHandler::instance().setParam(_ID("currentScene"), stringImpl(sceneName.c_str()));
 
     bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
 
@@ -210,7 +210,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     ParamHandler::instance().setParam(_ID("activeScene"), scene->resourceName());
 }
 
-bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, bool threaded) {
+bool SceneManager::switchScene(const Str64& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, bool threaded) {
     assert(!name.empty());
 
     Scene* sceneToUnload = nullptr;
@@ -273,7 +273,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, cons
     return true;
 }
 
-vector<stringImpl> SceneManager::sceneNameList(bool sorted) const {
+vector<Str64> SceneManager::sceneNameList(bool sorted) const {
     return _scenePool->sceneNameList(sorted);
 }
 
@@ -812,11 +812,11 @@ bool LoadSave::loadScene(Scene& activeScene) {
         return true;
     }
 
-    const stringImpl& sceneName = activeScene.resourceName();
+    const Str64& sceneName = activeScene.resourceName();
 
-    stringImpl path = Paths::g_saveLocation +  sceneName + "/";
-    stringImpl saveFile = "current_save.sav";
-    stringImpl bakSaveFile = "save.bak";
+    Str256 path = Paths::g_saveLocation +  sceneName + "/";
+    Str64 saveFile = "current_save.sav";
+    Str64 bakSaveFile = "save.bak";
 
     bool isLoadFromBackup = false;
     // If file is missing, restore from bak
@@ -851,10 +851,10 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
         return true;
     }
 
-    const stringImpl& sceneName = activeScene.resourceName();
-    stringImpl path = Paths::g_saveLocation + sceneName + "/";
-    stringImpl saveFile = "current_save.sav";
-    stringImpl bakSaveFile = "save.bak";
+    const Str64& sceneName = activeScene.resourceName();
+    Str256 path = Paths::g_saveLocation + sceneName + "/";
+    Str64 saveFile = "current_save.sav";
+    Str64 bakSaveFile = "save.bak";
 
     if (fileExists((path + saveFile).c_str())) {
         copyFile(path, saveFile, path, bakSaveFile, true);

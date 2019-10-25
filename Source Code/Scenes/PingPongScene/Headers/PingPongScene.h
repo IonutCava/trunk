@@ -40,11 +40,11 @@ class Sphere3D;
 
 class PingPongScene : public Scene {
    public:
-    explicit PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name);
+    explicit PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name);
 
     ~PingPongScene() {}
 
-    bool load(const stringImpl& name) override;
+    bool load(const Str64& name) override;
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
     void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
     void processTasks(const U64 deltaTimeUS) override;

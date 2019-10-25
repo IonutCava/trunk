@@ -18,8 +18,8 @@ const char* Texture::s_missingTextureFileName = nullptr;
 
 Texture::Texture(GFXDevice& context,
                  size_t descriptorHash,
-                 const stringImpl& name,
-                 const stringImpl& resourceName,
+                 const Str64& name,
+                 const Str64& resourceName,
                  const stringImpl& resourceLocation,
                  bool isFlipped,
                  bool asyncLoad,
@@ -74,7 +74,7 @@ void Texture::threadedLoad() {
 
     // Each texture face/layer must be in a comma separated list
     stringstreamImpl textureLocationList(assetLocation());
-    stringstreamImpl textureFileList(assetName());
+    stringstreamImpl textureFileList(assetName().c_str());
 
     bool loadFromFile = false;
 
@@ -95,7 +95,7 @@ void Texture::threadedLoad() {
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
 
-            currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation : currentTextureLocation);
+            currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation.c_str() : currentTextureLocation);
             currentTextureFullPath.append("/" + currentTextureFile);
 
             _descriptor._sourceFileList.push_back(currentTextureFile);
@@ -174,7 +174,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
             // Missing texture fallback.
             fileData.flip(false);
             // missing_texture.jpg must be something that really stands out
-            ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, _width, _height, _descriptor.srgb(), fileData);
+            ImageTools::ImageDataInterface::CreateImageData(((Paths::g_assetsLocation + Paths::g_texturesLocation) + s_missingTextureFileName).c_str(), _width, _height, _descriptor.srgb(), fileData);
 
         }
 
@@ -185,8 +185,8 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 
         FileWithPath fwp = splitPathToNameAndLocation(name);
         Util::ReplaceStringInPlace(fwp._path, "/", "_");
-        const stringImpl cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation;
-        const stringImpl cacheName = fwp._path + "_" + fwp._fileName + ".cache";
+        const Str256 cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation;
+        const Str64 cacheName = (fwp._path + "_" + fwp._fileName + ".cache").c_str();
 
         ByteBuffer metadataCache = {};
         if (metadataCache.loadFromFile(cachePath, cacheName)) {

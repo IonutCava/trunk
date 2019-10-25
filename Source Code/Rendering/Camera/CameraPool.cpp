@@ -68,7 +68,7 @@ void Camera::destroyPool() {
     _utilityCameras.fill(nullptr);
 }
 
-Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
+Camera* Camera::createCamera(const Str64& cameraName, CameraType type) {
     Camera* camera = nullptr;
     switch (type) {
     case Camera::CameraType::FIRST_PERSON:

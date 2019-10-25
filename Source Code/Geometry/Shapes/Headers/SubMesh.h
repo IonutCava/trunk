@@ -69,7 +69,7 @@ class SubMesh : public Object3D {
     explicit SubMesh(GFXDevice& context,
                      ResourceCache& parentCache,
                      size_t descriptorHash,
-                     const stringImpl& name,
+                     const Str64& name,
                      ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NO_VB);
 
     virtual ~SubMesh();

@@ -53,7 +53,7 @@ struct NodeCullParams;
 
 struct SceneGraphNodeDescriptor {
     SceneNode_ptr    _node = nullptr;
-    stringImpl       _name = "";
+    Str64            _name = "";
     size_t           _instanceCount = 1;
     U32              _componentMask = 0;
     NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
@@ -111,7 +111,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         bool removeChildNode(const SceneGraphNode& node, bool recursive = true);
 
         /// Find a child Node using the given name (either SGN name or SceneNode name)
-        SceneGraphNode* findChild(const stringImpl& name, bool sceneNodeName = false, bool recursive = false) const;
+        SceneGraphNode* findChild(const Str64& name, bool sceneNodeName = false, bool recursive = false) const;
 
         /// Find a child using the given SGNN or SceneNode GUID
         SceneGraphNode* findChild(I64 GUID, bool sceneNodeGuid = false, bool recursive = false) const;
@@ -247,7 +247,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 
         void AddMissingComponents(U32 componentMask);
         /// Serialization: save to XML file
-        void saveToXML(const stringImpl& sceneLocation) const;
+        void saveToXML(const Str256& sceneLocation) const;
         /// Serialization: load from XML file (expressed as a boost property_tree)
         void loadFromXML(const boost::property_tree::ptree& pt);
 
@@ -294,7 +294,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         PROPERTY_R(SceneNode_ptr, node);
         POINTER_R(ECS::ComponentManager, compManager, nullptr);
         POINTER_R(SceneGraphNode, parent, nullptr);
-        PROPERTY_R(stringImpl, name, "");
+        PROPERTY_R(Str64, name, "");
         PROPERTY_RW(U64, lockToCamera, 0u);
         PROPERTY_R(U64, elapsedTimeUS, 0u);
         PROPERTY_R(U64, lastDeltaTimeUS, 0u);

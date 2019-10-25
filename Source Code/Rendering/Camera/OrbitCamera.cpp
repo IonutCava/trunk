@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-OrbitCamera::OrbitCamera(const stringImpl& name, const CameraType& type, const vec3<F32>& eye)
+OrbitCamera::OrbitCamera(const Str64& name, const CameraType& type, const vec3<F32>& eye)
     : Camera(name, type, eye),
       _currentRotationX(0.0),
       _currentRotationY(0.0),

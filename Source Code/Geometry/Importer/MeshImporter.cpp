@@ -20,8 +20,8 @@
 namespace Divide {
 
 namespace {
-    const stringImpl g_parsedAssetGeometryExt("DVDGeom");
-    const stringImpl g_parsedAssetAnimationExt("DVDAnim");
+    const char* g_parsedAssetGeometryExt = "DVDGeom";
+    const char* g_parsedAssetAnimationExt = "DVDAnim";
 };
 
 namespace Import {
@@ -29,7 +29,7 @@ namespace Import {
     {
     }
 
-    bool ImportData::saveToFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName) {
+    bool ImportData::saveToFile(PlatformContext& context, const Str256& path, const Str64& fileName) {
         ACKNOWLEDGE_UNUSED(context);
 
         ByteBuffer tempBuffer;
@@ -46,13 +46,13 @@ namespace Import {
             }
             tempBuffer << _hasAnimations;
             // Animations are handled by the SceneAnimator I/O
-            return tempBuffer.dumpToFile(path, fileName + "." + g_parsedAssetGeometryExt);
+            return tempBuffer.dumpToFile(path.c_str(), fileName + "." + g_parsedAssetGeometryExt);
         }
 
         return false;
     }
 
-    bool ImportData::loadFromFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName) {
+    bool ImportData::loadFromFile(PlatformContext& context, const Str256& path, const Str64& fileName) {
         ByteBuffer tempBuffer;
         if (tempBuffer.loadFromFile(path, fileName + "." + g_parsedAssetGeometryExt)) {
             U64 signature;

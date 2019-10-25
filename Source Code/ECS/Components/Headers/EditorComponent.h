@@ -62,9 +62,9 @@ namespace Divide {
     {
         std::function<void(void*)> _dataGetter = {};
         std::function<void(const void*)> _dataSetter = {};
+        Str128 _tooltip = "";
         void* _data = nullptr;
-        stringImpl _name;
-        stringImpl _tooltip;
+        Str32  _name = "";
 
         vec2<F32> _range = { 0.0f, 1.0f }; //< Used by slider_type as a min / max range or dropdown as selected_index / count
 
@@ -84,7 +84,7 @@ namespace Divide {
             return static_cast<T*>(_data);
         }
         template<typename T>
-        /*FORCE_INLINE */T get() const {
+        T get() const {
             if (_dataGetter) {
                 T dataOut = {};
                 _dataGetter(&dataOut);
@@ -95,7 +95,7 @@ namespace Divide {
         }
 
         template<typename T>
-        /*FORCE_INLINE */void get(T& dataOut) const {
+        void get(T& dataOut) const {
             if (_dataGetter) {
                 _dataGetter(&dataOut);
             } else {
@@ -104,7 +104,7 @@ namespace Divide {
         }
 
         template<typename T>
-        /*FORCE_INLINE */void set(const T& dataIn) {
+        void set(const T& dataIn) {
             if (_dataSetter) {
                 _dataSetter(&dataIn);
             } else {
@@ -135,13 +135,13 @@ namespace Divide {
 
       public:
 
-        EditorComponent(const stringImpl& name);
+        EditorComponent(const Str128& name);
         virtual ~EditorComponent();
 
-        inline void name(const stringImpl& nameStr) { _name = nameStr; }
-        inline const stringImpl& name() const { return _name; }
+        inline void name(const Str128& nameStr) { _name = nameStr; }
+        inline const Str128& name() const { return _name; }
 
-        inline void addHeader(const stringImpl& name) {
+        inline void addHeader(const Str32& name) {
             EditorComponentField field = {};
             field._name = name;
             field._type = EditorComponentFieldType::PUSH_TYPE;
@@ -170,7 +170,7 @@ namespace Divide {
         void loadFieldFromXML(EditorComponentField& field, const boost::property_tree::ptree& pt);
 
       protected:
-        stringImpl _name;
+        Str128 _name;
         DELEGATE_CBK<void, const char*> _onChangedCbk;
         vector<EditorComponentField> _fields;
     };

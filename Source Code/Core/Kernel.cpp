@@ -469,7 +469,7 @@ void computeViewports(const Rect<I32>& mainViewport, vector<Rect<I32>>& targetVi
 }
 
 Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vector<Time::ProfileTimer*>& timers, U8 index, const char* name) {
-    while (timers.size() < index + 1) {
+    while (timers.size() < to_size(index) + 1) {
         timers.push_back(&Time::ADD_TIMER(Util::StringFormat("%s %d", name, timers.size()).c_str()));
         parentTimer.addChildTimer(*timers.back());
     }
@@ -617,7 +617,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     // Create mem log file
-    const stringImpl& mem = config.debug.memFile;
+    const Str256& mem = config.debug.memFile.c_str();
     _platformContext.app().setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     _platformContext.pfx().setAPI(PXDevice::PhysicsAPI::PhysX);
     _platformContext.sfx().setAPI(SFXDevice::AudioAPI::SDL);
@@ -749,7 +749,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ShadowMap::initShadowMaps(_platformContext.gfx());
     _sceneManager->init(_platformContext, *_resCache);
 
-    if (!_sceneManager->switchScene(entryData.startupScene, true, targetViewport, false)) {
+    if (!_sceneManager->switchScene(entryData.startupScene.c_str(), true, targetViewport, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
     }

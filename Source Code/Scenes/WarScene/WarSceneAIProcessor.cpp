@@ -934,7 +934,7 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
     SceneGraphNode* enemy(_localWorkingMemory._currentTarget.value());
     if (enemy) {
         ret.append("Active target: ");
-        ret.append(enemy->name());
+        ret.append(enemy->name().c_str());
         ret.append("\n");
     }
 

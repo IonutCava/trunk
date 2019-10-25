@@ -115,7 +115,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
         _cmdBufferDirty = true;
     }
 
-    inline void name(const stringImpl& name) {
+    inline void name(const Str64& name) {
 #       ifdef _DEBUG
         _name = name;
 #       else
@@ -141,7 +141,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
     IMPrimitive(GFXDevice& context);
 #ifdef _DEBUG
-    stringImpl _name;
+    Str64 _name;
 #endif
    public:
     virtual ~IMPrimitive();

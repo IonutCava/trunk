@@ -63,7 +63,7 @@ namespace Divide {
             return _physicsCollisionGroup;
         }
 
-        void cookCollisionMesh(const stringImpl& sceneName);
+        void cookCollisionMesh(const Str64& sceneName);
 
         void onCollision(const RigidBodyComponent& collider);
 

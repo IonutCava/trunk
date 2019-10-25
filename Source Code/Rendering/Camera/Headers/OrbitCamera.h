@@ -44,7 +44,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 class OrbitCamera : public Camera {
   protected:
     friend class Camera;
-    explicit OrbitCamera(const stringImpl& name,
+    explicit OrbitCamera(const Str64& name,
                          const CameraType& type = CameraType::ORBIT,
                          const vec3<F32>& eye = VECTOR3_ZERO);
   public:

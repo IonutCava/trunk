@@ -39,7 +39,7 @@ namespace Divide {
         stringImpl alphaMapDescriptor = "";
         {
             boost::property_tree::ptree descTree = {};
-            read_xml(Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor + "/descriptor.xml", descTree);
+            read_xml((Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor.c_str() + "/descriptor.xml").c_str(), descTree);
 
             addVariable("heightfield", descTree.get<stringImpl>("heightfield", ""));
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
@@ -50,7 +50,7 @@ namespace Divide {
             tessellationSettings(vec2<F32>(descTree.get<F32>("tessellationSettings.<xmlattr>.chunkSize", 32.0f),
                                               descTree.get<F32>("tessellationSettings.<xmlattr>.patchSizeInM", 100.0f)));
             tessellatedTriangleWidth(descTree.get<U32>("tessellatedTriangleWidth", 30));
-            addVariable("vegetationTextureLocation", descTree.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation));
+            addVariable("vegetationTextureLocation", descTree.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation.c_str()));
             addVariable("grassMap", descTree.get<stringImpl>("vegetation.grassMap"));
             addVariable("treeMap", descTree.get<stringImpl>("vegetation.treeMap"));
 
@@ -72,7 +72,7 @@ namespace Divide {
         }
         {
             boost::property_tree::ptree alphaTree = {};
-            read_xml(Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor + "/" + alphaMapDescriptor, alphaTree);
+            read_xml(Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor.c_str() + "/" + alphaMapDescriptor, alphaTree);
 
             const U8 numLayers = alphaTree.get<U8>("AlphaData.nImages");
             const U8 numImages = alphaTree.get<U8>("AlphaData.nLayers");

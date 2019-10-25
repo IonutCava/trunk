@@ -69,7 +69,7 @@ U32 Vegetation::s_maxTreeInstances = 0u;
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
                        const VegetationDetails& details)
-    : SceneNode(context.parent().resourceCache(), parentChunk.parent().getDescriptorHash() + parentChunk.ID(), details.name + "_" + to_stringImpl(parentChunk.ID()), SceneNodeType::TYPE_VEGETATION),
+    : SceneNode(context.parent().resourceCache(), parentChunk.parent().descriptorHash() + parentChunk.ID(), details.name + "_" + to_stringImpl(parentChunk.ID()), SceneNodeType::TYPE_VEGETATION),
       _context(context),
       _terrainChunk(parentChunk),
       _billboardCount(details.billboardCount),
@@ -718,7 +718,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
     const Terrain& terrain = _terrainChunk.parent();
 
-    stringImpl cacheFileName = terrain.resourceName() + "_" + resourceName() + (treeData ? "_trees_" : "_grass_") + ".cache";
+    Str64 cacheFileName = terrain.resourceName() + "_" + resourceName() + (treeData ? "_trees_" : "_grass_") + ".cache";
     Console::printfn(Locale::get(treeData ? _ID("CREATE_TREE_START") : _ID("CREATE_GRASS_BEGIN")), _terrainChunk.ID());
 
     vectorEASTL<VegetationData>& container = treeData ? _tempTreeData : _tempGrassData;

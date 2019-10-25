@@ -100,7 +100,7 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
     target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
 }
 
-Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
+Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
       _parentCache(parentCache),
@@ -139,12 +139,12 @@ Material::~Material()
 {
 }
 
-Material_ptr Material::clone(const stringImpl& nameSuffix) {
+Material_ptr Material::clone(const Str64& nameSuffix) {
     DIVIDE_ASSERT(!nameSuffix.empty(),
                   "Material error: clone called without a valid name suffix!");
 
     const Material& base = *this;
-    Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(resourceName() + nameSuffix));
+    Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(resourceName() + nameSuffix.c_str()));
 
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_doubleSided = base._doubleSided;
@@ -431,12 +431,12 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             updateTranslucency();
         }
     }
-    const stringImpl vertSource = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertSource : _baseShaderSources._colourShaderVertSource;
-    const stringImpl fragSource = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragSource : _baseShaderSources._colourShaderFragSource;
+    const Str64 vertSource = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertSource : _baseShaderSources._colourShaderVertSource;
+    const Str64 fragSource = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragSource : _baseShaderSources._colourShaderFragSource;
 
-    stringImpl vertVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertVariant : _baseShaderSources._colourShaderVertVariant;
-    stringImpl fragVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragVariant : _baseShaderSources._colourShaderFragVariant;
-    stringImpl shaderName = vertSource + "_" + fragSource;
+    Str32 vertVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertVariant : _baseShaderSources._colourShaderVertVariant;
+    Str32 fragVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragVariant : _baseShaderSources._colourShaderFragVariant;
+    Str64 shaderName = vertSource + "_" + fragSource;
 
 
     if (renderStagePass.isDepthPass()) {
@@ -457,7 +457,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderName += ".OIT";
         fragDefines.push_back(std::make_pair("OIT_PASS", true));
     }
-    fragDefines.push_back(std::make_pair(Util::StringFormat("TEX_OPERATION %d", to_base(getTextureOperation())), true));
+    fragDefines.push_back(std::make_pair(Util::StringFormat("TEX_OPERATION %d", to_base(getTextureOperation())).c_str(), true));
 
     if (renderStagePass._stage == RenderStage::REFRACTION) {
         fragDefines.push_back(std::make_pair("WRITE_DEPTH_TO_ALPHA", true));
@@ -573,11 +573,11 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     fragDefines.insert(std::cend(fragDefines), std::cbegin(globalDefines), std::cend(globalDefines));
 
     if (!vertDefines.empty()) {
-        shaderName.append(Util::StringFormat("_%zu", ShaderProgram::definesHash(vertDefines)));
+        shaderName.append(Util::StringFormat("_%zu", ShaderProgram::definesHash(vertDefines)).c_str());
     }
 
     if (!fragDefines.empty()) {
-        shaderName.append(Util::StringFormat("_%zu", ShaderProgram::definesHash(fragDefines)));
+        shaderName.append(Util::StringFormat("_%zu", ShaderProgram::definesHash(fragDefines)).c_str());
     }
 
     ShaderModuleDescriptor vertModule = {};
@@ -1039,8 +1039,8 @@ Texture_ptr loadTextureXML(ResourceCache& targetCache,
                             const stringImpl &textureName,
                             const boost::property_tree::ptree& pt)
 {
-    stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
-    stringImpl pathName(textureName.substr(0, textureName.rfind("/")));
+    Str64 img_name(textureName.substr(textureName.find_last_of('/') + 1).c_str());
+    Str256 pathName(textureName.substr(0, textureName.rfind("/")).c_str());
 
     SamplerDescriptor sampDesc = {};
 
@@ -1054,7 +1054,7 @@ Texture_ptr loadTextureXML(ResourceCache& targetCache,
     TextureDescriptor texDesc(TextureType::TEXTURE_2D);
     texDesc.samplerDescriptor(sampDesc);
 
-    ResourceDescriptor texture(pathName + "/" + img_name);
+    ResourceDescriptor texture(img_name);
     texture.assetName(img_name);
     texture.assetLocation(pathName);
     texture.propertyDescriptor(texDesc);
@@ -1110,7 +1110,7 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
             stringImpl textureNode = entryName + ".texture.";
             textureNode += getTexUsageName(usage);
 
-            pt.put(textureNode + ".name", texture->assetName());
+            pt.put(textureNode + ".name", texture->assetName().c_str());
             pt.put(textureNode + ".path", texture->assetLocation());
             pt.put(textureNode + ".flipped", texture->flipped());
 

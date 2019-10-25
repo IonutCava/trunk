@@ -124,7 +124,7 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
-    stringImpl filename(Paths::g_assetsLocation + args);
+    Str256 filename(Paths::g_assetsLocation + args.c_str());
 
     std::ifstream soundfile(filename.c_str());
     if (soundfile) {
@@ -137,8 +137,8 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
             return;
         }
 
-        FileWithPath fileResult = splitPathToNameAndLocation(filename);
-        const stringImpl& name = fileResult._fileName;
+        FileWithPath fileResult = splitPathToNameAndLocation(filename.c_str());
+        const Str64& name = fileResult._fileName.c_str();
         const stringImpl& path = fileResult._path;
 
         // The file is valid, so create a descriptor for it
@@ -164,7 +164,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
 void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     SceneGraph& sceneGraph = _context.gui().activeScene()->sceneGraph();
     if (!args.empty()) {
-        SceneGraphNode* sgn = sceneGraph.findNode(args);
+        SceneGraphNode* sgn = sceneGraph.findNode(args.c_str());
         if (!sgn) {
             Console::errorfn(Locale::get(_ID("CONSOLE_NAVMESH_NO_NODE")), args.c_str());
             return;
@@ -196,7 +196,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleShaderRecompileCommand(const stringImpl& args) {
-    ShaderProgram::recompileShaderProgram(args);
+    ShaderProgram::recompileShaderProgram(args.c_str());
 }
 
 void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {

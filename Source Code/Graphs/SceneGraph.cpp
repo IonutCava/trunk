@@ -293,7 +293,7 @@ bool SceneGraph::loadCache(ByteBuffer& inputBuffer) {
 namespace {
     boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode* node) {
         boost::property_tree::ptree entry;
-        entry.put("<xmlattr>.name", node->name());
+        entry.put("<xmlattr>.name", node->name().c_str());
         entry.put("<xmlattr>.type", node->getNode().getTypeName());
 
         node->forEachChild([&entry](const SceneGraphNode* child, I32 /*childIdx*/) {
@@ -307,10 +307,10 @@ namespace {
 };
 
 void SceneGraph::saveToXML() const {
-    const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
-    stringImpl sceneLocation(scenePath + "/" + parentScene().resourceName());
+    Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
 
     {
         boost::property_tree::ptree pt;

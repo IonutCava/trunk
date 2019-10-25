@@ -132,8 +132,8 @@ namespace Divide {
         _modelLoadQueueLocked = false;
     }
 
-    void ContentExplorerWindow::getDirectoryStructureForPath(const stringImpl& directoryPath, Directory& directoryOut) {
-        path p(directoryPath);
+    void ContentExplorerWindow::getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut) {
+        path p(directoryPath.c_str());
         if (is_directory(p)) {
             directoryOut._path = p.filename().generic_string();
             for (auto&& x : directory_iterator(p)) {
@@ -144,7 +144,7 @@ namespace Divide {
                     }
                 } else if (is_directory(x.path())) {
                     directoryOut._children.push_back(std::make_shared<Directory>());
-                    getDirectoryStructureForPath(x.path().generic_string(), *directoryOut._children.back());
+                    getDirectoryStructureForPath(x.path().generic_string().c_str(), *directoryOut._children.back());
                 }
             }
         }
@@ -302,7 +302,7 @@ namespace Divide {
         ImGui::PopStyleVar();
     }
 
-    Texture_ptr ContentExplorerWindow::getTextureForPath(const stringImpl& texturePath, const stringImpl& textureName) {
+    Texture_ptr ContentExplorerWindow::getTextureForPath(const Str256& texturePath, const Str64& textureName) {
         SamplerDescriptor texturePreviewSampler = {};
         texturePreviewSampler.wrapU(TextureWrap::CLAMP);
         texturePreviewSampler.wrapV(TextureWrap::CLAMP);
@@ -324,7 +324,7 @@ namespace Divide {
         return CreateResource<Texture>(_parent.context().kernel().resourceCache(), textureResource);
     }
 
-    Mesh_ptr ContentExplorerWindow::getModelForPath(const stringImpl& modelPath, const stringImpl& modelName) {
+    Mesh_ptr ContentExplorerWindow::getModelForPath(const Str256& modelPath, const Str64& modelName) {
         ResourceDescriptor model(modelName);
         model.assetLocation(Paths::g_assetsLocation + modelPath);
         model.assetName(modelName);

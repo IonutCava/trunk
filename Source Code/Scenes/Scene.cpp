@@ -76,7 +76,7 @@ struct selectionQueueDistanceFrontToBack {
 constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
-Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name)
     : Resource(ResourceType::DEFAULT, name),
       PlatformContextComponent(context),
       _parent(parent),
@@ -178,9 +178,9 @@ bool Scene::idle() {  // Called when application is idle
     return true;
 }
 
-void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile) {
+void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) {
 
-    FileWithPath fileResult = splitPathToNameAndLocation(srcFile);
+    FileWithPath fileResult = splitPathToNameAndLocation(srcFile.c_str());
     const stringImpl& musicFile = fileResult._fileName;
     const stringImpl& musicFilePath = fileResult._path;
 
@@ -199,11 +199,11 @@ bool Scene::saveXML() const {
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_START")), resourceName().c_str());
 
-    const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
-    stringImpl sceneLocation(scenePath + "/" + resourceName().c_str());
-    stringImpl sceneDataFile(sceneLocation + ".xml");
+    Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
+    Str64 sceneDataFile(sceneLocation + ".xml");
 
     createDirectory((sceneLocation + "/collisionMeshes/").c_str());
     createDirectory((sceneLocation + "/navMeshes/").c_str());
@@ -263,14 +263,14 @@ bool Scene::saveXML() const {
 }
 
 namespace {
-    bool isPrimitive(const stringImpl& modelName) {
-        static const stringImpl pritimiveNames[] = {
+    bool IsPrimitive(const char* modelName) {
+        constexpr std::array<const char*, 3> pritimiveNames = {
             "BOX_3D",
-            //"PATCH_3D", <- Internal
             "QUAD_3D",
             "SPHERE_3D"
         };
-        for (const stringImpl& it : pritimiveNames) {
+
+        for (const char* it : pritimiveNames) {
             if (Util::CompareIgnoreCase(modelName, it)) {
                 return true;
             }
@@ -289,8 +289,8 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         TaskYield(parentTask);
     };
 
-    const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    stringImpl sceneLocation(scenePath + "/" + resourceName().c_str());
+    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
     stringImpl nodePath = sceneLocation + "/nodes/" + parent->name() + "_" + sceneNode.name + ".xml";
 
     SceneGraphNode* crtNode = parent;
@@ -320,7 +320,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         bool skipAdd = true;
         if (sceneNode.type == "ROOT") {
             // Nothing to do with the root. It's good that it exists
-        } else if (isPrimitive(sceneNode.type)) {// Primitive types (only top level)
+        } else if (IsPrimitive(sceneNode.type.c_str())) {// Primitive types (only top level)
             normalMask |= to_base(ComponentType::RENDERING);
 
             if (!modelName.empty()) {
@@ -445,7 +445,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
     }
 }
 
-SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
+SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode) {
     DIVIDE_ASSERT(!name.empty(),
@@ -475,12 +475,12 @@ SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
     return parentNode.addChildNode(particleNodeDescriptor);
 }
 
-void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& name) {
+void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& name) {
     Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), name.c_str());
 
     // Load the rest of the terrain
     std::shared_ptr<TerrainDescriptor> ter(new TerrainDescriptor((name + "_descriptor").c_str()));
-    if (!ter->loadFromXML(pt, name)) {
+    if (!ter->loadFromXML(pt, name.c_str())) {
         return;
     }
 
@@ -553,7 +553,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
     flashLight->get<SpotLightComponent>()->toggleEnabled();
 }
 
-SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
+SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
     ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
     skyDescriptor.ID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
@@ -577,7 +577,7 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
     return skyNode;
 }
 
-void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
+void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
     auto registerWater = [this, nodeName, &parentNode, pt](CachedResource_wptr res) {
         SceneGraphNodeDescriptor waterNodeDescriptor;
         waterNodeDescriptor._name = nodeName;
@@ -610,7 +610,7 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
     CreateResource<WaterPlane>(_resCache, waterDescriptor);
 }
 
-SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const stringImpl& nodeName) {
+SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
     auto registerPlane = [this](CachedResource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
         _loadingTasks.fetch_sub(1);
@@ -929,12 +929,12 @@ void Scene::loadDefaultCamera() {
 
 }
 
-bool Scene::loadXML(const stringImpl& name) {
+bool Scene::loadXML(const Str64& name) {
     XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, name, this, _context.config());
     return true;
 }
 
-bool Scene::load(const stringImpl& name) {
+bool Scene::load(const Str64& name) {
     setState(ResourceState::RES_LOADING);
 
     _resourceName = name;
@@ -1091,7 +1091,7 @@ void Scene::onSetActive() {
     addPlayerInternal(false);
 
     static stringImpl originalTitle = _context.activeWindow().title();
-    _context.activeWindow().title(originalTitle + " - " + resourceName());
+    _context.activeWindow().title(originalTitle + " - " + resourceName().c_str());
 }
 
 void Scene::onRemoveActive() {

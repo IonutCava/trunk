@@ -63,7 +63,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     noiseSampler.magFilter(TextureFilter::NEAREST);
     noiseSampler.anisotropyLevel(0);
 
-    stringImpl attachmentName("SSAOPreRenderOperator_NoiseTexture");
+    Str64 attachmentName("SSAOPreRenderOperator_NoiseTexture");
 
     TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
     noiseDescriptor.samplerDescriptor(noiseSampler);
@@ -115,7 +115,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "SSAOPass.glsl";
     fragModule._variant = "SSAOCalc";
-    fragModule._defines.push_back(std::make_pair(Util::StringFormat("KERNEL_SIZE %d", kernelSize), true));
+    fragModule._defines.push_back(std::make_pair(Util::StringFormat("KERNEL_SIZE %d", kernelSize).c_str(), true));
 
     ShaderProgramDescriptor ssaoShaderDescriptor = {};
     ssaoShaderDescriptor._modules.push_back(vertModule);
@@ -128,7 +128,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     fragModule._variant = "SSAOBlur";
     fragModule._defines.resize(0);
-    fragModule._defines.push_back(std::make_pair(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize), true));
+    fragModule._defines.push_back(std::make_pair(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize).c_str(), true));
 
     ssaoShaderDescriptor = {};
     ssaoShaderDescriptor._modules.push_back(vertModule);

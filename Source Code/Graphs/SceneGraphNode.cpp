@@ -64,7 +64,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _relationshipCache(*this)
 {
     _name = (descriptor._name.empty() ? Util::StringFormat("%s_SGN", (_node->resourceName().empty() ? "ERROR"   
-                                                                                                    : _node->resourceName().c_str()))
+                                                                                                    : _node->resourceName().c_str())).c_str()
                                       : descriptor._name);
 
     setFlag(Flags::ACTIVE);
@@ -316,7 +316,7 @@ bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const
     return type == SGNRelationshipCache::RelationshipType::CHILD;
 }
 
-SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) const {
+SceneGraphNode* SceneGraphNode::findChild(const Str64& name, bool sceneNodeName, bool recursive) const {
     SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         if (sceneNodeName ? child->getNode().resourceName().compare(name) == 0
@@ -688,7 +688,7 @@ bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
     });
 }
 
-void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
+void SceneGraphNode::saveToXML(const Str256& sceneLocation) const {
     if (!serialize()) {
         return;
     }
@@ -704,7 +704,7 @@ void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
         Attorney::EditorComponentSceneGraphNode::saveToXML(*editorComponent, pt);
     }
 
-    write_xml((sceneLocation + "/nodes/" + parent()->name() + "_" + name() + ".xml").c_str(), pt, std::locale(), settings);
+    write_xml(((sceneLocation + "/nodes/").c_str() + parent()->name() + "_" + name() + ".xml").c_str(), pt, std::locale(), settings);
 
     forEachChild([&sceneLocation](const SceneGraphNode* child, I32 /*childIdx*/){
         child->saveToXML(sceneLocation);

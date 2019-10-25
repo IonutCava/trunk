@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const bufferPtr content, size_t length, FileType fileType) {
+bool writeFile(const Str256& filePath, const Str64& fileName, const bufferPtr content, size_t length, FileType fileType) {
 
     if (!filePath.empty() && content != nullptr && length > 0) {
         if (!pathExists(filePath.c_str())) {
@@ -76,16 +76,16 @@ bool createFile(const char* filePathAndName, bool overwriteExisting) {
     return std::ifstream(filePathAndName, std::fstream::in).good();
 }
 
-bool deleteFile(const stringImpl& filePath, const stringImpl& fileName) {
+bool deleteFile(const Str256& filePath, const Str64& fileName) {
     if (fileName.empty()) {
         return false;
     }
-    boost::filesystem::path file(filePath + fileName);
+    boost::filesystem::path file((filePath + fileName).c_str());
     boost::filesystem::remove(file);
     return true;
 }
 
-bool copyFile(const stringImpl& sourcePath, const stringImpl& sourceName, const stringImpl& targetPath, const stringImpl& targetName, bool overwrite) {
+bool copyFile(const Str256& sourcePath, const Str64& sourceName, const Str256& targetPath, const Str64& targetName, bool overwrite) {
     if (sourceName.empty() || targetName.empty()) {
         return false;
     }
@@ -98,16 +98,16 @@ bool copyFile(const stringImpl& sourcePath, const stringImpl& sourceName, const 
         return false;
     }
 
-    boost::filesystem::path destination(targetPath + targetName);
-    boost::filesystem::path source(sourcePath + sourceName);
+    boost::filesystem::path destination((targetPath + targetName).c_str());
+    boost::filesystem::path source((sourcePath + sourceName).c_str());
     boost::filesystem::copy_file(source, destination, boost::filesystem::copy_option::overwrite_if_exists);
     return true;
 }
 
-bool findFile(const stringImpl& filePath, const stringImpl& fileName, stringImpl& foundPath) {
+bool findFile(const Str256& filePath, const Str64& fileName, stringImpl& foundPath) {
 
-    boost::filesystem::path dir_path(filePath);
-    boost::filesystem::path file_name(fileName);
+    boost::filesystem::path dir_path(filePath.c_str());
+    boost::filesystem::path file_name(fileName.c_str());
 
     const boost::filesystem::recursive_directory_iterator end;
     const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(dir_path), end,
@@ -123,8 +123,8 @@ bool findFile(const stringImpl& filePath, const stringImpl& fileName, stringImpl
     }
 }
 
-bool hasExtension(const stringImpl& filePath, const stringImpl& extension) {
-    stringImpl ext("." + extension);
+bool hasExtension(const Str256& filePath, const Str8& extension) {
+    Str8 ext("." + extension);
     return Util::CompareIgnoreCase(Util::GetTrailingCharacters(filePath, ext.length()), ext);
 }
 

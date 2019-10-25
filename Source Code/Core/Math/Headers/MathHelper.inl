@@ -914,38 +914,6 @@ FORCE_INLINE void Hash_combine(size_t& seed, const size_t& hash) {
     seed ^= hash + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-inline void ReplaceStringInPlace(stringImpl& subject, 
-                                 const stringImpl& search,
-                                 const stringImpl& replace,
-                                 bool recursive) {
-    bool changed = true;
-    while (changed) {
-        changed = false;
-
-        stringAlg::stringSize pos = 0;
-        while ((pos = subject.find(search, pos)) != stringImpl::npos) {
-            subject.replace(pos, search.length(), replace);
-            pos += replace.length();
-            changed = true;
-        }
-
-        if (!recursive) {
-            break;
-        }
-    }
-}
-
-
-inline stringImpl ReplaceString(const stringImpl& subject, 
-                                const stringImpl& search,
-                                const stringImpl& replace,
-                                bool recursive)
-{
-    stringImpl ret = subject;
-    ReplaceStringInPlace(ret, search, replace, recursive);
-    return ret;
-}
-
 // U = to data type, T = from data type
 template <typename U, typename T>
 U ConvertData(const T& data) {

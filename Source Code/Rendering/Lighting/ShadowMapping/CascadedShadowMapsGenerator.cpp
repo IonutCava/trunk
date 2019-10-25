@@ -45,7 +45,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     geomModule._moduleType = ShaderType::GEOMETRY;
     geomModule._sourceFile = "blur.glsl";
     geomModule._variant = "GaussBlur";
-    geomModule._defines.push_back(std::make_pair(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), true));
+    geomModule._defines.push_back(std::make_pair(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT).c_str(), true));
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
@@ -57,7 +57,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     shaderDescriptor._modules.push_back(geomModule);
     shaderDescriptor._modules.push_back(fragModule);
 
-    ResourceDescriptor blurDepthMapShader(Util::StringFormat("GaussBlur_%d_invocations", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
+    ResourceDescriptor blurDepthMapShader(Util::StringFormat("GaussBlur_%d_invocations", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT).c_str());
     blurDepthMapShader.threaded(false);
     blurDepthMapShader.propertyDescriptor(shaderDescriptor);
 

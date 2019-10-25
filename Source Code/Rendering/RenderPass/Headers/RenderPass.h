@@ -62,7 +62,7 @@ class RenderPass : private NonCopyable {
        };
   public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
-    explicit RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags, const vector<U8>& dependencies, bool performanceCounters = false);
+    explicit RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlags, const vector<U8>& dependencies, bool performanceCounters = false);
     ~RenderPass();
 
     void render(const Task& parentTask, const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut);
@@ -71,7 +71,7 @@ class RenderPass : private NonCopyable {
     inline U8 sortKey() const { return _sortKey; }
     inline const vector<U8>& dependencies() const { return _dependencies; }
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
-    inline const stringImpl& name() const { return _name; }
+    inline const Str64& name() const { return _name; }
 
     inline RenderStage stageFlag() const { return _stageFlag; }
 
@@ -85,7 +85,7 @@ class RenderPass : private NonCopyable {
 
     U8 _sortKey = 0;
     vector<U8> _dependencies;
-    stringImpl _name = "";
+    Str64 _name = "";
     U16 _lastTotalBinSize = 0;
     RenderStage _stageFlag = RenderStage::COUNT;
 

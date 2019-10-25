@@ -1488,7 +1488,7 @@ bool Editor::scenePreviewHovered() const {
 
 void Editor::saveToXML() const {
     boost::property_tree::ptree pt;
-    const stringImpl& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
+    const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
     pt.put("showMemEditor", _showMemoryEditor);
@@ -1502,7 +1502,7 @@ void Editor::saveToXML() const {
 
 void Editor::loadFromXML() {
     boost::property_tree::ptree pt;
-    const stringImpl& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
+    const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
     if (!fileExists((editorPath + g_editorSaveFile).c_str())) {
         if (fileExists((editorPath + g_editorSaveFile + ".bak").c_str())) {
             copyFile(editorPath, g_editorSaveFile + stringImpl(".bak"), editorPath, g_editorSaveFile, true);

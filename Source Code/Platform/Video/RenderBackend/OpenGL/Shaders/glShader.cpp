@@ -53,7 +53,7 @@ namespace {
 SharedMutex glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
 
-glShader::glShader(GFXDevice& context, const stringImpl& name)
+glShader::glShader(GFXDevice& context, const Str64& name)
     : TrackedObject(),
       GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID(), _ID(name.c_str())),
       glObject(glObjectType::TYPE_SHADER, context),
@@ -271,7 +271,7 @@ void glShader::removeShader(glShader* s) {
 }
 
 /// Return a new shader reference
-glShader* glShader::getShader(const stringImpl& name) {
+glShader* glShader::getShader(const Str64& name) {
     // Try to find the shader
     SharedLock r_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(_ID(name.c_str()));
@@ -284,7 +284,7 @@ glShader* glShader::getShader(const stringImpl& name) {
 
 /// Load a shader by name, source code and stage
 glShader* glShader::loadShader(GFXDevice& context,
-                               const stringImpl& name,
+                               const Str64& name,
                                const ShaderLoadData& data) {
     // See if we have the shader already loaded
     glShader* shader = getShader(name);

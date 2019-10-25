@@ -18,51 +18,11 @@ bool findCommandLineArgument(int argc, char** argv, const char* target_arg, cons
     return false;
 }
 
-void GetPermutations(const stringImpl& inputString, vector<stringImpl>& permutationContainer) {
-    permutationContainer.clear();
-    stringImpl tempCpy(inputString);
-    std::sort(std::begin(tempCpy), std::end(tempCpy));
-    do {
-        permutationContainer.push_back(inputString);
-    } while (std::next_permutation(std::begin(tempCpy), std::end(tempCpy)));
-}
-
-bool IsNumber(const stringImpl& s) {
+bool IsNumber(const char* s) {
     F32 number = 0.0f;
     if (istringstreamImpl(s) >> number) {
         return !(IS_ZERO(number) && s[0] != 0);
     }
-    return false;
-}
-
-stringImpl GetTrailingCharacters(const stringImpl& input, size_t count) {
-    const size_t inputLength = input.length();
-    count = std::min(inputLength, count);
-    assert(count > 0);
-    return input.substr(inputLength - count, inputLength);
-}
-
-stringImpl GetStartingCharacters(const stringImpl& input, size_t count) {
-    const size_t inputLength = input.length();
-    count = std::min(inputLength, count);
-    assert(count > 0);
-    return input.substr(0, inputLength - count);
-}
-
-U32 LineCount(const stringImpl& str) {
-    return to_U32(std::count(std::cbegin(str), std::cend(str), '\n')) + 1;
-}
-
-bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
-    if (a.length() == b.length()) {
-        return std::equal(std::cbegin(b),
-            std::cend(b),
-            std::cbegin(a),
-            [](unsigned char a, unsigned char b) {
-            return std::tolower(a) == std::tolower(b);
-        });
-    }
-
     return false;
 }
 

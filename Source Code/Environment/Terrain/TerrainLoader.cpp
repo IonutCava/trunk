@@ -20,7 +20,7 @@ namespace Divide {
 namespace {
     constexpr bool g_disableLoadFromCache = false;
     const char* g_materialFileExtension = ".mat.xml";
-    stringImpl climatesLocation(U8 textureQuality) {
+    Str256 climatesLocation(U8 textureQuality) {
        CLAMP<U8>(textureQuality, 0u, 3u);
 
        return Paths::g_assetsLocation + Paths::g_heightmapLocation +

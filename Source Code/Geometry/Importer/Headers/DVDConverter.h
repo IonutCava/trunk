@@ -98,7 +98,7 @@ class DVDConverter {
     void loadSubMeshMaterial(Import::MaterialData& material,
                              const aiScene* source,
                              const U16 materialIndex,
-                             const stringImpl& materialName,
+                             const Str64& materialName,
                              bool skinned);
 
   private:

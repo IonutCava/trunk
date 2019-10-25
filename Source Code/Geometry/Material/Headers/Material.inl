@@ -250,7 +250,7 @@ inline const Material::ShaderData& Material::getBaseShaderData() const {
     return _baseShaderSources;
 }
 
-inline void Material::addShaderDefine(ShaderType type, const stringImpl& define, bool addPrefix) {
+inline void Material::addShaderDefine(ShaderType type, const Str128& define, bool addPrefix) {
     if (type != ShaderType::COUNT) {
         addShaderDefineInternal(type, define, addPrefix);
     } else {
@@ -260,7 +260,7 @@ inline void Material::addShaderDefine(ShaderType type, const stringImpl& define,
     }
 }
 
-inline void Material::addShaderDefineInternal(ShaderType type, const stringImpl& define, bool addPrefix) {
+inline void Material::addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix) {
     ModuleDefines& defines = _extraShaderDefines[to_base(type)];
 
     if (eastl::find(eastl::cbegin(defines), eastl::cend(defines), std::make_pair(define, addPrefix)) == eastl::cend(defines)) {

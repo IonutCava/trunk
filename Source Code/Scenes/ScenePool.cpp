@@ -70,7 +70,7 @@ void ScenePool::init() {
 }
 
 
-Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name, bool& foundInCache) {
+Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name, bool& foundInCache) {
     assert(!name.empty());
 
     foundInCache = false;
@@ -86,7 +86,7 @@ Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cach
     }
 
     if (ret == nullptr) {
-        ret = g_sceneFactory[name](context, cache, parent, name);
+        ret = g_sceneFactory[_ID(name.c_str())](context, cache, parent, name);
 
         // Default scene is the first scene we load
         if (!_defaultScene) {
@@ -135,14 +135,14 @@ bool ScenePool::deleteScene(Scene*& scene) {
     return false;
 }
 
-vector<stringImpl> ScenePool::sceneNameList(bool sorted) const {
-    vector<stringImpl> scenes;
-    for (SceneFactoryMap::value_type it : g_sceneFactory) {
-        scenes.push_back(it.first);
+vector<Str64> ScenePool::sceneNameList(bool sorted) const {
+    vector<Str64> scenes;
+    for (SceneNameMap::value_type it : g_sceneNameMap) {
+        scenes.push_back(it.second);
     }
 
     if (sorted) {
-        std::sort(std::begin(scenes), std::end(scenes));
+        eastl::sort(std::begin(scenes), std::end(scenes));
     }
 
     return scenes;

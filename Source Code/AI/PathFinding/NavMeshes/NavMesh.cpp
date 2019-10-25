@@ -29,13 +29,13 @@ NavigationMesh::NavigationMesh(PlatformContext& context)
       _buildJobGUID(-1)
 {
     ParamHandler& par = ParamHandler::instance();
-    stringImpl path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
-    path.append(par.getParam<stringImpl>(_ID("currentScene")));
+    Str256 path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
+    path.append(par.getParam<stringImpl>(_ID("currentScene")).c_str());
 
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
     _filePath = path + "/" + Paths::g_navMeshesLocation;
     
-    _configFile = path + "/navMeshConfig.ini";
+    _configFile.append(path.c_str()) + "/navMeshConfig.ini";
     _buildThreaded = true;
     _debugDraw = false;
     _renderConnections = false;
@@ -284,7 +284,7 @@ bool NavigationMesh::buildProcess() {
 bool NavigationMesh::generateMesh() {
     assert(_sgn != nullptr);
 
-    stringImpl nodeName(generateMeshName(*_sgn));
+    Str64 nodeName(generateMeshName(*_sgn));
 
     // Parse objects from level into RC-compatible format
     _fileName.append(nodeName);
@@ -293,7 +293,7 @@ bool NavigationMesh::generateMesh() {
                      nodeName.c_str());
 
     NavModelData data;
-    stringImpl geometrySaveFile(_fileName);
+    Str64 geometrySaveFile(_fileName);
     Util::ReplaceStringInPlace(geometrySaveFile, ".nm", ".ig");
 
     data.clear(false);
@@ -642,9 +642,9 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     }
 
     dtNavMesh* temp = nullptr;
-    stringImpl file = _fileName;
+    Str64 file = _fileName;
 
-    stringImpl nodeName(generateMeshName(sgn));
+    Str64 nodeName(generateMeshName(sgn));
     
     // Parse objects from level into RC-compatible format
     file.append(nodeName);
@@ -715,10 +715,9 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
         return false;
     }
 
-    stringImpl file = _fileName;
-    stringImpl nodeName(generateMeshName(sgn));
+    Str64 file = _fileName;
     // Parse objects from level into RC-compatible format
-    file.append(nodeName);
+    file.append(generateMeshName(sgn));
     file.append(".nm");
 
 
@@ -771,7 +770,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
     return true;
 }
 
-stringImpl NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
+Str64 NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
     return (sgn.getNode().type() != SceneNodeType::TYPE_ROOT)
                ? "_node_[_" + sgn.name() + "_]"
                : "_root_node";

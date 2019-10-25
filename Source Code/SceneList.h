@@ -52,14 +52,17 @@ static struct STRUCT_NAME(scene) {                      \
 } VAR_NAME(scene);                                      \
                                                         \
 STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {             \
-    g_sceneFactory[#scene]  = boost::factory<scene*>(); \
+    g_sceneFactory[_ID(#scene)]  = boost::factory<scene*>(); \
+    g_sceneNameMap[_ID(#scene)]  = #scene; \
 }
 
 #define INIT_SCENE_FACTORY \
     namespace { \
-        typedef std::function<Scene*(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)> SceneConstructor; \
-        typedef hashMap<stringImpl, SceneConstructor> SceneFactoryMap; \
+        typedef std::function<Scene*(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name)> SceneConstructor; \
+        typedef hashMap<U64, SceneConstructor> SceneFactoryMap; \
+        typedef hashMap<U64, Str64> SceneNameMap; \
         SceneFactoryMap g_sceneFactory; \
+        SceneNameMap g_sceneNameMap; \
     };\
     REGISTER_SCENE(DefaultScene)\
     REGISTER_SCENE(MainScene)\

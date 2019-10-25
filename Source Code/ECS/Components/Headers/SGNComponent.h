@@ -64,20 +64,26 @@ BETTER_ENUM(ComponentType, U16,
 );
 
 //ref: http://www.nirfriedman.com/2018/04/29/unforgettable-factory/
-template <class Base, class... Args>
-class Factory {
-public:
-    template <class ... T>
-    static void construct(ComponentType type, SceneGraphNode& node, T&&... args) {
-        data().at(type)(node, std::forward<T>(args)...);
+template <typename Base, typename... Args>
+struct Factory {
+    using ConstructFunc = DELEGATE_CBK<void, SceneGraphNode&, Args...>;
+    using FactoryContainer = ska::bytell_hash_map<ComponentType::_integral, ConstructFunc>;
+
+    template <typename... ConstructArgs>
+    static void construct(ComponentType type, SceneGraphNode& node, ConstructArgs&&... args) {
+        data().at(type)(node, std::forward<ConstructArgs>(args)...);
     }
 
-    template <class T, ComponentType::_enumerated C>
+    template <typename T, ComponentType::_enumerated C>
     struct Registrar : public ECS::Component<T>,
-                       Base
-                       
+                       public Base
     {
-        friend T;
+        template<typename... InnerArgs>
+        Registrar(InnerArgs&&... args)
+            : Base(Key{ s_registered }, C, std::forward<InnerArgs>(args)...)
+        {
+            ACKNOWLEDGE_UNUSED(s_registered);
+        }
 
         static bool registerComponentType() {
             Factory::data()[C] = [](SceneGraphNode& node, Args... args) -> void {
@@ -88,36 +94,30 @@ public:
 
         static bool s_registered;
 
-        template<class ...P>
-        Registrar(P&&... param) : Base(Key{s_registered}, C, std::forward<P>(param)...) { 
-            (void)s_registered;
-        }
+        friend T;
     };
 
     friend Base;
 
 private:
-    class Key {
-        Key(bool registered)
-            : _registered(registered)
-        {
-        };
+    struct Key {
+        Key(bool registered) : _registered(registered) {}
 
-    private:
+      private:
         bool _registered = false;
-        template <class T, ComponentType::_enumerated C> friend struct Registrar;
+        template <typename T, ComponentType::_enumerated C> friend struct Registrar;
     };
 
     Factory() = default;
 
-    static auto &data() {
-        static ska::bytell_hash_map<ComponentType::_integral, DELEGATE_CBK<void, SceneGraphNode&, Args...>> s;
-        return s;
+    static FactoryContainer& data() {
+        static FactoryContainer container;
+        return container;
     }
 };
 
-template <class Base, class... Args>
-template <class T, ComponentType::_enumerated C>
+template <typename Base, typename... Args>
+template <typename T, ComponentType::_enumerated C>
 bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args...>::template Registrar<T, C>::registerComponentType();
 
 struct EntityOnUpdate;
@@ -127,42 +127,40 @@ class SGNComponent : private PlatformContextComponent,
                      public Factory<SGNComponent>,
                      public ECS::Event::IEventListener
 {
-   public:
+    public:
+        explicit SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context);
+        virtual ~SGNComponent();
 
-    explicit SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context);
-    virtual ~SGNComponent();
+        virtual void PreUpdate(const U64 deltaTime);
+        virtual void Update(const U64 deltaTime);
+        virtual void PostUpdate(const U64 deltaTime);
+        virtual void FrameEnded();
 
-    virtual void PreUpdate(const U64 deltaTime);
-    virtual void Update(const U64 deltaTime);
-    virtual void PostUpdate(const U64 deltaTime);
-    virtual void FrameEnded();
+        virtual void OnUpdateLoop();
 
-    virtual void OnUpdateLoop();
+        inline SceneGraphNode& getSGN() const { return _parentSGN; }
+        inline ComponentType type() const { return _type; }
 
-    inline SceneGraphNode& getSGN() const { return _parentSGN; }
-    inline ComponentType type() const { return _type; }
+        EditorComponent& getEditorComponent() { return _editorComponent; }
+        const EditorComponent& getEditorComponent() const { return _editorComponent; }
 
-    EditorComponent& getEditorComponent() { return _editorComponent; }
-    const EditorComponent& getEditorComponent() const { return _editorComponent; }
+        virtual bool saveCache(ByteBuffer& outputBuffer) const;
+        virtual bool loadCache(ByteBuffer& inputBuffer);
 
-    virtual bool saveCache(ByteBuffer& outputBuffer) const;
-    virtual bool loadCache(ByteBuffer& inputBuffer);
+        I64 uniqueID() const;
 
-    I64 uniqueID() const;
+        virtual bool enabled() const;
+        virtual void enabled(const bool state);
 
-    virtual bool enabled() const;
-    virtual void enabled(const bool state);
+    protected:
+        void RegisterEventCallbacks();
 
-   protected:
-    void RegisterEventCallbacks();
-
-   protected:
-    EditorComponent _editorComponent;
-    /// Pointer to the SGN owning this instance of AnimationComponent
-    SceneGraphNode& _parentSGN;
-    ComponentType _type;
-    std::atomic_bool _enabled;
-    mutable std::atomic_bool _hasChanged;
+    protected:
+        EditorComponent _editorComponent;
+        SceneGraphNode& _parentSGN;
+        ComponentType _type;
+        std::atomic_bool _enabled;
+        mutable std::atomic_bool _hasChanged;
 
 };
 

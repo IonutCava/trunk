@@ -87,13 +87,13 @@ public:
     /// Draw all of the 2D game elements in the target viewport
     void createFrameBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     /// Add a new pass that will run once for each of the RenderStages specified
-    RenderPass& addRenderPass(const stringImpl& renderPassName,
+    RenderPass& addRenderPass(const Str64& renderPassName,
                               U8 orderKey,
                               RenderStage renderStage,
                               vector<U8> dependencies = {},
                               bool usePerformanceCounters = false);
     /// Find a renderpass by name and remove it from the manager
-    void removeRenderPass(const stringImpl& name);
+    void removeRenderPass(const Str64& name);
     U16  getLastTotalBinSize(RenderStage renderStage) const;
 
     inline RenderQueue& getQueue() { return _renderQueue; }

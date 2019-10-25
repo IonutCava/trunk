@@ -114,7 +114,7 @@ namespace GFX {
 
         void clear();
 
-        eastl::fixed_string<char, 64 + 1, false> _binding;
+        Str64 _binding;
         vectorEASTL<char> _buffer;
         U64               _bindingHash;
         PushConstantType  _type = PushConstantType::COUNT;

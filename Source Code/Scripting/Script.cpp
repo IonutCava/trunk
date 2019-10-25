@@ -67,8 +67,8 @@ bool Script::onStartup() {
 
         s_fileWatcherListener.addIgnoredEndCharacter('~');
         s_fileWatcherListener.addIgnoredExtension("tmp");
-        scriptFileWatcher().addWatch(Paths::Scripts::g_scriptsLocation, &s_fileWatcherListener);
-        scriptFileWatcher().addWatch(Paths::Scripts::g_scriptsAtomsLocation, &s_fileWatcherListener);
+        scriptFileWatcher().addWatch(Paths::Scripts::g_scriptsLocation.c_str(), &s_fileWatcherListener);
+        scriptFileWatcher().addWatch(Paths::Scripts::g_scriptsAtomsLocation.c_str(), &s_fileWatcherListener);
     }
 
     return true;
@@ -89,16 +89,16 @@ bool Script::onShutdown() {
 
 void Script::compile() {
     if (!_scriptFile._fileName.empty()) {
-        readFile(_scriptFile._path, _scriptFile._fileName, _scriptSource, _scriptFileType);
+        readFile(_scriptFile._path.c_str(), _scriptFile._fileName.c_str(), _scriptSource, _scriptFileType);
     }
 }
 
 void Script::bootstrap() {
     const SysInfo& systemInfo = const_sysInfo();
-    const stringImpl& path = systemInfo._pathAndFilename._path;
+    const std::string& path = systemInfo._pathAndFilename._path;
 
-    vector<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation,
-                                    path + Paths::Scripts::g_scriptsAtomsLocation };
+    vector<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation.c_str(),
+                                    path + Paths::Scripts::g_scriptsAtomsLocation.c_str() };
 
     _script = 
         std::make_unique<chaiscript::ChaiScript>(scriptpath,
@@ -120,12 +120,13 @@ void Script::preprocessIncludes(const stringImpl& source, I32 level /*= 0 */) {
     }
 
     std::smatch matches;
-    stringImpl line, include_file, include_string;
+    stringImpl line, include_string;
+    Str64 include_file;
 
     istringstreamImpl input(source);
     while (std::getline(input, line)) {
         if (std::regex_search(line, matches, Paths::g_usePattern)) {
-            include_file = Util::Trim(matches[1].str().c_str());
+            include_file = Util::Trim(matches[1].str()).c_str();
             _usedAtoms.push_back(include_file);
 
             // Open the atom file and add the code to the atom cache for future reference
@@ -158,7 +159,7 @@ void Script::onScriptModify(const char* script, FileUpdateEvent& evt) {
     vector<Script*> scriptsToReload;
 
     for (ScriptMap::value_type it : s_scripts) {
-        for (const stringImpl& atom : it.second->_usedAtoms) {
+        for (const Str64& atom : it.second->_usedAtoms) {
             if (Util::CompareIgnoreCase(atom, script)) {
                 scriptsToReload.push_back(it.second);
                 break;

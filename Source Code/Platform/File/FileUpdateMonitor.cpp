@@ -35,8 +35,8 @@ void UpdateListener::handleFileAction(FW::WatchID watchid, const FW::String& dir
     if (!_ignoredExtensions.empty()) {
         if (std::find_if(std::cbegin(_ignoredExtensions),
             std::cend(_ignoredExtensions),
-            [filename](const stringImpl& extension) {
-            return hasExtension(filename, extension);
+            [filename](const Str8& extension) {
+            return hasExtension(filename.c_str(), extension);
         }) != std::cend(_ignoredExtensions)) {
             return;
         }

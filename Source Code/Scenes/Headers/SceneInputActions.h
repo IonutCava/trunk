@@ -126,9 +126,9 @@ struct InputAction {
 
     DELEGATE_CBK<void, InputParams> _action;
     // This will be usefull for menus and the like (defined in XML)
-    stringImpl _displayName;
+    Str64 _displayName;
 
-    void displayName(const stringImpl& name);
+    void displayName(const Str64& name);
 };
 
 class InputActionList {

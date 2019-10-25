@@ -237,7 +237,7 @@ namespace Divide {
         Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
     }
 
-RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
+RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
                                              U8 orderKey,
                                              RenderStage renderStage,
                                              vector<U8> dependencies,
@@ -264,7 +264,7 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
     return *item;
 }
 
-void RenderPassManager::removeRenderPass(const stringImpl& name) {
+void RenderPassManager::removeRenderPass(const Str64& name) {
     for (vectorEASTL<std::shared_ptr<RenderPass>>::iterator it = eastl::begin(_renderPasses);
          it != eastl::end(_renderPasses); ++it) {
          if ((*it)->name().compare(name) == 0) {

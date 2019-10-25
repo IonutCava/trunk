@@ -63,7 +63,7 @@ namespace Attorney {
     class ShaderProgramKernel;
 }
 
-typedef vectorEASTL<std::pair<stringImpl, bool>> ModuleDefines;
+typedef vectorEASTL<std::pair<Str128, bool>> ModuleDefines;
 
 class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
@@ -107,8 +107,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
    public:
     explicit ShaderProgram(GFXDevice& context,
                            size_t descriptorHash,
-                           const stringImpl& shaderName,
-                           const stringImpl& shaderFileName,
+                           const Str64& shaderName,
+                           const Str64& shaderFileName,
                            const stringImpl& shaderFileLocation,
                            const ShaderProgramDescriptor& descriptor,
                            bool asyncLoad);
@@ -176,7 +176,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static void onShutdown();
     static bool updateAll(const U64 deltaTimeUS);
     /// Queue a shaderProgram recompile request
-    static bool recompileShaderProgram(const stringImpl& name);
+    static bool recompileShaderProgram(const Str64& name);
     /// Remove a shaderProgram from the program cache
     static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache
@@ -193,7 +193,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static void rebuildAllShaders();
 
-    static vector<stringImpl> getAllAtomLocations();
+    static vector<Str256> getAllAtomLocations();
 
     static bool useShaderTexCache() { return s_useShaderTextCache; }
     static bool useShaderBinaryCache() { return s_useShaderBinaryCache; }
@@ -258,8 +258,8 @@ namespace Attorney {
 
 struct ShaderModuleDescriptor {
     ModuleDefines _defines;
-    stringImpl _variant;
-    stringImpl _sourceFile;
+    Str64 _sourceFile;
+    Str32 _variant;
     ShaderType _moduleType = ShaderType::COUNT;
     bool _batchSameFile = true;
 };
@@ -279,8 +279,8 @@ public:
         _hash = PropertyDescriptor::getHash();
         for (const ShaderModuleDescriptor& desc : _modules) {
             Util::Hash_combine(_hash, ShaderProgram::definesHash(desc._defines));
-            Util::Hash_combine(_hash, desc._variant);
-            Util::Hash_combine(_hash, desc._sourceFile);
+            Util::Hash_combine(_hash, std::string(desc._variant.c_str()));
+            Util::Hash_combine(_hash, std::string(desc._sourceFile.c_str()));
             Util::Hash_combine(_hash, desc._moduleType);
             Util::Hash_combine(_hash, desc._batchSameFile);
         }

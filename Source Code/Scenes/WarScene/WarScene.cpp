@@ -51,7 +51,7 @@ namespace {
     U64 elapsedGameTimeUs = 0;
 };
 
-WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
+WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name)
    : Scene(context, cache, parent, name),
     _flag{ nullptr, nullptr },
     _infoBox(nullptr),
@@ -72,7 +72,7 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
         stringImpl selectionText = "";
         for (SceneGraphNode* it : node) {
             selectionText.append("\n");
-            selectionText.append(it->name());
+            selectionText.append(it->name().c_str());
         }
 
         _GUI->modifyText(_ID("entityState"), selectionText.c_str(), true);
@@ -394,7 +394,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 #endif
 }
 
-bool WarScene::load(const stringImpl& name) {
+bool WarScene::load(const Str64& name) {
     static const U32 lightMask = to_base(ComponentType::TRANSFORM) |
                                  to_base(ComponentType::BOUNDS) |
                                  to_base(ComponentType::RENDERING);

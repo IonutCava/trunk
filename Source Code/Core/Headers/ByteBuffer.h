@@ -126,8 +126,8 @@ class ByteBuffer {
 
     void put(size_t pos, const Byte *src, size_t cnt);
 
-    bool dumpToFile(const stringImpl& path, const stringImpl& fileName);
-    bool loadFromFile(const stringImpl& path, const stringImpl& fileName);
+    bool dumpToFile(const Str256& path, const Str64& fileName);
+    bool loadFromFile(const Str256& path, const Str64& fileName);
 
    private:
     /// limited for internal use because can "append" any unexpected type (like
@@ -139,7 +139,7 @@ class ByteBuffer {
     friend class boost::serialization::access;
 
     template <typename Archive>
-    void serialize(Archive &ar, const unsigned int version);
+    void serialize(Archive &ar, const U32 version);
 
    protected:
     size_t _rpos, _wpos;

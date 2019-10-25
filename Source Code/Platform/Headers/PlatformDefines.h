@@ -70,6 +70,13 @@ do {                                                \
     struct T;                             \
     TYPEDEF_SMART_POINTERS_FOR_TYPE(T);
 
+#define ALIAS_TEMPLATE_FUNCTION(highLevelF, lowLevelF) \
+template<typename... Args> \
+inline auto highLevelF(Args&&... args) -> decltype(lowLevelF(std::forward<Args>(args)...)) \
+{ \
+    return lowLevelF(std::forward<Args>(args)...); \
+}
+
 namespace Divide {
 
 typedef U8 PlayerIndex;

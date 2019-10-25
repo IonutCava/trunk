@@ -26,7 +26,7 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener,
 
     // Check if the listener has a name or we should assign an id
     if (listener->getListenerName().empty()) {
-        listener->name(Util::StringFormat("generic_f_listener_%d", listener->getGUID()));
+        listener->name(Util::StringFormat("generic_f_listener_%d", listener->getGUID()).c_str());
     }
 
     listener->setCallOrder(callOrder);
