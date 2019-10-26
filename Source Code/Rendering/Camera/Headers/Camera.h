@@ -356,7 +356,7 @@ class Camera : public Resource {
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND
-    explicit Camera(const Str64& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
     virtual ~Camera();
 
    protected:
@@ -401,7 +401,7 @@ class Camera : public Resource {
 
        static Camera* utilityCamera(UtilityCamera type);
 
-       static Camera* createCamera(const Str64& cameraName, CameraType type);
+       static Camera* createCamera(const Str128& cameraName, CameraType type);
        static bool    destroyCamera(Camera*& camera);
        static Camera* findCamera(U64 nameHash);
 

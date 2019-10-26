@@ -118,7 +118,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
    public:
     typedef std::function<void(NavigationMesh*)> CreationCallback;
 
-    inline void setFileName(const Str64& fileName) {
+    inline void setFileName(const Str128& fileName) {
         _fileName.append(fileName);
     }
     /// Initiates the NavigationMesh build process, which includes notifying the
@@ -181,7 +181,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// Create a navigation mesh query to help in pathfinding.
     bool createNavigationQuery(U32 maxNodes = 2048);
     /// Create a unique mesh name using the given root node
-    Str64 generateMeshName(SceneGraphNode& sgn);
+    Str128 generateMeshName(SceneGraphNode& sgn);
    private:
     bool _saveIntermediates;
     NavigationMeshConfig _configParams;
@@ -212,7 +212,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// A callback function to call after building is complete
     CreationCallback _loadCompleteClbk;
     /// Data file to store this nav mesh in.
-    Str64 _fileName;
+    Str128 _fileName;
     Str256 _filePath;
     /// Configuration file
     stringImpl _configFile;

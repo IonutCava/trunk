@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-bool writeFile(const Str256& filePath, const Str64& fileName, const bufferPtr content, size_t length, FileType fileType) {
+bool writeFile(const Str256& filePath, const Str128& fileName, const bufferPtr content, size_t length, FileType fileType) {
 
     if (!filePath.empty() && content != nullptr && length > 0) {
         if (!pathExists(filePath.c_str())) {
@@ -76,7 +76,7 @@ bool createFile(const char* filePathAndName, bool overwriteExisting) {
     return std::ifstream(filePathAndName, std::fstream::in).good();
 }
 
-bool deleteFile(const Str256& filePath, const Str64& fileName) {
+bool deleteFile(const Str256& filePath, const Str128& fileName) {
     if (fileName.empty()) {
         return false;
     }
@@ -85,7 +85,7 @@ bool deleteFile(const Str256& filePath, const Str64& fileName) {
     return true;
 }
 
-bool copyFile(const Str256& sourcePath, const Str64& sourceName, const Str256& targetPath, const Str64& targetName, bool overwrite) {
+bool copyFile(const Str256& sourcePath, const Str128& sourceName, const Str256& targetPath, const Str128& targetName, bool overwrite) {
     if (sourceName.empty() || targetName.empty()) {
         return false;
     }
@@ -104,7 +104,7 @@ bool copyFile(const Str256& sourcePath, const Str64& sourceName, const Str256& t
     return true;
 }
 
-bool findFile(const Str256& filePath, const Str64& fileName, stringImpl& foundPath) {
+bool findFile(const Str256& filePath, const Str128& fileName, Str256& foundPath) {
 
     boost::filesystem::path dir_path(filePath.c_str());
     boost::filesystem::path file_name(fileName.c_str());

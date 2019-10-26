@@ -78,7 +78,7 @@ class ResourceDescriptor : public Hashable {
        using CBK = DELEGATE_CBK<void, CachedResource_wptr>;
 
     ///resourceName is the name of the resource instance, not an actual asset name! Use "assetName" for that
-    explicit ResourceDescriptor(const Str64& resourceName);
+    explicit ResourceDescriptor(const Str128& resourceName);
 
     ~ResourceDescriptor();
 
@@ -98,11 +98,9 @@ class ResourceDescriptor : public Hashable {
 
     size_t getHash() const final;
 
-    inline void assetLocation(const Str256& location) { assetLocation(stringImpl(location.c_str())); }
-
     PROPERTY_RW(stringImpl, assetLocation); //<Can't be fixed size due to the need to handle array textures, cube maps, etc
-    PROPERTY_RW(Str64, assetName); //< Resource instance name (for lookup)
-    PROPERTY_RW(Str64, resourceName);
+    PROPERTY_RW(stringImpl, assetName); //< Resource instance name (for lookup)
+    PROPERTY_RW(Str128, resourceName);
     PROPERTY_RW(bool, flag, false);
     PROPERTY_RW(bool, threaded, true);
     PROPERTY_RW(bool, waitForReady, true);

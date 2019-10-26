@@ -148,13 +148,13 @@ namespace Divide {
     public:
         vkTexture(GFXDevice& context,
                   size_t descriptorHash,
-                  const Str64& name,
-                  const Str64& resourceName,
-                  const stringImpl& resourceLocation,
+                  const Str128& name,
+                  const stringImpl& assetNames,
+                  const stringImpl& assetLocations,
                   bool isFlipped,
                   bool asyncLoad,
                   const TextureDescriptor& texDescriptor)
-            : Texture(context, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor)
+            : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor)
         {}
 
         void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) final {}
@@ -166,12 +166,12 @@ namespace Divide {
     class vkShaderProgram final : public ShaderProgram {
     public:
         vkShaderProgram(GFXDevice& context, size_t descriptorHash,
-                        const Str64& name,
-                        const Str64& resourceName,
-                        const stringImpl& resourceLocation,
+                        const Str128& name,
+                        const Str128& assetName,
+                        const stringImpl& assetLocation,
                         const ShaderProgramDescriptor& descriptor,
                         bool asyncLoad)
-            : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad)
+            : ShaderProgram(context, descriptorHash, name, assetName, assetLocation, descriptor, asyncLoad)
         {}
 
         bool isValid() const final { return true; }

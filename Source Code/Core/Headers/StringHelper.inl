@@ -93,6 +93,22 @@ void GetPermutations(const T_str& inputString, vector<T_str>& permutationContain
     } while (std::next_permutation(std::begin(tempCpy), std::end(tempCpy)));
 }
 
+template<size_t N, typename T_str>
+void ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive) {
+    for (const stringImpl& s : search) {
+        ReplaceStringInPlace(subject, s, replace, recursive);
+    }
+}
+
+template<size_t N, typename T_str>
+T_str ReplaceString(const T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive) {
+    T_str ret = subject;
+    for (const stringImpl& s : search) {
+        ReplaceStringInPlace(ret, s, replace, recursive);
+    }
+    return ret;
+}
+
 template<typename T_str>
 inline void ReplaceStringInPlace(T_str& subject,
                                  const stringImpl& search,
@@ -131,7 +147,7 @@ T_str GetTrailingCharacters(const T_str& input, size_t count) {
     const size_t inputLength = input.length();
     count = std::min(inputLength, count);
     assert(count > 0);
-    return input.substr(inputLength - count, inputLength);
+    return input.substr(inputLength - count, inputLength).data();
 }
 
 template<typename T_str>
@@ -152,6 +168,8 @@ template<typename T_strA>
 inline bool CompareIgnoreCase(const T_strA& a, const char* b) {
     if (b != nullptr && !a.empty()) {
         return CompareIgnoreCase(a.c_str(), b);
+    } else if (a.empty()) {
+        return b != nullptr && (b[0] == '\0');
     }
     return false;
 }
@@ -186,7 +204,7 @@ inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) 
 
 template<typename T_strA, typename T_strB>
 inline bool CompareIgnoreCase(const T_strA& a, const T_strB& b) {
-    return a.comparei(b.c_str()) == 0;
+    return CompareIgnoreCase(a.c_str(), b.c_str());
 }
 
 template<typename T_str>

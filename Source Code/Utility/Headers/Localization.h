@@ -62,7 +62,7 @@ private:
     /// Each string key in the map matches a key in the language ini file
     /// each string value in the map matches the value in the ini file for the given key
     /// Basically, the hashMap is a direct copy of the [language] section of the give ini file
-    hashMap<U64, Str64> _languageTable;
+    hashMap<U64, stringImpl> _languageTable;
     LangCallbacks _languageChangeCallbacks;
 };
 

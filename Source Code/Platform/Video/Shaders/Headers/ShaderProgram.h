@@ -63,7 +63,7 @@ namespace Attorney {
     class ShaderProgramKernel;
 }
 
-typedef vectorEASTL<std::pair<Str128, bool>> ModuleDefines;
+typedef vectorEASTL<std::pair<stringImpl, bool>> ModuleDefines;
 
 class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
@@ -107,8 +107,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
    public:
     explicit ShaderProgram(GFXDevice& context,
                            size_t descriptorHash,
-                           const Str64& shaderName,
-                           const Str64& shaderFileName,
+                           const Str128& shaderName,
+                           const Str128& shaderFileName,
                            const stringImpl& shaderFileLocation,
                            const ShaderProgramDescriptor& descriptor,
                            bool asyncLoad);
@@ -176,7 +176,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static void onShutdown();
     static bool updateAll(const U64 deltaTimeUS);
     /// Queue a shaderProgram recompile request
-    static bool recompileShaderProgram(const Str64& name);
+    static bool recompileShaderProgram(const Str128& name);
     /// Remove a shaderProgram from the program cache
     static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache

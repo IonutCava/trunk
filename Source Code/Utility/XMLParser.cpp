@@ -131,7 +131,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
     }
 }
 
-void loadScene(const Str256& scenePath, const Str64&sceneName, Scene* scene, const Configuration& config) {
+void loadScene(const Str256& scenePath, const Str128& sceneName, Scene* scene, const Configuration& config) {
     ParamHandler &par = ParamHandler::instance();
     
     ptree pt;

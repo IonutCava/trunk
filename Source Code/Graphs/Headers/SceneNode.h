@@ -101,8 +101,8 @@ class SceneNode : public CachedResource {
     friend class Attorney::SceneNodeNetworkComponent;
 
   public:
-    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const Str64& name, const SceneNodeType& type = SceneNodeType::TYPE_EMPTY);
-    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const Str64& name, const Str64& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
+    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const SceneNodeType& type = SceneNodeType::TYPE_EMPTY);
+    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
 
     /// Perform any pre-draw operations PRE-command build

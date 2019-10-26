@@ -157,7 +157,7 @@ class Material : public CachedResource {
     };
 
    public:
-    explicit Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name);
+    explicit Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name);
     ~Material();
 
     static bool onStartup();
@@ -168,7 +168,7 @@ class Material : public CachedResource {
     /// Return a new instance of this material with the name composed of the
     /// base material's name and the give name suffix.
     /// clone calls CreateResource internally!)
-    Material_ptr clone(const Str64& nameSuffix);
+    Material_ptr clone(const Str128& nameSuffix);
     bool unload() noexcept override;
     void update(const U64 deltaTimeUS);
 

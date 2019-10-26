@@ -48,7 +48,7 @@ namespace {
     }
 }
 
-Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name)
+Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
       _terrainQuadtree(context),
       _shaderData(nullptr),

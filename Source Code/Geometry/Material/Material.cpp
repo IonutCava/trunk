@@ -100,7 +100,7 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
     target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
 }
 
-Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name)
+Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
       _parentCache(parentCache),
@@ -139,7 +139,7 @@ Material::~Material()
 {
 }
 
-Material_ptr Material::clone(const Str64& nameSuffix) {
+Material_ptr Material::clone(const Str128& nameSuffix) {
     DIVIDE_ASSERT(!nameSuffix.empty(),
                   "Material error: clone called without a valid name suffix!");
 
@@ -436,17 +436,17 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     Str32 vertVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertVariant : _baseShaderSources._colourShaderVertVariant;
     Str32 fragVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragVariant : _baseShaderSources._colourShaderFragVariant;
-    Str64 shaderName = vertSource + "_" + fragSource;
+    Str128 shaderName = vertSource + "_" + fragSource;
 
 
     if (renderStagePass.isDepthPass()) {
         if (renderStagePass._stage == RenderStage::SHADOW) {
-            shaderName += ".Shadow";
+            shaderName += ".SHDW";
             vertVariant += "Shadow";
             fragVariant += "Shadow";
             globalDefines.push_back(std::make_pair("SHADOW_PASS", true));
         } else {
-            shaderName += ".PrePass";
+            shaderName += ".PP";
             vertVariant += "PrePass";
             fragVariant += "PrePass";
             globalDefines.push_back(std::make_pair("PRE_PASS", true));
@@ -466,26 +466,26 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     // Bump mapping?
     if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] && _bumpMethod != BumpMethod::NONE) {
         globalDefines.push_back(std::make_pair("COMPUTE_TBN", true));
-        shaderName += ".NormalMap";  // Normal Mapping
+        shaderName += ".N";  // Normal Mapping
         if (_bumpMethod == BumpMethod::PARALLAX) {
             fragDefines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
-            shaderName += ".ParallaxMap";
+            shaderName += ".PMap";
         } else if (_bumpMethod == BumpMethod::RELIEF) {
             fragDefines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
-            shaderName += ".ReliefMap";
+            shaderName += ".RMap";
         }
     }
     if (!_textures[slot0]) {
         fragDefines.push_back(std::make_pair("SKIP_TEXTURES", true));
-        shaderName += ".NoTexture";
+        shaderName += ".NTex";
     }
 
     if (!renderStagePass.isDepthPass() && _textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
         if (isPBRMaterial()) {
-            shaderName += ".MetallicRoughness";
+            shaderName += ".MRgh";
             fragDefines.push_back(std::make_pair("USE_METALLIC_ROUGHNESS_MAP", true));
         } else {
-            shaderName += ".SpecularMap";
+            shaderName += ".SMap";
             fragDefines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
         }
     }
@@ -493,7 +493,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     updateTranslucency();
 
     if (_translucencySource != TranslucencySource::COUNT && renderStagePass._passType != RenderPassType::OIT_PASS) {
-        shaderName += ".AlphaDiscard";
+        shaderName += ".AD";
         fragDefines.push_back(std::make_pair("USE_ALPHA_DISCARD", true));
     }
 
@@ -502,26 +502,26 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         case TranslucencySource::OPACITY_MAP_R: {
             fragDefines.push_back(std::make_pair("USE_OPACITY_MAP", true));
             if (_translucencySource == TranslucencySource::OPACITY_MAP_R) {
-                shaderName += ".OpacityMapR";
+                shaderName += ".OMapR";
                 fragDefines.push_back(std::make_pair("USE_OPACITY_MAP_RED_CHANNEL", true));
             } else {
-                shaderName += ".OpacityMapA";
+                shaderName += ".OMapA";
             }
         } break;
         case TranslucencySource::ALBEDO: {
-            shaderName += ".AlbedoAlpha";
+            shaderName += ".AAlpha";
             fragDefines.push_back(std::make_pair("USE_ALBEDO_ALPHA", true));
         } break;
         default: break;
     };
 
     if (isDoubleSided()) {
-        shaderName += ".DoubleSided";
+        shaderName += ".2Sided";
         fragDefines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
     }
 
     if (!receivesShadows() || !_context.context().config().rendering.shadowMapping.enabled) {
-        shaderName += ".NoShadows";
+        shaderName += ".NSHDW";
         fragDefines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }
 
@@ -539,7 +539,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             case ShadingMode::PHONG:
             case ShadingMode::BLINN_PHONG: {
                 fragDefines.push_back(std::make_pair("USE_SHADING_BLINN_PHONG", true));
-                shaderName += ".BlinnPhong";
+                shaderName += ".Blinn";
             } break;
             case ShadingMode::TOON: {
                 fragDefines.push_back(std::make_pair("USE_SHADING_TOON", true));
@@ -547,11 +547,11 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             } break;
             case ShadingMode::OREN_NAYAR: {
                 fragDefines.push_back(std::make_pair("USE_SHADING_OREN_NAYAR", true));
-                shaderName += ".OrenNayar";
+                shaderName += ".OrenN";
             } break;
             case ShadingMode::COOK_TORRANCE: {
                 fragDefines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
-                shaderName += ".CookTorrance";
+                shaderName += ".CookT";
             } break;
         }
     }
@@ -559,12 +559,12 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
         vertDefines.push_back(std::make_pair("USE_GPU_SKINNING", true));
-        shaderName += ".Skinned";  //<Use "," instead of "." will add a Vertex only property
+        shaderName += ".Sknd";  //<Use "," instead of "." will add a Vertex only property
     }
 
     if (renderStagePass._stage == RenderStage::DISPLAY) {
         fragDefines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
-        shaderName += ".DeferredNormals";
+        shaderName += ".DNrmls";
     }
 
     globalDefines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));

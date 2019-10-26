@@ -143,12 +143,12 @@ void glShaderProgram::onShutdown() {
 
 glShaderProgram::glShaderProgram(GFXDevice& context,
                                  size_t descriptorHash,
-                                 const Str64& name,
-                                 const Str64& resourceName,
-                                 const stringImpl& resourceLocation,
+                                 const Str128& name,
+                                 const Str128& assetName,
+                                 const stringImpl& assetLocation,
                                  const ShaderProgramDescriptor& descriptor,
                                  bool asyncLoad)
-    : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad),
+    : ShaderProgram(context, descriptorHash, name, assetName, assetLocation, descriptor, asyncLoad),
       glObject(glObjectType::TYPE_SHADER_PROGRAM, context),
       _stageMask(UseProgramStageMask::GL_NONE_BIT),
       _validated(false),
@@ -309,7 +309,7 @@ vector<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
     if (!header.empty()) {
         fileName.append("." + to_stringImpl(_ID(header.c_str())));
     }
-    fileName.append(".") + extension.c_str();
+    fileName.append("." + extension);
 
     if (s_useShaderTextCache && !reloadExisting) {
         shaderFileRead((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText).c_str(),
@@ -378,8 +378,6 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
         assert(!modules.empty());
 
         glShader::ShaderLoadData loadData;
-        Str64 programName = modules.front()._sourceFile;
-        programName = programName.substr(0, programName.find_first_of(".,"));
 
         bool hasData = false;
         for (const ShaderModuleDescriptor& shaderDescriptor : modules) {
@@ -387,15 +385,6 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             assert(type != ShaderType::COUNT);
 
             const U8 shaderIdx = to_U8(type);
-
-            programName.append("-") + GLUtil::glShaderStageNameTable[shaderIdx].c_str();
-            if (!shaderDescriptor._variant.empty()) {
-                programName.append(".") + shaderDescriptor._variant.c_str();
-            }
-            if (!shaderDescriptor._defines.empty()) {
-                programName.append(Util::StringFormat(".%zu",ShaderProgram::definesHash(shaderDescriptor._defines)).c_str());
-            }
-
             stringImpl header = "";
             for (auto define : shaderDescriptor._defines) {
                 // Placeholders are ignored
@@ -409,9 +398,9 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             glShader::LoadData& stageData = loadData[shaderIdx];
             stageData._type = shaderDescriptor._moduleType;
             stageData._name = shaderDescriptor._sourceFile.substr(0, shaderDescriptor._sourceFile.find_first_of(".,"));
-            stageData._name.append(".") + GLUtil::glShaderStageNameTable[shaderIdx].c_str();
+            stageData._name.append("." + GLUtil::glShaderStageNameTable[shaderIdx]);
             if (!shaderDescriptor._variant.empty()) {
-                stageData._name.append(".") + shaderDescriptor._variant.c_str();
+                stageData._name.append("." + shaderDescriptor._variant);
             }
 
             std::pair<bool, stringImpl> sourceCode;
@@ -431,31 +420,35 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             continue;
         }
 
-        if (reloadExisting) {
-            const U64 targetNameHash = _ID(programName.c_str());
-            for (glShader* tempShader : _shaderStage) {
-                if (tempShader->nameHash() == targetNameHash) {
-                    assert(tempShader != nullptr);
-                    glShader::loadShader(_context, tempShader, false, loadData);
-                    break;
+        for (glShader::LoadData& stageData : loadData) {
+            if (!stageData._name.empty() && !stageData.sourceCode.empty()) {
+                if (reloadExisting) {
+                    const U64 targetNameHash = _ID(stageData._name.c_str());
+                    for (glShader* tempShader : _shaderStage) {
+                        if (tempShader->nameHash() == targetNameHash) {
+                            assert(tempShader != nullptr);
+                            glShader::loadShader(_context, tempShader, false, loadData);
+                            break;
+                        }
+                    }
+                    rebindStages();
+                    for (glShader* shader : _shaderStage) {
+                        shader->reuploadUniforms(true);
+                    }
+                    _validated = false;
+                } else {
+                    glShader* shader = glShader::getShader(stageData._name);
+                    if (shader == nullptr) {
+                        shader = glShader::loadShader(_context, stageData._name, loadData);
+                        assert(shader != nullptr);
+                    } else {
+                        shader->AddRef();
+                        Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")), shader->name().c_str(), shader->GetRef());
+                    }
+
+                    _shaderStage.push_back(shader);
                 }
             }
-            rebindStages();
-            for (glShader* shader : _shaderStage) {
-                shader->reuploadUniforms(true);
-            }
-            _validated = false;
-        } else {
-            glShader* shader = glShader::getShader(programName);
-            if (shader == nullptr) {
-                shader = glShader::loadShader(_context, programName, loadData);
-                assert(shader != nullptr);
-            } else {
-                shader->AddRef();
-                Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")), shader->name().c_str(), shader->GetRef());
-            }
-
-            _shaderStage.push_back(shader);
         }
     }
 
@@ -612,7 +605,7 @@ void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
     }
 }
 
-stringImpl glShaderProgram::preprocessIncludes(const Str64& name,
+stringImpl glShaderProgram::preprocessIncludes(const Str128& name,
                                                const stringImpl& source,
                                                GLint level,
                                                vector<Str64>& foundAtoms,
@@ -710,7 +703,7 @@ const stringImpl& glShaderProgram::shaderFileReadLocked(const Str256& filePath, 
     return result.first->second;
 }
 
-Str64 glShaderProgram::decorateFileName(const Str64& name) {
+Str128 glShaderProgram::decorateFileName(const Str128& name) {
     if (Config::Build::IS_DEBUG_BUILD) {
         return "DEBUG." + name;
     } else if (Config::Build::IS_PROFILE_BUILD) {
@@ -720,12 +713,12 @@ Str64 glShaderProgram::decorateFileName(const Str64& name) {
     return "RELEASE." + name;
 }
 
-void glShaderProgram::shaderFileRead(const Str256& filePath, const Str64& fileName, stringImpl& sourceCodeOut) {
+void glShaderProgram::shaderFileRead(const Str256& filePath, const Str128& fileName, stringImpl& sourceCodeOut) {
     readFile(filePath, decorateFileName(fileName), sourceCodeOut, FileType::TEXT);
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file
-void glShaderProgram::shaderFileWrite(const Str256& filePath, const Str64& fileName, const char* sourceCode) {
+void glShaderProgram::shaderFileWrite(const Str256& filePath, const Str128& fileName, const char* sourceCode) {
     writeFile(filePath, decorateFileName(fileName), (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
 }
 

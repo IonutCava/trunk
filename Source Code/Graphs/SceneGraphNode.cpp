@@ -316,7 +316,7 @@ bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const
     return type == SGNRelationshipCache::RelationshipType::CHILD;
 }
 
-SceneGraphNode* SceneGraphNode::findChild(const Str64& name, bool sceneNodeName, bool recursive) const {
+SceneGraphNode* SceneGraphNode::findChild(const Str128& name, bool sceneNodeName, bool recursive) const {
     SharedLock r_lock(_childLock);
     for (auto& child : _children) {
         if (sceneNodeName ? child->getNode().resourceName().compare(name) == 0

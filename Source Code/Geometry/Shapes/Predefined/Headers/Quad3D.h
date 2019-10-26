@@ -50,7 +50,7 @@ class Quad3D : public Object3D {
     explicit Quad3D(GFXDevice& context,
                     ResourceCache& parentCache,
                     size_t descriptorHash,
-                    const Str64& name,
+                    const Str128& name,
                     const bool doubleSided);
 
     vec3<F32> getCorner(CornerLocation corner);

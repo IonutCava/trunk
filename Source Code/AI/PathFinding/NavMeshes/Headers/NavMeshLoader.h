@@ -105,8 +105,8 @@ class NavModelData {
     inline bool isValid() const { return _valid; }
     inline void isValid(bool state) { _valid = state; }
 
-    inline void name(const Str64& name) { _navMeshName = name; }
-    inline const Str64& name() const { return _navMeshName; }
+    inline void name(const Str128& name) { _navMeshName = name; }
+    inline const Str128& name() const { return _navMeshName; }
 
     inline const F32* getVerts() const { return _vertices; }
     inline const F32* getNormals() const { return _normals; }
@@ -128,7 +128,7 @@ class NavModelData {
 
    private:
     bool _valid;
-    Str64 _navMeshName;
+    Str128 _navMeshName;
     vector<SamplePolyAreas> _triangleAreaType;
 };
 

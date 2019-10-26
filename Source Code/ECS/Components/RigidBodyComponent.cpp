@@ -19,7 +19,7 @@ namespace Divide {
 
     }
 
-    void RigidBodyComponent::cookCollisionMesh(const Str64& sceneName) {
+    void RigidBodyComponent::cookCollisionMesh(const Str128& sceneName) {
 
     }
 

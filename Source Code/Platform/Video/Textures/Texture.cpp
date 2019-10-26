@@ -18,13 +18,13 @@ const char* Texture::s_missingTextureFileName = nullptr;
 
 Texture::Texture(GFXDevice& context,
                  size_t descriptorHash,
-                 const Str64& name,
-                 const Str64& resourceName,
-                 const stringImpl& resourceLocation,
+                 const Str128& name,
+                 const stringImpl& assetNames,
+                 const stringImpl& assetLocations,
                  bool isFlipped,
                  bool asyncLoad,
                  const TextureDescriptor& texDescriptor)
-    : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
+    : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, assetNames, assetLocations),
       GraphicsResource(context, GraphicsResource::Type::TEXTURE, getGUID(), _ID(name.c_str())),
       _data(0u, 0u, TextureType::COUNT),
       _descriptor(texDescriptor),
@@ -157,9 +157,9 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         // Flip image if needed
         fileData.flip(_flipped);
         fileData.set16Bit(_descriptor.dataType() == GFXDataFormat::FLOAT_16 ||
-                          _descriptor.dataType() == GFXDataFormat::SIGNED_SHORT ||
-                          _descriptor.dataType() == GFXDataFormat::UNSIGNED_SHORT);
-        
+            _descriptor.dataType() == GFXDataFormat::SIGNED_SHORT ||
+            _descriptor.dataType() == GFXDataFormat::UNSIGNED_SHORT);
+
         // Save file contents in  the "img" object
         ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor.srgb(), fileData);
 
@@ -184,9 +184,13 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         // If we have an alpha channel, we must check for translucency/transparency
 
         FileWithPath fwp = splitPathToNameAndLocation(name);
+        Util::ReplaceStringInPlace(fwp._path, { "//","\\" }, "/");
         Util::ReplaceStringInPlace(fwp._path, "/", "_");
-        const Str256 cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation;
-        const Str64 cacheName = (fwp._path + "_" + fwp._fileName + ".cache").c_str();
+        if (fwp._path.back() == '_') {
+            fwp._path.pop_back();
+        }
+        const Str256 cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation + fwp._path + "/";
+        const Str64 cacheName = (fwp._fileName + ".cache");
 
         ByteBuffer metadataCache = {};
         if (metadataCache.loadFromFile(cachePath, cacheName)) {

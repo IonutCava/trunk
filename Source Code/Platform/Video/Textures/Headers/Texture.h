@@ -67,9 +67,9 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     explicit Texture(GFXDevice& context,
                      size_t descriptorHash,
-                     const Str64& name,
-                     const Str64& resourceName,
-                     const stringImpl& resourceLocation,
+                     const Str128& name,
+                     const stringImpl& assetNames,
+                     const stringImpl& assetLocations,
                      bool isFlipped,
                      bool asyncLoad,
                      const TextureDescriptor& texDescriptor);

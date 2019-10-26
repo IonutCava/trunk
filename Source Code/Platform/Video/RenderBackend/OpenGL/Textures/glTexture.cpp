@@ -17,14 +17,14 @@ namespace Divide {
 
 glTexture::glTexture(GFXDevice& context,
                      size_t descriptorHash,
-                     const Str64& name,
-                     const Str64& resourceName,
-                     const stringImpl& resourceLocation,
+                     const Str128& name,
+                     const stringImpl& assetNames,
+                     const stringImpl& assetLocations,
                      bool isFlipped,
                      bool asyncLoad,
                      const TextureDescriptor& texDescriptor)
 
-    : Texture(context, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor),
+    : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor),
       glObject(glObjectType::TYPE_TEXTURE, context),
      _lockManager(MemoryManager_NEW glLockManager())
 {

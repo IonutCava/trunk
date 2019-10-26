@@ -51,7 +51,7 @@ namespace {
     U64 elapsedGameTimeUs = 0;
 };
 
-WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name)
+WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)
    : Scene(context, cache, parent, name),
     _flag{ nullptr, nullptr },
     _infoBox(nullptr),
@@ -394,7 +394,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 #endif
 }
 
-bool WarScene::load(const Str64& name) {
+bool WarScene::load(const Str128& name) {
     static const U32 lightMask = to_base(ComponentType::TRANSFORM) |
                                  to_base(ComponentType::BOUNDS) |
                                  to_base(ComponentType::RENDERING);

@@ -30,7 +30,7 @@ NavigationMesh::NavigationMesh(PlatformContext& context)
 {
     ParamHandler& par = ParamHandler::instance();
     Str256 path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
-    path.append(par.getParam<stringImpl>(_ID("currentScene")).c_str());
+    path.append(par.getParam<stringImpl>(_ID("currentScene")));
 
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
     _filePath = path + "/" + Paths::g_navMeshesLocation;
@@ -284,7 +284,7 @@ bool NavigationMesh::buildProcess() {
 bool NavigationMesh::generateMesh() {
     assert(_sgn != nullptr);
 
-    Str64 nodeName(generateMeshName(*_sgn));
+    Str128 nodeName(generateMeshName(*_sgn));
 
     // Parse objects from level into RC-compatible format
     _fileName.append(nodeName);
@@ -293,7 +293,7 @@ bool NavigationMesh::generateMesh() {
                      nodeName.c_str());
 
     NavModelData data;
-    Str64 geometrySaveFile(_fileName);
+    Str128 geometrySaveFile(_fileName);
     Util::ReplaceStringInPlace(geometrySaveFile, ".nm", ".ig");
 
     data.clear(false);
@@ -642,9 +642,9 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     }
 
     dtNavMesh* temp = nullptr;
-    Str64 file = _fileName;
+    Str128 file = _fileName;
 
-    Str64 nodeName(generateMeshName(sgn));
+    Str128 nodeName(generateMeshName(sgn));
     
     // Parse objects from level into RC-compatible format
     file.append(nodeName);
@@ -715,7 +715,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
         return false;
     }
 
-    Str64 file = _fileName;
+    Str128 file = _fileName;
     // Parse objects from level into RC-compatible format
     file.append(generateMeshName(sgn));
     file.append(".nm");
@@ -770,7 +770,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
     return true;
 }
 
-Str64 NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
+Str128 NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
     return (sgn.getNode().type() != SceneNodeType::TYPE_ROOT)
                ? "_node_[_" + sgn.name() + "_]"
                : "_root_node";

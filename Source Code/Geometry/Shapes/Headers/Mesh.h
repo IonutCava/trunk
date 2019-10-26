@@ -61,8 +61,8 @@ class Mesh : public Object3D {
     explicit Mesh(GFXDevice& context,
                   ResourceCache& parentCache,
                   size_t descriptorHash,
-                  const Str64& name,
-                  const Str64& resourceName,
+                  const Str128& name,
+                  const Str128& resourceName,
                   const stringImpl& resourceLocation);
 
     virtual ~Mesh();

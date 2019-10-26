@@ -41,9 +41,15 @@ namespace Divide {
     namespace Util {
         bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix = "--");
 
+        template<size_t N, typename T_str = stringImpl>
+        void ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive = false);
+
+        template<size_t N, typename T_str = stringImpl>
+        T_str ReplaceString(const T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive = false);
+
         template<typename T_str = stringImpl>
         void ReplaceStringInPlace(T_str& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
-
+        
         template<typename T_str = stringImpl>
         T_str ReplaceString(const T_str& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
 

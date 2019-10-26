@@ -143,7 +143,7 @@ public:
 
 protected:
     /// this method handles cache lookups and reference counting
-    CachedResource_ptr loadResource(size_t descriptorHash, const Str64& resourceName);
+    CachedResource_ptr loadResource(size_t descriptorHash, const Str128& resourceName);
 
 protected:
     friend struct DeleteResource;

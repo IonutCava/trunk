@@ -263,7 +263,13 @@ inline void Material::addShaderDefine(ShaderType type, const Str128& define, boo
 inline void Material::addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix) {
     ModuleDefines& defines = _extraShaderDefines[to_base(type)];
 
-    if (eastl::find(eastl::cbegin(defines), eastl::cend(defines), std::make_pair(define, addPrefix)) == eastl::cend(defines)) {
+    if (eastl::find_if(eastl::cbegin(defines),
+                       eastl::cend(defines),
+                       [&define, addPrefix](const auto& it) {
+                            return it.second == addPrefix &&
+                                   it.first.compare(define.c_str()) == 0;
+                        }) == eastl::cend(defines))
+    {
         defines.emplace_back(define, addPrefix);
     }
 }

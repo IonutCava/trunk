@@ -51,9 +51,8 @@ void LanguageData::changeLanguage(const char* newLanguage) {
 }
 
 const char* LanguageData::get(U64 key, const char* defaultValue) {
-    typedef hashMap<U64, Str64>::const_iterator citer;
     // When we ask for a string for the given key, we check our language cache first
-    const citer entry = _languageTable.find(key);
+    const auto& entry = _languageTable.find(key);
     if (entry != std::cend(_languageTable)) {
         // Usually, the entire language table is loaded.
         return entry->second.c_str();

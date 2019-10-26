@@ -3,160 +3,150 @@
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Headers/FileManagement.h"
 
 namespace Divide {
 
-namespace Paths {
-    //special case
-    Str256 g_logPath = "logs/";
+Str128 Paths::g_exePath;
+Str64 Paths::g_logPath;
+Str64 Paths::g_assetsLocation;
+Str64 Paths::g_shadersLocation;
+Str64 Paths::g_texturesLocation;
+Str64 Paths::g_heightmapLocation;
+Str64 Paths::g_climatesLowResLocation;
+Str64 Paths::g_climatesMedResLocation;
+Str64 Paths::g_climatesHighResLocation;
+Str64 Paths::g_xmlDataLocation;
+Str64 Paths::g_scenesLocation;
 
-    Str256 g_exePath;
-    Str256 g_assetsLocation;
-    Str256 g_shadersLocation;
-    Str256 g_texturesLocation;
-    Str256 g_heightmapLocation;
-    Str256 g_climatesLowResLocation;
-    Str256 g_climatesMedResLocation;
-    Str256 g_climatesHighResLocation;
-    Str256 g_imagesLocation;
-    Str256 g_materialsLocation;
-    Str256 g_soundsLocation;
-    Str256 g_xmlDataLocation;
-    Str256 g_navMeshesLocation;
-    Str256 g_scenesLocation;
-    Str256 g_saveLocation;
-    Str256 g_GUILocation;
-    Str256 g_fontsPath;
-    Str256 g_localisationPath;
-    Str256 g_cacheLocation;
-    Str256 g_terrainCacheLocation;
-    Str256 g_geometryCacheLocation;
+Str64 Paths::g_saveLocation;
+Str64 Paths::g_imagesLocation;
+Str64 Paths::g_materialsLocation;
+Str64 Paths::g_navMeshesLocation;
+Str64 Paths::g_GUILocation;
+Str64 Paths::g_fontsPath;
+Str64 Paths::g_soundsLocation;
+Str64 Paths::g_localisationPath;
+Str64 Paths::g_cacheLocation;
+Str64 Paths::g_terrainCacheLocation;
+Str64 Paths::g_geometryCacheLocation;
 
-    namespace Editor {
-        Str256 g_saveLocation;
-        Str256 g_tabLayoutFile;
-        Str256 g_panelLayoutFile;
-    };
+Str64 Paths::Editor::g_saveLocation;
+Str64 Paths::Editor::g_tabLayoutFile;
+Str64 Paths::Editor::g_panelLayoutFile;
 
-    namespace Scripts {
-        Str256 g_scriptsLocation;
-        Str256 g_scriptsAtomsLocation;
-    };
+Str64 Paths::Scripts::g_scriptsLocation;
+Str64 Paths::Scripts::g_scriptsAtomsLocation;
 
-    namespace Textures {
-        Str256 g_metadataLocation;
-    };
+Str64 Paths::Textures::g_metadataLocation;
 
-    namespace Shaders {
-        Str256 g_cacheLocation;
-        Str256 g_cacheLocationText;
-        Str256 g_cacheLocationBin;
+Str64 Paths::Shaders::g_cacheLocation;
+Str64 Paths::Shaders::g_cacheLocationText;
+Str64 Paths::Shaders::g_cacheLocationBin;
 
-        namespace GLSL {
-            // these must match the last 4 characters of the atom file
-            Str8 g_fragAtomExt;
-            Str8 g_vertAtomExt;
-            Str8 g_geomAtomExt;
-            Str8 g_tescAtomExt;
-            Str8 g_teseAtomExt;
-            Str8 g_compAtomExt;
-            Str8 g_comnAtomExt;
+// these must match the last 4 characters of the atom file
+Str8 Paths::Shaders::GLSL::g_fragAtomExt;
+Str8 Paths::Shaders::GLSL::g_vertAtomExt;
+Str8 Paths::Shaders::GLSL::g_geomAtomExt;
+Str8 Paths::Shaders::GLSL::g_tescAtomExt;
+Str8 Paths::Shaders::GLSL::g_teseAtomExt;
+Str8 Paths::Shaders::GLSL::g_compAtomExt;
+Str8 Paths::Shaders::GLSL::g_comnAtomExt;
 
-            // Shader subfolder name that contains shader files for OpenGL
-            Str256 g_parentShaderLoc;
-            // Atom folder names in parent shader folder
-            Str256 g_fragAtomLoc;
-            Str256 g_vertAtomLoc;
-            Str256 g_geomAtomLoc;
-            Str256 g_tescAtomLoc;
-            Str256 g_teseAtomLoc;
-            Str256 g_compAtomLoc;
-            Str256 g_comnAtomLoc;
-        };
+// Shader subfolder name that contains shader files for OpenGL
+Str64 Paths::Shaders::GLSL::g_parentShaderLoc;
+// Atom folder names in parent shader folder
+Str64 Paths::Shaders::GLSL::g_fragAtomLoc;
+Str64 Paths::Shaders::GLSL::g_vertAtomLoc;
+Str64 Paths::Shaders::GLSL::g_geomAtomLoc;
+Str64 Paths::Shaders::GLSL::g_tescAtomLoc;
+Str64 Paths::Shaders::GLSL::g_teseAtomLoc;
+Str64 Paths::Shaders::GLSL::g_compAtomLoc;
+Str64 Paths::Shaders::GLSL::g_comnAtomLoc;
 
-        namespace HLSL {
-            Str256 g_parentShaderLoc;
-        };
-    };
+Str64 Paths::Shaders::HLSL::g_parentShaderLoc;
 
-    std::regex g_includePattern;
-    std::regex g_definePattern;
-    std::regex g_usePattern;
+std::regex Paths::g_includePattern;
+std::regex Paths::g_definePattern;
+std::regex Paths::g_usePattern;
 
-    void initPaths(const SysInfo& info) {
-        g_exePath = (info._pathAndFilename._path + "/").c_str();
-        g_assetsLocation = ("assets/");
-        g_shadersLocation = ("shaders/");
-        g_texturesLocation = ("textures/");
-        g_heightmapLocation = ("terrain/");
-        g_climatesLowResLocation = ("climates_05k/");
-        g_climatesMedResLocation = ("climates_1k/");
-        g_climatesHighResLocation = ("climates_4k/");
-        g_xmlDataLocation = ("XML/");
-        g_scenesLocation = ("Scenes/");
+void Paths::initPaths(const SysInfo& info) {
+    g_exePath.assign(info._pathAndFilename._path + "/");
+    g_logPath = "logs/";
 
-        g_saveLocation = ("SaveData/");
-        g_imagesLocation = ("misc_images/");
-        g_materialsLocation = ("materials/");
-        g_navMeshesLocation = ("navMeshes/");
-        g_GUILocation = ("GUI/");
-        g_fontsPath = ("fonts/");
-        g_soundsLocation = ("sounds/");
-        g_localisationPath = ("localisation/");
-        g_cacheLocation = ("cache/");
-        g_terrainCacheLocation = ("terrain/");
-        g_geometryCacheLocation = ("geometry/");
+    g_assetsLocation = "assets/";
+    g_shadersLocation = "shaders/";
+    g_texturesLocation = "textures/";
+    g_heightmapLocation = "terrain/";
+    g_climatesLowResLocation = "climates_05k/";
+    g_climatesMedResLocation = "climates_1k/";
+    g_climatesHighResLocation = "climates_4k/";
+    g_xmlDataLocation = "XML/";
+    g_scenesLocation = "Scenes/";
 
-        Scripts::g_scriptsLocation = (g_assetsLocation + "scripts/");
-        Scripts::g_scriptsAtomsLocation = (Scripts::g_scriptsLocation + "atoms/");
+    g_saveLocation = "SaveData/";
+    g_imagesLocation = "misc_images/";
+    g_materialsLocation = "materials/";
+    g_navMeshesLocation = "navMeshes/";
+    g_GUILocation = "GUI/";
+    g_fontsPath = "fonts/";
+    g_soundsLocation = "sounds/";
+    g_localisationPath = "localisation/";
+    g_cacheLocation = "cache/";
+    g_terrainCacheLocation = "terrain/";
+    g_geometryCacheLocation = "geometry/";
 
-        Textures::g_metadataLocation = ("textureData/");
+    Editor::g_saveLocation = "Editor/";
+    Editor::g_tabLayoutFile = "Tabs.layout";
+    Editor::g_panelLayoutFile = "Panels.layout";
 
-        Editor::g_saveLocation = ("Editor/");
-        Editor::g_tabLayoutFile = ("Tabs.layout");
-        Editor::g_panelLayoutFile = ("Panels.layout");
+    Scripts::g_scriptsLocation = Paths::g_assetsLocation + "scripts/";
+    Scripts::g_scriptsAtomsLocation = Paths::Scripts::g_scriptsLocation + "atoms/";
 
-        Shaders::g_cacheLocation = ("shaders/");
-        Shaders::g_cacheLocationText = (Shaders::g_cacheLocation + "Text/");
-        Shaders::g_cacheLocationBin = (Shaders::g_cacheLocation + "Binary/");
-        // these must match the last 4 characters of the atom file
-        Shaders::GLSL::g_fragAtomExt = ("frag");
-        Shaders::GLSL::g_vertAtomExt = ("vert");
-        Shaders::GLSL::g_geomAtomExt = ("geom");
-        Shaders::GLSL::g_tescAtomExt = ("tesc");
-        Shaders::GLSL::g_teseAtomExt = ("tese");
-        Shaders::GLSL::g_compAtomExt = (".comp");
-        Shaders::GLSL::g_comnAtomExt = (".cmn");
+    Textures::g_metadataLocation = "textureData/";
 
-        Shaders::GLSL::g_parentShaderLoc = ("GLSL/");
-        Shaders::GLSL::g_fragAtomLoc = ("fragmentAtoms/");
-        Shaders::GLSL::g_vertAtomLoc = ("vertexAtoms/");
-        Shaders::GLSL::g_geomAtomLoc = ("geometryAtoms/");
-        Shaders::GLSL::g_tescAtomLoc = ("tessellationCAtoms/");
-        Shaders::GLSL::g_teseAtomLoc = ("tessellationEAtoms/");
-        Shaders::GLSL::g_compAtomLoc = ("computeAtoms/");
-        Shaders::GLSL::g_comnAtomLoc = ("common/");
+    Shaders::g_cacheLocation = "shaders/";
+    Shaders::g_cacheLocationText = Paths::Shaders::g_cacheLocation + "Text/";
+    Shaders::g_cacheLocationBin = Paths::Shaders::g_cacheLocation + "Binary/";
 
-        Shaders::HLSL::g_parentShaderLoc = ("HLSL/");
+    // these must match the last 4 characters of the atom file
+    Shaders::GLSL::g_fragAtomExt = "frag";
+    Shaders::GLSL::g_vertAtomExt = "vert";
+    Shaders::GLSL::g_geomAtomExt = "geom";
+    Shaders::GLSL::g_tescAtomExt = "tesc";
+    Shaders::GLSL::g_teseAtomExt = "tese";
+    Shaders::GLSL::g_compAtomExt = ".comp";
+    Shaders::GLSL::g_comnAtomExt = ".cmn";
 
-        g_includePattern = std::regex(R"(^\s*#\s*include\s+["<]([^">]+)*[">])");
-        g_definePattern = std::regex(R"(([#!][A-z]{2,}[\s]{1,}?([A-z]{2,}[\s]{1,}?)?)([\\(]?[^\s\\)]{1,}[\\)]?)?)");
-        g_usePattern = std::regex(R"(^\s*use\s*\(\s*\"(.*)\"\s*\))");
-    }
+    // Shader subfolder name that contains shader files for OpenGL
+    Shaders::GLSL::g_parentShaderLoc = "GLSL/";
+    // Atom folder names in parent shader folder
+    Shaders::GLSL::g_fragAtomLoc = "fragmentAtoms/";
+    Shaders::GLSL::g_vertAtomLoc = "vertexAtoms/";
+    Shaders::GLSL::g_geomAtomLoc = "geometryAtoms/";
+    Shaders::GLSL::g_tescAtomLoc = "tessellationCAtoms/";
+    Shaders::GLSL::g_teseAtomLoc = "tessellationEAtoms/";
+    Shaders::GLSL::g_compAtomLoc = "computeAtoms/";
+    Shaders::GLSL::g_comnAtomLoc = "common/";
 
-    void updatePaths(const PlatformContext& context) {
-        const Configuration& config = context.config();
-        const XMLEntryData& entryData = context.entryData();
+    Shaders::HLSL::g_parentShaderLoc = "HLSL/";
+
+    g_includePattern = std::regex(R"(^\s*#\s*include\s+["<]([^">]+)*[">])");
+    g_definePattern = std::regex(R"(([#!][A-z]{2,}[\s]{1,}?([A-z]{2,}[\s]{1,}?)?)([\\(]?[^\s\\)]{1,}[\\)]?)?)");
+    g_usePattern = std::regex(R"(^\s*use\s*\(\s*\"(.*)\"\s*\))");
+}
+
+void Paths::updatePaths(const PlatformContext& context) {
+    const Configuration& config = context.config();
+    const XMLEntryData& entryData = context.entryData();
         
-        g_assetsLocation = (entryData.assetsLocation + "/").c_str();
-        g_shadersLocation = (config.defaultShadersLocation + "/").c_str();
-        g_texturesLocation = (config.defaultTextureLocation + "/").c_str();
-        g_xmlDataLocation = (entryData.scriptLocation + "/").c_str();
-        g_scenesLocation = (entryData.scenesLocation + "/").c_str();
-        Scripts::g_scriptsLocation = (g_assetsLocation + "scripts/");
-        Scripts::g_scriptsAtomsLocation = (Scripts::g_scriptsLocation + "atoms/");
-    }
-
-}; //namespace Paths
+    g_assetsLocation = (entryData.assetsLocation + "/").c_str();
+    g_shadersLocation = (config.defaultShadersLocation + "/").c_str();
+    g_texturesLocation = (config.defaultTextureLocation + "/").c_str();
+    g_xmlDataLocation = (entryData.scriptLocation + "/").c_str();
+    g_scenesLocation = (entryData.scenesLocation + "/").c_str();
+    Scripts::g_scriptsLocation = (g_assetsLocation + "scripts/");
+    Scripts::g_scriptsAtomsLocation = (Scripts::g_scriptsLocation + "atoms/");
+}
 
 }; //namespace Divide

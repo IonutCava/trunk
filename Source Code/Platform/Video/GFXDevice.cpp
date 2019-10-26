@@ -2186,9 +2186,9 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* nam
 }
 
 Texture* GFXDevice::newTexture(size_t descriptorHash,
-                               const Str64& name,
-                               const Str64& resourceName,
-                               const stringImpl& resourceLocation,
+                               const Str128& resourceName,
+                               const stringImpl& assetNames,
+                               const stringImpl& assetLocations,
                                bool isFlipped,
                                bool asyncLoad,
                                const TextureDescriptor& texDescriptor) {
@@ -2200,13 +2200,13 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
     switch (getRenderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            temp = new (objectArena()) glTexture(*this, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
+            temp = new (objectArena()) glTexture(*this, descriptorHash, resourceName, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor);
         } break;
         case RenderAPI::Vulkan: {
-            temp = new (objectArena()) vkTexture(*this, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
+            temp = new (objectArena()) vkTexture(*this, descriptorHash, resourceName, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor);
         } break;
         case RenderAPI::None: {
-            temp = new (objectArena()) noTexture(*this, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
+            temp = new (objectArena()) noTexture(*this, descriptorHash, resourceName, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -2236,9 +2236,9 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) {
 }
 
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
-                                           const Str64& name,
-                                           const Str64& resourceName,
-                                           const stringImpl& resourceLocation,
+                                           const Str128& resourceName,
+                                           const Str128& assetName,
+                                           const stringImpl& assetLocation,
                                            const ShaderProgramDescriptor& descriptor,
                                            bool asyncLoad) {
 
@@ -2248,13 +2248,13 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
     switch (getRenderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            temp = new (objectArena()) glShaderProgram(*this, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad);
+            temp = new (objectArena()) glShaderProgram(*this, descriptorHash, resourceName, assetName, assetLocation, descriptor, asyncLoad);
         } break;
         case RenderAPI::Vulkan: {
-            temp = new (objectArena()) vkShaderProgram(*this, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad);
+            temp = new (objectArena()) vkShaderProgram(*this, descriptorHash, resourceName, assetName, assetLocation, descriptor, asyncLoad);
         } break;
         case RenderAPI::None: {
-            temp = new (objectArena()) noShaderProgram(*this, descriptorHash, name, resourceName, resourceLocation, descriptor, asyncLoad);
+            temp = new (objectArena()) noShaderProgram(*this, descriptorHash, resourceName, assetName, assetLocation, descriptor, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

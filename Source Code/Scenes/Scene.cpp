@@ -76,7 +76,7 @@ struct selectionQueueDistanceFrontToBack {
 constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
-Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name)
+Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)
     : Resource(ResourceType::DEFAULT, name),
       PlatformContextComponent(context),
       _parent(parent),
@@ -202,8 +202,8 @@ bool Scene::saveXML() const {
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
-    Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
-    Str64 sceneDataFile(sceneLocation + ".xml");
+    const Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
+    const Str256 sceneDataFile(sceneLocation + ".xml");
 
     createDirectory((sceneLocation + "/collisionMeshes/").c_str());
     createDirectory((sceneLocation + "/navMeshes/").c_str());
@@ -929,12 +929,12 @@ void Scene::loadDefaultCamera() {
 
 }
 
-bool Scene::loadXML(const Str64& name) {
+bool Scene::loadXML(const Str128& name) {
     XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, name, this, _context.config());
     return true;
 }
 
-bool Scene::load(const Str64& name) {
+bool Scene::load(const Str128& name) {
     setState(ResourceState::RES_LOADING);
 
     _resourceName = name;

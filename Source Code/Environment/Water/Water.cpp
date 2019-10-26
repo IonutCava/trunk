@@ -21,7 +21,7 @@ namespace {
     constexpr F32 g_reflectionPlaneCorrectionHeight = 1.0f;
 };
 
-WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const Str64& name)
+WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
       _reflectionCam(nullptr)
@@ -45,7 +45,7 @@ bool WaterPlane::load() {
 
     _reflectionCam = Camera::createCamera(resourceName() + "_reflectionCam", Camera::CameraType::FREE_FLY);
 
-    const Str64& name = resourceName();
+    const Str128& name = resourceName();
 
     SamplerDescriptor defaultSampler = {};
     defaultSampler.wrapU(TextureWrap::REPEAT);

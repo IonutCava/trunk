@@ -49,9 +49,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
    public:
     explicit glShaderProgram(GFXDevice& context,
                              size_t descriptorHash,
-                             const Str64& name,
-                             const Str64& resourceName,
-                             const stringImpl& resourceLocation,
+                             const Str128& name,
+                             const Str128& assetName,
+                             const stringImpl& assetLocation,
                              const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad);
     ~glShaderProgram();
@@ -60,7 +60,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static void destroyStaticData();
     static void onStartup(GFXDevice& context, ResourceCache& parentCache);
     static void onShutdown();
-    static Str64 decorateFileName(const Str64& name);
+    static Str128 decorateFileName(const Str128& name);
 
     /// Make sure this program is ready for deletion
     bool unload() noexcept override;
@@ -80,9 +80,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static const stringImpl& shaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed);
     static const stringImpl& shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed);
 
-    static void shaderFileRead(const Str256& filePath, const Str64& fileName, stringImpl& sourceCodeOut);
-    static void shaderFileWrite(const Str256& filePath, const Str64& fileName, const char* sourceCode);
-    static stringImpl preprocessIncludes(const Str64& name,
+    static void shaderFileRead(const Str256& filePath, const Str128& fileName, stringImpl& sourceCodeOut);
+    static void shaderFileWrite(const Str256& filePath, const Str128& fileName, const char* sourceCode);
+    static stringImpl preprocessIncludes(const Str128& name,
                                          const stringImpl& source,
                                          GLint level,
                                          vector<Str64>& foundAtoms,

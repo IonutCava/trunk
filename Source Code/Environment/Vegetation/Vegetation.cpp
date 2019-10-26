@@ -718,7 +718,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
     const Terrain& terrain = _terrainChunk.parent();
 
-    Str64 cacheFileName = terrain.resourceName() + "_" + resourceName() + (treeData ? "_trees_" : "_grass_") + ".cache";
+    Str128 cacheFileName = terrain.resourceName() + "_" + resourceName() + (treeData ? "_trees_" : "_grass_") + ".cache";
     Console::printfn(Locale::get(treeData ? _ID("CREATE_TREE_START") : _ID("CREATE_GRASS_BEGIN")), _terrainChunk.ID());
 
     vectorEASTL<VegetationData>& container = treeData ? _tempTreeData : _tempGrassData;

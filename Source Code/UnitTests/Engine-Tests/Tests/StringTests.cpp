@@ -19,7 +19,7 @@ vector<stringImpl> getFiles(const stringImpl& input, const std::regex& pattern) 
     vector<stringImpl> include_file;
     while (std::getline(inputStream, line)) {
         if (std::regex_search(line, matches, pattern)) {
-            include_file.emplace_back(Util::Trim(matches[1].str().c_str()));
+            include_file.emplace_back(Util::Trim(matches[1].str()));
         }
     }
 

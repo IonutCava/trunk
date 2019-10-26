@@ -48,87 +48,87 @@ enum class CacheType : U8 {
 
 struct SysInfo;
 class PlatformContext;
-namespace Paths {
-    extern Str256 g_exePath;
-    extern Str256 g_logPath;
-    extern Str256 g_assetsLocation;
-    extern Str256 g_shadersLocation;
-    extern Str256 g_texturesLocation;
-    extern Str256 g_heightmapLocation;
-    extern Str256 g_climatesLowResLocation;
-    extern Str256 g_climatesMedResLocation;
-    extern Str256 g_climatesHighResLocation;
-    extern Str256 g_imagesLocation;
-    extern Str256 g_materialsLocation;
-    extern Str256 g_soundsLocation;
-    extern Str256 g_xmlDataLocation;
-    extern Str256 g_navMeshesLocation;
-    extern Str256 g_scenesLocation;
-    extern Str256 g_saveLocation;
-    extern Str256 g_GUILocation;
-    extern Str256 g_fontsPath;
-    extern Str256 g_localisationPath;
-    extern Str256 g_cacheLocation;
-    extern Str256 g_terrainCacheLocation;
-    extern Str256 g_geometryCacheLocation;
+struct Paths {
+    static Str128 g_exePath;
+    static Str64 g_logPath;
+    static Str64 g_assetsLocation;
+    static Str64 g_shadersLocation;
+    static Str64 g_texturesLocation;
+    static Str64 g_heightmapLocation;
+    static Str64 g_climatesLowResLocation;
+    static Str64 g_climatesMedResLocation;
+    static Str64 g_climatesHighResLocation;
+    static Str64 g_imagesLocation;
+    static Str64 g_materialsLocation;
+    static Str64 g_soundsLocation;
+    static Str64 g_xmlDataLocation;
+    static Str64 g_navMeshesLocation;
+    static Str64 g_scenesLocation;
+    static Str64 g_saveLocation;
+    static Str64 g_GUILocation;
+    static Str64 g_fontsPath;
+    static Str64 g_localisationPath;
+    static Str64 g_cacheLocation;
+    static Str64 g_terrainCacheLocation;
+    static Str64 g_geometryCacheLocation;
 
-    namespace Editor {
-        extern Str256 g_saveLocation;
-        extern Str256 g_tabLayoutFile;
-        extern Str256 g_panelLayoutFile;
+    struct Editor {
+        static Str64 g_saveLocation;
+        static Str64 g_tabLayoutFile;
+        static Str64 g_panelLayoutFile;
     };
 
-    namespace Scripts {
-        extern Str256 g_scriptsLocation;
-        extern Str256 g_scriptsAtomsLocation;
+    struct Scripts {
+        static Str64 g_scriptsLocation;
+        static Str64 g_scriptsAtomsLocation;
     };
 
-    namespace Textures {
-        extern Str256 g_metadataLocation;
+    struct Textures {
+        static Str64 g_metadataLocation;
     };
 
-    namespace Shaders {
-        extern Str256 g_cacheLocation;
-        extern Str256 g_cacheLocationText;
-        extern Str256 g_cacheLocationBin;
+    struct Shaders {
+        static Str64 g_cacheLocation;
+        static Str64 g_cacheLocationText;
+        static Str64 g_cacheLocationBin;
 
-        namespace GLSL {
+        struct GLSL {
             // these must match the last 4 characters of the atom file
-            extern Str8 g_fragAtomExt;
-            extern Str8 g_vertAtomExt;
-            extern Str8 g_geomAtomExt;
-            extern Str8 g_tescAtomExt;
-            extern Str8 g_teseAtomExt;
-            extern Str8 g_compAtomExt;
-            extern Str8 g_comnAtomExt;
+            static Str8 g_fragAtomExt;
+            static Str8 g_vertAtomExt;
+            static Str8 g_geomAtomExt;
+            static Str8 g_tescAtomExt;
+            static Str8 g_teseAtomExt;
+            static Str8 g_compAtomExt;
+            static Str8 g_comnAtomExt;
 
             // Shader subfolder name that contains shader files for OpenGL
-            extern Str256 g_parentShaderLoc;
+            static Str64 g_parentShaderLoc;
             // Atom folder names in parent shader folder
-            extern Str256 g_fragAtomLoc;
-            extern Str256 g_vertAtomLoc;
-            extern Str256 g_geomAtomLoc;
-            extern Str256 g_tescAtomLoc;
-            extern Str256 g_teseAtomLoc;
-            extern Str256 g_compAtomLoc;
-            extern Str256 g_comnAtomLoc;
-        }; //namespace GLSL
-        namespace HLSL {
-            extern Str256 g_parentShaderLoc;
-        }; //namespace HLSL
-    }; //namespace Shaders
+            static Str64 g_fragAtomLoc;
+            static Str64 g_vertAtomLoc;
+            static Str64 g_geomAtomLoc;
+            static Str64 g_tescAtomLoc;
+            static Str64 g_teseAtomLoc;
+            static Str64 g_compAtomLoc;
+            static Str64 g_comnAtomLoc;
+        }; //class GLSL
+        struct HLSL {
+            static Str64 g_parentShaderLoc;
+        }; //class HLSL
+    }; //class Shaders
 
     // include command regex pattern
-    extern std::regex g_includePattern;
+    static std::regex g_includePattern;
     // define regex pattern
-    extern std::regex g_definePattern;
+    static std::regex g_definePattern;
     // use command regex pattern
-    extern std::regex g_usePattern;
+    static std::regex g_usePattern;
 
     
-    void initPaths(const SysInfo& info);
-    void updatePaths(const PlatformContext& context);
-}; //namespace Paths
+    static void initPaths(const SysInfo& info);
+    static void updatePaths(const PlatformContext& context);
+}; //class Paths
 
 
 bool pathExists(const char* filePath);
@@ -137,11 +137,11 @@ bool createFile(const char* filePathAndName, bool overwriteExisting);
 bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
 
 template<typename T /*requirement: has_assign<T> == true*/>
-bool readFile(const Str256& filePath, const Str64& fileName, T& contentOut, FileType fileType);
-bool writeFile(const Str256& filePath, const Str64& fileName, const bufferPtr content, size_t length, FileType fileType);
-bool deleteFile(const Str256& filePath, const Str64& fileName);
-bool copyFile(const Str256& sourcePath, const Str64& sourceName, const Str256& targetPath, const Str64& targetName, bool overwrite);
-bool findFile(const Str256& filePath, const Str64& fileName, Str256& foundPath);
+bool readFile(const Str256& filePath, const Str128& fileName, T& contentOut, FileType fileType);
+bool writeFile(const Str256& filePath, const Str128& fileName, const bufferPtr content, size_t length, FileType fileType);
+bool deleteFile(const Str256& filePath, const Str128& fileName);
+bool copyFile(const Str256& sourcePath, const Str128& sourceName, const Str256& targetPath, const Str128& targetName, bool overwrite);
+bool findFile(const Str256& filePath, const Str128& fileName, Str256& foundPath);
 
 /// will add '.' automatically at the start of 'extension'
 bool hasExtension(const Str256& filePath, const Str8& extension);

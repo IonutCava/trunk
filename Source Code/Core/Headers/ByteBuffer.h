@@ -126,8 +126,8 @@ class ByteBuffer {
 
     void put(size_t pos, const Byte *src, size_t cnt);
 
-    bool dumpToFile(const Str256& path, const Str64& fileName);
-    bool loadFromFile(const Str256& path, const Str64& fileName);
+    bool dumpToFile(const Str256& path, const Str128& fileName);
+    bool loadFromFile(const Str256& path, const Str128& fileName);
 
    private:
     /// limited for internal use because can "append" any unexpected type (like

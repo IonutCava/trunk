@@ -11,7 +11,7 @@
 
 namespace Divide {
 
-SkinnedSubMesh::SkinnedSubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str64& name)
+SkinnedSubMesh::SkinnedSubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
     : SubMesh(context, parentCache, descriptorHash, name),
      _parentAnimatorPtr(nullptr)
 {

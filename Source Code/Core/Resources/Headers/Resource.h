@@ -74,11 +74,11 @@ class Resource : public GUIDWrapper
 {
    public:
     explicit Resource(ResourceType type,
-                      const Str64& resourceName);
+                      const Str128& resourceName);
 
     ResourceState getState() const noexcept;
 
-    PROPERTY_R(Str64, resourceName);
+    PROPERTY_R(Str128, resourceName);
     PROPERTY_R(ResourceType, resourceType, ResourceType::COUNT);
 
    protected:
@@ -100,15 +100,15 @@ class CachedResource : public Resource,
 public:
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const Str64& resourceName);
+                            const Str128& resourceName);
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const Str64& resourceName,
-                            const Str64& assetName);
+                            const Str128& resourceName,
+                            const stringImpl& assetName);
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const Str64& resourceName,
-                            const Str64& assetName,
+                            const Str128& resourceName,
+                            const stringImpl& assetName,
                             const stringImpl& assetLocation);
 
     /// Loading and unloading interface
@@ -126,7 +126,7 @@ protected:
     std::array<DELEGATE_CBK<void, Resource_wptr>, to_base(ResourceState::COUNT)> _loadingCallbacks;
     mutable std::mutex _callbackLock;
     PROPERTY_RW(stringImpl, assetLocation);
-    PROPERTY_RW(Str64, assetName);
+    PROPERTY_RW(stringImpl, assetName);
     PROPERTY_R(size_t, descriptorHash);
 };
 

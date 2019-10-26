@@ -26,8 +26,8 @@ std::atomic_int ShaderProgram::s_shaderCount;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, 
                              size_t descriptorHash,
-                             const Str64& shaderName,
-                             const Str64& shaderFileName,
+                             const Str128& shaderName,
+                             const Str128& shaderFileName,
                              const stringImpl& shaderFileLocation,
                              const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad)
@@ -87,7 +87,7 @@ void ShaderProgram::idle() {
 
 /// Calling this will force a recompilation of all shader stages for the program
 /// that matches the name specified
-bool ShaderProgram::recompileShaderProgram(const Str64& name) {
+bool ShaderProgram::recompileShaderProgram(const Str128& name) {
     bool state = false;
     SharedLock r_lock(s_programLock);
 
@@ -96,9 +96,9 @@ bool ShaderProgram::recompileShaderProgram(const Str64& name) {
         const ShaderProgramMapEntry& shader = it.second;
         
         ShaderProgram* program = shader.first;
-        const Str64& shaderName = program->resourceName();
+        const Str128& shaderName = program->resourceName();
         // Check if the name matches any of the program's name components    
-        if (shaderName.find(name) != Str64::npos || shaderName.compare(name) == 0) {
+        if (shaderName.find(name) != Str128::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue
             s_recompileQueue.push(program);
             // Mark as found

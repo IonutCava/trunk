@@ -17,8 +17,8 @@ namespace Divide {
 Mesh::Mesh(GFXDevice& context,
            ResourceCache& parentCache,
            size_t descriptorHash,
-           const Str64& name,
-           const Str64& resourceName,
+           const Str128& name,
+           const Str128& resourceName,
            const stringImpl& resourceLocation)
     : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, ObjectType::MESH, 0),
       _visibleToNetwork(true),

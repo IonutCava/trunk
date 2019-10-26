@@ -13,7 +13,7 @@ size_t PropertyDescriptor::getHash() const {
     return _hash;
 }
 
-ResourceDescriptor::ResourceDescriptor(const Str64& resourceName)
+ResourceDescriptor::ResourceDescriptor(const Str128& resourceName)
     : _propertyDescriptor(nullptr),
       _resourceName(resourceName),
       _assetName(resourceName),
@@ -91,7 +91,11 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
 
 size_t ResourceDescriptor::getHash() const {
     _hash = 31;
-    Util::Hash_combine(_hash, Util::ReplaceString(stringImpl(_assetLocation.c_str()) + "/" + _assetName.c_str(), "//", "/", true));
+    stringImpl fullPath = _assetLocation;
+    fullPath.append("/");
+    fullPath.append(_assetName.c_str());
+
+    Util::Hash_combine(_hash, Util::ReplaceString(fullPath, "//", "/", true));
     Util::Hash_combine(_hash, _flag);
     Util::Hash_combine(_hash, _ID);
     Util::Hash_combine(_hash, _mask.i);

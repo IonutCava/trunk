@@ -111,7 +111,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         bool removeChildNode(const SceneGraphNode& node, bool recursive = true);
 
         /// Find a child Node using the given name (either SGN name or SceneNode name)
-        SceneGraphNode* findChild(const Str64& name, bool sceneNodeName = false, bool recursive = false) const;
+        SceneGraphNode* findChild(const Str128& name, bool sceneNodeName = false, bool recursive = false) const;
 
         /// Find a child using the given SGNN or SceneNode GUID
         SceneGraphNode* findChild(I64 GUID, bool sceneNodeGuid = false, bool recursive = false) const;

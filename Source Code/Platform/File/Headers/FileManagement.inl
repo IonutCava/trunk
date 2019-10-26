@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 template<typename T>
-bool readFile(const Str256& filePath, const Str64& fileName, T& contentOut, FileType fileType) {
+bool readFile(const Str256& filePath, const Str128& fileName, T& contentOut, FileType fileType) {
     static_assert(std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value,
                   "Specified target container does not have a direct assignment operator!");
 
@@ -66,10 +66,10 @@ bool readFile(const Str256& filePath, const Str64& fileName, T& contentOut, File
 
 //Optimized variant for vectors
 template<>
-inline bool readFile(const Str256& filePath, const Str64& fileName, vector<Byte>& contentOut, FileType fileType) {
+inline bool readFile(const Str256& filePath, const Str128& fileName, vector<Byte>& contentOut, FileType fileType) {
     size_t fileSize = 0;
     if (!filePath.empty() && !fileName.empty() && pathExists(filePath.c_str())) {
-        std::ifstream streamIn((filePath + fileName.c_str()).c_str(),
+        std::ifstream streamIn((filePath + fileName).c_str(),
                                fileType == FileType::BINARY
                                          ? std::ios::in | std::ios::binary
                                          : std::ios::in);

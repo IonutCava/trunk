@@ -285,18 +285,18 @@ public:
     GenericVertexData* newGVD(const U32 ringBufferLength, const char* name = nullptr);
     /// Create and return a new texture.
     Texture*           newTexture(size_t descriptorHash,
-                                  const Str64& name,
-                                  const Str64& resourceName,
-                                  const stringImpl& resourceLocation,
+                                  const Str128& resourceName,
+                                  const stringImpl& assetNames,
+                                  const stringImpl& assetLocations,
                                   bool isFlipped,
                                   bool asyncLoad,
                                   const TextureDescriptor& texDescriptor);
 
     /// Create and return a new shader program.
     ShaderProgram*     newShaderProgram(size_t descriptorHash,
-                                        const Str64& name,
-                                        const Str64& resourceName,
-                                        const stringImpl& resourceLocation,
+                                        const Str128& resourceName,
+                                        const Str128& assetName,
+                                        const stringImpl& assetLocation,
                                         const ShaderProgramDescriptor& descriptor,
                                         bool asyncLoad);
     /// Create and return a new shader buffer. 

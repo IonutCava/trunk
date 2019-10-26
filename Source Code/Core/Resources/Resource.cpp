@@ -8,7 +8,7 @@ namespace Divide {
 
 //---------------------------- Resource ------------------------------------------//
 Resource::Resource(ResourceType type,
-                   const Str64& resourceName)
+                   const Str128& resourceName)
     : GUIDWrapper(),
       _resourceType(type),
       _resourceName(resourceName),
@@ -27,23 +27,23 @@ void Resource::setState(ResourceState currentState) noexcept {
 //---------------------------- Cached Resource ------------------------------------//
 CachedResource::CachedResource(ResourceType type,
                                size_t descriptorHash,
-                               const Str64& resourceName)
+                               const Str128& resourceName)
     : CachedResource(type, descriptorHash, resourceName, "", "")
 {
 }
 
 CachedResource::CachedResource(ResourceType type,
                                size_t descriptorHash,
-                               const Str64& resourceName,
-                               const Str64& assetName)
+                               const Str128& resourceName,
+                               const stringImpl& assetName)
     : CachedResource(type, descriptorHash, resourceName, assetName, "")
 {
 }
 
 CachedResource::CachedResource(ResourceType type,
                                size_t descriptorHash,
-                               const Str64& resourceName,
-                               const Str64& assetName,
+                               const Str128& resourceName,
+                               const stringImpl& assetName,
                                const stringImpl& assetLocation)
     : Resource(type, resourceName),
       _descriptorHash(descriptorHash),

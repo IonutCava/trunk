@@ -70,7 +70,7 @@ void ScenePool::init() {
 }
 
 
-Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str64& name, bool& foundInCache) {
+Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name, bool& foundInCache) {
     assert(!name.empty());
 
     foundInCache = false;
@@ -135,8 +135,8 @@ bool ScenePool::deleteScene(Scene*& scene) {
     return false;
 }
 
-vector<Str64> ScenePool::sceneNameList(bool sorted) const {
-    vector<Str64> scenes;
+vector<Str128> ScenePool::sceneNameList(bool sorted) const {
+    vector<Str128> scenes;
     for (SceneNameMap::value_type it : g_sceneNameMap) {
         scenes.push_back(it.second);
     }

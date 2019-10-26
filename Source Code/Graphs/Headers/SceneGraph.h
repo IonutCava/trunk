@@ -70,7 +70,7 @@ class SceneGraph : private NonCopyable,
         return *_root;
     }
 
-    inline SceneGraphNode* findNode(const Str64& name, bool sceneNodeName = false) const {
+    inline SceneGraphNode* findNode(const Str128& name, bool sceneNodeName = false) const {
         if (sceneNodeName ? _root->getNode().resourceName().compare(name.c_str()) == 0
                           : _root->name().compare(name) == 0) {
             return _root;

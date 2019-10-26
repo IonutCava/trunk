@@ -11,7 +11,7 @@ namespace Divide {
 ImpostorSphere::ImpostorSphere(GFXDevice& context,
                                ResourceCache& parentCache,
                                size_t descriptorHash,
-                               const Str64& name,
+                               const Str128& name,
                                F32 radius)
     : Sphere3D(context, parentCache, descriptorHash, name, radius, 8)
 {
@@ -26,7 +26,7 @@ ImpostorSphere::~ImpostorSphere()
 ImpostorBox::ImpostorBox(GFXDevice& context,
                          ResourceCache& parentCache,
                          size_t descriptorHash,
-                         const Str64& name,
+                         const Str128& name,
                          const vec3<F32>& size)
     : Box3D(context, parentCache, descriptorHash, name, size)
 {

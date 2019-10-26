@@ -42,7 +42,7 @@ namespace Divide {
 class FirstPersonCamera : public Camera {
   protected:
     friend class Camera;
-    explicit FirstPersonCamera(const Str64& name, const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit FirstPersonCamera(const Str128& name, const vec3<F32>& eye = VECTOR3_ZERO);
 };
 
 };  // namespace Divide
