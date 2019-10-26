@@ -115,7 +115,7 @@ void Paths::initPaths(const SysInfo& info) {
     Shaders::GLSL::g_geomAtomExt = "geom";
     Shaders::GLSL::g_tescAtomExt = "tesc";
     Shaders::GLSL::g_teseAtomExt = "tese";
-    Shaders::GLSL::g_compAtomExt = ".comp";
+    Shaders::GLSL::g_compAtomExt = "comp";
     Shaders::GLSL::g_comnAtomExt = ".cmn";
 
     // Shader subfolder name that contains shader files for OpenGL
