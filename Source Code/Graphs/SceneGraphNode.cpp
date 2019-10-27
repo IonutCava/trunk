@@ -480,8 +480,8 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
 }
 
 
-bool SceneGraphNode::preCullNode(const NodeCullParams& params,
-                                 F32& distanceToClosestPointSQ) const {
+bool SceneGraphNode::preCullNode(const NodeCullParams& params, F32& distanceToClosestPointSQ) const {
+
     // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
     if (!hasFlag(Flags::LOADING)) {
         // Use the bounding primitives to do camera/frustum checks
@@ -496,12 +496,8 @@ bool SceneGraphNode::preCullNode(const NodeCullParams& params,
         const vec3<F32>& center = sphere.getCenter();
         distanceToClosestPointSQ = center.distanceSquared(eye) - SQUARED(radius);
         if (distanceToClosestPointSQ < params._cullMaxDistanceSq || !getNode().isInView()) {
-            if (params._minExtents.lengthSquared() > 0.0f) {
-                const BoundingBox& boundingBox = bComp->getBoundingBox();
-                vec3<F32> diff(boundingBox.getExtent() - params._minExtents);
-                if (diff.x < 0.0f || diff.y < 0.0f || diff.z < 0.0f) {
-                    return true;
-                }
+            if (params._minExtents.maxComponent() > 0.0f && (bComp->getBoundingBox().getExtent() - params._minExtents).minComponent() < 0.f) {
+                return true;
             }
 
             RenderingComponent* rComp = get<RenderingComponent>();

@@ -59,13 +59,20 @@ namespace {
         g_freeList[idx].store(true);
     }
 
+    FORCE_INLINE bool isTransformNode(SceneNodeType nodeType, ObjectType objType) {
+        return nodeType == SceneNodeType::TYPE_EMPTY ||
+               nodeType == SceneNodeType::TYPE_TRANSFORM ||
+               objType._value == ObjectType::MESH;
+    }
+
     // Return true if the node type is capable of generating draw commands
-    FORCE_INLINE bool generatesDrawCommands(SceneNodeType nodeType, ObjectType objType) {
-        return nodeType != SceneNodeType::TYPE_ROOT &&
-               nodeType != SceneNodeType::TYPE_TRANSFORM &&
-               nodeType != SceneNodeType::TYPE_TRIGGER &&
-               nodeType != SceneNodeType::TYPE_EMPTY &&
-               objType._value != ObjectType::MESH;
+    FORCE_INLINE bool generatesDrawCommands(SceneNodeType nodeType, ObjectType objType, bool &isTransformNodeOut) {
+        if (nodeType == SceneNodeType::TYPE_ROOT && nodeType == SceneNodeType::TYPE_TRIGGER) {
+            isTransformNodeOut = false;
+            return false;
+        }
+        isTransformNodeOut = isTransformNode(nodeType, objType);
+        return !isTransformNodeOut;
     }
 
     // Return true if this node should be removed from a shadow pass
@@ -92,11 +99,7 @@ namespace {
             objectType = static_cast<const Object3D&>(sceneNode).getObjectType();
         }
 
-        isTransformNodeOut = snType == SceneNodeType::TYPE_EMPTY ||
-                             snType == SceneNodeType::TYPE_TRANSFORM ||
-                             objectType._value == ObjectType::MESH;
-
-        if (generatesDrawCommands(snType, objectType)) {
+        if (generatesDrawCommands(snType, objectType, isTransformNodeOut)) {
             // only checks nodes and can return true for a shadow stage
             return stage == RenderStage::SHADOW && doesNotCastShadows(stage, node, snType, objectType);
         }
@@ -188,7 +191,7 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
 
     if (isVisible && !StopRequested(task)) {
         if (!isTransformNode) {
-            nodes.emplace_back(VisibleNode{ distanceSqToCamera, &currentNode });
+            nodes.emplace_back(&currentNode, distanceSqToCamera);
         }
         // Parent node intersects the view, so check children
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
@@ -231,13 +234,15 @@ void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, const NodeCul
             (params._stage != RenderStage::SHADOW || castsShadows || child->hasFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED)))
         {
             bool isTransformNode = false;
-            bool shouldCull = shouldCullNode(params._stage, *child, isTransformNode) && !isTransformNode;
+            bool shouldCull = shouldCullNode(params._stage, *child, isTransformNode);
             if (!shouldCull) {
                 F32 distanceSqToCamera = std::numeric_limits<F32>::max();
                 if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(*child, params, distanceSqToCamera)) {
-                    nodes.emplace_back(VisibleNode{ distanceSqToCamera, child });
+                    nodes.emplace_back(child, distanceSqToCamera);
                     addAllChildren(*child, params, nodes);
                 }
+            } else if (isTransformNode) {
+                addAllChildren(*child, params, nodes);
             }
         }
     }
@@ -252,7 +257,7 @@ VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, cons
     for (SceneGraphNode* node : nodes) {
         // Internal node cull (check against camera frustum and all that ...)
         if (!Attorney::SceneGraphNodeRenderPassCuller::cullNode(*node, params, collisionResult, distanceSqToCamera)) {
-            ret.emplace_back(VisibleNode{ distanceSqToCamera, node });
+            ret.emplace_back(node, distanceSqToCamera);
         }
     }
     return ret;
@@ -269,7 +274,7 @@ VisibleNodeList RenderPassCuller::toVisibleNodes(const Camera& camera, const vec
         if (bComp != nullptr) {
             distanceSqToCamera = bComp->getBoundingSphere().getCenter().distanceSquared(cameraEye);
         }
-        ret.emplace_back(VisibleNode{ distanceSqToCamera, node });
+        ret.emplace_back(node, distanceSqToCamera);
     }
     return ret;
 }

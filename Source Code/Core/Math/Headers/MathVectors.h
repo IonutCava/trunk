@@ -404,6 +404,10 @@ class vec2 {
     inline T distanceSquared(const vec2 &v) const;
     /// convert the vector to unit length
     inline vec2& normalize();
+    /// get the smallest value of X or Y
+    inline T minComponent() const;
+    /// get the largest value of X or Y
+    inline T maxComponent() const;
     /// round both values
     inline void round();
     /// lerp between this and the specified vector by the specified amount
@@ -753,6 +757,10 @@ class vec3 {
     inline T distanceSquared(const vec3 &v) const noexcept;
     /// transform the vector to unit length
     inline vec3& normalize();
+    /// get the smallest value of X,Y or Z
+    inline T minComponent() const;
+    /// get the largest value of X,Y or Z
+    inline T maxComponent() const;
     /// round all three values
     inline void round();
     /// project this vector on the line defined by the 2 points(A, B)
@@ -1254,6 +1262,10 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     inline void swap(vec4 &iv) noexcept;
     /// transform the vector to unit length
     inline vec4& normalize();
+    /// get the smallest value of X,Y,Z or W
+    inline T minComponent() const;
+    /// get the largest value of X,Y,Z or W
+    inline T maxComponent() const;
     /// calculate the dot product between this vector and the specified one
     inline T dot(const vec4 &v) const;
     /// return the vector's length

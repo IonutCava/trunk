@@ -237,6 +237,17 @@ inline vec2<T>& vec2<T>::normalize() {
     return *this;
 }
 
+/// get the smallest value of X or Y
+template <typename T>
+inline T vec2<T>::minComponent() const {
+    return std::min(x, y);
+}
+/// get the largest value of X or Y
+template <typename T>
+inline T vec2<T>::maxComponent() const {
+    return std::max(x, y);
+}
+
 /// compare 2 vectors
 template <typename T>
 template <typename U>
@@ -372,6 +383,17 @@ inline vec3<T>& vec3<T>::normalize() {
     }
 
     return *this;
+}
+
+/// get the smallest value of X, Y or Z
+template <typename T>
+inline T vec3<T>::minComponent() const {
+    return std::min(x, std::min(y, z));
+}
+/// get the largest value of X, Y or Z
+template <typename T>
+inline T vec3<T>::maxComponent() const {
+    return std::max(x, std::max(y, z));
 }
 
 /// set this vector to be equal to the cross of the 2 specified vectors
@@ -765,6 +787,17 @@ template <>
 inline vec4<F32>& vec4<F32>::normalize() {
     _reg._reg = _mm_mul_ps(_reg._reg, _mm_rsqrt_ps(SIMPLE_DOT(_reg._reg, _reg._reg)));
     return *this;
+}
+
+/// get the smallest value of X, Y, Z or W
+template <typename T>
+inline T vec4<T>::minComponent() const {
+    return std::min(x, std::min(y, std::min(z, w)));
+}
+/// get the largest value of X, Y, Z or W
+template <typename T>
+inline T vec4<T>::maxComponent() const {
+    return std::max(x, std::max(y, std::min(z, w)));
 }
 
 /// lerp between this and the specified vector by the specified amount
