@@ -99,7 +99,7 @@ namespace Divide {
                 }
 
                 layerOffsetStr = to_stringImpl(i);
-                addVariable("blendMap" + layerOffsetStr, stripQuotes(itImage->second.get<stringImpl>("FileName", "")));
+                addVariable("blendMap" + layerOffsetStr, stripQuotes(itImage->second.get<std::string>("FileName", "").c_str()));
 
                 for (boost::property_tree::ptree::iterator itLayer = std::begin(itImage->second.get_child("LayerList"));
                     itLayer != std::end(itImage->second.get_child("LayerList"));

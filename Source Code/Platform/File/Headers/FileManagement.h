@@ -136,18 +136,24 @@ bool fileExists(const char* filePathAndName);
 bool createFile(const char* filePathAndName, bool overwriteExisting);
 bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
 
-template<typename T /*requirement: has_assign<T> == true*/>
-bool readFile(const Str256& filePath, const Str128& fileName, T& contentOut, FileType fileType);
-bool writeFile(const Str256& filePath, const Str128& fileName, const bufferPtr content, size_t length, FileType fileType);
-bool deleteFile(const Str256& filePath, const Str128& fileName);
-bool copyFile(const Str256& sourcePath, const Str128& sourceName, const Str256& targetPath, const Str128& targetName, bool overwrite);
-bool findFile(const Str256& filePath, const Str128& fileName, Str256& foundPath);
+template<typename T,
+         typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
+bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType);
+
+bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, size_t length, FileType fileType);
+bool deleteFile(const char* filePath, const char* fileName);
+bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, bool overwrite);
+bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath);
 
 /// will add '.' automatically at the start of 'extension'
-bool hasExtension(const Str256& filePath, const Str8& extension);
+bool hasExtension(const char* filePath, const Str16& extension);
+inline bool hasExtension(const stringImpl& filePath, const Str16& extension);
 
-stringImpl stripQuotes(const stringImpl& input);
-FileWithPath splitPathToNameAndLocation(const stringImpl& input);
+stringImpl stripQuotes(const char* input);
+
+FileWithPath splitPathToNameAndLocation(const char* input);
+
+inline FileWithPath splitPathToNameAndLocation(const stringImpl& input);
 
 bool clearCache();
 bool clearCache(CacheType type);

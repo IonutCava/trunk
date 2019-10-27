@@ -142,7 +142,9 @@ vector<Str128> ScenePool::sceneNameList(bool sorted) const {
     }
 
     if (sorted) {
-        eastl::sort(std::begin(scenes), std::end(scenes));
+        std::sort(std::begin(scenes), std::end(scenes), [](const Str128& a, const Str128& b)-> bool {
+            return a < b;
+        });
     }
 
     return scenes;

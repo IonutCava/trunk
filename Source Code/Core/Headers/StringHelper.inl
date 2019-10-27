@@ -169,7 +169,7 @@ inline bool CompareIgnoreCase(const T_strA& a, const char* b) {
     if (b != nullptr && !a.empty()) {
         return CompareIgnoreCase(a.c_str(), b);
     } else if (a.empty()) {
-        return b != nullptr && (b[0] == '\0');
+        return Util::IsEmptyOrNull(b);
     }
     return false;
 }

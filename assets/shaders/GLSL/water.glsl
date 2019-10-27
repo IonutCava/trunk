@@ -93,6 +93,7 @@ void main()
     writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
     
     //writeOutput(vec4(texture(texReflectPlanar, uvFinalReflect).rgb, 1.0f));
+    //writeOutput(vec4(VAR._normalWV, 1.0f));
     //writeOutput(texColour);
 #endif
 }

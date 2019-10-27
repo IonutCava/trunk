@@ -48,7 +48,7 @@ namespace {
                 g_freeList[0] = false;
                 g_freeListInitialized.store(true);
             }
-            return g_tempContainers[idxOut];
+            return GetAvailableContainer(idxOut);
         }
     };
 

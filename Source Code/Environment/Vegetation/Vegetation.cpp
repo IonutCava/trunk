@@ -724,7 +724,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
     vectorEASTL<VegetationData>& container = treeData ? _tempTreeData : _tempGrassData;
 
     ByteBuffer chunkCache;
-    if (_context.context().config().debug.useVegetationCache && chunkCache.loadFromFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, cacheFileName)) {
+    if (_context.context().config().debug.useVegetationCache && chunkCache.loadFromFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), cacheFileName.c_str())) {
         container.resize(chunkCache.read<size_t>());
         chunkCache.read(reinterpret_cast<Byte*>(container.data()), sizeof(VegetationData) * container.size());
     } else {
@@ -806,7 +806,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         container.shrink_to_fit();
         chunkCache << container.size();
         chunkCache.append(container.data(), container.size());
-        chunkCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, cacheFileName);
+        chunkCache.dumpToFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), cacheFileName.c_str());
     }
     
 end:

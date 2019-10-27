@@ -571,14 +571,14 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     const vec3<F32>& bMax = terrainBB.getMax();
 
     ByteBuffer terrainCache;
-    if (!g_disableLoadFromCache && terrainCache.loadFromFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache")) {
+    if (!g_disableLoadFromCache && terrainCache.loadFromFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), (terrainRawFile + ".cache").c_str())) {
         terrainCache >> terrain->_physicsVerts;
     }
 
     if (terrain->_physicsVerts.empty()) {
 
-        vector<char> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), NULL);
-        readFile(terrainMapLocation + "/", terrainRawFile, data, FileType::BINARY);
+        vector<Byte> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), NULL);
+        readFile((terrainMapLocation + "/").c_str(), terrainRawFile.c_str(), data, FileType::BINARY);
 
         constexpr F32 ushortMax = std::numeric_limits<U16>::max() + 1.0f;
 
@@ -675,7 +675,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
             }
         }
         terrainCache << terrain->_physicsVerts;
-        terrainCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache");
+        terrainCache.dumpToFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), (terrainRawFile + ".cache").c_str());
     }
 
     // Do this first in case we have any threaded loads

@@ -9,9 +9,9 @@
 
 namespace Divide {
     namespace {
-        FORCE_INLINE stringImpl GetFullFieldName(const Str128& componentName, Str32 fieldName) {
+        FORCE_INLINE stringImpl GetFullFieldName(const char* componentName, Str32 fieldName) {
             Util::ReplaceStringInPlace(fieldName, " ", "__");
-            return Util::StringFormat("%s.%s", componentName.c_str(), fieldName.c_str());
+            return Util::StringFormat("%s.%s", componentName, fieldName.c_str());
         }
     };
 
@@ -58,7 +58,7 @@ namespace Divide {
         pt.put(_name.c_str(), "");
 
         for (const EditorComponentField& field : _fields) {
-            auto entryName = GetFullFieldName(_name, field._name);
+            auto entryName = GetFullFieldName(_name.c_str(), field._name);
 
             switch(field._type) {
                 case EditorComponentFieldType::PUSH_TYPE: {
@@ -102,7 +102,7 @@ namespace Divide {
     void EditorComponent::loadFromXML(const boost::property_tree::ptree& pt) {
         if (!pt.get(_name.c_str(), "").empty()) {
             for (EditorComponentField& field : _fields) {
-                auto entryName = GetFullFieldName(_name, field._name);
+                auto entryName = GetFullFieldName(_name.c_str(), field._name);
 
                 switch (field._type) {
                     case EditorComponentFieldType::PUSH_TYPE: {
@@ -148,7 +148,7 @@ namespace Divide {
     }
 
     void EditorComponent::saveFieldToXML(const EditorComponentField& field, boost::property_tree::ptree& pt) const {
-        auto entryName = GetFullFieldName(_name, field._name);
+        auto entryName = GetFullFieldName(_name.c_str(), field._name);
 
         switch (field._basicType) {
             case GFX::PushConstantType::BOOL: {
@@ -433,7 +433,7 @@ namespace Divide {
     }
 
     void EditorComponent::loadFieldFromXML(EditorComponentField& field, const boost::property_tree::ptree& pt) {
-        auto entryName = GetFullFieldName(_name, field._name);
+        auto entryName = GetFullFieldName(_name.c_str(), field._name);
 
         switch (field._basicType) {
             case GFX::PushConstantType::BOOL:

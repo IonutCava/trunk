@@ -115,6 +115,8 @@ namespace Divide {
         U32 LineCount(const T_str& str);
 
         void CStringRemoveChar(char* str, char charToRemove) noexcept;
+
+        bool IsEmptyOrNull(const char* str) noexcept;
     }; //namespace Util
 }; //namespace Divide
 

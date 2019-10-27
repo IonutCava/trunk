@@ -29,7 +29,7 @@ Script::Script(const stringImpl& scriptPathOrCode, FileType fileType)
       _scriptFileType(fileType)
 {
     if (!scriptPathOrCode.empty()) {
-        if (hasExtension(scriptPathOrCode, "chai")) {
+        if (hasExtension(scriptPathOrCode.c_str(), "chai")) {
             _scriptFile = splitPathToNameAndLocation(scriptPathOrCode);
         } else {
             _scriptSource = scriptPathOrCode;
@@ -130,9 +130,9 @@ void Script::preprocessIncludes(const stringImpl& source, I32 level /*= 0 */) {
             _usedAtoms.push_back(include_file);
 
             // Open the atom file and add the code to the atom cache for future reference
-            readFile(Paths::Scripts::g_scriptsLocation, include_file, include_string, FileType::TEXT);
+            readFile(Paths::Scripts::g_scriptsLocation.c_str(), include_file.c_str(), include_string, FileType::TEXT);
             if (include_string.empty()) {
-                readFile(Paths::Scripts::g_scriptsAtomsLocation, include_file, include_string, FileType::TEXT);
+                readFile(Paths::Scripts::g_scriptsAtomsLocation.c_str(), include_file.c_str(), include_string, FileType::TEXT);
             }
             if (!include_string.empty()) {
                 preprocessIncludes(include_string, level + 1);

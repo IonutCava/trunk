@@ -60,7 +60,17 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static void destroyStaticData();
     static void onStartup(GFXDevice& context, ResourceCache& parentCache);
     static void onShutdown();
-    static Str128 decorateFileName(const Str128& name);
+
+    template<size_t N>
+    static Str<N> decorateFileName(const Str<N>& name) {
+        if (Config::Build::IS_DEBUG_BUILD) {
+            return "DEBUG." + name;
+        } else if (Config::Build::IS_PROFILE_BUILD) {
+            return "PROFILE." + name;
+        }
+
+        return "RELEASE." + name;
+    }
 
     /// Make sure this program is ready for deletion
     bool unload() noexcept override;

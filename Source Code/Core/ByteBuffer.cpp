@@ -53,7 +53,7 @@ void ByteBuffer::append(const Byte *src, size_t cnt) {
 }
 
 
-bool ByteBuffer::dumpToFile(const Str256& path, const Str128& fileName) {
+bool ByteBuffer::dumpToFile(const char* path, const char* fileName) {
     if (!_storage.empty() && _storage.back() != BUFFER_FORMAT_VERSION) {
         append(BUFFER_FORMAT_VERSION);
     }
@@ -61,7 +61,7 @@ bool ByteBuffer::dumpToFile(const Str256& path, const Str128& fileName) {
     return writeFile(path, fileName, _storage.data(), _storage.size(), FileType::BINARY);
 }
 
-bool ByteBuffer::loadFromFile(const Str256& path, const Str128& fileName) {
+bool ByteBuffer::loadFromFile(const char* path, const char* fileName) {
     clear();
     if (readFile(path, fileName, _storage, FileType::BINARY)) {
         return _storage.back() == BUFFER_FORMAT_VERSION;

@@ -19,11 +19,12 @@ namespace Divide {
 
     }
 
-    void RigidBodyComponent::cookCollisionMesh(const Str128& sceneName) {
-
+    void RigidBodyComponent::cookCollisionMesh(const char* sceneName) {
+        ACKNOWLEDGE_UNUSED(sceneName);
     }
 
     bool RigidBodyComponent::filterCollission(const RigidBodyComponent& collider) {
+        ACKNOWLEDGE_UNUSED(collider);
         // filter by mask, type, etc
         return true;
     }

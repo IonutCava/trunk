@@ -32,16 +32,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_FILE_FILE_MANAGEMENT_INL_
 #define _PLATFORM_FILE_FILE_MANAGEMENT_INL_
 
+#include "Core/Headers/StringHelper.h"
+
 namespace Divide {
 
-template<typename T>
-bool readFile(const Str256& filePath, const Str128& fileName, T& contentOut, FileType fileType) {
-    static_assert(std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value,
-                  "Specified target container does not have a direct assignment operator!");
-
+template<typename T,
+         typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
+inline bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType) {
     size_t fileSize = 0;
-    if (!filePath.empty() && !fileName.empty() && pathExists(filePath.c_str())) {
-        std::ifstream streamIn((filePath + fileName.c_str()).c_str(),
+    if (!Util::IsEmptyOrNull(filePath) && !Util::IsEmptyOrNull(fileName) && pathExists(filePath)) {
+        std::ifstream streamIn(stringImpl{ filePath } +fileName,
                                fileType == FileType::BINARY
                                          ? std::ios::in | std::ios::binary
                                          : std::ios::in);
@@ -66,10 +66,10 @@ bool readFile(const Str256& filePath, const Str128& fileName, T& contentOut, Fil
 
 //Optimized variant for vectors
 template<>
-inline bool readFile(const Str256& filePath, const Str128& fileName, vector<Byte>& contentOut, FileType fileType) {
+inline bool readFile(const char* filePath, const char* fileName, vector<Byte>& contentOut, FileType fileType) {
     size_t fileSize = 0;
-    if (!filePath.empty() && !fileName.empty() && pathExists(filePath.c_str())) {
-        std::ifstream streamIn((filePath + fileName).c_str(),
+    if (!Util::IsEmptyOrNull(filePath) && !Util::IsEmptyOrNull(fileName) && pathExists(filePath)) {
+        std::ifstream streamIn(stringImpl{ filePath } +fileName,
                                fileType == FileType::BINARY
                                          ? std::ios::in | std::ios::binary
                                          : std::ios::in);
@@ -90,6 +90,15 @@ inline bool readFile(const Str256& filePath, const Str128& fileName, vector<Byte
 
     return fileSize > 0;
 }
+
+inline bool hasExtension(const stringImpl& filePath, const Str16& extension) {
+    return hasExtension(filePath.c_str(), extension);
+}
+
+inline FileWithPath splitPathToNameAndLocation(const stringImpl& input) {
+    return splitPathToNameAndLocation(input.c_str());
+}
+
 }; //namespace Divide
 
 #endif //_PLATFORM_FILE_FILE_MANAGEMENT_INL_

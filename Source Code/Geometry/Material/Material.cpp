@@ -442,13 +442,13 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     if (renderStagePass.isDepthPass()) {
         if (renderStagePass._stage == RenderStage::SHADOW) {
             shaderName += ".SHDW";
-            vertVariant += "Shadow";
-            fragVariant += "Shadow";
+            vertVariant += ".Shadow";
+            fragVariant += ".Shadow";
             globalDefines.push_back(std::make_pair("SHADOW_PASS", true));
         } else {
             shaderName += ".PP";
-            vertVariant += "PrePass";
-            fragVariant += "PrePass";
+            vertVariant += ".PrePass";
+            fragVariant += ".PrePass";
             globalDefines.push_back(std::make_pair("PRE_PASS", true));
         }
     }

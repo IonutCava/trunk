@@ -46,7 +46,7 @@ namespace Import {
             }
             tempBuffer << _hasAnimations;
             // Animations are handled by the SceneAnimator I/O
-            return tempBuffer.dumpToFile(path.c_str(), fileName + "." + g_parsedAssetGeometryExt);
+            return tempBuffer.dumpToFile(path.c_str(), (fileName + "." + g_parsedAssetGeometryExt).c_str());
         }
 
         return false;
@@ -54,7 +54,7 @@ namespace Import {
 
     bool ImportData::loadFromFile(PlatformContext& context, const Str256& path, const Str64& fileName) {
         ByteBuffer tempBuffer;
-        if (tempBuffer.loadFromFile(path, fileName + "." + g_parsedAssetGeometryExt)) {
+        if (tempBuffer.loadFromFile(path.c_str(), (fileName + "." + g_parsedAssetGeometryExt).c_str())) {
             U64 signature;
             tempBuffer >> signature;
             if (signature != _ID("BufferEntryPoint")) {
@@ -214,8 +214,8 @@ namespace Import {
 
             ByteBuffer tempBuffer;
             animator.reset(new SceneAnimator());
-            if (tempBuffer.loadFromFile(Paths::g_cacheLocation + Paths::g_geometryCacheLocation,
-                                        dataIn.modelName() + "." + g_parsedAssetAnimationExt))
+            if (tempBuffer.loadFromFile((Paths::g_cacheLocation + Paths::g_geometryCacheLocation).c_str(),
+                                        (dataIn.modelName() + "." + g_parsedAssetAnimationExt).c_str()))
             {
                 animator->load(context, tempBuffer);
             } else {
@@ -223,8 +223,8 @@ namespace Import {
                     Attorney::SceneAnimatorMeshImporter::registerAnimations(*animator, dataIn._animations);
                     animator->init(context, dataIn.skeleton(), dataIn._bones);
                     animator->save(context, tempBuffer);
-                    if (!tempBuffer.dumpToFile(Paths::g_cacheLocation + Paths::g_geometryCacheLocation,
-                                               dataIn.modelName() + "." + g_parsedAssetAnimationExt))
+                    if (!tempBuffer.dumpToFile((Paths::g_cacheLocation + Paths::g_geometryCacheLocation).c_str(),
+                                               (dataIn.modelName() + "." + g_parsedAssetAnimationExt).c_str()))
                     {
                         //handle error
                         DIVIDE_UNEXPECTED_CALL();

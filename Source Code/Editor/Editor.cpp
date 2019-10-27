@@ -47,6 +47,7 @@ namespace {
     I32 window_opacity = 255;
     I32 previous_window_opacity = 255;
     const char* g_editorSaveFile = "Editor.xml";
+    const char* g_editorSaveFileBak = "Editor.xml.bak";
 
     WindowManager* g_windowManager = nullptr;
     Editor* g_editor = nullptr;
@@ -1398,7 +1399,7 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
     ImGui::OpenPopup(modalName);
     if (ImGui::BeginPopupModal(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         assert(mesh != nullptr);
-        if (inputBuf[0] == '\0') {
+        if (Util::IsEmptyOrNull(inputBuf)) {
             strcpy_s(&inputBuf[0], std::min(to_size(254), mesh->resourceName().length()) + 1, mesh->resourceName().c_str());
         }
         ImGui::Text("Spawn [ %s ]?", mesh->resourceName().c_str());
@@ -1496,7 +1497,7 @@ void Editor::saveToXML() const {
     pt.put("autoSaveCamera", _autoSaveCamera);
 
     createDirectory(editorPath.c_str());
-    copyFile(editorPath, g_editorSaveFile, editorPath, g_editorSaveFile + stringImpl(".bak"), true);
+    copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true);
     boost::property_tree::write_xml(editorPath + g_editorSaveFile, pt, std::locale(), settings);
 }
 
@@ -1504,8 +1505,8 @@ void Editor::loadFromXML() {
     boost::property_tree::ptree pt;
     const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
     if (!fileExists((editorPath + g_editorSaveFile).c_str())) {
-        if (fileExists((editorPath + g_editorSaveFile + ".bak").c_str())) {
-            copyFile(editorPath, g_editorSaveFile + stringImpl(".bak"), editorPath, g_editorSaveFile, true);
+        if (fileExists((editorPath + g_editorSaveFileBak).c_str())) {
+            copyFile(editorPath.c_str(), g_editorSaveFileBak, editorPath.c_str(), g_editorSaveFile, true);
         }
     }
 

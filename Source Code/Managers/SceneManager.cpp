@@ -815,8 +815,8 @@ bool LoadSave::loadScene(Scene& activeScene) {
     const Str128& sceneName = activeScene.resourceName();
 
     Str256 path = Paths::g_saveLocation +  sceneName + "/";
-    Str64 saveFile = "current_save.sav";
-    Str64 bakSaveFile = "save.bak";
+    const char* saveFile = "current_save.sav";
+    const char* bakSaveFile = "save.bak";
 
     bool isLoadFromBackup = false;
     // If file is missing, restore from bak
@@ -825,15 +825,15 @@ bool LoadSave::loadScene(Scene& activeScene) {
 
         // Save file might be deleted if it was corrupted
         if (fileExists((path + bakSaveFile).c_str())) {
-            copyFile(path, bakSaveFile, path, saveFile, false);
+            copyFile(path.c_str(), bakSaveFile, path.c_str(), saveFile, false);
         }
     }
 
     ByteBuffer save;
-    if (save.loadFromFile(path, saveFile)) {
+    if (save.loadFromFile(path.c_str(), saveFile)) {
         if (!Attorney::SceneLoadSave::load(activeScene, save)) {
             //Remove the save and try the backup
-            deleteFile(path, saveFile);
+            deleteFile(path.c_str(), saveFile);
             if (!isLoadFromBackup) {
                 return loadScene(activeScene);
             }
@@ -853,16 +853,16 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
 
     const Str128& sceneName = activeScene.resourceName();
     Str256 path = Paths::g_saveLocation + sceneName + "/";
-    Str64 saveFile = "current_save.sav";
-    Str64 bakSaveFile = "save.bak";
+    const char* saveFile = "current_save.sav";
+    const char* bakSaveFile = "save.bak";
 
     if (fileExists((path + saveFile).c_str())) {
-        copyFile(path, saveFile, path, bakSaveFile, true);
+        copyFile(path.c_str(), saveFile, path.c_str(), bakSaveFile, true);
     }
 
     ByteBuffer save;
     if (Attorney::SceneLoadSave::save(activeScene, save)) {
-        return save.dumpToFile(path, saveFile);
+        return save.dumpToFile(path.c_str(), saveFile);
     }
 
     return false;

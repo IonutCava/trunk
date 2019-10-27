@@ -316,7 +316,7 @@ void SceneGraph::saveToXML() const {
         boost::property_tree::ptree pt;
         pt.add_child("entities.node", dumpSGNtoAssets(&getRoot()));
 
-        copyFile(sceneLocation + "/", "assets.xml", sceneLocation + "/", "assets.xml.bak", true);
+        copyFile((sceneLocation + "/").c_str(), "assets.xml", (sceneLocation + "/").c_str(), "assets.xml.bak", true);
         write_xml((sceneLocation + "/" + "assets.xml").c_str(), pt, std::locale(), settings);
     }
 

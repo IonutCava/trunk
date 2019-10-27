@@ -35,6 +35,9 @@ void CStringRemoveChar(char* str, char charToRemove) noexcept {
     *pw = '\0';
 }
 
+bool IsEmptyOrNull(const char* str) noexcept {
+    return str == nullptr || (str[0] == '\0');
+}
 }; //namespace Util
 
 }; //namespace Divide

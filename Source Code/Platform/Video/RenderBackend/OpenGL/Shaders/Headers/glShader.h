@@ -66,7 +66,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
    public:
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for
-    explicit glShader(GFXDevice& context, const Str64& name);
+    explicit glShader(GFXDevice& context, const Str256& name);
     ~glShader();
 
     bool load(const ShaderLoadData& data);
@@ -75,7 +75,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     /// The shader's name is a period-separated list of strings used to define
     /// the main shader file and the properties to load
-    inline const Str64& name() const { return _name; }
+    inline const Str256& name() const { return _name; }
 
     bool embedsType(ShaderType type) const;
 
@@ -87,11 +87,11 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     /// Remove a shader from the cache
     static void removeShader(glShader* s);
     /// Return a new shader reference
-    static glShader* getShader(const Str64& name);
+    static glShader* getShader(const Str256& name);
 
     /// Add or refresh a shader from the cache
     static glShader* loadShader(GFXDevice& context,
-                                const Str64& name,
+                                const Str256& name,
                                 const ShaderLoadData& data);
 
     static glShader* loadShader(GFXDevice& context,
@@ -140,7 +140,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     U8 _stageCount;
     UseProgramStageMask _stageMask;
 
-    Str64 _name;
+    Str256 _name;
     std::unordered_set<U64> _usedAtoms;
     std::array<vectorEASTL<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
 

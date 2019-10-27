@@ -153,7 +153,7 @@ bool Scene::idle() {  // Called when application is idle
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
-            _sceneGraph->getRoot().get<RigidBodyComponent>()->cookCollisionMesh(resourceName());
+            _sceneGraph->getRoot().get<RigidBodyComponent>()->cookCollisionMesh(resourceName().c_str());
             _cookCollisionMeshesScheduled = false;
         }
     }
@@ -245,7 +245,7 @@ bool Scene::saveXML() const {
         pt.put("lod.lodThresholds.<xmlattr>.z", state().renderState().lodThresholds().z);
         pt.put("lod.lodThresholds.<xmlattr>.w", state().renderState().lodThresholds().w);
 
-        copyFile(scenePath, resourceName() + ".xml", scenePath, resourceName() + ".xml.bak", true);
+        copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true);
         write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
     }
     sceneGraph().saveToXML();
@@ -253,7 +253,7 @@ bool Scene::saveXML() const {
     //save music
     {
         ptree pt;
-        copyFile(sceneLocation + "/", "musicPlaylist.xml", sceneLocation + "/", "musicPlaylist.xml.bak", true);
+        copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true);
         write_xml((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt, std::locale(), settings);
     }
 

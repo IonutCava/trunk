@@ -193,7 +193,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         const Str64 cacheName = (fwp._fileName + ".cache");
 
         ByteBuffer metadataCache = {};
-        if (metadataCache.loadFromFile(cachePath, cacheName)) {
+        if (metadataCache.loadFromFile(cachePath.c_str(), cacheName.c_str())) {
             metadataCache >> _hasTransparency;
             metadataCache >> _hasTranslucency;
         } else {
@@ -231,7 +231,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 
                 metadataCache << _hasTransparency;
                 metadataCache << _hasTranslucency;
-                metadataCache.dumpToFile(cachePath, cacheName);
+                metadataCache.dumpToFile(cachePath.c_str(), cacheName.c_str());
             }
         }
 
