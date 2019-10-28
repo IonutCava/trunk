@@ -99,6 +99,13 @@ stringImpl SetClipPlanesCommand::toString(U16 indent) const {
     return ret;
 }
 
+stringImpl SetCameraCommand::toString(U16 indent) const {
+    stringImpl ret = Base::toString(indent);
+    ret.append("    ");
+    ret.append(Util::StringFormat("[ Camera position (eye): [ %5.2f %5.2f %5.2f]\n", _cameraSnapshot._eye.x, _cameraSnapshot._eye.y, _cameraSnapshot._eye.z));
+    return ret;
+}
+
 stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
     stringImpl ret = Base::toString(indent);
 

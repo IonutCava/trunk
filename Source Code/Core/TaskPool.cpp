@@ -66,7 +66,8 @@ bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority) {
     _runningTaskCount.fetch_add(1);
 
     if (priority == TaskPriority::REALTIME) {
-        task(true);
+        WAIT_FOR_CONDITION(task(true));
+
         return true;
     }
 
@@ -74,11 +75,14 @@ bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority) {
 }
 
 void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
-    DELEGATE_CBK<void>& cbk = _taskCallbacks[taskIdentifier];
-    if (cbk) {
-        cbk();
-        cbk = 0;
+    auto& cbks = _taskCallbacks[taskIdentifier];
+    for (auto& cbk : cbks) {
+        if (cbk) {
+            cbk();
+            cbk = 0;
+        }
     }
+    cbks.resize(0);
 }
 
 void TaskPool::flushCallbackQueue() {
@@ -121,7 +125,7 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGAT
         if (priority == TaskPriority::REALTIME) {
             onCompletionFunction();
         } else {
-            _taskCallbacks[taskIndex] = onCompletionFunction;
+            _taskCallbacks[taskIndex].push_back(onCompletionFunction);
             _threadedCallbackBuffer.enqueue(taskIndex);
         }
     }
@@ -137,7 +141,8 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& th
 
     Task* task = nullptr;
     do {
-        constexpr U16 target = to_U16(1u); U16 expected = to_U16(0u);
+        constexpr U16 target = to_U16(1u); 
+        U16 expected = to_U16(0u);
 
         Task& crtTask = g_taskAllocator[g_allocatedTasks++ & (Config::MAX_POOLED_TASKS - 1u)];
         if (crtTask._unfinishedJobs.compare_exchange_weak(expected, target, std::memory_order_acquire, std::memory_order_relaxed)) {
@@ -214,7 +219,7 @@ void parallel_for(TaskPool& pool,
                            cbk(parentTask, start, end);
                            jobCount.fetch_sub(1);
                        },
-                       debugName), priority);
+                debugName), priority);
         }
         if (remainder > 0) {
             Start(*CreateTask(pool,
@@ -223,7 +228,7 @@ void parallel_for(TaskPool& pool,
                            cbk(parentTask, count - remainder, count);
                            jobCount.fetch_sub(1);
                        },
-                       debugName), priority);
+                debugName), priority);
         }
 
         if (useCurrentThread) {
@@ -231,6 +236,7 @@ void parallel_for(TaskPool& pool,
             const U32 start = adjustedCount * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
             cbk(*threadTask, start, end);
+            threadTask->_unfinishedJobs.fetch_sub(1);
         }
         if (!noWait) {
             while (jobCount.load() > 0) {

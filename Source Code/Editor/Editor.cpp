@@ -824,8 +824,9 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
         { (R + L) / (L - R), (T + B) / (B - T),  0.0f,   1.0f },
     };
 
-    GFX::SetCameraCommand cameraCmd = {};
-    cameraCmd._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->snapshot();
+    GFX::SetCameraCommand cameraCmd = {
+        Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->snapshot()
+    };
     memcpy(cameraCmd._cameraSnapshot._projectionMatrix.m, ortho_projection, sizeof(F32) * 16);
     GFX::EnqueueCommand(buffer, cameraCmd);
 

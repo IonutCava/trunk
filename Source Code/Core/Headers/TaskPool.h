@@ -101,7 +101,7 @@ public:
      moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
      std::atomic_uint _runningTaskCount;
      std::atomic_bool _stopRequested = false;
-     hashMap<U32, DELEGATE_CBK<void>> _taskCallbacks;
+     hashMap<U32, vectorEASTL<DELEGATE_CBK<void>>> _taskCallbacks;
      U8 _workerThreadCount;
 
 

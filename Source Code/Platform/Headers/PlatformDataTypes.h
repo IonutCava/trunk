@@ -74,6 +74,19 @@ typedef union {
     U8  b[8];
 } P64;
 
+inline bool operator==(const P32& lhs, const P32& rhs) {
+    return lhs.i == rhs.i;
+}
+inline bool operator!=(const P32& lhs, const P32& rhs) {
+    return lhs.i != rhs.i;
+}
+inline bool operator==(const P64& lhs, const P64& rhs) {
+    return lhs.i == rhs.i;
+}
+inline bool operator!=(const P64& lhs, const P64& rhs) {
+    return lhs.i != rhs.i;
+}
+
 //Ref: https://stackoverflow.com/questions/7416699/how-to-define-24bit-data-type-in-c
 const I32 INT24_MAX = 8388607;
 

@@ -407,13 +407,13 @@ I32 glShader::binding(const char* name, U64 bindingHash) {
     }
 
     // Check the cache for the location
-    ShaderVarMap::const_iterator it = _shaderVarLocation.find(bindingHash);
-    if (it != std::end(_shaderVarLocation)) {
+    const auto& it = _shaderVarLocation.find(bindingHash);
+    if (it != std::cend(_shaderVarLocation)) {
         return it->second;
     }
 
     // Cache miss. Query OpenGL for the location
-    GLint location = glGetUniformLocation(_programHandle, name);
+    const GLint location = glGetUniformLocation(_programHandle, name);
 
     // Save it for later reference
     hashAlg::insert(_shaderVarLocation, bindingHash, location);
@@ -437,12 +437,12 @@ I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, bool force) {
     }
 
     UniformsByNameHash::ShaderVarMap& map = _uniformsByNameHash._shaderVars;
-    UniformsByNameHash::ShaderVarMap::iterator it = map.find(locationHash);
+    const auto& it = map.find(locationHash);
     if (it != std::cend(map)) {
-        if (!force && it->second == constant) {
-            return -1;
-        } else {
+        if (force || it->second != constant) {
             it->second = constant;
+        } else {
+            return -1;
         }
     } else {
         hashAlg::emplace(map, locationHash, constant);

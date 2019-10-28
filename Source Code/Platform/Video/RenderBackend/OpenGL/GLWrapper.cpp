@@ -1012,11 +1012,13 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     // Set the proper render states
     setStateBlock(pipeline.stateHash());
 
-    bool success = false;
-    ShaderProgram& program = ShaderProgram::findShaderProgram(pipeline.shaderProgramHandle(), success);
-    assert(success && "GL_API::bindPipeline error: invalid shader program handle");
+    ShaderProgram* program = ShaderProgram::findShaderProgram(pipeline.shaderProgramHandle());
+    if (program == nullptr) {
+        // Should we return false?
+        program = ShaderProgram::defaultShader().get();
+    }
 
-    glShaderProgram& glProgram = static_cast<glShaderProgram&>(program);
+    glShaderProgram& glProgram = static_cast<glShaderProgram&>(*program);
     // We need a valid shader as no fixed function pipeline is available
     
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
@@ -1038,11 +1040,13 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
 void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     assert(s_activeStateTracker->_activePipeline != nullptr);
 
-    bool success = false;
-    ShaderProgram& program = ShaderProgram::findShaderProgram(s_activeStateTracker->_activePipeline->shaderProgramHandle(), success);
-    assert(success && "GL_API::bindPipeline error: invalid shader program handle");
+    ShaderProgram* program = ShaderProgram::findShaderProgram(s_activeStateTracker->_activePipeline->shaderProgramHandle());
+    if (program == nullptr) {
+        // Should we skip the upload?
+        program = ShaderProgram::defaultShader().get();
+    }
 
-    static_cast<glShaderProgram&>(program).UploadPushConstants(pushConstants);
+    static_cast<glShaderProgram*>(program)->UploadPushConstants(pushConstants);
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) {
@@ -1458,7 +1462,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         handles.reserve(texCount);
         samplers.reserve(texCount);
 
-        for (auto data : textureData.textures()) {
+        for (const auto& data : textureData.textures()) {
             types.push_back(data.second.type());
             handles.push_back(data.second.textureHandle());
             samplers.push_back(data.second.samplerHandle());
@@ -1466,7 +1470,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
 
         bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
     } else {
-        for (auto data : textureData.textures()) {
+        for (const auto& data : textureData.textures()) {
             bound = getStateTracker().bindTexture(static_cast<GLushort>(data.first),
                                                   data.second.type(),
                                                   data.second.textureHandle(),

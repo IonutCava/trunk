@@ -131,10 +131,8 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     bool load(SceneGraphNode& sgn);
     /// Unload the navmesh reverting the instance to an empty container
     bool unload();
-    /// Called once per frame with the time diff between this and the last frame
-    void update(const U64 deltaTimeUS);
     /// Render the debug mesh if debug drawing is enabled
-    GFX::CommandBuffer& draw();
+    GFX::CommandBuffer& draw(bool force);
     inline void debugDraw(bool state) { _debugDraw = state; }
     inline bool debugDraw() const { return _debugDraw; }
 

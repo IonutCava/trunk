@@ -258,10 +258,9 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
 // This should be called in a separate thread for each RenderStage
 void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     U8 stageIndex = to_U8(stage);
+
     // Create and upload light data for current pass
-
     LightVec& sortedLights = _sortedLights[stageIndex];
-
     sortedLights.resize(0);
     {
         SharedLock r_lock(_lightLock);
@@ -284,35 +283,37 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
 
     U32 totalLightCount = 0;
     vec3<F32> tempColour;
-    _activeLightCount[stageIndex].fill(0);
+
+    auto& lightCount = _activeLightCount[stageIndex];
+    lightCount.fill(0);
         
     BufferData& crtData = _sortedLightProperties[stageIndex];
     for (Light* light : sortedLights) {
-        LightType type = static_cast<LightType>(light->getLightType());
-        I32 typeIndex = to_I32(type);
+        const LightType type = static_cast<LightType>(light->getLightType());
+        const bool isDirectional = type == LightType::DIRECTIONAL;
+        const I32 typeIndex = to_I32(type);
 
-        if (!light->enabled() || !_lightTypeState[typeIndex]) {
-            continue;
+        if (_lightTypeState[typeIndex] && light->enabled()) {
+            if (totalLightCount++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
+                break;
+            }
+
+            LightProperties& temp = crtData._lightProperties[totalLightCount - 1];
+            light->getDiffuseColour(tempColour);
+            temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
+            // Non directional lights are positioned at specific point in space
+            // So we need W = 1 for a valid positional transform
+            // Directional lights use position for the light direction. 
+            // So we need W = 0 for an infinite distance.
+            temp._position.set((viewMatrix * vec4<F32>(light->positionCache(), (isDirectional ? 0.0f : 1.0f))).xyz(), light->getRange());
+            // spot direction is not considered a point in space, so W = 0
+            temp._direction.set((viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), light->getConeAngle());
+
+            temp._options.x = typeIndex;
+            temp._options.y = light->shadowIndex();
+
+            ++lightCount[typeIndex];
         }
-        if (totalLightCount++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
-            break;
-        }
-
-        LightProperties& temp = crtData._lightProperties[totalLightCount - 1];
-        light->getDiffuseColour(tempColour);
-        temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
-        // Non directional lights are positioned at specific point in space
-        // So we need W = 1 for a valid positional transform
-        // Directional lights use position for the light direction. 
-        // So we need W = 0 for an infinite distance.
-        temp._position.set((viewMatrix * vec4<F32>(light->positionCache(), type == LightType::DIRECTIONAL ? 0.0f : 1.0f)).xyz(), light->getRange());
-        // spot direction is not considered a point in space, so W = 0
-        temp._direction.set((viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), light->getConeAngle());
-
-        temp._options.x = typeIndex;
-        temp._options.y = light->shadowIndex();
-
-        ++_activeLightCount[stageIndex][typeIndex];
     }
         
     crtData._globalData.set(

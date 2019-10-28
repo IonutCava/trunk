@@ -790,8 +790,9 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         // Step2: Composition pass
         // Don't clear depth & colours and do not write to the depth buffer
 
-        GFX::SetCameraCommand setCameraCommand;
-        setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+        GFX::SetCameraCommand setCameraCommand = {
+            Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()
+        };
         GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
         GFX::BeginRenderPassCommand beginRenderPassCompCmd;
@@ -821,8 +822,12 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         TextureData revealage = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->data();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.setTexture(accum, to_base(ShaderProgram::TextureUsage::UNIT0));
-        descriptorSetCmd._set._textureData.setTexture(revealage, to_base(ShaderProgram::TextureUsage::UNIT1));
+        descriptorSetCmd._set._textureData.setTextures(
+            {
+                { to_base(ShaderProgram::TextureUsage::UNIT0), accum },
+                { to_base(ShaderProgram::TextureUsage::UNIT1), revealage }
+            }
+        );
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GenericDrawCommand drawCommand;
@@ -847,8 +852,9 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), params._stage, *params._camera, params._minLoD, params._minExtents);
 
     // Tell the Rendering API to draw from our desired PoV
-    GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._cameraSnapshot = params._camera->snapshot();
+    GFX::SetCameraCommand setCameraCommand = {
+        params._camera->snapshot()
+    };
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::SetClipPlanesCommand setClipPlanesCommand;

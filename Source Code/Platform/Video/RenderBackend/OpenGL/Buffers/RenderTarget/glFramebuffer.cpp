@@ -95,7 +95,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     RTAttachment* attachment = _attachmentPool->get(type, index).get();
     if (!attachment->used()) {
         return;
-    }
+    }   
     Texture* tex = nullptr;
     if (!attachment->isExternal()) {
         tex = attachment->texture().get();
@@ -135,32 +135,28 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
 
 void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentState state, bool layeredRendering) {
 
-    GLenum binding = static_cast<GLenum>(attachment.binding());
-
     const Texture_ptr& tex = attachment.texture(false);
-    if (tex->numLayers() == 1) {
+    if (layeredRendering && tex->numLayers() == 1) {
         layeredRendering = false;
     }
 
-    BindingState bState{ state,
-                         attachment.mipWriteLevel(),
-                         attachment.writeLayer(),
-                         layeredRendering };
-
-    BindingState oldState = getAttachmentState(binding);
-    if (bState != oldState) {
-        if (!attachment.used() || bState._attState == AttachmentState::STATE_DISABLED) {
-            return;
+    if(attachment.used() && state != AttachmentState::STATE_DISABLED) {
+        const GLenum binding = static_cast<GLenum>(attachment.binding());
+        const BindingState bState{ state,
+                                   attachment.mipWriteLevel(),
+                                   attachment.writeLayer(),
+                                   layeredRendering };
+        // Compare with old state
+        if (bState != getAttachmentState(binding)) {
+            const GLuint handle = tex->data().textureHandle();
+            if (layeredRendering) {
+                glNamedFramebufferTextureLayer(_framebufferHandle, binding, handle, bState._writeLevel, bState._writeLayer);
+            } else {
+                glNamedFramebufferTexture(_framebufferHandle, binding, handle, bState._writeLevel);
+            }
+            queueCheckStatus();
+            setAttachmentState(binding, bState);
         }
-
-        const GLuint handle = tex->data().textureHandle();
-        if (layeredRendering) {
-            glNamedFramebufferTextureLayer(_framebufferHandle, binding, handle, bState._writeLevel, bState._writeLayer);
-        } else {
-            glNamedFramebufferTexture(_framebufferHandle, binding, handle, bState._writeLevel);
-        }
-        queueCheckStatus();
-        setAttachmentState(binding, bState);
     }
 }
 
@@ -558,7 +554,7 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTA
     if (_previousPolicy.drawMask() != mask) {
         _targetColourBuffers.fill(GL_NONE);
         // handle colour buffers first
-        U8 count = to_U8(std::min((size_t)MAX_RT_COLOUR_ATTACHMENTS, activeAttachments.size()));
+        const U8 count = to_U8(std::min(to_size(MAX_RT_COLOUR_ATTACHMENTS), activeAttachments.size()));
         for (U8 j = 0; j < count; ++j) {
             const RTAttachment_ptr& colourAtt = activeAttachments[j];
             _targetColourBuffers[j] =  mask.isEnabled(RTAttachmentType::Colour, j) ? static_cast<GLenum>(colourAtt->binding()) : GL_NONE;
@@ -863,60 +859,58 @@ void glFramebuffer::queueCheckStatus() {
 }
 
 bool glFramebuffer::checkStatus() {
-    if (!_statusCheckQueued) {
-        return true;
-    }
+    if (_statusCheckQueued) {
+        _statusCheckQueued = false;
 
-    _statusCheckQueued = false;
-
-    if (Config::ENABLE_GPU_VALIDATION) {
-        // check FB status
-        switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
-        {
-            case GL_FRAMEBUFFER_COMPLETE: {
-                return true;
-            }
-            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
-                return false;
-            }
-            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_NO_IMAGE")));
-                return false;
-            }
-            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
-                return false;
-            }
-            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
-                return false;
-            }
-            case GL_FRAMEBUFFER_UNSUPPORTED: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_UNSUPPORTED")));
-                return false;
-            }
-            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
-                return false;
-            }
-            case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
-                return false;
-            }
-            case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
-                return false;
-            }
-            case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
-                 Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
-                 return false;
-            }
-            default: {
-                Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
-                return false;
-            }
-        };
+        if (Config::ENABLE_GPU_VALIDATION) {
+            // check FB status
+            switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
+            {
+                case GL_FRAMEBUFFER_COMPLETE: {
+                    return true;
+                }
+                case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
+                    Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
+                    return false;
+                }
+                case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
+                    Console::errorfn(Locale::get(_ID("ERROR_RT_NO_IMAGE")));
+                    return false;
+                }
+                case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
+                    Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
+                    return false;
+                }
+                case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
+                    Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
+                    return false;
+                }
+                case GL_FRAMEBUFFER_UNSUPPORTED: {
+                    Console::errorfn(Locale::get(_ID("ERROR_RT_UNSUPPORTED")));
+                    return false;
+                }
+                case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
+                    Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
+                    return false;
+                }
+                case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
+                    Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
+                    return false;
+                }
+                case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
+                    Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
+                    return false;
+                }
+                case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
+                     Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
+                     return false;
+                }
+                default: {
+                    Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
+                    return false;
+                }
+            };
+        }
     }
 
     return true;

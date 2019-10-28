@@ -15,7 +15,9 @@ RenderStateBlock::RenderStateBlock() noexcept
 {
     setDefaultValues();
     if (s_defaultCacheValue == 0) {
+        _dirty = true;
         s_defaultCacheValue = getHash();
+        _hash = s_defaultCacheValue;
     }
 }
 
@@ -30,7 +32,7 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _zFunc(other._zFunc),
      _zBias(other._zBias),
      _zUnits(other._zUnits),
-     _scissorTest(other._scissorTest),
+     _scissorTestEnabled(other._scissorTestEnabled),
      _stencilEnable(other._stencilEnable),
      _stencilRef(other._stencilRef),
      _stencilMask(other._stencilMask),
@@ -47,31 +49,28 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
 }
 
 void RenderStateBlock::flipCullMode() {
-    if (_cullMode == CullMode::NONE) {
+    if (cullMode() == CullMode::NONE) {
         _cullMode = CullMode::ALL;
-    }
-    if (_cullMode == CullMode::ALL) {
+    } else if (cullMode() == CullMode::ALL) {
         _cullMode = CullMode::NONE;
-    }
-    if (_cullMode == CullMode::CW) {
+    } else if (cullMode() == CullMode::CW) {
         _cullMode = CullMode::CCW;
-    }
-    if (_cullMode == CullMode::CCW) {
+    } else if (cullMode() == CullMode::CCW) {
         _cullMode = CullMode::CW;
     }
     _dirty = true;
 }
 
 void RenderStateBlock::setCullMode(CullMode mode) {
-    if (_cullMode != mode) {
+    if (cullMode() != mode) {
         _cullMode = mode;
-        _cullEnabled = _cullMode == CullMode::NONE ? false : true;
+        _cullEnabled = (mode != CullMode::NONE);
         _dirty = true;
     }
 }
 
 void RenderStateBlock::flipFrontFace() {
-    _frontFaceCCW = !_frontFaceCCW;
+    _frontFaceCCW = !frontFaceCCW();
     _dirty = true;
 }
 
@@ -92,27 +91,21 @@ void RenderStateBlock::setColourWrites(bool red,
                                        bool green,
                                        bool blue,
                                        bool alpha) {
-    const U8 r = red ? 1 : 0;
-    const U8 g = green ? 1 : 0;
-    const U8 b = blue ? 1 : 0;
-    const U8 a = alpha ? 1 : 0;
+    P32 rgba = {};
+    rgba.b[0] = (red ? 1 : 0);
+    rgba.b[1] = (green ? 1 : 0);
+    rgba.b[2] = (blue ? 1 : 0);
+    rgba.b[3] = (alpha ? 1 : 0);
 
-    if (_colourWrite.b[0] != r ||
-        _colourWrite.b[1] != g ||
-        _colourWrite.b[2] != b ||
-        _colourWrite.b[3] != a)
-    {
-        _colourWrite.b[0] = r;
-        _colourWrite.b[1] = g;
-        _colourWrite.b[2] = b;
-        _colourWrite.b[3] = a;
+    if (_colourWrite != rgba) {
+        _colourWrite = rgba;
         _dirty = true;
     }
 }
 
 void RenderStateBlock::setScissorTest(const bool enable) {
-    if (_scissorTest != enable) {
-        _scissorTest = enable;
+    if (_scissorTestEnabled != enable) {
+        _scissorTestEnabled = enable;
         _dirty = true;
     }
 }
@@ -183,7 +176,7 @@ void RenderStateBlock::setDefaultValues() {
     _zFunc = ComparisonFunction::LEQUAL;
     _colourWrite.b[0] = _colourWrite.b[1] = _colourWrite.b[2] = _colourWrite.b[3] = 1;
     _depthTestEnabled = true;
-    _scissorTest = false;
+    _scissorTestEnabled = false;
     _cullMode = CullMode::CW;
     _cullEnabled = true;
     _frontFaceCCW = true;
@@ -234,13 +227,13 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool&
 
 size_t RenderStateBlock::getHash() const {
     if (_dirty) {
-        size_t previousCache = Hashable::getHash();
+        const size_t previousCache = Hashable::getHash();
 
         // Avoid small float rounding errors offsetting the general hash value
-        U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
-        U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
+        const U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
+        const U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
 
-        _hash = 17;
+        _hash = 59;
         Util::Hash_combine(_hash, _colourWrite.i);
         Util::Hash_combine(_hash, to_U32(_cullMode));
         Util::Hash_combine(_hash, _cullEnabled);
@@ -248,7 +241,7 @@ size_t RenderStateBlock::getHash() const {
         Util::Hash_combine(_hash, to_U32(_zFunc));
         Util::Hash_combine(_hash, zBias);
         Util::Hash_combine(_hash, zUnits);
-        Util::Hash_combine(_hash, _scissorTest);
+        Util::Hash_combine(_hash, _scissorTestEnabled);
         Util::Hash_combine(_hash, _stencilEnable);
         Util::Hash_combine(_hash, _stencilRef);
         Util::Hash_combine(_hash, _stencilMask);

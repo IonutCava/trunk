@@ -103,7 +103,7 @@ struct RenderTargetHandle {
 
 struct RenderTargetDescriptor {
     U8 _attachmentCount = 0;
-    stringImpl _name = "";
+    Str64 _name = "";
     vec2<U16>  _resolution = vec2<U16>(1u);
     RTAttachmentDescriptor* _attachments = nullptr;
 
@@ -166,7 +166,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
 
     F32& depthClearValue();
 
-    const stringImpl& name() const;
+    const Str64& name() const;
 
    protected:
     U8 _colourAttachmentCount = 0;

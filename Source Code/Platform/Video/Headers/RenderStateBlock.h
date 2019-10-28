@@ -40,12 +40,9 @@
 namespace Divide {
 
 class RenderStateBlock : public GUIDWrapper, public Hashable {
-   public:
-      using RenderStateMap = hashMap<size_t, RenderStateBlock, NoHash<size_t>>;
-      static RenderStateMap s_stateBlockMap;
-   private:
-      static SharedMutex s_stateBlockMapMutex;
-   public:
+    public:
+        using RenderStateMap = hashMap<size_t, RenderStateBlock, NoHash<size_t>>;
+
        static void init();
        static void clear();
        /// Retrieve a state block by hash value.
@@ -54,135 +51,77 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
        /// Returns false if the specified hash is not found in the map
        static const RenderStateBlock& get(size_t renderStateBlockHash, bool& blockFound);
 
-   protected:
-    /// Colour Writes
-    P32 _colourWrite;
+    protected:
+        static RenderStateMap s_stateBlockMap;
+        static SharedMutex s_stateBlockMapMutex;
+        static size_t s_defaultCacheValue;
 
-    /// Rasterizer
-    CullMode _cullMode = CullMode::CW;
-    bool _frontFaceCCW = true;
-    bool _cullEnabled = true;
-    bool _scissorTest = false;
-    FillMode _fillMode = FillMode::SOLID;
-    U32  _tessControlPoints = 3;
+    public:
+        RenderStateBlock() noexcept;
+        RenderStateBlock(const RenderStateBlock& b);
 
-    /// Depth
-    bool _depthTestEnabled = true;
-    ComparisonFunction _zFunc = ComparisonFunction::LEQUAL;
-    F32 _zBias = 0.0f;
-    F32 _zUnits = 0.0f;
+        inline bool operator==(const RenderStateBlock& rhs) const {
+            return getHash() == rhs.getHash();
+        }
 
-    /// Stencil
-    bool _stencilEnable = false;
-    U32 _stencilRef = 0u;
-    U32 _stencilMask = 0xFFFFFFFF;
-    U32 _stencilWriteMask = 0xFFFFFFFF;
-    StencilOperation _stencilFailOp = StencilOperation::KEEP;
-    StencilOperation _stencilZFailOp = StencilOperation::KEEP;
-    StencilOperation _stencilPassOp = StencilOperation::KEEP;
-    ComparisonFunction _stencilFunc = ComparisonFunction::NEVER;
+        inline bool operator!=(const RenderStateBlock& rhs) const {
+            return getHash() != rhs.getHash();
+        }
 
-    mutable bool _dirty = true;
-    static size_t s_defaultCacheValue;
+        void setDefaultValues();
 
-  private:
-    void operator=(const RenderStateBlock& b) = delete;
+        void setFillMode(FillMode mode);
+        void setTessControlPoints(U32 count);
+        void setZBias(F32 zBias, F32 zUnits);
+        void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
+        void flipCullMode();
+        void flipFrontFace();
+        void setCullMode(CullMode mode);
+        void setFrontFaceCCW(bool state);
+        void depthTestEnabled(const bool enable);
+        void setScissorTest(const bool enable);
 
-   public:
-    RenderStateBlock() noexcept;
-    RenderStateBlock(const RenderStateBlock& b);
+        void setStencil(bool enable,
+                        U32 stencilRef = 0,
+                        StencilOperation stencilFailOp  = StencilOperation::KEEP,
+                        StencilOperation stencilZFailOp = StencilOperation::KEEP,
+                        StencilOperation stencilPassOp  = StencilOperation::KEEP,
+                        ComparisonFunction stencilFunc = ComparisonFunction::NEVER);
 
-    void setDefaultValues();
+        void setStencilReadWriteMask(U32 read, U32 write);
 
-    void setFillMode(FillMode mode);
-    void setTessControlPoints(U32 count);
-    void setZBias(F32 zBias, F32 zUnits);
-    void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
-    void flipCullMode();
-    void flipFrontFace();
-    void setCullMode(CullMode mode);
-    void setFrontFaceCCW(bool state);
-    void depthTestEnabled(const bool enable);
-    void setScissorTest(const bool enable);
+        void setColourWrites(bool red, bool green, bool blue, bool alpha);
 
-    void setStencil(bool enable,
-                    U32 stencilRef = 0,
-                    StencilOperation stencilFailOp  = StencilOperation::KEEP,
-                    StencilOperation stencilZFailOp = StencilOperation::KEEP,
-                    StencilOperation stencilPassOp  = StencilOperation::KEEP,
-                    ComparisonFunction stencilFunc = ComparisonFunction::NEVER);
+        size_t getHash() const override;
 
-    void setStencilReadWriteMask(U32 read, U32 write);
+    public:
+        PROPERTY_R(P32, colourWrite);
+        PROPERTY_R(F32, zBias, 0.0f);
+        PROPERTY_R(F32, zUnits, 0.0f);
+        PROPERTY_R(U32, tessControlPoints, 3);
+        PROPERTY_R(U32, stencilRef, 0u);
+        PROPERTY_R(U32, stencilMask, 0xFFFFFFFF);
+        PROPERTY_R(U32, stencilWriteMask, 0xFFFFFFFF);
 
-    void setColourWrites(bool red, bool green, bool blue, bool alpha);
+        PROPERTY_R(ComparisonFunction, zFunc, ComparisonFunction::LEQUAL);
+        PROPERTY_R(StencilOperation, stencilFailOp, StencilOperation::KEEP);
+        PROPERTY_R(StencilOperation, stencilZFailOp, StencilOperation::KEEP);
+        PROPERTY_R(StencilOperation, stencilPassOp, StencilOperation::KEEP);
+        PROPERTY_R(ComparisonFunction, stencilFunc, ComparisonFunction::NEVER);
 
-    inline P32 colourWrite() const {
-        return _colourWrite;
-    }
-    inline CullMode cullMode() const {
-        return _cullMode;
-    }
-    inline bool frontFaceCCW() const {
-        return _frontFaceCCW;
-    }
-    inline bool cullEnabled() const {
-        return _cullEnabled;
-    }
-    inline bool depthTestEnabled() const {
-        return _depthTestEnabled;
-    }
-    inline ComparisonFunction zFunc() const {
-        return _zFunc;
-    }
-    inline F32 zBias() const {
-        return _zBias;
-    }
-    inline F32 zUnits() const {
-        return _zUnits;
-    }
-    inline bool scissorTestEnable() const {
-        return _scissorTest;
-    }
-    inline bool stencilEnable() const {
-        return _stencilEnable;
-    }
-    inline U32 stencilRef() const {
-        return _stencilRef;
-    }
-    inline U32 stencilMask() const {
-        return _stencilMask;
-    }
-    inline U32 stencilWriteMask() const {
-        return _stencilWriteMask;
-    }
-    inline StencilOperation stencilFailOp() const {
-        return _stencilFailOp;
-    }
-    inline StencilOperation stencilZFailOp() const {
-        return _stencilZFailOp;
-    }
-    inline StencilOperation stencilPassOp() const {
-        return _stencilPassOp;
-    }
-    inline ComparisonFunction stencilFunc() const {
-        return _stencilFunc;
-    }
-    inline FillMode fillMode() const {
-        return _fillMode;
-    }
+        PROPERTY_R(CullMode, cullMode, CullMode::CW);
+        PROPERTY_R(FillMode, fillMode, FillMode::SOLID);
 
-    inline U32 tessControlPoints() const {
-        return _tessControlPoints;
-    }
+        PROPERTY_R(bool, frontFaceCCW, true);
+        PROPERTY_R(bool, cullEnabled, true);
+        PROPERTY_R(bool, scissorTestEnabled, false);
+        PROPERTY_R(bool, depthTestEnabled, true);
+        PROPERTY_R(bool, stencilEnable, false);
 
-    size_t getHash() const override;
+        mutable bool _dirty = true;
 
-    bool operator==(const RenderStateBlock& RSBD) const {
-        return getHash() == RSBD.getHash();
-    }
-    bool operator!=(const RenderStateBlock& RSBD) const {
-        return getHash() != RSBD.getHash();
-    }
+    private:
+        void operator=(const RenderStateBlock& b) = delete;
 };
 
 };  // namespace Divide

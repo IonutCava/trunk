@@ -146,7 +146,7 @@ class AIManager : public SceneComponent
     NavMeshMap _navMeshes;
     AITeamMap _aiTeams;
     mutable std::mutex _updateMutex;
-    mutable std::mutex _navMeshMutex;
+    mutable SharedMutex _navMeshMutex;
     DELEGATE_CBK<void> _sceneCallback;
 
 };

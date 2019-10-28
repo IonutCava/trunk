@@ -204,29 +204,25 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
     return false;
 }
 
-ShaderProgram& ShaderProgram::findShaderProgram(I64 shaderHandle, bool& success) {
+ShaderProgram* ShaderProgram::findShaderProgram(I64 shaderHandle) {
     SharedLock r_lock(s_programLock);
-    auto it = s_shaderPrograms.find(shaderHandle);
+    const auto& it = s_shaderPrograms.find(shaderHandle);
     if (it != std::cend(s_shaderPrograms)) {
-        success = true;
-        return *it->second.first;
+        return it->second.first;
     }
 
-    success = false;
-    return *defaultShader().get();
+    return nullptr;
 }
 
-ShaderProgram& ShaderProgram::findShaderProgram(size_t shaderHash, bool& success) {
+ShaderProgram* ShaderProgram::findShaderProgram(size_t shaderHash) {
     SharedLock r_lock(s_programLock);
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
         if (it.second.second == shaderHash) {
-            success = true;
-            return *it.second.first;
+            return it.second.first;
         }
     }
 
-    success = false;
-    return *defaultShader().get();
+    return nullptr;
 }
 
 const ShaderProgram_ptr& ShaderProgram::defaultShader() {

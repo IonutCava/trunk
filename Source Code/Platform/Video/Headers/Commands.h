@@ -262,7 +262,12 @@ BEGIN_COMMAND(SetBlendCommand, CommandType::SET_BLEND);
 END_COMMAND(SetBlendCommand);
 
 BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA);
+    SetCameraCommand() = default;
+    SetCameraCommand(const CameraSnapshot& snapshot) : _cameraSnapshot(snapshot) {}
+
     CameraSnapshot _cameraSnapshot;
+
+    stringImpl toString(U16 indent) const final;
 END_COMMAND(PushCameraCommand);
 
 BEGIN_COMMAND(PushCameraCommand, CommandType::PUSH_CAMERA);

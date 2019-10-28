@@ -44,7 +44,7 @@ void AIManager::destroy() {
         _aiTeams.clear();
     }
     {
-        UniqueLock w_lock(_navMeshMutex);
+        UniqueLockShared w_lock(_navMeshMutex);
         for (NavMeshMap::value_type& it : _navMeshes) {
             MemoryManager::DELETE(it.second);
         }
@@ -139,7 +139,7 @@ void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
 bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius,
                            Navigation::NavigationMesh* const navMesh) {
     {
-        UniqueLock w_lock(_navMeshMutex);
+        UniqueLockShared w_lock(_navMeshMutex);
         NavMeshMap::iterator it = _navMeshes.find(radius);
         DIVIDE_ASSERT(it == std::end(_navMeshes),
                       "AIManager error: NavMesh for specified dimensions already "
@@ -161,7 +161,7 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius,
 
 void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
     {
-        UniqueLock w_lock(_navMeshMutex);
+        UniqueLockShared w_lock(_navMeshMutex);
         NavMeshMap::iterator it = _navMeshes.find(radius);
         DIVIDE_ASSERT(it != std::end(_navMeshes),
                       "AIManager error: Can't destroy NavMesh for specified radius "
@@ -197,20 +197,21 @@ void AIManager::unregisterTeam(AITeam* const team) {
 }
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {
-    UniqueLock w_lock(_navMeshMutex);
+    _navMeshDebugDraw = state;
+
+    SharedLock r_lock(_navMeshMutex);
     for (NavMeshMap::value_type& it : _navMeshes) {
         it.second->debugDraw(state);
     }
-
-    _navMeshDebugDraw = state;
 }
 
 void AIManager::debugDraw(GFX::CommandBuffer& bufferInOut, bool forceAll) {
-    UniqueLock w_lock(_navMeshMutex);
-    for (NavMeshMap::value_type& it : _navMeshes) {
-        it.second->update(_deltaTimeUS);
-        if (forceAll || it.second->debugDraw()) {
-            bufferInOut.add(it.second->draw());
+    if (forceAll || _navMeshDebugDraw) {
+        SharedLock r_lock(_navMeshMutex);
+        for (NavMeshMap::value_type& it : _navMeshes) {
+            if (forceAll || it.second->debugDraw()) {
+                bufferInOut.add(it.second->draw(forceAll));
+            }
         }
     }
 }

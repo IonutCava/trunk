@@ -141,7 +141,6 @@ class glFramebuffer : public RenderTarget,
    protected:
 
     RTAttachment* getAttachmentInternal(RTAttachmentType type, U8 index);
-    RTAttachmentPool::PoolEntry& getAttachmentInternal(RTAttachmentType type);
 
     void clear(const RTClearDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const;
     void begin(const RTDrawDescriptor& drawPolicy);
@@ -160,7 +159,7 @@ class glFramebuffer : public RenderTarget,
     hashMap<GLenum, eastl::set<U16, eastl::greater<U16>>> _attachmentResolvedLayers;
 
     Rect<I32> _prevViewport;
-    stringImpl _debugMessage;
+    Str128 _debugMessage;
     glFramebuffer* _parent;
     glFramebuffer* _resolveBuffer;
     GLuint _framebufferHandle;

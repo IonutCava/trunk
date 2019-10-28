@@ -13,7 +13,9 @@
 namespace Divide {
 
 void finish(Task& task) {
-    if (task._unfinishedJobs.fetch_sub(1, std::memory_order_relaxed) <= 1) {
+    const U16 runningCount = task._unfinishedJobs.fetch_sub(1, std::memory_order_relaxed);
+
+    if (runningCount == 1) {
         if (task._parent != nullptr) {
             finish(*task._parent);
         }
@@ -27,7 +29,7 @@ bool run(Task& task, TaskPool& pool, TaskPriority priority, bool wait, DELEGATE_
 
     while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
         if (wait) {
-            task._parentPool->threadWaiting();
+            TaskYield(task);
         } else {
             return false;
         }
@@ -37,8 +39,8 @@ bool run(Task& task, TaskPool& pool, TaskPriority priority, bool wait, DELEGATE_
         task._callback(task);
     }
 
-    pool.taskCompleted(task._id, priority, onCompletionFunction);
     finish(task);
+    pool.taskCompleted(task._id, priority, onCompletionFunction);
     return true;
 }
 

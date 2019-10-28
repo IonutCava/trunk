@@ -181,10 +181,10 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache
     static void registerShaderProgram(ShaderProgram* shaderProgram);
-    /// Find a specific shader program by handle. Returns the default shader on failure
-    static ShaderProgram& findShaderProgram(I64 shaderHandle, bool& success);
-    /// Find a specific shader program by descriptor hash. Returns the default shader on failure;
-    static ShaderProgram& findShaderProgram(size_t shaderHash, bool& success);
+    /// Find a specific shader program by handle.
+    static ShaderProgram* findShaderProgram(I64 shaderHandle);
+    /// Find a specific shader program by descriptor hash.
+    static ShaderProgram* findShaderProgram(size_t shaderHash);
 
     /// Return a default shader used for general purpose rendering
     static const ShaderProgram_ptr& defaultShader();

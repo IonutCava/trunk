@@ -156,8 +156,9 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
         _filtersDirty = false;
     }
 
-    GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
+    GFX::SetCameraCommand setCameraCommand = {
+        Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()
+    };
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     _preRenderBatch->execute(camera, _filterStack, bufferInOut);

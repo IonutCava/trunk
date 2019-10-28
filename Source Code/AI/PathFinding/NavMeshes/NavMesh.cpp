@@ -577,11 +577,9 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
     return true;
 }
 
-void NavigationMesh::update(const U64 deltaTimeUS) {
-    _debugDrawInterface->paused(!_debugDraw);
-}
+GFX::CommandBuffer& NavigationMesh::draw(bool force) {
+    _debugDrawInterface->paused(!_debugDraw && !force);
 
-GFX::CommandBuffer& NavigationMesh::draw() {
     RenderMode mode = _renderMode;
 
     if (_building) {

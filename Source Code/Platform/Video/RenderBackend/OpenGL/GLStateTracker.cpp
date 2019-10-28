@@ -634,8 +634,8 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
         newBlock.depthTestEnabled() ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
     }
 
-    if (oldBlock.scissorTestEnable() != newBlock.scissorTestEnable()) {
-        newBlock.scissorTestEnable() ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
+    if (oldBlock.scissorTestEnabled() != newBlock.scissorTestEnabled()) {
+        newBlock.scissorTestEnabled() ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
     }
 
     // Check culling mode (back (CW) / front (CCW) by default)
@@ -656,8 +656,7 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
 
     // Check rasterization mode
     if (oldBlock.fillMode() != newBlock.fillMode()) {
-        glPolygonMode(GL_FRONT_AND_BACK,
-                      GLUtil::glFillModeTable[to_U32(newBlock.fillMode())]);
+        glPolygonMode(GL_FRONT_AND_BACK, GLUtil::glFillModeTable[to_U32(newBlock.fillMode())]);
     }
 
     if (oldBlock.tessControlPoints() != newBlock.tessControlPoints()) {
@@ -715,7 +714,7 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock) {
     newBlock.cullEnabled() ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
     newBlock.stencilEnable() ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
     newBlock.depthTestEnabled() ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
-    newBlock.scissorTestEnable() ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
+    newBlock.scissorTestEnabled() ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
 
     if (newBlock.cullMode() != CullMode::NONE) {
         GLenum targetMode = GLUtil::glCullModeTable[to_U32(newBlock.cullMode())];
@@ -745,7 +744,7 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock) {
         glPolygonOffset(newBlock.zBias(), newBlock.zUnits());
     }
 
-    P32 cWrite = newBlock.colourWrite();
+    const P32 cWrite = newBlock.colourWrite();
     glColorMask(cWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
                 cWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
                 cWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
