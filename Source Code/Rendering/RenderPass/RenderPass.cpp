@@ -244,11 +244,11 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             {
                 //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
-                VisibleNodeList nodes = mgr.getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true);
+                const VisibleNodeList& nodes = mgr.getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true);
 
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
-                for (VisibleNode& node : nodes) {
+                for (const VisibleNode& node : nodes) {
                     RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
                         if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
@@ -272,10 +272,10 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             {
             }
             {
-                VisibleNodeList nodes = mgr.getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true);
+                const VisibleNodeList& nodes = mgr.getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true);
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
-                for (VisibleNode& node : nodes) {
+                for (const VisibleNode& node : nodes) {
                      RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                      if (RefractionUtil::isInBudget()) {
                         if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,

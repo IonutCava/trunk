@@ -952,7 +952,7 @@ bool Scene::load(const Str128& name) {
             loadAsset(parentTask, node, &_sceneGraph->getRoot(), false);
         },"Parent load asset task"));
     }
-    Wait(Start(*loadTask));
+    Start(*loadTask);
 
     U32 totalLoadingTasks = _loadingTasks.load();
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
@@ -966,6 +966,8 @@ bool Scene::load(const Str128& name) {
         idle();
         std::this_thread::yield();
     }
+
+    Wait(*loadTask);
 
     // We always add a sky
     auto skies = sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);

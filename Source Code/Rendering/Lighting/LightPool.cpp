@@ -309,8 +309,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
             // spot direction is not considered a point in space, so W = 0
             temp._direction.set((viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), light->getConeAngle());
 
-            temp._options.x = typeIndex;
-            temp._options.y = light->shadowIndex();
+            temp._options.xy(typeIndex, light->shadowIndex());
 
             ++lightCount[typeIndex];
         }

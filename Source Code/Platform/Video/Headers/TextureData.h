@@ -90,7 +90,7 @@ class TextureDataContainer {
       TextureDataContainer();
       ~TextureDataContainer();
 
-      using DataEntries = eastl::vector_map<U8/*binding*/, TextureData>;
+      using DataEntries = eastl::vector_map<U8/*binding*/, TextureData, eastl::less<U8>, eastl::dvd_eastl_allocator>;
 
       bool set(const TextureDataContainer& other);
 
@@ -113,7 +113,7 @@ class TextureDataContainer {
 
     protected:
         inline UpdateState setTextureInternal(const TextureData& data, U8 binding, bool force) {
-            auto result = _textures.emplace(binding, data);
+            const auto& result = _textures.emplace(binding, data);
             if (result.second) {
                 return UpdateState::ADDED;
             }

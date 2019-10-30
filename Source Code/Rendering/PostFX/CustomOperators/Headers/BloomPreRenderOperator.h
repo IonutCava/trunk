@@ -56,6 +56,8 @@ class BloomPreRenderOperator : public PreRenderOperator {
     ShaderProgram_ptr _bloomCalc;
     ShaderProgram_ptr _bloomApply;
 
+    Pipeline* _bloomCalcPipeline;
+    Pipeline* _bloomApplyPipeline;
     PushConstants _bloomApplyConstants;
 
     F32 _bloomFactor;

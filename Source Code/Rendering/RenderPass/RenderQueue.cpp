@@ -190,29 +190,28 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     static const U16 threadBias = 64;
     
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
-    Task* sortTask = nullptr;
-
+    Task* sortTask = CreateTask(pool, DELEGATE_CBK<void, Task&>(), "Render queue parent sort task");
     for (RenderBin* renderBin : _renderBins) {
-        if (!renderBin->empty(stagePass._stage)) {
+        if (renderBin->getBinSize(stagePass._stage) > threadBias) {
             RenderingOrder sortOrder = getSortOrder(stagePass, renderBin->getType());
-
-            if (renderBin->getBinSize(stagePass._stage) > threadBias) {
-                if (sortTask == nullptr) {
-                    sortTask = CreateTask(pool, DELEGATE_CBK<void, Task&>(), "Render queue parent sort task");
-                }
-                Start(*CreateTask(pool,
-                                   sortTask,
-                                    [renderBin, sortOrder, stagePass](const Task& parentTask) {
-                                        renderBin->sort(stagePass._stage, sortOrder, parentTask);
-                                    },"Render queue sort task"));
-            } else {
-                renderBin->sort(stagePass._stage, sortOrder);
-            }
+            Start(*CreateTask(pool,
+                                sortTask,
+                                [renderBin, sortOrder, stagePass](const Task& parentTask) {
+                                    renderBin->sort(stagePass._stage, sortOrder, parentTask);
+                                },"Render queue sort task"));
         }
     }
-    if (sortTask != nullptr) {
-        Wait(Start(*sortTask));
+
+    Start(*sortTask);
+
+    for (RenderBin* renderBin : _renderBins) {
+        U16 size = renderBin->getBinSize(stagePass._stage);
+        if (size > 0 && size <= threadBias) {
+            renderBin->sort(stagePass._stage, getSortOrder(stagePass, renderBin->getType()));
+        }
     }
+
+    Wait(*sortTask);
 }
 
 void RenderQueue::refresh(RenderStage stage) {

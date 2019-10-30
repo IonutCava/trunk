@@ -70,6 +70,15 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     ResourceDescriptor bloomApply("BloomApply");
     bloomApply.propertyDescriptor(shaderDescriptor);
     _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
+
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.get2DStateBlock();
+    pipelineDescriptor._shaderProgramHandle = _bloomCalc->getGUID();
+
+    _bloomCalcPipeline = _context.newPipeline(pipelineDescriptor);
+
+    pipelineDescriptor._shaderProgramHandle = _bloomApply->getGUID();
+    _bloomApplyPipeline = _context.newPipeline(pipelineDescriptor);
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator() {
@@ -94,8 +103,6 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
 
 // Order: luminance calc -> bloom -> tonemap
 void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
@@ -107,10 +114,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    pipelineDescriptor._shaderProgramHandle = _bloomCalc->getGUID();
-    GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomCalcPipeline });
 
      // Step 1: generate bloom
 
@@ -149,10 +153,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    pipelineDescriptor._shaderProgramHandle = _bloomApply->getGUID();
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].clear();
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomApplyPipeline });
 
     _bloomApplyConstants.set("bloomFactor", GFX::PushConstantType::FLOAT, _bloomFactor);
     GFX::SendPushConstantsCommand pushConstantsCommand;

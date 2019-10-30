@@ -485,18 +485,15 @@ bool SceneGraphNode::preCullNode(const NodeCullParams& params, F32& distanceToCl
     // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
     if (!hasFlag(Flags::LOADING)) {
         // Use the bounding primitives to do camera/frustum checks
-        BoundsComponent* bComp = get<BoundsComponent>();
-        const BoundingSphere& sphere = bComp->getBoundingSphere();
+        const BoundingSphere& sphere = get<BoundsComponent>()->getBoundingSphere();
 
         // Get camera info
         const vec3<F32>& eye = params._currentCamera->getEye();
 
         // Check distance to sphere edge (center - radius)
-        F32 radius = sphere.getRadius();
-        const vec3<F32>& center = sphere.getCenter();
-        distanceToClosestPointSQ = center.distanceSquared(eye) - SQUARED(radius);
+        distanceToClosestPointSQ = sphere.getCenter().distanceSquared(eye) - SQUARED(sphere.getRadius());
         if (distanceToClosestPointSQ < params._cullMaxDistanceSq || !getNode().isInView()) {
-            if (params._minExtents.maxComponent() > 0.0f && (bComp->getBoundingBox().getExtent() - params._minExtents).minComponent() < 0.f) {
+            if (params._minExtents.maxComponent() > 0.0f && (get<BoundsComponent>()->getBoundingBox().getExtent() - params._minExtents).minComponent() < 0.f) {
                 return true;
             }
 

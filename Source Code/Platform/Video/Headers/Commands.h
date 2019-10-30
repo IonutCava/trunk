@@ -135,6 +135,14 @@ struct Command : public CommandBase {
 };
 
 BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);
+    BindPipelineCommand(const Pipeline* pipeline)
+        : _pipeline(pipeline)
+    {
+    }
+
+    BindPipelineCommand() = default;
+    ~BindPipelineCommand() = default;
+
     const Pipeline* _pipeline = nullptr;
 
     stringImpl toString(U16 indent) const final;

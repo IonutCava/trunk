@@ -610,10 +610,20 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 bool Material::getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container, bool force) {
     const U8 slotValue = to_U8(slot);
 
-    SharedLock r_lock(_textureLock);
-    const Texture_ptr& crtTexture = _textures[slotValue];
+    TextureData data = {};
+    {
+        SharedLock r_lock(_textureLock);
+        const Texture_ptr& crtTexture = _textures[slotValue];
+        if (crtTexture != nullptr) {
+            data = crtTexture->data();
+        }
+    }
 
-    return crtTexture != nullptr && container.setTexture(crtTexture->data(), slotValue, force) != TextureDataContainer::UpdateState::NOTHING;
+    if (data.type() != TextureType::COUNT) {
+        return container.setTexture(data, slotValue, force) != TextureDataContainer::UpdateState::NOTHING;
+    }
+
+    return false;
 }
 
 bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData) {

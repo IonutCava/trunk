@@ -37,19 +37,25 @@ namespace Divide {
 namespace GFX {
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-CommandBuffer::add(const T& command) {
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+CommandBuffer::allocateCommand() {
     constexpr U8 index = static_cast<U8>(T::EType);
 
     const I24 cmdIndex = _commandCount[index]++;
-    _commandOrder.emplace_back(PolyContainerEntry{ index, cmdIndex });
+    _commandOrder.emplace_back(index, cmdIndex);
 
-    T* mem = static_cast<T*>(_commands.getPtr(index, cmdIndex));
+    return static_cast<T*>(_commands.getPtr(index, cmdIndex));
+}
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+CommandBuffer::add(const T& command) {
+    T* mem = allocateCommand<T>();
     if (mem != nullptr) {
         *mem = command;
     } else {
         mem = CmdAllocator<T>::allocate(command);
-        _commands.insert<T>(index,
+        _commands.insert<T>(to_base(T::EType),
                             deleted_unique_ptr<CommandBase>(
                                 mem,
                                 [](CommandBase *& cmd) {
@@ -60,6 +66,27 @@ CommandBuffer::add(const T& command) {
 
     return *mem;
 }
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+CommandBuffer::add(T&& command) {
+    T* mem = allocateCommand<T>();
+    if (mem != nullptr) {
+        *mem = command;
+    } else {
+        mem = CmdAllocator<T>::allocate(command);
+        _commands.insert<T>(to_base(T::EType),
+                            deleted_unique_ptr<CommandBase>(
+                                mem,
+                                [](CommandBase *& cmd) {
+                                    CmdAllocator<T>::deallocate((T*&)(cmd));
+                                }
+                            ));
+    }
+
+    return *mem;
+}
+
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type

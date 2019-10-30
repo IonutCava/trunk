@@ -157,18 +157,17 @@ void CommandBuffer::clean() {
         return;
     }
 
-    bool skip = false;
     const Pipeline* prevPipeline = nullptr;
     const DescriptorSet* prevDescriptorSet = nullptr;
 
-    for (auto it = eastl::begin(_commandOrder); it != eastl::cend(_commandOrder);) {
-        skip = false;
-        CommandEntry cmd = *it;
-
-        switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
+    bool erase = false;
+    for (auto it = eastl::begin(_commandOrder); it != eastl::cend(_commandOrder); ) {
+        erase = false;
+        const U8 typeIndex = it->_typeIndex;
+        switch (static_cast<GFX::CommandType>(typeIndex)) {
             case CommandType::DRAW_COMMANDS :
             {
-                vectorEASTLFast<GenericDrawCommand>& cmds = get<DrawCommand>(cmd)._drawCommands;
+                vectorEASTLFast<GenericDrawCommand>& cmds = get<DrawCommand>(*it)._drawCommands;
                 cmds.erase(eastl::remove_if(eastl::begin(cmds),
                                             eastl::end(cmds),
                                             [](const GenericDrawCommand& cmd) -> bool {
@@ -177,43 +176,39 @@ void CommandBuffer::clean() {
                            eastl::end(cmds));
 
                 if (cmds.empty()) {
-                    it = _commandOrder.erase(it);
-                    --_commandCount[cmd._typeIndex];
-                    skip = true;
+                    --_commandCount[typeIndex];
+                    erase = true;
                 }
             } break;
             case CommandType::BIND_PIPELINE : {
-                const Pipeline* pipeline = get<BindPipelineCommand>(cmd)._pipeline;
+                const Pipeline* pipeline = get<BindPipelineCommand>(*it)._pipeline;
                 // If the current pipeline is identical to the previous one, remove it
                 if (prevPipeline != nullptr && *prevPipeline == *pipeline) {
-                    it = _commandOrder.erase(it);
-                    --_commandCount[cmd._typeIndex];
-                    skip = true;
+                    --_commandCount[typeIndex];
+                    erase = true;
                 }
                  
                 prevPipeline = pipeline;
             }break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                const PushConstants& constants = get<SendPushConstantsCommand>(cmd)._constants;
+                const PushConstants& constants = get<SendPushConstantsCommand>(*it)._constants;
                 if (constants.empty()) {
-                    it = _commandOrder.erase(it);
-                    --_commandCount[cmd._typeIndex];
-                    skip = true;
+                    --_commandCount[typeIndex];
+                    erase = true;
                 }
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                const DescriptorSet& set = get<BindDescriptorSetsCommand>(cmd)._set;
+                const DescriptorSet& set = get<BindDescriptorSetsCommand>(*it)._set;
                 if (set.empty() || (prevDescriptorSet != nullptr && *prevDescriptorSet == set)) {
-                    it = _commandOrder.erase(it);
-                    --_commandCount[cmd._typeIndex];
-                    skip = true;
+                    --_commandCount[typeIndex];
+                    erase = true;
                 } 
-                if (set.empty() || skip) {
+                if (set.empty() || erase) {
                     prevDescriptorSet = &set;
                 }
             }break;
             case GFX::CommandType::DRAW_TEXT: {
-                const TextElementBatch& batch = get<DrawTextCommand>(cmd)._batch;
+                const TextElementBatch& batch = get<DrawTextCommand>(*it)._batch;
                 bool hasText = !batch.empty();
                 if (hasText) {
                     hasText = false;
@@ -222,18 +217,19 @@ void CommandBuffer::clean() {
                     }
                 }
                 if (!hasText) {
-                    it = _commandOrder.erase(it);
-                    --_commandCount[cmd._typeIndex];
-                    skip = true;
+                    --_commandCount[typeIndex];
+                    erase = true;
                 }
             }break;
             default: break;
         };
 
 
-        if (!skip) {
+        if (erase) {
+            it = _commandOrder.erase(it);
+        } else {
             ++it;
-        }
+        } 
     }
 
     // Remove redundant pipeline changes
@@ -346,38 +342,43 @@ bool CommandBuffer::validate() const {
 
 bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const {
     const size_t startSize = commands.size();
-
-    std::sort(std::begin(commands),
-                std::end(commands),
-                [byBaseInstance](const GenericDrawCommand & a, const GenericDrawCommand & b) -> bool
-                {
-                    return (byBaseInstance ? a._cmd.baseInstance < b._cmd.baseInstance
-                                           : a._commandOffset < b._commandOffset);
-                });
+    if (byBaseInstance) {
+        std::sort(std::begin(commands),
+                  std::end(commands),
+                  [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool {
+                    return a._cmd.baseInstance < b._cmd.baseInstance;
+                  });
+    } else {
+        std::sort(std::begin(commands),
+                  std::end(commands),
+                  [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool {
+                    return a._commandOffset < b._commandOffset;
+                  });
+    }
 
     auto batch = [byBaseInstance](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
-        bool instanced = false;
         // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
-        if (previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) {
-            instanced = previousIDC._cmd.primCount != currentIDC._cmd.primCount;
+        if ((previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) && previousIDC._cmd.primCount != currentIDC._cmd.primCount) {
+            return false;
         }
 
         // Batchable commands must share the same buffer and other various state
-        if (!instanced && compatible(previousIDC, currentIDC)) {
-            bool merge = false;
+        if (compatible(previousIDC, currentIDC)) {
             if (byBaseInstance) { // Base instance compatibility
-                merge = previousIDC._cmd.baseInstance + previousIDC._drawCount == currentIDC._cmd.baseInstance;
+                if (previousIDC._cmd.baseInstance + previousIDC._drawCount != currentIDC._cmd.baseInstance) {
+                    return false;
+                }
             } else {// Command offset compatibility
-                merge = previousIDC._commandOffset + to_I32(previousIDC._drawCount) == currentIDC._commandOffset;
+                if (previousIDC._commandOffset + to_I32(previousIDC._drawCount) != currentIDC._commandOffset) {
+                    return false;
+                }
             }
 
-            if (merge) {
-                // If the rendering commands are batchable, increase the draw count for the previous one
-                previousIDC._drawCount += currentIDC._drawCount;
-                // And set the current command's draw count to zero so it gets removed from the list later on
-                currentIDC._drawCount = 0;
-                return true;
-            }
+            // If the rendering commands are batchable, increase the draw count for the previous one
+            previousIDC._drawCount += currentIDC._drawCount;
+            // And set the current command's draw count to zero so it gets removed from the list later on
+            currentIDC._drawCount = 0;
+            return true;
         }
 
         return false;

@@ -45,11 +45,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
   public:
       using CommandEntry = PolyContainerEntry;
       using Container = PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)>;
-#if 0
       using CommandOrderContainer = eastl::list<CommandEntry>;
-#else
-      using CommandOrderContainer = vectorEASTLFast<CommandEntry>;
-#endif
 
   public:
     CommandBuffer() = default;
@@ -64,6 +60,10 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     template<typename T>
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
     add(const T& command);
+
+    template<typename T>
+    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+    add(T&& command);
 
     bool validate() const;
 
@@ -128,8 +128,13 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     void toString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out) const;
 
+
   protected:
     bool mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const;
+
+    template<typename T>
+    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+    allocateCommand();
 
   protected:
       CommandOrderContainer _commandOrder;
@@ -141,6 +146,12 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 EnqueueCommand(CommandBuffer& buffer, T& cmd) {
+    buffer.add(cmd);
+}
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
+EnqueueCommand(CommandBuffer& buffer, T&& cmd) {
     buffer.add(cmd);
 }
 

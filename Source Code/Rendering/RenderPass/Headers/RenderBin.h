@@ -94,7 +94,7 @@ class RenderPassManager;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
-    typedef vectorEASTLFast<RenderBinItem> RenderBinStack;
+    using RenderBinStack = vectorEASTLFast<RenderBinItem>;
 
    public:
 

@@ -109,11 +109,8 @@ public:
         return (value[2] << 16) | (value[1] << 8) | value[0];
     }
 
-    FORCE_INLINE I24& operator= (const I24& input) noexcept {
-        value[0] = input.value[0];
-        value[1] = input.value[1];
-        value[2] = input.value[2];
-
+    FORCE_INLINE I24& operator= (const I24& input) {
+        std::memcpy(value, input.value, sizeof(U8) * 3);
         return *this;
     }
 

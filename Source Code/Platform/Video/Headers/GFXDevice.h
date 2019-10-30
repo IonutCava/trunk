@@ -420,6 +420,8 @@ private:
     Pipeline* _HIZCullPipeline = nullptr;
     Pipeline* _DrawFSTexturePipeline = nullptr;
     Pipeline* _AxisGizmoPipeline = nullptr;
+    Pipeline* _BlurVPipeline = nullptr;
+    Pipeline* _BlurHPipeline = nullptr;
 
     U32 _horizBlur = 0u;
     U32 _vertBlur = 0u;

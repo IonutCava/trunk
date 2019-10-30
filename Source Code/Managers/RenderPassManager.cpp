@@ -790,10 +790,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         // Step2: Composition pass
         // Don't clear depth & colours and do not write to the depth buffer
 
-        GFX::SetCameraCommand setCameraCommand = {
-            Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()
-        };
-        GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+        GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
 
         GFX::BeginRenderPassCommand beginRenderPassCompCmd;
         beginRenderPassCompCmd._name = "DO_OIT_PASS_2";
@@ -813,9 +810,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         }
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCompCmd);
 
-        GFX::BindPipelineCommand bindPipelineCmd;
-        bindPipelineCmd._pipeline = _OITCompositionPipeline;
-        GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _OITCompositionPipeline });
 
         RenderTarget& oitTarget = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT));
         TextureData accum = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->data();
@@ -833,16 +828,14 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         GenericDrawCommand drawCommand;
         drawCommand._primitiveType = PrimitiveType::TRIANGLES;
 
-        GFX::DrawCommand drawCmd = { drawCommand };
-        GFX::EnqueueCommand(bufferInOut, drawCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCommand });
 
         GFX::EndRenderPassCommand endRenderPassCompCmd;
         endRenderPassCompCmd._autoResolveMSAAColour = true;
         GFX::EnqueueCommand(bufferInOut, endRenderPassCompCmd);
     }
 
-    GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {

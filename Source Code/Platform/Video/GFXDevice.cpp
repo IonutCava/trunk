@@ -590,6 +590,17 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
             ShaderProgram_ptr blurShader = std::static_pointer_cast<ShaderProgram>(res.lock());
             _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
             _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
+
+            {
+                PipelineDescriptor pipelineDescriptor;
+                pipelineDescriptor._stateHash = get2DStateBlock();
+                pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
+                pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
+                _BlurHPipeline = newPipeline(pipelineDescriptor);
+                pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
+                _BlurVPipeline = newPipeline(pipelineDescriptor);
+            }
+
         });
         _blurShader = CreateResource<ShaderProgram>(cache, blur);
     }
@@ -688,13 +699,13 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         _DrawFSTexturePipeline = newPipeline(pipelineDescriptor);
     }
     ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
-
-    PipelineDescriptor pipelineDesc;
-
-    RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
-    pipelineDesc._stateHash = primitiveDescriptor.getHash();
-    pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-    _AxisGizmoPipeline = newPipeline(pipelineDesc);
+    {
+        PipelineDescriptor pipelineDesc;
+        RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
+        pipelineDesc._stateHash = primitiveDescriptor.getHash();
+        pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+        _AxisGizmoPipeline = newPipeline(pipelineDesc);
+    }
     _renderer = std::make_unique<Renderer>(context(), cache);
 
     SizeChangeParams params;
@@ -1019,10 +1030,6 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
                            GFX::CommandBuffer& bufferInOut)
 {
 
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _blurShader->getGUID();
-
     GenericDrawCommand triangleCmd;
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
@@ -1038,12 +1045,10 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::BindPipelineCommand pipelineCmd;
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
-    pipelineCmd._pipeline = newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand(_BlurHPipeline));
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
+    pushConstantsCommand._constants.countHint(2);
     pushConstantsCommand._constants.set("kernelSize", GFX::PushConstantType::INT, kernelSize);
     pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(blurTargetH._rt->getWidth(), blurTargetH._rt->getHeight()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
@@ -1059,9 +1064,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     beginRenderPassCmd._name = "BLUR_RENDER_TARGET_VERTICAL";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
-    pipelineCmd._pipeline = newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand(_BlurVPipeline));
 
     pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(blurTargetV._rt->getWidth(), blurTargetV._rt->getHeight()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
@@ -1434,8 +1437,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         Rect<I32> viewport(0, 0, renderTarget.getWidth(), renderTarget.getHeight());
         drawTextureInViewport(depthTex->data(), viewport, false, cmdBufferInOut);
 
-        GFX::EndRenderPassCommand endRenderPassCmd;
-        GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);
+        GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderPassCommand{});
     }
 
     const Texture_ptr& hizDepthTex = renderTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
@@ -1447,9 +1449,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
         GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
-        GFX::BindPipelineCommand pipelineCmd;
-        pipelineCmd._pipeline = _HIZPipeline;
-        GFX::EnqueueCommand(cmdBufferInOut, pipelineCmd);
+        GFX::EnqueueCommand(cmdBufferInOut, GFX::BindPipelineCommand{ _HIZPipeline });
 
         GFX::SetViewportCommand viewportCommand;
         GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -1512,12 +1512,10 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
         // Unbind the render target
-        GFX::EndRenderPassCommand endRenderPassCmd;
-        GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);
+        GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderPassCommand{});
     }
 
-    GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EnqueueCommand(cmdBufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, GFX::EndDebugScopeCommand{});
 
     return hizDepthTex;
 }
@@ -1534,9 +1532,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     beginDebugScopeCmd._scopeName = "Occlusion Cull";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    GFX::BindPipelineCommand bindPipelineCmd = {};
-    bindPipelineCmd._pipeline = _HIZCullPipeline;
-    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _HIZCullPipeline });
 
     ShaderBufferBinding shaderBuffer = {};
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
@@ -1559,7 +1555,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     U32 cmdCount = *bufferData._lastCommandCount;
 
-    GFX::SendPushConstantsCommand HIZPushConstantsCMD;
+    GFX::SendPushConstantsCommand HIZPushConstantsCMD = {};
     HIZPushConstantsCMD._constants.countHint(6);
     HIZPushConstantsCMD._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
     HIZPushConstantsCMD._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
@@ -1573,8 +1569,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     computeCmd._computeGroupSize.set((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 
-    GFX::EndDebugScopeCommand endDebugScopeCmd = {};
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void GFXDevice::updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut) {

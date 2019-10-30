@@ -38,8 +38,31 @@ namespace Divide {
 #pragma pack(push, 1)
 struct PolyContainerEntry
 {
-    U8 _typeIndex = 0;
-    I24 _elementIndex = 0;
+    PolyContainerEntry() : _data(0) {}
+    PolyContainerEntry(U8 type, I24 element) : _typeIndex(type), _elementIndex(element) {}
+    PolyContainerEntry(const PolyContainerEntry& other) : _data(other._data) {}
+    PolyContainerEntry(PolyContainerEntry&& other) noexcept : _data(std::move(other._data)) {}
+    
+
+    PolyContainerEntry& operator=(const PolyContainerEntry& other) {
+        _data = other._data;
+        return *this;
+    }
+
+    PolyContainerEntry& operator=(PolyContainerEntry&& other) noexcept {
+        _data = std::move(other._data);
+        return *this;
+    }
+    
+    ~PolyContainerEntry() = default;
+
+    union {
+        struct {
+            U8 _typeIndex;
+            I24 _elementIndex;
+        };
+        I32 _data = 0;
+    };
 };
 #pragma pack(pop)
 
@@ -48,7 +71,7 @@ using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*&)>>;
 
 template<typename T, U8 N>
 struct PolyContainer {
-    typedef vectorEASTLFast<deleted_unique_ptr<T>> EntryList;
+    using EntryList = vectorEASTLFast<deleted_unique_ptr<T>>;
 
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, PolyContainerEntry>::type

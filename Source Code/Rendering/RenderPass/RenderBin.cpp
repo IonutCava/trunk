@@ -16,33 +16,24 @@ namespace Divide {
 
 namespace {
     constexpr U32 AVERAGE_BIN_SIZE = 127;
-};
 
-struct RenderQueueDistanceBackToFront {
-    FORCE_INLINE bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
-       return a._distanceToCameraSq > b._distanceToCameraSq;
-    }
-};
+    auto RenderQueueDistanceBackToFront = [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
+        return a._distanceToCameraSq > b._distanceToCameraSq;
+    };
 
-struct RenderQueueDistanceFrontToBack {
-    FORCE_INLINE bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+    auto RenderQueueDistanceFrontToBack = [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
         return a._distanceToCameraSq < b._distanceToCameraSq;
-    }
-};
+    };
 
-
-struct RenderQueueWaterFirst {
-    FORCE_INLINE bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+    auto RenderQueueWaterFirst = [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
         return a._renderable->getSGN().getNode().type() == SceneNodeType::TYPE_WATER;
-    }
-};
-/// Sorting opaque items is a 3 step process:
-/// 1: sort by shaders
-/// 2: if the shader is identical, sort by state hash
-/// 3: if shader is identical and state hash is identical, sort by albedo ID
-struct RenderQueueKeyCompare {
-    // Sort
-    FORCE_INLINE bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
+    };
+
+    /// Sorting opaque items is a 3 step process:
+    /// 1: sort by shaders
+    /// 2: if the shader is identical, sort by state hash
+    /// 3: if shader is identical and state hash is identical, sort by albedo ID
+    auto RenderQueueKeyCompare = [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
         // Sort by shader in all states The sort key is the shader id (for now)
         if (a._sortKeyA != b._sortKeyA) {
             return a._sortKeyA < b._sortKeyA;
@@ -58,8 +49,8 @@ struct RenderQueueKeyCompare {
             return a._sortKeyB < b._sortKeyB;
         }
         // Final fallback is front to back
-        return RenderQueueDistanceFrontToBack()(a, b);
-    }
+        return RenderQueueDistanceFrontToBack(a, b);
+    };
 };
 
 RenderBin::RenderBin(RenderBinType rbType) : _rbType(rbType)
@@ -85,16 +76,16 @@ void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
 
     switch (renderOrder) {
         case RenderingOrder::BY_STATE: {
-            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueKeyCompare());
+            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueKeyCompare);
         } break;
         case RenderingOrder::BACK_TO_FRONT: {
-            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueDistanceBackToFront());
+            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueDistanceBackToFront);
         } break;
         case RenderingOrder::FRONT_TO_BACK: {
-            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueDistanceFrontToBack());
+            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueDistanceFrontToBack);
         } break;
         case RenderingOrder::WATER_FIRST: {
-            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueWaterFirst());
+            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueWaterFirst);
         } break;
         case RenderingOrder::NONE: {
             // no need to sort
@@ -128,13 +119,14 @@ void RenderBin::refresh(RenderStage stage) {
 }
 
 void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePass, F32 minDistToCameraSq) {
-    U8 stageIndex = to_U8(stagePass._stage);
+    const U8 stageIndex = to_U8(stagePass._stage);
 
     const size_t count = _renderBinStack[stageIndex].size() + 1;
     I64 keyA = static_cast<I64>(count);
     I32 keyB = to_I32(count);
 
     RenderingComponent* const rComp = sgn.get<RenderingComponent>();
+    const size_t sortHash = rComp->getSortKeyHash(stagePass);
 
     const Material_ptr& nodeMaterial = rComp->getMaterialInstance();
     if (nodeMaterial) {
@@ -143,7 +135,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePas
 
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
-    _renderBinStack[stageIndex].emplace_back(rComp, keyA, keyB, rComp->getSortKeyHash(stagePass), minDistToCameraSq );
+    _renderBinStack[stageIndex].emplace_back(rComp, keyA, keyB, sortHash, minDistToCameraSq );
 }
 
 void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const {

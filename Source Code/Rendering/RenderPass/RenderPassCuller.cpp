@@ -168,59 +168,57 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 /// This method performs the visibility check on the given node and all of its children and adds them to the RenderQueue
 void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
     // Early out for inactive nodes
-    if (!currentNode.hasFlag(SceneGraphNode::Flags::ACTIVE)) {
-        return;
-    }
+    if (currentNode.hasFlag(SceneGraphNode::Flags::ACTIVE)) {
 
-    bool isTransformNode = false;
-    Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
+        Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
 
-    // If it fails the culling test, stop
-    if (shouldCullNode(params._stage, currentNode, isTransformNode)) {
-        if (isTransformNode) {
-            collisionResult = Frustum::FrustCollision::FRUSTUM_INTERSECT;
-        } else {
-            return;
-        }
-    }
-
-    F32 distanceSqToCamera = 0.0f;
-
-    // Internal node cull (check against camera frustum and all that ...)
-    bool isVisible = isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera);
-
-    if (isVisible && !StopRequested(task)) {
-        if (!isTransformNode) {
-            nodes.emplace_back(&currentNode, distanceSqToCamera);
-        }
-        // Parent node intersects the view, so check children
-        if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
-
-            // A very good use-case for ranges :-<
-            vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
-
-            U32 containerIdx = 0;
-            NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
-            tempContainer.resize(children.size());
-            parallel_for(*task._parentPool,
-                         [this, &children, &params, &tempContainer](const Task & parentTask, U32 start, U32 end) {
-                             for (U32 i = start; i < end; ++i) {
-                                frustumCullNode(parentTask, *children[i], params, tempContainer[i]);
-                             }
-                         },
-                         to_U32(children.size()),
-                         g_nodesPerCullingPartition * 2,
-                         params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
-                         false,
-                         true,
-                         "Frustum cull node task");
-            for (const VisibleNodeList& nodeListEntry : tempContainer) {
-                nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
+        // If it fails the culling test, stop
+        bool isTransformNode = false;
+        if (shouldCullNode(params._stage, currentNode, isTransformNode)) {
+            if (isTransformNode) {
+                collisionResult = Frustum::FrustCollision::FRUSTUM_INTERSECT;
+            } else {
+                return;
             }
-            FreeContainer(tempContainer, containerIdx);
-        } else {
-            // All nodes are in view entirely
-            addAllChildren(currentNode, params, nodes);
+        }
+
+        // Internal node cull (check against camera frustum and all that ...)
+        F32 distanceSqToCamera = 0.0f;
+        bool isVisible = isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera);
+
+        if (isVisible && !StopRequested(task)) {
+            if (!isTransformNode) {
+                nodes.emplace_back(&currentNode, distanceSqToCamera);
+            }
+            // Parent node intersects the view, so check children
+            if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
+
+                // A very good use-case for ranges :-<
+                vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
+
+                U32 containerIdx = 0;
+                NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
+                tempContainer.resize(children.size());
+                parallel_for(*task._parentPool,
+                             [this, &children, &params, &tempContainer](const Task & parentTask, U32 start, U32 end) {
+                                 for (U32 i = start; i < end; ++i) {
+                                    frustumCullNode(parentTask, *children[i], params, tempContainer[i]);
+                                 }
+                             },
+                             to_U32(children.size()),
+                             g_nodesPerCullingPartition * 2,
+                             params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
+                             false,
+                             true,
+                             "Frustum cull node task");
+                for (const VisibleNodeList& nodeListEntry : tempContainer) {
+                    nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
+                }
+                FreeContainer(tempContainer, containerIdx);
+            } else {
+                // All nodes are in view entirely
+                addAllChildren(currentNode, params, nodes);
+            }
         }
     }
 }

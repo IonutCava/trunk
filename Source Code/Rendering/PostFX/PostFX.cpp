@@ -156,10 +156,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
         _filtersDirty = false;
     }
 
-    GFX::SetCameraCommand setCameraCommand = {
-        Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()
-    };
-    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
+    GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
 
     _preRenderBatch->execute(camera, _filterStack, bufferInOut);
 
@@ -181,10 +178,8 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     bindPipelineCmd._pipeline = _drawPipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
-    GFX::SendPushConstantsCommand sendPushConstantsCmd;
     _drawConstants.set("_zPlanes", GFX::PushConstantType::VEC2, camera.getZPlanes());
-    sendPushConstantsCmd._constants = _drawConstants;
-    GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._textureData.setTexture(depthData, to_U8(ShaderProgram::TextureUsage::DEPTH));
