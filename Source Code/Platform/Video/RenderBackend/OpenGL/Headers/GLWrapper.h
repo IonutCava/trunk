@@ -257,7 +257,7 @@ private:
     FONScontext* _fonsContext;
 
     static SharedMutex s_mipmapQueueSetLock;
-    static std::unordered_set<GLuint> s_mipmapQueue;
+    static eastl::unordered_set<GLuint> s_mipmapQueue;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
 
@@ -274,7 +274,7 @@ private:
 
     static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
 
-    static const U8 s_syncDeleteQueueSize = 5;
+    static constexpr U8 s_syncDeleteQueueSize = 5;
     static U8 s_syncDeleteQueueIndexR, s_syncDeleteQueueIndexW;
     static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[s_syncDeleteQueueSize];
 

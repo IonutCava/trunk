@@ -76,9 +76,9 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 namespace AI {
 namespace Navigation {
 
-static const I32 NAVMESHSET_MAGIC =
+constexpr I32 NAVMESHSET_MAGIC =
     'M' << 24 | 'S' << 16 | 'E' << 8 | 'T';  //'MSET';
-static const I32 NAVMESHSET_VERSION = 1;
+constexpr I32 NAVMESHSET_VERSION = 1;
 
 struct NavMeshSetHeader {
     I32 magic;
@@ -235,8 +235,7 @@ class NavigationMeshCrowd {
     static dtNavMesh* getNavigationMesh(NavigationMesh& navMesh) {
         return navMesh._navMesh;
     }
-    static const NavigationMeshConfig& getConfigParams(
-        NavigationMesh& navMesh) {
+    static const NavigationMeshConfig& getConfigParams( NavigationMesh& navMesh) {
         return navMesh._configParams;
     }
     friend class Divide::AI::Navigation::DivideDtCrowd;

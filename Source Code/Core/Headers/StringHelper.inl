@@ -45,8 +45,16 @@ typename std::enable_if<std::is_same<T_vec, typename vector<T_str>>::value ||
 Split(const char* input, char delimiter, T_vec& elems) {
     elems.resize(0);
     if (input != nullptr) {
-        istringstreamImpl ss(input);
+        {
+            size_t i = 0;
+            const char* o = input;
+            for (i = 0; input[i]; input[i] == delimiter ? i++ : *input++);
+            elems.reserve(i);
+            input = o;
+        }
+
         stringImpl item;
+        istringstreamImpl ss(input);
         while (std::getline(ss, item, delimiter)) {
             elems.push_back(std::move(item));
         }
@@ -59,8 +67,16 @@ template<typename T_str>
 vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>& elems) {
     elems.resize(0);
     if (input != nullptr && strlen(input) > 0) {
-        istringstreamImpl ss(input);
+        {
+            size_t i = 0;
+            const char* o = input;
+            for (i = 0; input[i]; input[i] == delimiter ? i++ : *input++);
+            elems.reserve(i);
+            input = o;
+        }
+
         stringImpl item;
+        istringstreamImpl ss(input);
         while (std::getline(ss, item, delimiter)) {
             elems.emplace_back(item.c_str());
         }

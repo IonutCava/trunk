@@ -62,7 +62,7 @@ struct alignas(64) Task {
 #endif
 };
 
-Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, const DELEGATE_CBK<void>& onCompletionFunction = {});
+Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, DELEGATE_CBK<void>&& onCompletionFunction = {});
 Task& Stop(Task& task);
 void Wait(const Task& task);
 bool StopRequested(const Task& task);

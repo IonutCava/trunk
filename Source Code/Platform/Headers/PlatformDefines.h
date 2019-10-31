@@ -468,8 +468,8 @@ namespace detail {
     auto ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) \
     = ::boost_optional_detail::ScopeGuardOnExit() + [&]()
 
-static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
-static const D64 EPSILON_D64 = std::numeric_limits<D64>::epsilon();
+constexpr F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
+constexpr D64 EPSILON_D64 = std::numeric_limits<D64>::epsilon();
 
 template <typename T>
 inline bool IS_VALID_CONTAINER_RANGE(T elementCount, T min, T max) noexcept {

@@ -25,7 +25,7 @@ void finish(Task& task) {
     }
 }
 
-bool run(Task& task, TaskPool& pool, TaskPriority priority, bool wait, DELEGATE_CBK<void> onCompletionFunction) {
+bool run(Task& task, TaskPriority priority, bool wait, DELEGATE_CBK<void>&& onCompletionFunction) {
 
     while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
         if (wait) {
@@ -40,18 +40,18 @@ bool run(Task& task, TaskPool& pool, TaskPriority priority, bool wait, DELEGATE_
     }
 
     finish(task);
-    pool.taskCompleted(task._id, priority, onCompletionFunction);
+    task._parentPool->taskCompleted(task._id, priority, std::move(onCompletionFunction));
     return true;
 }
 
-Task& Start(Task& task, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
-    if (!task._parentPool->enqueue([&task, priority, onCompletionFunction](bool wait) {
-                                        return run(task, *task._parentPool, priority, wait, onCompletionFunction);
+Task& Start(Task& task, TaskPriority priority, DELEGATE_CBK<void>&& onCompletionFunction) {
+    if (!task._parentPool->enqueue([&task, priority, comp{ std::forward<decltype(onCompletionFunction)>(onCompletionFunction) }](bool wait) mutable {
+                                        return run(task, priority, wait, std::move(comp));
                                     },
                                     priority))
     {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
-        run(task, *task._parentPool, priority, true, onCompletionFunction);
+        run(task, priority, true, std::move(onCompletionFunction));
     }
 
     return task;

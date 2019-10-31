@@ -39,7 +39,7 @@ namespace Divide {
 /// Container to store data for a given set of particles
 class ParticleData {
    public:
-    static const U32 g_threadPartitionSize = 256;
+    static constexpr U32 g_threadPartitionSize = 256;
 
     enum class Properties : U8 {
         PROPERTIES_POS = toBit(1),

@@ -75,31 +75,4 @@ RTDrawDescriptor::RTDrawDescriptor()
     _drawMask.enableAll();
 }
 
-void RTDrawDescriptor::markDirtyLayer(RTAttachmentType type, U8 index, U16 layer) {
-    vectorEASTL<DirtyLayersEntry>& retEntry = _dirtyLayers[to_base(type)];
-    for (DirtyLayersEntry& entry : retEntry) {
-        if (entry.first == index) {
-            entry.second.insert(layer);
-            return;
-        }
-    }
-    retEntry.push_back(std::make_pair(index, DirtyLayers{ layer }));
-}
-
-const std::unordered_set<U16>& RTDrawDescriptor::getDirtyLayers(RTAttachmentType type, U8 index) const {
-    static std::unordered_set<U16> defaultRet = {};
-
-    const vectorEASTL<DirtyLayersEntry>& retEntry = _dirtyLayers[to_base(type)];
-    auto it = eastl::find_if(eastl::cbegin(retEntry),
-                             eastl::cend(retEntry),
-                             [index](const DirtyLayersEntry& entry) {
-                                 return entry.first == index;
-                             });
-    if (it != std::cend(retEntry)) {
-        return it->second;
-    }
-
-    return defaultRet;
-}
-
 }; //namespace Divide

@@ -278,13 +278,13 @@ bool WarScene::addUnits() {
     vec3<F32> currentScale;
     stringImpl currentName;
 
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::UNIT) |
-                                  to_base(ComponentType::NETWORKING);
+    constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
+                                to_base(ComponentType::TRANSFORM) |
+                                to_base(ComponentType::RIGID_BODY) |
+                                to_base(ComponentType::BOUNDS) |
+                                to_base(ComponentType::RENDERING) |
+                                to_base(ComponentType::UNIT) |
+                                to_base(ComponentType::NETWORKING);
 
     SceneGraphNode& root = _sceneGraph->getRoot();
     for (I32 k = 0; k < 2; ++k) {

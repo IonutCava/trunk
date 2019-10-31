@@ -638,21 +638,12 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
     if (hasDepth() && drawPolicy.drawMask().isEnabled(RTAttachmentType::Depth)) {
         _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT].insert(_attachmentState[GL_DEPTH_ATTACHMENT]._writeLayer);
-
-        const std::unordered_set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Depth);
-        for (U16 layer : additionalDirtyLayers) {
-            _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT].insert(layer);
-        }
     }
 
     if (hasColour()) {
         for (U8 i = 0; i < MAX_RT_COLOUR_ATTACHMENTS; ++i) {
             if (drawPolicy.drawMask().isEnabled(RTAttachmentType::Colour, i)) {
                 _attachmentResolvedLayers[GL_COLOR_ATTACHMENT0 + i].insert(_attachmentState[GL_COLOR_ATTACHMENT0 + i]._writeLayer);
-                const std::unordered_set<U16>& additionalDirtyLayers = drawPolicy.getDirtyLayers(RTAttachmentType::Colour, i);
-                for (U16 layer : additionalDirtyLayers) {
-                    _attachmentResolvedLayers[GL_COLOR_ATTACHMENT0 + i].insert(layer);
-                }
             }
         }
     }
@@ -859,61 +850,62 @@ void glFramebuffer::queueCheckStatus() {
 }
 
 bool glFramebuffer::checkStatus() {
-    if (_statusCheckQueued) {
-        _statusCheckQueued = false;
-
-        if (Config::ENABLE_GPU_VALIDATION) {
-            // check FB status
-            switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
-            {
-                case GL_FRAMEBUFFER_COMPLETE: {
-                    return true;
-                }
-                case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
-                    Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
-                    return false;
-                }
-                case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
-                    Console::errorfn(Locale::get(_ID("ERROR_RT_NO_IMAGE")));
-                    return false;
-                }
-                case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
-                    Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
-                    return false;
-                }
-                case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
-                    Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
-                    return false;
-                }
-                case GL_FRAMEBUFFER_UNSUPPORTED: {
-                    Console::errorfn(Locale::get(_ID("ERROR_RT_UNSUPPORTED")));
-                    return false;
-                }
-                case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
-                    Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
-                    return false;
-                }
-                case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
-                    Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
-                    return false;
-                }
-                case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
-                    Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
-                    return false;
-                }
-                case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
-                     Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
-                     return false;
-                }
-                default: {
-                    Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
-                    return false;
-                }
-            };
-        }
+    if (!_statusCheckQueued) {
+        return true;
     }
 
-    return true;
+    _statusCheckQueued = false;
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // check FB status
+        switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
+        {
+            case GL_FRAMEBUFFER_COMPLETE: {
+                return true;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_NO_IMAGE")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_UNSUPPORTED: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_UNSUPPORTED")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
+                return false;
+            }
+            case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
+                Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
+                return false;
+            }
+            default: {
+                Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
+                return false;
+            }
+        };
+    }
+
+    return false;
 }
 
 };  // namespace Divide

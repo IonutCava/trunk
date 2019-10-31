@@ -60,16 +60,16 @@ void Mesh::setMaterialTpl(const Material_ptr& material) {
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NAVIGATION);
+    constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
+                               to_base(ComponentType::TRANSFORM) |
+                               to_base(ComponentType::BOUNDS) |
+                               to_base(ComponentType::RENDERING) |
+                               to_base(ComponentType::NAVIGATION);
 
-    static const U32 skinnedMask = normalMask | 
-                                   to_base(ComponentType::ANIMATION) |
-                                   to_base(ComponentType::INVERSE_KINEMATICS) |
-                                   to_base(ComponentType::RAGDOLL);
+    constexpr U32 skinnedMask = normalMask |
+                                to_base(ComponentType::ANIMATION) |
+                                to_base(ComponentType::INVERSE_KINEMATICS) |
+                                to_base(ComponentType::RAGDOLL);
 
     SceneGraphNodeDescriptor subMeshDescriptor;
     subMeshDescriptor._usageContext = sgn.usageContext();

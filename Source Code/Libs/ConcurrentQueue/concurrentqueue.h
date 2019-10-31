@@ -323,8 +323,8 @@ struct ConcurrentQueueDefaultTraits
 #if defined(malloc) || defined(free)
 	// Gah, this is 2015, stop defining macros that break standard code already!
 	// Work around malloc/free being special macros:
-	static inline void* WORKAROUND_malloc(size_t size) { return malloc(size); }
-	static inline void WORKAROUND_free(void* ptr) { return free(ptr); }
+	static inline void* WORKAROUND_malloc(size_t size) { return xmalloc(size); }
+	static inline void WORKAROUND_free(void* ptr) { return xfree(ptr); }
 	static inline void* (malloc)(size_t size) { return WORKAROUND_malloc(size); }
 	static inline void (free)(void* ptr) { return WORKAROUND_free(ptr); }
 #else

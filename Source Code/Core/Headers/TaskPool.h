@@ -79,12 +79,12 @@ public:
     friend struct Task;
     friend void Wait(const Task& task);
     friend void TaskYield(const Task& task);
-    friend Task& Start(Task& task, TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction);
+    friend Task& Start(Task& task, TaskPriority prio, DELEGATE_CBK<void>&& onCompletionFunction);
     friend bool StopRequested(const Task& task);
     friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread, const char* debugName);
 
-    friend bool run(Task& task, TaskPool& pool, TaskPriority priority, bool wait, DELEGATE_CBK<void> onCompletionFunction);
-    void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
+    friend bool run(Task& task, TaskPriority priority, bool wait, DELEGATE_CBK<void>&& onCompletionFunction);
+    void taskCompleted(U32 taskIndex, TaskPriority priority, DELEGATE_CBK<void>&& onCompletionFunction);
     
     bool enqueue(PoolTask&& task, TaskPriority priority);
     bool stopRequested() const noexcept;

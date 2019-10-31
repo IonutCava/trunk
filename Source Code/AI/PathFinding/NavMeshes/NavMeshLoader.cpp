@@ -16,12 +16,12 @@ namespace AI {
 namespace Navigation {
 namespace NavigationMeshLoader {
 static vec3<F32> _minVertValue, _maxVertValue;
-static const U32 cubeFaces[6][4] = {{0, 4, 6, 2},
-                                    {0, 2, 3, 1},
-                                    {0, 1, 5, 4},
-                                    {3, 2, 6, 7},
-                                    {7, 6, 4, 5},
-                                    {3, 7, 5, 1}};
+constexpr U32 cubeFaces[6][4] = {{0, 4, 6, 2},
+                                 {0, 2, 3, 1},
+                                 {0, 1, 5, 4},
+                                 {3, 2, 6, 7},
+                                 {7, 6, 4, 5},
+                                 {3, 7, 5, 1}};
 
 char* parseRow(char* buf, char* bufEnd, char* row, I32 len) {
     bool cont = false;

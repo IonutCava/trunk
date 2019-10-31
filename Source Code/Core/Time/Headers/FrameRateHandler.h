@@ -38,9 +38,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace Time {
 class FrameRateHandler {
-    static const U32 FRAME_AVG_DELAY_COUNT = 5;
-    static const U32 FRAME_ARRAY_SIZE = 120;
-    static const U32 FRAME_AVG_RESET_COUNT = 60 * 5;
+    static constexpr U32 FRAME_AVG_DELAY_COUNT = 5;
+    static constexpr U32 FRAME_ARRAY_SIZE = 120;
+    static constexpr U32 FRAME_AVG_RESET_COUNT = 60 * 5;
 
 public:
     FrameRateHandler();

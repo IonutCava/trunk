@@ -159,12 +159,12 @@ void PhysXSceneInterface::addRigidActor(PhysXActor* const actor,
 }
 
 void PhysXSceneInterface::addToScene(PhysXActor& actor) {
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NETWORKING);
+    constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
+                               to_base(ComponentType::TRANSFORM) |
+                               to_base(ComponentType::RIGID_BODY) |
+                               to_base(ComponentType::BOUNDS) |
+                               to_base(ComponentType::RENDERING) |
+                               to_base(ComponentType::NETWORKING);
 
    /* STUBBED("ToDo: Only 1 shape per actor for now. Also, maybe use a factory or something. Fix This! -Ionut")
     SceneNode* sceneNode = nullptr;

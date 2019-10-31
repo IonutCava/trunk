@@ -1239,23 +1239,40 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot, bool push
         _cameraSnapshots.push(_activeCameraSnapshot);
     }
 
-    if (_activeCameraSnapshot != cameraSnapshot) {
-        _activeCameraSnapshot = cameraSnapshot;
+    GFXShaderData::GPUData& data = _gpuBlock._data;
 
-        GFXShaderData::GPUData& data = _gpuBlock._data;
+    bool needsUpdate = false, projectionDirty = false, viewDirty = false;
+    if (cameraSnapshot._projectionMatrix != data._ProjectionMatrix) {
+        data._ProjectionMatrix.set(cameraSnapshot._projectionMatrix);
+        data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
+        projectionDirty = true;
+    }
+
+    if (cameraSnapshot._viewMatrix != data._ViewMatrix) {
         data._ViewMatrix.set(cameraSnapshot._viewMatrix);
+        viewDirty = true;
+    }
 
-        if (cameraSnapshot._projectionMatrix != data._ProjectionMatrix) {
-            data._ProjectionMatrix.set(cameraSnapshot._projectionMatrix);
-            data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
-        }
-
-        data._cameraPosition.set(cameraSnapshot._eye, cameraSnapshot._aspectRatio);
-        data._renderProperties.xy(cameraSnapshot._zPlanes);
-        data._renderProperties.z = cameraSnapshot._FoV;
-
+    if (projectionDirty || viewDirty) {
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
+        needsUpdate = true;
+    }
+
+    const vec4<F32> cameraPos(cameraSnapshot._eye, cameraSnapshot._aspectRatio);
+    if (cameraPos != data._cameraPosition) {
+        data._cameraPosition.set(cameraPos);
+        needsUpdate = true;
+    }
+
+    const vec4<F32> cameraProperties(cameraSnapshot._zPlanes, cameraSnapshot._FoV, data._renderProperties.w);
+    if (data._renderProperties != cameraProperties) {
+        data._renderProperties.set(cameraProperties);
+        needsUpdate = true;
+    }
+
+    if (needsUpdate) {
         _gpuBlock._needsUpload = true;
+        _activeCameraSnapshot = cameraSnapshot;
     }
 }
 

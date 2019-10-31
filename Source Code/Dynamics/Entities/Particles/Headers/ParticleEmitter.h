@@ -93,7 +93,7 @@ class ParticleEmitter : public SceneNode {
     const char* getResourceTypeName() const override { return "ParticleEmitter"; }
 
    private:
-    static const U8 s_MaxPlayerBuffers = 4;
+    static constexpr U8 s_MaxPlayerBuffers = 4;
 
     GFXDevice& _context;
     std::shared_ptr<ParticleData> _particles;
@@ -106,8 +106,8 @@ class ParticleEmitter : public SceneNode {
     /// draw the impostor?
     bool _drawImpostor;
 
-    typedef std::array<GenericVertexData*, to_base(RenderStage::COUNT)> BuffersPerStage;
-    typedef std::array<BuffersPerStage, s_MaxPlayerBuffers> BuffersPerPlayer;
+    using BuffersPerStage = std::array<GenericVertexData*, to_base(RenderStage::COUNT)>;
+    using BuffersPerPlayer = std::array<BuffersPerStage, s_MaxPlayerBuffers>;
     BuffersPerPlayer _particleGPUBuffers;
     std::array<bool, to_base(RenderStage::COUNT)> _buffersDirty;
 

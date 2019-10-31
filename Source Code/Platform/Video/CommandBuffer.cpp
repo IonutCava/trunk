@@ -66,27 +66,20 @@ void CommandBuffer::batch() {
     while (tryMerge) {
         prevCommands.fill(nullptr);
         tryMerge = false;
-        bool skip = false;
-        for (auto it = std::begin(_commandOrder); it != std::cend(_commandOrder);) {
-            skip = false;
 
+        for (auto it = std::begin(_commandOrder); it != std::cend(_commandOrder);) {
             const CommandEntry& cmd = *it;
 
-            auto type = static_cast<GFX::CommandType>(cmd._typeIndex);
+            GFX::CommandType type = static_cast<GFX::CommandType>(cmd._typeIndex);
             CommandBase& crtCommand = get<CommandBase>(cmd);
-            CommandBase*& prevCommand = prevCommands[to_U16(type)];
+            CommandBase*& prevCommand = prevCommands[cmd._typeIndex];
 
             if (prevCommand != nullptr && tryMergeCommands(type, prevCommand, &crtCommand, partial)) {
+                --_commandCount[cmd._typeIndex];
                 it = _commandOrder.erase(it);
-                --_commandCount[to_base(type)];
-                skip = true;
                 tryMerge = true;
             } else {
                 prevCommands.fill(nullptr);
-            }
-            
-
-            if (!skip) {
                 prevCommand = &crtCommand;
                 ++it;
             }
@@ -103,8 +96,7 @@ void CommandBuffer::batch() {
         switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 // We may just wish to clear some state
-                const BeginRenderPassCommand& crtCmd = get<BeginRenderPassCommand>(cmd);
-                if (crtCmd._descriptor.setViewport() != 0) {
+                if (get<BeginRenderPassCommand>(cmd)._descriptor.setViewport()) {
                     hasWork = true;
                     break;
                 }
@@ -187,8 +179,9 @@ void CommandBuffer::clean() {
                     --_commandCount[typeIndex];
                     erase = true;
                 }
-                 
-                prevPipeline = pipeline;
+                if (!erase) {
+                    prevPipeline = pipeline;
+                }
             }break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
                 const PushConstants& constants = get<SendPushConstantsCommand>(*it)._constants;
@@ -203,7 +196,7 @@ void CommandBuffer::clean() {
                     --_commandCount[typeIndex];
                     erase = true;
                 } 
-                if (set.empty() || erase) {
+                if (!erase) {
                     prevDescriptorSet = &set;
                 }
             }break;
@@ -239,8 +232,8 @@ void CommandBuffer::clean() {
         GFX::CommandType type = static_cast<GFX::CommandType>(entry->_typeIndex);
 
         if (type == CommandType::BIND_PIPELINE && prev->_typeIndex == to_base(type)) {
-            entry = _commandOrder.erase(entry);
             --_commandCount[entry->_typeIndex];
+            entry = _commandOrder.erase(entry);
         } else {
             ++entry;
         }

@@ -220,9 +220,9 @@ class DivideDtCrowd : public NonCopyable {
     /// The latest set target or destination position.
     F32 _targetPos[3];
     /// Max pathlength for calculated paths.
-    static const I32 AGENT_MAX_TRAIL = 64;
+    static constexpr I32 AGENT_MAX_TRAIL = 64;
     /// Max number of agents allowed in this crowd.
-    static const I32 MAX_AGENTS = 128;
+    static constexpr I32 MAX_AGENTS = 128;
     /// Stores the calculated paths for each agent in the crowd.
     struct AgentTrail {
         F32 trail[AGENT_MAX_TRAIL * 3];

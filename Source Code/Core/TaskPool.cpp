@@ -120,7 +120,7 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     _poolImpl->join();
 }
 
-void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
+void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, DELEGATE_CBK<void>&& onCompletionFunction) {
     if (onCompletionFunction) {
         if (priority == TaskPriority::REALTIME) {
             onCompletionFunction();

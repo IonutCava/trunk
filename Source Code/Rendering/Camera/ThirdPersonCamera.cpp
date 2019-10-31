@@ -11,14 +11,13 @@ ThirdPersonCamera::ThirdPersonCamera(const Str128& name, const vec3<F32>& eye)
 }
 
 bool ThirdPersonCamera::rotateRelative(const vec3<I32>& relRotation) {
-    static vec3<F32> rotation;
-    static const F32 rotationLimitRollLower = to_F32(M_PI) * 0.30f - Angle::to_RADIANS(1);
-    static const F32 rotationLimitRollUpper = to_F32(M_PI) * 0.175f - Angle::to_RADIANS(1);
-    static const F32 rotationLimitPitch = to_F32(M_PI) - Angle::to_RADIANS(1);
+    constexpr F32 rotationLimitRollLower = to_F32(M_PI) * 0.30f - Angle::to_RADIANS(1);
+    constexpr F32 rotationLimitRollUpper = to_F32(M_PI) * 0.175f - Angle::to_RADIANS(1);
+    constexpr F32 rotationLimitPitch = to_F32(M_PI) - Angle::to_RADIANS(1);
 
     if (relRotation.lengthSquared() != 0) {
+        vec3<F32> rotation(relRotation.pitch, relRotation.yaw, relRotation.roll);
 
-        rotation.set(relRotation.pitch, relRotation.yaw, relRotation.roll);
         rotation.set((rotation / _mouseSensitivity) * _speed.turn);
 
         if (!IS_ZERO(rotation.yaw)) {

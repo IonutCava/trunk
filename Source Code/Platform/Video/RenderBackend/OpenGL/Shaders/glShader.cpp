@@ -402,53 +402,55 @@ void glShader::dumpBinary() {
 /// If we didn't, ask the GPU to give us the variables address and save it for later use
 I32 glShader::binding(const char* name, U64 bindingHash) {
     // If the shader can't be used for rendering, just return an invalid address
-    if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID || !valid()) {
-        return -1;
+    if (_programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid()) {
+
+        // Check the cache for the location
+        const auto& it = _shaderVarLocation.find(bindingHash);
+        if (it != std::cend(_shaderVarLocation)) {
+            return it->second;
+        }
+
+        // Cache miss. Query OpenGL for the location
+        const GLint location = glGetUniformLocation(_programHandle, name);
+
+        // Save it for later reference
+        hashAlg::insert(_shaderVarLocation, bindingHash, location);
+
+        // Return the location
+        return location;
     }
 
-    // Check the cache for the location
-    const auto& it = _shaderVarLocation.find(bindingHash);
-    if (it != std::cend(_shaderVarLocation)) {
-        return it->second;
-    }
-
-    // Cache miss. Query OpenGL for the location
-    const GLint location = glGetUniformLocation(_programHandle, name);
-
-    // Save it for later reference
-    hashAlg::insert(_shaderVarLocation, bindingHash, location);
-
-    // Return the location
-    return location;
+    return -1;
 }
 
 I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, bool force) {
-    if (constant._type == GFX::PushConstantType::COUNT || constant._bindingHash == 0u) {
-        return -1;
-    }
-    assert(!constant._binding.empty());
+    if (constant._type != GFX::PushConstantType::COUNT && constant._bindingHash > 0u) {
+        assert(!constant._binding.empty());
 
-    const U64 locationHash = constant._bindingHash;
+        const U64 locationHash = constant._bindingHash;
 
-    const I32 bindingLoc = binding(constant._binding.c_str(), locationHash);
+        const I32 bindingLoc = binding(constant._binding.c_str(), locationHash);
 
-    if (bindingLoc == -1 || _programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
-        return -1;
-    }
-
-    UniformsByNameHash::ShaderVarMap& map = _uniformsByNameHash._shaderVars;
-    const auto& it = map.find(locationHash);
-    if (it != std::cend(map)) {
-        if (force || it->second != constant) {
-            it->second = constant;
-        } else {
+        if (bindingLoc == -1 || _programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
             return -1;
         }
-    } else {
-        hashAlg::emplace(map, locationHash, constant);
+
+        UniformsByNameHash::ShaderVarMap& map = _uniformsByNameHash._shaderVars;
+        const auto& it = map.find(locationHash);
+        if (it != std::cend(map)) {
+            if (force || it->second != constant) {
+                it->second = constant;
+            } else {
+                return -1;
+            }
+        } else {
+            hashAlg::emplace(map, locationHash, constant);
+        }
+
+        return bindingLoc;
     }
 
-    return bindingLoc;
+    return -1;
 }
 
 void glShader::UploadPushConstant(const GFX::PushConstant& constant, bool force) {

@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "glResources.h"
 
 namespace Divide {
-    static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
+    constexpr U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
 
     class Pipeline;
     class glFramebuffer;

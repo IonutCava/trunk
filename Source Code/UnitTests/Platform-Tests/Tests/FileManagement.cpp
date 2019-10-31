@@ -7,7 +7,7 @@
 
 TEST(FileExistanceCheck)
 {
-    static const char* invalidFileName = "abc.cba";
+    const char* invalidFileName = "abc.cba";
 
     if (PreparePlatform()) {
         const Divide::SysInfo& systemInfo = Divide::const_sysInfo();
@@ -20,7 +20,7 @@ TEST(FileExistanceCheck)
 
 TEST(PathExistanceCheck)
 {
-    static const char* invalidPath = "abccba";
+    const char* invalidPath = "abccba";
 
     if (PreparePlatform()) {
         CHECK_TRUE(Divide::pathExists((Divide::Paths::g_exePath + Divide::Paths::g_assetsLocation).c_str()));
@@ -30,11 +30,11 @@ TEST(PathExistanceCheck)
 
 TEST(ExtensionCheck)
 {
-    static const char* file1 = "temp.xyz";
-    static const char* file2 = "folder/temp.st";
-    static const char* file3 = "folder/temp";
-    static const char* ext1 = "xyz";
-    static const char* ext2 = "st";
+    const char* file1 = "temp.xyz";
+    const char* file2 = "folder/temp.st";
+    const char* file3 = "folder/temp";
+    const char* ext1 = "xyz";
+    const char* ext2 = "st";
 
     if (PreparePlatform()) {
         CHECK_TRUE(Divide::hasExtension(file1, ext1));

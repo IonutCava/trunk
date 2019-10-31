@@ -126,7 +126,7 @@ void IMPrimitive::fromLines(const vector<Line>& lines) {
         vec3<F32>(1.0f,  1.0f, -1.0f)
     };
 
-    static const U16 indices[] = {
+    constexpr U16 indices[] = {
         0, 1, 2,
         3, 7, 1,
         5, 4, 7,

@@ -35,6 +35,7 @@
 
 #include "TemplateAllocator.h"
 #include <EASTL/unordered_map.h>
+#include <EASTL/unordered_set.h>
 #include <EASTL/intrusive_hash_map.h>
 
 #pragma warning(push)

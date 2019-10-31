@@ -226,6 +226,7 @@ void Frustum::computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut)
 }
 
 void Frustum::computePlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
+    // no constexpr due to alignment declspec
     static const vec4<I32> unitVecs[] = { vec4<I32>(-1, -1, -1, 1),
                                           vec4<I32>(-1 , 1, -1, 1),
                                           vec4<I32>(-1, -1,  1, 1),

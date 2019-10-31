@@ -160,11 +160,11 @@ bool MainScene::load(const Str128& name) {
     _sun->get<DirectionalLightComponent>()->csmSplitCount(3);  // 3 splits
     _sun->get<DirectionalLightComponent>()->csmNearClipOffset(25.0f);
 
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NAVIGATION);
+    constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
+                               to_base(ComponentType::TRANSFORM) |
+                               to_base(ComponentType::BOUNDS) |
+                               to_base(ComponentType::RENDERING) |
+                               to_base(ComponentType::NAVIGATION);
 
     ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.data(vec3<U16>(baseCamera->getZPlanes().y));

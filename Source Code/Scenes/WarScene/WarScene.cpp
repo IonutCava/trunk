@@ -395,14 +395,14 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 }
 
 bool WarScene::load(const Str128& name) {
-    static const U32 lightMask = to_base(ComponentType::TRANSFORM) |
-                                 to_base(ComponentType::BOUNDS) |
-                                 to_base(ComponentType::RENDERING);
+    constexpr U32 lightMask = to_base(ComponentType::TRANSFORM) |
+                              to_base(ComponentType::BOUNDS) |
+                              to_base(ComponentType::RENDERING);
 
-    static const U32 normalMask = lightMask |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::NETWORKING);
+    constexpr U32 normalMask = lightMask |
+                               to_base(ComponentType::RIGID_BODY) |
+                               to_base(ComponentType::NAVIGATION) |
+                               to_base(ComponentType::NETWORKING);
 
     // Load scene resources
     bool loadState = SCENE_LOAD(name);
@@ -614,7 +614,7 @@ bool WarScene::load(const Str128& name) {
         printMessage(eventID, unitName);
     });
 #endif
-    static const bool disableParticles = true;
+    constexpr bool disableParticles = true;
 
     if (!disableParticles) {
         const U32 particleCount = Config::Build::IS_DEBUG_BUILD ? 4000 : 20000;
@@ -710,7 +710,7 @@ bool WarScene::load(const Str128& name) {
     
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setHorizontalFoV(110);
 
-    static const bool disableEnvProbes = true;
+    constexpr bool disableEnvProbes = true;
     if (!disableEnvProbes) {
         _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
         _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));

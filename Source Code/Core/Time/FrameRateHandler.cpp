@@ -41,7 +41,7 @@ void FrameRateHandler::reset() {
 }
 
 void FrameRateHandler::tick(const U64 elapsedTime) noexcept {
-    static const F32 fpsLimitDiff = 30.0f;
+    constexpr F32 fpsLimitDiff = 30.0f;
 
     const F32 elapsedSeconds = Time::MicrosecondsToSeconds<F32>(elapsedTime);
     const F32 deltaSeconds = elapsedSeconds - _previousElapsedSeconds;

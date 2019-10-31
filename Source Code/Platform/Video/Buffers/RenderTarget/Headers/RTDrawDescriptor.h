@@ -97,7 +97,6 @@ protected:
 };
 
 class RTDrawDescriptor {
-  public: 
   public:
     RTDrawDescriptor();
 
@@ -110,19 +109,11 @@ class RTDrawDescriptor {
     inline RTBlendState& blendState(U8 index) { return _blendStates[index]; }
     inline const RTBlendState& blendState(U8 index) const{ return _blendStates[index]; }
 
-    void markDirtyLayer(RTAttachmentType type, U8 index, U16 layer);
-    const std::unordered_set<U16>& getDirtyLayers(RTAttachmentType type, U8 index = 0) const;
-
     inline bool operator==(const RTDrawDescriptor& other) const;
     inline bool operator!=(const RTDrawDescriptor& other) const;
 
   protected:
-
-    typedef std::unordered_set<U16> DirtyLayers;
-    typedef std::pair<U8, DirtyLayers> DirtyLayersEntry;
-
     RTDrawMask _drawMask;
-    std::array<vectorEASTL<DirtyLayersEntry>, to_base(RTAttachmentType::COUNT)> _dirtyLayers;
     std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;
     bool _setViewport;
 };

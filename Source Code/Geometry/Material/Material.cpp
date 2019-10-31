@@ -842,7 +842,8 @@ size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
 }
 
 void Material::getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32& textureKey) const {
-    static const I16 invalidKey = -std::numeric_limits<I16>::max();
+    constexpr I16 invalidKey = -std::numeric_limits<I16>::max();
+
     shaderKey = static_cast<I64>(invalidKey);
     textureKey = _textureKeyCache == -1 ? invalidKey : _textureKeyCache;
 

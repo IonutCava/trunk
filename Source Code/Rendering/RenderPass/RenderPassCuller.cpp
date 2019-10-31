@@ -16,7 +16,7 @@
 namespace Divide {
 
 namespace {
-    static const U32 g_nodesPerCullingPartition = 16u;
+    constexpr U32 g_nodesPerCullingPartition = 16u;
     //Worst case scenario: one per each node
     std::array<NodeListContainer, Config::MAX_VISIBLE_NODES> g_tempContainers = {};
     std::array<std::atomic_bool, Config::MAX_VISIBLE_NODES> g_freeList;

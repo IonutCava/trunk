@@ -50,7 +50,7 @@ class AudioState {
     }
 };
 
-static const U32 MAX_SOUND_BUFFERS = 64;
+constexpr U32 MAX_SOUND_BUFFERS = 64;
 
 /// Audio Programming Interface
 class NOINITVTABLE AudioAPIWrapper {

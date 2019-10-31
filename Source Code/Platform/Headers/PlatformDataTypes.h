@@ -95,18 +95,33 @@ class I24
 {
 protected:
     U8 value[3];
-public:
-    I24() noexcept : I24(0) {}
-    I24(I32 val) noexcept { *this = val; }
-    I24(const I24& val) noexcept { *this = val; }
 
-    FORCE_INLINE operator I32() const noexcept {
-        /* Sign extend negative quantities */
-        if (value[2] & 0x80) {
-            return (0xff << 24) | (value[2] << 16) | (value[1] << 8) | value[0];
-        }
-         
-        return (value[2] << 16) | (value[1] << 8) | value[0];
+public:
+    I24() noexcept
+        : I24(0)
+    {
+    }
+
+    I24(I32 val) noexcept 
+    {
+        *this = val;
+    }
+
+    I24(const I24& val) noexcept
+    {
+        *this = val;
+    }
+
+    I24(I24&& other) noexcept
+        : value{ std::move(other.value[0]), std::move(other.value[1]), std::move(other.value[2]) }
+    {
+    }
+
+    FORCE_INLINE I24& operator= (I24&& other) noexcept {
+        value[0] = std::move(other.value[0]);
+        value[1] = std::move(other.value[1]);
+        value[2] = std::move(other.value[2]);
+        return *this;
     }
 
     FORCE_INLINE I24& operator= (const I24& input) {
@@ -115,11 +130,20 @@ public:
     }
 
     FORCE_INLINE I24& operator= (const I32 input) noexcept {
-        value[0] = ((U8*)& input)[0];
-        value[1] = ((U8*)& input)[1];
-        value[2] = ((U8*)& input)[2];
+        value[0] = ((U8*)&input)[0];
+        value[1] = ((U8*)&input)[1];
+        value[2] = ((U8*)&input)[2];
 
         return *this;
+    }
+
+    FORCE_INLINE operator I32() const noexcept {
+        /* Sign extend negative quantities */
+        if (value[2] & 0x80) {
+            return (0xff << 24) | (value[2] << 16) | (value[1] << 8) | value[0];
+        }
+         
+        return (value[2] << 16) | (value[1] << 8) | value[0];
     }
 
     FORCE_INLINE I24 operator+   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }

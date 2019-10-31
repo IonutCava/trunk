@@ -130,7 +130,8 @@ stringImpl ProfileTimer::print(U32 level) const {
 }
 
 U64 ProfileTimer::overhead() {
-    static const U8 overheadLoopCount = 3;
+    constexpr U8 overheadLoopCount = 3;
+
     U64 overhead = 0;
     ProfileTimer test;
     const bool prevState = timersEnabled();

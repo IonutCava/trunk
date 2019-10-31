@@ -60,10 +60,11 @@ class Rect;
 template <typename T>
 class Quaternion;
 
-typedef vec4<U8> UColour4;
-typedef vec3<U8> UColour3;
-typedef vec4<F32> FColour4;
-typedef vec3<F32> FColour3;
+using UColour3 = vec3<U8>;
+using FColour3 = vec3<F32>;
+
+using UColour4 = vec4<U8>;
+using FColour4 = vec4<F32>;
 
 #if !defined(M_PI)
     constexpr D64 M_PI = 3.14159265358979323846;

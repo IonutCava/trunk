@@ -567,7 +567,7 @@ constexpr F32 CHAR_TO_FLOAT_SNORM(const U8 value)noexcept {
 
 // Pack 3 values into 1 float
 inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) noexcept {
-    static const D64 offset = to_D64(1 << 24);
+    constexpr D64 offset = to_D64(1 << 24);
 
     const U32 packed = (x << 16) | (y << 8) | z;
     return to_F32(to_D64(packed) / offset);

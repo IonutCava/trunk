@@ -270,7 +270,7 @@ bool GL_API::initShaders() {
 }
 
 bool GL_API::initGLSW(Configuration& config) {
-    static const std::pair<stringImpl, stringImpl>  shaderVaryings[] =
+    constexpr std::pair<const char*, const char*> shaderVaryings[] =
     {
         { "vec4"       , "_vertexW"},
         { "vec4"       , "_vertexWV"},
@@ -278,28 +278,29 @@ bool GL_API::initGLSW(Configuration& config) {
         { "flat uvec3" , "dvd_drawParams"},
         { "vec2"       , "_texCoord"}
     };
-    static const stringImpl drawParams = ""
+
+    constexpr const char* drawParams = ""
         "#define dvd_baseInstance dvd_drawParams.x\n"
         "#define dvd_instanceID dvd_drawParams.y\n"
         "#define dvd_drawID dvd_drawParams.z\n";
 
-    static const std::pair<stringImpl, stringImpl> shaderVaryingsBump[] =
+    constexpr std::pair<const char*, const char*> shaderVaryingsBump[] =
     {
         { "mat3" , "_tbn"}
     };
 
-    static const stringImpl crossTypeGLSLHLSL = "#define float2 vec2\n"
-                                                "#define float3 vec3\n"
-                                                "#define float4 vec4\n"
-                                                "#define int2 ivec2\n"
-                                                "#define int3 ivec3\n"
-                                                "#define int4 ivec4\n"
-                                                "#define float2x2 mat2\n"
-                                                "#define float3x3 mat3\n"
-                                                "#define float4x4 mat4\n"
-                                                "#define lerp mix";
+    constexpr const char* crossTypeGLSLHLSL = "#define float2 vec2\n"
+                                              "#define float3 vec3\n"
+                                              "#define float4 vec4\n"
+                                              "#define int2 ivec2\n"
+                                              "#define int3 ivec3\n"
+                                              "#define int4 ivec4\n"
+                                              "#define float2x2 mat2\n"
+                                              "#define float3x3 mat3\n"
+                                              "#define float4x4 mat4\n"
+                                              "#define lerp mix";
 
-    auto getPassData = [](ShaderType type) -> stringImpl {
+    auto getPassData = [&](ShaderType type) -> stringImpl {
         stringImpl baseString = "     _out.%s = _in[index].%s;";
         if (type == ShaderType::TESSELLATION_CTRL) {
             baseString = "    _out[gl_InvocationID].%s = _in[index].%s;";
@@ -307,13 +308,13 @@ bool GL_API::initGLSW(Configuration& config) {
 
         stringImpl passData("void PassData(in int index) {");
         passData.append("\n");
-        for (const std::pair<stringImpl, stringImpl>& var : shaderVaryings) {
-            passData.append(Util::StringFormat(baseString.c_str(), var.second.c_str(), var.second.c_str()));
+        for (U8 i = 0; i < (sizeof(shaderVaryings) / sizeof(shaderVaryings[0])); ++i) {
+            passData.append(Util::StringFormat(baseString.c_str(), shaderVaryings[i].second, shaderVaryings[i].second));
             passData.append("\n");
         }
         passData.append("#if defined(COMPUTE_TBN)\n");
-        for (const std::pair<stringImpl, stringImpl>& var : shaderVaryingsBump) {
-            passData.append(Util::StringFormat(baseString.c_str(), var.second.c_str(), var.second.c_str()));
+        for (U8 i = 0; i < (sizeof(shaderVaryingsBump) / sizeof(shaderVaryingsBump[0])); ++i) {
+            passData.append(Util::StringFormat(baseString.c_str(), shaderVaryingsBump[i].second, shaderVaryingsBump[i].second));
             passData.append("\n");
         }
         passData.append("#endif\n");
@@ -720,12 +721,12 @@ bool GL_API::initGLSW(Configuration& config) {
 
     auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets, bool bump) {
         if (bump) {
-            for (const std::pair<stringImpl, stringImpl>& entry : shaderVaryingsBump) {
-                appendToShaderHeader(type, Util::StringFormat("    %s %s;", entry.first.c_str(), entry.second.c_str()), lineOffsets);
+            for (U8 i = 0; i < (sizeof(shaderVaryingsBump) / sizeof(shaderVaryingsBump[0])); ++i) {
+                appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsBump[i].first, shaderVaryingsBump[i].second), lineOffsets);
             }
         } else {
-            for (const std::pair<stringImpl, stringImpl>& entry : shaderVaryings) {
-                appendToShaderHeader(type, Util::StringFormat("    %s %s;", entry.first.c_str(), entry.second.c_str()), lineOffsets);
+            for (U8 i = 0; i < (sizeof(shaderVaryings) / sizeof(shaderVaryings[0])); ++i) {
+                appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryings[i].first, shaderVaryings[i].second), lineOffsets);
             }
         }
     };

@@ -349,12 +349,12 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     {
         SharedLock r_lock(_lightLock);
         size_t totalLightCount = 0;
-        for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
+        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
             totalLightCount += _lights[i].size();
         }
         sortedLights.reserve(totalLightCount);
 
-        for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
+        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
             sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
         }
     }
@@ -362,12 +362,9 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     eastl::sort(eastl::begin(sortedLights),
                 eastl::end(sortedLights),
                 [&eyePos](Light* a, Light* b) {
-                    return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
+                    return a->getLightType() == LightType::DIRECTIONAL || // directional lights first
+                           a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
                 });
-    {
-        SharedLock r_lock(_lightLock);
-        sortedLights.insert(eastl::cbegin(sortedLights), eastl::cbegin(_lights[0]), eastl::cend(_lights[0]));
-    }
 
     for (Light* light : sortedLights) {
         light->shadowIndex(-1);

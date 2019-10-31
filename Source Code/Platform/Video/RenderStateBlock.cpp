@@ -226,41 +226,43 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool&
 }
 
 size_t RenderStateBlock::getHash() const {
-    if (_dirty) {
-        const size_t previousCache = Hashable::getHash();
+    const size_t previousCache = Hashable::getHash();
 
-        // Avoid small float rounding errors offsetting the general hash value
-        const U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
-        const U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
-
-        _hash = 59;
-        Util::Hash_combine(_hash, _colourWrite.i);
-        Util::Hash_combine(_hash, to_U32(_cullMode));
-        Util::Hash_combine(_hash, _cullEnabled);
-        Util::Hash_combine(_hash, _depthTestEnabled);
-        Util::Hash_combine(_hash, to_U32(_zFunc));
-        Util::Hash_combine(_hash, zBias);
-        Util::Hash_combine(_hash, zUnits);
-        Util::Hash_combine(_hash, _scissorTestEnabled);
-        Util::Hash_combine(_hash, _stencilEnable);
-        Util::Hash_combine(_hash, _stencilRef);
-        Util::Hash_combine(_hash, _stencilMask);
-        Util::Hash_combine(_hash, _stencilWriteMask);
-        Util::Hash_combine(_hash, _frontFaceCCW);
-        Util::Hash_combine(_hash, to_U32(_stencilFailOp));
-        Util::Hash_combine(_hash, to_U32(_stencilZFailOp));
-        Util::Hash_combine(_hash, to_U32(_stencilPassOp));
-        Util::Hash_combine(_hash, to_U32(_stencilFunc));
-        Util::Hash_combine(_hash, to_U32(_fillMode));
-        Util::Hash_combine(_hash, to_U32(_tessControlPoints));
-
-        if (previousCache != _hash) {
-            UniqueLockShared w_lock(s_stateBlockMapMutex);
-            hashAlg::insert(s_stateBlockMap, _hash, *this);
-        }
-        _dirty = false;
+    if (!_dirty) {
+        return previousCache;
     }
 
-    return Hashable::getHash();
+    // Avoid small float rounding errors offsetting the general hash value
+    const U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
+    const U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
+
+    _hash = 59;
+    Util::Hash_combine(_hash, _colourWrite.i);
+    Util::Hash_combine(_hash, to_U32(_cullMode));
+    Util::Hash_combine(_hash, _cullEnabled);
+    Util::Hash_combine(_hash, _depthTestEnabled);
+    Util::Hash_combine(_hash, to_U32(_zFunc));
+    Util::Hash_combine(_hash, zBias);
+    Util::Hash_combine(_hash, zUnits);
+    Util::Hash_combine(_hash, _scissorTestEnabled);
+    Util::Hash_combine(_hash, _stencilEnable);
+    Util::Hash_combine(_hash, _stencilRef);
+    Util::Hash_combine(_hash, _stencilMask);
+    Util::Hash_combine(_hash, _stencilWriteMask);
+    Util::Hash_combine(_hash, _frontFaceCCW);
+    Util::Hash_combine(_hash, to_U32(_stencilFailOp));
+    Util::Hash_combine(_hash, to_U32(_stencilZFailOp));
+    Util::Hash_combine(_hash, to_U32(_stencilPassOp));
+    Util::Hash_combine(_hash, to_U32(_stencilFunc));
+    Util::Hash_combine(_hash, to_U32(_fillMode));
+    Util::Hash_combine(_hash, to_U32(_tessControlPoints));
+
+    if (previousCache != _hash) {
+        UniqueLockShared w_lock(s_stateBlockMapMutex);
+        hashAlg::insert(s_stateBlockMap, _hash, *this);
+    }
+    _dirty = false;
+    return _hash;
 }
+
 };

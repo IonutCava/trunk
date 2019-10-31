@@ -26,12 +26,12 @@ namespace Divide {
 namespace {
     // 3 should always be enough for round-robin GPU updates to avoid stalls:
     // 1 in ram, 1 in driver and 1 in VRAM
-    static const U32 g_particleBufferSizeFactor = 3;
-    static const U32 g_particleGeometryBuffer = 0;
-    static const U32 g_particlePositionBuffer = g_particleGeometryBuffer + 1;
-    static const U32 g_particleColourBuffer = g_particlePositionBuffer* + 2;
+    constexpr U32 g_particleBufferSizeFactor = 3;
+    constexpr U32 g_particleGeometryBuffer = 0;
+    constexpr U32 g_particlePositionBuffer = g_particleGeometryBuffer + 1;
+    constexpr U32 g_particleColourBuffer = g_particlePositionBuffer* + 2;
 
-    static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
+    constexpr U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
 
 ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
@@ -164,8 +164,8 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 }
 
 bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleData) {
-    static const U32 positionAttribLocation = 13;
-    static const U32 colourAttribLocation = to_base(AttribLocation::COLOR);
+    constexpr U32 positionAttribLocation = 13;
+    constexpr U32 colourAttribLocation = to_base(AttribLocation::COLOR);
 
     U32 particleCount = _particles->totalCount();
 
@@ -345,7 +345,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
 
-    static const U32 s_particlesPerThread = 1024;
+    constexpr U32 s_particlesPerThread = 1024;
 
     if (_enabled) {
         U32 aliveCount = getAliveParticleCount();

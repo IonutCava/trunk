@@ -90,8 +90,7 @@ namespace std {
             //  otherwise you can roll your own
         }
 
-        static const char*
-            find(const char* s, int n, char a) {
+        static const char* find(const char* s, int n, char a) {
             while (n-- > 0 && toupper(*s) != toupper(a)) {
                 ++s;
             }
