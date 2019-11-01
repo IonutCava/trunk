@@ -362,8 +362,11 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     eastl::sort(eastl::begin(sortedLights),
                 eastl::end(sortedLights),
                 [&eyePos](Light* a, Light* b) {
-                    return a->getLightType() == LightType::DIRECTIONAL || // directional lights first
-                           a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
+                    // directional lights first
+                    if (a->getLightType() != b->getLightType()) {
+                        return to_base(a->getLightType()) < to_base(b->getLightType());
+                    }
+                    return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
                 });
 
     for (Light* light : sortedLights) {
