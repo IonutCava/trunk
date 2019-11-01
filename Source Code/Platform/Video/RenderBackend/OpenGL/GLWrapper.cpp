@@ -624,8 +624,8 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define TEXTURE_PREPASS_SHADOWS " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::PREPASS_SHADOWS)),
+        "#define TEXTURE_GBUFFER_EXTRA" +
+        to_stringImpl(to_base(ShaderProgram::TextureUsage::GBUFFER_EXTRA)),
         lineOffsets);
 
     appendToShaderHeader(

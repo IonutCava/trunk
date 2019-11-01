@@ -14,7 +14,6 @@ class ShaderProgram;
 
 enum class RenderStage : U8;
 
-
 // ALL FILTERS MUST MODIFY THE INPUT RENDERTARGET ONLY!
 BETTER_ENUM(FilterType, U16,
     FILTER_SS_ANTIALIASING = toBit(1),
@@ -37,8 +36,7 @@ enum class FilterSpace : U8 {
 };
 
 class PreRenderBatch;
-/// It's called a prerender operator because it operates on the buffer before
-/// "rendering" to the screen
+/// It's called a prerender operator because it operates on the buffer before "rendering" to the screen
 /// Technically, it's a post render operation
 class NOINITVTABLE PreRenderOperator {
    public:
@@ -50,6 +48,7 @@ class NOINITVTABLE PreRenderOperator {
     virtual ~PreRenderOperator();
 
     virtual void idle(const Configuration& config) = 0;
+    virtual void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) = 0;
     virtual void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) = 0;
 
     virtual void reshape(U16 width, U16 height);

@@ -101,6 +101,11 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     _bloomBlurBuffer[1]._rt->resize(width, height);
 }
 
+void BloomPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(camera);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
+}
+
 // Order: luminance calc -> bloom -> tonemap
 void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
 

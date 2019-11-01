@@ -15,8 +15,6 @@ layout(binding = SHADOW_SINGLE_MAP_ARRAY)  uniform sampler2DArrayShadow    texDe
 layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArrayShadow  texDepthMapFromLightCube;
 layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDepthMapFromLightArray;
 
-//layout(binding = TEXTURE_PREPASS_SHADOWS)  uniform sampler2D               texDepthMapFromPrePass;
-
 #include "shadowUtils.frag"
 #include "shadow_directional.frag"
 #include "shadow_point.frag"
@@ -25,8 +23,8 @@ layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDe
 float getShadowFactorInternal(int idx) {
 
 #if !defined(PRE_PASS)
-    if (idx >= 0 && idx < 4) {
-        //return texture(texDepthMapFromPrePass, dvd_screenPositionNormalised)[idx];
+    if (idx == 0 || idx == 1) {
+        //return texture(texGBufferExtra, dvd_screenPositionNormalised)[idx];
     }
 #endif
 

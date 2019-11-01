@@ -91,7 +91,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         PROJECTION = 11,
         REFLECTION_PLANAR = 12,
         REFRACTION_PLANAR = 13,
-        PREPASS_SHADOWS = 14,
+        GBUFFER_EXTRA = 14,
         DEPTH_PREV = 15,
         COUNT,
 

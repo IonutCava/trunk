@@ -1773,6 +1773,14 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         VelocityPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
         VelocityPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 1u);
             
+        DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
+        SSAOPreview->_shader = _renderTargetDraw;
+        SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
+        SSAOPreview->_name = "SSAO Map";
+        SSAOPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
+        SSAOPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
+        SSAOPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+        SSAOPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 1u);
 
         DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();
         AlphaAccumulationHigh->_shader = _renderTargetDraw;
@@ -1814,6 +1822,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         addDebugView(DepthPreview);
         addDebugView(NormalPreview);
         addDebugView(VelocityPreview);
+        addDebugView(SSAOPreview);
         addDebugView(AlphaAccumulationHigh);
         addDebugView(AlphaRevealageHigh);
         //addDebugView(AlphaAccumulationLow);

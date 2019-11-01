@@ -11,7 +11,7 @@
 
 #if defined(USE_DEFERRED_NORMALS)
 layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
-//r,g,b = CSM shadow factor for light ids 0, 1 & 2; a - specular/roughness
+//r,g = CSM shadow factor for light ids 0 & 1; b - ssao, a - specular/roughness
 layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
 #endif
 

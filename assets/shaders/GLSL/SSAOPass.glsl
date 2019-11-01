@@ -37,7 +37,7 @@ float ssao(in mat3 kernelBasis, in vec3 originPos) {
         vec4 offset = projectionMatrix * vec4(samplePos, 1.0);
         offset.xyz /= offset.w;
         // get sample depth:
-        float sampleDepth = 2.0 * textureLod(texDepth, offset.xy * 0.5 + 0.5, 0).r - 1.0;
+        float sampleDepth = 2.0 * textureLod(texDepthMap, offset.xy * 0.5 + 0.5, 0).r - 1.0;
 
         float delta = offset.z - sampleDepth;
 
@@ -54,11 +54,11 @@ float ssao(in mat3 kernelBasis, in vec3 originPos) {
 
 void main(void) {
     //	get view space origin:
-    float originDepth = textureLod(texDepth, VAR._texCoord, 0).r;
+    float originDepth = textureLod(texDepthMap, VAR._texCoord, 0).r;
     vec4 originPos = positionFromDepth(originDepth, invProjectionMatrix, VAR._texCoord);
 
     //	get view space normal:
-    vec3 normal = 2.0 * normalize(texture(texNormal, VAR._texCoord).rgb) - 1.0;
+    vec3 normal = normalize(unpackNormal(texture(texNormal, VAR._texCoord).rg));
 
     //	construct kernel basis matrix:
     vec3 rvec = normalize(2.0 * texture(texNoise, noiseScale * VAR._texCoord).rgb - 1.0);
@@ -75,9 +75,12 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texSSAO;
 
 uniform vec2 ssaoTexelSize;
 
-out float _colourOut;
+//b - ssao
+layout(location = TARGET_EXTRA) out vec4 _output;
 
 void main() {
+#   define _colourOut (_output.b)
+
     float colourOut = 0.0;
     vec2 hlim = vec2(float(-BLUR_SIZE) * 0.5 + 0.5);
     for (int x = 0; x < BLUR_SIZE; ++x) {

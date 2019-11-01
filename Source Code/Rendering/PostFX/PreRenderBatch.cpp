@@ -224,7 +224,23 @@ RenderTargetHandle& PreRenderBatch::outputRT() {
     return _postFXOutput;
 }
 
-void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& buffer) {
+void PreRenderBatch::prepare(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut) {
+    OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
+    OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
+
+    for (PreRenderOperator* op : hdrBatch) {
+        if (op != nullptr && BitCompare(filterStack, to_U16(op->operatorType()))) {
+            op->prepare(camera, bufferInOut);
+        }
+    }
+    for (PreRenderOperator* op : ldrBatch) {
+        if (op != nullptr && BitCompare(filterStack, to_U16(op->operatorType()))) {
+            op->prepare(camera, bufferInOut);
+        }
+    }
+}
+
+void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut) {
     static Pipeline* pipelineLumCalc = nullptr, * pipelineToneMap = nullptr, * pipelineToneMapAdaptive = nullptr;
     if (pipelineLumCalc == nullptr) {
         PipelineDescriptor pipelineDescriptor = {};
@@ -258,9 +274,9 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
         beginRenderPassCmd._target = _currentLuminance._targetID;
         beginRenderPassCmd._name = "DO_LUMINANCE_PASS";
-        GFX::EnqueueCommand(buffer, beginRenderPassCmd);
+        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        GFX::EnqueueCommand(buffer, GFX::BindPipelineCommand{ pipelineLumCalc });
+        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ pipelineLumCalc });
 
         // We don't know if our screen target has been resolved
         GFX::ResolveRenderTargetCommand resolveCmd = { };
@@ -268,28 +284,28 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
         resolveCmd._resolveColours = true;
         resolveCmd._resolveDepth = false;
 
-        GFX::EnqueueCommand(buffer, resolveCmd);
+        GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
         descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
-        GFX::EnqueueCommand(buffer, descriptorSetCmd);
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-        GFX::EnqueueCommand(buffer, GFX::DrawCommand{ triangleCmd });
-        GFX::EnqueueCommand(buffer, GFX::EndRenderPassCommand{});
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
         // Use previous luminance to control adaptive exposure
         GFX::BlitRenderTargetCommand blitRTCommand = {};
         blitRTCommand._source = _currentLuminance._targetID;
         blitRTCommand._destination = _previousLuminance._targetID;
         blitRTCommand._blitColours.emplace_back();
-        GFX::EnqueueCommand(buffer, blitRTCommand);
+        GFX::EnqueueCommand(bufferInOut, blitRTCommand);
     }
 
     // Execute all HDR based operators
     for (PreRenderOperator* op : hdrBatch) {
         if (op != nullptr && BitCompare(filterStack, to_U16(op->operatorType()))) {
-            op->execute(camera, buffer);
+            op->execute(camera, bufferInOut);
         }
     }
 
@@ -298,9 +314,9 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     resolveCmd._source = inputRT()._targetID;
     resolveCmd._resolveColours = true;
     resolveCmd._resolveDepth = false;
-    GFX::EnqueueCommand(buffer, resolveCmd);
+    GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
-    GFX::EnqueueCommand(buffer, GFX::BindPipelineCommand{ _adaptiveExposureControl ? pipelineToneMapAdaptive : pipelineToneMap });
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _adaptiveExposureControl ? pipelineToneMapAdaptive : pipelineToneMap });
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
@@ -310,21 +326,21 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
         TextureData data1 = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
         descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
     }
-    GFX::EnqueueCommand(buffer, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = _postFXOutput._targetID;
     beginRenderPassCmd._name = "DO_TONEMAP_PASS";
-    GFX::EnqueueCommand(buffer, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(buffer, GFX::SendPushConstantsCommand{ _toneMapConstants });
-    GFX::EnqueueCommand(buffer, GFX::DrawCommand{triangleCmd});
-    GFX::EnqueueCommand(buffer, GFX::EndRenderPassCommand{});
+    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
+    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{triangleCmd});
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
     // Execute all LDR based operators
     for (PreRenderOperator* op : ldrBatch) {
         if (op != nullptr && BitCompare(filterStack, to_U16(op->operatorType()))) {
-            op->execute(camera, buffer);
+            op->execute(camera, bufferInOut);
         }
     }
 }

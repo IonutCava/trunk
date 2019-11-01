@@ -31,6 +31,9 @@ layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmen
 #if defined(USE_SPECULAR_MAP)
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif //USE_SPECULAR_MAP
+//#if defined(USE_SSAO)
+//layout(binding = TEXTURE_GBUFFER_EXTRA)  uniform sampler2D texGBufferExtra;
+//#endif
 #endif  //PRE_PASS
 
 //Specular and opacity maps are available even for non-textured geometry
@@ -130,6 +133,14 @@ float Gloss(in vec3 bump, in vec2 uv)
 
 float getRimLighting(in mat4 colourMatrix, in vec2 uv) {
     return 0.0f;
+}
+
+float getSSAO(in vec2 uv) {
+#if defined(USE_SSAO)
+    return texture(texGBufferExtra, uv).b;
+#else
+    return 1.0f;
+#endif
 }
 
 #if defined(USE_CUSTOM_SHININESS)

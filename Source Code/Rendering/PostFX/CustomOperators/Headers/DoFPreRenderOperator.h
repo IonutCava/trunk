@@ -36,14 +36,15 @@
 
 namespace Divide {
 
-class DoFPreRenderOperator : public PreRenderOperator {
+class DoFPreRenderOperator final : public PreRenderOperator {
    public:
     DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
     ~DoFPreRenderOperator();
 
-    void idle(const Configuration& config) override;
-    void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) override;
-    void reshape(U16 width, U16 height) override;
+    void idle(const Configuration& config) final;
+    void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
+    void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
+    void reshape(U16 width, U16 height) final;
 
    private:
      ShaderProgram_ptr _dofShader;

@@ -96,7 +96,7 @@
     <enableDepthOfField>false</enableDepthOfField>
     <enableBloom>true</enableBloom>
     <bloomFactor>0.8</bloomFactor>
-    <enableSSAO>false</enableSSAO>    
+    <enableSSAO>true</enableSSAO>    
   </postFX>
   
   <shadowMapping>

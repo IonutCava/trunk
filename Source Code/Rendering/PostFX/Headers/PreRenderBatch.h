@@ -15,7 +15,8 @@ class PreRenderBatch {
     void destroy();
 
     void idle(const Configuration& config);
-    void execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& buffer);
+    void prepare(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut);
+    void execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut);
     void reshape(U16 width, U16 height);
 
     TextureData getOutput();

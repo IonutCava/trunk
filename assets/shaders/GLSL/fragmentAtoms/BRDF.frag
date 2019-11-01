@@ -100,6 +100,13 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     const vec3 viewDirNorm = normalize(-VAR._vertexWV.xyz);
     const vec4 data = getExtraData(colourMatrix, uv);
 
+#   if defined(USE_AMBIENT_COLOUR)
+        const vec3 ambient = vec3(0.01f, 0.01f, 0.01f);
+        albedo.rgb += (ambient * when_lt(lightColour.a, 0.01f));
+#   endif
+
+    //albedo.rgb *= getSSAO(uv);
+
     // Apply all lighting contributions (.a = reflectionCoeff)
     vec4 lightColour = vec4(0.0f);
     getDirectionalLightContribution(albedo, data, normalWV, viewDirNorm, lightColour);
@@ -110,9 +117,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     
     lightColour.rgb += getEmissive(colourMatrix);
 
-    /*const vec3 ambient = vec3(0.01f, 0.01f, 0.01f);
-    lightColour.rgb += (ambient * when_lt(lightColour.a, 0.01f));
-
+    /*
     // Specular reflections
     if (lightColour.a > 0.0f) {
         if (dvd_lodLevel < 1 && getReflectivity(colourMatrix) > 100) {

@@ -56,6 +56,11 @@ void DoFPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 }
 
+void DoFPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(camera);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
+}
+
 void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     // Copy current screen
     GFX::BlitRenderTargetCommand blitRTCommand;

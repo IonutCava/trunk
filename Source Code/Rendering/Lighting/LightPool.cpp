@@ -259,27 +259,30 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
 void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     U8 stageIndex = to_U8(stage);
 
-    // Create and upload light data for current pass
     LightVec& sortedLights = _sortedLights[stageIndex];
     sortedLights.resize(0);
     {
         SharedLock r_lock(_lightLock);
-        for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
-            sortedLights.insert(eastl::end(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
+        size_t totalLightCount = 0;
+        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+            totalLightCount += _lights[i].size();
+        }
+        sortedLights.reserve(totalLightCount);
+
+        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+            sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
         }
     }
 
     eastl::sort(eastl::begin(sortedLights),
                 eastl::end(sortedLights),
-                [&eyePos](Light* a, Light* b) -> bool
-                {
-                    return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
-                });
-
-    {
-        SharedLock r_lock(_lightLock);
-        sortedLights.insert(eastl::begin(sortedLights), eastl::cbegin(_lights[0]), eastl::cend(_lights[0]));
-    }
+                [&eyePos](Light* a, Light* b) {
+                // directional lights first
+                if (a->getLightType() != b->getLightType()) {
+                    return to_base(a->getLightType()) < to_base(b->getLightType());
+                }
+                return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
+            });
 
     U32 totalLightCount = 0;
     vec3<F32> tempColour;

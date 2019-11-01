@@ -279,6 +279,9 @@ BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA);
 END_COMMAND(PushCameraCommand);
 
 BEGIN_COMMAND(PushCameraCommand, CommandType::PUSH_CAMERA);
+    PushCameraCommand() = default;
+    PushCameraCommand(const CameraSnapshot & snapshot) : _cameraSnapshot(snapshot) {}
+
     CameraSnapshot _cameraSnapshot;
 END_COMMAND(PushCameraCommand);
 

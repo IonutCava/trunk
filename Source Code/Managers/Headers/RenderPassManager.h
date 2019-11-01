@@ -109,7 +109,6 @@ private:
     // Returns false if we skipped the pre-pass step
     bool prePass(const VisibleNodeList& nodes,
                  const PassParams& params,
-                 vec2<bool> extraTargets, 
                  const RenderTarget& target,
                  GFX::CommandBuffer& bufferInOut);
     bool occlusionPass(const VisibleNodeList& nodes,

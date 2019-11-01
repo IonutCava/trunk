@@ -92,6 +92,11 @@ void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 }
 
+void PostAAPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(camera);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
+}
+
 /// This is tricky as we use our screen as both input and output
 void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     STUBBED("ToDo: Move PostAA to compute shaders to avoid a blit and RT swap. -Ionut");

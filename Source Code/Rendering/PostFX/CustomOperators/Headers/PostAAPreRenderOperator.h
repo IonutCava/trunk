@@ -39,14 +39,15 @@
 
 namespace Divide {
 
-class PostAAPreRenderOperator : public PreRenderOperator {
+class PostAAPreRenderOperator final : public PreRenderOperator {
    public:
     PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
     ~PostAAPreRenderOperator();
 
-    void idle(const Configuration& config) override;
-    void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) override;
-    void reshape(U16 width, U16 height) override;
+    void idle(const Configuration& config) final;
+    void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
+    void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
+    void reshape(U16 width, U16 height) final;
 
    private:
     I32 _idleCount;

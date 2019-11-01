@@ -346,6 +346,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
     shaderOitDescriptor._modules.back()._defines.push_back(std::make_pair("OIT_PASS", true));
+    //shaderOitDescriptor._modules.back()._defines.push_back(std::make_pair("USE_SSAO", true));
     shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
 
     ResourceDescriptor grassColourOITShader("grassColourOIT");

@@ -532,7 +532,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     buildDrawCommands(stagePass, params, refreshNodeData, bufferInOut);
 }
 
-bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     // PrePass requires a depth buffer
     bool doPrePass = params._stage != RenderStage::SHADOW &&
                      params._target._usage != RenderTargetUsage::COUNT &&
@@ -544,9 +544,6 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
     GFX::EnqueueCommand(bufferInOut, memCmd);
 
     if (doPrePass) {
-        const bool hasNormalsTarget = extraTargets.x;
-        const bool hasLightingTarget = extraTargets.y;
-
         GFX::BeginDebugScopeCommand beginDebugScopeCmd;
         beginDebugScopeCmd._scopeID = 0;
         beginDebugScopeCmd._scopeName = " - PrePass";
@@ -558,13 +555,8 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         RTDrawDescriptor normalsAndDepthPolicy = {};
         normalsAndDepthPolicy.drawMask().disableAll();
         normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
-
-        if (hasLightingTarget) {
-            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
-        }
-        if (hasNormalsTarget) {
-            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
-        }
+        normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
+        normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
 
         if (params._bindTargets) {
             GFX::BeginRenderPassCommand beginRenderPassCommand;
@@ -696,7 +688,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
                 GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
                 const TextureData& data = target.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->data();
-                constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::PREPASS_SHADOWS);
+                constexpr U8 bindSlot = to_U8(ShaderProgram::TextureUsage::GBUFFER_EXTRA);
 
                 descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
             }
@@ -880,7 +872,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
-    bool prePassExecuted = prePass(visibleNodes, params, extraTargets, target, bufferInOut);
+    bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
     bool hasHiZ = false;
     if (prePassExecuted) {
         GFX::ResolveRenderTargetCommand resolveCmd = { };
@@ -889,6 +881,12 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
         GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
         hasHiZ = occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
+    }
+
+    //ToDo: Might be worth having pre-pass operations per render stage, but currently, only the main pass needs SSAO, bloom and so forth
+    if (params._stage == RenderStage::DISPLAY) {
+        PostFX& postFX = _context.getRenderer().postFX();
+        postFX.prepare(*params._camera, bufferInOut);
     }
 
     GFX::MemoryBarrierCommand memCmd;

@@ -58,6 +58,7 @@ public:
     explicit PostFX(PlatformContext& context, ResourceCache& cache);
     ~PostFX();
 
+    void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void apply(const Camera& camera, GFX::CommandBuffer& bufferInOut);
 
     void idle(const Configuration& config);

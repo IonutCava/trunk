@@ -144,7 +144,7 @@ void PostFX::updateResolution(U16 width, U16 height) {
     _preRenderBatch->reshape(width, height);
 }
 
-void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     if (_filtersDirty) {
         _shaderFunctionSelection[0] = _shaderFunctionList[getFilterState(FilterType::FILTER_VIGNETTE) ? 0 : 4];
         _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
@@ -155,7 +155,14 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
         _drawPipeline = context().gfx().newPipeline(desc);
         _filtersDirty = false;
     }
+    ;
+    
+    GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
+    _preRenderBatch->prepare(camera, _filterStack, bufferInOut);
+    GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
+}
 
+void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
 
     _preRenderBatch->execute(camera, _filterStack, bufferInOut);

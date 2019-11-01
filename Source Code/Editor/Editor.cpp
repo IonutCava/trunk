@@ -777,7 +777,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
         // Draw the gizmos and overlayed graphics to the main render target but don't clear anything
         RTDrawDescriptor screenTarget = {};
         screenTarget.drawMask().disableAll();
-        screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
+        screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO), true);
 
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
         beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
