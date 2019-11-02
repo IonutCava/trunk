@@ -435,12 +435,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._variant = "MainPass";
         }
-		if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::NORMAL) {
-			shaderModule._defines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
-		} else if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::OCCLUSION) {
-			shaderModule._defines.push_back(std::make_pair("USE_PARALLAX_OCCLUSION_MAPPING", true));
-		}
-        //shaderModule._defines.push_back(std::make_pair("USE_SSAO", true));
+        if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::NORMAL) {
+            shaderModule._defines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
+        } else if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::OCCLUSION) {
+            shaderModule._defines.push_back(std::make_pair("USE_PARALLAX_OCCLUSION_MAPPING", true));
+        }
+        shaderModule._defines.push_back(std::make_pair("USE_SSAO", true));
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
         shaderModule._defines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));

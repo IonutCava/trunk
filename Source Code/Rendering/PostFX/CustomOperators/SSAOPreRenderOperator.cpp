@@ -16,22 +16,6 @@ namespace Divide {
 SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_SS_AMBIENT_OCCLUSION)
 {
-    vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
-
-    {
-        vector<RTAttachmentDescriptor> att = {
-            { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA)).texture()->descriptor(), RTAttachmentType::Colour },
-        };
-
-        RenderTargetDescriptor desc = {};
-        desc._name = "SSAO";
-        desc._resolution = res;
-        desc._attachmentCount = to_U8(att.size());
-        desc._attachments = att.data();
-
-        _samplerCopy = _context.renderTargetPool().allocateRT(desc);
-    }
-
     U16 ssaoNoiseSize = 4;
     U16 noiseDataSize = ssaoNoiseSize * ssaoNoiseSize;
     vector<vec3<F32>> noiseData(noiseDataSize);
@@ -40,10 +24,9 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
         noise.set(Random(-1.0f, 1.0f),
                   Random(-1.0f, 1.0f),
                   0.0f);
-        noise.normalize();
     }
 
-    U16 kernelSize = 32;
+    U16 kernelSize = 64;
     vector<vec3<F32>> kernel(kernelSize);
     for (U16 i = 0; i < kernelSize; ++i) {
         vec3<F32>& k = kernel[i];
@@ -51,8 +34,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
               Random(-1.0f, 1.0f),
               Random( 0.0f, 1.0f));
         k.normalize();
-        F32 scale = to_F32(i) / to_F32(kernelSize);
-        k *= Lerp(0.1f, 1.0f, scale * scale);
+        F32 scaleSq = SQUARED(to_F32(i) / to_F32(kernelSize));
+        k *= Lerp(0.1f, 1.0f, scaleSq);
     }
     
     SamplerDescriptor noiseSampler = {};
@@ -85,7 +68,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     screenSampler.magFilter(TextureFilter::LINEAR);
     screenSampler.anisotropyLevel(0);
 
-    TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::UNSIGNED_SHORT);
+    TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
     outputDescriptor.samplerDescriptor(screenSampler);
 
     {
@@ -95,7 +78,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
         RenderTargetDescriptor desc = {};
         desc._name = "SSAO_Out";
-        desc._resolution = res;
+        desc._resolution = vec2<U16>(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
@@ -154,9 +137,6 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     _ssaoOutput._rt->resize(width, height);
 
     _ssaoGenerateConstants.set("noiseScale", GFX::PushConstantType::VEC2, vec2<F32>(width, height) / to_F32(_noiseTexture->width()));
-
-    _ssaoBlurConstants.set("ssaoTexelSize", GFX::PushConstantType::VEC2, vec2<F32>(1.0f / _ssaoOutput._rt->getWidth(),
-                                                                                  1.0f / _ssaoOutput._rt->getHeight()));
 }
 
 void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
@@ -169,6 +149,8 @@ void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bu
 
     _ssaoGenerateConstants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
     _ssaoGenerateConstants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, GetInverse(camera.getProjectionMatrix()));
+    _ssaoGenerateConstants.set("radius", GFX::PushConstantType::FLOAT, 0.5f);
+    _ssaoGenerateConstants.set("power", GFX::PushConstantType::FLOAT, 2.0f);
 
     // Generate AO
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -198,6 +180,8 @@ void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bu
     GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
     // Blur AO
+    beginRenderPassCmd._descriptor.drawMask().disableAll();
+    beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
     beginRenderPassCmd._target = _parent.inputRT()._targetID;
     beginRenderPassCmd._name = "DO_SSAO_BLUR";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
@@ -210,11 +194,6 @@ void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bu
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
-
-    // Draw the gizmos and overlayed graphics to the main render target but don't clear anything
-    RTDrawDescriptor screenTarget = {};
-    screenTarget.drawMask().disableAll();
-    screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
 
 
     GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });

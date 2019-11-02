@@ -11,6 +11,11 @@ See "license.txt" or "http://copyfree.org/licenses/mit/license.txt".
 #define NEED_DEPTH_TEXTURE
 #include "utility.frag"
 
+// This constant removes artifacts caused by neighbour fragments with minimal depth difference.
+#define CAP_MIN_DISTANCE 0.0001
+// This constant avoids the influence of fragments, which are too far away.
+#define CAP_MAX_DISTANCE 0.005
+
 uniform vec3 sampleKernel[KERNEL_SIZE];
 uniform float radius = 1.5;
 uniform float power = 2.0;
@@ -25,36 +30,42 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormal;
 
 out float _ssaoOut;
 
-float ssao(in mat3 kernelBasis, in vec3 originPos) {
+float ssao(in mat3 kernelBasis, in vec4 posView) {
+    const float bias = 0.025f;
+
     float occlusion = 0.0;
 
     for (int i = 0; i < KERNEL_SIZE; ++i) {
-        // get sample position:
-        vec3 samplePos = kernelBasis * sampleKernel[i];
-        samplePos = samplePos * radius + originPos;
+        // Reorient sample vector in view space ...
+        vec3 sampleVectorView = kernelBasis * sampleKernel[i];
 
-        // project sample position:
-        vec4 offset = projectionMatrix * vec4(samplePos, 1.0);
-        offset.xyz /= offset.w;
-        // get sample depth:
-        float sampleDepth = 2.0 * textureLod(texDepthMap, offset.xy * 0.5 + 0.5, 0).r - 1.0;
+        // ... and calculate sample point.
+        vec4 samplePointView = posView + radius * vec4(sampleVectorView, 0.0);
 
-        float delta = offset.z - sampleDepth;
+        // Project point and calculate NDC.
+        vec4 samplePointNDC = projectionMatrix * samplePointView;
 
-        if (delta > 0.0001 && delta < 0.005) {
-            float rangeCheck = smoothstep(1.0, 0.0, radius / abs(originPos.z - sampleDepth));
-            occlusion += rangeCheck * step(samplePos.z, sampleDepth);
-        }
-        
+        samplePointNDC /= samplePointNDC.w;
+
+        // Create texture coordinate out of it.
+        vec2 samplePointTexCoord = samplePointNDC.xy * 0.5 + 0.5;
+
+        // Get sample out of depth texture
+        float zSceneNDC = positionFromDepth(texture(texDepthMap, samplePointTexCoord).r, invProjectionMatrix, samplePointTexCoord).z;
+
+        float rangeCheck = smoothstep(0.0, 1.0, radius / abs(posView.z - zSceneNDC));
+
+        // If scene fragment is before (smaller in z) sample point, increase occlusion.
+        occlusion += (zSceneNDC >= samplePointView.z + bias ? 1.0f : 0.0f) * rangeCheck;
     }
 
-    occlusion = 1.0 - (occlusion / float(KERNEL_SIZE));
+    occlusion = 1.0 - (occlusion / (float(KERNEL_SIZE)));
     return pow(occlusion, power);
 }
 
 void main(void) {
-    //	get view space origin:
-    float originDepth = textureLod(texDepthMap, VAR._texCoord, 0).r;
+    // Calculate out of the current fragment in screen space the view space position.
+    float originDepth = texture(texDepthMap, VAR._texCoord).r;
     vec4 originPos = positionFromDepth(originDepth, invProjectionMatrix, VAR._texCoord);
 
     //	get view space normal:
@@ -66,14 +77,12 @@ void main(void) {
     vec3 bitangent = cross(tangent, normal);
     mat3 kernelBasis = mat3(tangent, bitangent, normal);
     
-    _ssaoOut = ssao(kernelBasis, originPos.xyz);
+    _ssaoOut = ssao(kernelBasis, originPos);
 }
 
 --Fragment.SSAOBlur
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texSSAO;
-
-uniform vec2 ssaoTexelSize;
 
 //b - ssao
 layout(location = TARGET_EXTRA) out vec4 _output;
@@ -81,29 +90,18 @@ layout(location = TARGET_EXTRA) out vec4 _output;
 void main() {
 #   define _colourOut (_output.b)
 
-    float colourOut = 0.0;
-    vec2 hlim = vec2(float(-BLUR_SIZE) * 0.5 + 0.5);
-    for (int x = 0; x < BLUR_SIZE; ++x) {
-        for (int y = 0; y < BLUR_SIZE; ++y) {
-            vec2 offset = vec2(float(x), float(y));
-            offset += hlim;
-            offset *= ssaoTexelSize;
+    vec2 texelSize = 1.0 / vec2(textureSize(texSSAO, 0));
 
+    const int end = int(BLUR_SIZE / 2);
+    const int start = int(end * -1);
+
+    float colourOut = 0.0;
+    for (int x = start; x < end; ++x) {
+        for (int y = start; y < end; ++y) {
+            vec2 offset = vec2(float(x), float(y)) * texelSize;
             colourOut += texture(texSSAO, VAR._texCoord + offset).r;
         }
     }
 
     _colourOut = colourOut / float(BLUR_SIZE * BLUR_SIZE);
-}
-
---Fragment.SSAOApply
-
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texSSAO;
-
-out vec4 _colourOut;
-
-void main() {
-    _colourOut.rgb = texture(texScreen, VAR._texCoord).rgb * 1.0;
-                    //texture(texSSAO, VAR._texCoord).r;
 }

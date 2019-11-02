@@ -180,11 +180,10 @@ float computeDepth(in vec4 posWV) {
 vec4 positionFromDepth(in float depth,
                        in mat4 invProjectionMatrix,
                        in vec2 uv) {
-
-    vec4 pos = vec4(2.0f * uv.x - 1.0f,
-        2.0f * uv.y - 1.0f,
-        2.0f * depth - 1.0f,
-        1.0f);
+    float x = uv.x * 2.0f - 1.0f;
+    float y = uv.y * 2.0f - 1.0f;
+    float z = 2.0f * depth - 1.0f;
+    vec4 pos = vec4(x, y, z, 1.0f);
 
     pos = invProjectionMatrix * pos;
     pos /= pos.w;

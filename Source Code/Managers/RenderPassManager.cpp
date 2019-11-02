@@ -656,13 +656,6 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             RTDrawDescriptor drawPolicy = {};
             if (params._drawPolicy != nullptr) {
                 drawPolicy = *params._drawPolicy;
-            } else {
-                if (hasLightingTarget) {
-                    drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), false);
-                }
-                if (hasNormalsTarget) {
-                    drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
-                }
             }
 
             if (hasNormalsTarget) {
@@ -678,6 +671,8 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
             if (prePassExecuted) {
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+                drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
+                drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), false);
                 TextureData depthData = hasHiZ ? hizTex->data() : depthTex->data();
                 descriptorSetCmd._set._textureData.setTexture(depthData, to_base(ShaderProgram::TextureUsage::DEPTH));
             }

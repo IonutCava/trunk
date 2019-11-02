@@ -563,7 +563,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     if (renderStagePass._stage == RenderStage::DISPLAY) {
-        //fragDefines.push_back(std::make_pair("USE_SSAO", true));
+        fragDefines.push_back(std::make_pair("USE_SSAO", true));
         fragDefines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
         shaderName += ".DNrmls";
     }
