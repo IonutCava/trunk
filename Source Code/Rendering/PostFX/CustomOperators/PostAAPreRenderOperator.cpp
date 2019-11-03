@@ -6,9 +6,8 @@
 #include "Utility/Headers/Localization.h"
 #include "Core/Headers/Configuration.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
-
 #include "Rendering/PostFX/Headers/PreRenderBatch.h"
 
 namespace Divide {
@@ -17,7 +16,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_SS_ANTIALIASING),
       _useSMAA(false),
       _postAASamples(0),
-      _idleCount(0)
+      _aaPipeline(nullptr)
 {
     vector<RTAttachmentDescriptor> att = {
         { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
@@ -67,25 +66,37 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     smaa.propertyDescriptor(aaShaderDescriptor);
     smaa.waitForReady(false);
     _smaa = CreateResource<ShaderProgram>(cache, smaa);
+
+    useSMAA(_ID(cache.context().config().rendering.postFX.postAAType.c_str()) == _ID("SMAA"));
+    setAASamples(cache.context().config().rendering.postFX.postAASamples);
 }
 
 PostAAPreRenderOperator::~PostAAPreRenderOperator()
 {
 }
 
+void PostAAPreRenderOperator::setAASamples(U8 postAASamples)
+{
+    if (_postAASamples != postAASamples) {
+        _postAASamples = postAASamples;
+        _fxaaConstants.set("dvd_qualityMultiplier", GFX::PushConstantType::INT, to_I32(_postAASamples));
+        _context.context().config().rendering.postFX.postAASamples = postAASamples;
+    }
+}
+
 void PostAAPreRenderOperator::idle(const Configuration& config) {
-    I32 samples = config.rendering.postFX.postAASamples;
+    ACKNOWLEDGE_UNUSED(config);
+}
 
-    if (_postAASamples != samples) {
-        _postAASamples = samples;
-        _fxaaConstants.set("dvd_qualityMultiplier", GFX::PushConstantType::INT, _postAASamples);
-    }
+void PostAAPreRenderOperator::useSMAA(const bool state) {
+    _useSMAA = state;
 
-    if (_idleCount == 0) {
-        _useSMAA = _ID(config.rendering.postFX.postAAType.c_str()) == _ID("SMAA");
-    }
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.get2DStateBlock();
+    pipelineDescriptor._shaderProgramHandle = (_useSMAA ? _smaa : _fxaa)->getGUID();
+    _aaPipeline = _context.newPipeline(pipelineDescriptor);
 
-    _idleCount = (++_idleCount % 60);
+    _context.context().config().rendering.postFX.postAAType = state ? "SMAA" : "FXAA";
 }
 
 void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
@@ -102,12 +113,8 @@ void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& 
     STUBBED("ToDo: Move PostAA to compute shaders to avoid a blit and RT swap. -Ionut");
     RenderTargetHandle ldrTarget = _parent.outputRT();
 
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = (_useSMAA ? _smaa : _fxaa)->getGUID();
-
     GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = _aaPipeline;
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     GFX::BlitRenderTargetCommand blitRTCommand;

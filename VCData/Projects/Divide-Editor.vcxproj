@@ -36,6 +36,7 @@
     <ClCompile Include="../../Source Code\Editor\Widgets\Gizmo.cpp" />
     <ClCompile Include="../../Source Code\Editor\Widgets\ImGuiExtensions.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\UndoManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Editor\Widgets\DockedWindows\PostFXWindow.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Widgets\StatusBar.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +51,7 @@
     <ClInclude Include="../../Source Code\Editor\Widgets\Headers\Gizmo.h" />
     <ClInclude Include="../../Source Code\Editor\Widgets\Headers\ImGuiExtensions.h" />
     <ClInclude Include="..\..\Source Code\Editor\Headers\UndoManager.h" />
+    <ClInclude Include="..\..\Source Code\Editor\Widgets\DockedWindows\Headers\PostFXWindow.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\StatusBar.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

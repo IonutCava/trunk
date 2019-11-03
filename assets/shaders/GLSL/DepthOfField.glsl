@@ -7,14 +7,13 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
 
 uniform vec2 size;
-uniform bool bHorizontal;
+uniform float focalDepth;  //external focal point value, but you may use autofocus option below
+uniform bool autofocus = true; //use autofocus in shader? disable if you use external focalDepth value
 
 float width = size.x; //texture width
 float height = size.y; //texture height
 
-vec2 texel = vec2(1.0/width,1.0/height);
-
-uniform float focalDepth;  //external focal point value, but you may use autofocus option below
+vec2 texel = vec2(1.0 / width, 1.0 / height);
 
 //------------------------------------------
 //user variables
@@ -22,7 +21,6 @@ uniform float focalDepth;  //external focal point value, but you may use autofoc
 int samples = 3; //samples on the first ring
 int rings = 5; //ring count
 
-bool autofocus = true; //use autofocus in shader? disable if you use external focalDepth value
 vec2 focus = vec2(0.5,0.5); // autofocus point on screen (0.0,0.0 - left lower corner, 1.0,1.0 - upper right)
 float range = 4.0; //focal range
 float maxblur = 1.25; //clamp value of max blur
@@ -200,123 +198,4 @@ void main()
     col /= s;   
     
     _colourOut = vec4(col, 1.0);
-}
-
--- Fragment.OLD.BROKEN.DO.NOT.USE
-
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-
-uniform vec2 size;
-uniform bool bHorizontal;
-
-uniform float mask11[11];
-uniform float mask5[5];
-uniform float mask3[3];
-
-vec4 convolH11(){
-
-    float stepX = 1.0/size.x;
-    vec4 colour;
-    int k = (11/2);
-    int ind = 0;
-    for(int i=-k; i<=k; i++)
-        colour += mask11[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
-            
-    return colour;
-}
-
-vec4 convolH5(){
-
-    float stepX = 1.0/size.x;
-    vec4 colour;
-    int k = (5/2);
-    int ind = 0;
-    for(int i=-k; i<=k; i++)
-        colour += mask5[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
-    return colour;
-}
-
-vec4 convolH3(){
-
-    float stepX = 1.0/size.x;
-    vec4 colour;
-    int k = (3/2);
-    int ind = 0;
-    for(int i=-k; i<=k; i++)
-        colour += mask3[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
-    return colour;
-}
-
-vec4 convolV11(){
-
-    float stepY = 1.0/size.y;
-    vec4 colour;
-    int k = (11/2);
-    int ind = 0;
-    for(int i=-k; i<=k; i++)
-        colour += mask11[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
-    return colour;
-}
-
-vec4 convolV5(){
-
-    float stepY = 1.0/size.y;
-    vec4 colour;
-    int k = (5/2);
-    int ind = 0;
-    for(int i=-k; i<=k; i++)
-        colour += mask5[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
-    return colour;
-}
-
-vec4 convolV3(){
-
-    float stepY = 1.0/size.y;
-    vec4 colour;
-    int k = (3/2);
-    int ind = 0;
-    for(int i=-k; i<=k; i++)
-        colour += mask3[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
-    
-    return colour;
-}
-
-
-
-void Pdc(inout vec4 colour){
-
-    float depth = texture(texDepth, VAR._texCoord).r;
-
-    if(depth > 0.997){
-
-        if(bHorizontal)    {        
-            colour = convolH11();
-        }else{
-            colour = convolV11();
-        }
-        
-    }else if(depth > 0.995){
-        if(bHorizontal)    {
-            colour = convolH5();
-        }else{
-            colour = convolV5();
-        }
-        
-    }else if(depth > 0.994){
-        if(bHorizontal)    {
-            colour = convolH3();
-        }else{
-            colour = convolV3();
-        }
-        
-    }
-    else{
-        colour = texture(texScreen, VAR._texCoord);
-    }
-}
-
-void main(){
-
-    Pdc(_colourOut);
 }

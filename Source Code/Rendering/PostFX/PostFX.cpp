@@ -154,8 +154,7 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
         desc._shaderFunctions[to_base(ShaderType::FRAGMENT)] = _shaderFunctionSelection;
         _drawPipeline = context().gfx().newPipeline(desc);
         _filtersDirty = false;
-    }
-    ;
+    };
     
     GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
     _preRenderBatch->prepare(camera, _filterStack, bufferInOut);

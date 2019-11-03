@@ -47,13 +47,25 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     void reshape(U16 width, U16 height) final;
     TextureData getDebugOutput() const;
 
+    inline F32 radius() const { return _radius; }
+    void radius(const F32 val);
+
+    inline F32 power() const { return _power; }
+    void power(const F32 val);
+
    private:
-    RenderTargetHandle _ssaoOutput;
+     void onToggle(const bool state) final;
+
+   private:
+    PushConstants _ssaoBlurConstants;
+    PushConstants _ssaoGenerateConstants;
     ShaderProgram_ptr _ssaoGenerateShader;
     ShaderProgram_ptr _ssaoBlurShader;
     Texture_ptr _noiseTexture;
-    PushConstants _ssaoBlurConstants;
-    PushConstants _ssaoGenerateConstants;
+    RenderTargetHandle _ssaoOutput;
+    F32 _radius;
+    F32 _power;
+    bool _enabled;
 };
 
 };  // namespace Divide

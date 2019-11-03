@@ -113,6 +113,7 @@ class Editor : public PlatformContextComponent,
         ContentExplorer,
         Output,
         SceneView,
+        PostFX,
         COUNT
     };
 

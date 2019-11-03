@@ -8,6 +8,7 @@
 #include "Editor/Widgets/Headers/StatusBar.h"
 
 #include "Editor/Widgets/DockedWindows/Headers/OutputWindow.h"
+#include "Editor/Widgets/DockedWindows/Headers/PostFXWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/PropertyWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/SceneViewWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/ContentExplorerWindow.h"
@@ -429,6 +430,10 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     descriptor.position = ImVec2(to_F32(renderResolution.width) - 300, 0);
     descriptor.name = "Property Explorer";
     _dockedWindows[to_base(WindowType::Properties)] = MemoryManager_NEW PropertyWindow(*this, _context, descriptor);
+
+    descriptor.position = ImVec2(to_F32(renderResolution.width) - 300, 0);
+    descriptor.name = "PostFX Settings";
+    _dockedWindows[to_base(WindowType::PostFX)] = MemoryManager_NEW PostFXWindow(*this, _context, descriptor);
 
     descriptor.position = ImVec2(0, 550.0f);
     descriptor.size = ImVec2(to_F32(renderResolution.width * 0.5f), to_F32(renderResolution.height) - 550 - 3);

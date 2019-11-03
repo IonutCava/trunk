@@ -70,6 +70,7 @@ public:
         if (!getFilterState(filter)) {
             SetBit(_filterStack, to_U16(filter));
             _filtersDirty = true;
+            getFilterBatch()->onFilterEnabled(filter);
         }
     }
 
@@ -77,11 +78,16 @@ public:
         if (getFilterState(filter)) {
             ClearBit(_filterStack, to_U16(filter));
             _filtersDirty = true;
+            getFilterBatch()->onFilterDisabled(filter);
         }
     }
 
     inline bool getFilterState(FilterType filter) const {
         return BitCompare(_filterStack, to_U16(filter));
+    }
+
+    inline PreRenderBatch* getFilterBatch() const {
+        return _preRenderBatch;
     }
 
     // fade the screen to the specified colour lerping over the specified time interval

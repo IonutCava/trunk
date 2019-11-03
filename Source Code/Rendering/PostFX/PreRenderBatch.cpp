@@ -224,17 +224,41 @@ RenderTargetHandle& PreRenderBatch::outputRT() {
     return _postFXOutput;
 }
 
+void PreRenderBatch::onFilterEnabled(FilterType filter) {
+    onFilterToggle(filter, true);
+}
+
+void PreRenderBatch::onFilterDisabled(FilterType filter) {
+    onFilterToggle(filter, false);
+}
+
+void PreRenderBatch::onFilterToggle(FilterType filter, const bool state) {
+    OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
+    OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
+
+    for (PreRenderOperator* op : hdrBatch) {
+        if (op != nullptr && filter == op->operatorType()) {
+            op->onToggle(state);
+        }
+    }
+    for (PreRenderOperator* op : ldrBatch) {
+        if (op != nullptr && filter == op->operatorType()) {
+            op->onToggle(state);
+        }
+    }
+}
+
 void PreRenderBatch::prepare(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut) {
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
 
     for (PreRenderOperator* op : hdrBatch) {
-        if (op != nullptr && BitCompare(filterStack, to_U16(op->operatorType()))) {
+        if (op != nullptr) {
             op->prepare(camera, bufferInOut);
         }
     }
     for (PreRenderOperator* op : ldrBatch) {
-        if (op != nullptr && BitCompare(filterStack, to_U16(op->operatorType()))) {
+        if (op != nullptr) {
             op->prepare(camera, bufferInOut);
         }
     }

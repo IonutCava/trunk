@@ -46,8 +46,17 @@ class DoFPreRenderOperator final : public PreRenderOperator {
     void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
+    inline F32 focalDepth() const { return _focalDepth; }
+    void focalDepth(const F32 val);
+
+    inline bool autoFocus() const { return _autoFocus; }
+    void autoFocus(const bool state);
+
    private:
      ShaderProgram_ptr _dofShader;
+     PushConstants _constants;
+     F32 _focalDepth;
+     bool _autoFocus;
 };
 
 };  // namespace Divide

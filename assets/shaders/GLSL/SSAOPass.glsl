@@ -87,21 +87,26 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texSSAO;
 //b - ssao
 layout(location = TARGET_EXTRA) out vec4 _output;
 
+uniform bool passThrough = false;
+
 void main() {
 #   define _colourOut (_output.b)
+    if (!passThrough) {
+        vec2 texelSize = 1.0 / vec2(textureSize(texSSAO, 0));
 
-    vec2 texelSize = 1.0 / vec2(textureSize(texSSAO, 0));
+        const int end = int(BLUR_SIZE / 2);
+        const int start = int(end * -1);
 
-    const int end = int(BLUR_SIZE / 2);
-    const int start = int(end * -1);
-
-    float colourOut = 0.0;
-    for (int x = start; x < end; ++x) {
-        for (int y = start; y < end; ++y) {
-            vec2 offset = vec2(float(x), float(y)) * texelSize;
-            colourOut += texture(texSSAO, VAR._texCoord + offset).r;
+        float colourOut = 0.0;
+        for (int x = start; x < end; ++x) {
+            for (int y = start; y < end; ++y) {
+                vec2 offset = vec2(float(x), float(y)) * texelSize;
+                colourOut += texture(texSSAO, VAR._texCoord + offset).r;
+            }
         }
-    }
 
-    _colourOut = colourOut / float(BLUR_SIZE * BLUR_SIZE);
+        _colourOut = colourOut / float(BLUR_SIZE * BLUR_SIZE);
+    } else {
+        _colourOut = 1.0f;
+    }
 }

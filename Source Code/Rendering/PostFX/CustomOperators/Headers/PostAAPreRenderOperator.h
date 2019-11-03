@@ -49,13 +49,19 @@ class PostAAPreRenderOperator final : public PreRenderOperator {
     void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
+    inline U8 aaSamples() const { return _postAASamples; }
+    void setAASamples(U8 postAASamples);
+
+    inline void useSMAA(const bool state);
+    inline bool usesSMAA() const { return _useSMAA; }
+
    private:
-    I32 _idleCount;
-    bool _useSMAA;
-    I32 _postAASamples;
+    PushConstants _fxaaConstants;
     ShaderProgram_ptr _fxaa;
     ShaderProgram_ptr _smaa;
-    PushConstants _fxaaConstants;
+    Pipeline* _aaPipeline;
+    U8 _postAASamples;
+    bool _useSMAA;
 };
 
 };  // namespace Divide

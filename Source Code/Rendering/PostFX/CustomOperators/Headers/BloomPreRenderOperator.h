@@ -50,6 +50,12 @@ class BloomPreRenderOperator : public PreRenderOperator {
     void reshape(U16 width, U16 height) final;
     TextureData getDebugOutput() const;
 
+    inline F32 factor() const { return _bloomFactor; }
+    void factor(F32 val);
+
+    inline F32 luminanceThreshold() const { return _bloomThreshold; }
+    void luminanceThreshold(F32 val);
+
    private:
     RenderTargetHandle _bloomOutput;
     RenderTargetHandle _bloomBlurBuffer[2];
@@ -60,8 +66,10 @@ class BloomPreRenderOperator : public PreRenderOperator {
     Pipeline* _bloomCalcPipeline;
     Pipeline* _bloomApplyPipeline;
     PushConstants _bloomApplyConstants;
+    PushConstants _bloomCalcConstants;
 
     F32 _bloomFactor;
+    F32 _bloomThreshold;
 };
 
 };  // namespace Divide

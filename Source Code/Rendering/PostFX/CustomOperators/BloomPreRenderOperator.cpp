@@ -7,6 +7,7 @@
 
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
@@ -17,7 +18,8 @@ namespace Divide {
 
 BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_BLOOM),
-      _bloomFactor(0.0f)
+      _bloomFactor(0.8f),
+      _bloomThreshold(0.75f)
 {
     vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
 
@@ -79,6 +81,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
 
     pipelineDescriptor._shaderProgramHandle = _bloomApply->getGUID();
     _bloomApplyPipeline = _context.newPipeline(pipelineDescriptor);
+
+    factor(_context.context().config().rendering.postFX.bloomFactor);
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator() {
@@ -88,7 +92,7 @@ BloomPreRenderOperator::~BloomPreRenderOperator() {
 }
 
 void BloomPreRenderOperator::idle(const Configuration& config) {
-    _bloomFactor = config.rendering.postFX.bloomFactor;
+    ACKNOWLEDGE_UNUSED(config);
 }
 
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {
@@ -99,6 +103,17 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     _bloomOutput._rt->resize(w, h);
     _bloomBlurBuffer[0]._rt->resize(width, height);
     _bloomBlurBuffer[1]._rt->resize(width, height);
+}
+
+void BloomPreRenderOperator::factor(F32 val) {
+    _bloomFactor = val;
+    _bloomApplyConstants.set("bloomFactor", GFX::PushConstantType::FLOAT, _bloomFactor);
+    _context.context().config().rendering.postFX.bloomFactor = val;
+}
+
+void BloomPreRenderOperator::luminanceThreshold(F32 val) {
+    _bloomThreshold = val;
+    _bloomCalcConstants.set("luminanceThreshold", GFX::PushConstantType::FLOAT, _bloomThreshold);
 }
 
 void BloomPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
@@ -120,6 +135,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomCalcPipeline });
+    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _bloomCalcConstants });
 
      // Step 1: generate bloom
 
@@ -159,11 +175,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomApplyPipeline });
-
-    _bloomApplyConstants.set("bloomFactor", GFX::PushConstantType::FLOAT, _bloomFactor);
-    GFX::SendPushConstantsCommand pushConstantsCommand;
-    pushConstantsCommand._constants = _bloomApplyConstants;
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _bloomApplyConstants });
 
     beginRenderPassCmd._target = screen._targetID;
     beginRenderPassCmd._descriptor = _screenOnlyDraw;

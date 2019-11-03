@@ -697,7 +697,10 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation) const {
         Attorney::EditorComponentSceneGraphNode::saveToXML(*editorComponent, pt);
     }
 
-    write_xml(((sceneLocation + "/nodes/").c_str() + parent()->name() + "_" + name() + ".xml").c_str(), pt, std::locale(), settings);
+    stringImpl targetFile = sceneLocation + "/nodes/";
+    targetFile.append(parent()->name() + "_");
+    targetFile.append(name() + ".xml");
+    write_xml(targetFile.c_str(), pt, std::locale(), settings);
 
     forEachChild([&sceneLocation](const SceneGraphNode* child, I32 /*childIdx*/){
         child->saveToXML(sceneLocation);

@@ -19,6 +19,9 @@ class PreRenderBatch {
     void execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut);
     void reshape(U16 width, U16 height);
 
+    void onFilterEnabled(FilterType filter);
+    void onFilterDisabled(FilterType filter);
+
     TextureData getOutput();
 
     RenderTargetHandle inputRT() const;
@@ -61,6 +64,7 @@ class PreRenderBatch {
         return FilterSpace::FILTER_SPACE_HDR;
     }
 
+    void onFilterToggle(FilterType type, const bool state);
   private:
     typedef vector<PreRenderOperator*> OperatorBatch;
     OperatorBatch _operators[to_base(FilterSpace::COUNT)];

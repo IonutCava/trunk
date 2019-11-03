@@ -31,4 +31,7 @@ TextureData PreRenderOperator::getDebugOutput() const {
     return TextureData(0u, 0u, TextureType::COUNT);
 };
 
+void PreRenderOperator::onToggle(const bool state) {
+    ACKNOWLEDGE_UNUSED(state);
+}
 }; //namespace Divide

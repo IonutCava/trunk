@@ -57,6 +57,7 @@ class NOINITVTABLE PreRenderOperator {
 
     virtual TextureData getDebugOutput() const;
 
+    virtual void onToggle(const bool state);
    protected:
     GFXDevice& _context;
 
