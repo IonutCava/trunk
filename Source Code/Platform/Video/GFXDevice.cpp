@@ -1607,28 +1607,15 @@ void GFXDevice::updateCullCount(const RenderPass::BufferData& bufferData, GFX::C
 
 #pragma region Drawing functions
 void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const {
-    GFX::DrawTextCommand drawTextCommand;
-    drawTextCommand._batch = batch;
-    drawText(drawTextCommand, bufferInOut);
+    drawText(GFX::DrawTextCommand{ batch }, bufferInOut);
 }
 
 void GFXDevice::drawText(const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) const {
-    GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = _textRenderPipeline;
-    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-
-    GFX::SendPushConstantsCommand pushConstantsCommand;
-    pushConstantsCommand._constants = _textRenderConstants;
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-
-    GFX::PushCameraCommand pushCameraCommand;
-    pushCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
-    GFX::EnqueueCommand(bufferInOut, pushCameraCommand);
-    
-    GFX::EnqueueCommand(bufferInOut, cmd);
-
-    GFX::PopCameraCommand popCameraCommand;
-    GFX::EnqueueCommand(bufferInOut, popCameraCommand);
+    GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
+        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _textRenderPipeline });
+        GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _textRenderConstants });
+        GFX::EnqueueCommand(bufferInOut, cmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch) {
@@ -1657,35 +1644,23 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     beginDebugScopeCmd._scopeName = "Draw Fullscreen Texture";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    GFX::PushCameraCommand pushCameraCommand;
-    pushCameraCommand._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot();
-    GFX::EnqueueCommand(bufferInOut, pushCameraCommand);
-
-    GFX::BindPipelineCommand bindPipelineCmd;
-    bindPipelineCmd._pipeline = _DrawFSTexturePipeline;
-    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _DrawFSTexturePipeline });
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    GFX::SetViewportCommand viewportCommand;
-    viewportCommand._viewport.set(viewport);
-    GFX::EnqueueCommand(bufferInOut, viewportCommand);
+    GFX::EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ viewport });
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set("convertToSRGB", GFX::PushConstantType::UINT, convertToSrgb ? 1u : 0u);
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     // Blit render target to screen
-    GFX::DrawCommand drawCmd = { triangleCmd };
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
-
-    GFX::PopCameraCommand popCameraCommand;
-    GFX::EnqueueCommand(bufferInOut, popCameraCommand);
-
-    GFX::EndDebugScopeCommand endDebugScopeCommand;
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+    GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 #pragma endregion
 
@@ -1709,8 +1684,7 @@ void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffe
             padding,
             bufferInOut);
 
-        GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+        GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
     }
 }
 

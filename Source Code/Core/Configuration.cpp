@@ -72,7 +72,8 @@ Configuration::Configuration() : XML::IXMLSerializable()
     rendering.postFX.enableBloom = false;
     rendering.postFX.bloomFactor = 0.4f;
     rendering.postFX.enableSSAO = false;
-
+    rendering.postFX.ssaoRadius = 0.5f;
+    rendering.postFX.ssaoPower = 2.0f;
     rendering.shadowMapping.enabled = true;
     rendering.shadowMapping.shadowMapResolution = 512;
     rendering.shadowMapping.msaaSamples = 0;
@@ -157,7 +158,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.enableBloom);
         GET_PARAM(rendering.postFX.bloomFactor);
         GET_PARAM(rendering.postFX.enableSSAO);
-
+        GET_PARAM(rendering.postFX.ssaoRadius);
+        GET_PARAM(rendering.postFX.ssaoPower);
         GET_PARAM(rendering.shadowMapping.enabled);
         GET_PARAM(rendering.shadowMapping.shadowMapResolution);
         GET_PARAM(rendering.shadowMapping.msaaSamples);
@@ -242,6 +244,8 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(rendering.postFX.enableBloom);
     PUT_PARAM(rendering.postFX.bloomFactor);
     PUT_PARAM(rendering.postFX.enableSSAO);
+    PUT_PARAM(rendering.postFX.ssaoRadius);
+    PUT_PARAM(rendering.postFX.ssaoPower);
 
     PUT_PARAM(rendering.shadowMapping.enabled);
     PUT_PARAM(rendering.shadowMapping.shadowMapResolution);

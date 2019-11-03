@@ -19,39 +19,36 @@ void finish(Task& task) {
         if (task._parent != nullptr) {
             finish(*task._parent);
         }
-#if defined(DEBUG_TASK_SYSTEM)
-        task._childTasks.clear();
-#endif
     }
-}
-
-bool run(Task& task, TaskPriority priority, bool wait, DELEGATE_CBK<void>&& onCompletionFunction) {
-
-    while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
-        if (wait) {
-            TaskYield(task);
-        } else {
-            return false;
-        }
-    }
-    
-    if (task._callback) {
-        task._callback(task);
-    }
-
-    finish(task);
-    task._parentPool->taskCompleted(task._id, priority, std::move(onCompletionFunction));
-    return true;
 }
 
 Task& Start(Task& task, TaskPriority priority, DELEGATE_CBK<void>&& onCompletionFunction) {
-    if (!task._parentPool->enqueue([&task, priority, comp{ std::forward<decltype(onCompletionFunction)>(onCompletionFunction) }](bool wait) mutable {
-                                        return run(task, priority, wait, std::move(comp));
-                                    },
-                                    priority))
-    {
+    const bool hasOnCompletionFunction = (priority != TaskPriority::REALTIME && onCompletionFunction);
+
+    auto run = [&task, priority, hasOnCompletionFunction](bool wait) {
+        while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
+            if (wait) {
+                TaskYield(task);
+            } else {
+                return false;
+            }
+        }
+
+        if (task._callback) {
+            task._callback(task);
+        }
+
+        finish(task);
+        task._parentPool->taskCompleted(task._id, priority, hasOnCompletionFunction);
+        return true;
+    };
+
+    if (!task._parentPool->enqueue(run, priority, task._id, std::forward<DELEGATE_CBK<void>>(onCompletionFunction))) {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
-        run(task, priority, true, std::move(onCompletionFunction));
+        run(true);
+        if (hasOnCompletionFunction) {
+            onCompletionFunction();
+        }
     }
 
     return task;

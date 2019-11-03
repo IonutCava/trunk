@@ -171,13 +171,11 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     static size_t writeOffsetBytes = 0;
     static size_t prevWriteOffsetBytes = 0;
 
-    size_t dataSize = nverts * sizeof(FONSvert);
+    const size_t dataSize = nverts * sizeof(FONSvert);
 
     // Not enough space left in the buffer. Start from the beginning
     if (prevWriteOffsetBytes > writeOffsetBytes) {
-        { //Wait
-            g_lockManager->Wait(true);
-        }
+        g_lockManager->Wait(true);
     }
 
     if (writeOffsetBytes + dataSize > GLFONS_VB_BUFFER_SIZE) {

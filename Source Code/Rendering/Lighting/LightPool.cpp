@@ -28,6 +28,10 @@ std::array<U8, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {
     to_U8(ShaderProgram::TextureUsage::SHADOW_CUBE)
 }};
 
+namespace {
+    LightPool::LightList g_sortedLightsContainer = {};
+};
+
 bool LightPool::_debugDraw = false;
 
 LightPool::LightPool(Scene& parentScene, PlatformContext& context)
@@ -141,6 +145,8 @@ bool LightPool::clear() {
     if (!_init) {
         return true;
     }
+    g_sortedLightsContainer.clear();
+
     return _lights.empty();
 }
 
@@ -259,7 +265,7 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
 void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     U8 stageIndex = to_U8(stage);
 
-    LightVec& sortedLights = _sortedLights[stageIndex];
+    LightList& sortedLights = _sortedLights[stageIndex];
     sortedLights.resize(0);
     {
         SharedLock r_lock(_lightLock);
@@ -348,22 +354,22 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     _sortedShadowLights.resize(0);
     _sortedShadowLights.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-    LightVec sortedLights = {};
+    g_sortedLightsContainer.resize(0);
     {
         SharedLock r_lock(_lightLock);
         size_t totalLightCount = 0;
         for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
             totalLightCount += _lights[i].size();
         }
-        sortedLights.reserve(totalLightCount);
+        g_sortedLightsContainer.reserve(totalLightCount);
 
         for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-            sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
+            g_sortedLightsContainer.insert(eastl::cend(g_sortedLightsContainer), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
         }
     }
 
-    eastl::sort(eastl::begin(sortedLights),
-                eastl::end(sortedLights),
+    eastl::sort(eastl::begin(g_sortedLightsContainer),
+                eastl::end(g_sortedLightsContainer),
                 [&eyePos](Light* a, Light* b) {
                     // directional lights first
                     if (a->getLightType() != b->getLightType()) {
@@ -372,7 +378,7 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
                     return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
                 });
 
-    for (Light* light : sortedLights) {
+    for (Light* light : g_sortedLightsContainer) {
         light->shadowIndex(-1);
         if (light->enabled() && light->castsShadows() && _lightTypeState[to_base(light->getLightType())]) {
             if (_sortedShadowLights.size() < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {

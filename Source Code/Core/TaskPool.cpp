@@ -62,13 +62,17 @@ void TaskPool::onThreadCreate(const std::thread::id& threadID) {
     }
 }
 
-bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority) {
+bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE_CBK<void>&& onCompletionFunction) {
     _runningTaskCount.fetch_add(1);
 
     if (priority == TaskPriority::REALTIME) {
         WAIT_FOR_CONDITION(task(true));
-
+        if (onCompletionFunction) {
+            onCompletionFunction();
+        }
         return true;
+    } else if (onCompletionFunction) {
+        _taskCallbacks[taskIndex].push_back(onCompletionFunction);
     }
 
     return _poolImpl->addTask(std::move(task));
@@ -120,14 +124,9 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     _poolImpl->join();
 }
 
-void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, DELEGATE_CBK<void>&& onCompletionFunction) {
-    if (onCompletionFunction) {
-        if (priority == TaskPriority::REALTIME) {
-            onCompletionFunction();
-        } else {
-            _taskCallbacks[taskIndex].push_back(onCompletionFunction);
-            _threadedCallbackBuffer.enqueue(taskIndex);
-        }
+void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCompletionFunction) {
+    if (hasOnCompletionFunction) {
+        _threadedCallbackBuffer.enqueue(taskIndex);
     }
 
     _runningTaskCount.fetch_sub(1);
@@ -150,12 +149,6 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& th
         }
     } while (task == nullptr);
 
-#if defined(DEBUG_TASK_SYSTEM)
-    task->_debugName = debugName;
-    if (parentTask != nullptr) {
-        parentTask->_childTasks.push_back(task);
-    }
-#endif
     task->_parent = parentTask;
     task->_parentPool = this;
     task->_callback = threadedFunction;

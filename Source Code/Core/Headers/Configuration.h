@@ -124,6 +124,8 @@ public:
             bool enableBloom = false;
             F32 bloomFactor = 0.f;
             bool enableSSAO = false;
+            F32 ssaoRadius = 0.5f;
+            F32 ssaoPower = 2.0f;
         } postFX = {};
         struct ShadowMapping {
             bool enabled = true;

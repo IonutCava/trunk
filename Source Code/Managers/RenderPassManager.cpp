@@ -24,7 +24,7 @@
 namespace Divide {
 
     namespace {
-        typedef std::set<U32> SetType;
+        using SetType = eastl::set<U32, eastl::less<U32>>;
         thread_local SetType g_usedIndices;
         thread_local U32 g_freeCounter = 0;
         thread_local RenderQueue::SortedQueues g_sortedQueues;

@@ -83,10 +83,9 @@ public:
     friend bool StopRequested(const Task& task);
     friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread, const char* debugName);
 
-    friend bool run(Task& task, TaskPriority priority, bool wait, DELEGATE_CBK<void>&& onCompletionFunction);
-    void taskCompleted(U32 taskIndex, TaskPriority priority, DELEGATE_CBK<void>&& onCompletionFunction);
+    void taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCompletionFunction);
     
-    bool enqueue(PoolTask&& task, TaskPriority priority);
+    bool enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE_CBK<void>&& onCompletionFunction);
     bool stopRequested() const noexcept;
 
     void runCbkAndClearTask(U32 taskIdentifier);

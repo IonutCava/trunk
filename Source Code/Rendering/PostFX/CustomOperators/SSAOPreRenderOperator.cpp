@@ -5,6 +5,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
@@ -122,9 +124,9 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     
     _ssaoGenerateConstants.set("sampleKernel", GFX::PushConstantType::VEC3, kernel);
     _ssaoBlurConstants.set("passThrough", GFX::PushConstantType::BOOL, false);
-
-    radius(0.5f);
-    power(2.0f);
+    
+    radius(context.context().config().rendering.postFX.ssaoRadius);
+    power(context.context().config().rendering.postFX.ssaoPower);
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator() 
@@ -147,11 +149,13 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
 void SSAOPreRenderOperator::radius(const F32 val) {
     _radius = val;
     _ssaoGenerateConstants.set("radius", GFX::PushConstantType::FLOAT, _radius);
+    _context.context().config().rendering.postFX.ssaoRadius = val;
 }
 
 void SSAOPreRenderOperator::power(const F32 val) {
     _power = val;
     _ssaoGenerateConstants.set("power", GFX::PushConstantType::FLOAT, _power);
+    _context.context().config().rendering.postFX.ssaoPower = val;
 }
 
 void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {

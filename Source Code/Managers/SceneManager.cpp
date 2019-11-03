@@ -539,14 +539,8 @@ void SceneManager::postRenderAllPasses(const Camera& playerCamera) {
 
 void SceneManager::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     //Set a 2D camera for rendering
-    GFX::SetCameraCommand setCameraCommand = {
-        Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()
-    };
-    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
-
-    GFX::SetViewportCommand viewportCommand;
-    viewportCommand._viewport.set(targetViewport);
-    GFX::EnqueueCommand(bufferInOut, viewportCommand);
+    GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
+    GFX::EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ targetViewport });
 
     Attorney::SceneManager::drawCustomUI(getActiveScene(), targetViewport, bufferInOut);
 }

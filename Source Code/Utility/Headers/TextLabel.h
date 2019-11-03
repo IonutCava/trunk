@@ -143,7 +143,7 @@ struct TextElement {
 };
 
 struct TextElementBatch {
-    typedef vectorEASTL<TextElement> BatchType;
+    using BatchType = vectorEASTLFast<TextElement>;
 
     TextElementBatch() noexcept
     {

@@ -167,7 +167,7 @@ END_COMMAND(SendPushConstantsCommand);
 BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS);
     static_assert(sizeof(GenericDrawCommand) == 32, "Wrong command size! May cause performance issues. Disable assert to continue anyway.");
 
-    DrawCommand() {}
+    DrawCommand() = default;
     DrawCommand(size_t reserveSize) { _drawCommands.reserve(reserveSize); }
     DrawCommand(const GenericDrawCommand& cmd) : _drawCommands({ cmd }) {}
     DrawCommand(const vectorEASTLFast<GenericDrawCommand>& cmds) : _drawCommands(cmds) {}
@@ -179,6 +179,9 @@ END_COMMAND(DrawCommand);
 
 
 BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT);
+    SetViewportCommand() = default;
+    SetViewportCommand(const Rect<I32>& viewport) : _viewport(viewport) {}
+
     Rect<I32> _viewport;
 
     stringImpl toString(U16 indent) const final;
@@ -312,6 +315,9 @@ BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE);
 END_COMMAND(EndDebugScopeCommand);
 
 BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT);
+    DrawTextCommand() = default;
+    DrawTextCommand(const TextElementBatch& batch) : _batch(batch) {}
+
     TextElementBatch _batch;
 
     stringImpl toString(U16 indent) const final;

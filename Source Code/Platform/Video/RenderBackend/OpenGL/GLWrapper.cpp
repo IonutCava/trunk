@@ -874,29 +874,35 @@ void GL_API::drawText(const TextElementBatch& batch) {
 
     pushDebugMessage("OpenGL render text start!", 2);
 
-    BlendingProperties blend = {
-        BlendProperty::SRC_ALPHA,
-        BlendProperty::INV_SRC_ALPHA,
-        BlendOperation::ADD
-    };
-    blend._enabled = true;
+    getStateTracker().setBlending(0,
+        BlendingProperties{
+            BlendProperty::SRC_ALPHA,
+            BlendProperty::INV_SRC_ALPHA,
+            BlendOperation::ADD,
 
-    getStateTracker().setBlending(0, blend);
+            BlendProperty::ONE,
+            BlendProperty::ZERO,
+            BlendOperation::COUNT,
 
+            true //enabled
+        }
+    );
     getStateTracker().setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
-    I32 width = _context.renderingResolution().w;
-    I32 height = _context.renderingResolution().h;
+
+    const I32 width = _context.renderingResolution().w;
+    const I32 height = _context.renderingResolution().h;
         
     vec_size drawCount = 0;
+    size_t previousStyle = 0;
 
     fonsClearState(_fonsContext);
-    size_t previousStyle = 0;
     for (const TextElement& entry : batch())
     {
         if (previousStyle != entry._textLabelStyleHash) {
             const TextLabelStyle& textLabelStyle = TextLabelStyle::get(entry._textLabelStyleHash);
+            const UColour4& colour = textLabelStyle.colour();
             // Retrieve the font from the font cache
-            I32 font = getFont(TextLabelStyle::fontName(textLabelStyle.font()));
+            const I32 font = getFont(TextLabelStyle::fontName(textLabelStyle.font()));
             // The font may be invalid, so skip this text label
             if (font != FONS_INVALID) {
                 fonsSetFont(_fonsContext, font);
@@ -905,18 +911,13 @@ void GL_API::drawText(const TextElementBatch& batch) {
             fonsSetBlur(_fonsContext, textLabelStyle.spacing());
             fonsSetAlign(_fonsContext, textLabelStyle.alignFlag());
             fonsSetSize(_fonsContext, to_F32(textLabelStyle.fontSize()));
-            fonsSetColour(_fonsContext,
-                          textLabelStyle.colour().r,
-                          textLabelStyle.colour().g,
-                          textLabelStyle.colour().b,
-                          textLabelStyle.colour().a);
+            fonsSetColour(_fonsContext, colour.r, colour.g, colour.b, colour.a);
             previousStyle = entry._textLabelStyleHash;
         }
 
-        F32 textX = entry._position.d_x.d_scale * width + entry._position.d_x.d_offset;
-        F32 textY = entry._position.d_y.d_scale * height + entry._position.d_y.d_offset;
+        const F32 textX = entry._position.d_x.d_scale * width + entry._position.d_x.d_offset;
+        const F32 textY = height - (entry._position.d_y.d_scale * height + entry._position.d_y.d_offset);
 
-        textY = height - textY;
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
         
@@ -1455,9 +1456,9 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
     size_t texCount = textureData.textures().size();
     if (texCount > k_textureThreshold && false) {
         GLushort offset = 0;
-        vector<TextureType> types;
-        vector<GLuint> handles;
-        vector<GLuint> samplers;
+        vectorEASTL<TextureType> types;
+        vectorEASTL<GLuint> handles;
+        vectorEASTL<GLuint> samplers;
         
         types.reserve(texCount);
         handles.reserve(texCount);
@@ -1471,11 +1472,14 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
 
         bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
     } else {
+        GLStateTracker& stateTracker = getStateTracker();
         for (const auto& data : textureData.textures()) {
-            bound = getStateTracker().bindTexture(static_cast<GLushort>(data.first),
-                                                  data.second.type(),
-                                                  data.second.textureHandle(),
-                                                  data.second.samplerHandle()) || bound;
+            const TextureData& texData = data.second;
+
+            bound = stateTracker.bindTexture(static_cast<GLushort>(data.first),
+                                             texData.type(),
+                                             texData.textureHandle(),
+                                             texData.samplerHandle()) || bound;
         }
     }
 

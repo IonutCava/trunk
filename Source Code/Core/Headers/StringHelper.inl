@@ -65,8 +65,12 @@ Split(const char* input, char delimiter, T_vec& elems) {
 
 template<typename T_str>
 vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>& elems) {
+    assert(input != nullptr);
+
     elems.resize(0);
-    if (input != nullptr && strlen(input) > 0) {
+
+    const T_str original(input);
+    if (!original.empty()) {
         {
             size_t i = 0;
             const char* o = input;
@@ -75,11 +79,15 @@ vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>&
             input = o;
         }
 
-        stringImpl item;
-        istringstreamImpl ss(input);
-        while (std::getline(ss, item, delimiter)) {
-            elems.emplace_back(item.c_str());
+        T_str::const_iterator start = std::begin(original);
+        T_str::const_iterator end = std::end(original);
+        T_str::const_iterator next = std::find(start, end, delimiter);
+        while (next != end) {
+            elems.emplace_back(start, next);
+            start = next + 1;
+            next = std::find(start, end, delimiter);
         }
+        elems.emplace_back(start, next);
     }
 
     return elems;

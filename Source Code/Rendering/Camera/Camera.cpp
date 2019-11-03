@@ -421,15 +421,14 @@ bool Camera::updateViewMatrix() {
 
     _data._orientation.normalize();
 
+    //_target = -zAxis + _data._eye;
+
     // Reconstruct the view matrix.
-    vec3<F32> xAxis = _data._orientation.xAxis();
-    vec3<F32> yAxis = _data._orientation.yAxis();
-    vec3<F32> zAxis = _data._orientation.zAxis();
-
-    vec3<F32> target = -zAxis + _data._eye;
-
     _data._viewMatrix.set(GetMatrix(_data._orientation));
-    _data._viewMatrix.setRow(3, -xAxis.dot(_data._eye), -yAxis.dot(_data._eye), -zAxis.dot(_data._eye), 1.0f);
+    _data._viewMatrix.setRow(3,
+        -_data._orientation.xAxis().dot(_data._eye),
+        -_data._orientation.yAxis().dot(_data._eye),
+        -_data._orientation.zAxis().dot(_data._eye), 1.0f);
     _data._orientation.getEuler(_euler);
     _euler = Angle::to_DEGREES(_euler);
     // Extract the pitch angle from the view matrix.

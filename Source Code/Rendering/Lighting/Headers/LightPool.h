@@ -81,7 +81,7 @@ class LightPool : public SceneComponent,
           }
       };
   public:
-    typedef vectorEASTL<Light*> LightList;
+    using LightList = vectorEASTL<Light*>;
 
     explicit LightPool(Scene& parentScene, PlatformContext& context);
     ~LightPool();
@@ -145,7 +145,6 @@ class LightPool : public SceneComponent,
     
   protected:
     typedef std::array<Light::ShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LightShadowProperties;
-    typedef vectorEASTL<Light*> LightVec;
 
     friend class SceneManager;
     void generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
@@ -173,14 +172,14 @@ class LightPool : public SceneComponent,
      };
 
     std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount;
-    std::array<LightVec, to_base(RenderStage::COUNT)> _sortedLights;
+    std::array<LightList, to_base(RenderStage::COUNT)> _sortedLights;
 
     std::array<BufferData, to_base(RenderStage::COUNT)> _sortedLightProperties;
 
     ShaderBuffer* _lightShaderBuffer;
     ShaderBuffer* _shadowBuffer;
 
-    LightVec _sortedShadowLights;
+    LightList _sortedShadowLights;
     ShadowProperties _shadowBufferData;
 
     mutable SharedMutex _lightLock;

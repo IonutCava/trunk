@@ -38,8 +38,6 @@
 
 namespace Divide {
 
-//#define DEBUG_TASK_SYSTEM
-
 struct Task;
 class TaskPool;
 
@@ -50,16 +48,12 @@ enum class TaskPriority : U8 {
 };
 
 struct alignas(64) Task {
-    U32 _id = 0;
-    Task* _parent = nullptr;
+    DELEGATE_CBK<void, Task&> _callback;
     TaskPool* _parentPool = nullptr;
+    Task* _parent = nullptr;
+    U32 _id = 0;
     std::atomic_ushort _unfinishedJobs;
     std::atomic_bool _stopRequested = false;
-    DELEGATE_CBK<void, Task&> _callback;
-#if defined(DEBUG_TASK_SYSTEM)
-    eastl::string _debugName = "";
-    std::vector<Task*> _childTasks;
-#endif
 };
 
 Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, DELEGATE_CBK<void>&& onCompletionFunction = {});
