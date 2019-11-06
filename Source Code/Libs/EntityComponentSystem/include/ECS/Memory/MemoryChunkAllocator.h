@@ -125,6 +125,9 @@ namespace ECS { namespace Memory {
 				inline OBJECT_TYPE& operator*() const { return *m_CurrentObject; }
 				inline OBJECT_TYPE* operator->() const { return *m_CurrentObject; }
 
+                // ugh
+                inline OBJECT_TYPE* ptr() { return *m_CurrentObject; }
+
 				inline bool operator==(iterator& other) { return ((this->m_CurrentChunk == other.m_CurrentChunk) && (this->m_CurrentObject == other.m_CurrentObject));
 				}
 				inline bool operator!=(iterator& other) 

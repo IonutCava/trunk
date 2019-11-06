@@ -517,7 +517,8 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     descriptor.onLoadCallback(registerTerrain);
     descriptor.flag(ter->active());
     descriptor.waitForReady(false);
-    CreateResource<Terrain>(_resCache, descriptor);
+    auto ret = CreateResource<Terrain>(_resCache, descriptor);
+    ACKNOWLEDGE_UNUSED(ret);
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {
@@ -607,7 +608,8 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
     waterDescriptor.threaded(true);
     waterDescriptor.onLoadCallback(registerWater);
     waterDescriptor.waitForReady(false);
-    CreateResource<WaterPlane>(_resCache, waterDescriptor);
+    auto ret = CreateResource<WaterPlane>(_resCache, waterDescriptor);
+    ACKNOWLEDGE_UNUSED(ret);
 }
 
 SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {

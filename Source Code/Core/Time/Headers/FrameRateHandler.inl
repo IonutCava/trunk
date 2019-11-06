@@ -51,6 +51,13 @@ inline F32 FrameRateHandler::frameTime() const {
     return 1000.0f / frameRate();
 }
 
+inline std::pair<F32, F32> FrameRateHandler::frameRateAndTime() const {
+    return {
+        frameRate(),
+        frameTime()
+    };
+}
+
 inline F32 FrameRateHandler::averageFrameRate() const {
     return _averageFPS / _frameCount;
 }

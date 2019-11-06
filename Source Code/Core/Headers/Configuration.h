@@ -53,40 +53,40 @@ public:
         /// If false, materials recompute shader source code from shader atoms
         /// If true, clear shader cache to apply changes to shader atom source code
         I32 flushCommandBuffersOnFrame = -1;
-        bool enableRenderAPIDebugging;
-        bool enableDebugMsgGroups;
-        bool useGeometryCache;
-        bool useVegetationCache;
-        bool useShaderBinaryCache;
-        bool useShaderTextCache;
-        bool enableTreeInstances;
-        bool enableGrassInstances;
-        stringImpl memFile;
+        bool enableRenderAPIDebugging = false;
+        bool enableDebugMsgGroups = false;
+        bool useGeometryCache = true;
+        bool useVegetationCache = true;
+        bool useShaderBinaryCache = true;
+        bool useShaderTextCache = true;
+        bool enableTreeInstances = true;
+        bool enableGrassInstances = true;
+        stringImpl memFile = "";
         struct Mesh {
-            bool playAnimations;
-        } mesh;
-    } debug;
+            bool playAnimations = true;
+        } mesh = {};
+    } debug = {};
     
-    stringImpl language;
+    stringImpl language = "";
     
     struct Runtime {
-        U8 targetDisplay;
-        U8 targetRenderingAPI;
-        bool useFixedTimestep;
-        I16 maxWorkerThreads;
-        U8   windowedMode;
-        bool windowResizable;
-        bool enableVSync;
-        bool adaptiveSync;
-        I16  frameRateLimit;
+        U8 targetDisplay = 0;
+        U8 targetRenderingAPI = 0;
+        bool useFixedTimestep = true;
+        I16 maxWorkerThreads = 8;
+        U8   windowedMode = 0;
+        bool windowResizable = false;
+        bool enableVSync = true;
+        bool adaptiveSync = false;
+        I16  frameRateLimit = -1;
         vec2<U16> splashScreenSize;
         vec2<U16> windowSize;
         vec2<U16> resolution;
         F32 simSpeed = 1.f;
-        F32 zNear;
-        F32 zFar;
-        U8  verticalFOV;
-    } runtime;
+        F32 zNear = 0.1f;
+        F32 zFar = 1000.0f;
+        U8  verticalFOV = 60u;
+    } runtime = {};
 
     struct GUI {
         struct CEGUI {
@@ -106,17 +106,17 @@ public:
     } gui = {};
 
     struct Rendering {
-        U8 msaaSamples;
-        U8 anisotropicFilteringLevel;
-        U8 reflectionResolutionFactor;
-        I32 terrainDetailLevel;
-        I32 terrainTextureQuality;
-        I32 numLightsPerScreenTile;
-        U8 lightThreadGroupSize;
-        bool enableFog;
-        F32 fogDensity;
-        vec3<F32> fogColour;
-        vec4<U16> lodThresholds;
+        U8 msaaSamples = 0;
+        U8 anisotropicFilteringLevel = 16;
+        U8 reflectionResolutionFactor = 1;
+        I32 terrainDetailLevel = 0;
+        I32 terrainTextureQuality = 0;
+        I32 numLightsPerScreenTile = 512;
+        U8 lightThreadGroupSize = 1;
+        bool enableFog = true;
+        F32 fogDensity = 1.0f;
+        vec3<F32> fogColour = {};
+        vec4<U16> lodThresholds = {};
         struct PostFX {
             stringImpl postAAType = "";
             U8 postAASamples = 0;

@@ -36,6 +36,7 @@ namespace {
 
 ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_PARTICLE_EMITTER),
+      _particleGPUBuffers{nullptr},
       _context(context),
       _drawImpostor(false),
       _particleStateBlockHash(0),

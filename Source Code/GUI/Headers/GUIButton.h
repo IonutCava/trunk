@@ -98,6 +98,7 @@ class GUIButton : public GUIElement {
     /// A pointer to a function to call if the button is pressed
     std::array<ButtonCallback, to_base(Event::COUNT)> _callbackFunction;
     std::array<AudioDescriptor_ptr, to_base(Event::COUNT)> _eventSound;
+    std::array<CEGUI::Event::Connection, to_base(Event::COUNT)> _connections;
 
     CEGUI::Window* _btnWindow;
 

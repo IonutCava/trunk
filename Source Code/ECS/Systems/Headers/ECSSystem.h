@@ -73,6 +73,8 @@ namespace Divide {
         ECS::ECSEngine& _engine;
         ECS::ComponentManager* _compManager;
         ECS::ComponentManager::ComponentContainer<U>* _container;
+
+        vectorEASTL<U*> _componentCache;
     };
 };
 

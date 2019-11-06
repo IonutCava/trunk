@@ -67,7 +67,7 @@ namespace {
 
     // Return true if the node type is capable of generating draw commands
     FORCE_INLINE bool generatesDrawCommands(SceneNodeType nodeType, ObjectType objType, bool &isTransformNodeOut) {
-        if (nodeType == SceneNodeType::TYPE_ROOT && nodeType == SceneNodeType::TYPE_TRIGGER) {
+        if (nodeType == SceneNodeType::TYPE_ROOT || nodeType == SceneNodeType::TYPE_TRIGGER) {
             isTransformNodeOut = false;
             return false;
         }

@@ -50,15 +50,9 @@ namespace Divide {
         void Update(F32 dt) final;
         void PostUpdate(F32 dt) final;
         void OnUpdateLoop() final;
-        void FrameEnded() final;
 
         bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) final;
         bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) final;
-
-    protected:
-        Task* _preUpdateTask = nullptr;
-        Task* _updateTask = nullptr;
-        Task* _postUpdateTask = nullptr;
     };
 };
 

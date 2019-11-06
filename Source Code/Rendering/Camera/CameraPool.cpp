@@ -22,9 +22,11 @@ SharedMutex Camera::s_cameraPoolLock;
 Camera::CameraPool Camera::s_cameraPool;
 
 void Camera::update(const U64 deltaTimeUS) {
+    const F32 deltaTimeS = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
+
     SharedLock r_lock(s_cameraPoolLock);
     for (CameraPool::value_type& it : s_cameraPool) {
-        it.second->updateInternal(deltaTimeUS);
+        it.second->updateInternal(deltaTimeUS, deltaTimeS);
     }
 }
 

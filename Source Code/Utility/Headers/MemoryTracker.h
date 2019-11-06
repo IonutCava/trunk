@@ -101,9 +101,7 @@ class MemoryTracker {
     ~MemoryTracker()
     {
         Ready = false;
-        bool leakDetected = false;
-        size_t sizeLeaked = 0;
-        Dump(leakDetected, sizeLeaked);
+        _allocations.clear();
     }
 
     inline void Add(void* p, size_t size, char const* file, size_t line) {

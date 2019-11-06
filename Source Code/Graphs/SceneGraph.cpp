@@ -180,9 +180,7 @@ bool SceneGraph::frameEnded(const FrameEvent& evt) {
     for (SceneGraphNode* node : _orderedNodeList) {
         node->frameEnded();
     }
-
-    GetECSEngine().FrameEnded();
-
+ 
     return true;
 }
 

@@ -357,6 +357,25 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vec4<T> &v) {
     b >> v.w;
     return b;
 }
+template <typename T>
+inline ByteBuffer& operator<<(ByteBuffer& b, Quaternion<T> const& q) {
+    b << q.X();
+    b << q.Y();
+    b << q.Z();
+    b << q.W();
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer& operator>>(ByteBuffer& b, Quaternion<T>& q) {
+    vec4<T> elems = {};
+    b >> elems.x; q.X(elems.x);
+    b >> elems.y; q.Y(elems.y);
+    b >> elems.z; q.Z(elems.z);
+    b >> elems.w; q.W(elems.w);
+    
+    return b;
+}
 
 template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, mat2<T> const &m) {

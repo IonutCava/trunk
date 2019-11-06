@@ -79,7 +79,7 @@ class WarScene : public Scene {
 
    private:
     GUIMessageBox* _infoBox;
-    vector<SceneGraphNode*> _lightNodes;
+    vector<TransformComponent*> _lightNodeTransforms;
     vector<std::pair<SceneGraphNode*, bool>> _lightNodes2;
     vector<SceneGraphNode*> _lightNodes3;
 

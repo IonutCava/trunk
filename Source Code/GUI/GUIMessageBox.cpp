@@ -23,7 +23,7 @@ GUIMessageBox::GUIMessageBox(U64 guiID,
     _parent->addChild(_msgBoxWindow);
     CEGUI::PushButton* confirmBtn =
         dynamic_cast<CEGUI::PushButton*>(_msgBoxWindow->getChild("ConfirmBtn"));
-    confirmBtn->subscribeEvent(
+    _confirmEvent = confirmBtn->subscribeEvent(
         CEGUI::PushButton::EventClicked,
         CEGUI::Event::Subscriber(&GUIMessageBox::onConfirm, this));
 

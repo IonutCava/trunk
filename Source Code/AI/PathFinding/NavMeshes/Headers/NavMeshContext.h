@@ -39,8 +39,13 @@ namespace Navigation {
 
 class rcContextDivide : public rcContext {
    public:
-    rcContextDivide(bool state) : rcContext(state) { resetTimers(); }
-    ~rcContextDivide() {}
+    explicit rcContextDivide(bool state) : rcContext(state)
+    {
+        _startTime.fill(0.0);
+        _accTime.fill(0);
+        resetTimers();
+    }
+    ~rcContextDivide() = default;
 
    private:
     /// Logs a message.
@@ -55,8 +60,8 @@ class rcContextDivide : public rcContext {
     I32 doGetAccumulatedTime(const rcTimerLabel /*label*/) const;
 
    private:
-    D64 _startTime[RC_MAX_TIMERS];
-    I32 _accTime[RC_MAX_TIMERS];
+    std::array<D64, RC_MAX_TIMERS> _startTime;
+    std::array<I32, RC_MAX_TIMERS> _accTime;
 };
 };  // namespace Navigation
 };  // namespace AI

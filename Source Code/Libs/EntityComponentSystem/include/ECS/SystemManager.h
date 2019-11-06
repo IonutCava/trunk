@@ -69,7 +69,6 @@ namespace ECS
         void PreUpdate(f32 dt_ms);
         void Update(f32 dt_ms);
         void PostUpdate(f32 dt_ms);
-        void FrameEnded();
 
         void OnUpdateLoop();
 	public:

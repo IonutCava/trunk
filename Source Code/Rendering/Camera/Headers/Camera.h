@@ -349,7 +349,7 @@ class Camera : public Resource {
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
     /// Inject mouse events
-    virtual void updateInternal(const U64 deltaTimeUS);
+    virtual void updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS);
 
     const char* getResourceTypeName() const override { return "Camera"; }
 

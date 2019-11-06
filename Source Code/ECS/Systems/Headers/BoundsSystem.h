@@ -48,7 +48,6 @@ namespace Divide {
         void PreUpdate(F32 dt) final;
         void Update(F32 dt) final;
         void PostUpdate(F32 dt) final;
-        void FrameEnded() final;
 
       protected:
         void onBoundsChanged(SceneGraphNode& sgn) const;

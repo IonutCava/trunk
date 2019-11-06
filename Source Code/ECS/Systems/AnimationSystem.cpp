@@ -48,15 +48,6 @@ namespace Divide {
         }
     }
 
-    void AnimationSystem::FrameEnded() {
-
-        auto comp = _container->begin();
-        auto compEnd = _container->end();
-        for (; comp != compEnd; ++comp) {
-            comp->FrameEnded();
-        }
-    }
-
     bool AnimationSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
         AnimationComponent* aComp = sgn.GetComponent<AnimationComponent>();
         if (aComp != nullptr && !aComp->saveCache(outputBuffer)) {

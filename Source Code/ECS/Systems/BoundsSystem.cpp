@@ -9,6 +9,7 @@ namespace Divide {
         : ECSSystem(parentEngine),
           PlatformContextComponent(context)
     {
+        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
     }
 
     BoundsSystem::~BoundsSystem()
@@ -28,10 +29,14 @@ namespace Divide {
     void BoundsSystem::PreUpdate(F32 dt) {
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
+        _componentCache.resize(0);
+
         auto bComp = _container->begin();
         auto bCompEnd = _container->end();
         for (;bComp != bCompEnd; ++bComp)
         {
+            _componentCache.push_back(bComp.ptr());
+
             SceneGraphNode& sgn = bComp->getSGN();
             if (Attorney::SceneNodeBoundsComponent::boundsChanged(sgn.getNode())) {
                 bComp->flagBoundingBoxDirty(false);
@@ -46,9 +51,8 @@ namespace Divide {
     void BoundsSystem::Update(F32 dt) {
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto bComp = _container->begin();
-        auto bCompEnd = _container->end();
-        for (;bComp != bCompEnd; ++bComp) {
+        for (BoundsComponent* bComp : _componentCache)
+        {
             const SceneNode& sceneNode = bComp->getSGN().getNode();
             if (Attorney::SceneNodeBoundsComponent::boundsChanged(sceneNode)) {
                 bComp->setRefBoundingBox(sceneNode.getBounds());
@@ -62,20 +66,11 @@ namespace Divide {
     void BoundsSystem::PostUpdate(F32 dt) {
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto bComp = _container->begin();
-        auto bCompEnd = _container->end();
-        for (; bComp != bCompEnd; ++bComp) {
+        for (BoundsComponent* bComp : _componentCache)
+        {
             Attorney::SceneNodeBoundsComponent::clearBoundsChanged(bComp->getSGN().getNode());
             bComp->PostUpdate(microSec);
         }
     }
 
-    void BoundsSystem::FrameEnded() {
-
-        auto comp = _container->begin();
-        auto compEnd = _container->end();
-        for (; comp != compEnd; ++comp) {
-            comp->FrameEnded();
-        }
-    }
 }; //namespace Divide

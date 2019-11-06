@@ -54,6 +54,7 @@ SceneManager::SceneManager(Kernel& parentKernel)
     : FrameListener(),
       Input::InputAggregatorInterface(),
       KernelComponent(parentKernel),
+      _sceneGraphCullTimers{nullptr},
       _platformContext(nullptr),
       _resourceCache(nullptr),
       _sceneData(nullptr),

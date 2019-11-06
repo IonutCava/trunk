@@ -88,17 +88,6 @@ namespace ECS
 		}
 	}
 
-    void SystemManager::FrameEnded()
-    {
-        for (ISystem* system : this->m_SystemWorkOrder)
-        {
-            if (system->m_Enabled == true && system->m_NeedsUpdate == true)
-            {
-                system->FrameEnded();
-            }
-        }
-    }
-
     void SystemManager::OnUpdateLoop()
     {
         for (ISystem* system : this->m_SystemWorkOrder)

@@ -39,12 +39,12 @@ namespace Divide {
     }
 
     void SDLEventManager::pollEvents() {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
+        SDL_Event evt;
+        while (SDL_PollEvent(&evt)) {
             SharedLock lock(s_eventListenerLock);
 
             for (SDLEventListener* listener : s_eventListeners) {
-                if (listener->onSDLEvent(event)) {
+                if (listener->onSDLEvent(evt)) {
                     break;
                 }
             }

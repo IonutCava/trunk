@@ -54,6 +54,7 @@ namespace {
 WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)
    : Scene(context, cache, parent, name),
     _flag{ nullptr, nullptr },
+    _particleEmitter(nullptr),
     _infoBox(nullptr),
     _sceneReady(false),
     _terrainMode(false),
@@ -98,10 +99,12 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         const Camera& cam = _scenePlayers.front()->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
+        const std::pair<F32, F32> frameStats = Time::ApplicationTimer::instance().getFrameRateAndTime();
+
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f. FrameIndex : %d",
-                                            Time::ApplicationTimer::instance().getFps(),
-                                            Time::ApplicationTimer::instance().getFrameTime(),
+                                            frameStats.first,
+                                            frameStats.second,
                                             _context.gfx().getFrameCount()), false);
         _GUI->modifyText(_ID("RenderBinCount"),
             Util::StringFormat("Number of items in Render Bin: %d.",
@@ -243,8 +246,8 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
     }*/
 
     if (!initPosSetLight) {
-        for (U8 i = 0; i < _lightNodes.size(); ++i) {
-            initPosLight[i].set(_lightNodes[i]->get<TransformComponent>()->getPosition());
+        for (U8 i = 0; i < _lightNodeTransforms.size(); ++i) {
+            initPosLight[i].set(_lightNodeTransforms[i]->getPosition());
         }
         /*for (U8 i = 0; i < 80; ++i) {
             initPosLight2[i].set(_lightNodes2[i].first->get<TransformComponent>()->getPosition());
@@ -263,14 +266,13 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
         F32 s2 = std::sin(-phiLight);
         F32 c2 = std::cos(-phiLight);
         const F32 radius = 20;
-        for (size_t i = 0; i < _lightNodes.size(); ++i) {
+        for (size_t i = 0; i < _lightNodeTransforms.size(); ++i) {
             F32 c = i % 2 == 0 ? c1 : c2;
             F32 s = i % 2 == 0 ? s1 : s2;
-            SceneGraphNode* light = _lightNodes[i];
-            TransformComponent* tComp = light->get<TransformComponent>();
-            tComp->setPosition(radius * c + initPosLight[i].x,
-                               (radius * 0.5f) * s + initPosLight[i].y,
-                                radius * s + initPosLight[i].z);
+            _lightNodeTransforms[i]->setPosition(
+                radius * c + initPosLight[i].x,
+               (radius * 0.5f) * s + initPosLight[i].y,
+                radius * s + initPosLight[i].z);
         }
 
         /*for (U8 i = 0; i < 80; ++i) {
@@ -703,8 +705,9 @@ bool WarScene::load(const Str128& name) {
             pointLight->castsShadows(false);
             pointLight->setRange(50.0f);
             pointLight->setDiffuseColour(DefaultColours::RANDOM().rgb());
-            lightSGN->get<TransformComponent>()->setPosition(vec3<F32>(-21.0f + (115 * row), 20.0f, (-21.0f + (115 * col))));
-            _lightNodes.push_back(lightSGN);
+            TransformComponent* tComp = lightSGN->get<TransformComponent>();
+            tComp->setPosition(vec3<F32>(-21.0f + (115 * row), 20.0f, (-21.0f + (115 * col))));
+            _lightNodeTransforms.push_back(tComp);
         }
     }
     
@@ -712,8 +715,11 @@ bool WarScene::load(const Str128& name) {
 
     constexpr bool disableEnvProbes = true;
     if (!disableEnvProbes) {
-        _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
-        _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
+        auto ret = _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
+        ACKNOWLEDGE_UNUSED(ret);
+
+        ret = _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
+        ACKNOWLEDGE_UNUSED(ret);
     }
 
     _sceneReady = true;

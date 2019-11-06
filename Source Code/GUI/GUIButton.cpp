@@ -33,35 +33,49 @@ GUIButton::GUIButton(U64 guiID,
     _btnWindow->setText(text.c_str());
 
 
-
+    _connections[to_base(Event::MouseMove)] =
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseMove,
                                CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
                                     return onEvent(Event::MouseMove, e);
                                }));
+
+    _connections[to_base(Event::HoverEnter)] =
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseEntersArea,
                                CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
                                     return onEvent(Event::HoverEnter, e);
                                }));
+
+    _connections[to_base(Event::HoverLeave)] =
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseLeavesArea,
                                CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
                                     return onEvent(Event::HoverLeave, e);
                                 }));
+
+    _connections[to_base(Event::MouseDown)] =
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseButtonDown,
                                CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
                                     return onEvent(Event::MouseDown, e);
                                 }));
+
+    _connections[to_base(Event::MouseUp)] =
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseButtonUp,
                                CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
                                     return onEvent(Event::MouseUp, e);
                                 }));
+
+    _connections[to_base(Event::MouseClick)] =
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseClick,
                                CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
                                     return onEvent(Event::MouseClick, e);
                                 }));
+
+    _connections[to_base(Event::MouseDoubleClick)] =
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseDoubleClick,
                                CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
                                     return onEvent(Event::MouseDoubleClick, e);
                                 }));
+
+    _connections[to_base(Event::MouseTripleClick)] =
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseDoubleClick,
                                CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
                                     return onEvent(Event::MouseTripleClick, e);

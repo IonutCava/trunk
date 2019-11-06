@@ -142,7 +142,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     ~RenderingComponent();
 
     void Update(const U64 deltaTimeUS) final;
-    void FrameEnded() final;
 
     inline PushConstants& pushConstants() { return _globalPushConstants; }
     inline const PushConstants& pushConstants() const { return _globalPushConstants; }

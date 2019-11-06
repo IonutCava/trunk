@@ -102,7 +102,7 @@ namespace ECS
 		size_t m_NumPendingDestroyedEntities;
 
 		/// Summary:	The component manager instance.
-		ComponentManager*	m_ComponentManagerInstance;
+		ComponentManager*	m_ComponentManagerInstance = nullptr;
 
 	private:	
 

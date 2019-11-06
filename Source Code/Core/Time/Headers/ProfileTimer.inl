@@ -59,8 +59,8 @@ inline void STOP_TIMER(ProfileTimer& timer) {
     timer.stop();
 }
 
-inline void PRINT_TIMER(ProfileTimer& timer) {
-    timer.print();
+inline stringImpl PRINT_TIMER(ProfileTimer& timer) {
+    return timer.print();
 }
 
 inline void REMOVE_TIMER(ProfileTimer*& timer) { 

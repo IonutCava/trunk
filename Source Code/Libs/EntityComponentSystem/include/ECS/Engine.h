@@ -128,7 +128,6 @@ namespace ECS
         void PreUpdate(f32 tick_ms);
 		void Update(f32 tick_ms);
         void PostUpdate(f32 tick_ms);
-        void FrameEnded();
 
         // Called at the start of a new update loop, 
         // before the update calls and before processing input.

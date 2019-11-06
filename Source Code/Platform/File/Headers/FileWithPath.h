@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-enum FileType : unsigned char {
+enum class FileType : unsigned char {
     BINARY = 0,
     TEXT = 1,
     COUNT

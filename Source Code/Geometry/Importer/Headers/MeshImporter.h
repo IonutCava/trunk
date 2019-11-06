@@ -80,8 +80,8 @@ namespace Divide {
                 vec3<F32> normal = {0.f, 0.f, 0.f };
                 vec4<F32> tangent = { 0.f, 0.f, 0.f, 0.f };
                 vec3<F32> texcoord = { 0.f, 0.f, 0.f };
-                vec4<F32> weights;
-                P32       indices;
+                vec4<F32> weights = {};
+                P32       indices = {};
             };
 
             bool serialize(ByteBuffer& dataOut) const;

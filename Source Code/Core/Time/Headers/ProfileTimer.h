@@ -100,7 +100,7 @@ void REMOVE_TIMER(ProfileTimer*& timer);
 
 void START_TIMER(ProfileTimer& timer);
 void STOP_TIMER(ProfileTimer& timer);
-void PRINT_TIMER(ProfileTimer& timer);
+stringImpl PRINT_TIMER(ProfileTimer& timer);
 
 };  // namespace Time
 };  // namespace Divide

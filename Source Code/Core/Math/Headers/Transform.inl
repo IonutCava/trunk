@@ -72,8 +72,8 @@ inline void Transform::setPositionX(const F32 positionX) {
 /// Set the object's position on the Y axis
 inline void Transform::setPositionY(const F32 positionY) {
     setPosition(_transformValues._translation.x,
-                 positionY,
-                 _transformValues._translation.z);
+                positionY,
+                _transformValues._translation.z);
 }
 
 /// Set the object's position on the Z axis

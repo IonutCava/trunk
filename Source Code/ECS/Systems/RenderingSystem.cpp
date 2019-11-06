@@ -7,7 +7,7 @@ namespace Divide {
         : ECSSystem(parentEngine),
           PlatformContextComponent(context)
     {
-
+        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
     }
 
     RenderingSystem::~RenderingSystem()
@@ -18,10 +18,13 @@ namespace Divide {
     void RenderingSystem::PreUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
+        _componentCache.resize(0);
+
         auto rComp = _container->begin();
         auto rCompEnd = _container->end();
         for (;rComp != rCompEnd; ++rComp)
         {
+            _componentCache.push_back(rComp.ptr());
             rComp->PreUpdate(microSec);
         }
     }
@@ -29,9 +32,7 @@ namespace Divide {
     void RenderingSystem::Update(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto rComp = _container->begin();
-        auto rCompEnd = _container->end();
-        for (; rComp != rCompEnd; ++rComp)
+        for (RenderingComponent* rComp : _componentCache) 
         {
             rComp->Update(microSec);
         }
@@ -40,20 +41,9 @@ namespace Divide {
     void RenderingSystem::PostUpdate(F32 dt) {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto rComp = _container->begin();
-        auto rCompEnd = _container->end();
-        for (; rComp != rCompEnd; ++rComp)
+        for (RenderingComponent* rComp : _componentCache)
         {
             rComp->PostUpdate(microSec);
-        }
-    }
-
-    void RenderingSystem::FrameEnded() {
-
-        auto comp = _container->begin();
-        auto compEnd = _container->end();
-        for (; comp != compEnd; ++comp) {
-            comp->FrameEnded();
         }
     }
 

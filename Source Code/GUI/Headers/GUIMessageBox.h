@@ -80,6 +80,7 @@ class GUIMessageBox : public GUIElement {
    protected:
     vec2<I32> _offsetFromCentre;
     CEGUI::Window* _msgBoxWindow;
+    CEGUI::Event::Connection _confirmEvent;
 };
 
 };  // namespace Divide

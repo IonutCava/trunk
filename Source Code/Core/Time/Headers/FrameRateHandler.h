@@ -53,7 +53,9 @@ public:
     inline F32 minFrameRate() const;
     inline F32 maxFrameRate() const;
     inline F32 frameRate() const;
-    inline F32 frameTime() const ;
+    inline F32 frameTime() const;
+    inline std::pair<F32, F32> frameRateAndTime() const;
+
     inline F32 averageFrameRate() const;
 
 private:

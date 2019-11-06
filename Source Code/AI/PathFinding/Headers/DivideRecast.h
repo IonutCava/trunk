@@ -155,7 +155,7 @@ DEFINE_SINGLETON(DivideRecast)
 
   protected:
     /// Stores all created paths
-    PATHDATA _pathStore[MAX_PATHSLOT];
+    std::array<PATHDATA, MAX_PATHSLOT> _pathStore;
     /// The poly filter that will be used for all (random) point and nearest poly searches.
     dtQueryFilter* _filter;
 

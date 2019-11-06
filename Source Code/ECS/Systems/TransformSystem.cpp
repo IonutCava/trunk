@@ -12,7 +12,8 @@ namespace Divide {
         : ECSSystem(parentEngine),
           PlatformContextComponent(context)
     {
-
+        // Just a random value to start with some mem in place
+        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
     }
 
     TransformSystem::~TransformSystem()
@@ -23,88 +24,31 @@ namespace Divide {
     void TransformSystem::PreUpdate(F32 dt) {
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-
-        //vector<TransformComponent*> transforms;
+        // Keep memory in order to avoid mid-frame allocs
+        _componentCache.resize(0);
 
         auto transform = _container->begin();
         auto transformEnd = _container->end();
         for (;transform != transformEnd; ++transform)
         {
-            //transforms.push_back(transform.operator->());
+            _componentCache.push_back(transform.ptr());
             transform->PreUpdate(microSec);
         }
-
-        //_preUpdateTask = CreateTask(context(), DELEGATE_CBK<void, Task&>());
-        //for (TransformComponent* comp : transforms) {
-        //    Task* child = _preUpdateTask.addChildTask(CreateTask(context(),
-        //        [microSec, &comp](const Task& /*task*/) {
-        //        comp->PreUpdate(microSec);
-        //    }));
-
-        //    child->startTask();
-        //}
-        //_preUpdateTask.startTask();
     }
 
     void TransformSystem::Update(F32 dt) {
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        //vector<TransformComponent*> transforms;
-        auto transform = _container->begin();
-        auto transformEnd = _container->end();
-        for (; transform != transformEnd; ++transform)
-        {
-            //transforms.push_back(transform.operator->());
-            transform->Update(microSec);
+        for (TransformComponent* tComp : _componentCache) {
+            tComp->Update(microSec);
         }
-
-        //_preUpdateTask.wait();
-        //_updateTask = CreateTask(context(), DELEGATE_CBK<void, Task&>());
-        //for (TransformComponent* comp : transforms) {
-        //    Task* child = _updateTask.addChildTask(CreateTask(context(),
-        //        [microSec, &comp](const Task& /*task*/) {
-        //        comp->Update(microSec);
-        //    }));
-
-        //    child->startTask();
-
-        //}
-        //_updateTask.startTask();
     }
 
     void TransformSystem::PostUpdate(F32 dt) {
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
-        //vector<TransformComponent*> transforms;
 
-        auto transform = _container->begin();
-        auto transformEnd = _container->end();
-        for (; transform != transformEnd; ++transform)
-        {
-            //transforms.push_back(transform.operator->());
-            transform->PostUpdate(microSec);
-        }
-
-        //_updateTask.wait();
-        //_postUpdateTask = CreateTask(context(), DELEGATE_CBK<void, Task&>());
-        //for (TransformComponent* comp : transforms) {
-        //    Task* child = _postUpdateTask.addChildTask(CreateTask(context(),
-        //        [microSec, &comp](const Task& /*task*/) {
-        //        comp->PostUpdate(microSec);
-        //    }));
-
-        //    child->startTask();
-        //}
-
-        //_postUpdateTask.startTask().wait();
-    }
-
-    void TransformSystem::FrameEnded() {
-
-        auto transform = _container->begin();
-        auto transformEnd = _container->end();
-        for (; transform != transformEnd; ++transform)
-        {
-            transform->FrameEnded();
+        for (TransformComponent* tComp : _componentCache) {
+            tComp->PostUpdate(microSec);
         }
     }
 

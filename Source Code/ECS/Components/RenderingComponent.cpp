@@ -222,10 +222,6 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
     BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
 }
 
-void RenderingComponent::FrameEnded() {
-    SGNComponent::FrameEnded();
-}
-
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
     if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, renderStagePass, LoD)) {
         Material* matCache = getMaterialCache();
@@ -465,7 +461,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         // Continue only for skinned 3D objects
         if (_parentSGN.getNode<Object3D>().getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
         {
-            if (_skeletonPrimitive) {
+            if (_skeletonPrimitive == nullptr) {
                 _skeletonPrimitive = _context.newIMP();
                 _skeletonPrimitive->skipPostFX(true);
                 _skeletonPrimitive->name("Skeleton_" + _parentSGN.name());

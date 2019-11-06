@@ -154,7 +154,7 @@ namespace eastl
 		}
 
 
-		hash_map(this_type&& x)
+		hash_map(this_type&& x) noexcept
 		  : base_type(eastl::move(x))
 		{
 		}

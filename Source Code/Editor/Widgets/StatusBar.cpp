@@ -42,8 +42,10 @@ namespace {
 
     void EndBar() {
         ImGuiWindow* window = ImGui::GetCurrentWindow();
-        if (window->SkipItems)
+        if (window == nullptr || window->SkipItems) {
             return;
+        }
+
         ImGuiContext& g = *GImGui;
 
         // Nav: When a move request within one of our child menu failed, capture the request to navigate among our siblings.

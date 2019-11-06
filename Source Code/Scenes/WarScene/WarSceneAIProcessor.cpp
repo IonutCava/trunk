@@ -229,7 +229,7 @@ void WarSceneAIProcessor::beginPlan(const GOAPGoal& currentGoal) {
                 1);
         } break;
     };
-    printPlan();
+    Console::d_printfn(printPlan().c_str());
 }
 
 namespace {

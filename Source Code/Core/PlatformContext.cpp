@@ -23,6 +23,7 @@ namespace Divide {
 PlatformContext::PlatformContext(Application& app, Kernel& kernel)
   :  _app(app)
   ,  _kernel(kernel)
+  ,  _taskPool{}
   ,  _gfx(MemoryManager_NEW GFXDevice(_kernel))        // Video
   ,  _sfx(MemoryManager_NEW SFXDevice(_kernel))        // Audio
   ,  _pfx(MemoryManager_NEW PXDevice(_kernel))         // Physics

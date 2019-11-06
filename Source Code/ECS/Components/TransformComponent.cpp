@@ -430,14 +430,15 @@ namespace Divide {
     }
 
     void TransformComponent::getMatrix(D64 interpolationFactor, mat4<F32>& matOut) const {
-        SharedLock r_lock(_lock);
-        matOut.set(mat4<F32>
-                   {
-                        getLocalPositionLocked(interpolationFactor),
-                        getLocalScaleLocked(interpolationFactor),
-                        GetMatrix(getLocalOrientationLocked(interpolationFactor))
-                    });
-
+        {
+            SharedLock r_lock(_lock);
+            matOut.set(mat4<F32>
+                       {
+                            getLocalPositionLocked(interpolationFactor),
+                            getLocalScaleLocked(interpolationFactor),
+                            GetMatrix(getLocalOrientationLocked(interpolationFactor))
+                        });
+        }
         if (_transformOffset.first) {
             matOut *= _transformOffset.second;
         }
@@ -631,18 +632,14 @@ namespace Divide {
         outputBuffer << _hasChanged;
 
         if (_hasChanged) {
-
-            vec3<F32> localPos;
-            getPosition(localPos);
-            outputBuffer << localPos;
-
-            vec3<F32> localScale;
-            getScale(localScale);
-            outputBuffer << localScale;
-
-            Quaternion<F32> localRotation;
-            getOrientation(localRotation);
-            outputBuffer << localRotation.asVec4();
+            TransformValues values = {};
+            {
+                SharedLock r_lock(_lock);
+                _transformInterface.getValues(values);
+            }
+            outputBuffer << values._translation;
+            outputBuffer << values._scale;
+            outputBuffer << values._orientation;
             _hasChanged = false;
         }
 
@@ -663,17 +660,12 @@ namespace Divide {
         if (hasChanged) {
             inputBuffer >> tempID;
 
-            vec3<F32> localPos;
-            inputBuffer >> localPos;
-            setPosition(localPos);
+            TransformValues valuesIn = {};
+            inputBuffer >> valuesIn._translation;
+            inputBuffer >> valuesIn._scale;
+            inputBuffer >> valuesIn._orientation;
 
-            vec3<F32> localScale;
-            inputBuffer >> localScale;
-            setScale(localScale);
-
-            vec4<F32> localRotation;
-            inputBuffer >> localRotation;
-            setRotation(Quaternion<F32>(localRotation));
+            setTransform(valuesIn);
         }
 
         return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::saveCache(inputBuffer);

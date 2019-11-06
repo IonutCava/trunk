@@ -10,7 +10,8 @@ using namespace boost::asio;
 namespace Divide {
 
 Server::Server()
-    : thread_()
+    : thread_(),
+      acceptor_(nullptr)
 {
 }
 

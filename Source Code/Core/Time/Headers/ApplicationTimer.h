@@ -55,6 +55,7 @@ DEFINE_SINGLETON(ApplicationTimer)
     F32 getFps() const;
     F32 getFrameTime() const;
     F32 getSpeedfactor() const;
+    std::pair<F32, F32> getFrameRateAndTime() const;
 
     const stringImpl& benchmarkReport() const;
 

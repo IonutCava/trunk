@@ -36,6 +36,8 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Math/Headers/Dimension.h"
 
+#include <CEGUI/Event.h>
+
 namespace CEGUI {
     class Window;
 };
