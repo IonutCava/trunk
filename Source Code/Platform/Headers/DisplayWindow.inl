@@ -160,6 +160,11 @@ namespace Divide {
     inline void* DisplayWindow::userData() const {
         return _userData;
     }
+
+    template<typename... Args>
+    inline void DisplayWindow::title(const char* format, Args&& ...args) {
+        title(Util::StringFormat(format, std::forward<Args>(args)...));
+    }
 }; //namespace Divide
 
 #endif //_DISPLAY_WINDOW_INL_

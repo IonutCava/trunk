@@ -235,7 +235,7 @@ void Kernel::onLoop() {
         }
     }
 
-    U32 frameCount = _platformContext.gfx().getFrameCount();
+    const U32 frameCount = _platformContext.gfx().getFrameCount();
     // Should equate to approximately once every 10 seconds
     if (platformContext().debug().enabled() && frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
         Console::printfn(platformContext().debug().output().c_str());
@@ -243,6 +243,10 @@ void Kernel::onLoop() {
 
     if (frameCount % (Config::TARGET_FRAME_RATE / 4) == 0) {
         _platformContext.gui().modifyText(_ID("ProfileData"), platformContext().debug().output(), true);
+        const U32 fps = to_U32(Time::ApplicationTimer::instance().getFps());
+        DisplayWindow& window = _platformContext.activeWindow();
+        static stringImpl originalTitle = window.title();
+        window.title("%s - %d FPS", originalTitle, fps);
     }
 
     // Cap FPS
@@ -500,7 +504,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     const U8 playerCount = _sceneManager->getActivePlayerCount();
     const bool editorRunning = Config::Build::ENABLE_EDITOR && _platformContext.editor().running();
 
-    Rect<I32> mainViewport = _platformContext.activeWindow().renderingViewport();
+    const Rect<I32> mainViewport = _platformContext.activeWindow().renderingViewport();
     
     if (_prevViewport != mainViewport || _prevPlayerCount != playerCount) {
         computeViewports(mainViewport, _targetViewports, playerCount);

@@ -193,7 +193,9 @@ public:
     inline void setPosition(const vec2<I32>& position, bool global = false);
 
     inline const stringImpl& title() const;
-                        void title(const stringImpl& title);
+    void title(const stringImpl& title);
+    template<typename... Args>
+    void title(const char* format, Args&& ...args);
 
     WindowHandle handle() const;
 
@@ -220,6 +222,7 @@ public:
     bool onSDLEvent(SDL_Event event) override;
 
 private:
+    
     void restore();
     /// Changing from one window type to another
     /// should also change display dimensions and position

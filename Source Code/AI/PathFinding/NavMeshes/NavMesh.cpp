@@ -35,7 +35,8 @@ NavigationMesh::NavigationMesh(PlatformContext& context)
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
     _filePath = path + "/" + Paths::g_navMeshesLocation;
     
-    _configFile.append(path.c_str()) + "/navMeshConfig.ini";
+    _configFile.append(path.c_str());
+    _configFile.append("/navMeshConfig.ini");
     _buildThreaded = true;
     _debugDraw = false;
     _renderConnections = false;
