@@ -71,7 +71,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     clearFlag(Flags::VISIBILITY_LOCKED);
 
     if (_node == nullptr) {
-        _node = std::make_shared<SceneNode>(sceneGraph.parentScene().resourceCache(), GUIDWrapper::generateGUID(), "");
+        _node = eastl::make_shared<SceneNode>(sceneGraph.parentScene().resourceCache(), GUIDWrapper::generateGUID(), "");
     }
 
     if (_node->type() == SceneNodeType::TYPE_EMPTY || _node->type() == SceneNodeType::TYPE_ROOT) {
@@ -208,7 +208,7 @@ SceneGraphNode* SceneGraphNode::addChildNode(const SceneGraphNodeDescriptor& des
         setFlag(Flags::LOADING);
         sceneGraphNode->_node->setStateCallback(ResourceState::RES_LOADED,
             [this, sceneGraphNode](Resource_wptr res) {
-                postLoad(*(std::dynamic_pointer_cast<SceneNode>(res.lock())), *(sceneGraphNode));
+                postLoad(*(eastl::dynamic_pointer_cast<SceneNode>(res.lock())), *(sceneGraphNode));
                 clearFlag(Flags::LOADING);
             }
         );
@@ -400,11 +400,11 @@ void SceneGraphNode::processDeleteQueue(vector<vec_size>& childList) {
 }
 
 void SceneGraphNode::frameStarted() {
-    Attorney::SceneNodeSceneGraph::frameStarted(_node, *this);
+    Attorney::SceneNodeSceneGraph::frameStarted(*_node, *this);
 }
 
 void SceneGraphNode::frameEnded() {
-    Attorney::SceneNodeSceneGraph::frameEnded(_node, *this);
+    Attorney::SceneNodeSceneGraph::frameEnded(*_node, *this);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut

@@ -238,6 +238,7 @@ private:
     PlayerList _players;
     U8 _activePlayerCount;
 
+    bool _platerQueueDirty = false;
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;
 

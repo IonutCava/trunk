@@ -47,18 +47,18 @@ struct PatchData {
     vector<stringImpl> name, modelName;
 };
 
-DEFINE_SINGLETON(Patch)
-
+class Patch : public Singleton<Patch> {
+    friend class Singleton<Patch>;
 public:
-bool compareData(const PatchData& data);
-void addGeometry(const FileData& data);
-const vector<FileData>& updateClient();
-void reset() { ModelData.clear(); };
+    bool compareData(const PatchData& data);
+    void addGeometry(const FileData& data);
+    const vector<FileData>& updateClient();
+    void reset() { ModelData.clear(); };
 
 private:
-vector<FileData> ModelData;
+    vector<FileData> ModelData;
 
-END_SINGLETON
+};
 
 };  // namespace Divide
 

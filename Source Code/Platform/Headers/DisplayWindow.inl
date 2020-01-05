@@ -123,8 +123,8 @@ namespace Divide {
         changeType(_previousType);
     }
 
-    inline const stringImpl& DisplayWindow::title() const {
-        return _title;
+    inline const char* DisplayWindow::title() const {
+        return SDL_GetWindowTitle(_sdlWindow);
     }
 
     inline I64 DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
@@ -163,7 +163,11 @@ namespace Divide {
 
     template<typename... Args>
     inline void DisplayWindow::title(const char* format, Args&& ...args) {
-        title(Util::StringFormat(format, std::forward<Args>(args)...));
+        if (sizeof...(Args) > 0) {
+            SDL_SetWindowTitle(_sdlWindow, Util::StringFormat(format, static_cast<Args&&>(args)...).c_str());
+        } else {
+            SDL_SetWindowTitle(_sdlWindow, format);
+        }
     }
 }; //namespace Divide
 

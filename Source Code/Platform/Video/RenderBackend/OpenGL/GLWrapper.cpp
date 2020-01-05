@@ -52,8 +52,7 @@ namespace {
 };
 
 GLConfig GL_API::s_glConfig;
-GLStateTracker* GL_API::s_activeStateTracker = nullptr;
-GL_API::StateTrackerMap GL_API::s_stateTrackers;
+GLStateTracker GL_API::s_stateTracker;
 bool GL_API::s_glFlushQueued = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool GL_API::s_texturePool;
@@ -121,10 +120,12 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 
     // Clear our buffers
     if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-        std::pair<I64, SDL_GLContext> targetContext = std::make_pair(window.getGUID(), (SDL_GLContext)window.userData());
-        if (targetContext.second != nullptr && targetContext != _currentContext) {
-            SDL_GL_MakeCurrent(window.getRawWindow(), targetContext.second);
-            _currentContext = targetContext;
+        SDL_GLContext glContext = (SDL_GLContext)window.userData();
+        const I64 windowGUID = window.getGUID();
+
+        if (glContext != nullptr && (_currentContext.first != windowGUID || _currentContext.second != glContext)) {
+            SDL_GL_MakeCurrent(window.getRawWindow(), glContext);
+            _currentContext = std::make_pair(windowGUID, glContext);
         }
 
         bool shouldClearColour = false, shouldClearDepth = false;
@@ -146,8 +147,6 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
     // to stay in sync with third party software
     _context.registerDrawCall();
 
-    s_stateTrackers[window.getGUID()].init(&stateTracker);
-
     clearStates(window, stateTracker, global);
 }
 
@@ -167,10 +166,12 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         }
 
         if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-            std::pair<I64, SDL_GLContext> targetContext = std::make_pair(window.getGUID(), (SDL_GLContext)window.userData());
-            if (targetContext.second != nullptr && targetContext != _currentContext) {
-                SDL_GL_MakeCurrent(window.getRawWindow(), targetContext.second);
-                _currentContext = targetContext;
+            SDL_GLContext glContext = (SDL_GLContext)window.userData();
+            const I64 windowGUID = window.getGUID();
+            
+            if (glContext != nullptr && (_currentContext.first != windowGUID || _currentContext.second != glContext)) {
+                SDL_GL_MakeCurrent(window.getRawWindow(), glContext);
+                _currentContext = std::make_pair(windowGUID, glContext);
             }
 
             SDL_GL_SwapWindow(window.getRawWindow());
@@ -974,7 +975,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                     // User callback (registered via ImDrawList::AddCallback)
                     pcmd->UserCallback(cmd_list, pcmd);
                 } else {
-                    const Rect<I32>& viewport = s_activeStateTracker->_activeViewport;
+                    const Rect<I32>& viewport = GL_API::getStateTracker()._activeViewport;
                     Rect<I32> clip_rect = {
                         pcmd->ClipRect.x - pos.x,
                         pcmd->ClipRect.y - pos.y,
@@ -994,7 +995,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                         getStateTracker().setScissor(clip_rect);
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
 
-                        s_activeStateTracker->bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
+                        GL_API::getStateTracker().bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
                         buffer->draw(cmd, 0);
                     }
                 }
@@ -1005,11 +1006,11 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
 }
 
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
-    if (s_activeStateTracker->_activePipeline && *s_activeStateTracker->_activePipeline == pipeline) {
+    if (GL_API::getStateTracker()._activePipeline && *GL_API::getStateTracker()._activePipeline == pipeline) {
         return true;
     }
 
-    s_activeStateTracker->_activePipeline = &pipeline;
+    GL_API::getStateTracker()._activePipeline = &pipeline;
 
     // Set the proper render states
     setStateBlock(pipeline.stateHash());
@@ -1040,9 +1041,9 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
 }
 
 void GL_API::sendPushConstants(const PushConstants& pushConstants) {
-    assert(s_activeStateTracker->_activePipeline != nullptr);
+    assert(GL_API::getStateTracker()._activePipeline != nullptr);
 
-    ShaderProgram* program = ShaderProgram::findShaderProgram(s_activeStateTracker->_activePipeline->shaderProgramHandle());
+    ShaderProgram* program = ShaderProgram::findShaderProgram(GL_API::getStateTracker()._activePipeline->shaderProgramHandle());
     if (program == nullptr) {
         // Should we skip the upload?
         program = ShaderProgram::defaultShader().get();
@@ -1094,14 +1095,14 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.get<GFX::BeginRenderPassCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));
             Attorney::GLAPIRenderTarget::begin(rt, crtCmd._descriptor);
-            s_activeStateTracker->_activeRenderTarget = &rt;
+            GL_API::getStateTracker()._activeRenderTarget = &rt;
             GL_API::pushDebugMessage(crtCmd._name.c_str(), std::numeric_limits<I32>::max());
         }break;
         case GFX::CommandType::END_RENDER_PASS: {
             const GFX::EndRenderPassCommand& crtCmd = commandBuffer.get<GFX::EndRenderPassCommand>(entry);
-            assert(s_activeStateTracker->_activeRenderTarget != nullptr);
+            assert(GL_API::getStateTracker()._activeRenderTarget != nullptr);
             GL_API::popDebugMessage();
-            glFramebuffer& fb = *s_activeStateTracker->_activeRenderTarget;
+            glFramebuffer& fb = *GL_API::getStateTracker()._activeRenderTarget;
             Attorney::GLAPIRenderTarget::end(fb, crtCmd._autoResolveMSAAColour, crtCmd._autoResolveMSAAExternalColour, crtCmd._autoResolveMSAADepth);
         }break;
         case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
@@ -1112,20 +1113,20 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (crtCmd._command) {
                 crtCmd._command(data);
             }
-            s_activeStateTracker->_activePixelBuffer = buffer;
+            GL_API::getStateTracker()._activePixelBuffer = buffer;
         }break;
         case GFX::CommandType::END_PIXEL_BUFFER: {
-            assert(s_activeStateTracker->_activePixelBuffer != nullptr);
-            Attorney::GLAPIPixelBuffer::end(*s_activeStateTracker->_activePixelBuffer);
+            assert(GL_API::getStateTracker()._activePixelBuffer != nullptr);
+            Attorney::GLAPIPixelBuffer::end(*GL_API::getStateTracker()._activePixelBuffer);
         }break;
         case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
-            assert(s_activeStateTracker->_activeRenderTarget != nullptr);
+            assert(GL_API::getStateTracker()._activeRenderTarget != nullptr);
             const GFX::BeginRenderSubPassCommand& crtCmd = commandBuffer.get<GFX::BeginRenderSubPassCommand>(entry);
             for (const RenderTarget::DrawLayerParams& params : crtCmd._writeLayers) {
-                s_activeStateTracker->_activeRenderTarget->drawToLayer(params);
+                GL_API::getStateTracker()._activeRenderTarget->drawToLayer(params);
             }
 
-            s_activeStateTracker->_activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel, crtCmd._validateWriteLevel);
+            GL_API::getStateTracker()._activeRenderTarget->setMipLevel(crtCmd._mipWriteLevel, crtCmd._validateWriteLevel);
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {
         }break;
@@ -1237,7 +1238,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
-            assert(s_activeStateTracker->_activePipeline != nullptr);
+            assert(GL_API::getStateTracker()._activePipeline != nullptr);
             glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
             lockBuffers(false, _context.getFrameCount());
         }break;

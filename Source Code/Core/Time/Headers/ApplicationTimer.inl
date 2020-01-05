@@ -49,8 +49,8 @@ inline F32 ApplicationTimer::getFrameTime() const {
     return _frameRateHandler.frameTime();
 }
 
-inline std::pair<F32, F32> ApplicationTimer::getFrameRateAndTime() const {
-    return _frameRateHandler.frameRateAndTime();
+inline void ApplicationTimer::getFrameRateAndTime(F32& fpsOut, F32& frameTimeOut) const {
+    _frameRateHandler.frameRateAndTime(fpsOut, frameTimeOut);
 }
 
 inline F32 ApplicationTimer::getSpeedfactor() const { 

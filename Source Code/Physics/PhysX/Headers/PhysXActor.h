@@ -85,9 +85,6 @@ public:
     void getPosition(vec3<F32>& posOut) const override;
     void getOrientation(Quaternion<F32>& quatOut) const override;
 
-    /// Get the local transformation matrix
-    /// wasRebuilt is set to true if the matrix was just rebuilt
-    mat4<F32> getMatrix() override;
     void getMatrix(mat4<F32>& matrixOut) override;
 
     void getValues(TransformValues& valuesOut) const override;

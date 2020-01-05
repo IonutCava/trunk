@@ -134,10 +134,6 @@ SSAOPreRenderOperator::~SSAOPreRenderOperator()
     _context.renderTargetPool().deallocateRT(_ssaoOutput);
 }
 
-void SSAOPreRenderOperator::idle(const Configuration& config) {
-    ACKNOWLEDGE_UNUSED(config);
-}
-
 void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 

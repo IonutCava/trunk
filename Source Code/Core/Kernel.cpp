@@ -169,7 +169,8 @@ void Kernel::idle(bool fast) {
     }
     FrameListenerManager::instance().idle();
 
-    bool freezeLoopTime = ParamHandler::instance().getParam(_ID("freezeLoopTime"), false);
+    constexpr ParamHandler::HashType paramName = _ID_32("freezeLoopTime");
+    bool freezeLoopTime = ParamHandler::instance().getParam(paramName, false);
 
     if (Config::Build::ENABLE_EDITOR) {
         freezeLoopTime |= _platformContext.editor().simulationPauseRequested();
@@ -243,10 +244,11 @@ void Kernel::onLoop() {
 
     if (frameCount % (Config::TARGET_FRAME_RATE / 4) == 0) {
         _platformContext.gui().modifyText(_ID("ProfileData"), platformContext().debug().output(), true);
-        const U32 fps = to_U32(Time::ApplicationTimer::instance().getFps());
+        F32 fps = 0.f, frameTime = 0.f;
+        Time::ApplicationTimer::instance().getFrameRateAndTime(fps, frameTime);
         DisplayWindow& window = _platformContext.activeWindow();
         static stringImpl originalTitle = window.title();
-        window.title("%s - %d FPS", originalTitle, fps);
+        window.title("%s - %d FPS - %d ms", originalTitle, to_U32(fps), to_U32(frameTime));
     }
 
     // Cap FPS
@@ -582,11 +584,11 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 void Kernel::warmup() {
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
 
-    ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
+    ParamHandler::instance().setParam(_ID_32("freezeLoopTime"), true);
     for (U8 i = 0; i < g_warmupLoopCount; ++i) {
         onLoop();
     }
-    ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);
+    ParamHandler::instance().setParam(_ID_32("freezeLoopTime"), false);
 
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 

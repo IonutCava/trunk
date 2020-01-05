@@ -83,7 +83,7 @@ class ImplResourceLoader : public ResourceLoader {
 
    protected:
 
-    bool load(std::shared_ptr<ResourceType> res) {
+    bool load(eastl::shared_ptr<ResourceType> res) {
         if (res) {
             res->setState(ResourceState::RES_LOADING);
             return res->load();

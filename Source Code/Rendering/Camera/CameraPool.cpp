@@ -25,17 +25,17 @@ void Camera::update(const U64 deltaTimeUS) {
     const F32 deltaTimeS = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
 
     SharedLock r_lock(s_cameraPoolLock);
-    for (CameraPool::value_type& it : s_cameraPool) {
+    for (auto& it : s_cameraPool) {
         it.second->updateInternal(deltaTimeUS, deltaTimeS);
     }
 }
 
 vector<U64> Camera::cameraList() {
-    vector<U64> ret;
+    vector<U64> ret = {};
     ret.reserve(s_cameraPool.size());
 
     SharedLock r_lock(s_cameraPoolLock);
-    for (CameraPool::value_type& it : s_cameraPool) {
+    for (auto& it : s_cameraPool) {
         ret.push_back(it.first);
     }
 

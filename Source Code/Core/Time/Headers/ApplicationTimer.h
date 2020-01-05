@@ -42,7 +42,9 @@ namespace Time {
   
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimeValue;
 
-DEFINE_SINGLETON(ApplicationTimer)
+class ApplicationTimer : public Singleton<ApplicationTimer> {
+    friend class Singleton<ApplicationTimer>;
+
     typedef std::chrono::nanoseconds  NSec;
     typedef std::chrono::microseconds USec;
     typedef std::chrono::milliseconds MSec;
@@ -55,7 +57,7 @@ DEFINE_SINGLETON(ApplicationTimer)
     F32 getFps() const;
     F32 getFrameTime() const;
     F32 getSpeedfactor() const;
-    std::pair<F32, F32> getFrameRateAndTime() const;
+    void getFrameRateAndTime(F32& fpsOut, F32& frameTimeOut) const;
 
     const stringImpl& benchmarkReport() const;
 
@@ -83,7 +85,7 @@ DEFINE_SINGLETON(ApplicationTimer)
     std::atomic<U64> _elapsedTimeUs;
 
     stringImpl _lastBenchmarkReport;
-END_SINGLETON
+};
 
 /// The following functions force a timer update 
 /// (a call to query performance timer).

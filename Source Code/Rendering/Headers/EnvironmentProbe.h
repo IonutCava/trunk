@@ -89,8 +89,8 @@ protected:
     BoundingBox _aabb;
     Pipeline*    _bbPipeline;
     IMPrimitive* _boundingBoxPrimitive;
-    std::shared_ptr<ImpostorSphere> _impostor;
-    std::shared_ptr<ShaderProgram> _impostorShader;
+    eastl::shared_ptr<ImpostorSphere> _impostor;
+    eastl::shared_ptr<ShaderProgram> _impostorShader;
 
 private:
     GFXDevice& _context;

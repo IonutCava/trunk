@@ -57,10 +57,11 @@ do {                                                \
 #endif //TO_STRING
 
 #define TYPEDEF_SMART_POINTERS_FOR_TYPE(T)       \
-    typedef std::weak_ptr<T> T ## _wptr;         \
-    typedef std::shared_ptr<T> T ## _ptr;        \
-    typedef std::weak_ptr<const T> T ## _cwptr;  \
-    typedef std::shared_ptr<const T> T ## _cptr; 
+    using T ## _wptr = eastl::weak_ptr<T>;         \
+    using T ## _ptr = eastl::shared_ptr<T>;        \
+    using T ## _cwptr = eastl::weak_ptr<const T>;  \
+    using T ## _cptr = eastl::shared_ptr<const T>; 
+
 
 #define FWD_DECLARE_MANAGED_CLASS(T)      \
     class T;                              \
@@ -69,6 +70,7 @@ do {                                                \
 #define FWD_DECLARE_MANAGED_STRUCT(T)     \
     struct T;                             \
     TYPEDEF_SMART_POINTERS_FOR_TYPE(T);
+
 
 #define ALIAS_TEMPLATE_FUNCTION(highLevelF, lowLevelF) \
 template<typename... Args> \

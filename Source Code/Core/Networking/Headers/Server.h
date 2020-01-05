@@ -39,7 +39,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //----------------------------------------------------------------------
 namespace Divide {
 
-DEFINE_SINGLETON(Server)
+class Server : public Singleton<Server> {
+    friend class Singleton<Server>;
   public:
     void init(U16 port,
               const stringImpl& broadcast_endpoint_address,
@@ -59,7 +60,7 @@ DEFINE_SINGLETON(Server)
     channel _channel;
     bool _debugOutput;
 
-END_SINGLETON
+};
 
 };  // namespace Divide
 #endif

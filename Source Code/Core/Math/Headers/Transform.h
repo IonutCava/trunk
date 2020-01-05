@@ -37,6 +37,7 @@
 
 namespace Divide {
 
+//Not thread safe!
 class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
    public:
     Transform();
@@ -82,9 +83,6 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     
     bool isUniformScale() const;
 
-    /// Get the local transformation matrix
-    /// wasRebuilt is set to true if the matrix was just rebuilt
-    mat4<F32> getMatrix() override;
     void getMatrix(mat4<F32>& matrix) override;
 
     /// Sets the transform to match a certain transformation matrix.
@@ -106,21 +104,15 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     /// Reset transform to identity
     void identity();
 
-   protected:
-       const mat4<F32>& getMatrixInternal();
-
    private:
     /// The actual scale, rotation and translation values
     TransformValues _transformValues;
-    /// This is the actual model matrix, but it will not convert to world space
-    /// as it depends on it's parent in graph
+    /// This is the actual model matrix, but it will not convert to world space as it depends on it's parent in graph
     mat4<F32> _worldMatrix;
-    /// _dirty is set to true whenever a translation, rotation or scale is
-    /// applied
-    std::atomic_flag _notDirty = ATOMIC_FLAG_INIT;
-    /// _rebuildMatrix is true when a rotation or scale is applied to avoid
-    /// rebuilding matrices on translation
-    std::atomic_flag _dontRebuildMatrix = ATOMIC_FLAG_INIT;
+    /// _dirty is set to true whenever a translation, rotation or scale is applied
+    bool _dirty = false;
+    /// _rebuild is true when a rotation or scale is applied to avoid rebuilding matrices on translation
+    bool _rebuild = false;
 };
 
 };  // namespace Divide

@@ -630,7 +630,7 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
 
         DebugView* debugView = s_debugViews[0][reflectionIndex];
         if (debugView == nullptr) {
-            DebugView_ptr viewPtr = std::make_shared<DebugView>();
+            DebugView_ptr viewPtr = eastl::make_shared<DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _context.getRTPreviewShader(false);
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
@@ -709,7 +709,7 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
 
         DebugView* debugView = s_debugViews[1][refractionIndex];
         if (debugView == nullptr) {
-            DebugView_ptr viewPtr = std::make_shared<DebugView>();
+            DebugView_ptr viewPtr = eastl::make_shared<DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _context.getRTPreviewShader(false);
             viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);

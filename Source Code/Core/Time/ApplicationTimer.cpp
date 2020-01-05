@@ -40,14 +40,18 @@ void ApplicationTimer::update() {
 
         if (elapsedTime - _lastBenchmarkTimeStamp > Time::MillisecondsToMicroseconds(Config::Profile::BENCHMARK_FREQUENCY))
         {
+            F32 fps = 0.f;
+            F32 frameTime = 0.f;
+            _frameRateHandler.frameRateAndTime(fps, frameTime);
+
             _lastBenchmarkTimeStamp = elapsedTime;
             _lastBenchmarkReport = 
                 Util::StringFormat(Locale::get(_ID("FRAMERATE_FPS_OUTPUT")),
-                                   _frameRateHandler.frameRate(),
+                                   fps,
                                    _frameRateHandler.averageFrameRate(),
                                    _frameRateHandler.maxFrameRate(),
                                    _frameRateHandler.minFrameRate(),
-                                   _frameRateHandler.frameTime());
+                                   frameTime);
         }
     }
 }

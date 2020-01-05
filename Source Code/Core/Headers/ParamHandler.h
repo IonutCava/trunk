@@ -39,43 +39,36 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON(ParamHandler)
-    typedef hashMap<U64, AnyParam> ParamMap;
+
+class ParamHandler : public Singleton<ParamHandler> {
+    friend class Singleton<ParamHandler>;
+public:
+    using HashType = U32;
+
+    using ParamMap = hashMap<HashType, AnyParam>;
 
     /// A special map for string types (small perf. optimization for add/retrieve)
-    typedef hashMap<U64, stringImpl> ParamStringMap;
+    typedef hashMap<HashType, stringImpl> ParamStringMap;
     /// A special map for boolean types (small perf. optimization for add/retrieve)
     /// Used a lot as option toggles
-    typedef hashMap<U64, bool> ParamBoolMap;
+    typedef hashMap<HashType, bool> ParamBoolMap;
     /// Floats are also used often
-    typedef hashMap<U64, F32> ParamFloatMap;
+    typedef hashMap<HashType, F32> ParamFloatMap;
 
   public:
     void setDebugOutput(bool logState) noexcept;
 
     template <typename T>
-    T getParam(U64 paramID, T defaultValue = T()) const;
+    T getParam(HashType paramID, T defaultValue = T()) const;
 
     template <typename T>
-    T getParam(const char* name, T defaultValue = T()) const;
+    void setParam(HashType paramID, const T& value);
 
     template <typename T>
-    void setParam(U64 paramID, const T& value);
+    void delParam(HashType paramID);
 
     template <typename T>
-    void setParam(const char* name, const T& value);
-
-    template <typename T>
-    void delParam(U64 paramID);
-
-    template <typename T>
-    void delParam(const char* name);
-
-    template <typename T>
-    bool isParam(U64 paramID) const;
-
-    template <typename T>
-    bool isParam(const char* param) const;
+    bool isParam(HashType paramID) const;
 
   private:
     ParamMap _params;
@@ -85,7 +78,7 @@ DEFINE_SINGLETON(ParamHandler)
     mutable SharedMutex _mutex;
     std::atomic_bool _logState;
 
-END_SINGLETON
+};
 
 };  // namespace Divide
 

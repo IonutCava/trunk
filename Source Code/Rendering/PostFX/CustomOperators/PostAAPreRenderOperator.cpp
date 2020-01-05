@@ -84,10 +84,6 @@ void PostAAPreRenderOperator::setAASamples(U8 postAASamples)
     }
 }
 
-void PostAAPreRenderOperator::idle(const Configuration& config) {
-    ACKNOWLEDGE_UNUSED(config);
-}
-
 void PostAAPreRenderOperator::useSMAA(const bool state) {
     _useSMAA = state;
 

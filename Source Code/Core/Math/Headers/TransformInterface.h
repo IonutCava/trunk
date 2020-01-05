@@ -36,9 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Quaternion.h"
 
 namespace Divide {
+
 struct TransformValues {
-    TransformValues() noexcept;
-    TransformValues(const TransformValues& other) noexcept;
     /// The object's position in the world as a 3 component vector
     vec3<F32> _translation;
     /// Scaling is stored as a 3 component vector.
@@ -47,11 +46,10 @@ struct TransformValues {
     /// All orientation/rotation info is stored in a Quaternion
     /// (because they are awesome and also have an internal mat4 if needed)
     Quaternion<F32> _orientation;
-
-    void operator=(const TransformValues& other);
-    bool operator==(const TransformValues& other) const;
-    bool operator!=(const TransformValues& other) const;
 };
+
+bool operator==(const TransformValues& lhs, const TransformValues& rhs);
+bool operator!=(const TransformValues& lhs, const TransformValues& rhs);
 
 class ITransform {
 public:
@@ -175,9 +173,6 @@ public:
     /// Return the orientation quaternion
     virtual void getOrientation(Quaternion<F32>& quatOut) const = 0;
 
-    /// Get the local transformation matrix
-    /// wasRebuilt is set to true if the matrix was just rebuilt
-    virtual mat4<F32> getMatrix() = 0;
     virtual void getMatrix(mat4<F32>& matrix) = 0;
 
     /// Get the current position, rotation and scale as a "TransformValues" package

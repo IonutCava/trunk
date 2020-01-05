@@ -75,7 +75,8 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 
-DEFINE_SINGLETON(DivideRecast)
+class DivideRecast : public Singleton<DivideRecast> {
+    friend class Singleton<DivideRecast>;
   public:
     /**
      * Find a path beween start point and end point and, if possible, generates a
@@ -159,7 +160,7 @@ DEFINE_SINGLETON(DivideRecast)
     /// The poly filter that will be used for all (random) point and nearest poly searches.
     dtQueryFilter* _filter;
 
-END_SINGLETON
+};
 
 };  // namespace Navigation
 };  // namespace AI

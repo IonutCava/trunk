@@ -391,7 +391,7 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
 
                 U8 splitCount = static_cast<DirectionalLightComponent&>(light).csmSplitCount();
                 for (U8 i = 0; i < splitCount; ++i) {
-                    DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - splitCount + i));
+                    DebugView_ptr shadow = eastl::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - splitCount + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::DIRECTIONAL)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
                     shadow->_shader = previewDepthMapShader;
                     shadow->_shaderData.set("layer", GFX::PushConstantType::INT, i + light.getShadowOffset());
@@ -412,7 +412,7 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 shadowPreviewShader.threaded(false);
                 ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
-                DebugView_ptr shadow = std::make_shared<DebugView>(to_I16(std::numeric_limits<I16>::max() - 1));
+                DebugView_ptr shadow = eastl::make_shared<DebugView>(to_I16(std::numeric_limits<I16>::max() - 1));
                 shadow->_texture = ShadowMap::getDepthMap(LightType::SPOT)._rt->getAttachment(RTAttachmentType::Depth, 0).texture();
                 shadow->_shader = previewDepthMapShader;
                 shadow->_shaderData.set("layer", GFX::PushConstantType::INT, light.getShadowOffset());
@@ -433,7 +433,7 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 ShaderProgram_ptr previewCubeDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
                 for (U32 i = 0; i < 6; ++i) {
-                    DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
+                    DebugView_ptr shadow = eastl::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::POINT)._rt->getAttachment(RTAttachmentType::Depth, 0).texture();
                     shadow->_shader = previewCubeDepthMapShader;
                     shadow->_shaderData.set("layer", GFX::PushConstantType::INT, light.getShadowOffset());

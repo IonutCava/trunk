@@ -80,39 +80,6 @@ class Singleton {
     void operator=(Singleton&) = delete;
 };
 
-#define DEFINE_SINGLETON_W_SPECIFIER_2(class_name, specifier)   \
-    class class_name specifier : public Singleton<class_name> { \
-        friend class Singleton<class_name>;
-
-#define DEFINE_SINGLETON_W_SPECIFIER_3(class_name, base_class, specifier) \
-    class class_name specifier : public Singleton<class_name>,            \
-                                 public base_class {                      \
-        friend class Singleton<class_name>;
-
-#define DEFINE_SINGLETON_W_SPECIFIER_4(class_name, base_class1, \
-                                       base_class2, specifier)  \
-    class class_name specifier : public Singleton<class_name>,  \
-                                 public base_class1,            \
-                                 public base_class2 {           \
-        friend class Singleton<class_name>;
-
-#define DEFINE_SINGLETON_1(class_name) \
-    DEFINE_SINGLETON_W_SPECIFIER_2(class_name, )
-
-#define DEFINE_SINGLETON_2(class_name, base_class) \
-    DEFINE_SINGLETON_W_SPECIFIER_3(class_name, base_class, )
-
-#define DEFINE_SINGLETON_3(class_name, base_class1, base_class2) \
-    DEFINE_SINGLETON_W_SPECIFIER_4(class_name, base_class1, base_class2, )
-
-
-#define DEFINE_SINGLETON(...) VFUNC(DEFINE_SINGLETON_, __VA_ARGS__)
-
-#define DEFINE_SINGLETON_W_SPECIFIER(...) VFUNC(DEFINE_SINGLETON_W_SPECIFIER_, __VA_ARGS__)
-
-#define END_SINGLETON  \
-    };
-
 };  // namespace Divide
 
 #endif  // _CORE_SINGLETON_H_

@@ -94,5 +94,16 @@
     <ClInclude Include="..\..\Source Code\Editor\Widgets\DockedWindows\Headers\PostFXWindow.h">
       <Filter>Widgets\DockedWindows\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Headers\Editor.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Headers\Sample.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Source Code\Editor\Headers\Editor.inl">
+      <Filter>Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

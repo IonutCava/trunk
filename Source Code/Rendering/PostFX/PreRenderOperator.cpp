@@ -31,6 +31,10 @@ TextureData PreRenderOperator::getDebugOutput() const {
     return TextureData(0u, 0u, TextureType::COUNT);
 };
 
+void PreRenderOperator::idle(const Configuration& config) {
+    ACKNOWLEDGE_UNUSED(config);
+}
+
 void PreRenderOperator::onToggle(const bool state) {
     ACKNOWLEDGE_UNUSED(state);
 }

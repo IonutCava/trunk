@@ -35,8 +35,7 @@ GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
 
 GLStateTracker& GL_API::getStateTracker() {
-    assert(s_activeStateTracker != nullptr);
-    return *s_activeStateTracker;
+    return s_stateTracker;
 }
 
 glGlobalLockManager& GL_API::getLockManager() {
@@ -82,16 +81,15 @@ bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
     if (count > 0 && buffers != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             GLuint crtBuffer = buffers[i];
-            for (auto it : s_stateTrackers) {
-                for (GLuint& boundBuffer : it.second._activeBufferID) {
-                    if (boundBuffer == crtBuffer) {
-                        boundBuffer = GLUtil::k_invalidObjectID;
-                    }
+            GLStateTracker& stateTracker = GL_API::getStateTracker();
+            for (GLuint& boundBuffer : stateTracker._activeBufferID) {
+                if (boundBuffer == crtBuffer) {
+                    boundBuffer = GLUtil::k_invalidObjectID;
                 }
-                for (auto boundBuffer : it.second._activeVAOIB) {
-                    if (boundBuffer.second == crtBuffer) {
-                        boundBuffer.second = GLUtil::k_invalidObjectID;
-                    }
+            }
+            for (auto& boundBuffer : stateTracker._activeVAOIB) {
+                if (boundBuffer.second == crtBuffer) {
+                    boundBuffer.second = GLUtil::k_invalidObjectID;
                 }
             }
         }
@@ -107,11 +105,9 @@ bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
 bool GL_API::deleteVAOs(GLuint count, GLuint* vaos) {
     if (count > 0 && vaos != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
-            for (auto it : s_stateTrackers) {
-                if (it.second._activeVAOID == vaos[i]) {
-                    it.second._activeVAOID = GLUtil::k_invalidObjectID;
-                    break;
-                }
+            if (getStateTracker()._activeVAOID == vaos[i]) {
+                getStateTracker()._activeVAOID = GLUtil::k_invalidObjectID;
+                break;
             }
         }
         glDeleteVertexArrays(count, vaos);
@@ -125,11 +121,9 @@ bool GL_API::deleteFramebuffers(GLuint count, GLuint* framebuffers) {
     if (count > 0 && framebuffers != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             GLuint crtFB = framebuffers[i];
-            for (auto it : s_stateTrackers) {
-                for (GLuint& activeFB : it.second._activeFBID) {
-                    if (activeFB == crtFB) {
-                        activeFB = GLUtil::k_invalidObjectID;
-                    }
+            for (GLuint& activeFB : getStateTracker()._activeFBID) {
+                if (activeFB == crtFB) {
+                    activeFB = GLUtil::k_invalidObjectID;
                 }
             }
         }
@@ -143,10 +137,8 @@ bool GL_API::deleteFramebuffers(GLuint count, GLuint* framebuffers) {
 bool GL_API::deleteShaderPrograms(GLuint count, GLuint* programs) {
     if (count > 0 && programs != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
-            for (auto it : s_stateTrackers) {
-                if (it.second._activeShaderProgram == programs[i]) {
-                    it.second.setActiveProgram(0u);
-                }
+            if (getStateTracker()._activeShaderProgram == programs[i]) {
+                getStateTracker().setActiveProgram(0u);
             }
             glDeleteProgram(programs[i]);
         }
@@ -160,10 +152,8 @@ bool GL_API::deleteShaderPrograms(GLuint count, GLuint* programs) {
 bool GL_API::deleteShaderPipelines(GLuint count, GLuint* programPipelines) {
     if (count > 0 && programPipelines != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
-            for (auto it : s_stateTrackers) {
-                if (it.second._activeShaderPipeline == programPipelines[i]) {
-                    it.second.setActivePipeline(0);
-                }
+            if (getStateTracker()._activeShaderPipeline == programPipelines[i]) {
+                getStateTracker().setActivePipeline(0);
             }
         }
 
@@ -180,18 +170,18 @@ bool GL_API::deleteTextures(GLuint count, GLuint* textures, TextureType texType)
         for (GLuint i = 0; i < count; ++i) {
             GLuint crtTex = textures[i];
             if (crtTex != 0) {
-                for (auto it : s_stateTrackers) {
-                    for (auto bindingIt : it.second._textureBoundMap) {
-                        U32& handle = bindingIt[to_base(texType)];
-                        if (handle == crtTex) {
-                            handle = 0u;
-                        }
-                    }
+                GLStateTracker& stateTracker = getStateTracker();
 
-                    for (ImageBindSettings& settings : it.second._imageBoundMap) {
-                        if (settings._texture == crtTex) {
-                            settings.reset();
-                        }
+                for (auto bindingIt : stateTracker._textureBoundMap) {
+                    U32& handle = bindingIt[to_base(texType)];
+                    if (handle == crtTex) {
+                        handle = 0u;
+                    }
+                }
+
+                for (ImageBindSettings& settings : stateTracker._imageBoundMap) {
+                    if (settings._texture == crtTex) {
+                        settings.reset();
                     }
                 }
             }
@@ -210,11 +200,9 @@ bool GL_API::deleteSamplers(GLuint count, GLuint* samplers) {
         for (GLuint i = 0; i < count; ++i) {
             GLuint crtSampler = samplers[i];
             if (crtSampler != 0) {
-                for (auto it : s_stateTrackers) {
-                    for (GLuint& boundSampler : it.second._samplerBoundMap) {
-                        if (boundSampler == crtSampler) {
-                            boundSampler = 0;
-                        }
+                for (GLuint& boundSampler : getStateTracker()._samplerBoundMap) {
+                    if (boundSampler == crtSampler) {
+                        boundSampler = 0;
                     }
                 }
             }

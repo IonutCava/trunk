@@ -137,7 +137,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         offsetInBytes += queueWriteIndex() * _allignedBufferSize;
     }
 
-    size_t req = alignmentRequirement(_usage);
+    const size_t req = alignmentRequirement(_usage);
     if (offsetInBytes % req != 0) {
         offsetInBytes = (offsetInBytes + req - 1) / req * req;
     }

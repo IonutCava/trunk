@@ -169,10 +169,6 @@ void Editor::idle() {
     }
 }
 
-bool Editor::isInit() const {
-    return _mainWindow != nullptr;
-}
-
 bool Editor::init(const vec2<U16>& renderResolution) {
     ACKNOWLEDGE_UNUSED(renderResolution);
 
@@ -389,7 +385,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         main_viewport->PlatformHandle = _mainWindow;
 
-        const vector<WindowManager::MonitorData>& monitors = g_windowManager->monitorData();
+        const vectorEASTL<WindowManager::MonitorData>& monitors = g_windowManager->monitorData();
         I32 monitorCount = to_I32(monitors.size());
 
         platform_io.Monitors.resize(monitorCount);
@@ -508,10 +504,6 @@ void Editor::toggle(const bool state) {
         updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
     }
-}
-
-bool Editor::running() const {
-    return _running;
 }
 
 void Editor::update(const U64 deltaTimeUS) {
@@ -707,21 +699,9 @@ void Editor::drawStatusBar() {
     }
 }
 
-void Editor::setTransformSettings(const TransformSettings& settings) {
-    Attorney::GizmoEditor::setTransformSettings(*_gizmo, settings);
-}
-
-const TransformSettings& Editor::getTransformSettings() const {
-    return Attorney::GizmoEditor::getTransformSettings(*_gizmo);
-}
-
 const Rect<I32>& Editor::scenePreviewRect(bool globalCoords) const {
     SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
     return sceneView->sceneRect(globalCoords);
-}
-
-const Rect<I32>& Editor::getTargetViewport() const {
-    return _targetViewport;
 }
 
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
@@ -899,6 +879,7 @@ bool Editor::Undo() {
 
     return ret;
 }
+
 bool Editor::Redo() {
     bool ret = _undoManager->Redo();
     if (ret && _statusBar) {
@@ -907,7 +888,8 @@ bool Editor::Redo() {
 
     return ret;
 }
-/// Key released: return true if input was consumed
+
+// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
     if (!isInit()) {
         return false;
@@ -1239,22 +1221,6 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
     }
 }
 
-void Editor::setSelectedCamera(Camera* camera) {
-    _selectedCamera = camera;
-}
-
-Camera* Editor::getSelectedCamera() const {
-    return _selectedCamera;
-}
-
-bool Editor::simulationPauseRequested() const {
-    return _stepQueue == 0;
-}
-
-bool Editor::hasUnsavedElements() const {
-    return !_unsavedElements.empty();
-}
-
 void Editor::saveElement(I64 elementGUID) {
     if (elementGUID == -1) {
         _unsavedElements.clear();
@@ -1270,9 +1236,6 @@ void Editor::saveElement(I64 elementGUID) {
     }
 }
 
-void Editor::toggleMemoryEditor(bool state) {
-    _showMemoryEditor = state;
-}
 
 bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
 
@@ -1440,6 +1403,7 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
 
     return closed;
 }
+
 bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) {
     constexpr U32 normalMask = to_base(ComponentType::TRANSFORM) |
                                to_base(ComponentType::BOUNDS) |
@@ -1477,20 +1441,9 @@ void Editor::scenePreviewFocused(bool state) {
         io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
     }
 }
-ImGuiContext& Editor::imguiContext() {
-    return *_imguiContext;
-}
 
 ImGuiContext& Editor::imguizmoContext() {
     return _gizmo->getContext();
-}
-
-bool Editor::scenePreviewFocused() const {
-    return _scenePreviewFocused;
-}
-
-bool Editor::scenePreviewHovered() const {
-    return _sceneHovered;
 }
 
 void Editor::saveToXML() const {

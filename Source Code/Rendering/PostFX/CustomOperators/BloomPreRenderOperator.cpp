@@ -91,10 +91,6 @@ BloomPreRenderOperator::~BloomPreRenderOperator() {
     _context.renderTargetPool().deallocateRT(_bloomBlurBuffer[1]);
 }
 
-void BloomPreRenderOperator::idle(const Configuration& config) {
-    ACKNOWLEDGE_UNUSED(config);
-}
-
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 

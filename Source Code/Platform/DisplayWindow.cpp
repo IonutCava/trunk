@@ -68,7 +68,6 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     ToggleBit(_flags, WindowFlags::OWNS_RENDER_CONTEXT, !BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT)));
 
     _type = initialType;
-    _title = descriptor.title;
 
     vec2<I32> position(descriptor.position);
 
@@ -83,7 +82,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
         position.y += _parent.monitorData()[descriptor.targetDisplay].viewport.x;
     }
 
-    _sdlWindow = SDL_CreateWindow(_title.c_str(),
+    _sdlWindow = SDL_CreateWindow(descriptor.title.c_str(),
                                   position.x,
                                   position.y,
                                   descriptor.dimensions.width,
@@ -361,12 +360,6 @@ void DisplayWindow::maximized(const bool state) {
     ToggleBit(_flags, WindowFlags::MAXIMIZED, state);
 }
 
-void DisplayWindow::title(const stringImpl& title) {
-    if (title != _title) {
-        SDL_SetWindowTitle(_sdlWindow, title.c_str());
-        _title = title;
-    }
-}
 bool DisplayWindow::grabState() const {
     return SDL_GetWindowGrab(_sdlWindow) == SDL_TRUE;
 }

@@ -41,7 +41,6 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
     ~SSAOPreRenderOperator();
 
-    void idle(const Configuration& config) final;
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;

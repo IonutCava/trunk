@@ -42,9 +42,10 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON(FrameListenerManager)
+class FrameListenerManager : public Singleton<FrameListenerManager> {
+    friend class Singleton<FrameListenerManager>;
 
-    typedef vectorEASTL<U64> EventTimeMap;
+    using EventTimeMap = vectorEASTL<U64>;
 
   public:
     void registerFrameListener(FrameListener* listener, U32 callOrder);
@@ -78,10 +79,10 @@ DEFINE_SINGLETON(FrameListenerManager)
 
    private:
     mutable SharedMutex _listenerLock;
-    vector<FrameListener*> _listeners;
+    vectorEASTL<FrameListener*> _listeners;
     std::array<EventTimeMap, to_base(FrameEventType::FRAME_EVENT_ENDED) + 1> _eventTimers;
 
-END_SINGLETON
+};
 
 inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder) {
     FrameListenerManager::instance().registerFrameListener(listener,

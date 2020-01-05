@@ -62,7 +62,7 @@ struct VegetationDetails {
     stringImpl billboardTextureArray = "";
     std::shared_ptr<ImageTools::ImageData> grassMap;
     std::shared_ptr<ImageTools::ImageData> treeMap;
-    std::weak_ptr<Terrain> parentTerrain;
+    eastl::weak_ptr<Terrain> parentTerrain;
     vectorEASTL<stringImpl> treeMeshes;
     vec4<F32> grassScales, treeScales;
     std::array<vec3<F32>, 4> treeRotations;
@@ -125,7 +125,7 @@ class Vegetation : public SceneNode {
     TerrainChunk& _terrainChunk;
     // variables
     bool _render;  ///< Toggle vegetation rendering On/Off
-    std::weak_ptr<Terrain> _terrain;
+    eastl::weak_ptr<Terrain> _terrain;
     U16 _billboardCount;  ///< Vegetation cumulated density
     F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f, _time = 0.0f;
     U64 _stateRefreshIntervalUS = 0ULL;

@@ -231,8 +231,8 @@ bool Scene::saveXML() const {
         }
 
         pt.put("options.visibility", state().renderState().generalVisibility());
-        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str())));
-        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.move").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.turn").c_str())));
         pt.put("options.autoCookPhysicsAssets", true);
 
         pt.put("fog.fogDensity", state().renderState().fogDescriptor().density());
@@ -309,7 +309,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
                 //TaskYield(parentTask);
             }
 
-            std::static_pointer_cast<SceneNode>(res.lock())->loadFromXML(nodeTree);
+            eastl::static_pointer_cast<SceneNode>(res.lock())->loadFromXML(nodeTree);
             _loadingTasks.fetch_sub(1);
         };
 
@@ -452,7 +452,7 @@ SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
                   "Scene::addParticleEmitter error: invalid name specified!");
 
     ResourceDescriptor particleEmitter(name);
-    std::shared_ptr<ParticleEmitter> emitter = CreateResource<ParticleEmitter>(_resCache, particleEmitter);
+    eastl::shared_ptr<ParticleEmitter> emitter = CreateResource<ParticleEmitter>(_resCache, particleEmitter);
 
     DIVIDE_ASSERT(emitter != nullptr,
                   "Scene::addParticleEmitter error: Could not instantiate emitter!");
@@ -487,7 +487,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     auto registerTerrain = [this, name, &parentNode, pt](CachedResource_wptr res) {
         SceneGraphNodeDescriptor terrainNodeDescriptor;
         terrainNodeDescriptor._name = name;
-        terrainNodeDescriptor._node = std::static_pointer_cast<Terrain>(res.lock());
+        terrainNodeDescriptor._node = eastl::static_pointer_cast<Terrain>(res.lock());
         terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
         terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
                                                to_base(ComponentType::TRANSFORM) |
@@ -558,7 +558,7 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
     ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
     skyDescriptor.ID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
-    std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
+    eastl::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
     skyItem->loadFromXML(pt);
 
@@ -582,7 +582,7 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
     auto registerWater = [this, nodeName, &parentNode, pt](CachedResource_wptr res) {
         SceneGraphNodeDescriptor waterNodeDescriptor;
         waterNodeDescriptor._name = nodeName;
-        waterNodeDescriptor._node = std::static_pointer_cast<WaterPlane>(res.lock());
+        waterNodeDescriptor._node = eastl::static_pointer_cast<WaterPlane>(res.lock());
         waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
         waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
                                             to_base(ComponentType::TRANSFORM) |
@@ -625,7 +625,7 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
     planeDescriptor.ID(to_U32(baseCamera->getZPlanes().max));
     planeDescriptor.onLoadCallback(registerPlane);
 
-    std::shared_ptr<InfinitePlane> planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
+    eastl::shared_ptr<InfinitePlane> planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
     DIVIDE_ASSERT(planeItem != nullptr, "Scene::addInfPlane error: Could not create infinite plane resource!");
     planeItem->loadFromXML(pt);
 
@@ -690,7 +690,7 @@ U16 Scene::registerInputActions() {
     auto stopTurnUpDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
     auto togglePauseState = [](InputParams param){
         ParamHandler& par = ParamHandler::instance();
-        par.setParam(_ID("freezeLoopTime"), !par.getParam(_ID("freezeLoopTime"), false));
+        par.setParam(_ID_32("freezeLoopTime"), !par.getParam(_ID_32("freezeLoopTime"), false));
     };
     auto toggleDepthOfField = [this](InputParams param) {
         PostFX& postFX = _context.gfx().getRenderer().postFX();
@@ -718,8 +718,8 @@ U16 Scene::registerInputActions() {
         LightPool::togglePreviewShadowMaps(_context.gfx(), *_lightPool->getLights(LightType::DIRECTIONAL)[0]);
 
         ParamHandler& par = ParamHandler::instance();
-        par.setParam<bool>(_ID("rendering.previewDebugViews"),
-                          !par.getParam<bool>(_ID("rendering.previewDebugViews"), false));
+        par.setParam<bool>(_ID_32("rendering.previewDebugViews"),
+                          !par.getParam<bool>(_ID_32("rendering.previewDebugViews"), false));
     };
     auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
     auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
@@ -907,24 +907,24 @@ void Scene::loadDefaultCamera() {
     
     
     // Camera position is overridden in the scene's XML configuration file
-    if (!_paramHandler.isParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (!_paramHandler.isParam<bool>(_ID_32((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         return;
     }
 
-    if (_paramHandler.getParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (_paramHandler.getParam<bool>(_ID_32((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         baseCamera->setEye(vec3<F32>(
-            _paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.x").c_str())),
-            _paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.y").c_str())),
-            _paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.z").c_str()))));
-        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
-            _paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
+            _paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.x").c_str())),
+            _paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.y").c_str())),
+            _paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.z").c_str()))));
+        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
+            _paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
         baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
         baseCamera->setEye(vec3<F32>(0, 50, 0));
     }
 
-    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
     baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
                               _context.config().runtime.verticalFOV,
                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
@@ -1029,7 +1029,7 @@ void Scene::postLoad() {
     }
 
     // Cook geometry
-    if (_paramHandler.getParam<bool>(_ID((resourceName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
+    if (_paramHandler.getParam<bool>(_ID_32((resourceName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
         _cookCollisionMeshesScheduled = true;
     }
 }
@@ -1095,7 +1095,7 @@ void Scene::onSetActive() {
     addPlayerInternal(false);
 
     static stringImpl originalTitle = _context.activeWindow().title();
-    _context.activeWindow().title(originalTitle + " - " + resourceName().c_str());
+    _context.activeWindow().title("%s - %s", originalTitle.c_str(), resourceName().c_str());
 }
 
 void Scene::onRemoveActive() {
@@ -1122,7 +1122,7 @@ void Scene::addPlayerInternal(bool queue) {
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
         playerNodeDescriptor._serialize = false;
-        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName);
+        playerNodeDescriptor._node = eastl::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |
@@ -1232,9 +1232,12 @@ bool Scene::updateCameraControls(PlayerIndex idx) {
     updated = cam.zoom(to_I32(playerState.zoom())) || updated;
 
     playerState.cameraUpdated(updated);
-    playerState.cameraUnderwater(checkCameraUnderwater(cam));
+    if (updated) {
+        playerState.cameraUnderwater(checkCameraUnderwater(cam));
+        return true;
+    }
 
-    return playerState.cameraUpdated();
+    return false;
 }
 
 void Scene::updateSceneState(const U64 deltaTimeUS) {
@@ -1253,7 +1256,7 @@ void Scene::onLostFocus() {
         state().playerState(player->index()).resetMovement();
     }
 
-    //_paramHandler.setParam(_ID("freezeLoopTime"), true);
+    //_paramHandler.setParam(_ID_32("freezeLoopTime"), true);
 }
 
 void Scene::registerTask(Task& taskItem, bool start, TaskPriority priority) {
@@ -1350,19 +1353,19 @@ bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
 
 bool Scene::checkCameraUnderwater(const Camera& camera) const {
     const vec3<F32>& eyePos = camera.getEye();
-
-    for (const WaterDetails& water : state().globalWaterBodies())  {
-        if (IS_IN_RANGE_INCLUSIVE(eyePos.y, water._heightOffset - water._depth, water._heightOffset)) {
-            return true;
+    {
+        const auto& waterBodies = state().globalWaterBodies();
+        for (const WaterDetails& water : waterBodies) {
+            if (IS_IN_RANGE_INCLUSIVE(eyePos.y, water._heightOffset - water._depth, water._heightOffset)) {
+                return true;
+            }
         }
     }
 
-    const vectorEASTL<SceneGraphNode*>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
-    if (!waterBodies.empty()) {
-        for (SceneGraphNode* node : waterBodies) {
-            if (node->getNode<WaterPlane>().pointUnderwater(*node, eyePos)) {
-                return true;
-            }
+    const auto& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
+    for (SceneGraphNode* node : waterBodies) {
+        if (node->getNode<WaterPlane>().pointUnderwater(*node, eyePos)) {
+            return true;
         }
     }
 

@@ -99,12 +99,14 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         const Camera& cam = _scenePlayers.front()->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
-        const std::pair<F32, F32> frameStats = Time::ApplicationTimer::instance().getFrameRateAndTime();
+        F32 fps = 0.f;
+        F32 frameTime = 0.f;
+        Time::ApplicationTimer::instance().getFrameRateAndTime(fps, frameTime);
 
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f. FrameIndex : %d",
-                                            frameStats.first,
-                                            frameStats.second,
+                                            fps,
+                                            frameTime,
                                             _context.gfx().getFrameCount()), false);
         _GUI->modifyText(_ID("RenderBinCount"),
             Util::StringFormat("Number of items in Render Bin: %d.",

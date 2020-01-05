@@ -159,7 +159,8 @@ TEST(TaskSpeedTest)
         }
 
         Wait(Start(*job));
-        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        timer.stop();
+        const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (blocking): 60K tasks completed in: " << durationMS << " ms." << std::endl;
     }
     {
@@ -186,7 +187,8 @@ TEST(TaskSpeedTest)
         }
 
         Wait(Start(*job));
-        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        timer.stop();
+        const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (lockfree): 60K tasks completed in: " << durationMS << " ms." << std::endl;
     }
     {
@@ -205,7 +207,8 @@ TEST(TaskSpeedTest)
                      },
                      loopCount,
                      partitionSize);
-        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        timer.stop();
+        const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (parallel_for - blocking): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
     }
     {
@@ -227,7 +230,8 @@ TEST(TaskSpeedTest)
             TaskPriority::DONT_CARE,
             false, 
             true);
-        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        timer.stop();
+        const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (parallel_for - blocking - use current thread): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
     }
     {
@@ -246,7 +250,8 @@ TEST(TaskSpeedTest)
                     },
                     loopCount,
                     partitionSize);
-        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        timer.stop();
+        const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (parallel_for - lockfree): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
     }   
     {
@@ -268,7 +273,8 @@ TEST(TaskSpeedTest)
             TaskPriority::DONT_CARE,
             false,
             true);
-        F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop() - Time::ProfileTimer::overhead());
+        timer.stop();
+        const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (parallel_for - lockfree - use current thread): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
     }
 }

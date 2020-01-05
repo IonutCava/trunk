@@ -63,7 +63,7 @@ class TerrainLoader : private NonCopyable {
     ~TerrainLoader() {}
 
     static bool loadThreadedResources(Terrain_ptr terrain,
-                                     PlatformContext& context,
+                                      PlatformContext& context,
                                       const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
 
     static VegetationDetails& initializeVegetationDetails(Terrain_ptr terrain,

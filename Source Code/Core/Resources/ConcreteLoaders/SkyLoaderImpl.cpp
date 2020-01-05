@@ -9,8 +9,8 @@ namespace Divide {
 
 template<>
 CachedResource_ptr ImplResourceLoader<Sky>::operator()() {
-    std::shared_ptr<Sky> ptr(MemoryManager_NEW Sky(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), _descriptor.ID()),
-                             DeleteResource(_cache));
+    eastl::shared_ptr<Sky> ptr(MemoryManager_NEW Sky(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), _descriptor.ID()),
+                               DeleteResource(_cache));
 
     if (!load(ptr)) {
         ptr.reset();

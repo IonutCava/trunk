@@ -13,7 +13,7 @@ namespace Divide {
 
 template<>
 CachedResource_ptr ImplResourceLoader<Terrain>::operator()() {
-    std::shared_ptr<Terrain> ptr(MemoryManager_NEW Terrain(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName()),
+    eastl::shared_ptr<Terrain> ptr(MemoryManager_NEW Terrain(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName()),
                                  DeleteResource(_cache));
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_START")), _descriptor.resourceName().c_str());

@@ -138,7 +138,7 @@ public:
 
     inline U32 getWindowCount() const noexcept;
 
-    inline const vector<MonitorData>& monitorData() const noexcept;
+    inline const vectorEASTL<MonitorData>& monitorData() const noexcept;
 
     vec2<U16> getFullscreenResolution() const;
 
@@ -162,8 +162,8 @@ protected:
     I64 _mainWindowGUID = -1;
 
     PlatformContext* _context = nullptr;
-    vector<MonitorData> _monitors;
-    vector<DisplayWindow*> _windows;
+    vectorEASTL<MonitorData> _monitors;
+    vectorEASTL<DisplayWindow*> _windows;
 
     static hashMap<CursorStyle, SDL_Cursor*> s_cursors;
 };

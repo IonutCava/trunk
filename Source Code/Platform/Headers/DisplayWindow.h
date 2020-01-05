@@ -192,8 +192,7 @@ public:
            void setPosition(I32 x, I32 y, bool global = false, bool offset = false);
     inline void setPosition(const vec2<I32>& position, bool global = false);
 
-    inline const stringImpl& title() const;
-    void title(const stringImpl& title);
+    inline const char* title() const;
     template<typename... Args>
     void title(const char* format, Args&& ...args);
 
@@ -236,8 +235,6 @@ private:
 
     FColour4  _clearColour;
     Rect<I32> _renderingViewport;
-
-    stringImpl _title;
 
     vec2<U16> _prevDimensions;
     vec2<U16> _drawableSize;

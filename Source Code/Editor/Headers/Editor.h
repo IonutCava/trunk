@@ -129,30 +129,26 @@ class Editor : public PlatformContextComponent,
     void update(const U64 deltaTimeUS);
 
     void toggle(const bool state);
-    bool running() const;
-
     void onSizeChange(const SizeChangeParams& params);
     void selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node);
 
-    bool simulationPauseRequested() const;
-
-    template<typename T>
-    void registerUndoEntry(const UndoEntry<T>& entry) {
-        _undoManager->registerUndoEntry(entry);
-    }
     bool Undo();
     bool Redo();
-    void setTransformSettings(const TransformSettings& settings);
-    const TransformSettings& getTransformSettings() const;
 
     const Rect<I32>& scenePreviewRect(bool globalCoords) const;
-    bool scenePreviewFocused() const;
-    bool scenePreviewHovered() const;
     bool wantsMouse() const;
     bool wantsKeyboard() const;
     bool wantsGamepad() const;
 
-    const Rect<I32>& getTargetViewport() const;
+    template<typename T>
+    inline void registerUndoEntry(const UndoEntry<T>& entry);
+    inline bool simulationPauseRequested() const;
+    inline void setTransformSettings(const TransformSettings& settings);
+    inline const TransformSettings& getTransformSettings() const;
+    inline const Rect<I32>& getTargetViewport() const;
+    inline bool running() const;
+    inline bool scenePreviewFocused() const;
+    inline bool scenePreviewHovered() const;
 
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt);
@@ -189,24 +185,21 @@ class Editor : public PlatformContextComponent,
     void loadFromXML();
 
   protected:
-    bool isInit() const;
+    inline bool isInit() const;
     bool render(const U64 deltaTime);
     void updateMousePosAndButtons();
 
     void scenePreviewFocused(bool state);
     ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
-    ImGuiContext& imguiContext();
     ImGuiContext& imguizmoContext();
 
+    inline ImGuiContext& imguiContext();
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
     void drawMenuBar();
     void drawStatusBar();
-    void setSelectedCamera(Camera* camera);
-    Camera* getSelectedCamera() const;
-    bool hasUnsavedElements() const;
+
     void saveElement(I64 elementGUID);
-    void toggleMemoryEditor(bool state);
     void updateCameraSnapshot();
     // Returns true if the window was closed
     bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal);
@@ -214,6 +207,11 @@ class Editor : public PlatformContextComponent,
     bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
     // Return true if the model was spawned as a scene node
     bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name);
+
+    inline void toggleMemoryEditor(bool state);
+    inline bool hasUnsavedElements() const;
+    inline void setSelectedCamera(Camera* camera);
+    inline Camera* getSelectedCamera() const;
 
   private:
     ImGuiStyleEnum _currentTheme;
@@ -397,3 +395,5 @@ namespace Attorney {
 }; //namespace Divide
 
 #endif //_DIVIDE_EDITOR_H_
+
+#include "Editor.inl"

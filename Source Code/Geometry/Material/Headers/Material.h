@@ -218,7 +218,7 @@ class Material : public CachedResource {
 
     I64 getProgramID(RenderStagePass renderStagePass) const;
 
-    std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const;
+    eastl::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const;
 
     ShaderProgramInfo& getShaderInfo(RenderStagePass renderStagePass);
 

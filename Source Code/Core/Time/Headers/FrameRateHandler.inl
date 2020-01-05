@@ -51,15 +51,19 @@ inline F32 FrameRateHandler::frameTime() const {
     return 1000.0f / frameRate();
 }
 
-inline std::pair<F32, F32> FrameRateHandler::frameRateAndTime() const {
-    return {
-        frameRate(),
-        frameTime()
-    };
+inline void FrameRateHandler::frameRateAndTime(F32& fpsOut, F32& frameTimeOut) const {
+    fpsOut = frameRate();
+    frameTimeOut = frameTime();
 }
 
 inline F32 FrameRateHandler::averageFrameRate() const {
     return _averageFPS / _frameCount;
+}
+
+inline void FrameRateHandler::frameStates(F32& avgFPSOut, F32& minFPSOut, F32& maxFPSOut) const {
+    avgFPSOut = averageFrameRate();
+    minFPSOut = _minFPS;
+    maxFPSOut = _maxFPS;
 }
 
 }; //namespace Time

@@ -28,7 +28,6 @@ void DebugInterface::idle() {
     }
 
     if (!enabled()) {
-        _output.clear();
         return;
     }
 
@@ -68,6 +67,9 @@ void DebugInterface::idle() {
 
 void DebugInterface::toggle(const bool state) noexcept {
     _enabled = state;
+    if (!_enabled) {
+        _output.clear();
+    }
 }
 
 bool DebugInterface::enabled() const noexcept {

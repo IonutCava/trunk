@@ -145,7 +145,7 @@ const DisplayWindow* WindowManager::getWindowByID(U32 ID) const noexcept {
     return nullptr;
 }
 
-inline const vector<WindowManager::MonitorData>& WindowManager::monitorData() const noexcept {
+inline const vectorEASTL<WindowManager::MonitorData>& WindowManager::monitorData() const noexcept {
     return _monitors;
 }
 

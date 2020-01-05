@@ -155,8 +155,8 @@ class SceneNode : public CachedResource {
 
     virtual const char* getTypeName() const;
 
-    ResourceCache& parentResourceCache() { return _parentCache; }
-    const ResourceCache& parentResourceCache() const { return _parentCache; }
+    inline ResourceCache& parentResourceCache() { return _parentCache; }
+    inline const ResourceCache& parentResourceCache() const { return _parentCache; }
 
     inline const BoundingBox& getBounds() const { return _boundingBox; }
 
@@ -215,12 +215,12 @@ class SceneNodeSceneGraph {
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
     }
-    static void frameStarted(SceneNode_ptr& node, SceneGraphNode& sgn) {
-        node->frameStarted(sgn);
+    static void frameStarted(SceneNode& node, SceneGraphNode& sgn) {
+        node.frameStarted(sgn);
     }
 
-    static void frameEnded(SceneNode_ptr& node, SceneGraphNode& sgn) {
-        node->frameEnded(sgn);
+    static void frameEnded(SceneNode& node, SceneGraphNode& sgn) {
+        node.frameEnded(sgn);
     }
 
     static void sceneUpdate(SceneNode& node, const U64 deltaTimeUS,

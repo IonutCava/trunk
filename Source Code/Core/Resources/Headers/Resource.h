@@ -90,7 +90,7 @@ class Resource : public GUIDWrapper
 };
 
 class CachedResource : public Resource,
-                       public std::enable_shared_from_this<CachedResource>
+                       public eastl::enable_shared_from_this<CachedResource>
 {
     friend class ResourceCache;
     friend class ResourceLoader;

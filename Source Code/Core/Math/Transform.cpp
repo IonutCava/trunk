@@ -4,17 +4,6 @@
 
 namespace Divide {
 
-TransformValues::TransformValues() noexcept
-{
-}
-
-TransformValues::TransformValues(const TransformValues& other) noexcept
-    : _translation(other._translation),
-      _scale(other._scale),
-      _orientation(other._orientation)
-{
-}
-
 Transform::Transform()
     : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>(1.0f))
 {
@@ -22,9 +11,9 @@ Transform::Transform()
 
 Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation, const vec3<F32>& scale)
+    : _dirty(false),
+      _rebuild(false)
 {
-    _notDirty.clear();
-    _dontRebuildMatrix.clear();
     _transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
     _transformValues._orientation.set(orientation);
@@ -34,34 +23,28 @@ Transform::~Transform()
 {
 }
 
-const mat4<F32>& Transform::getMatrixInternal() {
-    if (!_notDirty.test_and_set()) {
-        if (!_dontRebuildMatrix.test_and_set()) {
+void Transform::getMatrix(mat4<F32>& matrix) {
+    if (_dirty) {
+        if (_rebuild) {
             // Ordering - a la Ogre:
             _worldMatrix.identity();
             //    1. Scale
             _worldMatrix.setScale(_transformValues._scale);
             //    2. Rotate
             _worldMatrix *= mat4<F32>(GetMatrix(_transformValues._orientation), false);
+            _rebuild = false;
         }
         //        3. Translate
         _worldMatrix.setTranslation(_transformValues._translation);
+        _dirty = false;
     }
 
-    return _worldMatrix;
-}
-
-void Transform::getMatrix(mat4<F32>& matrix) {
-    matrix.set(getMatrixInternal());
-}
-
-mat4<F32> Transform::getMatrix() {
-    return mat4<F32>{ getMatrixInternal() };
+    matrix = _worldMatrix;
 }
 
 void Transform::setTransforms(const mat4<F32>& transform) {
-    _notDirty.clear();
-    _dontRebuildMatrix.clear();
+    _dirty = true;
+    _rebuild = true;
 
     Quaternion<F32>& rotation = _transformValues._orientation;
     vec3<F32>& position = _transformValues._translation;
@@ -105,8 +88,8 @@ void Transform::identity() {
     _transformValues._translation.reset();
     _transformValues._orientation.identity();
     _worldMatrix.identity();
-    _notDirty.test_and_set();
-    _dontRebuildMatrix.test_and_set();
+    _dirty = false;
+    _rebuild = false;
 }
 
 };  // namespace Divide

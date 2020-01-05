@@ -175,10 +175,6 @@ namespace Divide {
         quatOut.identity();
     }
 
-    mat4<F32> PhysXActor::getMatrix() {
-        return _cachedLocalMatrix;
-    }
-
     void PhysXActor::getMatrix(mat4<F32>& matrixOut) {
         matrixOut.set(_cachedLocalMatrix);
     }

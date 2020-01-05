@@ -587,7 +587,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         blur.threaded(true);
         blur.propertyDescriptor(shaderDescriptor);
         blur.onLoadCallback([this](CachedResource_wptr res) {
-            ShaderProgram_ptr blurShader = std::static_pointer_cast<ShaderProgram>(res.lock());
+            ShaderProgram_ptr blurShader = eastl::static_pointer_cast<ShaderProgram>(res.lock());
             _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
             _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
 
@@ -698,7 +698,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         pipelineDescriptor._shaderProgramHandle = _displayShader->getGUID();
         _DrawFSTexturePipeline = newPipeline(pipelineDescriptor);
     }
-    ParamHandler::instance().setParam<bool>(_ID("rendering.previewDebugViews"), false);
+    ParamHandler::instance().setParam<bool>(_ID_32("rendering.previewDebugViews"), false);
     {
         PipelineDescriptor pipelineDesc;
         RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
@@ -786,7 +786,7 @@ void GFXDevice::closeRenderingAPI() {
 /// the screen, so we try to do some processing
 void GFXDevice::idle() {
     if (Config::ENABLE_GPU_VALIDATION) {
-        _debugViewsEnabled = ParamHandler::instance().getParam<bool>(_ID("rendering.previewDebugViews"), false);
+        _debugViewsEnabled = ParamHandler::instance().getParam<bool>(_ID_32("rendering.previewDebugViews"), false);
     }
 
     _api->idle();
@@ -1715,21 +1715,21 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         _previewDepthMapShader = CreateResource<ShaderProgram>(parent().resourceCache(), fbPreview);
         assert(_previewDepthMapShader != nullptr);
 
-        DebugView_ptr HiZ = std::make_shared<DebugView>();
+        DebugView_ptr HiZ = eastl::make_shared<DebugView>();
         HiZ->_shader = _previewDepthMapShader;
         HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Colour, 0).texture();
         HiZ->_name = "Hierarchical-Z";
         HiZ->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
         HiZ->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
-        DebugView_ptr DepthPreview = std::make_shared<DebugView>();
+        DebugView_ptr DepthPreview = eastl::make_shared<DebugView>();
         DepthPreview->_shader = _previewDepthMapShader;
         DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
         DepthPreview->_name = "Depth Buffer";
         DepthPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
         DepthPreview->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
-        DebugView_ptr NormalPreview = std::make_shared<DebugView>();
+        DebugView_ptr NormalPreview = eastl::make_shared<DebugView>();
         NormalPreview->_shader = _renderTargetDraw;
         NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
         NormalPreview->_name = "Normals";
@@ -1738,7 +1738,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         NormalPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 1u);
         NormalPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
-        DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
+        DebugView_ptr VelocityPreview = eastl::make_shared<DebugView>();
         VelocityPreview->_shader = _renderTargetDraw;
         VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
         VelocityPreview->_name = "Velocity Map";
@@ -1747,7 +1747,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         VelocityPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
         VelocityPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 1u);
             
-        DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
+        DebugView_ptr SSAOPreview = eastl::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
         SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
         SSAOPreview->_name = "SSAO Map";
@@ -1756,7 +1756,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         SSAOPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
         SSAOPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 1u);
 
-        DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();
+        DebugView_ptr AlphaAccumulationHigh = eastl::make_shared<DebugView>();
         AlphaAccumulationHigh->_shader = _renderTargetDraw;
         AlphaAccumulationHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
         AlphaAccumulationHigh->_name = "Alpha Accumulation High";
@@ -1765,7 +1765,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         AlphaAccumulationHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
         AlphaAccumulationHigh->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
-        DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
+        DebugView_ptr AlphaRevealageHigh = eastl::make_shared<DebugView>();
         AlphaRevealageHigh->_shader = _renderTargetDraw;
         AlphaRevealageHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
         AlphaRevealageHigh->_name = "Alpha Revealage High";
@@ -1774,7 +1774,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         AlphaRevealageHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
         AlphaRevealageHigh->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
-        //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
+        //DebugView_ptr AlphaAccumulationLow = eastl::make_shared<DebugView>();
         //AlphaAccumulationLow->_shader = _renderTargetDraw;
         //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
         //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
@@ -1783,7 +1783,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         //AlphaAccumulationLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
         //AlphaAccumulationLow->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
 
-        //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
+        //DebugView_ptr AlphaRevealageLow = eastl::make_shared<DebugView>();
         //AlphaRevealageLow->_shader = _renderTargetDraw;
         //AlphaRevealageLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
         //AlphaRevealageLow->_name = "Alpha Revealage Low";
@@ -1898,7 +1898,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
 }
 
 
-DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
+DebugView* GFXDevice::addDebugView(const eastl::shared_ptr<DebugView>& view) {
     UniqueLock lock(_debugViewLock);
 
     _debugViews.push_back(view);
@@ -1907,7 +1907,7 @@ DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
     }
     std::sort(std::begin(_debugViews),
               std::end(_debugViews),
-              [](const std::shared_ptr<DebugView>& a, const std::shared_ptr<DebugView>& b)-> bool {
+              [](const eastl::shared_ptr<DebugView>& a, const eastl::shared_ptr<DebugView>& b)-> bool {
                   return a->_sortIndex < b->_sortIndex;
                });
 
@@ -1916,10 +1916,10 @@ DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
 
 bool GFXDevice::removeDebugView(DebugView* view) {
     if (view != nullptr) {
-        vector<std::shared_ptr<DebugView>>::iterator it;
+        vector<eastl::shared_ptr<DebugView>>::iterator it;
         it = std::find_if(std::begin(_debugViews),
                           std::end(_debugViews),
-                         [view](const std::shared_ptr<DebugView>& entry) {
+                         [view](const eastl::shared_ptr<DebugView>& entry) {
                             return view->getGUID() == entry->getGUID();
                          });
 

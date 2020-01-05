@@ -62,6 +62,7 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _processInput(false),
       _scenePool(nullptr),
       _init(false),
+      _platerQueueDirty(false),
       _elapsedTime(0ULL),
       _elapsedTimeMS(0),
       _activePlayerCount(0),
@@ -93,16 +94,20 @@ void SceneManager::idle() {
         WaitForAllTasks(getActiveScene().context(), true, true, false);
         _parent.platformContext().gfx().getRenderer().postFX().setFadeIn(2750.0);
     } else {
-        while (!_playerAddQueue.empty()) {
-            std::pair<Scene*, SceneGraphNode*>& playerToAdd = _playerAddQueue.front();
-            addPlayerInternal(*playerToAdd.first, playerToAdd.second);
-            _playerAddQueue.pop();
+        if (_platerQueueDirty) {
+            while (!_playerAddQueue.empty()) {
+                std::pair<Scene*, SceneGraphNode*>& playerToAdd = _playerAddQueue.front();
+                addPlayerInternal(*playerToAdd.first, playerToAdd.second);
+                _playerAddQueue.pop();
+            }
+            while (!_playerRemoveQueue.empty()) {
+                std::pair<Scene*, Player_ptr>& playerToRemove = _playerRemoveQueue.front();
+                removePlayerInternal(*playerToRemove.first, playerToRemove.second);
+                _playerRemoveQueue.pop();
+            }
+            _platerQueueDirty = false;
         }
-        while (!_playerRemoveQueue.empty()) {
-            std::pair<Scene*, Player_ptr>& playerToRemove = _playerRemoveQueue.front();
-            removePlayerInternal(*playerToRemove.first, playerToRemove.second);
-            _playerRemoveQueue.pop();
-        }
+
         getActiveScene().idle();
     }
 }
@@ -158,7 +163,7 @@ Scene* SceneManager::load(const Str128& sceneName) {
         return nullptr;
     }
 
-    ParamHandler::instance().setParam(_ID("currentScene"), stringImpl(sceneName.c_str()));
+    ParamHandler::instance().setParam(_ID_32("currentScene"), stringImpl(sceneName.c_str()));
 
     bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
 
@@ -208,7 +213,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     ShadowMap::resetShadowMaps();
 
     _platformContext->gui().onChangeScene(scene);
-    ParamHandler::instance().setParam(_ID("activeScene"), scene->resourceName());
+    ParamHandler::instance().setParam(_ID_32("activeScene"), scene->resourceName());
 }
 
 bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, bool threaded) {
@@ -309,6 +314,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
 void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
     if (queue) {
         _playerAddQueue.push(std::make_pair(&parentScene, playerNode));
+        _platerQueueDirty = true;
     } else {
         addPlayerInternal(parentScene, playerNode);
     }
@@ -330,7 +336,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
     }
 
     if (i < Config::MAX_LOCAL_PLAYER_COUNT) {
-        Player_ptr player = std::make_shared<Player>(to_U8(i));
+        Player_ptr player = eastl::make_shared<Player>(to_U8(i));
         player->getCamera().fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
         player->getCamera().setFixedYawAxis(true);
         playerNode->get<UnitComponent>()->setUnit(player);
@@ -345,6 +351,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
 void SceneManager::removePlayer(Scene& parentScene, Player_ptr& player, bool queue) {
     if (queue) {
         _playerRemoveQueue.push(std::make_pair(&parentScene, player));
+        _platerQueueDirty = true;
     } else {
         removePlayerInternal(parentScene, player);
     }
@@ -472,7 +479,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
     // Shadow splits are only visible in debug builds
-    _sceneData->enableDebugRender(ParamHandler::instance().getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
+    _sceneData->enableDebugRender(ParamHandler::instance().getParam<bool>(_ID_32("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));

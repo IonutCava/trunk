@@ -46,18 +46,16 @@ ProfileTimer::~ProfileTimer()
 }
 
 void ProfileTimer::start() {
-    if (Config::Profile::ENABLE_FUNCTION_PROFILING && timersEnabled()) {
+    if (timersEnabled()) {
         _timer = _appTimer.getElapsedTime(true);
     }
 }
 
-U64 ProfileTimer::stop() {
-    if (Config::Profile::ENABLE_FUNCTION_PROFILING && timersEnabled()) {
+void ProfileTimer::stop() {
+    if (timersEnabled()) {
         _timerAverage += _appTimer.getElapsedTime(true) - _timer;
         _timerCounter++;
     }
-
-    return get();
 }
 
 void ProfileTimer::reset() noexcept {
@@ -109,24 +107,20 @@ U64 ProfileTimer::getChildTotal() const {
 }
 
 stringImpl ProfileTimer::print(U32 level) const {
-    if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
-        stringImpl ret(Util::StringFormat("[ %s ] : [ %5.3f ms]",
-                                          _name.c_str(),
-                                          MicrosecondsToMilliseconds<F32>(get())));
-        for (const U32 child : _children) {
-            if (g_profileTimersState[child]) {
-                ret.append("\n    " + g_profileTimers[child].print(level + 1));
-            }
+    stringImpl ret(Util::StringFormat("[ %s ] : [ %5.3f ms]",
+                                        _name.c_str(),
+                                        MicrosecondsToMilliseconds<F32>(get())));
+    for (const U32 child : _children) {
+        if (g_profileTimersState[child]) {
+            ret.append("\n    " + g_profileTimers[child].print(level + 1));
         }
-
-        for (U32 i = 0; i < level; ++i) {
-            ret.insert(0, "    ");
-        }
-
-        return ret;
     }
 
-    return "";
+    for (U32 i = 0; i < level; ++i) {
+        ret.insert(0, "    ");
+    }
+
+    return ret;
 }
 
 U64 ProfileTimer::overhead() {

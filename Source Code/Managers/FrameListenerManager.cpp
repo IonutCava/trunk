@@ -13,9 +13,6 @@ namespace Divide {
 FrameListenerManager::FrameListenerManager()
     : Singleton()
 {
-    for (EventTimeMap& map : _eventTimers) {
-        map.reserve(256);
-    }
 }
 
 
@@ -32,7 +29,7 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener,
     listener->setCallOrder(callOrder);
 
     UniqueLockShared w_lock(_listenerLock);
-    insert_sorted(_listeners, listener, std::less<>());
+    insert_sorted(_listeners, listener, eastl::less<>());
 }
 
 /// Remove an existent Frame Listener from our collection
@@ -42,14 +39,14 @@ void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
     I64 targetGUID = listener->getGUID();
 
     UniqueLockShared lock(_listenerLock);
-    vector<FrameListener*>::const_iterator it;
-    it = std::find_if(std::cbegin(_listeners), std::cend(_listeners),
+    vectorEASTL<FrameListener*>::const_iterator it;
+    it = eastl::find_if(eastl::cbegin(_listeners), eastl::cend(_listeners),
                       [targetGUID](FrameListener const* fl) -> bool
                       {
                         return fl->getGUID() == targetGUID;
                       });
 
-    if (it != std::cend(_listeners)) {
+    if (it != eastl::cend(_listeners)) {
         _listeners.erase(it);
     } else {
         Console::errorfn(Locale::get(_ID("ERROR_FRAME_LISTENER_REMOVE")), listener->getListenerName().c_str());

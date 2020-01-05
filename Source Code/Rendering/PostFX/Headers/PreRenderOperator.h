@@ -47,7 +47,7 @@ class NOINITVTABLE PreRenderOperator {
     PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache, FilterType operatorType);
     virtual ~PreRenderOperator();
 
-    virtual void idle(const Configuration& config) = 0;
+
     virtual void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) = 0;
     virtual void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) = 0;
 
@@ -56,8 +56,9 @@ class NOINITVTABLE PreRenderOperator {
     inline FilterType operatorType() const { return _operatorType; }
 
     virtual TextureData getDebugOutput() const;
-
+    virtual void idle(const Configuration& config);
     virtual void onToggle(const bool state);
+
    protected:
     GFXDevice& _context;
 

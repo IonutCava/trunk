@@ -45,7 +45,7 @@ class ProfileTimer {
     ~ProfileTimer();
 
     void start();
-    U64 stop();
+    void stop();
     void reset() noexcept;
     stringImpl print(U32 level = 0) const;
 

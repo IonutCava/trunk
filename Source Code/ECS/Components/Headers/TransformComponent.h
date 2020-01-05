@@ -136,14 +136,6 @@ namespace Divide {
          /// Return the local orientation quaternion
          Quaternion<F32> getLocalOrientation(D64 interpolationFactor) const;
 
-         inline mat4<F32> getLocalMatrix() {
-             return getMatrix();
-         }
-
-         inline mat4<F32> getLocalMatrix(D64 interpolationFactor) {
-             return getMatrix(interpolationFactor);
-         }
-
          void setTransforms(const mat4<F32>& transform);
 
          void getValues(TransformValues& valuesOut) const override;
@@ -155,6 +147,9 @@ namespace Divide {
 
          bool saveCache(ByteBuffer& outputBuffer) const override;
          bool loadCache(ByteBuffer& inputBuffer) override;
+
+         inline void getLocalMatrix(mat4<F32>& matOut) { getMatrix(matOut); }
+         inline void getLocalMatrix(D64 interpolationFactor, mat4<F32>& matOut) const { getMatrix(interpolationFactor, matOut); }
 
       protected:
          friend class TransformSystem;
@@ -168,10 +163,7 @@ namespace Divide {
          void onParentTransformDirty(U32 transformMask);
          void onParentUsageChanged(NodeUsageContext context);
 
-         mat4<F32> getMatrix() override;
-         void getMatrix(mat4<F32>& matrix) override;
-
-         mat4<F32> getMatrix(D64 interpolationFactor) const;
+         void getMatrix(mat4<F32>& matOut) override;
          void getMatrix(D64 interpolationFactor, mat4<F32>& matOut) const;
 
          //A simple lock-unlock and mutex-free matrix calculation system //

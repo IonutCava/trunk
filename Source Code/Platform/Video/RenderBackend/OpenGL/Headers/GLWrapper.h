@@ -278,9 +278,7 @@ private:
     static U8 s_syncDeleteQueueIndexR, s_syncDeleteQueueIndexW;
     static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[s_syncDeleteQueueSize];
 
-    using StateTrackerMap = ska::bytell_hash_map<I64, GLStateTracker> ;
-    static StateTrackerMap s_stateTrackers;
-    static GLStateTracker* s_activeStateTracker;
+    static GLStateTracker  s_stateTracker;
 
     static GLUtil::glTexturePool s_texturePool;
     static glGlobalLockManager s_globalLockManager;

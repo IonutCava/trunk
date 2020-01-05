@@ -30,7 +30,7 @@ NavigationMesh::NavigationMesh(PlatformContext& context)
 {
     ParamHandler& par = ParamHandler::instance();
     Str256 path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
-    path.append(par.getParam<stringImpl>(_ID("currentScene")));
+    path.append(par.getParam<stringImpl>(_ID_32("currentScene")));
 
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
     _filePath = path + "/" + Paths::g_navMeshesLocation;

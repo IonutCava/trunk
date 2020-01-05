@@ -91,7 +91,7 @@ void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
 
 void TaskPool::flushCallbackQueue() {
     constexpr I32 maxDequeueItems = 10;
-
+    
     U32 taskIndex[maxDequeueItems] = { 0 };
     size_t count = 0;
     do {

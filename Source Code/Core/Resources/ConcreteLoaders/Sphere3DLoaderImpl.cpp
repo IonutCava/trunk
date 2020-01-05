@@ -9,17 +9,17 @@
 namespace Divide {
 
 CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
-    std::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_context.gfx(),
-                                                             _cache,
-                                                             _loadingDescriptorHash,
-                                                             _descriptor.resourceName(),
-                                                             _descriptor.enumValue() == 0
-                                                                                      ? 1.0f
-                                                                                      : to_F32(_descriptor.enumValue()),
-                                                             _descriptor.ID() == 0 
-                                                                               ? 32 
-                                                                               : _descriptor.ID()),
-                                  DeleteResource(_cache));
+    eastl::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_context.gfx(),
+                                                               _cache,
+                                                               _loadingDescriptorHash,
+                                                               _descriptor.resourceName(),
+                                                               _descriptor.enumValue() == 0
+                                                                                        ? 1.0f
+                                                                                        : to_F32(_descriptor.enumValue()),
+                                                               _descriptor.ID() == 0 
+                                                                                 ? 32 
+                                                                                 : _descriptor.ID()),
+                                    DeleteResource(_cache));
 
     if (!_descriptor.flag()) {
         ResourceDescriptor matDesc("Material_" + _descriptor.resourceName());

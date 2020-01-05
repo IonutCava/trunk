@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 // A C++ interface to POSIX functions.
 //
 // Copyright (c) 2012 - 2016, Victor Zverovich
@@ -14,7 +12,9 @@
 
 #include "fmt/posix.h"
 
-#include <limits.h>
+#include <climits>
+
+#if FMT_USE_FCNTL
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -41,8 +41,8 @@
 #  ifdef __MINGW32__
 #    define _SH_DENYNO 0x40
 #  endif
-
 #endif  // _WIN32
+#endif  // FMT_USE_FCNTL
 
 #ifdef fileno
 #  undef fileno
@@ -51,7 +51,7 @@
 namespace {
 #ifdef _WIN32
 // Return type of read and write functions.
-typedef int RWResult;
+using RWResult = int;
 
 // On Windows the count argument to read and write is unsigned, so convert
 // it from size_t preventing integer overflow.
@@ -60,7 +60,7 @@ inline unsigned convert_rwcount(std::size_t count) {
 }
 #else
 // Return type of read and write functions.
-typedef ssize_t RWResult;
+using RWResult = ssize_t;
 
 inline std::size_t convert_rwcount(std::size_t count) { return count; }
 #endif
@@ -96,6 +96,7 @@ int buffered_file::fileno() const {
   return fd;
 }
 
+#if FMT_USE_FCNTL
 file::file(cstring_view path, int oflag) {
   int mode = S_IRUSR | S_IWUSR;
 #if defined(_WIN32) && !defined(__MINGW32__)
@@ -140,7 +141,7 @@ long long file::size() const {
   unsigned long long long_size = size_upper;
   return (long_size << sizeof(DWORD) * CHAR_BIT) | size_lower;
 #else
-  typedef struct stat Stat;
+  using Stat = struct stat;
   Stat file_stat = Stat();
   if (FMT_POSIX_CALL(fstat(fd_, &file_stat)) == -1)
     FMT_THROW(system_error(errno, "cannot get file attributes"));
@@ -232,4 +233,5 @@ long getpagesize() {
   return size;
 #endif
 }
+#endif  // FMT_USE_FCNTL
 FMT_END_NAMESPACE

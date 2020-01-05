@@ -52,7 +52,7 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
     }
 
     _lightTypeState.fill(true);
-    ParamHandler::instance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
+    ParamHandler::instance().setParam<bool>(_ID_32("rendering.debug.displayShadowDebugInfo"), false);
 
     init();
 }
@@ -244,7 +244,7 @@ void LightPool::togglePreviewShadowMaps(GFXDevice& context, Light& light) {
         return;
     }
 
-    ParamHandler::instance().setParam(_ID("rendering.debug.displayShadowDebugInfo"), _debugDraw);
+    ParamHandler::instance().setParam(_ID_32("rendering.debug.displayShadowDebugInfo"), _debugDraw);
     if (_debugDraw) {
         ShadowMap::enableShadowDebugViewForLight(context, light);
     } else {

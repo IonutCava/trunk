@@ -252,7 +252,7 @@ public:  // Accessors and Mutators
     inline void registerDrawCalls(U32 count);
     inline const Rect<I32>& getCurrentViewport() const;
 
-    DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
+    DebugView* addDebugView(const eastl::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
 
     /// In milliseconds

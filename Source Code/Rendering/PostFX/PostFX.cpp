@@ -36,7 +36,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
       _fadeOut(false),
       _fadeActive(false)
 {
-    ParamHandler::instance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
+    ParamHandler::instance().setParam<bool>(_ID_32("postProcessing.enableVignette"), false);
 
     _postFXTarget.drawMask().disableAll();
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);

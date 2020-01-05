@@ -50,9 +50,14 @@
     <ClInclude Include="../../Source Code\Editor\Widgets\DockedWindows\Headers\SceneViewWindow.h" />
     <ClInclude Include="../../Source Code\Editor\Widgets\Headers\Gizmo.h" />
     <ClInclude Include="../../Source Code\Editor\Widgets\Headers\ImGuiExtensions.h" />
+    <ClInclude Include="..\..\Source Code\Editor\Headers\Editor.h" />
+    <ClInclude Include="..\..\Source Code\Editor\Headers\Sample.h" />
     <ClInclude Include="..\..\Source Code\Editor\Headers\UndoManager.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\DockedWindows\Headers\PostFXWindow.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\StatusBar.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Source Code\Editor\Headers\Editor.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D8177F00-194F-42AE-8389-63B114DBEE63}</ProjectGuid>

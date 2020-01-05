@@ -174,6 +174,9 @@ namespace boost {
 #include <EASTL/array.h>
 #include <EASTL/vector_map.h>
 #include <EASTL/fixed_vector.h>
+#include <EASTL/shared_ptr.h>
+#include <EASTL/weak_ptr.h>
+#include <EASTL/unique_ptr.h>
 
 #include <MemoryPool/StackAlloc.h>
 #include <MemoryPool/C-11/MemoryPool.h>

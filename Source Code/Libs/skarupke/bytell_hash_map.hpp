@@ -543,9 +543,9 @@ public:
         BlockPointer special_end_item = new_buckets + num_blocks;
         for (BlockPointer it = new_buckets; it <= special_end_item; ++it)
             it->fill_control_bytes(Constants::magic_for_empty);
-        using std::swap;
-        swap(entries, new_buckets);
-        swap(num_slots_minus_one, num_items);
+        
+        std::swap(entries, new_buckets);
+        std::swap(num_slots_minus_one, num_items);
         --num_slots_minus_one;
         hash_policy.commit(new_prime_index);
         num_elements = 0;
@@ -694,12 +694,11 @@ public:
 
     void swap(sherwood_v8_table & other)
     {
-        using std::swap;
         swap_pointers(other);
-        swap(static_cast<ArgumentHash &>(*this), static_cast<ArgumentHash &>(other));
-        swap(static_cast<ArgumentEqual &>(*this), static_cast<ArgumentEqual &>(other));
+        std::swap(static_cast<ArgumentHash &>(*this), static_cast<ArgumentHash &>(other));
+        std::swap(static_cast<ArgumentEqual &>(*this), static_cast<ArgumentEqual &>(other));
         if (AllocatorTraits::propagate_on_container_swap::value)
-            swap(static_cast<ByteAlloc &>(*this), static_cast<ByteAlloc &>(other));
+            std::swap(static_cast<ByteAlloc &>(*this), static_cast<ByteAlloc &>(other));
     }
 
     size_t size() const

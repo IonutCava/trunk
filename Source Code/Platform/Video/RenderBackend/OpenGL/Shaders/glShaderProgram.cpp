@@ -275,8 +275,8 @@ void glShaderProgram::validatePostBind() {
 
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
 void glShaderProgram::threadedLoad(bool reloadExisting) {
-    if (!weak_from_this().expired()) {
-        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
+    if (!mWeakPtr.expired()) {
+        registerShaderProgram(eastl::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
     }
 
     // NULL shader means use shaderProgram(0), so bypass the normal loading routine
@@ -517,7 +517,7 @@ bool glShaderProgram::isValid() const {
 }
 
 bool glShaderProgram::isBound() const {
-    return GL_API::s_activeStateTracker->_activeShaderPipeline == _handle;
+    return GL_API::getStateTracker()._activeShaderPipeline == _handle;
 }
 
 /// Bind this shader program

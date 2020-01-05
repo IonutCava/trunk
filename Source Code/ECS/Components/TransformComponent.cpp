@@ -414,19 +414,13 @@ namespace Divide {
         _transformInterface.getValues(valuesOut);
     }
 
-    void TransformComponent::getMatrix(mat4<F32>& matrix) {
+    void TransformComponent::getMatrix(mat4<F32>& matOut) {
         SharedLock r_lock(_lock);
-        _transformInterface.getMatrix(matrix);
+        _transformInterface.getMatrix(matOut);
 
         if (_transformOffset.first) {
-            matrix *= _transformOffset.second;
+            matOut *= _transformOffset.second;
         }
-    }
-
-    mat4<F32> TransformComponent::getMatrix() {
-        mat4<F32> ret = {};
-        getMatrix(ret);
-        return ret;
     }
 
     void TransformComponent::getMatrix(D64 interpolationFactor, mat4<F32>& matOut) const {
@@ -442,12 +436,6 @@ namespace Divide {
         if (_transformOffset.first) {
             matOut *= _transformOffset.second;
         }
-    }
-
-    mat4<F32> TransformComponent::getMatrix(D64 interpolationFactor) const {
-        mat4<F32> ret = {};
-        getMatrix(interpolationFactor, ret);
-        return ret;
     }
 
     vec3<F32> TransformComponent::getLocalPositionLocked(D64 interpolationFactor) const {

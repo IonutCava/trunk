@@ -98,7 +98,8 @@ namespace Divide {
         vec2<U16> size = mainWindow->getDrawableSize();
         ImGuizmo::SetRect(0.0f, 0.0f, size.width, size.height);
 
-        mat4<F32> matrix(transform->getLocalMatrix());
+        mat4<F32> matrix = {};
+        transform->getLocalMatrix(matrix);
         ImGuizmo::Manipulate(camera.getViewMatrix(),
                              camera.getProjectionMatrix(),
                              _transformSettings.currentGizmoOperation,

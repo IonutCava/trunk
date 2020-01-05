@@ -67,6 +67,12 @@ typename vector<T, A>::iterator insert_sorted(vector<T, A>& vec, T const& item, 
     return vec.insert(std::upper_bound(std::begin(vec), std::end(vec), item, pred), item);
 }
 
+template< typename T, typename Pred>
+typename vectorEASTL<T>::iterator insert_sorted(vectorEASTL<T>& vec, T const& item, Pred pred)
+{
+    return vec.insert(eastl::upper_bound(eastl::begin(vec), eastl::end(vec), item, pred), item);
+}
+
 template<typename T, typename A>
 void insert_unique(vector<T, A>& target, const T& item)
 {
@@ -83,7 +89,6 @@ void insert_unique(vector<T, A>& target, const vector<T, A>& source)
             insert_unique(target, item);
         });
 }
-
 
 template<typename T>
 void insert_unique(vectorEASTL<T>& target, const T& item)

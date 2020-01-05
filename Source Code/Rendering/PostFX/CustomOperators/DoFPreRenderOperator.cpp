@@ -53,10 +53,6 @@ DoFPreRenderOperator::~DoFPreRenderOperator()
 {
 }
 
-void DoFPreRenderOperator::idle(const Configuration& config) {
-    ACKNOWLEDGE_UNUSED(config);
-}
-
 void DoFPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
     _constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(width, height));
