@@ -21,8 +21,6 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
       _castsShadows(false),
       _shadowIndex(-1)
 {
-    RegisterEventCallback(&Light::onTransformUpdated);
-
     _rangeAndCones.set(1.0f, 45.0f, 0.0f);
 
     _shadowCameras.fill(nullptr);
@@ -59,16 +57,9 @@ Light::~Light()
     _parentPool.removeLight(*this);
 }
 
-
-void Light::onTransformUpdated(const TransformUpdated* evt) {
-    if (_sgn.GetEntityID() != evt->GetSourceEntityId()) {
-        return;
-    }
-
-    updateCache();
-}
-
 void Light::updateCache() {
+    OPTICK_EVENT();
+
     TransformComponent* lightTransform = getSGN().get<TransformComponent>();
     assert(lightTransform != nullptr);
     
@@ -76,7 +67,7 @@ void Light::updateCache() {
     _directionCache = Normalized(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
 }
 
-void Light::setDiffuseColour(const vec3<U8>& newDiffuseColour) {
+void Light::setDiffuseColour(const UColour3& newDiffuseColour) {
     _colour.rgb(newDiffuseColour);
 }
 

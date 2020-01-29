@@ -155,6 +155,8 @@ namespace boost {
 
 #include <BetterEnums/include/enum.h>
 
+#include <Optick/optick.h>
+
 #ifndef BOOST_EXCEPTION_DISABLE
 #define BOOST_EXCEPTION_DISABLE
 #endif
@@ -172,6 +174,7 @@ namespace boost {
 #include <EASTL/set.h>
 #include <EASTL/list.h>
 #include <EASTL/array.h>
+#include <eastl/stack.h>
 #include <EASTL/vector_map.h>
 #include <EASTL/fixed_vector.h>
 #include <EASTL/shared_ptr.h>

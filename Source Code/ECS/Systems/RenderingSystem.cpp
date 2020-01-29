@@ -16,6 +16,8 @@ namespace Divide {
     }
 
     void RenderingSystem::PreUpdate(F32 dt) {
+        OPTICK_EVENT();
+
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         _componentCache.resize(0);
@@ -30,6 +32,8 @@ namespace Divide {
     }
 
     void RenderingSystem::Update(F32 dt) {
+        OPTICK_EVENT();
+
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         for (RenderingComponent* rComp : _componentCache) 
@@ -39,6 +43,8 @@ namespace Divide {
     }
 
     void RenderingSystem::PostUpdate(F32 dt) {
+        OPTICK_EVENT();
+
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         for (RenderingComponent* rComp : _componentCache)

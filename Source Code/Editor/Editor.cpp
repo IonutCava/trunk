@@ -44,14 +44,10 @@
 namespace Divide {
 
 namespace {
-    bool show_another_window = false;
-    I32 window_opacity = 255;
-    I32 previous_window_opacity = 255;
     const char* g_editorSaveFile = "Editor.xml";
     const char* g_editorSaveFileBak = "Editor.xml.bak";
 
     WindowManager* g_windowManager = nullptr;
-    Editor* g_editor = nullptr;
 
     struct ImGuiViewportData
     {
@@ -135,7 +131,6 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
 
     _dockedWindows.fill(nullptr);
     g_windowManager = &context.app().windowManager();
-    g_editor = this;
     REGISTER_FRAME_LISTENER(this, 99999);
 
     _memoryEditorData = std::make_pair(nullptr, 0);
@@ -159,14 +154,10 @@ Editor::~Editor()
     UNREGISTER_FRAME_LISTENER(this);
 
     g_windowManager = nullptr;
-    g_editor = nullptr;
 }
 
 void Editor::idle() {
-    if (window_opacity != previous_window_opacity) {
-        context().activeWindow().opacity(to_U8(window_opacity));
-        previous_window_opacity = window_opacity;
-    }
+
 }
 
 bool Editor::init(const vec2<U16>& renderResolution) {
@@ -178,7 +169,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     }
     
     createDirectories((Paths::g_saveLocation + Paths::Editor::g_saveLocation).c_str());
-    _mainWindow = &g_windowManager->getWindow(0u);
+    _mainWindow = &_context.app().windowManager().getWindow(0u);
 
     IMGUI_CHECKVERSION();
     _imguiContext = ImGui::CreateContext();
@@ -249,141 +240,158 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     InitBasicImGUIState(io);
 
-    vec2<U16> display_size = _mainWindow->getDrawableSize();
+    const vec2<U16> display_size = _mainWindow->getDrawableSize();
     io.DisplaySize = ImVec2((F32)_mainWindow->getDimensions().width, (F32)_mainWindow->getDimensions().height);
     io.DisplayFramebufferScale = ImVec2(io.DisplaySize.x > 0 ? ((F32)display_size.width / io.DisplaySize.x) : 0.f,
                                         io.DisplaySize.y > 0 ? ((F32)display_size.height / io.DisplaySize.y) : 0.f);
+
+    ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+    main_viewport->PlatformHandle = _mainWindow;
 
     if (_context.config().gui.imgui.multiViewportEnabled) {
         ImGuiPlatformIO& platform_io = _imguiContext->PlatformIO;
         platform_io.Platform_CreateWindow = [](ImGuiViewport* viewport)
         {
-            if (!g_windowManager) {
-                return;
+            if (g_windowManager != nullptr) {
+                const DisplayWindow& window = g_windowManager->getWindow(0u);
+                WindowDescriptor winDescriptor = {};
+                winDescriptor.title = "No Title Yet";
+                winDescriptor.targetDisplay = to_U32(window.currentDisplayIndex());
+                winDescriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
+                winDescriptor.flags = to_U16(WindowDescriptor::Flags::HIDDEN) | to_U16(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U16(WindowDescriptor::Flags::CLEAR_DEPTH);
+                // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
+                winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED) | to_U32(WindowDescriptor::Flags::RESIZEABLE);
+                winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
+                winDescriptor.flags |= to_U32(WindowDescriptor::Flags::SHARE_CONTEXT);
+
+                winDescriptor.dimensions.set(viewport->Size.x, viewport->Size.y);
+                winDescriptor.position.set(viewport->Pos.x, viewport->Pos.y);
+                winDescriptor.externalClose = true;
+                winDescriptor.targetAPI = window.context().gfx().getRenderAPI();
+
+                ErrorCode err = ErrorCode::NO_ERR;
+                DisplayWindow* newWindow = &g_windowManager->createWindow(winDescriptor, err);
+                if (err != ErrorCode::NO_ERR) {
+                    newWindow->hidden(false);
+                    newWindow->bringToFront();
+                    newWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestClose = true; return true; });
+                    newWindow->addEventListener(WindowEvent::MOVED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestMove = true; return true; });
+                    newWindow->addEventListener(WindowEvent::RESIZED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args);  viewport->PlatformRequestResize = true;  return true; });
+
+                    ImGuiViewportData* data = IM_NEW(ImGuiViewportData)();
+                    data->_window = newWindow;
+                    data->_windowOwned = true;
+                    viewport->PlatformUserData = data;
+                    viewport->PlatformHandle = (void*)data->_window;
+                } else {
+                    DIVIDE_UNEXPECTED_CALL("Editor::Platform_CreateWindow failed!");
+                    g_windowManager->destroyWindow(newWindow);
+                }
             }
-
-            ImGuiViewportData* data = IM_NEW(ImGuiViewportData)();
-            viewport->PlatformUserData = data;
-
-            const DisplayWindow& window = g_windowManager->getWindow(0u);
-            WindowDescriptor winDescriptor = {};
-            winDescriptor.title = "No Title Yet";
-            winDescriptor.targetDisplay = to_U32(window.currentDisplayIndex());
-            winDescriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
-            winDescriptor.flags = to_U16(WindowDescriptor::Flags::HIDDEN) | to_U16(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U16(WindowDescriptor::Flags::CLEAR_DEPTH);
-            // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
-            winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED) | to_U32(WindowDescriptor::Flags::RESIZEABLE);
-            winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
-            winDescriptor.flags |= to_U32(WindowDescriptor::Flags::SHARE_CONTEXT);
-
-            winDescriptor.dimensions.set(viewport->Size.x, viewport->Size.y);
-            winDescriptor.position.set(viewport->Pos.x, viewport->Pos.y);
-            winDescriptor.externalClose = true;
-            winDescriptor.targetAPI = window.context().gfx().getRenderAPI();
-
-            data->_window = &g_windowManager->createWindow(winDescriptor);
-            data->_window->hidden(false);
-            data->_window->bringToFront();
-            data->_window->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestClose = true; return true; });
-            data->_window->addEventListener(WindowEvent::MOVED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestMove = true; return true; });
-            data->_window->addEventListener(WindowEvent::RESIZED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args);  viewport->PlatformRequestResize = true;  return true; });
-
-            data->_windowOwned = true;
-
-            viewport->PlatformHandle = (void*)data->_window;
-            assert(viewport->PlatformHandle != nullptr);
         };
 
         platform_io.Platform_DestroyWindow = [](ImGuiViewport* viewport)
         {
-            if (!g_windowManager) {
-                return;
-            }
-
-            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData)
-            {
-                if (data->_window && data->_windowOwned) {
-                    g_windowManager->destroyWindow(data->_window);
+            if (g_windowManager != nullptr) {
+                if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData)
+                {
+                    if (data->_window && data->_windowOwned) {
+                        g_windowManager->destroyWindow(data->_window);
+                    }
+                    data->_window = nullptr;
+                    IM_DELETE(data);
                 }
-                data->_window = nullptr;
-                IM_DELETE(data);
+                viewport->PlatformUserData = viewport->PlatformHandle = nullptr;
             }
-            viewport->PlatformUserData = viewport->PlatformHandle = nullptr;
         };
 
         platform_io.Platform_ShowWindow = [](ImGuiViewport* viewport) {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            data->_window->hidden(false);
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData)
+            {
+                data->_window->hidden(false);
+            }
         };
 
         platform_io.Platform_SetWindowPos = [](ImGuiViewport* viewport, ImVec2 pos) {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            data->_window->setPosition((I32)pos.x, (I32)pos.y);
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData)
+            {
+                data->_window->setPosition((I32)pos.x, (I32)pos.y);
+            }
         };
 
         platform_io.Platform_GetWindowPos = [](ImGuiViewport* viewport) -> ImVec2 {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            const vec2<I32>& pos = data->_window->getPosition();
-            return ImVec2((F32)pos.x, (F32)pos.y);
-        };
-        platform_io.Platform_SetWindowAlpha = [](ImGuiViewport* viewport, float alpha) {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            data->_window->opacity(to_U8(alpha * 255));
-        };
-        platform_io.Platform_SetWindowSize = [](ImGuiViewport* viewport, ImVec2 size) {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            U16 w = to_U16(size.x);
-            U16 h = to_U16(size.y);
-            WAIT_FOR_CONDITION(data->_window->setDimensions(w, h));
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData)
+            {
+                const vec2<I32>& pos = data->_window->getPosition();
+                return ImVec2((F32)pos.x, (F32)pos.y);
+            }
+            DIVIDE_UNEXPECTED_CALL("Editor::Platform_GetWindowPos failed!");
+            return {};
         };
 
         platform_io.Platform_GetWindowSize = [](ImGuiViewport* viewport) -> ImVec2 {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            const vec2<U16>& dim = data->_window->getDimensions();
-            return ImVec2((F32)dim.w, (F32)dim.h);
-        };
-
-        platform_io.Platform_SetWindowFocus = [](ImGuiViewport* viewport) {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            data->_window->bringToFront();
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
+                const vec2<U16>& dim = data->_window->getDimensions();
+                return ImVec2((F32)dim.w, (F32)dim.h);
+            }
+            DIVIDE_UNEXPECTED_CALL("Editor::Platform_GetWindowSize failed!");
+            return {};
         };
 
         platform_io.Platform_GetWindowFocus = [](ImGuiViewport* viewport) -> bool {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            return data->_window->hasFocus();
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
+                return data->_window->hasFocus();
+            }
+            DIVIDE_UNEXPECTED_CALL("Editor::Platform_GetWindowFocus failed!");
+            return false;
+        };
+
+        platform_io.Platform_SetWindowAlpha = [](ImGuiViewport* viewport, float alpha) {
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
+                data->_window->opacity(to_U8(alpha * 255));
+            }
+        };
+
+        platform_io.Platform_SetWindowSize = [](ImGuiViewport* viewport, ImVec2 size) {
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
+                U16 w = to_U16(size.x);
+                U16 h = to_U16(size.y);
+                WAIT_FOR_CONDITION(data->_window->setDimensions(w, h));
+            }
+        };
+
+        platform_io.Platform_SetWindowFocus = [](ImGuiViewport* viewport) {
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
+                data->_window->bringToFront();
+            }
         };
 
         platform_io.Platform_SetWindowTitle = [](ImGuiViewport* viewport, const char* title) {
-            ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData;
-            data->_window->title(title);
+            if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
+                data->_window->title(title);
+            }
         };
 
         platform_io.Platform_RenderWindow = [](ImGuiViewport* viewport, void* platformContext) {
-            PlatformContext* context = (PlatformContext*)platformContext;
-            context->gfx().beginFrame(*(DisplayWindow*)viewport->PlatformHandle, false);
+            if (PlatformContext* context = (PlatformContext*)platformContext) {
+                context->gfx().beginFrame(*(DisplayWindow*)viewport->PlatformHandle, false);
+            }
         };
 
         platform_io.Renderer_RenderWindow = [](ImGuiViewport* viewport, void* platformContext) {
-            ACKNOWLEDGE_UNUSED(platformContext);
-
-            if (!g_editor) {
-                return;
+            if (PlatformContext* context = (PlatformContext*)platformContext) {
+                Editor* editor = &context->editor();
+                ImGui::SetCurrentContext(editor->_imguiContext);
+                editor->renderDrawList(viewport->DrawData, false, ((DisplayWindow*)viewport->PlatformHandle)->getGUID());
             }
-
-            ImGui::SetCurrentContext(g_editor->_imguiContext);
-            g_editor->renderDrawList(viewport->DrawData, false, ((DisplayWindow*)viewport->PlatformHandle)->getGUID());
         };
 
         platform_io.Platform_SwapBuffers = [](ImGuiViewport* viewport, void* platformContext) {
-            if (!g_windowManager) {
-                return;
+            if (g_windowManager != nullptr) {
+                PlatformContext* context = (PlatformContext*)platformContext;
+                context->gfx().endFrame(*(DisplayWindow*)viewport->PlatformHandle, false);
             }
-            PlatformContext* context = (PlatformContext*)platformContext;
-            context->gfx().endFrame(*(DisplayWindow*)viewport->PlatformHandle, false);
         };
-
-        ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        main_viewport->PlatformHandle = _mainWindow;
 
         const vectorEASTL<WindowManager::MonitorData>& monitors = g_windowManager->monitorData();
         I32 monitorCount = to_I32(monitors.size());
@@ -406,11 +414,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         ImGuiViewportData* data = IM_NEW(ImGuiViewportData)();
         data->_window = _mainWindow;
         data->_windowOwned = false;
-
         main_viewport->PlatformUserData = data;
-    } else {
-        ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        main_viewport->PlatformHandle = _mainWindow;
     }
 
     ImGui::ResetStyle(_currentTheme);
@@ -507,6 +511,8 @@ void Editor::toggle(const bool state) {
 }
 
 void Editor::update(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     Time::ScopedTimer timer(_editorUpdateTimer);
 
     Attorney::GizmoEditor::update(*_gizmo, deltaTimeUS);

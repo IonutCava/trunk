@@ -160,6 +160,8 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stag
 }
 
 void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTLFast<RenderPackage*>& queueInOut) {
+    OPTICK_EVENT();
+
     if (binAndFlag.first._value == RenderBinType::RBT_COUNT) {
         if (!binAndFlag.second) {
             // Why are we allowed to exclude everything? idk.
@@ -186,6 +188,8 @@ void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePas
 }
 
 void RenderQueue::sort(RenderStagePass stagePass) {
+
+    OPTICK_EVENT();
     // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
     constexpr U16 threadBias = 64;
     
@@ -221,6 +225,8 @@ void RenderQueue::refresh(RenderStage stage) {
 }
 
 void RenderQueue::getSortedQueues(RenderStagePass stagePass, SortedQueues& queuesOut, U16& countOut) const {
+    OPTICK_EVENT();
+
     if (stagePass._passType == RenderPassType::PRE_PASS) {
         constexpr RenderBinType rbTypes[] = {
             RenderBinType::RBT_OPAQUE,

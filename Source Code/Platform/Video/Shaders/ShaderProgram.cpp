@@ -155,6 +155,8 @@ void ShaderProgram::onShutdown() {
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     static bool onOddFrame = false;
 
     onOddFrame = !onOddFrame;

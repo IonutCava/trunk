@@ -113,23 +113,23 @@ template<typename Engine = std::mt19937_64>
 void SeedRandom(U32 seed);
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
 BitCompare(const Mask bitMask, const Type bit);
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 SetBit(Mask& bitMask, const Type bit);
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ClearBit(Mask& bitMask, const Type bit);
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ToggleBit(Mask& bitMask, const Type bit);
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ToggleBit(Mask& bitMask, const Type bit, bool state);
 
 template<typename Mask>
@@ -148,25 +148,25 @@ template<typename Mask>
 constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept;
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
 BitCompare(const std::atomic<Mask> bitMask, const Type bit);
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 SetBit(std::atomic<Mask>& bitMask, const Type bit);
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ClearBit(std::atomic<Mask>& bitMask, const Type bit);
 
 template<typename Mask>
-bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept;
+constexpr bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept;
 template<typename Mask>
-void SetBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept;
+constexpr void SetBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept;
 template<typename Mask>
-void ClearBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept;
+constexpr void ClearBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept;
 template<typename Mask>
-void ToggleBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept;
+constexpr void ToggleBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept;
 
 /// Clamps value n between min and max
 template <typename T>

@@ -102,6 +102,8 @@ namespace Divide {
     };
 
     void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
+        OPTICK_EVENT();
+
         if (parentTimer != nullptr && !parentTimer->hasChildTimer(*_renderPassTimer)) {
             parentTimer->addChildTimer(*_renderPassTimer);
             parentTimer->addChildTimer(*_postFxRenderTimer);
@@ -119,6 +121,7 @@ namespace Divide {
         Task* postFXTask = nullptr;
 
         {
+            OPTICK_EVENT("RenderPassManager::BuildCommandBuffers");
             Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
             {
                 Time::ScopedTimer timeAll(*_renderPassTimer);
@@ -134,6 +137,7 @@ namespace Divide {
                     _renderTasks[i] = CreateTask(pool,
                                                  nullptr,
                                                  [pass, buf, &sceneRenderState](const Task & parentTask) {
+                                                     OPTICK_EVENT("RenderPass: BuildCommandBuffer");
                                                      pass->render(parentTask, sceneRenderState, *buf);
                                                      buf->batch();
                                                  },
@@ -151,6 +155,8 @@ namespace Divide {
                     postFXTask = CreateTask(pool,
                                             nullptr,
                                             [buf, &gfx, &postFX, &cam, &timer](const Task & parentTask) {
+                                                OPTICK_EVENT("PostFX: BuildCommandBuffer");
+
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
 
@@ -174,6 +180,7 @@ namespace Divide {
             }
         }
         {
+            OPTICK_EVENT("RenderPassManager::FlushCommandBuffers");
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
 
             eastl::fill(eastl::begin(_completedPasses), eastl::end(_completedPasses), false);
@@ -313,6 +320,8 @@ RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePas
 
 /// Prepare the list of visible nodes for rendering
 GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix) const {
+    OPTICK_EVENT();
+
     GFXDevice::NodeData dataOut;
 
     // Extract transform data (if available)
@@ -382,6 +391,8 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                                         bool fullRefresh,
                                         GFX::CommandBuffer& bufferInOut)
 {
+    OPTICK_EVENT();
+
     if (!fullRefresh) {
         RefreshNodeDataParams params(g_drawCommands, bufferInOut);
         params._camera = &camera;
@@ -483,6 +494,8 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
 
 void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refresh, GFX::CommandBuffer& bufferInOut)
 {
+    OPTICK_EVENT();
+
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
     U16 queueSize = 0;
@@ -506,6 +519,8 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 }
 
 void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     RenderStage stage = stagePass._stage;
 
     RenderQueue& queue = getQueue();
@@ -533,6 +548,8 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
 }
 
 bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     // PrePass requires a depth buffer
     bool doPrePass = params._stage != RenderStage::SHADOW &&
                      params._target._usage != RenderTargetUsage::COUNT &&
@@ -583,6 +600,8 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
 }
 
 bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, bool prePassExecuted, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     ACKNOWLEDGE_UNUSED(nodes);
     ACKNOWLEDGE_UNUSED(extraTargets);
 
@@ -623,6 +642,8 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassPa
 }
 
 void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, RenderTarget& target, bool prePassExecuted, bool hasHiZ, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = " - MainPass";
@@ -717,6 +738,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 }
 
 void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
 
     RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS, params._passVariant, params._passIndex);
     prepareRenderQueues(stagePass, params, nodes, false, bufferInOut);
@@ -826,6 +848,8 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
 }
 
 void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), params._stage, *params._camera);
 
     // Cull the scene and grab the visible nodes
@@ -949,6 +973,8 @@ U32 RenderPassManager::renderQueueSize(RenderStagePass stagePass, RenderPackage:
 }
 
 void RenderPassManager::renderQueueToSubPasses(RenderStagePass stagePass, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement) const {
+    OPTICK_EVENT();
+
     const vectorEASTLFast<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
 
     if (qualityRequirement == RenderPackage::MinQuality::COUNT) {

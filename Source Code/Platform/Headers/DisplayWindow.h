@@ -166,6 +166,7 @@ public:
 
            void opacity(U8 opacity);
     inline U8   opacity() const;
+    inline U8   prevOpacity() const;
 
     inline void clearColour(const FColour4& colour);
     inline void clearColour(const FColour4& colour, bool clearColour, bool clearDepth);
@@ -249,7 +250,8 @@ private:
     WindowType _type;
     WindowType _previousType;
     WindowType _queuedType;
-    U8 _opacity;
+    U8 _opacity = 255u;
+    U8 _prevOpacity = 255u;
     
     /// Did we generate the window move event?
     bool _internalMoveEvent;

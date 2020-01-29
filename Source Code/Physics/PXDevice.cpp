@@ -64,10 +64,14 @@ void PXDevice::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {
 }
 
 void PXDevice::update(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     _api->update(deltaTimeUS);
 }
 
 void PXDevice::process(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     _api->process(deltaTimeUS);
 }
 

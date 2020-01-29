@@ -43,4 +43,10 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
     Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
 }
 
+void PointLightComponent::OnData(const ECS::Data& data) {
+    if (data.eventType == ECSCustomEventType::TransformUpdated) {
+        Light::updateCache();
+    }
+}
+
 };

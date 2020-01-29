@@ -116,6 +116,8 @@ void RenderPassCuller::clear() {
 
 VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 {
+    OPTICK_EVENT();
+
     RenderStage stage = params._stage;
     VisibleNodeList& nodeCache = getNodeCache(stage);
     if (!params._context || !params._sceneGraph || !params._camera || !params._sceneState) {
@@ -167,6 +169,8 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 
 /// This method performs the visibility check on the given node and all of its children and adds them to the RenderQueue
 void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
+    OPTICK_EVENT();
+
     // Early out for inactive nodes
     if (currentNode.hasFlag(SceneGraphNode::Flags::ACTIVE)) {
 
@@ -224,6 +228,8 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
 }
 
 void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
+    OPTICK_EVENT();
+
     bool castsShadows = currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
 
     vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
@@ -247,6 +253,8 @@ void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, const NodeCul
 }
 
 VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const {
+    OPTICK_EVENT();
+
     VisibleNodeList ret = {};
     ret.reserve(nodes.size());
 
@@ -262,6 +270,8 @@ VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, cons
 }
 
 VisibleNodeList RenderPassCuller::toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const {
+    OPTICK_EVENT();
+
     VisibleNodeList ret = {};
     ret.reserve(nodes.size());
 

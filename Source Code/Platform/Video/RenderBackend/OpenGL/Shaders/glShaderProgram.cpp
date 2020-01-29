@@ -275,6 +275,8 @@ void glShaderProgram::validatePostBind() {
 
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
 void glShaderProgram::threadedLoad(bool reloadExisting) {
+    OPTICK_EVENT();
+
     if (!mWeakPtr.expired()) {
         registerShaderProgram(eastl::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
     }

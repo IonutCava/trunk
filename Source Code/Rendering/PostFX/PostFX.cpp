@@ -145,6 +145,8 @@ void PostFX::updateResolution(U16 width, U16 height) {
 }
 
 void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     if (_filtersDirty) {
         _shaderFunctionSelection[0] = _shaderFunctionList[getFilterState(FilterType::FILTER_VIGNETTE) ? 0 : 4];
         _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
@@ -221,6 +223,8 @@ void PostFX::idle(const Configuration& config) {
 }
 
 void PostFX::update(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     if (_fadeActive) {
         _currentFadeTimeMS += Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
         F32 fadeStrength = to_F32(std::min(_currentFadeTimeMS / _targetFadeTimeMS , 1.0));

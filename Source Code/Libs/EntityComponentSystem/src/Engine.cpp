@@ -18,7 +18,6 @@
 
 namespace ECS
 {
-
 	ECSEngine::ECSEngine()
 	{
 		ECS_EngineTime			= new util::Timer();

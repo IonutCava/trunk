@@ -20,6 +20,8 @@ void SGNRelationshipCache::invalidate() {
 }
 
 bool SGNRelationshipCache::rebuild() {
+    OPTICK_EVENT();
+
     UniqueLockShared w_lock(_updateMutex);
     updateChildren(0, _childrenRecursiveCache);
     updateParents(0, _parentRecursiveCache);

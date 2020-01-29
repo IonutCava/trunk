@@ -225,6 +225,7 @@ class SceneNodeSceneGraph {
 
     static void sceneUpdate(SceneNode& node, const U64 deltaTimeUS,
                             SceneGraphNode& sgn, SceneState& sceneState) {
+        OPTICK_EVENT();
         node.sceneUpdate(deltaTimeUS, sgn, sceneState);
     }
 

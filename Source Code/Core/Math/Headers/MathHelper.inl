@@ -199,7 +199,7 @@ namespace customRNG
         template<typename Engine>
         Engine& getEngine() noexcept {
             static thread_local std::random_device rnddev{};
-            static thread_local auto rndeng = Engine(rnddev());
+            static thread_local Engine rndeng = Engine(rnddev());
             return rndeng;
         }
     }  // namespace detail
@@ -349,31 +349,31 @@ bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) {
 }
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
 BitCompare(const Mask bitMask, const Type bit) {
     return BitCompare(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 SetBit(Mask& bitMask, const Type bit) {
     SetBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ClearBit(Mask& bitMask, const Type bit) {
     ClearBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ToggleBit(Mask& bitMask, const Type bit) {
     ToggleBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ToggleBit(Mask& bitMask, const Type bit, bool state) {
     ToggleBit(bitMask, static_cast<Mask>(bit), state);
 }
@@ -425,56 +425,56 @@ constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept {
 }
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(typename Mask, const std::atomic<Mask> bitMask, const Type bit) {
+constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
+BitCompare(const std::atomic<Mask> bitMask, const Type bit) {
     return BitCompare(bitmask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 SetBit(std::atomic<Mask>& bitMask, const Type bit) {
     SetBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ClearBit(std::atomic<Mask>& bitMask, const Type bit) {
     ClearBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask>
-inline bool AnyCompare(const std::atomic<Mask> bitMask, const Mask checkMask) noexcept {
+constexpr bool AnyCompare(const std::atomic<Mask> bitMask, const Mask checkMask) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     return ((bitMask & checkMask) != 0);
 }
 
 template<typename Mask>
-inline bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept {
+constexpr bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     return ((bitMask & bit) == bit);
 }
 
 template<typename Mask>
-inline void SetBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
+constexpr void SetBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask |= bit;
 }
 
 template<typename Mask>
-inline void ClearBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
+constexpr void ClearBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask &= ~(bit);
 }
 
 template<typename Mask>
-inline void ToggleBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
+constexpr void ToggleBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     bitMask ^= 1 << bit;
 }
 
 template<typename T,
-         typename = typename enable_if<is_integral<T>::value>::type,
-         typename = typename enable_if<is_unsigned<T>::value>::type>
+         typename = typename std::enable_if<std::is_integral<T>::value>::type,
+         typename = typename std::enable_if<std::is_unsigned<T>::value>::type>
 constexpr T roundup(T value,
                     unsigned maxb = sizeof(T)*CHAR_BIT,
                     unsigned curb = 1)

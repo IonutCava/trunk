@@ -63,6 +63,7 @@ public:
 
 protected:
     void onThreadCreate(const std::thread::id& threadID);
+    void onThreadDestroy(const std::thread::id& threadID);
 
 protected:
     TaskPool& _parent;

@@ -16,6 +16,8 @@ namespace Divide {
     }
 
     void AnimationSystem::PreUpdate(F32 dt) {
+        OPTICK_EVENT();
+
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto anim = _container->begin();
@@ -27,6 +29,8 @@ namespace Divide {
     }
 
     void AnimationSystem::Update(F32 dt) {
+        OPTICK_EVENT();
+
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto anim = _container->begin();
@@ -38,6 +42,8 @@ namespace Divide {
     }
 
     void AnimationSystem::PostUpdate(F32 dt) {
+        OPTICK_EVENT();
+
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         auto anim = _container->begin();

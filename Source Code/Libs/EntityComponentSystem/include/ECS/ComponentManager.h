@@ -215,6 +215,20 @@ namespace ECS
 			}
 		}
 
+		void PassDataToAllComponents(const EntityId entityId, const Data& data) {
+			static const size_t NUM_COMPONENTS = this->m_EntityComponentMap[0].size();
+
+			for (ComponentTypeId componentTypeId = 0; componentTypeId < NUM_COMPONENTS; ++componentTypeId)
+			{
+				const ComponentId componentId = this->m_EntityComponentMap[entityId.index][componentTypeId];
+				if (componentId == INVALID_COMPONENT_ID)
+					continue;
+
+				if (IComponent* component = this->m_ComponentLUT[componentId]) {
+					component->OnData(data);
+				}
+			}
+		}
 		///-------------------------------------------------------------------------------------------------
 		/// Fn:	template<class T> T* ComponentManager::GetComponent(const EntityId entityId)
 		///

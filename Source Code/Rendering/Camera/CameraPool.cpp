@@ -22,6 +22,8 @@ SharedMutex Camera::s_cameraPoolLock;
 Camera::CameraPool Camera::s_cameraPool;
 
 void Camera::update(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     const F32 deltaTimeS = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
 
     SharedLock r_lock(s_cameraPoolLock);

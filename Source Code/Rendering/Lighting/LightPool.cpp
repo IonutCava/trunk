@@ -279,17 +279,19 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
             sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
         }
     }
+    {
+        OPTICK_EVENT("LightPool::SortLights");
 
-    eastl::sort(eastl::begin(sortedLights),
-                eastl::end(sortedLights),
-                [&eyePos](Light* a, Light* b) {
-                // directional lights first
-                if (a->getLightType() != b->getLightType()) {
-                    return to_base(a->getLightType()) < to_base(b->getLightType());
-                }
-                return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
-            });
-
+        eastl::sort(eastl::begin(sortedLights),
+                    eastl::end(sortedLights),
+                    [&eyePos](Light* a, Light* b) {
+                    // directional lights first
+                    if (a->getLightType() != b->getLightType()) {
+                        return to_base(a->getLightType()) < to_base(b->getLightType());
+                    }
+                    return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
+                });
+    }
     U32 totalLightCount = 0;
     vec3<F32> tempColour;
 
@@ -330,10 +332,13 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         _activeLightCount[stageIndex][to_base(LightType::SPOT)],
         to_U32(_sortedShadowLights.size())
     );
+    {
+        OPTICK_EVENT("LightPool::UploadLightDataToGPU");
 
-    _lightShaderBuffer->writeBytes((stageIndex - 1) * _lightShaderBuffer->getPrimitiveSize(),
-                                   sizeof(vec4<I32>) + (totalLightCount * sizeof(LightProperties)),
-                                   (bufferPtr)(&crtData));
+        _lightShaderBuffer->writeBytes((stageIndex - 1) * _lightShaderBuffer->getPrimitiveSize(),
+                                       sizeof(vec4<I32>) + (totalLightCount * sizeof(LightProperties)),
+                                       (bufferPtr)(&crtData));
+    }
 }
 
 void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInOut) {
@@ -349,6 +354,8 @@ void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInO
 }
 
 void LightPool::preRenderAllPasses(const Camera& playerCamera) {
+    OPTICK_EVENT();
+
     const vec3<F32>& eyePos = playerCamera.getEye();
 
     _sortedShadowLights.resize(0);

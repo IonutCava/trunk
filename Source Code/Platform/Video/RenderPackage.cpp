@@ -224,6 +224,8 @@ void RenderPackage::setLoDLevel(U8 LoD) {
 }
 
 void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
+    OPTICK_EVENT();
+
     auto& cmds = _commands->get<GFX::DrawCommand>();
     for (auto& cmd : cmds) {
         auto& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;

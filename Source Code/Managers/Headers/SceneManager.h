@@ -118,15 +118,21 @@ public:
 
     /// Gather input events and process them in the current scene
     inline void processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+        OPTICK_EVENT();
+
         getActiveScene().processInput(idx, deltaTimeUS);
         Attorney::SceneManager::updateCameraControls(getActiveScene(), idx);
     }
 
     inline void processTasks(const U64 deltaTimeUS) {
+        OPTICK_EVENT();
+
         getActiveScene().processTasks(deltaTimeUS);
     }
 
     inline void processGUI(const U64 deltaTimeUS) {
+        OPTICK_EVENT();
+
         getActiveScene().processGUI(deltaTimeUS);
     }
 

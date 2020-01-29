@@ -189,10 +189,13 @@ void RenderPass::initBufferData() {
 }
 
 void RenderPass::render(const Task& parentTask, const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     ACKNOWLEDGE_UNUSED(parentTask);
 
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
+            OPTICK_EVENT("RenderPass - Main");
             RenderPassManager::PassParams params = {};
             params._stage = _stageFlag;
             params._target = RenderTargetID(RenderTargetUsage::SCREEN);
@@ -212,6 +215,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 
         } break;
         case RenderStage::SHADOW: {
+            OPTICK_EVENT("RenderPass - Shadow");
             GFX::BeginDebugScopeCommand beginDebugScopeCmd;
             beginDebugScopeCmd._scopeID = 20;
             beginDebugScopeCmd._scopeName = "Shadow Render Stage";
@@ -224,6 +228,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 
         } break;
         case RenderStage::REFLECTION: {
+            OPTICK_EVENT("RenderPass - Reflection");
             SceneManager& mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
@@ -266,6 +271,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             }
         } break;
         case RenderStage::REFRACTION: {
+            OPTICK_EVENT("RenderPass - Refraction");
             // Get list of refractive nodes from the scene manager
             SceneManager& mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
@@ -296,6 +302,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 }
 
 void RenderPass::postRender() {
+    OPTICK_EVENT();
+
     _renderData->incQueue();
 }
 

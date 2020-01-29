@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
 namespace Divide {
-    struct TransformUpdated;
+    //struct TransformUpdated;
     class BoundsComponent final : public BaseComponentType<BoundsComponent, ComponentType::BOUNDS>{
     public:
         BoundsComponent(SceneGraphNode& sgn, PlatformContext& context);
@@ -59,10 +59,13 @@ namespace Divide {
         void Update(const U64 deltaTimeUS) final;
         void PostUpdate(const U64 deltaTimeUS) final;
 
+        //void onTransformUpdated(const TransformUpdated* evt);
+        void OnData(const ECS::Data& data) final;
+
+        void setRefBoundingBox(const BoundingBox& nodeBounds);
+
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(bool recursive);
-        void onTransformUpdated(const TransformUpdated* evt);
-        void setRefBoundingBox(const BoundingBox& nodeBounds);
 
     private:
         std::atomic_bool _ignoreTransform;

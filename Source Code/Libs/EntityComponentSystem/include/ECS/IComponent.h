@@ -15,6 +15,8 @@
 
 namespace ECS
 {
+	struct Data;
+
 	using ComponentId		= ObjectID;
 	using ComponentTypeId	= TypeID;
 
@@ -57,6 +59,8 @@ namespace ECS
 
 		inline void SetActive(bool state) { this->m_Enabled = state; }
 		inline bool IsActive() const { return this->m_Enabled; }
+
+		virtual void OnData(const Data& data) = 0;
 	};
 }
 

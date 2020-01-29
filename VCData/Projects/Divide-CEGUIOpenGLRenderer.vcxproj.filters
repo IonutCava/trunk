@@ -148,6 +148,9 @@
     <Filter Include="fontstash\Headers">
       <UniqueIdentifier>{b1409af1-b903-4433-bc32-62ca0de9a8cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Optik">
+      <UniqueIdentifier>{3eac6feb-106a-442f-b1fa-cbad773e55cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GeometryBufferBase.h">
@@ -492,6 +495,51 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Text\Headers\glfontstash.h">
       <Filter>fontstash\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick.config.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_common.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.freebsd.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.linux.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.macos.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.platform.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.win.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_gpu.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_memory.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_message.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_miniz.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_serialization.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_server.h">
+      <Filter>Optik</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GeometryBufferBase.cpp">
@@ -728,6 +776,30 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator_.cpp">
       <Filter>Allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_core.cpp">
+      <Filter>Optik</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_gpu.cpp">
+      <Filter>Optik</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_gpu.d3d12.cpp">
+      <Filter>Optik</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_gpu.vulkan.cpp">
+      <Filter>Optik</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_message.cpp">
+      <Filter>Optik</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_miniz.cpp">
+      <Filter>Optik</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_serialization.cpp">
+      <Filter>Optik</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_server.cpp">
+      <Filter>Optik</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

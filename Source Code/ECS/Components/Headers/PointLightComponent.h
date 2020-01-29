@@ -41,6 +41,10 @@ class PointLightComponent final : public BaseComponentType<PointLightComponent, 
 {
    public:
     explicit PointLightComponent(SceneGraphNode& sgn, PlatformContext& context);
+
+   protected:
+    void OnData(const ECS::Data& data) final;
+
    private:
     vec3<F32> _direction[6];
 };

@@ -154,6 +154,8 @@ void Kernel::stopSplashScreen() {
 }
 
 void Kernel::idle(bool fast) {
+    OPTICK_EVENT();
+
     _platformContext.idle();
 
     if (!fast && !Config::Build::IS_SHIPPING_BUILD) {
@@ -274,6 +276,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
                            const U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
                            const U64 appDeltaTimeUS) //Real app delta time between frames. Can't be paused (e.g. used by editor)
 {
+    OPTICK_EVENT();
+
     Time::ScopedTimer timer(_appScenePass);
     {
         Time::ScopedTimer timer2(_cameraMgrTimer);
@@ -484,6 +488,8 @@ Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vector<Time::Profi
 }
 
 bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     Time::ScopedTimer time(_flushToScreenTimer);
 
     FrameListenerManager& frameMgr = FrameListenerManager::instance();

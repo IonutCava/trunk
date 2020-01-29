@@ -10,6 +10,8 @@
 
 namespace Divide {
 
+bool Divide::TaskPool::USE_OPTICK_PROFILER = false;
+
 TEST(TaskPoolContructionTest)
 {
     Console::toggleErrorStream(false);

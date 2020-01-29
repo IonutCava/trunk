@@ -43,6 +43,8 @@ DEFINE_POOL(ClearBufferDataCommand);
 DEFINE_POOL(ExternalCommand);
 
 void CommandBuffer::add(const CommandBuffer& other) {
+    OPTICK_EVENT();
+
     static_assert(sizeof(PolyContainerEntry) == 4, "PolyContainerEntry has the wrong size!");
 
     for (const CommandEntry& cmd : other._commandOrder) {
@@ -56,6 +58,8 @@ void CommandBuffer::addDestructive(CommandBuffer& other) {
 }
 
 void CommandBuffer::batch() {
+    OPTICK_EVENT();
+
     clean();
 
     std::array<CommandBase*, to_base(GFX::CommandType::COUNT)> prevCommands;
@@ -64,6 +68,7 @@ void CommandBuffer::batch() {
 
     bool partial = false;
     while (tryMerge) {
+        OPTICK_EVENT("TRY_MERGE_LOOP");
         prevCommands.fill(nullptr);
         tryMerge = false;
 
@@ -145,6 +150,8 @@ void CommandBuffer::batch() {
 }
 
 void CommandBuffer::clean() {
+    OPTICK_EVENT();
+
     if (_commandOrder.empty()) {
         return;
     }
@@ -159,6 +166,8 @@ void CommandBuffer::clean() {
         switch (static_cast<GFX::CommandType>(typeIndex)) {
             case CommandType::DRAW_COMMANDS :
             {
+                OPTICK_EVENT("Clean Draw Commands");
+
                 vectorEASTLFast<GenericDrawCommand>& cmds = get<DrawCommand>(*it)._drawCommands;
                 cmds.erase(eastl::remove_if(eastl::begin(cmds),
                                             eastl::end(cmds),
@@ -173,6 +182,8 @@ void CommandBuffer::clean() {
                 }
             } break;
             case CommandType::BIND_PIPELINE : {
+                OPTICK_EVENT("Clean Pipelines");
+
                 const Pipeline* pipeline = get<BindPipelineCommand>(*it)._pipeline;
                 // If the current pipeline is identical to the previous one, remove it
                 if (prevPipeline != nullptr && *prevPipeline == *pipeline) {
@@ -184,6 +195,8 @@ void CommandBuffer::clean() {
                 }
             }break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
+                OPTICK_EVENT("Clean Push Constants");
+
                 const PushConstants& constants = get<SendPushConstantsCommand>(*it)._constants;
                 if (constants.empty()) {
                     --_commandCount[typeIndex];
@@ -191,6 +204,8 @@ void CommandBuffer::clean() {
                 }
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+                OPTICK_EVENT("Clean Descriptor Sets");
+
                 const DescriptorSet& set = get<BindDescriptorSetsCommand>(*it)._set;
                 if (set.empty() || (prevDescriptorSet != nullptr && *prevDescriptorSet == set)) {
                     --_commandCount[typeIndex];
@@ -201,11 +216,13 @@ void CommandBuffer::clean() {
                 }
             }break;
             case GFX::CommandType::DRAW_TEXT: {
-                const TextElementBatch& batch = get<DrawTextCommand>(*it)._batch;
-                bool hasText = !batch.empty();
+                OPTICK_EVENT("Clean Draw Text");
+
+                const TextElementBatch& textBatch = get<DrawTextCommand>(*it)._batch;
+                bool hasText = !textBatch.empty();
                 if (hasText) {
                     hasText = false;
-                    for (const TextElement& element : batch()) {
+                    for (const TextElement& element : textBatch()) {
                         hasText = hasText || !element.text().empty();
                     }
                 }
@@ -242,6 +259,8 @@ void CommandBuffer::clean() {
 
 // New use cases that emerge from production work should be checked here.
 bool CommandBuffer::validate() const {
+    OPTICK_EVENT();
+
     bool valid = true;
 
     if (Config::ENABLE_GPU_VALIDATION) {
@@ -332,50 +351,54 @@ bool CommandBuffer::validate() const {
     return valid;
 }
 
+bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) {
+    OPTICK_EVENT();
 
-bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const {
-    const size_t startSize = commands.size();
-    if (byBaseInstance) {
-        std::sort(std::begin(commands),
-                  std::end(commands),
-                  [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool {
-                    return a._cmd.baseInstance < b._cmd.baseInstance;
-                  });
-    } else {
-        std::sort(std::begin(commands),
-                  std::end(commands),
-                  [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool {
-                    return a._commandOffset < b._commandOffset;
-                  });
+    // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
+    if ((previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) && previousIDC._cmd.primCount != currentIDC._cmd.primCount) {
+        return false;
     }
 
-    auto batch = [byBaseInstance](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
-        // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
-        if ((previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) && previousIDC._cmd.primCount != currentIDC._cmd.primCount) {
-            return false;
-        }
-
-        // Batchable commands must share the same buffer and other various state
-        if (compatible(previousIDC, currentIDC)) {
-            if (byBaseInstance) { // Base instance compatibility
-                if (previousIDC._cmd.baseInstance + previousIDC._drawCount != currentIDC._cmd.baseInstance) {
-                    return false;
-                }
-            } else {// Command offset compatibility
-                if (previousIDC._commandOffset + to_I32(previousIDC._drawCount) != currentIDC._commandOffset) {
-                    return false;
-                }
+    // Batchable commands must share the same buffer and other various state
+    if (compatible(previousIDC, currentIDC)) {
+        if (byBaseInstance) { // Base instance compatibility
+            if (previousIDC._cmd.baseInstance + previousIDC._drawCount != currentIDC._cmd.baseInstance) {
+                return false;
             }
-
-            // If the rendering commands are batchable, increase the draw count for the previous one
-            previousIDC._drawCount += currentIDC._drawCount;
-            // And set the current command's draw count to zero so it gets removed from the list later on
-            currentIDC._drawCount = 0;
-            return true;
+        }
+        else {// Command offset compatibility
+            if (previousIDC._commandOffset + to_I32(previousIDC._drawCount) != currentIDC._commandOffset) {
+                return false;
+            }
         }
 
-        return false;
-    };
+        // If the rendering commands are batchable, increase the draw count for the previous one
+        previousIDC._drawCount += currentIDC._drawCount;
+        // And set the current command's draw count to zero so it gets removed from the list later on
+        currentIDC._drawCount = 0;
+        return true;
+    }
+
+    return false;
+}
+
+bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const {
+    OPTICK_EVENT((byBaseInstance ? "CommandBuffer::mergeDrawCommands by instance" : "CommandBuffer::mergeDrawCommands by offset"));
+
+    const size_t startSize = commands.size();
+    if (byBaseInstance) {
+        eastl::sort(std::begin(commands),
+                    std::end(commands),
+                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool {
+                        return a._cmd.baseInstance < b._cmd.baseInstance;
+                    });
+    } else {
+        eastl::sort(std::begin(commands),
+                    std::end(commands),
+                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool {
+                        return a._commandOffset < b._commandOffset;
+                    });
+    }
 
     vec_size previousCommandIndex = 0;
     vec_size currentCommandIndex = 1;
@@ -383,7 +406,7 @@ bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& comma
     for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
         GenericDrawCommand& previousCommand = commands[previousCommandIndex];
         GenericDrawCommand& currentCommand = commands[currentCommandIndex];
-        if (!batch(previousCommand, currentCommand)) {
+        if (!BatchDrawCommands(byBaseInstance, previousCommand, currentCommand)) {
             previousCommandIndex = currentCommandIndex;
         }
     }

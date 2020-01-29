@@ -409,13 +409,11 @@ void SceneGraphNode::frameEnded() {
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
+    OPTICK_EVENT();
+
     // update local time
     _elapsedTimeUS += deltaTimeUS;
     _lastDeltaTimeUS = deltaTimeUS;
-
-    if (!_relationshipCache.isValid()) {
-        _relationshipCache.rebuild();
-    }
 
     if (hasFlag(Flags::ACTIVE)) {
         if (_lockToCamera != 0) {
@@ -433,12 +431,41 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
     }
 }
 
+void SceneGraphNode::processEvents() {
+    OPTICK_EVENT();
+
+    _uniqueEventsCache.clear();
+    ECSCustomEventType type = ECSCustomEventType::COUNT;
+    while (_events.try_dequeue(type)) {
+        _uniqueEventsCache.insert(type);
+    }
+
+    const ECS::EntityId id = GetEntityID();
+    ECS::Data data = {};
+    for (ECSCustomEventType type2 : _uniqueEventsCache) {
+        switch (type2) {
+            case ECSCustomEventType::RelationshipCacheInvalidated: {
+                if (!_relationshipCache.isValid()) {
+                    _relationshipCache.rebuild();
+                }
+            }break;
+            default: {
+                data.eventType = type2;
+                _compManager->PassDataToAllComponents(id, data);
+            } break;
+        };
+    }
+}
+
 bool SceneGraphNode::preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut) {
+    OPTICK_EVENT();
+
     return _node->preRender(*this, camera, renderStagePass, refreshData, rebuildCommandsOut);
 }
 
 bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
-    
+    OPTICK_EVENT();
+
     RenderingComponent* rComp = get<RenderingComponent>();
     if (rComp != nullptr) {
         AnimationComponent* aComp = get<AnimationComponent>();
@@ -455,16 +482,20 @@ bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderS
                 pkg.addShaderBuffer(0, buffer);
             }
         }
-        rComp->onRender(renderStagePass, refreshData);
+        rComp->onRender(renderStagePass);
     }
     return _node->onRender(*this, camera, renderStagePass, refreshData);
 }
 
 void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     _node->onRefreshNodeData(*this, renderStagePass, camera, quick, bufferInOut);
 }
 
 bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {
+    OPTICK_EVENT();
+
     return _node->getDrawState(*this, stagePass, LoD);
 }
 
@@ -481,6 +512,7 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
 
 
 bool SceneGraphNode::preCullNode(const NodeCullParams& params, F32& distanceToClosestPointSQ) const {
+    OPTICK_EVENT();
 
     // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
     if (!hasFlag(Flags::LOADING)) {
@@ -518,6 +550,8 @@ bool SceneGraphNode::preCullNode(const NodeCullParams& params, F32& distanceToCl
 bool SceneGraphNode::cullNode(const NodeCullParams& params,
                               Frustum::FrustCollision& collisionTypeOut,
                               F32& distanceToClosestPointSQ) const {
+    OPTICK_EVENT();
+
     // Some nodes should always render for different reasons (eg, trees are instanced and bound to the parent chunk)
     if (hasFlag(Flags::VISIBILITY_LOCKED)) {
         collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
@@ -563,6 +597,8 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
     if (source == this || !_relationshipCache.isValid()) {
         return;
     }
+
+    SendEvent(ECSCustomEventType::RelationshipCacheInvalidated);
 
     _relationshipCache.invalidate();
 
@@ -759,4 +795,10 @@ bool SceneGraphNode::hasFlag(Flags flag) const {
     return BitCompare(_nodeFlags, to_U32(flag));
 }
 
+void SceneGraphNode::SendEvent(ECSCustomEventType eventType) {
+    if (_events.enqueue(eventType)) {
+        //Yay
+    }
+    //Nay
+}
 };

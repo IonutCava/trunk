@@ -219,6 +219,8 @@ void Terrain::toggleBoundingBoxes() {
 }
 
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
+    OPTICK_EVENT();
+
     _drawDistance = sceneState.renderState().generalVisibility();
     if (_shaderDataDirty) {
         _shaderData->incQueue();

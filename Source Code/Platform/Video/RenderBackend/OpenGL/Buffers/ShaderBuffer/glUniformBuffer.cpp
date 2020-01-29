@@ -63,6 +63,8 @@ GLuint glUniformBuffer::bufferID() const {
 
 void glUniformBuffer::clearData(U32 offsetElementCount,
                                 U32 rangeElementCount) {
+    OPTICK_EVENT();
+
     if (rangeElementCount > 0) {
         GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
         GLintptr offsetInBytes = offsetElementCount * _elementSize;

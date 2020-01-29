@@ -55,6 +55,10 @@ Task& Start(Task& task, TaskPriority priority, DELEGATE_CBK<void>&& onCompletion
 }
 
 void Wait(const Task& task) {
+    if (TaskPool::USE_OPTICK_PROFILER) {
+        OPTICK_EVENT();
+    }
+
     while (!Finished(task)) {
         TaskYield(task);
     }

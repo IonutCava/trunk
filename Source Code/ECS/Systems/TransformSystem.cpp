@@ -22,6 +22,8 @@ namespace Divide {
     }
 
     void TransformSystem::PreUpdate(F32 dt) {
+        OPTICK_EVENT();
+
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         // Keep memory in order to avoid mid-frame allocs
@@ -37,6 +39,8 @@ namespace Divide {
     }
 
     void TransformSystem::Update(F32 dt) {
+        OPTICK_EVENT();
+
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         for (TransformComponent* tComp : _componentCache) {
@@ -45,6 +49,8 @@ namespace Divide {
     }
 
     void TransformSystem::PostUpdate(F32 dt) {
+        OPTICK_EVENT();
+
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         for (TransformComponent* tComp : _componentCache) {

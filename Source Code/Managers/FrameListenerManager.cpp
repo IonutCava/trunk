@@ -175,11 +175,15 @@ void FrameListenerManager::createEvent(const U64 currentTimeUS, FrameEventType t
 }
 
 bool FrameListenerManager::createAndProcessEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt) {
+    OPTICK_EVENT();
+
     createEvent(currentTimeUS, type, evt);
     return frameEvent(evt);
 }
 
 U64 FrameListenerManager::calculateEventTime(const U64 currentTimeUS, FrameEventType type) {
+    OPTICK_EVENT();
+
     EventTimeMap& times = _eventTimers[to_U32(type)];
     times.push_back(currentTimeUS);
 

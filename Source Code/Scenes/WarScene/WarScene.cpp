@@ -308,6 +308,8 @@ namespace{
 };
 
 void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
+    //OPTICK_EVENT();
+
     if (!_sceneReady) {
         return;
     }

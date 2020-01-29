@@ -134,6 +134,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
 }
 
 void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentState state, bool layeredRendering) {
+    OPTICK_EVENT();
 
     const Texture_ptr& tex = attachment.texture(false);
     if (layeredRendering && tex->numLayers() == 1) {
@@ -230,6 +231,8 @@ bool glFramebuffer::resize(U16 width, U16 height) {
 }
 
 void glFramebuffer::resolve(I8 colour, bool allColours, bool depth, bool externalColours) {
+    OPTICK_EVENT();
+
     if (_resolveBuffer != nullptr) {
         RTBlitParams params = {};
         params._inputFB = this;
@@ -292,6 +295,8 @@ void glFramebuffer::fastBlit(GLuint inputFB,
 
 void glFramebuffer::blitFrom(const RTBlitParams& params)
 {
+    OPTICK_EVENT();
+
     if (!params._inputFB || (params._blitColours.empty() && params._blitDepth.empty())) {
         return;
     }
@@ -533,6 +538,8 @@ RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index, bool
 }
 
 void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) {
+    OPTICK_EVENT();
+
     const RTDrawMask& mask = drawPolicy.drawMask();
 
     for (U8 i = 0; i < activeAttachments.size(); ++i) {
@@ -549,6 +556,8 @@ void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const RTAt
 }
 
 void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) {
+    OPTICK_EVENT();
+
     const RTDrawMask& mask = drawPolicy.drawMask();
 
     if (_previousPolicy.drawMask() != mask) {
@@ -579,6 +588,8 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTA
 }
 
 void glFramebuffer::toggleAttachments() {
+    OPTICK_EVENT();
+
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
         /// Get the attachments in use for each type
         const RTAttachmentPool::PoolEntry& attachments = _attachmentPool->get(static_cast<RTAttachmentType>(i));
@@ -596,6 +607,8 @@ void glFramebuffer::toggleAttachments() {
 }
 
 void glFramebuffer::clear(const RTClearDescriptor& descriptor) {
+    OPTICK_EVENT();
+
     toggleAttachments();
     const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
     prepareBuffers({}, colourAttachments);
@@ -622,6 +635,8 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
 }
 
 void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
+    OPTICK_EVENT();
+
     /// Push debug state
     GL_API::pushDebugMessage(_debugMessage.c_str(), _framebufferHandle);
 
@@ -652,6 +667,8 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 }
 
 void glFramebuffer::end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth) {
+    OPTICK_EVENT();
+
     GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, 0);
     if (_previousPolicy.setViewport()) {
         _context.setViewport(_prevViewport);
@@ -689,6 +706,8 @@ void glFramebuffer::queueMipMapRecomputation(const RTAttachment& attachment, con
 }
 
 void glFramebuffer::clear(const RTClearDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const {
+    OPTICK_EVENT();
+
     if (drawPolicy.clearColours() && hasColour()) {
         for (const RTAttachment_ptr& att : activeAttachments) {
             U32 binding = att->binding();
@@ -734,6 +753,8 @@ void glFramebuffer::clear(const RTClearDescriptor& drawPolicy, const RTAttachmen
 }
 
 void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
+    OPTICK_EVENT();
+
     if (params._type == RTAttachmentType::COUNT) {
         return;
     }
@@ -775,6 +796,8 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
 }
 
 void glFramebuffer::setMipLevel(U16 writeLevel, bool validate) {
+    OPTICK_EVENT();
+
     if (writeLevel == std::numeric_limits<U16>::max()) {
         return;
     }
@@ -810,6 +833,8 @@ void glFramebuffer::readData(const vec4<U16>& rect,
                              GFXImageFormat imageFormat,
                              GFXDataFormat dataType,
                              bufferPtr outData) {
+    OPTICK_EVENT();
+
     if (_resolveBuffer) {
         resolve(-1, true, false, false);
         _resolveBuffer->readData(rect, imageFormat, dataType, outData);
@@ -850,6 +875,8 @@ void glFramebuffer::queueCheckStatus() {
 }
 
 bool glFramebuffer::checkStatus() {
+    OPTICK_EVENT();
+
     if (!_statusCheckQueued) {
         return true;
     }

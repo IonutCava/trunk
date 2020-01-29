@@ -361,6 +361,7 @@ I64 Material::getProgramID(RenderStagePass renderStagePass) const {
 }
 
 bool Material::canDraw(RenderStagePass renderStagePass) {
+    OPTICK_EVENT();
 
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     if (info._shaderCompStage == ShaderProgramInfo::BuildStage::QUEUED && info._shaderRef != nullptr) {
@@ -628,6 +629,8 @@ bool Material::getTextureData(ShaderProgram::TextureUsage slot, TextureDataConta
 }
 
 bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
+    OPTICK_EVENT();
+
     if (textureData.empty()) {
         return getTextureDataFast(renderStagePass, textureData);
     }
@@ -662,6 +665,8 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
 }
 
 bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
+    OPTICK_EVENT();
+
     constexpr U8 transparentSlots[] = {
         to_base(ShaderProgram::TextureUsage::UNIT0),
         to_base(ShaderProgram::TextureUsage::OPACITY)

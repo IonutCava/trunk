@@ -41,6 +41,9 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
 {
    public:
     explicit SpotLightComponent(SceneGraphNode& sgn, PlatformContext& context);
+
+   protected:
+    void OnData(const ECS::Data& data) final;
 };
 
 INIT_COMPONENT(SpotLightComponent);

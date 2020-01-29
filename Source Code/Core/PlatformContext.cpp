@@ -30,7 +30,7 @@ PlatformContext::PlatformContext(Application& app, Kernel& kernel)
   ,  _gui(MemoryManager_NEW GUI(_kernel))              // Graphical User Interface
   ,  _entryData(MemoryManager_NEW XMLEntryData())      // Initial XML data
   ,  _config(MemoryManager_NEW Configuration())        // XML based configuration
-  ,  _client(MemoryManager_NEW LocalClient(_kernel))  // Network client
+  ,  _client(MemoryManager_NEW LocalClient(_kernel))   // Network client
   ,  _debug(MemoryManager_NEW DebugInterface(_kernel)) // Debug Interface
   ,  _inputHandler(MemoryManager_NEW Input::InputHandler(_kernel, _app))
   ,  _editor(Config::Build::ENABLE_EDITOR ? MemoryManager_NEW Editor(*this) : nullptr)
@@ -66,6 +66,8 @@ void PlatformContext::terminate() {
 }
 
 void PlatformContext::beginFrame(U32 componentMask) {
+    OPTICK_EVENT();
+
     if (BitCompare(componentMask, ComponentType::GFXDevice)) {
         _gfx->beginFrame(app().windowManager().getMainWindow(), true);
     }
@@ -107,6 +109,8 @@ void PlatformContext::idle(U32 componentMask) {
 }
 
 void PlatformContext::endFrame(U32 componentMask) {
+    OPTICK_EVENT();
+
     if (BitCompare(componentMask, ComponentType::GFXDevice)) {
         _gfx->endFrame(app().windowManager().getMainWindow(), true);
     }

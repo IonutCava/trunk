@@ -182,7 +182,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
     void drawDebugAxis();
-    void onRender(RenderStagePass renderStagePass, bool refreshData);
+    void onRender(RenderStagePass renderStagePass);
 
     U8 getLoDLevel(const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 

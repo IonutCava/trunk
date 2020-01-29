@@ -209,6 +209,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         template <typename T>
         inline T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } //< ToDo: Optimise this -Ionut
 
+        void SendEvent(ECSCustomEventType eventType);
+
         /// Sends a global event but dispatched is handled between update steps
         template<class E, class... ARGS>
         inline void SendEvent(ARGS&&... eventArgs) { GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...); }
@@ -252,6 +254,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void loadFromXML(const boost::property_tree::ptree& pt);
 
     private:
+        /// Process any events that might of queued up during the ECS Update stages
+        void processEvents();
         /// Returns true if the node should be culled (is not visible for the current stage). Calls "preCullNode" internally.
         bool cullNode(const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) const;
         /// Fast distance-to-camera and min-LoD checks. Part of the cullNode call but usefull for quick visibility checks elsewhere
@@ -288,6 +292,9 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         vectorEASTL<SceneGraphNode*> _children;
         // ToDo: Remove this HORRIBLE hack -Ionut
         vectorFast<EditorComponent*> _editorComponents;
+        moodycamel::ConcurrentQueue<ECSCustomEventType> _events;
+        eastl::set<ECSCustomEventType> _uniqueEventsCache;
+
         mutable SharedMutex _childLock;
 
         REFERENCE_R(SceneGraph, sceneGraph);
@@ -323,6 +330,10 @@ namespace Attorney {
 
     class SceneGraphNodeSceneGraph {
     private:
+        static void processEvents(SceneGraphNode& node) {
+            node.processEvents();
+        }
+
         static void onNetworkSend(SceneGraphNode& node, U32 frameCount) {
             node.onNetworkSend(frameCount);
         }

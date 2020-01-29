@@ -20,7 +20,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
 
     _boundingBoxDirty.store(true);
 
-    RegisterEventCallback(&BoundsComponent::onTransformUpdated);
+    //RegisterEventCallback(&BoundsComponent::onTransformUpdated);
     EditorComponentField bbField = {};
     bbField._name = "Bounding Box";
     bbField._data = &_boundingBox;
@@ -49,27 +49,37 @@ BoundsComponent::~BoundsComponent()
 }
 
 void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
-    _boundingBoxDirty.store(true);
+    OPTICK_EVENT();
 
-    if (recursive) {
-        SceneGraphNode* parent = _parentSGN.parent();
-        if (parent != nullptr) {
-            BoundsComponent* bounds = parent->get<BoundsComponent>();
-            // We stop if the parent sgn doesn't have a bounds component.
-            if (bounds != nullptr) {
-                bounds->flagBoundingBoxDirty(true);
+    bool expected = false;
+    if (_boundingBoxDirty.compare_exchange_strong(expected, true)) {
+
+        if (recursive) {
+            SceneGraphNode* parent = _parentSGN.parent();
+            if (parent != nullptr) {
+                BoundsComponent* bounds = parent->get<BoundsComponent>();
+                // We stop if the parent sgn doesn't have a bounds component.
+                if (bounds != nullptr) {
+                    bounds->flagBoundingBoxDirty(true);
+                }
             }
         }
     }
 }
 
-void BoundsComponent::onTransformUpdated(const TransformUpdated* evt) {
+void BoundsComponent::OnData(const ECS::Data& data) {
+    if (data.eventType == ECSCustomEventType::TransformUpdated) {
+        flagBoundingBoxDirty(true);
+    }
+}
+
+/*void BoundsComponent::onTransformUpdated(const TransformUpdated* evt) {
     if (GetOwner() != evt->GetSourceEntityId()) {
         return;
     }
 
     flagBoundingBoxDirty(true);
-}
+}*/
 
 void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) {
     // All the parents should already be dirty thanks to the bounds system
@@ -78,6 +88,8 @@ void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) {
 }
 
 const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
+    OPTICK_EVENT();
+
     bool expected = true;
     if (_boundingBoxDirty.compare_exchange_strong(expected, false)) {
         BoundingBox tempBB(_refBoundingBox);
@@ -101,10 +113,14 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
 }
 
 void BoundsComponent::Update(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::Update(deltaTimeUS);
 }
 
 void BoundsComponent::PostUpdate(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     updateAndGetBoundingBox();
 
     BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::PostUpdate(deltaTimeUS);

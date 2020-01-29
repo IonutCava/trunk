@@ -302,6 +302,8 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
 
 /// Tell the rendering API to set up our desired PoV
 bool Camera::updateLookAt() {
+    OPTICK_EVENT();
+
     bool cameraUpdated =  updateViewMatrix();
     cameraUpdated = updateProjection() || cameraUpdated;
     cameraUpdated = updateFrustum() || cameraUpdated;

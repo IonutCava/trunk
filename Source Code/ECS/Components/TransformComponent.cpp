@@ -84,6 +84,8 @@ namespace Divide {
     }
 
     void TransformComponent::PreUpdate(const U64 deltaTimeUS) {
+        OPTICK_EVENT();
+
         // If we have dirty transforms, inform everybody
         if (_transformUpdatedMask.load() != to_base(TransformType::NONE))
         {
@@ -94,10 +96,13 @@ namespace Divide {
     }
 
     void TransformComponent::Update(const U64 deltaTimeUS) {
+        OPTICK_EVENT();
+
         // Cleanup our dirty transforms
         if (_transformUpdatedMask.exchange(to_U32(TransformType::NONE) != to_U32(TransformType::NONE))) {
             updateWorldMatrix();
-            _parentSGN.SendEvent<TransformUpdated>(GetOwner());
+            //_parentSGN.SendEvent<TransformUpdated>(GetOwner());
+            _parentSGN.SendEvent(ECSCustomEventType::TransformUpdated);
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
@@ -480,6 +485,8 @@ namespace Divide {
     }
 
     void TransformComponent::getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const {
+        OPTICK_EVENT();
+
         if (_parentUsageContext == NodeUsageContext::NODE_STATIC || interpolationFactor > 0.99) {
             matrixOut.set(getWorldMatrix());
         } else {

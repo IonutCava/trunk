@@ -56,9 +56,20 @@ void TaskPool::shutdown() {
 }
 
 void TaskPool::onThreadCreate(const std::thread::id& threadID) {
-    setThreadName((_threadNamePrefix + to_stringImpl(_threadCount.fetch_add(1))).c_str());
+    const stringImpl threadName = _threadNamePrefix + to_stringImpl(_threadCount.fetch_add(1));
+    if (USE_OPTICK_PROFILER) {
+        OPTICK_START_THREAD(threadName.c_str());
+    }
+
+    setThreadName(threadName.c_str());
     if (_threadCreateCbk) {
         _threadCreateCbk(threadID);
+    }
+}
+
+void TaskPool::onThreadDestroy(const std::thread::id& threadID) {
+    if (USE_OPTICK_PROFILER) {
+        OPTICK_STOP_THREAD();
     }
 }
 
@@ -90,6 +101,10 @@ void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
 }
 
 void TaskPool::flushCallbackQueue() {
+    if (USE_OPTICK_PROFILER) {
+        OPTICK_EVENT();
+    }
+
     constexpr I32 maxDequeueItems = 10;
     
     U32 taskIndex[maxDequeueItems] = { 0 };
@@ -209,6 +224,9 @@ void parallel_for(TaskPool& pool,
             Start(*CreateTask(pool,
                        nullptr,
                        [&cbk, &jobCount, start, end](const Task& parentTask) {
+                           if (TaskPool::USE_OPTICK_PROFILER) {
+                               OPTICK_EVENT();
+                           }
                            cbk(parentTask, start, end);
                            jobCount.fetch_sub(1);
                        },
@@ -218,6 +236,9 @@ void parallel_for(TaskPool& pool,
             Start(*CreateTask(pool,
                        nullptr,
                        [&cbk, &jobCount, count, remainder](const Task& parentTask) {
+                           if (TaskPool::USE_OPTICK_PROFILER) {
+                               OPTICK_EVENT();
+                           }
                            cbk(parentTask, count - remainder, count);
                            jobCount.fetch_sub(1);
                        },
@@ -228,6 +249,9 @@ void parallel_for(TaskPool& pool,
             Task* threadTask = CreateTask(pool, [](const Task& parentTask) {ACKNOWLEDGE_UNUSED(parentTask); }, debugName);
             const U32 start = adjustedCount * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
+            if (TaskPool::USE_OPTICK_PROFILER) {
+                OPTICK_EVENT();
+            }
             cbk(*threadTask, start, end);
             threadTask->_unfinishedJobs.fetch_sub(1);
         }

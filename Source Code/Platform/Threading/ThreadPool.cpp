@@ -56,17 +56,24 @@ namespace Divide {
         _parent.onThreadCreate(threadID);
     }
 
+    void ThreadPool::onThreadDestroy(const std::thread::id& threadID) {
+        _parent.onThreadDestroy(threadID);
+    }
+
     BlockingThreadPool::BlockingThreadPool(TaskPool& parent, const U8 threadCount)
         : ThreadPool(parent, threadCount)
     {
         for (U8 idx = 0; idx < threadCount; ++idx) {
             _threads.push_back(std::thread([&]
             {
-                onThreadCreate(std::this_thread::get_id());
+                const std::thread::id threadID = std::this_thread::get_id();
+                onThreadCreate(threadID);
 
                 while (_isRunning) {
                     executeOneTask(true);
                 }
+
+                onThreadDestroy(threadID);
             }));
         }
     }
@@ -103,11 +110,14 @@ namespace Divide {
         for (U8 idx = 0; idx < threadCount; ++idx) {
             _threads.push_back(std::thread([&]
             {
-                onThreadCreate(std::this_thread::get_id());
+                const std::thread::id threadID = std::this_thread::get_id();
+                onThreadCreate(threadID);
 
                 while (_isRunning) {
                     executeOneTask(true);
                 }
+
+                onThreadDestroy(threadID);
             }));
         }
     }

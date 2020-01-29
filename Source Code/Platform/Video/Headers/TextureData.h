@@ -113,6 +113,8 @@ class TextureDataContainer {
 
     protected:
         inline UpdateState setTextureInternal(const TextureData& data, U8 binding, bool force) {
+            OPTICK_EVENT();
+
             const auto& result = _textures.emplace(binding, data);
             if (result.second) {
                 return UpdateState::ADDED;

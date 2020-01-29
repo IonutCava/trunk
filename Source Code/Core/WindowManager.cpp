@@ -350,6 +350,8 @@ bool WindowManager::destroyWindow(DisplayWindow*& window) {
 }
 
 void WindowManager::update(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     for (DisplayWindow* win : _windows) {
         win->update(deltaTimeUS);
     }

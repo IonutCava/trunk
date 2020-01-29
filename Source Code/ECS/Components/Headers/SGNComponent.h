@@ -63,6 +63,22 @@ BETTER_ENUM(ComponentType, U16,
     COUNT = 15
 );
 
+enum class ECSCustomEventType : U8 {
+    TransformUpdated = 0,
+    RelationshipCacheInvalidated,
+    COUNT
+};
+
+}; //namespace Divide 
+
+namespace ECS {
+    struct Data {
+        Divide::ECSCustomEventType eventType = Divide::ECSCustomEventType::COUNT;
+    };
+};
+
+namespace Divide {
+
 //ref: http://www.nirfriedman.com/2018/04/29/unforgettable-factory/
 template <typename Base, typename... Args>
 struct Factory {
@@ -83,6 +99,10 @@ struct Factory {
             : Base(Key{ s_registered }, C, std::forward<InnerArgs>(args)...)
         {
             ACKNOWLEDGE_UNUSED(s_registered);
+        }
+
+        virtual void OnData(const ECS::Data& data) override {
+            ACKNOWLEDGE_UNUSED(data);
         }
 
         static bool registerComponentType() {
@@ -136,6 +156,8 @@ class SGNComponent : private PlatformContextComponent,
         virtual void PostUpdate(const U64 deltaTime);
 
         virtual void OnUpdateLoop();
+
+        virtual void OnData(const ECS::Data& data);
 
         inline SceneGraphNode& getSGN() const { return _parentSGN; }
         inline ComponentType type() const { return _type; }

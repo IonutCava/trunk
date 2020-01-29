@@ -12,6 +12,8 @@
 #include "Core/Headers/TaskPool.h"
 namespace Divide {
 
+bool TaskPool::USE_OPTICK_PROFILER = true;
+
 namespace {
     void out_of_memory()
     {

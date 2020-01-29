@@ -799,6 +799,8 @@ void GFXDevice::idle() {
 }
 
 void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
+    OPTICK_EVENT();
+
     if (global && Config::ENABLE_GPU_VALIDATION) {
         if (_renderDocManager) {
             _renderDocManager->StartFrameCapture();
@@ -825,6 +827,8 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
 }
 
 void GFXDevice::endFrame(DisplayWindow& window, bool global) {
+    OPTICK_EVENT();
+
     if (global) {
         FRAME_COUNT++;
         FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
@@ -1207,6 +1211,8 @@ void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
 
 #pragma region GPU State
 void GFXDevice::uploadGPUBlock() {
+    OPTICK_EVENT();
+
     if (_gpuBlock._needsUpload) {
         // We flush the entire buffer on update to inform the GPU that we don't
         // need the previous data. Might avoid some driver sync
@@ -1234,6 +1240,8 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
 }
 
 void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot, bool push) {
+    OPTICK_EVENT();
+
     // Tell the Rendering API to draw from our desired PoV
     if (push) {
         _cameraSnapshots.push(_activeCameraSnapshot);
@@ -1278,6 +1286,8 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot, bool push
 
 /// Update the rendering viewport
 bool GFXDevice::setViewport(const Rect<I32>& viewport) {
+    OPTICK_EVENT();
+
     // Change the viewport on the Rendering API level
     if (_api->setViewport(viewport)) {
     // Update the buffer with the new value
@@ -1299,6 +1309,8 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 
 #pragma region Command buffers, occlusion culling, etc
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submitToGPU) {
+    OPTICK_EVENT();
+
     if (Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
 
@@ -1541,6 +1553,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
                               const Texture_ptr& depthBuffer,
                               const Camera& camera,
                               GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
 
     constexpr U32 GROUP_SIZE_AABB = 64;
 

@@ -54,6 +54,9 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     inline void csmNearClipOffset(F32 offset) { _csmNearClipOffset = offset; }
 
    protected:
+     void OnData(const ECS::Data& data) final;
+
+   protected:
     /// CSM split count
     U8 _csmSplitCount;
     /// CSM extra back up distance for light position

@@ -69,6 +69,8 @@ Frustum::FrustCollision Frustum::PlaneSphereIntersect(const Plane<F32>& frustumP
 }
 
 Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const {
+    OPTICK_EVENT();
+
     Frustum::FrustCollision res = FrustCollision::FRUSTUM_IN;
     I8 planeToSkip = -1;
     if (lastPlaneCache != -1) {
@@ -111,6 +113,8 @@ Frustum::FrustCollision Frustum::PlaneBoundingBoxIntersect(const Plane<F32>& fru
 
 
 Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const {
+    OPTICK_EVENT();
+
     Frustum::FrustCollision res = FrustCollision::FRUSTUM_IN;
     I8 planeToSkip = -1;
     if (lastPlaneCache != -1) {

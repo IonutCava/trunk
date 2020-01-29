@@ -169,6 +169,7 @@ inline bool CommandBuffer::empty() const {
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawCommand* prevCommand, DrawCommand* crtCommand, bool& partial) const {
+    OPTICK_EVENT();
     ACKNOWLEDGE_UNUSED(type);
 
     vectorEASTLFast<GenericDrawCommand>& commands = prevCommand->_drawCommands;
@@ -191,6 +192,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawCommand* 
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand, bool& partial) const {
+    OPTICK_EVENT();
     ACKNOWLEDGE_UNUSED(type);
 
     return Merge(prevCommand->_set, crtCommand->_set, partial);
@@ -198,6 +200,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, BindDescripto
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand, bool& partial) const {
+    OPTICK_EVENT();
     ACKNOWLEDGE_UNUSED(type);
 
     return Merge(prevCommand->_constants, crtCommand->_constants, partial);
@@ -205,6 +208,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SendPushConst
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawTextCommand* prevCommand, DrawTextCommand* crtCommand, bool& partial) const {
+    OPTICK_EVENT();
     ACKNOWLEDGE_UNUSED(type);
 
     partial = false;
@@ -216,6 +220,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawTextComma
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SetScissorCommand* prevCommand, SetScissorCommand* crtCommand, bool& partial) const {
+    OPTICK_EVENT();
     ACKNOWLEDGE_UNUSED(type);
 
     partial = false;
@@ -224,6 +229,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SetScissorCom
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SetViewportCommand* prevCommand, SetViewportCommand* crtCommand, bool& partial) const {
+    OPTICK_EVENT();
     ACKNOWLEDGE_UNUSED(type);
 
     partial = false;
@@ -232,6 +238,7 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SetViewportCo
 
 template<>
 inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, BindPipelineCommand* prevCommand, BindPipelineCommand* crtCommand, bool& partial) const {
+    OPTICK_EVENT();
     ACKNOWLEDGE_UNUSED(type);
 
     partial = false;
@@ -241,6 +248,8 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, BindPipelineC
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
 CommandBuffer::tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand, bool& partial) const {
+    OPTICK_EVENT();
+
     assert(prevCommand != nullptr && crtCommand != nullptr);
     switch (type) {
         case GFX::CommandType::DRAW_COMMANDS:

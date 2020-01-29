@@ -439,6 +439,8 @@ void Vegetation::createAndUploadGPUData(GFXDevice& gfxDevice, const Terrain_ptr&
 }
 
 void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
+    OPTICK_EVENT();
+
     assert(s_buffer != nullptr);
     Wait(*_buildTask);
 
@@ -560,6 +562,8 @@ void Vegetation::getStats(U32& maxGrassInstances, U32& maxTreeInstances) const {
 void Vegetation::sceneUpdate(const U64 deltaTimeUS,
                              SceneGraphNode& sgn,
                              SceneState& sceneState) {
+    OPTICK_EVENT();
+
     if (!_render) {
         uploadVegetationData(sgn);
     }
@@ -587,7 +591,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         }
         _stateRefreshIntervalBufferUS += deltaTimeUS;
 
-        const SceneRenderState& renderState = _context.parent().sceneManager().getActiveScene().renderState();
+        const SceneRenderState& renderState = sceneState.renderState();
 
         const F32 sceneGrassDistance = renderState.grassVisibility();
         const F32 sceneTreeDistance = renderState.treeVisibility();
@@ -619,6 +623,8 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
 }
 
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut){
+    OPTICK_EVENT();
+
     if (!quick && _render && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
         // This will always lag one frame
         Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Colour, 0).texture();

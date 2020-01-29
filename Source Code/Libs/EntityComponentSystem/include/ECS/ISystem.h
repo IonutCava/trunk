@@ -41,6 +41,7 @@ namespace ECS
 
 	static const SystemPriority HIGHEST_SYSTEM_PRIORITY		= std::numeric_limits<SystemPriority>::max();
 
+	struct Data;
 
 	class ECS_API ISystem
 	{
@@ -75,7 +76,7 @@ namespace ECS
 		virtual void PreUpdate(f32 dt)	= 0;
 		virtual void Update(f32 dt)		= 0;
 		virtual void PostUpdate(f32 dt) = 0;
-        virtual void OnUpdateLoop() = 0;
+		virtual void OnUpdateLoop() = 0;
 	};
 }
 

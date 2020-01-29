@@ -40,6 +40,7 @@ namespace Divide {
     }
 
     void SGNComponent::PreUpdate(const U64 deltaTime) {
+        OPTICK_EVENT();
         ACKNOWLEDGE_UNUSED(deltaTime);
     }
 
@@ -52,15 +53,21 @@ namespace Divide {
     }
 
     void SGNComponent::Update(const U64 deltaTime) {
+        OPTICK_EVENT();
         ACKNOWLEDGE_UNUSED(deltaTime);
     }
 
     void SGNComponent::PostUpdate(const U64 deltaTime) {
+        OPTICK_EVENT();
         ACKNOWLEDGE_UNUSED(deltaTime);
     }
 
     void SGNComponent::OnUpdateLoop() {
 
+    }
+
+    void SGNComponent::OnData(const ECS::Data& data) {
+        ACKNOWLEDGE_UNUSED(data);
     }
 
 }; //namespace Divide

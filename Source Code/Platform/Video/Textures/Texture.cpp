@@ -70,7 +70,9 @@ bool Texture::load() {
 
 /// Load texture data using the specified file name
 void Texture::threadedLoad() {
-    TextureLoadInfo info;
+    OPTICK_EVENT();
+
+    TextureLoadInfo info = {};
 
     // Each texture face/layer must be in a comma separated list
     stringstreamImpl textureLocationList(assetLocation());

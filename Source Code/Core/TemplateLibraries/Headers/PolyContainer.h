@@ -69,14 +69,19 @@ struct PolyContainerEntry
 template<typename T>
 using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*&)>>;
 
+constexpr bool VALIDATE_POLY_CONTAINERS = false;
+
 template<typename T, U8 N>
 struct PolyContainer {
+
     using EntryList = vectorEASTLFast<deleted_unique_ptr<T>>;
 
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, PolyContainerEntry>::type
         insert(U8 index, deleted_unique_ptr<T>&& cmd) {
-        assert(index < N);
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(index < N);
+        }
 
         EntryList& collection = _collection[index];
         collection.push_back(std::move(cmd));
@@ -93,16 +98,22 @@ struct PolyContainer {
     }
 
     inline T& get(U8 index, I24 entry) {
-        assert(index < N);
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(index < N);
+        }
 
         const EntryList& collection = _collection[index];
-        assert(entry < collection.size());
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(entry < collection.size());
+        }
 
         return *collection[to_I32(entry)];
     }
 
     inline T* getPtr(U8 index, I24 entry) const {
-        assert(index < N);
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(index < N);
+        }
 
         const EntryList& collection = _collection[index];
         if (entry < collection.size()) {
@@ -113,10 +124,14 @@ struct PolyContainer {
     }
 
     inline const T& get(U8 index, I24 entry) const {
-        assert(index < N);
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(index < N);
+        }
 
         const EntryList& collection = _collection[index];
-        assert(entry < collection.size());
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(entry < collection.size());
+        }
 
         return *collection[to_I32(entry)];
     }
@@ -138,7 +153,9 @@ struct PolyContainer {
     }
 
     inline vec_size_eastl size(U8 index) const {
-        assert(index < N);
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(index < N);
+        }
 
         return _collection[index].size();
     }
@@ -150,7 +167,9 @@ struct PolyContainer {
     }
 
     inline void reserve(U8 index, size_t reserveSize) {
-        assert(index < N);
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(index < N);
+        }
 
         _collection[index].reserve(reserveSize);
     }
@@ -176,7 +195,9 @@ struct PolyContainer {
     }
 
     inline void clear(U8 index, bool clearMemory = false) {
-        assert(index < N);
+        if (VALIDATE_POLY_CONTAINERS) {
+            assert(index < N);
+        }
 
         if (clearMemory) {
             _collection[index].clear();

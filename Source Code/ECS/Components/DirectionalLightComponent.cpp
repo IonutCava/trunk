@@ -54,4 +54,9 @@ DirectionalLightComponent::~DirectionalLightComponent()
 {
 }
 
+void DirectionalLightComponent::OnData(const ECS::Data& data) {
+    if (data.eventType == ECSCustomEventType::TransformUpdated) {
+        Light::updateCache();
+    }
+}
 };

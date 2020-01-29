@@ -171,6 +171,8 @@ void RenderingComponent::setMaxRenderRange(F32 maxRange) {
 }
 
 void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
+    OPTICK_EVENT();
+
     RenderPackage& pkg = getDrawPackage(stagePass);
     pkg.clear();
 
@@ -206,6 +208,8 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     if (getMaterialCache() != nullptr) {
         getMaterialCache()->update(deltaTimeUS);
     }
@@ -223,6 +227,8 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 }
 
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
+    OPTICK_EVENT();
+
     if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, renderStagePass, LoD)) {
         Material* matCache = getMaterialCache();
         // Can we render without a material? Maybe. IDK.
@@ -247,7 +253,9 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
-void RenderingComponent::onRender(RenderStagePass renderStagePass, bool refreshData) {
+void RenderingComponent::onRender(RenderStagePass renderStagePass) {
+    OPTICK_EVENT();
+
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
 
@@ -274,6 +282,8 @@ bool RenderingComponent::getDataIndex(U32& idxOut) {
 }
 
 void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
+    OPTICK_EVENT();
+
     if (!useDataIndexAsUniform()) {
         return;
     }
@@ -289,12 +299,16 @@ void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
 }
 
 bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams) {
+    OPTICK_EVENT();
+
     uploadDataIndexAsUniform(refreshParams._stagePass);
     Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, true, refreshParams._bufferInOut);
     return true;
 }
 
 bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams) {
+    OPTICK_EVENT();
+
     RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
     I32 drawCommandCount = pkg.drawCommandCount();
 
@@ -487,6 +501,8 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 }
 
 U8 RenderingComponent::getLoDLevel(const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
+    OPTICK_EVENT();
+
     U8 lodLevel = 0u;
 
     if (_lodLocked) {
@@ -526,6 +542,8 @@ void RenderingComponent::queueRebuildCommands(RenderStagePass renderStagePass) {
 }
 
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData) {
+    OPTICK_EVENT();
+
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
     if (refreshData) {
         lod = getLoDLevel(camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds());
@@ -562,6 +580,8 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 }
 
 RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) {
+    OPTICK_EVENT();
+
     if (renderStagePass._stage == RenderStage::SHADOW) {
         constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
 

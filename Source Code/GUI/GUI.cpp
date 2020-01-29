@@ -160,6 +160,8 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
 }
 
 void GUI::update(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     if (!_init) {
         return;
     }

@@ -29,7 +29,7 @@ namespace ECS
 	class EntityManager;
 	class SystemManager;
 	class ComponentManager;
-
+	struct Data;
 
 
 	class ECS_API ECSEngine

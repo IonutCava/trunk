@@ -14,6 +14,11 @@
 
 namespace Divide {
 
+namespace {
+    constexpr U32 g_nodesPerEventPartition = 16u;
+    constexpr U32 g_nodesPerUpdatePartition = 32u;
+};
+
 SceneGraph::SceneGraph(Scene& parentScene)
     : FrameListener(),
       SceneComponent(parentScene),
@@ -185,21 +190,63 @@ bool SceneGraph::frameEnded(const FrameEvent& evt) {
 }
 
 void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
+    OPTICK_EVENT();
 
     const F32 msTime = Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS);
-    GetECSEngine().PreUpdate(msTime);
-    GetECSEngine().Update(msTime);
-    GetECSEngine().PostUpdate(msTime);
+    {
+        OPTICK_EVENT("ECS::PreUpdate");
+        GetECSEngine().PreUpdate(msTime);
+    }
+    {
+        OPTICK_EVENT("ECS::Update");
+        GetECSEngine().Update(msTime);
+    }
+    {
+        OPTICK_EVENT("ECS::PostUpdate");
+        GetECSEngine().PostUpdate(msTime);
+    }
 
+    PlatformContext& context = parentScene().context();
 
+    parallel_for(context,
+                    [this](const Task& parentTask, U32 start, U32 end) {
+                        for (U32 i = start; i < end; ++i) {
+                            SceneGraphNode* node = _orderedNodeList[i];
+                            Attorney::SceneGraphNodeSceneGraph::processEvents(*node);
+                        }
+                    },
+                    to_U32(_orderedNodeList.size()),
+                    g_nodesPerEventPartition,
+                    TaskPriority::DONT_CARE,
+                    false,
+                    true,
+                    "Process Node Events");
+
+#if 0 // need a flag maybe, per node, that returns true if the update can be run in parallel. Otherwise, add to a separate list and parse serially after the parallel_for
+    parallel_for(context,
+                    [this, deltaTimeUS, &sceneState](const Task& parentTask, U32 start, U32 end) {
+                        for (U32 i = start; i < end; ++i) {
+                            SceneGraphNode* node = _orderedNodeList[i];
+                            node->sceneUpdate(deltaTimeUS, sceneState);
+                        }
+                    },
+                    to_U32(_orderedNodeList.size()),
+                    g_nodesPerUpdatePartition,
+                    TaskPriority::DONT_CARE,
+                    false,
+                    true,
+                    "Process Node Events");
+#else
     for (SceneGraphNode* node : _orderedNodeList) {
         node->sceneUpdate(deltaTimeUS, sceneState);
     }
+#endif
 
     if (_loadComplete) {
-        Start(*CreateTask(parentScene().context(),
+        Start(*CreateTask(context,
             [this, deltaTimeUS](const Task& parentTask) mutable
             {
+                OPTICK_EVENT("Octree Update");
                 _octreeUpdating = true;
                 if (_octreeChanged) {
                     _octree->updateTree();

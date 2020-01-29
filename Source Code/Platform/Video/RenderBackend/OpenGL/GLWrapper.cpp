@@ -110,6 +110,8 @@ void GL_API::idle() {
 
 /// Prepare the GPU for rendering a frame
 void GL_API::beginFrame(DisplayWindow& window, bool global) {
+    OPTICK_EVENT();
+
     // Start a duration query in debug builds
     if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         GLuint writeQuery = _elapsedTimeQuery->writeQuery().getID();
@@ -152,6 +154,8 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 
 /// Finish rendering the current frame
 void GL_API::endFrame(DisplayWindow& window, bool global) {
+    OPTICK_EVENT();
+
     // Revert back to the default OpenGL states
     //clearStates(window, global);
 
@@ -872,6 +876,7 @@ I32 GL_API::getFont(const Str64& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const TextElementBatch& batch) {
+    OPTICK_EVENT();
 
     pushDebugMessage("OpenGL render text start!", 2);
 
@@ -942,6 +947,8 @@ void GL_API::drawText(const TextElementBatch& batch) {
 }
 
 void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
+    OPTICK_EVENT();
+
     if (data != nullptr && data->Valid) {
 
         GenericVertexData::IndexBuffer idxBuffer;
@@ -1006,6 +1013,8 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
 }
 
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
+    OPTICK_EVENT();
+
     if (GL_API::getStateTracker()._activePipeline && *GL_API::getStateTracker()._activePipeline == pipeline) {
         return true;
     }
@@ -1041,6 +1050,8 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
 }
 
 void GL_API::sendPushConstants(const PushConstants& pushConstants) {
+    OPTICK_EVENT();
+
     assert(GL_API::getStateTracker()._activePipeline != nullptr);
 
     ShaderProgram* program = ShaderProgram::findShaderProgram(GL_API::getStateTracker()._activePipeline->shaderProgramHandle());
@@ -1053,6 +1064,8 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) {
+    OPTICK_EVENT();
+
     if (cmd._sourceBuffer._id == 0) {
         getStateTracker().setActiveVAO(s_dummyVAO);
 
@@ -1090,6 +1103,8 @@ namespace {
 };
 
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
+    OPTICK_EVENT();
+
     switch (static_cast<GFX::CommandType>(entry._typeIndex)) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
             const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.get<GFX::BeginRenderPassCommand>(entry);
@@ -1149,14 +1164,19 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (makeImagesResident(set._images)) {
 
             }
-            for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
-                glUniformBuffer* buffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer);
+            {
+                OPTICK_EVENT("Bind Shader Buffers");
+                for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
 
-                if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
-                    getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->bufferID());
-                    _commandBufferOffset = shaderBufCmd._elementRange.x;
-                } else {
-                    buffer->bindRange(to_U8(shaderBufCmd._binding), shaderBufCmd._elementRange.x, shaderBufCmd._elementRange.y);
+                    glUniformBuffer* buffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer);
+
+                    if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
+                        getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->bufferID());
+                        _commandBufferOffset = shaderBufCmd._elementRange.x;
+                    }
+                    else {
+                        buffer->bindRange(to_U8(shaderBufCmd._binding), shaderBufCmd._elementRange.x, shaderBufCmd._elementRange.y);
+                    }
                 }
             }
         }break;
@@ -1183,6 +1203,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             popDebugMessage();
         } break;
         case GFX::CommandType::COMPUTE_MIPMAPS: {
+            OPTICK_EVENT("GL: Compute MipMaps");
             const GFX::ComputeMipMapsCommand& crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
             if (crtCmd._layerRange.x == 0 && crtCmd._layerRange.y <= 1) {
                 glGenerateTextureMipmap(crtCmd._texture->data().textureHandle());
@@ -1239,7 +1260,10 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::DISPATCH_COMPUTE: {
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
             assert(GL_API::getStateTracker()._activePipeline != nullptr);
-            glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
+            {
+                OPTICK_EVENT("GL: Dispatch Compute");
+                glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
+            }
             lockBuffers(false, _context.getFrameCount());
         }break;
         case GFX::CommandType::MEMORY_BARRIER: {
@@ -1285,6 +1309,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 }
 
 void GL_API::lockBuffers(bool flush, U32 frameID) {
+    OPTICK_EVENT();
+
     BufferWriteData data = {};
     bool shouldFlush = false;
 
@@ -1329,10 +1355,14 @@ void GL_API::lockBuffers(bool flush, U32 frameID) {
 }
 
 void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
+    OPTICK_EVENT();
+
     s_firstCommandInBuffer = true;
 }
 
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) {
+    OPTICK_EVENT();
+
     if (s_glFlushQueued && submitToGPU) {
         glFlush();
         s_glFlushQueued = false;
@@ -1362,6 +1392,8 @@ void GL_API::registerSyncDelete(GLsync syncObject) {
 }
 
 void GL_API::processSyncDeleteQeueue() {
+    OPTICK_EVENT();
+
     GLsync sync;
     while (s_syncDeleteQueue[s_syncDeleteQueueIndexR].try_dequeue(sync)) {
         glDeleteSync(sync);
@@ -1431,6 +1463,8 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
 
 /// Activate the render state block described by the specified hash value (0 == default state block)
 size_t GL_API::setStateBlock(size_t stateBlockHash) {
+    OPTICK_EVENT();
+
     // Passing 0 is a perfectly acceptable way of enabling the default render state block
     if (stateBlockHash == 0) {
         stateBlockHash = _context.getDefaultStateBlock(false);
@@ -1440,6 +1474,8 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
 }
 
 bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) {
+    OPTICK_EVENT();
+
     for (const Image& image : images) {
         if (image._texture != nullptr) {
             image._texture->bindLayer(image._binding, image._level, image._layer, false, image._flag != Image::Flag::WRITE ? true : false, image._flag != Image::Flag::READ ? true : false);
@@ -1450,6 +1486,8 @@ bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) {
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) {
+    OPTICK_EVENT();
+
     bool bound = false;
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
@@ -1509,12 +1547,16 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
 }
 
 bool GL_API::setViewport(const Rect<I32>& viewport) {
+    OPTICK_EVENT();
+
     return getStateTracker().setViewport(viewport);
 }
 
 /// Verify if we have a sampler object created and available for the given
 /// descriptor
 U32 GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
+    OPTICK_EVENT();
+
     // Get the descriptor's hash value
     size_t hashValue = descriptor.getHash();
     // Try to find the hash value in the sampler object map

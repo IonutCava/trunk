@@ -31,6 +31,8 @@ struct MeshLoadData {
 };
 
 void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
+    OPTICK_EVENT();
+
     if (MeshImporter::loadMeshDataFromFile(*loadData._context, *loadData._cache, tempMeshData)) {
         if (!MeshImporter::loadMesh(loadData._mesh, *loadData._context, *loadData._cache, tempMeshData)) {
             loadData._mesh.reset();

@@ -1241,6 +1241,8 @@ bool Scene::updateCameraControls(PlayerIndex idx) {
 }
 
 void Scene::updateSceneState(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     _sceneTimerUS += deltaTimeUS;
     updateSceneStateInternal(deltaTimeUS);
     _sceneGraph->sceneUpdate(deltaTimeUS, *_sceneState);
@@ -1248,6 +1250,8 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
 }
 
 void Scene::onStartUpdateLoop(const U8 loopNumber) {
+    OPTICK_EVENT();
+
     _sceneGraph->onStartUpdateLoop(loopNumber);
 }
 

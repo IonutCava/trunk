@@ -197,6 +197,8 @@ bool NavigationMesh::buildThreaded() {
 }
 
 void NavigationMesh::buildInternal(const Task& parentTask) {
+    OPTICK_EVENT();
+
     _building = true;
     // Create mesh
     Time::ProfileTimer importTimer;

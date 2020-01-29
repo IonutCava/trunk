@@ -260,6 +260,7 @@ vec2<U16> DisplayWindow::getDrawableSizeInternal() const {
 
 void DisplayWindow::opacity(U8 opacity) {
     if (SDL_SetWindowOpacity(_sdlWindow, opacity / 255.0f) != -1) {
+        _prevOpacity = _opacity;
         _opacity = opacity;
     }
 }

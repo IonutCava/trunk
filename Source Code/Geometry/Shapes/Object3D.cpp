@@ -106,6 +106,8 @@ void Object3D::rebuildVB() {
 
 void Object3D::rebuild() {
     if (_geometryDirty) {
+        OPTICK_EVENT();
+
         rebuildVB();
         computeTriangleList();
         _geometryDirty = false;

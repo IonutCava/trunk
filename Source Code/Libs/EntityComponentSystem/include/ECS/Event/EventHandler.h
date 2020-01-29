@@ -138,6 +138,8 @@ namespace ECS { namespace Event {
 		// dispatches all stores events and clears buffer
 		void DispatchEvents()
 		{
+			OPTICK_EVENT();
+
 			size_t lastIndex = this->m_EventStorage.size();
 			size_t thisIndex = 0;
 

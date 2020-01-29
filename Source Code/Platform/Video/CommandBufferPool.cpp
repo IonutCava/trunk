@@ -37,6 +37,8 @@ ScopedCommandBuffer::~ScopedCommandBuffer()
 
 
 ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers) {
+    OPTICK_EVENT();
+
     return ScopedCommandBuffer(useSecondaryBuffers);
 }
 

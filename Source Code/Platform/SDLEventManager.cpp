@@ -39,6 +39,8 @@ namespace Divide {
     }
 
     void SDLEventManager::pollEvents() {
+        OPTICK_EVENT();
+
         SDL_Event evt;
         while (SDL_PollEvent(&evt)) {
             SharedLock lock(s_eventListenerLock);

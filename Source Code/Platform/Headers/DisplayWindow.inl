@@ -68,6 +68,10 @@ namespace Divide {
         return _opacity;
     }
 
+    inline U8 DisplayWindow::prevOpacity() const {
+        return _prevOpacity;
+    }
+
     inline void DisplayWindow::clearColour(const FColour4& colour) {
         clearColour(colour,
                     BitCompare(_flags, WindowFlags::CLEAR_COLOUR),

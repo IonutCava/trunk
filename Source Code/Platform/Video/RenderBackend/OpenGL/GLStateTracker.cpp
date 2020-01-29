@@ -453,6 +453,8 @@ void GLStateTracker::setBlendColour(const UColour4& blendColour, bool force) {
 }
 
 void GLStateTracker::setBlending(const BlendingProperties& blendingProperties) {
+    OPTICK_EVENT();
+
     bool enable = blendingProperties.blendEnabled();
 
     if ((_blendEnabledGlobal == GL_TRUE) != enable) {

@@ -36,6 +36,11 @@ namespace ECS
 		{
 			return STATIC_COMPONENT_TYPE_ID;
 		}	
+
+		virtual void OnData(const Data& data) 
+		{
+			(void)data;
+		}
 	};
 
 	// This private member only exists to force the compiler to create an instance of Component T,

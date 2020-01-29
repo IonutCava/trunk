@@ -462,16 +462,22 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
 }
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {
+    OPTICK_EVENT();
+
     _sceneData->uploadToGPU();
 
     return Attorney::SceneManager::frameStarted(getActiveScene());
 }
 
 bool SceneManager::frameEnded(const FrameEvent& evt) {
+    OPTICK_EVENT();
+
     return Attorney::SceneManager::frameEnded(getActiveScene());
 }
 
 void SceneManager::updateSceneState(const U64 deltaTimeUS) {
+    OPTICK_EVENT();
+
     Scene& activeScene = getActiveScene();
     assert(activeScene.getState() == ResourceState::RES_LOADED);
     // Update internal timers
@@ -529,19 +535,27 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
 }
 
 void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     _platformContext->gfx().getRenderer().preRender(stagePass, hizColourTexture, getActiveScene().lightPool(), camera, bufferInOut);
 }
 
 void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
     parent().renderPassManager()->getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
 }
 
 void SceneManager::preRenderAllPasses(const Camera& playerCamera) {
+    OPTICK_EVENT();
+
     getActiveScene().lightPool().preRenderAllPasses(playerCamera);
 }
 
 void SceneManager::postRenderAllPasses(const Camera& playerCamera) {
+    OPTICK_EVENT();
+
     getActiveScene().lightPool().postRenderAllPasses(playerCamera);
 }
 
@@ -554,6 +568,8 @@ void SceneManager::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuf
 }
 
 void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+
     Scene& activeScene = getActiveScene();
 
     Attorney::SceneManager::debugDraw(activeScene, camera, stagePass, bufferInOut);
@@ -585,6 +601,8 @@ Camera* SceneManager::playerCamera() const {
 }
 
 void SceneManager::currentPlayerPass(PlayerIndex idx) {
+    OPTICK_EVENT();
+
     _currentPlayerPass = idx;
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), _currentPlayerPass);
     playerCamera()->updateLookAt();
@@ -659,6 +677,8 @@ VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, Ren
 }
 
 const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents) {
+    OPTICK_EVENT();
+
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
 
     Scene& activeScene = getActiveScene();
@@ -683,6 +703,8 @@ const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Cam
 }
 
 void SceneManager::prepareLightData(RenderStage stage, const Camera& camera) {
+    OPTICK_EVENT();
+
     if (stage != RenderStage::SHADOW) {
         getActiveScene().lightPool().prepareLightData(stage, camera.getEye(), camera.getViewMatrix());
     }
@@ -872,6 +894,8 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
 }
 
 bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
+    OPTICK_EVENT();
+
     const Scene& activeScene = getActiveScene();
 
     if (_saveTask != nullptr) {

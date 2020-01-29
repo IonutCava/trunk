@@ -128,6 +128,8 @@ void InfinitePlane::postLoad(SceneGraphNode& sgn) {
 }
 
 void InfinitePlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
+    OPTICK_EVENT();
+
     TransformComponent* tComp = sgn.get<TransformComponent>();
 
     const vec3<F32>& newEye = sceneState.parentScene().playerCamera()->getEye();

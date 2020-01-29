@@ -63,6 +63,8 @@ namespace ECS
 
 	void EntityManager::RemoveDestroyedEntities()
 	{
+		OPTICK_EVENT();
+
 		for (size_t i = 0; i < this->m_NumPendingDestroyedEntities; ++i)
 		{
 			EntityId entityId = this->m_PendingDestroyedEntities[i];

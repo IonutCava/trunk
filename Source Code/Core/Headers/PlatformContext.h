@@ -94,10 +94,8 @@ public:
     inline void idle(ComponentType component) { idle(to_base(component)); }
     inline void endFrame(ComponentType component) { endFrame(to_base(component)); }
 
-    void init();
     void terminate();
 
-    
     inline Application& app()  noexcept { return _app; }
     inline const Application& app() const noexcept { return _app; }
 

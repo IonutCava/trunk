@@ -45,6 +45,8 @@ public:
         COUNT
     };
 
+    static bool USE_OPTICK_PROFILER;
+
   public:
 
     explicit TaskPool();
@@ -92,6 +94,7 @@ public:
 
     friend class ThreadPool;
     void onThreadCreate(const std::thread::id& threadID);
+    void onThreadDestroy(const std::thread::id& threadID);
 
   private:
      stringImpl _threadNamePrefix;

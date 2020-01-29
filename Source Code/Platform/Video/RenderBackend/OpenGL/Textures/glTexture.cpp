@@ -402,6 +402,8 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, 
 
 
 /*static*/ void glTexture::copy(const TextureData& source, const TextureData& destination, const CopyTexParams& params) {
+    OPTICK_EVENT();
+
     const TextureType srcType = source.type();
     const TextureType dstType = destination.type();
     if (srcType != TextureType::COUNT && dstType != TextureType::COUNT) {
