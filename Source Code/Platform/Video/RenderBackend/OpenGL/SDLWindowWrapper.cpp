@@ -369,7 +369,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Once OpenGL is ready for rendering, init CEGUI
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
     _GUIGLrenderer->enableExtraStateSettings(config.gui.cegui.extraStates);
-    CEGUI::System::create(*_GUIGLrenderer);
+    _context.context().gui().setRenderer(*_GUIGLrenderer);
 
     glClearColor(DefaultColours::DIVIDE_BLUE.r,
                  DefaultColours::DIVIDE_BLUE.g,

@@ -28,7 +28,7 @@ public:
     {
     }
 
-    inline std::ofstream& buffer() {
+    inline std::ofstream& buffer() noexcept {
         return _buf;
     }
 

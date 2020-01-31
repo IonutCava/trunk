@@ -152,8 +152,10 @@ public:
         return _activeScene;
     }
 
-    CEGUI::GUIContext& getCEGUIContext() noexcept ;
+    CEGUI::GUIContext& getCEGUIContext() noexcept;
     const CEGUI::GUIContext& getCEGUIContext() const noexcept;
+
+    void setRenderer(CEGUI::Renderer& renderer);
 
 protected:
     GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;

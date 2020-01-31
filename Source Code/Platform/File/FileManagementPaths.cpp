@@ -7,8 +7,9 @@
 
 namespace Divide {
 
+Str64 Paths::g_logPath = "logs/";
+
 Str128 Paths::g_exePath;
-Str64 Paths::g_logPath;
 Str64 Paths::g_assetsLocation;
 Str64 Paths::g_shadersLocation;
 Str64 Paths::g_texturesLocation;

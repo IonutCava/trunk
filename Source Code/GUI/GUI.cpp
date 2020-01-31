@@ -177,17 +177,20 @@ void GUI::update(const U64 deltaTimeUS) {
     }
 }
 
+void GUI::setRenderer(CEGUI::Renderer& renderer) {
+    CEGUI::System::create(renderer, nullptr, nullptr, nullptr, nullptr, "", (Paths::g_logPath + "CEGUI.log").c_str());
+
+    if (Config::Build::IS_DEBUG_BUILD) {
+        CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
+    }
+}
+
 bool GUI::init(PlatformContext& context, ResourceCache& cache) {
     if (_init) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
     }
     _defaultGUIScheme = context.config().gui.cegui.defaultGUIScheme;
-
-    if (Config::Build::IS_DEBUG_BUILD) {
-        CEGUI::Logger::getSingleton().setLogFilename(stringImpl(Paths::g_logPath.c_str()) + "CEGUI.log", false);
-        CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
-    }
 
     CEGUI::DefaultResourceProvider* rp = static_cast<CEGUI::DefaultResourceProvider*>(CEGUI::System::getSingleton().getResourceProvider());
 

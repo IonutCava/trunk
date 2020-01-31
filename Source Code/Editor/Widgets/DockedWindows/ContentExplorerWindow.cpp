@@ -279,13 +279,6 @@ namespace Divide {
                     }
                     ImGui::Text(file.second.c_str());
 
-                    if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true, true)) {
-                        previewTexture = nullptr;
-                    }
-                    if (Attorney::EditorGeneralWidget::modalModelSpawn(_parent, "Spawn Entity", spawnMesh)) {
-                        spawnMesh = nullptr;
-                    }
-
                     ImGui::PopID();
                     ImGui::NextColumn();
                     if (lockTextureQueue) {
@@ -297,6 +290,13 @@ namespace Divide {
                 }
             }
             ImGui::EndChild();
+        }
+
+        if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true, true)) {
+            previewTexture = nullptr;
+        }
+        if (Attorney::EditorGeneralWidget::modalModelSpawn(_parent, "Spawn Entity", spawnMesh)) {
+            spawnMesh = nullptr;
         }
 
         ImGui::PopStyleVar();

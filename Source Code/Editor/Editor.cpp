@@ -271,12 +271,12 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
                 ErrorCode err = ErrorCode::NO_ERR;
                 DisplayWindow* newWindow = &g_windowManager->createWindow(winDescriptor, err);
-                if (err != ErrorCode::NO_ERR) {
+                if (err == ErrorCode::NO_ERR) {
                     newWindow->hidden(false);
                     newWindow->bringToFront();
-                    newWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestClose = true; return true; });
-                    newWindow->addEventListener(WindowEvent::MOVED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestMove = true; return true; });
-                    newWindow->addEventListener(WindowEvent::RESIZED, [viewport](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args);  viewport->PlatformRequestResize = true;  return true; });
+                    newWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestClose = true; return true; });
+                    newWindow->addEventListener(WindowEvent::MOVED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestMove = true; return true; });
+                    newWindow->addEventListener(WindowEvent::RESIZED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args);  viewport->PlatformRequestResize = true;  return true; });
 
                     ImGuiViewportData* data = IM_NEW(ImGuiViewportData)();
                     data->_window = newWindow;
@@ -381,6 +381,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         platform_io.Renderer_RenderWindow = [](ImGuiViewport* viewport, void* platformContext) {
             if (PlatformContext* context = (PlatformContext*)platformContext) {
                 Editor* editor = &context->editor();
+
                 ImGui::SetCurrentContext(editor->_imguiContext);
                 editor->renderDrawList(viewport->DrawData, false, ((DisplayWindow*)viewport->PlatformHandle)->getGUID());
             }
@@ -670,7 +671,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) noexcept {
 
         if (_imguiContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault(&context());
+            ImGui::RenderPlatformWindowsDefault(&context(), &context());
         }
 
         return true;
@@ -1245,6 +1246,10 @@ void Editor::saveElement(I64 elementGUID) {
 
 bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
 
+    if (tex == nullptr) {
+        return false;
+    }
+
     ImDrawCallback toggleColours { [](const ImDrawList* parent_list, const ImDrawCmd* cmd) -> void {
         ACKNOWLEDGE_UNUSED(parent_list);
 
@@ -1366,6 +1371,10 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 }
 
 bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
+    if (mesh == nullptr) {
+        return nullptr;
+    }
+
     static vec3<F32> scale(1.0f);
     static char inputBuf[256] = {};
 
