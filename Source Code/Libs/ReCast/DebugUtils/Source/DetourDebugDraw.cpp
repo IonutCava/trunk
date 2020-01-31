@@ -55,7 +55,7 @@ static void drawPolyBoundaries(duDebugDraw* dd, const dtMeshTile* tile,
         
         const dtPolyDetail* pd = &tile->detailMeshes[i];
         
-        for (int j = 0, const nj = (int)p->vertCount; j < nj; ++j)
+        for (int j = 0, nj = (int)p->vertCount; j < nj; ++j)
         {
             unsigned int c = col;
             if (inner)
