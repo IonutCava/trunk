@@ -65,11 +65,11 @@ class GPUState : private NonCopyable {
     /// register a new display mode (resolution, bitdepth, etc).
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
 
-    inline vec_size getDisplayCount() const {
+    inline vec_size getDisplayCount() const noexcept {
         return _supportedDisplayModes.size();
     }
 
-    inline const vector<GPUVideoMode>& getDisplayModes(vec_size displayIndex) const {
+    inline const vector<GPUVideoMode>& getDisplayModes(vec_size displayIndex) const noexcept {
         assert(displayIndex < _supportedDisplayModes.size());
         return _supportedDisplayModes[displayIndex];
     }

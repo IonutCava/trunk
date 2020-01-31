@@ -63,7 +63,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                               WindowType initialType,
                               const WindowDescriptor& descriptor)
 {
-    bool vsync = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::VSYNC));
+    const bool vsync = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::VSYNC));
     ToggleBit(_flags, WindowFlags::VSYNC, vsync);
     ToggleBit(_flags, WindowFlags::OWNS_RENDER_CONTEXT, !BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT)));
 
@@ -111,7 +111,7 @@ WindowHandle DisplayWindow::handle() const {
     return handle;
 }
 
-void DisplayWindow::update(const U64 deltaTimeUS) {
+void DisplayWindow::update(const U64 deltaTimeUS) noexcept {
     if (_queuedType != WindowType::COUNT) {
         //handleChangeWindowType(_queuedType);
         _queuedType = WindowType::COUNT;
@@ -175,8 +175,8 @@ bool DisplayWindow::onSDLEvent(SDL_Event event) {
         };
         case SDL_WINDOWEVENT_RESIZED: {
             if (!_internalResizeEvent) {
-                U16 width = to_U16(event.window.data1);
-                U16 height = to_U16(event.window.data2);
+                const U16 width = to_U16(event.window.data1);
+                const U16 height = to_U16(event.window.data2);
                 setDimensions(width, height);
             }
             args._flag = fullscreen();
@@ -230,13 +230,13 @@ bool DisplayWindow::onSDLEvent(SDL_Event event) {
     return false;
 }
 
-I32 DisplayWindow::currentDisplayIndex() const {
-    I32 displayIndex = SDL_GetWindowDisplayIndex(_sdlWindow);
+I32 DisplayWindow::currentDisplayIndex() const noexcept {
+    const I32 displayIndex = SDL_GetWindowDisplayIndex(_sdlWindow);
     assert(displayIndex != -1);
     return displayIndex;
 }
 
-Rect<I32> DisplayWindow::getBorderSizes() const {
+Rect<I32> DisplayWindow::getBorderSizes() const noexcept {
     I32 top = 0, left = 0, bottom = 0, right = 0;
     if (SDL_GetWindowBordersSize(_sdlWindow, &top, &left, &bottom, &right) != -1) {
         return { top, left, bottom, right };
@@ -258,7 +258,7 @@ vec2<U16> DisplayWindow::getDrawableSizeInternal() const {
     return context().gfx().getDrawableSize(*this);
 }
 
-void DisplayWindow::opacity(U8 opacity) {
+void DisplayWindow::opacity(U8 opacity) noexcept {
     if (SDL_SetWindowOpacity(_sdlWindow, opacity / 255.0f) != -1) {
         _prevOpacity = _opacity;
         _opacity = opacity;
@@ -269,7 +269,7 @@ void DisplayWindow::opacity(U8 opacity) {
 void DisplayWindow::setPosition(I32 x, I32 y, bool global, bool offset) {
     _internalMoveEvent = true;
 
-    I32 displayIndex = currentDisplayIndex();
+    const I32 displayIndex = currentDisplayIndex();
     if (x == -1) {
         x = SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex);
     } else if (!global && offset) {
@@ -289,14 +289,14 @@ vec2<I32> DisplayWindow::getPosition(bool global, bool offset) const {
     SDL_GetWindowPosition(_sdlWindow, &ret.x, &ret.y);
 
     if (!global && offset) {
-        vec2<I32> pOffset = _parent.monitorData()[currentDisplayIndex()].viewport.xy();
+        const vec2<I32> pOffset = _parent.monitorData()[currentDisplayIndex()].viewport.xy();
         ret -= pOffset;
     }
 
     return ret;
 }
 
-void DisplayWindow::bringToFront() const {
+void DisplayWindow::bringToFront() const noexcept {
     SDL_RaiseWindow(_sdlWindow);
 }
 
@@ -306,19 +306,19 @@ void DisplayWindow::centerWindowPosition() {
 }
 
 /// Mouse positioning is handled by SDL
-bool DisplayWindow::setCursorPosition(I32 x, I32 y) {
+bool DisplayWindow::setCursorPosition(I32 x, I32 y) noexcept {
     SDL_WarpMouseInWindow(_sdlWindow, x, y);
     return true;
 }
 
-void DisplayWindow::decorated(const bool state) {
+void DisplayWindow::decorated(const bool state) noexcept {
     // documentation states that this is a no-op on redundant state, so no need to bother checking
     SDL_SetWindowBordered(_sdlWindow, state ? SDL_TRUE : SDL_FALSE);
 
     ToggleBit(_flags, WindowFlags::DECORATED, state);
 }
 
-void DisplayWindow::hidden(const bool state) {
+void DisplayWindow::hidden(const bool state) noexcept {
     if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_SHOWN)) == state) {
         if (state) {
             SDL_HideWindow(_sdlWindow);
@@ -330,14 +330,14 @@ void DisplayWindow::hidden(const bool state) {
     ToggleBit(_flags, WindowFlags::HIDDEN, state);
 }
 
-void DisplayWindow::restore() {
+void DisplayWindow::restore() noexcept {
     SDL_RestoreWindow(_sdlWindow);
 
     ClearBit(_flags, WindowFlags::MAXIMIZED);
     ClearBit(_flags, WindowFlags::MINIMIZED);
 }
 
-void DisplayWindow::minimized(const bool state) {
+void DisplayWindow::minimized(const bool state) noexcept {
     if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MINIMIZED)) != state) {
         if (state) {
             SDL_MinimizeWindow(_sdlWindow);
@@ -349,7 +349,7 @@ void DisplayWindow::minimized(const bool state) {
     ToggleBit(_flags, WindowFlags::MINIMIZED, state);
 }
 
-void DisplayWindow::maximized(const bool state) {
+void DisplayWindow::maximized(const bool state) noexcept {
     if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MAXIMIZED)) != state) {
         if (state) {
             SDL_MaximizeWindow(_sdlWindow);
@@ -361,11 +361,11 @@ void DisplayWindow::maximized(const bool state) {
     ToggleBit(_flags, WindowFlags::MAXIMIZED, state);
 }
 
-bool DisplayWindow::grabState() const {
+bool DisplayWindow::grabState() const noexcept {
     return SDL_GetWindowGrab(_sdlWindow) == SDL_TRUE;
 }
 
-void DisplayWindow::grabState(bool state) {
+void DisplayWindow::grabState(bool state) noexcept {
     SDL_SetWindowGrab(_sdlWindow, state ? SDL_TRUE : SDL_FALSE);
 }
 
@@ -403,7 +403,7 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
     SDLEventManager::pollEvents();
 }
 
-vec2<U16> DisplayWindow::getPreviousDimensions() const {
+vec2<U16> DisplayWindow::getPreviousDimensions() const noexcept {
     if (fullscreen()) {
         return _parent.getFullscreenResolution();
     }
@@ -411,7 +411,7 @@ vec2<U16> DisplayWindow::getPreviousDimensions() const {
 }
 
 bool DisplayWindow::setDimensions(U16 width, U16 height) {
-    vec2<U16> dim = getDimensions();
+    const vec2<U16> dim = getDimensions();
     if (dim == vec2<U16>(width, height)) {
         return true;
     }
@@ -422,7 +422,7 @@ bool DisplayWindow::setDimensions(U16 width, U16 height) {
     I32 newH = to_I32(height);
     if (_type == WindowType::FULLSCREEN) {
         // Find a decent resolution close to our dragged dimensions
-        SDL_DisplayMode mode, closestMode;
+        SDL_DisplayMode mode, closestMode = {};
         SDL_GetCurrentDisplayMode(currentDisplayIndex(), &mode);
         mode.w = width;
         mode.h = height;
@@ -450,7 +450,7 @@ bool DisplayWindow::setDimensions(const vec2<U16>& dimensions) {
     return setDimensions(dimensions.x, dimensions.y);
 }
 
-vec2<U16> DisplayWindow::getDimensions() const {
+vec2<U16> DisplayWindow::getDimensions() const noexcept {
     I32 width = -1, height = -1;
     SDL_GetWindowSize(_sdlWindow, &width, &height);
 

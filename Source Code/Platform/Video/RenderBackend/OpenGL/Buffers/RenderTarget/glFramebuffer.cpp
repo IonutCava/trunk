@@ -100,7 +100,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     if (!attachment->isExternal()) {
         tex = attachment->texture().get();
         // Do we need to resize the attachment?
-        bool shouldResize = tex->width() != getWidth() || tex->height() != getHeight();
+        const bool shouldResize = tex->width() != getWidth() || tex->height() != getHeight();
         if (shouldResize) {
             tex->resize(NULL, vec2<U16>(getWidth(), getHeight()));
         }
@@ -116,7 +116,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     if (type == RTAttachmentType::Depth) {
         attachmentEnum = GL_DEPTH_ATTACHMENT;
 
-        TextureType texType = tex->data().type();
+        const TextureType texType = tex->data().type();
         _isLayeredDepth = (texType == TextureType::TEXTURE_2D_ARRAY ||
                            texType == TextureType::TEXTURE_2D_ARRAY_MS ||
                            texType == TextureType::TEXTURE_CUBE_MAP ||
@@ -242,7 +242,7 @@ void glFramebuffer::resolve(I8 colour, bool allColours, bool depth, bool externa
                 ColourBlitEntry entry = {};
                 entry._inputIndex = entry._outputIndex = to_U16(att->binding() - to_U32(GL_COLOR_ATTACHMENT0));
                 eastl::set<U16, eastl::greater<U16>>& layers = _attachmentResolvedLayers[static_cast<GLenum>(att->binding())];
-                for (U16 layer : layers) {
+                for (const U16 layer : layers) {
                     if (att->isExternal() && !externalColours) {
                         continue;
                     }
@@ -258,7 +258,7 @@ void glFramebuffer::resolve(I8 colour, bool allColours, bool depth, bool externa
 
         if (depth) {
             eastl::set<U16, eastl::greater<U16>>& layers = _attachmentResolvedLayers[GL_DEPTH_ATTACHMENT];
-            for (U16 layer : layers) {
+            for (const U16 layer : layers) {
                 params._blitDepth.push_back({ layer, layer });
             }
             layers.clear();
@@ -302,14 +302,14 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
     }
 
     glFramebuffer* input = static_cast<glFramebuffer*>(params._inputFB);
-    vec2<GLuint> inputDim(input->getWidth(), input->getHeight());
-    vec2<GLuint> outputDim(this->getWidth(), this->getHeight());
+    const vec2<GLuint> inputDim(input->getWidth(), input->getHeight());
+    const vec2<GLuint> outputDim(this->getWidth(), this->getHeight());
 
     // This seems hacky but it is the most common blit case so it is a really good idea to add it as a fast path. -Ionut
     // If we just blit depth, or just the first colour attachment (layer 0) or both colour 0 (layer 0) + depth
     if (params._blitColours.empty() || (params._blitColours.size() == 1 && params._blitColours.front()._inputLayer == 0)) {
         ClearBufferMask clearMask = GL_NONE_BIT;
-        bool setDepthBlitFlag = !params._blitDepth.empty() && hasDepth();
+        const bool setDepthBlitFlag = !params._blitDepth.empty() && hasDepth();
         if (setDepthBlitFlag) {
             clearMask = GL_DEPTH_BUFFER_BIT;
         }
@@ -378,8 +378,8 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
             const RTAttachment_ptr& inAtt = inputAttachments[entry._inputIndex];
             const RTAttachment_ptr& outAtt = outputAttachments[entry._outputIndex];
 
-            GLuint crtReadAtt = inAtt->binding();
-            GLenum readBuffer = static_cast<GLenum>(crtReadAtt);
+            const GLuint crtReadAtt = inAtt->binding();
+            const GLenum readBuffer = static_cast<GLenum>(crtReadAtt);
             if (prevReadAtt != readBuffer) {
                 if (readBuffer != input->_activeReadBuffer) {
                     input->_activeReadBuffer = readBuffer;
@@ -388,9 +388,9 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                 prevReadAtt = crtReadAtt;
             }
 
-            GLuint crtWriteAtt = outAtt->binding();
+            const GLuint crtWriteAtt = outAtt->binding();
             if (prevWriteAtt != crtWriteAtt) {
-                GLenum colourAttOut = static_cast<GLenum>(crtWriteAtt);
+                const GLenum colourAttOut = static_cast<GLenum>(crtWriteAtt);
                 bool set = _activeColourBuffers[0] != colourAttOut;
                 if (!set) {
                     for (size_t i = 1; i < _activeColourBuffers.size(); ++i) {
@@ -710,7 +710,7 @@ void glFramebuffer::clear(const RTClearDescriptor& drawPolicy, const RTAttachmen
 
     if (drawPolicy.clearColours() && hasColour()) {
         for (const RTAttachment_ptr& att : activeAttachments) {
-            U32 binding = att->binding();
+            const U32 binding = att->binding();
             if (static_cast<GLenum>(binding) != GL_NONE) {
 
                 if (!drawPolicy.clearExternalColour() && att->isExternal()) {
@@ -761,7 +761,7 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
 
     const RTAttachment_ptr& att = _attachmentPool->get(params._type, params._index);
 
-    GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->texture(false)->data().type())];
+    const GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->texture(false)->data().type())];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
     if (textureType != GL_TEXTURE_2D_ARRAY &&
         textureType != GL_TEXTURE_CUBE_MAP_ARRAY &&
@@ -769,9 +769,9 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
         return;
     }
 
-    bool useDepthLayer =  (hasDepth()  && params._includeDepth) ||
-                          (hasDepth()  && params._type == RTAttachmentType::Depth);
-    bool useColourLayer = (hasColour() && params._type == RTAttachmentType::Colour);
+    const bool useDepthLayer =  (hasDepth()  && params._includeDepth) ||
+                                (hasDepth()  && params._type == RTAttachmentType::Depth);
+    const bool useColourLayer = (hasColour() && params._type == RTAttachmentType::Colour);
 
     if (useDepthLayer && _isLayeredDepth) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
@@ -862,7 +862,7 @@ void glFramebuffer::setAttachmentState(GLenum binding, BindingState state) {
 }
 
 glFramebuffer::BindingState glFramebuffer::getAttachmentState(GLenum binding) const {
-    hashMap<GLenum, BindingState>::const_iterator it = _attachmentState.find(binding);
+    const hashMap<GLenum, BindingState>::const_iterator it = _attachmentState.find(binding);
     if (it != std::cend(_attachmentState)) {
         return it->second;
     }

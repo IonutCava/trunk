@@ -240,8 +240,8 @@ class vec2 {
     bool operator<=(const vec2 &v) const { return *this < v || *this == v; }
     bool operator>=(const vec2 &v) const { return *this > v || *this == v; }
 
-    bool operator==(const vec2 &v) const { return this->compare(v); }
-    bool operator!=(const vec2 &v) const { return !this->compare(v); }
+    bool operator==(const vec2 &v) const noexcept { return this->compare(v); }
+    bool operator!=(const vec2 &v) const noexcept { return !this->compare(v); }
 
     template<typename U>
     bool operator!=(const vec2<U> &v) const { return !this->compare(v); }
@@ -1222,7 +1222,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
     inline void set(const T* v) noexcept { std::memcpy(_v, v, 4 * sizeof(T)); }
     /// set the 4 components of the vector manually
-    inline void set(T value) { _reg = simd_vector<T>(value); }
+    inline void set(T value) noexcept { _reg = simd_vector<T>(value); }
     /// set the 4 components of the vector manually
     inline void set(T _x, T _y, T _z, T _w) noexcept {
         _reg = simd_vector<T>(_x, _y, _z, _w);

@@ -139,7 +139,7 @@ namespace ECS
 			// aqcuire memory for new component object of type T
 			void* pObjectMemory			= GetComponentContainer<T>()->CreateObject();
 
-			ComponentId componentId		= this->AqcuireComponentId((T*)pObjectMemory);
+			const ComponentId componentId		= this->AqcuireComponentId((T*)pObjectMemory);
 			((T*)pObjectMemory)->m_ComponentID = componentId;
 
 			// create component inplace
@@ -203,7 +203,7 @@ namespace ECS
 				if (component != nullptr)
 				{
 					// get appropriate component container
-					auto it = this->m_ComponentContainerRegistry.find(componentTypeId);
+					const auto it = this->m_ComponentContainerRegistry.find(componentTypeId);
 					if (it != this->m_ComponentContainerRegistry.end())
 						it->second->DestroyComponent(component);
 					else
@@ -278,9 +278,9 @@ namespace ECS
         template<class T>
         inline ComponentContainer<T>* GetComponentContainer()
         {
-            ComponentTypeId CID = T::STATIC_COMPONENT_TYPE_ID;
+            const ComponentTypeId CID = T::STATIC_COMPONENT_TYPE_ID;
 
-            auto it = this->m_ComponentContainerRegistry.find(CID);
+            const auto it = this->m_ComponentContainerRegistry.find(CID);
             ComponentContainer<T>* cc = nullptr;
 
             if (it == this->m_ComponentContainerRegistry.end())

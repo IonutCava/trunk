@@ -133,8 +133,6 @@ class SceneNode : public CachedResource {
         return _renderState.getDrawState();
     }
 
-    virtual bool isInView() const { return true;  }
-
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION
     virtual bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const;

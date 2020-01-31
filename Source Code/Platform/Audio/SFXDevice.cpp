@@ -90,7 +90,7 @@ void SFXDevice::addMusic(U32 playlistEntry, const AudioDescriptor_ptr& music) {
 }
 
 bool SFXDevice::playMusic(U32 playlistEntry) {
-    MusicPlaylists::iterator it = _musicPlaylists.find(playlistEntry);
+    const MusicPlaylists::iterator it = _musicPlaylists.find(playlistEntry);
     if (it != std::cend(_musicPlaylists)) {
         return playMusic(it->second);
     }

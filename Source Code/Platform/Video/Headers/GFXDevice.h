@@ -210,15 +210,15 @@ public:  // GPU interface
         Camera* camera = nullptr);
 
     /// Access (Read Only) rendering data used by the GFX
-    inline const GFXShaderData::GPUData& renderingData() const;
+    inline const GFXShaderData::GPUData& renderingData() const noexcept;
 
     /// Returns true if the viewport was changed
            bool setViewport(const Rect<I32>& viewport);
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
-    inline const Rect<I32>& getViewport() const;
+    inline const Rect<I32>& getViewport() const noexcept;
 
-    inline F32 renderingAspectRatio() const;
-    inline const vec2<U16>& renderingResolution() const;
+    inline F32 renderingAspectRatio() const noexcept;
+    inline const vec2<U16>& renderingResolution() const noexcept;
 
     /// Switch between fullscreen rendering
     void toggleFullScreen();
@@ -233,24 +233,24 @@ public:  // GPU interface
 
 public:  // Accessors and Mutators
     inline Renderer& getRenderer() const;
-    inline const GPUState& gpuState() const;
-    inline GPUState& gpuState();
-    inline void debugDrawFrustum(const Frustum* frustum);
+    inline const GPUState& gpuState() const noexcept;
+    inline GPUState& gpuState() noexcept;
+    inline void debugDrawFrustum(const Frustum* frustum) noexcept;
     /// returns the standard state block
-    inline size_t getDefaultStateBlock(bool noDepth) const;
-    inline size_t get2DStateBlock() const;
-    inline const Texture_ptr& getPrevDepthBuffer() const;
-    inline GFXRTPool& renderTargetPool();
-    inline const GFXRTPool& renderTargetPool() const;
-    inline const ShaderProgram_ptr& getRTPreviewShader(bool depthOnly) const;
-    inline U32 getFrameCount() const;
-    inline I32 getDrawCallCount() const;
+    inline size_t getDefaultStateBlock(bool noDepth) const noexcept;
+    inline size_t get2DStateBlock() const noexcept;
+    inline const Texture_ptr& getPrevDepthBuffer() const noexcept;
+    inline GFXRTPool& renderTargetPool() noexcept;
+    inline const GFXRTPool& renderTargetPool() const noexcept;
+    inline const ShaderProgram_ptr& getRTPreviewShader(bool depthOnly) const noexcept;
+    inline U32 getFrameCount() const noexcept;
+    inline I32 getDrawCallCount() const noexcept;
     /// Return the last number of HIZ culled items
-    inline U32 getLastCullCount() const;
-    inline Arena::Statistics getObjectAllocStats() const;
-    inline void registerDrawCall();
-    inline void registerDrawCalls(U32 count);
-    inline const Rect<I32>& getCurrentViewport() const;
+    inline U32 getLastCullCount() const noexcept;
+    inline Arena::Statistics getObjectAllocStats() const noexcept;
+    inline void registerDrawCall() noexcept;
+    inline void registerDrawCalls(U32 count) noexcept;
+    inline const Rect<I32>& getCurrentViewport() const noexcept;
 
     DebugView* addDebugView(const eastl::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
@@ -262,12 +262,12 @@ public:  // Accessors and Mutators
     inline void onThreadCreated(const std::thread::id& threadID);
     inline RenderAPI getRenderAPI() const;
 
-    static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
-    static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
-    static void setGPUVendor(GPUVendor gpuvendor) { s_GPUVendor = gpuvendor; }
-    static GPUVendor getGPUVendor() { return s_GPUVendor; }
-    static void setGPURenderer(GPURenderer gpurenderer) { s_GPURenderer = gpurenderer; }
-    static GPURenderer getGPURenderer() { return s_GPURenderer; }
+    static void setFrameInterpolationFactor(const D64 interpolation) noexcept { s_interpolationFactor = interpolation; }
+    static D64 getFrameInterpolationFactor() noexcept { return s_interpolationFactor; }
+    static void setGPUVendor(GPUVendor gpuvendor) noexcept { s_GPUVendor = gpuvendor; }
+    static GPUVendor getGPUVendor() noexcept { return s_GPUVendor; }
+    static void setGPURenderer(GPURenderer gpurenderer) noexcept { s_GPURenderer = gpurenderer; }
+    static GPURenderer getGPURenderer() noexcept { return s_GPURenderer; }
 
 public:
     std::mutex&       objectArenaMutex();
@@ -356,8 +356,8 @@ protected:
 
     void updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut);
 
-    RenderAPIWrapper& getAPIImpl() { return *_api; }
-    const RenderAPIWrapper& getAPIImpl() const { return *_api; }
+    RenderAPIWrapper& getAPIImpl() noexcept { return *_api; }
+    const RenderAPIWrapper& getAPIImpl() const noexcept { return *_api; }
 
 private:
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
@@ -471,11 +471,11 @@ private:
 namespace Attorney {
     class GFXDeviceGUI {
     private:
-        static void drawText(GFXDevice& device, const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) {
+        static void drawText(const GFXDevice& device, const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) {
             return device.drawText(cmd, bufferInOut);
         }
 
-        static void drawText(GFXDevice& device, const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
+        static void drawText(const GFXDevice& device, const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
             return device.drawText(batch, bufferInOut);
         }
         friend class Divide::GUI;
@@ -505,7 +505,7 @@ namespace Attorney {
            vector<std::tuple<GraphicsResource::Type, I64, U64>>::iterator it;
            it = std::find_if(std::begin(device._graphicResources),
                 std::end(device._graphicResources),
-                [type, GUID, nameHash](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) -> bool {
+                [type, GUID, nameHash](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) noexcept -> bool {
                     if (std::get<1>(crtEntry) == GUID) {
                         assert(std::get<0>(crtEntry) == type && std::get<2>(crtEntry) == nameHash);
                         return true;

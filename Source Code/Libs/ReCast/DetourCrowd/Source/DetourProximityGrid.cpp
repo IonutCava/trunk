@@ -152,7 +152,7 @@ int dtProximityGrid::queryItems(const float minx, const float miny,
             unsigned short idx = m_buckets[h];
             while (idx != 0xffff)
             {
-                Item& item = m_pool[idx];
+                const Item& item = m_pool[idx];
                 if ((int)item.x == x && (int)item.y == y)
                 {
                     // Check if the id exists already.
@@ -184,7 +184,7 @@ int dtProximityGrid::getItemCountAt(const int x, const int y) const
     unsigned short idx = m_buckets[h];
     while (idx != 0xffff)
     {
-        Item& item = m_pool[idx];
+        const Item& item = m_pool[idx];
         if ((int)item.x == x && (int)item.y == y)
             n++;
         idx = item.next;

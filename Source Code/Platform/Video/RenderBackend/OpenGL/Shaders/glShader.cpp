@@ -161,7 +161,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
                 }
             }
 
-            for (GLuint shader : shaders) {
+            for (const GLuint shader : shaders) {
                 glAttachShader(_programHandle, shader);
             }
 
@@ -169,7 +169,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
             glProgramParameteri(_programHandle, GL_PROGRAM_SEPARABLE, GL_TRUE);
             glLinkProgram(_programHandle);
 
-            for (GLuint shader : shaders) {
+            for (const GLuint shader : shaders) {
                 glDetachShader(_programHandle, shader);
                 glDeleteShader(shader);
             }
@@ -258,9 +258,9 @@ void glShader::removeShader(glShader* s) {
     assert(s != nullptr);
 
     // Try to find it
-    U64 nameHash = s->nameHash();
+    const U64 nameHash = s->nameHash();
     UniqueLockShared w_lock(_shaderNameLock);
-    ShaderMap::iterator it = _shaderNameMap.find(nameHash);
+    const ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {
         // Subtract one reference from it.
         if (s->SubRef()) {
@@ -274,7 +274,7 @@ void glShader::removeShader(glShader* s) {
 glShader* glShader::getShader(const Str256& name) {
     // Try to find the shader
     SharedLock r_lock(_shaderNameLock);
-    ShaderMap::iterator it = _shaderNameMap.find(_ID(name.c_str()));
+    const ShaderMap::iterator it = _shaderNameMap.find(_ID(name.c_str()));
     if (it != std::end(_shaderNameMap)) {
         return it->second;
     }
@@ -454,7 +454,7 @@ I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, bool force) {
 }
 
 void glShader::UploadPushConstant(const GFX::PushConstant& constant, bool force) {
-    I32 binding = cachedValueUpdate(constant, force);
+    const I32 binding = cachedValueUpdate(constant, force);
 
     if (binding != -1) {
         Uniform(binding, constant._type, constant._buffer, constant._flag);

@@ -44,7 +44,7 @@ CommandBuffer::allocateCommand() {
     const I24 cmdIndex = _commandCount[index]++;
     _commandOrder.emplace_back(index, cmdIndex);
 
-    return static_cast<T*>(_commands.getPtr(index, cmdIndex));
+    return static_cast<T*>(_commands.getPtrOrNull(index, cmdIndex));
 }
 
 template<typename T>
@@ -64,6 +64,7 @@ CommandBuffer::add(const T& command) {
                             ));
     }
 
+    _batched = false;
     return *mem;
 }
 
@@ -84,66 +85,90 @@ CommandBuffer::add(T&& command) {
                             ));
     }
 
+    _batched = false;
     return *mem;
 }
 
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-CommandBuffer::get(const CommandEntry& commandEntry) {
+CommandBuffer::get(const CommandEntry& commandEntry) noexcept {
     return static_cast<T&>(_commands.get(commandEntry));
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
-CommandBuffer::get(const CommandEntry& commandEntry) const {
+CommandBuffer::get(const CommandEntry& commandEntry) const noexcept {
     return static_cast<const T&>(_commands.get(commandEntry));
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, CommandBuffer::Container::EntryList&>::type
-CommandBuffer::get() {
+CommandBuffer::get() noexcept {
     return _commands.get(to_base(T::EType));
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const CommandBuffer::Container::EntryList&>::type
-CommandBuffer::get() const {
+CommandBuffer::get() const noexcept {
     return _commands.get(to_base(T::EType));
 }
 
-
-inline bool CommandBuffer::exists(const CommandEntry& commandEntry) const {
+inline bool CommandBuffer::exists(const CommandEntry& commandEntry) const noexcept {
     return _commands.exists(commandEntry._typeIndex, commandEntry._elementIndex);
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-CommandBuffer::get(I24 index) {
+CommandBuffer::get(I24 index) noexcept {
     return get<T>({to_base(T::EType), index});
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
-CommandBuffer::get(I24 index) const {
+CommandBuffer::get(I24 index) const noexcept {
     return get<T>({to_base(T::EType), index });
 }
 
-inline bool CommandBuffer::exists(U8 typeIndex, I24 index) const {
+inline bool CommandBuffer::exists(U8 typeIndex, I24 index) const noexcept {
     return _commands.exists(typeIndex, index);
 }
 
 template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+CommandBuffer::getPtr(const CommandEntry& commandEntry) noexcept {
+    return static_cast<T*>(_commands.getPtr(commandEntry));
+}
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
+CommandBuffer::getPtr(const CommandEntry& commandEntry) const noexcept {
+    return static_cast<const T*>(_commands.getPtr(commandEntry));
+}
+
+template<typename T>
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+CommandBuffer::getPtr(I24 index) noexcept {
+    return _commands.getPtr(to_base(T::EType), index);
+}
+
+template<typename T>
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
+CommandBuffer::getPtr(I24 index) const noexcept {
+    return _commands.getPtr(to_base(T::EType), index);
+}
+
+template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
-CommandBuffer::count() const {
+CommandBuffer::count() const noexcept {
     return _commands.size(to_base(T::EType));
 }
 
-inline CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() {
+inline CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() noexcept {
     return _commandOrder;
 }
 
-inline const CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() const {
+inline const CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() const noexcept {
     return _commandOrder;
 }
 
@@ -155,15 +180,18 @@ inline void CommandBuffer::clear(bool clearMemory) {
     } else {
         _commandOrder.resize(0);
     }
+
+    _batched = true;
 }
 
 inline void CommandBuffer::nuke() {
     _commandOrder.clear();
     _commandCount.fill(0);
     _commands.nuke();
+    _batched = true;
 }
 
-inline bool CommandBuffer::empty() const {
+inline bool CommandBuffer::empty() const noexcept {
     return _commandOrder.empty();
 }
 
@@ -174,8 +202,9 @@ inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawCommand* 
 
     vectorEASTLFast<GenericDrawCommand>& commands = prevCommand->_drawCommands;
     commands.insert(eastl::cend(commands),
-                    eastl::cbegin(crtCommand->_drawCommands),
-                    eastl::cend(crtCommand->_drawCommands));
+                    eastl::make_move_iterator(eastl::begin(crtCommand->_drawCommands)),
+                    eastl::make_move_iterator(eastl::end(crtCommand->_drawCommands)));
+    crtCommand->_drawCommands.resize(0);
 
     partial = false;
     bool merged = true;

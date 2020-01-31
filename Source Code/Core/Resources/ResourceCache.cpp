@@ -106,7 +106,7 @@ void ResourceCache::add(CachedResource_wptr res) {
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getResourceTypeName(), resource->getGUID(), hash);
 
     UniqueLockShared w_lock(_creationMutex);
-    auto ret = _resDB.emplace(hash, res);
+    const auto ret = _resDB.emplace(hash, res);
     DIVIDE_ASSERT(ret.second, Locale::get(_ID("ERROR_RESOURCE_CACHE_LOAD_RES")));
 }
 

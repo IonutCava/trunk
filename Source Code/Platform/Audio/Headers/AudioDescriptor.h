@@ -58,7 +58,7 @@ class AudioDescriptor : public CachedResource {
 
     }
 
-    inline bool unload() noexcept {
+    inline bool unload() noexcept override {
         return true;
     }
 
@@ -70,25 +70,25 @@ class AudioDescriptor : public CachedResource {
     }
 
 
-    inline bool& isLooping() { return _isLooping; }
-    inline bool& is3D() { return _is3D; }
+    inline bool& isLooping() noexcept { return _isLooping; }
+    inline bool& is3D() noexcept { return _is3D; }
 
-    inline void setVolume(I8 value) { _volume = value; }
-    inline I32 getVolume() { return _volume; }
+    inline void setVolume(I8 value) noexcept { _volume = value; }
+    inline I32 getVolume() noexcept { return _volume; }
 
-    inline void setFrequency(F32 value) { _frequency = value; }
-    inline F32 getFrequency() { return _frequency; }
+    inline void setFrequency(F32 value) noexcept { _frequency = value; }
+    inline F32 getFrequency() noexcept { return _frequency; }
 
-    inline void setBitDepth(I8 bitDepth) { _bitDepth = bitDepth; }
-    inline I8 getBitDepth() { return _bitDepth; }
+    inline void setBitDepth(I8 bitDepth) noexcept { _bitDepth = bitDepth; }
+    inline I8 getBitDepth() noexcept { return _bitDepth; }
 
-    inline void setChannel(I8 ID) { _channelID = ID; }
-    inline I8 getChannel() { return _channelID; }
+    inline void setChannel(I8 ID) noexcept { _channelID = ID; }
+    inline I8 getChannel() noexcept { return _channelID; }
 
-    inline bool dirty() const { return _dirty; }
-    inline void clean() { _dirty = false; }
+    inline bool dirty() const noexcept { return _dirty; }
+    inline void clean() noexcept { _dirty = false; }
 
-    const char* getResourceTypeName() const override { return "AudioDescriptor"; }
+    const char* getResourceTypeName() const noexcept  override { return "AudioDescriptor"; }
 
    private:
     bool _dirty;

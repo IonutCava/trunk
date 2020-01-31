@@ -142,8 +142,8 @@ class SceneGraph : private NonCopyable,
     void onNodeAdd(SceneGraphNode& newNode);
     void onNodeTransform(SceneGraphNode& node);
 
-    bool frameStarted(const FrameEvent& evt);
-    bool frameEnded(const FrameEvent& evt);
+    bool frameStarted(const FrameEvent& evt) noexcept override;
+    bool frameEnded(const FrameEvent& evt) noexcept override;
 
    private:
     ECS::ECSEngine _ecsEngine;

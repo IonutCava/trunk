@@ -9,8 +9,8 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
       _elementCountBindOffset(0),
       _ringSizeFactor(params._ringSizeFactor)
 {
-    size_t bufferSizeInBytes = _elementCount * params._elementSizeInBytes;
-    size_t totalSizeInBytes = bufferSizeInBytes * _ringSizeFactor;
+    const size_t bufferSizeInBytes = _elementCount * params._elementSizeInBytes;
+    const size_t totalSizeInBytes = bufferSizeInBytes * _ringSizeFactor;
     
     BufferImplParams implParams = {};
     implParams._dataSize = totalSizeInBytes;
@@ -48,7 +48,7 @@ void glGenericBuffer::writeData(GLuint elementCount,
                                 const bufferPtr data)
 {
     // Calculate the size of the data that needs updating
-    size_t dataCurrentSizeInBytes = elementCount * _buffer->elementSize();
+    const size_t dataCurrentSizeInBytes = elementCount * _buffer->elementSize();
     // Calculate the offset in the buffer in bytes from which to start writing
     size_t offsetInBytes = elementOffset * _buffer->elementSize();
 
@@ -65,7 +65,7 @@ void glGenericBuffer::readData(GLuint elementCount,
                                bufferPtr dataOut) 
 {
     // Calculate the size of the data that needs updating
-    size_t dataCurrentSizeInBytes = elementCount * _buffer->elementSize();
+    const size_t dataCurrentSizeInBytes = elementCount * _buffer->elementSize();
     // Calculate the offset in the buffer in bytes from which to start writing
     size_t offsetInBytes = elementOffset * _buffer->elementSize();
 
@@ -81,7 +81,7 @@ void glGenericBuffer::lockData(GLuint elementCount,
                                GLuint ringReadOffset,
                                bool flush)
 {
-    size_t rangeInBytes = elementCount * _buffer->elementSize();
+    const size_t rangeInBytes = elementCount * _buffer->elementSize();
     size_t offsetInBytes = elementOffset * _buffer->elementSize();
 
     if (_ringSizeFactor > 1) {
@@ -93,7 +93,7 @@ void glGenericBuffer::lockData(GLuint elementCount,
 
 void glGenericBuffer::clearData(GLuint elementOffset, GLuint ringWriteOffset)
 {
-    size_t rangeInBytes = _elementCount * _buffer->elementSize();
+    const size_t rangeInBytes = _elementCount * _buffer->elementSize();
     size_t offsetInBytes = elementOffset * _buffer->elementSize();
 
     if (_ringSizeFactor > 1) {

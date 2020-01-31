@@ -34,23 +34,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    inline bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option) {
+    inline bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option) noexcept {
         return BitCompare(cmd._renderOptions, to_base(option));
     }
 
-    inline void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
+    inline void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept {
         SetBit(cmd._renderOptions, to_U16(option));
     }
 
-    inline void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
+    inline void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept {
         ClearBit(cmd._renderOptions, to_U16(option));
     }
 
-    inline void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option) {
+    inline void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept {
         setOption(cmd, option, !isEnabledOption(cmd, option));
     }
 
-    inline void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state) {
+    inline void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state) noexcept {
         if (state) {
             enableOption(cmd, option);
         } else {
@@ -58,11 +58,11 @@ namespace Divide {
         }
     }
 
-    inline void enableOptions(GenericDrawCommand& cmd, U16 optionsMask) {
+    inline void enableOptions(GenericDrawCommand& cmd, U16 optionsMask) noexcept {
         SetBit(cmd._renderOptions, optionsMask);
     }
 
-    inline void disableOptions(GenericDrawCommand& cmd, U16 optionsMask) {
+    inline void disableOptions(GenericDrawCommand& cmd, U16 optionsMask) noexcept {
         ClearBit(cmd._renderOptions, optionsMask);
     }
 

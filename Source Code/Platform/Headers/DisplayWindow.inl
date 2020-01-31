@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    inline SDL_Window* DisplayWindow::getRawWindow() const {
+    inline SDL_Window* DisplayWindow::getRawWindow() const noexcept {
         return _sdlWindow;
     }
 
@@ -48,71 +48,70 @@ namespace Divide {
         setPosition(position.x, position.y, global);
     }
 
-    inline bool DisplayWindow::swapBuffers() const {
+    inline bool DisplayWindow::swapBuffers() const noexcept {
         return BitCompare(_flags, WindowFlags::SWAP_BUFFER);
     }
 
-    inline void DisplayWindow::swapBuffers(const bool state) {
+    inline void DisplayWindow::swapBuffers(const bool state) noexcept {
         ToggleBit(_flags, WindowFlags::SWAP_BUFFER, state);
     }
 
-    inline bool DisplayWindow::isHovered() const {
+    inline bool DisplayWindow::isHovered() const noexcept {
         return BitCompare(_flags, WindowFlags::IS_HOVERED);
     }
 
-    inline bool DisplayWindow::hasFocus() const {
+    inline bool DisplayWindow::hasFocus() const noexcept {
         return BitCompare(_flags, WindowFlags::HAS_FOCUS);
     }
 
-    inline U8 DisplayWindow::opacity() const {
+    inline U8 DisplayWindow::opacity() const noexcept {
         return _opacity;
     }
 
-    inline U8 DisplayWindow::prevOpacity() const {
+    inline U8 DisplayWindow::prevOpacity() const noexcept {
         return _prevOpacity;
     }
 
-    inline void DisplayWindow::clearColour(const FColour4& colour) {
+    inline void DisplayWindow::clearColour(const FColour4& colour) noexcept {
         clearColour(colour,
                     BitCompare(_flags, WindowFlags::CLEAR_COLOUR),
                     BitCompare(_flags, WindowFlags::CLEAR_DEPTH));
     }
 
-    void DisplayWindow::clearColour(const FColour4& colour, bool clearColour, bool clearDepth) {
+    void DisplayWindow::clearColour(const FColour4& colour, bool clearColour, bool clearDepth)noexcept {
         _clearColour.set(colour);
         ToggleBit(_flags, WindowFlags::CLEAR_COLOUR, clearColour);
         ToggleBit(_flags, WindowFlags::CLEAR_DEPTH, clearDepth);
     }
 
-    inline const FColour4& DisplayWindow::clearColour() const {
+    inline const FColour4& DisplayWindow::clearColour() const noexcept {
         bool shouldClearColour, shouldClearDepth;
         return clearColour(shouldClearColour, shouldClearDepth);
     }
 
-    inline const FColour4& DisplayWindow::clearColour(bool &clearColour, bool &clearDepth) const {
+    inline const FColour4& DisplayWindow::clearColour(bool &clearColour, bool &clearDepth) const noexcept {
         clearColour = BitCompare(_flags, WindowFlags::CLEAR_COLOUR);
         clearDepth = BitCompare(_flags, WindowFlags::CLEAR_DEPTH);
         return _clearColour;
     }
 
-    inline bool DisplayWindow::minimized() const {
+    inline bool DisplayWindow::minimized() const noexcept {
         return BitCompare(_flags, WindowFlags::MINIMIZED);
     }
 
-    inline bool DisplayWindow::maximized() const {
+    inline bool DisplayWindow::maximized() const noexcept {
         return BitCompare(_flags, WindowFlags::MAXIMIZED);
     }
 
-
-    inline bool DisplayWindow::decorated() const {
+    inline bool DisplayWindow::decorated() const noexcept {
         return BitCompare(_flags, WindowFlags::DECORATED);
     }
 
-        inline bool DisplayWindow::hidden() const {
+        inline bool DisplayWindow::hidden() const noexcept {
         return BitCompare(_flags, WindowFlags::HIDDEN);
     }
 
-    inline WindowType DisplayWindow::type() const {
+    inline WindowType DisplayWindow::type() const noexcept {
         return _type;
     }
 
@@ -127,7 +126,7 @@ namespace Divide {
         changeType(_previousType);
     }
 
-    inline const char* DisplayWindow::title() const {
+    inline const char* DisplayWindow::title() const noexcept {
         return SDL_GetWindowTitle(_sdlWindow);
     }
 
@@ -141,8 +140,8 @@ namespace Divide {
         EventListeners& listeners = _eventListeners[to_base(windowEvent)];
         listeners.erase(
             std::find_if(std::begin(listeners), std::end(listeners),
-                           [&listenerGUID](const std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>& it)
-                           -> bool { 
+                           [&listenerGUID](const std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>& it) noexcept -> bool
+                           { 
                                 return it->getGUID() == listenerGUID;
                             }),
             std::end(listeners));
@@ -157,11 +156,11 @@ namespace Divide {
         return Rect<I32>(0, 0, to_I32(dim.width), to_I32(dim.height));
     }
 
-    inline const Rect<I32>& DisplayWindow::renderingViewport() const {
+    inline const Rect<I32>& DisplayWindow::renderingViewport() const noexcept {
         return _renderingViewport;
     }
 
-    inline void* DisplayWindow::userData() const {
+    inline void* DisplayWindow::userData() const noexcept {
         return _userData;
     }
 

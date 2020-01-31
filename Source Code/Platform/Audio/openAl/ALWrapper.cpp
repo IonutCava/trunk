@@ -21,7 +21,7 @@ ErrorCode OpenAL_API::initAudioAPI(PlatformContext& context) {
     // Generate Buffers
     alGetError();  // clear error code
     alGenBuffers(MAX_SOUND_BUFFERS, buffers);
-    ALenum error = alGetError();
+    const ALenum error = alGetError();
     if (error != AL_NO_ERROR) {
         return ErrorCode::OAL_INIT_ERROR;
     }

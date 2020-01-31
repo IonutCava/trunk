@@ -12,7 +12,7 @@ namespace GenericDrawCommandResults {
     hashMap<I64, QueryResult> g_queryResults;
 };
 
-bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) {
+bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) noexcept {
     //check_size<GenericDrawCommand, 32>();
 
     return

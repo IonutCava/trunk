@@ -564,22 +564,22 @@ void Editor::update(const U64 deltaTimeUS) {
     static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->update(deltaTimeUS);
 }
 
-bool Editor::frameStarted(const FrameEvent& evt) {
+bool Editor::frameStarted(const FrameEvent& evt) noexcept {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
 
-bool Editor::framePreRenderStarted(const FrameEvent& evt) {
+bool Editor::framePreRenderStarted(const FrameEvent& evt) noexcept {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
 
-bool Editor::framePreRenderEnded(const FrameEvent& evt) {
+bool Editor::framePreRenderEnded(const FrameEvent& evt) noexcept {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
 
-bool Editor::frameRenderingQueued(const FrameEvent& evt) {
+bool Editor::frameRenderingQueued(const FrameEvent& evt) noexcept {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
@@ -643,14 +643,14 @@ bool Editor::render(const U64 deltaTime) {
     return true;
 }
 
-bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
+bool Editor::frameSceneRenderEnded(const FrameEvent& evt) noexcept {
     ACKNOWLEDGE_UNUSED(evt);
     Attorney::GizmoEditor::render(*_gizmo, 
                                   *Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager()));
     return true;
 }
 
-bool Editor::framePostRenderStarted(const FrameEvent& evt) {
+bool Editor::framePostRenderStarted(const FrameEvent& evt) noexcept {
     if (!_running) {
         return true;
     }
@@ -679,12 +679,12 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     return false;
 }
 
-bool Editor::framePostRenderEnded(const FrameEvent& evt) {
+bool Editor::framePostRenderEnded(const FrameEvent& evt) noexcept {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
 
-bool Editor::frameEnded(const FrameEvent& evt) {
+bool Editor::frameEnded(const FrameEvent& evt) noexcept {
     ACKNOWLEDGE_UNUSED(evt);
     if (running() && _stepQueue > 0) {
         --_stepQueue;

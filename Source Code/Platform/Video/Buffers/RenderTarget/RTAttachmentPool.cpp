@@ -81,12 +81,12 @@ RTAttachment_ptr& RTAttachmentPool::checkAndRemoveExistingAttachment(RTAttachmen
 }
 
 RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descriptor) {
-    RTAttachmentType type = descriptor._type;
+    const RTAttachmentType type = descriptor._type;
     RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, descriptor._index);
 
     ptr.reset(new RTAttachment(*this, descriptor));
 
-    Str64 texName = Util::StringFormat("FBO_%s_Att_%s_%d_%d", _parent.name().c_str(), getAttachmentName(type), descriptor._index, _parent.getGUID()).c_str();
+    const Str64 texName = Util::StringFormat("FBO_%s_Att_%s_%d_%d", _parent.name().c_str(), getAttachmentName(type), descriptor._index, _parent.getGUID()).c_str();
 
     ResourceDescriptor textureAttachment(texName);
     textureAttachment.assetName(texName);
@@ -98,7 +98,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     Texture_ptr tex = CreateResource<Texture>(parentCache, textureAttachment);
     assert(tex);
 
-    Texture::TextureLoadInfo info = {};
+    const Texture::TextureLoadInfo info = {};
     tex->loadData(info, NULL, vec2<U16>(_parent.getWidth(), _parent.getHeight()));
 
     ptr->setTexture(tex);
@@ -116,7 +116,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const ExternalRTAttachmentDescriptor&
     internalDescriptor._type = descriptor._type;
     internalDescriptor._clearColour = descriptor._clearColour;
 
-    RTAttachmentType type = internalDescriptor._type;
+    const RTAttachmentType type = internalDescriptor._type;
     RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, internalDescriptor._index);
 
     ptr.reset(new RTAttachment(descriptor._attachment->parent(), internalDescriptor, descriptor._attachment));

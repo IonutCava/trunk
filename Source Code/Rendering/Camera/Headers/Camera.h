@@ -165,12 +165,12 @@ class Camera : public Resource {
         move(0.0f, factor, 0.0f);
     }
 
-    inline void setEye(F32 x, F32 y, F32 z) {
+    inline void setEye(F32 x, F32 y, F32 z) noexcept {
         _data._eye.set(x, y, z);
         _viewMatrixDirty = true;
     }
 
-    inline void setEye(const vec3<F32>& position) {
+    inline void setEye(const vec3<F32>& position) noexcept {
         _data._eye = position;
         _viewMatrixDirty = true;
     }
@@ -190,42 +190,41 @@ class Camera : public Resource {
 
     /// Mouse sensitivity: amount of pixels per radian (this should be moved out
     /// of the camera class)
-    inline void setMouseSensitivity(F32 sensitivity) {
+    inline void setMouseSensitivity(F32 sensitivity) noexcept {
         _mouseSensitivity = sensitivity;
     }
 
-    inline void setMoveSpeedFactor(F32 moveSpeedFactor) {
+    inline void setMoveSpeedFactor(F32 moveSpeedFactor) noexcept {
         _speedFactor.move = moveSpeedFactor;
     }
 
-    inline void setTurnSpeedFactor(F32 turnSpeedFactor) {
+    inline void setTurnSpeedFactor(F32 turnSpeedFactor) noexcept {
         _speedFactor.turn = turnSpeedFactor;
     }
 
-    inline void setZoomSpeedFactor(F32 zoomSpeedFactor) {
+    inline void setZoomSpeedFactor(F32 zoomSpeedFactor) noexcept {
         _speedFactor.zoom = zoomSpeedFactor;
     }
 
     /// Exactly as in Ogre3D: locks the yaw movement to the specified axis
-    inline void setFixedYawAxis(bool useFixed,
-                                const vec3<F32>& fixedAxis = WORLD_Y_AXIS) {
+    inline void setFixedYawAxis(bool useFixed, const vec3<F32>& fixedAxis = WORLD_Y_AXIS) noexcept {
         _yawFixed = useFixed;
         _fixedYawAxis = fixedAxis;
     }
 
     /// Getter methods.
 
-    inline F32 getTurnSpeedFactor() const { return _speedFactor.turn; }
-    inline F32 getMoveSpeedFactor() const { return _speedFactor.move; }
-    inline F32 getZoomSpeedFactor() const { return _speedFactor.zoom; }
+    inline F32 getTurnSpeedFactor() const noexcept { return _speedFactor.turn; }
+    inline F32 getMoveSpeedFactor() const noexcept { return _speedFactor.move; }
+    inline F32 getZoomSpeedFactor() const noexcept { return _speedFactor.zoom; }
 
-    inline const CameraType& type() const { return _type; }
+    inline const CameraType& type() const noexcept { return _type; }
 
-    inline const vec3<F32>& getEye() const {
+    inline const vec3<F32>& getEye() const noexcept {
         return _data._eye;
     }
 
-    inline const Quaternion<F32>& getOrientation() const {
+    inline const Quaternion<F32>& getOrientation() const noexcept {
         return _data._orientation;
     }
 
@@ -245,30 +244,30 @@ class Camera : public Resource {
         return vec3<F32>(-viewMat.m[0][2], -viewMat.m[1][2], -viewMat.m[2][2]);
     }
 
-    inline const vec3<Angle::DEGREES<F32>>& getEuler() const { return _euler; }
+    inline const vec3<Angle::DEGREES<F32>>& getEuler() const noexcept { return _euler; }
 
     inline void setEuler(const vec3<Angle::DEGREES<F32>>& euler) {
         setRotation(euler.yaw, euler.pitch, euler.roll);
     }
 
-    inline const vec2<F32>& getZPlanes() const { return _data._zPlanes; }
+    inline const vec2<F32>& getZPlanes() const noexcept { return _data._zPlanes; }
 
-    inline const vec4<F32>& orthoRect() const { return _orthoRect; }
+    inline const vec4<F32>& orthoRect() const noexcept { return _orthoRect; }
 
-    inline bool isOrthoProjected() const { return _isOrthoCamera; }
+    inline bool isOrthoProjected() const noexcept { return _isOrthoCamera; }
 
-    inline const Angle::DEGREES<F32> getVerticalFoV() const { return _data._FoV; }
+    inline const Angle::DEGREES<F32> getVerticalFoV() const noexcept { return _data._FoV; }
 
-    inline const Angle::DEGREES<F32> getHorizontalFoV() const {
-        Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_data._FoV) * 0.5f;
+    inline const Angle::DEGREES<F32> getHorizontalFoV() const noexcept {
+        const Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_data._FoV) * 0.5f;
         return Angle::to_DEGREES(2.0f * std::atan(tan(halfFoV) * _data._aspectRatio));
     }
 
-    inline const F32 getAspectRatio() const {
+    inline const F32 getAspectRatio() const noexcept {
         return _data._aspectRatio;
     }
 
-    inline const mat4<F32>& getViewMatrix() const {
+    inline const mat4<F32>& getViewMatrix() const noexcept {
         return _data._viewMatrix;
     }
 
@@ -282,7 +281,7 @@ class Camera : public Resource {
         return _data._projectionMatrix;
     }
 
-    inline const mat4<F32>& getProjectionMatrix() const {
+    inline const mat4<F32>& getProjectionMatrix() const noexcept {
         return _data._projectionMatrix;
     }
 
@@ -318,15 +317,15 @@ class Camera : public Resource {
     /// Extract the frustum associated with our current PoV
     virtual bool updateFrustum();
     /// Get the camera's current frustum
-    inline const Frustum& getFrustum() const { return _frustum; }
+    inline const Frustum& getFrustum() const noexcept { return _frustum; }
 
-    inline Frustum& getFrustum() { return _frustum; }
+    inline Frustum& getFrustum() noexcept { return _frustum; }
 
-    inline void lockMovement(bool state) { _movementLocked = state; }
+    inline void lockMovement(bool state) noexcept { _movementLocked = state; }
 
-    inline void lockRotation(bool state) { _rotationLocked = state; }
+    inline void lockRotation(bool state) noexcept { _rotationLocked = state; }
 
-    inline void lockFrustum(bool state) { _frustumLocked = state; }
+    inline void lockFrustum(bool state) noexcept { _frustumLocked = state; }
 
     /// Get the world space position from the specified screen coordinates
     /// (use winCoords.z for depth from 0 to 1)
@@ -345,19 +344,20 @@ class Camera : public Resource {
     bool removeUpdateListener(U32 id);
     U32 addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
 
+    virtual ~Camera();
+
    protected:
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
     /// Inject mouse events
     virtual void updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS);
 
-    const char* getResourceTypeName() const override { return "Camera"; }
+    const char* getResourceTypeName() const noexcept override { return "Camera"; }
 
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND
     explicit Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
-    virtual ~Camera();
 
    protected:
     CameraSnapshot _data;

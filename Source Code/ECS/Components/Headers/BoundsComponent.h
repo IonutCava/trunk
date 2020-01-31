@@ -52,6 +52,7 @@ namespace Divide {
         inline bool ignoreTransform() const { return _ignoreTransform; }
         inline void ignoreTransform(bool state) { _ignoreTransform = state; }
 
+        F32 distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept;
     protected:
         friend class SceneGraph;
         friend class BoundsSystem;

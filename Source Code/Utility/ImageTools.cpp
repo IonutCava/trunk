@@ -462,8 +462,8 @@ void ImageDataInterface::CreateImageData(const stringImpl& filename, U16 refWidt
 }
 
 I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData) noexcept {
-    U8 cGarbage = 0;
-    I16 iGarbage = 0;
+    const U8 cGarbage = 0;
+    const I16 iGarbage = 0;
     const U16 width = dimensions.width;
     const U16 height = dimensions.height;
 
@@ -474,8 +474,8 @@ I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDe
     }
 
     // compute image type: 2 for RGB(A), 3 for greyscale
-    U8 mode = pixelDepth / 8;
-    U8 type = ((pixelDepth == 24) || (pixelDepth == 32)) ? 2 : 3;
+    const U8 mode = pixelDepth / 8;
+    const U8 type = ((pixelDepth == 24) || (pixelDepth == 32)) ? 2 : 3;
 
     // write the header
     fwrite(&cGarbage, sizeof(U8), 1, file);

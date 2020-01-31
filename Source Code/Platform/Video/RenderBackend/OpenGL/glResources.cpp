@@ -45,7 +45,7 @@ const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, G
         _cachedVao = vao;
     }
     
-    vec_size count = data->size();
+    const vec_size count = data->size();
     if (count > 0) {
         assert(index <= count);
         return (*data)[index];
@@ -66,7 +66,7 @@ void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingPar
         _cachedVao = vao;
     }
 
-    vec_size count = data->size();
+    const vec_size count = data->size();
     assert(count > 0 && count > index);
     ACKNOWLEDGE_UNUSED(count);
 
@@ -604,7 +604,7 @@ void glTexturePool::destroy() {
 }
 
 GLuint glTexturePool::allocate(GLenum type, bool retry) {
-    auto it = _pools.find(type);
+    const auto it = _pools.find(type);
     assert(it != _pools.cend());
 
     poolImpl& impl = it->second;
@@ -626,7 +626,7 @@ GLuint glTexturePool::allocate(GLenum type, bool retry) {
 }
 
 void glTexturePool::deallocate(GLuint& handle, GLenum type, U32 frameDelay) {
-    auto it = _pools.find(type);
+    const auto it = _pools.find(type);
     assert(it != _pools.cend());
 
     poolImpl& impl = it->second;

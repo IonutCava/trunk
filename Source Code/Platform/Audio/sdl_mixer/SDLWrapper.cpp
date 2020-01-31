@@ -21,9 +21,9 @@ void musicFinishedHook() {
 
 ErrorCode SDL_API::initAudioAPI(PlatformContext& context) {
 
-    I32 flags = MIX_INIT_OGG | MIX_INIT_MP3 | MIX_INIT_FLAC/* | MIX_INIT_MOD*/;
+    const I32 flags = MIX_INIT_OGG | MIX_INIT_MP3 | MIX_INIT_FLAC/* | MIX_INIT_MOD*/;
 
-    I32 ret = Mix_Init(flags);
+    const I32 ret = Mix_Init(flags);
     if ((ret & flags) == flags) {
         // Try HiFi sound
         if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) == -1) {
@@ -71,7 +71,7 @@ void SDL_API::musicFinished() {
 void SDL_API::playMusic(const AudioDescriptor_ptr& music) {
     if (music) {
         Mix_Music* musicPtr = nullptr;
-        MusicMap::iterator it = _musicMap.find(music->getGUID());
+        const MusicMap::iterator it = _musicMap.find(music->getGUID());
         if (it == std::cend(_musicMap)) {
             musicPtr = Mix_LoadMUS(music->assetPath().c_str());
             hashAlg::insert(_musicMap, music->getGUID(), musicPtr);
@@ -100,7 +100,7 @@ void SDL_API::playMusic(const AudioDescriptor_ptr& music) {
 void SDL_API::playSound(const AudioDescriptor_ptr& sound) {
     if (sound) {
         Mix_Chunk* soundPtr = nullptr;
-        SoundMap::iterator it = _soundMap.find(sound->getGUID());
+        const SoundMap::iterator it = _soundMap.find(sound->getGUID());
         if (it == std::cend(_soundMap)) {
             soundPtr = Mix_LoadWAV(sound->assetPath().c_str());
             hashAlg::insert(_soundMap, sound->getGUID(), soundPtr);

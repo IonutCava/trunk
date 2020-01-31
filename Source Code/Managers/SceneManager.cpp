@@ -165,7 +165,7 @@ Scene* SceneManager::load(const Str128& sceneName) {
 
     ParamHandler::instance().setParam(_ID_32("currentScene"), stringImpl(sceneName.c_str()));
 
-    bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
+    const bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
 
     if (sceneNotLoaded) {
         
@@ -291,15 +291,15 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
     if (params.isWindowResize) {
         return;
     }
-    U16 w = params.width;
-    U16 h = params.height;
+    const U16 w = params.width;
+    const U16 h = params.height;
 
-    F32 aspectRatio = to_F32(w) / h;
+    const F32 aspectRatio = to_F32(w) / h;
 
     if (_init) {
         
-        F32 fov = _platformContext->config().runtime.verticalFOV;;
-        vec2<F32> zPlanes(_platformContext->config().runtime.zNear, _platformContext->config().runtime.zFar);
+        const F32 fov = _platformContext->config().runtime.verticalFOV;;
+        const vec2<F32> zPlanes(_platformContext->config().runtime.zNear, _platformContext->config().runtime.zFar);
 
         for (const Player_ptr& player : _players) {
             if (player != nullptr) {
@@ -321,7 +321,7 @@ void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, boo
 }
 
 void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerNode) {
-    I64 sgnGUID = playerNode->getGUID();
+    const I64 sgnGUID = playerNode->getGUID();
     for (const Player_ptr& crtPlayer : _players) {
         if (crtPlayer && crtPlayer->getBoundNode()->getGUID() == sgnGUID) {
             return;
@@ -359,7 +359,7 @@ void SceneManager::removePlayer(Scene& parentScene, Player_ptr& player, bool que
 
 void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) {
     if (player) {
-        I64 targetGUID = player->getGUID();
+        const I64 targetGUID = player->getGUID();
         for (U32 i = 0; i < Config::MAX_LOCAL_PLAYER_COUNT; ++i) {
             if (_players[i] != nullptr && _players[i]->getGUID() == targetGUID) {
 
@@ -376,6 +376,8 @@ void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) 
 }
 
 vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) const {
+    OPTICK_EVENT();
+
     const SceneGraph& sceneGraph = getActiveScene().sceneGraph();
 
     auto CheckPointLoS = [&camera, &sceneGraph](const vec3<F32>& point) -> bool {
@@ -383,7 +385,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         const vec2<F32>& zPlanes = camera.getZPlanes();
         const F32 distanceToPoint = eye.distance(point);
 
-        Ray cameraRay(point, point.direction(eye));
+        const Ray cameraRay(point, point.direction(eye));
         vector<SGNRayResult> rayResults;
         sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, rayResults);
         for (SGNRayResult& result : rayResults) {
@@ -394,7 +396,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         return true;
     };
 
-    auto HasLoSToCamera = [&](const BoundingBox& bb) -> bool {
+    const auto HasLoSToCamera = [&](const BoundingBox& bb) -> bool {
         // Quick raycast to camera
         if (CheckPointLoS(bb.getCenter())) {
             return true;
@@ -410,7 +412,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         return false;
     };
 
-    auto IsNodeInRect = [editorRunning, &screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node) -> SceneGraphNode* {
+    const auto IsNodeInRect = [editorRunning, &screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node) -> SceneGraphNode* {
         assert(node != nullptr);
         if (node->getNode().type() == SceneNodeType::TYPE_OBJECT3D)
         {
@@ -461,7 +463,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
     return ret;
 }
 
-bool SceneManager::frameStarted(const FrameEvent& evt) {
+bool SceneManager::frameStarted(const FrameEvent& evt) noexcept {
     OPTICK_EVENT();
 
     _sceneData->uploadToGPU();
@@ -469,7 +471,7 @@ bool SceneManager::frameStarted(const FrameEvent& evt) {
     return Attorney::SceneManager::frameStarted(getActiveScene());
 }
 
-bool SceneManager::frameEnded(const FrameEvent& evt) {
+bool SceneManager::frameEnded(const FrameEvent& evt) noexcept {
     OPTICK_EVENT();
 
     return Attorney::SceneManager::frameEnded(getActiveScene());
@@ -491,10 +493,10 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _sceneData->deltaTime(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));
 
     FogDescriptor& fog = activeScene.state().renderState().fogDescriptor();
-    bool fogEnabled = _platformContext->config().rendering.enableFog;
+    const bool fogEnabled = _platformContext->config().rendering.enableFog;
     if (fog.dirty() || fogEnabled != fog.active()) {
         const vec3<F32>& colour = fog.colour();
-        F32 density = fogEnabled ? fog.density() : 0.0f;
+        const F32 density = fogEnabled ? fog.density() : 0.0f;
         _sceneData->fogDetails(colour.r, colour.g, colour.b, density);
         fog.clean();
         fog.active(fogEnabled);
@@ -510,10 +512,10 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     
     vector<WaterDetails>& waterBodies = activeScene.state().globalWaterBodies();
     for (auto body : waterBodies) {
-        vec3<F32> posW (0.0f, body._heightOffset, 0.0f);
-        vec3<F32> dim(std::numeric_limits<I16>::max(),
-                      std::numeric_limits<I16>::max(),
-                      body._depth);
+        const vec3<F32> posW (0.0f, body._heightOffset, 0.0f);
+        const vec3<F32> dim(std::numeric_limits<I16>::max(),
+                            std::numeric_limits<I16>::max(),
+                            body._depth);
         _sceneData->waterDetails(index++, posW, dim);
     }
 
@@ -543,7 +545,7 @@ void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, co
 void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
-    SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
+    const SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
     parent().renderPassManager()->getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
 }
 
@@ -609,6 +611,8 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
 }
 
 VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
+    OPTICK_EVENT();
+
     const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
     const vectorEASTL<SceneGraphNode*>& waterNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
     const vectorEASTL<SceneGraphNode*>& otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
@@ -643,6 +647,8 @@ VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, Ren
 }
 
 VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
+    OPTICK_EVENT();
+
     const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
     const vectorEASTL<SceneGraphNode*>& waterNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
     const vectorEASTL<SceneGraphNode*>& otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
@@ -839,7 +845,7 @@ bool LoadSave::loadScene(Scene& activeScene) {
 
     const Str128& sceneName = activeScene.resourceName();
 
-    Str256 path = Paths::g_saveLocation +  sceneName + "/";
+    const Str256 path = Paths::g_saveLocation +  sceneName + "/";
     const char* saveFile = "current_save.sav";
     const char* bakSaveFile = "save.bak";
 
@@ -877,7 +883,7 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
     }
 
     const Str128& sceneName = activeScene.resourceName();
-    Str256 path = Paths::g_saveLocation + sceneName + "/";
+    const Str256 path = Paths::g_saveLocation + sceneName + "/";
     const char* saveFile = "current_save.sav";
     const char* bakSaveFile = "save.bak";
 

@@ -367,7 +367,7 @@ bool dtPathCorridor::optimizePathTopology(dtNavMeshQuery* navquery, const dtQuer
     int nres = 0;
     navquery->initSlicedFindPath(m_path[0], m_path[m_npath-1], m_pos, m_target, filter);
     navquery->updateSlicedFindPath(MAX_ITER, 0);
-    dtStatus status = navquery->finalizeSlicedFindPathPartial(m_path, m_npath, res, &nres, MAX_RES);
+    const dtStatus status = navquery->finalizeSlicedFindPathPartial(m_path, m_npath, res, &nres, MAX_RES);
     
     if (dtStatusSucceed(status) && nres > 0)
     {
@@ -412,7 +412,7 @@ bool dtPathCorridor::moveOverOffmeshConnection(dtPolyRef offMeshConRef, dtPolyRe
     const dtNavMesh* nav = navquery->getAttachedNavMesh();
     dtAssert(nav);
 
-    dtStatus status = nav->getOffMeshConnectionPolyEndPoints(refs[0], refs[1], startPos, endPos);
+    const dtStatus status = nav->getOffMeshConnectionPolyEndPoints(refs[0], refs[1], startPos, endPos);
     if (dtStatusSucceed(status))
     {
         dtVcopy(m_pos, endPos);
@@ -447,7 +447,7 @@ bool dtPathCorridor::movePosition(const float* npos, dtNavMeshQuery* navquery, c
     static const int MAX_VISITED = 16;
     dtPolyRef visited[MAX_VISITED];
     int nvisited = 0;
-    dtStatus status = navquery->moveAlongSurface(m_path[0], m_pos, npos, filter,
+    const dtStatus status = navquery->moveAlongSurface(m_path[0], m_pos, npos, filter,
                                                  result, visited, &nvisited, MAX_VISITED);
     if (dtStatusSucceed(status)) {
         m_npath = dtMergeCorridorStartMoved(m_path, m_npath, m_maxPath, visited, nvisited);
@@ -485,8 +485,8 @@ bool dtPathCorridor::moveTargetPosition(const float* npos, dtNavMeshQuery* navqu
     static const int MAX_VISITED = 16;
     dtPolyRef visited[MAX_VISITED];
     int nvisited = 0;
-    dtStatus status = navquery->moveAlongSurface(m_path[m_npath-1], m_target, npos, filter,
-                                                 result, visited, &nvisited, MAX_VISITED);
+    const dtStatus status = navquery->moveAlongSurface(m_path[m_npath-1], m_target, npos, filter,
+                                                       result, visited, &nvisited, MAX_VISITED);
     if (dtStatusSucceed(status))
     {
         m_npath = dtMergeCorridorEndMoved(m_path, m_npath, m_maxPath, visited, nvisited);

@@ -37,27 +37,27 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct InputParams {
-    InputParams(U8 deviceIndex)
+    InputParams(U8 deviceIndex) noexcept
         : InputParams(deviceIndex, -1)
     {
     }
 
-    InputParams(U8 deviceIndex, I32 var1)
+    InputParams(U8 deviceIndex, I32 var1) noexcept
         : InputParams(deviceIndex, var1, -1)
     {
     }
 
-    InputParams(U8 deviceIndex, I32 var1, I32 var2)
+    InputParams(U8 deviceIndex, I32 var1, I32 var2) noexcept
         : InputParams(deviceIndex, var1, var2, -1)
     {
     }
 
-    InputParams(U8 deviceIndex, I32 var1, I32 var2, I32 var3)
+    InputParams(U8 deviceIndex, I32 var1, I32 var2, I32 var3) noexcept
         : InputParams(deviceIndex, var1, var2, var3, -1)
     {
     }
 
-    InputParams(U8 deviceIndex, I32 var1, I32 var2, I32 var3, I32 var4)
+    InputParams(U8 deviceIndex, I32 var1, I32 var2, I32 var3, I32 var4) noexcept
         : _var{ var1, var2, var3, var4 },
           _deviceIndex(deviceIndex)
     {
@@ -104,7 +104,7 @@ public:
         return conflict;
     }
 
-    inline const vector<U16>& getActionIDs(Action action) const {
+    inline const vector<U16>& getActionIDs(Action action) const noexcept {
         return _actions[to_base(action)];
     }
 

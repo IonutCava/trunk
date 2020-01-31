@@ -184,7 +184,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void drawDebugAxis();
     void onRender(RenderStagePass renderStagePass);
 
-    U8 getLoDLevel(const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
+    U8 getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
     inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
     inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }

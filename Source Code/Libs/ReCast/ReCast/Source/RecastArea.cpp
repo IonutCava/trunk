@@ -321,10 +321,10 @@ void rcMarkBoxArea(rcContext* ctx, const float* bmin, const float* bmax, unsigne
     ctx->startTimer(RC_TIMER_MARK_BOX_AREA);
 
     int minx = (int)((bmin[0]-chf.bmin[0])/chf.cs);
-    int miny = (int)((bmin[1]-chf.bmin[1])/chf.ch);
+    const int miny = (int)((bmin[1]-chf.bmin[1])/chf.ch);
     int minz = (int)((bmin[2]-chf.bmin[2])/chf.cs);
     int maxx = (int)((bmax[0]-chf.bmin[0])/chf.cs);
-    int maxy = (int)((bmax[1]-chf.bmin[1])/chf.ch);
+    const int maxy = (int)((bmax[1]-chf.bmin[1])/chf.ch);
     int maxz = (int)((bmax[2]-chf.bmin[2])/chf.cs);
     
     if (maxx < 0) return;
@@ -344,7 +344,7 @@ void rcMarkBoxArea(rcContext* ctx, const float* bmin, const float* bmax, unsigne
             const rcCompactCell& c = chf.cells[x+z*chf.width];
             for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
             {
-                rcCompactSpan& s = chf.spans[i];
+                const rcCompactSpan& s = chf.spans[i];
                 if ((int)s.y >= miny && (int)s.y <= maxy)
                 {
                     if (chf.areas[i] != RC_NULL_AREA)
@@ -401,10 +401,10 @@ void rcMarkConvexPolyArea(rcContext* ctx, const float* verts, const int nverts,
     bmax[1] = hmax;
 
     int minx = (int)((bmin[0]-chf.bmin[0])/chf.cs);
-    int miny = (int)((bmin[1]-chf.bmin[1])/chf.ch);
+    const int miny = (int)((bmin[1]-chf.bmin[1])/chf.ch);
     int minz = (int)((bmin[2]-chf.bmin[2])/chf.cs);
     int maxx = (int)((bmax[0]-chf.bmin[0])/chf.cs);
-    int maxy = (int)((bmax[1]-chf.bmin[1])/chf.ch);
+    const int maxy = (int)((bmax[1]-chf.bmin[1])/chf.ch);
     int maxz = (int)((bmax[2]-chf.bmin[2])/chf.cs);
     
     if (maxx < 0) return;
@@ -426,7 +426,7 @@ void rcMarkConvexPolyArea(rcContext* ctx, const float* verts, const int nverts,
             const rcCompactCell& c = chf.cells[x+z*chf.width];
             for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
             {
-                rcCompactSpan& s = chf.spans[i];
+                const rcCompactSpan& s = chf.spans[i];
                 if (chf.areas[i] == RC_NULL_AREA)
                     continue;
                 if ((int)s.y >= miny && (int)s.y <= maxy)
@@ -485,11 +485,11 @@ int rcOffsetPoly(const float* verts, const int nverts, const float offset,
         const float dly0 = dx0;
         const float dlx1 = -dy1;
         const float dly1 = dx1;
-        float cross = dx1*dy0 - dx0*dy1;
+        const float cross = dx1*dy0 - dx0*dy1;
         float dmx = (dlx0 + dlx1) * 0.5f;
         float dmy = (dly0 + dly1) * 0.5f;
-        float dmr2 = dmx*dmx + dmy*dmy;
-        bool bevel = dmr2 * MITER_LIMIT*MITER_LIMIT < 1.0f;
+        const float dmr2 = dmx*dmx + dmy*dmy;
+        const bool bevel = dmr2 * MITER_LIMIT*MITER_LIMIT < 1.0f;
         if (dmr2 > 1e-6f)
         {
             const float scale = 1.0f / dmr2;
@@ -501,7 +501,7 @@ int rcOffsetPoly(const float* verts, const int nverts, const float offset,
         {
             if (n+2 >= maxOutVerts)
                 return 0;
-            float d = (1.0f - (dx0*dx1 + dy0*dy1))*0.5f;
+            const float d = (1.0f - (dx0*dx1 + dy0*dy1))*0.5f;
             outVerts[n*3+0] = vb[0] + (-dlx0+dx0*d)*offset;
             outVerts[n*3+1] = vb[1];
             outVerts[n*3+2] = vb[2] + (-dly0+dy0*d)*offset;
@@ -549,10 +549,10 @@ void rcMarkCylinderArea(rcContext* ctx, const float* pos,
     const float r2 = r*r;
     
     int minx = (int)((bmin[0]-chf.bmin[0])/chf.cs);
-    int miny = (int)((bmin[1]-chf.bmin[1])/chf.ch);
+    const int miny = (int)((bmin[1]-chf.bmin[1])/chf.ch);
     int minz = (int)((bmin[2]-chf.bmin[2])/chf.cs);
     int maxx = (int)((bmax[0]-chf.bmin[0])/chf.cs);
-    int maxy = (int)((bmax[1]-chf.bmin[1])/chf.ch);
+    const int maxy = (int)((bmax[1]-chf.bmin[1])/chf.ch);
     int maxz = (int)((bmax[2]-chf.bmin[2])/chf.cs);
     
     if (maxx < 0) return;
@@ -573,7 +573,7 @@ void rcMarkCylinderArea(rcContext* ctx, const float* pos,
             const rcCompactCell& c = chf.cells[x+z*chf.width];
             for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
             {
-                rcCompactSpan& s = chf.spans[i];
+                const rcCompactSpan& s = chf.spans[i];
                 
                 if (chf.areas[i] == RC_NULL_AREA)
                     continue;

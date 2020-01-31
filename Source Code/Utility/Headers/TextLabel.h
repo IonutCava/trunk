@@ -71,26 +71,26 @@ class TextLabelStyle : public Hashable {
 
     size_t getHash() const override;
 
-    inline size_t font() const { return _font; }
-    inline U8 fontSize() const { return _fontSize; }
-    inline U8 width() const { return _width; }
-    inline F32 blurAmount() const { return _blurAmount; }
-    inline F32 spacing() const { return _spacing; }
-    inline U32 alignFlag() const { return _alignFlag; }
-    inline const UColour4& colour() const { return _colour; }
-    inline bool bold() const { return _bold; }
-    inline bool italic() const { return _italic; }
+    inline size_t font() const noexcept { return _font; }
+    inline U8 fontSize() const noexcept { return _fontSize; }
+    inline U8 width() const noexcept { return _width; }
+    inline F32 blurAmount() const noexcept { return _blurAmount; }
+    inline F32 spacing() const noexcept { return _spacing; }
+    inline U32 alignFlag() const noexcept { return _alignFlag; }
+    inline const UColour4& colour() const noexcept { return _colour; }
+    inline bool bold() const noexcept { return _bold; }
+    inline bool italic() const noexcept { return _italic; }
 
 
-    inline void font(size_t font) { _font = font; _dirty = true; }
-    inline void fontSize(U8 fontSize) { _fontSize = fontSize; _dirty = true; }
-    inline void width(U8 width) { _width = width; _dirty = true; }
-    inline void blurAmount(F32 blurAmount) { _blurAmount = blurAmount; _dirty = true; }
-    inline void spacing(F32 spacing) { _spacing = spacing; _dirty = true; }
-    inline void alignFlag(U32 alignFlag) { _alignFlag = alignFlag; _dirty = true; }
-    inline void colour(const UColour4& colour) { _colour.set(colour); _dirty = true; }
-    inline void bold(bool bold) { _bold = bold; _dirty = true; }
-    inline void italic(bool italic) { _italic = italic; _dirty = true; }
+    inline void font(size_t font) noexcept { _font = font; _dirty = true; }
+    inline void fontSize(U8 fontSize) noexcept { _fontSize = fontSize; _dirty = true; }
+    inline void width(U8 width) noexcept { _width = width; _dirty = true; }
+    inline void blurAmount(F32 blurAmount) noexcept { _blurAmount = blurAmount; _dirty = true; }
+    inline void spacing(F32 spacing) noexcept { _spacing = spacing; _dirty = true; }
+    inline void alignFlag(U32 alignFlag) noexcept { _alignFlag = alignFlag; _dirty = true; }
+    inline void colour(const UColour4& colour) noexcept { _colour.set(colour); _dirty = true; }
+    inline void bold(bool bold) noexcept { _bold = bold; _dirty = true; }
+    inline void italic(bool italic) noexcept { _italic = italic; _dirty = true; }
 
  protected:
     size_t _font;
@@ -131,9 +131,7 @@ struct TextElement {
         }
     }
 
-    inline const TextType& text() const {
-        return _text;
-    }
+    inline const TextType& text() const noexcept { return _text; }
 
     size_t _textLabelStyleHash;
     RelativePosition2D _position;
@@ -149,7 +147,7 @@ struct TextElementBatch {
     {
     }
 
-    TextElementBatch(size_t elementCount) noexcept
+    TextElementBatch(size_t elementCount)
     {
         _data.reserve(elementCount);
     }
@@ -159,13 +157,9 @@ struct TextElementBatch {
     {
     }
 
-    const BatchType& operator()() const {
-        return _data;
-    }
+    const BatchType& operator()() const noexcept { return _data; }
 
-    inline bool empty() const {
-        return _data.empty();
-    }
+    inline bool empty() const noexcept { return _data.empty(); }
 
     BatchType _data;
 };

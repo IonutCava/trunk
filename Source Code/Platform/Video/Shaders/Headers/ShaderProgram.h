@@ -50,6 +50,7 @@ class Kernel;
 class Camera;
 class Material;
 class ShaderBuffer;
+class ResourceCache;
 class ShaderProgramDescriptor;
 
 struct PushConstants;
@@ -130,7 +131,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual void update(const U64 deltaTimeUS) = 0;
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
-    inline vec_size getFunctionCount(ShaderType shader) {
+    inline vec_size getFunctionCount(ShaderType shader) noexcept {
         return _functionIndex[to_U32(shader)].size();
     }
 
@@ -163,10 +164,10 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     }
 
     inline U32 addFunctionIndex(ShaderType shader, U32 index) {
-        U32 shaderTypeValue = to_U32(shader);
+        const U32 shaderTypeValue = to_U32(shader);
 
         _availableFunctionIndex[shaderTypeValue].push_back(index);
-        return U32(_availableFunctionIndex[shaderTypeValue].size() - 1);
+        return to_U32(_availableFunctionIndex[shaderTypeValue].size() - 1);
     }
     /** ------ END EXPERIMENTAL CODE ----- **/
 
@@ -195,19 +196,19 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static vector<Str256> getAllAtomLocations();
 
-    static bool useShaderTexCache() { return s_useShaderTextCache; }
-    static bool useShaderBinaryCache() { return s_useShaderBinaryCache; }
+    static bool useShaderTexCache() noexcept { return s_useShaderTextCache; }
+    static bool useShaderBinaryCache() noexcept { return s_useShaderBinaryCache; }
 
     static size_t definesHash(const ModuleDefines& defines);
 
-    static I32 shaderProgramCount() { return s_shaderCount.load(std::memory_order_relaxed); }
+    static I32 shaderProgramCount() noexcept { return s_shaderCount.load(std::memory_order_relaxed); }
 
-    const char* getResourceTypeName() const override { return "ShaderProgram"; }
+    const char* getResourceTypeName() const noexcept override { return "ShaderProgram"; }
 
    protected:
      virtual bool recompileInternal(bool force) = 0;
 
-     static void useShaderTextCache(bool state) { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
+     static void useShaderTextCache(bool state) noexcept { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
      static void useShaderBinaryCache(bool state) { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
 
    protected:
@@ -266,7 +267,7 @@ struct ShaderModuleDescriptor {
 
 class ShaderProgramDescriptor final : public PropertyDescriptor {
 public:
-    ShaderProgramDescriptor()
+    ShaderProgramDescriptor() noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_SHADER) {
 
     }

@@ -112,7 +112,7 @@ class Unit : public FrameListener {
         return _node;
     }
     /// Just before we render the frame
-    virtual bool frameRenderingQueued(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
+    virtual bool frameRenderingQueued(const FrameEvent& evt) noexcept override { ACKNOWLEDGE_UNUSED(evt); return true; }
 
     virtual void setAttribute(U32 attributeID, I32 initialValue);
     virtual I32 getAttribute(U32 attributeID) const;

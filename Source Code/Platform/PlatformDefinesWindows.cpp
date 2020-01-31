@@ -168,7 +168,7 @@ namespace Divide {
     bool GetAvailableMemory(SysInfo& info) {
         MEMORYSTATUSEX status; 
         status.dwLength = sizeof(status);
-        BOOL infoStatus = GlobalMemoryStatusEx(&status);
+        const BOOL infoStatus = GlobalMemoryStatusEx(&status);
         if (infoStatus != FALSE) {
             info._availableRam = status.ullAvailPhys;
             return true;
@@ -216,12 +216,12 @@ namespace Divide {
     }
 
     void setThreadName(std::thread* thread, const char* threadName) {
-        DWORD threadId = ::GetThreadId(static_cast<HANDLE>(thread->native_handle()));
+        const DWORD threadId = ::GetThreadId(static_cast<HANDLE>(thread->native_handle()));
         setThreadName(threadId, threadName);
     }
 
     bool createDirectory(const char* path) {
-        int ret = _mkdir(path);
+        const int ret = _mkdir(path);
         if (ret != 0) {
             return errno == EEXIST;
         }
@@ -233,7 +233,7 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(argc);
 
         char buf[1024] = { 0 };
-        DWORD ret = GetModuleFileNameA(NULL, buf, sizeof(buf));
+        const DWORD ret = GetModuleFileNameA(NULL, buf, sizeof(buf));
         if (ret == 0 || ret == sizeof(buf))
         {
             return getExecutableLocation(argv[0]);

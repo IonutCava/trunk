@@ -60,7 +60,7 @@ class SceneRenderState;
 class Light : public GUIDWrapper, public ECS::Event::IEventListener
 {
    public:
-       static U8 GetThreadGroupSize(U8 optionIn) {
+       static U8 GetThreadGroupSize(U8 optionIn) noexcept {
            return (optionIn == 0 ? 8 : optionIn == 1 ? 16 : 32);
        }
 
@@ -102,50 +102,53 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         setDiffuseColour(Util::ToByteColour(newDiffuseColour));
     }
 
-    inline F32 getRange() const { return _rangeAndCones.x; }
-    inline F32 getConeAngle() const { return _rangeAndCones.y; }
-    inline F32 getSpotCosOuterConeAngle() const { return _rangeAndCones.z; }
+    inline F32 getRange() const noexcept { return _rangeAndCones.x; }
+    inline F32 getConeAngle() const noexcept { return _rangeAndCones.y; }
+    inline F32 getSpotCosOuterConeAngle() const noexcept { return _rangeAndCones.z; }
 
-    inline void setRange(F32 range) { _rangeAndCones.x = range;  }
-    inline void setConeAngle(F32 newAngle) { _rangeAndCones.y = newAngle; }
-    inline void setSpotCosOuterConeAngle(F32 newCosAngle) { _rangeAndCones.z = newCosAngle; }
+    inline void setRange(F32 range) noexcept { _rangeAndCones.x = range;  }
+    inline void setConeAngle(F32 newAngle) noexcept { _rangeAndCones.y = newAngle; }
+    inline void setSpotCosOuterConeAngle(F32 newCosAngle) noexcept { _rangeAndCones.z = newCosAngle; }
 
     /// Light state (on/off)
-    inline void toggleEnabled() { enabled(!enabled()); }
+    inline void toggleEnabled() noexcept { enabled(!enabled()); }
 
     /// Get the light type. (see LightType enum)
-    inline const LightType& getLightType() const { return _type; }
+    inline const LightType& getLightType() const noexcept { return _type; }
+
+    /// Get the distance squared from this light to the specified position
+    inline F32 distanceSquared(const vec3<F32>& pos) const noexcept { return positionCache().distanceSquared(pos); }
 
     /*----------- Shadow Mapping-------------------*/
-     inline const ShadowProperties& getShadowProperties() const {
+     inline const ShadowProperties& getShadowProperties() const noexcept {
         return _shadowProperties;
     }
 
-    inline const mat4<F32>& getShadowVPMatrix(U8 index) const {
+    inline const mat4<F32>& getShadowVPMatrix(U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightVP[index];
     }
 
-    inline mat4<F32>& getShadowVPMatrix(U8 index) {
+    inline mat4<F32>& getShadowVPMatrix(U8 index) noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightVP[index];
     }
 
-    inline F32 getShadowFloatValues(U8 index) const {
+    inline F32 getShadowFloatValues(U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightPosition[index].w;
     }
 
-    inline const vec4<F32>& getShadowLightPos(U8 index) const {
+    inline const vec4<F32>& getShadowLightPos(U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightPosition[index];
     }
 
-    inline U16 getShadowOffset() const {
+    inline U16 getShadowOffset() const noexcept {
         return to_U16(_shadowProperties._lightDetails.y);
     }
 
@@ -155,7 +158,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         _shadowProperties._lightVP[index].set(newValue);
     }
 
-    inline void setShadowFloatValue(U8 index, F32 newValue) {
+    inline void setShadowFloatValue(U8 index, F32 newValue) noexcept {
         assert(index < 6);
 
         _shadowProperties._lightPosition[index].w = newValue;
@@ -166,15 +169,15 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         lightPos.set(newValue, lightPos.w);
     }
 
-    inline void setShadowOffset(U16 offset) {
+    inline void setShadowOffset(U16 offset) noexcept {
         _shadowProperties._lightDetails.y = to_F32(offset);
     }
 
-    inline ShadowCameraPool& shadowCameras() { return _shadowCameras; }
-    inline const ShadowCameraPool& shadowCameras() const { return _shadowCameras; }
+    inline ShadowCameraPool& shadowCameras() noexcept { return _shadowCameras; }
+    inline const ShadowCameraPool& shadowCameras() const noexcept { return _shadowCameras; }
 
-    inline       SceneGraphNode& getSGN()       { return _sgn; }
-    inline const SceneGraphNode& getSGN() const { return _sgn; }
+    inline       SceneGraphNode& getSGN()       noexcept { return _sgn; }
+    inline const SceneGraphNode& getSGN() const noexcept { return _sgn; }
 
     PROPERTY_R(vec3<F32>, positionCache);
     PROPERTY_R(vec3<F32>, directionCache);
@@ -185,11 +188,11 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
    protected:
      friend class LightPool;
-     inline void shadowIndex(I32 index) {
+     inline void shadowIndex(I32 index) noexcept {
          _shadowIndex = index;
      }
 
-     inline I32 shadowIndex() const {
+     inline I32 shadowIndex() const noexcept {
          return _shadowIndex;
      }
 

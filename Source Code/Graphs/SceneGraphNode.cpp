@@ -511,29 +511,26 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
 }
 
 
-bool SceneGraphNode::preCullNode(const NodeCullParams& params, F32& distanceToClosestPointSQ) const {
+bool SceneGraphNode::preCullNode(const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) const {
     OPTICK_EVENT();
 
     // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
     if (!hasFlag(Flags::LOADING)) {
-        // Use the bounding primitives to do camera/frustum checks
-        const BoundingSphere& sphere = get<BoundsComponent>()->getBoundingSphere();
-
         // Get camera info
         const vec3<F32>& eye = params._currentCamera->getEye();
 
         // Check distance to sphere edge (center - radius)
-        distanceToClosestPointSQ = sphere.getCenter().distanceSquared(eye) - SQUARED(sphere.getRadius());
-        if (distanceToClosestPointSQ < params._cullMaxDistanceSq || !getNode().isInView()) {
-            if (params._minExtents.maxComponent() > 0.0f && (get<BoundsComponent>()->getBoundingBox().getExtent() - params._minExtents).minComponent() < 0.f) {
+        distanceToClosestPointSQ = bounds.distanceToBSpehereSQ(eye);
+        if (distanceToClosestPointSQ < params._cullMaxDistanceSq) {
+            if (params._minExtents.maxComponent() > 0.0f && (bounds.getBoundingBox().getExtent() - params._minExtents).minComponent() < 0.f) {
                 return true;
             }
 
             RenderingComponent* rComp = get<RenderingComponent>();
             const vec2<F32>& renderRange = rComp->renderRange();
             if (IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
-                if (params._minLoD > -1 && rComp != nullptr) {
-                    U8 lodLevel = rComp->getLoDLevel(eye, params._stage, params._lodThresholds);
+                if (params._minLoD > -1) {
+                    U8 lodLevel = rComp->getLoDLevel(bounds, eye, params._stage, params._lodThresholds);
                     if (lodLevel > params._minLoD) {
                         return true;
                     }
@@ -552,25 +549,25 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
                               F32& distanceToClosestPointSQ) const {
     OPTICK_EVENT();
 
+    collisionTypeOut = Frustum::FrustCollision::FRUSTUM_OUT;
+
     // Some nodes should always render for different reasons (eg, trees are instanced and bound to the parent chunk)
     if (hasFlag(Flags::VISIBILITY_LOCKED)) {
         collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
         return false;
     }
 
-    collisionTypeOut = Frustum::FrustCollision::FRUSTUM_OUT;
-
-    if (preCullNode(params, distanceToClosestPointSQ)) {
+    const BoundsComponent* bComp = get<BoundsComponent>();
+    if (preCullNode(*bComp, params, distanceToClosestPointSQ)) {
         return true;
     }
 
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     I8 _frustPlaneCache = -1;
 
-    BoundsComponent* bComp = get<BoundsComponent>();
     const BoundingSphere& sphere = bComp->getBoundingSphere();
     const BoundingBox& boundingBox = bComp->getBoundingBox();
-    F32 radius = sphere.getRadius();
+    const F32 radius = sphere.getRadius();
     const vec3<F32>& center = sphere.getCenter();
 
     // Get camera info
@@ -767,7 +764,7 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
     }
 }
 
-void SceneGraphNode::setFlag(Flags flag) {
+void SceneGraphNode::setFlag(Flags flag) noexcept {
     SetBit(_nodeFlags, to_U32(flag));
     if (PropagateFlagToChildren(flag)) {
         forEachChild([flag](SceneGraphNode* child, I32 /*childIdx*/) {
@@ -779,7 +776,7 @@ void SceneGraphNode::setFlag(Flags flag) {
     }
 }
 
-void SceneGraphNode::clearFlag(Flags flag) {
+void SceneGraphNode::clearFlag(Flags flag) noexcept {
     ClearBit(_nodeFlags, to_U32(flag));
     if (PropagateFlagToChildren(flag)) {
         forEachChild([flag](SceneGraphNode* child, I32 /*childIdx*/) {
@@ -791,7 +788,7 @@ void SceneGraphNode::clearFlag(Flags flag) {
     }
 }
 
-bool SceneGraphNode::hasFlag(Flags flag) const {
+bool SceneGraphNode::hasFlag(Flags flag) const noexcept {
     return BitCompare(_nodeFlags, to_U32(flag));
 }
 

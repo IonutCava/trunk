@@ -84,15 +84,15 @@ struct GenericDrawCommand {
 };
 #pragma pack(pop)
 
-bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option);
-void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option);
-void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option);
-void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option);
-void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state);
-void enableOptions(GenericDrawCommand& cmd, U16 optionsMask);
-void disableOptions(GenericDrawCommand& cmd, U16 optionsMask);
+bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
+void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
+void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
+void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
+void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state) noexcept;
+void enableOptions(GenericDrawCommand& cmd, U16 optionsMask) noexcept;
+void disableOptions(GenericDrawCommand& cmd, U16 optionsMask) noexcept;
 
-bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs);
+bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) noexcept;
 
 }; //namespace Divide
 

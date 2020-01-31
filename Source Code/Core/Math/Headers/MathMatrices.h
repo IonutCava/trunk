@@ -589,8 +589,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     vec4<T> getCol(I32 index) const;
 
-    void zero();
-    void identity();
+    void zero() noexcept;
+    void identity() noexcept;
     bool isIdentity() const;
     void swap(mat4 &B);
 

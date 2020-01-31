@@ -500,7 +500,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     }
 }
 
-U8 RenderingComponent::getLoDLevel(const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
+U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
     OPTICK_EVENT();
 
     U8 lodLevel = 0u;
@@ -509,16 +509,14 @@ U8 RenderingComponent::getLoDLevel(const vec3<F32>& cameraEye, RenderStage rende
         return lodLevel;
     }
 
-    BoundsComponent* bounds = _parentSGN.get<BoundsComponent>();
-
-    const BoundingSphere& bSphere = bounds->getBoundingSphere();
+    const BoundingSphere& bSphere = bComp.getBoundingSphere();
     if (bSphere.getCenter().distanceSquared(cameraEye) <= SQUARED(lodThresholds.x)) {
         return lodLevel;
     }
 
     lodLevel += 1;
 
-    const F32 cameraDistanceSQ = bounds->getBoundingBox().nearestDistanceFromPointSquared(cameraEye);
+    const F32 cameraDistanceSQ = bComp.getBoundingBox().nearestDistanceFromPointSquared(cameraEye);
     if (cameraDistanceSQ > SQUARED(lodThresholds.y)) {
         lodLevel += 1;
         if (cameraDistanceSQ > SQUARED(lodThresholds.z)) {
@@ -546,7 +544,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
     if (refreshData) {
-        lod = getLoDLevel(camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds());
+        lod = getLoDLevel(*_parentSGN.get<BoundsComponent>(), camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds());
     }
 
     if (canDraw(renderStagePass, lod, refreshData)) {

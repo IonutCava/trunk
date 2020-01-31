@@ -48,8 +48,10 @@ void CommandBuffer::add(const CommandBuffer& other) {
     static_assert(sizeof(PolyContainerEntry) == 4, "PolyContainerEntry has the wrong size!");
 
     for (const CommandEntry& cmd : other._commandOrder) {
-        other.get<CommandBase>(cmd).addToBuffer(*this);
+        other.getPtr<CommandBase>(cmd)->addToBuffer(*this);
     }
+
+    _batched = false;
 }
 
 void CommandBuffer::addDestructive(CommandBuffer& other) {
@@ -60,9 +62,13 @@ void CommandBuffer::addDestructive(CommandBuffer& other) {
 void CommandBuffer::batch() {
     OPTICK_EVENT();
 
+    if (_batched) {
+        return;
+    }
+
     clean();
 
-    std::array<CommandBase*, to_base(GFX::CommandType::COUNT)> prevCommands;
+    eastl::array<CommandBase*, to_base(GFX::CommandType::COUNT)> prevCommands;
 
     bool tryMerge = true;
 
@@ -72,20 +78,22 @@ void CommandBuffer::batch() {
         prevCommands.fill(nullptr);
         tryMerge = false;
 
-        for (auto it = std::begin(_commandOrder); it != std::cend(_commandOrder);) {
-            const CommandEntry& cmd = *it;
+        auto endIt = eastl::cend(_commandOrder);
+        for (auto it = eastl::begin(_commandOrder); it != endIt;) {
+            const U8 typeIndex = it->_typeIndex;
 
-            GFX::CommandType type = static_cast<GFX::CommandType>(cmd._typeIndex);
-            CommandBase& crtCommand = get<CommandBase>(cmd);
-            CommandBase*& prevCommand = prevCommands[cmd._typeIndex];
+            CommandBase* crtCommand = getPtr<CommandBase>(*it);
+            CommandBase*& prevCommand = prevCommands[typeIndex];
 
-            if (prevCommand != nullptr && tryMergeCommands(type, prevCommand, &crtCommand, partial)) {
-                --_commandCount[cmd._typeIndex];
+            const GFX::CommandType type = static_cast<GFX::CommandType>(typeIndex);
+            if (prevCommand != nullptr && tryMergeCommands(type, prevCommand, crtCommand, partial)) {
+                --_commandCount[typeIndex];
                 it = _commandOrder.erase(it);
+                endIt = eastl::cend(_commandOrder);
                 tryMerge = true;
             } else {
                 prevCommands.fill(nullptr);
-                prevCommand = &crtCommand;
+                prevCommand = crtCommand;
                 ++it;
             }
         }
@@ -101,7 +109,7 @@ void CommandBuffer::batch() {
         switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 // We may just wish to clear some state
-                if (get<BeginRenderPassCommand>(cmd)._descriptor.setViewport()) {
+                if (getPtr<BeginRenderPassCommand>(cmd)->_descriptor.setViewport()) {
                     hasWork = true;
                     break;
                 }
@@ -132,21 +140,22 @@ void CommandBuffer::batch() {
                 break;
             }break;
             case GFX::CommandType::RESOLVE_RT: {
-                const ResolveRenderTargetCommand& crtCmd = get<ResolveRenderTargetCommand>(cmd);
-                hasWork = crtCmd._resolveColours || crtCmd._resolveDepth;
+                const ResolveRenderTargetCommand* crtCmd = getPtr<ResolveRenderTargetCommand>(cmd);
+                hasWork = crtCmd->_resolveColours || crtCmd->_resolveDepth;
             } break;
             case GFX::CommandType::COPY_TEXTURE: {
-                const CopyTextureCommand& crtCmd = get<CopyTextureCommand>(cmd);
-                hasWork = crtCmd._source.type() != TextureType::COUNT && crtCmd._destination.type() != TextureType::COUNT;
+                const CopyTextureCommand* crtCmd = getPtr<CopyTextureCommand>(cmd);
+                hasWork = crtCmd->_source.type() != TextureType::COUNT && crtCmd->_destination.type() != TextureType::COUNT;
             }break;
         };
     }
 
     if (!hasWork) {
         _commandOrder.resize(0);
-        _commandCount.fill(0);
-        return;
+        std::memset(_commandCount.data(), 0, sizeof(I24) * to_base(GFX::CommandType::COUNT));
     }
+
+    _batched = true;
 }
 
 void CommandBuffer::clean() {
@@ -160,7 +169,7 @@ void CommandBuffer::clean() {
     const DescriptorSet* prevDescriptorSet = nullptr;
 
     bool erase = false;
-    for (auto it = eastl::begin(_commandOrder); it != eastl::cend(_commandOrder); ) {
+    for (auto it = eastl::cbegin(_commandOrder); it != eastl::cend(_commandOrder); ) {
         erase = false;
         const U8 typeIndex = it->_typeIndex;
         switch (static_cast<GFX::CommandType>(typeIndex)) {
@@ -168,28 +177,23 @@ void CommandBuffer::clean() {
             {
                 OPTICK_EVENT("Clean Draw Commands");
 
-                vectorEASTLFast<GenericDrawCommand>& cmds = get<DrawCommand>(*it)._drawCommands;
+                vectorEASTLFast<GenericDrawCommand>& cmds = getPtr<DrawCommand>(*it)->_drawCommands;
                 cmds.erase(eastl::remove_if(eastl::begin(cmds),
                                             eastl::end(cmds),
-                                            [](const GenericDrawCommand& cmd) -> bool {
+                                            [](const GenericDrawCommand& cmd) noexcept -> bool {
                                                 return cmd._drawCount == 0u;
                                             }),
                            eastl::end(cmds));
 
-                if (cmds.empty()) {
-                    --_commandCount[typeIndex];
-                    erase = true;
-                }
+                erase = cmds.empty();
             } break;
             case CommandType::BIND_PIPELINE : {
                 OPTICK_EVENT("Clean Pipelines");
 
-                const Pipeline* pipeline = get<BindPipelineCommand>(*it)._pipeline;
+                const Pipeline* pipeline = getPtr<BindPipelineCommand>(*it)->_pipeline;
                 // If the current pipeline is identical to the previous one, remove it
-                if (prevPipeline != nullptr && *prevPipeline == *pipeline) {
-                    --_commandCount[typeIndex];
-                    erase = true;
-                }
+                erase = (prevPipeline != nullptr && *prevPipeline == *pipeline);
+
                 if (!erase) {
                     prevPipeline = pipeline;
                 }
@@ -197,20 +201,15 @@ void CommandBuffer::clean() {
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
                 OPTICK_EVENT("Clean Push Constants");
 
-                const PushConstants& constants = get<SendPushConstantsCommand>(*it)._constants;
-                if (constants.empty()) {
-                    --_commandCount[typeIndex];
-                    erase = true;
-                }
+                const PushConstants& constants = getPtr<SendPushConstantsCommand>(*it)->_constants;
+                erase = constants.empty();
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
                 OPTICK_EVENT("Clean Descriptor Sets");
 
-                const DescriptorSet& set = get<BindDescriptorSetsCommand>(*it)._set;
-                if (set.empty() || (prevDescriptorSet != nullptr && *prevDescriptorSet == set)) {
-                    --_commandCount[typeIndex];
-                    erase = true;
-                } 
+                const DescriptorSet& set = getPtr<BindDescriptorSetsCommand>(*it)->_set;
+                erase = (set.empty() || (prevDescriptorSet != nullptr && *prevDescriptorSet == set));
+
                 if (!erase) {
                     prevDescriptorSet = &set;
                 }
@@ -218,7 +217,7 @@ void CommandBuffer::clean() {
             case GFX::CommandType::DRAW_TEXT: {
                 OPTICK_EVENT("Clean Draw Text");
 
-                const TextElementBatch& textBatch = get<DrawTextCommand>(*it)._batch;
+                const TextElementBatch& textBatch = getPtr<DrawTextCommand>(*it)->_batch;
                 bool hasText = !textBatch.empty();
                 if (hasText) {
                     hasText = false;
@@ -226,29 +225,27 @@ void CommandBuffer::clean() {
                         hasText = hasText || !element.text().empty();
                     }
                 }
-                if (!hasText) {
-                    --_commandCount[typeIndex];
-                    erase = true;
-                }
+
+                erase = !hasText;
             }break;
             default: break;
         };
 
 
-        if (erase) {
-            it = _commandOrder.erase(it);
-        } else {
+        if (!erase) {
             ++it;
+        } else {
+            --_commandCount[typeIndex];
+            it = _commandOrder.erase(it);
         } 
     }
 
     // Remove redundant pipeline changes
     auto entry = eastl::begin(_commandOrder); ++entry;
     for (; entry != eastl::cend(_commandOrder);) {
-        auto prev = eastl::prev(entry);
-        GFX::CommandType type = static_cast<GFX::CommandType>(entry->_typeIndex);
+        const GFX::CommandType type = static_cast<GFX::CommandType>(entry->_typeIndex);
 
-        if (type == CommandType::BIND_PIPELINE && prev->_typeIndex == to_base(type)) {
+        if (type == CommandType::BIND_PIPELINE && eastl::prev(entry)->_typeIndex == to_base(type)) {
             --_commandCount[entry->_typeIndex];
             entry = _commandOrder.erase(entry);
         } else {
@@ -365,8 +362,7 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
             if (previousIDC._cmd.baseInstance + previousIDC._drawCount != currentIDC._cmd.baseInstance) {
                 return false;
             }
-        }
-        else {// Command offset compatibility
+        } else {// Command offset compatibility
             if (previousIDC._commandOffset + to_I32(previousIDC._drawCount) != currentIDC._commandOffset) {
                 return false;
             }
@@ -383,19 +379,21 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
 }
 
 bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const {
-    OPTICK_EVENT((byBaseInstance ? "CommandBuffer::mergeDrawCommands by instance" : "CommandBuffer::mergeDrawCommands by offset"));
+    OPTICK_EVENT("CommandBuffer::mergeDrawCommand");
 
     const size_t startSize = commands.size();
     if (byBaseInstance) {
-        eastl::sort(std::begin(commands),
-                    std::end(commands),
-                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool {
+        OPTICK_EVENT("Sort by instance");
+        eastl::sort(eastl::begin(commands),
+                    eastl::end(commands),
+                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
                         return a._cmd.baseInstance < b._cmd.baseInstance;
                     });
     } else {
-        eastl::sort(std::begin(commands),
-                    std::end(commands),
-                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) -> bool {
+        OPTICK_EVENT("Sort by offset");
+        eastl::sort(eastl::begin(commands),
+                    eastl::end(commands),
+                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
                         return a._commandOffset < b._commandOffset;
                     });
     }
@@ -411,13 +409,15 @@ bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& comma
         }
     }
 
-    commands.erase(eastl::remove_if(eastl::begin(commands),
-                                eastl::end(commands),
-                                [](const GenericDrawCommand& cmd) -> bool {
-                                    return cmd._drawCount == 0;
-                                }),
-                eastl::end(commands));
-
+    {
+        OPTICK_EVENT("Erase empty commands");
+        commands.erase(eastl::remove_if(eastl::begin(commands),
+                                    eastl::end(commands),
+                                    [](const GenericDrawCommand& cmd) noexcept -> bool {
+                                        return cmd._drawCount == 0;
+                                    }),
+                    eastl::end(commands));
+    }
     return startSize - commands.size() > 0;
 }
 

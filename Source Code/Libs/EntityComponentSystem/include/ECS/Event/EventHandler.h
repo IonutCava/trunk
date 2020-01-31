@@ -74,8 +74,8 @@ namespace ECS { namespace Event {
 		// Remove event callback
 		inline void RemoveEventCallback(Internal::IEventDelegate* eventDelegate)
 		{
-			auto typeId = eventDelegate->GetStaticEventTypeId();
-			EventDispatcherMap::const_iterator iter = this->m_EventDispatcherMap.find(typeId);
+			const auto typeId = eventDelegate->GetStaticEventTypeId();
+			const EventDispatcherMap::const_iterator iter = this->m_EventDispatcherMap.find(typeId);
 			if (iter != this->m_EventDispatcherMap.end())
 			{
 				this->m_EventDispatcherMap[typeId]->RemoveEventCallback(eventDelegate);
@@ -147,7 +147,7 @@ namespace ECS { namespace Event {
 			{
                 IEvent* event = this->m_EventStorage[thisIndex++];
                 if (event != nullptr) {
-                    auto it = this->m_EventDispatcherMap.find(event->GetEventTypeID());
+                    const auto it = this->m_EventDispatcherMap.find(event->GetEventTypeID());
                     if (it != eastl::cend(this->m_EventDispatcherMap)) {
                         it->second->Dispatch(event);
                         // update last index, after dispatch operation there could be new events

@@ -678,7 +678,7 @@ static int fons__atlasAddSkylineLevel(FONSatlas* atlas, int idx, int x, int y, i
 	// Delete skyline segments that fall under the shadow of the new segment.
     for (i = idx+1; i < atlas->nnodes; i++) {
         if (atlas->nodes[i].x < atlas->nodes[i-1].x + atlas->nodes[i-1].width) {
-            int shrink = atlas->nodes[i-1].x + atlas->nodes[i-1].width - atlas->nodes[i].x;
+            const int shrink = atlas->nodes[i-1].x + atlas->nodes[i-1].width - atlas->nodes[i].x;
 			atlas->nodes[i].x += (short)shrink;
 			atlas->nodes[i].width -= (short)shrink;
             if (atlas->nodes[i].width <= 0) {
@@ -709,7 +709,7 @@ static int fons__atlasRectFits(FONSatlas* atlas, int i, int w, int h)
     // Checks if there is enough space at the location of skyline span 'i',
     // and return the max height of all skyline spans under that at that location,
     // (think tetris block being dropped at that position). Or -1 if no space found.
-    int x = atlas->nodes[i].x;
+    const int x = atlas->nodes[i].x;
     int y = atlas->nodes[i].y;
 	int spaceLeft;
     if (x + w > atlas->width)
@@ -958,8 +958,8 @@ static FILE* fons__fopen(const char* filename, const char* mode)
 {
 #ifdef _WIN32
 	int len = 0;
-	int fileLen = (int)strlen(filename);
-	int modeLen = (int)strlen(mode);
+    const int fileLen = (int)strlen(filename);
+    const int modeLen = (int)strlen(mode);
 	wchar_t wpath[MAX_PATH];
 	wchar_t wmode[MAX_PATH];
 	FILE* f;
@@ -1168,7 +1168,7 @@ static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned in
     float scale;
 	FONSglyph* glyph = NULL;
     unsigned int h;
-    float size = isize/10.0f;
+    const float size = isize/10.0f;
 	int pad, added;
     unsigned char* bdst;
     unsigned char* dst;
@@ -1196,7 +1196,7 @@ static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned in
 	if (g == 0) {
 		for (i = 0; i < font->nfallbacks; ++i) {
 			FONSfont* fallbackFont = stash->fonts[font->fallbacks[i]];
-			int fallbackIndex = fons__tt_getGlyphIndex(&fallbackFont->font, codepoint);
+            const int fallbackIndex = fons__tt_getGlyphIndex(&fallbackFont->font, codepoint);
 			if (fallbackIndex != 0) {
 				g = fallbackIndex;
 				renderFont = fallbackFont;
@@ -1403,8 +1403,8 @@ FONS_DEF float fonsDrawText(FONScontext* stash,
 	FONSglyph* glyph = NULL;
 	FONSquad q;
 	int prevGlyphIndex = -1;
-    short isize = (short)(state->size*10.0f);
-    short iblur = (short)state->blur;
+    const short isize = (short)(state->size*10.0f);
+    const short iblur = (short)state->blur;
     float scale;
 	FONSfont* font;
     float width;
@@ -1532,10 +1532,10 @@ FONS_DEF int fonsTextIterNext(FONScontext* stash, FONStextIter* iter, FONSquad* 
 FONS_DEF void fonsDrawDebug(FONScontext* stash, float x, float y)
 {
 	int i;
-    int w = stash->params.width;
-    int h = stash->params.height;
-	float u = w == 0 ? 0 : (1.0f / w);
-	float v = h == 0 ? 0 : (1.0f / h);
+    const int w = stash->params.width;
+    const int h = stash->params.height;
+    const float u = w == 0 ? 0 : (1.0f / w);
+    const float v = h == 0 ? 0 : (1.0f / h);
 
 	if (stash->nverts+6+6 > FONS_VERTEX_COUNT)
 		fons__flush(stash);
@@ -1588,8 +1588,8 @@ FONS_DEF float fonsTextBounds(FONScontext* stash,
 	FONSquad q;
 	FONSglyph* glyph = NULL;
 	int prevGlyphIndex = -1;
-    short isize = (short)(state->size*10.0f);
-    short iblur = (short)state->blur;
+    const short isize = (short)(state->size*10.0f);
+    const short iblur = (short)state->blur;
     float scale;
 	FONSfont* font;
 	float startx, advance;

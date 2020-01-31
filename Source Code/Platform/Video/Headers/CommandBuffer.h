@@ -79,48 +79,64 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
     tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand, bool& partial) const;
 
-    template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
-    get(const CommandEntry& commandEntry) const;
-
-    template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-    get(const CommandEntry& commandEntry);
+    bool exists(const CommandEntry& commandEntry) const noexcept;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, Container::EntryList&>::type
-    get();
+    get() noexcept;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, const Container::EntryList&>::type
-    get() const;
-
-    bool exists(const CommandEntry& commandEntry) const;
-
-    template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-    get(I24 index);
+    get() const noexcept;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
-    get(I24 index) const;
+    get(const CommandEntry& commandEntry) const  noexcept;
 
-    bool exists(U8 typeIndex, I24 index) const;
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+    get(const CommandEntry& commandEntry) noexcept;
 
-    inline CommandOrderContainer& operator()();
-    inline const CommandOrderContainer& operator()() const;
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+    get(I24 index) noexcept;
 
-    inline vec_size size() const { return _commandOrder.size(); }
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
+    get(I24 index) const noexcept;
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
+    getPtr(const CommandEntry& commandEntry) const  noexcept;
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+    getPtr(const CommandEntry& commandEntry) noexcept;
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+    getPtr(I24 index) noexcept;
+
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
+    getPtr(I24 index) const noexcept;
+
+    bool exists(U8 typeIndex, I24 index) const noexcept;
+
+    inline CommandOrderContainer& operator()() noexcept;
+    inline const CommandOrderContainer& operator()() const noexcept;
+
+    inline vec_size size() const noexcept { return _commandOrder.size(); }
     inline void clear(bool clearMemory = true);
     inline void nuke();
-    inline bool empty() const;
+    inline bool empty() const noexcept;
 
     // Multi-line. indented list of all commands (and params for some of them)
     stringImpl toString() const;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
-    count() const;
+    count() const noexcept;
 
   protected:
     template<typename T, CommandType enumVal>
@@ -138,9 +154,10 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
   protected:
       CommandOrderContainer _commandOrder;
-      std::array<I24, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
+      eastl::array<I24, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
 
       PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;
+      bool _batched = false;
 };
 
 template<typename T>

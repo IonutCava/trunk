@@ -55,7 +55,7 @@ void populatePressRelease(PressReleaseActions& actions, const ptree & attributes
 
     U16 id = 0;
     vector<std::string> actionsOut;
-    for (auto it : actionNames) {
+    for (const auto it : actionNames) {
         const std::string actionList = attributes.get<std::string>(it.second, "");
         Util::Split<vector<std::string>, std::string>(actionList.c_str(), ',', actionsOut);
         for (const std::string& it2 : actionsOut) {
@@ -113,7 +113,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
 
     const stringImpl label("joystickButtons.joystick");
     for (U32 i = 0 ; i < to_base(Input::Joystick::COUNT); ++i) {
-        Input::Joystick joystick = static_cast<Input::Joystick>(i);
+        const Input::Joystick joystick = static_cast<Input::Joystick>(i);
         
         for (const ptree::value_type & f : pt.get_child(label + std::to_string(i + 1), empty_ptree()))
         {
@@ -136,8 +136,8 @@ void loadScene(const Str256& scenePath, const Str128& sceneName, Scene* scene, c
     
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
-    Str256 sceneLocation(scenePath + "/" + sceneName);
-    Str256 sceneDataFile(sceneLocation + ".xml");
+    const Str256 sceneLocation(scenePath + "/" + sceneName);
+    const Str256 sceneDataFile(sceneLocation + ".xml");
 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes

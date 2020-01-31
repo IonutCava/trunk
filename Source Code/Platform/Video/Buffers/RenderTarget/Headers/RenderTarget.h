@@ -51,7 +51,7 @@ struct RenderTargetID {
     {
     }
 
-    RenderTargetID(RenderTargetUsage usage, U16 index)
+    RenderTargetID(RenderTargetUsage usage, U16 index) noexcept
         : _index(index),
           _usage(usage)
     {

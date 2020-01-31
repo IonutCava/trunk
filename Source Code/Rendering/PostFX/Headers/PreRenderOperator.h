@@ -53,7 +53,7 @@ class NOINITVTABLE PreRenderOperator {
 
     virtual void reshape(U16 width, U16 height);
 
-    inline FilterType operatorType() const { return _operatorType; }
+    inline FilterType operatorType() const noexcept { return _operatorType; }
 
     virtual TextureData getDebugOutput() const;
     virtual void idle(const Configuration& config);

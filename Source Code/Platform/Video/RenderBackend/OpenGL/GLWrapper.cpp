@@ -114,7 +114,7 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 
     // Start a duration query in debug builds
     if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
-        GLuint writeQuery = _elapsedTimeQuery->writeQuery().getID();
+        const GLuint writeQuery = _elapsedTimeQuery->writeQuery().getID();
         glBeginQuery(GL_TIME_ELAPSED, writeQuery);
     }
 
@@ -195,7 +195,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
 
     if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         // The returned results are 'g_performanceQueryRingLength - 1' frames old!
-        GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
+        const GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
         GLint available = 0;
         glGetQueryObjectiv(readQuery, GL_QUERY_RESULT_AVAILABLE, &available);
 
@@ -220,7 +220,7 @@ F32 GL_API::getFrameDurationGPU() const {
 void GL_API::appendToShaderHeader(ShaderType type,
                                   const stringImpl& entry,
                                   ShaderOffsetArray& inOutOffset) {
-    GLuint index = to_U32(type);
+    const GLuint index = to_U32(type);
     stringImpl stage;
 
     switch (type) {
@@ -305,7 +305,7 @@ bool GL_API::initGLSW(Configuration& config) {
                                               "#define float4x4 mat4\n"
                                               "#define lerp mix";
 
-    auto getPassData = [&](ShaderType type) -> stringImpl {
+    const auto getPassData = [&](ShaderType type) -> stringImpl {
         stringImpl baseString = "     _out.%s = _in[index].%s;";
         if (type == ShaderType::TESSELLATION_CTRL) {
             baseString = "    _out[gl_InvocationID].%s = _in[index].%s;";
@@ -353,7 +353,7 @@ bool GL_API::initGLSW(Configuration& config) {
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
     GLint minGLVersion = GLUtil::getGLValue(GL_MINOR_VERSION);
-    GLint maxClipCull = GLUtil::getGLValue(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES);
+    const GLint maxClipCull = GLUtil::getGLValue(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES);
 
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", minGLVersion), lineOffsets);
 
@@ -724,7 +724,7 @@ bool GL_API::initGLSW(Configuration& config) {
         to_stringImpl(to_base(AttribLocation::GENERIC)),
         lineOffsets);
 
-    auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets, bool bump) {
+    const auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets, bool bump) {
         if (bump) {
             for (U8 i = 0; i < (sizeof(shaderVaryingsBump) / sizeof(shaderVaryingsBump[0])); ++i) {
                 appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsBump[i].first, shaderVaryingsBump[i].second), lineOffsets);
@@ -844,9 +844,9 @@ bool GL_API::deInitGLSW() {
 I32 GL_API::getFont(const Str64& fontName) {
     if (_fontCache.first.compare(fontName) != 0) {
         _fontCache.first = fontName;
-        U64 fontNameHash = _ID(fontName.c_str());
+        const U64 fontNameHash = _ID(fontName.c_str());
         // Search for the requested font by name
-        FontCache::const_iterator it = _fonts.find(fontNameHash);
+        const FontCache::const_iterator it = _fonts.find(fontNameHash);
         // If we failed to find it, it wasn't loaded yet
         if (it == std::cend(_fonts)) {
             // Fonts are stored in the general asset directory -> in the GUI
@@ -928,7 +928,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
         
         const TextElement::TextType& text = entry.text();
-        vec_size_eastl lineCount = text.size();
+        const vec_size_eastl lineCount = text.size();
         for (vec_size_eastl i = 0; i < lineCount; ++i) {
             fonsDrawText(_fonsContext,
                          textX,
@@ -955,11 +955,11 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
         GenericDrawCommand cmd = {};
         cmd._primitiveType = PrimitiveType::TRIANGLES;
 
-        ImVec2 pos = data->DisplayPos;
+        const ImVec2 pos = data->DisplayPos;
         for (int n = 0; n < data->CmdListsCount; n++)
         {
             const ImDrawList* cmd_list = data->CmdLists[n];
-            U32 vertCount = to_U32(cmd_list->VtxBuffer.size());
+            const U32 vertCount = to_U32(cmd_list->VtxBuffer.size());
             assert(vertCount < MAX_IMGUI_VERTS);
 
             cmd._cmd.firstIndex = 0;
@@ -1210,11 +1210,11 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             } else {
 
                 Texture* tex = crtCmd._texture;
-                TextureData data = tex->data();
+                const TextureData data = tex->data();
                 const TextureDescriptor& descriptor = tex->descriptor();
-                GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
+                const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
-                GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
+                const GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
                 GLuint handle = s_texturePool.allocate(GL_NONE);
                 glTextureView(handle,
                     type,
@@ -1269,7 +1269,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::MEMORY_BARRIER: {
             const GFX::MemoryBarrierCommand& crtCmd = commandBuffer.get<GFX::MemoryBarrierCommand>(entry);
             MemoryBarrierMask glMask = MemoryBarrierMask::GL_NONE_BIT;
-            U8 barrierMask = crtCmd._barrierMask;
+            const U8 barrierMask = crtCmd._barrierMask;
             if (barrierMask != 0) {
                 if (barrierMask == to_base(MemoryBarrierType::ALL)) {
                     glMemoryBarrier(MemoryBarrierMask::GL_ALL_BARRIER_BITS);
@@ -1403,7 +1403,7 @@ void GL_API::processSyncDeleteQeueue() {
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
     GenericVertexData* ret = nullptr;
 
-    auto it = _IMGUIBuffers.find(windowGUID);
+    const auto it = _IMGUIBuffers.find(windowGUID);
     if (it == eastl::cend(_IMGUIBuffers)) {
         // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
         // We update and draw multiple times in a loop
@@ -1492,9 +1492,9 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
     constexpr vec_size k_textureThreshold = 3;
-    size_t texCount = textureData.textures().size();
+    const size_t texCount = textureData.textures().size();
     if (texCount > k_textureThreshold && false) {
-        GLushort offset = 0;
+        const GLushort offset = 0;
         vectorEASTL<TextureType> types;
         vectorEASTL<GLuint> handles;
         vectorEASTL<GLuint> samplers;
@@ -1526,9 +1526,9 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         Texture* tex = it._view._texture;
         const TextureData& data = tex->data();
         const TextureDescriptor& descriptor = tex->descriptor();
-        GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
+        const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
-        GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
+        const GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
         GLuint handle = s_texturePool.allocate(GL_NONE);
         glTextureView(handle,
             type,
@@ -1558,7 +1558,7 @@ U32 GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     OPTICK_EVENT();
 
     // Get the descriptor's hash value
-    size_t hashValue = descriptor.getHash();
+    const size_t hashValue = descriptor.getHash();
     // Try to find the hash value in the sampler object map
     GLuint sampler = getSamplerHandle(hashValue);
     if (sampler == 0) {
@@ -1579,7 +1579,7 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
         // If we fail to find the sampler object for the given hash, we print an
         // error and return the default OpenGL handle
         UniqueLock r_lock(s_samplerMapLock);
-        SamplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
+        const SamplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
         if (it != std::cend(s_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
             return it->second;

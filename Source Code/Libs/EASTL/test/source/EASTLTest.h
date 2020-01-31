@@ -33,6 +33,7 @@ int TestChrono();
 int TestCppCXTypeTraits();
 int TestDeque();
 int TestExtra();
+int TestFinally();
 int TestFixedFunction();
 int TestFixedHash();
 int TestFixedList();
@@ -67,19 +68,18 @@ int TestSet();
 int TestSmartPtr();
 int TestSort();
 int TestSpan();
-int TestSparseMatrix();
 int TestString();
 int TestStringHashMap();
 int TestStringMap();
 int TestStringView();
 int TestTuple();
+int TestTupleVector();
 int TestTypeTraits();
 int TestUtility();
 int TestVariant();
 int TestVector();
 int TestVectorMap();
 int TestVectorSet();
-int TestTupleVector();
 
 
 // Now enable warnings as desired.
@@ -117,8 +117,8 @@ int TestTupleVector();
 	#pragma warning(default: 4557)      // '__assume' contains effect 'effect'
   //#pragma warning(default: 4619)      // #pragma warning : there is no warning number 'number'
 	#pragma warning(default: 4623)      // 'derived class' : default constructor could not be generated because a base class default constructor is inaccessible
-	#pragma warning(default: 4625)      // 'derived class' : copy constructor could not be generated because a base class copy constructor is inaccessible
-	#pragma warning(default: 4626)      // 'derived class' : assignment operator could not be generated because a base class assignment operator is inaccessible
+  //#pragma warning(default: 4625)      // 'derived class' : copy constructor could not be generated because a base class copy constructor is inaccessible
+  //#pragma warning(default: 4626)      // 'derived class' : assignment operator could not be generated because a base class assignment operator is inaccessible
 	#pragma warning(default: 4628)      // Digraphs not supported with -Ze. Character sequence 'digraph' not interpreted as alternate token for 'char'
 	#pragma warning(default: 4640)      // 'instance' : construction of local static object is not thread-safe
 	#pragma warning(default: 4668)      // 'symbol' is not defined as a preprocessor macro, replacing with '0' for 'directives'

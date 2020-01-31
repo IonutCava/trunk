@@ -44,7 +44,7 @@ namespace Divide {
 class GUIDWrapper {
    public:
     GUIDWrapper() noexcept : _GUID(generateGUID()) {}
-    GUIDWrapper(const GUIDWrapper& old) : _GUID(generateGUID()) { (void)old; }
+    GUIDWrapper(const GUIDWrapper& old) noexcept : _GUID(generateGUID()) { (void)old; }
     GUIDWrapper(GUIDWrapper&& old) noexcept : _GUID(old._GUID) {}
     virtual ~GUIDWrapper() {}
 

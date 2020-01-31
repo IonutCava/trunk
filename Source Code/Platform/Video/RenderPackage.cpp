@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-RenderPackage::RenderPackage()
+RenderPackage::RenderPackage() noexcept
     : _commands(GFX::allocateCommandBuffer(true)),
       _drawCommandOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY)),
       _drawCommandCount(0),
@@ -35,7 +35,7 @@ void RenderPackage::set(const RenderPackage& other) {
     _commands->add(*other._commands);
 }
 
-void RenderPackage::setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount) {
+void RenderPackage::setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount) noexcept {
     if (lodIndex < _lodIndexOffsets.size()) {
         _lodIndexOffsets[lodIndex] = std::make_pair(indexOffset, indexCount);
     }
@@ -215,11 +215,11 @@ void RenderPackage::setTexture(I32 descriptorSetIndex, const TextureData& data, 
     cmd._set._textureData.setTexture(data, binding);
 }
 
-U8 RenderPackage::lodLevel() const {
+U8 RenderPackage::lodLevel() const noexcept {
     return _lodLevel;
 }
 
-void RenderPackage::setLoDLevel(U8 LoD) {
+void RenderPackage::setLoDLevel(U8 LoD) noexcept {
     _lodLevel = std::min(LoD, to_U8(_lodIndexOffsets.size() - 1));
 }
 

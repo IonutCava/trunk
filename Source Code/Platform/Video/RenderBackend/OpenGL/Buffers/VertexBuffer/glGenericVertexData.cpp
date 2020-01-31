@@ -73,7 +73,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, U32 cmdBufferO
         GLUtil::submitRenderCommand(command, _indexBuffer > 0, false, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 
-    vec_size bufferCount = _bufferObjects.size();
+    const vec_size bufferCount = _bufferObjects.size();
     for (vec_size i = 0; i < bufferCount; ++i) {
         glGenericBuffer* buffer = _bufferObjects[i];
         buffer->lockData(buffer->elementCount(), 0, queueIndex(), true);
@@ -92,7 +92,7 @@ void glGenericVertexData::rebuildCountAndIndexData(U32 drawCount, U32 indexCount
     }
 
     if (_indexBuffer > 0 && (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex)) {
-        U32 idxCount = to_U32(drawCount * _idxBuffer.count);
+        const U32 idxCount = to_U32(drawCount * _idxBuffer.count);
 
         if (_indexOffsetData.size() < idxCount) {
             _indexOffsetData.resize(idxCount, firstIndex);
@@ -137,7 +137,7 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
     DIVIDE_ASSERT(indices.count > 0, "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
     assert(_indexBuffer != 0 && "glGenericVertexData::UpdateIndexBuffer error: no valid index buffer found!");
 
-    size_t elementSize = indices.smallIndices ? sizeof(GLushort) : sizeof(GLuint);
+    const size_t elementSize = indices.smallIndices ? sizeof(GLushort) : sizeof(GLuint);
 
     if (indices.offsetCount == 0) {
         _indexBufferSize = (GLuint)(indices.count * elementSize);
@@ -148,7 +148,7 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
                           indices.data,
                           _indexBufferUsage);
     } else {
-        size_t size = (indices.count + indices.offsetCount) * elementSize;
+        const size_t size = (indices.count + indices.offsetCount) * elementSize;
         DIVIDE_ASSERT(size < _indexBufferSize);
         glInvalidateBufferSubData(_indexBuffer,
                                   indices.offsetCount * elementSize,
@@ -162,7 +162,7 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
 
 /// Specify the structure and data of the given buffer
 void glGenericVertexData::setBuffer(const SetBufferParams& params) {
-    U32 buffer = params._buffer;
+    const U32 buffer = params._buffer;
 
     // Make sure the buffer exists
     assert(buffer >= 0 && buffer < _bufferObjects.size() &&
@@ -242,10 +242,10 @@ void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) 
     }
 
     // Update the attribute data
-    GFXDataFormat format = descriptor.dataType();
+    const GFXDataFormat format = descriptor.dataType();
 
-    bool isIntegerType = format != GFXDataFormat::FLOAT_16 &&
-                         format != GFXDataFormat::FLOAT_32;
+    const bool isIntegerType = format != GFXDataFormat::FLOAT_16 &&
+                               format != GFXDataFormat::FLOAT_32;
     
     if (!isIntegerType || descriptor.normalized()) {
         glVertexArrayAttribFormat(_vertexArray,

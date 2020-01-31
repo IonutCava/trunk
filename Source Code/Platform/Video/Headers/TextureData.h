@@ -48,16 +48,28 @@ struct CopyTexParams {
 };
 
 struct TextureData {
-    TextureData() : TextureData(0u, 0u, TextureType::COUNT)
+    TextureData() noexcept : TextureData(0u, 0u, TextureType::COUNT)
     {}
 
-    TextureData(U32 texHandle, U32 samplerHandle, TextureType type)
+    TextureData(U32 texHandle, U32 samplerHandle, TextureType type) noexcept
         : _textureHandle(texHandle), _samplerHandle(samplerHandle), _textureType(type)
     {}
 
-    inline U32 textureHandle() const { return _textureHandle; }
-    inline U32 samplerHandle() const { return _samplerHandle; }
-    inline TextureType type()  const { return _textureType; }
+    inline U32 textureHandle() const noexcept { return _textureHandle; }
+    inline U32 samplerHandle() const noexcept { return _samplerHandle; }
+    inline TextureType  type() const noexcept { return _textureType;   }
+
+    FORCE_INLINE bool operator==(const TextureData& other) const noexcept {
+        return _textureHandle == other._textureHandle &&
+               _samplerHandle == other._samplerHandle &&
+               _textureType == other._textureType;
+    }
+
+    FORCE_INLINE bool operator!=(const TextureData& other) const noexcept {
+        return _textureHandle != other._textureHandle ||
+               _samplerHandle != other._samplerHandle ||
+               _textureType != other._textureType;
+    }
 
 private:
     friend class Texture;
@@ -65,18 +77,6 @@ private:
     U32 _samplerHandle = 0u;
     TextureType _textureType = TextureType::COUNT;
 };
-
-FORCE_INLINE bool operator==(const TextureData& lhs, const TextureData& rhs) noexcept {
-    return lhs.type() == rhs.type() &&
-           lhs.textureHandle() == rhs.textureHandle() &&
-           lhs.samplerHandle() == rhs.samplerHandle();
-}
-
-FORCE_INLINE bool operator!=(const TextureData& lhs, const TextureData& rhs) noexcept {
-    return lhs.type() != rhs.type() ||
-           lhs.textureHandle() != rhs.textureHandle() ||
-           lhs.samplerHandle() != rhs.samplerHandle();
-}
 
 class TextureDataContainer {
     public:

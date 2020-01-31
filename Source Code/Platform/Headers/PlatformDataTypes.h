@@ -74,21 +74,21 @@ typedef union {
     U8  b[8];
 } P64;
 
-inline bool operator==(const P32& lhs, const P32& rhs) {
+inline bool operator==(const P32& lhs, const P32& rhs) noexcept {
     return lhs.i == rhs.i;
 }
-inline bool operator!=(const P32& lhs, const P32& rhs) {
+inline bool operator!=(const P32& lhs, const P32& rhs) noexcept {
     return lhs.i != rhs.i;
 }
-inline bool operator==(const P64& lhs, const P64& rhs) {
+inline bool operator==(const P64& lhs, const P64& rhs) noexcept {
     return lhs.i == rhs.i;
 }
-inline bool operator!=(const P64& lhs, const P64& rhs) {
+inline bool operator!=(const P64& lhs, const P64& rhs) noexcept {
     return lhs.i != rhs.i;
 }
 
 //Ref: https://stackoverflow.com/questions/7416699/how-to-define-24bit-data-type-in-c
-const I32 INT24_MAX = 8388607;
+constexpr I32 INT24_MAX = 8388607;
 
 #pragma pack(push, 1)
 class I24
@@ -98,18 +98,18 @@ protected:
 
 public:
     I24() noexcept
-        : I24(0)
+        : value{ 0u ,0u, 0u }
     {
     }
 
     I24(I32 val) noexcept 
+        : value{ ((U8*)&val)[0], ((U8*)&val)[1], ((U8*)&val)[2] }
     {
-        *this = val;
     }
 
     I24(const I24& val) noexcept
+        : value{ val.value[0], val.value[1], val.value[2] }
     {
-        *this = val;
     }
 
     I24(I24&& other) noexcept
@@ -124,7 +124,7 @@ public:
         return *this;
     }
 
-    FORCE_INLINE I24& operator= (const I24& input) {
+    FORCE_INLINE I24& operator= (const I24& input) noexcept {
         std::memcpy(value, input.value, sizeof(U8) * 3);
         return *this;
     }
@@ -146,8 +146,8 @@ public:
         return (value[2] << 16) | (value[1] << 8) | value[0];
     }
 
-    FORCE_INLINE I24 operator+   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
-    FORCE_INLINE I24 operator-   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) - static_cast<I32>(val)); }
+    FORCE_INLINE I24 operator+   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) + val); }
+    FORCE_INLINE I24 operator-   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) - val); }
     FORCE_INLINE I24 operator+   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
     FORCE_INLINE I24 operator-   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) - static_cast<I32>(val)); }
     FORCE_INLINE I24 operator*   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) * static_cast<I32>(val)); }
@@ -165,14 +165,15 @@ public:
     FORCE_INLINE I24& operator++ ()      noexcept { *this = *this + 1; return *this; }
     FORCE_INLINE I24& operator-- ()      noexcept { *this = *this - 1; return *this; }
 
-    FORCE_INLINE I24  operator++ (I32)                  noexcept { I24 ret = *this; ++(*this); return ret; }
-    FORCE_INLINE I24  operator-- (I32)                  noexcept { I24 ret = *this; --(*this); return ret; }
+    FORCE_INLINE I24  operator++ (I32)                  noexcept { const I24 ret = *this; ++(*this); return ret; }
+    FORCE_INLINE I24  operator-- (I32)                  noexcept { const I24 ret = *this; --(*this); return ret; }
     FORCE_INLINE bool operator== (const I24& val) const noexcept { return static_cast<I32>(*this) == static_cast<I32>(val); }
     FORCE_INLINE bool operator!= (const I24& val) const noexcept { return static_cast<I32>(*this) != static_cast<I32>(val); }
     FORCE_INLINE bool operator>= (const I24& val) const noexcept { return static_cast<I32>(*this) >= static_cast<I32>(val); }
     FORCE_INLINE bool operator<= (const I24& val) const noexcept { return static_cast<I32>(*this) <= static_cast<I32>(val); }
     FORCE_INLINE bool operator>  (const I24& val) const noexcept { return static_cast<I32>(*this) >  static_cast<I32>(val); }
     FORCE_INLINE bool operator<  (const I24& val) const noexcept { return static_cast<I32>(*this) <  static_cast<I32>(val); }
+
     FORCE_INLINE bool operator>  (const size_t& val) const noexcept {
         const I32 lhs = static_cast<I32>(*this);
         return lhs >=0 && static_cast<size_t>(lhs) > val;
@@ -183,7 +184,7 @@ public:
     }
     FORCE_INLINE bool operator>  (const U32& val) const noexcept {
         const I32 lhs = static_cast<I32>(*this);
-        return lhs >= 0 && static_cast<U32>(lhs) > val; 
+        return lhs >= 0 && static_cast<U32>(lhs) > val;
     }
     FORCE_INLINE bool operator<  (const U32& val) const noexcept {
         const I32 lhs = static_cast<I32>(*this);
@@ -302,13 +303,13 @@ constexpr char to_byte(const T value) {
 class counter {
     size_t count;
 public:
-    counter &operator=(size_t val) { count = val; return *this; }
+    counter &operator=(size_t val) noexcept { count = val; return *this; }
     counter(size_t count = 0) noexcept : count(count) {}
-    operator size_t() { return count; }
-    counter &operator++() { ++count; return *this; }
-    counter operator++(int) { counter ret(count); ++count; return ret; }
-    bool operator==(counter const &other) { return count == other.count; }
-    bool operator!=(counter const &other) { return count != other.count; }
+    operator size_t() noexcept { return count; }
+    counter &operator++() noexcept { ++count; return *this; }
+    counter operator++(int) noexcept { counter ret(count); ++count; return ret; }
+    bool operator==(counter const &other) noexcept { return count == other.count; }
+    bool operator!=(counter const &other) noexcept { return count != other.count; }
 };
 
 

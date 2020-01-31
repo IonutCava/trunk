@@ -88,7 +88,7 @@ void dtNodePool::clear()
 unsigned int dtNodePool::findNodes(dtPolyRef id, dtNode** nodes, const int maxNodes)
 {
     int n = 0;
-    unsigned int bucket = dtHashRef(id) & (m_hashSize-1);
+    const unsigned int bucket = dtHashRef(id) & (m_hashSize-1);
     dtNodeIndex i = m_first[bucket];
     while (i != DT_NULL_IDX)
     {
@@ -106,7 +106,7 @@ unsigned int dtNodePool::findNodes(dtPolyRef id, dtNode** nodes, const int maxNo
 
 dtNode* dtNodePool::findNode(dtPolyRef id, unsigned char state)
 {
-    unsigned int bucket = dtHashRef(id) & (m_hashSize-1);
+    const unsigned int bucket = dtHashRef(id) & (m_hashSize-1);
     dtNodeIndex i = m_first[bucket];
     while (i != DT_NULL_IDX)
     {

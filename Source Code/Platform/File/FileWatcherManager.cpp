@@ -24,7 +24,7 @@ namespace Divide {
 
     void FileWatcherManager::idle() {
         // Expensive: update just one per frame
-        for (std::unique_ptr<FileWatcher>& fw : s_fileWatchers) {
+        for (const std::unique_ptr<FileWatcher>& fw : s_fileWatchers) {
             if (!fw->_updated) {
                 fw->_impl.update();
                 fw->_updated = true;
@@ -33,7 +33,7 @@ namespace Divide {
         }
 
         // If we got here, we updated all of our watchers at least once
-        for (std::unique_ptr<FileWatcher>& fw : s_fileWatchers) {
+        for (const std::unique_ptr<FileWatcher>& fw : s_fileWatchers) {
             fw->_updated = false;
         }
     }

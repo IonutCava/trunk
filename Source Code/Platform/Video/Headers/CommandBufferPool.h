@@ -41,9 +41,6 @@ namespace GFX {
 
 class CommandBufferPool {
  public:
-    CommandBufferPool();
-    ~CommandBufferPool();
-
     CommandBuffer* allocateBuffer();
     void deallocateBuffer(CommandBuffer*& buffer);
 
@@ -57,11 +54,11 @@ class ScopedCommandBuffer {
     ScopedCommandBuffer(bool useSecondaryBuffers);
     ~ScopedCommandBuffer();
 
-    inline CommandBuffer& operator()() {
+    inline CommandBuffer& operator()() noexcept {
         return *_buffer;
     }
 
-    inline const CommandBuffer& operator()() const {
+    inline const CommandBuffer& operator()() const noexcept {
         return *_buffer;
     }
 

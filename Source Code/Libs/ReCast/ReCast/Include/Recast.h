@@ -687,9 +687,9 @@ inline void rcVcopy(float* dest, const float* v)
 /// @return The distance between the two points.
 inline float rcVdist(const float* v1, const float* v2)
 {
-    float dx = v2[0] - v1[0];
-    float dy = v2[1] - v1[1];
-    float dz = v2[2] - v1[2];
+    const float dx = v2[0] - v1[0];
+    const float dy = v2[1] - v1[1];
+    const float dz = v2[2] - v1[2];
     return rcSqrt(dx*dx + dy*dy + dz*dz);
 }
 
@@ -699,9 +699,9 @@ inline float rcVdist(const float* v1, const float* v2)
 /// @return The square of the distance between the two points.
 inline float rcVdistSqr(const float* v1, const float* v2)
 {
-    float dx = v2[0] - v1[0];
-    float dy = v2[1] - v1[1];
-    float dz = v2[2] - v1[2];
+    const float dx = v2[0] - v1[0];
+    const float dy = v2[1] - v1[1];
+    const float dz = v2[2] - v1[2];
     return dx*dx + dy*dy + dz*dz;
 }
 
@@ -709,7 +709,7 @@ inline float rcVdistSqr(const float* v1, const float* v2)
 ///  @param[in,out]    v    The vector to normalize. [(x, y, z)]
 inline void rcVnormalize(float* v)
 {
-    float d = 1.0f / rcSqrt(rcSqr(v[0]) + rcSqr(v[1]) + rcSqr(v[2]));
+    const float d = 1.0f / rcSqrt(rcSqr(v[0]) + rcSqr(v[1]) + rcSqr(v[2]));
     v[0] *= d;
     v[1] *= d;
     v[2] *= d;
@@ -1016,7 +1016,7 @@ bool rcBuildRegionsMonotone(rcContext* ctx, rcCompactHeightfield& chf,
 inline void rcSetCon(rcCompactSpan& s, int dir, int i)
 {
     const unsigned int shift = (unsigned int)dir*6;
-    unsigned int con = s.con;
+    const unsigned int con = s.con;
     s.con = (con & ~(0x3f << shift)) | (((unsigned int)i & 0x3f) << shift);
 }
 

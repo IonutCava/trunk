@@ -13,7 +13,7 @@ size_t PipelineDescriptor::getHash() const {
         Util::Hash_combine(_hash, i);
 
         const vector<U32>& functions = _shaderFunctions[i];
-        for (U32 function : functions) {
+        for (const U32 function : functions) {
             Util::Hash_combine(_hash, function);
         }
     }

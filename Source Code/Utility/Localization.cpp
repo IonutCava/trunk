@@ -13,7 +13,7 @@ namespace Locale {
 
 namespace detail {
     /// Default language can be set at compile time
-    Str64 g_localeFile;
+    Str64 g_localeFile = {};
 
     std::unique_ptr<LanguageData> g_data = nullptr;
 
@@ -93,7 +93,7 @@ ErrorCode init(const char* newLanguage) {
     detail::g_localeFile = newLanguage;
     assert(!detail::g_localeFile.empty());
 
-    Str256 file = (Paths::g_localisationPath + detail::g_localeFile) + g_languageFileExtension;
+    const Str256 file = (Paths::g_localisationPath + detail::g_localeFile) + g_languageFileExtension;
 
     if (languageFile.LoadFile(file.c_str()) != SI_OK) {
         return ErrorCode::NO_LANGUAGE_INI;

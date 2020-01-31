@@ -37,20 +37,16 @@ namespace Divide {
 class Scene;
 class SceneComponent {
     public:
-        explicit SceneComponent(Scene& parentScene)
+        explicit SceneComponent(Scene& parentScene) noexcept
             : _parentScene(parentScene)
         {
         }
 
-        virtual ~SceneComponent()
-        {
-        }
-
-        inline Scene& parentScene() {
+        inline Scene& parentScene() noexcept {
             return _parentScene;
         }
 
-        inline const Scene& parentScene() const {
+        inline const Scene& parentScene() const noexcept {
             return _parentScene;
         }
 

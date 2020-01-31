@@ -121,15 +121,15 @@ class Scene : public Resource, public PlatformContextComponent {
     void onStartUpdateLoop(const U8 loopNumber);
     /// Override this for Scene specific updates
     virtual void updateSceneStateInternal(const U64 deltaTimeUS) { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
-    inline SceneState& state() { return *_sceneState; }
-    inline const SceneState& state() const { return *_sceneState; }
+    inline SceneState& state() noexcept { return *_sceneState; }
+    inline const SceneState& state() const noexcept { return *_sceneState; }
     inline SceneRenderState& renderState() { return _sceneState->renderState(); }
     inline const SceneRenderState& renderState() const { return _sceneState->renderState(); }
-    inline SceneInput& input() { return *_input; }
-    inline const SceneInput& input() const { return *_input; }
+    inline SceneInput& input() noexcept { return *_input; }
+    inline const SceneInput& input() const noexcept { return *_input; }
 
-    inline SceneGraph& sceneGraph() { return *_sceneGraph; }
-    inline const SceneGraph& sceneGraph() const { return *_sceneGraph; }
+    inline SceneGraph& sceneGraph() noexcept { return *_sceneGraph; }
+    inline const SceneGraph& sceneGraph() const noexcept { return *_sceneGraph; }
 
     void registerTask(Task& taskItem, bool start = true, TaskPriority priority = TaskPriority::DONT_CARE);
     void clearTasks();
@@ -145,7 +145,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     /// Object picking
     inline vector<I64> getCurrentSelection(PlayerIndex index = 0) const {
-        auto it = _currentSelection.find(index);
+        const auto it = _currentSelection.find(index);
         if (it != eastl::cend(_currentSelection)) {
             return it->second;
         }
@@ -166,17 +166,17 @@ class Scene : public Resource, public PlatformContextComponent {
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode);
 
-    inline AI::AIManager& aiManager() { return *_aiManager; }
-    inline const AI::AIManager& aiManager() const { return *_aiManager; }
+    inline AI::AIManager& aiManager() noexcept { return *_aiManager; }
+    inline const AI::AIManager& aiManager() const noexcept { return *_aiManager; }
 
-    inline ResourceCache& resourceCache() { return _resCache; }
-    inline const ResourceCache& resourceCache() const { return _resCache; }
+    inline ResourceCache& resourceCache() noexcept { return _resCache; }
+    inline const ResourceCache& resourceCache() const noexcept { return _resCache; }
 
     Camera* playerCamera() const;
     Camera* playerCamera(U8 index) const;
 
-    inline LightPool& lightPool() { return *_lightPool; }
-    inline const LightPool& lightPool() const { return *_lightPool; }
+    inline LightPool& lightPool() noexcept { return *_lightPool; }
+    inline const LightPool& lightPool() const noexcept { return *_lightPool; }
 
     // can save at any time, I guess?
     virtual bool saveXML() const;
@@ -217,7 +217,7 @@ class Scene : public Resource, public PlatformContextComponent {
     // to be ready for our game viewport, so we pass it here to make sure we are using the proper one
     virtual void postLoadMainThread(const Rect<U16>& targetRenderViewport);
     /// Check if Scene::load() was called
-    bool checkLoadFlag() const { return _loadComplete; }
+    bool checkLoadFlag() const noexcept { return _loadComplete; }
     /// Unload scenegraph
     void clearObjects();
     /**End loading and unloading logic*/
@@ -263,7 +263,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     bool lockCameraToPlayerMouse(PlayerIndex index, bool lockState);
 
-    const char* getResourceTypeName() const override { return "Scene"; }
+    const char* getResourceTypeName() const noexcept override { return "Scene"; }
 
 
     void updateSelectionData(PlayerIndex idx, DragSelectData& data);
@@ -394,7 +394,7 @@ class SceneManager {
         return Scene::onShutdown();
     }
 
-    static SceneGUIElements* gui(Scene& scene) {
+    static SceneGUIElements* gui(Scene& scene) noexcept {
         return scene._GUI;
     }
 
@@ -411,7 +411,7 @@ class SceneManager {
 
 class SceneRenderPass {
  private:
-    static SceneEnvironmentProbePool* getEnvProbes(Scene& scene) {
+    static SceneEnvironmentProbePool* getEnvProbes(Scene& scene) noexcept {
         return scene._envProbePool;
     }
 
@@ -442,7 +442,7 @@ private:
 
 class SceneGUI {
 private:
-    static SceneGUIElements* guiElements(Scene& scene) {
+    static SceneGUIElements* guiElements(Scene& scene) noexcept {
         return scene._GUI;
     }
 

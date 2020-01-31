@@ -33,14 +33,14 @@ static int sweepCircleCircle(const float* c0, const float r0, const float* v,
     static const float EPS = 0.0001f;
     float s[3];
     dtVsub(s,c1,c0);
-    float r = r0+r1;
-    float c = dtVdot2D(s,s) - r*r;
+    const float r = r0+r1;
+    const float c = dtVdot2D(s,s) - r*r;
     float a = dtVdot2D(v,v);
     if (a < EPS) return 0;    // not moving
     
     // Overlap, calc time to exit.
     float b = dtVdot2D(v,s);
-    float d = b*b - a*c;
+    const float d = b*b - a*c;
     if (d < 0.0f) return 0; // no intersection.
     a = 1.0f / a;
     const float rd = dtSqrt(d);
@@ -61,7 +61,7 @@ static int isectRaySeg(const float* ap, const float* u,
     d = 1.0f/d;
     t = dtVperp2D(v,w) * d;
     if (t < 0 || t > 1) return 0;
-    float s = dtVperp2D(u,w) * d;
+    const float s = dtVperp2D(u,w) * d;
     if (s < 0 || s > 1) return 0;
     return 1;
 }

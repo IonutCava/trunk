@@ -14,7 +14,7 @@ namespace Divide {
 
 Configuration::Configuration() : XML::IXMLSerializable()
 {
-    debug.flushCommandBuffersOnFrame = -1;
+    debug.dumpCommandBuffersOnFrame = -1;
     debug.enableRenderAPIDebugging = true;
     debug.enableDebugMsgGroups = false;
     debug.useGeometryCache = true;
@@ -95,7 +95,7 @@ bool Configuration::fromXML(const char* xmlFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), xmlFile);
     LOAD_FILE(xmlFile);
     if (FILE_VALID()) {
-        GET_PARAM(debug.flushCommandBuffersOnFrame);
+        GET_PARAM(debug.dumpCommandBuffersOnFrame);
         GET_PARAM(debug.enableRenderAPIDebugging);
         GET_PARAM(debug.enableDebugMsgGroups);
         GET_PARAM(debug.useGeometryCache);
@@ -181,7 +181,7 @@ bool Configuration::fromXML(const char* xmlFile) {
 
 bool Configuration::toXML(const char* xmlFile) const {
     PREPARE_FILE_FOR_WRITING(xmlFile);
-    PUT_PARAM(debug.flushCommandBuffersOnFrame);
+    PUT_PARAM(debug.dumpCommandBuffersOnFrame);
     PUT_PARAM(debug.enableRenderAPIDebugging);
     PUT_PARAM(debug.enableDebugMsgGroups);
     PUT_PARAM(debug.useGeometryCache);

@@ -120,9 +120,9 @@ class Character : public Unit {
     /// Rotate the character to look at another character
     virtual void lookAt(const vec3<F32>& targetPos);
     /// Just before we render the frame
-    virtual bool frameRenderingQueued(const FrameEvent& evt);
+    virtual bool frameRenderingQueued(const FrameEvent& evt) noexcept override;
 
-    inline const vec3<F32>& getRelativeLookingDirection() const {
+    inline const vec3<F32>& getRelativeLookingDirection() const noexcept {
         return _lookingDirection;
     }
     inline const void setRelativeLookingDirection(const vec3<F32>& direction) {

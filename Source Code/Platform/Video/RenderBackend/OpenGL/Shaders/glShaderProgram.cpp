@@ -559,7 +559,7 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
                   "unbound or unlinked program!");
 
     if (index != GLUtil::k_invalidObjectID) {
-        U32 value[] = {index};
+        const U32 value[] = {index};
         glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_U32(type)], 1, value);
     }
 }
@@ -569,7 +569,7 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) {
     I32 subroutineCount = 0;
 
     validatePreBind();
-    for (glShader* shader : _shaderStage) {
+    for (const glShader* shader : _shaderStage) {
         assert(shader != nullptr);
         if (shader->valid() && shader->embedsType(type)) {
             glGetProgramStageiv(shader->getProgramHandle(), GLUtil::glShaderStageTable[to_U32(type)], GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
@@ -641,7 +641,7 @@ stringImpl glShaderProgram::preprocessIncludes(const Str128& name,
             ShaderType typeIndex = ShaderType::COUNT;
             bool found = false;
             // switch will throw warnings due to promotion to int
-            U64 extHash = _ID(Util::GetTrailingCharacters(include_file, 4).c_str());
+            const U64 extHash = _ID(Util::GetTrailingCharacters(include_file, 4).c_str());
             for (U8 i = 0; i < to_base(ShaderType::COUNT) + 1; ++i) {
                 if (extHash == shaderAtomExtensionHash[i]) {
                     typeIndex = static_cast<ShaderType>(i);
@@ -686,7 +686,7 @@ const stringImpl& glShaderProgram::shaderFileRead(const Str256& filePath, const 
 const stringImpl& glShaderProgram::shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed) {
     U64 atomNameHash = _ID(atomName.c_str());
     // See if the atom was previously loaded and still in cache
-    AtomMap::iterator it = s_atoms.find(atomNameHash);
+    const AtomMap::iterator it = s_atoms.find(atomNameHash);
     // If that's the case, return the code from cache
     if (it != std::cend(s_atoms)) {
         wasParsed = true;
@@ -705,7 +705,7 @@ const stringImpl& glShaderProgram::shaderFileReadLocked(const Str256& filePath, 
         output = preprocessIncludes(atomName, output, 0, foundAtoms, false);
     }
 
-    auto result = s_atoms.insert({ atomNameHash, output });
+    const auto result = s_atoms.insert({ atomNameHash, output });
     assert(result.second);
 
     // Return the source code
@@ -752,7 +752,7 @@ void glShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
             }
 
             assert(shader != nullptr);
-            for (U64 atomHash : shader->_usedAtoms) {
+            for (const U64 atomHash : shader->_usedAtoms) {
                 if (atomHash == atomNameHash) {
                     s_recompileQueue.push(shaderProgram);
                     skip = true;

@@ -2,7 +2,7 @@
 <debug>
   <!-- if this is not set to -1, then all command buffers used in that frame number will be dumped to the error log for inspection -->
   <!-- requires a build with ENABLE_GPU_VALIDATION set-->
-  <flushCommandBuffersOnFrame>-1</flushCommandBuffersOnFrame>
+    <dumpCommandBuffersOnFrame>-1</dumpCommandBuffersOnFrame>
   <enableRenderAPIDebugging>true</enableRenderAPIDebugging>
   <enableDebugMsgGroups>true</enableDebugMsgGroups>
   <useGeometryCache>true</useGeometryCache>
@@ -31,7 +31,7 @@
   <!-- Fixed time step on/off as described here: https://gafferongames.com/post/fix_your_timestep/ -->
   <useFixedTimestep>true</useFixedTimestep>
   <!-- The maximum number of worker threads that we want to spawn. -1 = (CPU thread count - 1). We will always spawn a minimum of 5 threads-->
-  <maxWorkerThreads>-1</maxWorkerThreads>
+  <maxWorkerThreads>8</maxWorkerThreads>
   <!-- 0 = windowed, 1 = borderless window, 2 = fullscreen (has some issues)-->
   <windowedMode>0</windowedMode>
   <!-- do we allow window resizing if running in windowed mode? -->

@@ -285,12 +285,12 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         eastl::sort(eastl::begin(sortedLights),
                     eastl::end(sortedLights),
                     [&eyePos](Light* a, Light* b) {
-                    // directional lights first
-                    if (a->getLightType() != b->getLightType()) {
-                        return to_base(a->getLightType()) < to_base(b->getLightType());
-                    }
-                    return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
-                });
+                        // directional lights first
+                        if (a->getLightType() != b->getLightType()) {
+                            return to_base(a->getLightType()) < to_base(b->getLightType());
+                        }
+                        return a->distanceSquared(eyePos) < b->distanceSquared(eyePos);
+                    });
     }
     U32 totalLightCount = 0;
     vec3<F32> tempColour;

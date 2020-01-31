@@ -25,7 +25,7 @@ void finish(Task& task) {
 Task& Start(Task& task, TaskPriority priority, DELEGATE_CBK<void>&& onCompletionFunction) {
     const bool hasOnCompletionFunction = (priority != TaskPriority::REALTIME && onCompletionFunction);
 
-    auto run = [&task, priority, hasOnCompletionFunction](bool wait) {
+    const auto run = [&task, priority, hasOnCompletionFunction](bool wait) {
         while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
             if (wait) {
                 TaskYield(task);

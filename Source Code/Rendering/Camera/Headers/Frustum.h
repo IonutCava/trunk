@@ -76,19 +76,19 @@ class Frustum {
 
     void set(const Frustum& other);
 
-    FrustCollision ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const;
-    FrustCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const;
-    FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const;
+    FrustCollision ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const noexcept;
+    FrustCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const noexcept;
+    FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const noexcept;
 
-    inline FrustCollision ContainsPoint(const vec3<F32>& point) const {
+    inline FrustCollision ContainsPoint(const vec3<F32>& point) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsPoint(point, lastPlaneCache);
     }
-    inline FrustCollision ContainsBoundingBox(const BoundingBox& bbox) const {
+    inline FrustCollision ContainsBoundingBox(const BoundingBox& bbox) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsBoundingBox(bbox, lastPlaneCache);
     }
-    inline FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius) const {
+    inline FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsSphere(center, radius, lastPlaneCache);
     }
@@ -104,7 +104,7 @@ class Frustum {
     static void computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut);
 
 
-    inline bool operator==(const Frustum& other) const {
+    inline bool operator==(const Frustum& other) const noexcept {
         for (U8 i = 0; i < to_U8(FrustPlane::COUNT); ++i) {
             if (_frustumPlanes[i] != other._frustumPlanes[i]) {
                 return false;
@@ -114,7 +114,7 @@ class Frustum {
         return true;
     }
 
-    inline bool operator!=(const Frustum& other) const {
+    inline bool operator!=(const Frustum& other) const noexcept {
         for (U8 i = 0; i < to_U8(FrustPlane::COUNT); ++i) {
             if (_frustumPlanes[i] != other._frustumPlanes[i]) {
                 return true;
@@ -126,16 +126,16 @@ class Frustum {
 
    private:
      FrustCollision PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane,
-                                              const BoundingBox& bbox) const;
+                                              const BoundingBox& bbox) const noexcept;
      FrustCollision PlanePointIntersect(const Plane<F32>& frustumPlane, 
-                                        const vec3<F32>& point) const;
+                                        const vec3<F32>& point) const noexcept;
      FrustCollision PlaneSphereIntersect(const Plane<F32>& frustumPlane,
                                          const vec3<F32>& center,
-                                         F32 radius) const;
+                                         F32 radius) const noexcept;
 
     /// Get the point where the 3 specified planes intersect
     void intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
-                           const Plane<F32>& c, vec3<F32>& outResult);
+                           const Plane<F32>& c, vec3<F32>& outResult) noexcept;
     void updatePoints();
 
    private:

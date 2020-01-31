@@ -85,9 +85,6 @@ class QuadtreeNode {
     inline QuadtreeNode& getChild(ChildPosition pos) const { return *_children[to_base(pos)]; }
     inline QuadtreeNode& getChild(U32 index) const { return *_children[index]; }
 
-   protected:
-    bool isInView(const Camera& camera, F32 maxDistance, U8& LoD) const;
-
    private:
     BoundingBox _boundingBox;                    //< Node BoundingBox
     BoundingSphere _boundingSphere;              //< Node BoundingSphere

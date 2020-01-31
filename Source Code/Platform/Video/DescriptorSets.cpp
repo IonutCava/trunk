@@ -6,7 +6,7 @@
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
-    bool BufferCompare(ShaderBuffer* a, ShaderBuffer* b) {
+    bool BufferCompare(const ShaderBuffer* const a, const ShaderBuffer* const b) noexcept {
         if (a != nullptr && b != nullptr) {
             return a->getGUID() == b->getGUID();
         }
@@ -14,7 +14,7 @@ namespace Divide {
         return a == nullptr && b == nullptr;
     }
 
-    const ShaderBufferBinding* DescriptorSet::findBinding(ShaderBufferLocation slot) const {
+    const ShaderBufferBinding* DescriptorSet::findBinding(ShaderBufferLocation slot) const noexcept {
         for (const ShaderBufferBinding& it : _shaderBuffers) {
             if (it._binding == slot) {
                 return &it;
@@ -24,7 +24,7 @@ namespace Divide {
         return nullptr;
     }
 
-    const TextureData* DescriptorSet::findTexture(U8 binding) const {
+    const TextureData* DescriptorSet::findTexture(U8 binding) const noexcept {
         for (auto& it : _textureData.textures()) {
             if (it.first == binding) {
                 return &it.second;
@@ -34,7 +34,7 @@ namespace Divide {
         return nullptr;
     }
 
-    const TextureView* DescriptorSet::findTextureView(U8 binding) const {
+    const TextureView* DescriptorSet::findTextureView(U8 binding) const noexcept {
         for (auto& it : _textureViews) {
             if (it._binding == binding) {
                 return &it._view;
@@ -44,7 +44,7 @@ namespace Divide {
         return nullptr;
     }
 
-    const Image* DescriptorSet::findImage(U8 binding) const {
+    const Image* DescriptorSet::findImage(U8 binding) const noexcept {
         for (auto& it : _images) {
             if (it._binding == binding) {
                 return &it;
@@ -68,8 +68,9 @@ namespace Divide {
 
         ShaderBufferList::iterator it = std::find_if(std::begin(_shaderBuffers),
                                                      std::end(_shaderBuffers),
-                                                     [&entry](const ShaderBufferBinding& binding)
-                                                      -> bool { return binding._binding == entry._binding; });
+                                                     [&entry](const ShaderBufferBinding& binding) noexcept -> bool {
+                                                         return binding._binding == entry._binding;
+                                                     });
 
         if (it == std::end(_shaderBuffers)) {
             _shaderBuffers.push_back(entry);

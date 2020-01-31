@@ -99,7 +99,7 @@ public:
     ~GL_API();
 
 protected:
-    RenderAPI renderAPI() const final;
+    RenderAPI renderAPI() const noexcept final;
 
     /// Try and create a valid OpenGL context taking in account the specified command line arguments
     ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;

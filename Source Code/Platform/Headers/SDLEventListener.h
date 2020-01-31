@@ -45,7 +45,7 @@ namespace Divide {
         // Return true if the event was consumed!
         virtual bool onSDLEvent(SDL_Event event) = 0;
 
-        inline U64 listenerID() const { return _listenerID; }
+        inline U64 listenerID() const noexcept { return _listenerID; }
     private:
         U64 _listenerID = 0u;
         static std::atomic<U64> s_listenerIDCounter;

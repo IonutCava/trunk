@@ -181,8 +181,8 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         }
 
         // Extract width, height and bitdepth
-        U16 width = fileData.dimensions().width;
-        U16 height = fileData.dimensions().height;
+        const U16 width = fileData.dimensions().width;
+        const U16 height = fileData.dimensions().height;
         // If we have an alpha channel, we must check for translucency/transparency
 
         FileWithPath fwp = splitPathToNameAndLocation(name);
@@ -201,7 +201,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         } else {
             STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
             if (fileData.alpha()) {
-                auto findAlpha = [this, &fileData, height](const Task& parent, U32 start, U32 end) {
+                const auto findAlpha = [this, &fileData, height](const Task& parent, U32 start, U32 end) {
                     U8 tempA;
                     for (U32 i = start; i < end; ++i) {
                         for (I32 j = 0; j < height; ++j) {

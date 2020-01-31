@@ -62,15 +62,15 @@ class RenderQueue : public KernelComponent {
     void addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, F32 minDistToCameraSq);
     U16 getRenderQueueStackSize(RenderStage stage) const;
 
-    inline RenderBin* getBin(RenderBinType rbType) {
+    inline RenderBin* getBin(RenderBinType rbType) noexcept {
         return _renderBins[rbType._to_integral()];
     }
 
-    inline RenderBin* getBin(U16 renderBin) {
+    inline RenderBin* getBin(U16 renderBin) noexcept {
         return _renderBins[renderBin];
     }
 
-    inline RenderBinArray& getBins() {
+    inline RenderBinArray& getBins() noexcept {
         return _renderBins;
     }
 

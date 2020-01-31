@@ -187,11 +187,11 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void changeUsageContext(const NodeUsageContext& newContext);
 
         /// General purpose flag management. Certain flags propagate to children (e.g. selection)!
-        void setFlag(Flags flag);
+        void setFlag(Flags flag) noexcept;
         /// Clearing a flag might propagate to child nodes (e.g. selection).
-        void clearFlag(Flags flag);
+        void clearFlag(Flags flag) noexcept;
         /// Returns true only if the currrent node has the specified flag. Does not check children!
-        bool hasFlag(Flags flag) const;
+        bool hasFlag(Flags flag) const noexcept;
 
         /// Always use the level of redirection needed to reduce virtual function overhead.
         /// Use getNode<SceneNode> if you need material properties for ex. or getNode<SkinnedSubMesh> for animation transforms
@@ -259,7 +259,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Returns true if the node should be culled (is not visible for the current stage). Calls "preCullNode" internally.
         bool cullNode(const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) const;
         /// Fast distance-to-camera and min-LoD checks. Part of the cullNode call but usefull for quick visibility checks elsewhere
-        bool preCullNode(const NodeCullParams& params, F32& distanceToClosestPointSQ) const;
+        bool preCullNode(const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) const;
         /// Called for every single stage of every render pass. Useful for checking materials, doing compute events, etc
         bool preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut);
         /// Called after preRender and after we rebuild our command buffers. Useful for modifying the command buffer that's going to be used for this RenderStagePass
@@ -392,8 +392,8 @@ namespace Attorney {
             return node.cullNode(params, collisionTypeOut, distanceToClosestPointSQ);
         }
 
-        static bool preCullNode(const SceneGraphNode& node, const NodeCullParams& params, F32& distanceToClosestPointSQ) {
-            return node.preCullNode(params, distanceToClosestPointSQ);
+        static bool preCullNode(const SceneGraphNode& node, const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) {
+            return node.preCullNode(bounds, params, distanceToClosestPointSQ);
         }
 
         friend class Divide::RenderPassCuller;

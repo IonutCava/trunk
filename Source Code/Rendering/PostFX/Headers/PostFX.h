@@ -82,11 +82,11 @@ public:
         }
     }
 
-    inline bool getFilterState(FilterType filter) const {
+    inline bool getFilterState(FilterType filter) const noexcept {
         return BitCompare(_filterStack, to_U16(filter));
     }
 
-    inline PreRenderBatch* getFilterBatch() const {
+    inline PreRenderBatch* getFilterBatch() const noexcept {
         return _preRenderBatch;
     }
 

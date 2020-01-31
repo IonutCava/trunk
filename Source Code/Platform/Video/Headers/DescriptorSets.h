@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     class ShaderBuffer;
-    bool BufferCompare(ShaderBuffer* a, ShaderBuffer* b);
+    bool BufferCompare(const ShaderBuffer* const a, const ShaderBuffer* const b) noexcept;
 
     class Texture;
     struct TextureView {
@@ -83,13 +83,13 @@ namespace Divide {
         bool set(const ShaderBufferBinding& other);
         bool set(ShaderBufferLocation binding, ShaderBuffer* buffer, const vec2<U32>& elementRange);
 
-        inline bool operator==(const ShaderBufferBinding& other) const {
+        inline bool operator==(const ShaderBufferBinding& other) const noexcept {
             return _binding == other._binding &&
                    _elementRange == other._elementRange &&
                    BufferCompare(_buffer, other._buffer);
         }
 
-        inline bool operator!=(const ShaderBufferBinding& other) const {
+        inline bool operator!=(const ShaderBufferBinding& other) const noexcept {
             return _binding != other._binding ||
                    _elementRange != other._elementRange ||
                    !BufferCompare(_buffer, other._buffer);
@@ -111,7 +111,7 @@ namespace Divide {
         U8 _level = 0;
         U8 _binding = 0;
 
-        inline bool operator==(const Image& other) const {
+        inline bool operator==(const Image& other) const noexcept {
             return _flag == other._flag &&
                    _layer == other._layer &&
                    _level == other._level &&
@@ -119,7 +119,7 @@ namespace Divide {
                    _texture == other._texture;
         }
 
-        inline bool operator!=(const Image& other) const {
+        inline bool operator!=(const Image& other) const noexcept {
             return _flag != other._flag ||
                    _layer != other._layer ||
                    _level != other._level ||
@@ -141,30 +141,30 @@ namespace Divide {
 
         bool addShaderBuffer(const ShaderBufferBinding& entry);
         bool addShaderBuffers(const ShaderBufferList& entries);
-        const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const;
-        const TextureData* findTexture(U8 binding) const;
-        const TextureView* findTextureView(U8 binding) const;
-        const Image* findImage(U8 binding) const;
+        const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const noexcept;
+        const TextureData* findTexture(U8 binding) const noexcept;
+        const TextureView* findTextureView(U8 binding) const noexcept;
+        const Image* findImage(U8 binding) const noexcept;
 
         inline bool operator==(const DescriptorSet &other) const {
             return _shaderBuffers == other._shaderBuffers &&
-                   _textureData == other._textureData &&
                    _textureViews == other._textureViews &&
-                   _images == other._images;
+                   _images == other._images &&
+                   _textureData == other._textureData;
         }
 
         inline bool operator!=(const DescriptorSet &other) const {
             return _shaderBuffers != other._shaderBuffers ||
-                   _textureData != other._textureData ||
                    _textureViews != other._textureViews ||
-                   _images != other._images;
+                   _images != other._images ||
+                   _textureData != other._textureData;
         }
 
-        inline bool empty() const {
+        inline bool empty() const noexcept {
             return  _shaderBuffers.empty() &&
-                    _textureData.textures().empty() &&
                     _textureViews.empty() &&
-                    _images.empty();
+                    _images.empty() &&
+                    _textureData.empty();
         }
 
         XALLOCATOR
@@ -175,7 +175,7 @@ namespace Divide {
     using DescriptorSetPool = MemoryPool<DescriptorSet, nextPOW2(sizeof(DescriptorSet) * 256)>;
 
     struct DeleteDescriptorSet {
-        DeleteDescriptorSet(std::mutex& lock, DescriptorSetPool& context)
+        DeleteDescriptorSet(std::mutex& lock, DescriptorSetPool& context) noexcept
             : _lock(lock),
               _context(context)
         {

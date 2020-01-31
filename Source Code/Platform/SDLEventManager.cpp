@@ -11,7 +11,7 @@ namespace Divide {
     void SDLEventManager::registerListener(SDLEventListener& listener) {
         UniqueLockShared lock(s_eventListenerLock);
 
-        U64 targetID = listener.listenerID();
+        const U64 targetID = listener.listenerID();
 
         // prevent double add
         vectorFast<SDLEventListener*>::const_iterator it;
@@ -26,7 +26,7 @@ namespace Divide {
     void SDLEventManager::unregisterListener(SDLEventListener& listener) {
         UniqueLockShared lock(s_eventListenerLock);
 
-        U64 targetID = listener.listenerID();
+        const U64 targetID = listener.listenerID();
 
         // prevent double remove
         vectorFast<SDLEventListener*>::const_iterator it;

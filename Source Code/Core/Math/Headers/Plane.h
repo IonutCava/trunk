@@ -70,7 +70,7 @@ class Plane {
     {
     }
 
-    Plane(const Plane& rhs)
+    Plane(const Plane& rhs) noexcept
         : _normal(rhs._normal),
           _distance(rhs._distance)
     {
@@ -150,11 +150,11 @@ class Plane {
     }
 
     /// Comparison operator
-    bool operator==(const Plane& rhs) const {
+    bool operator==(const Plane& rhs) const noexcept {
         return COMPARE(rhs._distance, _distance) && rhs._normal == _normal;
     }
 
-    bool operator!=(const Plane& rhs) const {
+    bool operator!=(const Plane& rhs) const noexcept {
         return !COMPARE(rhs._distance, _distance) || rhs._normal != _normal;
     }
 

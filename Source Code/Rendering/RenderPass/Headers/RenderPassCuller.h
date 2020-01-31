@@ -61,7 +61,7 @@ struct NodeCullParams {
 
 struct VisibleNode {
     VisibleNode() = default;
-    VisibleNode(SceneGraphNode* node, F32 distSq) : _node(node), _distanceToCameraSq(distSq) {}
+    VisibleNode(SceneGraphNode* node, F32 distSq)  noexcept : _node(node), _distanceToCameraSq(distSq) {}
 
     SceneGraphNode* _node = nullptr;
     F32 _distanceToCameraSq = 0.0f;
@@ -89,19 +89,19 @@ class RenderPassCuller {
         RenderPassCuller() = default;
         ~RenderPassCuller() = default;
 
-        void clear();
+        void clear() noexcept;
 
         VisibleNodeList& frustumCull(const CullParams& params);
 
         VisibleNodeList frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const;
         VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;
 
-        inline VisibleNodeList& getNodeCache(RenderStage stage) { return _visibleNodes[to_U32(stage)]; }
-        inline const VisibleNodeList& getNodeCache(RenderStage stage) const { return _visibleNodes[to_U32(stage)]; }
+        inline VisibleNodeList& getNodeCache(RenderStage stage) noexcept { return _visibleNodes[to_U32(stage)]; }
+        inline const VisibleNodeList& getNodeCache(RenderStage stage) const noexcept { return _visibleNodes[to_U32(stage)]; }
 
     protected:
         void frustumCullNode(const Task& parentTask, SceneGraphNode& node, const NodeCullParams& params, VisibleNodeList& nodes) const;
-        void addAllChildren(SceneGraphNode& currentNode, const NodeCullParams& params,  VisibleNodeList& nodes) const;
+        void addAllChildren(const SceneGraphNode& currentNode, const NodeCullParams& params,  VisibleNodeList& nodes) const;
 
     protected:
         std::array<VisibleNodeList, to_base(RenderStage::COUNT)> _visibleNodes;

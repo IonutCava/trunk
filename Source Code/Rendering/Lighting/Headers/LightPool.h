@@ -91,17 +91,17 @@ class LightPool : public SceneComponent,
     /// remove a light from the manager
     bool removeLight(Light& light);
     /// disable or enable a specific light type
-    inline void toggleLightType(LightType type) {
+    inline void toggleLightType(LightType type) noexcept {
         toggleLightType(type, !lightTypeEnabled(type));
     }
-    inline void toggleLightType(LightType type, const bool state) {
+    inline void toggleLightType(LightType type, const bool state) noexcept {
         _lightTypeState[to_U32(type)] = state;
     }
-    inline bool lightTypeEnabled(LightType type) const {
+    inline bool lightTypeEnabled(LightType type) const noexcept {
         return _lightTypeState[to_U32(type)];
     }
     /// Retrieve the number of active lights in the scene;
-    inline const U32 getActiveLightCount(RenderStage stage, LightType type) const {
+    inline const U32 getActiveLightCount(RenderStage stage, LightType type) const noexcept {
         return _activeLightCount[to_base(stage)][to_U32(type)];
     }
 
@@ -126,12 +126,12 @@ class LightPool : public SceneComponent,
     static void togglePreviewShadowMaps(GFXDevice& context, Light& light);
 
     /// Get the appropriate shadow bind slot for every light's shadow
-    static U8 getShadowBindSlotOffset(ShadowType type) {
+    static U8 getShadowBindSlotOffset(ShadowType type) noexcept {
         return _shadowLocation[to_U32(type)];
     }
 
     /// Get the appropriate shadow bind slot offset for every light's shadow
-    static U8 getShadowBindSlotOffset(LightType lightType) {
+    static U8 getShadowBindSlotOffset(LightType lightType) noexcept {
         switch (lightType) {
             default:
             case LightType::SPOT:
@@ -156,7 +156,7 @@ class LightPool : public SceneComponent,
 
     inline LightList::const_iterator findLightLocked(I64 GUID, LightType type) const {
         return eastl::find_if(eastl::cbegin(_lights[to_U32(type)]), eastl::cend(_lights[to_U32(type)]),
-                             [&GUID](Light* const light) {
+                             [&GUID](Light* const light) noexcept {
                                  return (light && light->getGUID() == GUID);
                              });
     }

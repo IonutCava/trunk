@@ -58,9 +58,9 @@ class Renderer : public PlatformContextComponent {
 
     void updateResolution(U16 newWidth, U16 newHeight);
 
-    inline PostFX& postFX() { return *_postFX; }
+    inline PostFX& postFX() noexcept { return *_postFX; }
 
-    inline const PostFX& postFX() const { return *_postFX; }
+    inline const PostFX& postFX() const noexcept { return *_postFX; }
 
   private:
     ResourceCache& _resCache;

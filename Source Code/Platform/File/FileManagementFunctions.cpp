@@ -131,7 +131,7 @@ bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath)
 }
 
 bool hasExtension(const char* filePath, const Str16& extension) {
-    Str16 ext("." + extension);
+    const Str16 ext("." + extension);
     return Util::CompareIgnoreCase(Util::GetTrailingCharacters(stringImplFast{ filePath }, ext.length()), ext);
 }
 

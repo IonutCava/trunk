@@ -101,62 +101,6 @@ bool QuadtreeNode::computeBoundingBox(BoundingBox& parentBB) {
     return true;
 }
 
-bool QuadtreeNode::isInView(const Camera& camera, F32 maxDistance, U8& LoD) const {
-    F32 boundingRadius = _boundingSphere.getRadius();
-    const vec3<F32>& boundingCenter = _boundingSphere.getCenter();
-    const vec3<F32>& eye = camera.getEye();
-     
-    F32 visibilityDistance = maxDistance + boundingRadius;
-     
-    F32 distanceToCenter = boundingCenter.distance(eye);
-
-    if (distanceToCenter > visibilityDistance &&
-        _boundingBox.nearestDistanceFromPointSquared(eye) > std::min(visibilityDistance, camera.getZPlanes().y))
-    {
-        LoD = 4;
-        return false;
-    }
-        
-    STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
-    I8 _frustPlaneCache = -1;
-
-    if (!_boundingBox.containsPoint(camera.getEye())) {
-        const Frustum& frust = camera.getFrustum();
-        switch (frust.ContainsSphere(boundingCenter, boundingRadius, _frustPlaneCache)) {
-            case Frustum::FrustCollision::FRUSTUM_OUT:
-                return false;
-            case Frustum::FrustCollision::FRUSTUM_IN:
-                break;
-            case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
-                _frustPlaneCache = -1;
-                switch (frust.ContainsBoundingBox(_boundingBox, _frustPlaneCache)) {
-                    case Frustum::FrustCollision::FRUSTUM_IN:
-                    case Frustum::FrustCollision::FRUSTUM_INTERSECT:
-                        break;
-                    case Frustum::FrustCollision::FRUSTUM_OUT:
-                        return false;
-                };
-            };
-        };
-    }
-
-    LoD = 0;
-    if (distanceToCenter > boundingRadius) {
-        LoD = 1;
-        if (distanceToCenter > 2 * boundingRadius) {
-            LoD = 2;
-            if (distanceToCenter > 3 * boundingRadius) {
-                LoD = 3;
-                if (distanceToCenter > 2 * boundingRadius) {
-                    LoD = 4;
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
 void QuadtreeNode::toggleBoundingBoxes(Pipeline* pipeline) {
     _drawBBoxes = !_drawBBoxes;
     if (_drawBBoxes) {

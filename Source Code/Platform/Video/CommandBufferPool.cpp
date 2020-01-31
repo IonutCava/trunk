@@ -5,13 +5,6 @@
 namespace Divide {
 namespace GFX {
 
-CommandBufferPool::CommandBufferPool()
-{
-}
-
-CommandBufferPool::~CommandBufferPool()
-{
-}
 
 CommandBuffer* CommandBufferPool::allocateBuffer() {
     return _pool.newElement(_mutex);

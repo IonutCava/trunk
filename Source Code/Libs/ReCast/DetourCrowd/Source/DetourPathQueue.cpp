@@ -151,7 +151,7 @@ dtPathQueueRef dtPathQueue::request(dtPolyRef startRef, dtPolyRef endRef,
     if (slot == -1)
         return DT_PATHQ_INVALID;
     
-    dtPathQueueRef ref = m_nextHandle++;
+    const dtPathQueueRef ref = m_nextHandle++;
     if (m_nextHandle == DT_PATHQ_INVALID) m_nextHandle++;
     
     PathQuery& q = m_queue[slot];
@@ -186,7 +186,7 @@ dtStatus dtPathQueue::getPathResult(dtPathQueueRef ref, dtPolyRef* path, int* pa
         if (m_queue[i].ref == ref)
         {
             PathQuery& q = m_queue[i];
-            dtStatus details = q.status & DT_STATUS_MASK;
+            const dtStatus details = q.status & DT_STATUS_MASK;
             // Free request for reuse.
             q.ref = DT_PATHQ_INVALID;
             q.status = 0;

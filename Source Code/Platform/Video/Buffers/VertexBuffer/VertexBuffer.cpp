@@ -51,15 +51,15 @@ void VertexBuffer::computeNormals() {
     // Code from
     // http://devmaster.net/forums/topic/1065-calculating-normals-of-a-mesh/
 
-    size_t vertCount = getVertexCount();
-    size_t indexCount = getIndexCount();
+    const size_t vertCount = getVertexCount();
+    const size_t indexCount = getIndexCount();
 
     typedef vector<vec3<F32>> normalVector;
 
     vector<normalVector> normalBuffer(vertCount);
     for (U32 i = 0; i < indexCount; i += 3) {
 
-        U32 idx0 = getIndex(i + 0);
+        const U32 idx0 = getIndex(i + 0);
         if (idx0 == Config::PRIMITIVE_RESTART_INDEX_L ||
             idx0 == Config::PRIMITIVE_RESTART_INDEX_S) {
             assert(i > 2);
@@ -67,8 +67,8 @@ void VertexBuffer::computeNormals() {
             continue;
         }
 
-        U32 idx1 = getIndex(i + 1);
-        U32 idx2 = getIndex(i + 2);
+        const U32 idx1 = getIndex(i + 1);
+        const U32 idx2 = getIndex(i + 2);
         // get the three vertices that make the faces
         const vec3<F32>& p1 = getPosition(idx0);
         const vec3<F32>& p2 = getPosition(idx1);
@@ -101,7 +101,7 @@ void VertexBuffer::computeNormals() {
 }
 
 void VertexBuffer::computeTangents() {
-    size_t indexCount = getIndexCount();
+    const size_t indexCount = getIndexCount();
 
     // Code from:
     // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#header-1
@@ -112,7 +112,7 @@ void VertexBuffer::computeTangents() {
 
     for (U32 i = 0; i < indexCount; i += 3) {
         // get the three vertices that make the faces
-        U32 idx0 = getIndex(i + 0);
+        const U32 idx0 = getIndex(i + 0);
         if (idx0 == Config::PRIMITIVE_RESTART_INDEX_L ||
             idx0 == Config::PRIMITIVE_RESTART_INDEX_S) {
             assert(i > 2);
@@ -120,8 +120,8 @@ void VertexBuffer::computeTangents() {
             continue;
         }
 
-        U32 idx1 = getIndex(i + 1);
-        U32 idx2 = getIndex(i + 2);
+        const U32 idx1 = getIndex(i + 1);
+        const U32 idx2 = getIndex(i + 2);
 
         const vec3<F32>& v0 = getPosition(idx0);
         const vec3<F32>& v1 = getPosition(idx1);
@@ -140,7 +140,7 @@ void VertexBuffer::computeTangents() {
         deltaUV1.set(uv1 - uv0);
         deltaUV2.set(uv2 - uv0);
 
-        F32 r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+        const F32 r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
         tangent.set((deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r);
 
         // Set the same tangent for all three vertices of the triangle.

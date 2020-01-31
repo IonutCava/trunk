@@ -40,7 +40,7 @@ namespace Divide {
     TextureDataContainer::UpdateState TextureDataContainer::setTextures(const DataEntries& textureEntries, bool force) {
         UpdateState ret = UpdateState::COUNT;
         for (auto entry : textureEntries) {
-            UpdateState state = setTextureInternal(entry.second, entry.first, force);
+            const UpdateState state = setTextureInternal(entry.second, entry.first, force);
             if (ret == UpdateState::COUNT || state != UpdateState::NOTHING) {
                 ret = state;
             }
@@ -50,7 +50,7 @@ namespace Divide {
     }
 
     bool TextureDataContainer::removeTexture(U8 binding) {
-        auto ret = _textures.erase(binding);
+        const auto ret = _textures.erase(binding);
         assert(ret < 2);
         return ret != 0;
     }

@@ -27,7 +27,7 @@ class PreRenderBatch {
     RenderTargetHandle inputRT() const;
     RenderTargetHandle& outputRT();
 
-    inline void toggleAdaptiveExposure(const bool state) {
+    inline void toggleAdaptiveExposure(const bool state) noexcept {
         _adaptiveExposureControl = state;
     }
 
@@ -55,7 +55,7 @@ class PreRenderBatch {
 
    private:
 
-    inline FilterSpace getOperatorSpace(FilterType type) const {
+    inline FilterSpace getOperatorSpace(FilterType type) const noexcept {
         switch(type) {
             case FilterType::FILTER_SS_ANTIALIASING :
                 return FilterSpace::FILTER_SPACE_LDR;

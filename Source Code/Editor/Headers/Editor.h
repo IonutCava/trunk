@@ -151,14 +151,14 @@ class Editor : public PlatformContextComponent,
     inline bool scenePreviewHovered() const;
 
   protected: //frame listener
-    bool frameStarted(const FrameEvent& evt);
-    bool framePreRenderStarted(const FrameEvent& evt);
-    bool framePreRenderEnded(const FrameEvent& evt);
-    bool frameSceneRenderEnded(const FrameEvent& evt);
-    bool frameRenderingQueued(const FrameEvent& evt);
-    bool framePostRenderStarted(const FrameEvent& evt);
-    bool framePostRenderEnded(const FrameEvent& evt);
-    bool frameEnded(const FrameEvent& evt);
+    bool frameStarted(const FrameEvent& evt) noexcept override;
+    bool framePreRenderStarted(const FrameEvent& evt) noexcept override;
+    bool framePreRenderEnded(const FrameEvent& evt) noexcept override;
+    bool frameSceneRenderEnded(const FrameEvent& evt) noexcept override;
+    bool frameRenderingQueued(const FrameEvent& evt) noexcept override;
+    bool framePostRenderStarted(const FrameEvent& evt) noexcept override;
+    bool framePostRenderEnded(const FrameEvent& evt) noexcept override;
+    bool frameEnded(const FrameEvent& evt) noexcept override;
 
   public: // input
     /// Key pressed: return true if input was consumed

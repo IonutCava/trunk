@@ -89,7 +89,7 @@ namespace {
     } g_ContextPool;
 };
 
-RenderAPI GL_API::renderAPI() const {
+RenderAPI GL_API::renderAPI() const noexcept {
     return (s_glConfig._glES ? RenderAPI::OpenGLES : RenderAPI::OpenGL);
 }
 
@@ -189,7 +189,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
             // nVidia flushes a lot of useful info about buffer allocations and shader
             // recompiles due to state and what now, but those aren't needed until that's
             // what's actually causing the bottlenecks
-            U32 nvidiaBufferErrors[] = { 131185, 131218, 131186 };
+            const U32 nvidiaBufferErrors[] = { 131185, 131218, 131186 };
             // Disable shader compiler errors (shader class handles that)
             glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
                                   GL_DONT_CARE, 0, nullptr, GL_FALSE);
@@ -445,7 +445,7 @@ void GL_API::queueComputeMipMap(GLuint textureHandle) {
 
 void GL_API::dequeueComputeMipMap(GLuint textureHandle) {
     UniqueLockShared w_lock(s_mipmapQueueSetLock);
-    auto it = s_mipmapQueue.find(textureHandle);
+    const auto it = s_mipmapQueue.find(textureHandle);
     if (it != std::cend(s_mipmapQueue)) {
         s_mipmapQueue.erase(it);
     }
@@ -458,7 +458,7 @@ void GL_API::onThreadCreated(const std::thread::id& threadID) {
 
     // This also makes the context current
     assert(GLUtil::s_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
-    bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::s_glSecondaryContext);
+    const bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::s_glSecondaryContext);
     assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
     ACKNOWLEDGE_UNUSED(ctxFound);
 

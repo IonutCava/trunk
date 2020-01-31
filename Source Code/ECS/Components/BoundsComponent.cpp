@@ -112,6 +112,11 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     return _boundingBox;
 }
 
+F32 BoundsComponent::distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept {
+    const BoundingSphere& sphere = getBoundingSphere();
+    return sphere.getCenter().distanceSquared(pos) - SQUARED(sphere.getRadius());
+}
+
 void BoundsComponent::Update(const U64 deltaTimeUS) {
     OPTICK_EVENT();
 

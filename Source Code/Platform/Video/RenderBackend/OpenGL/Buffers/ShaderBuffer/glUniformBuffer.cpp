@@ -66,7 +66,7 @@ void glUniformBuffer::clearData(U32 offsetElementCount,
     OPTICK_EVENT();
 
     if (rangeElementCount > 0) {
-        GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
+        const GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
         GLintptr offsetInBytes = offsetElementCount * _elementSize;
 
         assert(offsetInBytes + rangeInBytes <= _allignedBufferSize &&
@@ -77,7 +77,7 @@ void glUniformBuffer::clearData(U32 offsetElementCount,
             offsetInBytes += queueWriteIndex() * _allignedBufferSize;
         }
 
-        size_t req = alignmentRequirement(_usage);
+        const size_t req = alignmentRequirement(_usage);
         if (offsetInBytes % req != 0) {
             offsetInBytes = (offsetInBytes + req - 1) / req * req;
         }
@@ -91,7 +91,7 @@ void glUniformBuffer::readData(U32 offsetElementCount,
                                bufferPtr result) const {
 
     if (rangeElementCount > 0) {
-        GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
+        const GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
         GLintptr offsetInBytes = offsetElementCount * _elementSize;
 
         assert(offsetInBytes + rangeInBytes <= _allignedBufferSize &&
@@ -102,7 +102,7 @@ void glUniformBuffer::readData(U32 offsetElementCount,
             offsetInBytes += queueReadIndex() * _allignedBufferSize;
         }
 
-        size_t req = alignmentRequirement(_usage);
+        const size_t req = alignmentRequirement(_usage);
         if (offsetInBytes % req != 0) {
             offsetInBytes = (offsetInBytes + req - 1) / req * req;
         }
@@ -149,7 +149,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
 
 bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     BufferWriteData data = {};
-    bool ret = bindRange(bindIndex, offsetElementCount, rangeElementCount, data);
+    const bool ret = bindRange(bindIndex, offsetElementCount, rangeElementCount, data);
     bufferImpl()->lockRange(data._offset, data._range, data._flush);
     return ret;
 }
@@ -168,7 +168,7 @@ bool glUniformBuffer::bindRange(U8 bindIndex,
     if (queueLength() > 1) {
         dataOut._offset += to_size(queueReadIndex() * _allignedBufferSize);
     }
-    size_t req = alignmentRequirement(_usage);
+    const size_t req = alignmentRequirement(_usage);
     if (dataOut._offset % req != 0) {
         dataOut._offset = (dataOut._offset + req - 1) / req * req;
     }

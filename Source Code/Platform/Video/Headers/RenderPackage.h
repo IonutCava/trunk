@@ -68,20 +68,20 @@ public:
     };
 
 public:
-    explicit RenderPackage();
+    explicit RenderPackage() noexcept;
     ~RenderPackage();
 
     void clear();
     void set(const RenderPackage& other);
 
-    inline void qualityRequirement(MinQuality state) { _qualityRequirement = state; }
-    inline MinQuality qualityRequirement() const { return  _qualityRequirement; }
+    inline void qualityRequirement(MinQuality state) noexcept { _qualityRequirement = state; }
+    inline MinQuality qualityRequirement() const noexcept { return  _qualityRequirement; }
 
     size_t getSortKeyHash() const;
 
-    U8 lodLevel() const;
+    U8 lodLevel() const noexcept;
 
-    inline I32 drawCommandCount() const { return _drawCommandCount; }
+    inline I32 drawCommandCount() const noexcept { return _drawCommandCount; }
 
     const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
     void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd);
@@ -116,14 +116,14 @@ public:
     void enableOptions(U16 optionMask);
     void disableOptions(U16 optionMask);
 
-    inline bool empty() const { return _commands->empty(); }
+    inline bool empty() const noexcept { return _commands->empty(); }
 
-    void setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount);
+    void setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount) noexcept;
 
     PROPERTY_RW(bool, autoIndexBuffer, false);
 
 protected:
-    void setLoDLevel(U8 LoD);
+    void setLoDLevel(U8 LoD) noexcept;
 
     void updateDrawCommands(U32 dataIndex, U32 startOffset);
     void getCommandBuffer(GFX::CommandBuffer& bufferInOut);

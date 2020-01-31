@@ -69,19 +69,19 @@ public:
         return renderTarget(handle._targetID);
     }
 
-    inline RenderTarget& renderTarget(RenderTargetID target) {
+    inline RenderTarget& renderTarget(RenderTargetID target) noexcept {
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
-    inline const RenderTarget& renderTarget(RenderTargetID target) const {
+    inline const RenderTarget& renderTarget(RenderTargetID target) const noexcept {
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
-    inline vector<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) {
+    inline vector<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) noexcept {
         return _renderTargets[to_U32(target)];
     }
 
-    inline const vector<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const {
+    inline const vector<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const noexcept {
         return _renderTargets[to_U32(target)];
     }
 

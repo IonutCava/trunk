@@ -107,7 +107,7 @@ namespace {
     }
 #else
     // another linear combination, using AVX instructions on XMM regs
-    static inline __m128 lincomb_AVX_4mem(const F32 *a, const mat4<F32> &B)
+    static inline __m128 lincomb_AVX_4mem(const F32 *a, const mat4<F32> &B) noexcept
     {
         __m128 result;
         result = _mm_mul_ps(_mm_broadcast_ss(&a[0]), B._reg[0]._reg);
@@ -122,10 +122,10 @@ namespace {
     void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C)
     {
         _mm256_zeroupper();
-        __m128 out0x = lincomb_AVX_4mem(A.m[0], B);
-        __m128 out1x = lincomb_AVX_4mem(A.m[1], B);
-        __m128 out2x = lincomb_AVX_4mem(A.m[2], B);
-        __m128 out3x = lincomb_AVX_4mem(A.m[3], B);
+        const __m128 out0x = lincomb_AVX_4mem(A.m[0], B);
+        const __m128 out1x = lincomb_AVX_4mem(A.m[1], B);
+        const __m128 out2x = lincomb_AVX_4mem(A.m[2], B);
+        const __m128 out3x = lincomb_AVX_4mem(A.m[3], B);
 
         C._reg[0] = out0x;
         C._reg[1] = out1x;
@@ -136,11 +136,11 @@ namespace {
 #endif
 
     //ref: https://lxjk.github.io/2017/09/03/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained.html
-    inline void GetTransformInverseNoScale(const mat4<F32>& inM, mat4<F32>& r)
+    inline void GetTransformInverseNoScale(const mat4<F32>& inM, mat4<F32>& r) noexcept
     {
         // transpose 3x3, we know m03 = m13 = m23 = 0
-        __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
-        __m128 t1 = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg); // 02, 03, 12, 13
+        const __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
+        const __m128 t1 = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg); // 02, 03, 12, 13
         r._reg[0] = VecShuffle(t0, inM._reg[2]._reg, 0, 2, 0, 3);        // 00, 10, 20, 23(=0)
         r._reg[1] = VecShuffle(t0, inM._reg[2]._reg, 1, 3, 1, 3);        // 01, 11, 21, 23(=0)
         r._reg[2] = VecShuffle(t1, inM._reg[2]._reg, 0, 2, 2, 3);        // 02, 12, 22, 23(=0)
@@ -1980,12 +1980,12 @@ vec4<T> mat4<T>::getCol(I32 index) const {
 }
 
 template<typename T>
-void mat4<T>::zero() {
+void mat4<T>::zero() noexcept {
     memset(mat, 0, sizeof(T) * 16);
 }
 
 template<typename T>
-void mat4<T>::identity() {
+void mat4<T>::identity() noexcept {
     memset(mat, 0, 16 * sizeof(T));
     m[0][0] = m[1][1] = m[2][2] = m[3][3] = static_cast<T>(1);
 }

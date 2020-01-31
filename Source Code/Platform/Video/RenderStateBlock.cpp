@@ -216,7 +216,7 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool&
 
     SharedLock r_lock(s_stateBlockMapMutex);
     // Find the render state block associated with the received hash value
-    RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
+    const RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
     if(it != std::cend(s_stateBlockMap) ) {
         blockFound = true;
         return it->second;

@@ -21,7 +21,7 @@ namespace {
     std::array<NodeListContainer, Config::MAX_VISIBLE_NODES> g_tempContainers = {};
     std::array<std::atomic_bool, Config::MAX_VISIBLE_NODES> g_freeList;
     std::atomic_bool g_freeListInitialized = false;
-    std::mutex g_tempContainersLock;
+    std::mutex g_tempContainersLock = {};
 
     // This would be messy to return as a pair (std::reference_wrapper and the like)
     NodeListContainer& GetAvailableContainer(U32& idxOut) {
@@ -59,7 +59,7 @@ namespace {
         g_freeList[idx].store(true);
     }
 
-    FORCE_INLINE bool isTransformNode(SceneNodeType nodeType, ObjectType objType) {
+    FORCE_INLINE bool isTransformNode(SceneNodeType nodeType, ObjectType objType) noexcept {
         return nodeType == SceneNodeType::TYPE_EMPTY ||
                nodeType == SceneNodeType::TYPE_TRANSFORM ||
                objType._value == ObjectType::MESH;
@@ -85,7 +85,7 @@ namespace {
             return true;
         }
 
-        RenderingComponent* rComp = node.get<RenderingComponent>();
+        const RenderingComponent* rComp = node.get<RenderingComponent>();
         assert(rComp != nullptr);
         return !rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
     }
@@ -108,7 +108,7 @@ namespace {
     }
 };
 
-void RenderPassCuller::clear() {
+void RenderPassCuller::clear() noexcept {
     for (VisibleNodeList& cache : _visibleNodes) {
         cache.clear();
     }
@@ -118,7 +118,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 {
     OPTICK_EVENT();
 
-    RenderStage stage = params._stage;
+    const RenderStage stage = params._stage;
     VisibleNodeList& nodeCache = getNodeCache(stage);
     if (!params._context || !params._sceneGraph || !params._camera || !params._sceneState) {
         return nodeCache;
@@ -188,7 +188,7 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
 
         // Internal node cull (check against camera frustum and all that ...)
         F32 distanceSqToCamera = 0.0f;
-        bool isVisible = isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera);
+        const bool isVisible = isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera);
 
         if (isVisible && !StopRequested(task)) {
             if (!isTransformNode) {
@@ -210,7 +210,7 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
                                  }
                              },
                              to_U32(children.size()),
-                             g_nodesPerCullingPartition * 2,
+                             g_nodesPerCullingPartition,
                              params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
                              false,
                              true,
@@ -227,21 +227,20 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
     }
 }
 
-void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
+void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
     OPTICK_EVENT();
 
-    bool castsShadows = currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
+    const bool castsShadows = currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
 
-    vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
+    const vectorEASTL<SceneGraphNode*>& children = currentNode.getChildrenLocked();
     for (SceneGraphNode* child : children) {
         if (child->hasFlag(SceneGraphNode::Flags::ACTIVE) &&
             (params._stage != RenderStage::SHADOW || castsShadows || child->hasFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED)))
         {
             bool isTransformNode = false;
-            bool shouldCull = shouldCullNode(params._stage, *child, isTransformNode);
-            if (!shouldCull) {
+            if (!shouldCullNode(params._stage, *child, isTransformNode)) {
                 F32 distanceSqToCamera = std::numeric_limits<F32>::max();
-                if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(*child, params, distanceSqToCamera)) {
+                if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(*child, *(child->get<BoundsComponent>()), params, distanceSqToCamera)) {
                     nodes.emplace_back(child, distanceSqToCamera);
                     addAllChildren(*child, params, nodes);
                 }

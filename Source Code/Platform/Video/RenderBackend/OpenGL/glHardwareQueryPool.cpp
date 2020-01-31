@@ -17,7 +17,7 @@ glHardwareQueryPool::~glHardwareQueryPool()
 
 void glHardwareQueryPool::init(U32 size) {
     destroy();
-    U32 j = std::max(size, 1u);
+    const U32 j = std::max(size, 1u);
     for (U32 i = 0; i < j; ++i) {
         _queryPool.emplace_back(MemoryManager_NEW glHardwareQueryRing(_context, 1, i));
     }

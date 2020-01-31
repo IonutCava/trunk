@@ -55,7 +55,7 @@ class glTexture final : public Texture,
 
     void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override;
 
-    void setMipMapRange(U16 base = 0, U16 max = 1000) override;
+    void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept override;
 
     void resize(const bufferPtr ptr,
                 const vec2<U16>& dimensions) override;

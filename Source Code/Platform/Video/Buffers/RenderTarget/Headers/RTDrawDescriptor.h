@@ -73,20 +73,20 @@ class RTClearDescriptor {
 public:
     RTClearDescriptor();
 
-    inline void clearColour(U8 index, const bool state) { _clearColourAttachment[index] = state; }
-    inline bool clearColour(U8 index) const { return _clearColourAttachment[index]; }
+    inline void clearColour(U8 index, const bool state) noexcept { _clearColourAttachment[index] = state; }
+    inline bool clearColour(U8 index) const noexcept { return _clearColourAttachment[index]; }
 
-    void clearColours(bool state) { _clearColours = state; }
-    bool clearColours() const { return _clearColours; }
+    void clearColours(bool state) noexcept { _clearColours = state; }
+    bool clearColours() const noexcept { return _clearColours; }
 
-    void clearDepth(bool state) { _clearDepth = state; }
-    bool clearDepth() const { return _clearDepth; }
+    void clearDepth(bool state) noexcept { _clearDepth = state; }
+    bool clearDepth() const noexcept { return _clearDepth; }
 
-    void clearExternalColour(bool state) { _clearExternalColour = state; }
-    bool clearExternalColour() const { return _clearExternalColour; }
+    void clearExternalColour(bool state) noexcept { _clearExternalColour = state; }
+    bool clearExternalColour() const noexcept { return _clearExternalColour; }
 
-    void clearExternalDepth(bool state) { _clearExternalDepth = state; }
-    bool clearExternalDepth() const { return _clearExternalDepth; }
+    void clearExternalDepth(bool state) noexcept { _clearExternalDepth = state; }
+    bool clearExternalDepth() const noexcept { return _clearExternalDepth; }
 
 protected:
     std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _clearColourAttachment;
@@ -100,14 +100,14 @@ class RTDrawDescriptor {
   public:
     RTDrawDescriptor();
 
-    inline bool setViewport() const { return _setViewport; }
-    inline void setViewport(const bool state) { _setViewport = state; }
+    inline bool setViewport() const noexcept { return _setViewport; }
+    inline void setViewport(const bool state) noexcept { _setViewport = state; }
 
-    inline RTDrawMask& drawMask() { return _drawMask; }
-    inline const RTDrawMask& drawMask() const { return _drawMask; }
+    inline RTDrawMask& drawMask() noexcept { return _drawMask; }
+    inline const RTDrawMask& drawMask() const noexcept { return _drawMask; }
 
-    inline RTBlendState& blendState(U8 index) { return _blendStates[index]; }
-    inline const RTBlendState& blendState(U8 index) const{ return _blendStates[index]; }
+    inline RTBlendState& blendState(U8 index) noexcept { return _blendStates[index]; }
+    inline const RTBlendState& blendState(U8 index) const noexcept { return _blendStates[index]; }
 
     inline bool operator==(const RTDrawDescriptor& other) const;
     inline bool operator!=(const RTDrawDescriptor& other) const;

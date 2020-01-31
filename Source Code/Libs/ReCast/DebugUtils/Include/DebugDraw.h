@@ -73,10 +73,10 @@ inline unsigned int duRGBA(int r, int g, int b, int a)
 
 inline unsigned int duRGBAf(float fr, float fg, float fb, float fa)
 {
-    unsigned char r = (unsigned char)(fr*255.0f);
-    unsigned char g = (unsigned char)(fg*255.0f);
-    unsigned char b = (unsigned char)(fb*255.0f);
-    unsigned char a = (unsigned char)(fa*255.0f);
+    const unsigned char r = (unsigned char)(fr*255.0f);
+    const unsigned char g = (unsigned char)(fg*255.0f);
+    const unsigned char b = (unsigned char)(fb*255.0f);
+    const unsigned char a = (unsigned char)(fa*255.0f);
     return duRGBA(r,g,b,a);
 }
 
@@ -108,10 +108,10 @@ inline unsigned int duLerpCol(unsigned int ca, unsigned int cb, unsigned int u)
     const unsigned int bb = (cb >> 16) & 0xff;
     const unsigned int ab = (cb >> 24) & 0xff;
     
-    unsigned int r = (ra*(255-u) + rb*u)/255;
-    unsigned int g = (ga*(255-u) + gb*u)/255;
-    unsigned int b = (ba*(255-u) + bb*u)/255;
-    unsigned int a = (aa*(255-u) + ab*u)/255;
+    const unsigned int r = (ra*(255-u) + rb*u)/255;
+    const unsigned int g = (ga*(255-u) + gb*u)/255;
+    const unsigned int b = (ba*(255-u) + bb*u)/255;
+    const unsigned int a = (aa*(255-u) + ab*u)/255;
     return duRGBA(r,g,b,a);
 }
 

@@ -62,9 +62,9 @@ struct FogDescriptor {
   public:
     FogDescriptor();
 
-    inline bool dirty() const { return _dirty; }
-    inline F32 density() const { return _density; }
-    inline const vec3<F32>& colour() const { return _colour; }
+    inline bool dirty() const noexcept { return _dirty; }
+    inline F32 density() const noexcept { return _density; }
+    inline const vec3<F32>& colour() const noexcept { return _colour; }
 
     inline void set(const vec3<F32>& colour, F32 density) {
         CLAMP_01(density);
@@ -76,13 +76,13 @@ struct FogDescriptor {
 
   protected:
     friend class SceneManager;
-    inline void clean() {
+    inline void clean() noexcept {
         _dirty = false;
     }
-    inline void active(const bool state) {
+    inline void active(const bool state) noexcept {
         _active = state;
     }
-    inline bool active() const {
+    inline bool active() const noexcept {
         return _active;
     }
   private:
@@ -142,30 +142,30 @@ class SceneRenderState : public SceneComponent {
     /// Show/hide axis gizmos
     void toggleAxisLines();
     
-    inline void gizmoState(GizmoState newState) {
+    inline void gizmoState(GizmoState newState) noexcept {
         _gizmoState = newState;
     }
     
-    inline GizmoState gizmoState() const {
+    inline GizmoState gizmoState() const noexcept {
         return _gizmoState;
     }
 
-    inline void generalVisibility(F32 distance) { _generalVisibility = distance; }
-    inline F32  generalVisibility()       const { return _generalVisibility; }
+    inline void generalVisibility(F32 distance) noexcept { _generalVisibility = distance; }
+    inline F32  generalVisibility()       const noexcept { return _generalVisibility; }
 
-    inline void grassVisibility(F32 distance) { _grassVisibility = distance; }
-    inline F32  grassVisibility()       const { return _grassVisibility; }
+    inline void grassVisibility(F32 distance) noexcept { _grassVisibility = distance; }
+    inline F32  grassVisibility()       const noexcept { return _grassVisibility; }
 
-    inline void treeVisibility(F32 distance) { _treeVisibility = distance; }
-    inline F32  treeVisibility()       const { return _treeVisibility; }
+    inline void treeVisibility(F32 distance) noexcept { _treeVisibility = distance; }
+    inline F32  treeVisibility()       const noexcept { return _treeVisibility; }
 
-    inline void renderPass(U8 renderPass) { _renderPass = renderPass; }
-    inline U8   renderPass()      const { return _renderPass; }
+    inline void renderPass(U8 renderPass) noexcept { _renderPass = renderPass; }
+    inline U8   renderPass()        const noexcept { return _renderPass; }
 
-    inline vec4<U16>& lodThresholds() { return _lod; }
-    inline FogDescriptor& fogDescriptor() { return _fog; }
-    inline const vec4<U16>& lodThresholds() const { return _lod; }
-    inline const FogDescriptor& fogDescriptor() const { return _fog; }
+    inline vec4<U16>& lodThresholds() noexcept { return _lod; }
+    inline FogDescriptor& fogDescriptor() noexcept { return _fog; }
+    inline const vec4<U16>& lodThresholds() const noexcept { return _lod; }
+    inline const FogDescriptor& fogDescriptor() const noexcept { return _fog; }
 
    protected:
        
@@ -187,19 +187,21 @@ enum class MoveDirection : I8 {
     POSITIVE = 1
 };
 
+constexpr F32 DEFAULT_PLAYER_HEIGHT = 1.82f;
+
 class SceneStatePerPlayer {
   public:
     SceneStatePerPlayer() noexcept
-      : _headHeight(1.82f)
+      : _headHeight(DEFAULT_PLAYER_HEIGHT)
     {
         resetAll();
     }
 
-    inline void resetMovement() {
+    inline void resetMovement() noexcept {
         _moveFB = _moveLR = _moveUD = _angleUD = _angleLR = _roll = _zoom = MoveDirection::NONE;
     }
 
-    inline void resetAll() {
+    inline void resetAll() noexcept {
         resetMovement();
         _cameraUnderwater = false;
         _cameraUpdated = false;
@@ -207,43 +209,43 @@ class SceneStatePerPlayer {
         _cameraLockedToMouse = false;
     }
 
-    inline void cameraUnderwater(bool state) { _cameraUnderwater = state; }
-    inline bool cameraUnderwater()     const { return _cameraUnderwater; }
+    inline void cameraUnderwater(bool state) noexcept { _cameraUnderwater = state; }
+    inline bool cameraUnderwater()     const noexcept { return _cameraUnderwater; }
 
-    inline void cameraUpdated(bool state) { _cameraUpdated = state; }
-    inline bool cameraUpdated()     const { return _cameraUpdated; }
+    inline void cameraUpdated(bool state) noexcept { _cameraUpdated = state; }
+    inline bool cameraUpdated()     const noexcept { return _cameraUpdated; }
 
-    inline void moveFB(MoveDirection factor) { _moveFB = factor; }
-    inline MoveDirection  moveFB()     const { return _moveFB; }
+    inline void moveFB(MoveDirection factor) noexcept { _moveFB = factor; }
+    inline MoveDirection  moveFB()     const noexcept { return _moveFB; }
 
-    inline void moveLR(MoveDirection factor) { _moveLR = factor; }
-    inline MoveDirection  moveLR()     const { return _moveLR; }
+    inline void moveLR(MoveDirection factor) noexcept { _moveLR = factor; }
+    inline MoveDirection  moveLR()     const noexcept { return _moveLR; }
 
-    inline void moveUD(MoveDirection factor) { _moveUD = factor; }
-    inline MoveDirection  moveUD()     const { return _moveUD; }
+    inline void moveUD(MoveDirection factor) noexcept { _moveUD = factor; }
+    inline MoveDirection  moveUD()     const noexcept { return _moveUD; }
 
-    inline void angleUD(MoveDirection factor) { _angleUD = factor; }
-    inline MoveDirection  angleUD()     const { return _angleUD; }
+    inline void angleUD(MoveDirection factor) noexcept { _angleUD = factor; }
+    inline MoveDirection  angleUD()     const noexcept { return _angleUD; }
 
-    inline void angleLR(MoveDirection factor) { _angleLR = factor; }
-    inline MoveDirection  angleLR()     const { return _angleLR; }
+    inline void angleLR(MoveDirection factor) noexcept { _angleLR = factor; }
+    inline MoveDirection  angleLR()     const noexcept { return _angleLR; }
 
-    inline void roll(MoveDirection factor) { _roll = factor; }
-    inline MoveDirection  roll()     const { return _roll; }
+    inline void roll(MoveDirection factor) noexcept { _roll = factor; }
+    inline MoveDirection  roll()     const noexcept { return _roll; }
 
-    inline void zoom(MoveDirection factor) { _zoom = factor; }
-    inline MoveDirection  zoom()     const { return _zoom; }
+    inline void zoom(MoveDirection factor) noexcept { _zoom = factor; }
+    inline MoveDirection  zoom()     const noexcept { return _zoom; }
 
-    inline void cameraLockedToMouse(bool state) { _cameraLockedToMouse = state; }
-    inline bool cameraLockedToMouse()     const { return _cameraLockedToMouse; }
+    inline void cameraLockedToMouse(bool state) noexcept { _cameraLockedToMouse = state; }
+    inline bool cameraLockedToMouse()     const noexcept { return _cameraLockedToMouse; }
 
-    inline void    overrideCamera(Camera* camera) { _overrideCamera = camera; }
-    inline Camera* overrideCamera()         const { return _overrideCamera; }
+    inline void    overrideCamera(Camera* camera) noexcept { _overrideCamera = camera; }
+    inline Camera* overrideCamera()         const noexcept { return _overrideCamera; }
 
-    inline F32 headHeight() const { return _headHeight; }
+    inline F32 headHeight() const noexcept { return _headHeight; }
 
 private:
-    const F32 _headHeight = 0.5f;
+    const F32 _headHeight = DEFAULT_PLAYER_HEIGHT;
     bool _cameraLockedToMouse;
     MoveDirection _moveFB;   ///< forward-back move change detected
     MoveDirection _moveLR;   ///< left-right move change detected
@@ -280,13 +282,6 @@ class SceneState : public SceneComponent {
     {
     }
 
-    virtual ~SceneState()
-    {
-        for (MusicPlaylist& playlist : _music) {
-            playlist.clear();
-        }
-    }
-
     inline void onPlayerAdd(U8 index) {
         // Just reset everything
         onPlayerRemove(index);
@@ -312,29 +307,29 @@ class SceneState : public SceneComponent {
         return _playerState[index];
     }
 
-    inline SceneRenderState& renderState()  { return _renderState; }
-    inline MusicPlaylist& music(MusicType type) { return _music[to_U32(type)]; }
+    inline SceneRenderState& renderState() noexcept { return _renderState; }
+    inline MusicPlaylist& music(MusicType type) noexcept { return _music[to_U32(type)]; }
 
-    inline const SceneRenderState& renderState() const { return _renderState; }
-    inline const MusicPlaylist& music(MusicType type) const { return _music[to_U32(type)]; }
+    inline const SceneRenderState& renderState() const noexcept { return _renderState; }
+    inline const MusicPlaylist& music(MusicType type) const noexcept { return _music[to_U32(type)]; }
 
-    inline void windSpeed(F32 speed) { _windSpeed = speed; }
-    inline F32  windSpeed()    const { return _windSpeed; }
+    inline void windSpeed(F32 speed) noexcept { _windSpeed = speed; }
+    inline F32  windSpeed()    const noexcept { return _windSpeed; }
 
-    inline void windDirX(F32 factor) { _windDirX = factor; }
-    inline F32  windDirX()     const { return _windDirX; }
+    inline void windDirX(F32 factor) noexcept { _windDirX = factor; }
+    inline F32  windDirX()     const noexcept { return _windDirX; }
 
-    inline void windDirZ(F32 factor) { _windDirZ = factor; }
-    inline F32  windDirZ()     const { return _windDirZ; }
+    inline void windDirZ(F32 factor) noexcept { _windDirZ = factor; }
+    inline F32  windDirZ()     const noexcept { return _windDirZ; }
 
-    inline vector<WaterDetails>& globalWaterBodies() { return _globalWaterBodies; }
-    inline const vector<WaterDetails>& globalWaterBodies() const { return _globalWaterBodies; }
+    inline vector<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
+    inline const vector<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
 
-    inline void saveLoadDisabled(const bool state) { _saveLoadDisabled = state; }
-    inline bool saveLoadDisabled()           const { return _saveLoadDisabled; }
+    inline void saveLoadDisabled(const bool state) noexcept { _saveLoadDisabled = state; }
+    inline bool saveLoadDisabled()           const noexcept { return _saveLoadDisabled; }
 
-    inline void playerPass(U8 pass) { _playerPass = pass; }
-    inline U8   playerPass()  const { return _playerPass; }
+    inline void playerPass(U8 pass) noexcept { _playerPass = pass; }
+    inline U8   playerPass()  const noexcept { return _playerPass; }
 
 protected:
 
@@ -357,8 +352,7 @@ protected:
 namespace Attorney {
 class SceneRenderStateScene {
    private:
-    static void playAnimations(SceneRenderState& sceneRenderState,
-                               bool playAnimations) {
+    static void playAnimations(SceneRenderState& sceneRenderState, bool playAnimations) noexcept {
         if (playAnimations) {
             SetBit(sceneRenderState._stateMask, SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
         } else {

@@ -56,11 +56,11 @@ class TrackedObject : private NonCopyable, public GUIDWrapper {
     /// Remove an object dependency
     void UNREGISTER_TRACKED_DEPENDENCY(TrackedObject* const obj);
     /// For memory consumption later on
-    virtual const unsigned long size() const { return sizeof(*this); }
-    bool operator==(const TrackedObject& other) const {
+    virtual const unsigned long size() const noexcept { return sizeof(*this); }
+    bool operator==(const TrackedObject& other) const noexcept {
         return this->getGUID() == other.getGUID();
     }
-    bool operator!=(const TrackedObject& other) const {
+    bool operator!=(const TrackedObject& other) const noexcept {
         return this->getGUID() != other.getGUID();
     }
 

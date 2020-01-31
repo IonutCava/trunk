@@ -75,13 +75,13 @@ class ImageData : private NonCopyable {
     ~ImageData();
 
     /// image origin information
-    inline void flip(bool state) { _flip = state; }
-    inline bool flip() const { return _flip; }
+    inline void flip(bool state) noexcept { _flip = state; }
+    inline bool flip() const noexcept { return _flip; }
 
-    inline void set16Bit(bool state) { _16Bit = state; }
-    inline bool is16Bit() const { return _16Bit; }
+    inline void set16Bit(bool state) noexcept { _16Bit = state; }
+    inline bool is16Bit() const noexcept { return _16Bit; }
 
-    inline bool isHDR() const { return _isHDR; }
+    inline bool isHDR() const noexcept { return _isHDR; }
     /// set and get the image's actual data 
     inline const bufferPtr data(U32 mipLevel = 0) const { 
         bufferPtr data = nullptr;
@@ -112,7 +112,7 @@ class ImageData : private NonCopyable {
         return data;
     }
 
-    inline const vector<ImageLayer>& imageLayers() const {
+    inline const vector<ImageLayer>& imageLayers() const noexcept {
         return _data;
     }
     /// image width, height and depth
@@ -122,19 +122,19 @@ class ImageData : private NonCopyable {
         return _data[mipLevel]._dimensions;
     }
     /// set and get the image's compression state
-    inline bool compressed() const { return _compressed; }
+    inline bool compressed() const noexcept { return _compressed; }
     /// get the number of pre-loaded mip maps
-    inline U32 mipCount() const { return to_U32(_data.size()); }
+    inline U32 mipCount() const noexcept { return to_U32(_data.size()); }
     /// image transparency information
-    inline bool alpha() const { return _alpha; }
+    inline bool alpha() const noexcept { return _alpha; }
     /// image depth information
-    inline U8 bpp() const { return _bpp; }
+    inline U8 bpp() const noexcept { return _bpp; }
     /// the filename from which the image is created
-    inline const stringImpl& name() const { return _name; }
+    inline const stringImpl& name() const noexcept { return _name; }
     /// the image format as given by STB/NV_DDS
-    inline GFXImageFormat format() const { return _format; }
+    inline GFXImageFormat format() const noexcept { return _format; }
 
-    inline GFXDataFormat dataType() const { return _dataType; }
+    inline GFXDataFormat dataType() const noexcept { return _dataType; }
     /// get the texel colour at the specified offset from the origin
     UColour4 getColour(I32 x, I32 y, U32 mipLevel = 0) const;
     void getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
@@ -144,9 +144,7 @@ class ImageData : private NonCopyable {
     void getBlue(I32 x, I32 y, U8& b, U32 mipLevel = 0) const;
     void getAlpha(I32 x, I32 y, U8& a, U32 mipLevel = 0) const;
 
-    inline TextureType compressedTextureType() const {
-        return _compressedTextureType;
-    }
+    inline TextureType compressedTextureType() const noexcept { return _compressedTextureType; }
 
   protected:
     friend class ImageDataInterface;

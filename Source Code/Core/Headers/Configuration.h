@@ -52,7 +52,7 @@ public:
         /// If true, load shader source code from cache files
         /// If false, materials recompute shader source code from shader atoms
         /// If true, clear shader cache to apply changes to shader atom source code
-        I32 flushCommandBuffersOnFrame = -1;
+        I32 dumpCommandBuffersOnFrame = -1;
         bool enableRenderAPIDebugging = false;
         bool enableDebugMsgGroups = false;
         bool useGeometryCache = true;

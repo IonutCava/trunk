@@ -176,7 +176,7 @@ constexpr T toBit(const T X) {
     return 1 << X;
 }
 
-inline U32 powerOfTwo(U32 X) noexcept {
+constexpr U32 powerOfTwo(U32 X) noexcept {
     U32 r = 0;
     while (X >>= 1) {
         r++;
@@ -324,7 +324,7 @@ union Double_t {
     D64 d;
 };
 
-inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
+inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
     const F32 absDiff = std::abs(A - B);
     if (absDiff <= maxDiff) {
@@ -419,9 +419,9 @@ namespace detail {
         void Dismiss() const throw()
         {    dismissed_ = true;    }
     protected:
-        ScopeGuardImplBase() : dismissed_(false)
+        ScopeGuardImplBase() noexcept : dismissed_(false)
         {}
-        ScopeGuardImplBase(const ScopeGuardImplBase& other)
+        ScopeGuardImplBase(const ScopeGuardImplBase& other) noexcept
             : dismissed_(other.dismissed_)
         {    other.Dismiss();    }
         ~ScopeGuardImplBase() {} // nonvirtual (see below why)

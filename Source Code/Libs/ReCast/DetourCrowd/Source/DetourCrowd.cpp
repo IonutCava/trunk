@@ -59,7 +59,7 @@ static void integrate(dtCrowdAgent* ag, const float dt)
     const float maxDelta = ag->params.maxAcceleration * dt;
     float dv[3];
     dtVsub(dv, ag->nvel, ag->vel);
-    float ds = dtVlen(dv);
+    const float ds = dtVlen(dv);
     if (ds > maxDelta)
         dtVscale(dv, dv, maxDelta/ds);
     dtVadd(ag->vel, ag->vel, dv);
@@ -118,8 +118,8 @@ static void calcSmoothSteerDirection(const dtCrowdAgent* ag, float* dir)
     dir0[1] = 0;
     dir1[1] = 0;
     
-    float len0 = dtVlen(dir0);
-    float len1 = dtVlen(dir1);
+    const float len0 = dtVlen(dir0);
+    const float len1 = dtVlen(dir1);
     if (len1 > 0.001f)
         dtVscale(dir1,dir1,1.0f/len1);
     
@@ -190,9 +190,9 @@ static int getNeighbours(const float* pos, const float height, const float range
     
     static const int MAX_NEIS = 32;
     unsigned short ids[MAX_NEIS];
-    int nids = grid->queryItems(pos[0]-range, pos[2]-range,
-                                pos[0]+range, pos[2]+range,
-                                ids, MAX_NEIS);
+    const int nids = grid->queryItems(pos[0]-range, pos[2]-range,
+                                      pos[0]+range, pos[2]+range,
+                                      ids, MAX_NEIS);
     
     for (int i = 0; i < nids; ++i)
     {
@@ -528,7 +528,7 @@ int dtCrowd::addAgent(const float* pos, const dtCrowdAgentParams* params)
     float nearest[3];
     dtPolyRef ref = 0;
     dtVcopy(nearest, pos);
-    dtStatus status = m_navquery->findNearestPoly(pos, m_ext, &m_filters[ag->params.queryFilterType], &ref, nearest);
+    const dtStatus status = m_navquery->findNearestPoly(pos, m_ext, &m_filters[ag->params.queryFilterType], &ref, nearest);
     if (dtStatusFailed(status))
     {
         dtVcopy(nearest, pos);
@@ -1046,7 +1046,7 @@ void dtCrowd::update(const float dt, dtCrowdAgentDebugInfo* debug)
     const int debugIdx = debug ? debug->idx : -1;
     
     dtCrowdAgent** agents = m_activeAgents;
-    int nagents = getActiveAgents(agents, m_maxAgents);
+    const int nagents = getActiveAgents(agents, m_maxAgents);
 
     // Check that all agents still have valid paths.
     checkPathValidity(agents, nagents, dt);
@@ -1283,7 +1283,7 @@ void dtCrowd::update(const float dt, dtCrowdAgentDebugInfo* debug)
                 vod = debug->vod;
             
             // Sample new safe velocity.
-            bool adaptive = true;
+            const bool adaptive = true;
             int ns = 0;
 
             const dtObstacleAvoidanceParams* params = &m_obstacleQueryParams[ag->params.obstacleAvoidanceType];

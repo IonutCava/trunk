@@ -75,12 +75,12 @@ struct PushConstants {
         set(binding, type, values.data(), N, flag);
     }
 
-    inline void clear() { _data.clear(); }
-    inline bool empty() const { return _data.empty(); }
+    inline void clear() noexcept { _data.clear(); }
+    inline bool empty() const noexcept { return _data.empty(); }
     inline void countHint(size_t count) { _data.reserve(count); }
 
-    inline vectorEASTL<GFX::PushConstant>& data() { return _data; }
-    inline const vectorEASTL<GFX::PushConstant>& data() const { return _data; }
+    inline vectorEASTL<GFX::PushConstant>& data() noexcept { return _data; }
+    inline const vectorEASTL<GFX::PushConstant>& data() const noexcept { return _data; }
 };
 
 bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial);

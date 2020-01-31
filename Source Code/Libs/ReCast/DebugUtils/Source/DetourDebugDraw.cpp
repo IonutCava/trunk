@@ -27,11 +27,11 @@
 
 static float distancePtLine2d(const float* pt, const float* p, const float* q)
 {
-    float pqx = q[0] - p[0];
-    float pqz = q[2] - p[2];
+    const float pqx = q[0] - p[0];
+    const float pqz = q[2] - p[2];
     float dx = pt[0] - p[0];
     float dz = pt[2] - p[2];
-    float d = pqx*pqx + pqz*pqz;
+    const float d = pqx*pqx + pqz*pqz;
     float t = pqx*dx + pqz*dz;
     if (d != 0) t /= d;
     dx = p[0] + t*pqx - pt[0];
@@ -55,7 +55,7 @@ static void drawPolyBoundaries(duDebugDraw* dd, const dtMeshTile* tile,
         
         const dtPolyDetail* pd = &tile->detailMeshes[i];
         
-        for (int j = 0, nj = (int)p->vertCount; j < nj; ++j)
+        for (int j = 0, const nj = (int)p->vertCount; j < nj; ++j)
         {
             unsigned int c = col;
             if (inner)
@@ -120,9 +120,9 @@ static void drawPolyBoundaries(duDebugDraw* dd, const dtMeshTile* tile,
 static void drawMeshTile(duDebugDraw* dd, const dtNavMesh& mesh, const dtNavMeshQuery* query,
                          const dtMeshTile* tile, unsigned char flags)
 {
-    dtPolyRef base = mesh.getPolyRefBase(tile);
+    const dtPolyRef base = mesh.getPolyRefBase(tile);
 
-    int tileNum = mesh.decodePolyIdTile(base);
+    const int tileNum = mesh.decodePolyIdTile(base);
     
     dd->begin(DU_DRAW_TRIS);
     for (int i = 0; i < tile->header->polyCount; ++i)
@@ -344,7 +344,7 @@ static void drawMeshTilePortal(duDebugDraw* dd, const dtMeshTile* tile)
 
     for (int side = 0; side < 8; ++side)
     {
-        unsigned short m = DT_EXT_LINK | (unsigned short)side;
+        const unsigned short m = DT_EXT_LINK | (unsigned short)side;
         
         for (int i = 0; i < tile->header->polyCount; ++i)
         {
@@ -364,7 +364,7 @@ static void drawMeshTilePortal(duDebugDraw* dd, const dtMeshTile* tile)
                 
                 if (side == 0 || side == 4)
                 {
-                    unsigned int col = side == 0 ? duRGBA(128,0,0,128) : duRGBA(128,0,128,128);
+                    const unsigned int col = side == 0 ? duRGBA(128,0,0,128) : duRGBA(128,0,128,128);
 
                     const float x = va[0] + ((side == 0) ? -padx : padx);
                     
@@ -382,7 +382,7 @@ static void drawMeshTilePortal(duDebugDraw* dd, const dtMeshTile* tile)
                 }
                 else if (side == 2 || side == 6)
                 {
-                    unsigned int col = side == 2 ? duRGBA(0,128,0,128) : duRGBA(0,128,128,128);
+                    const unsigned int col = side == 2 ? duRGBA(0,128,0,128) : duRGBA(0,128,128,128);
 
                     const float z = va[2] + ((side == 2) ? -padx : padx);
                     
@@ -427,7 +427,7 @@ void duDebugDrawNavMeshPolysWithFlags(struct duDebugDraw* dd, const dtNavMesh& m
     {
         const dtMeshTile* tile = mesh.getTile(i);
         if (!tile->header) continue;
-        dtPolyRef base = mesh.getPolyRefBase(tile);
+        const dtPolyRef base = mesh.getPolyRefBase(tile);
 
         for (int j = 0; j < tile->header->polyCount; ++j)
         {
@@ -490,7 +490,7 @@ static void debugDrawTileCachePortals(struct duDebugDraw* dd, const dtTileCacheL
     const float* bmin = layer.header->bmin;
 
     // Portals
-    unsigned int pcol = duRGBA(255,255,255,255);
+    const unsigned int pcol = duRGBA(255,255,255,255);
     
     const int segs[4*4] = {0,0,0,1, 0,1,1,1, 1,1,1,0, 1,0,0,0};
     
@@ -532,7 +532,7 @@ void duDebugDrawTileCacheLayerAreas(struct duDebugDraw* dd, const dtTileCacheLay
     const float* bmax = layer.header->bmax;
     const int idx = layer.header->tlayer;
     
-    unsigned int colour = duIntToCol(idx+1, 255);
+    const unsigned int colour = duIntToCol(idx+1, 255);
     
     // Layer bounds
     float lbmin[3], lbmax[3];
@@ -586,7 +586,7 @@ void duDebugDrawTileCacheLayerRegions(struct duDebugDraw* dd, const dtTileCacheL
     const float* bmax = layer.header->bmax;
     const int idx = layer.header->tlayer;
     
-    unsigned int colour = duIntToCol(idx+1, 255);
+    const unsigned int colour = duIntToCol(idx+1, 255);
     
     // Layer bounds
     float lbmin[3], lbmax[3];
@@ -609,7 +609,7 @@ void duDebugDrawTileCacheLayerRegions(struct duDebugDraw* dd, const dtTileCacheL
             if (lh == 0xff) continue;
             const unsigned char reg = layer.regs[lidx];
             
-            unsigned int col = duLerpCol(colour, duIntToCol(reg, 255), 192);
+            const unsigned int col = duLerpCol(colour, duIntToCol(reg, 255), 192);
             
             const float fx = bmin[0] + x*cs;
             const float fy = bmin[1] + (lh+1)*ch;
@@ -677,7 +677,7 @@ void duDebugDrawTileCacheContours(duDebugDraw* dd, const struct dtTileCacheConto
             {
                 // Portal segment
                 col = duRGBA(255,255,255,128);
-                int d = va[3] & 0xf;
+                const int d = va[3] & 0xf;
                 
                 const float cx = (ax+bx)*0.5f;
                 const float cy = (ay+by)*0.5f;
@@ -714,9 +714,9 @@ void duDebugDrawTileCacheContours(duDebugDraw* dd, const struct dtTileCacheConto
                 colour = duRGBA(255,0,0,255);
             }
             
-            float fx = orig[0] + va[0]*cs;
-            float fy = orig[1] + (va[1]+1+(i&1))*ch;
-            float fz = orig[2] + va[2]*cs;
+            const float fx = orig[0] + va[0]*cs;
+            const float fy = orig[1] + (va[1]+1+(i&1))*ch;
+            const float fz = orig[2] + va[2]*cs;
             dd->vertex(fx,fy,fz, colour);
         }
     }
@@ -776,7 +776,7 @@ void duDebugDrawTileCachePolyMesh(duDebugDraw* dd, const struct dtTileCachePolyM
             if (p[j] == DT_TILECACHE_NULL_IDX) break;
             if (p[nvp+j] & 0x8000) continue;
             const int nj = (j+1 >= nvp || p[j+1] == DT_TILECACHE_NULL_IDX) ? 0 : j+1; 
-            int vi[2] = {p[j], p[nj]};
+            const int vi[2] = {p[j], p[nj]};
             
             for (int k = 0; k < 2; ++k)
             {
@@ -801,7 +801,7 @@ void duDebugDrawTileCachePolyMesh(duDebugDraw* dd, const struct dtTileCachePolyM
             if (p[j] == DT_TILECACHE_NULL_IDX) break;
             if ((p[nvp+j] & 0x8000) == 0) continue;
             const int nj = (j+1 >= nvp || p[j+1] == DT_TILECACHE_NULL_IDX) ? 0 : j+1; 
-            int vi[2] = {p[j], p[nj]};
+            const int vi[2] = {p[j], p[nj]};
             
             unsigned int col = colb;
             if ((p[nvp+j] & 0xf) != 0xf)
@@ -820,7 +820,7 @@ void duDebugDrawTileCachePolyMesh(duDebugDraw* dd, const struct dtTileCachePolyM
                 const float cy = (ay+by)*0.5f;
                 const float cz = (az+bz)*0.5f;
                 
-                int d = p[nvp+j] & 0xf;
+                const int d = p[nvp+j] & 0xf;
                 
                 const float dx = cx + offs[d*2+0]*2*cs;
                 const float dy = cy;

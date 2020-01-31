@@ -7,7 +7,7 @@ namespace Divide {
 namespace GFX {
 
 namespace {
-    const char* primitiveTypeToString(PrimitiveType type) {
+    const char* primitiveTypeToString(PrimitiveType type) noexcept {
         switch (type) {
             case PrimitiveType::API_POINTS: return "POINTS";
             case PrimitiveType::LINES: return "LINES";

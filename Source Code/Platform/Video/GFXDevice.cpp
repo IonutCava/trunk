@@ -209,7 +209,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     }
 
     stringImpl refreshRates;
-    vec_size displayCount = gpuState().getDisplayCount();
+    const vec_size displayCount = gpuState().getDisplayCount();
     for (vec_size idx = 0; idx < displayCount; ++idx) {
         const vector<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
         Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
@@ -217,7 +217,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         for (const GPUState::GPUVideoMode& mode : registeredModes) {
             // Optionally, output to console/file each display mode
             refreshRates = Util::StringFormat("%d", mode._refreshRate.front());
-            vec_size refreshRateCount = mode._refreshRate.size();
+            const vec_size refreshRateCount = mode._refreshRate.size();
             for (vec_size i = 1; i < refreshRateCount; ++i) {
                 refreshRates += Util::StringFormat(", %d", mode._refreshRate[i]);
             }
@@ -282,7 +282,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
 
-    U8 msaaSamples = config.rendering.msaaSamples;
+    const U8 msaaSamples = config.rendering.msaaSamples;
 
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
@@ -328,7 +328,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
 
-    U16 reflectRes = 512 * config.rendering.reflectionResolutionFactor;
+    const U16 reflectRes = 512 * config.rendering.reflectionResolutionFactor;
 
     ResourceDescriptor prevDepthTex("PREV_DEPTH");
     depthDescriptor.msaaSamples(0);
@@ -336,7 +336,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     prevDepthTex.threaded(false);
     _prevDepthBuffer = CreateResource<Texture>(parent().resourceCache(), prevDepthTex);
     assert(_prevDepthBuffer);
-    Texture::TextureLoadInfo info;
+    const Texture::TextureLoadInfo info = {};
     _prevDepthBuffer->loadData(info, NULL, renderResolution);
 
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_32);
@@ -868,8 +868,8 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Colour, 0);
     const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Depth, 0);
     // Colour attachment takes precedent over depth attachment
-    bool hasColour = colourAttachment.used();
-    bool hasDepth = depthAttachment.used();
+    const bool hasColour = colourAttachment.used();
+    const bool hasDepth = depthAttachment.used();
     // Everyone's innocent until proven guilty
     bool isValidFB = true;
     if (hasColour) {
@@ -964,8 +964,9 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Colour, 0);
     const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Depth, 0);
     // Colour attachment takes precedent over depth attachment
-    bool hasColour = colourAttachment.used();
-    bool hasDepth = depthAttachment.used();
+    const bool hasColour = colourAttachment.used();
+    const bool hasDepth = depthAttachment.used();
+
     bool isValidFB = true;
     if (hasColour) {
         // We only need the colour attachment
@@ -1152,8 +1153,8 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         return;
     }
 
-    U16 w = params.width;
-    U16 h = params.height;
+    const U16 w = params.width;
+    const U16 h = params.height;
 
     if (!params.isWindowResize) {
         // Update resolution only if it's different from the current one.
@@ -1186,16 +1187,16 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
 }
 
 void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
-    F32 currentAspectRatio = renderingAspectRatio();
+    const F32 currentAspectRatio = renderingAspectRatio();
 
     I32 left = 0, bottom = 0;
     I32 newWidth = w;
     I32 newHeight = h;
 
-    I32 tempWidth = to_I32(h * currentAspectRatio);
-    I32 tempHeight = to_I32(w / currentAspectRatio);
+    const I32 tempWidth = to_I32(h * currentAspectRatio);
+    const I32 tempHeight = to_I32(w / currentAspectRatio);
 
-    F32 newAspectRatio = to_F32(tempWidth) / tempHeight;
+    const F32 newAspectRatio = to_F32(tempWidth) / tempHeight;
 
     if (newAspectRatio <= currentAspectRatio) {
         newWidth = tempWidth;
@@ -1314,7 +1315,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
     if (Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
 
-        I32 debugFrame = _context.config().debug.flushCommandBuffersOnFrame;
+        const I32 debugFrame = _context.config().debug.dumpCommandBuffersOnFrame;
         if (debugFrame >= 0 && to_U32(FRAME_COUNT) == to_U32(debugFrame)) {
             Console::errorfn(commandBuffer.toString().c_str());
         }
@@ -1429,13 +1430,13 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
     // The depth buffer's resolution should be equal to the screen's resolution
     RenderTarget& renderTarget = _rtPool->renderTarget(HiZTarget);
-    U16 width = renderTarget.getWidth();
-    U16 height = renderTarget.getHeight();
+    const U16 width = renderTarget.getWidth();
+    const U16 height = renderTarget.getHeight();
     U16 level = 0;
     U16 dim = width > height ? width : height;
 
     // Store the current width and height of each mip
-    Rect<I32> previousViewport(_viewport);
+    const Rect<I32> previousViewport(_viewport);
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = to_I32(depthBuffer._index);
@@ -1463,14 +1464,14 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         RenderTarget& depthSource = _rtPool->renderTarget(depthBuffer);
         const Texture_ptr& depthTex = depthSource.getAttachment(RTAttachmentType::Depth, 0).texture();
 
-        Rect<I32> viewport(0, 0, renderTarget.getWidth(), renderTarget.getHeight());
+        const Rect<I32> viewport(0, 0, renderTarget.getWidth(), renderTarget.getHeight());
         drawTextureInViewport(depthTex->data(), viewport, false, cmdBufferInOut);
 
         GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderPassCommand{});
     }
 
     const Texture_ptr& hizDepthTex = renderTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
-    TextureData hizData = hizDepthTex->data();
+    const TextureData hizData = hizDepthTex->data();
     if (!hizDepthTex->descriptor().autoMipMaps()) {
         GFX::BeginRenderPassCommand beginRenderPassCmd;
         beginRenderPassCmd._target = HiZTarget;
@@ -1583,7 +1584,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    U32 cmdCount = *bufferData._lastCommandCount;
+    const U32 cmdCount = *bufferData._lastCommandCount;
 
     GFX::SendPushConstantsCommand HIZPushConstantsCMD = {};
     HIZPushConstantsCMD._constants.countHint(6);
@@ -1637,9 +1638,9 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 
     // Assume full game window viewport for text
     GFX::SetViewportCommand viewportCommand;
-    RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    U16 width = screenRT.getWidth();
-    U16 height = screenRT.getHeight();
+    const RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    const U16 width = screenRT.getWidth();
+    const U16 height = screenRT.getHeight();
     viewportCommand._viewport.set(0, 0, width, height);
     GFX::EnqueueCommand(buffer, viewportCommand);
 
@@ -1834,18 +1835,18 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         }
     }
 
-    I32 columnCount = std::min(viewCount, maxViewportColumnCount);
+    const I32 columnCount = std::min(viewCount, maxViewportColumnCount);
     I32 rowCount = viewCount / maxViewportColumnCount;
     if (viewCount % maxViewportColumnCount > 0) {
         rowCount++;
     }
 
-    I32 screenWidth = targetViewport.z - targetViewport.x;
-    I32 screenHeight = targetViewport.w - targetViewport.y;
-    F32 aspectRatio = to_F32(screenWidth) / screenHeight;
+    const I32 screenWidth = targetViewport.z - targetViewport.x;
+    const I32 screenHeight = targetViewport.w - targetViewport.y;
+    const F32 aspectRatio = to_F32(screenWidth) / screenHeight;
 
-    I32 viewportWidth = (screenWidth / columnCount) - padding;
-    I32 viewportHeight = to_I32(viewportWidth / aspectRatio) - padding;
+    const I32 viewportWidth = (screenWidth / columnCount) - padding;
+    const I32 viewportHeight = to_I32(viewportWidth / aspectRatio) - padding;
     Rect<I32> viewport(screenWidth - viewportWidth, targetViewport.y, viewportWidth, viewportHeight);
 
     PipelineDescriptor pipelineDesc = {};
@@ -2232,10 +2233,10 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) {
     // Pipeline with no shader is no pipeline at all
     DIVIDE_ASSERT(descriptor._shaderProgramHandle != 0, "Missing shader handle during pipeline creation!");
 
-    size_t hash = descriptor.getHash();
+    const size_t hash = descriptor.getHash();
 
     UniqueLock lock(_pipelineCacheLock);
-    hashMap<size_t, Pipeline, NoHash<size_t>>::iterator it = _pipelineCache.find(hash);
+    const hashMap<size_t, Pipeline, NoHash<size_t>>::iterator it = _pipelineCache.find(hash);
     if (it == std::cend(_pipelineCache)) {
         return &hashAlg::insert(_pipelineCache, hash, Pipeline(descriptor)).first->second;
     }
@@ -2319,10 +2320,10 @@ const ShaderComputeQueue& GFXDevice::shaderComputeQueue() const {
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
     RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    U16 width = screenRT.getWidth();
-    U16 height = screenRT.getHeight();
+    const U16 width = screenRT.getWidth();
+    const U16 height = screenRT.getHeight();
     // Allocate sufficiently large buffers to hold the pixel data
-    U32 bufferSize = width * height * 4;
+    const U32 bufferSize = width * height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
     screenRT.readData(GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);

@@ -70,11 +70,11 @@ void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UCol
 void IMPrimitive::fromSphere(const vec3<F32>& center,
                              F32 radius,
                              const UColour4& colour) {
-    U32 slices = 8, stacks = 8;
-    F32 drho = to_F32(M_PI) / stacks;
-    F32 dtheta = 2.0f * to_F32(M_PI) / slices;
-    F32 ds = 1.0f / slices;
-    F32 dt = 1.0f / stacks;
+    const U32 slices = 8, stacks = 8;
+    const F32 drho = to_F32(M_PI) / stacks;
+    const F32 dtheta = 2.0f * to_F32(M_PI) / slices;
+    const F32 ds = 1.0f / slices;
+    const F32 dt = 1.0f / stacks;
     F32 t = 1.0f;
     F32 s = 0.0f;
     U32 i, j;  // Looping variables
@@ -83,16 +83,17 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
     begin(PrimitiveType::LINE_LOOP);
     for (i = 0; i < stacks; i++) {
-        F32 rho = i * drho;
-        F32 srho = std::sin(rho);
-        F32 crho = std::cos(rho);
-        F32 srhodrho = std::sin(rho + drho);
-        F32 crhodrho = std::cos(rho + drho);
+        const F32 rho = i * drho;
+        const F32 srho = std::sin(rho);
+        const F32 crho = std::cos(rho);
+        const F32 srhodrho = std::sin(rho + drho);
+        const F32 crhodrho = std::cos(rho + drho);
+
         s = 0.0f;
         for (j = 0; j <= slices; j++) {
-            F32 theta = (j == slices) ? 0.0f : j * dtheta;
-            F32 stheta = -std::sin(theta);
-            F32 ctheta = std::cos(theta);
+            const F32 theta = (j == slices) ? 0.0f : j * dtheta;
+            const F32 stheta = -std::sin(theta);
+            const F32 ctheta = std::cos(theta);
 
             F32 x = stheta * srho;
             F32 y = ctheta * srho;

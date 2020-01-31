@@ -39,7 +39,7 @@ bool glVAOCache::getVAO(const AttribFlags& flags, GLuint& vaoOut, size_t& hashOu
     hashOut = std::hash<AttribFlags>()(flags);
 
     // See if we already have a matching VAO
-    VAOMap::iterator it = _cache.find(hashOut);
+    const VAOMap::iterator it = _cache.find(hashOut);
     if (it != std::cend(_cache)) {
         // Remember it if we do
         vaoOut = it->second;

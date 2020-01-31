@@ -103,8 +103,8 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
                          rangeElementCount);
     }
 
-    inline U32 getPrimitiveCount() const { return _elementCount; }
-    inline size_t getPrimitiveSize() const { return _elementSize; }
+    inline U32 getPrimitiveCount() const noexcept { return _elementCount; }
+    inline size_t getPrimitiveSize() const noexcept { return _elementSize; }
 
     static size_t alignmentRequirement(Usage usage);
 

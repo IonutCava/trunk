@@ -239,7 +239,7 @@ namespace ECS { namespace Memory {
 
 		void DestroyObject(void* object)
 		{
-			uptr adr = reinterpret_cast<uptr>(object);
+			const uptr adr = reinterpret_cast<uptr>(object);
 
 			for (auto chunk : this->m_Chunks)
 			{
@@ -247,7 +247,7 @@ namespace ECS { namespace Memory {
 				{
 					// note: no need to call d'tor since it was called already by 'delete'
 
-                    size_t objectCount = chunk->objects.size();
+                    const size_t objectCount = chunk->objects.size();
 
 					chunk->objects.remove((OBJECT_TYPE*)object);
                     assert(chunk->objects.size() != objectCount && "Remove failed!");

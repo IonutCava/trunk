@@ -117,7 +117,7 @@ class MemoryTracker {
             if (!MemoryTracker::LogAllAllocations) {
                 UniqueLock w_lock(_mutex);
                 MemoryTracker::Lock lock(*this);
-                hashMap<void*, Entry>::iterator it = _allocations.find(p);
+                const hashMap<void*, Entry>::iterator it = _allocations.find(p);
                 if (it != std::cend(_allocations)) {
                     _allocations.erase(it);
                 } else {

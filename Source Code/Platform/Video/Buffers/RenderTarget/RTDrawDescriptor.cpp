@@ -16,7 +16,7 @@ bool RTDrawMask::isEnabled(RTAttachmentType type) const {
         case RTAttachmentType::Depth: return !_disabledDepth;
         case RTAttachmentType::Stencil: return !_disabledStencil;
         case RTAttachmentType::Colour: {
-            for (bool state : _disabledColours) {
+            for (const bool state : _disabledColours) {
                 if (!state) {
                     return true;
                 }

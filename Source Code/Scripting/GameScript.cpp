@@ -54,31 +54,31 @@ void GameScript::addGameInstance() {
     _script->add(m);
 }
 
-bool GameScript::frameStarted(const FrameEvent& evt) {
+bool GameScript::frameStarted(const FrameEvent& evt) noexcept {
     return true;
 }
 
-bool GameScript::framePreRenderStarted(const FrameEvent& evt) {
+bool GameScript::framePreRenderStarted(const FrameEvent& evt) noexcept {
     return true;
 }
 
-bool GameScript::framePreRenderEnded(const FrameEvent& evt) {
+bool GameScript::framePreRenderEnded(const FrameEvent& evt) noexcept {
     return true;
 }
 
-bool GameScript::frameRenderingQueued(const FrameEvent& evt) {
+bool GameScript::frameRenderingQueued(const FrameEvent& evt) noexcept {
     return true;
 }
 
-bool GameScript::framePostRenderStarted(const FrameEvent& evt) {
+bool GameScript::framePostRenderStarted(const FrameEvent& evt) noexcept {
     return true;
 }
 
-bool GameScript::framePostRenderEnded(const FrameEvent& evt) {
+bool GameScript::framePostRenderEnded(const FrameEvent& evt) noexcept {
     return true;
 }
 
-bool GameScript::frameEnded(const FrameEvent& evt) {
+bool GameScript::frameEnded(const FrameEvent& evt) noexcept {
     return true;
 }
 

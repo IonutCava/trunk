@@ -63,12 +63,12 @@ struct CmdAllocator {
 #define TO_STR(arg) #arg
 
 #define DEFINE_POOL(Command) \
-decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex; \
-decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool; \
+decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex = {}; \
+decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool = {}; \
 
 #define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> { \
 typedef Command<Name, Enum> Base; \
-inline const char* commandName() const final { return TO_STR(Enum); }
+inline const char* commandName() const noexcept final { return TO_STR(Enum); }
 
 #define END_COMMAND(Name) \
 }
@@ -117,7 +117,7 @@ struct CommandBase
 {
     virtual void addToBuffer(CommandBuffer& buffer) const = 0;
     virtual stringImpl toString(U16 indent) const = 0;
-    virtual const char* commandName() const = 0;
+    virtual const char* commandName() const noexcept = 0;
 };
 
 template<typename T, CommandType EnumVal>
@@ -126,7 +126,7 @@ struct Command : public CommandBase {
         buffer.add(reinterpret_cast<const T&>(*this));
     }
 
-    virtual stringImpl toString(U16 indent) const override {
+    stringImpl toString(U16 indent) const override {
         ACKNOWLEDGE_UNUSED(indent);
         return stringImpl(commandName());
     }
@@ -135,7 +135,7 @@ struct Command : public CommandBase {
 };
 
 BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);
-    BindPipelineCommand(const Pipeline* pipeline)
+    BindPipelineCommand(const Pipeline* pipeline) noexcept
         : _pipeline(pipeline)
     {
     }
@@ -180,7 +180,7 @@ END_COMMAND(DrawCommand);
 
 BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT);
     SetViewportCommand() = default;
-    SetViewportCommand(const Rect<I32>& viewport) : _viewport(viewport) {}
+    SetViewportCommand(const Rect<I32>& viewport) noexcept : _viewport(viewport) {}
 
     Rect<I32> _viewport;
 

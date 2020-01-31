@@ -101,13 +101,15 @@ namespace GFX {
 
         template<>
         inline void set(const bool* values, const size_t count, bool flag) {
+            assert(values != nullptr);
+
             if (count == 1) { //fast path
-                I32 value = (*values ? 1 : 0);
+                const I32 value = (*values ? 1 : 0);
                 set(&value, 1, flag);
             } else {
                 //Slooow. Avoid using in the rendering loop. Try caching
                 vector<I32> temp(count);
-                std::transform(values, values + count, std::back_inserter(temp), [](bool e) { return (e ? 1 : 0); });
+                std::transform(values, values + count, std::back_inserter(temp), [](bool e) noexcept { return (e ? 1 : 0); });
                 set(temp.data(), count, flag);
             }
         }

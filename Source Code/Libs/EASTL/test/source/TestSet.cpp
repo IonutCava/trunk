@@ -103,6 +103,30 @@ int TestSet()
 		vs.key_comp() = kc;
 	}
 
+	{ // non-const comparator test
+		struct my_less
+		{
+			bool operator()(int a, int b) { return a < b; }
+		};
+
+		{
+			set<int, my_less> a = {0, 1, 2, 3, 4};
+			auto i = a.find(42);
+			VERIFY(i == a.end());
+		}
+	}
+
+	{ // set erase_if tests
+		set<int> s = {0, 1, 2, 3, 4};
+		eastl::erase_if(s, [](auto i) { return i % 2 == 0;});
+		VERIFY((s == set<int>{1,3}));
+	}
+
+	{ // multiset erase_if tests
+		multiset<int> s = {0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 3, 3, 4};
+		eastl::erase_if(s, [](auto i) { return i % 2 == 0;});
+		VERIFY((s == multiset<int>{1, 1, 1, 3, 3, 3}));
+	}
 
 	return nErrorCount;
 }

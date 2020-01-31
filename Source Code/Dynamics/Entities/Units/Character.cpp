@@ -67,7 +67,7 @@ void Character::update(const U64 deltaTimeUS) {
 }
 
 /// Just before we render the frame
-bool Character::frameRenderingQueued(const FrameEvent& evt) {
+bool Character::frameRenderingQueued(const FrameEvent& evt) noexcept {
     if (!getBoundNode()) {
         return false;
     }

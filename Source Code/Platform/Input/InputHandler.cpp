@@ -56,7 +56,7 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
      switch (event.type) {
         case SDL_TEXTEDITING:
         case SDL_TEXTINPUT: {
-            Input::UTF8Event arg(eventWindow, 0, event.text.text);
+            const Input::UTF8Event arg(eventWindow, 0, event.text.text);
             _eventListener.onUTF8(arg);
             return true;
         };
@@ -161,7 +161,7 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
             state.HWheel = event.wheel.x;
             state.VWheel = event.wheel.y;
 
-            Input::MouseMoveEvent arg(eventWindow, to_U8(event.motion.which), state, event.type == SDL_MOUSEWHEEL);
+            const Input::MouseMoveEvent arg(eventWindow, to_U8(event.motion.which), state, event.type == SDL_MOUSEWHEEL);
             _eventListener.mouseMoved(arg);
             return true;
         };
@@ -260,7 +260,7 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
             Input::JoystickData jData = {};
             jData._gamePad = event.type == SDL_CONTROLLERBUTTONDOWN || event.type == SDL_CONTROLLERBUTTONUP;
 
-            Uint8 state = jData._gamePad ? event.cbutton.state : event.jbutton.state;
+            const Uint8 state = jData._gamePad ? event.cbutton.state : event.jbutton.state;
             jData._data = state == SDL_PRESSED ? to_U32(Input::InputState::PRESSED) : to_U32(Input::InputState::RELEASED);
             
             Input::JoystickElement element = {};

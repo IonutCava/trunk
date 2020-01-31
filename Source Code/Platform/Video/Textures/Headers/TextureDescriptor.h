@@ -65,7 +65,7 @@ struct SamplerDescriptor : public Hashable {
         return _hash;
     }
 
-    inline bool generateMipMaps() const {
+    inline bool generateMipMaps() const noexcept {
         return minFilter() != TextureFilter::LINEAR &&
                minFilter() != TextureFilter::NEAREST &&
                minFilter() != TextureFilter::COUNT;
@@ -126,33 +126,29 @@ class TextureDescriptor final : public PropertyDescriptor {
     {
     }
 
-    virtual ~TextureDescriptor()
-    {
-    }
-
     void clone(std::shared_ptr<PropertyDescriptor>& target) const final {
         return target.reset(new TextureDescriptor(*this));
     }
 
-    inline void setLayerCount(U32 layerCount) { 
+    inline void setLayerCount(U32 layerCount) noexcept {
         _layerCount = layerCount;
     }
 
-    inline bool isCubeTexture() const {
+    inline bool isCubeTexture() const noexcept {
         return (_type == TextureType::TEXTURE_CUBE_MAP ||
                 _type == TextureType::TEXTURE_CUBE_ARRAY);
     }
 
-    inline bool isArrayTexture() const {
+    inline bool isArrayTexture() const noexcept {
         return _type == TextureType::TEXTURE_2D_ARRAY;
     }
 
-    inline bool isMultisampledTexture() const {
+    inline bool isMultisampledTexture() const noexcept {
         return _type == TextureType::TEXTURE_2D_MS ||
                _type == TextureType::TEXTURE_2D_ARRAY_MS;
     }
 
-    inline U8 numChannels() const {
+    inline U8 numChannels() const noexcept {
         switch (baseFormat()) {
                 case GFXImageFormat::RED:
                 case GFXImageFormat::DEPTH_COMPONENT:
@@ -169,7 +165,7 @@ class TextureDescriptor final : public PropertyDescriptor {
 
         return 0;
     }
-    const vector<stringImpl>& sourceFileList() const { return _sourceFileList; }
+    const vector<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
 
     /// A TextureDescriptor will always have a sampler, even if it is the default one
     PROPERTY_RW(SamplerDescriptor, samplerDescriptor);

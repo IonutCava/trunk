@@ -67,42 +67,42 @@ class SceneShaderData {
     SceneShaderData(GFXDevice& context);
     ~SceneShaderData();
 
-    inline ShaderBuffer* buffer() const {
+    inline ShaderBuffer* buffer() const noexcept {
         return _sceneShaderData;
     }
 
-    inline void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) {
+    inline void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) noexcept {
         _bufferData._fogDetails.set(colourR, colourG, colourB, density);
         _dirty = true;
     }
 
-    inline void fogDensity(F32 density) {
+    inline void fogDensity(F32 density) noexcept {
         CLAMP_01(density);
         _bufferData._fogDetails.w = density;
         _dirty = true;
     }
 
-    inline void shadowingSettings(F32 lightBleedBias, F32 minShadowVariance, F32 shadowFadeDist, F32 shadowMaxDist) {
+    inline void shadowingSettings(F32 lightBleedBias, F32 minShadowVariance, F32 shadowFadeDist, F32 shadowMaxDist) noexcept {
         _bufferData._shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
         _dirty = true;
     }
 
-    inline void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) {
+    inline void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) noexcept {
         _bufferData._windDetails.set(directionX, directionY, directionZ, speed);
         _dirty = true;
     }
 
-    inline void elapsedTime(U32 timeMS) {
+    inline void elapsedTime(U32 timeMS) noexcept {
         _bufferData._otherData.x = to_F32(timeMS);
         _dirty = true;
     }
 
-    inline void deltaTime(F32 deltaTimeMS) {
+    inline void deltaTime(F32 deltaTimeMS) noexcept {
         _bufferData._otherData.y = deltaTimeMS;
         _dirty = true;
     }
 
-    inline void enableDebugRender(bool state) {
+    inline void enableDebugRender(bool state) noexcept {
         _bufferData._otherData.z = state ? 1.0f : 0.0f;
         _dirty = true;
     }

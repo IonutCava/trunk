@@ -132,47 +132,47 @@ public:
     ErrorCode init(U32 windowFlags,
                    WindowType initialType,
                    const WindowDescriptor& descriptor);
-    void update(const U64 deltaTimeUS);
+    void update(const U64 deltaTimeUS) noexcept;
 
     ErrorCode destroyWindow();
 
-    inline SDL_Window* getRawWindow() const;
+    inline SDL_Window* getRawWindow() const noexcept;
 
-    I32 currentDisplayIndex() const;
+    I32 currentDisplayIndex() const noexcept;
 
-    inline bool swapBuffers() const;
-    inline void swapBuffers(const bool state);
+    inline bool swapBuffers() const noexcept;
+    inline void swapBuffers(const bool state) noexcept;
 
-    inline bool isHovered() const;
-    inline bool hasFocus() const;
+    inline bool isHovered() const noexcept;
+    inline bool hasFocus() const noexcept;
 
-    inline bool minimized() const;
-           void minimized(const bool state);
+    inline bool minimized() const noexcept;
+           void minimized(const bool state) noexcept;
 
-    inline bool maximized() const;
-           void maximized(const bool state);
+    inline bool maximized() const noexcept;
+           void maximized(const bool state) noexcept;
 
-    inline bool hidden() const;
-           void hidden(const bool state);
+    inline bool hidden() const noexcept;
+           void hidden(const bool state) noexcept;
 
-    inline bool decorated() const;
-           void decorated(const bool state);
+    inline bool decorated() const noexcept;
+           void decorated(const bool state) noexcept;
 
     inline bool fullscreen() const;
 
-    inline WindowType type() const;
+    inline WindowType type() const noexcept;
     inline void changeType(WindowType newType);
     inline void changeToPreviousType();
 
-           void opacity(U8 opacity);
-    inline U8   opacity() const;
-    inline U8   prevOpacity() const;
+           void opacity(U8 opacity) noexcept;
+    inline U8   opacity() const noexcept;
+    inline U8   prevOpacity() const noexcept;
 
-    inline void clearColour(const FColour4& colour);
-    inline void clearColour(const FColour4& colour, bool clearColour, bool clearDepth);
+    inline void clearColour(const FColour4& colour) noexcept;
+    inline void clearColour(const FColour4& colour, bool clearColour, bool clearDepth) noexcept;
 
-    inline const FColour4& clearColour() const;
-    inline const FColour4& clearColour(bool &clearColour, bool &clearDepth) const;
+    inline const FColour4& clearColour() const noexcept;
+    inline const FColour4& clearColour(bool &clearColour, bool &clearDepth) const noexcept;
 
     /// width and height get adjusted to the closest supported value
     bool setDimensions(U16 width, U16 height);
@@ -181,26 +181,26 @@ public:
     /// Centering is also easier via SDL
     void centerWindowPosition();
 
-    void bringToFront() const;
+    void bringToFront() const noexcept;
 
-    vec2<U16> getDimensions() const;
-    vec2<U16> getPreviousDimensions() const;
+    vec2<U16> getDimensions() const noexcept;
+    vec2<U16> getPreviousDimensions() const noexcept;
 
-    Rect<I32> getBorderSizes() const;
+    Rect<I32> getBorderSizes() const noexcept;
     vec2<U16> getDrawableSize() const;
     vec2<I32> getPosition(bool global = false, bool offset = false) const;
 
            void setPosition(I32 x, I32 y, bool global = false, bool offset = false);
     inline void setPosition(const vec2<I32>& position, bool global = false);
 
-    inline const char* title() const;
+    inline const char* title() const noexcept;
     template<typename... Args>
     void title(const char* format, Args&& ...args);
 
     WindowHandle handle() const;
 
     /// Mouse positioning is handled by SDL. Returns true on success
-    bool setCursorPosition(I32 x, I32 y);
+    bool setCursorPosition(I32 x, I32 y) noexcept;
 
     inline I64 addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void removeEventlistener(WindowEvent windowEvent, I64 listenerGUID);
@@ -211,19 +211,18 @@ public:
 
     inline Rect<I32> windowViewport() const;
 
-    inline const Rect<I32>& renderingViewport() const;
+    inline const Rect<I32>& renderingViewport() const noexcept;
     void renderingViewport(const Rect<I32>& viewport);
 
-    inline void* userData() const;
+    inline void* userData() const noexcept;
 
-    bool grabState() const;
-    void grabState(bool state);
+    bool grabState() const noexcept;
+    void grabState(bool state) noexcept;
 
     bool onSDLEvent(SDL_Event event) override;
 
 private:
-    
-    void restore();
+    void restore() noexcept;
     /// Changing from one window type to another
     /// should also change display dimensions and position
     void handleChangeWindowType(WindowType newWindowType);

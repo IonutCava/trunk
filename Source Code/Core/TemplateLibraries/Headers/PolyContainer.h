@@ -56,6 +56,8 @@ struct PolyContainerEntry
     
     ~PolyContainerEntry() = default;
 
+    FORCE_INLINE const I32 elementIndex() const noexcept { return to_I32(_elementIndex); }
+
     union {
         struct {
             U8 _typeIndex;
@@ -89,75 +91,71 @@ struct PolyContainer {
         return PolyContainerEntry{ index, to_I32(collection.size() - 1) };
     }
 
-    inline EntryList& get(U8 index) {
-        return  _collection[index];
-    }
-
-    inline const EntryList& get(U8 index) const {
-        return  _collection[index];
-    }
-
-    inline T& get(U8 index, I24 entry) {
+    inline EntryList& get(U8 index) noexcept {
         if (VALIDATE_POLY_CONTAINERS) {
             assert(index < N);
         }
 
-        const EntryList& collection = _collection[index];
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(entry < collection.size());
-        }
-
-        return *collection[to_I32(entry)];
+        return  _collection[index];
     }
 
-    inline T* getPtr(U8 index, I24 entry) const {
+    inline const EntryList& get(U8 index) const noexcept {
         if (VALIDATE_POLY_CONTAINERS) {
             assert(index < N);
         }
 
-        const EntryList& collection = _collection[index];
+        return  _collection[index];
+    }
+
+    inline T* getPtr(const PolyContainerEntry& entry) noexcept {
+        return getPtr(entry._typeIndex, entry.elementIndex());
+    }
+
+    inline const T* getPtr(const PolyContainerEntry& entry) const noexcept {
+        return getPtr(entry._typeIndex, entry.elementIndex());
+    }
+
+    inline T* getPtr(U8 index, I32 entry) const noexcept {
+        const EntryList& collection = get(index);
+        return collection[entry].get();
+    }
+
+    inline T* getPtrOrNull(U8 index, I32 entry) const noexcept {
+        const EntryList& collection = get(index);
+        assert(entry >= 0);
         if (entry < collection.size()) {
-            return collection[to_I32(entry)].get();
+            return collection[entry].get();
         }
-        
+
         return nullptr;
     }
 
-    inline const T& get(U8 index, I24 entry) const {
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(index < N);
-        }
-
-        const EntryList& collection = _collection[index];
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(entry < collection.size());
-        }
-
-        return *collection[to_I32(entry)];
+    inline T& get(U8 index, I32 entry) noexcept {
+        return *getPtr(index, entry);
     }
 
-    inline T& get(const PolyContainerEntry& entry) {
-        return get(entry._typeIndex, entry._elementIndex);
+    inline const T& get(U8 index, I32 entry) const noexcept {
+        return *getPtr(index, entry);
     }
 
-    inline const T& get(const PolyContainerEntry& entry) const {
-        return get(entry._typeIndex, entry._elementIndex);
+    inline T& get(const PolyContainerEntry& entry) noexcept {
+        return *getPtr(entry._typeIndex, entry.elementIndex());
     }
 
-    inline bool exists(const PolyContainerEntry& entry) const {
-        return exists(entry._typeIndex, entry._elementIndex);
+    inline const T& get(const PolyContainerEntry& entry) const noexcept {
+        return *getPtr(entry._typeIndex, entry.elementIndex());
     }
 
-    inline bool exists(U8 index, I24 entry) const {
-        return index < N && entry < _collection[index].size();
+    inline bool exists(const PolyContainerEntry& entry) const noexcept {
+        return exists(entry._typeIndex, entry.elementIndex());
     }
 
-    inline vec_size_eastl size(U8 index) const {
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(index < N);
-        }
+    inline bool exists(U8 index, I32 entry) const noexcept{
+        return index < N && entry < size(index);
+    }
 
-        return _collection[index].size();
+    inline vec_size_eastl size(U8 index) const noexcept{
+        return get(index).size();
     }
 
     inline void reserve(size_t size) {
@@ -167,11 +165,7 @@ struct PolyContainer {
     }
 
     inline void reserve(U8 index, size_t reserveSize) {
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(index < N);
-        }
-
-        _collection[index].reserve(reserveSize);
+        getPtr(index)->reserve(reserveSize);
     }
 
     inline void clear(bool clearMemory = false) {
@@ -195,19 +189,15 @@ struct PolyContainer {
     }
 
     inline void clear(U8 index, bool clearMemory = false) {
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(index < N);
-        }
-
         if (clearMemory) {
-            _collection[index].clear();
+            getPtr(index)->clear();
         } else {
-            _collection[index].resize(0);
+            getPtr(index)->resize(0);
         }
     }
 
-    inline bool empty() const {
-        for (auto col : _collection) {
+    inline bool empty() const noexcept {
+        for (const auto& col : _collection) {
             if (!col.empty()) {
                 return false;
             }
@@ -216,7 +206,7 @@ struct PolyContainer {
         return true;
     }
 
-    std::array<EntryList, N> _collection;
+    eastl::array<EntryList, N> _collection;
 };
 
 }; //namespace Divide

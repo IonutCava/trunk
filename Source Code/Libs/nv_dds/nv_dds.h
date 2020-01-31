@@ -203,8 +203,8 @@ public:
     bool is_dword_aligned() {
         assert(m_valid);
 
-        int dwordLineSize = get_dword_aligned_linesize(get_width(), m_components * 8);
-        int curLineSize = get_width() * m_components;
+        const int dwordLineSize = get_dword_aligned_linesize(get_width(), m_components * 8);
+        const int curLineSize = get_width() * m_components;
 
         return (dwordLineSize == curLineSize);
     }

@@ -55,10 +55,6 @@ class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
        {
        }
 
-       virtual ~PixelBuffer()
-       {
-       }
-
     virtual bool create(
         U16 width, U16 height, U16 depth = 0,
         GFXImageFormat formatEnum = GFXImageFormat::RGBA,
@@ -66,11 +62,11 @@ class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
 
     virtual void updatePixels(const F32* const pixels, U32 pixelCount) = 0;
 
-    inline U32 getTextureHandle() const { return _textureID; }
-    inline U16 getWidth() const { return _width; }
-    inline U16 getHeight() const { return _height; }
-    inline U16 getDepth() const { return _depth; }
-    inline PBType getType() const { return _pbtype; }
+    inline U32 getTextureHandle() const noexcept { return _textureID; }
+    inline U16 getWidth() const noexcept { return _width; }
+    inline U16 getHeight() const noexcept { return _height; }
+    inline U16 getDepth() const noexcept { return _depth; }
+    inline PBType getType() const noexcept { return _pbtype; }
 
     inline TextureData getData() const { return TextureData{ _textureID, 0u, _textureType }; }
 

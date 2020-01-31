@@ -54,10 +54,10 @@ namespace GFX {
 };
 
 struct RenderBinItem {
-    RenderBinItem() : RenderBinItem(nullptr, -1, -1, 0, 0.0f) 
+    RenderBinItem() noexcept : RenderBinItem(nullptr, -1, -1, 0, 0.0f)
     {}
 
-    RenderBinItem(RenderingComponent* rcomp, I64 a, I32 b, size_t hash, F32 dist)
+    RenderBinItem(RenderingComponent* rcomp, I64 a, I32 b, size_t hash, F32 dist) noexcept
         : _renderable(rcomp), _sortKeyA(a), _sortKeyB(b), _stateHash(hash), _distanceToCameraSq(dist)
     {}
 
@@ -121,7 +121,7 @@ class RenderBin {
 
     bool empty(RenderStage stage) const;
 
-    inline RenderBinType getType() const { return _rbType; }
+    inline RenderBinType getType() const noexcept { return _rbType; }
 
    private:
     const RenderBinType _rbType;

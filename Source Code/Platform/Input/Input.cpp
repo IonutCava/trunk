@@ -156,7 +156,7 @@ namespace Input {
         ACKNOWLEDGE_UNUSED(deviceIndex);
 
         I32 x = -1, y = -1;
-        U32 state = SDL_GetMouseState(&x, &y);
+        const U32 state = SDL_GetMouseState(&x, &y);
 
         U32 sdlButton = 0;
         switch (button) {

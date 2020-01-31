@@ -190,7 +190,7 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
         return true;
     }
 
-    ShaderProgramMap::const_iterator it = std::find_if(
+    const ShaderProgramMap::const_iterator it = std::find_if(
         std::cbegin(s_shaderPrograms),
         std::cend(s_shaderPrograms),
         [shaderHash](const ShaderProgramMap::value_type& item) {

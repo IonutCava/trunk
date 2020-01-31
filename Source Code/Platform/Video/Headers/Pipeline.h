@@ -71,35 +71,35 @@ class Pipeline {
 public:
     Pipeline(const PipelineDescriptor& descriptor);
 
-    inline I64 shaderProgramHandle() const {
+    inline I64 shaderProgramHandle() const noexcept {
         return _descriptor._shaderProgramHandle;
     }
 
-    inline const PipelineDescriptor& descriptor() const {
+    inline const PipelineDescriptor& descriptor() const noexcept {
         return _descriptor;
     }
 
-    inline size_t stateHash() const {
+    inline size_t stateHash() const noexcept {
         return _descriptor._stateHash;
     }
 
-    inline U8 multiSampleCount() const{
+    inline U8 multiSampleCount() const noexcept {
         return _descriptor._multiSampleCount;
     }
 
-    inline const ShaderFunctions& shaderFunctions() const {
+    inline const ShaderFunctions& shaderFunctions() const noexcept {
         return _descriptor._shaderFunctions;
     }
 
-    inline size_t getHash() const {
+    inline size_t getHash() const noexcept {
         return _cachedHash;
     }
 
-    inline bool operator==(const Pipeline& other) const {
+    inline bool operator==(const Pipeline& other) const noexcept {
         return _cachedHash == other._cachedHash;
     }
 
-    inline bool operator!=(const Pipeline& other) const {
+    inline bool operator!=(const Pipeline& other) const noexcept {
         return _cachedHash != other._cachedHash;
     }
 

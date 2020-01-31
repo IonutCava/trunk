@@ -79,7 +79,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
     /// Change the texture's mip levels. This can be called at any time
-    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) { _descriptor.mipLevels({ base, max }); }
+    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const bufferPtr ptr,
                         const vec2<U16>& dimensions) = 0;
@@ -96,14 +96,14 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     virtual void setCurrentSampler(const SamplerDescriptor& descriptor);
 
     /// Get the sampler descriptor used by this texture
-    inline const SamplerDescriptor& getCurrentSampler() const { return _descriptor.samplerDescriptor(); }
+    inline const SamplerDescriptor& getCurrentSampler() const noexcept { return _descriptor.samplerDescriptor(); }
     /// Texture base mip level
-    inline U16 getBaseMipLevel() const { return _descriptor.mipLevels().x; }
+    inline U16 getBaseMipLevel() const noexcept { return _descriptor.mipLevels().x; }
     /// Texture max mip level
-    inline U16 getMaxMipLevel() const { return _descriptor.mipLevels().y; }
+    inline U16 getMaxMipLevel() const noexcept { return _descriptor.mipLevels().y; }
     /// Number of loaded mip levels in VRAM
-    inline U16 getMipCount() const { return _descriptor._mipCount; }
-    inline bool automaticMipMapGeneration() const { return _descriptor.autoMipMaps(); }
+    inline U16 getMipCount() const noexcept { return _descriptor._mipCount; }
+    inline bool automaticMipMapGeneration() const noexcept { return _descriptor.autoMipMaps(); }
 
     PROPERTY_R(TextureDescriptor, descriptor);
     PROPERTY_R(TextureData, data);
@@ -131,10 +131,10 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     virtual void validateDescriptor();
 
-    inline void setTextureHandle(U32 handle) { _data._textureHandle = handle; }
-    inline void setSamplerHandle(U32 handle) { _data._samplerHandle = handle; }
+    inline void setTextureHandle(U32 handle) noexcept { _data._textureHandle = handle; }
+    inline void setSamplerHandle(U32 handle) noexcept { _data._samplerHandle = handle; }
 
-    const char* getResourceTypeName() const override { return "Texture"; }
+    const char* getResourceTypeName() const noexcept override { return "Texture"; }
 
    protected:
     bool _asyncLoad;

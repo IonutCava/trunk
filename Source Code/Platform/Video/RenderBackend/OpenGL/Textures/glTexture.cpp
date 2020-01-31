@@ -85,7 +85,7 @@ void glTexture::threadedLoad() {
     _lockManager->Lock(!Runtime::isMainThread());
 }
 
-void glTexture::setMipMapRange(U16 base, U16 max) {
+void glTexture::setMipMapRange(U16 base, U16 max) noexcept {
     if (_descriptor.mipLevels() == vec2<U16>(base, max)) {
         return;
     }
@@ -121,9 +121,9 @@ void glTexture::resize(const bufferPtr ptr,
         setTextureHandle(tempHandle);
     }
 
-    vec2<U16> mipLevels(0, _descriptor.samplerDescriptor().generateMipMaps()
-                                ? 1 + Texture::computeMipCount(_width, _height)
-                                : 1);
+    const vec2<U16> mipLevels(0, _descriptor.samplerDescriptor().generateMipMaps()
+                                    ? 1 + Texture::computeMipCount(_width, _height)
+                                    : 1);
 
     _allocatedStorage = false;
     // We may have limited the number of mips
@@ -131,7 +131,7 @@ void glTexture::resize(const bufferPtr ptr,
                             std::min(_descriptor.mipLevels().y, mipLevels.y)});
     _descriptor.mipCount(mipLevels.y);
 
-    TextureLoadInfo info;
+    const TextureLoadInfo info = {};
     loadData(info, ptr, dimensions);
 
     if (automaticMipMapGeneration() && _descriptor.samplerDescriptor().generateMipMaps()) {
@@ -144,10 +144,10 @@ void glTexture::reserveStorage() {
         !(data().type() == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
         "glTexture::reserverStorage error: width and height for cube map texture do not match!");
 
-    GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
-    GLuint handle = _data.textureHandle();
-    GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
-    GLushort mipMaxLevel = _descriptor.mipLevels().max;
+    const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
+    const GLuint handle = _data.textureHandle();
+    const GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
+    const GLushort mipMaxLevel = _descriptor.mipLevels().max;
 
     switch (_data.type()) {
         case TextureType::TEXTURE_1D: {
@@ -299,8 +299,8 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                                    const vector<ImageTools::ImageLayer>& imageLayers) {
 
     _descriptor.autoMipMaps(false);
-    GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
-    GLint numMips = static_cast<GLint>(imageLayers.size());
+    const GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
+    const GLint numMips = static_cast<GLint>(imageLayers.size());
 
     GL_API::getStateTracker().setPixelPackUnpackAlignment();
     for (GLint i = 0; i < numMips; ++i) {
@@ -360,9 +360,9 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
 
 void glTexture::loadDataUncompressed(const TextureLoadInfo& info, bufferPtr data) {
     if (data) {
-        GLenum format = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
-        GLenum type = GLUtil::glDataFormat[to_U32(_descriptor.dataType())];
-        GLuint handle = _data.textureHandle();
+        const GLenum format = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
+        const GLenum type = GLUtil::glDataFormat[to_U32(_descriptor.dataType())];
+        const GLuint handle = _data.textureHandle();
 
         GL_API::getStateTracker().setPixelPackUnpackAlignment();
         switch (_data.type()) {
@@ -392,10 +392,10 @@ void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
 }
 
 void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) {
-    GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
-                            : (write ? GL_WRITE_ONLY : GL_NONE);
+    const GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
+                               : (write ? GL_WRITE_ONLY : GL_NONE);
 
-    GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
+    const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
     GL_API::getStateTracker().bindTextureImage(slot, _descriptor.type(), _data.textureHandle(), level, layered, layer, access, glInternalFormat);
 }
 

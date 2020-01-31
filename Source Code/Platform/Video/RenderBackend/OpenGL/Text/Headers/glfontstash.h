@@ -155,8 +155,8 @@ static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* 
 	GLFONScontext* gl = (GLFONScontext*)userPtr;
 
     if (gl->tex != 0) {
-        int w = rect[2] - rect[0];
-        int h = rect[3] - rect[1];
+        const int w = rect[2] - rect[0];
+        const int h = rect[3] - rect[1];
         Divide::GL_API::getStateTracker().setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
         glTextureSubImage2D(gl->tex, 0, rect[0], rect[1], w, h, GL_RED, GL_UNSIGNED_BYTE, (Divide::bufferPtr)data);
     }

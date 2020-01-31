@@ -54,8 +54,8 @@ protected:
     virtual ~GraphicsResource();
 
 public:
-    inline GFXDevice& context() { return _context; }
-    inline U64 nameHash() const { return _nameHash; }
+    inline GFXDevice& context() noexcept { return _context; }
+    inline U64 nameHash() const noexcept { return _nameHash; }
 
 protected:
     GFXDevice& _context;

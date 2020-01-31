@@ -115,7 +115,7 @@ void glPixelBuffer::end() const {
 bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
                            GFXImageFormat formatEnum,
                            GFXDataFormat dataTypeEnum) {
-    GLenum textureTypeEnum = GLUtil::glTextureTypeTable[to_U32(_textureType)];
+    const GLenum textureTypeEnum = GLUtil::glTextureTypeTable[to_U32(_textureType)];
     _internalFormat = GLUtil::internalFormat(formatEnum, dataTypeEnum, false);
     _format = GLUtil::glImageFormatTable[to_U32(formatEnum)];
     _dataType = GLUtil::glDataFormat[to_U32(dataTypeEnum)];
@@ -168,7 +168,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
         glTextureParameteri(_textureID, GL_TEXTURE_WRAP_R, to_I32(GL_REPEAT));
     }
 
-    U16 mipLevels = to_U16(std::floor(std::log2(std::max(_width, _height))) + 1);
+    const U16 mipLevels = to_U16(std::floor(std::log2(std::max(_width, _height))) + 1);
     GL_API::getStateTracker().setPixelPackUnpackAlignment();
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:

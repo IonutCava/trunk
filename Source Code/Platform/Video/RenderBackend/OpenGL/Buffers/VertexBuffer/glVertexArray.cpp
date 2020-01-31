@@ -142,11 +142,11 @@ void glVertexArray::reset() {
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
 std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
-    bool useTexcoords = _useAttribute[to_base(AttribLocation::TEXCOORD)];
-    bool useNormals   = _useAttribute[to_base(AttribLocation::NORMAL)];
-    bool useTangents  = _useAttribute[to_base(AttribLocation::TANGENT)];
-    bool useColour    = _useAttribute[to_base(AttribLocation::COLOR)];
-    bool useBoneData  = _useAttribute[to_base(AttribLocation::BONE_INDICE)];
+    const bool useTexcoords = _useAttribute[to_base(AttribLocation::TEXCOORD)];
+    const bool useNormals   = _useAttribute[to_base(AttribLocation::NORMAL)];
+    const bool useTangents  = _useAttribute[to_base(AttribLocation::TANGENT)];
+    const bool useColour    = _useAttribute[to_base(AttribLocation::COLOR)];
+    const bool useBoneData  = _useAttribute[to_base(AttribLocation::BONE_INDICE)];
 
     size_t prevOffset = sizeof(vec3<F32>);
 
@@ -199,7 +199,7 @@ bool glVertexArray::create(bool staticDraw) {
     if (!staticDraw) {
         // OpenGLES support isn't added, but this check doesn't break anything,
         // so I'll just leave it here -Ionut
-        GLenum usage = (GL_API::s_glConfig._glES ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW);
+        const GLenum usage = (GL_API::s_glConfig._glES ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW);
         if (usage != _usage) {
             _usage = usage;
             _refreshQueued = true;
@@ -216,9 +216,9 @@ bool glVertexArray::refresh() {
     // rendering system)
     assert(!_indices.empty() && "glVertexArray::refresh error: Invalid index data on Refresh()!");
 
-    GLsizei nSizeIndices = (GLsizei)(_indices.size() * (usesLargeIndices() ? sizeof(U32) : sizeof(U16)));
+    const GLsizei nSizeIndices = (GLsizei)(_indices.size() * (usesLargeIndices() ? sizeof(U32) : sizeof(U16)));
 
-    bool indicesChanged = (nSizeIndices != _prevSizeIndices);
+    const bool indicesChanged = (nSizeIndices != _prevSizeIndices);
     _prevSizeIndices = nSizeIndices;
     _refreshQueued = indicesChanged;
 
@@ -233,14 +233,14 @@ bool glVertexArray::refresh() {
     }
     _attribDirty.fill(false);
 
-    std::pair<bufferPtr, size_t> bufferData = getMinimalData();
+    const std::pair<bufferPtr, size_t> bufferData = getMinimalData();
     // If any of the VBO's components changed size, we need to recreate the
     // entire buffer.
 
     GLsizei size = static_cast<GLsizei>(bufferData.second);
-    bool sizeChanged = size != _prevSize;
+    const bool sizeChanged = size != _prevSize;
     bool needsReallocation = false;
-    U32 countRequirement = GLUtil::VBO::getChunkCountForSize(size);
+    const U32 countRequirement = GLUtil::VBO::getChunkCountForSize(size);
     if (sizeChanged) {
         needsReallocation = countRequirement > GLUtil::VBO::getChunkCountForSize(_prevSize);
         _prevSize = size;
@@ -317,7 +317,7 @@ void glVertexArray::upload() {
         size_t crtHash = 0;
         // Dirty on a VAO map cache miss
         if (!_VAOMap.getVAO(stageUsage, _vaoCaches[i], crtHash)) {
-            GLuint crtVao = _vaoCaches[i];
+            const GLuint crtVao = _vaoCaches[i];
             if (eastl::find(eastl::cbegin(vaos), eastl::cend(vaos), crtVao) == eastl::cend(vaos)) {
                 vaos.push_back(crtVao);
                 // Set vertex attribute pointers
@@ -409,7 +409,7 @@ void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 
     }
 
     if (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex) {
-        U32 idxCount = drawCount * getIndexCount();
+        const U32 idxCount = drawCount * getIndexCount();
         if (_indexOffsetData.size() < idxCount) {
             _indexOffsetData.resize(idxCount, firstIndex);
         }

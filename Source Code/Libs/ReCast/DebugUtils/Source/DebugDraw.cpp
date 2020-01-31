@@ -35,17 +35,17 @@ inline int bit(int a, int b)
 
 unsigned int duIntToCol(int i, int a)
 {
-    int    r = bit(i, 1) + bit(i, 3) * 2 + 1;
-    int    g = bit(i, 2) + bit(i, 4) * 2 + 1;
-    int    b = bit(i, 0) + bit(i, 5) * 2 + 1;
+    const int    r = bit(i, 1) + bit(i, 3) * 2 + 1;
+    const int    g = bit(i, 2) + bit(i, 4) * 2 + 1;
+    const int    b = bit(i, 0) + bit(i, 5) * 2 + 1;
     return duRGBA(r*63,g*63,b*63,a);
 }
 
 void duIntToCol(int i, float* col)
 {
-    int    r = bit(i, 0) + bit(i, 3) * 2 + 1;
-    int    g = bit(i, 1) + bit(i, 4) * 2 + 1;
-    int    b = bit(i, 2) + bit(i, 5) * 2 + 1;
+    const int    r = bit(i, 0) + bit(i, 3) * 2 + 1;
+    const int    g = bit(i, 1) + bit(i, 4) * 2 + 1;
+    const int    b = bit(i, 2) + bit(i, 5) * 2 + 1;
     col[0] = 1 - r*63.0f/255.0f;
     col[1] = 1 - g*63.0f/255.0f;
     col[2] = 1 - b*63.0f/255.0f;
@@ -318,7 +318,7 @@ void duAppendCylinder(struct duDebugDraw* dd, float minx, float miny, float minz
         }
     }
     
-    unsigned int col2 = duMultCol(col, 160);
+    const unsigned int col2 = duMultCol(col, 160);
     
     const float cx = (maxx + minx)/2;
     const float cz = (maxz + minz)/2;
@@ -371,7 +371,7 @@ inline void vcross(float* dest, const float* v1, const float* v2)
 
 inline void vnormalize(float* v)
 {
-    float d = 1.0f / sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    const float d = 1.0f / sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     v[0] *= d;
     v[1] *= d;
     v[2] *= d;

@@ -43,12 +43,12 @@ U32 VBO::handle() {
 bool VBO::checkChunksAvailability(size_t offset, U32 count) {
     assert(MAX_VBO_CHUNK_COUNT > offset);
 
-    std::pair<bool, U32>& chunk = _chunkUsageState[offset];
+    const std::pair<bool, U32>& chunk = _chunkUsageState[offset];
     U32 freeChunkCount = 0;
     if (!chunk.first) {
         freeChunkCount++;
         for (U32 j = 1; j < MAX_VBO_CHUNK_COUNT - offset; ++j) {
-            std::pair<bool, U32>& chunkChild = _chunkUsageState[offset + j];
+            const std::pair<bool, U32>& chunkChild = _chunkUsageState[offset + j];
             if (chunkChild.first) {
                 break;
             } else {
@@ -100,7 +100,7 @@ void VBO::releaseChunks(size_t offset) {
 
     assert(offset < MAX_VBO_CHUNK_COUNT);
     assert(_chunkUsageState[offset].second != 0);
-    U32 childCount = _chunkUsageState[offset].second;
+    const U32 childCount = _chunkUsageState[offset].second;
     for (size_t i = 0; i < childCount; ++i) {
         std::pair<bool, U32>& chunkChild = _chunkUsageState[i + offset];
         assert(chunkChild.first);
@@ -111,7 +111,7 @@ void VBO::releaseChunks(size_t offset) {
 
 U32 VBO::getMemUsage() {
     U32 usedBlocks = 0;
-    for (std::pair<bool, U32>& chunk : _chunkUsageState) {
+    for (const std::pair<bool, U32>& chunk : _chunkUsageState) {
         if (chunk.first) {
             usedBlocks++;
         }
@@ -233,7 +233,7 @@ void createAndAllocBuffer(GLsizeiptr bufferSize,
 void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
     if (bufferId > 0) {
         if (mappedPtr != nullptr) {
-            GLboolean result = glUnmapNamedBuffer(bufferId);
+            const GLboolean result = glUnmapNamedBuffer(bufferId);
             assert(result != GL_FALSE && "GLUtil::freeBuffer error: buffer unmaping failed");
             ACKNOWLEDGE_UNUSED(result);
             mappedPtr = nullptr;

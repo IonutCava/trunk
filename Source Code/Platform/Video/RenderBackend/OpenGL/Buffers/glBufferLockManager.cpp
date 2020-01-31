@@ -178,7 +178,7 @@ void glGlobalLockManager::quickCheckOldEntries(U32 frameID) {
         //Entries-FrameID
         const std::pair<BufferLockEntries, U32>& entriesForCrtBuffer = it->second;
         // Check how old these entries are. Need to be at least 3 frames old for a fast check.
-        U32 frameAge = frameID - entriesForCrtBuffer.second;
+        const U32 frameAge = frameID - entriesForCrtBuffer.second;
         if (frameAge < 3) {
             ++it;
             continue;

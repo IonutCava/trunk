@@ -213,9 +213,9 @@ bool GLStateTracker::bindTextures(GLushort unitOffset,
         if (textureHandles != nullptr) {
             UniqueLockShared w_lock(GL_API::s_mipmapQueueSetLock);
             for (GLuint i = 0; i < textureCount; ++i) {
-                GLuint crtHandle = textureHandles[i];
+                const GLuint crtHandle = textureHandles[i];
                 if (crtHandle > 0) {
-                    auto it = GL_API::s_mipmapQueue.find(crtHandle);
+                    const auto it = GL_API::s_mipmapQueue.find(crtHandle);
                     if (it == std::cend(GL_API::s_mipmapQueue)) {
                         continue;
                     }
@@ -229,7 +229,7 @@ bool GLStateTracker::bindTextures(GLushort unitOffset,
 
         if (textureCount == 1) {
             GLuint targetHandle = textureHandles ? textureHandles[0] : 0u;
-            TextureType type = textureTypes ? textureTypes[0] : TextureType::TEXTURE_2D;
+            const TextureType type = textureTypes ? textureTypes[0] : TextureType::TEXTURE_2D;
 
             GLuint& crtHandle = _textureBoundMap[unitOffset][to_base(type)];
 
@@ -286,7 +286,7 @@ bool GLStateTracker::bindTextureImage(GLushort unit, TextureType type, GLuint ha
 bool GLStateTracker::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLintptr offset, GLsizei stride) {
     const VAOBindings::BufferBindingParams& bindings = _vaoBufferData.bindingParams(vaoID, location);
 
-    VAOBindings::BufferBindingParams currentParams(bufferID, offset, stride);
+    const VAOBindings::BufferBindingParams currentParams(bufferID, offset, stride);
     if (bindings != currentParams) {
         // Bind the specified buffer handle to the desired buffer target
         glVertexArrayVertexBuffer(vaoID, location, bufferID, offset, stride);
@@ -442,7 +442,7 @@ void GLStateTracker::setDepthRange(F32 nearVal, F32 farVal) {
 
 void GLStateTracker::setBlendColour(const UColour4& blendColour, bool force) {
     if (_blendColour != blendColour || force) {
-        FColour4 floatColour = Util::ToFloatColour(blendColour);
+        const FColour4 floatColour = Util::ToFloatColour(blendColour);
         glBlendColor(static_cast<GLfloat>(floatColour.r),
                      static_cast<GLfloat>(floatColour.g),
                      static_cast<GLfloat>(floatColour.b),
@@ -455,7 +455,7 @@ void GLStateTracker::setBlendColour(const UColour4& blendColour, bool force) {
 void GLStateTracker::setBlending(const BlendingProperties& blendingProperties) {
     OPTICK_EVENT();
 
-    bool enable = blendingProperties.blendEnabled();
+    const bool enable = blendingProperties.blendEnabled();
 
     if ((_blendEnabledGlobal == GL_TRUE) != enable) {
         enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
@@ -507,7 +507,7 @@ void GLStateTracker::setBlending(const BlendingProperties& blendingProperties) {
 }
 
 void GLStateTracker::setBlending(GLuint drawBufferIdx,const BlendingProperties& blendingProperties) {
-    bool enable = blendingProperties.blendEnabled();
+    const bool enable = blendingProperties.blendEnabled();
 
     assert(drawBufferIdx < (GLuint)(GL_API::s_maxFBOAttachments));
 
@@ -643,7 +643,7 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
     // Check culling mode (back (CW) / front (CCW) by default)
     if (oldBlock.cullMode() != newBlock.cullMode()) {
         if (newBlock.cullMode() != CullMode::NONE) {
-            GLenum targetMode = GLUtil::glCullModeTable[to_U32(newBlock.cullMode())];
+            const GLenum targetMode = GLUtil::glCullModeTable[to_U32(newBlock.cullMode())];
             if (_currentCullMode != targetMode) {
                 glCullFace(targetMode);
                 _currentCullMode = targetMode;
@@ -704,7 +704,7 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
 
     // Check and set colour mask
     if (oldBlock.colourWrite().i != newBlock.colourWrite().i) {
-        P32 cWrite = newBlock.colourWrite();
+        const P32 cWrite = newBlock.colourWrite();
         glColorMask(cWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
                     cWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
                     cWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
@@ -719,7 +719,7 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock) {
     newBlock.scissorTestEnabled() ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
 
     if (newBlock.cullMode() != CullMode::NONE) {
-        GLenum targetMode = GLUtil::glCullModeTable[to_U32(newBlock.cullMode())];
+        const GLenum targetMode = GLUtil::glCullModeTable[to_U32(newBlock.cullMode())];
         if (_currentCullMode != targetMode) {
             glCullFace(targetMode);
             _currentCullMode = targetMode;

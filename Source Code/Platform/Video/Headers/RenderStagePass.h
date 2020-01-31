@@ -70,39 +70,39 @@ struct RenderStagePass {
         return index(_stage, _passType);
     }
 
-    inline bool isDepthPass() const {
+    inline bool isDepthPass() const noexcept {
         return _stage == RenderStage::SHADOW ||
                _passType == RenderPassType::PRE_PASS;
     }
 
-    constexpr static StagePassIndex count() {
+    constexpr static StagePassIndex count() noexcept {
         return static_cast<StagePassIndex>(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT));
     }
 
-    static StagePassIndex index(const RenderStage stage, const RenderPassType type) {
+    static StagePassIndex index(const RenderStage stage, const RenderPassType type) noexcept {
         return static_cast<StagePassIndex>(to_base(stage) + to_base(type) * to_base(RenderStage::COUNT));
     }
 
-    static RenderStage stage(StagePassIndex index) {
+    static RenderStage stage(StagePassIndex index) noexcept {
         return static_cast<RenderStage>(index % to_base(RenderStage::COUNT));
     }
 
-    static RenderPassType pass(StagePassIndex index) {
+    static RenderPassType pass(StagePassIndex index) noexcept {
         return static_cast<RenderPassType>(index / to_base(RenderStage::COUNT));
     }
 
-    static RenderStagePass stagePass(StagePassIndex index) {
+    static RenderStagePass stagePass(StagePassIndex index) noexcept {
         return RenderStagePass(RenderStagePass::stage(index), RenderStagePass::pass(index));
     }
 
-    inline bool operator==(const RenderStagePass& other) const {
+    inline bool operator==(const RenderStagePass& other) const noexcept {
         return _variant == other._variant &&
                _passIndex == other._passIndex &&
                _stage == other._stage &&
                _passType == other._passType;
     }
 
-    inline bool operator!=(const RenderStagePass& other) const {
+    inline bool operator!=(const RenderStagePass& other) const noexcept {
         return _variant != other._variant ||
                _passIndex != other._passIndex ||
                _stage != other._stage ||
