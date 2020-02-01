@@ -99,7 +99,6 @@ struct GLLockEntryLight {
     bool* valid = nullptr;
 };
 
-#pragma optimize( "", off )
 bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait) {
     OPTICK_EVENT();
 
@@ -116,7 +115,7 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
         SharedLock r_lock(_lock);
         // Check again as the range may have been cleared on another thread
         for (GLLockEntry& lock : _bufferLocks) {
-            if (lock._ageID == idx) {
+            if (lock._ageID == idx || !lock._valid) {
                 continue;
             }
 
@@ -125,18 +124,11 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
 
             if (entry != std::cend(entries)) {
                 for (const BufferRange& range : entry->second) {
-                    if (lock._valid && testRange.Overlaps(range)) {
-                        if (ret) {
+                    if (testRange.Overlaps(range)) {
+                        if (wait(lock._sync, true, noWait)) {
                             lock._valid = false;
-                        } else {
-                            U8 retryCount = 0;
-                            if (wait(lock._sync, true, noWait, retryCount)) {
-                                lock._valid = false;
-                                if (retryCount > 1) {
-                                    //ToDo: do something?
-                                }
-                                ret = true;
-                            }
+                            ret = true;
+                            break;
                         }
                     }
                 }
@@ -171,19 +163,17 @@ void glGlobalLockManager::quickCheckOldEntries(U32 frameID) {
 void glGlobalLockManager::markOldDuplicateRangesAsInvalid(U32 frameID, const BufferLockEntries& entries) {
     OPTICK_EVENT();
     
-    for (auto bufferLock = eastl::begin(_bufferLocks); bufferLock != eastl::end(_bufferLocks); ++bufferLock) {
-        if (!bufferLock->_valid) {
-            continue;
-        }
-
-        for (auto& oldEntry : bufferLock->_entries) {
-            for (auto& newEntry : entries) {
-                if (oldEntry.first == newEntry.first) {
-                    for (auto& oldRange : oldEntry.second) {
-                        for (auto& newRange : newEntry.second) {
-                            if (oldRange.Overlaps(newRange)) {
-                                bufferLock->_valid = false;
-                                goto NEXT_ENTRY;
+    for (auto& bufferLock : _bufferLocks) {
+        if (bufferLock._valid) {
+            for (auto& oldEntry : bufferLock._entries) {
+                for (auto& newEntry : entries) {
+                    if (oldEntry.first == newEntry.first) {
+                        for (auto& oldRange : oldEntry.second) {
+                            for (auto& newRange : newEntry.second) {
+                                if (oldRange.Overlaps(newRange)) {
+                                    bufferLock._valid = false;
+                                    goto NEXT_ENTRY;
+                                }
                             }
                         }
                     }
@@ -191,7 +181,7 @@ void glGlobalLockManager::markOldDuplicateRangesAsInvalid(U32 frameID, const Buf
             }
         }
 
-    NEXT_ENTRY:;
+        NEXT_ENTRY:;
     }
 }
 
@@ -221,5 +211,5 @@ void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush, U
         glFlush();
     }
 }
-#pragma optimize( "", on )
+
 };
