@@ -48,7 +48,7 @@ Split(const char* input, char delimiter, T_vec& elems) {
         {
             size_t i = 0;
             const char* o = input;
-            for (i = 0; input[i]; input[i] == delimiter ? i++ : *input++);
+            for (i = 0; input[i]; input[i] == delimiter ? i++ : *(input++));
             elems.reserve(i);
             input = o;
         }

@@ -11,6 +11,7 @@ namespace Divide {
 
 Server::Server()
     : thread_(),
+     _debugOutput(false),
       acceptor_(nullptr)
 {
 }
@@ -31,6 +32,7 @@ void Server::close() {
     thread_->join();
     thread_.reset();
 }
+
 void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool debugOutput) {
     if (thread_) {
         return;

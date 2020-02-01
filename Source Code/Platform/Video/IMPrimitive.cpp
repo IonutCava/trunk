@@ -70,11 +70,12 @@ void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UCol
 void IMPrimitive::fromSphere(const vec3<F32>& center,
                              F32 radius,
                              const UColour4& colour) {
-    const U32 slices = 8, stacks = 8;
-    const F32 drho = to_F32(M_PI) / stacks;
-    const F32 dtheta = 2.0f * to_F32(M_PI) / slices;
-    const F32 ds = 1.0f / slices;
-    const F32 dt = 1.0f / stacks;
+    constexpr U32 slices = 8, stacks = 8;
+    constexpr F32 drho = to_F32(M_PI) / stacks;
+    constexpr F32 dtheta = 2.0f * to_F32(M_PI) / slices;
+    constexpr F32 ds = 1.0f / slices;
+    constexpr F32 dt = 1.0f / stacks;
+
     F32 t = 1.0f;
     F32 s = 0.0f;
     U32 i, j;  // Looping variables

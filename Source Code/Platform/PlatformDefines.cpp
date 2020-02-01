@@ -187,7 +187,7 @@ void SetClipboardText(void* user_data, const char* text)
 
 void ToggleCursor(bool state)
 {
-    SDL_ShowCursor(state ? SDL_TRUE : SDL_FALSE);
+    SDL_ShowCursor((state ? SDL_TRUE : SDL_FALSE));
 }
 
 bool CursorState()
