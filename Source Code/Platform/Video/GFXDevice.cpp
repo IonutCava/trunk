@@ -785,6 +785,8 @@ void GFXDevice::closeRenderingAPI() {
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
 /// the screen, so we try to do some processing
 void GFXDevice::idle() {
+    OPTICK_EVENT();
+
     if (Config::ENABLE_GPU_VALIDATION) {
         _debugViewsEnabled = ParamHandler::instance().getParam<bool>(_ID_32("rendering.previewDebugViews"), false);
     }
@@ -1046,7 +1048,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     TextureData data = blurSource._rt->getAttachment(att, index).texture()->data();
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -1094,13 +1096,12 @@ void GFXDevice::decreaseResolution() {
 }
 
 void GFXDevice::stepResolution(bool increment) {
-    auto compare = [](const vec2<U16>& a, const vec2<U16>& b) -> bool {
+    auto compare = [](const vec2<U16>& a, const vec2<U16>& b) noexcept -> bool {
         return a.x > b.x || a.y > b.y;
     };
 
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
-    vector<GPUState::GPUVideoMode>::const_iterator it;
     const vector<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
 
     bool found = false;
@@ -1493,7 +1494,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         triangleCmd._drawCount = 1;
 
         // for i > 0, use texture views?
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTexture(hizData, to_U8(ShaderProgram::TextureUsage::DEPTH));
         GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
 
@@ -1568,7 +1569,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     ShaderBufferBinding shaderBuffer = {};
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
     shaderBuffer._buffer = bufferData._cmdBuffer;
-    shaderBuffer._elementRange.set(to_U16(bufferData._cmdBufferElementOffset), to_U16(bufferData._cmdBuffer->getPrimitiveCount()));
+    shaderBuffer._elementRange.set(to_U16(bufferData._cmdBufferElementOffset), to_U16(bufferData._cmdBuffer->getPrimitiveCount() / bufferData._cmdBufferElementFactor));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
     bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
@@ -1661,7 +1662,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _DrawFSTexturePipeline });
 
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
     bindDescriptorSetsCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
@@ -1921,7 +1922,7 @@ DebugView* GFXDevice::addDebugView(const eastl::shared_ptr<DebugView>& view) {
     }
     std::sort(std::begin(_debugViews),
               std::end(_debugViews),
-              [](const eastl::shared_ptr<DebugView>& a, const eastl::shared_ptr<DebugView>& b)-> bool {
+              [](const eastl::shared_ptr<DebugView>& a, const eastl::shared_ptr<DebugView>& b) noexcept -> bool {
                   return a->_sortIndex < b->_sortIndex;
                });
 
@@ -1933,7 +1934,7 @@ bool GFXDevice::removeDebugView(DebugView* view) {
         vector<eastl::shared_ptr<DebugView>>::iterator it;
         it = std::find_if(std::begin(_debugViews),
                           std::end(_debugViews),
-                         [view](const eastl::shared_ptr<DebugView>& entry) {
+                         [view](const eastl::shared_ptr<DebugView>& entry) noexcept {
                             return view->getGUID() == entry->getGUID();
                          });
 
@@ -2007,7 +2008,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // Apply the inverse view matrix so that it cancels out in the shader
             // Submit the draw command, rendering it in a tiny viewport in the lower
             // right corner
-            U16 windowWidth = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
+            const U16 windowWidth = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
             _axisGizmo->viewport(Rect<I32>(windowWidth - 120, 8, 128, 128));
             _axisGizmo->fromLines(_axisLines);
         

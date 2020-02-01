@@ -114,11 +114,11 @@ GLintptr glGenericBuffer::getBindOffset(GLuint ringReadOffset)
     return retInBytes;
 }
 
-void glGenericBuffer::setBindOffset(GLuint elementCountOffset) {
+void glGenericBuffer::setBindOffset(GLuint elementCountOffset) noexcept {
     _elementCountBindOffset = elementCountOffset;
 }
 
-glBufferImpl* glGenericBuffer::bufferImpl() const {
+glBufferImpl* glGenericBuffer::bufferImpl() const noexcept {
     return _buffer;
 }
 

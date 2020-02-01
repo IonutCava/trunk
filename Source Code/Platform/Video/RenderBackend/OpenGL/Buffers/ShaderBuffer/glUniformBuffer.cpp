@@ -124,6 +124,8 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
                                  ptrdiff_t rangeInBytes,
                                  const bufferPtr data) {
 
+    OPTICK_EVENT();
+
     if (rangeInBytes == 0) {
         return;
     }
@@ -131,6 +133,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
     if (rangeInBytes == static_cast<ptrdiff_t>(_elementCount * _elementSize)) {
         rangeInBytes = _allignedBufferSize;
     }
+
     DIVIDE_ASSERT(offsetInBytes + rangeInBytes <= (ptrdiff_t)_allignedBufferSize,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");

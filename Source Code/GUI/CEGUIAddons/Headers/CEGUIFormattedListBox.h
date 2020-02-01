@@ -61,9 +61,9 @@ class FormattedListboxTextItem : public ListboxTextItem {
     void setFormatting(const HorizontalTextFormatting fmt);
 
     // overridden functions.
-    Sizef getPixelSize(void) const;
+    Sizef getPixelSize(void) const override;
     void draw(GeometryBuffer& buffer, const Rectf& targetRect, float alpha,
-              const Rectf* clipper) const;
+              const Rectf* clipper) const override;
 
    protected:
     ///! Helper to create a FormattedRenderedString of an appropriate type.

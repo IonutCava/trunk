@@ -74,8 +74,8 @@ class GUIMessageBox : public GUIElement {
                   CEGUI::Window* parent = nullptr);
     ~GUIMessageBox();
 
-    void setVisible(const bool visible);
-    void setActive(const bool active);
+    void setVisible(const bool visible) override;
+    void setActive(const bool active) override;
 
    protected:
     vec2<I32> _offsetFromCentre;

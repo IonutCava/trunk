@@ -479,21 +479,21 @@ void ToFloatColour(const vec4<U32>& uintColour, FColour4& colourOut) noexcept;
 void ToFloatColour(const vec3<U32>& uintColour, FColour3& colourOut) noexcept;
 
 
-inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) {
+inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) noexcept {
     return PACK_FLOAT(FLOAT_TO_CHAR_SNORM(x),
                       FLOAT_TO_CHAR_SNORM(y),
                       FLOAT_TO_CHAR_SNORM(z));
 }
 
-inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) {
+inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) noexcept {
     return PACK_FLOAT(FLOAT_TO_CHAR(x),
                       FLOAT_TO_CHAR(y),
                       FLOAT_TO_CHAR(z));
 }
 
-inline U32 PACK_VEC2(F32 x, F32 y) {
-    U32 xScaled = to_U32(x * 0xFFFF);
-    U32 yScaled = to_U32(y * 0xFFFF);
+inline U32 PACK_VEC2(F32 x, F32 y) noexcept {
+    const U32 xScaled = to_U32(x * 0xFFFF);
+    const U32 yScaled = to_U32(y * 0xFFFF);
     return (xScaled << 16) | (yScaled & 0xFFFF);
 }
 

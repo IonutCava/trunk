@@ -2,7 +2,7 @@
 <debug>
   <!-- if this is not set to -1, then all command buffers used in that frame number will be dumped to the error log for inspection -->
   <!-- requires a build with ENABLE_GPU_VALIDATION set-->
-    <dumpCommandBuffersOnFrame>-1</dumpCommandBuffersOnFrame>
+  <dumpCommandBuffersOnFrame>-1</dumpCommandBuffersOnFrame>
   <enableRenderAPIDebugging>true</enableRenderAPIDebugging>
   <enableDebugMsgGroups>true</enableDebugMsgGroups>
   <useGeometryCache>true</useGeometryCache>
@@ -114,6 +114,6 @@
   </shadowMapping>
 </rendering>
 
-<title>DIVIDE Framework - (C) Ionut Cava 2019</title>
+<title>DIVIDE Framework - (C) Ionut Cava 2020</title>
 <defaultTextureLocation>textures</defaultTextureLocation>
 <defaultShadersLocation>shaders</defaultShadersLocation>

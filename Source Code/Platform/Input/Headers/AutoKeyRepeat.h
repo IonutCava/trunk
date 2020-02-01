@@ -61,9 +61,9 @@ class AutoRepeatKey {
     /// Default constructor
     AutoRepeatKey(D64 repeatDelay = 0.035, D64 initialDelay = 0.300);
     /// Called when a key is pressed
-    void begin(const Input::KeyEvent &evt);
+    void begin(const Input::KeyEvent &evt) noexcept;
     /// Called when a key is released
-    void end(const Input::KeyEvent &evt);
+    void end(const Input::KeyEvent &evt) noexcept;
     /// Update the internal time interval between frames (microseconds)
     void update(const U64 deltaTimeUS);
     /// Adjust delay between key injections

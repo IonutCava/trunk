@@ -89,7 +89,7 @@ class Object3D : public SceneNode {
         return _geometryFlagMask;
     }
 
-    virtual void postLoad(SceneGraphNode& sgn);
+    void postLoad(SceneGraphNode& sgn) override;
 
     virtual bool onRender(SceneGraphNode& sgn,
                           const Camera& camera,

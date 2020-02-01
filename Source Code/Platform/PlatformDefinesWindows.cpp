@@ -113,13 +113,13 @@ void  malloc_free(void*& ptr) {
     _aligned_free(ptr);
 }
 
-LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
     return FALSE;
 }
 
 namespace Divide {
     //https://msdn.microsoft.com/en-us/library/windows/desktop/ms679360%28v=vs.85%29.aspx
-    static CHAR * getLastErrorText(CHAR *pBuf, LONG bufSize) {
+    static CHAR * getLastErrorText(CHAR *pBuf, LONG bufSize) noexcept {
         DWORD retSize;
         LPTSTR pTemp = NULL;
 
@@ -150,18 +150,18 @@ namespace Divide {
         return(pBuf);
     }
 
-    void getWindowHandle(void* window, WindowHandle& handleOut) {
+    void getWindowHandle(void* window, WindowHandle& handleOut) noexcept {
         SDL_SysWMinfo wmInfo = {};
         SDL_VERSION(&wmInfo.version);
         SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
         handleOut._handle = wmInfo.info.win.window;
     }
 
-    ErrorCode PlatformInitImpl(int argc, char** argv) {
+    ErrorCode PlatformInitImpl(int argc, char** argv) noexcept {
         return ErrorCode::NO_ERR;
     }
 
-    bool PlatformCloseImpl() {
+    bool PlatformCloseImpl() noexcept {
         return true;
     }
 
@@ -181,7 +181,7 @@ namespace Divide {
     }
 
 
-    const DWORD MS_VC_EXCEPTION = 0x406D1388;
+    constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 #pragma pack(push,8)
     typedef struct tagTHREADNAME_INFO
@@ -193,7 +193,7 @@ namespace Divide {
     } THREADNAME_INFO;
 #pragma pack(pop)
 
-    void setThreadName(U32 threadID, const char* threadName) {
+    void setThreadName(U32 threadID, const char* threadName) noexcept {
         // DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( t.native_handle() ) );
 
         THREADNAME_INFO info;
@@ -211,11 +211,11 @@ namespace Divide {
         }
     }
 
-    void setThreadName(const char* threadName) {
+    void setThreadName(const char* threadName) noexcept {
         setThreadName(GetCurrentThreadId(), threadName);
     }
 
-    void setThreadName(std::thread* thread, const char* threadName) {
+    void setThreadName(std::thread* thread, const char* threadName) noexcept {
         const DWORD threadId = ::GetThreadId(static_cast<HANDLE>(thread->native_handle()));
         setThreadName(threadId, threadName);
     }

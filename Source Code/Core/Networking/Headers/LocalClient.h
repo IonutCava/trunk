@@ -50,7 +50,7 @@ private:
     /// statement for example)
     /// switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case
     /// MSG_HEARTBEAT: break;}
-    void handlePacket(WorldPacket& p);
+    void handlePacket(WorldPacket& p) override;
 
     void HandlePongOpCode(WorldPacket& p);
     void HandleHeartBeatOpCode(WorldPacket& p);

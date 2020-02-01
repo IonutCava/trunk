@@ -173,7 +173,7 @@ void IMPrimitive::fromLines(const vector<Line>& lines) {
     }
 }
 
-void IMPrimitive::pipeline(const Pipeline& pipeline) {
+void IMPrimitive::pipeline(const Pipeline& pipeline) noexcept {
     _pipeline = &pipeline;
     _cmdBufferDirty = true;
 }

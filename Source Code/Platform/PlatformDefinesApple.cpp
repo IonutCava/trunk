@@ -16,11 +16,11 @@ void  malloc_free(void*& ptr) {
 
 namespace Divide {
 
-    ErrorCode PlatformInitImpl(int argc, char** argv) {
+    ErrorCode PlatformInitImpl(int argc, char** argv) noexcept {
         return ErrorCode::NO_ERR;
     }
 
-    bool PlatformCloseImpl() {
+    bool PlatformCloseImpl() noexcept {
         return true;
     }
 
@@ -38,7 +38,7 @@ namespace Divide {
         return true;
     }
 
-    void getWindowHandle(void* window, WindowHandle& handleOut) {
+    void getWindowHandle(void* window, WindowHandle& handleOut) noexcept {
         SDL_SysWMinfo wmInfo;
         SDL_VERSION(&wmInfo.version);
         SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
@@ -46,7 +46,7 @@ namespace Divide {
         handleOut._handle = wmInfo.info.cocoa.window;
     }
 
-    void setThreadName(std::thread* thread, const char* threadName) {
+    void setThreadName(std::thread* thread, const char* threadName) noexcept {
         auto handle = thread->native_handle();
         pthread_setname_np(handle, threadName);
     }
@@ -61,7 +61,7 @@ namespace Divide {
     }
 
     #include <sys/prctl.h>
-    void setThreadName(const char* threadName) {
+    void setThreadName(const char* threadName) noexcept {
         prctl(PR_SET_NAME, threadName, 0, 0, 0);
     }
 

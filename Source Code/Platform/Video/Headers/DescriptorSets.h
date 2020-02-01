@@ -47,13 +47,13 @@ namespace Divide {
         vec2<U16> _mipLevels = {};
         vec2<U16> _layerRange = {};
 
-        inline bool operator==(const TextureView& other) const {
+        inline bool operator==(const TextureView& other) const noexcept {
             return _mipLevels == other._mipLevels &&
                    _layerRange == other._layerRange &&
                    _texture == other._texture;
         }
 
-        inline bool operator!=(const TextureView& other) const {
+        inline bool operator!=(const TextureView& other) const noexcept {
             return _mipLevels != other._mipLevels ||
                    _layerRange != other._layerRange ||
                    _texture != other._texture;

@@ -76,7 +76,7 @@ class glIMPrimitive final : public IMPrimitive {
     void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) final;
     /// Submit the created batch to the GPU for rendering
     void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) final;
-    void pipeline(const Pipeline& pipeline) final;
+    void pipeline(const Pipeline& pipeline) noexcept final;
 
     GFX::CommandBuffer& toCommandBuffer() const final;
    protected:

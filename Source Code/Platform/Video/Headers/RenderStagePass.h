@@ -66,7 +66,7 @@ struct RenderStagePass {
     RenderStage _stage = RenderStage::COUNT;
     RenderPassType _passType = RenderPassType::COUNT;
 
-    inline StagePassIndex index() const {
+    inline StagePassIndex index() const noexcept {
         return index(_stage, _passType);
     }
 

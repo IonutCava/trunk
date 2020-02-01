@@ -30,8 +30,9 @@ void GPUState::registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode) {
             U8 crtRefresh = mode._refreshRate.front();
             if (std::find_if(std::begin(crtMode._refreshRate),
                 std::end(crtMode._refreshRate),
-                [&crtRefresh](U8 refresh)
-                -> bool { return refresh == crtRefresh; }) == std::end(crtMode._refreshRate)){
+                [&crtRefresh](U8 refresh) noexcept -> bool {
+                    return refresh == crtRefresh;
+                }) == std::end(crtMode._refreshRate)){
                 crtMode._refreshRate.push_back(crtRefresh);
             }
             return;

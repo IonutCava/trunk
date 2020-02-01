@@ -121,7 +121,7 @@ namespace Input {
         {SDLK_RGUI, KeyCode::KC_RWIN}
     };
 
-    SDL_Keycode SDLKeyCodeFromKey(KeyCode code) {
+    SDL_Keycode SDLKeyCodeFromKey(KeyCode code) noexcept {
         for (const KeyMapEntry& entry : KeyCodeSDLMap) {
             if (entry._kCode == code) {
                 return entry._sdlKCode;
@@ -131,7 +131,7 @@ namespace Input {
         return SDLK_UNKNOWN;
     }
 
-    KeyCode KeyCodeFromSDLKey(SDL_Keycode code) {
+    KeyCode KeyCodeFromSDLKey(SDL_Keycode code) noexcept {
         for (const KeyMapEntry& entry : KeyCodeSDLMap) {
             if (entry._sdlKCode == code) {
                 return entry._kCode;
@@ -152,7 +152,7 @@ namespace Input {
         return state[SDL_GetScancodeFromKey(SDLKeyCodeFromKey(key))] ? InputState::PRESSED : InputState::RELEASED;
     }
 
-    InputState getMouseButtonState(U8 deviceIndex, Input::MouseButton button) {
+    InputState getMouseButtonState(U8 deviceIndex, Input::MouseButton button) noexcept {
         ACKNOWLEDGE_UNUSED(deviceIndex);
 
         I32 x = -1, y = -1;
@@ -182,7 +182,7 @@ namespace Input {
         return (state & SDL_BUTTON(sdlButton)) != 0 ? InputState::PRESSED : InputState::RELEASED;
     }
 
-    InputState getJoystickElementState(Input::Joystick deviceIndex, Input::JoystickElement element) {
+    InputState getJoystickElementState(Input::Joystick deviceIndex, Input::JoystickElement element) noexcept {
         assert(false && "implement me!");
 
         return InputState::RELEASED;

@@ -53,7 +53,7 @@ public:
 
     void addIgnoredExtension(const char* extension);
     void addIgnoredEndCharacter(char character);
-    void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action);
+    void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action) override;
 
 private:
     FileUpdateCbk _cbk;

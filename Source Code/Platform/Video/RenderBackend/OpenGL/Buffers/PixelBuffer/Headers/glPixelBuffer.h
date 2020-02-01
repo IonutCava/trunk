@@ -61,7 +61,7 @@ class glPixelBuffer final : public PixelBuffer {
     void end() const;
 
    private:
-    size_t sizeOf(GLenum dataType) const;
+    size_t sizeOf(GLenum dataType) const noexcept;
 
    private:
     GLuint _bufferSize;

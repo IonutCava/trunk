@@ -11,7 +11,7 @@
 
 namespace Divide {
 
-size_t glPixelBuffer::sizeOf(GLenum dataType) const {
+size_t glPixelBuffer::sizeOf(GLenum dataType) const noexcept {
     switch (_dataType) {
         case GL_FLOAT:
             return sizeof(GLfloat);

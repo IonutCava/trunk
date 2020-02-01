@@ -37,6 +37,7 @@
 
 #include "GLStateTracker.h"
 #include "glHardwareQueryPool.h"
+#include "glIMPrimitive.h"
 #include "Rendering/Camera/Headers/Frustum.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShaderProgram.h"

@@ -78,6 +78,8 @@ void PlatformContext::beginFrame(U32 componentMask) {
 }
 
 void PlatformContext::idle(U32 componentMask) {
+    OPTICK_EVENT();
+
     for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
         _taskPool[i]->flushCallbackQueue();
     }

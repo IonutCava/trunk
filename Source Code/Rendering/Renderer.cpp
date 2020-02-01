@@ -180,6 +180,8 @@ void Renderer::preRender(RenderStagePass stagePass,
 }
 
 void Renderer::idle() {
+    OPTICK_EVENT();
+
     _postFX->idle(_context.config());
 }
 

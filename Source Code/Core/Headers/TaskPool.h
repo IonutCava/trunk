@@ -82,7 +82,7 @@ public:
     friend void Wait(const Task& task);
     friend void TaskYield(const Task& task);
     friend Task& Start(Task& task, TaskPriority prio, DELEGATE_CBK<void>&& onCompletionFunction);
-    friend bool StopRequested(const Task& task);
+    friend bool StopRequested(const Task& task) noexcept;
     friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread, const char* debugName);
 
     void taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCompletionFunction);

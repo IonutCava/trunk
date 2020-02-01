@@ -50,14 +50,14 @@ namespace GLUtil {
         //for each chunk, keep track how many next chunks are also part of the same allocation
         std::array<std::pair<bool, U32>, MAX_VBO_CHUNK_COUNT> _chunkUsageState;
 
-        static U32 getChunkCountForSize(size_t sizeInBytes);
+        static U32 getChunkCountForSize(size_t sizeInBytes) noexcept;
 
-        VBO() noexcept;
+        VBO();
         ~VBO();
 
         void freeAll();
-        U32 handle();
-        bool checkChunksAvailability(size_t offset, U32 count);
+        U32 handle() noexcept;
+        bool checkChunksAvailability(size_t offset, U32 count) noexcept;
 
         bool allocateChunks(U32 count, GLenum usage, size_t& offsetOut);
 
@@ -65,7 +65,7 @@ namespace GLUtil {
 
         void releaseChunks(size_t offset);
 
-        U32 getMemUsage();
+        U32 getMemUsage() noexcept;
 
     private:
         GLuint _handle;
@@ -74,7 +74,7 @@ namespace GLUtil {
     };
 
     struct AllocationHandle {
-        explicit AllocationHandle()
+        explicit AllocationHandle() noexcept
             : _id(0),
               _offset(0)
         {
@@ -87,9 +87,9 @@ namespace GLUtil {
     bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, size_t& offsetOut);
     bool releaseVBO(GLuint& handle, size_t& offset);
     U32 getVBOMemUsage(GLuint handle);
-    U32 getVBOCount();
+    U32 getVBOCount() noexcept;
 
-    void clearVBOs();
+    void clearVBOs() noexcept;
 
     void createAndAllocBuffer(GLsizeiptr bufferSize,
                               GLenum usageMask,

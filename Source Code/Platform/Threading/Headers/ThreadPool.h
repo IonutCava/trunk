@@ -54,10 +54,10 @@ public:
     void join();
 
     // Wait for all running jobs to finish
-    virtual void wait();
+    void wait() noexcept;
 
     // Get all of the threads for external usage (e.g. setting affinity)
-    eastl::vector<std::thread>& threads();
+    eastl::vector<std::thread>& threads() noexcept;
 
     virtual void executeOneTask(bool waitForTask) = 0;
 

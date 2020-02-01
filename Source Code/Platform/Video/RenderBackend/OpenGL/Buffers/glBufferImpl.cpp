@@ -10,7 +10,8 @@
 namespace Divide {
 namespace {
 
-    const size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
+    constexpr size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
+
     struct BindConfigEntry {
         U32 _handle = 0;
         GLintptr _offset = 0;
@@ -23,7 +24,7 @@ namespace {
     bool setIfDifferentBindRange(U32 UBOid,
                                  U32 bindIndex,
                                  GLintptr offsetInBytes,
-                                 GLsizeiptr rangeInBytes) {
+                                 GLsizeiptr rangeInBytes) noexcept {
 
         BindConfigEntry& crtConfig = g_currentBindConfig[bindIndex];
 
@@ -121,6 +122,8 @@ glBufferImpl::~glBufferImpl()
 }
 
 bool glBufferImpl::waitRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool blockClient) {
+    OPTICK_EVENT();
+
     if (_mappedBuffer != nullptr && !_unsynced) {
         //assert(!GL_API::s_glFlushQueued);
 
@@ -144,7 +147,7 @@ void glBufferImpl::lockRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bo
     }
 }
 
-GLuint glBufferImpl::bufferID() const {
+GLuint glBufferImpl::bufferID() const noexcept {
     return _handle;
 }
 
@@ -163,6 +166,9 @@ bool glBufferImpl::bindRange(GLuint bindIndex, GLintptr offsetInBytes, GLsizeipt
 
 void glBufferImpl::writeData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, const bufferPtr data)
 {
+    OPTICK_EVENT();
+    OPTICK_TAG("Mapped", _mappedBuffer != nullptr);
+
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);
 
@@ -193,7 +199,7 @@ void glBufferImpl::readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, con
             if (_target != GL_ATOMIC_COUNTER_BUFFER) {
                 glMemoryBarrier(MemoryBarrierMask::GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
             }
-            Byte* src = ((Byte*)(_mappedBuffer)+offsetInBytes);
+            const Byte* src = ((Byte*)(_mappedBuffer)+offsetInBytes);
             std::memcpy(data, src, rangeInBytes);
         }
     } else {
@@ -206,6 +212,8 @@ void glBufferImpl::readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, con
 }
 
 void glBufferImpl::invalidateData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes) {
+    OPTICK_EVENT();
+
     if (_mappedBuffer == nullptr) {
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glInvalidateBufferData(_handle);
@@ -230,11 +238,11 @@ void glBufferImpl::zeroMem(GLintptr offsetInBytes, GLsizeiptr rangeInBytes) {
     }
 }
 
-size_t glBufferImpl::elementSize() const {
+size_t glBufferImpl::elementSize() const noexcept {
     return _elementSize;
 }
 
-GLenum glBufferImpl::GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) {
+GLenum glBufferImpl::GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept {
     switch (frequency) {
     case BufferUpdateFrequency::ONCE:
         switch (usage) {

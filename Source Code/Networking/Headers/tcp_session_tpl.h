@@ -44,13 +44,13 @@ class tcp_session_tpl : public subscriber,
    public:
     tcp_session_tpl(boost::asio::io_service& io_service, channel& ch);
 
-    inline boost::asio::ip::tcp::socket& getSocket() { return _socket; }
+    inline boost::asio::ip::tcp::socket& getSocket() noexcept { return _socket; }
 
     // Called by the server object to initiate the four actors.
     virtual void start();
 
     // Push a new packet in the output queue
-    virtual void sendPacket(const WorldPacket& p);
+    virtual void sendPacket(const WorldPacket& p) override;
 
     // Push a new file in the output queue
     virtual void sendFile(const stringImpl& fileName);
@@ -112,8 +112,8 @@ class udp_broadcaster : public subscriber {
     udp_broadcaster(boost::asio::io_service& io_service,
                     const boost::asio::ip::udp::endpoint& broadcast_endpoint);
 
-    inline boost::asio::ip::udp::socket& getSocket() { return socket_; }
-    void sendPacket(const WorldPacket& p);
+    inline boost::asio::ip::udp::socket& getSocket() noexcept { return socket_; }
+    void sendPacket(const WorldPacket& p) override;
 
    private:
     boost::asio::ip::udp::socket socket_;

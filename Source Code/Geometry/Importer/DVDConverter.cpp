@@ -40,7 +40,7 @@ namespace Divide {
             assimpStream() = default;
             ~assimpStream() = default;
 
-            void write(const char* message) {
+            void write(const char* message) override {
                 Console::printf("%s\n", message);
             }
         };

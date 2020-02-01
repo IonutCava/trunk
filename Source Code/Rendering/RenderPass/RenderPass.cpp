@@ -25,7 +25,7 @@ namespace Divide {
 
 namespace {
     // How many cmd buffers should we create (as a factor) so that we can swap them between frames
-    constexpr U32 g_cmdBufferFrameCount = 3;
+    constexpr U8 g_cmdBufferFrameCount = 3;
 
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
@@ -129,16 +129,17 @@ RenderPass::~RenderPass()
 }
 
 RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIndex) const {
-    U32 idx = _stageFlag == RenderStage::DISPLAY ? 0 : passIndex;
-    U32 frameOffset = _context.FRAME_COUNT % g_cmdBufferFrameCount;
+    const U32 idx = _stageFlag == RenderStage::DISPLAY ? 0 : passIndex;
+    const U32 frameOffset = _context.FRAME_COUNT % g_cmdBufferFrameCount;
 
     BufferData ret = {};
     ret._renderDataElementOffset = getBufferOffset(_stageFlag, type, passIndex);
     ret._renderData = _renderData;
-	ret._cullCounter = _cullCounter;
+    ret._cullCounter = _cullCounter;
     ret._cmdBuffer = _cmdBuffers[idx];
     ret._lastCommandCount = &_lastNodeCount[idx * frameOffset];
     ret._cmdBufferElementOffset = Config::MAX_VISIBLE_NODES* frameOffset;
+    ret._cmdBufferElementFactor = g_cmdBufferFrameCount;
 
     return ret;
 }
@@ -178,7 +179,7 @@ void RenderPass::initBufferData() {
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._separateReadWrite = false;
 
-    U32 cmdCount = getCmdBufferCount(_stageFlag);
+    const U32 cmdCount = getCmdBufferCount(_stageFlag);
     _cmdBuffers.reserve(cmdCount);
     _lastNodeCount.resize(cmdCount, 0u);
 
@@ -273,7 +274,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         case RenderStage::REFRACTION: {
             OPTICK_EVENT("RenderPass - Refraction");
             // Get list of refractive nodes from the scene manager
-            SceneManager& mgr = _parent.parent().sceneManager();
+            const SceneManager& mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
             {
             }

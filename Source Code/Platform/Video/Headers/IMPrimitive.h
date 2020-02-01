@@ -53,15 +53,15 @@ FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
 /// IMPrimitive replaces immediate mode calls to VB based rendering
 class NOINITVTABLE IMPrimitive : public VertexDataInterface {
    public:
-    inline const Pipeline* pipeline() const {
+    inline const Pipeline* pipeline() const noexcept {
         return _pipeline;
     }
 
-    inline const Texture* texture() const {
+    inline const Texture* texture() const noexcept {
         return _texture;
     }
 
-    virtual void pipeline(const Pipeline& pipeline);
+    virtual void pipeline(const Pipeline& pipeline) noexcept;
     virtual void texture(const Texture& texture);
 
     virtual void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) = 0;
@@ -92,15 +92,15 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     virtual bool hasBatch() const = 0;
     void reset();
 
-    inline void forceWireframe(bool state) { _forceWireframe = state; }
-    inline bool forceWireframe() const { return _forceWireframe; }
+    inline void forceWireframe(bool state) noexcept { _forceWireframe = state; }
+    inline bool forceWireframe() const noexcept { return _forceWireframe; }
 
-    inline const mat4<F32>& worldMatrix() const { return _worldMatrix; }
+    inline const mat4<F32>& worldMatrix() const noexcept { return _worldMatrix; }
     inline void worldMatrix(const mat4<F32>& worldMatrix) {
         _worldMatrix.set(worldMatrix);
         _cmdBufferDirty = true;
     }
-    inline void resetWorldMatrix() {
+    inline void resetWorldMatrix() noexcept {
         _worldMatrix.identity();
         _cmdBufferDirty = true;
     }
@@ -110,7 +110,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
         _cmdBufferDirty = true;
     }
 
-    inline void resetViewport() {
+    inline void resetViewport() noexcept {
         _viewport.set(-1);
         _cmdBufferDirty = true;
     }

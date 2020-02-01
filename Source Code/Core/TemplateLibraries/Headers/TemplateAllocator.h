@@ -128,13 +128,13 @@ namespace eastl {
     };
 
 
-    inline bool operator==(const dvd_eastl_allocator& a, const dvd_eastl_allocator& b)
+    inline bool operator==(const dvd_eastl_allocator& a, const dvd_eastl_allocator& b) noexcept
     {
         (void)a; (void)b;
         return true; // All allocators are considered equal, as they merely use global new/delete.
     }
 
-    inline bool operator!=(const dvd_eastl_allocator& a, const dvd_eastl_allocator& b)
+    inline bool operator!=(const dvd_eastl_allocator& a, const dvd_eastl_allocator& b) noexcept
     {
         (void)a; (void)b;
         return false; // All allocators are considered equal, as they merely use global new/delete.

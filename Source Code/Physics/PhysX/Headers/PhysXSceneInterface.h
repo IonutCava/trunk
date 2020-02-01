@@ -47,17 +47,17 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     PhysXSceneInterface(Scene& parentScene);
     virtual ~PhysXSceneInterface();
 
-    virtual bool init();
-    virtual void idle();
-    virtual void release();
-    virtual void update(const U64 deltaTimeUS);
-    virtual void process(const U64 deltaTimeUS);
+    virtual bool init() override;
+    virtual void idle() override;
+    virtual void release() override;
+    virtual void update(const U64 deltaTimeUS) override;
+    virtual void process(const U64 deltaTimeUS) override;
 
     void addRigidActor(PhysXActor* const actor, bool threaded = true);
     inline const vector<physx::PxMaterial*> getMaterials() {
         return _materials;
     }
-    inline physx::PxScene* getPhysXScene() { return _gScene; }
+    inline physx::PxScene* getPhysXScene() noexcept { return _gScene; }
 
    protected:
     void updateActor(PhysXActor& actor);

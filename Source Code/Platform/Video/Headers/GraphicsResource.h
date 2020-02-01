@@ -49,9 +49,10 @@ public:
         COUNT
     };
 
+    virtual ~GraphicsResource();
+
 protected:
     explicit GraphicsResource(GFXDevice& context, Type type, I64 GUID, U64 nameHash);
-    virtual ~GraphicsResource();
 
 public:
     inline GFXDevice& context() noexcept { return _context; }

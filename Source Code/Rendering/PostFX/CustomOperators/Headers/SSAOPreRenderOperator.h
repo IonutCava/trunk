@@ -44,7 +44,7 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
-    TextureData getDebugOutput() const;
+    TextureData getDebugOutput() const final;
 
     inline F32 radius() const { return _radius; }
     void radius(const F32 val);

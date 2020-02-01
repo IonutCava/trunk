@@ -206,6 +206,8 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
 }
 
 void PostFX::idle(const Configuration& config) {
+    OPTICK_EVENT();
+
     // Update states
     if (getFilterState(FilterType::FILTER_NOISE)) {
         _noiseTimer += Time::ElapsedMilliseconds();

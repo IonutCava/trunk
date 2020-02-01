@@ -193,7 +193,7 @@ namespace Divide {
 
         void writeData(U32 offsetElementCount, U32 rangeElementCount, const bufferPtr data) final {}
         void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, const bufferPtr data) final {}
-        void writeData(const bufferPtr data) {}
+        void writeData(const bufferPtr data) final {}
 
         void clearData(U32 offsetElementCount, U32 rangeElementCount) final {}
 

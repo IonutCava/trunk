@@ -41,7 +41,7 @@ class DisplayWindow;
 namespace Input {
 
 struct InputEvent {
-    explicit InputEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
+    explicit InputEvent(DisplayWindow* sourceWindow, U8 deviceIndex) noexcept;
 
     U8 _deviceIndex = 0;
     DisplayWindow* _sourceWindow = nullptr;
@@ -62,14 +62,14 @@ struct MouseMoveEvent : public InputEvent {
     MouseAxis X() const;
     MouseAxis Y() const;
 
-    I32 WheelV() const;
-    I32 WheelH() const;
+    I32 WheelV() const noexcept;
+    I32 WheelH() const noexcept;
 
     vec2<I32> relativePos() const;
     vec2<I32> absolutePos() const;
-    const MouseState& state() const;
+    const MouseState& state() const noexcept;
     
-    bool wheelEvent() const;
+    bool wheelEvent() const noexcept;
  private:
     MouseState _stateIn;
     const bool _wheelEvent = false;

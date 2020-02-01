@@ -101,7 +101,7 @@ class TextureDataContainer {
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
-      inline void clear() { _textures.clear(); }
+      inline void clear() noexcept { _textures.clear(); }
 
       inline bool empty() const noexcept { return _textures.empty(); }
 

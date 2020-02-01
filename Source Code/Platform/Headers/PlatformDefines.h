@@ -117,14 +117,14 @@ struct SysInfo {
     FileWithPath _pathAndFilename;
 };
 
-SysInfo& sysInfo();
-const SysInfo& const_sysInfo();
+SysInfo& sysInfo() noexcept;
+const SysInfo& const_sysInfo() noexcept;
 
 void InitSysInfo(SysInfo& info, I32 argc, char** argv);
 
-extern void getWindowHandle(void* window, WindowHandle& handleOut);
-extern void setThreadName(std::thread* thread, const char* threadName);
-extern void setThreadName(const char* threadName);
+extern void getWindowHandle(void* window, WindowHandle& handleOut) noexcept;
+extern void setThreadName(std::thread* thread, const char* threadName) noexcept;
+extern void setThreadName(const char* threadName) noexcept;
 extern bool createDirectory(const char* path);
 
 //ref: http://stackoverflow.com/questions/1528298/get-path-of-executable
@@ -140,15 +140,15 @@ bool GetAvailableMemory(SysInfo& info);
 ErrorCode PlatformPreInit(int argc, char** argv);
 ErrorCode PlatformPostInit(int argc, char** argv);
 
-ErrorCode PlatformInitImpl(int argc, char** argv);
-bool PlatformCloseImpl();
+ErrorCode PlatformInitImpl(int argc, char** argv) noexcept;
+bool PlatformCloseImpl() noexcept;
 
-const char* GetClipboardText(void* user_data);
-void SetClipboardText(void* user_data, const char* text);
+const char* GetClipboardText(void* user_data) noexcept;
+void SetClipboardText(void* user_data, const char* text) noexcept;
 
-void ToggleCursor(bool state);
+void ToggleCursor(bool state) noexcept;
 
-bool CursorState();
+bool CursorState() noexcept;
 
 template <typename T>
 struct synchronized {
@@ -691,7 +691,7 @@ inline TO safe_static_cast(D64 from)
 bool preAssert(const bool expression, const char* failMessage);
 
 /// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
-FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage) {
+FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage = "UNEXPECTED CALL") {
     if (!Config::Build::IS_RELEASE_BUILD) {
         if (preAssert(expression, failMessage)) {
             assert(expression && failMessage);
@@ -703,13 +703,6 @@ FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage) 
 
 FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED CALL") {
     DIVIDE_ASSERT(false, failMessage);
-}
-
-FORCE_INLINE void DIVIDE_ASSERT(const bool expression) noexcept {
-    if (Config::Build::IS_DEBUG_BUILD && !Config::Assert::CONTINUE_ON_ASSERT) {
-        assert(expression);
-    }
-    ACKNOWLEDGE_UNUSED(expression);
 }
 
 template <typename Ret, typename... Args >
@@ -735,7 +728,7 @@ class GUID_DELEGATE_CBK : public GUIDWrapper {
     DELEGATE_CBK<Ret, Args...> _callback;
 };
 
-U32 HARDWARE_THREAD_COUNT();
+U32 HARDWARE_THREAD_COUNT() noexcept;
 
 template<typename T, typename U>
 constexpr void assert_type(const U& ) {

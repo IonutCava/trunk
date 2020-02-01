@@ -10,7 +10,7 @@ namespace Divide {
 namespace GLUtil {
 
 namespace {
-    const U32 g_numWarmupVAOs = 25u;
+    constexpr U32 g_numWarmupVAOs = 25u;
 };
 
 glVAOPool::glVAOPool() noexcept
@@ -75,9 +75,9 @@ void glVAOPool::deallocate(GLuint& vao) {
     vector<std::pair<GLuint, bool>>::iterator it;
     it = std::find_if(std::begin(_pool),
         std::end(_pool),
-        [vao](std::pair<GLuint, bool>& entry) {
-        return entry.first == vao;
-    });
+        [vao](std::pair<GLuint, bool>& entry) noexcept {
+            return entry.first == vao;
+        });
 
     assert(it != std::cend(_pool));
     // We don't know what kind of state we may have in the current VAO so delete it and create a new one.

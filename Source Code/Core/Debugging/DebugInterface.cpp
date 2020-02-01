@@ -23,6 +23,8 @@ DebugInterface::~DebugInterface()
 }
 
 void DebugInterface::idle() {
+    OPTICK_EVENT();
+
     if (!Config::Profile::BENCHMARK_PERFORMANCE && !Config::Profile::ENABLE_FUNCTION_PROFILING) {
         return;
     }

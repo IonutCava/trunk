@@ -54,7 +54,7 @@ JoystickElement joystickElementByName(const stringImpl& elementName) {
     return ret;
 }
 
-InputEvent::InputEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
+InputEvent::InputEvent(DisplayWindow* sourceWindow, U8 deviceIndex) noexcept
     : _deviceIndex(deviceIndex),
       _sourceWindow(sourceWindow)
 {
@@ -73,7 +73,7 @@ MouseMoveEvent::MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, Mous
 {
 }
 
-const MouseState& MouseMoveEvent::state() const {
+const MouseState& MouseMoveEvent::state() const noexcept {
     return _stateIn;
 }
 
@@ -85,11 +85,11 @@ MouseAxis MouseMoveEvent::Y() const {
     return state().Y;
 }
 
-I32 MouseMoveEvent::WheelH() const {
+I32 MouseMoveEvent::WheelH() const noexcept {
     return _stateIn.HWheel;
 }
 
-I32 MouseMoveEvent::WheelV() const {
+I32 MouseMoveEvent::WheelV() const noexcept {
     return _stateIn.VWheel;
 }
 
@@ -101,7 +101,7 @@ vec2<I32> MouseMoveEvent::absolutePos() const {
     return vec2<I32>(state().X.abs, state().Y.abs);
 }
 
-bool MouseMoveEvent::wheelEvent() const {
+bool MouseMoveEvent::wheelEvent() const noexcept {
     return _wheelEvent;
 }
 

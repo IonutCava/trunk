@@ -12,11 +12,11 @@ namespace GLUtil {
 
 static vector<VBO> g_globalVBOs;
 
-U32 VBO::getChunkCountForSize(size_t sizeInBytes) {
+U32 VBO::getChunkCountForSize(size_t sizeInBytes) noexcept {
     return to_U32(std::ceil(to_F32(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
 }
 
-VBO::VBO() noexcept
+VBO::VBO()
     : _handle(0),
       _usage(GL_NONE),
       _filledManually(false)
@@ -36,11 +36,11 @@ void VBO::freeAll() {
     _usage = GL_NONE;
 }
 
-U32 VBO::handle() {
+U32 VBO::handle()noexcept {
     return _handle;
 }
 
-bool VBO::checkChunksAvailability(size_t offset, U32 count) {
+bool VBO::checkChunksAvailability(size_t offset, U32 count) noexcept {
     assert(MAX_VBO_CHUNK_COUNT > offset);
 
     const std::pair<bool, U32>& chunk = _chunkUsageState[offset];
@@ -109,7 +109,7 @@ void VBO::releaseChunks(size_t offset) {
     }
 }
 
-U32 VBO::getMemUsage() {
+U32 VBO::getMemUsage() noexcept {
     U32 usedBlocks = 0;
     for (const std::pair<bool, U32>& chunk : _chunkUsageState) {
         if (chunk.first) {
@@ -171,11 +171,11 @@ U32 getVBOMemUsage(GLuint handle) {
     return 0;
 }
 
-U32 getVBOCount() {
+U32 getVBOCount() noexcept {
     return to_U32(g_globalVBOs.size());
 }
 
-void clearVBOs() {
+void clearVBOs() noexcept {
     g_globalVBOs.clear();
 }
 

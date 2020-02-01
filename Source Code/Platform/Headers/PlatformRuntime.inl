@@ -34,7 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 namespace Runtime {
-    inline bool isMainThread() {
+    inline bool isMainThread() noexcept {
         return (mainThreadID() == std::this_thread::get_id());
     }
 }; //namespace Runtime

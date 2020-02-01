@@ -67,12 +67,12 @@ class OrbitCamera : public Camera {
     inline F32 curRadius() const { return _curRadius; }
 
     virtual void update(const U64 deltaTimeUS);
-    virtual void move(F32 dx, F32 dy, F32 dz);
-    virtual void rotate(F32 yaw, F32 pitch, F32 roll);
+    virtual void move(F32 dx, F32 dy, F32 dz) override;
+    virtual void rotate(F32 yaw, F32 pitch, F32 roll) override;
     virtual bool zoom(I32 zoomFactor) override;
 
    protected:
-    virtual bool updateViewMatrix();
+    virtual bool updateViewMatrix() override;
 
    protected:
     F32 _maxRadius;

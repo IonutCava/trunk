@@ -157,7 +157,7 @@ Editor::~Editor()
 }
 
 void Editor::idle() {
-
+    OPTICK_EVENT();
 }
 
 bool Editor::init(const vec2<U16>& renderResolution) {

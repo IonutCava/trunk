@@ -19,7 +19,7 @@ InputHandler::InputHandler(InputAggregatorInterface& eventListener, Application&
 }
 
 namespace {
-    Uint32 GetEventWindowID(SDL_Event event) {
+    Uint32 GetEventWindowID(SDL_Event event) noexcept {
         switch (event.type) {
             case SDL_KEYDOWN :
             case SDL_KEYUP   :

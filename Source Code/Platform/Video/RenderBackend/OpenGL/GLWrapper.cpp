@@ -1,7 +1,6 @@
 ﻿#include "stdafx.h"
 
 #include "Headers/GLWrapper.h"
-#include "Headers/glIMPrimitive.h"
 #include "Headers/glHardwareQuery.h"
 
 #include "Platform/Headers/PlatformRuntime.h"
@@ -1330,6 +1329,8 @@ void GL_API::lockBuffers(bool flush, U32 frameID) {
                     existingData._range = std::max(existingData._range, data._range);
                     updatedExisting = true;
                     shouldFlush = data._flush || shouldFlush;
+
+                    assert(existingData._offset == 0 || existingData._range <= existingData._offset);
                 }
                 break;
             }

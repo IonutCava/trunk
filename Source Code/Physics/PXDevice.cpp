@@ -76,6 +76,8 @@ void PXDevice::process(const U64 deltaTimeUS) {
 }
 
 void PXDevice::idle() {
+    OPTICK_EVENT();
+
     _api->idle();
 }
 

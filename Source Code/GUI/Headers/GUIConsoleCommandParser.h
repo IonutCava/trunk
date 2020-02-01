@@ -49,7 +49,7 @@ class GUIConsoleCommandParser : public CommandParser, public PlatformContextComp
     GUIConsoleCommandParser(PlatformContext& context, ResourceCache& cache);
     ~GUIConsoleCommandParser();
 
-    bool processCommand(const stringImpl& commandString);
+    bool processCommand(const stringImpl& commandString) override;
 
    private:
     typedef hashMap<U64 /*command name*/,

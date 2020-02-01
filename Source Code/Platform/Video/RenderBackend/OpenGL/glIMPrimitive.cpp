@@ -66,7 +66,7 @@ void glIMPrimitive::endBatch() {
     _imInterface->EndBatch();
 }
 
-void glIMPrimitive::pipeline(const Pipeline& pipeline) {
+void glIMPrimitive::pipeline(const Pipeline& pipeline) noexcept {
 
     IMPrimitive::pipeline(pipeline);
     _imInterface->SetShaderProgramHandle(pipeline.shaderProgramHandle());

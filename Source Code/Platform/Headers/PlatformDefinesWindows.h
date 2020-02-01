@@ -113,7 +113,7 @@
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp
 
-LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 
 namespace Divide {
     struct WindowHandle {

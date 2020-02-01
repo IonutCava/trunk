@@ -15,7 +15,7 @@
 namespace Divide {
 
 namespace {
-    const char* getAttachmentName(RTAttachmentType type) {
+    const char* getAttachmentName(RTAttachmentType type) noexcept {
         switch (type) {
         case RTAttachmentType::Colour:  return "Colour";
         case RTAttachmentType::Depth:   return "Depth";

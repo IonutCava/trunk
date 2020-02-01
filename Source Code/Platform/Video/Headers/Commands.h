@@ -115,6 +115,8 @@ class CommandBuffer;
 
 struct CommandBase
 {
+    virtual ~CommandBase() = default;
+
     virtual void addToBuffer(CommandBuffer& buffer) const = 0;
     virtual stringImpl toString(U16 indent) const = 0;
     virtual const char* commandName() const noexcept = 0;
@@ -122,6 +124,9 @@ struct CommandBase
 
 template<typename T, CommandType EnumVal>
 struct Command : public CommandBase {
+
+    virtual ~Command() = default;
+
     inline void addToBuffer(CommandBuffer& buffer) const final {
         buffer.add(reinterpret_cast<const T&>(*this));
     }
@@ -141,7 +146,6 @@ BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);
     }
 
     BindPipelineCommand() = default;
-    ~BindPipelineCommand() = default;
 
     const Pipeline* _pipeline = nullptr;
 
@@ -156,7 +160,6 @@ BEGIN_COMMAND(SendPushConstantsCommand, CommandType::SEND_PUSH_CONSTANTS);
     }
 
     SendPushConstantsCommand() = default;
-    ~SendPushConstantsCommand() = default;
 
     PushConstants _constants;
 
@@ -274,7 +277,7 @@ END_COMMAND(SetBlendCommand);
 
 BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA);
     SetCameraCommand() = default;
-    SetCameraCommand(const CameraSnapshot& snapshot) : _cameraSnapshot(snapshot) {}
+    SetCameraCommand(const CameraSnapshot& snapshot) noexcept : _cameraSnapshot(snapshot) {}
 
     CameraSnapshot _cameraSnapshot;
 

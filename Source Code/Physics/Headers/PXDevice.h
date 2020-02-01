@@ -53,24 +53,24 @@ public:
     explicit PXDevice(Kernel& parent);
     ~PXDevice();
 
-    inline void setAPI(PhysicsAPI API) { _API_ID = API; }
-    inline PhysicsAPI getAPI() const { return _API_ID; }
+    inline void setAPI(PhysicsAPI API) noexcept { _API_ID = API; }
+    inline PhysicsAPI getAPI() const noexcept { return _API_ID; }
 
-    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) override;
-    bool closePhysicsAPI()  override;
+    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) final;
+    bool closePhysicsAPI()  final;
 
-    void updateTimeStep(U8 timeStepFactor, F32 simSpeed)  override;
-    void update(const U64 deltaTimeUS)  override;
-    void process(const U64 deltaTimeUS);
-    void idle()  override;
-    void setPhysicsScene(PhysicsSceneInterface* const targetScene);
+    void updateTimeStep(U8 timeStepFactor, F32 simSpeed)  final;
+    void update(const U64 deltaTimeUS) final;
+    void process(const U64 deltaTimeUS) final;
+    void idle()  final;
+    void setPhysicsScene(PhysicsSceneInterface* const targetScene) final;
 
-    PhysicsSceneInterface* NewSceneInterface(Scene& scene)  override;
+    PhysicsSceneInterface* NewSceneInterface(Scene& scene)  final;
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) override;
+    PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) final;
 
-    inline PhysicsAPIWrapper& getImpl() { assert(_api != nullptr); return *_api; }
-    inline const PhysicsAPIWrapper& getImpl() const { assert(_api != nullptr); return *_api; }
+    inline PhysicsAPIWrapper& getImpl() noexcept { assert(_api != nullptr); return *_api; }
+    inline const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }
 
 private:
     F32 _simulationSpeed;

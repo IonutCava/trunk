@@ -18,6 +18,8 @@ ShaderComputeQueue::~ShaderComputeQueue()
 }
 
 void ShaderComputeQueue::idle() {
+    OPTICK_EVENT();
+
     constexpr U32 maxShadersPerCall = 32;
     {
         SharedLock r_lock(_queueLock);

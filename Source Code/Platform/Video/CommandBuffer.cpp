@@ -379,7 +379,8 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
 }
 
 bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const {
-    OPTICK_EVENT("CommandBuffer::mergeDrawCommand");
+    OPTICK_EVENT();
+    OPTICK_TAG("By Instance", byBaseInstance);
 
     const size_t startSize = commands.size();
     if (byBaseInstance) {

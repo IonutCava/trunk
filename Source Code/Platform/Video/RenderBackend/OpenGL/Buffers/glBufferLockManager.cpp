@@ -6,12 +6,14 @@
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
+#include <eastl/fixed_set.h>
+
 namespace Divide {
 
 // --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
-glBufferLockManager::glBufferLockManager() noexcept
+glBufferLockManager::glBufferLockManager()
     : glLockManager()
 {
     _swapLocks.reserve(32);
@@ -20,7 +22,7 @@ glBufferLockManager::glBufferLockManager() noexcept
 
 // --------------------------------------------------------------------------------------------------------------------
 glBufferLockManager::~glBufferLockManager() {
-    UniqueLock w_lock(_lock);
+    const UniqueLock w_lock(_lock);
     for (BufferLock& lock : _bufferLocks) {
         GL_API::registerSyncDelete(lock._syncObj);
     }
@@ -33,6 +35,9 @@ bool glBufferLockManager::WaitForLockedRange(GLintptr lockBeginBytes,
                                              GLsizeiptr lockLength,
                                              bool blockClient,
                                              bool quickCheck) {
+    OPTICK_EVENT();
+    OPTICK_TAG("BlockClient", blockClient);
+    OPTICK_TAG("QuickCheck", quickCheck);
 
     bool ret = false;
     BufferRange testRange{lockBeginBytes, lockLength};
@@ -42,7 +47,7 @@ bool glBufferLockManager::WaitForLockedRange(GLintptr lockBeginBytes,
     for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range)) {
             U8 retryCount = 0;
-            if (wait(&lock._syncObj, blockClient, quickCheck, retryCount)) {
+            if (wait(lock._syncObj, blockClient, quickCheck, retryCount)) {
                 GL_API::registerSyncDelete(lock._syncObj);
                 lock._syncObj = nullptr;
                 if (retryCount > 0) {
@@ -63,6 +68,7 @@ bool glBufferLockManager::WaitForLockedRange(GLintptr lockBeginBytes,
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::LockRange(GLintptr lockBeginBytes,
                                     GLsizeiptr lockLength) {
+    OPTICK_EVENT();
 
     if (WaitForLockedRange(lockBeginBytes, lockLength, true, true)) {
         //Console::printfn("Duplicate lock (%p) [%d - %d]", this, lockBeginBytes, lockLength);
@@ -79,133 +85,141 @@ void glBufferLockManager::LockRange(GLintptr lockBeginBytes,
         });
 }
 
-glGlobalLockManager::glGlobalLockManager() noexcept
-    : _lockCount(0)
+glGlobalLockManager::glGlobalLockManager()
 {
-}
-
-glGlobalLockManager::~glGlobalLockManager()
-{
+    _lockIndex.store(0u);
 }
 
 void glGlobalLockManager::clean(U32 frameID) {
-    UniqueLockShared w_lock(_lock);
-    cleanLocked(frameID);
+    quickCheckOldEntries(frameID);
 }
 
-void glGlobalLockManager::cleanLocked(U32 frameID) {
-    // Delete all locks older than 6 frames  (APP->Driver->GPU x2)
-    constexpr U32 LockDeleteFrameThreshold = 6;
+struct GLLockEntryLight {
+    GLsync* sync = nullptr;
+    bool* valid = nullptr;
+};
 
-    // Check again as the range may have been cleared on another thread
-    for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-        if (frameID - it->second.second > LockDeleteFrameThreshold) {
-            GL_API::registerSyncDelete(it->first);
-            it = _bufferLocks.erase(it);
-        } else {
-            ++it;
-        }
-    }
-}
-
-bool glGlobalLockManager::test(GLsync syncObject, const vectorEASTL<BufferRange>& ranges, const BufferRange& testRange, bool noWait) {
-    for (const BufferRange& range : ranges) {
-        if (testRange.Overlaps(range)) {
-            U8 retryCount = 0;
-            if (wait(&syncObject, true, noWait, retryCount)) {
-                GL_API::registerSyncDelete(syncObject);
-                syncObject = nullptr;
-                if (retryCount > 1) {
-                    //ToDo: do something?
-                }
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
+#pragma optimize( "", off )
 bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait) {
-    constexpr bool USE_PRESCAN = false;
+    OPTICK_EVENT();
 
+    const U64 idx = _lockIndex.load();
 
-    bool foundLockedRange = !USE_PRESCAN;
-    if (USE_PRESCAN) {
+    OPTICK_TAG("LockLength", to_U64(lockLength));
+    OPTICK_TAG("noWait", noWait);
+    OPTICK_TAG("LockIndex", idx);
+
+    bool ret = false;
+
+    const BufferRange testRange{ lockBeginBytes, lockLength };
+    {
         SharedLock r_lock(_lock);
-        for (const auto& it : _bufferLocks) {
-            if (it.second.first.find(bufferHandle) != std::cend(it.second.first)) {
-                foundLockedRange = true;
-                break;
-            }
-        }
-    }
-
-    if (foundLockedRange) {
-        bool ret = false;
-
-        const BufferRange testRange{ lockBeginBytes, lockLength };
-
-        UniqueLockShared w_lock(_lock);
-        _lockCount = 0;
         // Check again as the range may have been cleared on another thread
-        for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-            const BufferLockEntries& entries = it->second.first;
-            _lockCount += entries.size();
+        for (GLLockEntry& lock : _bufferLocks) {
+            if (lock._ageID == idx) {
+                continue;
+            }
 
-            const auto& entry = entries.find(bufferHandle);
+            const BufferLockEntries& entries = lock._entries;
+            const BufferLockEntries::const_iterator& entry = entries.find(bufferHandle);
+
             if (entry != std::cend(entries)) {
-                if (test(it->first, entry->second, testRange, noWait)) {
-                    it = _bufferLocks.erase(it);
-                } else {
-                    ++it;
+                for (const BufferRange& range : entry->second) {
+                    if (lock._valid && testRange.Overlaps(range)) {
+                        if (ret) {
+                            lock._valid = false;
+                        } else {
+                            U8 retryCount = 0;
+                            if (wait(lock._sync, true, noWait, retryCount)) {
+                                lock._valid = false;
+                                if (retryCount > 1) {
+                                    //ToDo: do something?
+                                }
+                                ret = true;
+                            }
+                        }
+                    }
                 }
-                ret = true;
-            } else {
-                ++it;
             }
         }
-
-        return ret;
     }
-    
-   return false;
+
+    return ret;
 }
 
 void glGlobalLockManager::quickCheckOldEntries(U32 frameID) {
+    OPTICK_EVENT();
+
+    UniqueLockShared w_lock(_lock);
     // Needed in order to delete old locks (from binds) that never needed actual waits (from writes). e.g. Terrain render nodes with static camera
     for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-        //Entries-FrameID
-        const std::pair<BufferLockEntries, U32>& entriesForCrtBuffer = it->second;
         // Check how old these entries are. Need to be at least 3 frames old for a fast check.
-        const U32 frameAge = frameID - entriesForCrtBuffer.second;
-        if (frameAge < 3) {
+        if (!it->_valid || frameID - it->_frameID > 5) {
+            if (it->_valid) {
+                wait(it->_sync, true, true);
+            }
+            if (it->_sync != nullptr) {
+                GL_API::registerSyncDelete(it->_sync);
+            }
+            it = _bufferLocks.erase(it);
+        }else {
             ++it;
+        }
+    }
+}
+
+void glGlobalLockManager::markOldDuplicateRangesAsInvalid(U32 frameID, const BufferLockEntries& entries) {
+    OPTICK_EVENT();
+    
+    for (auto bufferLock = eastl::begin(_bufferLocks); bufferLock != eastl::end(_bufferLocks); ++bufferLock) {
+        if (!bufferLock->_valid) {
             continue;
         }
-        GLsync syncObject = it->first;
-        U8 retryCount = 0;
-        if (frameAge > 5 || wait(&syncObject, true, true, retryCount)) {
-            GL_API::registerSyncDelete(syncObject);
-            it = _bufferLocks.erase(it);
-        } else {
-            ++it;
+
+        for (auto& oldEntry : bufferLock->_entries) {
+            for (auto& newEntry : entries) {
+                if (oldEntry.first == newEntry.first) {
+                    for (auto& oldRange : oldEntry.second) {
+                        for (auto& newRange : newEntry.second) {
+                            if (oldRange.Overlaps(newRange)) {
+                                bufferLock->_valid = false;
+                                goto NEXT_ENTRY;
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+    NEXT_ENTRY:;
     }
 }
 
 void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush, U32 frameID) {
-    GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    OPTICK_EVENT();
+    OPTICK_TAG("Flush", flush);
+    _lockIndex.fetch_add(1u);
+
+    GLLockEntry sync = {};
+    sync._ageID = _lockIndex.load();
+    sync._entries = std::move(entries);
+    sync._frameID = frameID;
 
     {
+        OPTICK_EVENT("GL_SYNC!");
+        sync._sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    }
+    {
         UniqueLockShared w_lock(_lock);
-        quickCheckOldEntries(frameID);
-        hashAlg::emplace(_bufferLocks, sync, entries, frameID);
+        markOldDuplicateRangesAsInvalid(frameID, sync._entries);
+        assert(_bufferLocks.size() < MAX_LOCK_ENTRIES);
+        _bufferLocks.push_back(sync);
     }
 
     if (flush) {
+        OPTICK_EVENT("GL_FLUSH!");
         glFlush();
     }
 }
-
+#pragma optimize( "", on )
 };

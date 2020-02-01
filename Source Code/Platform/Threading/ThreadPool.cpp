@@ -29,7 +29,7 @@ namespace Divide {
 
         const vec_size_eastl threadCount = _threads.size();
         for (vec_size_eastl idx = 0; idx < threadCount; ++idx) {
-            addTask([](bool wait) { ACKNOWLEDGE_UNUSED(wait);  return true; });
+            addTask([](bool wait) noexcept { ACKNOWLEDGE_UNUSED(wait);  return true; });
         }
 
         for (std::thread& thread : _threads) {
@@ -39,7 +39,7 @@ namespace Divide {
         }
     }
 
-    void ThreadPool::wait() {
+    void ThreadPool::wait() noexcept {
         if (_isRunning) {
             // Busy wait
             while (_tasksLeft.load() > 0) {
@@ -48,7 +48,7 @@ namespace Divide {
         }
     }
 
-    eastl::vector<std::thread>& ThreadPool::threads() {
+    eastl::vector<std::thread>& ThreadPool::threads() noexcept {
         return _threads;
     }
 

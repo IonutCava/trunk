@@ -68,7 +68,7 @@ class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
     inline U16 getDepth() const noexcept { return _depth; }
     inline PBType getType() const noexcept { return _pbtype; }
 
-    inline TextureData getData() const { return TextureData{ _textureID, 0u, _textureType }; }
+    inline TextureData getData() const noexcept { return TextureData{ _textureID, 0u, _textureType }; }
 
    protected:
     PBType _pbtype;

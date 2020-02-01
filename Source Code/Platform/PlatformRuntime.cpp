@@ -10,18 +10,18 @@ namespace detail {
     std::thread::id g_mainThreadID;
 };
 
-const std::thread::id&  mainThreadID() {
+const std::thread::id&  mainThreadID() noexcept {
     return detail::g_mainThreadID;
 }
 
-void mainThreadID(const std::thread::id& threadID) {
+void mainThreadID(const std::thread::id& threadID) noexcept {
     assert(!detail::g_idSet);
 
     detail::g_mainThreadID = threadID;
     detail::g_idSet = true;
 }
 
-bool resetMainThreadID() {
+bool resetMainThreadID() noexcept {
     detail::g_idSet = false;
     return true;
 }

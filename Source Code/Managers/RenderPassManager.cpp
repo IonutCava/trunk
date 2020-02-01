@@ -392,6 +392,7 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                                         GFX::CommandBuffer& bufferInOut)
 {
     OPTICK_EVENT();
+    OPTICK_TAG("FULL_REFRESH", fullRefresh);
 
     if (!fullRefresh) {
         RefreshNodeDataParams params(g_drawCommands, bufferInOut);
@@ -399,97 +400,99 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
         params._stagePass = stagePass;
 
         for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
-            for (SceneGraphNode* node : queue) {
+            for (const SceneGraphNode* node : queue) {
                 RenderingComponent& renderable = *node->get<RenderingComponent>();
                 Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(renderable, params);
             }
         }
-        return;
-    }
+    } else {
+        g_usedIndices.clear();
+        g_freeCounter = 0;
+        g_drawCommands.resize(0);
+        g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
-    const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
-    g_usedIndices.clear();
-    g_freeCounter = 0;
-    g_drawCommands.resize(0);
-    g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
-
-    for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
-        for (SceneGraphNode* node : queue) {
-            RenderingComponent& renderable = *node->get<RenderingComponent>();
-            U32 dataIdxOut = 0;
-            if (renderable.getDataIndex(dataIdxOut)) {
-                g_usedIndices.insert(dataIdxOut);
+        for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
+            for (const SceneGraphNode* node : queue) {
+                RenderingComponent& renderable = *node->get<RenderingComponent>();
+                U32 dataIdxOut = 0;
+                if (renderable.getDataIndex(dataIdxOut)) {
+                    g_usedIndices.insert(dataIdxOut);
+                }
             }
         }
-    }
 
-    bool skip = false;
-    U32 totalNodes = 0;
-    for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
-        if (skip) {
-            break;
-        }
-
-        for (SceneGraphNode* node : queue) {
-            RenderingComponent& renderable = *node->get<RenderingComponent>();
-
-            RefreshNodeDataParams params(g_drawCommands, bufferInOut);
-            params._camera = &camera;
-            params._stagePass = stagePass;
-            if (totalNodes == Config::MAX_VISIBLE_NODES) {
-                skip = true;
+        bool skip = false;
+        U32 totalNodes = 0;
+        const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
+        for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
+            if (skip) {
                 break;
             }
 
-            if (!renderable.getDataIndex(params._dataIdx)) {
-                SetType::iterator iter = g_usedIndices.lower_bound(g_freeCounter);
-                while (iter != std::end(g_usedIndices) && *iter == g_freeCounter) {
-                    ++iter;
-                    ++g_freeCounter;
-                }
-                params._dataIdx = g_freeCounter;
-            }
+            for (SceneGraphNode* node : queue) {
+                RenderingComponent& renderable = *node->get<RenderingComponent>();
 
-            if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
-                const GFXDevice::NodeData data = processVisibleNode(node, stagePass, playAnimations, camera.getViewMatrix());
-                g_nodeData[params._dataIdx] = data;
-                g_usedIndices.insert(params._dataIdx);
-                ++g_freeCounter;
-                ++totalNodes;
+                RefreshNodeDataParams params(g_drawCommands, bufferInOut);
+                params._camera = &camera;
+                params._stagePass = stagePass;
+                if (totalNodes == Config::MAX_VISIBLE_NODES) {
+                    skip = true;
+                    break;
+                }
+
+                if (!renderable.getDataIndex(params._dataIdx)) {
+                    SetType::iterator iter = g_usedIndices.lower_bound(g_freeCounter);
+                    while (iter != std::end(g_usedIndices) && *iter == g_freeCounter) {
+                        ++iter;
+                        ++g_freeCounter;
+                    }
+                    params._dataIdx = g_freeCounter;
+                }
+
+                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
+                    const GFXDevice::NodeData data = processVisibleNode(node, stagePass, playAnimations, camera.getViewMatrix());
+                    g_nodeData[params._dataIdx] = data;
+                    g_usedIndices.insert(params._dataIdx);
+                    ++g_freeCounter;
+                    ++totalNodes;
+                }
             }
         }
+
+        const U32 nodeCount = std::max(totalNodes, to_U32(*std::max_element(std::cbegin(g_usedIndices), std::cend(g_usedIndices)) + 1));
+        U32 cmdCount = to_U32(g_drawCommands.size());
+
+        RenderPass::BufferData bufferData = getBufferData(stagePass);
+        *bufferData._lastCommandCount = cmdCount;
+
+        {
+            OPTICK_EVENT("RenderPassManager::buildBufferData - UpdateBuffers");
+            bufferData._cmdBuffer->writeData(
+                bufferData._cmdBufferElementOffset,
+                cmdCount,
+                (bufferPtr)g_drawCommands.data());
+
+            bufferData._renderData->writeData(
+                bufferData._renderDataElementOffset,
+                nodeCount,
+                (bufferPtr)g_nodeData.data());
+        }
+
+        ShaderBufferBinding cmdBuffer = {};
+        cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;
+        cmdBuffer._buffer = bufferData._cmdBuffer;
+        cmdBuffer._elementRange = { bufferData._cmdBufferElementOffset, cmdCount };
+
+        ShaderBufferBinding dataBuffer = {};
+        dataBuffer._binding = ShaderBufferLocation::NODE_INFO;
+        dataBuffer._buffer = bufferData._renderData;
+        dataBuffer._elementRange = { bufferData._renderDataElementOffset, nodeCount };
+
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+        descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
+        descriptorSetCmd._set.addShaderBuffer(dataBuffer);
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
     }
-
-    const U32 nodeCount = std::max(totalNodes, to_U32(*std::max_element(std::cbegin(g_usedIndices), std::cend(g_usedIndices)) + 1));
-    U32 cmdCount = to_U32(g_drawCommands.size());
-
-    RenderPass::BufferData bufferData = getBufferData(stagePass);
-    *bufferData._lastCommandCount = cmdCount;
-
-    bufferData._cmdBuffer->writeData(
-        bufferData._cmdBufferElementOffset,
-        cmdCount,
-        (bufferPtr)g_drawCommands.data());
-
-    bufferData._renderData->writeData(
-        bufferData._renderDataElementOffset,
-        nodeCount,
-        (bufferPtr)g_nodeData.data());
-
-    ShaderBufferBinding cmdBuffer = {};
-    cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;
-    cmdBuffer._buffer = bufferData._cmdBuffer;
-    cmdBuffer._elementRange = { bufferData._cmdBufferElementOffset, cmdCount };
-
-    ShaderBufferBinding dataBuffer = {};
-    dataBuffer._binding = ShaderBufferLocation::NODE_INFO;
-    dataBuffer._buffer = bufferData._renderData;
-    dataBuffer._elementRange = { bufferData._renderDataElementOffset, nodeCount };
-
-    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
-    descriptorSetCmd._set.addShaderBuffer(dataBuffer);
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
 void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refresh, GFX::CommandBuffer& bufferInOut)
@@ -506,7 +509,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 
     getQueue().getSortedQueues(stagePass, g_sortedQueues, queueSize);
     for (const vectorEASTLFast<SceneGraphNode*>& queue : g_sortedQueues) {
-        for (SceneGraphNode* node : queue) {
+        for (const SceneGraphNode* node : queue) {
             if (params._sourceNode != nullptr && *params._sourceNode == *node) {
                 continue;
             }
@@ -825,7 +828,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         TextureData accum = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->data();
         TextureData revealage = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->data();
 
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTextures(
             {
                 { to_base(ShaderProgram::TextureUsage::UNIT0), accum },

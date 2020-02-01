@@ -14,13 +14,13 @@ AutoRepeatKey::AutoRepeatKey(D64 repeatDelay, D64 initialDelay)
 {
 }
 
-void AutoRepeatKey::begin(const KeyEvent &evt) {
+void AutoRepeatKey::begin(const KeyEvent &evt) noexcept {
     _key = evt;
     _elapsed = 0.0;
     _delay = _initialDelay;
 }
 
-void AutoRepeatKey::end(const KeyEvent &evt) {
+void AutoRepeatKey::end(const KeyEvent &evt) noexcept {
     if (_key._text != evt._text) {
         return;
     }

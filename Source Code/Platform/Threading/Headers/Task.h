@@ -57,10 +57,10 @@ struct alignas(64) Task {
 };
 
 Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, DELEGATE_CBK<void>&& onCompletionFunction = {});
-Task& Stop(Task& task);
+Task& Stop(Task& task) noexcept;
 void Wait(const Task& task);
-bool StopRequested(const Task& task);
-bool Finished(const Task& task);
+bool StopRequested(const Task& task) noexcept;
+bool Finished(const Task& task) noexcept;
 void TaskYield(const Task& task);
 
 };  // namespace Divide

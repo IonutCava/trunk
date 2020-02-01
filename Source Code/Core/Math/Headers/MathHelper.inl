@@ -120,8 +120,7 @@ namespace detail {
             ((f >> 18) & 0x001f); // Mantissa
     }
 
-    inline U32 packed10ToFloat(U32 const & p) noexcept
-    {
+    inline U32 packed10ToFloat(U32 const & p) noexcept {
         // 10 bits    =>                         EE EEEFFFFF
         // 11 bits    =>                        EEE EEFFFFFF
         // Half bits  =>                   SEEEEEFF FFFFFFFF
@@ -141,51 +140,35 @@ namespace detail {
             ((p & 0x001f) << 18); // Mantissa
     }
 
-    inline U32 floatTo11bit(F32 x)
-    {
-        if (x == 0.0f)
-            return 0u;
-        else if (std::isnan(x))
-            return ~0u;
-        else if (std::isinf(x))
-            return 0x1f << 6;
+    inline U32 floatTo11bit(F32 x) noexcept {
+             if (x == 0.0f)     return 0u;
+        else if (std::isnan(x)) return ~0u;
+        else if (std::isinf(x)) return 0x1f << 6;
 
         return float2packed11(reinterpret_cast<U32&>(x));
     }
 
-    inline F32 packed11bitToFloat(U32 x)
-    {
-        if (x == 0u)
-            return 0.0f;
-        else if (x == ((1 << 11) - 1))
-            return ~0;//NaN
-        else if (x == (0x1f << 6))
-            return ~0;//Inf
+    inline F32 packed11bitToFloat(U32 x) noexcept {
+             if (x == 0u)              return 0.0f;
+        else if (x == ((1 << 11) - 1)) return ~0;//NaN
+        else if (x == (0x1f << 6))     return ~0;//Inf
 
         U32 result = packed11ToFloat(x);
         return reinterpret_cast<F32&>(result);
     }
 
-    inline U32 floatTo10bit(F32 x)
-    {
-        if (x == 0.0f)
-            return 0u;
-        else if (std::isnan(x))
-            return ~0u;
-        else if (std::isinf(x))
-            return 0x1f << 5;
+    inline U32 floatTo10bit(F32 x) noexcept {
+             if (x == 0.0f)     return 0u;
+        else if (std::isnan(x)) return ~0u;
+        else if (std::isinf(x)) return 0x1f << 5;
 
         return float2packed10(reinterpret_cast<U32&>(x));
     }
 
-    inline F32 packed10bitToFloat(U32 x)
-    {
-        if (x == 0)
-            return 0.0f;
-        else if (x == ((1 << 10) - 1))
-            return ~0;//NaN
-        else if (x == (0x1f << 5))
-            return ~0;//Inf
+    inline F32 packed10bitToFloat(U32 x) noexcept {
+             if (x == 0)               return 0.0f;
+        else if (x == ((1 << 10) - 1)) return ~0;//NaN
+        else if (x == (0x1f << 5))     return ~0;//Inf
 
         U32 result = packed10ToFloat(x);
         return reinterpret_cast<F32&>(result);
@@ -910,7 +893,7 @@ FORCE_INLINE void Hash_combine(size_t& seed, const T& v) {
 }
 
 template<>
-FORCE_INLINE void Hash_combine(size_t& seed, const size_t& hash) {
+FORCE_INLINE void Hash_combine(size_t& seed, const size_t& hash) noexcept {
     seed ^= hash + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 

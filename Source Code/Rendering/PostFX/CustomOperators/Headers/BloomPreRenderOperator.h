@@ -47,7 +47,7 @@ class BloomPreRenderOperator : public PreRenderOperator {
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
-    TextureData getDebugOutput() const;
+    TextureData getDebugOutput() const final;
 
     inline F32 factor() const { return _bloomFactor; }
     void factor(F32 val);

@@ -36,4 +36,7 @@
       <UniqueIdentifier>{b46125ee-e93e-4369-b988-8b2a283420fc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\main.xml" />
+  </ItemGroup>
 </Project>

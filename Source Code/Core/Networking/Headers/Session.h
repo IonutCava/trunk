@@ -46,7 +46,7 @@ class Session : public tcp_session_tpl {
        Session(boost::asio::io_service& io_service, channel& ch);
 
    private:
-    void handlePacket(WorldPacket& p);
+    void handlePacket(WorldPacket& p) override;
     void HandleGeometryListOpCode(WorldPacket& p);
     void HandleRequestGeometry(WorldPacket& p);
 };

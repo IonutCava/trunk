@@ -55,10 +55,10 @@ struct BufferImplParams {
 };
 
 struct BufferWriteData {
-    BufferWriteData() : BufferWriteData(GLUtil::k_invalidObjectID) {};
-    BufferWriteData(GLuint bufferHandle) : BufferWriteData(bufferHandle, 0, 0) {}
-    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range) : BufferWriteData(bufferHandle, offset, range, false) {}
-    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range, bool flush) : _handle(bufferHandle), _offset(offset), _range(range), _flush(flush) {}
+    BufferWriteData() noexcept : BufferWriteData(GLUtil::k_invalidObjectID) {};
+    BufferWriteData(GLuint bufferHandle) noexcept : BufferWriteData(bufferHandle, 0, 0) {}
+    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range) noexcept : BufferWriteData(bufferHandle, offset, range, false) {}
+    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range, bool flush) noexcept : _handle(bufferHandle), _offset(offset), _range(range), _flush(flush) {}
 
     GLuint _handle = GLUtil::k_invalidObjectID;
     GLintptr _offset = 0;
@@ -72,7 +72,7 @@ public:
     explicit glBufferImpl(GFXDevice& context, const BufferImplParams& params);
     virtual ~glBufferImpl();
 
-    GLuint bufferID() const;
+    GLuint bufferID() const noexcept;
 
     bool bindRange(GLuint bindIndex, GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
     void lockRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool flush);
@@ -82,9 +82,9 @@ public:
     void readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, const bufferPtr data);
     void zeroMem(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
 
-    size_t elementSize() const;
+    size_t elementSize() const noexcept;
 
-    static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage);
+    static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept;
 protected:
     void invalidateData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
 

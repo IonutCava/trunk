@@ -68,7 +68,7 @@ class GUIButton : public GUIElement {
     };
 
    public:
-    void setTooltip(const stringImpl& tooltipText);
+    void setTooltip(const stringImpl& tooltipText) override;
     void setText(const stringImpl& text);
     void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
     void setActive(const bool active) override;

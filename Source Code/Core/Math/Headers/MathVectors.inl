@@ -73,7 +73,7 @@ namespace {
         return _mm_hadd_ps(b, b);
     }
 
-    inline void DOT_SIMD(const __m128 &a, const __m128 &b, F32 &dot)
+    inline void DOT_SIMD(const __m128 &a, const __m128 &b, F32 &dot) noexcept
     {
         _mm_store_ss(&dot, DOT_SIMD(a, b));
     }

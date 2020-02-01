@@ -54,11 +54,11 @@ using HashType = EnumHash<Key>;
 namespace hashAlg = eastl;
 
 
-template <typename K, typename V, typename HashFun = HashType<K> >
-using hashMap = hashAlg::unordered_map<K, V, HashFun>;
+template <typename K, typename V, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K>>
+using hashMap = hashAlg::unordered_map<K, V, HashFun, Predicate>;
 
-template <typename K, typename V, typename HashFun = HashType<K> >
-using hashPairReturn = hashAlg::pair<typename hashMap<K, V, HashFun>::iterator, bool>;
+template <typename K, typename V, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K>>
+using hashPairReturn = hashAlg::pair<typename hashMap<K, V, HashFun, Predicate>::iterator, bool>;
 
 template <typename K, typename V>
 using hashMapIntrusive = hashAlg::intrusive_hash_map<K, V, 37>;
@@ -107,28 +107,28 @@ template <> struct hash<std::string>
 };
 
 
-template <typename K, typename V, typename ... Args, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun>& map, K key, Args&&... args) {
+template <typename K, typename V, typename ... Args, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K>>
+inline hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun, Predicate>& map, K key, Args&&... args) {
     return map.try_emplace(key, eastl::forward<Args>(args)...);
 }
 
-template <typename K, typename V, typename ... Args, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun>& map, Args&&... args) {
+template <typename K, typename V, typename ... Args, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K>>
+inline hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun, Predicate>& map, Args&&... args) {
     return map.emplace(eastl::forward<Args>(args)...);
 }
 
-template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun>& map, const hashAlg::pair<K, V>& valuePair) {
+template <typename K, typename V, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K> >
+inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, const hashAlg::pair<K, V>& valuePair) {
     return map.insert(valuePair);
 }
 
-template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun>& map, K key, const V& value) {
+template <typename K, typename V, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K> >
+inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, K key, const V& value) {
     return map.emplace(key, value);
 }
 
-template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun>& map, K key, V&& value) {
+template <typename K, typename V, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K> >
+inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, K key, V&& value) {
     return map.emplace(key, eastl::move(value));
 }
 

@@ -157,7 +157,7 @@ namespace Attorney {
             pkg.updateDrawCommands(dataIndex, startOffset);
         }
 
-        static void setLoDLevel(RenderPackage& pkg, U8 LoD) {
+        static void setLoDLevel(RenderPackage& pkg, U8 LoD) noexcept {
             pkg.setLoDLevel(LoD);
         }
 

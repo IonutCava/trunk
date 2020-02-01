@@ -59,6 +59,7 @@ class RenderPass : private NonCopyable {
            U32* _lastCommandCount = nullptr;
            U32 _renderDataElementOffset = 0;
            U32 _cmdBufferElementOffset = 0;
+           U8  _cmdBufferElementFactor = 0;
        };
   public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list

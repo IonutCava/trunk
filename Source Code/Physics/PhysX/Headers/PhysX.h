@@ -49,11 +49,11 @@ class PhysXSceneInterface;
 
 
 class PxDefaultAllocator : public physx::PxAllocatorCallback {
-    void* allocate(size_t size, const char*, const char*, int) {
+    void* allocate(size_t size, const char*, const char*, int)  override {
     	return malloc_aligned(size, 16);
     }
 
-    void deallocate(void* ptr) {
+    void deallocate(void* ptr)  override {
     	malloc_free(ptr);
     }
 };
@@ -67,20 +67,20 @@ public:
     ~PhysX();
 
 public:
-    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed)  override;
-    bool closePhysicsAPI()  override;
-    void update(const U64 deltaTimeUS)  override;
-    void process(const U64 deltaTimeUS)  override;
-    void idle()  override;
+    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) final;
+    bool closePhysicsAPI() final;
+    void update(const U64 deltaTimeUS) final;
+    void process(const U64 deltaTimeUS) final;
+    void idle() final;
 
-    void updateTimeStep(U8 timeStepFactor, F32 simSpeed)  override;
+    void updateTimeStep(U8 timeStepFactor, F32 simSpeed) final;
 
-    PhysicsSceneInterface* NewSceneInterface(Scene& scene)  override;
+    PhysicsSceneInterface* NewSceneInterface(Scene& scene) final;
 
-    inline physx::PxPhysics* const getSDK() { return _gPhysicsSDK; }
-    void setPhysicsScene(PhysicsSceneInterface* const targetScene);
+    inline physx::PxPhysics* const getSDK() noexcept { return _gPhysicsSDK; }
+    void setPhysicsScene(PhysicsSceneInterface* const targetScene) final;
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) override;
+    PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) final;
 
 
     void togglePvdConnection();

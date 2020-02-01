@@ -19,7 +19,7 @@
 namespace Divide {
 
 namespace {
-    TextureType GetNonMSType(TextureType type) {
+    TextureType GetNonMSType(TextureType type) noexcept {
         if (type == TextureType::TEXTURE_2D_MS) {
             return TextureType::TEXTURE_2D;
         }
@@ -181,7 +181,7 @@ bool glFramebuffer::create() {
         vector<RTAttachmentDescriptor> attachments;
         for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
             for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachmentType>(i)); ++j) {
-                RTAttachment* att = _attachmentPool->get(static_cast<RTAttachmentType>(i), j).get();
+                const RTAttachment* att = _attachmentPool->get(static_cast<RTAttachmentType>(i), j).get();
                 if (att->used()) {
                     RTAttachmentDescriptor descriptor = {};
                     descriptor._texDescriptor = att->texture(false)->descriptor();
@@ -717,7 +717,7 @@ void glFramebuffer::clear(const RTClearDescriptor& drawPolicy, const RTAttachmen
                     continue;
                 }
 
-                GLint buffer = static_cast<GLint>(binding - static_cast<GLint>(GL_COLOR_ATTACHMENT0));
+                const GLint buffer = static_cast<GLint>(binding - static_cast<GLint>(GL_COLOR_ATTACHMENT0));
 
                 if (drawPolicy.clearColour(to_U8(buffer))) {
                     switch (att->texture(false)->descriptor().dataType()) {

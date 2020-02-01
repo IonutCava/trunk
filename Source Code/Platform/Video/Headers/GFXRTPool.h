@@ -61,11 +61,11 @@ protected:
 public:
     RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor);
 
-    inline RenderTarget& renderTarget(const RenderTargetHandle& handle) {
+    inline RenderTarget& renderTarget(const RenderTargetHandle& handle) noexcept {
         return renderTarget(handle._targetID);
     }
 
-    inline const RenderTarget& renderTarget(const RenderTargetHandle& handle) const {
+    inline const RenderTarget& renderTarget(const RenderTargetHandle& handle) const noexcept {
         return renderTarget(handle._targetID);
     }
 

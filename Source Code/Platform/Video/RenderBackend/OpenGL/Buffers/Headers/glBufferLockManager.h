@@ -46,7 +46,7 @@ struct BufferRange {
     GLintptr _startOffset = 0;
     GLsizeiptr _length = 0;
 
-    inline bool Overlaps(const BufferRange& _rhs) const {
+    inline bool Overlaps(const BufferRange& _rhs) const noexcept {
         return static_cast<GLsizeiptr>(_startOffset) < (_rhs._startOffset + _rhs._length) &&
                static_cast<GLsizeiptr>(_rhs._startOffset) < (_startOffset + _length);
     }
@@ -61,7 +61,7 @@ struct BufferLock {
 // --------------------------------------------------------------------------------------------------------------------
 class glBufferLockManager : public glLockManager {
    public:
-    glBufferLockManager() noexcept;
+    glBufferLockManager();
     ~glBufferLockManager();
 
     // Return true if we found a lock to wait on
@@ -79,8 +79,10 @@ using BufferLockEntries = hashMap<GLuint /*buffer handle*/,  LockEntries>;
 
 class glGlobalLockManager : public glLockManager {
 public:
-    glGlobalLockManager() noexcept;
-    ~glGlobalLockManager();
+    static const size_t MAX_LOCK_ENTRIES = 1024;
+
+    glGlobalLockManager();
+    ~glGlobalLockManager() = default;
 
     void clean(U32 frameID);
 
@@ -88,21 +90,23 @@ public:
     bool WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait = false);
     void LockBuffers(BufferLockEntries&& entries, bool flush, U32 frameID);
 
-    inline size_t lastTotalLockCount() const noexcept { return _lockCount; }
-
 protected:
-    bool test(GLsync syncObject, const vectorEASTL<BufferRange>& ranges, const BufferRange& testRange, bool noWait = false);
+    struct GLLockEntry {
+        BufferLockEntries _entries;
+        GLsync _sync;
+        U64 _ageID = 0u;
+        U32 _frameID = 0u;
+        bool _valid = true;
+    };
+
     void quickCheckOldEntries(U32 frameID);
-
-    void cleanLocked(U32 frameID);
+    void markOldDuplicateRangesAsInvalid(U32 frameID, const BufferLockEntries& newEntries);
 private:
-    size_t _lockCount = 0;
-
     mutable SharedMutex _lock;
-    using LockMap = hashMap<GLsync, std::pair<BufferLockEntries, U32>>;
-    LockMap _bufferLocks;
+    using LockEntries = eastl::fixed_vector<GLLockEntry, MAX_LOCK_ENTRIES, false>;
+    LockEntries _bufferLocks;
+    std::atomic<U64> _lockIndex;
 };
 
 };  // namespace Divide
-
 #endif

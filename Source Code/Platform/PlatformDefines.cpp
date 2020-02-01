@@ -50,11 +50,11 @@ SysInfo::SysInfo() : _availableRam(0),
 {
 }
 
-SysInfo& sysInfo() {
+SysInfo& sysInfo() noexcept {
     return g_sysInfo;
 }
 
-const SysInfo& const_sysInfo() {
+const SysInfo& const_sysInfo() noexcept {
     return g_sysInfo;
 }
 
@@ -120,7 +120,7 @@ void InitSysInfo(SysInfo& info, I32 argc, char** argv) {
     info._pathAndFilename._path.append("/");
 }
 
-U32 HARDWARE_THREAD_COUNT() {
+U32 HARDWARE_THREAD_COUNT() noexcept {
     return std::max(std::thread::hardware_concurrency(), 2u);
 }
 
@@ -171,26 +171,26 @@ FileWithPath getExecutableLocation(char* argv0) {
     return splitPathToNameAndLocation(extractFilePathAndName(argv0));
 }
 
-const char* GetClipboardText(void* user_data)
+const char* GetClipboardText(void* user_data) noexcept
 {
     ACKNOWLEDGE_UNUSED(user_data);
 
     return SDL_GetClipboardText();
 }
 
-void SetClipboardText(void* user_data, const char* text)
+void SetClipboardText(void* user_data, const char* text) noexcept
 {
     ACKNOWLEDGE_UNUSED(user_data);
 
     SDL_SetClipboardText(text);
 }
 
-void ToggleCursor(bool state)
+void ToggleCursor(bool state) noexcept
 {
     SDL_ShowCursor((state ? SDL_TRUE : SDL_FALSE));
 }
 
-bool CursorState()
+bool CursorState() noexcept
 {
     return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
 }

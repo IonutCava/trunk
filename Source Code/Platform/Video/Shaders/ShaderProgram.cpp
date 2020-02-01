@@ -73,6 +73,8 @@ bool ShaderProgram::recompile(bool force) {
 
 //================================ static methods ========================================
 void ShaderProgram::idle() {
+    OPTICK_EVENT();
+
     // If we don't have any shaders queued for recompilation, return early
     if (!s_recompileQueue.empty()) {
         // Else, recompile the top program from the queue

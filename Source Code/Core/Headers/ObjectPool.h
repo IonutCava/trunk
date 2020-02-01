@@ -43,11 +43,11 @@ struct PoolHandle {
     U16 _id = 0;
     U8  _generation = 0;
 
-    inline bool operator== (const PoolHandle& val) const {
+    inline bool operator== (const PoolHandle& val) const noexcept {
         return _id == val._id && _generation == val._generation;
     }
 
-    inline bool operator!= (const PoolHandle& val) const {
+    inline bool operator!= (const PoolHandle& val) const noexcept {
         return _id != val._id || _generation != val._generation;
     }
 };
