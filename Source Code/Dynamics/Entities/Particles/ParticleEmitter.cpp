@@ -350,7 +350,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
 
     if (_enabled) {
         U32 aliveCount = getAliveParticleCount();
-        renderState().setDrawState(aliveCount > 0);
+        renderState().drawState(aliveCount > 0);
 
         TransformComponent* transform = sgn.get<TransformComponent>();
 

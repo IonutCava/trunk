@@ -64,10 +64,12 @@ struct RenderParams {
     Pipeline _pipeline;
 };
 
+using DrawCommandContainer = eastl::fixed_vector<IndirectDrawCommand, Config::MAX_VISIBLE_NODES, false>;
+
 struct RefreshNodeDataParams {
-    explicit RefreshNodeDataParams(vectorEASTL<IndirectDrawCommand>& commands, GFX::CommandBuffer& bufferInOut)
+    explicit RefreshNodeDataParams(DrawCommandContainer& commands, GFX::CommandBuffer& bufferInOut)
         : _drawCommandsInOut(commands),
-        _bufferInOut(bufferInOut)
+          _bufferInOut(bufferInOut)
     {
 
     }
@@ -75,7 +77,7 @@ struct RefreshNodeDataParams {
     RenderStagePass _stagePass = {};
     U32 _dataIdx = 0;
     const Camera* _camera = nullptr;
-    vectorEASTL<IndirectDrawCommand>& _drawCommandsInOut;
+    DrawCommandContainer& _drawCommandsInOut;
     GFX::CommandBuffer& _bufferInOut;
 
 };
@@ -227,9 +229,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
-    inline Material* getMaterialCache() const { return _materialInstanceCache; }
-
-
     void defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
     void defaultRefractionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
 
@@ -240,13 +239,15 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void updateReflectionIndex(ReflectorType type, I32 index);
     void updateRefractionIndex(ReflectorType type, I32 index);
 
+    void onMaterialChanged();
+
    protected:
     GFXDevice& _context;
     const Configuration& _config;
     Material_ptr _materialInstance;
     Material* _materialInstanceCache;
 
-    std::pair<I64, bool> _dataIndex;
+    std::pair<U32, bool> _dataIndex;
     F32 _cullFlagValue;
     U32 _renderMask;
     bool _lodLocked;
@@ -255,10 +256,10 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
     std::array<U32, to_base(RenderStage::COUNT)> _drawDataIdx;
 
-    typedef std::array<RenderPackage, to_base(RenderPassType::COUNT)> RenderPackagesPerPassType;
+    using RenderPackagesPerPassType = std::array<RenderPackage, to_base(RenderPassType::COUNT)>;
     std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT) - 1> _renderPackagesNormal;
 
-    typedef std::array<RenderPackage, 6> RenderPacakgesPerSplit;
+    using RenderPacakgesPerSplit = std::array<RenderPackage, 6>;
     std::array<RenderPacakgesPerSplit, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _renderPackagesShadow;
 
     PushConstants _globalPushConstants;

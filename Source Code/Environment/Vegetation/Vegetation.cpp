@@ -77,7 +77,6 @@ Vegetation::Vegetation(GFXDevice& context,
       _grassScales(details.grassScales),
       _treeScales(details.treeScales),
       _treeRotations(details.treeRotations),
-      _render(false),
       _shadowMapped(true),
       _treeParentNode(nullptr),
       _cullPipelineGrass(nullptr),
@@ -103,6 +102,8 @@ Vegetation::Vegetation(GFXDevice& context,
     renderState().addToDrawExclusionMask(RenderPassType::MAIN_PASS);
     renderState().addToDrawExclusionMask(RenderStage::REFLECTION);
     renderState().addToDrawExclusionMask(RenderStage::REFRACTION);
+    renderState().minLodLevel(2u);
+    renderState().drawState(false);
 
     setState(ResourceState::RES_LOADING);
     _buildTask = CreateTask(_context.context(),
@@ -447,7 +448,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     if (_instanceCountGrass > 0u) {
         if (_terrainChunk.ID() < s_maxChunks) {
             s_grassData->writeData(_terrainChunk.ID() * s_maxGrassInstances, _instanceCountGrass, (bufferPtr)_tempGrassData.data());
-            _render = _instanceCountTrees == 0;
+            renderState().drawState(true);
         } else {
             Console::errorfn("Vegetation::uploadGrassData: insufficient buffer space for grass data");
         }
@@ -457,12 +458,13 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     if (_instanceCountTrees > 0u) {
         if (_terrainChunk.ID() < s_maxChunks) {
             s_treeData->writeData(_terrainChunk.ID() * s_maxTreeInstances, _instanceCountTrees, (bufferPtr)_tempTreeData.data());
-            _render = true;
+            renderState().drawState(true);
         } else {
             Console::errorfn("Vegetation::uploadGrassData: insufficient buffer space for tree data");
         }
         _tempTreeData.clear();
     }
+
     sgn.get<RenderingComponent>()->setMaterialTpl(s_vegetationMaterial);
 
     PipelineDescriptor pipeDesc;
@@ -564,7 +566,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
                              SceneState& sceneState) {
     OPTICK_EVENT();
 
-    if (!_render) {
+    if (!renderState().drawState()) {
         uploadVegetationData(sgn);
     }
 
@@ -580,7 +582,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         s_buffersBound = true;
     }
 
-    if (_render) {
+    if (renderState().drawState()) {
         assert(getState() == ResourceState::RES_LOADED);
         // Query shadow state every "_stateRefreshInterval" microseconds
         if (_stateRefreshIntervalBufferUS >= _stateRefreshIntervalUS) {
@@ -608,12 +610,8 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-bool Vegetation::getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const {
-    return _render && LoD < 2 && SceneNode::getDrawState(sgn, renderStage, LoD);
-}
-
 void Vegetation::postLoad(SceneGraphNode& sgn) {
-    U32 ID = _terrainChunk.ID();
+    const U32 ID = _terrainChunk.ID();
     assert(s_grassData != nullptr);
 
     // positive value to keep occlusion culling happening
@@ -625,38 +623,35 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
 void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut){
     OPTICK_EVENT();
 
-    if (!quick && _render && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
+    if (!quick && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
         // This will always lag one frame
-        Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Colour, 0).texture();
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        const Texture_ptr& depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Colour, 0).texture();
+
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-        //Cull grass
-        GFX::BindPipelineCommand pipelineCmd;
-        pipelineCmd._pipeline = _cullPipelineGrass;
-        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
         GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
-        cullConstants._constants.countHint(4);
+        cullConstants._constants.countHint(4 + _cullPushConstants.data().size());
         cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
         cullConstants._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
         cullConstants._constants.set("viewMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
         cullConstants._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
-        GFX::EnqueueCommand(bufferInOut, cullConstants);
 
-        GFX::DispatchComputeCommand computeCmd;
+        GFX::DispatchComputeCommand computeCmd = {};
 
         if (_instanceCountGrass > 0) {
+            //Cull grass
+            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _cullPipelineGrass });
+            GFX::EnqueueCommand(bufferInOut, cullConstants);
+
             computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
 
         if (_instanceCountTrees > 0) {
             // Cull trees
-            pipelineCmd._pipeline = _cullPipelineTrees;
-            GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
+            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _cullPipelineTrees });
             GFX::EnqueueCommand(bufferInOut, cullConstants);
 
             computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
@@ -670,9 +665,9 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
 void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) {
-    if (_render && renderStagePass._passIndex == 0) {
+    if (renderStagePass._passIndex == 0) {
 
-        GenericDrawCommand cmd;
+        GenericDrawCommand cmd = {};
         cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
         cmd._cmd.indexCount = s_buffer->getIndexCount();
         cmd._sourceBuffer = s_buffer->handle();

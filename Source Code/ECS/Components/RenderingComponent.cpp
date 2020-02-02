@@ -52,7 +52,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
       _lodLocked(false),
       _cullFlagValue(1.0f),
       _renderMask(0),
-      _dataIndex({-1, false}),
+      _dataIndex({std::numeric_limits<U32>::max(), false}),
       _reflectionIndex(-1),
       _refractionIndex(-1),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
@@ -182,13 +182,12 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
 
     // The following commands are needed for material rendering
     // In the absence of a material, use the SceneNode buildDrawCommands to add all of the needed commands
-    if (getMaterialCache() != nullptr) {
+    if (_materialInstanceCache != nullptr) {
         PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._stateHash = getMaterialCache()->getRenderStateBlock(stagePass);
-        pipelineDescriptor._shaderProgramHandle = getMaterialCache()->getProgramID(stagePass);
+        pipelineDescriptor._stateHash = _materialInstanceCache->getRenderStateBlock(stagePass);
+        pipelineDescriptor._shaderProgramHandle = _materialInstanceCache->getProgramID(stagePass);
 
-        GFX::BindPipelineCommand pipelineCommand = {};
-        pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
+        GFX::BindPipelineCommand pipelineCommand = { _context.newPipeline(pipelineDescriptor) };
         pkg.addPipelineCommand(pipelineCommand);
 
         GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
@@ -210,8 +209,8 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
 void RenderingComponent::Update(const U64 deltaTimeUS) {
     OPTICK_EVENT();
 
-    if (getMaterialCache() != nullptr) {
-        getMaterialCache()->update(deltaTimeUS);
+    if (_materialInstanceCache != nullptr && _materialInstanceCache->update(deltaTimeUS)) {
+        onMaterialChanged();
     }
 
     const Object3D& node = _parentSGN.getNode<Object3D>();
@@ -226,13 +225,30 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
     BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
 }
 
-bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
+
+void RenderingComponent::onMaterialChanged() {
     OPTICK_EVENT();
 
+    for (RenderPackagesPerPassType& it : _renderPackagesNormal) {
+        for (RenderPackage& pkg : it) {
+            pkg.textureDataDirty(true);
+        }
+    }
+
+    for (RenderPacakgesPerSplit& it : _renderPackagesShadow) {
+        for (RenderPackage& pkg : it) {
+            pkg.textureDataDirty(true);
+        }
+    }
+}
+
+bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
+    OPTICK_EVENT();
+    OPTICK_TAG("Node", _parentSGN.name().c_str());
+
     if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, renderStagePass, LoD)) {
-        Material* matCache = getMaterialCache();
         // Can we render without a material? Maybe. IDK.
-        if (matCache == nullptr || matCache->canDraw(renderStagePass)) {
+        if (_materialInstanceCache == nullptr || _materialInstanceCache->canDraw(renderStagePass)) {
             return renderOptionEnabled(RenderOptions::IS_VISIBLE);
         }
     }
@@ -241,8 +257,9 @@ bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool r
 }
 
 void RenderingComponent::rebuildMaterial() {
-    if (getMaterialCache() != nullptr) {
-        getMaterialCache()->rebuild();
+    if (_materialInstanceCache != nullptr) {
+        _materialInstanceCache->rebuild();
+        onMaterialChanged();
     }
 
     _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
@@ -257,27 +274,32 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     OPTICK_EVENT();
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
-    TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
+    if (pkg.textureDataDirty()) {
+        TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
 
-    if (getMaterialCache() != nullptr) {
-        getMaterialCache()->getTextureData(renderStagePass, textures);
-    }
-
-    for (U8 i = 0; i < _externalTextures.size(); ++i) {
-        const Texture_ptr& crtTexture = _externalTextures[i];
-        if (crtTexture != nullptr) {
-            textures.setTexture(crtTexture->data(), to_base(g_texUsage[i].second));
+        if (_materialInstanceCache != nullptr) {
+            _materialInstanceCache->getTextureData(renderStagePass, textures);
         }
+
+        for (U8 i = 0; i < _externalTextures.size(); ++i) {
+            const Texture_ptr& crtTexture = _externalTextures[i];
+            if (crtTexture != nullptr) {
+                textures.setTexture(crtTexture->data(), to_base(g_texUsage[i].second));
+            }
+        }
+        pkg.textureDataDirty(false);
     }
 }
 
 void RenderingComponent::setDataIndex(U32 idx) {
-    _dataIndex.first = to_I64(idx);
+    assert(idx != std::numeric_limits<U32>::max());
+
+    _dataIndex.first = idx;
     _dataIndex.second = true;
 }
 
 bool RenderingComponent::getDataIndex(U32& idxOut) {
-    idxOut = to_U32(_dataIndex.first);
+    idxOut = _dataIndex.first;
     return _dataIndex.second;
 }
 
@@ -293,7 +315,11 @@ void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
     if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, stagePass, lod)) {
         RenderPackage& pkg = getDrawPackage(stagePass);
         if (!pkg.empty()) {
-            pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[stage]);
+            const U32 dataIdx = _drawDataIdx[stage];
+            if (pkg.dataDrawIdxCache() != dataIdx) {
+                pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, dataIdx);
+                pkg.dataDrawIdxCache(dataIdx);
+            }
         }
     }
 }
@@ -310,11 +336,11 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
     OPTICK_EVENT();
 
     RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
-    I32 drawCommandCount = pkg.drawCommandCount();
+    const I32 drawCommandCount = pkg.drawCommandCount();
 
     if (drawCommandCount > 0) {
         if (!_dataIndex.second) {
-            _dataIndex.first = to_I64(refreshParams._dataIdx);
+            _dataIndex.first = refreshParams._dataIdx;
         }
 
         if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
@@ -334,7 +360,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
             }
         }
 
-        _drawDataIdx[to_base(refreshParams._stagePass._stage)] = to_U32(_dataIndex.first);
+        _drawDataIdx[to_base(refreshParams._stagePass._stage)] = _dataIndex.first;
         uploadDataIndexAsUniform(refreshParams._stagePass);
         Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
         return true;
@@ -346,8 +372,8 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
-    if (getMaterialCache() != nullptr) {
-        getMaterialCache()->getMaterialMatrix(matOut);
+    if (_materialInstanceCache != nullptr) {
+        _materialInstanceCache->getMaterialMatrix(matOut);
     }
 }
 

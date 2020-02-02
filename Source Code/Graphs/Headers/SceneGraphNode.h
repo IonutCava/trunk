@@ -401,7 +401,7 @@ namespace Attorney {
 
     class SceneGraphNodeRelationshipCache {
     private:
-        static const SGNRelationshipCache& relationshipCache(const SceneGraphNode& node) {
+        static const SGNRelationshipCache& relationshipCache(const SceneGraphNode& node) noexcept {
             return node._relationshipCache;
         }
 

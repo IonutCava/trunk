@@ -94,9 +94,11 @@ class RenderPassManager;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
-    using RenderBinStack = vectorEASTLFast<RenderBinItem>;
-
    public:
+    using RenderBinStack = vectorEASTLFast<RenderBinItem>;
+    using SortedQueueEntry = std::pair<SceneGraphNode*, RenderingComponent*>;
+    using SortedQueue = vectorEASTLFast<SortedQueueEntry>;
+    using SortedQueues = std::array<SortedQueue, RenderBinType::RBT_COUNT>;
 
     friend class RenderQueue;
 
@@ -115,7 +117,7 @@ class RenderBin {
 
     const RenderBinItem& getItem(RenderStage stage, U16 index) const;
 
-    void getSortedNodes(RenderStage stage, vectorEASTLFast<SceneGraphNode*>& nodes, U16& countOut) const;
+    void getSortedNodes(RenderStage stage, SortedQueue& nodes, U16& countOut) const;
 
     U16 getBinSize(RenderStage stage) const;
 

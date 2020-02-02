@@ -46,8 +46,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneNode);
 /// This class manages all of the RenderBins and renders them in the correct order
 class RenderQueue : public KernelComponent {
    public:
-    typedef std::array<RenderBin*, RenderBinType::RBT_COUNT> RenderBinArray;
-    typedef std::array<vectorEASTLFast<SceneGraphNode*>, RenderBinType::RBT_COUNT> SortedQueues;
+    using RenderBinArray = std::array<RenderBin*, RenderBinType::RBT_COUNT>;
 
   public:
     RenderQueue(Kernel& parent);
@@ -74,7 +73,7 @@ class RenderQueue : public KernelComponent {
         return _renderBins;
     }
 
-    void getSortedQueues(RenderStagePass stagePass, SortedQueues& queuesOut, U16& countOut) const;
+    void getSortedQueues(RenderStagePass stagePass, RenderBin::SortedQueues& queuesOut, U16& countOut) const;
 
   private:
 

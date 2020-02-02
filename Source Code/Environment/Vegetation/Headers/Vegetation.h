@@ -83,9 +83,6 @@ class Vegetation : public SceneNode {
     explicit Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const VegetationDetails& details);
     ~Vegetation();
 
-
-    inline void toggleRendering(bool state) noexcept { _render = state; }
-
     void buildDrawCommands(SceneGraphNode& sgn,
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) final;
@@ -111,20 +108,16 @@ class Vegetation : public SceneNode {
                            const Camera& camera,
                            bool quick,
                            GFX::CommandBuffer& bufferInOut) final;
-
-    bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const final;
-
    private:
     void uploadVegetationData(SceneGraphNode& sgn);
     void computeVegetationTransforms(const Task& parentTask, bool treeData);
 
-    const char* getResourceTypeName() const final { return "Vegetation"; }
+    const char* getResourceTypeName() const noexcept final { return "Vegetation"; }
 
    private:
     GFXDevice& _context;
     TerrainChunk& _terrainChunk;
     // variables
-    bool _render;  ///< Toggle vegetation rendering On/Off
     eastl::weak_ptr<Terrain> _terrain;
     U16 _billboardCount;  ///< Vegetation cumulated density
     F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f, _time = 0.0f;

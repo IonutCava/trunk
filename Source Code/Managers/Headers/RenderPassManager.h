@@ -103,7 +103,7 @@ public:
     void doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut);
     void postInit();
 
-    static U32 getUniqueNodeDataIndex();
+    static U32 getUniqueNodeDataIndex() noexcept;
 
 private:
     // Returns false if we skipped the pre-pass step
@@ -135,7 +135,7 @@ private:
     const RenderPass& getPassForStage(RenderStage renderStage) const;
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void buildBufferData(RenderStagePass stagePass, const SceneRenderState& renderState, const Camera& camera, const RenderQueue::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
+    void buildBufferData(RenderStagePass stagePass, const SceneRenderState& renderState, const Camera& camera, const RenderBin::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
     GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix) const;
 
 private: //TEMP

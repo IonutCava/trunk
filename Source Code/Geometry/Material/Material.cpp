@@ -171,7 +171,7 @@ Material_ptr Material::clone(const Str128& nameSuffix) {
 
     for (U8 i = 0; i < to_U8(base._textures.size()); ++i) {
         ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
-        Texture_ptr tex = base._textures[i];
+        const Texture_ptr& tex = base._textures[i];
         if (tex) {
             cloneMat->setTexture(usage, tex);
         }
@@ -183,11 +183,14 @@ Material_ptr Material::clone(const Str128& nameSuffix) {
     return cloneMat;
 }
 
-void Material::update(const U64 deltaTimeUS) {
+bool Material::update(const U64 deltaTimeUS) {
     if (_needsNewShader) {
         recomputeShaders();
         _needsNewShader = false;
+        return true;
     }
+
+    return false;
 }
 
 // base = base texture
@@ -197,7 +200,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                           const Texture_ptr& texture,
                           const TextureOperation& op) {
     bool computeShaders = false;
-    U32 slot = to_U32(textureUsageSlot);
+    const U32 slot = to_U32(textureUsageSlot);
 
     if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT1) {
         _operation = op;
@@ -300,6 +303,8 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
 void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
                                         RenderStagePass renderStagePass,
                                         const bool computeOnAdd) {
+    OPTICK_EVENT();
+
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // if we already have a different shader assigned ...
     if (info._shaderRef != nullptr && info._shaderRef->resourceName().compare(shaderDescriptor.resourceName()) != 0)
@@ -332,6 +337,8 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
 }
 
 void Material::recomputeShaders() {
+    OPTICK_EVENT();
+
     for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
         ShaderProgramInfo& info = _shaderInfo[i];
         if (!info._customShader) {
@@ -384,6 +391,7 @@ bool Material::canDraw(RenderStagePass renderStagePass) {
 
 /// If the current material doesn't have a shader associated with it, then add the default ones.
 bool Material::computeShader(RenderStagePass renderStagePass) {
+    OPTICK_EVENT();
 
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // If shader's invalid, try to request a recompute as it might fix it
@@ -869,14 +877,14 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
 void Material::rebuild() {
     recomputeShaders();
 
-    for (ShaderProgramInfo& info : _shaderInfo) {
+    for (const ShaderProgramInfo& info : _shaderInfo) {
         if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
-           info._shaderRef->recompile(true);
+            info._shaderRef->recompile(true);
         }
     }
 }
 
-const char* getTexUsageName(ShaderProgram::TextureUsage texUsage) {
+const char* getTexUsageName(ShaderProgram::TextureUsage texUsage) noexcept {
     switch (texUsage) {
         case ShaderProgram::TextureUsage::UNIT0      : return "UNIT0";
         case ShaderProgram::TextureUsage::NORMALMAP: return "NORMALMAP";
@@ -910,7 +918,7 @@ ShaderProgram::TextureUsage getTexUsageByName(const stringImpl& name) {
     return ShaderProgram::TextureUsage::COUNT;
 }
 
-const char *getBumpMethodName(Material::BumpMethod bumpMethod) {
+const char *getBumpMethodName(Material::BumpMethod bumpMethod) noexcept {
     switch(bumpMethod) {
         case Material::BumpMethod::NORMAL   : return "NORMAL";
         case Material::BumpMethod::PARALLAX : return "PARALLAX";
@@ -932,7 +940,7 @@ Material::BumpMethod getBumpMethodByName(const stringImpl& name) {
     return Material::BumpMethod::COUNT;
 }
 
-const char *getShadingModeName(Material::ShadingMode shadingMode) {
+const char *getShadingModeName(Material::ShadingMode shadingMode) noexcept {
     switch (shadingMode) {
         case Material::ShadingMode::FLAT          : return "FLAT";
         case Material::ShadingMode::PHONG         : return "PHONG";
@@ -983,7 +991,7 @@ Material::TextureOperation getTextureOperationByName(const stringImpl& operation
     return Material::TextureOperation::REPLACE;
 }
 
-const char *getTextureOperationName(Material::TextureOperation textureOp) {
+const char *getTextureOperationName(Material::TextureOperation textureOp) noexcept {
     switch(textureOp) {
         case Material::TextureOperation::MULTIPLY   : return "TEX_OP_MULTIPLY";
         case Material::TextureOperation::DECAL      : return "TEX_OP_DECAL";
@@ -997,7 +1005,7 @@ const char *getTextureOperationName(Material::TextureOperation textureOp) {
     return "TEX_OP_REPLACE";
 }
 
-const char *getWrapModeName(TextureWrap wrapMode) {
+const char *getWrapModeName(TextureWrap wrapMode) noexcept {
     switch(wrapMode) {
         case TextureWrap::CLAMP           : return "CLAMP";
         case TextureWrap::CLAMP_TO_EDGE   : return "CLAMP_TO_EDGE";
@@ -1022,7 +1030,7 @@ TextureWrap getWrapModeByName(const stringImpl& wrapMode) {
     return TextureWrap::REPEAT;
 }
 
-const char *getFilterName(TextureFilter filter) {
+const char *getFilterName(TextureFilter filter) noexcept {
     switch(filter) {
         case TextureFilter::LINEAR: return "LINEAR";
         case TextureFilter::NEAREST_MIPMAP_NEAREST : return "NEAREST_MIPMAP_NEAREST";
@@ -1056,8 +1064,8 @@ Texture_ptr loadTextureXML(ResourceCache& targetCache,
                             const stringImpl &textureName,
                             const boost::property_tree::ptree& pt)
 {
-    Str64 img_name(textureName.substr(textureName.find_last_of('/') + 1).c_str());
-    Str256 pathName(textureName.substr(0, textureName.rfind("/")).c_str());
+    const Str64 img_name(textureName.substr(textureName.find_last_of('/') + 1).c_str());
+    const Str256 pathName(textureName.substr(0, textureName.rfind("/")).c_str());
 
     SamplerDescriptor sampDesc = {};
 
@@ -1189,7 +1197,7 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
     STUBBED("ToDo: Set texture is currently disabled!");
 
     for (U8 i = 0; i < g_materialTexturesCount; ++i) {
-        ShaderProgram::TextureUsage usage = g_materialTextures[i];
+        const ShaderProgram::TextureUsage usage = g_materialTextures[i];
 
         if (auto child = pt.get_child_optional(((entryName + ".texture.") + getTexUsageName(usage)) + ".name")) {
             stringImpl textureNode = entryName + ".texture.";

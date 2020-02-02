@@ -10,10 +10,7 @@ struct RenderStagePass;
 
 class SceneNodeRenderState {
    public:
-    inline void setDrawState(bool state) { _drawState = state; }
-    inline bool getDrawState() const { return _drawState; }
-
-    bool getDrawState(const RenderStagePass& stagePass) const;
+    bool drawState(const RenderStagePass& stagePass, const U8 LoD) const;
 
     void addToDrawExclusionMask(RenderStagePass stagePass);
     void removeFromDrawExclusionMask(RenderStagePass stagePass);
@@ -24,8 +21,10 @@ class SceneNodeRenderState {
     void addToDrawExclusionMask(RenderPassType passType);
     void removeFromDrawExclusionMask(RenderPassType passType);
 
+    PROPERTY_RW(bool, drawState, true);
+    PROPERTY_RW(U8, minLodLevel, 255u);
+
    protected:
-    bool _drawState = true;
     RenderStage _exclusionStage = RenderStage::COUNT;
     RenderPassType _exclusionPassType = RenderPassType::COUNT;
     vector<RenderStagePass> _exclusionStagePasses;

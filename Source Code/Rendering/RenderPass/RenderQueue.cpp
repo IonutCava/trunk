@@ -209,7 +209,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     Start(*sortTask);
 
     for (RenderBin* renderBin : _renderBins) {
-        U16 size = renderBin->getBinSize(stagePass._stage);
+        const U16 size = renderBin->getBinSize(stagePass._stage);
         if (size > 0 && size <= threadBias) {
             renderBin->sort(stagePass._stage, getSortOrder(stagePass, renderBin->getType()));
         }
@@ -224,7 +224,7 @@ void RenderQueue::refresh(RenderStage stage) {
     }
 }
 
-void RenderQueue::getSortedQueues(RenderStagePass stagePass, SortedQueues& queuesOut, U16& countOut) const {
+void RenderQueue::getSortedQueues(RenderStagePass stagePass, RenderBin::SortedQueues& queuesOut, U16& countOut) const {
     OPTICK_EVENT();
 
     if (stagePass._passType == RenderPassType::PRE_PASS) {
@@ -237,14 +237,14 @@ void RenderQueue::getSortedQueues(RenderStagePass stagePass, SortedQueues& queue
             RenderBinType::RBT_TRANSLUCENT
         };
          
-        for (RenderBinType type : rbTypes) {
-            RenderBin* renderBin = _renderBins[type];
-            vectorEASTLFast<SceneGraphNode*>& nodes = queuesOut[type];
+        for (const RenderBinType type : rbTypes) {
+            const RenderBin* renderBin = _renderBins[type];
+            RenderBin::SortedQueue& nodes = queuesOut[type];
             renderBin->getSortedNodes(stagePass._stage, nodes, countOut);
         }
     } else {
-        for (RenderBin* renderBin : _renderBins) {
-            vectorEASTLFast<SceneGraphNode*>& nodes = queuesOut[renderBin->getType()];
+        for (const RenderBin* renderBin : _renderBins) {
+            RenderBin::SortedQueue& nodes = queuesOut[renderBin->getType()];
             renderBin->getSortedNodes(stagePass._stage, nodes, countOut);
         }
     }

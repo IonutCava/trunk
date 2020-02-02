@@ -126,17 +126,6 @@ class SceneNode : public CachedResource {
                                    bool quick,
                                    GFX::CommandBuffer& bufferInOut);
 
-    virtual bool getDrawState(const SceneGraphNode& sgn, U8 LoD) const {
-        ACKNOWLEDGE_UNUSED(sgn);
-        ACKNOWLEDGE_UNUSED(LoD);
-
-        return _renderState.getDrawState();
-    }
-
-    /// Some SceneNodes may need special case handling. I.E. water shouldn't
-    /// render itself in REFLECTION
-    virtual bool getDrawState(const SceneGraphNode& sgn, RenderStagePass renderStage, U8 LoD) const;
-
     virtual void buildDrawCommands(SceneGraphNode& sgn,
                                    RenderStagePass renderStage,
                                    RenderPackage& pkgInOut);

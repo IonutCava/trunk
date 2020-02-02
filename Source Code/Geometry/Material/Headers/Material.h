@@ -170,7 +170,8 @@ class Material : public CachedResource {
     /// clone calls CreateResource internally!)
     Material_ptr clone(const Str128& nameSuffix);
     bool unload() noexcept override;
-    void update(const U64 deltaTimeUS);
+    /// Returns true if the material changed between update calls
+    bool update(const U64 deltaTimeUS);
 
     void setColourData(const ColourData& other);
     void setHardwareSkinning(const bool state);
@@ -327,22 +328,22 @@ class Material : public CachedResource {
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);
 
-const char* getShadingModeName(Material::ShadingMode shadingMode);
+const char* getShadingModeName(Material::ShadingMode shadingMode) noexcept;
 Material::ShadingMode getShadingModeByName(const stringImpl& name);
 
-const char* getTexUsageName(ShaderProgram::TextureUsage texUsage);
+const char* getTexUsageName(ShaderProgram::TextureUsage texUsage) noexcept;
 ShaderProgram::TextureUsage getTexUsageByName(const stringImpl& name);
 
-const char* getTextureOperationName(Material::TextureOperation textureOp);
+const char* getTextureOperationName(Material::TextureOperation textureOp) noexcept;
 Material::TextureOperation getTextureOperationByName(const stringImpl& operation);
 
-const char* getBumpMethodName(Material::BumpMethod bumpMethod);
+const char* getBumpMethodName(Material::BumpMethod bumpMethod) noexcept;
 Material::BumpMethod getBumpMethodByName(const stringImpl& name);
 
-const char* getWrapModeName(TextureWrap wrapMode);
+const char* getWrapModeName(TextureWrap wrapMode) noexcept;
 TextureWrap getWrapModeByName(const stringImpl& wrapMode);
 
-const char* getFilterName(TextureFilter filter);
+const char* getFilterName(TextureFilter filter) noexcept;
 TextureFilter getFilterByName(const stringImpl& filter);
 };  // namespace Divide
 

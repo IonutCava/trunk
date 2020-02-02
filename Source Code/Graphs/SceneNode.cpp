@@ -136,13 +136,6 @@ void SceneNode::setBounds(const BoundingBox& aabb) {
     _boundingBox.set(aabb);
 }
 
-bool SceneNode::getDrawState(const SceneGraphNode& sgn, RenderStagePass currentStagePass, U8 LoD) const {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(LoD);
-
-    return _renderState.getDrawState(currentStagePass);
-}
-
 const Material_ptr& SceneNode::getMaterialTpl() const {
     // UpgradableReadLock ur_lock(_materialLock);
     return _materialTemplate;

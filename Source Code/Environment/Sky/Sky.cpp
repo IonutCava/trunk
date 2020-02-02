@@ -80,7 +80,7 @@ bool Sky::load() {
     skybox.ID(4); // resolution
     skybox.enumValue(to_U32(radius)); // radius
     _sky = CreateResource<Sphere3D>(_parentCache, skybox);
-    _sky->renderState().setDrawState(false);
+    _sky->renderState().drawState(false);
 
 
     ShaderModuleDescriptor vertModule = {};

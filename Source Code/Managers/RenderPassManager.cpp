@@ -27,13 +27,13 @@ namespace Divide {
         using SetType = eastl::set<U32, eastl::less<U32>>;
         thread_local SetType g_usedIndices;
         thread_local U32 g_freeCounter = 0;
-        thread_local RenderQueue::SortedQueues g_sortedQueues;
-        thread_local std::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> g_nodeData;
-        thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
+        thread_local RenderBin::SortedQueues g_sortedQueues;
+        thread_local eastl::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> g_nodeData;
+        thread_local DrawCommandContainer g_drawCommands;
     };
 
     std::atomic_uint RenderPassManager::g_NodeDataIndex = 0;
-    U32 RenderPassManager::getUniqueNodeDataIndex() {
+    U32 RenderPassManager::getUniqueNodeDataIndex() noexcept {
         return g_NodeDataIndex.fetch_add(1);
     }
 
@@ -187,6 +187,8 @@ namespace Divide {
 
             bool slowIdle = false;
             while (!all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), true)) {
+                OPTICK_EVENT("ON_LOOP");
+
                 // For every render pass
                 bool finished = true;
                 for (U8 i = 0; i < renderPassCount; ++i) {
@@ -225,6 +227,8 @@ namespace Divide {
                 }
 
                 if (!finished) {
+                    OPTICK_EVENT("IDLING");
+
                     parent().idle(!slowIdle);
                     std::this_thread::yield();
                     slowIdle = !slowIdle;
@@ -322,11 +326,11 @@ RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePas
 GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix) const {
     OPTICK_EVENT();
 
-    GFXDevice::NodeData dataOut;
+    GFXDevice::NodeData dataOut = {};
 
     // Extract transform data (if available)
     // (Nodes without transforms just use identity matrices)
-    TransformComponent* const transform = node->get<TransformComponent>();
+    const TransformComponent* const transform = node->get<TransformComponent>();
     if (transform) {
         // ... get the node's world matrix properly interpolated
         transform->getWorldMatrix(_context.getFrameInterpolationFactor(), dataOut._worldMatrix);
@@ -349,7 +353,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
         }
     }
 
-    RenderingComponent* const renderable = node->get<RenderingComponent>();
+    const RenderingComponent* const renderable = node->get<RenderingComponent>();
 
     vec4<F32> properties = {};
     renderable->getRenderingProperties(stagePass,
@@ -387,7 +391,7 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
 void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                                         const SceneRenderState& renderState,
                                         const Camera& camera,
-                                        const RenderQueue::SortedQueues& sortedQueues,
+                                        const RenderBin::SortedQueues& sortedQueues,
                                         bool fullRefresh,
                                         GFX::CommandBuffer& bufferInOut)
 {
@@ -399,48 +403,46 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
         params._camera = &camera;
         params._stagePass = stagePass;
 
-        for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
-            for (const SceneGraphNode* node : queue) {
-                RenderingComponent& renderable = *node->get<RenderingComponent>();
-                Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(renderable, params);
+        for (const RenderBin::SortedQueue& queue : sortedQueues) {
+            for (const RenderBin::SortedQueueEntry& entry : queue) {
+                Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(*entry.second, params);
             }
         }
     } else {
         g_usedIndices.clear();
+        g_drawCommands.clear(0);
         g_freeCounter = 0;
-        g_drawCommands.resize(0);
-        g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
-        for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
-            for (const SceneGraphNode* node : queue) {
-                RenderingComponent& renderable = *node->get<RenderingComponent>();
+        for (const RenderBin::SortedQueue& queue : sortedQueues) {
+            for (const RenderBin::SortedQueueEntry& entry : queue) {
                 U32 dataIdxOut = 0;
-                if (renderable.getDataIndex(dataIdxOut)) {
+                if (entry.second->getDataIndex(dataIdxOut)) {
                     g_usedIndices.insert(dataIdxOut);
                 }
             }
         }
 
+        RefreshNodeDataParams params(g_drawCommands, bufferInOut);
+        params._camera = &camera;
+        params._stagePass = stagePass;
+
         bool skip = false;
         U32 totalNodes = 0;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
-        for (const vectorEASTLFast<SceneGraphNode*>& queue : sortedQueues) {
+        for (const RenderBin::SortedQueue& queue : sortedQueues) {
+            OPTICK_EVENT("ON_LOOP");
+
             if (skip) {
                 break;
             }
 
-            for (SceneGraphNode* node : queue) {
-                RenderingComponent& renderable = *node->get<RenderingComponent>();
-
-                RefreshNodeDataParams params(g_drawCommands, bufferInOut);
-                params._camera = &camera;
-                params._stagePass = stagePass;
+            for (const RenderBin::SortedQueueEntry& entry : queue) {
                 if (totalNodes == Config::MAX_VISIBLE_NODES) {
                     skip = true;
                     break;
                 }
 
-                if (!renderable.getDataIndex(params._dataIdx)) {
+                if (!entry.second->getDataIndex(params._dataIdx)) {
                     SetType::iterator iter = g_usedIndices.lower_bound(g_freeCounter);
                     while (iter != std::end(g_usedIndices) && *iter == g_freeCounter) {
                         ++iter;
@@ -449,8 +451,8 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                     params._dataIdx = g_freeCounter;
                 }
 
-                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(renderable, params)) {
-                    const GFXDevice::NodeData data = processVisibleNode(node, stagePass, playAnimations, camera.getViewMatrix());
+                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*entry.second, params)) {
+                    const GFXDevice::NodeData data = processVisibleNode(entry.first, stagePass, playAnimations, camera.getViewMatrix());
                     g_nodeData[params._dataIdx] = data;
                     g_usedIndices.insert(params._dataIdx);
                     ++g_freeCounter;
@@ -502,19 +504,19 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
     U16 queueSize = 0;
-    for (auto& queue : g_sortedQueues) {
+    for (RenderBin::SortedQueue& queue : g_sortedQueues) {
         queue.resize(0);
         queue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
     getQueue().getSortedQueues(stagePass, g_sortedQueues, queueSize);
-    for (const vectorEASTLFast<SceneGraphNode*>& queue : g_sortedQueues) {
-        for (const SceneGraphNode* node : queue) {
-            if (params._sourceNode != nullptr && *params._sourceNode == *node) {
+    for (const RenderBin::SortedQueue& queue : g_sortedQueues) {
+        for (const RenderBin::SortedQueueEntry& entry : queue) {
+            if (params._sourceNode != nullptr && *params._sourceNode == *entry.first) {
                 continue;
             }
 
-            Attorney::RenderingCompRenderPass::prepareDrawPackage(*node->get<RenderingComponent>(), *params._camera, sceneRenderState, stagePass, refresh);
+            Attorney::RenderingCompRenderPass::prepareDrawPackage(*entry.second, *params._camera, sceneRenderState, stagePass, refresh);
         }
     }
 

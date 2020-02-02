@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-bool SceneNodeRenderState::getDrawState(const RenderStagePass& stagePass) const {
+bool SceneNodeRenderState::drawState(const RenderStagePass& stagePass, const U8 LoD) const {
     if (!_drawState || _exclusionStage == stagePass._stage || _exclusionPassType == stagePass._passType) {
         return false;
     }
@@ -18,7 +18,7 @@ bool SceneNodeRenderState::getDrawState(const RenderStagePass& stagePass) const 
         }
     }
 
-    return true;
+    return LoD < minLodLevel();
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderStagePass stagePass) {

@@ -238,7 +238,7 @@ namespace Import {
             animator = nullptr;
         }
 
-        mesh->renderState().setDrawState(true);
+        mesh->renderState().drawState(true);
         mesh->getGeometryVB()->fromBuffer(*dataIn.vertexBuffer());
         mesh->setGeometryVBDirty();
 

@@ -496,7 +496,7 @@ void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Ca
 bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {
     OPTICK_EVENT();
 
-    return _node->getDrawState(*this, stagePass, LoD);
+    return _node->renderState().drawState(stagePass, LoD);
 }
 
 void SceneGraphNode::onNetworkSend(U32 frameCount) {

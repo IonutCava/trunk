@@ -120,7 +120,9 @@ public:
 
     void setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount) noexcept;
 
-    PROPERTY_RW(bool, autoIndexBuffer, false);
+    PROPERTY_RW(bool, autoIndexBuffer,  false);
+    PROPERTY_RW(bool, textureDataDirty, true);
+    PROPERTY_RW(U32,  dataDrawIdxCache, 0u);
 
 protected:
     void setLoDLevel(U8 LoD) noexcept;

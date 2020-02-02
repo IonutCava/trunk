@@ -104,14 +104,18 @@ void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder, const Task& 
     sort(stage, renderOrder);
 }
 
-void RenderBin::getSortedNodes(RenderStage stage, vectorEASTLFast<SceneGraphNode*>& nodes, U16& countOut) const {
+void RenderBin::getSortedNodes(RenderStage stage, SortedQueue& nodes, U16& countOut) const {
     OPTICK_EVENT();
 
     nodes.resize(0);
     nodes.reserve(getBinSize(stage));
 
     for (const RenderBinItem& item : _renderBinStack[to_base(stage)]) {
-        nodes.push_back(&(item._renderable->getSGN()));
+        nodes.emplace_back(
+            &(item._renderable->getSGN()), 
+            item._renderable
+        );
+
         ++countOut;
     }
 }

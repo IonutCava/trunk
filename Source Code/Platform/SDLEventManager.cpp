@@ -43,9 +43,14 @@ namespace Divide {
 
         SDL_Event evt;
         while (SDL_PollEvent(&evt)) {
+            OPTICK_EVENT("OnLoop");
+            OPTICK_TAG("Event", evt.type);
+
             SharedLock lock(s_eventListenerLock);
 
             for (SDLEventListener* listener : s_eventListeners) {
+                assert(listener != nullptr);
+
                 if (listener->onSDLEvent(evt)) {
                     break;
                 }

@@ -27,12 +27,14 @@ void RenderPackage::clear() {
         _commands->clear();
         _drawCommandCount = 0;
     }
+    textureDataDirty(true);
     assert(_drawCommandCount == 0);
 }
 
 void RenderPackage::set(const RenderPackage& other) {
     _commands->clear();
     _commands->add(*other._commands);
+    textureDataDirty(other.textureDataDirty());
 }
 
 void RenderPackage::setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount) noexcept {
