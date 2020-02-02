@@ -133,7 +133,7 @@ protected:
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
 
     void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
-    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) final;
+    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
@@ -176,10 +176,9 @@ public:
     static bool deleteVAOs(GLuint count, GLuint* vaos);
     static bool deleteFramebuffers(GLuint count, GLuint* framebuffers);
 
-    static void registerBufferBind(BufferWriteData&& data);
-    static void registerSyncDelete(GLsync syncObject);
+    static void registerBufferBind(BufferWriteData&& data, bool flush);
 
-    static void lockBuffers(bool flush, U32 frameID);
+    static void lockBuffers(U32 frameID);
 
     using IMPrimitivePool = MemoryPool<glIMPrimitive, 1024>;
 
@@ -196,8 +195,6 @@ private:
 
     bool bindPipeline(const Pipeline& pipeline);
     void sendPushConstants(const PushConstants& pushConstants);
-
-    static void processSyncDeleteQeueue();
 
     /// FontStash library initialization
     bool createFonsContext();
@@ -225,7 +222,7 @@ public:
     static GLuint s_SSBMaxSize;
     static glHardwareQueryPool* s_hardwareQueryPool;
     static GLConfig s_glConfig;
-    static bool s_glFlushQueued;
+    static std::atomic_bool s_glFlushQueued;
 
 private:
     GFXDevice& _context;
@@ -274,10 +271,6 @@ private:
     U32 _commandBufferOffset = 0;
 
     static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
-
-    static constexpr U8 s_syncDeleteQueueSize = 5;
-    static U8 s_syncDeleteQueueIndexR, s_syncDeleteQueueIndexW;
-    static moodycamel::ConcurrentQueue<GLsync> s_syncDeleteQueue[s_syncDeleteQueueSize];
 
     static GLStateTracker  s_stateTracker;
 

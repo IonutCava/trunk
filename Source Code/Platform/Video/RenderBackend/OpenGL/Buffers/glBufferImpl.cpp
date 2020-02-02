@@ -141,8 +141,8 @@ void glBufferImpl::lockRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bo
                 bufferID(),
                 offsetInBytes,
                 rangeInBytes,
-                flush 
-            }
+            },
+            flush
         );
     }
 }

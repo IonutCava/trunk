@@ -1310,7 +1310,7 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 #pragma endregion
 
 #pragma region Command buffers, occlusion culling, etc
-void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submitToGPU) {
+void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     OPTICK_EVENT();
 
     if (Config::ENABLE_GPU_VALIDATION) {
@@ -1405,12 +1405,13 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool submi
             case GFX::CommandType::DISPATCH_COMPUTE:
                 uploadGPUBlock(); /*no break. fall-through*/
 
-            default:
-                _api->flushCommand(cmd, commandBuffer);
-                break;
+            default: break;
         }
+
+        _api->flushCommand(cmd, commandBuffer);
     }
-    _api->postFlushCommandBuffer(commandBuffer, submitToGPU);
+
+    _api->postFlushCommandBuffer(commandBuffer);
 
     DIVIDE_ASSERT(_cameraSnapshots.empty(), "Mismatched {Push/Pop}CameraCommand!");
 }

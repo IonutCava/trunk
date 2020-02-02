@@ -34,7 +34,7 @@ void glLockManager::Wait(bool blockClient) {
     UniqueLockShared w_lock(_syncMutex);
     if (_defaultSync != nullptr) {
         wait(_defaultSync, blockClient);
-        GL_API::registerSyncDelete(_defaultSync);
+        glDeleteSync(_defaultSync);
         _defaultSync = nullptr;
     }
 }

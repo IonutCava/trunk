@@ -52,16 +52,12 @@ namespace {
 
 GLConfig GL_API::s_glConfig;
 GLStateTracker GL_API::s_stateTracker;
-bool GL_API::s_glFlushQueued = false;
+std::atomic_bool GL_API::s_glFlushQueued = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool GL_API::s_texturePool;
 glGlobalLockManager GL_API::s_globalLockManager;
 GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool;
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
-
-U8 GL_API::s_syncDeleteQueueIndexR = 1;
-U8 GL_API::s_syncDeleteQueueIndexW = 0;
-moodycamel::ConcurrentQueue<GLsync> GL_API::s_syncDeleteQueue[s_syncDeleteQueueSize];
 
 GL_API::GL_API(GFXDevice& context, const bool glES)
     : RenderAPIWrapper(),
@@ -176,19 +172,17 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
                 SDL_GL_MakeCurrent(window.getRawWindow(), glContext);
                 _currentContext = std::make_pair(windowGUID, glContext);
             }
-
-            SDL_GL_SwapWindow(window.getRawWindow());
+            {
+                OPTICK_EVENT("Swap Buffers");
+                SDL_GL_SwapWindow(window.getRawWindow());
+            }
         }
 
         if (global) {
             _swapBufferTimer.stop();
             s_texturePool.onFrameEnd();
             s_globalLockManager.clean(_context.getFrameCount());
-            processSyncDeleteQeueue();
-            s_glFlushQueued = false;
-
-            s_syncDeleteQueueIndexR = (s_syncDeleteQueueIndexR + 1) % s_syncDeleteQueueSize;
-            s_syncDeleteQueueIndexW = (s_syncDeleteQueueIndexW + 1) % s_syncDeleteQueueSize;
+            s_glFlushQueued.store(false);
         }
     }
 
@@ -1097,14 +1091,25 @@ void GL_API::popDebugMessage() {
     }
 }
 
-namespace {
-    static bool s_firstCommandInBuffer = true;
-};
-
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
     OPTICK_EVENT();
 
-    switch (static_cast<GFX::CommandType>(entry._typeIndex)) {
+    const GFX::CommandType cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
+
+    OPTICK_TAG("Type", to_base(cmdType));
+
+    switch (cmdType) {
+        case GFX::CommandType::DRAW_TEXT:
+        case GFX::CommandType::DRAW_IMGUI:
+        case GFX::CommandType::DRAW_COMMANDS:
+        case GFX::CommandType::DISPATCH_COMPUTE: 
+        case GFX::CommandType::READ_BUFFER_DATA: {
+            lockBuffers(_context.getFrameCount());
+        } break;
+        default: break;
+    };
+
+    switch (cmdType) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
             const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.get<GFX::BeginRenderPassCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));
@@ -1172,8 +1177,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
                         getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->bufferID());
                         _commandBufferOffset = shaderBufCmd._elementRange.x;
-                    }
-                    else {
+                    } else {
                         buffer->bindRange(to_U8(shaderBufCmd._binding), shaderBufCmd._elementRange.x, shaderBufCmd._elementRange.y);
                     }
                 }
@@ -1230,22 +1234,16 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::DRAW_TEXT: {
             const GFX::DrawTextCommand& crtCmd = commandBuffer.get<GFX::DrawTextCommand>(entry);
             drawText(crtCmd._batch);
-            lockBuffers(false, _context.getFrameCount());
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             const GFX::DrawIMGUICommand& crtCmd = commandBuffer.get<GFX::DrawIMGUICommand>(entry);
             drawIMGUI(crtCmd._data, crtCmd._windowGUID);
-            lockBuffers(false, _context.getFrameCount());
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
             const GFX::DrawCommand& crtCmd = commandBuffer.get<GFX::DrawCommand>(entry);
             const vectorEASTLFast<GenericDrawCommand>& drawCommands = crtCmd._drawCommands;
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                 if (draw(currentDrawCommand, _commandBufferOffset)) {
-                    // Lock all buffers as soon as we issue a draw command since we should've flushed the command queue by now
-                    lockBuffers(s_firstCommandInBuffer, _context.getFrameCount());
-                    s_firstCommandInBuffer = false;
-
                     if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
                         if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
                             _context.registerDrawCalls(2);
@@ -1263,7 +1261,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 OPTICK_EVENT("GL: Dispatch Compute");
                 glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
             }
-            lockBuffers(false, _context.getFrameCount());
         }break;
         case GFX::CommandType::MEMORY_BARRIER: {
             const GFX::MemoryBarrierCommand& crtCmd = commandBuffer.get<GFX::MemoryBarrierCommand>(entry);
@@ -1307,11 +1304,10 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
     };
 }
 
-void GL_API::lockBuffers(bool flush, U32 frameID) {
+void GL_API::lockBuffers(U32 frameID) {
     OPTICK_EVENT();
 
     BufferWriteData data = {};
-    bool shouldFlush = false;
 
     g_bufferLockData.resize(0);
 
@@ -1328,7 +1324,6 @@ void GL_API::lockBuffers(bool flush, U32 frameID) {
                     existingData._offset = std::min(existingData._offset, data._offset);
                     existingData._range = std::max(existingData._range, data._range);
                     updatedExisting = true;
-                    shouldFlush = data._flush || shouldFlush;
 
                     assert(existingData._offset == 0 || existingData._range <= existingData._offset);
                 }
@@ -1338,7 +1333,6 @@ void GL_API::lockBuffers(bool flush, U32 frameID) {
 
         if (!updatedExisting) {
             g_bufferLockData.emplace_back(data._handle, data._offset, data._range);
-            shouldFlush = data._flush || shouldFlush;
         }
     }
 
@@ -1348,29 +1342,31 @@ void GL_API::lockBuffers(bool flush, U32 frameID) {
             entries[entry._handle].emplace_back(BufferRange{ entry._offset, entry._range });
         }
 
-        s_globalLockManager.LockBuffers(std::move(entries), flush && shouldFlush, frameID);
-        if (!flush) {
-            s_glFlushQueued = shouldFlush;
+        s_globalLockManager.LockBuffers(std::move(entries), frameID);
+
+        bool expected = true;
+        if (s_glFlushQueued.compare_exchange_weak(expected, false)) {
+            OPTICK_EVENT("GL_FLUSH");
+            glFlush();
         }
     }
 }
 
 void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    OPTICK_EVENT();
-
-    s_firstCommandInBuffer = true;
+    ACKNOWLEDGE_UNUSED(commandBuffer);
 }
 
-void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer, bool submitToGPU) {
+void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
+    ACKNOWLEDGE_UNUSED(commandBuffer);
     OPTICK_EVENT();
 
-    if (s_glFlushQueued && submitToGPU) {
+    bool expected = true;
+    if (s_glFlushQueued.compare_exchange_weak(expected, false)) {
         glFlush();
-        s_glFlushQueued = false;
     }
 }
 
-void GL_API::registerBufferBind(BufferWriteData&& data) {
+void GL_API::registerBufferBind(BufferWriteData&& data, bool flush) {
     assert(Runtime::isMainThread());
 
     if (data._handle == -1 || data._range == 0) {
@@ -1379,25 +1375,8 @@ void GL_API::registerBufferBind(BufferWriteData&& data) {
 
     if (!s_bufferBinds.enqueue(std::move(data))) {
         assert(false && "GL_API::registerBufferBind failure!");
-    }
-}
-
-void GL_API::registerSyncDelete(GLsync syncObject) {
-#if 1
-    glDeleteSync(syncObject);
-#else
-    if (!s_syncDeleteQueue[s_syncDeleteQueueIndexW].enqueue(syncObject)) {
-        assert(false && "GL_API::registerSyncDelete failure!");
-    }
-#endif
-}
-
-void GL_API::processSyncDeleteQeueue() {
-    OPTICK_EVENT();
-
-    GLsync sync;
-    while (s_syncDeleteQueue[s_syncDeleteQueueIndexR].try_dequeue(sync)) {
-        glDeleteSync(sync);
+    } else if (flush) {
+        s_glFlushQueued.store(true);
     }
 }
 

@@ -79,7 +79,8 @@ using BufferLockEntries = hashMap<GLuint /*buffer handle*/,  LockEntries>;
 
 class glGlobalLockManager : public glLockManager {
 public:
-    static const size_t MAX_LOCK_ENTRIES = 1024;
+    static const size_t MAX_LOCK_ENTRIES = 512;
+    static const size_t MAX_FRAME_AGE_BEFORE_AUTO_DELETE = 4;
 
     glGlobalLockManager();
     ~glGlobalLockManager() = default;
@@ -88,7 +89,7 @@ public:
 
     // Return true if  we found a lock to wait on
     bool WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait = false);
-    void LockBuffers(BufferLockEntries&& entries, bool flush, U32 frameID);
+    void LockBuffers(BufferLockEntries&& entries, U32 frameID);
 
 protected:
     struct GLLockEntry {
@@ -99,8 +100,11 @@ protected:
         bool _valid = true;
     };
 
-    void quickCheckOldEntries(U32 frameID);
-    void markOldDuplicateRangesAsInvalid(U32 frameID, const BufferLockEntries& newEntries);
+    // Quickly checks expired sync objects and removes them from our data store. Returns true if any items were found.
+    bool quickCheckOldEntries(U32 frameID);
+    // Quickly checks for duplicates between our internal data store and the new entries and, if found, marks the former as invalid.
+    // Returns true if any items were found.
+    bool markOldDuplicateRangesAsInvalid(U32 frameID, const BufferLockEntries& newEntries);
 private:
     mutable SharedMutex _lock;
     using LockEntries = eastl::fixed_vector<GLLockEntry, MAX_LOCK_ENTRIES, false>;

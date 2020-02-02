@@ -57,13 +57,11 @@ struct BufferImplParams {
 struct BufferWriteData {
     BufferWriteData() noexcept : BufferWriteData(GLUtil::k_invalidObjectID) {};
     BufferWriteData(GLuint bufferHandle) noexcept : BufferWriteData(bufferHandle, 0, 0) {}
-    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range) noexcept : BufferWriteData(bufferHandle, offset, range, false) {}
-    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range, bool flush) noexcept : _handle(bufferHandle), _offset(offset), _range(range), _flush(flush) {}
+    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range) noexcept : _handle(bufferHandle), _offset(offset), _range(range) {}
 
     GLuint _handle = GLUtil::k_invalidObjectID;
     GLintptr _offset = 0;
     GLsizeiptr _range = 0;
-    bool _flush = false;
 };
 
 class glBufferLockManager;

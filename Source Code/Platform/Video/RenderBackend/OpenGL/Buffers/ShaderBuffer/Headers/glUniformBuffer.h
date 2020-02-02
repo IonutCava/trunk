@@ -89,6 +89,7 @@ class glUniformBuffer final : public ShaderBuffer {
 
     glBufferImpl* _buffer;
     GLsizeiptr _allignedBufferSize;
+    std::atomic_bool _writesDirty;
 };
 
 };  // namespace Divide

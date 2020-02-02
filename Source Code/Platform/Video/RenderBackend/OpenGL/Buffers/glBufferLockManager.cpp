@@ -23,8 +23,8 @@ glBufferLockManager::glBufferLockManager()
 // --------------------------------------------------------------------------------------------------------------------
 glBufferLockManager::~glBufferLockManager() {
     const UniqueLock w_lock(_lock);
-    for (BufferLock& lock : _bufferLocks) {
-        GL_API::registerSyncDelete(lock._syncObj);
+    for (const BufferLock& lock : _bufferLocks) {
+        glDeleteSync(lock._syncObj);
     }
 
     _bufferLocks.clear();
@@ -40,7 +40,7 @@ bool glBufferLockManager::WaitForLockedRange(GLintptr lockBeginBytes,
     OPTICK_TAG("QuickCheck", quickCheck);
 
     bool ret = false;
-    BufferRange testRange{lockBeginBytes, lockLength};
+    const BufferRange testRange{lockBeginBytes, lockLength};
 
     UniqueLock w_lock(_lock);
     _swapLocks.resize(0);
@@ -48,7 +48,7 @@ bool glBufferLockManager::WaitForLockedRange(GLintptr lockBeginBytes,
         if (testRange.Overlaps(lock._range)) {
             U8 retryCount = 0;
             if (wait(lock._syncObj, blockClient, quickCheck, retryCount)) {
-                GL_API::registerSyncDelete(lock._syncObj);
+                glDeleteSync(lock._syncObj);
                 lock._syncObj = nullptr;
                 if (retryCount > 0) {
                     //Console::d_errorfn("glBufferLockManager::WaitForLockedRange: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
@@ -91,6 +91,7 @@ glGlobalLockManager::glGlobalLockManager()
 }
 
 void glGlobalLockManager::clean(U32 frameID) {
+    UniqueLockShared w_lock(_lock);
     quickCheckOldEntries(frameID);
 }
 
@@ -139,42 +140,54 @@ bool glGlobalLockManager::WaitForLockedRange(GLuint bufferHandle, GLintptr lockB
     return ret;
 }
 
-void glGlobalLockManager::quickCheckOldEntries(U32 frameID) {
+bool glGlobalLockManager::quickCheckOldEntries(U32 frameID) {
     OPTICK_EVENT();
 
-    UniqueLockShared w_lock(_lock);
+    bool ret = false;
     // Needed in order to delete old locks (from binds) that never needed actual waits (from writes). e.g. Terrain render nodes with static camera
     for (auto it = eastl::begin(_bufferLocks); it != eastl::end(_bufferLocks);) {
-        // Check how old these entries are. Need to be at least 3 frames old for a fast check.
-        if (!it->_valid || frameID - it->_frameID > 5) {
+        // Check how old these entries are.
+        if (!it->_valid || frameID - it->_frameID > MAX_FRAME_AGE_BEFORE_AUTO_DELETE) {
             if (it->_valid) {
-                wait(it->_sync, true, true);
+                if (!wait(it->_sync, true, true)) {
+                    // ?
+                }
             }
             if (it->_sync != nullptr) {
-                GL_API::registerSyncDelete(it->_sync);
+                glDeleteSync(it->_sync);
             }
             it = _bufferLocks.erase(it);
+            ret = true;
         }else {
             ++it;
         }
     }
+
+    return ret;
 }
 
-void glGlobalLockManager::markOldDuplicateRangesAsInvalid(U32 frameID, const BufferLockEntries& entries) {
+bool glGlobalLockManager::markOldDuplicateRangesAsInvalid(U32 frameID, const BufferLockEntries& entries) {
     OPTICK_EVENT();
     
-    for (auto& bufferLock : _bufferLocks) {
-        if (bufferLock._valid) {
-            for (auto& oldEntry : bufferLock._entries) {
-                for (auto& newEntry : entries) {
-                    if (oldEntry.first == newEntry.first) {
-                        for (auto& oldRange : oldEntry.second) {
-                            for (auto& newRange : newEntry.second) {
-                                if (oldRange.Overlaps(newRange)) {
-                                    bufferLock._valid = false;
-                                    goto NEXT_ENTRY;
-                                }
-                            }
+    bool ret = false;
+    for (GLLockEntry& bufferLock : _bufferLocks) {
+        if (!bufferLock._valid) {
+            continue;
+        }
+
+        for (auto& oldEntry : bufferLock._entries) {
+            for (auto& newEntry : entries) {
+
+                if (oldEntry.first != newEntry.first) {
+                    continue;
+                }
+
+                for (auto& oldRange : oldEntry.second) {
+                    for (auto& newRange : newEntry.second) {
+                        if (oldRange.Overlaps(newRange)) {
+                            bufferLock._valid = false;
+                            ret = true;
+                            goto NEXT_ENTRY;
                         }
                     }
                 }
@@ -183,11 +196,13 @@ void glGlobalLockManager::markOldDuplicateRangesAsInvalid(U32 frameID, const Buf
 
         NEXT_ENTRY:;
     }
+
+    return ret;
 }
 
-void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush, U32 frameID) {
+void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, U32 frameID) {
     OPTICK_EVENT();
-    OPTICK_TAG("Flush", flush);
+
     _lockIndex.fetch_add(1u);
 
     GLLockEntry sync = {};
@@ -201,14 +216,13 @@ void glGlobalLockManager::LockBuffers(BufferLockEntries&& entries, bool flush, U
     }
     {
         UniqueLockShared w_lock(_lock);
-        markOldDuplicateRangesAsInvalid(frameID, sync._entries);
+        if (markOldDuplicateRangesAsInvalid(frameID, sync._entries)) {
+            if (quickCheckOldEntries(frameID)) {
+                // ?
+            }
+        }
         assert(_bufferLocks.size() < MAX_LOCK_ENTRIES);
         _bufferLocks.push_back(sync);
-    }
-
-    if (flush) {
-        OPTICK_EVENT("GL_FLUSH!");
-        glFlush();
     }
 }
 

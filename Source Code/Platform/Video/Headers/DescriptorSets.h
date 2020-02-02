@@ -64,12 +64,12 @@ namespace Divide {
         TextureView _view = {};
         U8 _binding = 0;
 
-        inline bool operator==(const TextureViewEntry& other) const {
+        inline bool operator==(const TextureViewEntry& other) const noexcept {
             return _binding == other._binding &&
                    _view == other._view;
         }
 
-        inline bool operator!=(const TextureViewEntry& other) const {
+        inline bool operator!=(const TextureViewEntry& other) const noexcept {
             return _binding != other._binding ||
                    _view != other._view;
         }

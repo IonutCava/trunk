@@ -23,6 +23,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     : ShaderBuffer(context, descriptor)
 {
     _maxSize = (_usage != Usage::CONSTANT_BUFFER) ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
+    _writesDirty.store(false);
 
     _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_usage));
 
@@ -147,13 +148,16 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         offsetInBytes = (offsetInBytes + req - 1) / req * req;
     }
 
-    _buffer->writeData(offsetInBytes, rangeInBytes, data);
+    bufferImpl()->writeData(offsetInBytes, rangeInBytes, data);
+    _writesDirty.store(true);
 }
 
 bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     BufferWriteData data = {};
     const bool ret = bindRange(bindIndex, offsetElementCount, rangeElementCount, data);
-    bufferImpl()->lockRange(data._offset, data._range, data._flush);
+    const bool flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) && _writesDirty.load();
+    bufferImpl()->lockRange(data._offset, data._range, flush);
+    _writesDirty.store(false);
     return ret;
 }
 
@@ -175,7 +179,6 @@ bool glUniformBuffer::bindRange(U8 bindIndex,
     if (dataOut._offset % req != 0) {
         dataOut._offset = (dataOut._offset + req - 1) / req * req;
     }
-    dataOut._flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
 
     assert(static_cast<size_t>(dataOut._range) <= _maxSize &&
            "glUniformBuffer::bindRange: attempted to bind a larger shader block than is allowed on the current platform");
