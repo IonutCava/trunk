@@ -1519,7 +1519,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
             (GLuint)it._view._layerRange.x,
             (GLuint)it._view._layerRange.y);
 
-        getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data.type(), handle, data.samplerHandle());
+        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data.type(), handle, data.samplerHandle()) || bound;
         s_texturePool.deallocate(handle, GL_NONE, 3);
     }
 

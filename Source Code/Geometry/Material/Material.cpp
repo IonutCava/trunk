@@ -80,7 +80,7 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 
     RenderStateBlock shadowDescriptorCSM(shadowDescriptor);
     shadowDescriptorCSM.setCullMode(CullMode::CW);
-    shadowDescriptorCSM.setZFunc(ComparisonFunction::LESS);
+    shadowDescriptorCSM.setZFunc(ComparisonFunction::LEQUAL);
     shadowDescriptorCSM.setColourWrites(true, true, false, false);
 
     target.setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));

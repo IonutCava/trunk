@@ -211,8 +211,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 }
 
 //Between 0 and 1, change these to check the results
-constexpr F32 minDistance = 0.07f;
-constexpr F32 maxDistance = 1.0f;
+constexpr F32 minDistance = 0.00000001f;
+constexpr F32 maxDistance = 1.0000f;
 CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateSplitDepths(const mat4<F32>& projMatrix, DirectionalLightComponent& light, const vec2<F32>& nearFarPlanes) {
     SplitDepths depths = {};
 

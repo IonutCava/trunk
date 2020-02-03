@@ -39,9 +39,11 @@ layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBl
     //RenderDoc: vec3 colour; float cosOuterCone; vec3 positionWV; float range; vec3 directionWV; float spotAngle; int lightType; int castsShadows; ivec2 null;
 };
 
+#if defined(FRAG_SHADER) || defined(COMPUTE_SHADER)
 layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLightIndexBuffer
 {
     int perTileLightIndices[];
 };
+#endif
 
 #endif //_LIGHT_INPUT_CMN_

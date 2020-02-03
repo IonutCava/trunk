@@ -4,21 +4,19 @@
 #define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
 
 //Chebyshev Upper Bound
-float VSM(vec2 moments, float fragDepth) {
-    float lit = 0.0f;
+float VSM(vec2 moments, float distance) {
+    const float E_x2 = moments.y;
+    const float Ex_2 = moments.x * moments.x;
+    const float variance = max(E_x2 - Ex_2, -(dvd_shadowingSettings.y));
+    const float mD = (moments.x - distance);
+    const float mD_2 = mD * mD;
 
-    float E_x2 = moments.y;
-    float Ex_2 = moments.x * moments.x;
-    float variance = max(E_x2 - Ex_2, -(dvd_shadowingSettings.y));
-    float mD = (moments.x - fragDepth);
-    float mD_2 = mD * mD;
-    float p = linstep(dvd_shadowingSettings.x, 1.0f, variance / (variance + mD_2));
-    lit = max(p, fragDepth <= moments.x ? 1.0f : 0.0f);
+    const float p = linstep(dvd_shadowingSettings.x, 1.0f, variance / (variance + mD_2));
 
-    return clamp(lit, 0.0f, 1.0f);
+    return saturate(max(p, distance <= moments.x ? 1.0f : 0.0f));
 }
 
-float applyShadowDirectional(in uint idx, in vec4 details) {
+float getShadowFactorDirectional(in uint idx, in vec4 details) {
     const int Split = getCSMSlice(idx);
 
     const vec4 sc = dvd_shadowLightVP[Split + (idx * 6)] * VAR._vertexW;

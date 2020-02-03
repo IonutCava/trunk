@@ -20,31 +20,24 @@ layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDe
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
-float getShadowFactorInternal(int idx) {
-
-#if !defined(PRE_PASS)
-    if (idx == 0 || idx == 1) {
-        //return texture(texGBufferExtra, dvd_screenPositionNormalised)[idx];
-    }
-#endif
+float getShadowFactor(int idx) {
+    float ret = 1.0f;
 
     if (idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
-        uint lightIndex = uint(idx);
-
+        const uint lightIndex = uint(idx);
         const vec4 crtDetails = dvd_shadowLightDetails[idx];
+
         switch (uint(crtDetails.x)) {
-            case LIGHT_DIRECTIONAL: return applyShadowDirectional(lightIndex, crtDetails);
-            case LIGHT_OMNIDIRECTIONAL: return applyShadowPoint(lightIndex, crtDetails);
-            case LIGHT_SPOT: return applyShadowSpot(lightIndex, crtDetails);
+            case LIGHT_DIRECTIONAL:     ret = getShadowFactorDirectional(lightIndex, crtDetails); break;
+            case LIGHT_OMNIDIRECTIONAL: ret = getShadowFactorPoint(lightIndex, crtDetails);       break;
+            case LIGHT_SPOT:            ret = getShadowFactorSpot(lightIndex, crtDetails);        break;
         };
     }
 
-    return 1.0f;
-}
-float getShadowFactor(int idx) {
-    return saturate(getShadowFactorInternal(idx) / SHADOW_INTENSITY_FACTOR);
+    return saturate(ret / SHADOW_INTENSITY_FACTOR);
 }
 #else
+
 float getShadowFactor(int idx) {
     return 1.0f;
 }

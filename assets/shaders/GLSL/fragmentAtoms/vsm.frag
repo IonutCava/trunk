@@ -2,10 +2,19 @@
 #define _VSM_FRAG_
 
 float getShadowDepth() {
+#if 0
+    const float depth = 0.5f * gl_FragCoord.z + 0.5f;
+#elif 0
     const float depth = gl_FragCoord.z;
+#else
+    const vec4 pos = dvd_ProjectionMatrix * VAR._vertexWV;
+    const float depth = 0.5f * (pos.z / pos.w) + 0.5f;
+#endif
+
 #if 0
     return exp(DEPTH_EXP_WARP * depth);
 #endif
+
     return depth;
 }
 

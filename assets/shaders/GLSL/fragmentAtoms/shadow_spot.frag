@@ -26,7 +26,7 @@ float filterFinalShadow(in sampler2DArrayShadow shadowMap, in vec3 projCoords, i
     return visiblity;
 }
 
-float applyShadowSpot(in uint idx, in vec4 details) {
+float getShadowFactorSpot(in uint idx, in vec4 details) {
 
     vec4 temp_coord = dvd_shadowLightVP[idx * 6] * VAR._vertexW;
     vec3 shadow_coord = temp_coord.xyz / temp_coord.w;

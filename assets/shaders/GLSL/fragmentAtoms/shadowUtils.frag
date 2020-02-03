@@ -13,7 +13,7 @@ layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 int getCSMSlice(in uint idx) {
 
     int Split = 0;
-    const float fragDepth = VAR._vertexWV.z;
+    const float fragDepth = (VAR._vertexWV.z / VAR._vertexWV.w);
     // Figure out which cascade to sample from
 
     float dist = 0.0f;

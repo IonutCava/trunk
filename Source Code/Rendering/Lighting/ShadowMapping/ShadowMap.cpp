@@ -227,6 +227,10 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
 void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
     GFX::ResetAndClearRenderTargetCommand resetRenderTargetCommand;
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
+        // no need to clear layered FBO as we will just blit into it anyway
+        if (i == to_base(ShadowType::LAYERED)) {
+            continue;
+        }
         resetRenderTargetCommand._source = RenderTargetID(RenderTargetUsage::SHADOW, i);
         resetRenderTargetCommand._clearDescriptor = {};
         resetRenderTargetCommand._drawDescriptor = {};
