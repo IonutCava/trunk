@@ -79,7 +79,8 @@ FWD_DECLARE_MANAGED_STRUCT(DebugView);
 /// All the information needed for a single light's shadowmap
 class NOINITVTABLE ShadowMap {
   public:
-      static constexpr U32 MAX_SHADOW_PASSES = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6;
+      static constexpr U32 MAX_PASSES_PER_LIGHT = 6;
+      static constexpr U32 MAX_SHADOW_PASSES = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * MAX_PASSES_PER_LIGHT;
 
   public:
     // Init and destroy buffers, shaders, etc

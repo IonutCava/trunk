@@ -130,7 +130,7 @@ void Renderer::preRender(RenderStagePass stagePass,
     const vec2<U16> renderTargetRes(hizColourTexture->width(), hizColourTexture->height());
     const Rect<I32> viewport(0u, 0u, renderTargetRes.x, renderTargetRes.y);
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = to_I32(stagePass.index());
     beginDebugScopeCmd._scopeName = "Renderer PrePass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);

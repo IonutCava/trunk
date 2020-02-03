@@ -71,15 +71,18 @@ class LightPool : public SceneComponent,
           vec4<I32> _options = { 3, 1, 0, 0 };
       };
 
+#pragma pack(push, 1)
       struct ShadowProperties {
-          std::array<vec4<F32>, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _lightDetails;
-          std::array<vec4<F32>, ShadowMap::MAX_SHADOW_PASSES> _lightPosition;
-          std::array<mat4<F32>, ShadowMap::MAX_SHADOW_PASSES> _lightVP;
+          vec4<F32> _lightDetails[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS];
+          vec4<F32> _lightPosition[ShadowMap::MAX_SHADOW_PASSES];
+          mat4<F32> _lightVP[ShadowMap::MAX_SHADOW_PASSES];
 
           inline bufferPtr data() const {
-              return (bufferPtr)&_lightDetails[0][0];
+              return (bufferPtr)&_lightDetails[0]._v;
           }
       };
+#pragma pack(pop)
+
   public:
     using LightList = vectorEASTL<Light*>;
 

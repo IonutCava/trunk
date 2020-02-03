@@ -123,13 +123,6 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
 
     _textureUseForDepth.fill(false);
 
-    _textureExtenalFlag.fill(false);
-    _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFLECTION_PLANAR)] = true;
-    _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFRACTION_PLANAR)] = true;
-    _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::REFLECTION_CUBE)] = true;
-    _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::DEPTH)] = true;
-    _textureExtenalFlag[to_base(ShaderProgram::TextureUsage::DEPTH_PREV)] = true;
-
     _operation = TextureOperation::NONE;
 
     ApplyDefaultStateBlocks(*this);
@@ -215,34 +208,50 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         if (!_textures[slot]) {
             // if we add a new type of texture recompute shaders
             computeShaders = true;
-        } else {
+        }
+        else {
             // Skip adding same texture
             if (texture != nullptr && _textures[slot]->getGUID() == texture->getGUID()) {
                 return true;
             }
         }
-    
+
         _textures[slot] = texture;
-    }
 
-    if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
-        textureUsageSlot == ShaderProgram::TextureUsage::OPACITY)
-    {
-        bool isOpacity = true;
-        if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0) {
-            _textureKeyCache = texture == nullptr ? -1 : texture->data().textureHandle();
-            isOpacity = false;
+
+        if (textureUsageSlot == ShaderProgram::TextureUsage::NORMALMAP ||
+            textureUsageSlot == ShaderProgram::TextureUsage::HEIGHTMAP)
+        {
+            const bool isHeight = textureUsageSlot == ShaderProgram::TextureUsage::HEIGHTMAP;
+
+            // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
+            const Texture_ptr& otherTex = _textures[isHeight ? to_base(ShaderProgram::TextureUsage::NORMALMAP)
+                : to_base(ShaderProgram::TextureUsage::HEIGHTMAP)];
+
+            if (otherTex != nullptr && texture != nullptr && otherTex->data().textureHandle() == texture->data().textureHandle()) {
+                _textures[to_base(ShaderProgram::TextureUsage::HEIGHTMAP)] = nullptr;
+            }
         }
 
-        // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
-        const Texture_ptr& otherTex = _textures[isOpacity ? to_base(ShaderProgram::TextureUsage::UNIT0)
-                                                          : to_base(ShaderProgram::TextureUsage::OPACITY)];
+        if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
+            textureUsageSlot == ShaderProgram::TextureUsage::OPACITY)
+        {
+            bool isOpacity = true;
+            if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0) {
+                _textureKeyCache = texture == nullptr ? -1 : texture->data().textureHandle();
+                isOpacity = false;
+            }
 
-        if (otherTex != nullptr && texture != nullptr && otherTex->data() == texture->data()) {
-            _textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = nullptr;
+            // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
+            const Texture_ptr& otherTex = _textures[isOpacity ? to_base(ShaderProgram::TextureUsage::UNIT0)
+                : to_base(ShaderProgram::TextureUsage::OPACITY)];
+
+            if (otherTex != nullptr && texture != nullptr && otherTex->data().textureHandle() == texture->data().textureHandle()) {
+                _textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = nullptr;
+            }
+
+            updateTranslucency();
         }
-
-        updateTranslucency();
     }
 
     _needsNewShader = true;
@@ -393,6 +402,8 @@ bool Material::canDraw(RenderStagePass renderStagePass) {
 bool Material::computeShader(RenderStagePass renderStagePass) {
     OPTICK_EVENT();
 
+    const bool isDepthPass = renderStagePass.isDepthPass();
+
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // If shader's invalid, try to request a recompute as it might fix it
     if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COUNT) {
@@ -440,15 +451,15 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             updateTranslucency();
         }
     }
-    const Str64 vertSource = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertSource : _baseShaderSources._colourShaderVertSource;
-    const Str64 fragSource = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragSource : _baseShaderSources._colourShaderFragSource;
+    const Str64 vertSource = isDepthPass ? _baseShaderSources._depthShaderVertSource : _baseShaderSources._colourShaderVertSource;
+    const Str64 fragSource = isDepthPass ? _baseShaderSources._depthShaderFragSource : _baseShaderSources._colourShaderFragSource;
 
-    Str32 vertVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderVertVariant : _baseShaderSources._colourShaderVertVariant;
-    Str32 fragVariant = renderStagePass.isDepthPass() ? _baseShaderSources._depthShaderFragVariant : _baseShaderSources._colourShaderFragVariant;
+    Str32 vertVariant = isDepthPass ? _baseShaderSources._depthShaderVertVariant : _baseShaderSources._colourShaderVertVariant;
+    Str32 fragVariant = isDepthPass ? _baseShaderSources._depthShaderFragVariant : _baseShaderSources._colourShaderFragVariant;
     Str128 shaderName = vertSource + "_" + fragSource;
 
 
-    if (renderStagePass.isDepthPass()) {
+    if (isDepthPass) {
         if (renderStagePass._stage == RenderStage::SHADOW) {
             shaderName += ".SHDW";
             vertVariant += "Shadow";
@@ -466,36 +477,42 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderName += ".OIT";
         fragDefines.push_back(std::make_pair("OIT_PASS", true));
     }
-    fragDefines.push_back(std::make_pair(Util::StringFormat("TEX_OPERATION %d", to_base(getTextureOperation())).c_str(), true));
-
     if (renderStagePass._stage == RenderStage::REFRACTION) {
         fragDefines.push_back(std::make_pair("WRITE_DEPTH_TO_ALPHA", true));
     }
 
-    // Bump mapping?
-    if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] && _bumpMethod != BumpMethod::NONE) {
-        globalDefines.push_back(std::make_pair("COMPUTE_TBN", true));
-        shaderName += ".N";  // Normal Mapping
-        if (_bumpMethod == BumpMethod::PARALLAX) {
-            fragDefines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
-            shaderName += ".PMap";
-        } else if (_bumpMethod == BumpMethod::RELIEF) {
-            fragDefines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
-            shaderName += ".RMap";
-        }
-    }
     if (!_textures[slot0]) {
         fragDefines.push_back(std::make_pair("SKIP_TEXTURES", true));
         shaderName += ".NTex";
+    } else {
+        fragDefines.push_back(std::make_pair(Util::StringFormat("TEX_OPERATION %d", to_base(getTextureOperation())).c_str(), true));
     }
 
-    if (!renderStagePass.isDepthPass() && _textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
-        if (isPBRMaterial()) {
-            shaderName += ".MRgh";
-            fragDefines.push_back(std::make_pair("USE_METALLIC_ROUGHNESS_MAP", true));
-        } else {
-            shaderName += ".SMap";
-            fragDefines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
+    // Display pre-pass caches normal maps in a GBuffer, so it's the only exception
+    if (!isDepthPass || renderStagePass._stage == RenderStage::DISPLAY) {
+        // Bump mapping?
+        if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] && _bumpMethod != BumpMethod::NONE) {
+            globalDefines.push_back(std::make_pair("COMPUTE_TBN", true));
+
+            if (_bumpMethod == BumpMethod::PARALLAX) {
+                fragDefines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
+                shaderName += ".PMap";
+            } else if (_bumpMethod == BumpMethod::RELIEF) {
+                fragDefines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
+                shaderName += ".RMap";
+            } else {
+                shaderName += ".NMap";
+            }
+        }
+
+        if (_textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
+            if (isPBRMaterial()) {
+                shaderName += ".MRgh";
+                fragDefines.push_back(std::make_pair("USE_METALLIC_ROUGHNESS_MAP", true));
+            } else {
+                shaderName += ".SMap";
+                fragDefines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
+            }
         }
     }
 
@@ -534,7 +551,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         fragDefines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }
 
-    if (!renderStagePass.isDepthPass()) {
+    if (!isDepthPass) {
         switch (_shadingMode) {
             default:
             case ShadingMode::FLAT: {
@@ -643,29 +660,35 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
         return getTextureDataFast(renderStagePass, textureData);
     }
 
-    const bool depthStage = renderStagePass.isDepthPass();
+    const bool isDepthPass = renderStagePass.isDepthPass();
 
     bool ret = false;
-    if (!depthStage || hasTransparency() || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::UNIT0)]) {
+    if (!isDepthPass || hasTransparency() || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::UNIT0)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData) || ret;
     }
 
-    if (!depthStage || hasTransparency() || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::OPACITY)]) {
+    if (!isDepthPass || hasTransparency() || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::OPACITY)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData) || ret;
     }
 
-    ret = getTextureData(ShaderProgram::TextureUsage::HEIGHTMAP, textureData) || ret;
-    ret = getTextureData(ShaderProgram::TextureUsage::PROJECTION, textureData) || ret;
+    if (!isDepthPass || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::HEIGHTMAP)]) {
+        ret = getTextureData(ShaderProgram::TextureUsage::HEIGHTMAP, textureData) || ret;
+    }
+    if (!isDepthPass || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::PROJECTION)]) {
+        ret = getTextureData(ShaderProgram::TextureUsage::PROJECTION, textureData) || ret;
+    }
 
-    if (!depthStage || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::UNIT1)]) {
+    if (!isDepthPass || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::UNIT1)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData) || ret;
     }
 
-    if (!depthStage || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
+    if (!isDepthPass || _textureUseForDepth[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
         ret = getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData) || ret;
     }
 
-    if (renderStagePass._stage != RenderStage::DISPLAY || depthStage) {
+    if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
+       !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
+    {
         ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
     }
 
@@ -682,58 +705,40 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
 
     constexpr U8 extraSlots[] = {
         to_base(ShaderProgram::TextureUsage::UNIT1),
-        to_base(ShaderProgram::TextureUsage::SPECULAR)
+        to_base(ShaderProgram::TextureUsage::SPECULAR),
+        to_base(ShaderProgram::TextureUsage::HEIGHTMAP),
+        to_base(ShaderProgram::TextureUsage::PROJECTION)
     };
 
 
     bool ret = false;
     TextureDataContainer::DataEntries& textures = textureData.textures();
-    {
-        constexpr U8 heightSlot = to_base(ShaderProgram::TextureUsage::HEIGHTMAP);
-        SharedLock r_lock(_textureLock);
-        const Texture_ptr& crtHeightTexture = _textures[heightSlot];
-        if (crtHeightTexture != nullptr) {
-            textures[heightSlot] = crtHeightTexture->data();
-            ret = true;
-        }
-    }
-    {
-        constexpr U8 projectionSlot = to_base(ShaderProgram::TextureUsage::PROJECTION);
-        SharedLock r_lock(_textureLock);
-        const Texture_ptr& crtProjectionTexture = _textures[projectionSlot];
-        if (crtProjectionTexture != nullptr) {
-            textures[projectionSlot] = crtProjectionTexture->data();
-            ret = true;
-        }
-    }
+    SharedLock r_lock(_textureLock);
+
     const bool depthStage = renderStagePass.isDepthPass();
-    {
-        SharedLock r_lock(_textureLock);
-        for (const U8 slot : transparentSlots) {
-            if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
-                const Texture_ptr& crtTexture = _textures[slot];
-                if (crtTexture != nullptr) {
-                    textures[slot] = crtTexture->data();
-                    ret = true;
-                }
+    for (const U8 slot : transparentSlots) {
+        if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
+            const Texture_ptr& crtTexture = _textures[slot];
+            if (crtTexture != nullptr) {
+                textures[slot] = crtTexture->data();
+                ret = true;
             }
         }
     }
 
-    {
-        SharedLock r_lock(_textureLock);
-        for (const U8 slot : extraSlots) {
-            if (!depthStage || _textureUseForDepth[slot]) {
-                const Texture_ptr& crtTexture = _textures[slot];
-                if (crtTexture != nullptr) {
-                    textures[slot] = crtTexture->data();
-                    ret = true;
-                }
+    for (const U8 slot : extraSlots) {
+        if (!depthStage || _textureUseForDepth[slot]) {
+            const Texture_ptr& crtTexture = _textures[slot];
+            if (crtTexture != nullptr) {
+                textures[slot] = crtTexture->data();
+                ret = true;
             }
         }
-    } 
+    }
 
-    if (renderStagePass._stage != RenderStage::DISPLAY || depthStage) {
+    if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
+        !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
+    {
         constexpr U8 normalSlot = to_base(ShaderProgram::TextureUsage::NORMALMAP);
         const Texture_ptr& crtNormalTexture = _textures[normalSlot];
         if (crtNormalTexture != nullptr) {
@@ -808,7 +813,7 @@ void Material::updateTranslucency() {
     bool usingAlbedoTexAlpha = false;
     bool usingOpacityTexAlpha = false;
     // base texture is translucent
-    Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
+    const Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
     if (albedo && albedo->hasTransparency()) {
         _translucencySource = TranslucencySource::ALBEDO;
         _translucent = albedo->hasTranslucency();
@@ -846,7 +851,7 @@ void Material::updateTranslucency() {
 }
 
 size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
-    size_t ret = defaultRenderState(renderStagePass);
+    const size_t ret = defaultRenderState(renderStagePass);
     if (_doubleSided) {
         RenderStateBlock tempBlock = RenderStateBlock::get(ret);
         tempBlock.setCullMode(CullMode::NONE);

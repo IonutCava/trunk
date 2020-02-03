@@ -922,6 +922,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     // We do our own binding
     params._bindTargets = false;
     params._passVariant = stagePass._variant;
+    params._passName = "CubeMap";
 
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
     GFX::EndRenderSubPassCommand endRenderSubPassCommand;
@@ -997,6 +998,8 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     params._passVariant = stagePass._variant;
     params._pass = stagePass._passType;
     params._passIndex = passIndex;
+    params._passName = "DualParaboloid";
+
     // Enable our render target
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -1440,7 +1443,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     // Store the current width and height of each mip
     const Rect<I32> previousViewport(_viewport);
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = to_I32(depthBuffer._index);
     beginDebugScopeCmd._scopeName = "Construct Hi-Z";
     GFX::EnqueueCommand(cmdBufferInOut, beginDebugScopeCmd);
@@ -1655,7 +1658,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 123456332;
     beginDebugScopeCmd._scopeName = "Draw Fullscreen Texture";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);

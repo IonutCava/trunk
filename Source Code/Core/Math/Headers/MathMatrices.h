@@ -448,6 +448,7 @@ class mat3 {
 /***************
  * mat4
  ***************/
+#pragma pack(push, 1)
 template <typename T>
 class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
     // m0  m1  m2  m3
@@ -696,6 +697,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         simd_vector<T> _reg[4];
     };
 };
+#pragma pack(pop)
 
 extern mat2<F32> MAT2_BIAS;
 extern mat3<F32> MAT3_BIAS;

@@ -60,6 +60,7 @@ public:
         const SceneGraphNode* _sourceNode = nullptr;
         const RTDrawDescriptor* _drawPolicy = nullptr;
         const RTClearDescriptor* _clearDescriptor = nullptr;
+        Str64 _passName = "";
         Camera* _camera = nullptr;
         FrustumClipPlanes _clippingPlanes = {};
         RenderTargetID _target = {};

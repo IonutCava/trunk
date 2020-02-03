@@ -210,6 +210,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
             clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
             params._clearDescriptor = &clearDescriptor;
+            params._passName = "MainRenderPass";
 
             _parent.doCustomPass(params, bufferInOut);
             _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize(_stageFlag);
@@ -217,7 +218,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         } break;
         case RenderStage::SHADOW: {
             OPTICK_EVENT("RenderPass - Shadow");
-            GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+            GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
             beginDebugScopeCmd._scopeID = 20;
             beginDebugScopeCmd._scopeName = "Shadow Render Stage";
             GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);

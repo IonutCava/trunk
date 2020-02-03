@@ -210,7 +210,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
                     RenderStagePass renderStagePass,
                     GFX::CommandBuffer& bufferInOut);
 
-    void rebuildDrawCommands(RenderStagePass stagePass);
+    void rebuildDrawCommands(RenderStagePass stagePass, RenderPackage& pkg);
 
     void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData);
 

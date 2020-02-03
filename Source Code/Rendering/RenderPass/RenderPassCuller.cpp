@@ -99,6 +99,10 @@ namespace {
             objectType = static_cast<const Object3D&>(sceneNode).getObjectType();
         }
 
+        if (node.hasFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED)) {
+            return false;
+        }
+
         if (generatesDrawCommands(snType, objectType, isTransformNodeOut)) {
             // only checks nodes and can return true for a shadow stage
             return stage == RenderStage::SHADOW && doesNotCastShadows(stage, node, snType, objectType);
@@ -230,23 +234,21 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
 void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
     OPTICK_EVENT();
 
-    const bool castsShadows = currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
-
     const vectorEASTL<SceneGraphNode*>& children = currentNode.getChildrenLocked();
     for (SceneGraphNode* child : children) {
-        if (child->hasFlag(SceneGraphNode::Flags::ACTIVE) &&
-            (params._stage != RenderStage::SHADOW || castsShadows || child->hasFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED)))
-        {
-            bool isTransformNode = false;
-            if (!shouldCullNode(params._stage, *child, isTransformNode)) {
-                F32 distanceSqToCamera = std::numeric_limits<F32>::max();
-                if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(*child, *(child->get<BoundsComponent>()), params, distanceSqToCamera)) {
-                    nodes.emplace_back(child, distanceSqToCamera);
-                    addAllChildren(*child, params, nodes);
-                }
-            } else if (isTransformNode) {
+        if (!child->hasFlag(SceneGraphNode::Flags::ACTIVE)) {
+            continue;
+        }
+        
+        bool isTransformNode = false;
+        if (!shouldCullNode(params._stage, *child, isTransformNode)) {
+            F32 distanceSqToCamera = std::numeric_limits<F32>::max();
+            if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(*child, *(child->get<BoundsComponent>()), params, distanceSqToCamera)) {
+                nodes.emplace_back(child, distanceSqToCamera);
                 addAllChildren(*child, params, nodes);
             }
+        } else if (isTransformNode) {
+            addAllChildren(*child, params, nodes);
         }
     }
 }

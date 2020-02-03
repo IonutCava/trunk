@@ -60,28 +60,19 @@ class SceneRenderState;
 class Light : public GUIDWrapper, public ECS::Event::IEventListener
 {
    public:
-       static U8 GetThreadGroupSize(U8 optionIn) noexcept {
-           return (optionIn == 0 ? 8 : optionIn == 1 ? 16 : 32);
-       }
+    static U8 GetThreadGroupSize(U8 optionIn) noexcept {
+        return (optionIn == 0 ? 8 : optionIn == 1 ? 16 : 32);
+    }
 
-       //Note: 6 - cube faces. CSM splits must always be less than 6!
-       struct ShadowProperties {
-           /// light viewProjection matrices
-           mat4<F32> _lightVP[6];
-           // x = light type, y = arrayOffset, z - bias
-           vec4<F32> _lightDetails;
-           /// light's position in world space. w - csm split distances (or whatever else might be needed)
-           vec4<F32> _lightPosition[6];
-
-           inline void set(const ShadowProperties& other) {
-               _lightDetails.set(other._lightDetails);
-               memcpy(_lightVP,       other._lightVP,       6 * sizeof(mat4<F32>));
-               memcpy(_lightPosition, other._lightPosition, 6 * sizeof(vec4<F32>));
-           }
-
-           // Renderdoc:
-           //vec4 details; mat4 vp[6]; vec4 pos[6]; float f[6]
-       };
+    //Note: 6 - cube faces. CSM splits must always be less than 6!
+    struct ShadowProperties {
+        // x = light type, y = arrayOffset, z - bias
+        vec4<F32> _lightDetails;
+        /// light's position in world space. w - csm split distances (or whatever else might be needed)
+        vec4<F32> _lightPosition[ShadowMap::MAX_PASSES_PER_LIGHT];
+        /// light viewProjection matrices
+        mat4<F32> _lightVP[ShadowMap::MAX_PASSES_PER_LIGHT];
+    };
 
     /// Create a new light assigned to the specified slot with the specified range
     explicit Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool);

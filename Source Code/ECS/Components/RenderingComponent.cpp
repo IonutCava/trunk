@@ -32,7 +32,7 @@ namespace Divide {
 namespace {
     constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
 
-    I32 getUsageIndex(RenderTargetUsage usage) {
+    I32 getUsageIndex(RenderTargetUsage usage) noexcept {
         for (I32 i = 0; i < (sizeof(g_texUsage) / sizeof(g_texUsage[0])); ++i) {
             if (g_texUsage[i].first == usage) {
                 return i;
@@ -87,18 +87,16 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
 
     const Object3D& node = parentSGN.getNode<Object3D>();
 
-    bool nodeSkinned = node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
-
     // Prepare it for rendering lines
-    RenderStateBlock primitiveStateBlock;
-    PipelineDescriptor pipelineDescriptor;
+    RenderStateBlock primitiveStateBlock = {};
+    PipelineDescriptor pipelineDescriptor = {};
 
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
     pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
     _primitivePipeline[0] = _context.newPipeline(pipelineDescriptor);
 
-    if (nodeSkinned) {
-        RenderStateBlock primitiveStateBlockNoZRead;
+    if (node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+        RenderStateBlock primitiveStateBlockNoZRead = {};
         primitiveStateBlockNoZRead.depthTestEnabled(false);
         pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
         _primitivePipeline[1] = _context.newPipeline(pipelineDescriptor);
@@ -106,8 +104,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     
     if (Config::Build::ENABLE_EDITOR) {
         // Prepare it for line rendering
-        size_t noDepthStateBlock = _context.getDefaultStateBlock(true);
-        RenderStateBlock stateBlock(RenderStateBlock::get(noDepthStateBlock));
+        RenderStateBlock stateBlock(RenderStateBlock::get(_context.getDefaultStateBlock(true)));
 
         pipelineDescriptor._stateHash = stateBlock.getHash();
         _primitivePipeline[2] = _context.newPipeline(pipelineDescriptor);
@@ -170,10 +167,8 @@ void RenderingComponent::setMaxRenderRange(F32 maxRange) {
     _renderRange.max = std::min(maxRange,  1.0f * g_renderRangeLimit);
 }
 
-void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
+void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass, RenderPackage& pkg) {
     OPTICK_EVENT();
-
-    RenderPackage& pkg = getDrawPackage(stagePass);
     pkg.clear();
 
     if (useDataIndexAsUniform()) {
@@ -187,8 +182,7 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
         pipelineDescriptor._stateHash = _materialInstanceCache->getRenderStateBlock(stagePass);
         pipelineDescriptor._shaderProgramHandle = _materialInstanceCache->getProgramID(stagePass);
 
-        GFX::BindPipelineCommand pipelineCommand = { _context.newPipeline(pipelineDescriptor) };
-        pkg.addPipelineCommand(pipelineCommand);
+        pkg.addPipelineCommand(GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
         GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
         for (const ShaderBufferBinding& binding : getShaderBuffers()) {
@@ -198,9 +192,7 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
     }
 
     if (!_globalPushConstants.empty()) {
-        GFX::SendPushConstantsCommand pushConstantsCommand = {};
-        pushConstantsCommand._constants = _globalPushConstants;
-        pkg.addPushConstantsCommand(pushConstantsCommand);
+        pkg.addPushConstantsCommand(GFX::SendPushConstantsCommand{ _globalPushConstants });
     }
 
     _parentSGN.getNode().buildDrawCommands(_parentSGN, stagePass, pkg);
@@ -281,12 +273,15 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
             _materialInstanceCache->getTextureData(renderStagePass, textures);
         }
 
-        for (U8 i = 0; i < _externalTextures.size(); ++i) {
-            const Texture_ptr& crtTexture = _externalTextures[i];
-            if (crtTexture != nullptr) {
-                textures.setTexture(crtTexture->data(), to_base(g_texUsage[i].second));
+        if (!renderStagePass.isDepthPass()) {
+            for (U8 i = 0; i < _externalTextures.size(); ++i) {
+                const Texture_ptr& crtTexture = _externalTextures[i];
+                if (crtTexture != nullptr) {
+                    textures.setTexture(crtTexture->data(), to_base(g_texUsage[i].second));
+                }
             }
         }
+
         pkg.textureDataDirty(false);
     }
 }
@@ -531,7 +526,8 @@ U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>
 
     U8 lodLevel = 0u;
 
-    if (_lodLocked) {
+    //ToDo: HACK for shadow rendering
+    if (_lodLocked || renderStage == RenderStage::SHADOW) {
         return lodLevel;
     }
 
@@ -558,7 +554,8 @@ U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>
         lodLevel += 1;
     }
 
-    return lodLevel;
+    // Hack: clamlp LoD
+    return std::min(lodLevel, to_U8(2u));
 }
 
 void RenderingComponent::queueRebuildCommands(RenderStagePass renderStagePass) {
@@ -579,17 +576,17 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
         bool rebuildCommandsOut = false;
         if (Attorney::SceneGraphNodeComponent::preRender(_parentSGN, camera, renderStagePass, refreshData, rebuildCommandsOut)) {
             if (pkg.empty() || rebuildCommandsOut) {
-                rebuildDrawCommands(renderStagePass);
+                rebuildDrawCommands(renderStagePass, pkg);
             }
             if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, camera, renderStagePass, refreshData)) {
 
                 Attorney::RenderPackageRenderingComponent::setLoDLevel(pkg, lod);
 
-                bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
-                renderGeometry = renderGeometry || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
+                const bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) ||
+                                            sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
+                const bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
+                                             sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
 
-                bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
-                renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
                 if (renderWireframe && renderGeometry) {
                     pkg.enableOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY) | to_base(CmdRenderOptions::RENDER_WIREFRAME));
                 } else if (!renderWireframe && !renderGeometry) {
@@ -608,9 +605,9 @@ RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePas
 
     if (renderStagePass._stage == RenderStage::SHADOW) {
         constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
+        const U32 passIndex = renderStagePass._passIndex % stride;
+        const U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
 
-        U32 passIndex = renderStagePass._passIndex % stride;
-        U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
         return _renderPackagesShadow[lightIndex][passIndex];
     } else {
         return _renderPackagesNormal[to_base(renderStagePass._stage) - 1][to_base(renderStagePass._passType)];
@@ -621,8 +618,8 @@ const RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderSt
     if (renderStagePass._stage == RenderStage::SHADOW) {
         constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
 
-        U32 passIndex = renderStagePass._passIndex % stride;
-        U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
+        const U32 passIndex = renderStagePass._passIndex % stride;
+        const U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
         return _renderPackagesShadow[lightIndex][passIndex];
     } else {
         return _renderPackagesNormal[to_base(renderStagePass._stage) - 1][to_base(renderStagePass._passType)];

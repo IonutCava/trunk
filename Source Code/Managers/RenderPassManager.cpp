@@ -566,7 +566,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
     GFX::EnqueueCommand(bufferInOut, memCmd);
 
     if (doPrePass) {
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
         beginDebugScopeCmd._scopeID = 0;
         beginDebugScopeCmd._scopeName = " - PrePass";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
@@ -593,12 +593,10 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         Attorney::SceneManagerRenderPass::postRender(parent().sceneManager(), stagePass, *params._camera, bufferInOut);
 
         if (params._bindTargets) {
-            GFX::EndRenderPassCommand endRenderPassCommand;
-            GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
+            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
         }
 
-        GFX::EndDebugScopeCommand endDebugScopeCmd;
-        GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
     }
 
     return doPrePass;
@@ -649,7 +647,7 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassPa
 void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, RenderTarget& target, bool prePassExecuted, bool hasHiZ, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = " - MainPass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
@@ -733,13 +731,11 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
         }
 
         if (params._bindTargets) {
-            GFX::EndRenderPassCommand endRenderPassCommand;
-            GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
+            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
         }
     }
 
-    GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -748,7 +744,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
     const RenderStagePass stagePass(params._stage, RenderPassType::OIT_PASS, params._passVariant, params._passIndex);
     prepareRenderQueues(stagePass, params, nodes, false, bufferInOut);
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 2;
     beginDebugScopeCmd._scopeName = " - W-OIT Pass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
@@ -855,20 +851,20 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
 void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+    beginDebugScopeCmd._scopeID = 0;
+    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s - %s )", TypeUtil::RenderStageToString(params._stage), params._passName.empty() ? "N/A" : params._passName.c_str()).c_str();
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
+
     Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), params._stage, *params._camera);
 
     // Cull the scene and grab the visible nodes
     const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), params._stage, *params._camera, params._minLoD, params._minExtents);
 
     // Tell the Rendering API to draw from our desired PoV
-    GFX::SetCameraCommand setCameraCommand = {
-        params._camera->snapshot()
-    };
-    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
-
-    GFX::SetClipPlanesCommand setClipPlanesCommand;
-    setClipPlanesCommand._clippingPlanes = params._clippingPlanes;
-    GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
+    GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ params._camera->snapshot() });
+    GFX::EnqueueCommand(bufferInOut, GFX::SetClipPlanesCommand{ params._clippingPlanes });
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
 
@@ -877,20 +873,17 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
         target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA))
     };
 
-    RTClearDescriptor clearDescriptor = {};
-    if (params._clearDescriptor != nullptr) {
-        clearDescriptor = *params._clearDescriptor;
+    if (params._bindTargets) {
+        RTClearDescriptor clearDescriptor = {};
+        if (params._clearDescriptor != nullptr) {
+            clearDescriptor = *params._clearDescriptor;
+        }
+
+        GFX::ClearRenderTargetCommand clearMainTarget = {};
+        clearMainTarget._target = params._target;
+        clearMainTarget._descriptor = clearDescriptor;
+        GFX::EnqueueCommand(bufferInOut, clearMainTarget);
     }
-
-    GFX::ClearRenderTargetCommand clearMainTarget = {};
-    clearMainTarget._target = params._target;
-    clearMainTarget._descriptor = clearDescriptor;
-    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
-
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 0;
-    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s )", TypeUtil::RenderStageToString(params._stage)).c_str();
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
     bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
@@ -929,8 +922,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
         woitPass(visibleNodes, params, extraTargets, target, bufferInOut);
     }
 
-    GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void RenderPassManager::createFrameBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {

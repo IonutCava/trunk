@@ -24,15 +24,15 @@ float applyShadowDirectional(in uint idx, in vec4 details) {
     const vec4 sc = dvd_shadowLightVP[Split + (idx * 6)] * VAR._vertexW;
     const vec3 shadowCoord = sc.xyz / sc.w;
 
-    bool inFrustum = all(bvec4(
-        shadowCoord.x >= 0.0f,
-        shadowCoord.x <= 1.0f,
-        shadowCoord.y >= 0.0f,
-        shadowCoord.y <= 1.0f));
+    const bool inFrustum = shadowCoord.z <= 1.0f && 
+                            all(bvec4(shadowCoord.x >= 0.0f,
+                                      shadowCoord.x <= 1.0f,
+                                      shadowCoord.y >= 0.0f,
+                                      shadowCoord.y <= 1.0f));
 
-    if (inFrustum && shadowCoord.z <= 1.0f)
+    if (inFrustum)
     {
-        float layer = float(Split + details.y);
+        const float layer = float(Split + details.y);
 
         vec2 moments = texture(texDepthMapFromLightArray, vec3(shadowCoord.xy, layer)).rg;
        

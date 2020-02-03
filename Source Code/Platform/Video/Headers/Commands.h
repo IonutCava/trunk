@@ -295,6 +295,9 @@ BEGIN_COMMAND(PopCameraCommand, CommandType::POP_CAMERA);
 END_COMMAND(PopCameraCommand);
 
 BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES);
+    SetClipPlanesCommand() = default;
+    SetClipPlanesCommand(const FrustumClipPlanes& clippingPlanes) : _clippingPlanes(clippingPlanes) {}
+
     FrustumClipPlanes _clippingPlanes;
 
     stringImpl toString(U16 indent) const final;

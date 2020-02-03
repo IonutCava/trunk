@@ -260,7 +260,7 @@ namespace Attorney {
 struct ShaderModuleDescriptor {
     ModuleDefines _defines;
     Str64 _sourceFile;
-    Str32 _variant;
+    Str64 _variant;
     ShaderType _moduleType = ShaderType::COUNT;
     bool _batchSameFile = true;
 };

@@ -222,6 +222,8 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params._target = renderParams._renderTarget;
     params._passIndex = renderParams._passIndex;
     params._clippingPlanes._planes[0] = refractionPlane;
+    params._passName = "Refraction";
+
     renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 }
 
@@ -256,6 +258,8 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._passIndex = renderParams._passIndex;
     params._clearDescriptor = &clearDescriptor;
     params._clippingPlanes._planes[0] = reflectionPlane;
+    params._passName = "Reflection";
+
     renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 
     RenderTarget& reflectTarget = renderParams._context.renderTargetPool().renderTarget(renderParams._renderTarget);

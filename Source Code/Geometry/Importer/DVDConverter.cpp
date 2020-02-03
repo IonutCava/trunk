@@ -649,7 +649,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         const Str64& img_name = fileResult._fileName.c_str();
         const Str256& img_path = fileResult._path.c_str();
 
-        Import::TextureEntry& texture = material._textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)];
+        Import::TextureEntry& texture = material._textures[to_base(ShaderProgram::TextureUsage::HEIGHTMAP)];
         if (img_name.rfind('.') != Str64::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&

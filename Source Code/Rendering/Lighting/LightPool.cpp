@@ -90,7 +90,7 @@ void LightPool::init() {
     // ViewProjection Matrices, View Space Position, etc
     bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
     bufferDescriptor._elementCount = 1;
-    bufferDescriptor._elementSize = sizeof(_shadowBufferData);
+    bufferDescriptor._elementSize = sizeof(ShadowProperties);
     bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
     
     _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
@@ -204,25 +204,26 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
                 break;
             }
 
-            bool isDirLight = light->getLightType() == LightType::DIRECTIONAL;
+            const bool isDirLight = light->getLightType() == LightType::DIRECTIONAL;
+
             if (!isDirLight || directionalLightCount < Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS) {
                 ShadowMap::generateShadowMaps(playerCamera, *light, shadowLightCount, bufferInOut);
+
                 const Light::ShadowProperties& shadowProp = light->getShadowProperties();
 
                 _shadowBufferData._lightDetails[shadowLightCount].set(shadowProp._lightDetails);
-                std::memcpy(_shadowBufferData._lightPosition[shadowLightCount * 6], shadowProp._lightPosition, 6 * sizeof(vec4<F32>));
-                std::memcpy(_shadowBufferData._lightVP[shadowLightCount * 6], shadowProp._lightVP, 6 * sizeof(mat4<F32>));
 
-                shadowLightCount++;
+                std::memcpy(&_shadowBufferData._lightPosition[shadowLightCount * 6]._v, &shadowProp._lightPosition[0]._v, ShadowMap::MAX_PASSES_PER_LIGHT * sizeof(vec4<F32>));
+                std::memcpy(&_shadowBufferData._lightVP[shadowLightCount * 6].mat,      &shadowProp._lightVP[0].mat,      ShadowMap::MAX_PASSES_PER_LIGHT * sizeof(mat4<F32>));
+
+                ++shadowLightCount;
                 if (isDirLight) {
-                    directionalLightCount++;
+                    ++directionalLightCount;
                 }
             }
         }
 
-
         _shadowBuffer->writeData(_shadowBufferData.data());
-
     }
 
     ShaderBufferBinding buffer = {};

@@ -39,6 +39,7 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     params._pass = RenderPassType::COUNT;
     params._passIndex = (lightIndex * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
     params._passVariant = to_U8(light.getLightType());
+    params._passName = "SingleShadowMap";
 
     passMgr->doCustomPass(params, bufferInOut);
 }
