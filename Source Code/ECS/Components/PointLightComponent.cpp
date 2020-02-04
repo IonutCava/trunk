@@ -41,6 +41,8 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
     bb.setMin(-10.0f);
     bb.setMax(10.0f);
     Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
+
+    _directionCache.set(VECTOR3_ZERO);
 }
 
 void PointLightComponent::OnData(const ECS::Data& data) {

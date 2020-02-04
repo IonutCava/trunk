@@ -7,6 +7,7 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 
@@ -37,7 +38,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     EditorComponentField directionField = {};
     directionField._name = "Direction";
     directionField._dataGetter = [this](void* dataOut) { static_cast<vec3<F32>*>(dataOut)->set(directionCache()); };
-    directionField._dataSetter = [this](const void* data) { /*NOP*/ ACKNOWLEDGE_UNUSED(data); }; 
+    directionField._dataSetter = [this](const void* data) { setDirection(*static_cast<const vec3<F32>*>(data)); };
     directionField._type = EditorComponentFieldType::PUSH_TYPE;
     directionField._readOnly = true;
     rangeAndConeField._basicType = GFX::PushConstantType::VEC3;
@@ -48,6 +49,8 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     bb.setMin(-g_defaultLightDistance * 0.5f);
     bb.setMax(-g_defaultLightDistance * 0.5f);
     Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
+
+    _positionCache.set(VECTOR3_ZERO);
 }
 
 DirectionalLightComponent::~DirectionalLightComponent()
@@ -59,4 +62,14 @@ void DirectionalLightComponent::OnData(const ECS::Data& data) {
         Light::updateCache();
     }
 }
+
+void DirectionalLightComponent::setDirection(const vec3<F32>& direction) {
+    TransformComponent* tComp = _parentSGN.get<TransformComponent>();
+    if (tComp) {
+        Quaternion<F32> rot = tComp->getOrientation();
+        rot.fromRotation(directionCache(), direction, tComp->getUpVector());
+        tComp->setRotation(rot);
+    }
+}
+
 };

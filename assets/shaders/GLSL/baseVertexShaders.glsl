@@ -19,7 +19,7 @@ void main(void)
 
 -- Vertex.BasicData
 
-#include "vertexDefault.vert"
+#include "vbInputData.vert"
 
 void main(void)
 {

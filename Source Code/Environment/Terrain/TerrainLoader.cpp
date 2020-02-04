@@ -531,7 +531,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateDepth;
     terrainRenderStateDepth.setCullMode(CullMode::CW);
-    // terrainDescDepth.setZBias(1.0f, 1.0f);
+    terrainRenderStateDepth.setZBias(1.0f, 1.0f);
     terrainRenderStateDepth.setZFunc(ComparisonFunction::LEQUAL);
     terrainRenderStateDepth.setColourWrites(true, true, false, false);
     terrainRenderStateDepth.setTessControlPoints(4);

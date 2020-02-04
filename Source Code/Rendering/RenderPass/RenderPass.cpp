@@ -223,7 +223,14 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             beginDebugScopeCmd._scopeName = "Shadow Render Stage";
             GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
+            GFX::SetClippingStateCommand clipStateCmd = {};
+            clipStateCmd._negativeOneToOneDepth = true;
+            GFX::EnqueueCommand(bufferInOut, clipStateCmd);
+
             Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), bufferInOut);
+
+            clipStateCmd._negativeOneToOneDepth = false;
+            GFX::EnqueueCommand(bufferInOut, clipStateCmd);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;
             GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);

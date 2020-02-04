@@ -62,7 +62,7 @@ class RTDrawMask {
 };
 
 struct RTBlendState {
-    UColour4 _blendColour = {};
+    UColour4 _blendColour = {0u, 0u, 0u, 0u};
     BlendingProperties _blendProperties;
 
     inline bool operator==(const RTBlendState& other) const;

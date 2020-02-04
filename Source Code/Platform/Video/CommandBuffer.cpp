@@ -40,6 +40,7 @@ DEFINE_POOL(DispatchComputeCommand);
 DEFINE_POOL(MemoryBarrierCommand);
 DEFINE_POOL(ReadBufferDataCommand);
 DEFINE_POOL(ClearBufferDataCommand);
+DEFINE_POOL(SetClippingStateCommand);
 DEFINE_POOL(ExternalCommand);
 
 void CommandBuffer::add(const CommandBuffer& other) {
@@ -135,6 +136,7 @@ void CommandBuffer::batch() {
             case GFX::CommandType::SET_SCISSOR:
             case GFX::CommandType::SET_BLEND:
             case GFX::CommandType::SET_VIEWPORT:
+            case GFX::CommandType::SET_CLIPING_STATE:
             case GFX::CommandType::SWITCH_WINDOW: {
                 hasWork = true;
                 break;

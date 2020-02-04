@@ -94,7 +94,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     // Draw FBO
     {
         // MSAA rendering is supported
-        TextureType texType = g_shadowSettings.msaaSamples > 0 ? TextureType::TEXTURE_2D_ARRAY_MS : TextureType::TEXTURE_2D_ARRAY;
+        const TextureType texType = g_shadowSettings.msaaSamples > 0 ? TextureType::TEXTURE_2D_ARRAY_MS : TextureType::TEXTURE_2D_ARRAY;
 
         TextureDescriptor depthMapDescriptor(texType, texDescriptor.baseFormat(), texDescriptor.dataType());
         depthMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
@@ -182,6 +182,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
     auto& rpm = _context.parent().renderPassManager();
 
+    constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
+
     const bool renderLastSplit = true;//_context.getFrameCount() % 2 == 0;
     I16 i = to_I16(numSplits) - (renderLastSplit ? 1 : 2);
     for (i; i >= 0; i--) {
@@ -192,7 +194,6 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
-        constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
         params._passIndex = (lightIndex * stride) + i;
         params._camera = light.shadowCameras()[i];
         //params._minLoD = i > 1 ? 1 : -1;
@@ -211,8 +212,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 }
 
 //Between 0 and 1, change these to check the results
-constexpr F32 minDistance = 0.00000001f;
-constexpr F32 maxDistance = 1.0000f;
+constexpr F32 minDistance = 0.0f;
+constexpr F32 maxDistance = 1.0f;
 CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateSplitDepths(const mat4<F32>& projMatrix, DirectionalLightComponent& light, const vec2<F32>& nearFarPlanes) {
     SplitDepths depths = {};
 
@@ -234,12 +235,12 @@ CascadedShadowMapsGenerator::SplitDepths CascadedShadowMapsGenerator::calculateS
         const F32 uniform = minZ + range * p;
         const F32 d = g_shadowSettings.splitLambda * (log - uniform) + uniform;
         depths[i] = (d - nearClip) / clipRange;
-        light.setShadowFloatValue(i, (nearClip + depths[i] * clipRange) * -1.0f);
+        light.setShadowFloatValue(i, d);
     }
 
     for (; i < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++i) {
         depths[i] = std::numeric_limits<F32>::max();
-        light.setShadowFloatValue(i, depths[i] * -1.0f);
+        light.setShadowFloatValue(i, -depths[i]);
     }
 
     return depths;
@@ -255,6 +256,11 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
     const mat4<F32> invViewProj = GetInverse(mat4<F32>::Multiply(viewMatrix, projectionMatrix));
 
     for (U8 cascadeIterator = 0; cascadeIterator < numSplits; ++cascadeIterator) {
+        Camera* lightCam = light.shadowCameras()[cascadeIterator];
+
+        const F32 prevSplitDistance = cascadeIterator == 0 ? 0.0f : splitDepths[cascadeIterator - 1];
+        const F32 splitDistance = splitDepths[cascadeIterator];
+
         vec3<F32> frustumCornersWS[8] =
         {
             {-1.0f,  1.0f, -1.0f},
@@ -269,11 +275,8 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
 
         for (U8 i = 0; i < 8; ++i) {
             const vec4<F32> inversePoint = invViewProj * vec4<F32>(frustumCornersWS[i], 1.0f);
-            frustumCornersWS[i].set(inversePoint.xyz() / inversePoint.w);
+            frustumCornersWS[i].set(inversePoint / inversePoint.w);
         }
-
-        const F32 prevSplitDistance = cascadeIterator == 0 ? minDistance : splitDepths[cascadeIterator - 1];
-        const F32 splitDistance = splitDepths[cascadeIterator];
 
         for (U8 i = 0; i < 4; ++i) {
             const vec3<F32> cornerRay = frustumCornersWS[i + 4] - frustumCornersWS[i];
@@ -288,68 +291,62 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         for (U8 i = 0; i < 8; ++i) {
             frustumCenter += frustumCornersWS[i];
         }
-
         frustumCenter /= 8.0f;
 
         F32 radius = 0.0f;
         for (U8 i = 0; i < 8; ++i) {
-            const F32 distance = (frustumCornersWS[i] - frustumCenter).length();
+            const F32 distance = (frustumCornersWS[i] - frustumCenter).lengthSquared();
             radius = std::max(radius, distance);
         }
-        radius = std::ceil(radius * 16.0f) / 16.0f;
+        radius = std::ceil(Sqrt(radius) * 16.0f) / 16.0f;
 
-        //ToDo: This might not be needed anymore
-        //radius *= 1.01f;
-
-        const vec3<F32> maxExtents(radius);
+        const vec3<F32> maxExtents(radius, radius, radius);
         const vec3<F32> minExtents = -maxExtents;
 
         //Position the viewmatrix looking down the center of the frustum with an arbitrary lighht direction
-        const vec3<F32> lightPosition = frustumCenter - light.directionCache() * -minExtents.z;
-
-        Camera* lightCam = light.shadowCameras()[cascadeIterator];
-        const vec3<F32> cascadeExtents = maxExtents - minExtents;
-
-        Rect<F32> orthoRect{};
-        orthoRect.left = minExtents.x;
-        orthoRect.right = maxExtents.x;
-        orthoRect.bottom = minExtents.y;
-        orthoRect.top = maxExtents.y;
-
-        const vec2<F32> clipPlanes(0.0001f, cascadeExtents.z);
+        const vec3<F32> lightDirection = frustumCenter - light.directionCache() * -minExtents.z;
+        const mat4<F32>& lightViewMatrix = lightCam->lookAt(lightDirection, frustumCenter, WORLD_Y_AXIS);
 
         // Lets store the ortho rect in case we need it;
-        mat4<F32> lightOrthoMatrix = lightCam->setProjection(orthoRect, clipPlanes);
-        const mat4<F32>& lightViewMatrix = lightCam->lookAt(lightPosition, frustumCenter, WORLD_Y_AXIS);
+        const vec2<F32> clip = {
+            0.0f,
+            maxExtents.z - minExtents.z
+        };
 
-        // Shimmer fix
+        mat4<F32> lightOrthoMatrix = {
+            Rect<F32>{
+                minExtents.x,
+                maxExtents.x,
+                minExtents.y,
+                maxExtents.y
+            },
+            clip
+        };
+
+        // The rounding matrix that ensures that shadow edges do not shimmer
+        // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
         {
             const mat4<F32> shadowMatrix = mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix);
-            // The rounding matrix that ensures that shadow edges do not shimmer
-            // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
-            const F32 halfShadowMapSize = g_shadowSettings.shadowMapResolution * 0.5f;
-            vec4<F32> shadowOrigin(0.0f, 0.0f, 0.0f, 1.0f);
+            vec4<F32> shadowOrigin = {0.0f, 0.0f, 0.0f, 1.0f };
             shadowOrigin = shadowMatrix * shadowOrigin;
-            shadowOrigin = shadowOrigin * halfShadowMapSize;
+            shadowOrigin = shadowOrigin * g_shadowSettings.shadowMapResolution * 0.5f;
 
-            vec4<F32> roundedOrigin = shadowOrigin;
+            vec4<F32> roundedOrigin = shadowOrigin; 
             roundedOrigin.round();
 
-            vec4<F32> roundOffset = roundedOrigin - shadowOrigin;
-            roundOffset = roundOffset * 2.0f / g_shadowSettings.shadowMapResolution;
+            vec3<F32> roundOffset = (roundedOrigin - shadowOrigin).xyz() * 2.0f / g_shadowSettings.shadowMapResolution;
             roundOffset.z = 0.0f;
-            roundOffset.w = 0.0f;
 
-            lightOrthoMatrix.translate(roundOffset.xyz());
+            lightOrthoMatrix.translate(roundOffset);
 
             // Use our adjusted matrix for actual rendering
-            lightCam->setProjection(lightOrthoMatrix, clipPlanes, true);
+            lightCam->setProjection(lightOrthoMatrix, clip, true);
         }
 
         mat4<F32>& lightVP = light.getShadowVPMatrix(cascadeIterator);
         mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix, lightVP);
 
-        light.setShadowLightPos(cascadeIterator, lightPosition);
+        light.setShadowLightPos(cascadeIterator, lightDirection);
         light.setShadowVPMatrix(cascadeIterator, mat4<F32>::Multiply(lightVP, MAT4_BIAS));
     }
 }

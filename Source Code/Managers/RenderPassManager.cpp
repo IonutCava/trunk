@@ -560,12 +560,12 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
                            params._target._usage != RenderTargetUsage::COUNT &&
                            target.getAttachment(RTAttachmentType::Depth, 0).used();
 
-    // We need to add a barrier here for various buffer updates: grass/tree culling, draw command buffer updates, etc
-    GFX::MemoryBarrierCommand memCmd;
-    memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
-    GFX::EnqueueCommand(bufferInOut, memCmd);
-
     if (doPrePass) {
+        // We need to add a barrier here for various buffer updates: grass/tree culling, draw command buffer updates, etc
+        GFX::MemoryBarrierCommand memCmd;
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
+
         GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
         beginDebugScopeCmd._scopeID = 0;
         beginDebugScopeCmd._scopeName = " - PrePass";
@@ -891,6 +891,8 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
 
     const bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
     bool hasHiZ = false;
+
+    GFX::MemoryBarrierCommand memCmd = {};
     if (prePassExecuted) {
         GFX::ResolveRenderTargetCommand resolveCmd = { };
         resolveCmd._source = params._target;
@@ -898,17 +900,18 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
         GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
         hasHiZ = occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
+
+        memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET);
+    } else {
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
     }
+    GFX::EnqueueCommand(bufferInOut, memCmd);
 
     //ToDo: Might be worth having pre-pass operations per render stage, but currently, only the main pass needs SSAO, bloom and so forth
     if (params._stage == RenderStage::DISPLAY) {
         PostFX& postFX = _context.getRenderer().postFX();
         postFX.prepare(*params._camera, bufferInOut);
     }
-
-    GFX::MemoryBarrierCommand memCmd;
-    memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET);
-    GFX::EnqueueCommand(bufferInOut, memCmd);
 
     mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, hasHiZ, bufferInOut);
 

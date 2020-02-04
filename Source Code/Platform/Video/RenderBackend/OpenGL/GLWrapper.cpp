@@ -1262,6 +1262,10 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
             }
         }break;
+        case GFX::CommandType::SET_CLIPING_STATE: {
+            const GFX::SetClippingStateCommand& crtCmd = commandBuffer.get<GFX::SetClippingStateCommand>(entry);
+            getStateTracker().setClipingPlaneState(crtCmd._lowerLeftOrigin, crtCmd._negativeOneToOneDepth);
+        } break;
         case GFX::CommandType::MEMORY_BARRIER: {
             const GFX::MemoryBarrierCommand& crtCmd = commandBuffer.get<GFX::MemoryBarrierCommand>(entry);
             MemoryBarrierMask glMask = MemoryBarrierMask::GL_NONE_BIT;
@@ -1270,7 +1274,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 if (barrierMask == to_base(MemoryBarrierType::ALL)) {
                     glMemoryBarrier(MemoryBarrierMask::GL_ALL_BARRIER_BITS);
                 } else {
-                    for (U8 i = 0; i < to_U8(MemoryBarrierType::COUNT); ++i) {
+                    for (U8 i = 0; i < to_U8(MemoryBarrierType::COUNT) + 1; ++i) {
                         if (BitCompare(barrierMask, to_U8(1 << i))) {
                             switch (static_cast<MemoryBarrierType>(1 << i)) {
                                 case MemoryBarrierType::BUFFER:

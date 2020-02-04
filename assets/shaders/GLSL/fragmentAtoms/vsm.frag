@@ -4,7 +4,7 @@
 float getShadowDepth() {
 #if 0
     const float depth = 0.5f * gl_FragCoord.z + 0.5f;
-#elif 0
+#elif 1
     const float depth = gl_FragCoord.z;
 #else
     const vec4 pos = dvd_ProjectionMatrix * VAR._vertexWV;

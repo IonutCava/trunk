@@ -62,9 +62,14 @@ void Light::updateCache() {
 
     TransformComponent* lightTransform = getSGN().get<TransformComponent>();
     assert(lightTransform != nullptr);
-    
-    _positionCache = lightTransform->getPosition();
-    _directionCache = Normalized(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
+
+    if (_type != LightType::DIRECTIONAL) {
+        _positionCache = lightTransform->getPosition();
+    }
+
+    if (_type != LightType::POINT) {
+        _directionCache = Normalized(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
+    }
 }
 
 void Light::setDiffuseColour(const UColour3& newDiffuseColour) {

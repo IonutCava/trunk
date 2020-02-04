@@ -18,10 +18,10 @@ struct Light {
     /// rgb = colour
     /// w = cosOuterConeAngle
     vec4   _colour;
-    /// xyz = light positon 
+    /// xyz = light positon (spot and omni. 0,0,0 for directional)
     /// w = range
     vec4   _positionWV; 
-    /// xyz = direction
+    /// xyz = direction (spot and directional, 0,0,0 for omni)
     /// w = spot angle   
     vec4   _directionWV; 
     /// x = light type: 0 - directional, 1  - point, 2 - spot, 3 - none

@@ -58,10 +58,10 @@ class LightPool : public SceneComponent,
           /// rgb = diffuse
           /// w = cosOuterConeAngle;
           FColour4 _diffuse = { DefaultColours::WHITE.rgb(), 0.0f };
-          /// light position (or direction for Directional lights)
+          /// light position ((0,0,0) for directional lights)
           /// w = range
           vec4<F32> _position = { 0.0f, 0.0f, 0.0f, 0.0f };
-          /// xyz = spot direction
+          /// xyz = light direction (spot and directional lights only. (0,0,0) for point)
           /// w = spot angle
           vec4<F32> _direction = { 0.0f, 0.0f, 0.0f, 45.0f };
           /// x = light type: 0 - directional, 1 - point, 2 - spot, 3 - none

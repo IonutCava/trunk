@@ -303,6 +303,8 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     for (Light* light : sortedLights) {
         const LightType type = static_cast<LightType>(light->getLightType());
         const bool isDirectional = type == LightType::DIRECTIONAL;
+        const bool isOmni = type == LightType::POINT;
+
         const I32 typeIndex = to_I32(type);
 
         if (_lightTypeState[typeIndex] && light->enabled()) {
@@ -313,14 +315,18 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
             LightProperties& temp = crtData._lightProperties[totalLightCount - 1];
             light->getDiffuseColour(tempColour);
             temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
-            // Non directional lights are positioned at specific point in space
-            // So we need W = 1 for a valid positional transform
-            // Directional lights use position for the light direction. 
-            // So we need W = 0 for an infinite distance.
-            temp._position.set((viewMatrix * vec4<F32>(light->positionCache(), (isDirectional ? 0.0f : 1.0f))).xyz(), light->getRange());
-            // spot direction is not considered a point in space, so W = 0
-            temp._direction.set((viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), light->getConeAngle());
+            // Omni and spot lights have a position. Directional lights have this set to (0,0,0)
+            if (isDirectional) {
+                temp._position.set(VECTOR3_ZERO, light->getRange());
+            } else {
+                temp._position.set((viewMatrix * vec4<F32>(light->positionCache(), 1.0f)).xyz(), light->getRange());
+            }
 
+            if (isOmni) {
+                temp._direction.set(VECTOR3_ZERO, light->getConeAngle());
+            } else {
+                temp._direction.set((viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), light->getConeAngle());
+            }
             temp._options.xy(typeIndex, light->shadowIndex());
 
             ++lightCount[typeIndex];

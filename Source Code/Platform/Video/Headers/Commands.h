@@ -107,6 +107,7 @@ enum class CommandType : U8 {
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
     SWITCH_WINDOW,
+    SET_CLIPING_STATE,
     EXTERNAL,
     COUNT
 };
@@ -359,6 +360,13 @@ BEGIN_COMMAND(ClearBufferDataCommand, CommandType::CLEAR_BUFFER_DATA);
     U32           _offsetElementCount = 0;
     U32           _elementCount = 0;
 END_COMMAND(ClearBufferDataCommand);
+
+BEGIN_COMMAND(SetClippingStateCommand, CommandType::SET_CLIPING_STATE)
+    bool _lowerLeftOrigin = true;
+    bool _negativeOneToOneDepth = true;
+
+    stringImpl toString(U16 indent) const final;
+END_COMMAND(SetClippingStateCommand);
 
 BEGIN_COMMAND(ExternalCommand, CommandType::EXTERNAL);
     std::function<void()> _cbk;

@@ -82,55 +82,42 @@ namespace {
     // a[0] * B.row[0] + a[1] * B.row[1] + a[2] * B.row[2] + a[3] * B.row[3]
     static inline __m128 lincomb_SSE(const __m128 &a, const mat4<F32> &B)
     {
-        __m128 result;
-        result = _mm_mul_ps(_mm_shuffle_ps(a, a, 0x00), B._reg[0]._reg);
+        __m128 result = _mm_mul_ps(_mm_shuffle_ps(a, a, 0x00), B._reg[0]._reg);
         result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0x55), B._reg[1]._reg));
         result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xaa), B._reg[2]._reg));
         result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xff), B._reg[3]._reg));
+
         return result;
     }
 
     // this is the right approach for SSE ... SSE4.2
-    void M4x4_SSE(const mat4<F32>& A, const mat4<F32>& B, mat4<F32>& C)
+    static inline void M4x4_SSE(const mat4<F32>& A, const mat4<F32>& B, mat4<F32>& C)
     {
         // out_ij = sum_k a_ik b_kj
         // => out_0j = a_00 * b_0j + a_01 * b_1j + a_02 * b_2j + a_03 * b_3j
-        __m128 out0x = lincomb_SSE(A._reg[0]._reg, B);
-        __m128 out1x = lincomb_SSE(A._reg[1]._reg, B);
-        __m128 out2x = lincomb_SSE(A._reg[2]._reg, B);
-        __m128 out3x = lincomb_SSE(A._reg[3]._reg, B);
-
-        C._reg[0]._reg = out0x;
-        C._reg[1]._reg = out1x;
-        C._reg[2]._reg = out2x;
-        C._reg[3]._reg = out3x;
+        for (U8 i = 0; i < 4; ++i) {
+            C._reg[i]._reg = lincomb_SSE(A._reg[i]._reg, B);
+        }
     }
 #else
     // another linear combination, using AVX instructions on XMM regs
     static inline __m128 lincomb_AVX_4mem(const F32 *a, const mat4<F32> &B) noexcept
     {
-        __m128 result;
-        result = _mm_mul_ps(_mm_broadcast_ss(&a[0]), B._reg[0]._reg);
-        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[1]), B._reg[1]._reg));
-        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[2]), B._reg[2]._reg));
-        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[3]), B._reg[3]._reg));
+        __m128 result = _mm_mul_ps(_mm_broadcast_ss(&a[0]), B._reg[0]._reg);
+        for (U8 i = 1; i < 4; ++i) {
+            result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[i]), B._reg[i]._reg));
+        }
         return result;
     }
 
     // using AVX instructions, 4-wide
     // this can be better if A is in memory.
-    void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C)
+    static inline void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C)
     {
         _mm256_zeroupper();
-        const __m128 out0x = lincomb_AVX_4mem(A.m[0], B);
-        const __m128 out1x = lincomb_AVX_4mem(A.m[1], B);
-        const __m128 out2x = lincomb_AVX_4mem(A.m[2], B);
-        const __m128 out3x = lincomb_AVX_4mem(A.m[3], B);
-
-        C._reg[0] = out0x;
-        C._reg[1] = out1x;
-        C._reg[2] = out2x;
-        C._reg[3] = out3x;
+        for (U8 i = 0; i < 4; ++i) {
+            C._reg[i] = lincomb_AVX_4mem(A.m[i], B);
+        }
     }
 
 #endif

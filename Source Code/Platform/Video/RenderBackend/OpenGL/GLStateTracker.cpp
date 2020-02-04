@@ -440,6 +440,19 @@ void GLStateTracker::setDepthRange(F32 nearVal, F32 farVal) {
     }
 }
 
+void GLStateTracker::setClipingPlaneState(const bool lowerLeftOrigin, const bool negativeOneToOneDepth) {
+    if (lowerLeftOrigin != _lowerLeftOrigin || negativeOneToOneDepth != _negativeOneToOneDepth) {
+
+        glClipControl(
+            (lowerLeftOrigin ? GL_LOWER_LEFT : GL_UPPER_LEFT),
+            (negativeOneToOneDepth ? GL_NEGATIVE_ONE_TO_ONE : GL_ZERO_TO_ONE)
+        );
+
+        _lowerLeftOrigin = lowerLeftOrigin;
+        _negativeOneToOneDepth = negativeOneToOneDepth;
+    }
+}
+
 void GLStateTracker::setBlendColour(const UColour4& blendColour, bool force) {
     if (_blendColour != blendColour || force) {
         const FColour4 floatColour = Util::ToFloatColour(blendColour);

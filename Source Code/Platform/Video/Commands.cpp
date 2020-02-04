@@ -174,6 +174,9 @@ stringImpl MemoryBarrierCommand::toString(U16 indent) const {
     return Base::toString(indent) + Util::StringFormat(" [ Mask: %d ]", _barrierMask);
 }
 
+stringImpl SetClippingStateCommand::toString(U16 indent) const {
+    return Base::toString(indent) + Util::StringFormat(" [ Origin: %s ] [ Depth: %s ]", _lowerLeftOrigin ? "LOWER_LEFT" : "UPPER_LEFT", _negativeOneToOneDepth ? "-1 to 1 " : "0 to 1");
+}
 
 }; //namespace GFX
 }; //namespace Divide

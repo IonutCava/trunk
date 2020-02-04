@@ -73,7 +73,7 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
     shadowDescriptor.setCullMode(CullMode::CCW);
     shadowDescriptor.setZFunc(ComparisonFunction::LESS);
     /// set a polygon offset
-    shadowDescriptor.setZBias(1.0f, 1.0f);
+    //shadowDescriptor.setZBias(1.0f, 1.0f);
 
     RenderStateBlock shadowDescriptorNoColour(shadowDescriptor);
     shadowDescriptorNoColour.setColourWrites(false, false, false, false);
@@ -403,6 +403,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     OPTICK_EVENT();
 
     const bool isDepthPass = renderStagePass.isDepthPass();
+    const bool isShadowPass = renderStagePass._stage == RenderStage::SHADOW;
 
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // If shader's invalid, try to request a recompute as it might fix it
@@ -454,7 +455,11 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     const Str64 vertSource = isDepthPass ? _baseShaderSources._depthShaderVertSource : _baseShaderSources._colourShaderVertSource;
     const Str64 fragSource = isDepthPass ? _baseShaderSources._depthShaderFragSource : _baseShaderSources._colourShaderFragSource;
 
-    Str32 vertVariant = isDepthPass ? _baseShaderSources._depthShaderVertVariant : _baseShaderSources._colourShaderVertVariant;
+    Str32 vertVariant = isDepthPass 
+                            ? isShadowPass 
+                                ? _baseShaderSources._shadowShaderVertVariant
+                                : _baseShaderSources._depthShaderVertVariant
+                            : _baseShaderSources._colourShaderVertVariant;
     Str32 fragVariant = isDepthPass ? _baseShaderSources._depthShaderFragVariant : _baseShaderSources._colourShaderFragVariant;
     Str128 shaderName = vertSource + "_" + fragSource;
 

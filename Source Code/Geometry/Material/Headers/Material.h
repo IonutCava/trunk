@@ -145,6 +145,7 @@ class Material : public CachedResource {
     struct ShaderData {
         Str64 _depthShaderVertSource = "baseVertexShaders";
         Str32 _depthShaderVertVariant = "BasicLightData";
+        Str32 _shadowShaderVertVariant = "BasicData";
 
         Str64 _colourShaderVertSource = "baseVertexShaders";
         Str32 _colourShaderVertVariant = "BasicLightData";

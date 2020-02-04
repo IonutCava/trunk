@@ -65,6 +65,8 @@ namespace Divide {
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID);
         /// Set a new depth range. Default is 0 - 1 with 0 mapping to the near plane and 1 to the far plane
         void setDepthRange(F32 nearVal, F32 farVal);
+        // Just a wrapper around glClipControl
+        void setClipingPlaneState(const bool lowerLeftOrigin, const bool negativeOneToOneDepth);
         void setBlending(const BlendingProperties& blendingProperties);
         inline void resetBlending() {
             setBlending(_blendPropertiesGlobal);
@@ -174,6 +176,8 @@ namespace Divide {
         GLuint _activeShaderPipeline = 0;//GLUtil::_invalidObjectID;
         GLfloat _depthNearVal = -1.f;
         GLfloat _depthFarVal = -1.f;
+        bool _lowerLeftOrigin = true;
+        bool _negativeOneToOneDepth = true;
         BlendingProperties _blendPropertiesGlobal = { BlendProperty::ONE,
                                                       BlendProperty::ONE,
                                                       BlendOperation::ADD };

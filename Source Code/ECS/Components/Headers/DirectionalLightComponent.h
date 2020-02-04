@@ -53,6 +53,8 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     inline F32 csmNearClipOffset() const { return _csmNearClipOffset; }
     inline void csmNearClipOffset(F32 offset) { _csmNearClipOffset = offset; }
 
+    void setDirection(const vec3<F32>& direction);
+
    protected:
      void OnData(const ECS::Data& data) final;
 

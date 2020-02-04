@@ -16,9 +16,8 @@ int getCSMSlice(in uint idx) {
     const float fragDepth = (VAR._vertexWV.z / VAR._vertexWV.w);
     // Figure out which cascade to sample from
 
-    float dist = 0.0f;
     for (; Split < MAX_CSM_SPLITS_PER_LIGHT; Split++) {
-        dist = dvd_shadowLightPosition[Split + (idx * 6)].w;
+        const float dist = -dvd_shadowLightPosition[Split + (idx * 6)].w;
         if (fragDepth > dist) {
             break;
         }

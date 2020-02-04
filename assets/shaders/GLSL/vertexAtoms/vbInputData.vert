@@ -1,17 +1,7 @@
 #ifndef _VB_INPUT_DATA_VERT_
 #define _VB_INPUT_DATA_VERT_
 
-layout(location = ATTRIB_POSITION) in vec3 inVertexData;
-layout(location = ATTRIB_TEXCOORD) in vec2 inTexCoordData;
-layout(location = ATTRIB_NORMAL) in float inNormalData;
-layout(location = ATTRIB_TANGENT) in float inTangentData;
-layout(location = ATTRIB_COLOR) in vec4 inColourData;
-layout(location = ATTRIB_BONE_WEIGHT) in vec4 inBoneWeightData;
-layout(location = ATTRIB_BONE_INDICE) in uvec4 inBoneIndiceData;
-layout(location = ATTRIB_WIDTH) in uint inLineWidthData;
-layout(location = ATTRIB_GENERIC) in vec2 inGenericData;
-
-#include "nodeBufferedInput.cmn"
+#include "vertexDefault.vert"
 
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
@@ -27,9 +17,12 @@ vec3   dvd_Tangent;
 vec4   dvd_Colour;
 #endif
 
+vec3 UNPACK_FLOAT(in float value) {
+    return (fract(vec3(1.0, 256.0, 65536.0) * value) * 2.0) - 1.0;
+}
+
 void computeDataMinimal() {
     dvd_Vertex = vec4(inVertexData, 1.0);
-    VAR._texCoord = inTexCoordData;
     dvd_Normal = UNPACK_FLOAT(inNormalData);
 
 #if !defined(DEPTH_PASS)
@@ -39,7 +32,7 @@ void computeDataMinimal() {
 #if defined(COMPUTE_TBN)
     dvd_Tangent = UNPACK_FLOAT(inTangentData);
 #endif
-
+    VAR._texCoord = inTexCoordData;
     VAR.dvd_baseInstance = gl_BaseInstanceARB;
     VAR.dvd_instanceID = gl_InstanceID;
     VAR.dvd_drawID = gl_DrawIDARB;

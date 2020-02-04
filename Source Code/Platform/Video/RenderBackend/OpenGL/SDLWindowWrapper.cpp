@@ -309,8 +309,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                      GLUtil::getGLValue(GL_MAX_SUBROUTINES),
                      GLUtil::getGLValue(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
 
-    // no -1 to 1 depth nonsense
-    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
     // Seamless cubemaps are a nice feature to have enabled (core since 3.2)
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     //glEnable(GL_FRAMEBUFFER_SRGB);
