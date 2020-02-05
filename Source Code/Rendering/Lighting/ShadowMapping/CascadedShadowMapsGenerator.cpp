@@ -88,7 +88,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     sampler.magFilter(TextureFilter::LINEAR);
     sampler.anisotropyLevel(0);
 
-    RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(ShadowType::LAYERED));
+    const RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(ShadowType::LAYERED));
     const RenderTarget& rt = _context.renderTargetPool().renderTarget(depthMapID);
     const TextureDescriptor& texDescriptor = rt.getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor();
     // Draw FBO

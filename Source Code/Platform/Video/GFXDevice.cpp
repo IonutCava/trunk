@@ -1313,7 +1313,7 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 #pragma endregion
 
 #pragma region Command buffers, occlusion culling, etc
-void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
+void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch) {
     OPTICK_EVENT();
 
     if (Config::ENABLE_GPU_VALIDATION) {
@@ -1325,7 +1325,9 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
         }
     }
 
-    commandBuffer.batch();
+    if (batch) {
+        commandBuffer.batch();
+    }
 
     if (!commandBuffer.validate()) {
         Console::errorfn(Locale::get(_ID("ERROR_GFX_INVALID_COMMAND_BUFFER")), commandBuffer.toString().c_str());

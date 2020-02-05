@@ -69,37 +69,44 @@ void CommandBuffer::batch() {
 
     clean();
 
-    eastl::array<CommandBase*, to_base(GFX::CommandType::COUNT)> prevCommands;
+    CommandBase* prevCommand = nullptr;
+    CommandType prevType = CommandType::COUNT;
 
     bool tryMerge = true;
 
-    bool partial = false;
     while (tryMerge) {
         OPTICK_EVENT("TRY_MERGE_LOOP");
-        prevCommands.fill(nullptr);
+
         tryMerge = false;
+        prevCommand = nullptr;
+        prevType = CommandType::COUNT;
 
-        auto endIt = eastl::cend(_commandOrder);
-        for (auto it = eastl::begin(_commandOrder); it != endIt;) {
-            const U8 typeIndex = it->_typeIndex;
+        for (CommandEntry& entry : _commandOrder)  {
+            if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID) {
+                continue;
+            }
 
-            CommandBase* crtCommand = getPtr<CommandBase>(*it);
-            CommandBase*& prevCommand = prevCommands[typeIndex];
+            const U8 typeIndex = entry._typeIndex;
+            const GFX::CommandType cmdType = static_cast<GFX::CommandType>(typeIndex);
 
-            const GFX::CommandType type = static_cast<GFX::CommandType>(typeIndex);
-            if (prevCommand != nullptr && tryMergeCommands(type, prevCommand, crtCommand, partial)) {
+            CommandBase* crtCommand = getPtr<CommandBase>(entry);
+
+            if (prevCommand != nullptr && 
+                prevType == cmdType &&
+                tryMergeCommands(cmdType, prevCommand, crtCommand))
+            {
                 --_commandCount[typeIndex];
-                it = _commandOrder.erase(it);
-                endIt = eastl::cend(_commandOrder);
+                entry._data = PolyContainerEntry::INVALID_ENTRY_ID;
                 tryMerge = true;
             } else {
-                prevCommands.fill(nullptr);
+                prevType = cmdType;
                 prevCommand = crtCommand;
-                ++it;
             }
         }
     }
-    
+
+    eastl::erase_if(_commandOrder, ([](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; }));
+
     // If we don't have any actual work to do, clear everything
     bool hasWork = false;
     for (const CommandEntry& cmd : _commandOrder) {
@@ -168,18 +175,22 @@ void CommandBuffer::clean() {
     }
 
     const Pipeline* prevPipeline = nullptr;
+    const Rect<I32>* prevScissorRect = nullptr;
+    const Rect<I32>* prevViewportRect = nullptr;
     const DescriptorSet* prevDescriptorSet = nullptr;
+    const BlendingProperties* prevBlendProperties = nullptr;
 
     bool erase = false;
-    for (auto it = eastl::cbegin(_commandOrder); it != eastl::cend(_commandOrder); ) {
+    for (CommandEntry& cmd :_commandOrder) {
         erase = false;
-        const U8 typeIndex = it->_typeIndex;
+        const U8 typeIndex = cmd._typeIndex;
+
         switch (static_cast<GFX::CommandType>(typeIndex)) {
             case CommandType::DRAW_COMMANDS :
             {
                 OPTICK_EVENT("Clean Draw Commands");
 
-                vectorEASTLFast<GenericDrawCommand>& cmds = getPtr<DrawCommand>(*it)->_drawCommands;
+                vectorEASTLFast<GenericDrawCommand>& cmds = getPtr<DrawCommand>(cmd)->_drawCommands;
                 cmds.erase(eastl::remove_if(eastl::begin(cmds),
                                             eastl::end(cmds),
                                             [](const GenericDrawCommand& cmd) noexcept -> bool {
@@ -192,7 +203,7 @@ void CommandBuffer::clean() {
             case CommandType::BIND_PIPELINE : {
                 OPTICK_EVENT("Clean Pipelines");
 
-                const Pipeline* pipeline = getPtr<BindPipelineCommand>(*it)->_pipeline;
+                const Pipeline* pipeline = getPtr<BindPipelineCommand>(cmd)->_pipeline;
                 // If the current pipeline is identical to the previous one, remove it
                 erase = (prevPipeline != nullptr && *prevPipeline == *pipeline);
 
@@ -203,13 +214,13 @@ void CommandBuffer::clean() {
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
                 OPTICK_EVENT("Clean Push Constants");
 
-                const PushConstants& constants = getPtr<SendPushConstantsCommand>(*it)->_constants;
+                const PushConstants& constants = getPtr<SendPushConstantsCommand>(cmd)->_constants;
                 erase = constants.empty();
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
                 OPTICK_EVENT("Clean Descriptor Sets");
 
-                const DescriptorSet& set = getPtr<BindDescriptorSetsCommand>(*it)->_set;
+                const DescriptorSet& set = getPtr<BindDescriptorSetsCommand>(cmd)->_set;
                 erase = (set.empty() || (prevDescriptorSet != nullptr && *prevDescriptorSet == set));
 
                 if (!erase) {
@@ -219,7 +230,7 @@ void CommandBuffer::clean() {
             case GFX::CommandType::DRAW_TEXT: {
                 OPTICK_EVENT("Clean Draw Text");
 
-                const TextElementBatch& textBatch = getPtr<DrawTextCommand>(*it)->_batch;
+                const TextElementBatch& textBatch = getPtr<DrawTextCommand>(cmd)->_batch;
                 bool hasText = !textBatch.empty();
                 if (hasText) {
                     hasText = false;
@@ -230,29 +241,63 @@ void CommandBuffer::clean() {
 
                 erase = !hasText;
             }break;
+            case GFX::CommandType::SET_SCISSOR: {
+                OPTICK_EVENT("Clean Scissor");
+
+                const Rect<I32>* scissorRect = &getPtr<SetScissorCommand>(cmd)->_rect;
+                erase = (prevScissorRect != nullptr && *prevScissorRect == *scissorRect);
+
+                if (!erase) {
+                    prevScissorRect = scissorRect;
+                }
+            } break;
+            case GFX::CommandType::SET_VIEWPORT: {
+                OPTICK_EVENT("Clean Viewport");
+
+                const Rect<I32>* viewportRect = &getPtr<SetViewportCommand>(cmd)->_viewport;
+                erase = (prevViewportRect != nullptr && *prevViewportRect == *viewportRect);
+
+                if (!erase) {
+                    prevViewportRect = viewportRect;
+                }
+            } break;
+            case GFX::CommandType::SET_BLEND: {
+                OPTICK_EVENT("Clean Viewport");
+
+                const BlendingProperties* blendProperties = &getPtr<SetBlendCommand>(cmd)->_blendProperties;
+                erase = (prevBlendProperties != nullptr && *prevBlendProperties == *blendProperties);
+
+                if (!erase) {
+                    prevBlendProperties = blendProperties;
+                }
+            } break;
             default: break;
         };
 
 
-        if (!erase) {
-            ++it;
-        } else {
+        if (erase) {
             --_commandCount[typeIndex];
-            it = _commandOrder.erase(it);
+            cmd._data = PolyContainerEntry::INVALID_ENTRY_ID;
         } 
     }
 
-    // Remove redundant pipeline changes
-    auto entry = eastl::begin(_commandOrder); ++entry;
-    for (; entry != eastl::cend(_commandOrder);) {
-        const GFX::CommandType type = static_cast<GFX::CommandType>(entry->_typeIndex);
+    {
+        OPTICK_EVENT("Remove redundant Pipelines");
+        // Remove redundant pipeline changes
+        auto entry = eastl::next(eastl::begin(_commandOrder));
+        for (; entry != eastl::cend(_commandOrder); ++entry) {
+            const U8 typeIndex = entry->_typeIndex;
+            const GFX::CommandType type = static_cast<GFX::CommandType>(typeIndex);
 
-        if (type == CommandType::BIND_PIPELINE && eastl::prev(entry)->_typeIndex == to_base(type)) {
-            --_commandCount[entry->_typeIndex];
-            entry = _commandOrder.erase(entry);
-        } else {
-            ++entry;
+            if (type == CommandType::BIND_PIPELINE && eastl::prev(entry)->_typeIndex == typeIndex) {
+                --_commandCount[typeIndex];
+                entry->_data = -1;
+            }
         }
+    }
+    {
+        OPTICK_EVENT("Remove invalid draw commands");
+        eastl::erase_if(_commandOrder, [](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; });
     }
 }
 
@@ -260,13 +305,10 @@ void CommandBuffer::clean() {
 bool CommandBuffer::validate() const {
     OPTICK_EVENT();
 
-    bool valid = true;
-
     if (Config::ENABLE_GPU_VALIDATION) {
         bool pushedPass = false, pushedSubPass = false, pushedPixelBuffer = false;
-        bool hasPipeline = false, needsPipeline = false;
-        bool hasDescriptorSets = false, needsDescriptorSets = false;
-        U32 pushedDebugScope = 0;
+        bool hasPipeline = false, hasDescriptorSets = false;
+        U32 pushedDebugScope = 0u;
 
         for (const CommandEntry& cmd : _commandOrder) {
             switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
@@ -322,13 +364,17 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::DRAW_TEXT:
                 case GFX::CommandType::DRAW_IMGUI:
                 case GFX::CommandType::DRAW_COMMANDS: {
-                    needsPipeline = true;
+                    if (!hasPipeline) {
+                        return false;
+                    }
                 }break;
                 case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
                     hasDescriptorSets = true;
                 }break;
                 case GFX::CommandType::BLIT_RT: {
-                    needsDescriptorSets = true;
+                    if (!hasDescriptorSets) {
+                        return false;
+                    }
                 }break;
                 default: {
                     // no requirements yet
@@ -336,92 +382,10 @@ bool CommandBuffer::validate() const {
             };
         }
 
-        valid = !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0;
-
-        if (needsDescriptorSets) {
-            valid = hasDescriptorSets && valid;
-        }
-
-        if (needsPipeline && !hasPipeline) {
-            valid = false;
-        }
+        return !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0;
     }
 
-    return valid;
-}
-
-bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) {
-    OPTICK_EVENT();
-
-    // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
-    if ((previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) && previousIDC._cmd.primCount != currentIDC._cmd.primCount) {
-        return false;
-    }
-
-    // Batchable commands must share the same buffer and other various state
-    if (compatible(previousIDC, currentIDC)) {
-        if (byBaseInstance) { // Base instance compatibility
-            if (previousIDC._cmd.baseInstance + previousIDC._drawCount != currentIDC._cmd.baseInstance) {
-                return false;
-            }
-        } else {// Command offset compatibility
-            if (previousIDC._commandOffset + to_I32(previousIDC._drawCount) != currentIDC._commandOffset) {
-                return false;
-            }
-        }
-
-        // If the rendering commands are batchable, increase the draw count for the previous one
-        previousIDC._drawCount += currentIDC._drawCount;
-        // And set the current command's draw count to zero so it gets removed from the list later on
-        currentIDC._drawCount = 0;
-        return true;
-    }
-
-    return false;
-}
-
-bool CommandBuffer::mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const {
-    OPTICK_EVENT();
-    OPTICK_TAG("By Instance", byBaseInstance);
-
-    const size_t startSize = commands.size();
-    if (byBaseInstance) {
-        OPTICK_EVENT("Sort by instance");
-        eastl::sort(eastl::begin(commands),
-                    eastl::end(commands),
-                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
-                        return a._cmd.baseInstance < b._cmd.baseInstance;
-                    });
-    } else {
-        OPTICK_EVENT("Sort by offset");
-        eastl::sort(eastl::begin(commands),
-                    eastl::end(commands),
-                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
-                        return a._commandOffset < b._commandOffset;
-                    });
-    }
-
-    vec_size previousCommandIndex = 0;
-    vec_size currentCommandIndex = 1;
-    const vec_size commandCount = commands.size();
-    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-        GenericDrawCommand& previousCommand = commands[previousCommandIndex];
-        GenericDrawCommand& currentCommand = commands[currentCommandIndex];
-        if (!BatchDrawCommands(byBaseInstance, previousCommand, currentCommand)) {
-            previousCommandIndex = currentCommandIndex;
-        }
-    }
-
-    {
-        OPTICK_EVENT("Erase empty commands");
-        commands.erase(eastl::remove_if(eastl::begin(commands),
-                                    eastl::end(commands),
-                                    [](const GenericDrawCommand& cmd) noexcept -> bool {
-                                        return cmd._drawCount == 0;
-                                    }),
-                    eastl::end(commands));
-    }
-    return startSize - commands.size() > 0;
+    return true;
 }
 
 void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out) const {
@@ -465,6 +429,101 @@ stringImpl CommandBuffer::toString() const {
     assert(crtIndent == 0);
 
     return out;
+}
+
+
+
+bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) {
+    OPTICK_EVENT();
+
+    // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
+    if ((previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) && previousIDC._cmd.primCount != currentIDC._cmd.primCount) {
+        return false;
+    }
+
+    // Batchable commands must share the same buffer and other various state
+    if (compatible(previousIDC, currentIDC)) {
+        if (byBaseInstance) { // Base instance compatibility
+            if (previousIDC._cmd.baseInstance + previousIDC._drawCount != currentIDC._cmd.baseInstance) {
+                return false;
+            }
+        } else {// Command offset compatibility
+            if (previousIDC._commandOffset + to_I32(previousIDC._drawCount) != currentIDC._commandOffset) {
+                return false;
+            }
+        }
+
+        // If the rendering commands are batchable, increase the draw count for the previous one
+        previousIDC._drawCount += currentIDC._drawCount;
+        // And set the current command's draw count to zero so it gets removed from the list later on
+        currentIDC._drawCount = 0;
+        return true;
+    }
+
+    return false;
+}
+
+bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
+    OPTICK_EVENT();
+
+    const auto BatchCommands = [](vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) {
+        OPTICK_EVENT();
+
+        vec_size previousCommandIndex = 0;
+        vec_size currentCommandIndex = 1;
+        const vec_size commandCount = commands.size();
+        for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
+            GenericDrawCommand& previousCommand = commands[previousCommandIndex];
+            GenericDrawCommand& currentCommand = commands[currentCommandIndex];
+            if (!BatchDrawCommands(byBaseInstance, previousCommand, currentCommand)) {
+                previousCommandIndex = currentCommandIndex;
+            }
+        }
+    };
+
+    const auto RemoveEmptyDrawCommands = [](vectorEASTLFast<GenericDrawCommand>& commands) {
+        const size_t startSize = commands.size();
+        commands.erase(eastl::remove_if(eastl::begin(commands),
+                                        eastl::end(commands),
+                                        [](const GenericDrawCommand& cmd) noexcept -> bool {
+                                        return cmd._drawCount == 0;
+                                    }),
+            eastl::end(commands));
+
+        return startSize - commands.size() > 0;
+    };
+
+    vectorEASTLFast<GenericDrawCommand>& commands = prevCommand->_drawCommands;
+    commands.insert(eastl::cend(commands),
+                    eastl::make_move_iterator(eastl::begin(crtCommand->_drawCommands)),
+                    eastl::make_move_iterator(eastl::end(crtCommand->_drawCommands)));
+    crtCommand->_drawCommands.resize(0);
+
+    {
+        OPTICK_EVENT("Merge by instance");
+        eastl::sort(eastl::begin(commands),
+                    eastl::end(commands),
+                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
+                        return a._cmd.baseInstance < b._cmd.baseInstance;
+                    });
+        do { 
+            BatchCommands(commands, true); 
+        } while (RemoveEmptyDrawCommands(commands));
+    }
+    {
+        OPTICK_EVENT("Merge by offset");
+        eastl::sort(eastl::begin(commands),
+                    eastl::end(commands),
+                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
+                        return a._commandOffset < b._commandOffset;
+                    });
+
+        do {
+            BatchCommands(commands, false);
+        } while (RemoveEmptyDrawCommands(commands));
+    }
+
+    return true;
 }
 
 }; //namespace GFX

@@ -132,12 +132,11 @@ namespace Divide {
                     RenderPass* pass = _renderPasses[i].get();
 
                     GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
-                    assert(buf->empty());
-
                     _renderTasks[i] = CreateTask(pool,
                                                  nullptr,
                                                  [pass, buf, &sceneRenderState](const Task & parentTask) {
                                                      OPTICK_EVENT("RenderPass: BuildCommandBuffer");
+                                                     buf->clear(false);
                                                      pass->render(parentTask, sceneRenderState, *buf);
                                                      buf->batch();
                                                  },
@@ -146,7 +145,6 @@ namespace Divide {
                 }
                 { //PostFX should be pretty fast
                     GFX::CommandBuffer* buf = _postFXCommandBuffer;
-                    assert(buf->empty());
 
                     Time::ProfileTimer& timer = *_postFxRenderTimer;
                     GFXDevice& gfx = parent().platformContext().gfx();
@@ -156,6 +154,8 @@ namespace Divide {
                                             nullptr,
                                             [buf, &gfx, &postFX, &cam, &timer](const Task & parentTask) {
                                                 OPTICK_EVENT("PostFX: BuildCommandBuffer");
+
+                                                buf->clear(false);
 
                                                 Time::ScopedTimer time(timer);
                                                 postFX.apply(cam, *buf);
@@ -218,8 +218,7 @@ namespace Divide {
 
                     if (!dependenciesRunning) {
                         // No running dependency so we can flush the command buffer and add the pass to the skip list
-                        _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
-                        _renderPassCommandBuffer[i]->clear(false);
+                        _context.flushCommandBuffer(*_renderPassCommandBuffer[i], false);
                         _completedPasses[i] = true;
                     } else {
                         finished = false;
@@ -238,8 +237,7 @@ namespace Divide {
 
         // Flush the postFX stack
         Wait(*postFXTask);
-        _context.flushCommandBuffer(*_postFXCommandBuffer);
-        _postFXCommandBuffer->clear(false);
+        _context.flushCommandBuffer(*_postFXCommandBuffer, false);
 
         for (U8 i = 0; i < renderPassCount; ++i) {
             _renderPasses[i]->postRender();

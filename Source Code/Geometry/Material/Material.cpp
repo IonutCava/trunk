@@ -73,7 +73,7 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
     shadowDescriptor.setCullMode(CullMode::CCW);
     shadowDescriptor.setZFunc(ComparisonFunction::LESS);
     /// set a polygon offset
-    //shadowDescriptor.setZBias(1.0f, 1.0f);
+    shadowDescriptor.setZBias(1.0f, 1.0f);
 
     RenderStateBlock shadowDescriptorNoColour(shadowDescriptor);
     shadowDescriptorNoColour.setColourWrites(false, false, false, false);
@@ -226,7 +226,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
             // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
             const Texture_ptr& otherTex = _textures[isHeight ? to_base(ShaderProgram::TextureUsage::NORMALMAP)
-                : to_base(ShaderProgram::TextureUsage::HEIGHTMAP)];
+                                                             : to_base(ShaderProgram::TextureUsage::HEIGHTMAP)];
 
             if (otherTex != nullptr && texture != nullptr && otherTex->data().textureHandle() == texture->data().textureHandle()) {
                 _textures[to_base(ShaderProgram::TextureUsage::HEIGHTMAP)] = nullptr;
@@ -244,7 +244,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
             // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
             const Texture_ptr& otherTex = _textures[isOpacity ? to_base(ShaderProgram::TextureUsage::UNIT0)
-                : to_base(ShaderProgram::TextureUsage::OPACITY)];
+                                                              : to_base(ShaderProgram::TextureUsage::OPACITY)];
 
             if (otherTex != nullptr && texture != nullptr && otherTex->data().textureHandle() == texture->data().textureHandle()) {
                 _textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = nullptr;

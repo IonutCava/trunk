@@ -195,108 +195,39 @@ inline bool CommandBuffer::empty() const noexcept {
     return _commandOrder.empty();
 }
 
-template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawCommand* prevCommand, DrawCommand* crtCommand, bool& partial) const {
-    OPTICK_EVENT();
-    ACKNOWLEDGE_UNUSED(type);
-
-    vectorEASTLFast<GenericDrawCommand>& commands = prevCommand->_drawCommands;
-    commands.insert(eastl::cend(commands),
-                    eastl::make_move_iterator(eastl::begin(crtCommand->_drawCommands)),
-                    eastl::make_move_iterator(eastl::end(crtCommand->_drawCommands)));
-    crtCommand->_drawCommands.resize(0);
-
-    partial = false;
-    bool merged = true;
-    while (merged) {
-        merged = mergeDrawCommands(commands, true);
-        merged = mergeDrawCommands(commands, false) || merged;
-        if (merged) {
-            partial = true;
-        }
-    }
-
-    return true;
-}
-
-template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, BindDescriptorSetsCommand* prevCommand, BindDescriptorSetsCommand* crtCommand, bool& partial) const {
-    OPTICK_EVENT();
-    ACKNOWLEDGE_UNUSED(type);
-
-    return Merge(prevCommand->_set, crtCommand->_set, partial);
-}
-
-template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SendPushConstantsCommand* prevCommand, SendPushConstantsCommand* crtCommand, bool& partial) const {
-    OPTICK_EVENT();
-    ACKNOWLEDGE_UNUSED(type);
-
-    return Merge(prevCommand->_constants, crtCommand->_constants, partial);
-}
-
-template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, DrawTextCommand* prevCommand, DrawTextCommand* crtCommand, bool& partial) const {
-    OPTICK_EVENT();
-    ACKNOWLEDGE_UNUSED(type);
-
-    partial = false;
-    prevCommand->_batch._data.insert(std::cend(prevCommand->_batch._data),
-                                     std::cbegin(crtCommand->_batch._data),
-                                     std::cend(crtCommand->_batch._data));
-    return true;
-}
-
-template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SetScissorCommand* prevCommand, SetScissorCommand* crtCommand, bool& partial) const {
-    OPTICK_EVENT();
-    ACKNOWLEDGE_UNUSED(type);
-
-    partial = false;
-    return prevCommand->_rect == crtCommand->_rect;
-}
-
-template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, SetViewportCommand* prevCommand, SetViewportCommand* crtCommand, bool& partial) const {
-    OPTICK_EVENT();
-    ACKNOWLEDGE_UNUSED(type);
-
-    partial = false;
-    return prevCommand->_viewport == crtCommand->_viewport;
-}
-
-template<>
-inline bool CommandBuffer::tryMergeCommands(GFX::CommandType type, BindPipelineCommand* prevCommand, BindPipelineCommand* crtCommand, bool& partial) const {
-    OPTICK_EVENT();
-    ACKNOWLEDGE_UNUSED(type);
-
-    partial = false;
-    return *prevCommand->_pipeline == *crtCommand->_pipeline;
-}
-
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
-CommandBuffer::tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand, bool& partial) const {
+CommandBuffer::tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand) const {
     OPTICK_EVENT();
 
+    bool ret = false;
     assert(prevCommand != nullptr && crtCommand != nullptr);
     switch (type) {
-        case GFX::CommandType::DRAW_COMMANDS:
-            return tryMergeCommands(type, static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand), partial);
-        case GFX::CommandType::BIND_DESCRIPTOR_SETS:
-            return tryMergeCommands(type, static_cast<BindDescriptorSetsCommand*>(prevCommand), static_cast<BindDescriptorSetsCommand*>(crtCommand), partial);
-        case GFX::CommandType::SEND_PUSH_CONSTANTS:
-            return tryMergeCommands(type, static_cast<SendPushConstantsCommand*>(prevCommand), static_cast<SendPushConstantsCommand*>(crtCommand), partial);
-        case GFX::CommandType::DRAW_TEXT:
-            return tryMergeCommands(type, static_cast<DrawTextCommand*>(prevCommand), static_cast<DrawTextCommand*>(crtCommand), partial);
-        case GFX::CommandType::SET_SCISSOR:
-            return tryMergeCommands(type, static_cast<SetScissorCommand*>(prevCommand), static_cast<SetScissorCommand*>(crtCommand), partial);
-        case GFX::CommandType::SET_VIEWPORT:
-            return tryMergeCommands(type, static_cast<SetViewportCommand*>(prevCommand), static_cast<SetViewportCommand*>(crtCommand), partial);
-        case GFX::CommandType::BIND_PIPELINE:
-            return tryMergeCommands(type, static_cast<BindPipelineCommand*>(prevCommand), static_cast<BindPipelineCommand*>(crtCommand), partial);
+        case GFX::CommandType::DRAW_COMMANDS:        {
+            ret = Merge(static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand));
+        } break;
+        case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+            bool partial = false;
+            ret = Merge(reinterpret_cast<BindDescriptorSetsCommand*>(prevCommand)->_set, reinterpret_cast<BindDescriptorSetsCommand*>(crtCommand)->_set, partial);
+        } break;
+        case GFX::CommandType::SEND_PUSH_CONSTANTS:  {
+            bool partial = false;
+            ret = Merge(reinterpret_cast<SendPushConstantsCommand*>(prevCommand)->_constants, reinterpret_cast<SendPushConstantsCommand*>(crtCommand)->_constants, partial);
+        } break;
+        case GFX::CommandType::DRAW_TEXT:            {
+            const TextElementBatch::BatchType& crt = reinterpret_cast<DrawTextCommand*>(crtCommand)->_batch._data;
+            if (!crt.empty()) {
+                TextElementBatch::BatchType& prev = reinterpret_cast<DrawTextCommand*>(prevCommand)->_batch._data;
+                prev.insert(std::cend(prev), std::cbegin(crt), std::cend(crt));
+                ret = true;
+            }
+        } break;
+        default: {
+            ret = false;
+        } break;
     }
-    return false;
+
+    return ret;
 }
 
 }; //namespace GFX

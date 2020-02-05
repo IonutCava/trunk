@@ -77,7 +77,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     // Return true if merge is successful
     template<typename T>
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
-    tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand, bool& partial) const;
+    tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand) const;
 
     bool exists(const CommandEntry& commandEntry) const noexcept;
 
@@ -144,10 +144,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     void toString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out) const;
 
-
   protected:
-    bool mergeDrawCommands(vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) const;
-
     template<typename T>
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     allocateCommand();
@@ -159,6 +156,9 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
       PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;
       bool _batched = false;
 };
+
+bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand);
+bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC);
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type

@@ -38,6 +38,8 @@ namespace Divide {
 #pragma pack(push, 1)
 struct PolyContainerEntry
 {
+    static constexpr I32 INVALID_ENTRY_ID = std::numeric_limits<I32>::min();
+
     PolyContainerEntry() : _data(0) {}
     PolyContainerEntry(U8 type, I24 element) : _typeIndex(type), _elementIndex(element) {}
     PolyContainerEntry(const PolyContainerEntry& other) : _data(other._data) {}
@@ -63,7 +65,7 @@ struct PolyContainerEntry
             U8 _typeIndex;
             I24 _elementIndex;
         };
-        I32 _data = 0;
+        I32 _data = INVALID_ENTRY_ID;
     };
 };
 #pragma pack(pop)
