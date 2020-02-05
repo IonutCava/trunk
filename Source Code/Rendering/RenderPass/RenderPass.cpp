@@ -153,7 +153,7 @@ void RenderPass::initBufferData() {
     bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
     bufferDescriptor._separateReadWrite = false;
     
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::IMMUTABLE_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();

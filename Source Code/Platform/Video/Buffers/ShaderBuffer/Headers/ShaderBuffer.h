@@ -56,10 +56,11 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
        enum class Flags : U8 {
            NONE = 0,
-           ALLOW_THREADED_WRITES = toBit(1),
-           AUTO_RANGE_FLUSH = toBit(2),
-           NO_SYNC = toBit(3),
-           COUNT = 6
+           ALLOW_THREADED_WRITES = toBit(1), //< Makes sure reads and writes are properly sync'ed between threads (e.g. With glFlush() after glFenceSync() in OpenGL)
+           IMMUTABLE_STORAGE = toBit(2),     //< Persistent mapped buffers
+           AUTO_RANGE_FLUSH = toBit(3),      //< Flush the entire buffer after a write as opposed to just the affected region
+           NO_SYNC = toBit(4),               //< Skip any kind of sync between reads and writes. Useful if using stuff taht auto-syncs like glBufferSubData in OpenGL
+           COUNT
        };
 
    public:

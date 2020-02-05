@@ -94,7 +94,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     bufferDescriptor._elementCount = frameCount();
     bufferDescriptor._elementSize = sizeof(mat4<F32>) * Config::MAX_BONE_COUNT_PER_NODE;
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::IMMUTABLE_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._initialData = animationData.data();
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;

@@ -308,7 +308,7 @@ bool CommandBuffer::validate() const {
     if (Config::ENABLE_GPU_VALIDATION) {
         bool pushedPass = false, pushedSubPass = false, pushedPixelBuffer = false;
         bool hasPipeline = false, hasDescriptorSets = false;
-        U32 pushedDebugScope = 0u;
+        I32 pushedDebugScope = 0, pushedCamera = 0;
 
         for (const CommandEntry& cmd : _commandOrder) {
             switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
@@ -357,6 +357,12 @@ bool CommandBuffer::validate() const {
                     }
                     pushedPixelBuffer = false;
                 }break;
+                case GFX::CommandType::PUSH_CAMERA: {
+                    ++pushedCamera;
+                }break;
+                case GFX::CommandType::POP_CAMERA: {
+                    --pushedCamera;
+                }break;
                 case GFX::CommandType::BIND_PIPELINE: {
                     hasPipeline = true;
                 } break;
@@ -382,7 +388,7 @@ bool CommandBuffer::validate() const {
             };
         }
 
-        return !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0;
+        return !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0 && pushedCamera == 0;
     }
 
     return true;

@@ -217,6 +217,7 @@ namespace Divide {
                     }
 
                     if (!dependenciesRunning) {
+                        OPTICK_TAG("Buffer ID: ", i);
                         // No running dependency so we can flush the command buffer and add the pass to the skip list
                         _context.flushCommandBuffer(*_renderPassCommandBuffer[i], false);
                         _completedPasses[i] = true;

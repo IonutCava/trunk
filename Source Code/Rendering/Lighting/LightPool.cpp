@@ -78,7 +78,9 @@ void LightPool::init() {
     bufferDescriptor._elementSize = sizeof(vec4<U32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 6;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) | to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::IMMUTABLE_STORAGE) | 
+                              to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
+                              to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
 
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;

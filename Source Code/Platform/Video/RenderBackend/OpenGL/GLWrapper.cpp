@@ -46,12 +46,11 @@ namespace Divide {
 
 namespace {
     bool g_frameTimeRequested = false;
-
-    vectorFast<BufferWriteData> g_bufferLockData;
 };
 
 GLConfig GL_API::s_glConfig;
 GLStateTracker GL_API::s_stateTracker;
+bool GL_API::s_glFlushLocked = false;
 std::atomic_bool GL_API::s_glFlushQueued = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
 GLUtil::glTexturePool GL_API::s_texturePool;
@@ -1102,7 +1101,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::DRAW_TEXT:
         case GFX::CommandType::DRAW_IMGUI:
         case GFX::CommandType::DRAW_COMMANDS:
-        case GFX::CommandType::DISPATCH_COMPUTE: 
+        case GFX::CommandType::DISPATCH_COMPUTE:
+        case GFX::CommandType::COMPUTE_MIPMAPS:
         case GFX::CommandType::READ_BUFFER_DATA: {
             lockBuffers(_context.getFrameCount());
         } break;
@@ -1312,52 +1312,48 @@ void GL_API::lockBuffers(U32 frameID) {
     OPTICK_EVENT();
 
     BufferWriteData data = {};
-
-    g_bufferLockData.resize(0);
+    BufferLockEntries entries;
 
     while (s_bufferBinds.try_dequeue(data)) {
 
         bool updatedExisting = false;
         // Buffer locking only happens on the main rendering thread (OpenGL forces us to) so we merge as many locks as possible here
-        // const BufferRange testRange{ data._offset, data._range };
-        for (BufferWriteData& existingData : g_bufferLockData) {
-            if (existingData._handle == data._handle) {
-                //const BufferRange existingRange{ existingData._offset, existingData._range };
-                //if (testRange.Overlaps(existingRange)) 
-                {
-                    existingData._offset = std::min(existingData._offset, data._offset);
-                    existingData._range = std::max(existingData._range, data._range);
-                    updatedExisting = true;
-
-                    assert(existingData._offset == 0 || existingData._range <= existingData._offset);
+        const BufferRange testRange{ data._offset, data._range };
+        for (auto& existingData : entries) {
+            if (existingData.first == data._handle) {
+                for (BufferRange& existingRange : existingData.second) {
+                    if (testRange.Overlaps(existingRange)) 
+                    {
+                        existingRange._startOffset = std::min(existingRange._startOffset, data._offset);
+                        existingRange._length = std::max(existingRange._length, data._range);
+                        updatedExisting = true;
+                        assert(existingRange._startOffset == 0 || existingRange._length <= existingRange._startOffset);
+                        break;
+                    }
                 }
-                break;
             }
         }
 
         if (!updatedExisting) {
-            g_bufferLockData.emplace_back(data._handle, data._offset, data._range);
+            entries[data._handle].emplace_back(testRange);
         }
     }
 
-    if (!g_bufferLockData.empty()) {
-        BufferLockEntries entries;
-        for (const BufferWriteData& entry : g_bufferLockData) {
-            entries[entry._handle].emplace_back(BufferRange{ entry._offset, entry._range });
-        }
-
+    if (!entries.empty()) {
         s_globalLockManager.LockBuffers(std::move(entries), frameID);
 
         bool expected = true;
-        if (s_glFlushQueued.compare_exchange_weak(expected, false)) {
+        if (!s_glFlushLocked && s_glFlushQueued.compare_exchange_weak(expected, false)) {
             OPTICK_EVENT("GL_FLUSH");
             glFlush();
+            //s_glFlushLocked = true;
         }
     }
 }
 
 void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     ACKNOWLEDGE_UNUSED(commandBuffer);
+    s_glFlushLocked = false;
 }
 
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
@@ -1366,6 +1362,7 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
 
     bool expected = true;
     if (s_glFlushQueued.compare_exchange_weak(expected, false)) {
+        OPTICK_EVENT("GL_FLUSH");
         glFlush();
     }
 }

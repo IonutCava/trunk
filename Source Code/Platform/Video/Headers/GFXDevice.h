@@ -363,7 +363,7 @@ private:
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
     void uploadGPUBlock();
     void setClipPlanes(const FrustumClipPlanes& clipPlanes);
-    void renderFromCamera(const CameraSnapshot& cameraSnapshot, bool push);
+    void renderFromCamera(const CameraSnapshot& cameraSnapshot);
 
     ErrorCode createAPIInstance(RenderAPI api);
 

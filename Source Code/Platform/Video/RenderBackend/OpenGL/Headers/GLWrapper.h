@@ -222,6 +222,7 @@ public:
     static GLuint s_SSBMaxSize;
     static glHardwareQueryPool* s_hardwareQueryPool;
     static GLConfig s_glConfig;
+    static bool s_glFlushLocked;
     static std::atomic_bool s_glFlushQueued;
 
 private:

@@ -242,10 +242,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
     bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._initialData = &_gpuBlock._data;
     bufferDescriptor._name = "DVD_GPU_DATA";
+    // Persistent storage 
+    //bufferDescriptor._flags = to_base(ShaderBuffer::Flags::IMMUTABLE_STORAGE);
     _gfxDataBuffer = newSB(bufferDescriptor);
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
@@ -1221,6 +1224,7 @@ void GFXDevice::uploadGPUBlock() {
     if (_gpuBlock._needsUpload) {
         // We flush the entire buffer on update to inform the GPU that we don't
         // need the previous data. Might avoid some driver sync
+        //_gfxDataBuffer->incQueue();
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
         _gpuBlock._needsUpload = false;
@@ -1244,13 +1248,8 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     }
 }
 
-void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot, bool push) {
+void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     OPTICK_EVENT();
-
-    // Tell the Rendering API to draw from our desired PoV
-    if (push) {
-        _cameraSnapshots.push(_activeCameraSnapshot);
-    }
 
     GFXShaderData::GPUData& data = _gpuBlock._data;
 
@@ -1315,7 +1314,6 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 #pragma region Command buffers, occlusion culling, etc
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch) {
     OPTICK_EVENT();
-
     if (Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
 
@@ -1386,15 +1384,16 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
                 break;
             case GFX::CommandType::SET_CAMERA: {
                 const GFX::SetCameraCommand& crtCmd = commandBuffer.get<GFX::SetCameraCommand>(cmd);
-                renderFromCamera(crtCmd._cameraSnapshot, false);
+                // Tell the Rendering API to draw from our desired PoV
+                renderFromCamera(crtCmd._cameraSnapshot);
             } break;
             case GFX::CommandType::PUSH_CAMERA: {
                 const GFX::PushCameraCommand& crtCmd = commandBuffer.get<GFX::PushCameraCommand>(cmd);
-                renderFromCamera(crtCmd._cameraSnapshot, true);
+                _cameraSnapshots.push(_activeCameraSnapshot);
+                renderFromCamera(crtCmd._cameraSnapshot);
             } break;
             case GFX::CommandType::POP_CAMERA: {
-                DIVIDE_ASSERT(!_cameraSnapshots.empty(), "Missing matching PushCameraCommand!");
-                renderFromCamera(_cameraSnapshots.top(), false);
+                renderFromCamera(_cameraSnapshots.top());
                 _cameraSnapshots.pop();
             } break;
             case GFX::CommandType::SET_CLIP_PLANES:
@@ -1417,8 +1416,6 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
     }
 
     _api->postFlushCommandBuffer(commandBuffer);
-
-    DIVIDE_ASSERT(_cameraSnapshots.empty(), "Mismatched {Push/Pop}CameraCommand!");
 }
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)

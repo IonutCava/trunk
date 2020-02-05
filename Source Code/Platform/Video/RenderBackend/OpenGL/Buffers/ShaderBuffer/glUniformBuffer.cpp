@@ -42,9 +42,9 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                            ? GL_UNIFORM_BUFFER
                                            : GL_ATOMIC_COUNTER_BUFFER;
 
-    implParams._storageType = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) || _usage == Usage::ATOMIC_COUNTER
-                                ? BufferStorageType::IMMUTABLE
-                                : BufferStorageType::AUTO;
+    implParams._storageType = BitCompare(_flags, ShaderBuffer::Flags::IMMUTABLE_STORAGE) || _usage == Usage::ATOMIC_COUNTER
+                                                                                        ? BufferStorageType::IMMUTABLE
+                                                                                        : BufferStorageType::AUTO;
 
     implParams._unsynced =  implParams._storageType != BufferStorageType::IMMUTABLE || 
                             BitCompare(_flags, ShaderBuffer::Flags::NO_SYNC) ||
@@ -131,6 +131,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         return;
     }
 
+    const ptrdiff_t writeRange = rangeInBytes;
     if (rangeInBytes == static_cast<ptrdiff_t>(_elementCount * _elementSize)) {
         rangeInBytes = _allignedBufferSize;
     }
@@ -148,14 +149,17 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         offsetInBytes = (offsetInBytes + req - 1) / req * req;
     }
 
-    bufferImpl()->writeData(offsetInBytes, rangeInBytes, data);
+    bufferImpl()->writeData(offsetInBytes, writeRange, data);
     _writesDirty.store(true);
 }
 
 bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     BufferWriteData data = {};
     const bool ret = bindRange(bindIndex, offsetElementCount, rangeElementCount, data);
-    const bool flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) && _writesDirty.load();
+    const bool flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) && 
+                       !BitCompare(_flags, ShaderBuffer::Flags::NO_SYNC) &&
+                       _writesDirty.load();
+
     bufferImpl()->lockRange(data._offset, data._range, flush);
     _writesDirty.store(false);
     return ret;
