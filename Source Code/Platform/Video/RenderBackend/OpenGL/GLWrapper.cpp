@@ -48,14 +48,14 @@ namespace {
     bool g_frameTimeRequested = false;
 };
 
-GLConfig GL_API::s_glConfig;
-GLStateTracker GL_API::s_stateTracker;
+GLConfig GL_API::s_glConfig = {};
+GLStateTracker GL_API::s_stateTracker = {};
 bool GL_API::s_glFlushLocked = false;
 std::atomic_bool GL_API::s_glFlushQueued = false;
 bool GL_API::s_enabledDebugMSGGroups = false;
-GLUtil::glTexturePool GL_API::s_texturePool;
-glGlobalLockManager GL_API::s_globalLockManager;
-GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool;
+GLUtil::glTexturePool GL_API::s_texturePool = {};
+glGlobalLockManager GL_API::s_globalLockManager = {};
+GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool = {};
 moodycamel::ConcurrentQueue<BufferWriteData> GL_API::s_bufferBinds;
 
 GL_API::GL_API(GFXDevice& context, const bool glES)
@@ -1004,7 +1004,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
     }
 }
 
-bool GL_API::bindPipeline(const Pipeline& pipeline) {
+bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
     OPTICK_EVENT();
 
     if (GL_API::getStateTracker()._activePipeline && *GL_API::getStateTracker()._activePipeline == pipeline) {
@@ -1027,7 +1027,7 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     bool wasBound = false;
-    if (Attorney::GLAPIShaderProgram::bind(glProgram, wasBound)) {
+    if (Attorney::GLAPIShaderProgram::bind(glProgram, wasBound, shaderWasReady)) {
         const ShaderFunctions& functions = pipeline.shaderFunctions();
         for (U8 type = 0; type < to_U8(ShaderType::COUNT); ++type) {
             Attorney::GLAPIShaderProgram::SetSubroutines(glProgram, static_cast<ShaderType>(type), functions[type]);
@@ -1037,6 +1037,9 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
         }
         return true;
     }
+    GL_API::getStateTracker().setActiveProgram(0u);
+    GL_API::getStateTracker().setActivePipeline(0u);
+    GL_API::getStateTracker()._activePipeline = nullptr;
 
     return false;
 }
@@ -1186,10 +1189,15 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::BIND_PIPELINE: {
             const Pipeline* pipeline = commandBuffer.get<GFX::BindPipelineCommand>(entry)._pipeline;
             assert(pipeline != nullptr);
-            bindPipeline(*pipeline);
+            bool shaderWasReady = false;
+            if (!bindPipeline(*pipeline, shaderWasReady) && shaderWasReady) {
+                Console::errorfn(Locale::get(_ID("ERROR_GLSL_INVALID_BIND")), pipeline->shaderProgramHandle());
+            }
         } break;
         case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-            sendPushConstants(commandBuffer.get<GFX::SendPushConstantsCommand>(entry)._constants);
+            if (GL_API::getStateTracker()._activePipeline != nullptr) {
+                sendPushConstants(commandBuffer.get<GFX::SendPushConstantsCommand>(entry)._constants);
+            }
         } break;
         case GFX::CommandType::SET_SCISSOR: {
             getStateTracker().setScissor(commandBuffer.get<GFX::SetScissorCommand>(entry)._rect);
@@ -1232,23 +1240,29 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {
-            const GFX::DrawTextCommand& crtCmd = commandBuffer.get<GFX::DrawTextCommand>(entry);
-            drawText(crtCmd._batch);
+            if (GL_API::getStateTracker()._activePipeline != nullptr) {
+                const GFX::DrawTextCommand& crtCmd = commandBuffer.get<GFX::DrawTextCommand>(entry);
+                drawText(crtCmd._batch);
+            }
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
-            const GFX::DrawIMGUICommand& crtCmd = commandBuffer.get<GFX::DrawIMGUICommand>(entry);
-            drawIMGUI(crtCmd._data, crtCmd._windowGUID);
+            if (GL_API::getStateTracker()._activePipeline != nullptr) {
+                const GFX::DrawIMGUICommand& crtCmd = commandBuffer.get<GFX::DrawIMGUICommand>(entry);
+                drawIMGUI(crtCmd._data, crtCmd._windowGUID);
+            }
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
-            const GFX::DrawCommand& crtCmd = commandBuffer.get<GFX::DrawCommand>(entry);
-            const vectorEASTLFast<GenericDrawCommand>& drawCommands = crtCmd._drawCommands;
-            for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
-                if (draw(currentDrawCommand, _commandBufferOffset)) {
-                    if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
-                        if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
-                            _context.registerDrawCalls(2);
-                        } else {
-                            _context.registerDrawCall();
+            if (GL_API::getStateTracker()._activePipeline != nullptr) {
+                const GFX::DrawCommand& crtCmd = commandBuffer.get<GFX::DrawCommand>(entry);
+                const vectorEASTLFast<GenericDrawCommand>& drawCommands = crtCmd._drawCommands;
+                for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
+                    if (draw(currentDrawCommand, _commandBufferOffset)) {
+                        if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
+                            if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
+                                _context.registerDrawCalls(2);
+                            } else {
+                                _context.registerDrawCall();
+                            }
                         }
                     }
                 }
@@ -1256,8 +1270,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
             const GFX::DispatchComputeCommand& crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
-            assert(GL_API::getStateTracker()._activePipeline != nullptr);
-            {
+            if(GL_API::getStateTracker()._activePipeline != nullptr) {
                 OPTICK_EVENT("GL: Dispatch Compute");
                 glDispatchCompute(crtCmd._computeGroupSize.x, crtCmd._computeGroupSize.y, crtCmd._computeGroupSize.z);
             }

@@ -100,13 +100,13 @@ namespace Attorney {
 };
 
 namespace TypeUtil {
-    const char* GraphicResourceTypeToName(GraphicsResource::Type type);
+    const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept;
 
-    const char* RenderStageToString(RenderStage stage);
-    RenderStage StringToRenderStage(const char* stage);
+    const char* RenderStageToString(RenderStage stage) noexcept;
+    RenderStage StringToRenderStage(const char* stage) noexcept;
 
-    const char* RenderPassTypeToString(RenderPassType pass);
-    RenderPassType StringToRenderPassType(const char* pass);
+    const char* RenderPassTypeToString(RenderPassType pass) noexcept;
+    RenderPassType StringToRenderPassType(const char* pass) noexcept;
 };
 
 struct DebugView : public GUIDWrapper {

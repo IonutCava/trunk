@@ -193,7 +193,7 @@ private:
     static bool initGLSW(Configuration& config);
     static bool deInitGLSW();
 
-    bool bindPipeline(const Pipeline& pipeline);
+    bool bindPipeline(const Pipeline& pipeline, bool& shaderWasReady);
     void sendPushConstants(const PushConstants& pushConstants);
 
     /// FontStash library initialization

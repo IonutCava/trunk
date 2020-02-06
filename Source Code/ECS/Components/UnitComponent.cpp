@@ -7,13 +7,13 @@
 
 namespace Divide {
 UnitComponent::UnitComponent(SceneGraphNode& parentSGN, PlatformContext& context)
-    : BaseComponentType<UnitComponent, ComponentType::UNIT>(parentSGN, context)
+    : BaseComponentType<UnitComponent, ComponentType::UNIT>(parentSGN, context),
+      _unit(nullptr)
 {
 }
 
 UnitComponent::~UnitComponent()
 {
-    _unit.reset();
 }
 
 bool UnitComponent::setUnit(Unit_ptr unit) {

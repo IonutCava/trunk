@@ -57,6 +57,9 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     vec4  dvd_renderProperties;
     vec4  dvd_ViewPort;
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
+
+
+    float _padding[27];
 };
 
 #define dvd_numTilesX uint(dvd_renderProperties.w)

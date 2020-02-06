@@ -72,7 +72,7 @@ class SceneManager : public FrameListener,
     friend class Attorney::SceneManagerCameraAccessor;
 
 public:
-    typedef std::array<Player_ptr, Config::MAX_LOCAL_PLAYER_COUNT> PlayerList;
+    using PlayerList = std::array<SceneGraphNode*, Config::MAX_LOCAL_PLAYER_COUNT>;
 
 public:
     static bool onStartup();
@@ -195,14 +195,14 @@ protected:
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
-    void removePlayerInternal(Scene& parentScene, Player_ptr& player);
+    void removePlayerInternal(Scene& parentScene, SceneGraphNode* playerNode);
 
     // Add a new player to the simulation
     void addPlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue);
     // Removes the specified player from the active simulation
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
-    void removePlayer(Scene& parentScene, Player_ptr& player, bool queue);
+    void removePlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue);
     vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) const;
 
 protected:
@@ -246,7 +246,7 @@ private:
 
     bool _platerQueueDirty = false;
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
-    std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;
+    std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerRemoveQueue;
 
     vector<DELEGATE_CBK<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
 
@@ -317,8 +317,8 @@ private:
         manager.addPlayer(parentScene, playerNode, queue);
     }
 
-    static void removePlayer(Divide::SceneManager& manager, Scene& parentScene, Player_ptr& player, bool queue) {
-        manager.removePlayer(parentScene, player, queue);
+    static void removePlayer(Divide::SceneManager& manager, Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
+        manager.removePlayer(parentScene, playerNode, queue);
     }
 
     static vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Divide::SceneManager& manager, const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) {

@@ -232,7 +232,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool mouseMoved(const Input::MouseMoveEvent& arg);
     
     U8 getSceneIndexForPlayer(PlayerIndex idx) const;
-    const Player_ptr& getPlayerForIndex(PlayerIndex idx) const;
+    Player* getPlayerForIndex(PlayerIndex idx) const;
 
     U8 getPlayerIndexForDevice(U8 deviceIndex) const;
 
@@ -279,7 +279,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
        SceneGraphNode* _sun;
 
-       vectorEASTL<Player_ptr> _scenePlayers;
+       vectorEASTL<Player*> _scenePlayers;
        U64 _sceneTimerUS;
        vector<D64> _taskTimers;
        vector<D64> _guiTimersMS;

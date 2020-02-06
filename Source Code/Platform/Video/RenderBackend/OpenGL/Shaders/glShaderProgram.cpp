@@ -262,6 +262,8 @@ void glShaderProgram::validatePostBind() {
                 } else {
                     Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), "[ Couldn't retrieve info log! ]");
                 }
+            } else {
+                Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), _handle, resourceName().c_str(), "[ OK! ]");
             }
         }
         _validated = true;
@@ -502,7 +504,8 @@ bool glShaderProgram::recompileInternal(bool force) {
             threadedLoad(true);
             // Restore bind state
             if (wasBound) {
-                bind(wasBound);
+                bool wasReady = false;
+                bind(wasBound, wasReady);
             }
         }
 
@@ -523,10 +526,12 @@ bool glShaderProgram::isBound() const {
 }
 
 /// Bind this shader program
-bool glShaderProgram::bind(bool& wasBound) {
+bool glShaderProgram::bind(bool& wasBound, bool& wasReady) {
     validatePreBind();
+    wasReady = false;
     // If the shader isn't ready or failed to link, stop here
     if (_validated || _validationQueued) {
+        wasReady = true;
         // Set this program as the currently active one
         wasBound = GL_API::getStateTracker().setActivePipeline(_handle);
         validatePostBind();

@@ -47,9 +47,10 @@
 #include <RenderDoc-Manager/RenderDocManager.h>
 
 namespace Divide {
+    constexpr bool g_UseImmutableDataStorageForGPUData = false;
 
 namespace TypeUtil {
-    const char* GraphicResourceTypeToName(GraphicsResource::Type type) {
+    const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept {
         switch (type) {
             case GraphicsResource::Type::PIXEL_BUFFER: return "PIXEL_BUFFER";
             case GraphicsResource::Type::RENDER_TARGET: return "RENDER_TARGET";
@@ -63,7 +64,7 @@ namespace TypeUtil {
         return "UNKNOWN";
     };
 
-    const char* RenderStageToString(RenderStage stage) {
+    const char* RenderStageToString(RenderStage stage) noexcept {
         switch (stage) {
             case RenderStage::DISPLAY:    return "DISPLAY";
             case RenderStage::REFLECTION: return "REFLECTION";
@@ -74,7 +75,7 @@ namespace TypeUtil {
         return "ERROR!";
     }
 
-    RenderStage StringToRenderStage(const char* stage) {
+    RenderStage StringToRenderStage(const char* stage) noexcept {
              if (strcmp(stage, "DISPLAY") == 0)    { return RenderStage::DISPLAY;}
         else if (strcmp(stage, "REFLECTION") == 0) { return RenderStage::REFLECTION; }
         else if (strcmp(stage, "REFRACTION") == 0) { return RenderStage::REFRACTION; }
@@ -83,7 +84,7 @@ namespace TypeUtil {
         return RenderStage::COUNT;
     }
 
-    const char* RenderPassTypeToString(RenderPassType pass) {
+    const char* RenderPassTypeToString(RenderPassType pass) noexcept {
         switch (pass) {
             case RenderPassType::PRE_PASS:  return "PRE_PASS";
             case RenderPassType::MAIN_PASS: return "MAIN_PASS";
@@ -93,7 +94,7 @@ namespace TypeUtil {
         return "ERROR!";
     }
 
-    RenderPassType StringToRenderPassType(const char* pass) {
+    RenderPassType StringToRenderPassType(const char* pass) noexcept {
              if (strcmp(pass, "PRE_PASS") == 0)  { return RenderPassType::PRE_PASS; }
         else if (strcmp(pass, "MAIN_PASS") == 0) { return RenderPassType::MAIN_PASS; }
         else if (strcmp(pass, "OIT_PASS") == 0)  { return RenderPassType::OIT_PASS; }
@@ -103,7 +104,6 @@ namespace TypeUtil {
 };
 
 D64 GFXDevice::s_interpolationFactor = 1.0;
-
 GPUVendor GFXDevice::s_GPUVendor = GPUVendor::COUNT;
 GPURenderer GFXDevice::s_GPURenderer = GPURenderer::COUNT;
 
@@ -233,6 +233,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     ResourceCache& cache = parent().resourceCache();
     _rtPool = MemoryManager_NEW GFXRTPool(*this);
 
+    // Half a megabyte in size should work. I think.
+    constexpr size_t TargetBufferSize = (1 * 1024 * 1024) / 2 / sizeof(GFXShaderData::GPUData);
+
     // Initialize the shader manager
     ShaderProgram::onStartup(*this, cache);
     EnvironmentProbe::onStartup(*this);
@@ -241,14 +244,17 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
-    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._ringBufferLength = TargetBufferSize;
     bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._initialData = &_gpuBlock._data;
     bufferDescriptor._name = "DVD_GPU_DATA";
+    bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
     // Persistent storage 
-    //bufferDescriptor._flags = to_base(ShaderBuffer::Flags::IMMUTABLE_STORAGE);
+    if (g_UseImmutableDataStorageForGPUData) {
+        bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::IMMUTABLE_STORAGE);
+    }
     _gfxDataBuffer = newSB(bufferDescriptor);
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
@@ -454,7 +460,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     reflectionSampler.magFilter(TextureFilter::NEAREST);
 
     {
-        // A could be used for anything (e.g. depth(
+        // "A" could be used for anything (e.g. depth)
         TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
         environmentDescriptorPlanar.samplerDescriptor(reflectionSampler);
 
@@ -785,8 +791,7 @@ void GFXDevice::closeRenderingAPI() {
 #pragma endregion
 
 #pragma region Main frame loop
-/// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
-/// the screen, so we try to do some processing
+/// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to the screen, so we try to do some processing
 void GFXDevice::idle() {
     OPTICK_EVENT();
 
@@ -1222,11 +1227,9 @@ void GFXDevice::uploadGPUBlock() {
     OPTICK_EVENT();
 
     if (_gpuBlock._needsUpload) {
-        // We flush the entire buffer on update to inform the GPU that we don't
-        // need the previous data. Might avoid some driver sync
-        //_gfxDataBuffer->incQueue();
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
+        _gfxDataBuffer->incQueue();
         _gpuBlock._needsUpload = false;
     }
 }

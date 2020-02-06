@@ -38,7 +38,7 @@ namespace Divide {
 
 /// User controlled Unit
 class Camera;
-class Player : public Character {
+class Player final : public Character {
    public:
     explicit Player(U8 index);
     ~Player();

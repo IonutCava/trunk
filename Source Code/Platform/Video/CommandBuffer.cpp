@@ -43,6 +43,17 @@ DEFINE_POOL(ClearBufferDataCommand);
 DEFINE_POOL(SetClippingStateCommand);
 DEFINE_POOL(ExternalCommand);
 
+namespace {
+    FORCE_INLINE bool ShouldSkipType(const U8 typeIndex) noexcept {
+        switch (static_cast<CommandType>(typeIndex)) {
+            case GFX::CommandType::BEGIN_DEBUG_SCOPE:
+            case GFX::CommandType::END_DEBUG_SCOPE:
+                return true;
+        }
+        return false;
+    }
+};
+
 void CommandBuffer::add(const CommandBuffer& other) {
     OPTICK_EVENT();
 
@@ -75,7 +86,7 @@ void CommandBuffer::batch() {
     bool tryMerge = true;
 
     while (tryMerge) {
-        OPTICK_EVENT("TRY_MERGE_LOOP");
+        OPTICK_EVENT("TRY_MERGE_LOOP_1");
 
         tryMerge = false;
         prevCommand = nullptr;
@@ -83,6 +94,9 @@ void CommandBuffer::batch() {
 
         for (CommandEntry& entry : _commandOrder)  {
             if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID) {
+                continue;
+            }
+            if (ShouldSkipType(entry._typeIndex)) {
                 continue;
             }
 
@@ -104,6 +118,39 @@ void CommandBuffer::batch() {
             }
         }
     }
+
+    // Now try and merge ONLY descriptor sets
+    tryMerge = true;
+    while (tryMerge) {
+        OPTICK_EVENT("TRY_MERGE_LOOP_2");
+
+        tryMerge = false;
+
+        prevCommand = nullptr;
+        for (CommandEntry& entry : _commandOrder) {
+            if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID) {
+                continue;
+            }
+            if (ShouldSkipType(entry._typeIndex)) {
+                continue;
+            }
+
+            CommandBase* crtCommand = getPtr<CommandBase>(entry);
+            if (prevCommand != nullptr && 
+                entry._typeIndex == to_base(GFX::CommandType::BIND_DESCRIPTOR_SETS) &&
+                tryMergeCommands(GFX::CommandType::BIND_DESCRIPTOR_SETS, prevCommand, crtCommand))
+            {
+                --_commandCount[entry._typeIndex];
+                entry._data = PolyContainerEntry::INVALID_ENTRY_ID;
+                tryMerge = true;
+            }
+            else if (entry._typeIndex == to_base(GFX::CommandType::BIND_DESCRIPTOR_SETS))
+            {
+                prevCommand = crtCommand;
+            }
+        }
+    }
+
 
     eastl::erase_if(_commandOrder, ([](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; }));
 

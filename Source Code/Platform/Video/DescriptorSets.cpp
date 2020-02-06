@@ -25,7 +25,8 @@ namespace Divide {
     }
 
     const TextureData* DescriptorSet::findTexture(U8 binding) const noexcept {
-        for (auto& it : _textureData.textures()) {
+        auto& textures = _textureData.textures();
+        for (const auto& it : textures) {
             if (it.first == binding) {
                 return &it.second;
             }
@@ -105,20 +106,21 @@ namespace Divide {
     }
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
+        STUBBED("ToDo: This is problematic because we don't know what the current state is. If the current descriptor set doesn't set a binding, that doesn't mean that that binding is empty");
 
-        auto& otherTextureData = rhs._textureData.textures();
-
+        TextureDataContainer::DataEntries& otherTextureData = rhs._textureData.textures();
         for (auto it = eastl::begin(otherTextureData); it != eastl::end(otherTextureData);) {
             const TextureData* texData = lhs.findTexture(it->first);
             bool erase = false;
             if (texData == nullptr) {
-                lhs._textureData.setTexture(it->second, it->first);
-                erase = true;
+                //lhs._textureData.setTexture(it->second, it->first);
+                //erase = true;
             } else {
                 if (*texData == it->second) {
                     erase = true;
                 }
             }
+
             if (erase) {
                 it = otherTextureData.erase(it);
                 partial = true;
@@ -127,15 +129,15 @@ namespace Divide {
             }
         }
 
-        auto& otherViewList = rhs._textureViews;
+        TextureViews& otherViewList = rhs._textureViews;
         for (auto it = eastl::begin(otherViewList); it != eastl::end(otherViewList);) {
             const TextureViewEntry& otherView = *it;
 
             const TextureView* texViewData = lhs.findTextureView(otherView._binding);
             bool erase = false;
             if (texViewData == nullptr) {
-                lhs._textureViews.push_back(otherView);
-                erase = true;
+                //lhs._textureViews.push_back(otherView);
+                //erase = true;
             } else {
                 if (*texViewData == otherView._view) {
                     erase = true;
@@ -150,15 +152,15 @@ namespace Divide {
             }
         }
 
-        auto& otherImageList = rhs._images;
+        Images& otherImageList = rhs._images;
         for (auto it = eastl::begin(otherImageList); it != eastl::end(otherImageList);) {
             const Image& otherImage = *it;
 
             const Image* image = lhs.findImage(otherImage._binding);
             bool erase = false;
             if (image == nullptr) {
-                lhs._images.push_back(otherImage);
-                erase = true;
+                //lhs._images.push_back(otherImage);
+                //erase = true;
             } else {
                 if (*image == otherImage) {
                     erase = true;
@@ -179,7 +181,6 @@ namespace Divide {
             const ShaderBufferBinding* binding = lhs.findBinding(otherBinding._binding);
             bool erase = false;
             if (binding == nullptr) {
-                STUBBED("ToDo: This is problematic because we don't know what the current state is. If the current descriptor set doesn't set a binding, that doesn't mean that that binding is empty");
                 //lhs._shaderBuffers.push_back(otherBinding);
                 //erase = true;
             } else {

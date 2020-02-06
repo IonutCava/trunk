@@ -156,10 +156,7 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
 bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     BufferWriteData data = {};
     const bool ret = bindRange(bindIndex, offsetElementCount, rangeElementCount, data);
-    const bool flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) && 
-                       !BitCompare(_flags, ShaderBuffer::Flags::NO_SYNC) &&
-                       _writesDirty.load();
-
+    const bool flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) && _writesDirty.load();
     bufferImpl()->lockRange(data._offset, data._range, flush);
     _writesDirty.store(false);
     return ret;

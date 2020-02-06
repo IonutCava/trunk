@@ -125,8 +125,6 @@ bool glBufferImpl::waitRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bo
     OPTICK_EVENT();
 
     if (_mappedBuffer != nullptr && !_unsynced) {
-        //assert(!GL_API::s_glFlushQueued);
-
         return GL_API::getLockManager().WaitForLockedRange(bufferID(), offsetInBytes, rangeInBytes);
     }
 
@@ -167,7 +165,9 @@ bool glBufferImpl::bindRange(GLuint bindIndex, GLintptr offsetInBytes, GLsizeipt
 void glBufferImpl::writeData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, const bufferPtr data)
 {
     OPTICK_EVENT();
-    OPTICK_TAG("Mapped", _mappedBuffer != nullptr);
+    OPTICK_TAG("Mapped", bool(_mappedBuffer != nullptr));
+    OPTICK_TAG("Offset", to_U32(offsetInBytes));
+    OPTICK_TAG("Range", to_U32(rangeInBytes));
 
     if (_mappedBuffer) {
         waitRange(offsetInBytes, rangeInBytes, true);

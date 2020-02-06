@@ -1102,7 +1102,7 @@ void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
 
     while(!_scenePlayers.empty()) {
-        Attorney::SceneManagerScene::removePlayer(_parent, *this, _scenePlayers.back(), false);
+        Attorney::SceneManagerScene::removePlayer(_parent, *this, _scenePlayers.back()->getBoundNode(), false);
     }
 
     input().onRemoveActive();
@@ -1140,11 +1140,11 @@ void Scene::addPlayerInternal(bool queue) {
 void Scene::removePlayerInternal(PlayerIndex idx) {
     assert(idx < _scenePlayers.size());
     
-    Attorney::SceneManagerScene::removePlayer(_parent, *this, _scenePlayers[getSceneIndexForPlayer(idx)], true);
+    Attorney::SceneManagerScene::removePlayer(_parent, *this, _scenePlayers[getSceneIndexForPlayer(idx)]->getBoundNode(), true);
 }
 
 void Scene::onPlayerAdd(const Player_ptr& player) {
-    _scenePlayers.push_back(player);
+    _scenePlayers.push_back(player.get());
     state().onPlayerAdd(player->index());
     input().onPlayerAdd(player->index());
 }
@@ -1178,7 +1178,7 @@ U8 Scene::getSceneIndexForPlayer(PlayerIndex idx) const {
     return 0;
 }
 
-const Player_ptr& Scene::getPlayerForIndex(PlayerIndex idx) const {
+Player* Scene::getPlayerForIndex(PlayerIndex idx) const {
     return _scenePlayers[getSceneIndexForPlayer(idx)];
 }
 
@@ -1256,7 +1256,7 @@ void Scene::onStartUpdateLoop(const U8 loopNumber) {
 }
 
 void Scene::onLostFocus() {
-    for (const Player_ptr& player : _scenePlayers) {
+    for (const Player* player : _scenePlayers) {
         state().playerState(player->index()).resetMovement();
     }
 
@@ -1351,8 +1351,8 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
 }
 
 bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
-    const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
-    return checkCameraUnderwater(crtCamera);
+    const Camera* crtCamera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent, idx);
+    return checkCameraUnderwater(*crtCamera);
 }
 
 bool Scene::checkCameraUnderwater(const Camera& camera) const {
@@ -1368,7 +1368,7 @@ bool Scene::checkCameraUnderwater(const Camera& camera) const {
 
     const auto& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
     for (SceneGraphNode* node : waterBodies) {
-        if (node->getNode<WaterPlane>().pointUnderwater(*node, eyePos)) {
+        if (node && node->getNode<WaterPlane>().pointUnderwater(*node, eyePos)) {
             return true;
         }
     }
@@ -1637,7 +1637,7 @@ bool Scene::isDragSelecting(PlayerIndex idx) const {
 }
 
 bool Scene::save(ByteBuffer& outputBuffer) const {
-    U8 playerCount = to_U8(_scenePlayers.size());
+    const U8 playerCount = to_U8(_scenePlayers.size());
     outputBuffer << playerCount;
     for (U8 i = 0; i < playerCount; ++i) {
         const Camera& cam = _scenePlayers[i]->getCamera();

@@ -69,6 +69,7 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _currentPlayerPass(0),
       _saveTimer(0ULL)
 {
+    _players.fill(nullptr);
 }
 
 SceneManager::~SceneManager()
@@ -101,7 +102,7 @@ void SceneManager::idle() {
                 _playerAddQueue.pop();
             }
             while (!_playerRemoveQueue.empty()) {
-                std::pair<Scene*, Player_ptr>& playerToRemove = _playerRemoveQueue.front();
+                std::pair<Scene*, SceneGraphNode*>& playerToRemove = _playerRemoveQueue.front();
                 removePlayerInternal(*playerToRemove.first, playerToRemove.second);
                 _playerRemoveQueue.pop();
             }
@@ -301,9 +302,9 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
         const F32 fov = _platformContext->config().runtime.verticalFOV;;
         const vec2<F32> zPlanes(_platformContext->config().runtime.zNear, _platformContext->config().runtime.zFar);
 
-        for (const Player_ptr& player : _players) {
+        for (SceneGraphNode* player : _players) {
             if (player != nullptr) {
-                player->getCamera().setProjection(aspectRatio, fov, zPlanes);
+                player->get<UnitComponent>()->getUnit<Player>()->getCamera().setProjection(aspectRatio, fov, zPlanes);
             }
         }
 
@@ -322,8 +323,8 @@ void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, boo
 
 void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerNode) {
     const I64 sgnGUID = playerNode->getGUID();
-    for (const Player_ptr& crtPlayer : _players) {
-        if (crtPlayer && crtPlayer->getBoundNode()->getGUID() == sgnGUID) {
+    for (SceneGraphNode* crtPlayer : _players) {
+        if (crtPlayer && crtPlayer->getGUID() == sgnGUID) {
             return;
         }
     }
@@ -341,37 +342,35 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
         player->getCamera().setFixedYawAxis(true);
         playerNode->get<UnitComponent>()->setUnit(player);
 
-        _players[i] = player;
+        _players[i] = playerNode;
         ++_activePlayerCount;
 
         Attorney::SceneManager::onPlayerAdd(parentScene, player);
     }
 }
 
-void SceneManager::removePlayer(Scene& parentScene, Player_ptr& player, bool queue) {
+void SceneManager::removePlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
     if (queue) {
-        _playerRemoveQueue.push(std::make_pair(&parentScene, player));
+        _playerRemoveQueue.push(std::make_pair(&parentScene, playerNode));
         _platerQueueDirty = true;
     } else {
-        removePlayerInternal(parentScene, player);
+        removePlayerInternal(parentScene, playerNode);
     }
 }
 
-void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) {
-    if (player) {
-        const I64 targetGUID = player->getGUID();
-        for (U32 i = 0; i < Config::MAX_LOCAL_PLAYER_COUNT; ++i) {
-            if (_players[i] != nullptr && _players[i]->getGUID() == targetGUID) {
+void SceneManager::removePlayerInternal(Scene& parentScene, SceneGraphNode* playerNode) {
+    if (playerNode == nullptr) {
+        return;
+    }
 
-                _players[i] = nullptr;
-                --_activePlayerCount;
-
-                Attorney::SceneManager::onPlayerRemove(parentScene, player);
-                break;
-            }
+    const I64 targetGUID = playerNode->getGUID();
+    for (U32 i = 0; i < Config::MAX_LOCAL_PLAYER_COUNT; ++i) {
+        if (_players[i] != nullptr && _players[i]->getGUID() == targetGUID) {
+            --_activePlayerCount;
+            Attorney::SceneManager::onPlayerRemove(parentScene, playerNode->get<UnitComponent>()->getUnit<Player>());
+            _players[i] = nullptr;
+            break;
         }
-
-        player.reset();
     }
 }
 
@@ -592,7 +591,7 @@ Camera* SceneManager::playerCamera(PlayerIndex idx) const {
 
     Camera* overrideCamera = getActiveScene().state().playerState(idx).overrideCamera();
     if (overrideCamera == nullptr) {
-        overrideCamera = &_players[idx]->getCamera();
+        overrideCamera = &_players[idx]->get<UnitComponent>()->getUnit<Player>()->getCamera();
     }
 
     return overrideCamera;
