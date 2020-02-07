@@ -24,7 +24,7 @@
 namespace Divide {
 
     namespace {
-        using SetType = eastl::set<U32, eastl::less<U32>>;
+        using SetType = eastl::set<U32, eastl::less<U32>, eastl::dvd_eastl_allocator>;
         thread_local SetType g_usedIndices;
         thread_local U32 g_freeCounter = 0;
         thread_local RenderBin::SortedQueues g_sortedQueues;
@@ -322,7 +322,7 @@ RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePas
 }
 
 /// Prepare the list of visible nodes for rendering
-void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix, GFXDevice::NodeData& dataOut) const {
+void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const {
     OPTICK_EVENT();
 
     // Extract transform data (if available)
@@ -330,7 +330,11 @@ void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass
     const TransformComponent* const transform = node->get<TransformComponent>();
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        transform->getWorldMatrix(_context.getFrameInterpolationFactor(), dataOut._worldMatrix);
+        if (needsInterp) {
+            transform->getWorldMatrix(interpolationFactor, dataOut._worldMatrix);
+        } else {
+            dataOut._worldMatrix.set(transform->getWorldMatrix());
+        }
 
         dataOut._normalMatrixW.set(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {
@@ -418,6 +422,9 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
         }
 
         const mat4<F32>& viewMatrix = camera.getViewMatrix();
+        const D64 interpFactor = _context.getFrameInterpolationFactor();
+        const bool needsInterp = interpFactor > 0.99;
+
         RefreshNodeDataParams params(g_drawCommands, bufferInOut);
         params._camera = &camera;
         params._stagePass = stagePass;
@@ -449,7 +456,7 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
 
                 if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*entry.second, params)) {
                     GFXDevice::NodeData& data = g_nodeData[params._dataIdx];
-                    processVisibleNode(entry.first, stagePass, playAnimations, viewMatrix, data);
+                    processVisibleNode(entry.first, stagePass, playAnimations, viewMatrix, interpFactor, needsInterp, data);
                     g_usedIndices.insert(params._dataIdx);
                     ++g_freeCounter;
                     ++totalNodes;

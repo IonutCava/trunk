@@ -220,6 +220,9 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLev
     OPTICK_EVENT();
 
     lodLevel = std::min(lodLevel, to_U8(_lodIndexOffsets.size() - 1));
+    const std::pair<U32, U32>& idxData = _lodIndexOffsets[lodLevel];
+    const bool setAutoIdx = autoIndexBuffer() && (idxData.first != 0u || idxData.second != 0u);
+
     auto& cmds = _commands->get<GFX::DrawCommand>();
     for (auto& cmd : cmds) {
         auto& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
@@ -228,12 +231,9 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLev
                 drawCmd._cmd.baseInstance = dataIndex;
             }
             drawCmd._commandOffset = startOffset++;
-            if (autoIndexBuffer()) {
-                const std::pair<U32, U32>& idxData = _lodIndexOffsets[lodLevel];
-                if (idxData.first != 0u || idxData.second != 0u) {
-                    drawCmd._cmd.firstIndex = idxData.first;
-                    drawCmd._cmd.indexCount = idxData.second;
-                }
+            if (setAutoIdx) {
+                drawCmd._cmd.firstIndex = idxData.first;
+                drawCmd._cmd.indexCount = idxData.second;
             }
         }
     }

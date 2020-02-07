@@ -257,12 +257,10 @@ void CommandBuffer::clean() {
                 OPTICK_EVENT("Clean Draw Commands");
 
                 vectorEASTLFast<GenericDrawCommand>& cmds = getPtr<DrawCommand>(cmd)->_drawCommands;
-                cmds.erase(eastl::remove_if(eastl::begin(cmds),
-                                            eastl::end(cmds),
-                                            [](const GenericDrawCommand& cmd) noexcept -> bool {
-                                                return cmd._drawCount == 0u;
-                                            }),
-                           eastl::end(cmds));
+                eastl::erase_if(cmds,
+                                [](const GenericDrawCommand& cmd) noexcept -> bool {
+                                    return cmd._drawCount == 0u;
+                                });
 
                 erase = cmds.empty();
             } break;
@@ -506,8 +504,6 @@ stringImpl CommandBuffer::toString() const {
 
 
 bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) {
-    OPTICK_EVENT();
-
     // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
     if ((previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1) && previousIDC._cmd.primCount != currentIDC._cmd.primCount) {
         return false;
@@ -539,8 +535,6 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     OPTICK_EVENT();
 
     const auto BatchCommands = [](vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) {
-        OPTICK_EVENT();
-
         vec_size previousCommandIndex = 0;
         vec_size currentCommandIndex = 1;
         const vec_size commandCount = commands.size();
@@ -555,13 +549,10 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
 
     const auto RemoveEmptyDrawCommands = [](vectorEASTLFast<GenericDrawCommand>& commands) {
         const size_t startSize = commands.size();
-        commands.erase(eastl::remove_if(eastl::begin(commands),
-                                        eastl::end(commands),
-                                        [](const GenericDrawCommand& cmd) noexcept -> bool {
-                                        return cmd._drawCount == 0;
-                                    }),
-            eastl::end(commands));
-
+        eastl::erase_if(commands,
+                        [](const GenericDrawCommand& cmd) noexcept -> bool {
+                            return cmd._drawCount == 0;
+                        });
         return startSize - commands.size() > 0;
     };
 

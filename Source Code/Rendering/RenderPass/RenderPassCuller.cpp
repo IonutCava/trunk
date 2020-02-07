@@ -29,7 +29,7 @@ namespace {
         if (g_freeListInitialized.load()) {
             while(true) {
                 bool expected = true;
-                if (g_freeList[idxOut].compare_exchange_strong(expected, false)) {
+                if (g_freeList[idxOut].compare_exchange_weak(expected, false)) {
                     return g_tempContainers[idxOut];
                 }
                 (++idxOut) %= Config::MAX_VISIBLE_NODES;

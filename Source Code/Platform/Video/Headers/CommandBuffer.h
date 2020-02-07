@@ -45,7 +45,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
   public:
       using CommandEntry = PolyContainerEntry;
       using Container = PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)>;
-      using CommandOrderContainer = eastl::list<CommandEntry>;
+      using CommandOrderContainer = eastl::fixed_vector<CommandEntry, 256, true>;
 
   public:
     CommandBuffer() = default;

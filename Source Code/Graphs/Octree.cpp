@@ -72,13 +72,11 @@ void Octree::update(const U64 deltaTimeUS) {
     }
 
     // prune any dead objects from the tree
-    _objects.erase(eastl::remove_if(eastl::begin(_objects),
-                                    eastl::end(_objects),
-                                    [](SceneGraphNode* crtNode) -> bool {
-                                        SceneGraphNode* node = crtNode;
-                                        return !node || !node->hasFlag(SceneGraphNode::Flags::ACTIVE);
-                                    }),
-        eastl::end(_objects));
+    eastl::erase_if(_objects,
+                    [](SceneGraphNode* crtNode) -> bool {
+                        SceneGraphNode* node = crtNode;
+                        return !node || !node->hasFlag(SceneGraphNode::Flags::ACTIVE);
+                    });
 
     //go through and update every object in the current tree node
     _movedObjects.resize(0);
@@ -119,13 +117,11 @@ void Octree::update(const U64 deltaTimeUS) {
 
         //now, remove the object from the current node and insert it into the current containing node.
         I64 guid = movedObj->getGUID();
-        _objects.erase(eastl::remove_if(eastl::begin(_objects),
-                                        eastl::end(_objects),
-                                        [guid](SceneGraphNode* updatedNode) -> bool {
-                                            SceneGraphNode* node = updatedNode;
-                                            return node && node->getGUID() == guid;
-                                        }),
-            eastl::end(_objects));
+        eastl::erase_if(_objects,
+                        [guid](SceneGraphNode* updatedNode) -> bool {
+                            SceneGraphNode* node = updatedNode;
+                            return node && node->getGUID() == guid;
+                        });
 
         //this will try to insert the object as deep into the tree as we can go.
         current->insert(movedObj);
@@ -299,19 +295,17 @@ void Octree::buildTree() {
     }
 
     //delist every moved object from this node.
-    _objects.erase(eastl::remove_if(eastl::begin(_objects),
-                                    eastl::end(_objects),
-                                   [&delist](SceneGraphNode* movedNode) -> bool {
-                                      if (movedNode) {
-                                          for (I64 guid : delist) {
-                                              if (guid == movedNode->getGUID()) {
-                                                  return true;
-                                              }
-                                          }
-                                      }
-                                      return false;
-                                    }),
-        eastl::end(_objects));
+    eastl::erase_if(_objects,
+                    [&delist](SceneGraphNode* movedNode) -> bool {
+                        if (movedNode) {
+                            for (I64 guid : delist) {
+                                if (guid == movedNode->getGUID()) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    });
 
     //Create child nodes where there are items contained in the bounding region
     for (U8 i = 0; i < 8; ++i) {

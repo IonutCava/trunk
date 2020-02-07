@@ -87,23 +87,19 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
         return;
     }
 
-    vectorEASTL<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode().type())];
-
-    nodesByType.erase(eastl::remove_if(eastl::begin(nodesByType), eastl::end(nodesByType), 
-                                     [guid](SceneGraphNode* node)-> bool
-                                     {
-                                         return node && node->getGUID() == guid;
-                                     }),
-                      eastl::end(nodesByType));
+    eastl::erase_if(_nodesByType[to_base(oldNode.getNode().type())],
+                    [guid](SceneGraphNode* node)-> bool
+                    {
+                        return node && node->getGUID() == guid;
+                    });
 
     Attorney::SceneGraph::onNodeDestroy(_parentScene, oldNode);
 
-    _allNodes.erase(std::remove_if(std::begin(_allNodes), std::end(_allNodes),
-                                   [guid](SceneGraphNode* node)-> bool 
-                                   {
-                                       return node && node->getGUID() == guid;
-                                   }),
-                    std::end(_allNodes));
+    eastl::erase_if(_allNodes,
+                    [guid](SceneGraphNode* node)-> bool 
+                    {
+                        return node && node->getGUID() == guid;
+                    });
 
     _nodeListChanged = true;
 }

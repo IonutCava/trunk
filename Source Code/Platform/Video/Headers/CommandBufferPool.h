@@ -46,7 +46,7 @@ class CommandBufferPool {
 
  private:
     mutable std::mutex _mutex;
-    MemoryPool<CommandBuffer, 4096 * 4> _pool;
+    MemoryPool<CommandBuffer, 8192 * 2> _pool;
 };
 
 class ScopedCommandBuffer {

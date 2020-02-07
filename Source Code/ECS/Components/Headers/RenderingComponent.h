@@ -240,27 +240,26 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void onMaterialChanged();
 
    protected:
-    GFXDevice& _context;
-    const Configuration& _config;
-    Material_ptr _materialInstance;
-    Material* _materialInstanceCache;
-
-    std::pair<U32, bool> _dataIndex;
-    F32 _cullFlagValue;
-    U32 _renderMask;
-    bool _lodLocked;
-    vec2<F32> _renderRange;
-
-    std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
-    std::array<U32, to_base(RenderStage::COUNT)> _drawDataIdx;
-
-    using RenderPackagesPerPassType = std::array<RenderPackage, to_base(RenderPassType::COUNT)>;
-    std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT) - 1> _renderPackagesNormal;
-
-    using RenderPacakgesPerSplit = std::array<RenderPackage, 6>;
-    std::array<RenderPacakgesPerSplit, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _renderPackagesShadow;
+    std::array<RenderPackage, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6> _renderPackagesShadow;
+    std::array<RenderPackage, (to_base(RenderStage::COUNT) - 1) * to_base(RenderPassType::COUNT)> _renderPackagesNormal;
+    RenderCallback _reflectionCallback;
+    RenderCallback _refractionCallback;
+    std::array<Texture_ptr, (sizeof(g_texUsage) / sizeof(g_texUsage[0]))> _externalTextures;
 
     PushConstants _globalPushConstants;
+    EnvironmentProbeList _envProbes;
+    vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
+
+    std::pair<Texture_ptr, U32> _defaultReflection;
+    std::pair<Texture_ptr, U32> _defaultRefraction;
+    std::array<U32, to_base(RenderStage::COUNT)> _drawDataIdx;
+    Material_ptr _materialInstance;
+    Material* _materialInstanceCache;
+    GFXDevice& _context;
+    const Configuration& _config;
+
+    vec2<F32> _renderRange;
+    std::pair<U32, bool> _dataIndex;
 
     Pipeline*    _primitivePipeline[3];
     IMPrimitive* _boundingBoxPrimitive[2];
@@ -268,22 +267,14 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     IMPrimitive* _skeletonPrimitive;
     IMPrimitive* _axisGizmo;
 
-    RenderCallback _reflectionCallback;
-    RenderCallback _refractionCallback;
-
-    EnvironmentProbeList _envProbes;
-
-    ReflectorType _reflectorType;
-    
     /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
     I32 _reflectionIndex;
     I32 _refractionIndex;
-    std::pair<Texture_ptr, U32> _defaultReflection;
-    std::pair<Texture_ptr, U32> _defaultRefraction;
-
-    vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
-
-    std::array<Texture_ptr, (sizeof(g_texUsage) / sizeof(g_texUsage[0]))> _externalTextures;
+    F32 _cullFlagValue;
+    U32 _renderMask;
+    std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
+    ReflectorType _reflectorType;
+    bool _lodLocked;
 
     static hashMap<U32, DebugView*> s_debugViews[2];
 };
