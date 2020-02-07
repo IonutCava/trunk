@@ -11,8 +11,7 @@ RenderPackage::RenderPackage() noexcept
     : _commands(GFX::allocateCommandBuffer(true)),
       _drawCommandOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY)),
       _drawCommandCount(0),
-      _qualityRequirement(MinQuality::FULL),
-      _lodLevel(0u)
+      _qualityRequirement(MinQuality::FULL)
 {
     _lodIndexOffsets.fill({ 0u, 0u });
 }
@@ -217,17 +216,10 @@ void RenderPackage::setTexture(I32 descriptorSetIndex, const TextureData& data, 
     cmd._set._textureData.setTexture(data, binding);
 }
 
-U8 RenderPackage::lodLevel() const noexcept {
-    return _lodLevel;
-}
-
-void RenderPackage::setLoDLevel(U8 LoD) noexcept {
-    _lodLevel = std::min(LoD, to_U8(_lodIndexOffsets.size() - 1));
-}
-
-void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
+void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel) {
     OPTICK_EVENT();
 
+    lodLevel = std::min(lodLevel, to_U8(_lodIndexOffsets.size() - 1));
     auto& cmds = _commands->get<GFX::DrawCommand>();
     for (auto& cmd : cmds) {
         auto& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
@@ -237,7 +229,7 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
             }
             drawCmd._commandOffset = startOffset++;
             if (autoIndexBuffer()) {
-                const std::pair<U32, U32>& idxData = _lodIndexOffsets[_lodLevel];
+                const std::pair<U32, U32>& idxData = _lodIndexOffsets[lodLevel];
                 if (idxData.first != 0u || idxData.second != 0u) {
                     drawCmd._cmd.firstIndex = idxData.first;
                     drawCmd._cmd.indexCount = idxData.second;
@@ -245,10 +237,6 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset) {
             }
         }
     }
-}
-
-void RenderPackage::getCommandBuffer(GFX::CommandBuffer& bufferInOut) {
-    bufferInOut.add(*_commands);
 }
 
 }; //namespace Divide

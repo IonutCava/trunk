@@ -169,7 +169,7 @@ bool Sky::preRender(SceneGraphNode& sgn,
                    bool refreshData,
                    bool& rebuildCommandsOut) {
     if (_rebuildDrawCommands == RebuildCommandsState::REQUESTED) {
-        sgn.get<RenderingComponent>()->queueRebuildCommands(renderStagePass);
+        rebuildCommandsOut = true;
         _rebuildDrawCommands = RebuildCommandsState::DONE;
     }
 

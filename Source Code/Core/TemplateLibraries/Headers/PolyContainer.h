@@ -166,8 +166,14 @@ struct PolyContainer {
         }
     }
 
+    inline void reserve(const PolyContainer<T,N>& other) {
+        for (U8 i = 0; i < N; ++i) {
+            _collection[i].reserve(_collection[i].size() + other._collection[i].size());
+        }
+    }
+
     inline void reserve(U8 index, size_t reserveSize) {
-        getPtr(index)->reserve(reserveSize);
+        get(index).reserve(reserveSize);
     }
 
     inline void clear(bool clearMemory = false) {
@@ -192,9 +198,9 @@ struct PolyContainer {
 
     inline void clear(U8 index, bool clearMemory = false) {
         if (clearMemory) {
-            getPtr(index)->clear();
+            get(index).clear();
         } else {
-            getPtr(index)->resize(0);
+            get(index).resize(0);
         }
     }
 

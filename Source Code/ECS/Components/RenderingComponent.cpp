@@ -236,7 +236,7 @@ void RenderingComponent::onMaterialChanged() {
 
 bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
     OPTICK_EVENT();
-    OPTICK_TAG("Node", _parentSGN.name().c_str());
+    OPTICK_TAG("Node", (_parentSGN.name().c_str()));
 
     if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, renderStagePass, LoD)) {
         // Can we render without a material? Maybe. IDK.
@@ -286,35 +286,26 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     }
 }
 
-void RenderingComponent::setDataIndex(U32 idx) {
+void RenderingComponent::setDataIndex(U32 idx) noexcept {
     assert(idx != std::numeric_limits<U32>::max());
 
     _dataIndex.first = idx;
     _dataIndex.second = true;
 }
 
-bool RenderingComponent::getDataIndex(U32& idxOut) {
+bool RenderingComponent::getDataIndex(U32& idxOut) noexcept {
     idxOut = _dataIndex.first;
     return _dataIndex.second;
 }
 
-void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
+void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass, RenderPackage& pkg) {
     OPTICK_EVENT();
 
-    if (!useDataIndexAsUniform()) {
-        return;
-    }
-
-    const U8 stage = to_U8(stagePass._stage);
-    const U8 lod = _lodLevels[stage];
-    if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, stagePass, lod)) {
-        RenderPackage& pkg = getDrawPackage(stagePass);
-        if (!pkg.empty()) {
-            const U32 dataIdx = _drawDataIdx[stage];
-            if (pkg.dataDrawIdxCache() != dataIdx) {
-                pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, dataIdx);
-                pkg.dataDrawIdxCache(dataIdx);
-            }
+    if (useDataIndexAsUniform() && !pkg.empty()) {
+        const U32 dataIdx = _drawDataIdx[to_U8(stagePass._stage)];
+        if (pkg.dataDrawIdxCache() != dataIdx) {
+            pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, dataIdx);
+            pkg.dataDrawIdxCache(dataIdx);
         }
     }
 }
@@ -322,7 +313,7 @@ void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass) {
 bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams) {
     OPTICK_EVENT();
 
-    uploadDataIndexAsUniform(refreshParams._stagePass);
+    uploadDataIndexAsUniform(refreshParams._stagePass, getDrawPackage(refreshParams._stagePass));
     Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, true, refreshParams._bufferInOut);
     return true;
 }
@@ -333,35 +324,38 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
     RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
     const I32 drawCommandCount = pkg.drawCommandCount();
 
-    if (drawCommandCount > 0) {
-        if (!_dataIndex.second) {
-            _dataIndex.first = refreshParams._dataIdx;
-        }
+    if (drawCommandCount == 0) {
+        return false;
+    }
+     
+    const U8 lodLevel = _lodLevels[to_base(refreshParams._stagePass._stage)];
 
-        if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()));
-        } else {
-            RenderPackagesPerPassType& packages = _renderPackagesNormal[to_base(refreshParams._stagePass._stage) - 1];
-            for (RenderPackage& package : packages) {
-                Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()));
-            }
-        }
-        for (I32 i = 0; i < drawCommandCount; ++i) {
-            const GenericDrawCommand& cmd = pkg.drawCommand(i, 0);
-            if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
-                std::fill_n(std::back_inserter(refreshParams._drawCommandsInOut), cmd._drawCount, cmd._cmd);
-            } else {
-                refreshParams._drawCommandsInOut.push_back(cmd._cmd);
-            }
-        }
-
-        _drawDataIdx[to_base(refreshParams._stagePass._stage)] = _dataIndex.first;
-        uploadDataIndexAsUniform(refreshParams._stagePass);
-        Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
-        return true;
+    if (!_dataIndex.second) {
+        _dataIndex.first = refreshParams._dataIdx;
     }
 
-    return false;
+    if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
+        Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()), lodLevel);
+    } else {
+        RenderPackagesPerPassType& packages = _renderPackagesNormal[to_base(refreshParams._stagePass._stage) - 1];
+        for (RenderPackage& package : packages) {
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()), lodLevel);
+        }
+    }
+
+    for (I32 i = 0; i < drawCommandCount; ++i) {
+        const GenericDrawCommand& cmd = pkg.drawCommand(i, 0);
+        if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
+            std::fill_n(std::back_inserter(refreshParams._drawCommandsInOut), cmd._drawCount, cmd._cmd);
+        } else {
+            refreshParams._drawCommandsInOut.push_back(cmd._cmd);
+        }
+    }
+
+    _drawDataIdx[to_base(refreshParams._stagePass._stage)] = _dataIndex.first;
+    uploadDataIndexAsUniform(refreshParams._stagePass, pkg);
+    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
+    return true;
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
@@ -372,7 +366,7 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     }
 }
 
-void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
+void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
     const bool shadowMappingEnabled = _config.rendering.shadowMapping.enabled;
 
     propertiesOut.set(_parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED)
@@ -381,7 +375,7 @@ void RenderingComponent::getRenderingProperties(RenderStagePass& stagePass, vec4
                                                                                       ? 1.0f
                                                                                       : 0.0f,
                       (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
-                      to_F32(getDrawPackage(stagePass).lodLevel()),
+                      to_F32(_lodLevels[to_base(stagePass._stage)]),
                       _cullFlagValue);
 
     reflectionIndex = to_F32(defaultReflectionTextureIndex());
@@ -554,12 +548,7 @@ U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>
         lodLevel += 1;
     }
 
-    // Hack: clamlp LoD
-    return std::min(lodLevel, to_U8(2u));
-}
-
-void RenderingComponent::queueRebuildCommands(RenderStagePass renderStagePass) {
-    getDrawPackage(renderStagePass).clear();
+    return lodLevel;
 }
 
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData) {
@@ -567,7 +556,10 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
     if (refreshData) {
-        lod = getLoDLevel(*_parentSGN.get<BoundsComponent>(), camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds());
+        BoundsComponent* bComp = _parentSGN.get<BoundsComponent>();
+        if (bComp != nullptr) {
+            lod = getLoDLevel(*bComp, *camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds());
+        }
     }
 
     if (canDraw(renderStagePass, lod, refreshData)) {
@@ -578,23 +570,12 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             if (pkg.empty() || rebuildCommandsOut) {
                 rebuildDrawCommands(renderStagePass, pkg);
             }
+
             if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, camera, renderStagePass, refreshData)) {
-
-                Attorney::RenderPackageRenderingComponent::setLoDLevel(pkg, lod);
-
-                const bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) ||
-                                            sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
-                const bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
-                                             sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
-
-                if (renderWireframe && renderGeometry) {
-                    pkg.enableOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY) | to_base(CmdRenderOptions::RENDER_WIREFRAME));
-                } else if (!renderWireframe && !renderGeometry) {
-                    pkg.disableOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY) | to_base(CmdRenderOptions::RENDER_WIREFRAME));
-                } else {
-                    pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, renderGeometry);
-                    pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);
-                }
+                pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY,
+                                 (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY)  && sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
+                pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME,
+                                 (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
             }
         }
     }

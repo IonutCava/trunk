@@ -47,7 +47,7 @@
 #include <RenderDoc-Manager/RenderDocManager.h>
 
 namespace Divide {
-    constexpr bool g_UseImmutableDataStorageForGPUData = false;
+    constexpr bool g_UseImmutableDataStorageForGPUData = true;
 
 namespace TypeUtil {
     const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept {

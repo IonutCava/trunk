@@ -79,8 +79,6 @@ public:
 
     size_t getSortKeyHash() const;
 
-    U8 lodLevel() const noexcept;
-
     inline I32 drawCommandCount() const noexcept { return _drawCommandCount; }
 
     const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
@@ -125,10 +123,7 @@ public:
     PROPERTY_RW(U32,  dataDrawIdxCache, 0u);
 
 protected:
-    void setLoDLevel(U8 LoD) noexcept;
-
-    void updateDrawCommands(U32 dataIndex, U32 startOffset);
-    void getCommandBuffer(GFX::CommandBuffer& bufferInOut);
+    void updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel);
 
 protected:
     // Cached command buffer
@@ -139,15 +134,14 @@ private:
     I32 _drawCommandCount;
     U16 _drawCommandOptions;
     MinQuality _qualityRequirement;
-    U8 _lodLevel;
 };
 
 
 namespace Attorney {
     class RenderPackageRenderPassManager {
         private:
-        static void getCommandBuffer(RenderPackage& pkg, GFX::CommandBuffer& bufferInOut) {
-            pkg.getCommandBuffer(bufferInOut);
+        static GFX::CommandBuffer* getCommandBuffer(RenderPackage& pkg) {
+            return pkg._commands;
         }
 
         friend class Divide::RenderPassManager;
@@ -155,12 +149,8 @@ namespace Attorney {
 
     class RenderPackageRenderingComponent {
         private:
-        static void updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset) {
-            pkg.updateDrawCommands(dataIndex, startOffset);
-        }
-
-        static void setLoDLevel(RenderPackage& pkg, U8 LoD) noexcept {
-            pkg.setLoDLevel(LoD);
+        static void updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset, U8 lodLevel) {
+            pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
         }
 
         friend class Divide::RenderingComponent;

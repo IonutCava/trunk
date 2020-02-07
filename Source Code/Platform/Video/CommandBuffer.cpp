@@ -58,17 +58,36 @@ void CommandBuffer::add(const CommandBuffer& other) {
     OPTICK_EVENT();
 
     static_assert(sizeof(PolyContainerEntry) == 4, "PolyContainerEntry has the wrong size!");
+    _commands.reserve(other._commands);
 
     for (const CommandEntry& cmd : other._commandOrder) {
         other.getPtr<CommandBase>(cmd)->addToBuffer(*this);
     }
-
     _batched = false;
 }
 
+void CommandBuffer::add(CommandBuffer** buffers, size_t count) {
+    OPTICK_EVENT();
+
+    for (size_t i = 0; i < count; ++i) {
+        add(*buffers[i]);
+    }
+}
+
 void CommandBuffer::addDestructive(CommandBuffer& other) {
+    OPTICK_EVENT();
+
     add(other);
     other.clear(false);
+}
+
+void CommandBuffer::addDestructive(CommandBuffer** buffers, size_t count) {
+    OPTICK_EVENT();
+
+    add(buffers, count);
+    for (size_t i = 0; i < count; ++i) {
+        buffers[i]->clear(false);
+    }
 }
 
 void CommandBuffer::batch() {

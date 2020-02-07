@@ -168,7 +168,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
-    void getRenderingProperties(RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
+    void getRenderingProperties(const RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
 
     RenderPackage& getDrawPackage(RenderStagePass renderStagePass);
     const RenderPackage& getDrawPackage(RenderStagePass renderStagePass) const;
@@ -191,17 +191,15 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
     inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }
 
-    void queueRebuildCommands(RenderStagePass renderStagePass);
-
-    bool getDataIndex(U32& idxOut);
-    void setDataIndex(U32 idx);
+    bool getDataIndex(U32& idxOut) noexcept;
+    void setDataIndex(U32 idx) noexcept;
 
     PROPERTY_RW(bool, useDataIndexAsUniform, false);
 
   protected:
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
     bool onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams);
-    void uploadDataIndexAsUniform(RenderStagePass stagePass);
+    void uploadDataIndexAsUniform(RenderStagePass stagePass, RenderPackage& pkg);
 
     bool canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData);
 

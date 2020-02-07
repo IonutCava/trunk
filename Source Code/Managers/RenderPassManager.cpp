@@ -322,10 +322,8 @@ RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePas
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix) const {
+void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix, GFXDevice::NodeData& dataOut) const {
     OPTICK_EVENT();
-
-    GFXDevice::NodeData dataOut = {};
 
     // Extract transform data (if available)
     // (Nodes without transforms just use identity matrices)
@@ -383,8 +381,6 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
         }
         dataOut._colourMatrix.setRow(2, matColour);
     }
-
-    return dataOut;
 }
 
 void RenderPassManager::buildBufferData(RenderStagePass stagePass,
@@ -421,6 +417,7 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
             }
         }
 
+        const mat4<F32>& viewMatrix = camera.getViewMatrix();
         RefreshNodeDataParams params(g_drawCommands, bufferInOut);
         params._camera = &camera;
         params._stagePass = stagePass;
@@ -451,8 +448,8 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
                 }
 
                 if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*entry.second, params)) {
-                    const GFXDevice::NodeData data = processVisibleNode(entry.first, stagePass, playAnimations, camera.getViewMatrix());
-                    g_nodeData[params._dataIdx] = data;
+                    GFXDevice::NodeData& data = g_nodeData[params._dataIdx];
+                    processVisibleNode(entry.first, stagePass, playAnimations, viewMatrix, data);
                     g_usedIndices.insert(params._dataIdx);
                     ++g_freeCounter;
                     ++totalNodes;
@@ -976,17 +973,21 @@ void RenderPassManager::renderQueueToSubPasses(RenderStagePass stagePass, GFX::C
 
     const vectorEASTLFast<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
 
+    eastl::fixed_vector<GFX::CommandBuffer*, Config::MAX_VISIBLE_NODES> buffers = {};
+
     if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
         for (RenderPackage* item : queue) {
-            Attorney::RenderPackageRenderPassManager::getCommandBuffer(*item, commandsInOut);
+            buffers.push_back(Attorney::RenderPackageRenderPassManager::getCommandBuffer(*item));
         }
     } else {
         for (RenderPackage* item : queue) {
             if (item->qualityRequirement() == qualityRequirement) {
-                Attorney::RenderPackageRenderPassManager::getCommandBuffer(*item, commandsInOut);
+                buffers.push_back(Attorney::RenderPackageRenderPassManager::getCommandBuffer(*item));
             }
         }
     }
+
+    commandsInOut.add(buffers.data(), buffers.size());
 }
 
 };

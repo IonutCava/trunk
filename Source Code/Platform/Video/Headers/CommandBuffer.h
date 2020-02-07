@@ -68,7 +68,10 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     bool validate() const;
 
     void add(const CommandBuffer& other);
+    void add(CommandBuffer** buffers, size_t count);
+
     void addDestructive(CommandBuffer& other);
+    void addDestructive(CommandBuffer** buffers, size_t count);
 
     void clean();
 
