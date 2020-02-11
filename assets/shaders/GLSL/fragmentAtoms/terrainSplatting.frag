@@ -44,16 +44,20 @@ const int tiling[] = {
     int(TEXTURE_TILE_SIZE * 0.0009765625f),
 };
 
-vec4 _getTexture(in sampler2DArray tex, in vec3 uv) {
-    if (DETAIL_LEVEL > 1 && false) {
-        if (DETAIL_LEVEL > 2 && LoD == 0) {
-            return textureNoTile(tex, helperTextures, 3, uv);
-        }
 
-        return textureNoTile(tex, uv);
+vec4 _getTexture(in sampler2DArray tex, in vec2 uv, in uint arrayIdx) {
+    const vec3 texUV = vec3(uv, arrayIdx);
+#if (DETAIL_LEVEL > 1)
+    if (LoD == 0) {
+#if (DETAIL_LEVEL > 2)
+        return textureNoTile(tex, helperTextures, 3, texUV, 0.5f);
+#else
+        return textureNoTile(tex, texUV);
+#endif
     }
+#endif
 
-    return texture(tex, uv);
+    return texture(tex, texUV);
 }
 
 void getBlendFactor(in vec2 uv, inout float blendAmount[TOTAL_LAYER_COUNT]) {
@@ -73,7 +77,7 @@ void getBlendFactor(in vec2 uv, inout float blendAmount[TOTAL_LAYER_COUNT]) {
 float getDisplacementValueFromCoords(vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
     float ret = 0.0f;
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        ret = mix(ret, _getTexture(texExtraMaps, vec3(sampleUV, DISPLACEMENT_IDX[i])).r, amnt[i]);
+        ret = mix(ret, _getTexture(texExtraMaps, sampleUV, DISPLACEMENT_IDX[i]).r, amnt[i]);
     }
     return ret;
 }
@@ -89,7 +93,7 @@ float getDisplacementValue(vec2 sampleUV) {
 #endif
 
 vec2 _getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
-    vec2 scaledCoords = scaledTextureCoords(uv, tiling[LoD]);
+    const vec2 scaledCoords = scaledTextureCoords(uv, tiling[LoD]);
 #if defined(HAS_PARALLAX)
     if (LoD == 0) {
         const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
@@ -105,40 +109,23 @@ vec2 _getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
 }
 
 #if defined(PRE_PASS)
-vec3 _getUnderwaterNormal(in vec2 uv) {
-    return (2.0f * texture(helperTextures, vec3(uv, 2)).rgb - 1.0f);
-}
-
-vec3 _getTerrainNormal(in vec2 uv, in float blendAmount[TOTAL_LAYER_COUNT]) {
-    vec3 normal = vec3(0.0f);
-
-    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        normal = mix(normal, _getTexture(texNormalMaps, vec3(uv, NORMAL_IDX[i])).rgb, blendAmount[i]);
-    }
-
-    return (2.0f * normal - 1.0f);
-}
-
 vec3 _getTerrainNormal(in vec2 uv) {
     INSERT_BLEND_AMNT_ARRAY;
     getBlendFactor(uv, blendAmount);
+    const vec2 scaledUV = _getScaledCoords(uv, blendAmount);
 
-    return _getTerrainNormal(_getScaledCoords(uv, blendAmount), blendAmount);
+    vec3 normal = vec3(0.0f);
+    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
+        normal = mix(normal, _getTexture(texNormalMaps, scaledUV, NORMAL_IDX[i]).rgb, blendAmount[i]);
+    }
+
+    return normal;
 }
 
 vec3 getMixedNormal(in vec2 uv, in float waterDepth) {
-    const bool underwater = waterDepth < -0.01f;
-    const bool aboveWater = waterDepth > 0.01f;
-
-    /*if (underwater) {
-        return VAR._tbn * _getUnderwaterNormal(uv * UNDERWATER_TILE_SCALE);
-    } else if (aboveWater) {
-        return VAR._tbn * _getTerrainNormal(uv);
-    }*/
-
-    return VAR._tbn * mix(_getUnderwaterNormal(uv * UNDERWATER_TILE_SCALE), 
-                           _getTerrainNormal(uv),
-                          saturate(waterDepth));
+    return VAR._tbn * (2.0f * mix(texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb,
+                                  _getTerrainNormal(uv),
+                                   saturate(waterDepth)) - 1.0f);
 }
 #else //PRE_PASS
 
@@ -157,60 +144,40 @@ vec4 _getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
 #endif //LOW_QUALITY
 }
 
-vec4 _getTerrainAlbedo(in vec2 uv, in float blendAmount[TOTAL_LAYER_COUNT]) {
-    vec4 ret = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+vec4 _getTerrainAlbedo(in vec2 uv) {
+    INSERT_BLEND_AMNT_ARRAY;
+    getBlendFactor(uv, blendAmount);
+    const vec2 scaledUV = _getScaledCoords(uv, blendAmount);
+
+    vec4 ret = vec4(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
         // Albedo & Roughness
-        ret = mix(ret, _getTexture(texTileMaps, vec3(uv, ALBEDO_IDX[i])), blendAmount[i]);
+        ret = mix(ret, _getTexture(texTileMaps, scaledUV, ALBEDO_IDX[i]), blendAmount[i]);
         // ToDo: AO
     }
 
     return ret;
 }
-
-vec4 _getTerrainAlbedo(in vec2 uv) {
-    INSERT_BLEND_AMNT_ARRAY;
-    getBlendFactor(uv, blendAmount);
-
-    return _getTerrainAlbedo(_getScaledCoords(uv, blendAmount), blendAmount);
-}
-
-vec4 getMixedAlbedo(in vec2 uv, in float waterDepth, in float waterHeight) {
-    const bool underwater = waterDepth < -0.01f;
-    const bool aboveWater = waterDepth > 0.01f;
-
-    /*if (underwater) {
-        return _getUnderwaterAlbedo(uv * UNDERWATER_TILE_SCALE, waterHeight);
-    } else if (aboveWater) {
-        return _getTerrainAlbedo(uv);
-    }*/
-
-    return mix(_getUnderwaterAlbedo(uv * UNDERWATER_TILE_SCALE, waterHeight),
-               _getTerrainAlbedo(uv),
-                waterDepth);
-}
 #endif // PRE_PASS
 
-TerrainData BuildTerrainData(in vec2 waterDetails) {
-    TerrainData ret;
-    ret.uv = TexCoords;
+void BuildTerrainData(in vec2 waterDetails, out TerrainData data) {
+    data.uv = TexCoords;
+#   if defined(LOW_QUALITY)
+    data.normal = VAR._normalWV;
+#   endif
 
 #if defined(PRE_PASS)
-#   if defined(LOW_QUALITY)
-    ret.normal = VAR._normalWV;
-#   else
-    ret.normal = getMixedNormal(ret.uv, 1.0f - waterDetails.x);
+#   if !defined(LOW_QUALITY)
+    data.normal = getMixedNormal(data.uv, 1.0f - waterDetails.x);
 #   endif //LOW_QUALITY
 #else // PRE_PASS
-#   if defined(LOW_QUALITY)
-    ret.normal = VAR._normalWV; // skip some texture fetches
-#   else //LOW_QUALITY
-    ret.normal = getNormal(ret.uv);
+#   if !defined(LOW_QUALITY)
+    data.normal = getNormal(data.uv);
 #   endif //LOW_QUALITY
-    ret.albedo = getMixedAlbedo(ret.uv, 1.0f - waterDetails.x, waterDetails.y);
+    data.albedo =  mix(_getUnderwaterAlbedo(data.uv * UNDERWATER_TILE_SCALE, waterDetails.y),
+                       _getTerrainAlbedo(data.uv),
+                       1.0f - waterDetails.x);
 #endif //PRE_PASS
-
-    return ret;
 }
 
 

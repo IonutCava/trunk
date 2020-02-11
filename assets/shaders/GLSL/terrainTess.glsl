@@ -597,9 +597,10 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
-    TerrainData data = BuildTerrainData(_waterDetails);
+    TerrainData data;
+    BuildTerrainData(_waterDetails, data);
 
-    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
+    const mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     vec4 colourOut = getPixelColour(vec4(data.albedo.rgb, 1.0f), colourMatrix, data.normal, data.uv);
 
 #if defined(TOGGLE_NORMALS)
@@ -656,7 +657,8 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 void main(void)
 {
 
-    TerrainData data = BuildTerrainData(_waterDetails);
+    TerrainData data;
+    BuildTerrainData(_waterDetails, data);
 
 #if defined(PRE_PASS)
     const float crtDepth = computeDepth(_in._vertexWV);
@@ -664,7 +666,7 @@ void main(void)
 #else
     _private_roughness = data.albedo.a;
 
-    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
+    const mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     vec4 colourOut = getPixelColour(vec4(data.albedo.rgb, 1.0f), colourMatrix, data.normal, data.uv);
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)

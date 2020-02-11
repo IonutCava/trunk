@@ -181,10 +181,10 @@ namespace Divide {
         BlendingProperties _blendPropertiesGlobal = { BlendProperty::ONE,
                                                       BlendProperty::ONE,
                                                       BlendOperation::ADD };
-        gl::GLboolean _blendEnabledGlobal = GL_FALSE;
+        GLboolean _blendEnabledGlobal = GL_FALSE;
 
         vector<BlendingProperties> _blendProperties;
-        vector<gl::GLboolean> _blendEnabled;
+        vector<GLboolean> _blendEnabled;
         GLenum    _currentCullMode = GL_BACK;
         GLenum    _currentFrontFace = GL_CCW;
         UColour4  _blendColour = UColour4(0, 0, 0, 0);

@@ -796,7 +796,8 @@ void GFXDevice::idle() {
     OPTICK_EVENT();
 
     if (Config::ENABLE_GPU_VALIDATION) {
-        _debugViewsEnabled = ParamHandler::instance().getParam<bool>(_ID_32("rendering.previewDebugViews"), false);
+        constexpr U32 previewDebugViews = _ID_32("rendering.previewDebugViews");
+        _debugViewsEnabled = ParamHandler::instance().getParam<bool>(previewDebugViews, false);
     }
 
     _api->idle();

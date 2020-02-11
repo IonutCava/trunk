@@ -130,7 +130,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
                                      eastl::back_inserter(cstrings), std::mem_fn(&stringImpl::c_str));
 
                     const GLuint shader = glCreateShader(GLUtil::glShaderStageTable[i]);
-                    if (shader) {
+                    if (shader != 0u) {
                         glShaderSource(shader, (GLsizei)cstrings.size(), cstrings.data(), NULL);
                         glCompileShader(shader);
 

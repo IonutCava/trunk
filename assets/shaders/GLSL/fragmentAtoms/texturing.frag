@@ -58,7 +58,7 @@ vec4 textureNoTile(sampler2D samp, in vec2 uv) {
                    textureGrad(samp, uvd, ddxd, ddyd), b.x), b.y);
 }
 
-vec4 textureNoTile(sampler2D samp, in vec2 uv, in float v) {
+vec4 textureNoTileSLOW(sampler2D samp, in vec2 uv, in float v) {
     vec2 p = floor(uv);
     vec2 f = fract(uv);
 
@@ -92,28 +92,33 @@ vec4 textureNoTile(sampler2D samp, in vec2 uv, in float v) {
     return mix(va / w1, res, v);
 }
 
-vec4 textureNoTile(sampler2D samp, sampler2DArray noiseSampler, in int noiseSamplerIdx, in vec2 uv) {
+vec4 textureNoTile(sampler2D samp, sampler2DArray noiseSampler, in int noiseSamplerIdx, in vec2 uv, in float v) {
     // sample variation pattern    
     float k = texture(noiseSampler, vec3(0.005 * uv, noiseSamplerIdx)).x; // cheap (cache friendly) lookup    
 
-    // compute index    
-    float index = k * 8.0;
-    float i = floor(index);
-    float f = fract(index);
+    vec2 duvdx = dFdx(uv);
+    vec2 duvdy = dFdy(uv);
 
-    // offsets for the different virtual patterns    
-    vec2 offa = sin(vec2(3.0, 7.0) * (i + 0.0)); // can replace with any other hash    
-    vec2 offb = sin(vec2(3.0, 7.0) * (i + 1.0)); // can replace with any other hash    
+    float l = k * 8.0;
+    float f = fract(l);
 
-    // compute derivatives for mip-mapping    
-    vec2 dx = dFdx(uv), dy = dFdy(uv);
+#if 1
+    float ia = floor(l); // my method
+    float ib = ia + 1.0;
+#else
+    float ia = floor(l + 0.5); // suslik's method (see comments)
+    float ib = floor(l);
+    f = min(f, 1.0 - f) * 2.0;
+#endif    
 
-    // sample the two closest virtual patterns    
-    vec4 cola = textureGrad(samp, uv + offa, dx, dy);
-    vec4 colb = textureGrad(samp, uv + offb, dx, dy);
+    vec2 offa = sin(vec2(3.0, 7.0) * ia); // can replace with any other hash
+    vec2 offb = sin(vec2(3.0, 7.0) * ib); // can replace with any other hash
+
+    vec4 cola = textureGrad(samp, uv + v * offa, duvdx, duvdy);
+    vec4 colb = textureGrad(samp, uv + v * offb, duvdx, duvdy);
 
     // interpolate between the two virtual patterns    
-    return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * sum(cola.rgb - colb.rgb)));
+    return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * sum(cola - colb)));
 }
 
 vec4 textureNoTile(sampler2DArray samp, in vec3 uvIn) {
@@ -153,7 +158,7 @@ vec4 textureNoTile(sampler2DArray samp, in vec3 uvIn) {
 }
 
 //float v = smoothstep( 0.4, 0.6, sin(iTime    ) );
-vec4 textureNoTile(sampler2DArray samp, in vec3 uvIn, float v) {
+vec4 textureNoTileSLOW(sampler2DArray samp, in vec3 uvIn, float v) {
     const vec2 uv = uvIn.xy;
 
     vec2 p = floor(uv);
@@ -189,30 +194,36 @@ vec4 textureNoTile(sampler2DArray samp, in vec3 uvIn, float v) {
     return mix(va / w1, res, v);
 }
 
-vec4 textureNoTile(sampler2DArray samp, sampler2DArray noiseSampler, in int noiseSamplerIdx, in vec3 uvIn) {
+vec4 textureNoTile(sampler2DArray samp, sampler2DArray noiseSampler, in int noiseSamplerIdx, in vec3 uvIn, in float v) {
     const vec2 uv = uvIn.xy;
 
     // sample variation pattern    
-    float k = texture(noiseSampler, vec3(0.005f * uv, noiseSamplerIdx)).x; // cheap (cache friendly) lookup    
+    float k = texture(noiseSampler, vec3(0.005f * uv, noiseSamplerIdx)).x; // cheap (cache friendly) lookup 
 
-    // compute index    
-    float index = k * 8.0;
-    float i = floor(index);
-    float f = fract(index);
+    vec2 duvdx = dFdx(uv);
+    vec2 duvdy = dFdy(uv);
 
-    // offsets for the different virtual patterns    
-    vec2 offa = sin(vec2(3.0, 7.0) * (i + 0.0)); // can replace with any other hash    
-    vec2 offb = sin(vec2(3.0, 7.0) * (i + 1.0)); // can replace with any other hash    
+    float l = k * 8.0;
+    float f = fract(l);
 
-    // compute derivatives for mip-mapping    
-    vec2 dx = dFdx(uv), dy = dFdy(uv);
+#if 1
+    float ia = floor(l); // my method
+    float ib = ia + 1.0;
+#else
+    float ia = floor(l + 0.5); // suslik's method (see comments)
+    float ib = floor(l);
+    f = min(f, 1.0 - f) * 2.0;
+#endif    
+
+    vec2 offa = sin(vec2(3.0, 7.0) * ia); // can replace with any other hash
+    vec2 offb = sin(vec2(3.0, 7.0) * ib); // can replace with any other hash
 
     // sample the two closest virtual patterns    
-    vec4 cola = textureGrad(samp, vec3(uv + offa, uvIn.z), dx, dy);
-    vec4 colb = textureGrad(samp, vec3(uv + offb, uvIn.z), dx, dy);
+    vec4 cola = textureGrad(samp, vec3(uv + v * offa, uvIn.z), duvdx, duvdy);
+    vec4 colb = textureGrad(samp, vec3(uv + v * offb, uvIn.z), duvdx, duvdy);
 
     // interpolate between the two virtual patterns    
-    return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * sum(cola.rgb - colb.rgb)));
+    return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * sum(cola - colb)));
 }
 
 #endif //_TEXTURING_FRAG_

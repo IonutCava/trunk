@@ -234,14 +234,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     s_stateTracker.init(nullptr);
 
     if (s_stateTracker._opengl46Supported) {
-        gl::glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
+        glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
     }
 
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel,
           to_U8(0),
-          to_U8(s_stateTracker._opengl46Supported ? GLUtil::getGLValue(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY)
-                                                  : GLUtil::getGLValue(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
+          to_U8(s_stateTracker._opengl46Supported ? GLUtil::getGLValue(GL_MAX_TEXTURE_MAX_ANISOTROPY)
+                                                  : GLUtil::getGLValue(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
 
     // Number of sample buffers associated with the framebuffer & MSAA sample count
@@ -256,7 +256,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     if (s_stateTracker._opengl46Supported) {
         Console::printfn(Locale::get(_ID("GL_SHADER_THREADS")),
-                         GLUtil::getGLValue(gl::GL_MAX_SHADER_COMPILER_THREADS_ARB));
+                         GLUtil::getGLValue(GL_MAX_SHADER_COMPILER_THREADS_ARB));
     }
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
@@ -475,7 +475,7 @@ void GL_API::onThreadCreated(const std::thread::id& threadID) {
     }
 
     if (s_stateTracker._opengl46Supported) {
-        gl::glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
+        glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
     }
 
     initGLSW(_context.context().config());

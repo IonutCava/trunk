@@ -574,7 +574,8 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
-    TerrainData data = BuildTerrainData(_waterDetails);
+    TerrainData data;
+    BuildTerrainData(_waterDetails, data);
 
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     vec4 colourOut = getPixelColour(vec4(data.albedo.rgb, 1.0f), colourMatrix, data.normal, data.uv);
@@ -633,7 +634,8 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 void main(void)
 {
 
-    TerrainData data = BuildTerrainData(_waterDetails);
+    TerrainData data;
+    BuildTerrainData(_waterDetails, data);
 
 #if defined(PRE_PASS)
     const float crtDepth = computeDepth(_in._vertexWV);
