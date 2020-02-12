@@ -53,8 +53,6 @@ namespace {
     {
         DisplayWindow*  _window = nullptr;
         bool            _windowOwned = false;
-
-        ~ImGuiViewportData() { IM_ASSERT(_window == nullptr); }
     };
 
 
@@ -240,10 +238,12 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     InitBasicImGUIState(io);
 
+    io.DisplaySize.x = (F32)_mainWindow->getDimensions().width;
+    io.DisplaySize.y = (F32)_mainWindow->getDimensions().height;
+
     const vec2<U16> display_size = _mainWindow->getDrawableSize();
-    io.DisplaySize = ImVec2((F32)_mainWindow->getDimensions().width, (F32)_mainWindow->getDimensions().height);
-    io.DisplayFramebufferScale = ImVec2(io.DisplaySize.x > 0 ? ((F32)display_size.width / io.DisplaySize.x) : 0.f,
-                                        io.DisplaySize.y > 0 ? ((F32)display_size.height / io.DisplaySize.y) : 0.f);
+    io.DisplayFramebufferScale.x = io.DisplaySize.x > 0 ? ((F32)display_size.width / io.DisplaySize.x)  : 0.f;
+    io.DisplayFramebufferScale.y = io.DisplaySize.y > 0 ? ((F32)display_size.height / io.DisplaySize.y) : 0.f;
 
     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     main_viewport->PlatformHandle = _mainWindow;
@@ -258,7 +258,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 winDescriptor.title = "No Title Yet";
                 winDescriptor.targetDisplay = to_U32(window.currentDisplayIndex());
                 winDescriptor.clearColour.set(0.0f, 0.0f, 0.0f, 1.0f);
-                winDescriptor.flags = to_U16(WindowDescriptor::Flags::HIDDEN) | to_U16(WindowDescriptor::Flags::CLEAR_COLOUR) | to_U16(WindowDescriptor::Flags::CLEAR_DEPTH);
+                winDescriptor.flags = to_U16(WindowDescriptor::Flags::HIDDEN) | 
+                                      to_U16(WindowDescriptor::Flags::CLEAR_COLOUR) |
+                                      to_U16(WindowDescriptor::Flags::CLEAR_DEPTH);
                 // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
                 winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED) | to_U32(WindowDescriptor::Flags::RESIZEABLE);
                 winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
@@ -272,17 +274,16 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 ErrorCode err = ErrorCode::NO_ERR;
                 DisplayWindow* newWindow = &g_windowManager->createWindow(winDescriptor, err);
                 if (err == ErrorCode::NO_ERR) {
+                    assert(newWindow != nullptr);
+
                     newWindow->hidden(false);
                     newWindow->bringToFront();
                     newWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestClose = true; return true; });
                     newWindow->addEventListener(WindowEvent::MOVED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestMove = true; return true; });
                     newWindow->addEventListener(WindowEvent::RESIZED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args);  viewport->PlatformRequestResize = true;  return true; });
 
-                    ImGuiViewportData* data = IM_NEW(ImGuiViewportData)();
-                    data->_window = newWindow;
-                    data->_windowOwned = true;
-                    viewport->PlatformUserData = data;
-                    viewport->PlatformHandle = (void*)data->_window;
+                    viewport->PlatformHandle = (void*)newWindow;
+                    viewport->PlatformUserData = IM_NEW(ImGuiViewportData) {newWindow, true};
                 } else {
                     DIVIDE_UNEXPECTED_CALL("Editor::Platform_CreateWindow failed!");
                     g_windowManager->destroyWindow(newWindow);
@@ -1221,7 +1222,8 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
         const vec2<U16> displaySize = _mainWindow->getDrawableSize();
 
         ImGuiIO& io = _imguiContext->IO;
-        io.DisplaySize = ImVec2((F32)params.width, (F32)params.height);
+        io.DisplaySize.x = (F32)params.width;
+        io.DisplaySize.y = (F32)params.height;
         io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)displaySize.width / params.width) : 0.f,
                                             params.height > 0 ? ((F32)displaySize.height / params.height) : 0.f);
         Attorney::GizmoEditor::onSizeChange(*_gizmo, params, vec2<U16>(params.width, params.height));

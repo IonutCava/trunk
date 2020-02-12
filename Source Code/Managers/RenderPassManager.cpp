@@ -4,6 +4,7 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -24,9 +25,12 @@
 namespace Divide {
 
     namespace {
+        constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
+
         using SetType = eastl::set<U32, eastl::less<U32>, eastl::dvd_eastl_allocator>;
         thread_local SetType g_usedIndices;
         thread_local U32 g_freeCounter = 0;
+        //thread_local vectorEASTL<RenderingComponent*> g_rComps;
         thread_local RenderBin::SortedQueues g_sortedQueues;
         thread_local eastl::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> g_nodeData;
         thread_local DrawCommandContainer g_drawCommands;
@@ -513,15 +517,35 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     }
 
     getQueue().getSortedQueues(stagePass, g_sortedQueues, queueSize);
+
+    vectorEASTLFast<RenderingComponent*> g_rComps;
+    g_rComps.resize(0);
+    g_rComps.reserve(queueSize);
+
     for (const RenderBin::SortedQueue& queue : g_sortedQueues) {
         for (const RenderBin::SortedQueueEntry& entry : queue) {
             if (params._sourceNode != nullptr && *params._sourceNode == *entry.first) {
                 continue;
             }
 
-            Attorney::RenderingCompRenderPass::prepareDrawPackage(*entry.second, *params._camera, sceneRenderState, stagePass, refresh);
+            g_rComps.push_back(entry.second);
         }
     }
+
+
+    const Camera& cam = *params._camera;
+    parallel_for(_parent.platformContext(),
+        [&g_rComps, &cam, &sceneRenderState, &stagePass, refresh](const Task& parentTask, U32 start, U32 end) {
+            for (U32 i = start; i < end; ++i) {
+                Attorney::RenderingCompRenderPass::prepareDrawPackage(*g_rComps[i], cam, sceneRenderState, stagePass, refresh);
+            }
+        },
+        to_U32(queueSize),
+        g_nodesPerPrepareDrawPartition,
+        TaskPriority::DONT_CARE,
+        false,
+        true,
+        "Prepare Draw Task");
 
     buildBufferData(stagePass, sceneRenderState, *params._camera, g_sortedQueues, refresh, bufferInOut);
 }
