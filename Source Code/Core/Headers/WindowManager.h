@@ -68,9 +68,7 @@ struct WindowDescriptor {
     U32 targetDisplay = 0u;
     U16 flags = to_U16(to_base(Flags::DECORATED) |
                        to_base(Flags::RESIZEABLE) |
-                       to_base(Flags::ALLOW_HIGH_DPI) |
-                       to_base(Flags::CLEAR_DEPTH) |
-                       to_base(Flags::CLEAR_COLOUR));
+                       to_base(Flags::ALLOW_HIGH_DPI));
     RenderAPI targetAPI;
     bool externalClose = false;
 };

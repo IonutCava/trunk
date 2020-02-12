@@ -521,7 +521,7 @@ void glTexturePool::init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes)
     _types.reserve(poolSizes.size());
     //_pools.reserve(poolSizes.size());
 
-    for (auto it : poolSizes) {
+    for (const auto& it : poolSizes) {
         poolImpl pool = {};
         pool._usageMap.reserve(it.second); 
         for (U32 i = 0; i < it.second; ++i) {
@@ -551,8 +551,6 @@ void glTexturePool::onFrameEnd() {
 void glTexturePool::onFrameEndInternal(poolImpl & impl) {
     const U32 entryCount = to_U32(impl._tempBuffer.size());
 
-    std::memset(impl._tempBuffer.data(), 0, sizeof(GLuint) * entryCount);
-
     GLuint count = 0;
     for (U32 i = 0; i < entryCount; ++i) {
         if (impl._usageMap[i]._a.load() != State::CLEAN) {
@@ -581,10 +579,16 @@ void glTexturePool::onFrameEndInternal(poolImpl & impl) {
         U32 newIndex = 0;
         for (U32 i = 0; i < entryCount; ++i) {
             if (impl._lifeLeft[i] == 0 && impl._usageMap[i]._a.load() == State::CLEAN) {
+                for (auto& it : impl._cache) {
+                    if (it.second == impl._handles[i]) {
+                        it.second = poolImpl::INVALID_IDX;
+                    }
+                }
                 impl._handles[i] = impl._tempBuffer[newIndex++];
                 impl._usageMap[i]._a.store(State::FREE);
             }
         }
+        std::memset(impl._tempBuffer.data(), 0, sizeof(GLuint) * count);
     }
 }
 
@@ -600,29 +604,51 @@ void glTexturePool::destroy() {
         for (auto& it2 : impl._usageMap) {
             it2._a.store(State::CLEAN);
         }
+        impl._cache.clear();
     }
 }
 
 GLuint glTexturePool::allocate(GLenum type, bool retry) {
-    const auto it = _pools.find(type);
+    return allocate(0u, type, retry).first;
+}
+
+std::pair<GLuint, bool> glTexturePool::allocate(size_t hash, GLenum type, bool retry) {
+    const auto& it = _pools.find(type);
     assert(it != _pools.cend());
 
     poolImpl& impl = it->second;
-    const U32 count = to_U32(impl._handles.size());
-    for (U32 i = 0; i < count; ++i) {
-        State expected = State::FREE;
-        if (impl._usageMap[i]._a.compare_exchange_strong(expected, State::USED)) {
-            return impl._handles[i];
+
+    U32 idx = poolImpl::INVALID_IDX;
+    if (hash != 0u) {
+        const auto& cacheIt = impl._cache.find(hash);
+        if (cacheIt != eastl::cend(impl._cache)) {
+            idx = cacheIt->second;
         }
     }
+    if (idx != poolImpl::INVALID_IDX) {
+        impl._usageMap[idx]._a.store(State::USED);
+        impl._lifeLeft[idx] += 1;
+        return std::make_pair(impl._handles[idx], true);
+    } else {
+        const U32 count = to_U32(impl._handles.size());
+        for (U32 i = 0; i < count; ++i) {
+            State expected = State::FREE;
+            if (impl._usageMap[i]._a.compare_exchange_strong(expected, State::USED)) {
+                if (hash != 0) {
+                    impl._cache[hash] = i;
+                }
 
+                return std::make_pair(impl._handles[i], false);
+            }
+        }
+    }
     if (!retry) {
         onFrameEnd();
-        return allocate(type, true);
+        return allocate(hash, type, true);
     }
 
     DIVIDE_UNEXPECTED_CALL();
-    return 0;
+    return std::make_pair(0u, false);
 }
 
 void glTexturePool::deallocate(GLuint& handle, GLenum type, U32 frameDelay) {
@@ -642,6 +668,10 @@ void glTexturePool::deallocate(GLuint& handle, GLenum type, U32 frameDelay) {
     }
     
     DIVIDE_UNEXPECTED_CALL();
+}
+
+bool glTexturePool::hasPool(GLenum type) const {
+    return _pools.find(type) != eastl::cend(_pools);
 }
 
 };  // namespace GLutil

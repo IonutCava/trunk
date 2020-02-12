@@ -170,6 +170,10 @@ ErrorCode WindowManager::init(PlatformContext& context,
         ClearBit(descriptor.flags, WindowDescriptor::Flags::RESIZEABLE);
     }
 
+    // We don't need to clear colour and depth for the main window as we always render a single textured quad. Rendering is done offscreen.
+    ClearBit(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR);
+    ClearBit(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH);
+
     ErrorCode err = ErrorCode::NO_ERR;
     DisplayWindow& window = createWindow(descriptor, err);
 

@@ -45,7 +45,7 @@ namespace Divide {
 class FrameListenerManager : public Singleton<FrameListenerManager> {
     friend class Singleton<FrameListenerManager>;
 
-    using EventTimeMap = vectorEASTL<U64>;
+    using EventTimeMap = eastl::fixed_vector<U64, 16, false>;
 
   public:
     void registerFrameListener(FrameListener* listener, U32 callOrder);

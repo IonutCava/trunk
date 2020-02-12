@@ -42,7 +42,7 @@ namespace Divide {
     bool BufferCompare(const ShaderBuffer* const a, const ShaderBuffer* const b) noexcept;
 
     class Texture;
-    struct TextureView {
+    struct TextureView : public Hashable {
         Texture* _texture = nullptr;
         vec2<U16> _mipLevels = {};
         vec2<U16> _layerRange = {};
@@ -58,9 +58,11 @@ namespace Divide {
                    _layerRange != other._layerRange ||
                    _texture != other._texture;
         }
+
+        size_t getHash() const override;
     };
 
-    struct TextureViewEntry {
+    struct TextureViewEntry : public Hashable {
         TextureView _view = {};
         U8 _binding = 0;
 
@@ -73,6 +75,8 @@ namespace Divide {
             return _binding != other._binding ||
                    _view != other._view;
         }
+
+        size_t getHash() const override;
     };
 
     struct ShaderBufferBinding {

@@ -124,7 +124,7 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
             _currentContext = std::make_pair(windowGUID, glContext);
         }
 
-        bool shouldClearColour = false, shouldClearDepth = false;
+        bool shouldClearColour = false, shouldClearDepth = false, shouldClearStencil = false;
         stateTracker.setClearColour(window.clearColour(shouldClearColour, shouldClearDepth));
         ClearBufferMask mask = ClearBufferMask::GL_NONE_BIT;
         if (shouldClearColour) {
@@ -133,11 +133,12 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
         if (shouldClearDepth) {
             mask |= ClearBufferMask::GL_DEPTH_BUFFER_BIT;
         }
-        if (false) {
+        if (shouldClearStencil) {
             mask |= ClearBufferMask::GL_STENCIL_BUFFER_BIT;
         }
-
-        glClear(mask);
+        if (mask != ClearBufferMask::GL_NONE_BIT) {
+            glClear(mask);
+        }
     }
     // Clears are registered as draw calls by most software, so we do the same
     // to stay in sync with third party software
@@ -149,6 +150,7 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 /// Finish rendering the current frame
 void GL_API::endFrame(DisplayWindow& window, bool global) {
     OPTICK_EVENT();
+    static bool cleanLockManager = false;
 
     // Revert back to the default OpenGL states
     //clearStates(window, global);
@@ -180,7 +182,11 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         if (global) {
             _swapBufferTimer.stop();
             s_texturePool.onFrameEnd();
-            s_globalLockManager.clean(_context.getFrameCount());
+            cleanLockManager = !cleanLockManager;
+            if (cleanLockManager) {
+                s_globalLockManager.clean(_context.getFrameCount());
+            }
+
             s_glFlushQueued.store(false);
         }
     }
@@ -1219,24 +1225,32 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (crtCmd._layerRange.x == 0 && crtCmd._layerRange.y <= 1) {
                 glGenerateTextureMipmap(crtCmd._texture->data().textureHandle());
             } else {
+                TextureView view = {};
+                view._texture = crtCmd._texture;
+                view._layerRange.set(crtCmd._layerRange.x, crtCmd._layerRange.y);
+                view._mipLevels.set(view._texture->descriptor().mipLevels());
 
-                Texture* tex = crtCmd._texture;
-                const TextureData data = tex->data();
-                const TextureDescriptor& descriptor = tex->descriptor();
+                const TextureDescriptor& descriptor = view._texture->descriptor();
                 const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
+                const TextureData& data = view._texture->data();
                 const GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
-                GLuint handle = s_texturePool.allocate(GL_NONE);
-                glTextureView(handle,
-                    type,
-                    data.textureHandle(),
-                    glInternalFormat,
-                    (GLuint)descriptor.mipLevels().x,
-                    (GLuint)descriptor.mipLevels().y,
-                    (GLuint)crtCmd._layerRange.x,
-                    (GLuint)crtCmd._layerRange.y);
-                glGenerateTextureMipmap(handle);
-                s_texturePool.deallocate(handle, GL_NONE, 4);
+
+                std::pair<GLuint, bool> handle = s_texturePool.allocate(view.getHash(), GL_NONE);
+                if (!handle.second) {
+                    glTextureView(handle.first,
+                        type,
+                        data.textureHandle(),
+                        glInternalFormat,
+                        (GLuint)view._mipLevels.x,
+                        (GLuint)view._mipLevels.y,
+                        (GLuint)view._layerRange.x,
+                        (GLuint)view._layerRange.y);
+                }
+
+                glGenerateTextureMipmap(handle.first);
+
+                s_texturePool.deallocate(handle.first, GL_NONE, 3);
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {
@@ -1517,24 +1531,35 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
     }
 
     for (auto it : textureViews) {
-        Texture* tex = it._view._texture;
+        const size_t viewHash = it.getHash();
+
+        std::pair<GLuint,bool> handle = s_texturePool.allocate(viewHash, GL_NONE);
+        if (handle.first == 0u) {
+            DIVIDE_UNEXPECTED_CALL();
+            continue;
+        }
+
+        const Texture* tex = it._view._texture;
+        assert(tex != nullptr);
         const TextureData& data = tex->data();
-        const TextureDescriptor& descriptor = tex->descriptor();
-        const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
-        const GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
-        GLuint handle = s_texturePool.allocate(GL_NONE);
-        glTextureView(handle,
-            type,
-            data.textureHandle(),
-            glInternalFormat,
-            (GLuint)it._view._mipLevels.x,
-            (GLuint)it._view._mipLevels.y,
-            (GLuint)it._view._layerRange.x,
-            (GLuint)it._view._layerRange.y);
+        if (!handle.second) {
+            const TextureDescriptor& descriptor = tex->descriptor();
+            const GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
+            const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
-        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data.type(), handle, data.samplerHandle()) || bound;
-        s_texturePool.deallocate(handle, GL_NONE, 3);
+            glTextureView(handle.first,
+                type,
+                data.textureHandle(),
+                glInternalFormat,
+                (GLuint)it._view._mipLevels.x,
+                (GLuint)it._view._mipLevels.y,
+                (GLuint)it._view._layerRange.x,
+                (GLuint)it._view._layerRange.y);
+        }
+        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data.type(), handle.first, data.samplerHandle()) || bound;
+        // Self delete after 3 frames unless we use it again
+        s_texturePool.deallocate(handle.first, GL_NONE, 3u);
     }
 
     return bound;

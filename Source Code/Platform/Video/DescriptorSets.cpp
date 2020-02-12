@@ -3,6 +3,7 @@
 #include "Headers/DescriptorSets.h"
 
 #include "Core/Headers/Console.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
@@ -198,5 +199,27 @@ namespace Divide {
         }
 
         return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty() && rhs._textureViews.empty() && rhs._images.empty();
+    }
+
+    size_t TextureView::getHash() const {
+        _hash = 109;
+        if (_texture != nullptr) {
+            Util::Hash_combine(_hash, _texture->data().textureHandle());
+            Util::Hash_combine(_hash, to_base(_texture->data().type()));
+        }
+
+        Util::Hash_combine(_hash, _mipLevels.x);
+        Util::Hash_combine(_hash, _mipLevels.y);
+        Util::Hash_combine(_hash, _layerRange.x);
+        Util::Hash_combine(_hash, _layerRange.y);
+
+        return _hash;
+    }
+
+    size_t TextureViewEntry::getHash() const {
+        _hash = _view.getHash();
+        Util::Hash_combine(_hash, _binding);
+
+        return _hash;
     }
 }; //namespace Divide

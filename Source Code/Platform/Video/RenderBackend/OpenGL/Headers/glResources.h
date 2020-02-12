@@ -138,23 +138,36 @@ private:
     };
 
     struct poolImpl {
+        static constexpr U32 INVALID_IDX = std::numeric_limits<U32>::max();
+
         vectorEASTL<AtomicWrapper<State>>  _usageMap;
 
         vectorEASTL<U32>    _lifeLeft;
         vectorEASTL<GLuint> _handles;
         vectorEASTL<GLuint> _tempBuffer;
+
+        hashMap<size_t, U32> _cache;
+
         GLenum _type = GL_NONE;
     };
+
+
 public:
     void onFrameEnd();
     void init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes);
     void destroy();
     inline bool typeSupported(GLenum type) const;
-    //Use GL_NONE for textures created with glGen instead of glCreate (e.g. for texture views)
-    GLuint allocate(GLenum type = GL_NONE, bool retry = false);
-    
-    void deallocate(GLuint& handle, GLenum type = GL_NONE, U32 frameDelay = 1);
 
+    //Use GL_NONE for textures created with glGen instead of glCreate (e.g. for texture views)
+    //If the texture was hashed, it's deallocation time gets incremented by 1
+    //Return a pair of the newly allocated texture handle and a flag if it was retrieved from cache or not
+    std::pair<GLuint, bool> allocate(size_t hash, GLenum type, bool retry = false);
+    // no-hash version
+    GLuint allocate(GLenum type, bool retry = false);
+
+    void deallocate(GLuint& handle, GLenum type, U32 frameDelay = 1);
+
+    bool hasPool(GLenum type) const;
 protected:
     void onFrameEndInternal(poolImpl& impl);
 

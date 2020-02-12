@@ -119,6 +119,21 @@ void DisplayWindow::update(const U64 deltaTimeUS) noexcept {
 }
 
 void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& args) {
+    switch (event) {
+        case WindowEvent::HIDDEN:
+        case WindowEvent::MAXIMIZED:
+        case WindowEvent::MINIMIZED:
+        case WindowEvent::MOVED:
+        case WindowEvent::RESIZED:
+        case WindowEvent::RESTORED:
+        case WindowEvent::SHOWN:
+        case WindowEvent::SIZE_CHANGED:
+            _drawableSize = getDrawableSizeInternal();
+        break;
+        default:
+        break;
+    }
+
     for (auto listener : _eventListeners[to_base(event)]) {
         if (!listener->_callback(args)) {
             return;
@@ -181,14 +196,12 @@ bool DisplayWindow::onSDLEvent(SDL_Event event) {
             }
             args._flag = fullscreen();
             notifyListeners(WindowEvent::RESIZED, args);
-            _drawableSize = getDrawableSizeInternal();
             _internalResizeEvent = false;
             return true;
         };
         case SDL_WINDOWEVENT_SIZE_CHANGED: {
             args._flag = fullscreen();
             notifyListeners(WindowEvent::SIZE_CHANGED, args);
-            _drawableSize = getDrawableSizeInternal();
             return true;
         };
         case SDL_WINDOWEVENT_MOVED: {
@@ -246,8 +259,8 @@ Rect<I32> DisplayWindow::getBorderSizes() const noexcept {
 }
 
 vec2<U16> DisplayWindow::getDrawableSize() const {
-    //return _drawableSize;
-    return getDrawableSizeInternal();
+    return _drawableSize;
+    //return getDrawableSizeInternal();
 }
 
 vec2<U16> DisplayWindow::getDrawableSizeInternal() const {

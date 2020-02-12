@@ -731,7 +731,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
     const vec2<U16>& drawArea = winManager.getMainWindow().getDrawableSize();
-    Rect<U16> targetViewport(0, 0, drawArea.width, drawArea.height);
+    const Rect<U16> targetViewport(0, 0, drawArea.width, drawArea.height);
 
     // Initialize GUI with our current resolution
     _platformContext.gui().init(_platformContext, *_resCache);

@@ -1218,7 +1218,7 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
             return;
         }
 
-        vec2<U16> displaySize = _mainWindow->getDrawableSize();
+        const vec2<U16> displaySize = _mainWindow->getDrawableSize();
 
         ImGuiIO& io = _imguiContext->IO;
         io.DisplaySize = ImVec2((F32)params.width, (F32)params.height);

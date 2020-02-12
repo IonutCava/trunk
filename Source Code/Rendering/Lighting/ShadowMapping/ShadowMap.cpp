@@ -210,7 +210,7 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
         const TextureData& data = shadowTexture.texture()->data();
         const TextureDescriptor& texDescriptor = shadowTexture.descriptor()._texDescriptor;
 
-        if (useCount > 0 && useCount < texDescriptor.layerCount()) {
+        if (IS_IN_RANGE_EXCLUSIVE(useCount, 0u, texDescriptor.layerCount())) {
             TextureViewEntry entry = {};
             entry._binding = bindSlot;
             entry._view._texture = shadowTexture.texture().get();
