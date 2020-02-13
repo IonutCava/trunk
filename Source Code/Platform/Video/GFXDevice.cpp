@@ -48,6 +48,7 @@
 
 namespace Divide {
     constexpr bool g_UseImmutableDataStorageForGPUData = true;
+    constexpr bool g_UseRasterGridImplementationOfHiZ = true;
 
 namespace TypeUtil {
     const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept {
@@ -354,8 +355,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     hiZSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
-    hiZSampler.magFilter(TextureFilter::NEAREST);
-    hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
+    hiZSampler.anisotropyLevel(0u);
+
+    if (g_UseRasterGridImplementationOfHiZ) {
+        hiZSampler.magFilter(TextureFilter::NEAREST);
+        hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
+    } else {
+        hiZSampler.magFilter(TextureFilter::LINEAR);
+        hiZSampler.minFilter(TextureFilter::LINEAR_MIPMAP_NEAREST);
+    }
     hiZDescriptor.samplerDescriptor(hiZSampler);
     hiZDescriptor.autoMipMaps(false);
 
@@ -644,7 +652,9 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
         fragModule._sourceFile = "HiZConstruct.glsl";
-        fragModule._variant = "RasterGrid";
+        if (g_UseRasterGridImplementationOfHiZ) {
+            fragModule._variant = "RasterGrid";
+        }
 
         ShaderProgramDescriptor shaderDescriptor = {};
         shaderDescriptor._modules.push_back(vertModule);
@@ -658,6 +668,9 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     {
         ShaderModuleDescriptor compModule = {};
         compModule._moduleType = ShaderType::COMPUTE;
+        if (g_UseRasterGridImplementationOfHiZ) {
+            compModule._defines.push_back(std::make_pair("USE_RASTERGRID", true));
+        }
         compModule._sourceFile = "HiZOcclusionCull.glsl";
 
         ShaderProgramDescriptor shaderDescriptor = {};
@@ -1398,6 +1411,12 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
                 renderFromCamera(_cameraSnapshots.top());
                 _cameraSnapshots.pop();
             } break;
+            case GFX::CommandType::SET_MIP_LEVELS: {
+                const GFX::SetTextureMipLevelsCommand& crtCmd = commandBuffer.get<GFX::SetTextureMipLevelsCommand>(cmd);
+                if (crtCmd._texture != nullptr) {
+                    crtCmd._texture->setMipMapRange(crtCmd._baseLevel, crtCmd._maxLevel);
+                }
+            }break;
             case GFX::CommandType::SET_CLIP_PLANES:
                 setClipPlanes(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
                 break;
@@ -1490,6 +1509,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         GFX::SetViewportCommand viewportCommand;
         GFX::SendPushConstantsCommand pushConstantsCommand;
         GFX::EndRenderSubPassCommand endRenderSubPassCmd;
+        GFX::SetTextureMipLevelsCommand mipCommand = {};
 
         GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
         beginRenderSubPassCmd._validateWriteLevel = Config::ENABLE_GPU_VALIDATION;
@@ -1497,6 +1517,8 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         GenericDrawCommand triangleCmd;
         triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
         triangleCmd._drawCount = 1;
+
+        mipCommand._texture = hizDepthTex.get();
 
         // for i > 0, use texture views?
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
@@ -1507,7 +1529,8 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         U16 twidth = width;
         U16 theight = height;
         bool wasEven = false;
-
+        U16 owidth = twidth;
+        U16 oheight = theight;
         while (dim) {
             if (level) {
                 twidth = twidth < 1 ? 1 : twidth;
@@ -1521,7 +1544,14 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
                 viewportCommand._viewport.set(0, 0, twidth, theight);
                 GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
-                pushConstantsCommand._constants.set("depthInfo", GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+                if (g_UseRasterGridImplementationOfHiZ) {
+                    mipCommand._baseLevel = level - 1;
+                    mipCommand._maxLevel = level - 1;
+                    GFX::EnqueueCommand(cmdBufferInOut, mipCommand);
+                    pushConstantsCommand._constants.set("LastMipSize", GFX::PushConstantType::IVEC2, vec2<I32>(owidth, oheight));
+                } else {
+                    pushConstantsCommand._constants.set("depthInfo", GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+                }
                 GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
 
                 // Dummy draw command as the full screen quad is generated completely in the vertex shader
@@ -1534,6 +1564,8 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
             // Calculate next viewport size
             wasEven = (twidth % 2 == 0) && (theight % 2 == 0);
             dim /= 2;
+            owidth = twidth;
+            oheight = theight;
             twidth /= 2;
             theight /= 2;
             level++;
@@ -1542,6 +1574,12 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         // Restore mip level
         beginRenderSubPassCmd._mipWriteLevel = 0;
         GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
+        if (g_UseRasterGridImplementationOfHiZ) {
+            mipCommand._baseLevel = 0;
+            mipCommand._maxLevel = hizDepthTex->getMipCount() - 1;
+            GFX::EnqueueCommand(cmdBufferInOut, mipCommand);
+        }
+
         GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
 
         viewportCommand._viewport.set(previousViewport);

@@ -2,6 +2,7 @@
 
 #include "Headers/CommandBuffer.h"
 #include "Core/Headers/Console.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 
 namespace Divide {
@@ -32,6 +33,7 @@ DEFINE_POOL(PushCameraCommand);
 DEFINE_POOL(PopCameraCommand);
 DEFINE_POOL(SetClipPlanesCommand);
 DEFINE_POOL(BindDescriptorSetsCommand);
+DEFINE_POOL(SetTextureMipLevelsCommand);
 DEFINE_POOL(BeginDebugScopeCommand);
 DEFINE_POOL(EndDebugScopeCommand);
 DEFINE_POOL(DrawTextCommand);
@@ -217,6 +219,10 @@ void CommandBuffer::batch() {
             case GFX::CommandType::RESOLVE_RT: {
                 const ResolveRenderTargetCommand* crtCmd = getPtr<ResolveRenderTargetCommand>(cmd);
                 hasWork = crtCmd->_resolveColours || crtCmd->_resolveDepth;
+            } break;
+            case GFX::CommandType::SET_MIP_LEVELS: {
+                const SetTextureMipLevelsCommand* crtCmd = getPtr<SetTextureMipLevelsCommand>(cmd);
+                hasWork = crtCmd->_texture != nullptr && (crtCmd->_baseLevel != crtCmd->_texture->getBaseMipLevel() || crtCmd->_maxLevel != crtCmd->_texture->getMaxMipLevel());
             } break;
             case GFX::CommandType::COPY_TEXTURE: {
                 const CopyTextureCommand* crtCmd = getPtr<CopyTextureCommand>(cmd);

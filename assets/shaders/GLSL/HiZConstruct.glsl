@@ -97,11 +97,10 @@ layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
 #endif
 
 out float _depthOut;
+uniform ivec2 LastMipSize;
 
 void main(void)
 {
-    ivec2 LastMipSize = ivec2(dvd_ViewPort.z, dvd_ViewPort.w);
-
     // texture should not be linear, so this wouldn't work
     //vec4 texels = textureGather(LastMip, VAR._texCoord, 0);
     vec4 texels;

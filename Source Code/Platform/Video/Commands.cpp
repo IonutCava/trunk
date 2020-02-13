@@ -143,6 +143,10 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
     return ret;
 }
 
+stringImpl SetTextureMipLevelsCommand::toString(U16 indent) const {
+    return Base::toString(indent) + Util::StringFormat(" [ %d - %d ]" , _baseLevel, _maxLevel);
+}
+
 stringImpl BeginDebugScopeCommand::toString(U16 indent) const {
     return Base::toString(indent) + " [ " + stringImpl(_scopeName.c_str()) + " ]";
 }

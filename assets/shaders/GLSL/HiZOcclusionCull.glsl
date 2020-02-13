@@ -65,24 +65,16 @@ void main()
     }
 
     vec3 extents = dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
-#if 1
-    //if (zBufferCullRasterGrid(center, extents)) {
-    if (zBufferCullRasterGrid(center, extents)) {
-        atomicCounterIncrement(culledCount);
-        dvd_drawCommands[ident].instanceCount = 0;
-        return;
-    }
+#if defined(USE_RASTERGRID)
+    if (zBufferCullRasterGrid(center, extents))
 #else
     // first do instance cloud reduction
-    if (InstanceCloudReduction(center, extents)) {
-        atomicCounterIncrement(culledCount);
-        dvd_drawCommands[ident].instanceCount = 0;
-    }
-    if (zBufferCullARM(view_center, radius)) {
-        atomicCounterIncrement(culledCount);
-        dvd_drawCommands[ident].instanceCount = 0;
-    }
+    if (InstanceCloudReduction(center, extents) ||
+        zBufferCullARM(view_center, radius))
 #endif
-    dvd_drawCommands[ident].instanceCount = 1;
+    {
+        atomicCounterIncrement(culledCount);
+        dvd_drawCommands[ident].instanceCount = 0;
+    }
 }
 

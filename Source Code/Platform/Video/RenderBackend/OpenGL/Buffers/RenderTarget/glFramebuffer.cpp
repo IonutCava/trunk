@@ -809,7 +809,7 @@ void glFramebuffer::setMipLevel(U16 writeLevel, bool validate) {
 
         for (const RTAttachment_ptr& attachment : attachments) {
             const Texture_ptr& texture = attachment->texture(false);
-            if (texture->getMaxMipLevel() > writeLevel && !texture->descriptor().isMultisampledTexture())
+            if (texture->getMipCount() > writeLevel && !texture->descriptor().isMultisampledTexture())
             {
                 const BindingState& state = getAttachmentState(static_cast<GLenum>(attachment->binding()));
                 attachment->mipWriteLevel(writeLevel);

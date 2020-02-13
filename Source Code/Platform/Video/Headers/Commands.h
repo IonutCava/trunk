@@ -89,6 +89,7 @@ enum class CommandType : U8 {
     BLIT_RT,
     RESOLVE_RT,
     COPY_TEXTURE,
+    SET_MIP_LEVELS,
     COMPUTE_MIPMAPS,
     SET_CAMERA,
     PUSH_CAMERA,
@@ -310,6 +311,15 @@ BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
     stringImpl toString(U16 indent) const final;
 
 END_COMMAND(BindDescriptorSetsCommand);
+
+BEGIN_COMMAND(SetTextureMipLevelsCommand, CommandType::SET_MIP_LEVELS);
+    Texture* _texture = nullptr;
+    U16 _baseLevel = 0;
+    U16 _maxLevel = 1000;
+
+    stringImpl toString(U16 indent) const final;
+
+END_COMMAND(SetTextureMipLevelsCommand);
 
 BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
     Str64 _scopeName;
