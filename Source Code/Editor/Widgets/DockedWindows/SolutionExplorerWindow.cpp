@@ -63,6 +63,10 @@ namespace Divide {
             sceneManager.setSelected(0, { &sgn });
             Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
         }
+        //ImGui::IsItemDoubleClicked
+        if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered(ImGuiHoveredFlags_None)) {
+            Attorney::EditorSolutionExplorerWindow::teleportToNode(_parent, &sgn);
+        }
         
         if (node_open) {
             sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {

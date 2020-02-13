@@ -59,6 +59,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
       _context(context.gfx()),
       _config(context.config()),
       _lodLocked(false),
+      _lodLockedLevel(0u),
       _cullFlagValue(1.0f),
       _renderMask(0),
       _dataIndex({std::numeric_limits<U32>::max(), false}),
@@ -154,6 +155,22 @@ void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
         materialField._readOnly = false;
         // should override any existing entry
         _editorComponent.registerField(std::move(materialField));
+
+        EditorComponentField lockLodField = {};
+        lockLodField._name = "Lock LoD";
+        lockLodField._type = EditorComponentFieldType::PUSH_TYPE;
+        lockLodField._basicType = GFX::PushConstantType::BOOL;
+        lockLodField._data = &_lodLocked;
+        lockLodField._readOnly = false;
+        _editorComponent.registerField(std::move(lockLodField));
+
+        EditorComponentField lockLodLevelField = {};
+        lockLodLevelField._name = "Lock LoD Level";
+        lockLodLevelField._type = EditorComponentFieldType::PUSH_TYPE;
+        lockLodLevelField._basicType = GFX::PushConstantType::UINT;
+        lockLodLevelField._data = &_lodLockedLevel;
+        lockLodLevelField._readOnly = false;
+        _editorComponent.registerField(std::move(lockLodLevelField));
 
         _materialInstanceCache = _materialInstance.get();
     }
@@ -333,18 +350,26 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
         return false;
     }
      
-    const U8 lodLevel = _lodLevels[to_base(refreshParams._stagePass._stage)];
+    const U8 stageIdx = to_base(refreshParams._stagePass._stage);
+    const U8 lodLevel = _lodLevels[stageIdx];
 
     if (!_dataIndex.second) {
         _dataIndex.first = refreshParams._dataIdx;
     }
 
+    const U32 startOffset = to_U32(refreshParams._drawCommandsInOut.size());
     if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
-        Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()), lodLevel);
+        Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, startOffset, lodLevel);
     } else {
-        for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
-            RenderPackage& package = _renderPackagesNormal[getPackageIndexNoShadow(refreshParams._stagePass._stage, static_cast<RenderPassType>(i))];
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(package, refreshParams._dataIdx, to_U32(refreshParams._drawCommandsInOut.size()), lodLevel);
+        if (Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, startOffset, lodLevel) || true) {
+            const U8 pIdx = getPackageIndexNoShadow(refreshParams._stagePass._stage, refreshParams._stagePass._passType);
+
+            for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
+                const U8 cIdx = getPackageIndexNoShadow(refreshParams._stagePass._stage, static_cast<RenderPassType>(i));
+                if (cIdx != pIdx) {
+                    Attorney::RenderPackageRenderingComponent::updateDrawCommands(_renderPackagesNormal[cIdx], refreshParams._dataIdx, startOffset, lodLevel);
+                }
+            }
         }
     }
 
@@ -357,7 +382,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
         }
     }
 
-    _drawDataIdx[to_base(refreshParams._stagePass._stage)] = _dataIndex.first;
+    _drawDataIdx[stageIdx] = _dataIndex.first;
     uploadDataIndexAsUniform(refreshParams._stagePass, pkg);
     Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
     return true;
@@ -423,11 +448,9 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     SceneGraphNode* grandParent = _parentSGN.parent();
 
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
-    bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB);
-    renderBBox = renderBBox || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
-
-    bool renderBSphere = _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED);
-    renderBSphere = renderBSphere || renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
+    bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB) ||
+                      sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
+    bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
 
 
     if (renderBBox) {
@@ -443,7 +466,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour4(0, 0, 255, 255));
         bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
 
-        bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
+        const bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
         if (isSubMesh) {
             if (!grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED)) {
                 if (!_boundingBoxPrimitive[1]) {
@@ -523,19 +546,21 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
     OPTICK_EVENT();
 
-    U8 lodLevel = 0u;
+    if (_lodLocked) {
+        return CLAMPED<U8>(_lodLocked, 0u, 4u);
+    }
 
     //ToDo: HACK for shadow rendering
-    if (_lodLocked || renderStage == RenderStage::SHADOW) {
-        return lodLevel;
+    if (renderStage == RenderStage::SHADOW) {
+        return 0u;
     }
 
     const BoundingSphere& bSphere = bComp.getBoundingSphere();
     if (bSphere.getCenter().distanceSquared(cameraEye) <= SQUARED(lodThresholds.x)) {
-        return lodLevel;
+        return 0u;
     }
 
-    lodLevel += 1;
+    U8 lodLevel = 1;
 
     const F32 cameraDistanceSQ = bComp.getBoundingBox().nearestDistanceFromPointSquared(cameraEye);
     if (cameraDistanceSQ > SQUARED(lodThresholds.y)) {
@@ -564,6 +589,15 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
         BoundsComponent* bComp = _parentSGN.get<BoundsComponent>();
         if (bComp != nullptr) {
             lod = getLoDLevel(*bComp, *camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds());
+            const bool renderBS = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB);
+            const bool renderAABB = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
+
+            if (renderAABB != bComp->showAABB()) {
+                bComp->showAABB(renderAABB);
+            }
+            if (renderBS != bComp->showBS()) {
+                bComp->showAABB(renderBS);
+            }
         }
     }
 

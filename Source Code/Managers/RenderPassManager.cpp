@@ -329,6 +329,8 @@ RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePas
 void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const {
     OPTICK_EVENT();
 
+    constexpr F32 UNUSED = 0.0f;
+
     // Extract transform data (if available)
     // (Nodes without transforms just use identity matrices)
     const TransformComponent* const transform = node->get<TransformComponent>();
@@ -367,17 +369,17 @@ void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass
                                        dataOut._normalMatrixW.element(2, 3));
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    BoundsComponent* const bounds = node->get<BoundsComponent>();
-    dataOut._normalMatrixW.setRow(3, bounds->getBoundingSphere().asVec4());
-
+    const BoundsComponent* const bounds = node->get<BoundsComponent>();
+    const BoundingBox& aabb = bounds->getBoundingBox();
+    const F32 sphereRadius = bounds->getBoundingSphere().getRadius();
+    dataOut._normalMatrixW.setRow(3, vec4<F32>(aabb.getCenter(), sphereRadius));
+    dataOut._bbHalfExtents.xyz(aabb.getHalfExtent());
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
 
-    vec4<F32> dataRow = dataOut._colourMatrix.getRow(3);
-    dataRow.z = properties.z; // lod
-    //set properties.w to negative value to skip occlusion culling for the node
-    dataRow.w = properties.w;
-    dataOut._colourMatrix.setRow(3, dataRow);
+    dataOut._colourMatrix.element(3, 2) = properties.z; // lod;
+        //set properties.w to negative value to skip occlusion culling for the node
+    dataOut._colourMatrix.element(3, 3) = properties.w;
 
     // Temp: Make the hovered/selected node brighter by setting emissive to something bright
     if (properties.x > 0.5f || properties.x < -0.5f) {
@@ -389,6 +391,8 @@ void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass
         }
         dataOut._colourMatrix.setRow(2, matColour);
     }
+    dataOut._bbHalfExtents.w = UNUSED;
+    dataOut._colourMatrix.element(2, 3) = UNUSED;
 }
 
 void RenderPassManager::buildBufferData(RenderStagePass stagePass,
@@ -427,7 +431,7 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
 
         const mat4<F32>& viewMatrix = camera.getViewMatrix();
         const D64 interpFactor = _context.getFrameInterpolationFactor();
-        const bool needsInterp = interpFactor > 0.99;
+        const bool needsInterp = interpFactor < 0.99;
 
         RefreshNodeDataParams params(g_drawCommands, bufferInOut);
         params._camera = &camera;
@@ -518,9 +522,10 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 
     getQueue().getSortedQueues(stagePass, g_sortedQueues, queueSize);
 
-    vectorEASTLFast<RenderingComponent*> g_rComps;
-    g_rComps.resize(0);
-    g_rComps.reserve(queueSize);
+
+    vectorEASTLFast<RenderingComponent*> rComps = _queuedRenderingComponents[to_base(stagePass._stage)];
+    rComps.resize(0);
+    rComps.reserve(queueSize);
 
     for (const RenderBin::SortedQueue& queue : g_sortedQueues) {
         for (const RenderBin::SortedQueueEntry& entry : queue) {
@@ -528,25 +533,30 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
                 continue;
             }
 
-            g_rComps.push_back(entry.second);
+            rComps.push_back(entry.second);
         }
     }
 
-
     const Camera& cam = *params._camera;
-    parallel_for(_parent.platformContext(),
-        [&g_rComps, &cam, &sceneRenderState, &stagePass, refresh](const Task& parentTask, U32 start, U32 end) {
-            for (U32 i = start; i < end; ++i) {
-                Attorney::RenderingCompRenderPass::prepareDrawPackage(*g_rComps[i], cam, sceneRenderState, stagePass, refresh);
-            }
-        },
-        to_U32(queueSize),
-        g_nodesPerPrepareDrawPartition,
-        TaskPriority::DONT_CARE,
-        false,
-        true,
-        "Prepare Draw Task");
-
+#if 0
+    for (RenderingComponent* rComp : rComps) {
+        Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, refresh);
+    }
+#else
+        parallel_for(_parent.platformContext(),
+            [&rComps, &cam, &sceneRenderState, &stagePass, refresh](const Task& parentTask, U32 start, U32 end) {
+                for (U32 i = start; i < end; ++i) {
+                    Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComps[i], cam, sceneRenderState, stagePass, refresh);
+                }
+            },
+            to_U32(rComps.size()),
+            g_nodesPerPrepareDrawPartition,
+            TaskPriority::DONT_CARE,
+            false,
+            true,
+            "Prepare Draw Task");
+#endif
+    
     buildBufferData(stagePass, sceneRenderState, *params._camera, g_sortedQueues, refresh, bufferInOut);
 }
 

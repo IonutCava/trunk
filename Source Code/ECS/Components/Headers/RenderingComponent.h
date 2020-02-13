@@ -274,6 +274,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     U32 _renderMask;
     std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
     ReflectorType _reflectorType;
+    U8 _lodLockedLevel;
     bool _lodLocked;
 
     static hashMap<U32, DebugView*> s_debugViews[2];

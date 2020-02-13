@@ -1186,6 +1186,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
                         getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, buffer->bufferID());
                         _commandBufferOffset = shaderBufCmd._elementRange.x;
+                        buffer->bufferImpl()->lockRange(_commandBufferOffset * sizeof(IndirectDrawCommand), shaderBufCmd._elementRange.y * sizeof(IndirectDrawCommand), true);
                     } else {
                         buffer->bindRange(to_U8(shaderBufCmd._binding), shaderBufCmd._elementRange.x, shaderBufCmd._elementRange.y);
                     }

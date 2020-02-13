@@ -519,7 +519,7 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay,
             continue;
         }
 
-        if (std::get<0>(objPtr->get<BoundsComponent>()->getBoundingBox().intersect(intersectRay, start, end))) {
+        if (objPtr->get<BoundsComponent>()->getBoundingBox().intersect(intersectRay, start, end).hit) {
             IntersectionRecord ir;
             if (getIntersection(*objPtr, intersectRay, start, end, ir)) {
                 ret.push_back(ir);
@@ -529,7 +529,7 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay,
 
     // test each child octant for intersection
     for (I32 i = 0; i < 8; ++i) {
-        if (_childNodes[i] != nullptr && std::get<0>(_childNodes[i]->_region.intersect(intersectRay, start, end))) {
+        if (_childNodes[i] != nullptr && _childNodes[i]->_region.intersect(intersectRay, start, end).hit) {
             vectorEASTL<IntersectionRecord> hitList = _childNodes[i]->getIntersection(intersectRay, start, end, typeFilterMask);
             ret.insert(eastl::cend(ret), eastl::cbegin(hitList), eastl::cend(hitList));
         }
@@ -718,7 +718,7 @@ bool Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2, Inter
 
 bool Octree::getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const {
     const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
-    if (std::get<0>(bb.intersect(intersectRay, start, end))) {
+    if (bb.intersect(intersectRay, start, end).hit) {
         irOut.reset();
         irOut._intersectedObject1 = &node;
         irOut._ray = intersectRay;

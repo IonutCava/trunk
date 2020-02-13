@@ -110,7 +110,11 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
     const F32 ty_max = (bounds[1 - r.sign[1]].y - r.origin.y) * r.inv_direction.y;
 
     if ((t_min > ty_max) || (ty_min > t_max)) {
-        return std::make_tuple(false, t_min, t_max);
+        F32 t = t_min;
+        if (t < 0.0f) {
+            t = t_max;
+        }
+        return { false, t };
     }
 
     if (ty_min > t_min){
@@ -125,7 +129,11 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
     const F32 tz_max = (bounds[1 - r.sign[2]].z - r.origin.z) * r.inv_direction.z;
 
     if ((t_min > tz_max) || (tz_min > t_max)) {
-        return std::make_tuple(false, t_min, t_max);
+        F32 t = t_min;
+        if (t < 0.0f) {
+            t = t_max;
+        }
+        return { false, t };
     }
 
     if (tz_min > t_min) {
@@ -136,7 +144,12 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
         t_max = tz_max;
     }
 
-    return std::make_tuple(IS_IN_RANGE_INCLUSIVE(t_min, t0, t1)  && IS_IN_RANGE_INCLUSIVE(t_max, t0, t1), t_min, t_max);
+    F32 t = t_min;
+    if (t < 0.0f) {
+        t = t_max;
+    }
+
+    return { t >= 0.0f, t };
 }
 
 void BoundingBox::transform(const mat4<F32>& mat) {

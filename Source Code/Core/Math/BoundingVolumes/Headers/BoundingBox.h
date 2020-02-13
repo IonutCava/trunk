@@ -41,7 +41,10 @@ namespace Attorney {
     class BoundingBoxEditor;
 };
 
-typedef std::tuple<bool /*hit*/, F32/*min*/, F32/*max*/> AABBRayResult;
+struct AABBRayResult {
+    bool hit = false;
+    F32 dist = std::numeric_limits<F32>::max();
+};
 
 class PropertyWindow;
 class BoundingSphere;

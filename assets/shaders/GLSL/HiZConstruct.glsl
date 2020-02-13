@@ -106,9 +106,9 @@ void main(void)
     //vec4 texels = textureGather(LastMip, VAR._texCoord, 0);
     vec4 texels;
     texels.x = texture(LastMip, VAR._texCoord).x;
-    texels.y = textureOffset(LastMip, VAR._texCoord, ivec2(-1,  0)).x;
-    texels.z = textureOffset(LastMip, VAR._texCoord, ivec2(-1, -1)).x;
-    texels.w = textureOffset(LastMip, VAR._texCoord, ivec2( 0, -1)).x;
+    texels.y = textureOffset(LastMip, VAR._texCoord, ivec2(-1,  0)).r;
+    texels.z = textureOffset(LastMip, VAR._texCoord, ivec2(-1, -1)).r;
+    texels.w = textureOffset(LastMip, VAR._texCoord, ivec2( 0, -1)).r;
 
     float maxZ = max(max(texels.x, texels.y), max(texels.z, texels.w));
 

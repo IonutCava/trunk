@@ -57,8 +57,6 @@ class GFXShaderData {
           vec4<F32> _ViewPort = { 0.0f, 0.0f, 1.0f, 1.0f };
           vec4<F32> _clipPlanes[to_base(Frustum::FrustPlane::COUNT)];
 
-          F32 _padding[27];
-
           inline F32 aspectRatio() const noexcept;
           inline vec2<F32> cameraZPlanes() const;
           inline F32 FoV() const noexcept;

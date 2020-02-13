@@ -123,7 +123,7 @@ public:
     PROPERTY_RW(U32,  dataDrawIdxCache, 0u);
 
 protected:
-    void updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel);
+    bool updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel);
 
 protected:
     // Cached command buffer
@@ -149,8 +149,8 @@ namespace Attorney {
 
     class RenderPackageRenderingComponent {
         private:
-        static void updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset, U8 lodLevel) {
-            pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
+        static bool updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset, U8 lodLevel) {
+            return pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
         }
 
         friend class Divide::RenderingComponent;

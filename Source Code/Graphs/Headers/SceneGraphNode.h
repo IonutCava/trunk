@@ -68,7 +68,11 @@ namespace Attorney {
     class SceneGraphNodeRelationshipCache;
 };
 
-using SGNRayResult = std::tuple<I64, F32/*min*/, F32/*max*/>;
+struct SGNRayResult {
+    I64 sgnGUI = -1;
+    F32 dist = std::numeric_limits<F32>::max();
+    const char* name = nullptr;
+};
 
 class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
                              private ECS::Event::IEventListener,

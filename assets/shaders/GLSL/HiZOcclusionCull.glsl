@@ -8,6 +8,8 @@ struct NodeData {
     mat4 _worldMatrix;
     mat4 _normalMatrix;
     mat4 _colourMatrix;
+    //Temp. w - unused
+    vec4 _bbHalfExtents;
 };
 
 struct IndirectDrawCommand {
@@ -35,38 +37,52 @@ layout(location = 1) uniform float dvd_nearPlaneDistance = 0.1f;
 
 layout(local_size_x = 64) in;
 
-
-void cullNode(const in uint idx) {
-    atomicCounterIncrement(culledCount);
-    dvd_drawCommands[idx].instanceCount = 0;
-}
-
 void main()
 {
     uint ident = gl_GlobalInvocationID.x;
-    
+
     if (ident >= dvd_numEntities) {
-        cullNode(ident);
+        atomicCounterIncrement(culledCount);
+        dvd_drawCommands[ident].instanceCount = 2;
         return;
     }
-    
+
     uint nodeIndex = dvd_drawCommands[ident].baseInstance;
     // Skip occlusion cull if the flag is negative
     if (dvd_dataFlag(nodeIndex) < 0) {
         return;
     }
 
-    vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrix[3];
-    vec3 center = bSphere.xyz;
-    float radius = bSphere.w;
-    
+    const vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrix[3];
+    const vec3 center = bSphere.xyz;
+    const float radius = bSphere.w;
+
+    const vec3 view_center = (viewMatrix * vec4(center, 1.0)).xyz;
+    const float nearest_z = view_center.z + radius;
     // Sphere clips against near plane, just assume visibility.
-    if ((viewMatrix * vec4(center, 1.0)).z + radius >= -dvd_nearPlaneDistance) {
+    if (nearest_z >= -dvd_nearPlaneDistance) {
         return;
     }
 
-    if (zBufferCull(center, vec3(radius)) == 0) {
-        cullNode(ident);
+    vec3 extents = dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
+#if 1
+    //if (zBufferCullRasterGrid(center, extents)) {
+    if (zBufferCullRasterGrid(center, extents)) {
+        atomicCounterIncrement(culledCount);
+        dvd_drawCommands[ident].instanceCount = 0;
+        return;
     }
+#else
+    // first do instance cloud reduction
+    if (InstanceCloudReduction(center, extents)) {
+        atomicCounterIncrement(culledCount);
+        dvd_drawCommands[ident].instanceCount = 0;
+    }
+    if (zBufferCullARM(view_center, radius)) {
+        atomicCounterIncrement(culledCount);
+        dvd_drawCommands[ident].instanceCount = 0;
+    }
+#endif
+    dvd_drawCommands[ident].instanceCount = 1;
 }
 

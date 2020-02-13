@@ -364,9 +364,9 @@ bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRay
         });
     } else {
         // If we hit an AABB, we keep going down the graph
-        AABBRayResult result = get<BoundsComponent>()->getBoundingBox().intersect(ray, start, end);
-        if (std::get<0>(result)) {
-            intersections.push_back(std::make_tuple(getGUID(), std::get<1>(result), std::get<2>(result)));
+        const AABBRayResult result = get<BoundsComponent>()->getBoundingBox().intersect(ray, start, end);
+        if (result.hit) {
+            intersections.push_back({ getGUID(), result.dist, name().c_str() });
             forEachChild([&ray, start, end, &intersections](const SceneGraphNode* child, I32 /*childIdx*/) {
                 child->intersect(ray, start, end, intersections);
             });

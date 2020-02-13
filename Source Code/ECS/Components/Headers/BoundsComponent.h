@@ -53,6 +53,10 @@ namespace Divide {
         inline void ignoreTransform(bool state) { _ignoreTransform = state; }
 
         F32 distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept;
+
+        PROPERTY_RW(bool, showAABB, false);
+        PROPERTY_RW(bool, showBS, false);
+
     protected:
         friend class SceneGraph;
         friend class BoundsSystem;

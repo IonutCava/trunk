@@ -109,11 +109,11 @@ class Editor : public PlatformContextComponent,
 
     enum class WindowType : U8 {
         SolutionExplorer = 0,
+        PostFX,
         Properties,
         ContentExplorer,
         Output,
         SceneView,
-        PostFX,
         COUNT
     };
 
@@ -188,6 +188,7 @@ class Editor : public PlatformContextComponent,
     inline bool isInit() const;
     bool render(const U64 deltaTime);
     void updateMousePosAndButtons();
+    void teleportToNode(SceneGraphNode* sgn) const;
 
     void scenePreviewFocused(bool state);
     ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
@@ -307,6 +308,9 @@ namespace Attorney {
             editor._gizmo->enable(state);
         }
 
+        static void teleportToNode(const Editor& editor, SceneGraphNode* targetNode) {
+            editor.teleportToNode(targetNode);
+        }
         friend class Divide::SolutionExplorerWindow;
     };
 

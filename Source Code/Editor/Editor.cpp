@@ -1448,6 +1448,12 @@ bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const s
     return false;
 }
 
+void Editor::teleportToNode(SceneGraphNode* sgn) const {
+    if (sgn != nullptr) {
+        Attorney::SceneManagerCameraAccessor::moveCameraToNode(_context.kernel().sceneManager(), sgn, 3.0f);
+    }
+}
+
 void Editor::scenePreviewFocused(bool state) {
     _scenePreviewFocused = state;
 

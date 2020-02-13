@@ -59,14 +59,14 @@ void main(void) {
 
     Data[idx].data.w = extents.y * scale;
 
-    if (zBufferCull(positionW.xyz, (extents * scale) * 1.1f) > 0) {
+    if (zBufferCullRasterGrid(positionW.xyz, (extents * scale) * 1.1f)) {
+        Data[idx].data.z = 3.0f;
+    } else {
 #       if defined(CULL_TREES)
             Data[idx].data.z = dist > (dvd_visibilityDistance * 0.33f) ? 2.0f : 1.0f;
 #       else //CULL_TREES
             const float minDist = 0.01f;
             Data[idx].data.z = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
 #       endif //CULL_TREES
-    } else {
-        Data[idx].data.z = 3.0f;
     }
 }

@@ -388,7 +388,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         vector<SGNRayResult> rayResults;
         sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, rayResults);
         for (SGNRayResult& result : rayResults) {
-            if (std::get<1>(result) < distanceToPoint) {
+            if (result.dist < distanceToPoint) {
                 return false;
             }
         }
@@ -424,12 +424,13 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
                     return nullptr;
                 }
             }
-
-            if (node->get<SelectionComponent>() &&
-                node->get<SelectionComponent>()->enabled() &&
-                objectType != ObjectType::DECAL &&
-                objectType != ObjectType::SUBMESH &&
-                (editorRunning || objectType != ObjectType::TERRAIN))
+            const bool selectable = (node->get<SelectionComponent>() && node->get<SelectionComponent>()->enabled()) || 
+                                    editorRunning;
+            if (selectable &&
+                (editorRunning || (
+                 objectType != ObjectType::DECAL &&
+                 objectType != ObjectType::SUBMESH &&
+                 objectType != ObjectType::TERRAIN)))
             {
                 BoundsComponent* bComp = node->get<BoundsComponent>();
                 if (bComp != nullptr) {
@@ -607,6 +608,19 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
     _currentPlayerPass = idx;
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), _currentPlayerPass);
     playerCamera()->updateLookAt();
+}
+
+void SceneManager::moveCameraToNode(SceneGraphNode* targetNode, F32 targetDistanceFromNode) const {
+    if (targetNode != nullptr) {
+        TransformComponent* tComp = targetNode->get<TransformComponent>();
+        if (tComp != nullptr) {
+            vec3<F32> targetPos = tComp->getPosition();
+            if (targetDistanceFromNode > 0.0f) {
+                targetPos -= Normalized(Rotate(WORLD_Z_NEG_AXIS, playerCamera()->getOrientation())) * targetDistanceFromNode;
+            }
+            playerCamera()->setEye(targetPos);
+        }
+    }
 }
 
 VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {

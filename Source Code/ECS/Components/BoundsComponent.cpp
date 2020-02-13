@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/BoundsComponent.h"
+#include "Headers/RenderingComponent.h"
 #include "Headers/TransformComponent.h"
 
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -11,8 +12,8 @@ namespace Divide {
 
 BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     : BaseComponentType<BoundsComponent, ComponentType::BOUNDS>(sgn, context),
-     _ignoreTransform(false),
-     _tCompCache(sgn.get<TransformComponent>())
+     _tCompCache(sgn.get<TransformComponent>()),
+     _ignoreTransform(false)
 {
     _refBoundingBox.set(sgn.getNode().getBounds());
     _boundingBox.set(_refBoundingBox);
@@ -41,6 +42,34 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     bsField._type = EditorComponentFieldType::BOUNDING_SPHERE;
     bsField._readOnly = true;
     _editorComponent.registerField(std::move(bsField));
+
+    EditorComponentField vbbField = {};
+    vbbField._name = "Show AABB";
+    vbbField._data = &_showAABB;
+    vbbField._type = EditorComponentFieldType::PUSH_TYPE;
+    vbbField._basicType = GFX::PushConstantType::BOOL;
+    vbbField._readOnly = false;
+
+    _editorComponent.registerField(std::move(vbbField));
+
+    EditorComponentField vbsField = {};
+    vbsField._name = "Show Bounding Sphere";
+    vbsField._data = &_showBS;
+    vbsField._type = EditorComponentFieldType::PUSH_TYPE;
+    vbsField._basicType = GFX::PushConstantType::BOOL;
+    vbsField._readOnly = false;
+    _editorComponent.registerField(std::move(vbsField));
+
+
+    _editorComponent.onChangedCbk([this](const char* field) {
+        if (strcmp(field, "Show AABB") == 0 || strcmp(field, "Show Bounding Sphere") == 0) {
+            RenderingComponent* const rComp = _parentSGN.get<RenderingComponent>();
+            if (rComp != nullptr) {
+                rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB, _showAABB);
+                rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_SPHERE, _showBS);
+            }
+        }
+    });
 }
 
 BoundsComponent::~BoundsComponent()

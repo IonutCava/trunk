@@ -220,7 +220,7 @@ protected:
     Camera* playerCamera() const;
     Camera* playerCamera(PlayerIndex idx) const;
     void currentPlayerPass(PlayerIndex idx);
-
+    void moveCameraToNode(SceneGraphNode* targetNode, F32 targetDistanceFromNode) const;
 private:
     bool _init;
     bool _processInput;
@@ -362,6 +362,10 @@ class SceneManagerCameraAccessor {
 
     static Camera* playerCamera(Divide::SceneManager& mgr, PlayerIndex idx) {
         return mgr.playerCamera(idx);
+    }
+
+    static void moveCameraToNode(Divide::SceneManager& mgr, SceneGraphNode* targetNode, F32 targetDistanceFromNode) {
+        mgr.moveCameraToNode(targetNode, targetDistanceFromNode);
     }
 
     friend class Divide::Scene;

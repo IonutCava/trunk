@@ -233,8 +233,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     ResourceCache& cache = parent().resourceCache();
     _rtPool = MemoryManager_NEW GFXRTPool(*this);
 
-    // Half a megabyte in size should work. I think.
-    constexpr size_t TargetBufferSize = (1 * 1024 * 1024) / 2 / sizeof(GFXShaderData::GPUData);
+    // Quarter of a megabyte in size should work. I think.
+    constexpr size_t TargetBufferSize = (1024 * 1024) / 4 / sizeof(GFXShaderData::GPUData);
 
     // Initialize the shader manager
     ShaderProgram::onStartup(*this, cache);
@@ -351,13 +351,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_32);
 
     SamplerDescriptor hiZSampler = {};
-    hiZSampler.wrapU(TextureWrap::CLAMP_TO_BORDER);
-    hiZSampler.wrapV(TextureWrap::CLAMP_TO_BORDER);
-    hiZSampler.wrapW(TextureWrap::CLAMP_TO_BORDER);
-    hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
+    hiZSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    hiZSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    hiZSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.magFilter(TextureFilter::NEAREST);
-    hiZSampler.borderColour(DefaultColours::WHITE);
-
+    hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
     hiZDescriptor.samplerDescriptor(hiZSampler);
     hiZDescriptor.autoMipMaps(false);
 
@@ -646,7 +644,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
         fragModule._sourceFile = "HiZConstruct.glsl";
-        //fragModule._variant = "RasterGrid";
+        fragModule._variant = "RasterGrid";
 
         ShaderProgramDescriptor shaderDescriptor = {};
         shaderDescriptor._modules.push_back(vertModule);

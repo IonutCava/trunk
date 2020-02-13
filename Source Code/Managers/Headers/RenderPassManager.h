@@ -162,7 +162,7 @@ private:
     Time::ProfileTimer* _flushCommandBufferTimer;
     Time::ProfileTimer* _postFxRenderTimer;
     std::array<vectorEASTLFast<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
-
+    std::array<vectorEASTLFast<RenderingComponent*>, to_base(RenderStage::COUNT)> _queuedRenderingComponents;
     // Used to reserve an index into node data buffers. Usefull if we can't use baseInstance as an index, for example
     static std::atomic_uint g_NodeDataIndex;
 };

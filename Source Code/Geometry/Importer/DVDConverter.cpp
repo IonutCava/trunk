@@ -151,7 +151,23 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
     importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
     importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 
-    U32 ppsteps = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
+    U32 ppsteps = aiProcess_CalcTangentSpace |
+                  aiProcess_GenSmoothNormals |
+                  aiProcess_JoinIdenticalVertices |
+                  aiProcess_ImproveCacheLocality |
+                  aiProcess_LimitBoneWeights |
+                  aiProcess_RemoveRedundantMaterials |
+                  aiProcess_FixInfacingNormals |
+                  //aiProcess_SplitLargeMeshes |
+                  //aiProcess_FindInstances |
+                  aiProcess_Triangulate |
+                  aiProcess_GenUVCoords |
+                  aiProcess_SortByPType |
+                  aiProcess_FindDegenerates |
+                  aiProcess_FindInvalidData |
+                  aiProcess_ValidateDataStructure |
+                  //aiProcess_OptimizeMeshes |
+                  aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
 
     const aiScene* aiScenePointer = importer.ReadFile(((filePath + "/") + fileName).c_str(), ppsteps);
 

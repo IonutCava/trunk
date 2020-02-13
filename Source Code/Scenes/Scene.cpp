@@ -814,11 +814,11 @@ U16 Scene::registerInputActions() {
     };
 
     auto dragSelectBegin = [this](InputParams param) {
-        beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), !_context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
+        beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), true, vec2<I32>(param._var[2], param._var[3]));
     };
 
     auto dragSelectEnd = [this](InputParams param) {
-        endDragSelection(getPlayerIndexForDevice(param._deviceIndex), !_context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
+        endDragSelection(getPlayerIndexForDevice(param._deviceIndex), true, vec2<I32>(param._var[2], param._var[3]));
     };
 
     U16 actionID = 0;
@@ -1197,7 +1197,7 @@ void Scene::clearObjects() {
 
 bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!arg.wheelEvent()) {
-        PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
+        const PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
         DragSelectData& data = _dragSelectData[idx];
         if (data._isDragging) {
             data._endDragPos = arg.absolutePos();
@@ -1383,8 +1383,10 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
     const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
     vec2<I32> aimPos = COORD_REMAP(aimPosIn, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
 
+    bool editorRunning = false;
     if (Config::Build::ENABLE_EDITOR) {
         if (_context.editor().running() && _context.editor().scenePreviewFocused()) {
+            editorRunning = true;
             const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
             if (sceneRect.contains(aimPos)) {
                 aimPos = COORD_REMAP(aimPos, sceneRect, viewport);
@@ -1396,8 +1398,8 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
     F32 aimX = to_F32(aimPos.x);
     F32 aimY = viewport.w - to_F32(aimPos.y) - 1;
 
-    vec3<F32> startRay = crtCamera.unProject(aimX, aimY, 0.0f, viewport);
-    vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
+    const vec3<F32> startRay = crtCamera.unProject(aimX, aimY, 0.0f, viewport);
+    const vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
     // see if we select another one
     _sceneSelectionCandidates.resize(0);
 
@@ -1418,14 +1420,20 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
         std::sort(std::begin(_sceneSelectionCandidates),
                   std::end(_sceneSelectionCandidates),
                   [](const SGNRayResult& A, const SGNRayResult& B) -> bool {
-                      return std::get<1>(A) < std::get<1>(B);
+                      return A.dist < B.dist;
                   });
 
         SceneGraphNode* target = nullptr;
         for (const SGNRayResult& result : _sceneSelectionCandidates) {
-            I64 crtCandidate = std::get<0>(result);
-            SceneGraphNode* crtNode = _sceneGraph->findNode(crtCandidate);
-            if (crtNode && crtNode->get<SelectionComponent>() && crtNode->get<SelectionComponent>()->enabled()) {
+            if (result.dist < 0.0f) {
+                continue;
+            }
+
+            SceneGraphNode* crtNode = _sceneGraph->findNode(result.sgnGUI);
+            if (crtNode && 
+                (editorRunning || 
+                (crtNode->get<SelectionComponent>() && crtNode->get<SelectionComponent>()->enabled())))
+            {
                 target = crtNode;
                 break;
             }
@@ -1460,7 +1468,7 @@ void Scene::onNodeDestroy(SceneGraphNode& node) {
 }
 
 void Scene::resetSelection(PlayerIndex idx) {
-    for (I64 selectionGUID : _currentSelection[idx]) {
+    for (const I64 selectionGUID : _currentSelection[idx]) {
         SceneGraphNode* node = sceneGraph().findNode(selectionGUID);
         if (node != nullptr) {
             node->clearFlag(SceneGraphNode::Flags::HOVERED);
@@ -1468,7 +1476,7 @@ void Scene::resetSelection(PlayerIndex idx) {
         }
     }
 
-    _currentSelection[idx].clear();
+    _currentSelection[idx].resize(0);
 
     for (auto& cbk : _selectionChangeCallbacks) {
         cbk(idx, {});
