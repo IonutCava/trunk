@@ -491,14 +491,13 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 _boundingBoxPrimitive[1]->fromBox(bbGrandParent.getMin(), bbGrandParent.getMax(), UColour4(255, 0, 0, 255));
                 bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
                 setGrandparentFlag = true;
-            } else {
-                if (_boundingBoxPrimitive[1]) {
-                    _context.destroyIMP(_boundingBoxPrimitive[1]);
-                }
             }
         }
     } else if (_boundingBoxPrimitive[0]) {
         _context.destroyIMP(_boundingBoxPrimitive[0]);
+        if (_boundingBoxPrimitive[1]) {
+            _context.destroyIMP(_boundingBoxPrimitive[1]);
+        }
     }
 
     if (renderBSphere) {
@@ -526,14 +525,13 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 _boundingSpherePrimitive[1]->fromSphere(bsGrandParent.getCenter(), bsGrandParent.getRadius(), UColour4(255, 0, 0, 255));
                 bufferInOut.add(_boundingSpherePrimitive[1]->toCommandBuffer());
                 setGrandparentFlag = true;
-            } else {
-                if (_boundingSpherePrimitive[1]) {
-                    _context.destroyIMP(_boundingSpherePrimitive[1]);
-                }
             }
         }
     } else if (_boundingSpherePrimitive[0]) {
         _context.destroyIMP(_boundingSpherePrimitive[0]);
+        if (_boundingSpherePrimitive[1]) {
+            _context.destroyIMP(_boundingSpherePrimitive[1]);
+        }
     }
 
     if (setGrandparentFlag) {
