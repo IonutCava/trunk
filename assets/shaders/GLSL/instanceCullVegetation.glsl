@@ -55,11 +55,13 @@ void main(void) {
     }
 
     vec3 extents = Extents.xyz;
+    float radius = max(max(extents.x, extents.y), extents.z);
     float scale = instance.positionAndScale.w;
 
     Data[idx].data.w = extents.y * scale;
+    extents = (extents * scale) * 1.1f;
 
-    if (zBufferCullRasterGrid(positionW.xyz, (extents * scale) * 1.1f)) {
+    if (HiZCull(positionW.xyz, extents, radius)) {
         Data[idx].data.z = 3.0f;
     } else {
 #       if defined(CULL_TREES)

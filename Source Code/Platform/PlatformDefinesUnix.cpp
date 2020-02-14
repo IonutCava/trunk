@@ -7,6 +7,7 @@
 #include <SDL_syswm.h>
 #include <malloc.h>
 #include <unistd.h>
+#include <signal.h
 
 void* malloc_aligned(const size_t size, size_t alignment) {
 	return memalign(alignment, size);
@@ -26,6 +27,14 @@ int _vscprintf (const char * format, va_list pargs) {
 }
 
 namespace Divide {
+
+    void DebugBreak() {
+#if defined(SIGTRAP)
+        raise(SIGTRAP)
+#else
+        raise(SIGABRT)
+#endif
+    }
 
     ErrorCode PlatformInitImpl(int argc, char** argv) noexcept {
         return ErrorCode::NO_ERR;

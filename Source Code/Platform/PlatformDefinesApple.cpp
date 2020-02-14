@@ -5,6 +5,7 @@
 #include "Headers/PlatformDefinesApple.h"
 
 #include <SDL_syswm.h>
+#include <signal.h
 
 void* malloc_aligned(const size_t size, size_t alignment) {
 	return malloc(size);
@@ -15,6 +16,14 @@ void  malloc_free(void*& ptr) {
 }
 
 namespace Divide {
+
+    void DebugBreak() {
+#if defined(SIGTRAP)
+        raise(SIGTRAP)
+#else
+        raise(SIGABRT)
+#endif
+    }
 
     ErrorCode PlatformInitImpl(int argc, char** argv) noexcept {
         return ErrorCode::NO_ERR;

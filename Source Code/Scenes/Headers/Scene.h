@@ -154,8 +154,8 @@ class Scene : public Resource, public PlatformContextComponent {
     }
 
     bool findSelection(PlayerIndex idx, bool clearOld);
-    void beginDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos);
-    void endDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos);
+    void beginDragSelection(PlayerIndex idx, bool editorRunning, vec2<I32> mousePos);
+    void endDragSelection(PlayerIndex idx, bool editorRunning, vec2<I32> mousePos);
     bool isDragSelecting(PlayerIndex idx) const;
 
     inline void addSelectionCallback(const DELEGATE_CBK<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {

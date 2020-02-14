@@ -50,6 +50,7 @@ namespace Divide {
     enum class EditorComponentFieldType : U8 {
         PUSH_TYPE = 0,
         SLIDER_TYPE,
+        BUTTON,
         DROPDOWN_TYPE,
         BOUNDING_BOX,
         BOUNDING_SPHERE,
@@ -73,6 +74,7 @@ namespace Divide {
 
         F32 _step = 0.1f;
         bool _readOnly = false;
+        bool _serialise = true;
 
         template<typename T>
         T* getPtr() const {

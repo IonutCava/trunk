@@ -73,7 +73,7 @@ class RenderQueue : public KernelComponent {
         return _renderBins;
     }
 
-    void getSortedQueues(RenderStagePass stagePass, RenderBin::SortedQueues& queuesOut, U16& countOut) const;
+    void getSortedQueues(RenderStage stage, RenderPassType passType, RenderBin::SortedQueues& queuesOut, U16& countOut) const;
 
   private:
 

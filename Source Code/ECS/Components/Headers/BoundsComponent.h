@@ -49,9 +49,6 @@ namespace Divide {
 
         const BoundingBox& updateAndGetBoundingBox();
 
-        inline bool ignoreTransform() const { return _ignoreTransform; }
-        inline void ignoreTransform(bool state) { _ignoreTransform = state; }
-
         F32 distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept;
 
         PROPERTY_RW(bool, showAABB, false);
@@ -73,12 +70,10 @@ namespace Divide {
         void flagBoundingBoxDirty(bool recursive);
 
     private:
-        std::atomic_bool _ignoreTransform;
         std::atomic_bool _boundingBoxDirty;
         BoundingBox _boundingBox;
         BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;
-        std::mutex _bbLock;
         TransformComponent* _tCompCache = nullptr;
     };
 

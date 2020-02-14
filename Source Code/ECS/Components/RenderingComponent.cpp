@@ -65,12 +65,13 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
       _dataIndex({std::numeric_limits<U32>::max(), false}),
       _reflectionIndex(-1),
       _refractionIndex(-1),
-      _reflectorType(ReflectorType::PLANAR_REFLECTOR),
+      _reflectorType(ReflectorType::COUNT),
+      _refractorType(RefractorType::COUNT),
       _primitivePipeline{nullptr, nullptr, nullptr},
       _materialInstance(nullptr),
       _materialInstanceCache(nullptr),
       _boundingBoxPrimitive{ nullptr, nullptr },
-      _boundingSpherePrimitive(nullptr),
+      _boundingSpherePrimitive{ nullptr, nullptr },
       _skeletonPrimitive(nullptr),
       _axisGizmo(nullptr)
 {
@@ -123,15 +124,15 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
 
 RenderingComponent::~RenderingComponent()
 {
-    if (_boundingBoxPrimitive[0]) {
-        _context.destroyIMP(_boundingBoxPrimitive[0]);
+    for (U8 i = 0; i < 2; ++i) {
+        if (_boundingBoxPrimitive[i]) {
+            _context.destroyIMP(_boundingBoxPrimitive[i]);
+        }
+        if (_boundingSpherePrimitive[i]) {
+            _context.destroyIMP(_boundingSpherePrimitive[i]);
+        }
     }
-    if (_boundingBoxPrimitive[1]) {
-        _context.destroyIMP(_boundingBoxPrimitive[1]);
-    }
-    if (_boundingSpherePrimitive) {
-        _context.destroyIMP(_boundingSpherePrimitive);
-    }
+
     if (_skeletonPrimitive) {
         _context.destroyIMP(_skeletonPrimitive);
     }
@@ -157,12 +158,20 @@ void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
         _editorComponent.registerField(std::move(materialField));
 
         EditorComponentField lockLodField = {};
-        lockLodField._name = "Lock LoD";
+        lockLodField._name = "Rendered LOD Level";
         lockLodField._type = EditorComponentFieldType::PUSH_TYPE;
-        lockLodField._basicType = GFX::PushConstantType::BOOL;
-        lockLodField._data = &_lodLocked;
-        lockLodField._readOnly = false;
+        lockLodField._basicType = GFX::PushConstantType::UINT;
+        lockLodField._data = &_lodLevels[to_base(RenderStage::DISPLAY)];
+        lockLodField._readOnly = true;
         _editorComponent.registerField(std::move(lockLodField));
+
+        EditorComponentField renderLodField = {};
+        renderLodField._name = "Lock LoD";
+        renderLodField._type = EditorComponentFieldType::PUSH_TYPE;
+        renderLodField._basicType = GFX::PushConstantType::BOOL;
+        renderLodField._data = &_lodLocked;
+        renderLodField._readOnly = false;
+        _editorComponent.registerField(std::move(renderLodField));
 
         EditorComponentField lockLodLevelField = {};
         lockLodLevelField._name = "Lock LoD Level";
@@ -450,9 +459,12 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
     bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB) ||
                       sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
-    bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
+    bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE) ||
+                         sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
 
 
+    const bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
+    bool setGrandparentFlag = false;
     if (renderBBox) {
         if (!_boundingBoxPrimitive[0]) {
             _boundingBoxPrimitive[0] = _context.newIMP();
@@ -466,7 +478,6 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour4(0, 0, 255, 255));
         bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
 
-        const bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
         if (isSubMesh) {
             if (!grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED)) {
                 if (!_boundingBoxPrimitive[1]) {
@@ -477,39 +488,57 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
                 }
 
                 const BoundingBox& bbGrandParent = grandParent->get<BoundsComponent>()->getBoundingBox();
-                _boundingBoxPrimitive[1]->fromBox(
-                                     bbGrandParent.getMin() - vec3<F32>(0.0025f),
-                                     bbGrandParent.getMax() + vec3<F32>(0.0025f),
-                                     UColour4(255, 0, 0, 255));
+                _boundingBoxPrimitive[1]->fromBox(bbGrandParent.getMin(), bbGrandParent.getMax(), UColour4(255, 0, 0, 255));
                 bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
-                grandParent->setFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
+                setGrandparentFlag = true;
             } else {
                 if (_boundingBoxPrimitive[1]) {
                     _context.destroyIMP(_boundingBoxPrimitive[1]);
                 }
             }
         }
-
-        if (renderBSphere) {
-            if (!_boundingSpherePrimitive) {
-                _boundingSpherePrimitive = _context.newIMP();
-                _boundingSpherePrimitive->name("BoundingSphere_" + _parentSGN.name());
-                _boundingSpherePrimitive->pipeline(*_primitivePipeline[0]);
-                _boundingSpherePrimitive->skipPostFX(true);
-            }
-            const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
-            _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), UColour4(0, 255, 0, 255));
-            bufferInOut.add(_boundingSpherePrimitive->toCommandBuffer());
-        } else {
-            _context.destroyIMP(_boundingSpherePrimitive);
-        }
-    } else {
-        if (_boundingBoxPrimitive[0]) {
-            _context.destroyIMP(_boundingBoxPrimitive[0]);
-        }
+    } else if (_boundingBoxPrimitive[0]) {
+        _context.destroyIMP(_boundingBoxPrimitive[0]);
     }
 
+    if (renderBSphere) {
+        if (!_boundingSpherePrimitive[0]) {
+            _boundingSpherePrimitive[0] = _context.newIMP();
+            _boundingSpherePrimitive[0]->name("BoundingSphere_" + _parentSGN.name());
+            _boundingSpherePrimitive[0]->pipeline(*_primitivePipeline[0]);
+            _boundingSpherePrimitive[0]->skipPostFX(true);
+        }
 
+        const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
+        _boundingSpherePrimitive[0]->fromSphere(bs.getCenter(), bs.getRadius(), UColour4(0, 255, 0, 255));
+        bufferInOut.add(_boundingSpherePrimitive[0]->toCommandBuffer());
+
+        if (isSubMesh) {
+            if (!grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED)) {
+                if (!_boundingSpherePrimitive[1]) {
+                    _boundingSpherePrimitive[1] = _context.newIMP();
+                    _boundingSpherePrimitive[1]->name("BoundingSphere_Parent_" + _parentSGN.name());
+                    _boundingSpherePrimitive[1]->pipeline(*_primitivePipeline[0]);
+                    _boundingSpherePrimitive[1]->skipPostFX(true);
+                }
+
+                const BoundingSphere& bsGrandParent = grandParent->get<BoundsComponent>()->getBoundingSphere();
+                _boundingSpherePrimitive[1]->fromSphere(bsGrandParent.getCenter(), bsGrandParent.getRadius(), UColour4(255, 0, 0, 255));
+                bufferInOut.add(_boundingSpherePrimitive[1]->toCommandBuffer());
+                setGrandparentFlag = true;
+            } else {
+                if (_boundingSpherePrimitive[1]) {
+                    _context.destroyIMP(_boundingSpherePrimitive[1]);
+                }
+            }
+        }
+    } else if (_boundingSpherePrimitive[0]) {
+        _context.destroyIMP(_boundingSpherePrimitive[0]);
+    }
+
+    if (setGrandparentFlag) {
+        grandParent->setFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
+    }
 
     bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON);
     renderSkeleton = renderSkeleton || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
@@ -526,7 +555,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
             }
             if (!grandParent->hasFlag(SceneGraphNode::Flags::SKELETON_RENDERED)) {
                 // Get the animation component of any submesh. They should be synced anyway.
-                AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
+                const AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
                 // Get the skeleton lines from the submesh's animation component
                 const vector<Line>& skeletonLines = childAnimComp->skeletonLines();
                 _skeletonPrimitive->worldMatrix(_parentSGN.get<TransformComponent>()->getWorldMatrix());
@@ -536,8 +565,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
                 grandParent->setFlag(SceneGraphNode::Flags::SKELETON_RENDERED);
             }
-        }
-        else if (_skeletonPrimitive) {
+        } else if (_skeletonPrimitive) {
             _context.destroyIMP(_skeletonPrimitive);
         }
     }
@@ -547,7 +575,7 @@ U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>
     OPTICK_EVENT();
 
     if (_lodLocked) {
-        return CLAMPED<U8>(_lodLocked, 0u, 4u);
+        return CLAMPED<U8>(to_U8(_lodLockedLevel), 0u, 4u);
     }
 
     //ToDo: HACK for shadow rendering
@@ -622,11 +650,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
 RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) {
     if (renderStagePass._stage == RenderStage::SHADOW) {
-        constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
-        const U32 passIndex = renderStagePass._passIndex % stride;
-        const U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
-
-        return _renderPackagesShadow[lightIndex * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS + passIndex];
+        return _renderPackagesShadow[renderStagePass._indexA * 6u + renderStagePass._indexB];
     } else {
         return _renderPackagesNormal[getPackageIndexNoShadow(renderStagePass._stage, renderStagePass._passType)];
     }
@@ -634,16 +658,11 @@ RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePas
 
 const RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) const {
     if (renderStagePass._stage == RenderStage::SHADOW) {
-        constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
-
-        const U32 passIndex = renderStagePass._passIndex % stride;
-        const U32 lightIndex = (renderStagePass._passIndex - passIndex) / stride;
-        return _renderPackagesShadow[lightIndex * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS + passIndex];
+        return _renderPackagesShadow[renderStagePass._indexA * 6u + renderStagePass._indexB];
     } else {
         return _renderPackagesNormal[getPackageIndexNoShadow(renderStagePass._stage, renderStagePass._passType)];
     }
 }
-
 
 size_t RenderingComponent::getSortKeyHash(RenderStagePass renderStagePass) const {
     return getDrawPackage(renderStagePass).getSortKeyHash();
@@ -652,19 +671,15 @@ size_t RenderingComponent::getSortKeyHash(RenderStagePass renderStagePass) const
 void RenderingComponent::updateReflectionIndex(ReflectorType type, I32 index) {
     _reflectionIndex = index;
     if (_reflectionIndex > -1) {
-        RenderTarget& reflectionTarget =
-            _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR_REFLECTOR
-                ? RenderTargetUsage::REFLECTION_PLANAR
-                : RenderTargetUsage::REFLECTION_CUBE,
-                to_U16(index)));
+        RenderTarget& reflectionTarget = _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
+                                                                                                                               : RenderTargetUsage::REFLECTION_CUBE,
+                                                     to_U16(index)));
         const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
-        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
-                                             ? RenderTargetUsage::REFLECTION_PLANAR
-                                             : RenderTargetUsage::REFLECTION_CUBE)] = refTex;
+        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
+                                                                      : RenderTargetUsage::REFLECTION_CUBE)] = refTex;
     } else {
-        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR_REFLECTOR
-                                              ? RenderTargetUsage::REFLECTION_PLANAR
-                                              : RenderTargetUsage::REFLECTION_CUBE)] = _defaultReflection.first;
+        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
+                                                                      : RenderTargetUsage::REFLECTION_CUBE)] = _defaultReflection.first;
     }
 }
 
@@ -678,10 +693,14 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut)
 {
+    if (_reflectorType == ReflectorType::COUNT) {
+        return false;
+    }
+
     updateReflectionIndex(_reflectorType, reflectionIndex);
 
-    RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR_REFLECTOR ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                                 : RenderTargetUsage::REFLECTION_CUBE, 
+    RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
+                                                                       : RenderTargetUsage::REFLECTION_CUBE, 
                                reflectionIndex);
 
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -715,17 +734,16 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
     }
 
     if (_reflectionCallback) {
-        RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, camera);
+        RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, to_U8(_reflectorType), camera);
         _reflectionCallback(params, bufferInOut);
     } else {
-        if (_reflectorType == ReflectorType::CUBE_REFLECTOR) {
+        if (_reflectorType == ReflectorType::CUBE) {
             const vec2<F32>& zPlanes = camera->getZPlanes();
             _context.generateCubeMap(reflectRTID,
                                      0,
                                      camera->getEye(),
                                      vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                     RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS),
-                                     reflectionIndex,
+                                     RenderStagePass{RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(_reflectorType), reflectionIndex},
                                      bufferInOut);
         }
     }
@@ -736,8 +754,7 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
 void RenderingComponent::updateRefractionIndex(ReflectorType type, I32 index) {
     _refractionIndex = index;
     if (_refractionIndex > -1) {
-        RenderTarget& refractionTarget =
-            _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION_PLANAR, to_U16(index)));
+        RenderTarget& refractionTarget = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION_PLANAR, to_U16(index)));
         const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
         _externalTextures[getUsageIndex(RenderTargetUsage::REFRACTION_PLANAR)] = refTex;
     } else {
@@ -755,7 +772,7 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut) {
     // no default refraction system!
-    if (!_refractionCallback) {
+    if (_refractorType == RefractorType::COUNT) {
         return false;
     }
 
@@ -793,8 +810,11 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
         }
     }
 
-    RenderCbkParams params(_context, _parentSGN, renderState, refractRTID, refractionIndex, camera);
-    _refractionCallback(params, bufferInOut);
+    if (_refractionCallback) {
+        RenderCbkParams params{ _context, _parentSGN, renderState, refractRTID, refractionIndex, to_U8(_refractorType), camera };
+        _refractionCallback(params, bufferInOut);
+        return true;
+    }
 
     return false;
 }

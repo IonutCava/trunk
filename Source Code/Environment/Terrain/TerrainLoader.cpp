@@ -502,12 +502,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColourLQ);
 
     terrainMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);
-    terrainMaterial->setShaderProgram(terrainColourShader, RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
-    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
-    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
-    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
-    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
-    terrainMaterial->setShaderProgram(terrainShadowShader, RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS));
+    terrainMaterial->setShaderProgram(terrainColourShader, { RenderStage::DISPLAY, RenderPassType::MAIN_PASS });
+    terrainMaterial->setShaderProgram(terrainColourShaderLQ, { RenderStage::REFLECTION, RenderPassType::MAIN_PASS });
+    terrainMaterial->setShaderProgram(terrainColourShaderLQ, { RenderStage::REFRACTION, RenderPassType::MAIN_PASS });
+    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, { RenderStage::REFLECTION, RenderPassType::PRE_PASS });
+    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, { RenderStage::REFRACTION, RenderPassType::PRE_PASS });
+    terrainMaterial->setShaderProgram(terrainShadowShader, { RenderStage::SHADOW, RenderPassType::MAIN_PASS });
 
     terrain->setMaterialTpl(terrainMaterial);
 
@@ -538,8 +538,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());
     terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderPassType::PRE_PASS);
-    terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
-    terrainMaterial->setRenderStateBlock(terrainRenderStatePrePassReflection.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
+    terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), { RenderStage::REFLECTION, RenderPassType::MAIN_PASS });
+    terrainMaterial->setRenderStateBlock(terrainRenderStatePrePassReflection.getHash(), { RenderStage::REFLECTION, RenderPassType::PRE_PASS });
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
     if (threadedLoading) {

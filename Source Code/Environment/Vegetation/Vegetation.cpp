@@ -389,6 +389,18 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     compModule._defines.push_back(std::make_pair(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true));
     compModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstances).c_str(), true));
     compModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true));
+    switch (GetHiZMethod()) {
+        case HiZMethod::ARM:
+            compModule._defines.push_back(std::make_pair("USE_ARM", true));
+            break;
+        case HiZMethod::NVIDIA:
+            compModule._defines.push_back(std::make_pair("USE_NVIDIA", true));
+            break;
+        default:
+        case HiZMethod::RASTER_GRID:
+            compModule._defines.push_back(std::make_pair("USE_RASTERGRID", true));
+            break;
+    };
 
     ShaderProgramDescriptor shaderCompDescriptor = {};
     shaderCompDescriptor._modules.push_back(compModule);
@@ -466,6 +478,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     }
 
     sgn.get<RenderingComponent>()->setMaterialTpl(s_vegetationMaterial);
+    sgn.get<RenderingComponent>()->lockLoD(true, 0u);
 
     PipelineDescriptor pipeDesc;
     pipeDesc._shaderProgramHandle = s_cullShaderGrass->getGUID();
@@ -491,9 +504,9 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
                         Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
                         meshPtr->setMaterialTpl(s_treeMaterial);
                         // CSM last split should probably avoid rendering trees since it would cover most of the scene :/
-                        meshPtr->renderState().addToDrawExclusionMask(RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2));
+                        meshPtr->renderState().addToDrawExclusionMask({ RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2 });
                         for (const SubMesh_ptr& subMesh : meshPtr->subMeshList()) {
-                            subMesh->renderState().addToDrawExclusionMask(RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2));
+                            subMesh->renderState().addToDrawExclusionMask({ RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2 });
                         }
                         s_treeMeshes.push_back(meshPtr);
                     }
@@ -625,7 +638,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
 
     if (!quick && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
         // This will always lag one frame
-        const Texture_ptr& depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Colour, 0).texture();
+        const Texture_ptr& depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));

@@ -30,7 +30,7 @@ namespace{
 };
 
 CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
-    : ShadowMapGenerator(context)
+    : ShadowMapGenerator(context, ShadowType::LAYERED)
 {
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "EVCSM");
 
@@ -88,7 +88,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     sampler.magFilter(TextureFilter::LINEAR);
     sampler.anisotropyLevel(0);
 
-    const RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(ShadowType::LAYERED));
+    const RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(_type));
     const RenderTarget& rt = _context.renderTargetPool().renderTarget(depthMapID);
     const TextureDescriptor& texDescriptor = rt.getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor();
     // Draw FBO
@@ -158,11 +158,9 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     
     RenderPassManager::PassParams params = {};
     params._sourceNode = &light.getSGN();
-    params._stage = RenderStage::SHADOW;
+    params._stagePass = { RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()) };
     params._target = _drawBuffer._targetID;
     params._bindTargets = false;
-    params._pass = RenderPassType::COUNT;
-    params._passVariant = to_U8(light.getLightType());
     params._minLoD = -1;
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
@@ -182,8 +180,6 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
     auto& rpm = _context.parent().renderPassManager();
 
-    constexpr U32 stride = std::max(to_U32(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), 6u);
-
     const bool renderLastSplit = true;//_context.getFrameCount() % 2 == 0;
     I16 i = to_I16(numSplits) - (renderLastSplit ? 1 : 2);
     for (i; i >= 0; i--) {
@@ -194,7 +190,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
-        params._passIndex = (lightIndex * stride) + i;
+        params._stagePass._indexA = to_U16(lightIndex);
+        params._stagePass._indexB = i;
         params._camera = light.shadowCameras()[i];
         //params._minLoD = i > 1 ? 1 : -1;
         //params._minExtents.set(i > 1 ? 3.5f : (i > 0 ? 2.5f : 0.5f));

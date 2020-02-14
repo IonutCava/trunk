@@ -224,10 +224,10 @@ void RenderQueue::refresh(RenderStage stage) {
     }
 }
 
-void RenderQueue::getSortedQueues(RenderStagePass stagePass, RenderBin::SortedQueues& queuesOut, U16& countOut) const {
+void RenderQueue::getSortedQueues(RenderStage stage, RenderPassType passType, RenderBin::SortedQueues& queuesOut, U16& countOut) const {
     OPTICK_EVENT();
 
-    if (stagePass._passType == RenderPassType::PRE_PASS) {
+    if (passType == RenderPassType::PRE_PASS) {
         constexpr RenderBinType rbTypes[] = {
             RenderBinType::RBT_OPAQUE,
             RenderBinType::RBT_IMPOSTOR,
@@ -240,12 +240,12 @@ void RenderQueue::getSortedQueues(RenderStagePass stagePass, RenderBin::SortedQu
         for (const RenderBinType type : rbTypes) {
             const RenderBin* renderBin = _renderBins[type];
             RenderBin::SortedQueue& nodes = queuesOut[type];
-            renderBin->getSortedNodes(stagePass._stage, nodes, countOut);
+            renderBin->getSortedNodes(stage, nodes, countOut);
         }
     } else {
         for (const RenderBin* renderBin : _renderBins) {
             RenderBin::SortedQueue& nodes = queuesOut[renderBin->getType()];
-            renderBin->getSortedNodes(stagePass._stage, nodes, countOut);
+            renderBin->getSortedNodes(stage, nodes, countOut);
         }
     }
 }

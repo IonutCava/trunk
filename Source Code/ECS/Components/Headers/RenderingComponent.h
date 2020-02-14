@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Rendering/Headers/EnvironmentProbe.h"
+#include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 namespace Divide {
 
@@ -88,12 +89,14 @@ struct RenderCbkParams {
                              const SceneRenderState& sceneRenderState,
                              const RenderTargetID& renderTarget,
                              U32 passIndex,
+                             U8 passVariant,
                              Camera* camera)
         : _context(context),
           _sgn(sgn),
           _sceneRenderState(sceneRenderState),
           _renderTarget(renderTarget),
           _passIndex(passIndex),
+          _passVariant(passVariant),
           _camera(camera)
     {
     }
@@ -103,14 +106,8 @@ struct RenderCbkParams {
     const SceneRenderState& _sceneRenderState;
     const RenderTargetID& _renderTarget;
     U32 _passIndex;
+    U8  _passVariant;
     Camera* _camera;
-};
-
-
-enum class ReflectorType : U8 {
-    PLANAR_REFLECTOR = 0,
-    CUBE_REFLECTOR = 1,
-    COUNT
 };
 
 typedef DELEGATE_CBK<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
@@ -161,6 +158,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void cullFlagValue(F32 newValue);
 
     inline void lockLoD(bool state) { _lodLocked = state; }
+    inline void lockLoD(bool state, U8 level) { _lodLocked = state; _lodLockedLevel = level; }
     inline bool lodLocked() const { return _lodLocked; }
 
     void useUniqueMaterialInstance();
@@ -179,7 +177,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void rebuildMaterial();
 
-    inline void setReflectionAndRefractionType(ReflectorType type) { _reflectorType = type; }
+    inline void setReflectionAndRefractionType(ReflectorType reflectType, RefractorType refractType) { _reflectorType = reflectType;  _refractorType = refractType; }
     inline void setReflectionCallback(RenderCallback cbk) { _reflectionCallback = cbk; }
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
@@ -240,7 +238,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void onMaterialChanged();
 
    protected:
-    std::array<RenderPackage, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * 6> _renderPackagesShadow;
+    std::array<RenderPackage, ShadowMap::MAX_SHADOW_PASSES> _renderPackagesShadow;
     std::array<RenderPackage, (to_base(RenderStage::COUNT) - 1) * to_base(RenderPassType::COUNT)> _renderPackagesNormal;
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;
@@ -263,7 +261,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     Pipeline*    _primitivePipeline[3];
     IMPrimitive* _boundingBoxPrimitive[2];
-    IMPrimitive* _boundingSpherePrimitive;
+    IMPrimitive* _boundingSpherePrimitive[2];
     IMPrimitive* _skeletonPrimitive;
     IMPrimitive* _axisGizmo;
 
@@ -274,7 +272,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     U32 _renderMask;
     std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
     ReflectorType _reflectorType;
-    U8 _lodLockedLevel;
+    RefractorType _refractorType;
+    U32 _lodLockedLevel;
     bool _lodLocked;
 
     static hashMap<U32, DebugView*> s_debugViews[2];

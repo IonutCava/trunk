@@ -12,8 +12,7 @@ namespace Divide {
 
 BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     : BaseComponentType<BoundsComponent, ComponentType::BOUNDS>(sgn, context),
-     _tCompCache(sgn.get<TransformComponent>()),
-     _ignoreTransform(false)
+     _tCompCache(sgn.get<TransformComponent>())
 {
     _refBoundingBox.set(sgn.getNode().getBounds());
     _boundingBox.set(_refBoundingBox);
@@ -60,6 +59,12 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     vbsField._readOnly = false;
     _editorComponent.registerField(std::move(vbsField));
 
+    EditorComponentField recomputeBoundsField = {};
+    recomputeBoundsField._name = "Recompute Bounds";
+    recomputeBoundsField._range = { recomputeBoundsField._name.length() * 10.0f, 20.0f };//dimensions
+    recomputeBoundsField._type = EditorComponentFieldType::BUTTON;
+    recomputeBoundsField._readOnly = false; //disabled/enabled
+    _editorComponent.registerField(std::move(recomputeBoundsField));
 
     _editorComponent.onChangedCbk([this](const char* field) {
         if (strcmp(field, "Show AABB") == 0 || strcmp(field, "Show Bounding Sphere") == 0) {
@@ -68,6 +73,8 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
                 rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB, _showAABB);
                 rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_SPHERE, _showBS);
             }
+        } else if (strcmp(field, "Recompute Bounds") == 0) {
+            flagBoundingBoxDirty(true);
         }
     });
 }
@@ -98,6 +105,10 @@ void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
 
 void BoundsComponent::OnData(const ECS::Data& data) {
     if (data.eventType == ECSCustomEventType::TransformUpdated) {
+        if (_tCompCache == nullptr) {
+            _tCompCache = _parentSGN.get<TransformComponent>();
+        }
+
         flagBoundingBoxDirty(true);
     }
 }
@@ -121,20 +132,13 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
 
     bool expected = true;
     if (_boundingBoxDirty.compare_exchange_strong(expected, false)) {
-        BoundingBox tempBB(_refBoundingBox);
-        _parentSGN.forEachChild([&tempBB](const SceneGraphNode* child, I32 /*childIdx*/) {
-            tempBB.add(child->get<BoundsComponent>()->updateAndGetBoundingBox());
+        _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
+            child->get<BoundsComponent>()->updateAndGetBoundingBox();
         });
 
-        if (!_ignoreTransform && _tCompCache != nullptr) {
-            tempBB.transform(_tCompCache->getWorldMatrix());
-        }
-
-        {
-            UniqueLock w_lock(_bbLock);
-            _boundingBox.set(tempBB);
-            _boundingSphere.fromBoundingBox(_boundingBox);
-        }
+        assert(_tCompCache != nullptr);
+        _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), _tCompCache->getWorldMatrix());
+        _boundingSphere.fromBoundingBox(_boundingBox);
         _parentSGN.SendEvent<BoundsUpdated>(GetOwner());
     }
 

@@ -60,6 +60,7 @@ class SceneRenderState;
 class Light : public GUIDWrapper, public ECS::Event::IEventListener
 {
    public:
+
     static U8 GetThreadGroupSize(U8 optionIn) noexcept {
         return (optionIn == 0 ? 8 : optionIn == 1 ? 16 : 32);
     }

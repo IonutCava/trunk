@@ -83,21 +83,21 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
     shadowDescriptorCSM.setZFunc(ComparisonFunction::LEQUAL);
     shadowDescriptorCSM.setColourWrites(true, true, false, false);
 
-    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
-    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::MAIN_PASS));
-    target.setRenderStateBlock(reflectorDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS));
+    target.setRenderStateBlock(stateDescriptor.getHash(), { RenderStage::DISPLAY, RenderPassType::MAIN_PASS });
+    target.setRenderStateBlock(stateDescriptor.getHash(), { RenderStage::REFRACTION, RenderPassType::MAIN_PASS });
+    target.setRenderStateBlock(reflectorDescriptor.getHash(), { RenderStage::REFLECTION, RenderPassType::MAIN_PASS });
 
-    target.setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStage::SHADOW, to_base(LightType::POINT));
-    target.setRenderStateBlock(shadowDescriptorNoColour.getHash(), RenderStage::SHADOW, to_base(LightType::SPOT));
-    target.setRenderStateBlock(shadowDescriptorCSM.getHash(), RenderStage::SHADOW, to_base(LightType::DIRECTIONAL));
+    target.setRenderStateBlock(shadowDescriptorNoColour.getHash(), { RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::POINT) });
+    target.setRenderStateBlock(shadowDescriptorNoColour.getHash(), { RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::SPOT) });
+    target.setRenderStateBlock(shadowDescriptorCSM.getHash(), { RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::DIRECTIONAL) });
 
-    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
-    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::OIT_PASS));
-    target.setRenderStateBlock(reflectorOitDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::OIT_PASS));
+    target.setRenderStateBlock(oitDescriptor.getHash(), { RenderStage::DISPLAY, RenderPassType::OIT_PASS });
+    target.setRenderStateBlock(oitDescriptor.getHash(), { RenderStage::REFRACTION, RenderPassType::OIT_PASS });
+    target.setRenderStateBlock(reflectorOitDescriptor.getHash(), { RenderStage::REFLECTION, RenderPassType::OIT_PASS });
 
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS));
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFRACTION, RenderPassType::PRE_PASS));
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStagePass(RenderStage::REFLECTION, RenderPassType::PRE_PASS));
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), { RenderStage::DISPLAY, RenderPassType::PRE_PASS });
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), { RenderStage::REFRACTION, RenderPassType::PRE_PASS });
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), { RenderStage::REFLECTION, RenderPassType::PRE_PASS });
 }
 
 Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)

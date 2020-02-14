@@ -128,8 +128,7 @@ void EnvironmentProbe::refresh(GFX::CommandBuffer& bufferInOut) {
                                  _currentArrayIndex,
                                  _aabb.getCenter(),
                                  vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
-                                 RenderStagePass(RenderStage::REFLECTION, RenderPassType::MAIN_PASS),
-                                 getRTIndex(),
+                                 {RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(ReflectorType::ENVIRONMENT), getRTIndex()},
                                  bufferInOut);
         _currentUpdateCall = 0;
     }

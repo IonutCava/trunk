@@ -713,7 +713,19 @@ U16 Scene::registerInputActions() {
     auto toggleWireframeRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);};
     auto toggleGeometryRendering = [this](InputParams param) { renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);};
     auto toggleDebugLines = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES);};
-    auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_AABB);};
+    auto toggleBoundingBoxRendering = [this](InputParams param) {
+        bool showAABB = renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
+        bool showBS = renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
+        if (!showAABB && !showBS) {
+            renderState().enableOption(SceneRenderState::RenderOptions::RENDER_AABB);
+        } else if (showAABB && !showBS) {
+            renderState().enableOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
+        } else if (showAABB && showBS) {
+            renderState().disableOption(SceneRenderState::RenderOptions::RENDER_AABB);
+        } else /*if (!showAABB && showBS) */ {
+            renderState().disableOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
+        }
+    };
     auto toggleShadowMapDepthBufferPreview = [this](InputParams param) {
         LightPool::togglePreviewShadowMaps(_context.gfx(), *_lightPool->getLights(LightType::DIRECTIONAL)[0]);
 
@@ -814,11 +826,11 @@ U16 Scene::registerInputActions() {
     };
 
     auto dragSelectBegin = [this](InputParams param) {
-        beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), true, vec2<I32>(param._var[2], param._var[3]));
+        beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), _context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
     };
 
     auto dragSelectEnd = [this](InputParams param) {
-        endDragSelection(getPlayerIndexForDevice(param._deviceIndex), true, vec2<I32>(param._var[2], param._var[3]));
+        endDragSelection(getPlayerIndexForDevice(param._deviceIndex), _context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
     };
 
     U16 actionID = 0;
@@ -1601,35 +1613,43 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
     _parent.setSelected(idx, nodes);
 }
 
-void Scene::beginDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos) {
-    if (!findSelection(idx, clearOld)) {
-        DragSelectData& data = _dragSelectData[idx];
+void Scene::beginDragSelection(PlayerIndex idx, bool editorRunning, vec2<I32> mousePos) {
+    bool inEditor = false;
+    Rect<I32> targetViewport = {};
+    if (Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _context.editor();
-        data._inEditor = Config::Build::ENABLE_EDITOR && editor.running() && editor.scenePreviewFocused();
-        if (data._inEditor) {
-            data._targetViewport = _context.gfx().getCurrentViewport();
+        inEditor = editorRunning && editor.scenePreviewFocused();
+        if (inEditor) {
+            targetViewport = _context.gfx().getCurrentViewport();
         } else {
             const vec2<U16>& resolution = _context.gfx().renderingResolution();
-            data._targetViewport = Rect<I32>(0, 0, resolution.width, resolution.height);
+            targetViewport = Rect<I32>(0, 0, resolution.width, resolution.height);
         }
 
         const vec2<U16>& displaySize = _context.activeWindow().getDimensions();
-        mousePos = COORD_REMAP(mousePos, Rect<I32>(0, 0, displaySize.width, displaySize.height), data._targetViewport);
-        if (data._inEditor) {
+        mousePos = COORD_REMAP(mousePos, Rect<I32>(0, 0, displaySize.width, displaySize.height), targetViewport);
+        if (inEditor) {
             const Rect<I32>& sceneRect = editor.scenePreviewRect(false);
             if (!sceneRect.contains(mousePos)) {
                 return;
             }
-            mousePos = COORD_REMAP(mousePos, sceneRect, data._targetViewport);
+            mousePos = COORD_REMAP(mousePos, sceneRect, targetViewport);
         }
+    }
 
+    if (!findSelection(idx, true)) {
+        DragSelectData& data = _dragSelectData[idx];
+        data._inEditor = inEditor;
         data._startDragPos = mousePos;
         data._endDragPos = mousePos;
         data._isDragging = true;
+        data._targetViewport = targetViewport;
     }
 }
 
-void Scene::endDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos) {
+void Scene::endDragSelection(PlayerIndex idx, bool editorRunning, vec2<I32> mousePos) {
+    ACKNOWLEDGE_UNUSED(editorRunning);
+
     DragSelectData& data =_dragSelectData[idx];
     data._isDragging = false;
     data._endDragPos = mousePos;
@@ -1637,7 +1657,7 @@ void Scene::endDragSelection(PlayerIndex idx, bool clearOld, vec2<I32> mousePos)
 }
 
 bool Scene::isDragSelecting(PlayerIndex idx) const {
-    auto it = _dragSelectData.find(idx);
+    const auto it = _dragSelectData.find(idx);
     if (it != std::cend(_dragSelectData)) {
         return it->second._isDragging;
     }

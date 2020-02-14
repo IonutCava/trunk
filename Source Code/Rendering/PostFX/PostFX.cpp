@@ -158,9 +158,16 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
         _filtersDirty = false;
     };
     
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+    beginDebugScopeCmd._scopeID = 0;
+    beginDebugScopeCmd._scopeName = "PostFX: Prepare";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
     GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
     _preRenderBatch->prepare(camera, _filterStack, bufferInOut);
     GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
+
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {

@@ -114,20 +114,22 @@ class SceneRenderState : public SceneComponent {
     };
 
     enum class RenderOptions : U16 {
-        /// Show/hide bounding boxes and/or objects
+        /// Show/hide bounding boxes
         RENDER_AABB = toBit(1),
+        /// Show/hide bounding spheres
+        RENDER_BSPHERES = toBit(2),
         /// Show/hide debug lines
-        RENDER_DEBUG_LINES = toBit(2),
-        RENDER_DEBUG_TARGET_LINES = toBit(3),
+        RENDER_DEBUG_LINES = toBit(3),
+        RENDER_DEBUG_TARGET_LINES = toBit(4),
         /// Show/hide geometry
-        RENDER_GEOMETRY = toBit(4),
+        RENDER_GEOMETRY = toBit(5),
         /// Render skeletons for animated geometry
-        RENDER_SKELETONS = toBit(5),
+        RENDER_SKELETONS = toBit(6),
         /// Render wireframe for all scene geometry
-        RENDER_WIREFRAME = toBit(6),
-        RENDER_OCTREE_REGIONS = toBit(7),
-        PLAY_ANIMATIONS = toBit(8),
-        COUNT = 8
+        RENDER_WIREFRAME = toBit(7),
+        RENDER_OCTREE_REGIONS = toBit(8),
+        PLAY_ANIMATIONS = toBit(9),
+        COUNT = 9
     };
 
     explicit SceneRenderState(Scene& parentScene);

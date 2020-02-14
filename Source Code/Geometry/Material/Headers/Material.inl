@@ -65,7 +65,10 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash, I32 varia
 
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStage renderStage, I32 variant) {
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        RenderStagePass renderStagePass(renderStage, static_cast<RenderPassType>(pass));
+        RenderStagePass renderStagePass{ 
+            renderStage, 
+            static_cast<RenderPassType>(pass)
+        };
 
         if (variant < 0) {
             renderStagePass._variant = 0;
@@ -83,7 +86,10 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderSta
 
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderPassType renderPassType, I32 variant) {
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        RenderStagePass renderStagePass(static_cast<RenderStage>(stage), renderPassType);
+        RenderStagePass renderStagePass{
+            static_cast<RenderStage>(stage),
+            renderPassType
+        };
 
         if (variant < 0 ) {
             renderStagePass._variant = 0;
@@ -216,13 +222,13 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderSt
 
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage) {
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        setShaderProgram(shader, RenderStagePass(stage, static_cast<RenderPassType>(pass)));
+        setShaderProgram(shader, RenderStagePass{ stage, static_cast<RenderPassType>(pass) });
     }
 }
 
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderPassType passType) {
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(stage), passType));
+        setShaderProgram(shader, RenderStagePass{static_cast<RenderStage>(stage), passType});
     }
 }
 

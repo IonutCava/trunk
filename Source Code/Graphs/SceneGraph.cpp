@@ -37,8 +37,6 @@ SceneGraph::SceneGraph(Scene& parentScene)
     rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
 
     _root = createSceneGraphNode(*this, rootDescriptor);
-
-    _root->get<BoundsComponent>()->ignoreTransform(true);
     _root->postLoad();
 
     //Attorney::SceneNodeSceneGraph::postLoad(*rootSGN.getNode(), rootSGN);

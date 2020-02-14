@@ -40,7 +40,7 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     _sizeX = _sizeY = to_F32(_targetChunkDimension);
 
     F32 tempMin = std::numeric_limits<F32>::max();
-    F32 tempMax = std::numeric_limits<F32>::min();
+    F32 tempMax = std::numeric_limits<F32>::lowest();
 
     U32 offset = to_U32(std::pow(2.0f, to_F32(0.0f)));
     U32 div = to_U32(std::pow(2.0f, to_F32(depth)));

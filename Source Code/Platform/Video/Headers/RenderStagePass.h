@@ -38,33 +38,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct RenderStagePass {
-    typedef U8 StagePassIndex;
-
-    RenderStagePass() noexcept : RenderStagePass(RenderStage::COUNT, RenderPassType::COUNT)
-    {
-    }
-
-    RenderStagePass(RenderStage stage, RenderPassType passType) noexcept : RenderStagePass(stage, passType, 0u)
-    {
-    }
-
-    RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant) noexcept : RenderStagePass(stage, passType, variant, 0u)
-    {
-    }
-
-    RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant, U32 passIndex) noexcept
-        : _stage(stage),
-          _passType(passType),
-          _variant(variant),
-          _passIndex(passIndex)
-    {
-    }
-
-    U8 _variant = 0;
-    U32 _passIndex = 0;
-
+    using StagePassIndex = U8;
     RenderStage _stage = RenderStage::COUNT;
     RenderPassType _passType = RenderPassType::COUNT;
+    U8 _variant = 0;
+    union {
+        U32 _passIndex = 0;
+        struct {
+            U16 _indexA; //usually some kind of type info (reflector/refractor index, light type, etc)
+            U16 _indexB; //usually some kind of actual pass index (eg. cube face we are rendering into)
+        };
+    };
 
     inline StagePassIndex index() const noexcept {
         return index(_stage, _passType);
@@ -92,7 +76,7 @@ struct RenderStagePass {
     }
 
     static RenderStagePass stagePass(StagePassIndex index) noexcept {
-        return RenderStagePass(RenderStagePass::stage(index), RenderStagePass::pass(index));
+        return { RenderStagePass::stage(index), RenderStagePass::pass(index) };
     }
 
     inline bool operator==(const RenderStagePass& other) const noexcept {

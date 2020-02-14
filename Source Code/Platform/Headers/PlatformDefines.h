@@ -133,6 +133,8 @@ FileWithPath getExecutableLocation(char* argv0);
 
 bool createDirectories(const char* path);
 
+void DebugBreak();
+
 ErrorCode PlatformInit(int argc, char** argv);
 bool PlatformClose();
 bool GetAvailableMemory(SysInfo& info);
@@ -599,7 +601,7 @@ struct safe_static_cast_helper<false, false>
         assert(IS_IN_RANGE_INCLUSIVE(std::is_enum<FROM>::value 
                                          ? static_cast<U32>(to_underlying_type(from))
                                          : from,
-                                     std::numeric_limits<TO>::min(),
+                                     std::numeric_limits<TO>::lowest(),
                                      std::numeric_limits<TO>::max()) &&
             "Number to cast exceeds numeric limits.");
 
@@ -615,7 +617,7 @@ struct safe_static_cast_helper<false, true>
     static inline TO cast(FROM from)
     {
         assert(IS_IN_RANGE_INCLUSIVE(from,
-                                     std::numeric_limits<TO>::min(),
+                                     std::numeric_limits<TO>::lowest(),
                                      std::numeric_limits<TO>::max()) &&
             "Number to cast exceeds numeric limits.");
 
@@ -636,7 +638,7 @@ struct safe_static_cast_helper<true, false>
         // assuring a positive input, we can safely cast it into its unsigned type and check the numeric limits
         typedef typename std::make_unsigned<FROM>::type UnsignedFrom;
         assert(IS_IN_RANGE_INCLUSIVE(static_cast<UnsignedFrom>(from),
-                                     std::numeric_limits<TO>::min(),
+                                     std::numeric_limits<TO>::lowest(),
                                      std::numeric_limits<TO>::max()) &&
             "Number to cast exceeds numeric limits.");
         return static_cast<TO>(from);
@@ -651,7 +653,7 @@ struct safe_static_cast_helper<true, true>
     static inline TO cast(FROM from)
     {
         assert(IS_IN_RANGE_INCLUSIVE(std::is_enum<FROM>::value ? to_underlying_type(from) : from,
-                                     std::numeric_limits<TO>::min(),
+                                     std::numeric_limits<TO>::lowest(),
                                      std::numeric_limits<TO>::max()) &&
             "Number to cast exceeds numeric limits.");
 

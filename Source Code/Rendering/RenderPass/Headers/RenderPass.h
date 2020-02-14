@@ -76,7 +76,7 @@ class RenderPass : private NonCopyable {
 
     inline RenderStage stageFlag() const noexcept { return _stageFlag; }
 
-    BufferData getBufferData(RenderPassType type, I32 passIndex) const;
+    BufferData getBufferData(RenderPassType type, U32 variant, U16 passIndexA, U16 passIndexB) const;
 
     void initBufferData();
 

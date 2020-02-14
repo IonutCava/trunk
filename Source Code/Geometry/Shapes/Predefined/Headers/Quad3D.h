@@ -64,6 +64,9 @@ class Quad3D : public Object3D {
     void setDimensions(const vec4<F32>& rect);
 
     const char* getResourceTypeName() const override { return "Quad3D"; }
+
+   protected:
+     void recomputeBounds();
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Quad3D);

@@ -18,7 +18,7 @@
 namespace Divide {
 
 SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
-    : ShadowMapGenerator(context)
+    : ShadowMapGenerator(context, ShadowType::SINGLE)
 {
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "Single Shadow Map");
 }
@@ -31,14 +31,12 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(1.0, light.getRange()));
 
     auto& passMgr = _context.parent().renderPassManager();
-    RenderPassManager::PassParams params;
+
+    RenderPassManager::PassParams params = {};
     params._sourceNode = &light.getSGN();
     params._camera = shadowCameras[0];
-    params._stage = RenderStage::SHADOW;
-    params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::SINGLE));
-    params._pass = RenderPassType::COUNT;
-    params._passIndex = (lightIndex * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-    params._passVariant = to_U8(light.getLightType());
+    params._stagePass = { RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex };
+    params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_base(_type));
     params._passName = "SingleShadowMap";
 
     passMgr->doCustomPass(params, bufferInOut);

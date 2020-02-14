@@ -33,7 +33,6 @@ layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
 #define dvd_dataFlag(X) int(dvd_Matrices[X]._colourMatrix[3].w)
 
 layout(location = 0) uniform uint dvd_numEntities = 0;
-layout(location = 1) uniform float dvd_nearPlaneDistance = 0.1f;
 
 layout(local_size_x = 64) in;
 
@@ -43,7 +42,7 @@ void main()
 
     if (ident >= dvd_numEntities) {
         atomicCounterIncrement(culledCount);
-        dvd_drawCommands[ident].instanceCount = 2;
+        dvd_drawCommands[ident].instanceCount = 0;
         return;
     }
 
@@ -57,24 +56,10 @@ void main()
     const vec3 center = bSphere.xyz;
     const float radius = bSphere.w;
 
-    const vec3 view_center = (viewMatrix * vec4(center, 1.0)).xyz;
-    const float nearest_z = view_center.z + radius;
-    // Sphere clips against near plane, just assume visibility.
-    if (nearest_z >= -dvd_nearPlaneDistance) {
-        return;
-    }
-
-    vec3 extents = dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
-#if defined(USE_RASTERGRID)
-    if (zBufferCullRasterGrid(center, extents))
-#else
-    // first do instance cloud reduction
-    if (InstanceCloudReduction(center, extents) ||
-        zBufferCullARM(view_center, radius))
-#endif
-    {
+    vec3 extents = vec3(radius);//dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
+    if (HiZCull(center, extents, radius)) {
         atomicCounterIncrement(culledCount);
-        dvd_drawCommands[ident].instanceCount = 0;
+        //dvd_drawCommands[ident].instanceCount = 0;
     }
 }
 

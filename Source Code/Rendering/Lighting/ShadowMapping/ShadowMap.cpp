@@ -29,8 +29,9 @@ vector<DebugView_ptr> ShadowMap::s_debugViews;
 vector<RenderTargetHandle> ShadowMap::s_shadowMaps;
 Light* ShadowMap::s_shadowPreviewLight = nullptr;
 
-ShadowMapGenerator::ShadowMapGenerator(GFXDevice& context)
-    : _context(context)
+ShadowMapGenerator::ShadowMapGenerator(GFXDevice& context, ShadowType type)
+    : _context(context),
+      _type(type)
 {
 }
 

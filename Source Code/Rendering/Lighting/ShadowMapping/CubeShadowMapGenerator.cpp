@@ -14,7 +14,7 @@
 namespace Divide {
 
 CubeShadowMapGenerator::CubeShadowMapGenerator(GFXDevice& context)
-    : ShadowMapGenerator(context)
+    : ShadowMapGenerator(context, ShadowType::CUBEMAP)
 {
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "Single Shadow Map");
 }
@@ -22,12 +22,11 @@ CubeShadowMapGenerator::CubeShadowMapGenerator(GFXDevice& context)
 void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(playerCamera);
 
-    _context.generateCubeMap(RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP)),
+    _context.generateCubeMap(RenderTargetID(RenderTargetUsage::SHADOW, to_base(_type)),
                              light.getShadowOffset(),
                              light.getSGN().get<TransformComponent>()->getPosition(),
                              vec2<F32>(0.1f, light.getRange()),
-                             RenderStagePass(RenderStage::SHADOW, RenderPassType::PRE_PASS, to_U8(light.getLightType())),
-                             (lightIndex * Config::Lighting::MAX_SHADOW_CASTING_LIGHTS),
+                             {RenderStage::SHADOW, RenderPassType::PRE_PASS, to_U8(light.getLightType()), lightIndex},
                              bufferInOut,
                              &light.getSGN(),
                              light.shadowCameras()[0]);

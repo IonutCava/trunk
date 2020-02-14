@@ -233,7 +233,7 @@ template <typename T,
 T Random(T max) noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be randomized!");
 
-    return Random<T, Engine, Distribution>(max < 0 ? std::numeric_limits<T>::min() : 0, max);
+    return Random<T, Engine, Distribution>(max < 0 ? std::numeric_limits<T>::lowest() : 0, max);
 }
 
 template <typename T,

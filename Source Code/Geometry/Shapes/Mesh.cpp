@@ -31,13 +31,19 @@ Mesh::~Mesh()
 {
 }
 
+void Mesh::postImport() {
+    _boundingBox.reset();
+    for (const SubMesh_ptr& subMesh : _subMeshList) {
+        _boundingBox.add(subMesh->getBounds());
+    }
+
+    setBounds(_boundingBox);
+}
+
 void Mesh::addSubMesh(SubMesh_ptr subMesh) {
     // Hold a reference to the submesh by ID
     _subMeshList.push_back(subMesh);
-
     Attorney::SubMeshMesh::setParentMesh(*subMesh.get(), this);
-    // set our flags and everything else that might happen in this call
-    setBounds(_boundingBox);
 }
 
 void Mesh::setMaterialTpl(const Material_ptr& material) {
@@ -97,8 +103,6 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
         }
         
     }
-
-    sgn.get<BoundsComponent>()->ignoreTransform(true);
 
     Object3D::postLoad(sgn);
 }

@@ -239,11 +239,6 @@ bool ParticleEmitter::unload() noexcept {
     return SceneNode::unload();
 }
 
-void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    sgn.get<BoundsComponent>()->ignoreTransform(true);
-    SceneNode::postLoad(sgn);
-}
-
 void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
                                         RenderStagePass renderStagePass,
                                         RenderPackage& pkgInOut) {

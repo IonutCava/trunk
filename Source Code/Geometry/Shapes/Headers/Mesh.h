@@ -95,6 +95,9 @@ class Mesh : public Object3D {
 
     const char* getResourceTypeName() const override { return "Mesh"; }
 
+    friend class MeshImporter;
+    void postImport();
+
    protected:
     bool _visibleToNetwork;
     U64 _lastTimeStamp = 0ull;

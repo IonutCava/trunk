@@ -93,6 +93,8 @@ void SceneRenderState::enableOption(RenderOptions option) {
             Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_SKELETONS")), "On");
         } else if (option == RenderOptions::RENDER_AABB) {
             Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")), "On");
+        } else if (option == RenderOptions::RENDER_BSPHERES) {
+            Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_SPHERES")), "On");
         }
     }
 
@@ -108,6 +110,8 @@ void SceneRenderState::disableOption(RenderOptions option) {
             Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_SKELETONS")), "Off");
         } else if (option == RenderOptions::RENDER_AABB) {
             Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")), "Off");
+        } else if (option == RenderOptions::RENDER_BSPHERES) {
+            Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_SPHERES")), "Off");
         }
     }
 

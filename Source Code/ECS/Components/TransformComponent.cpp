@@ -29,6 +29,7 @@ namespace Divide {
         worldMatField._data = &_worldMatrix;
         worldMatField._type = EditorComponentFieldType::PUSH_TYPE;
         worldMatField._readOnly = true;
+        worldMatField._serialise = false;
         worldMatField._basicType = GFX::PushConstantType::MAT4;
 
         _editorComponent.registerField(std::move(worldMatField));
@@ -44,11 +45,20 @@ namespace Divide {
             _editorComponent.registerField(std::move(transformOffsetField));
         }
 
+        EditorComponentField recomputeMatrixField = {};
+        recomputeMatrixField._name = "Recompute WorldMatrix";
+        recomputeMatrixField._range = { recomputeMatrixField._name.length() * 10.0f, 20.0f };//dimensions
+        recomputeMatrixField._type = EditorComponentFieldType::BUTTON;
+        recomputeMatrixField._readOnly = false; //disabled/enabled
+        _editorComponent.registerField(std::move(recomputeMatrixField));
+
         _editorComponent.onChangedCbk([this](const char* field) {
             if (strcmp(field, "Transform") == 0) {
                 setTransformDirty(to_base(TransformType::ALL));
             } else if (strcmp(field, "Position Offset") == 0) {
                 // view offset stuff
+            } else if (strcmp(field, "Recompute WorldMatrix") == 0) {
+                _transformUpdatedMask.store(to_base(TransformType::ALL));
             }
 
             _hasChanged = true;

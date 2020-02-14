@@ -276,6 +276,7 @@ namespace Import {
 
         mesh->getGeometryVB()->create();
         mesh->getGeometryVB()->keepData(mesh->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+        mesh->postImport();
 
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")),

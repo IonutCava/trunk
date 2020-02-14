@@ -257,6 +257,21 @@ namespace Divide {
 
         bool ret = false;
         switch (field._type) {
+            case EditorComponentFieldType::BUTTON: {
+                if (field._readOnly) {
+                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                }
+
+                if (ImGui::Button(field._name.c_str(), ImVec2(field._range.x, field._range.y))) {
+                    ret = true;
+                }
+
+                if (field._readOnly) {
+                    ImGui::PopItemFlag();
+                    ImGui::PopStyleVar();
+                }
+            }break;
             case EditorComponentFieldType::SLIDER_TYPE:
             case EditorComponentFieldType::PUSH_TYPE: {
                 ret = processBasicField(field);

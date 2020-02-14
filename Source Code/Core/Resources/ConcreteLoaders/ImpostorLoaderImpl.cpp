@@ -17,10 +17,10 @@ CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
     if (!_descriptor.flag()) {
         Material_ptr matTemp = CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.resourceName()));
 
-        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS))));
+        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock({ RenderStage::DISPLAY, RenderPassType::MAIN_PASS })));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), { RenderStage::DISPLAY, RenderPassType::MAIN_PASS });
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), { RenderStage::DISPLAY, RenderPassType::OIT_PASS });
         matTemp->setShadingMode(Material::ShadingMode::FLAT);
 
         ptr->setMaterialTpl(matTemp);
@@ -41,10 +41,10 @@ CachedResource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
     if (!_descriptor.flag()) {
         Material_ptr matTemp = CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.resourceName()));
 
-        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS))));
+        RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock({ RenderStage::DISPLAY, RenderPassType::MAIN_PASS })));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::MAIN_PASS));
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStagePass(RenderStage::DISPLAY, RenderPassType::OIT_PASS));
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), {RenderStage::DISPLAY, RenderPassType::MAIN_PASS});
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), {RenderStage::DISPLAY, RenderPassType::OIT_PASS});
         matTemp->setShadingMode(Material::ShadingMode::FLAT);
 
         ptr->setMaterialTpl(matTemp);

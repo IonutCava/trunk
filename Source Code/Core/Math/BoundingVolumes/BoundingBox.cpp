@@ -6,22 +6,24 @@
 namespace Divide {
 
 BoundingBox::BoundingBox() noexcept
-    : BoundingBox(vec3<F32>(std::numeric_limits<F32>::max()),
-                  vec3<F32>(std::numeric_limits<F32>::min()))
+    : _min(std::numeric_limits<F32>::max()),
+      _max(std::numeric_limits<F32>::lowest())
 {
 }
 
 BoundingBox::BoundingBox(const vec3<F32>& min, const vec3<F32>& max) noexcept
-    : BoundingBox(min.x, min.y, min.z, max.x, max.y, max.z)
+    : _min(min), 
+      _max(max)
 {
 }
 
 BoundingBox::BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept
+    : _min(minX, minY, minZ),
+      _max(maxX, maxY, maxZ)
 {
-    set(minX, minY, minZ, maxX, maxY, maxZ);
 }
 
-BoundingBox::BoundingBox(const vector<vec3<F32> >& points) noexcept
+BoundingBox::BoundingBox(const vector<vec3<F32>>& points) noexcept
     : BoundingBox()
 {
     createFromPoints(points);
@@ -72,31 +74,23 @@ bool BoundingBox::collision(const BoundingBox& AABB2) const noexcept {
     const vec3<F32>& otherCenter = AABB2.getCenter();
     const vec3<F32>& otherHalfWidth = AABB2.getHalfExtent();
 
-    const bool x = std::abs(center[0] - otherCenter[0]) <=
-                   (halfWidth[0] + otherHalfWidth[0]);
-    const bool y = std::abs(center[1] - otherCenter[1]) <=
-                   (halfWidth[1] + otherHalfWidth[1]);
-    const bool z = std::abs(center[2] - otherCenter[2]) <=
-                   (halfWidth[2] + otherHalfWidth[2]);
-
-    return x && y && z;
+    return std::abs(center.x - otherCenter.x) <= (halfWidth.x + otherHalfWidth.x) &&
+           std::abs(center.y - otherCenter.y) <= (halfWidth.y + otherHalfWidth.y) &&
+           std::abs(center.z - otherCenter.z) <= (halfWidth.z + otherHalfWidth.z);
 }
 
 bool BoundingBox::collision(const BoundingSphere& bSphere) const noexcept {
     const vec3<F32>& center = bSphere.getCenter();
-    const vec3<F32> min(getMin());
-    const vec3<F32> max(getMax());
+    const vec3<F32>& min(getMin());
+    const vec3<F32>& max(getMax());
 
     F32 dmin = 0;
     for (U8 i = 0; i < 3; ++i) {
-        if (center[i] < min[i]) {
-            dmin += std::pow(center[i] - min[i], 2);
-        } else if (center[i] > max[i]) {
-            dmin += std::pow(center[i] - max[i], 2);
-        }
+             if (center[i] < min[i]) dmin += SQUARED(center[i] - min[i]);
+        else if (center[i] > max[i]) dmin += SQUARED(center[i] - max[i]);
     }
 
-    return dmin <= std::pow(bSphere.getRadius(), 2);
+    return dmin <= SQUARED(bSphere.getRadius());
 }
 
 /// Optimized method: http://www.cs.utah.edu/~awilliam/box/box.pdf
@@ -110,14 +104,10 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
     const F32 ty_max = (bounds[1 - r.sign[1]].y - r.origin.y) * r.inv_direction.y;
 
     if ((t_min > ty_max) || (ty_min > t_max)) {
-        F32 t = t_min;
-        if (t < 0.0f) {
-            t = t_max;
-        }
-        return { false, t };
+        return { false, (t_min >= 0.0f ? t_min : t_max) };
     }
 
-    if (ty_min > t_min){
+    if (ty_min > t_min) {
          t_min = ty_min;
     }
 
@@ -129,11 +119,7 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
     const F32 tz_max = (bounds[1 - r.sign[2]].z - r.origin.z) * r.inv_direction.z;
 
     if ((t_min > tz_max) || (tz_min > t_max)) {
-        F32 t = t_min;
-        if (t < 0.0f) {
-            t = t_max;
-        }
-        return { false, t };
+        return { false, (t_min >= 0.0f ? t_min : t_max) };
     }
 
     if (tz_min > t_min) {
@@ -153,26 +139,25 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
 }
 
 void BoundingBox::transform(const mat4<F32>& mat) {
-    transform(BoundingBox(*this), mat);
+    transform(getMin(), getMax(), mat);
 }
 
-void BoundingBox::transform(const BoundingBox& initialBoundingBox,
-                            const mat4<F32>& mat) {
-    // UpgradableReadLock ur_lock(_lock);
-    const F32* oldMin = &initialBoundingBox._min[0];
-    const F32* oldMax = &initialBoundingBox._max[0];
+void BoundingBox::transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat) {
+    transform(initialBoundingBox.getMin(), initialBoundingBox.getMax(), mat);
+}
 
+void BoundingBox::transform(vec3<F32> initialMin, vec3<F32> initialMax, const mat4<F32>& mat) {
     // UpgradeToWriteLock uw_lock(ur_lock);
-    _min.set(mat[12], mat[13], mat[14]);
-    _max.set(_min);
+    _min = _max = mat.getTranslation<F32>();
 
     F32 a = 0.0f, b = 0.0f;
     for (U8 i = 0; i < 3; ++i) {
         F32& min = _min[i];
         F32& max = _max[i];
+
         for (U8 j = 0; j < 3; ++j) {
-            a = mat.m[j][i] * oldMin[j];
-            b = mat.m[j][i] * oldMax[j];  // Transforms are usually row major
+            a = mat.m[j][i] * initialMin[j];
+            b = mat.m[j][i] * initialMax[j];  // Transforms are usually row major
 
             if (a < b) {
                 min += a;

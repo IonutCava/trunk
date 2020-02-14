@@ -59,6 +59,9 @@ namespace Divide {
 
         for (const EditorComponentField& field : _fields) {
             auto entryName = GetFullFieldName(_name.c_str(), field._name);
+            if (!field._serialise) {
+                continue;
+            }
 
             switch(field._type) {
                 case EditorComponentFieldType::PUSH_TYPE: {
@@ -91,6 +94,7 @@ namespace Divide {
                     field.getPtr<Material>()->saveToXML(entryName, pt);
                 }break;
                 default:
+                case EditorComponentFieldType::BUTTON:
                 case EditorComponentFieldType::BOUNDING_BOX:
                 case EditorComponentFieldType::BOUNDING_SPHERE: {
                     //Skip
@@ -103,6 +107,9 @@ namespace Divide {
         if (!pt.get(_name.c_str(), "").empty()) {
             for (EditorComponentField& field : _fields) {
                 auto entryName = GetFullFieldName(_name.c_str(), field._name);
+                if (!field._serialise) {
+                    continue;
+                }
 
                 switch (field._type) {
                     case EditorComponentFieldType::PUSH_TYPE: {
@@ -138,6 +145,7 @@ namespace Divide {
                         mat->loadFromXML(entryName, pt);
                     }break;
                     default:
+                    case EditorComponentFieldType::BUTTON:
                     case EditorComponentFieldType::BOUNDING_BOX:
                     case EditorComponentFieldType::BOUNDING_SPHERE: {
                         //Skip

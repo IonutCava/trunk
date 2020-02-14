@@ -33,7 +33,7 @@
 
 namespace Divide {
     namespace {
-        bool g_wasSetUp = false;
+        std::atomic_bool g_wasSetUp = false;
 
         class assimpStream : public Assimp::LogStream {
         public:
@@ -46,14 +46,13 @@ namespace Divide {
         };
 
         // Select the kinds of messages you want to receive on this log stream
-        const U32 severity = Config::Build::IS_DEBUG_BUILD ? Assimp::Logger::VERBOSE : Assimp::Logger::NORMAL;
+        constexpr U32 severity = Config::Build::IS_DEBUG_BUILD ? Assimp::Logger::VERBOSE : Assimp::Logger::NORMAL;
 
         constexpr bool g_removeLinesAndPoints = true;
 
         struct vertexWeight {
-            U8 _boneID;
-            F32 _boneWeight;
-            vertexWeight(U8 ID, F32 weight) : _boneID(ID), _boneWeight(weight) {}
+            U8 _boneID = 0;
+            F32 _boneWeight = 0.0f;
         };
 
         /// Recursively creates an internal node structure matching the current scene and animation.
@@ -122,18 +121,18 @@ namespace Divide {
     hashMap<U32, Material::TextureOperation>
     DVDConverter::aiTextureOperationTable = DVDConverter::fillTextureOperationMap();
 
-DVDConverter::DVDConverter()
-{
-}
-
 DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target, bool& result) {
-    if (!g_wasSetUp) {
-        g_wasSetUp = true;
+    bool expected = false;
+    if (g_wasSetUp.compare_exchange_weak(expected, true)) {
         Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
         Assimp::DefaultLogger::get()->attachStream(new assimpStream(), severity);
     }
 
     result = load(context, target);
+}
+
+DVDConverter::DVDConverter()
+{
 }
 
 DVDConverter::~DVDConverter()
@@ -151,23 +150,23 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
     importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS, 1);
     importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 
-    U32 ppsteps = aiProcess_CalcTangentSpace |
-                  aiProcess_GenSmoothNormals |
-                  aiProcess_JoinIdenticalVertices |
-                  aiProcess_ImproveCacheLocality |
-                  aiProcess_LimitBoneWeights |
-                  aiProcess_RemoveRedundantMaterials |
-                  aiProcess_FixInfacingNormals |
-                  //aiProcess_SplitLargeMeshes |
-                  //aiProcess_FindInstances |
-                  aiProcess_Triangulate |
-                  aiProcess_GenUVCoords |
-                  aiProcess_SortByPType |
-                  aiProcess_FindDegenerates |
-                  aiProcess_FindInvalidData |
-                  aiProcess_ValidateDataStructure |
-                  //aiProcess_OptimizeMeshes |
-                  aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
+    constexpr U32 ppsteps = aiProcess_CalcTangentSpace |
+                            aiProcess_JoinIdenticalVertices |
+                            aiProcess_ImproveCacheLocality |
+                            aiProcess_GenSmoothNormals |
+                            aiProcess_LimitBoneWeights |
+                            aiProcess_RemoveRedundantMaterials |
+                            aiProcess_FixInfacingNormals |
+                            aiProcess_SplitLargeMeshes |
+                            //aiProcess_FindInstances |
+                            aiProcess_Triangulate |
+                            aiProcess_GenUVCoords |
+                            aiProcess_SortByPType |
+                            aiProcess_FindDegenerates |
+                            aiProcess_FindInvalidData |
+                            aiProcess_ValidateDataStructure |
+                            aiProcess_OptimizeMeshes |
+                            aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
 
     const aiScene* aiScenePointer = importer.ReadFile(((filePath + "/") + fileName).c_str(), ppsteps);
 
@@ -218,7 +217,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
             name.append("_" + fileName);
         }
 
-        Import::SubMeshData subMeshTemp;
+        Import::SubMeshData subMeshTemp = {};
         subMeshTemp.name(name);
         subMeshTemp.index(to_U32(n));
         if (subMeshTemp.name().empty()) {
@@ -252,7 +251,7 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
 
     U32 indexCount = 0, vertexCount = 0;
     for (U8 lod = 0; lod < Import::MAX_LOD_LEVELS; ++lod) {
-        for (Import::SubMeshData& data : target._subMeshData) {
+        for (const Import::SubMeshData& data : target._subMeshData) {
             indexCount += to_U32(data._indices[lod].size());
             vertexCount += to_U32(data._vertices[lod].size());
         }
@@ -263,13 +262,11 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
     vb->reserveIndexCount(indexCount);
 
     U32 previousOffset = 0;
-
-    vec3<U32> triangleTemp;
     for (U8 lod = 0; lod < Import::MAX_LOD_LEVELS; ++lod) {
         U8 submeshBoneOffset = 0;
         for (Import::SubMeshData& data : target._subMeshData) {
-            BoundingBox importBB;
-            size_t idxCount = data._indices[lod].size();
+            const size_t idxCount = data._indices[lod].size();
+
             if (idxCount == 0) {
                 assert(lod > 0);
                 submeshBoneOffset += to_U8(data.boneCount());
@@ -280,49 +277,60 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
             data._triangles[lod].reserve(idxCount / 3);
             const auto& indices = data._indices[lod];
             for (size_t i = 0; i < idxCount; i += 3) {
-                triangleTemp.set(
+                U32 triangleTemp[3] = {
                     indices[i + 0] + previousOffset,
                     indices[i + 1] + previousOffset,
-                    indices[i + 2] + previousOffset);
-                data._triangles[lod].push_back(triangleTemp);
+                    indices[i + 2] + previousOffset
+                };
 
-                vb->addIndex(triangleTemp.x);
-                vb->addIndex(triangleTemp.y);
-                vb->addIndex(triangleTemp.z);
+                data._triangles[lod].emplace_back(triangleTemp[0], triangleTemp[1], triangleTemp[2]);
+
+                vb->addIndex(triangleTemp[0]);
+                vb->addIndex(triangleTemp[1]);
+                vb->addIndex(triangleTemp[2]);
             }
 
-            const auto& vertices = data._vertices[lod];
-            U32 vertCount = to_U32(vertices.size());
+            auto& vertices = data._vertices[lod];
+            const U32 vertCount = to_U32(vertices.size());
 
             const bool hasBones = data.boneCount() > 0;
             const bool hasTexCoord = !IS_ZERO(vertices[0].texcoord.z);
             const bool hasTangent = !IS_ZERO(vertices[0].tangent.w);
 
+            BoundingBox importBB = {};
             for (U32 i = 0; i < vertCount; ++i) {
+                const U32 targetIdx = i + previousOffset;
+
                 const Import::SubMeshData::Vertex& vert = vertices[i];
 
-                vb->modifyPositionValue(i + previousOffset, vert.position);
-                vb->modifyNormalValue(i + previousOffset, vert.normal);
+                vb->modifyPositionValue(targetIdx, vert.position);
+                vb->modifyNormalValue(targetIdx, vert.normal);
 
                 if (hasTexCoord) {
-                    vb->modifyTexCoordValue(i + previousOffset, vert.texcoord.xy());
+                    vb->modifyTexCoordValue(targetIdx, vert.texcoord.xy());
                 }
                 if (hasTangent) {
-                    vb->modifyTangentValue(i + previousOffset, vert.tangent.xyz());
-                }
-                if (hasBones) {
-                    P32 boneIndices = vert.indices;
-                    for (auto& idx : boneIndices.b) {
-                        idx += submeshBoneOffset;
-                    }
-
-                    vb->modifyBoneIndices(i + previousOffset, boneIndices);
-                    vb->modifyBoneWeights(i + previousOffset, vert.weights);
+                    vb->modifyTangentValue(targetIdx, vert.tangent.xyz());
                 }
                 if (lod == 0) {
                     importBB.add(vert.position);
                 }
             }//vertCount
+
+            if (hasBones) {
+                for (U32 i = 0; i < vertCount; ++i) {
+                    const U32 targetIdx = i + previousOffset;
+
+                    Import::SubMeshData::Vertex& vert = vertices[i];
+                    P32& boneIndices = vert.indices;
+                    for (U8& idx : boneIndices.b) {
+                        idx += submeshBoneOffset;
+                    }
+
+                    vb->modifyBoneIndices(targetIdx, boneIndices);
+                    vb->modifyBoneWeights(targetIdx, vert.weights);
+                }
+            }
 
             if (lod == 0) {
                 data.minPos(importBB.getMin());
@@ -336,8 +344,7 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
     } //lod
 }
 
-void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
-                                       Import::SubMeshData& subMeshData) {
+void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData& subMeshData) {
     vectorEASTL<U32> input_indices;
     input_indices.reserve(source->mNumFaces * 3);
     for (U32 k = 0; k < source->mNumFaces; k++) {
@@ -375,7 +382,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         for (U8 a = 0; a < source->mNumBones; ++a) {
             const aiBone* bone = source->mBones[a];
             for (U32 b = 0; b < bone->mNumWeights; ++b) {
-                weightsPerVertex[bone->mWeights[b].mVertexId].push_back(vertexWeight(a, bone->mWeights[b].mWeight));
+                weightsPerVertex[bone->mWeights[b].mVertexId].push_back({ a, bone->mWeights[b].mWeight });
             }
         }
 
@@ -483,7 +490,8 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     aiGetMaterialInteger(mat, AI_MATKEY_SHADING_MODEL, &shadingModel);
     material.shadingMode(aiShadingModeInternalTable[shadingModel]);
 
-    bool isPBRMaterial = !(material.shadingMode() != Material::ShadingMode::OREN_NAYAR && material.shadingMode() != Material::ShadingMode::COOK_TORRANCE);
+    const bool isPBRMaterial = !(material.shadingMode() != Material::ShadingMode::OREN_NAYAR && 
+                                 material.shadingMode() != Material::ShadingMode::COOK_TORRANCE);
     
     // Load material opacity value
     F32 alpha = 1.0f;
@@ -553,9 +561,9 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     material.doubleSided(two_sided != 0);
 
     aiString tName;
-    aiTextureMapping mapping;
-    U32 uvInd;
-    F32 blend;
+    aiTextureMapping mapping = aiTextureMapping_OTHER;
+    U32 uvInd = 0;
+    F32 blend = 0.0f;
     aiTextureOp op = aiTextureOp_Multiply;
     aiTextureMapMode mode[3] = {_aiTextureMapMode_Force32Bit,
                                 _aiTextureMapMode_Force32Bit,
@@ -584,7 +592,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         }*/
 
         // get full path
-        Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+        const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
         FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
         const Str64& img_name = fileResult._fileName.c_str();
@@ -593,8 +601,8 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         // if we have a name and an extension
         if (!img_name.substr(img_name.find_first_of("."), Str64::npos).empty()) {
 
-            ShaderProgram::TextureUsage usage = count == 1 ? ShaderProgram::TextureUsage::UNIT1
-                                                           : ShaderProgram::TextureUsage::UNIT0;
+            const ShaderProgram::TextureUsage usage = count == 1 ? ShaderProgram::TextureUsage::UNIT1
+                                                                 : ShaderProgram::TextureUsage::UNIT0;
 
             Import::TextureEntry& texture = material._textures[to_U32(usage)];
 
@@ -629,7 +637,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
 
     result = mat->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
-        Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+        const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
         FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
         const Str64& img_name = fileResult._fileName.c_str();
@@ -659,7 +667,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     result = mat->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping,&uvInd, &blend, &op, mode);
 
     if (result == AI_SUCCESS) {
-        Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+        const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
         FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
         const Str64& img_name = fileResult._fileName.c_str();
@@ -690,7 +698,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     if (!material.ignoreAlpha()) {
         result = mat->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
         if (result == AI_SUCCESS) {
-            Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+            const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
             FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
             const Str64& img_name = fileResult._fileName.c_str();
@@ -722,8 +730,9 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     } else {
         result = mat->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     }
+
     if (result == AI_SUCCESS) {
-        Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+        const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
         FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
         const Str64& img_name = fileResult._fileName.c_str();

@@ -157,6 +157,10 @@ namespace Divide {
         handleOut._handle = wmInfo.info.win.window;
     }
 
+    void DebugBreak() {
+        __debugbreak();
+    }
+
     ErrorCode PlatformInitImpl(int argc, char** argv) noexcept {
         return ErrorCode::NO_ERR;
     }

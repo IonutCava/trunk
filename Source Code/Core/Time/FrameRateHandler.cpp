@@ -10,7 +10,7 @@ FrameRateHandler::FrameRateHandler() :
     _frameCount(0),
     _averageFPS(0.0f),
     _minFPS(std::numeric_limits<F32>::max()),
-    _maxFPS(std::numeric_limits<F32>::min())
+    _maxFPS(std::numeric_limits<F32>::lowest())
 {
     _framerateSecPerFrame.fill(0.0f);
     _previousElapsedSeconds = 0.0f;
@@ -37,7 +37,7 @@ void FrameRateHandler::reset() {
     _framerateSecPerFrameAccum = 0.0f;
     _frameCount = 0;
     _minFPS = std::numeric_limits<F32>::max();
-    _maxFPS = std::numeric_limits<F32>::min();
+    _maxFPS = std::numeric_limits<F32>::lowest();
 }
 
 void FrameRateHandler::tick(const U64 elapsedTime) noexcept {
@@ -63,7 +63,7 @@ void FrameRateHandler::tick(const U64 elapsedTime) noexcept {
         _averageFPS = 0.0f;
         _frameCount = 0;
         _minFPS = std::numeric_limits<F32>::max();
-        _maxFPS = std::numeric_limits<F32>::min();
+        _maxFPS = std::numeric_limits<F32>::lowest();
     }
 }
 

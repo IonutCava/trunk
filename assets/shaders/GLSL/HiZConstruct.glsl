@@ -1,9 +1,9 @@
--- Fragment
+//ref: https://github.com/nvpro-samples/gl_occlusion_culling
+-- Fragment.Nvidia
 
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTex;
 
 uniform ivec2 depthInfo;
-out float _depthOut;
 
 void main() {
     
@@ -59,7 +59,7 @@ void main() {
         }
     }
 
-    _depthOut = depth;
+    gl_FragDepth = depth;
 
     /*-----------------------------------------------------------------------
     Copyright (c) 2014, NVIDIA. All rights reserved.
@@ -88,15 +88,8 @@ void main() {
 --Fragment.RasterGrid
 
 //http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
-
-#if defined(CUBE_MAP)
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2DCube LastMip;
-uniform int faceIndex = 0;
-#else
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
-#endif
 
-out float _depthOut;
 uniform ivec2 LastMipSize;
 
 void main(void)
@@ -129,5 +122,15 @@ void main(void)
         maxZ = max(maxZ, max(extra.x, extra.y));
     }
 
-    _depthOut = maxZ;
+    gl_FragDepth = maxZ;
+}
+
+//ref: https://github.com/ARM-software/opengl-es-sdk-for-android/blob/master/samples/advanced_samples/OcclusionCulling/assets/depth_mip.fs
+--Fragment.Arm
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
+
+void main()
+{
+    vec4 depths = textureGather(LastMip, VAR._texCoord, 0);
+    gl_FragDepth = max(max(depths.x, depths.y), max(depths.z, depths.w));
 }

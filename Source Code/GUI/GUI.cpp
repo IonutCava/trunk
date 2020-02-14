@@ -151,7 +151,7 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
         blendCmd._blendProperties._enabled = true;
         GFX::EnqueueCommand(bufferInOut, blendCmd);
 
-        context.drawTextureInViewport(getCEGUIRenderTextureData(), viewport, false, bufferInOut);
+        context.drawTextureInViewport(getCEGUIRenderTextureData(), viewport, false, false, bufferInOut);
     }
 
 

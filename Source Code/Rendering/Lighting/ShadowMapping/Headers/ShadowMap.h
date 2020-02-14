@@ -65,7 +65,7 @@ class ShadowMapGenerator {
 protected:
     SET_DELETE_FRIEND
 
-    explicit ShadowMapGenerator(GFXDevice& context);
+    explicit ShadowMapGenerator(GFXDevice& context, ShadowType type);
     virtual ~ShadowMapGenerator();
 
     friend class ShadowMap;
@@ -73,6 +73,7 @@ protected:
 
 protected:
     GFXDevice& _context;
+    ShadowType _type;
 };
 
 FWD_DECLARE_MANAGED_STRUCT(DebugView);

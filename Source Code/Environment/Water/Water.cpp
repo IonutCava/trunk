@@ -165,7 +165,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
         updateRefraction(params, commandsInOut);
     });
 
-    renderable->setReflectionAndRefractionType(ReflectorType::PLANAR_REFLECTOR);
+    renderable->setReflectionAndRefractionType(ReflectorType::PLANAR, RefractorType::PLANAR);
     renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
 
     SceneNode::postLoad(sgn);
@@ -217,10 +217,9 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFRACT);
     params._camera = renderParams._camera;
     params._minExtents.set(0.75f);
-    params._stage = RenderStage::REFRACTION;
+    params._stagePass = { RenderStage::REFRACTION, RenderPassType::COUNT, 0u, renderParams._passIndex };
     params._clearDescriptor = &clearDescriptor;
     params._target = renderParams._renderTarget;
-    params._passIndex = renderParams._passIndex;
     params._clippingPlanes._planes[0] = refractionPlane;
     params._passName = "Refraction";
 
@@ -253,9 +252,8 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
     params._camera = _reflectionCam;
     params._minExtents.set(1.25f);
-    params._stage = RenderStage::REFLECTION;
+    params._stagePass = { RenderStage::REFLECTION, RenderPassType::COUNT, 0u, renderParams._passIndex };
     params._target = renderParams._renderTarget;
-    params._passIndex = renderParams._passIndex;
     params._clearDescriptor = &clearDescriptor;
     params._clippingPlanes._planes[0] = reflectionPlane;
     params._passName = "Reflection";

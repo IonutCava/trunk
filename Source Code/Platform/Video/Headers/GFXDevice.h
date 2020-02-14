@@ -99,6 +99,8 @@ namespace Attorney {
     class KernelApplication;
 };
 
+constexpr HiZMethod GetHiZMethod();
+
 namespace TypeUtil {
     const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept;
 
@@ -197,7 +199,6 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
-        U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
         SceneGraphNode* sourceNode = nullptr,
         Camera* camera = nullptr);
@@ -207,7 +208,6 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
-        U32 passIndex,
         GFX::CommandBuffer& commandsInOut,
         SceneGraphNode* sourceNode = nullptr,
         Camera* camera = nullptr);
@@ -315,7 +315,7 @@ public:
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
 
     // Render the texture using a custom viewport
-    void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, GFX::CommandBuffer& bufferInOut);
+    void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut);
 
     void blurTarget(RenderTargetHandle& blurSource, 
                     RenderTargetHandle& blurTargetH,
@@ -416,12 +416,14 @@ private:
     ShaderProgram_ptr _HIZConstructProgram = nullptr;
     ShaderProgram_ptr _HIZCullProgram = nullptr;
     ShaderProgram_ptr _displayShader = nullptr;
+    ShaderProgram_ptr _depthShader = nullptr;
     ShaderProgram_ptr _textRenderShader = nullptr;
     ShaderProgram_ptr _blurShader = nullptr;
     
     Pipeline* _HIZPipeline = nullptr;
     Pipeline* _HIZCullPipeline = nullptr;
     Pipeline* _DrawFSTexturePipeline = nullptr;
+    Pipeline* _DrawFSDepthPipeline = nullptr;
     Pipeline* _AxisGizmoPipeline = nullptr;
     Pipeline* _BlurVPipeline = nullptr;
     Pipeline* _BlurHPipeline = nullptr;

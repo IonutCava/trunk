@@ -66,16 +66,7 @@ public:
         RenderTargetID _target = {};
         RenderTargetID _targetHIZ = {};
         I32 _minLoD = -1; //-1 = all
-        union {
-            U32 _passIndex = 0;
-            struct {
-                U16 _indexA;
-                U16 _indexB;
-            };
-        };
-        RenderStage _stage = RenderStage::COUNT;
-        RenderPassType _pass = RenderPassType::COUNT;
-        U8  _passVariant = 0;
+        RenderStagePass _stagePass = {};
         bool _bindTargets = true;
     };
 
@@ -101,7 +92,7 @@ public:
 
     RenderPass::BufferData getBufferData(RenderStagePass stagePass) const;
 
-    void doCustomPass(PassParams& params, GFX::CommandBuffer& bufferInOut);
+    void doCustomPass(const PassParams& params, GFX::CommandBuffer& bufferInOut);
     void postInit();
 
     static U32 getUniqueNodeDataIndex() noexcept;
@@ -134,15 +125,15 @@ private:
 
     RenderPass& getPassForStage(RenderStage renderStage);
     const RenderPass& getPassForStage(RenderStage renderStage) const;
-    void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    void prepareRenderQueues(RenderPassType passType, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    void buildDrawCommands(RenderPassType passType, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildBufferData(RenderStagePass stagePass, const SceneRenderState& renderState, const Camera& camera, const RenderBin::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
     void processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
 
 private: //TEMP
     friend class RenderBin;
     U32  renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
-    void renderQueueToSubPasses(RenderStagePass stagePass, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
+    void renderQueueToSubPasses(RenderStage stage, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
 
 private:
     GFXDevice& _context;

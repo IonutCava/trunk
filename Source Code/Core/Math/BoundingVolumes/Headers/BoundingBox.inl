@@ -73,20 +73,23 @@ inline void BoundingBox::createFromSphere(const vec3<F32>& center, F32 radius) n
 
 inline void BoundingBox::add(const vec3<F32>& v) noexcept {
     // Lock w_lock(_lock);
+    //Max
     if (v.x > _max.x) {
         _max.x = v.x;
-    }
-    if (v.x < _min.x) {
-        _min.x = v.x;
     }
     if (v.y > _max.y) {
         _max.y = v.y;
     }
-    if (v.y < _min.y) {
-        _min.y = v.y;
-    }
     if (v.z > _max.z) {
         _max.z = v.z;
+    }
+
+    //Min
+    if (v.x < _min.x) {
+        _min.x = v.x;
+    }
+    if (v.y < _min.y) {
+        _min.y = v.y;
     }
     if (v.z < _min.z) {
         _min.z = v.z;

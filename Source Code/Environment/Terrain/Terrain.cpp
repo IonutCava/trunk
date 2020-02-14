@@ -64,7 +64,7 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
     TerrainTessellator::Configuration shadowConfig = {};
     shadowConfig._useCameraDistance = false;
 
-    constexpr U32 passPerLight = ShadowMap::MAX_SHADOW_PASSES / Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
+    constexpr U32 passPerLight = ShadowMap::MAX_PASSES_PER_LIGHT;
     for (U32 i = 0; i < ShadowMap::MAX_SHADOW_PASSES; ++i) {
         if (i % passPerLight > 0) {
             _shadowTessellators[i].overrideConfig(shadowConfig);
@@ -125,6 +125,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
     sgn.get<RenderingComponent>()->setDataIndex(_nodeDataIndex);
+    sgn.get<RenderingComponent>()->lockLoD(true, 0u);
 
     _editorComponent.onChangedCbk([this](const char* field) {onEditorChange(field); });
 
@@ -254,8 +255,9 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     TerrainTessellator* tessellator = nullptr;
 
     if (renderStagePass._stage == RenderStage::SHADOW) {
-        offset = Terrain::MAX_RENDER_NODES * renderStagePass._passIndex;
-        tessellator = &_shadowTessellators[renderStagePass._passIndex];
+        const U32 shadowOffset = renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB;
+        offset = Terrain::MAX_RENDER_NODES * shadowOffset;
+        tessellator = &_shadowTessellators[shadowOffset];
     } else {
         offset = ShadowMap::MAX_SHADOW_PASSES * Terrain::MAX_RENDER_NODES;
         offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));

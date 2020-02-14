@@ -377,6 +377,13 @@ enum class QueryType : U8 {
     COUNT
 };
 
+enum class HiZMethod : U8 {
+    RASTER_GRID = 0,
+    ARM,
+    NVIDIA,
+    COUNT
+};
+
 };  // namespace Divide
 
 #endif

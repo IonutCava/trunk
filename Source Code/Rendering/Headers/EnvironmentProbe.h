@@ -48,6 +48,18 @@ namespace GFX {
     class CommandBuffer;
 }; //namespace GFX
 
+enum class RefractorType : U8 {
+    PLANAR = 0,
+    COUNT
+};
+
+enum class ReflectorType : U8 {
+    PLANAR = 0,
+    CUBE,
+    ENVIRONMENT,
+    COUNT
+};
+
 FWD_DECLARE_MANAGED_CLASS(EnvironmentProbe);
 class EnvironmentProbe : public GUIDWrapper {
 public:

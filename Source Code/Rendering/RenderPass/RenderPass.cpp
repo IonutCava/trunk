@@ -32,82 +32,37 @@ namespace {
         U16 g_reflectionBudget = 0;
 
         inline bool isInBudget() { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
-
         inline void resetBudget() { g_reflectionBudget = 0; }
-
         inline void updateBudget() { ++g_reflectionBudget; }
-
-        inline U16 currentEntry() { return g_reflectionBudget; }
+        inline U16  currentEntry() { return g_reflectionBudget; }
     };
 
     namespace RefractionUtil {
         U16 g_refractionBudget = 0;
 
         inline bool isInBudget() { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
-
         inline void resetBudget() { g_refractionBudget = 0; }
-
         inline void updateBudget() { ++g_refractionBudget;  }
-
-        inline U16 currentEntry() { return g_refractionBudget; }
+        inline U16  currentEntry() { return g_refractionBudget; }
     };
 
-    // This is very hackish but should hold up fine
-    U32 getDataBufferSize(RenderStage stage) {
-        U32 bufferSizeFactor = 1;
+    U32 getCmdBufferCount(RenderStage stage) noexcept {
         //We only care about the first parameter as it will determine the properties for the rest of the stages
         switch (stage) {
             // PrePass, MainPass and OitPass should share buffers
-            case RenderStage::DISPLAY: break;
-            // Planar, cube & environment
-            case RenderStage::REFRACTION:
-            case RenderStage::REFLECTION: {
-                bufferSizeFactor = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-                bufferSizeFactor *= 2;
-                bufferSizeFactor += 1;
-            }; break;
-            case RenderStage::SHADOW: {
-                // One buffer per light, but split into multiple pieces
-                bufferSizeFactor = ShadowMap::MAX_SHADOW_PASSES;
-            }; break;
+            case RenderStage::DISPLAY:    return 1;
+            case RenderStage::SHADOW:     return ShadowMap::MAX_SHADOW_PASSES;
+            case RenderStage::REFRACTION: return Config::MAX_REFRACTIVE_NODES_IN_VIEW; // planar
+            case RenderStage::REFLECTION: return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + // could be planar
+                                                 Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6; // environment
         };
 
-        return bufferSizeFactor * Config::MAX_VISIBLE_NODES;
+        DIVIDE_UNEXPECTED_CALL();
+        return 0u;
     }
 
-    U32 getBufferOffset(RenderStage stage, RenderPassType type, U32 passIndex) {
-        U32 ret = 0;
-
-        switch (stage) {
-            case RenderStage::DISPLAY: break;
-            case RenderStage::REFLECTION:
-            case RenderStage::REFRACTION: {
-                switch (passIndex) {
-                    case 0: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 0; break; // planar
-                    case 1: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 1; break; // cube
-                    case 2: ret = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 2; break; // environment
-                    default: assert(false && "getBufferOffset error: invalid pass index"); break;
-                };
-            }break;
-            case RenderStage::SHADOW: {
-                ret = Config::MAX_VISIBLE_NODES * passIndex;
-            }break;
-
-        }
-        return ret;
-    }
-
-    U32 getCmdBufferCount(RenderStage stage) {
-        U32 ret = 0;
-
-        switch (stage) {
-            case RenderStage::REFLECTION: // planar, cube & environment
-            case RenderStage::REFRACTION: ret = 3; break;
-            case RenderStage::DISPLAY: ret = 1;  break;
-            case RenderStage::SHADOW: ret = ShadowMap::MAX_SHADOW_PASSES;  break;
-        };
-
-        return ret;
+    U32 getDataBufferSize(RenderStage stage) noexcept {
+        return getCmdBufferCount(stage) * Config::MAX_VISIBLE_NODES;
     }
 };
 
@@ -126,22 +81,6 @@ RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name
 
 RenderPass::~RenderPass() 
 {
-}
-
-RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, I32 passIndex) const {
-    const U32 idx = _stageFlag == RenderStage::DISPLAY ? 0 : passIndex;
-    const U32 frameOffset = _context.FRAME_COUNT % g_cmdBufferFrameCount;
-
-    BufferData ret = {};
-    ret._renderDataElementOffset = getBufferOffset(_stageFlag, type, passIndex);
-    ret._renderData = _renderData;
-    ret._cullCounter = _cullCounter;
-    ret._cmdBuffer = _cmdBuffers[idx];
-    ret._lastCommandCount = &_lastNodeCount[idx * frameOffset];
-    ret._cmdBufferElementOffset = Config::MAX_VISIBLE_NODES* frameOffset;
-    ret._cmdBufferElementFactor = g_cmdBufferFrameCount;
-
-    return ret;
 }
 
 void RenderPass::initBufferData() {
@@ -189,6 +128,45 @@ void RenderPass::initBufferData() {
     }
 }
 
+RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, U32 variant, U16 passIndexA, U16 passIndexB) const {
+    U32 cmdBufferIdx = 0u;
+    switch (_stageFlag) {
+        case RenderStage::DISPLAY:    cmdBufferIdx = 0u; break;
+        case RenderStage::SHADOW:     cmdBufferIdx = passIndexA * ShadowMap::MAX_PASSES_PER_LIGHT + passIndexB; break;
+        case RenderStage::REFRACTION: {
+            assert(variant == to_base(RefractorType::PLANAR));
+            cmdBufferIdx = passIndexA * Config::MAX_REFRACTIVE_NODES_IN_VIEW + passIndexB;
+        } break;
+        case RenderStage::REFLECTION: {
+            switch (static_cast<ReflectorType>(variant)) {
+                case ReflectorType::PLANAR: 
+                case ReflectorType::CUBE:
+                    cmdBufferIdx = passIndexA * 6 + passIndexB;
+                    break;
+                case ReflectorType::ENVIRONMENT:
+                    cmdBufferIdx = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + passIndexA * 6 + passIndexB;
+                    break;
+                default: DIVIDE_UNEXPECTED_CALL(); 
+                    break;
+            };
+        } break;
+        default: DIVIDE_UNEXPECTED_CALL(); break;
+    }
+
+    const U32 frameOffset = _context.FRAME_COUNT % g_cmdBufferFrameCount;
+
+    BufferData ret = {};
+    ret._renderDataElementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
+    ret._renderData = _renderData;
+    ret._cullCounter = _cullCounter;
+    ret._cmdBuffer = _cmdBuffers[cmdBufferIdx];
+    ret._lastCommandCount = &_lastNodeCount[cmdBufferIdx * frameOffset];
+    ret._cmdBufferElementOffset = Config::MAX_VISIBLE_NODES * frameOffset;
+    ret._cmdBufferElementFactor = g_cmdBufferFrameCount;
+
+    return ret;
+}
+
 void RenderPass::render(const Task& parentTask, const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
@@ -198,7 +176,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         case RenderStage::DISPLAY: {
             OPTICK_EVENT("RenderPass - Main");
             RenderPassManager::PassParams params = {};
-            params._stage = _stageFlag;
+            params._stagePass = { _stageFlag, RenderPassType::COUNT };
             params._target = RenderTargetID(RenderTargetUsage::SCREEN);
             params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
@@ -211,9 +189,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
             params._clearDescriptor = &clearDescriptor;
             params._passName = "MainRenderPass";
-
             _parent.doCustomPass(params, bufferInOut);
-            _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize(_stageFlag);
 
         } break;
         case RenderStage::SHADOW: {
@@ -284,8 +260,6 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             // Get list of refractive nodes from the scene manager
             const SceneManager& mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
-            {
-            }
             {
                 const VisibleNodeList& nodes = mgr.getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true);
                 // While in budget, update refractions
