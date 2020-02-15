@@ -648,10 +648,22 @@ namespace Divide {
                  }
              }break;
              case GFX::PushConstantType::INT: {
-                 ret = inputOrSlider<I32, 1>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags);
+                switch (field._basicTypeSize) {
+                    case GFX::PushConstantSize::QWORD: ret = inputOrSlider<I64, 1>(_parent, isSlider, "", name, ImGuiDataType_S64, field, flags); break;
+                    case GFX::PushConstantSize::DWORD: ret = inputOrSlider<I32, 1>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags); break;
+                    case GFX::PushConstantSize::WORD:  ret = inputOrSlider<I16, 1>(_parent, isSlider, "", name, ImGuiDataType_S16, field, flags); break;
+                    case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<I8,  1>(_parent, isSlider, "", name, ImGuiDataType_S8,  field, flags); break;
+                    default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::UINT: {
-                 ret = inputOrSlider<U32, 1>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<U64, 1>(_parent, isSlider, "", name, ImGuiDataType_U64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<U32, 1>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<U16, 1>(_parent, isSlider, "", name, ImGuiDataType_U16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<U8,  1>(_parent, isSlider, "", name, ImGuiDataType_U8,  field, flags); break;
+                    default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::DOUBLE: {
                  ret = inputOrSlider<D64, 1>(_parent, isSlider, "", name, ImGuiDataType_Double, field, flags, "%.6f");
@@ -660,22 +672,58 @@ namespace Divide {
                  ret = inputOrSlider<F32, 1>(_parent, isSlider, "", name, ImGuiDataType_Float, field, flags, "%.3f");
              }break;
              case GFX::PushConstantType::IVEC2: {
-                 ret = inputOrSlider<vec2<I32>, 2>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec2<I64>, 2>(_parent, isSlider, "", name, ImGuiDataType_S64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec2<I32>, 2>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec2<I16>, 2>(_parent, isSlider, "", name, ImGuiDataType_S16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec2<I8>,  2>(_parent, isSlider, "", name, ImGuiDataType_S8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::IVEC3: {
-                 ret = inputOrSlider<vec3<I32>, 3>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec3<I64>, 3>(_parent, isSlider, "", name, ImGuiDataType_S64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec3<I32>, 3>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec3<I16>, 3>(_parent, isSlider, "", name, ImGuiDataType_S16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec3<I8>,  3>(_parent, isSlider, "", name, ImGuiDataType_S8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::IVEC4: {
-                 ret = inputOrSlider<vec4<I32>, 4>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec4<I64>, 4>(_parent, isSlider, "", name, ImGuiDataType_S64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec4<I32>, 4>(_parent, isSlider, "", name, ImGuiDataType_S32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec4<I16>, 4>(_parent, isSlider, "", name, ImGuiDataType_S16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec4<I8>,  4>(_parent, isSlider, "", name, ImGuiDataType_S8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::UVEC2: {
-                 ret = inputOrSlider<vec2<U32>, 2>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec2<U64>, 2>(_parent, isSlider, "", name, ImGuiDataType_U64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec2<U32>, 2>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec2<U16>, 2>(_parent, isSlider, "", name, ImGuiDataType_U16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec2<U8>,  2>(_parent, isSlider, "", name, ImGuiDataType_U8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::UVEC3: {
-                 ret = inputOrSlider<vec3<U32>, 3>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec3<U64>, 3>(_parent, isSlider, "", name, ImGuiDataType_U64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec3<U32>, 3>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec3<U16>, 3>(_parent, isSlider, "", name, ImGuiDataType_U16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec3<U8>,  3>(_parent, isSlider, "", name, ImGuiDataType_U8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::UVEC4: {
-                 ret = inputOrSlider<vec4<U32>, 4>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec4<U64>, 4>(_parent, isSlider, "", name, ImGuiDataType_U64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec4<U32>, 4>(_parent, isSlider, "", name, ImGuiDataType_U32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec4<U16>, 4>(_parent, isSlider, "", name, ImGuiDataType_U16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec4<U8>,  4>(_parent, isSlider, "", name, ImGuiDataType_U8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::VEC2: {
                  ret = inputOrSlider<vec2<F32>, 2>(_parent, isSlider, "", name, ImGuiDataType_Float, field, flags, "%.3f");
@@ -696,22 +744,58 @@ namespace Divide {
                  ret = inputOrSlider<vec4<D64>, 4>(_parent, isSlider, "", name, ImGuiDataType_Double, field, flags, "%.6f");
              }break;
              case GFX::PushConstantType::IMAT2: {
-                 ret = inputMatrix<mat2<I32>, 2>(_parent, "", name, ImGuiDataType_S32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat2<I64>, 2>(_parent, "", name, ImGuiDataType_S64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat2<I32>, 2>(_parent, "", name, ImGuiDataType_S32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat2<I16>, 2>(_parent, "", name, ImGuiDataType_S16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat2<I8>,  2>(_parent, "", name, ImGuiDataType_S8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::IMAT3: {
-                 ret = inputMatrix<mat3<I32>, 3>(_parent, "", name, ImGuiDataType_S32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat3<I64>, 3>(_parent, "", name, ImGuiDataType_S64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat3<I32>, 3>(_parent, "", name, ImGuiDataType_S32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat3<I16>, 3>(_parent, "", name, ImGuiDataType_S16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat3<I8>,  3>(_parent, "", name, ImGuiDataType_S8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::IMAT4: {
-                 ret = inputMatrix<mat4<I32>, 4>(_parent, "", name, ImGuiDataType_S32, field, flags);
+                 switch (field._basicTypeSize) {
+                 case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat4<I64>, 4>(_parent, "", name, ImGuiDataType_S64, field, flags); break;
+                 case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<I32>, 4>(_parent, "", name, ImGuiDataType_S32, field, flags); break;
+                 case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<I16>, 4>(_parent, "", name, ImGuiDataType_S16, field, flags); break;
+                 case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<I8>,  4>(_parent, "", name, ImGuiDataType_S8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::UMAT2: {
-                 ret = inputMatrix<mat2<U32>, 2>(_parent, "", name, ImGuiDataType_U32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat2<U64>, 2>(_parent, "", name, ImGuiDataType_U64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat2<U32>, 2>(_parent, "", name, ImGuiDataType_U32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat2<U16>, 2>(_parent, "", name, ImGuiDataType_U16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat2<U8>,  2>(_parent, "", name, ImGuiDataType_U8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::UMAT3: {
-                 ret = inputMatrix<mat3<U32>, 3>(_parent, "", name, ImGuiDataType_U32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat3<U64>, 3>(_parent, "", name, ImGuiDataType_U64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat3<U32>, 3>(_parent, "", name, ImGuiDataType_U32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat3<U16>, 3>(_parent, "", name, ImGuiDataType_U16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat3<U8>,  3>(_parent, "", name, ImGuiDataType_U8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::UMAT4: {
-                 ret = inputMatrix<mat4<U32>, 4>(_parent, "", name, ImGuiDataType_U32, field, flags);
+                 switch (field._basicTypeSize) {
+                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat4<U64>, 4>(_parent, "", name, ImGuiDataType_U64, field, flags); break;
+                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<U32>, 4>(_parent, "", name, ImGuiDataType_U32, field, flags); break;
+                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<U16>, 4>(_parent, "", name, ImGuiDataType_U16, field, flags); break;
+                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<U8>,  4>(_parent, "", name, ImGuiDataType_U8,  field, flags); break;
+                     default: DIVIDE_UNEXPECTED_CALL(); break;
+                 }
              }break;
              case GFX::PushConstantType::MAT2: {
                  ret = inputMatrix<mat2<F32>, 2>(_parent, "", name, ImGuiDataType_Float, field, flags, "%.3f");

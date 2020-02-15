@@ -11,7 +11,7 @@ out vec4 _colourOut;
 void main(void){
 #if !defined(DEPTH_ONLY)
     vec4 colour = texture(tex, VAR._texCoord);
-    if (convertToSRGB == 1) {
+    if (convertToSRGB == 1u) {
         colour = ToSRGB(colour);
     }
     _colourOut = colour;

@@ -37,7 +37,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 namespace GFX {
-
+    enum class PushConstantSize : U8 {
+        BYTE = 0,
+        WORD,
+        DWORD,
+        QWORD,
+        COUNT
+    };
     //ToDo: Make this more generic. Also used by the Editor -Ionut
     enum class PushConstantType : U8 {
         BOOL = 0,

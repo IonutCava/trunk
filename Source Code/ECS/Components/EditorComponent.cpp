@@ -33,10 +33,12 @@ namespace Divide {
                                  it._type == field._type; }),
             std::end(_fields));
 
+        assert(field._basicTypeSize == GFX::PushConstantSize::DWORD || field.supportsByteCount());
+
         _fields.push_back(field);
     }
 
-    void EditorComponent::onChanged(EditorComponentField& field) {
+    void EditorComponent::onChanged(EditorComponentField& field) const {
         if (_onChangedCbk) {
             _onChangedCbk(field._name.c_str());
         }

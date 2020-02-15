@@ -197,7 +197,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
   protected:
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
     bool onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams);
-    void uploadDataIndexAsUniform(RenderStagePass stagePass, RenderPackage& pkg);
+    void uploadDataIndexAsUniform(RenderStage stage, RenderPackage& pkg);
 
     bool canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData);
 

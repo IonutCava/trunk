@@ -160,6 +160,7 @@ void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
         EditorComponentField lockLodField = {};
         lockLodField._name = "Rendered LOD Level";
         lockLodField._type = EditorComponentFieldType::PUSH_TYPE;
+        lockLodField._basicTypeSize = GFX::PushConstantSize::BYTE;
         lockLodField._basicType = GFX::PushConstantType::UINT;
         lockLodField._data = &_lodLevels[to_base(RenderStage::DISPLAY)];
         lockLodField._readOnly = true;
@@ -177,6 +178,7 @@ void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
         lockLodLevelField._name = "Lock LoD Level";
         lockLodLevelField._type = EditorComponentFieldType::PUSH_TYPE;
         lockLodLevelField._basicType = GFX::PushConstantType::UINT;
+        lockLodLevelField._basicTypeSize = GFX::PushConstantSize::BYTE;
         lockLodLevelField._data = &_lodLockedLevel;
         lockLodLevelField._readOnly = false;
         _editorComponent.registerField(std::move(lockLodLevelField));
@@ -329,11 +331,11 @@ bool RenderingComponent::getDataIndex(U32& idxOut) noexcept {
     return _dataIndex.second;
 }
 
-void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass, RenderPackage& pkg) {
+void RenderingComponent::uploadDataIndexAsUniform(RenderStage stage, RenderPackage& pkg) {
     OPTICK_EVENT();
 
     if (useDataIndexAsUniform() && !pkg.empty()) {
-        const U32 dataIdx = _drawDataIdx[to_U8(stagePass._stage)];
+        const U32 dataIdx = _drawDataIdx[to_U8(stage)];
         if (pkg.dataDrawIdxCache() != dataIdx) {
             pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, dataIdx);
             pkg.dataDrawIdxCache(dataIdx);
@@ -344,7 +346,7 @@ void RenderingComponent::uploadDataIndexAsUniform(RenderStagePass stagePass, Ren
 bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams) {
     OPTICK_EVENT();
 
-    uploadDataIndexAsUniform(refreshParams._stagePass, getDrawPackage(refreshParams._stagePass));
+    uploadDataIndexAsUniform(refreshParams._stagePass._stage, getDrawPackage(refreshParams._stagePass));
     Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, true, refreshParams._bufferInOut);
     return true;
 }
@@ -392,7 +394,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams)
     }
 
     _drawDataIdx[stageIdx] = _dataIndex.first;
-    uploadDataIndexAsUniform(refreshParams._stagePass, pkg);
+    uploadDataIndexAsUniform(refreshParams._stagePass._stage, pkg);
     Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
     return true;
 }

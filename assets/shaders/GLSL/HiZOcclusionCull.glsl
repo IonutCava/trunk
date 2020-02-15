@@ -1,6 +1,7 @@
--- Compute
+--Compute
 #include "HiZCullingAlgorithm.cmn";
 
+uniform uint countCulledItems = 0u;
 layout(binding = BUFFER_ATOMIC_COUNTER, offset = 0) uniform atomic_uint culledCount;
 
 //ref: http://malideveloper.arm.com/resources/sample-code/occlusion-culling-hierarchical-z/
@@ -30,36 +31,39 @@ layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
     IndirectDrawCommand dvd_drawCommands[MAX_VISIBLE_NODES];
 };
 
-#define dvd_dataFlag(X) int(dvd_Matrices[X]._colourMatrix[3].w)
-
-layout(location = 0) uniform uint dvd_numEntities = 0;
+uniform uint dvd_numEntities;
 
 layout(local_size_x = 64) in;
 
+void CullItem(in uint idx) {
+    if (countCulledItems == 1u) {
+        atomicCounterIncrement(culledCount);
+    }
+    dvd_drawCommands[idx].instanceCount = 0u;
+}
+
 void main()
 {
-    uint ident = gl_GlobalInvocationID.x;
+    const uint ident = gl_GlobalInvocationID.x;
 
     if (ident >= dvd_numEntities) {
-        atomicCounterIncrement(culledCount);
-        dvd_drawCommands[ident].instanceCount = 0;
+        CullItem(ident);
         return;
     }
 
-    uint nodeIndex = dvd_drawCommands[ident].baseInstance;
+    const uint nodeIndex = dvd_drawCommands[ident].baseInstance;
     // Skip occlusion cull if the flag is negative
-    if (dvd_dataFlag(nodeIndex) < 0) {
+    if (dvd_Matrices[nodeIndex]._colourMatrix[3].w < 0.0f) {
         return;
     }
 
     const vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrix[3];
     const vec3 center = bSphere.xyz;
     const float radius = bSphere.w;
+    const vec3 extents = dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
 
-    vec3 extents = vec3(radius);//dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
     if (HiZCull(center, extents, radius)) {
-        atomicCounterIncrement(culledCount);
-        //dvd_drawCommands[ident].instanceCount = 0;
+        CullItem(ident);
     }
 }
 

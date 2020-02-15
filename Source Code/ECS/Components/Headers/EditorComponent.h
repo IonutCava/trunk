@@ -65,14 +65,19 @@ namespace Divide {
         std::function<void(const void*)> _dataSetter = {};
         Str128 _tooltip = "";
         void* _data = nullptr;
-        Str32  _name = "";
-
         vec2<F32> _range = { 0.0f, 1.0f }; //< Used by slider_type as a min / max range or dropdown as selected_index / count
+        Str32  _name = "";
+        F32 _step = 0.1f;
 
         GFX::PushConstantType _basicType = GFX::PushConstantType::COUNT;
         EditorComponentFieldType _type = EditorComponentFieldType::COUNT;
+        // Use this to configure smaller data sizes for integers only (signed or unsigned) like:
+        // U8: (PushConstantType::UINT, _byteCount=BYTE)
+        // I16: (PushConstantType::INT, _byteCount=WORD)
+        // etc
+        // byteCount of 3 is currently NOT supported
+        GFX::PushConstantSize _basicTypeSize = GFX::PushConstantSize::DWORD;
 
-        F32 _step = 0.1f;
         bool _readOnly = false;
         bool _serialise = true;
 
@@ -112,6 +117,23 @@ namespace Divide {
             } else {
                 *static_cast<T*>(_data) = dataIn;
             }
+        }
+
+        inline bool supportsByteCount() const {
+            return _basicType == GFX::PushConstantType::INT ||
+                   _basicType == GFX::PushConstantType::UINT ||
+                   _basicType == GFX::PushConstantType::IVEC2 ||
+                   _basicType == GFX::PushConstantType::IVEC3 ||
+                   _basicType == GFX::PushConstantType::IVEC4 ||
+                   _basicType == GFX::PushConstantType::UVEC2 ||
+                   _basicType == GFX::PushConstantType::UVEC3 ||
+                   _basicType == GFX::PushConstantType::UVEC4 ||
+                   _basicType == GFX::PushConstantType::IMAT2 ||
+                   _basicType == GFX::PushConstantType::IMAT3 ||
+                   _basicType == GFX::PushConstantType::IMAT4 ||
+                   _basicType == GFX::PushConstantType::UMAT2 ||
+                   _basicType == GFX::PushConstantType::UMAT3 ||
+                   _basicType == GFX::PushConstantType::UMAT4;
         }
 
         inline bool isMatrix() const {
@@ -164,7 +186,7 @@ namespace Divide {
         bool loadCache(ByteBuffer& inputBuffer);
 
       protected:
-        void onChanged(EditorComponentField& field);
+        void onChanged(EditorComponentField& field) const;
         virtual void saveToXML(boost::property_tree::ptree& pt) const;
         virtual void loadFromXML(const boost::property_tree::ptree& pt);
 
