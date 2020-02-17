@@ -22,7 +22,11 @@ void main(void)
 {
     _out.dvd_baseInstance = DATA_IDX;
     _out.dvd_instanceID = gl_InstanceID;
+#if defined(OPENGL_46)
+    _out.dvd_drawID = gl_DrawID;
+#else
     _out.dvd_drawID = gl_DrawIDARB;
+#endif
     // Calculate texture coordinates (u,v) relative to entire terrain
     const vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5f), -(TERRAIN_LENGTH * 0.5f));
 
@@ -576,6 +580,8 @@ layout(location = 12) in vec3 gs_wireColor;
 layout(location = 13) noperspective in vec3 gs_edgeDist;
 #endif
 
+#include "nodeBufferedInput.cmn"
+
 #define NEED_DEPTH_TEXTURE
 #define USE_CUSTOM_ROUGHNESS
 #include "BRDF.frag"
@@ -615,6 +621,8 @@ void main(void)
 }
 
 --Fragment.MainPass
+
+#include "nodeBufferedInput.cmn"
 
 #define NO_SPECULAR
 #if !defined(PRE_PASS)

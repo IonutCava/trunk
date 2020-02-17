@@ -692,7 +692,7 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
     }
 
     if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
-       !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
+       !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //not Display::PrePass
     {
         ret = getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData) || ret;
     }

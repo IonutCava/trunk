@@ -201,7 +201,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
 void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) {
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
-    bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
+    const bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
     Plane<F32> refractionPlane;
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
 
@@ -230,7 +230,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
 void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) {
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
-    bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
+    const bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
 
     Plane<F32> reflectionPlane;
     updatePlaneEquation(renderParams._sgn, reflectionPlane, !underwater);

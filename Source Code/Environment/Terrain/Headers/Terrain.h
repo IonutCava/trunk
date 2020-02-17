@@ -171,7 +171,6 @@ class Terrain : public Object3D {
     TessellatorArray _terrainTessellator;
     std::array<TerrainTessellator, ShadowMap::MAX_SHADOW_PASSES> _shadowTessellators;
     EditorDataState _editorDataDirtyState;
-    U32  _nodeDataIndex = 0;
     bool _shaderDataDirty;
     bool _drawCommandsDirty;
     SceneGraphNode* _vegetationGrassNode;
@@ -212,10 +211,6 @@ class TerrainLoader {
 
     static void descriptor(Terrain& terrain, const std::shared_ptr<TerrainDescriptor>& descriptor) noexcept {
         terrain._descriptor = descriptor;
-    }
-
-    static U32 dataIdx(Terrain& terrain) noexcept {
-        return terrain._nodeDataIndex;
     }
 
     static void setShaderProgram(Terrain& terrain, const ShaderProgram_ptr& shader, bool prePass, TerrainDescriptor::WireframeMode mode) {

@@ -1,18 +1,16 @@
 #if defined(USE_ARM)
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2DShadow HiZBuffer;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DShadow HiZBuffer;
 #else
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D HiZBuffer;
 #endif
 
-uniform mat4 viewProjectionMatrix;
-uniform mat4 projectionMatrix;
-
-#if defined(USE_ARM)
-uniform mat4 viewMatrix;
 uniform float dvd_nearPlaneDistance;
-#else
+#if !defined(USE_ARM)
 uniform vec2 viewportDimensions;
 #endif
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewProjectionMatrix;
 
 #if defined(USE_RASTERGRID) || defined(USE_ARM)
 vec4 BoundingBox[8];
@@ -221,7 +219,6 @@ bool zBufferCullRasterGrid(const in vec3 position, const in vec3 extents) {
 #endif
 
 bool HiZCull(const in vec3 position, const in vec3 extents, const in float radius) {
-#if defined(USE_ARM)
     const vec3 view_center = (viewMatrix * vec4(position, 1.0)).xyz;
     const float nearest_z = view_center.z + radius;
     // Sphere clips against near plane, just assume visibility.
@@ -229,21 +226,21 @@ bool HiZCull(const in vec3 position, const in vec3 extents, const in float radiu
         return false;
     }
 
-    if (!InstanceCloudReduction(position, extents)) {
-        return zBufferCullARM(view_center, radius, nearest_z);
+#if defined(USE_ARM)
+    if (InstanceCloudReduction(position, extents)) {
+        return true;
     }
 
-    return true;
+    return zBufferCullARM(view_center, radius, nearest_z);
 
 #elif defined(USE_NVIDIA)
     return zBufferCullNvidia(position, extents);
 #elif defined (USE_RASTERGRID)
     // first do instance cloud reduction
-    if (!InstanceCloudReduction(position, extents)) {
-        return zBufferCullRasterGrid(position, extents);
+    if (InstanceCloudReduction(position, extents)) {
+        return true;
     }
-
-    return true;
+    return zBufferCullRasterGrid(position, extents);
 #else
     return false;
 #endif

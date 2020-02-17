@@ -376,7 +376,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.push_back(std::make_pair(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %5.2ff", to_F32(Terrain::VTX_PER_TILE_EDGE)), true));
         shaderModule._defines.push_back(std::make_pair(Util::StringFormat("DETAIL_LEVEL %d", context.config().rendering.terrainDetailLevel), true));
         shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-        shaderModule._defines.push_back(std::make_pair("DATA_IDX " + to_stringImpl(Attorney::TerrainLoader::dataIdx(*terrain)), true));
+        shaderModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
         shaderModule._defines.push_back(std::make_pair("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true));
         shaderModule._defines.push_back(std::make_pair("ALBEDO_TILING " + to_stringImpl(albedoTilingFactor), true));
         shaderModule._defines.push_back(std::make_pair("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true));

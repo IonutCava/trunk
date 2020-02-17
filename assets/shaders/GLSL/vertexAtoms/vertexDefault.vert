@@ -1,8 +1,6 @@
 #ifndef _VERTEX_DEFAULT_VERT_
 #define _VERTEX_DEFAULT_VERT_
 
-#include "nodeBufferedInput.cmn"
-
 layout(location = ATTRIB_POSITION) in vec3 inVertexData;
 layout(location = ATTRIB_TEXCOORD) in vec2 inTexCoordData;
 layout(location = ATTRIB_NORMAL) in float inNormalData;

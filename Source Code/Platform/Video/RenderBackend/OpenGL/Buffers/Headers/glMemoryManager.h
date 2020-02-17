@@ -91,19 +91,19 @@ namespace GLUtil {
 
     void clearVBOs() noexcept;
 
-    void createAndAllocBuffer(GLsizeiptr bufferSize,
+    void createAndAllocBuffer(size_t bufferSize,
                               GLenum usageMask,
                               GLuint& bufferIdOut,
                               const bufferPtr data,
                               const char* name = nullptr);
 
     bufferPtr allocPersistentBuffer(GLuint bufferId,
-                                    GLsizeiptr bufferSize,
+                                    size_t bufferSize,
                                     BufferStorageMask storageMask,
                                     MapBufferAccessMask accessMask,
                                     const bufferPtr data);
 
-    bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
+    bufferPtr createAndAllocPersistentBuffer(size_t bufferSize,
                                              BufferStorageMask storageMask,
                                              MapBufferAccessMask accessMask,
                                              GLuint& bufferIdOut,

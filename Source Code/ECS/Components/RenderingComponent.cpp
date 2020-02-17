@@ -47,7 +47,7 @@ namespace {
         const U8 stageNoShadowIdx = to_base(stage) - 1;
         const U8 passTypeIdx = to_base(passType);
 
-        return stageNoShadowIdx * stageCountNoShadow + passTypeIdx;;
+        return stageNoShadowIdx * stageCountNoShadow + passTypeIdx;
     }
 
 };
@@ -62,7 +62,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
       _lodLockedLevel(0u),
       _cullFlagValue(1.0f),
       _renderMask(0),
-      _dataIndex({std::numeric_limits<U32>::max(), false}),
       _reflectionIndex(-1),
       _refractionIndex(-1),
       _reflectorType(ReflectorType::COUNT),
@@ -76,7 +75,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
       _axisGizmo(nullptr)
 {
     _lodLevels.fill(0u);
-    _drawDataIdx.fill(0u);
 
     _renderRange.min = -1.0f * g_renderRangeLimit;
     _renderRange.max =  1.0f* g_renderRangeLimit;
@@ -204,13 +202,9 @@ void RenderingComponent::setMaxRenderRange(F32 maxRange) {
     _renderRange.max = std::min(maxRange,  1.0f * g_renderRangeLimit);
 }
 
-void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass, RenderPackage& pkg) {
+void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, RenderPackage& pkg) {
     OPTICK_EVENT();
     pkg.clear();
-
-    if (useDataIndexAsUniform()) {
-        _globalPushConstants.set("dvd_dataIdx", GFX::PushConstantType::UINT, _drawDataIdx[to_base(stagePass._stage)]);
-    }
 
     // The following commands are needed for material rendering
     // In the absence of a material, use the SceneNode buildDrawCommands to add all of the needed commands
@@ -226,10 +220,6 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass, RenderPa
             bindDescriptorSetsCommand._set.addShaderBuffer(binding);
         }
         pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
-    }
-
-    if (!_globalPushConstants.empty()) {
-        pkg.addPushConstantsCommand(GFX::SendPushConstantsCommand{ _globalPushConstants });
     }
 
     _parentSGN.getNode().buildDrawCommands(_parentSGN, stagePass, pkg);
@@ -267,7 +257,7 @@ void RenderingComponent::onMaterialChanged() {
     }
 }
 
-bool RenderingComponent::canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData) {
+bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData) {
     OPTICK_EVENT();
     OPTICK_TAG("Node", (_parentSGN.name().c_str()));
 
@@ -295,7 +285,7 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
-void RenderingComponent::onRender(RenderStagePass renderStagePass) {
+void RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
@@ -319,83 +309,46 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     }
 }
 
-void RenderingComponent::setDataIndex(U32 idx) noexcept {
-    assert(idx != std::numeric_limits<U32>::max());
-
-    _dataIndex.first = idx;
-    _dataIndex.second = true;
-}
-
-bool RenderingComponent::getDataIndex(U32& idxOut) noexcept {
-    idxOut = _dataIndex.first;
-    return _dataIndex.second;
-}
-
-void RenderingComponent::uploadDataIndexAsUniform(RenderStage stage, RenderPackage& pkg) {
-    OPTICK_EVENT();
-
-    if (useDataIndexAsUniform() && !pkg.empty()) {
-        const U32 dataIdx = _drawDataIdx[to_U8(stage)];
-        if (pkg.dataDrawIdxCache() != dataIdx) {
-            pkg.pushConstants(0).set("dvd_dataIdx", GFX::PushConstantType::UINT, dataIdx);
-            pkg.dataDrawIdxCache(dataIdx);
-        }
-    }
-}
-
 bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams) {
     OPTICK_EVENT();
-
-    uploadDataIndexAsUniform(refreshParams._stagePass._stage, getDrawPackage(refreshParams._stagePass));
-    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, true, refreshParams._bufferInOut);
+    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *refreshParams._camera, true, *refreshParams._bufferInOut);
     return true;
 }
 
-bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams) {
+bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, const U32 dataIndex) {
     OPTICK_EVENT();
 
-    RenderPackage& pkg = getDrawPackage(refreshParams._stagePass);
+    RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
     const I32 drawCommandCount = pkg.drawCommandCount();
 
     if (drawCommandCount == 0) {
         return false;
     }
-     
-    const U8 stageIdx = to_base(refreshParams._stagePass._stage);
+
+    const RenderStage stage = refreshParams._stagePass->_stage;
+    const U8 stageIdx = to_base(stage);
     const U8 lodLevel = _lodLevels[stageIdx];
 
-    if (!_dataIndex.second) {
-        _dataIndex.first = refreshParams._dataIdx;
-    }
-
-    const U32 startOffset = to_U32(refreshParams._drawCommandsInOut.size());
-    if (refreshParams._stagePass._stage == RenderStage::SHADOW) {
-        Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, startOffset, lodLevel);
+    const U32 startOffset = to_U32(refreshParams._drawCommandsInOut->size());
+    if (stage == RenderStage::SHADOW) {
+        Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
     } else {
-        if (Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, refreshParams._dataIdx, startOffset, lodLevel) || true) {
-            const U8 pIdx = getPackageIndexNoShadow(refreshParams._stagePass._stage, refreshParams._stagePass._passType);
-
-            for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
-                const U8 cIdx = getPackageIndexNoShadow(refreshParams._stagePass._stage, static_cast<RenderPassType>(i));
-                if (cIdx != pIdx) {
-                    Attorney::RenderPackageRenderingComponent::updateDrawCommands(_renderPackagesNormal[cIdx], refreshParams._dataIdx, startOffset, lodLevel);
-                }
-            }
+        for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
+            const U8 cIdx = getPackageIndexNoShadow(stage, static_cast<RenderPassType>(i));
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(_renderPackagesNormal[cIdx], dataIndex, startOffset, lodLevel);
         }
     }
 
     for (I32 i = 0; i < drawCommandCount; ++i) {
         const GenericDrawCommand& cmd = pkg.drawCommand(i, 0);
         if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
-            std::fill_n(std::back_inserter(refreshParams._drawCommandsInOut), cmd._drawCount, cmd._cmd);
+            eastl::fill_n(eastl::back_inserter(*refreshParams._drawCommandsInOut), cmd._drawCount, cmd._cmd);
         } else {
-            refreshParams._drawCommandsInOut.push_back(cmd._cmd);
+            refreshParams._drawCommandsInOut->push_back(cmd._cmd);
         }
     }
 
-    _drawDataIdx[stageIdx] = _dataIndex.first;
-    uploadDataIndexAsUniform(refreshParams._stagePass._stage, pkg);
-    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, refreshParams._stagePass, *refreshParams._camera, false, refreshParams._bufferInOut);
+    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *refreshParams._camera, false, *refreshParams._bufferInOut);
     return true;
 }
 
@@ -424,7 +377,7 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
 }
 
 /// Called after the current node was rendered
-void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, GFX::CommandBuffer& bufferInOut) {
+void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut) {
     
     if (renderStagePass._stage != RenderStage::DISPLAY || renderStagePass._passType == RenderPassType::PRE_PASS) {
         return;
@@ -609,7 +562,7 @@ U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>
     return lodLevel;
 }
 
-void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData) {
+void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData) {
     OPTICK_EVENT();
 
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
@@ -648,23 +601,23 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     }
 }
 
-RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) {
+RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
     if (renderStagePass._stage == RenderStage::SHADOW) {
         return _renderPackagesShadow[renderStagePass._indexA * 6u + renderStagePass._indexB];
-    } else {
-        return _renderPackagesNormal[getPackageIndexNoShadow(renderStagePass._stage, renderStagePass._passType)];
     }
+
+    return _renderPackagesNormal[getPackageIndexNoShadow(renderStagePass._stage, renderStagePass._passType)];
 }
 
-const RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) const {
+const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) const {
     if (renderStagePass._stage == RenderStage::SHADOW) {
         return _renderPackagesShadow[renderStagePass._indexA * 6u + renderStagePass._indexB];
-    } else {
-        return _renderPackagesNormal[getPackageIndexNoShadow(renderStagePass._stage, renderStagePass._passType)];
     }
+
+    return _renderPackagesNormal[getPackageIndexNoShadow(renderStagePass._stage, renderStagePass._passType)];
 }
 
-size_t RenderingComponent::getSortKeyHash(RenderStagePass renderStagePass) const {
+size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass) const {
     return getDrawPackage(renderStagePass).getSortKeyHash();
 }
 

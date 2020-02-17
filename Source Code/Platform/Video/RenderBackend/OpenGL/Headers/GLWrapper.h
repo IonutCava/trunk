@@ -69,8 +69,7 @@ class PlatformContext;
 class RenderStateBlock;
 class GenericVertexData;
 class glHardwareQueryRing;
-class glGlobalLockManager;
-struct BufferWriteData;
+struct BufferLockEntry;
 
 namespace GLUtil {
     class glVAOCache;
@@ -156,10 +155,8 @@ protected:
     bool makeImagesResident(const vectorEASTLFast<Image>& images);
 
     bool setViewport(const Rect<I32>& viewport) final;
-
 public:
     static GLStateTracker& getStateTracker();
-    static glGlobalLockManager& getLockManager();
 
     /// Queue a mipmap recalculation
     static void queueComputeMipMap(GLuint textureHandle);
@@ -176,9 +173,8 @@ public:
     static bool deleteVAOs(GLuint count, GLuint* vaos);
     static bool deleteFramebuffers(GLuint count, GLuint* framebuffers);
 
-    static void registerBufferBind(BufferWriteData&& data, bool flush);
-
     static void lockBuffers(U32 frameID);
+    static void registerBufferBind(BufferLockEntry&& data);
 
     using IMPrimitivePool = MemoryPool<glIMPrimitive, 1024>;
 
@@ -222,8 +218,6 @@ public:
     static GLuint s_SSBMaxSize;
     static glHardwareQueryPool* s_hardwareQueryPool;
     static GLConfig s_glConfig;
-    static bool s_glFlushLocked;
-    static std::atomic_bool s_glFlushQueued;
 
 private:
     GFXDevice& _context;
@@ -269,18 +263,16 @@ private:
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
     hashMap<I64, GenericVertexData*> _IMGUIBuffers;
     Time::ProfileTimer& _swapBufferTimer;
-    U32 _commandBufferOffset = 0;
-
-    static moodycamel::ConcurrentQueue<BufferWriteData> s_bufferBinds;
 
     static GLStateTracker  s_stateTracker;
 
     static GLUtil::glTexturePool s_texturePool;
-    static glGlobalLockManager s_globalLockManager;
 
     static IMPrimitivePool s_IMPrimitivePool;
+    static eastl::fixed_vector<BufferLockEntry, 64, true> s_bufferLockQueue;
 
     std::pair<I64, SDL_GLContext> _currentContext;
+
 };
 
 };  // namespace Divide

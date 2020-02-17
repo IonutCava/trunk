@@ -195,9 +195,8 @@ bool glShaderProgram::rebindStages() {
                 shader->stageMask(),
                 shader->getProgramHandle());
             _stageMask |= shader->stageMask();
-            if (!previouslyUploaded && !_highPriority) {
-                return false;
-            }
+        } else {
+            return previouslyUploaded;
         }
     }
     return true;

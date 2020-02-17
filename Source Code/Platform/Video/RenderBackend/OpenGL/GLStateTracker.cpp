@@ -283,13 +283,13 @@ bool GLStateTracker::bindTextureImage(GLushort unit, TextureType type, GLuint ha
 }
 
 /// Single place to change buffer objects for every target available
-bool GLStateTracker::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLintptr offset, GLsizei stride) {
+bool GLStateTracker::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, size_t offset, size_t stride) {
     const VAOBindings::BufferBindingParams& bindings = _vaoBufferData.bindingParams(vaoID, location);
 
     const VAOBindings::BufferBindingParams currentParams(bufferID, offset, stride);
     if (bindings != currentParams) {
         // Bind the specified buffer handle to the desired buffer target
-        glVertexArrayVertexBuffer(vaoID, location, bufferID, offset, stride);
+        glVertexArrayVertexBuffer(vaoID, location, bufferID, (GLintptr)offset, (GLsizei)stride);
         // Remember the new binding for future reference
         _vaoBufferData.bindingParams(vaoID, location, currentParams);
         return true;

@@ -414,11 +414,11 @@ void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
                               GLenum mode,
                               GLenum internalFormat,
                               bool drawIndexed,
-                              GLsizei* countData,
+                              size_t* countData,
                               bufferPtr indexData) {
     if (drawCount > 1 && cmd.primCount == 1) {
         if (drawIndexed) {
-            glMultiDrawElements(mode, countData, internalFormat, (void* const*)indexData, drawCount);
+            glMultiDrawElements(mode, (GLsizei*)countData, internalFormat, (void* const*)indexData, drawCount);
         } else {
             glMultiDrawArrays(mode, (GLint*)indexData, (GLsizei*)countData, drawCount);
         }
@@ -433,7 +433,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool useIndirectBuffer,
                          GLuint cmdBufferOffset,
                          GLenum internalFormat,
-                         GLsizei* countData,
+                         size_t* countData,
                          bufferPtr indexData) {
 
     if (useIndirectBuffer) {
@@ -455,7 +455,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool useIndirectBuffer,
                          GLuint cmdBufferOffset,
                          GLenum internalFormat,
-                         GLsizei* countData,
+                         size_t* countData,
                          bufferPtr indexData)
 {
     DIVIDE_ASSERT(drawCommand._primitiveType != PrimitiveType::COUNT,

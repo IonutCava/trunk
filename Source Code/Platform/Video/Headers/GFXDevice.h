@@ -164,9 +164,6 @@ public:
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
         mat4<F32> _normalMatrixW = MAT4_IDENTITY;
         mat4<F32> _colourMatrix = MAT4_ZERO;
-
-        //Temp. w - bounding sphere radius
-        vec4<F32> _bbHalfExtents = { 0.0f, 0.0f, 0.0f, 0.0f };
     };
 
     using ObjectArena = MyArena<Config::REQUIRED_RAM_SIZE / 4>;
@@ -441,9 +438,6 @@ private:
     vec2<U16> _renderingResolution;
 
     GFXShaderData _gpuBlock;
-
-    std::array<U32, to_base(RenderStage::COUNT) - 1> _lastCommandCount;
-    std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 
     std::mutex _debugViewLock;
     bool _debugViewsEnabled = false;

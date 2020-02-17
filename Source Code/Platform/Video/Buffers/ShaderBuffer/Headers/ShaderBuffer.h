@@ -56,11 +56,12 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
        enum class Flags : U8 {
            NONE = 0,
-           ALLOW_THREADED_WRITES = toBit(1), //< Makes sure reads and writes are properly sync'ed between threads (e.g. With glFlush() after glFenceSync() in OpenGL)
-           IMMUTABLE_STORAGE = toBit(2),     //< Persistent mapped buffers
-           AUTO_RANGE_FLUSH = toBit(3),      //< Flush the entire buffer after a write as opposed to just the affected region
-           NO_SYNC = toBit(4),               //< Skip any kind of sync between reads and writes. Useful if using stuff taht auto-syncs like glBufferSubData in OpenGL
-           COUNT
+           IMMUTABLE_STORAGE = toBit(1),                         //< Persistent mapped buffers
+           ALLOW_THREADED_WRITES = toBit(2) | IMMUTABLE_STORAGE, //< Makes sure reads and writes are properly sync'ed between threads (e.g. With glFlush() after glFenceSync() in OpenGL). Will force IMMUTABLE_STORAGE to on
+           AUTO_STORAGE = toBit(3),                              //< Overrides Immutable flag
+           AUTO_RANGE_FLUSH = toBit(4),                          //< Flush the entire buffer after a write as opposed to just the affected region
+           NO_SYNC = toBit(5),                                   //< Skip any kind of sync between reads and writes. Useful if using stuff taht auto-syncs like glBufferSubData in OpenGL
+           COUNT = 6
        };
 
    public:
@@ -128,16 +129,16 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
 
 struct ShaderBufferDescriptor {
-    ShaderBuffer::Usage _usage = ShaderBuffer::Usage::COUNT;
-    U32 _flags = 0;
-    U32 _ringBufferLength = 1;
-    U32 _elementCount = 0;
-    bool _separateReadWrite = false; //< Use a separate read/write index based on queue length
+    stringImpl _name = "";
     size_t _elementSize = 0; //< Primitive size in bytes
+    bufferPtr _initialData = nullptr;
+    U32 _flags = 0u;
+    U32 _ringBufferLength = 1u;
+    U32 _elementCount = 0u;
     BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::ONCE;
     BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferPtr _initialData = NULL;
-    stringImpl _name = "";
+    ShaderBuffer::Usage _usage = ShaderBuffer::Usage::COUNT;
+    bool _separateReadWrite = false; //< Use a separate read/write index based on queue length
 };
 };  // namespace Divide
 #endif //_SHADER_BUFFER_H_

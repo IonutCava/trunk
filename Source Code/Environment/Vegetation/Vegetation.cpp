@@ -430,25 +430,27 @@ void Vegetation::createAndUploadGPUData(GFXDevice& gfxDevice, const Terrain_ptr&
     s_maxGrassInstances += s_maxGrassInstances % WORK_GROUP_SIZE;
     s_maxTreeInstances += s_maxTreeInstances % WORK_GROUP_SIZE;
 
-    ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-    bufferDescriptor._elementSize = sizeof(VegetationData);
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::NO_SYNC);
+    if (s_maxTreeInstances > 0 || s_maxGrassInstances > 0) {
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementSize = sizeof(VegetationData);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::NO_SYNC);
 
-    if (s_maxTreeInstances > 0) {
-        bufferDescriptor._elementCount = to_U32(s_maxTreeInstances * s_maxChunks);
-        bufferDescriptor._name = "Tree_data";
-        s_treeData = gfxDevice.newSB(bufferDescriptor);
-    }
-    if (s_maxGrassInstances > 0) {
-        bufferDescriptor._elementCount = to_U32(s_maxGrassInstances * s_maxChunks);
-        bufferDescriptor._name = "Grass_data";
-        s_grassData = gfxDevice.newSB(bufferDescriptor);
-    }
+        if (s_maxTreeInstances > 0) {
+            bufferDescriptor._elementCount = to_U32(s_maxTreeInstances * s_maxChunks);
+            bufferDescriptor._name = "Tree_data";
+            s_treeData = gfxDevice.newSB(bufferDescriptor);
+        }
+        if (s_maxGrassInstances > 0) {
+            bufferDescriptor._elementCount = to_U32(s_maxGrassInstances * s_maxChunks);
+            bufferDescriptor._name = "Grass_data";
+            s_grassData = gfxDevice.newSB(bufferDescriptor);
+        }
 
-    createVegetationMaterial(gfxDevice, terrain, vegDetails);
+        createVegetationMaterial(gfxDevice, terrain, vegDetails);
+    }
 }
 
 void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
@@ -457,7 +459,9 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     assert(s_buffer != nullptr);
     Wait(*_buildTask);
 
+    bool hasVegetation = false;
     if (_instanceCountGrass > 0u) {
+        hasVegetation = true;
         if (_terrainChunk.ID() < s_maxChunks) {
             s_grassData->writeData(_terrainChunk.ID() * s_maxGrassInstances, _instanceCountGrass, (bufferPtr)_tempGrassData.data());
             renderState().drawState(true);
@@ -468,6 +472,8 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     }
 
     if (_instanceCountTrees > 0u) {
+        hasVegetation = true;
+
         if (_terrainChunk.ID() < s_maxChunks) {
             s_treeData->writeData(_terrainChunk.ID() * s_maxTreeInstances, _instanceCountTrees, (bufferPtr)_tempTreeData.data());
             renderState().drawState(true);
@@ -477,14 +483,16 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
         _tempTreeData.clear();
     }
 
-    sgn.get<RenderingComponent>()->setMaterialTpl(s_vegetationMaterial);
-    sgn.get<RenderingComponent>()->lockLoD(true, 0u);
+    if (hasVegetation) {
+        sgn.get<RenderingComponent>()->setMaterialTpl(s_vegetationMaterial);
+        sgn.get<RenderingComponent>()->lockLoD(true, 0u);
 
-    PipelineDescriptor pipeDesc;
-    pipeDesc._shaderProgramHandle = s_cullShaderGrass->getGUID();
-    _cullPipelineGrass = _context.newPipeline(pipeDesc);
-    pipeDesc._shaderProgramHandle = s_cullShaderTrees->getGUID();
-    _cullPipelineTrees = _context.newPipeline(pipeDesc);
+        PipelineDescriptor pipeDesc;
+        pipeDesc._shaderProgramHandle = s_cullShaderGrass->getGUID();
+        _cullPipelineGrass = _context.newPipeline(pipeDesc);
+        pipeDesc._shaderProgramHandle = s_cullShaderTrees->getGUID();
+        _cullPipelineTrees = _context.newPipeline(pipeDesc);
+    }
 
     if (_instanceCountTrees > 0 && !_treeMeshNames.empty()) {
         {
@@ -553,7 +561,6 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
             RenderingComponent* rComp = child->get<RenderingComponent>();
             // negative value to disable occlusion culling
             rComp->cullFlagValue(ID * -1.0f);
-            rComp->useDataIndexAsUniform(true);
         });
 
         const vec3<F32>& extents = _treeParentNode->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
@@ -625,11 +632,9 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 
 void Vegetation::postLoad(SceneGraphNode& sgn) {
     const U32 ID = _terrainChunk.ID();
-    assert(s_grassData != nullptr);
-
     // positive value to keep occlusion culling happening
     sgn.get<RenderingComponent>()->cullFlagValue(ID * 1.0f);
-    sgn.get<RenderingComponent>()->useDataIndexAsUniform(true);
+
     SceneNode::postLoad(sgn);
 }
 
@@ -641,7 +646,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         const Texture_ptr& depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
@@ -733,7 +738,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
     const Terrain& terrain = _terrainChunk.parent();
 
-    Str128 cacheFileName = terrain.resourceName() + "_" + resourceName() + (treeData ? "_trees_" : "_grass_") + ".cache";
+    const Str128 cacheFileName = terrain.resourceName() + "_" + resourceName() + (treeData ? "_trees_" : "_grass_") + ".cache";
     Console::printfn(Locale::get(treeData ? _ID("CREATE_TREE_START") : _ID("CREATE_GRASS_BEGIN")), _terrainChunk.ID());
 
     vectorEASTL<VegetationData>& container = treeData ? _tempTreeData : _tempGrassData;
@@ -743,8 +748,8 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         container.resize(chunkCache.read<size_t>());
         chunkCache.read(reinterpret_cast<Byte*>(container.data()), sizeof(VegetationData) * container.size());
     } else {
-        U32 ID = _terrainChunk.ID();
-        U32 meshID = to_U32(ID % _treeMeshNames.size());
+        const U32 ID = _terrainChunk.ID();
+        const U32 meshID = to_U32(ID % _treeMeshNames.size());
 
         const vec2<F32>& chunkSize = _terrainChunk.getOffsetAndSize().zw();
         const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy();
@@ -780,7 +785,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
             assert(vert._position != VECTOR3_ZERO);
 
             auto map = treeData ? _treeMap : _grassMap;
-            const UColour4 colour = map->getColour((U16)mapCoord.x, (U16)mapCoord.y);
+            const UColour4 colour = map->getColour(to_I32(mapCoord.x), to_I32(mapCoord.y));
             const U8 index = bestIndex(colour);
             const F32 colourVal = colour[index];
             if (colourVal <= EPSILON_F32) {

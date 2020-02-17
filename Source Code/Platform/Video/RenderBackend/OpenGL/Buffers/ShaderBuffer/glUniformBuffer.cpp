@@ -23,7 +23,6 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     : ShaderBuffer(context, descriptor)
 {
     _maxSize = (_usage != Usage::CONSTANT_BUFFER) ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
-    _writesDirty.store(false);
 
     _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_usage));
 
@@ -42,11 +41,19 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                            ? GL_UNIFORM_BUFFER
                                            : GL_ATOMIC_COUNTER_BUFFER;
 
-    implParams._storageType = BitCompare(_flags, ShaderBuffer::Flags::IMMUTABLE_STORAGE) || _usage == Usage::ATOMIC_COUNTER
-                                                                                        ? BufferStorageType::IMMUTABLE
-                                                                                        : BufferStorageType::AUTO;
+    if (BitCompare(_flags, ShaderBuffer::Flags::IMMUTABLE_STORAGE) || 
+        BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) ||
+        _usage == Usage::ATOMIC_COUNTER) 
+    {
+        implParams._storageType = BufferStorageType::IMMUTABLE;
+    } else if (BitCompare(_flags, ShaderBuffer::Flags::AUTO_STORAGE)) {
+        implParams._storageType = BufferStorageType::AUTO;
+    } else {
+        implParams._storageType = BufferStorageType::NORMAL;
+    }
 
-    implParams._unsynced =  implParams._storageType != BufferStorageType::IMMUTABLE || 
+    implParams._unsynced =  (implParams._storageType != BufferStorageType::IMMUTABLE &&
+                             implParams._storageType != BufferStorageType::AUTO) ||
                             BitCompare(_flags, ShaderBuffer::Flags::NO_SYNC) ||
                             _frequency == BufferUpdateFrequency::ONCE;
 
@@ -58,17 +65,13 @@ glUniformBuffer::~glUniformBuffer()
     MemoryManager::DELETE(_buffer);
 }
 
-GLuint glUniformBuffer::bufferID() const {
-    return _buffer->bufferID();
-}
-
 void glUniformBuffer::clearData(U32 offsetElementCount,
                                 U32 rangeElementCount) {
     OPTICK_EVENT();
 
     if (rangeElementCount > 0) {
-        const GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
-        GLintptr offsetInBytes = offsetElementCount * _elementSize;
+        const size_t rangeInBytes = rangeElementCount * _elementSize;
+        size_t offsetInBytes = offsetElementCount * _elementSize;
 
         assert(offsetInBytes + rangeInBytes <= _allignedBufferSize &&
             "glUniformBuffer::UpdateData error: was called with an "
@@ -92,8 +95,8 @@ void glUniformBuffer::readData(U32 offsetElementCount,
                                bufferPtr result) const {
 
     if (rangeElementCount > 0) {
-        const GLsizeiptr rangeInBytes = rangeElementCount * _elementSize;
-        GLintptr offsetInBytes = offsetElementCount * _elementSize;
+        const size_t rangeInBytes = rangeElementCount * _elementSize;
+        size_t offsetInBytes = offsetElementCount * _elementSize;
 
         assert(offsetInBytes + rangeInBytes <= _allignedBufferSize &&
             "glUniformBuffer::UpdateData error: was called with an "
@@ -108,7 +111,7 @@ void glUniformBuffer::readData(U32 offsetElementCount,
             offsetInBytes = (offsetInBytes + req - 1) / req * req;
         }
 
-        _buffer->readData(offsetInBytes, rangeInBytes, result);
+        _buffer->readData(offsetInBytes, rangeInBytes, (Byte*)result);
     }
 }
 
@@ -116,8 +119,8 @@ void glUniformBuffer::writeData(U32 offsetElementCount,
                                 U32 rangeElementCount,
                                 const bufferPtr data) {
 
-    writeBytes(static_cast<GLintptr>(offsetElementCount * _elementSize),
-               static_cast<GLsizeiptr>(rangeElementCount * _elementSize),
+    writeBytes(static_cast<ptrdiff_t>(offsetElementCount * _elementSize),
+               static_cast<ptrdiff_t>(rangeElementCount * _elementSize),
                data);
 }
 
@@ -149,43 +152,35 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         offsetInBytes = (offsetInBytes + req - 1) / req * req;
     }
 
-    bufferImpl()->writeData(offsetInBytes, writeRange, data);
-    _writesDirty.store(true);
+    bufferImpl()->writeData(offsetInBytes, writeRange, reinterpret_cast<Byte*>(data));
 }
 
 bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
-    BufferWriteData data = {};
-    const bool ret = bindRange(bindIndex, offsetElementCount, rangeElementCount, data);
-    const bool flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) && _writesDirty.load();
-    bufferImpl()->lockRange(data._offset, data._range, flush);
-    _writesDirty.store(false);
-    return ret;
-}
+    BufferLockEntry data = {};
+    data._buffer = bufferImpl();
+    data._flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
 
-bool glUniformBuffer::bindRange(U8 bindIndex,
-                                U32 offsetElementCount,
-                                U32 rangeElementCount,
-                                BufferWriteData& dataOut) {
     if (rangeElementCount == 0) {
         rangeElementCount = _elementCount;
     }
 
-    dataOut._handle = bufferImpl()->bufferID();
-    dataOut._range = to_size(rangeElementCount * _elementSize);
-    dataOut._offset = to_size(offsetElementCount * _elementSize);
+    data._length = to_size(rangeElementCount * _elementSize);
+    data._offset = to_size(offsetElementCount * _elementSize);
     if (queueLength() > 1) {
-        dataOut._offset += to_size(queueReadIndex() * _allignedBufferSize);
+        data._offset += to_size(queueReadIndex() * _allignedBufferSize);
     }
     const size_t req = alignmentRequirement(_usage);
-    if (dataOut._offset % req != 0) {
-        dataOut._offset = (dataOut._offset + req - 1) / req * req;
+    if (data._offset % req != 0) {
+        data._offset = (data._offset + req - 1) / req * req;
     }
-
-    assert(static_cast<size_t>(dataOut._range) <= _maxSize &&
+    assert(data._offset % req == 0);
+    assert(static_cast<size_t>(data._length) <= _maxSize &&
            "glUniformBuffer::bindRange: attempted to bind a larger shader block than is allowed on the current platform");
 
-    assert(dataOut._offset % req == 0);
-    return _buffer->bindRange(bindIndex, dataOut._offset, dataOut._range);
+    const bool wasBound = data._buffer->bindRange(bindIndex, data._offset, data._length);
+    GL_API::registerBufferBind(std::move(data));
+
+    return wasBound;
 }
 
 bool glUniformBuffer::bind(U8 bindIndex) {

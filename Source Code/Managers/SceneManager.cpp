@@ -536,13 +536,13 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     }
 }
 
-void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::preRender(const RenderStagePass& stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     _platformContext->gfx().getRenderer().preRender(stagePass, hizColourTexture, getActiveScene().lightPool(), camera, bufferInOut);
 }
 
-void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::postRender(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     const SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
@@ -569,7 +569,7 @@ void SceneManager::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuf
     Attorney::SceneManager::drawCustomUI(getActiveScene(), targetViewport, bufferInOut);
 }
 
-void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::debugDraw(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     Scene& activeScene = getActiveScene();

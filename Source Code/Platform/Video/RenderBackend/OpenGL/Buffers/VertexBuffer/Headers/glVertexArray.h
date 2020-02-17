@@ -100,9 +100,9 @@ class glVertexArray final : public VertexBuffer {
     ///< A refresh call might be called before "Create()". This should help with that
     bool _refreshQueued;  
     bool _uploadQueued;
-    GLsizei _prevSize;
-    GLsizei _prevSizeIndices;
-    GLsizei _effectiveEntrySize;
+    size_t _prevSize;
+    size_t _prevSizeIndices;
+    size_t _effectiveEntrySize;
     ByteBuffer _smallData;
     AttribFlags _useAttribute;
     using AttribValues = std::array<GLuint, to_base(AttribLocation::COUNT)>;
@@ -117,7 +117,7 @@ class glVertexArray final : public VertexBuffer {
     U32 _lastIndexCount = 0;
     U32 _lastFirstIndex = 0;
 
-    std::array<GLsizei, Config::MAX_VISIBLE_NODES> _countData;
+    std::array<size_t, Config::MAX_VISIBLE_NODES> _countData;
     eastl::fixed_vector<GLuint, Config::MAX_VISIBLE_NODES * 256> _indexOffsetData;
 };
 

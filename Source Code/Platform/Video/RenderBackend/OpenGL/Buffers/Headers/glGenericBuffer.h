@@ -74,16 +74,11 @@ class glGenericBuffer {
                     GLuint ringReadOffset,
                     bufferPtr dataOut);
 
-      void lockData(GLuint elementCount,
-                    GLuint elementOffset,
-                    GLuint ringReadOffset,
-                    bool flush);
+      size_t getBindOffset(GLuint ringReadOffset);
 
-       GLintptr getBindOffset(GLuint ringReadOffset);
+      void setBindOffset(GLuint elementCountOffset) noexcept;
 
-       void     setBindOffset(GLuint elementCountOffset) noexcept;
-
-       glBufferImpl* bufferImpl() const noexcept;
+      glBufferImpl* bufferImpl() const noexcept;
   protected:
       GLuint _elementCount;
       GLuint _elementCountBindOffset;

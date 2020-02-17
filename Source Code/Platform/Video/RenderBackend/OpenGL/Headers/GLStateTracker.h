@@ -118,8 +118,8 @@ namespace Divide {
         bool bindActiveBuffer(GLuint vaoID,
                               GLuint location,
                               GLuint bufferID,
-                              GLintptr offset,
-                              GLsizei stride);
+                              size_t offset,
+                              size_t stride);
 
         bool setScissor(const Rect<I32>& newScissorRect);
 
@@ -167,6 +167,8 @@ namespace Divide {
                                       GLUtil::k_invalidObjectID,
                                       GLUtil::k_invalidObjectID };
         hashMap<GLuint, GLuint> _activeVAOIB;
+
+        GLuint _commandBufferOffset = 0u;
 
         GLint  _activePackUnpackAlignments[2] = { 1 , 1 };
         GLint  _activePackUnpackRowLength[2] = { 0 , 0 };

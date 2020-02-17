@@ -666,20 +666,22 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     _previousPolicy = drawPolicy;
 }
 
-void glFramebuffer::end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth) {
+void glFramebuffer::end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth, bool needsUnbind) {
     OPTICK_EVENT();
-
-    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, 0);
-    if (_previousPolicy.setViewport()) {
-        _context.setViewport(_prevViewport);
-    }
-
-    queueMipMapRecomputation();
 
     if (resolveMSAAColour || resolveMSAAExternalColour || resolveMSAADepth) {
         const RTDrawMask& mask = _previousPolicy.drawMask();
         resolve(-1, resolveMSAAColour && mask.isEnabled(RTAttachmentType::Colour), resolveMSAADepth && mask.isEnabled(RTAttachmentType::Depth), resolveMSAAExternalColour);
     }
+
+    if (needsUnbind) {
+        GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, 0);
+        if (_previousPolicy.setViewport()) {
+            _context.setViewport(_prevViewport);
+        }
+    }
+
+    queueMipMapRecomputation();
 
     GL_API::popDebugMessage();
 }

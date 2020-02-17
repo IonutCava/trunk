@@ -73,11 +73,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, U32 cmdBufferO
         GLUtil::submitRenderCommand(command, _indexBuffer > 0, false, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 
-    const vec_size bufferCount = _bufferObjects.size();
-    for (vec_size i = 0; i < bufferCount; ++i) {
-        glGenericBuffer* buffer = _bufferObjects[i];
-        buffer->lockData(buffer->elementCount(), 0, queueIndex(), true);
-    }
+    GL_API::lockBuffers(_context.getFrameCount());
 }
 
 void glGenericVertexData::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex) {
@@ -202,18 +198,24 @@ void glGenericVertexData::setBufferBindOffset(U32 buffer, U32 elementCountOffset
 }
 
 void glGenericVertexData::setBufferBindings() {
-    if (!_bufferObjects.empty()) {
-        for (U32 i = 0; i < _bufferObjects.size(); ++i) {
-            glGenericBuffer* buffer = _bufferObjects[i];
-            GL_API::getStateTracker().bindActiveBuffer(_vertexArray,
-                                                       i,
-                                                       buffer->bufferHandle(),
-                                                       buffer->getBindOffset(queueIndex()),
-                                                       static_cast<GLsizei>(buffer->bufferImpl()->elementSize()));
-            glVertexArrayBindingDivisor(_vertexArray, i, _instanceDivisor[i]);
-        }
+    if (_bufferObjects.empty()) {
+        return;
     }
 
+    for (U32 i = 0; i < _bufferObjects.size(); ++i) {
+        glGenericBuffer* buffer = _bufferObjects[i];
+        const size_t elementSize = buffer->bufferImpl()->elementSize();
+
+        BufferLockEntry entry = {};
+        entry._buffer = buffer->bufferImpl();
+        entry._offset = buffer->getBindOffset(queueIndex());
+        entry._length = buffer->elementCount() * elementSize;
+        entry._flush = true;
+
+        GL_API::getStateTracker().bindActiveBuffer(_vertexArray, i, buffer->bufferHandle(),entry._offset, elementSize);
+        glVertexArrayBindingDivisor(_vertexArray, i, _instanceDivisor[i]);
+        GL_API::registerBufferBind(std::move(entry));
+    }
 }
 
 /// Update the appropriate attributes 

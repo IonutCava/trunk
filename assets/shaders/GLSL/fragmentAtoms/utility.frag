@@ -1,7 +1,6 @@
 #ifndef _UTILITY_FRAG_
 #define _UTILITY_FRAG_
 
-#include "nodeBufferedInput.cmn"
 #include "utility.cmn"
 
 float ToLinearDepth(in float depthIn);

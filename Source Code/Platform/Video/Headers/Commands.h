@@ -204,6 +204,7 @@ BEGIN_COMMAND(EndRenderPassCommand, CommandType::END_RENDER_PASS);
     bool _autoResolveMSAAColour = false;
     bool _autoResolveMSAAExternalColour = false;
     bool _autoResolveMSAADepth = false;
+    bool _ignore = false;
 END_COMMAND(EndRenderPassCommand);
 
 BEGIN_COMMAND(BeginPixelBufferCommand, CommandType::BEGIN_PIXEL_BUFFER);
@@ -352,7 +353,7 @@ BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE);
 END_COMMAND(DispatchComputeCommand);
 
 BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER);
-    U8 _barrierMask = 0;
+    U32 _barrierMask = 0;
 
     stringImpl toString(U16 indent) const final;
 END_COMMAND(MemoryBarrierCommand);

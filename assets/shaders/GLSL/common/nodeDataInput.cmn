@@ -1,6 +1,10 @@
 #ifndef _NODE_DATA_INPUT_CMN_
 #define _NODE_DATA_INPUT_CMN_
 
+#if defined(PRE_PASS) || defined(SHADOW_PASS)
+#define DEPTH_PASS
+#endif
+
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
 out gl_PerVertex
 {

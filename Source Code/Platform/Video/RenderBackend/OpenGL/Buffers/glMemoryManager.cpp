@@ -180,7 +180,7 @@ void clearVBOs() noexcept {
 }
 
 bufferPtr allocPersistentBuffer(GLuint bufferId,
-                                GLsizeiptr bufferSize,
+                                size_t bufferSize,
                                 BufferStorageMask storageMask,
                                 MapBufferAccessMask accessMask,
                                 const bufferPtr data) {
@@ -190,7 +190,7 @@ bufferPtr allocPersistentBuffer(GLuint bufferId,
     return ptr;
 }
 
-bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
+bufferPtr createAndAllocPersistentBuffer(size_t bufferSize,
                                          BufferStorageMask storageMask,
                                          MapBufferAccessMask accessMask,
                                          GLuint& bufferIdOut,
@@ -210,7 +210,7 @@ bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
     return allocPersistentBuffer(bufferIdOut, bufferSize, storageMask, accessMask, data);
 }
 
-void createAndAllocBuffer(GLsizeiptr bufferSize,
+void createAndAllocBuffer(size_t bufferSize,
                           GLenum usageMask,
                           GLuint& bufferIdOut,
                           const bufferPtr data,

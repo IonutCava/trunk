@@ -130,8 +130,6 @@ constexpr unsigned int BENCHMARK_FREQUENCY = 500;
 constexpr bool DISABLE_SHADING = false;
 /// textures are capped at 2x2 when uploaded to the GPU
 constexpr bool USE_2x2_TEXTURES = false;
-/// disable persistently mapped buffers
-constexpr bool DISABLE_PERSISTENT_BUFFER = false;
 };  // namespace Profile
 
 namespace Assert {

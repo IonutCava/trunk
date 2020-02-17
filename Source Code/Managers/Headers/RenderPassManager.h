@@ -53,6 +53,7 @@ enum class RenderStage : U8;
 class RenderPassManager : public KernelComponent {
 public:
     struct PassParams {
+        FrustumClipPlanes _clippingPlanes = {};
         vec3<F32> _minExtents = { 0.0f };
         // source node is used to determine if the current pass is triggered by a specific node:
         // e.g. a light node for shadow mapping, a reflector for reflection (or refraction), etc
@@ -60,12 +61,11 @@ public:
         const SceneGraphNode* _sourceNode = nullptr;
         const RTDrawDescriptor* _drawPolicy = nullptr;
         const RTClearDescriptor* _clearDescriptor = nullptr;
-        Str64 _passName = "";
         Camera* _camera = nullptr;
-        FrustumClipPlanes _clippingPlanes = {};
+        Str64 _passName = "";
+        I32 _minLoD = -1; //-1 = all
         RenderTargetID _target = {};
         RenderTargetID _targetHIZ = {};
-        I32 _minLoD = -1; //-1 = all
         RenderStagePass _stagePass = {};
         bool _bindTargets = true;
     };
@@ -86,16 +86,14 @@ public:
                               bool usePerformanceCounters = false);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const Str64& name);
-    U16  getLastTotalBinSize(RenderStage renderStage) const;
+    U32  getLastTotalBinSize(RenderStage renderStage) const;
 
     inline RenderQueue& getQueue() { return _renderQueue; }
 
-    RenderPass::BufferData getBufferData(RenderStagePass stagePass) const;
+    RenderPass::BufferData getBufferData(const RenderStagePass& stagePass) const;
 
-    void doCustomPass(const PassParams& params, GFX::CommandBuffer& bufferInOut);
+    void doCustomPass(PassParams params, GFX::CommandBuffer& bufferInOut);
     void postInit();
-
-    static U32 getUniqueNodeDataIndex() noexcept;
 
 private:
     // Returns false if we skipped the pre-pass step
@@ -125,14 +123,14 @@ private:
 
     RenderPass& getPassForStage(RenderStage renderStage);
     const RenderPass& getPassForStage(RenderStage renderStage) const;
-    void prepareRenderQueues(RenderPassType passType, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void buildDrawCommands(RenderPassType passType, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void buildBufferData(RenderStagePass stagePass, const SceneRenderState& renderState, const Camera& camera, const RenderBin::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
-    void processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
+    void prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    void buildDrawCommands(const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    void buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const Camera& camera, const RenderBin::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
+    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
 
 private: //TEMP
     friend class RenderBin;
-    U32  renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
+    U32  renderQueueSize(RenderStage stage, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
     void renderQueueToSubPasses(RenderStage stage, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
 
 private:
@@ -141,7 +139,7 @@ private:
 
     vectorEASTL<Task*> _renderTasks;
     vectorEASTL<bool> _completedPasses;
-    vectorEASTL<std::shared_ptr<RenderPass>> _renderPasses;
+    vectorEASTL<RenderPass*> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
     GFX::CommandBuffer* _postFXCommandBuffer;
 
@@ -153,9 +151,6 @@ private:
     Time::ProfileTimer* _flushCommandBufferTimer;
     Time::ProfileTimer* _postFxRenderTimer;
     std::array<vectorEASTLFast<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
-    std::array<vectorEASTLFast<RenderingComponent*>, to_base(RenderStage::COUNT)> _queuedRenderingComponents;
-    // Used to reserve an index into node data buffers. Usefull if we can't use baseInstance as an index, for example
-    static std::atomic_uint g_NodeDataIndex;
 };
 
 };  // namespace Divide

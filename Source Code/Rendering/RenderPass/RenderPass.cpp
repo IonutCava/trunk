@@ -46,11 +46,11 @@ namespace {
         inline U16  currentEntry() { return g_refractionBudget; }
     };
 
-    U32 getCmdBufferCount(RenderStage stage) noexcept {
+    U32 getBufferFactor(RenderStage stage) noexcept {
         //We only care about the first parameter as it will determine the properties for the rest of the stages
         switch (stage) {
             // PrePass, MainPass and OitPass should share buffers
-            case RenderStage::DISPLAY:    return 1;
+            case RenderStage::DISPLAY:    return 1u;
             case RenderStage::SHADOW:     return ShadowMap::MAX_SHADOW_PASSES;
             case RenderStage::REFRACTION: return Config::MAX_REFRACTIVE_NODES_IN_VIEW; // planar
             case RenderStage::REFLECTION: return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + // could be planar
@@ -62,7 +62,7 @@ namespace {
     }
 
     U32 getDataBufferSize(RenderStage stage) noexcept {
-        return getCmdBufferCount(stage) * Config::MAX_VISIBLE_NODES;
+        return getBufferFactor(stage) * Config::MAX_VISIBLE_NODES;
     }
 };
 
@@ -73,10 +73,10 @@ RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name
       _dependencies(dependencies),
       _name(name),
       _stageFlag(passStageFlag),
-      _performanceCounters(performanceCounters)
+      _performanceCounters(performanceCounters),
+      _lastCmdCount(0u),
+      _lastNodeCount(0u)
 {
-    _lastTotalBinSize = 0;
-    _dataBufferSize = getDataBufferSize(_stageFlag);
 }
 
 RenderPass::~RenderPass() 
@@ -84,67 +84,72 @@ RenderPass::~RenderPass()
 }
 
 void RenderPass::initBufferData() {
-    ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-    bufferDescriptor._elementCount = _dataBufferSize;
-    bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
-
-    bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
-    bufferDescriptor._separateReadWrite = false;
-    
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::IMMUTABLE_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
-    _renderData = _context.newSB(bufferDescriptor);
-
-    if (_performanceCounters) {
+    {// Atomic counter for occlusion culling
+        ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
-        bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._elementCount = 1;
         bufferDescriptor._elementSize = sizeof(U32);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = 5;
         bufferDescriptor._separateReadWrite = true;
-        _cullCounter = _context.newSB(bufferDescriptor);
+
+        if (_performanceCounters) {
+            bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            _cullCounter = _context.newSB(bufferDescriptor);
+        }
     }
-
-    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._elementCount = Config::MAX_VISIBLE_NODES * g_cmdBufferFrameCount;
-    bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
-    bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._separateReadWrite = false;
-
-    const U32 cmdCount = getCmdBufferCount(_stageFlag);
-    _cmdBuffers.reserve(cmdCount);
-    _lastNodeCount.resize(cmdCount, 0u);
-
-    for (U32 i = 0; i < cmdCount; ++i) {
-        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s_%d", TypeUtil::RenderStageToString(_stageFlag), i).c_str();
-        _cmdBuffers.emplace_back(_context.newSB(bufferDescriptor));
+    {// Node Data buffer
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementCount = getDataBufferSize(_stageFlag);
+        bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
+        bufferDescriptor._separateReadWrite = false;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+        { 
+            bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            _nodeData = _context.newSB(bufferDescriptor);
+        }
+    }
+    {// Indirect draw command buffer
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementCount = getDataBufferSize(_stageFlag);
+        bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+        bufferDescriptor._separateReadWrite = false;
+        {
+            bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            _cmdBuffer = _context.newSB(bufferDescriptor);
+        }
     }
 }
 
-RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, U32 variant, U16 passIndexA, U16 passIndexB) const {
+RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePass) const {
+    assert(_stageFlag == stagePass._stage);
+
     U32 cmdBufferIdx = 0u;
     switch (_stageFlag) {
         case RenderStage::DISPLAY:    cmdBufferIdx = 0u; break;
-        case RenderStage::SHADOW:     cmdBufferIdx = passIndexA * ShadowMap::MAX_PASSES_PER_LIGHT + passIndexB; break;
+        case RenderStage::SHADOW:     cmdBufferIdx = stagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + stagePass._indexB; break;
         case RenderStage::REFRACTION: {
-            assert(variant == to_base(RefractorType::PLANAR));
-            cmdBufferIdx = passIndexA * Config::MAX_REFRACTIVE_NODES_IN_VIEW + passIndexB;
+            assert(stagePass._variant == to_base(RefractorType::PLANAR));
+            cmdBufferIdx = stagePass._indexA * Config::MAX_REFRACTIVE_NODES_IN_VIEW + stagePass._indexB;
         } break;
         case RenderStage::REFLECTION: {
-            switch (static_cast<ReflectorType>(variant)) {
+            switch (static_cast<ReflectorType>(stagePass._variant)) {
                 case ReflectorType::PLANAR: 
                 case ReflectorType::CUBE:
-                    cmdBufferIdx = passIndexA * 6 + passIndexB;
+                    cmdBufferIdx = stagePass._indexA * 6 + stagePass._indexB;
                     break;
                 case ReflectorType::ENVIRONMENT:
-                    cmdBufferIdx = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + passIndexA * 6 + passIndexB;
+                    cmdBufferIdx = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + stagePass._indexA * 6 + stagePass._indexB;
                     break;
                 default: DIVIDE_UNEXPECTED_CALL(); 
                     break;
@@ -153,17 +158,15 @@ RenderPass::BufferData RenderPass::getBufferData(RenderPassType type, U32 varian
         default: DIVIDE_UNEXPECTED_CALL(); break;
     }
 
-    const U32 frameOffset = _context.FRAME_COUNT % g_cmdBufferFrameCount;
-
     BufferData ret = {};
-    ret._renderDataElementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
-    ret._renderData = _renderData;
     ret._cullCounter = _cullCounter;
-    ret._cmdBuffer = _cmdBuffers[cmdBufferIdx];
-    ret._lastCommandCount = &_lastNodeCount[cmdBufferIdx * frameOffset];
-    ret._cmdBufferElementOffset = Config::MAX_VISIBLE_NODES * frameOffset;
-    ret._cmdBufferElementFactor = g_cmdBufferFrameCount;
 
+    ret._nodeData = _nodeData;
+    ret._cmdBuffer = _cmdBuffer;
+    ret._elementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
+
+    ret._lastCommandCount = &_lastCmdCount;
+    ret._lastNodeCount = &_lastNodeCount;
     return ret;
 }
 
@@ -208,8 +211,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             clipStateCmd._negativeOneToOneDepth = false;
             GFX::EnqueueCommand(bufferInOut, clipStateCmd);
 
-            GFX::EndDebugScopeCommand endDebugScopeCmd;
-            GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
         } break;
         case RenderStage::REFLECTION: {
@@ -287,7 +289,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 void RenderPass::postRender() {
     OPTICK_EVENT();
 
-    _renderData->incQueue();
+    _nodeData->incQueue();
+    _cmdBuffer->incQueue();
 }
 
 };

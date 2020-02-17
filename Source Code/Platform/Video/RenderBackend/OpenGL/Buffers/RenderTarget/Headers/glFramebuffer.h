@@ -144,7 +144,7 @@ class glFramebuffer : public RenderTarget,
 
     void clear(const RTClearDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const;
     void begin(const RTDrawDescriptor& drawPolicy);
-    void end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth);
+    void end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth, bool needsUnbind);
     void queueMipMapRecomputation();
     void queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange);
 
@@ -179,8 +179,8 @@ namespace Attorney {
         static void begin(glFramebuffer& buffer, const RTDrawDescriptor& drawPolicy) {
             buffer.begin(drawPolicy);
         }
-        static void end(glFramebuffer& buffer, bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth) {
-            buffer.end(resolveMSAAColour, resolveMSAAExternalColour, resolveMSAADepth);
+        static void end(glFramebuffer& buffer, bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth, bool needsUnbind) {
+            buffer.end(resolveMSAAColour, resolveMSAAExternalColour, resolveMSAADepth, needsUnbind);
         }
         static void resolve(glFramebuffer& buffer, I8 colour, bool allColours, bool depth, bool externalColours) {
             buffer.resolve(colour, allColours, depth, externalColours);

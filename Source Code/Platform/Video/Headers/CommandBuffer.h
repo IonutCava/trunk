@@ -126,6 +126,10 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     bool exists(U8 typeIndex, I24 index) const noexcept;
 
+    template<typename T>
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
+    exists(I24 index) const noexcept;
+
     inline CommandOrderContainer& operator()() noexcept;
     inline const CommandOrderContainer& operator()() const noexcept;
 

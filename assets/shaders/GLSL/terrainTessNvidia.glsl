@@ -47,7 +47,12 @@ void main(void)
 
     _out.dvd_baseInstance = DATA_IDX;
     _out.dvd_instanceID = gl_InstanceID;
+
+#if defined(OPENGL_46)
+    _out.dvd_drawID = gl_DrawID;
+#else
     _out.dvd_drawID = gl_DrawIDARB;
+#endif
     _out._vertexW = inAdjacency;
     gl_Position = dvd_WorldMatrix(DATA_IDX) * vec4(pos.x, SampleHeightForVS(_out._texCoord) * TERRAIN_SCALE , pos.y, 1.0f);
 }

@@ -26,30 +26,28 @@ namespace Divide {
 
     namespace {
         constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
+        constexpr bool g_singleThreadedCommandBufferCreation = false;
 
-        using SetType = eastl::set<U32, eastl::less<U32>, eastl::dvd_eastl_allocator>;
-        thread_local SetType g_usedIndices;
-        thread_local U32 g_freeCounter = 0;
-        //thread_local vectorEASTL<RenderingComponent*> g_rComps;
-        thread_local RenderBin::SortedQueues g_sortedQueues;
-        thread_local eastl::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> g_nodeData;
-        thread_local DrawCommandContainer g_drawCommands;
+        struct PerPassData {
+            RenderBin::SortedQueues sortedQueues;
+            DrawCommandContainer drawCommands;
+
+            std::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> nodeData;
+            eastl::fixed_vector<RenderingComponent*, Config::MAX_VISIBLE_NODES, false> queuedRenderingComponents;
+        };
+
+        std::array<PerPassData, to_base(RenderStage::COUNT)> g_passData;
     };
-
-    std::atomic_uint RenderPassManager::g_NodeDataIndex = 0;
-    U32 RenderPassManager::getUniqueNodeDataIndex() noexcept {
-        return g_NodeDataIndex.fetch_add(1);
-    }
 
     RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
         : KernelComponent(parent),
-        _renderQueue(parent),
-        _context(context),
-        _OITCompositionPipeline(nullptr),
-        _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
-        _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
-        _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
-        _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer"))
+          _renderQueue(parent),
+          _context(context),
+          _OITCompositionPipeline(nullptr),
+          _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
+          _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
+          _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
+          _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer"))
     {
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
 
@@ -82,6 +80,8 @@ namespace Divide {
         }
 
         GFX::deallocateCommandBuffer(_postFXCommandBuffer);
+
+        MemoryManager::DELETE_VECTOR(_renderPasses);
     }
 
     void RenderPassManager::postInit() {
@@ -133,7 +133,7 @@ namespace Divide {
                 for (I8 i = 0; i < renderPassCount; ++i)
                 { //All of our render passes should run in parallel
 
-                    RenderPass* pass = _renderPasses[i].get();
+                    RenderPass* pass = _renderPasses[i];
 
                     GFX::CommandBuffer* buf = _renderPassCommandBuffer[i];
                     _renderTasks[i] = CreateTask(pool,
@@ -145,7 +145,7 @@ namespace Divide {
                                                      buf->batch();
                                                  },
                                                  "Render pass task");
-                    Start(*_renderTasks[i]);
+                    Start(*_renderTasks[i], g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE);
                 }
                 { //PostFX should be pretty fast
                     GFX::CommandBuffer* buf = _postFXCommandBuffer;
@@ -179,7 +179,7 @@ namespace Divide {
                                                 buf->batch();
                                             },
                                             "PostFX pass task");
-                    Start(*postFXTask);
+                    Start(*postFXTask, g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE);
                 }
             }
         }
@@ -258,19 +258,15 @@ RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
                                              bool usePerformanceCounters) {
     assert(!renderPassName.empty());
 
-    _renderPasses.push_back(std::make_shared<RenderPass>(*this, _context, renderPassName, orderKey, renderStage, dependencies, usePerformanceCounters));
-    _renderPasses.back()->initBufferData();
+    _renderPasses.push_back(MemoryManager_NEW RenderPass(*this, _context, renderPassName, orderKey, renderStage, dependencies, usePerformanceCounters));
+    RenderPass* item = _renderPasses.back();
+
+    item->initBufferData();
 
     //Secondary command buffers. Used in a threaded fashion
     _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
 
-    const std::shared_ptr<RenderPass>& item = _renderPasses.back();
-
-    eastl::sort(eastl::begin(_renderPasses),
-                eastl::end(_renderPasses),
-                [](const std::shared_ptr<RenderPass>& a, const std::shared_ptr<RenderPass>& b) -> bool {
-                      return a->sortKey() < b->sortKey();
-                });
+    eastl::sort(eastl::begin(_renderPasses), eastl::end(_renderPasses), [](RenderPass* a, RenderPass* b) -> bool { return a->sortKey() < b->sortKey(); });
 
     _renderTasks.resize(_renderPasses.size());
     _completedPasses.resize(_renderPasses.size(), false);
@@ -279,8 +275,7 @@ RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
 }
 
 void RenderPassManager::removeRenderPass(const Str64& name) {
-    for (vectorEASTL<std::shared_ptr<RenderPass>>::iterator it = eastl::begin(_renderPasses);
-         it != eastl::end(_renderPasses); ++it) {
+    for (vectorEASTL<RenderPass*>::iterator it = eastl::begin(_renderPasses); it != eastl::end(_renderPasses); ++it) {
          if ((*it)->name().compare(name) == 0) {
             _renderPasses.erase(it);
             // Remove one command buffer
@@ -295,12 +290,12 @@ void RenderPassManager::removeRenderPass(const Str64& name) {
     _completedPasses.resize(_renderPasses.size(), false);
 }
 
-U16 RenderPassManager::getLastTotalBinSize(RenderStage renderStage) const {
+U32 RenderPassManager::getLastTotalBinSize(RenderStage renderStage) const {
     return getPassForStage(renderStage).getLastTotalBinSize();
 }
 
 RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) {
-    for (const std::shared_ptr<RenderPass>& pass : _renderPasses) {
+    for (RenderPass* pass : _renderPasses) {
         if (pass->stageFlag() == renderStage) {
             return *pass;
         }
@@ -311,7 +306,7 @@ RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) {
 }
 
 const RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) const {
-    for (const std::shared_ptr<RenderPass>& pass : _renderPasses) {
+    for (RenderPass* pass : _renderPasses) {
         if (pass->stageFlag() == renderStage) {
             return *pass;
         }
@@ -321,19 +316,18 @@ const RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) co
     return *_renderPasses.front();
 }
 
-RenderPass::BufferData RenderPassManager::getBufferData(RenderStagePass stagePass) const {
-    return getPassForStage(stagePass._stage).getBufferData(stagePass._passType, stagePass._variant, stagePass._indexA, stagePass._indexB);
+RenderPass::BufferData RenderPassManager::getBufferData(const RenderStagePass& stagePass) const {
+    return getPassForStage(stagePass._stage).getBufferData(stagePass);
 }
 
 /// Prepare the list of visible nodes for rendering
-void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass stagePass, bool playAnimations, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const {
+void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const {
     OPTICK_EVENT();
 
-    constexpr F32 UNUSED = 0.0f;
-
+    const SceneGraphNode& node = rComp.getSGN();
     // Extract transform data (if available)
     // (Nodes without transforms just use identity matrices)
-    const TransformComponent* const transform = node->get<TransformComponent>();
+    const TransformComponent* const transform = node.get<TransformComponent>();
     if (transform) {
         // ... get the node's world matrix properly interpolated
         if (needsInterp) {
@@ -349,34 +343,34 @@ void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass
             dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
             dataOut._normalMatrixW.inverseTranspose();
         }
+    } else {
+        dataOut._worldMatrix.identity();
+        dataOut._normalMatrixW.identity();
     }
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     AnimationComponent* animComp = nullptr;
     if (playAnimations) {
-        animComp = node->get<AnimationComponent>();
+        animComp = node.get<AnimationComponent>();
         if (animComp && animComp->playAnimations()) {
             dataOut._normalMatrixW.element(0, 3) = to_F32(animComp->boneCount());
         }
     }
 
-    const RenderingComponent* const renderable = node->get<RenderingComponent>();
-
     vec4<F32> properties = {};
-    renderable->getRenderingProperties(stagePass,
-                                       properties,
-                                       dataOut._normalMatrixW.element(1, 3),
-                                       dataOut._normalMatrixW.element(2, 3));
+    rComp.getRenderingProperties(stagePass,
+                                 properties,
+                                 dataOut._normalMatrixW.element(1, 3),
+                                 dataOut._normalMatrixW.element(2, 3));
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    const BoundsComponent* const bounds = node->get<BoundsComponent>();
+    const BoundsComponent* const bounds = node.get<BoundsComponent>();
     const BoundingBox& aabb = bounds->getBoundingBox();
     const F32 sphereRadius = bounds->getBoundingSphere().getRadius();
 
     dataOut._normalMatrixW.setRow(3, vec4<F32>(aabb.getCenter(), sphereRadius));
-    dataOut._bbHalfExtents.xyz(aabb.getHalfExtent());
     // Get the colour matrix (diffuse, specular, etc.)
-    renderable->getMaterialColourMatrix(dataOut._colourMatrix);
+    rComp.getMaterialColourMatrix(dataOut._colourMatrix);
 
     dataOut._colourMatrix.element(3, 2) = properties.z; // lod;
     //set properties.w to negative value to skip occlusion culling for the node
@@ -392,11 +386,10 @@ void RenderPassManager::processVisibleNode(SceneGraphNode* node, RenderStagePass
         }
         dataOut._colourMatrix.setRow(2, matColour);
     }
-    dataOut._bbHalfExtents.w = UNUSED;
-    dataOut._colourMatrix.element(2, 3) = UNUSED;
+    dataOut._colourMatrix.element(2, 3) = 0.0f;
 }
 
-void RenderPassManager::buildBufferData(RenderStagePass stagePass,
+void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                                         const SceneRenderState& renderState,
                                         const Camera& camera,
                                         const RenderBin::SortedQueues& sortedQueues,
@@ -406,136 +399,94 @@ void RenderPassManager::buildBufferData(RenderStagePass stagePass,
     OPTICK_EVENT();
     OPTICK_TAG("FULL_REFRESH", fullRefresh);
 
-    if (!fullRefresh) {
-        RefreshNodeDataParams params(g_drawCommands, bufferInOut);
-        params._camera = &camera;
-        params._stagePass = stagePass;
+    PerPassData& passData = g_passData[to_base(stagePass._stage)];
+    RefreshNodeDataParams params = {};
+    params._drawCommandsInOut = &passData.drawCommands;
+    params._bufferInOut = &bufferInOut;
+    params._camera = &camera;
+    params._stagePass = &stagePass;
 
-        for (const RenderBin::SortedQueue& queue : sortedQueues) {
-            for (const RenderBin::SortedQueueEntry& entry : queue) {
-                Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(*entry.second, params);
-            }
-        }
-    } else {
-        g_usedIndices.clear();
-        g_drawCommands.clear(0);
-        g_freeCounter = 0;
-
-        for (const RenderBin::SortedQueue& queue : sortedQueues) {
-            for (const RenderBin::SortedQueueEntry& entry : queue) {
-                U32 dataIdxOut = 0;
-                if (entry.second->getDataIndex(dataIdxOut)) {
-                    g_usedIndices.insert(dataIdxOut);
-                }
-            }
-        }
+    if (fullRefresh) {
+        params._drawCommandsInOut->clear();
 
         const mat4<F32>& viewMatrix = camera.getViewMatrix();
         const D64 interpFactor = _context.getFrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.99;
 
-        RefreshNodeDataParams params(g_drawCommands, bufferInOut);
-        params._camera = &camera;
-        params._stagePass = stagePass;
-
-        bool skip = false;
-        U32 totalNodes = 0;
+        U32 dataIdx = 0u;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
-        for (const RenderBin::SortedQueue& queue : sortedQueues) {
-            OPTICK_EVENT("ON_LOOP");
 
-            if (skip) {
-                break;
-            }
-
-            for (const RenderBin::SortedQueueEntry& entry : queue) {
-                if (totalNodes == Config::MAX_VISIBLE_NODES) {
-                    skip = true;
-                    break;
-                }
-
-                if (!entry.second->getDataIndex(params._dataIdx)) {
-                    SetType::iterator iter = g_usedIndices.lower_bound(g_freeCounter);
-                    while (iter != std::end(g_usedIndices) && *iter == g_freeCounter) {
-                        ++iter;
-                        ++g_freeCounter;
-                    }
-                    params._dataIdx = g_freeCounter;
-                }
-
-                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*entry.second, params)) {
-                    GFXDevice::NodeData& data = g_nodeData[params._dataIdx];
-                    processVisibleNode(entry.first, stagePass, playAnimations, viewMatrix, interpFactor, needsInterp, data);
-                    g_usedIndices.insert(params._dataIdx);
-                    ++g_freeCounter;
-                    ++totalNodes;
-                }
+        for(RenderingComponent * rComp : passData.queuedRenderingComponents) {
+            if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, dataIdx)) {
+                GFXDevice::NodeData& data = passData.nodeData[dataIdx];
+                processVisibleNode(*rComp, stagePass, playAnimations, viewMatrix, interpFactor, needsInterp, data);
+                ++dataIdx;
             }
         }
 
-        const U32 nodeCount = std::max(totalNodes, to_U32(*std::max_element(std::cbegin(g_usedIndices), std::cend(g_usedIndices)) + 1));
-        U32 cmdCount = to_U32(g_drawCommands.size());
-
-        RenderPass::BufferData bufferData = getBufferData(stagePass);
-        *bufferData._lastCommandCount = cmdCount;
+        RenderPass::BufferData bufferData = getPassForStage(stagePass._stage).getBufferData(stagePass);
+        *bufferData._lastCommandCount = to_U32(passData.drawCommands.size());
+        *bufferData._lastNodeCount = to_U32(passData.queuedRenderingComponents.size());
 
         {
             OPTICK_EVENT("RenderPassManager::buildBufferData - UpdateBuffers");
-            bufferData._cmdBuffer->writeData(
-                bufferData._cmdBufferElementOffset,
-                cmdCount,
-                (bufferPtr)g_drawCommands.data());
+            bufferData._nodeData->writeData(
+                bufferData._elementOffset,
+                *bufferData._lastNodeCount,
+                passData.nodeData.data());
 
-            bufferData._renderData->writeData(
-                bufferData._renderDataElementOffset,
-                nodeCount,
-                (bufferPtr)g_nodeData.data());
+            bufferData._cmdBuffer->writeData(
+                bufferData._elementOffset,
+                *bufferData._lastCommandCount,
+                passData.drawCommands.data());
         }
 
         ShaderBufferBinding cmdBuffer = {};
         cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;
         cmdBuffer._buffer = bufferData._cmdBuffer;
-        cmdBuffer._elementRange = { bufferData._cmdBufferElementOffset, cmdCount };
+        cmdBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastCommandCount };
 
         ShaderBufferBinding dataBuffer = {};
         dataBuffer._binding = ShaderBufferLocation::NODE_INFO;
-        dataBuffer._buffer = bufferData._renderData;
-        dataBuffer._elementRange = { bufferData._renderDataElementOffset, nodeCount };
+        dataBuffer._buffer = bufferData._nodeData;
+        dataBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
         descriptorSetCmd._set.addShaderBuffer(dataBuffer);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+    } else {
+        for (RenderingComponent* rComp : passData.queuedRenderingComponents) {
+            Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(*rComp, params);
+        }
     }
 }
 
-void RenderPassManager::buildDrawCommands(RenderPassType passType, const PassParams& params, bool refresh, GFX::CommandBuffer& bufferInOut)
+void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh, GFX::CommandBuffer& bufferInOut)
 {
     OPTICK_EVENT();
-    RenderStagePass stagePass = params._stagePass;
-    stagePass._passType = passType;
+
+    const RenderStagePass& stagePass = params._stagePass;
+    PerPassData& passData = g_passData[to_base(stagePass._stage)];
 
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
     U16 queueSize = 0;
-    for (RenderBin::SortedQueue& queue : g_sortedQueues) {
+    for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
         queue.resize(0);
         queue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-    getQueue().getSortedQueues(stagePass._stage, passType, g_sortedQueues, queueSize);
+    getQueue().getSortedQueues(stagePass._stage, stagePass._passType, passData.sortedQueues, queueSize);
 
-
-    vectorEASTLFast<RenderingComponent*> rComps = _queuedRenderingComponents[to_base(stagePass._stage)];
+    auto& rComps = passData.queuedRenderingComponents;
     rComps.resize(0);
-    rComps.reserve(queueSize);
 
-    for (const RenderBin::SortedQueue& queue : g_sortedQueues) {
+    for (const RenderBin::SortedQueue& queue : passData.sortedQueues) {
         for (const RenderBin::SortedQueueEntry& entry : queue) {
             if (params._sourceNode != nullptr && *params._sourceNode == *entry.first) {
                 continue;
             }
-
             rComps.push_back(entry.second);
         }
     }
@@ -549,19 +500,17 @@ void RenderPassManager::buildDrawCommands(RenderPassType passType, const PassPar
         },
         to_U32(rComps.size()),
         g_nodesPerPrepareDrawPartition,
-        TaskPriority::DONT_CARE,
+        g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE,
         false,
         true,
         "Prepare Draw Task");
     
-    buildBufferData(stagePass, sceneRenderState, *params._camera, g_sortedQueues, refresh, bufferInOut);
+    buildBufferData(stagePass, sceneRenderState, *params._camera, passData.sortedQueues, refresh, bufferInOut);
 }
 
-void RenderPassManager::prepareRenderQueues(RenderPassType passType, const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
-
-    RenderStagePass stagePass = params._stagePass;
-    stagePass._passType = passType;
+    const RenderStagePass& stagePass = params._stagePass;
 
     RenderQueue& queue = getQueue();
     queue.refresh(stagePass._stage);
@@ -584,11 +533,13 @@ void RenderPassManager::prepareRenderQueues(RenderPassType passType, const PassP
         queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_TRANSLUCENT, oitPass), packageQueue);
     }
 
-    buildDrawCommands(passType, params, refreshNodeData, bufferInOut);
+    buildDrawCommands(params, refreshNodeData, bufferInOut);
 }
 
 bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
+
+    assert(params._stagePass._passType == RenderPassType::PRE_PASS);
 
     // PrePass requires a depth buffer
     const bool doPrePass = params._stagePass._stage != RenderStage::SHADOW &&
@@ -596,17 +547,12 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
                            target.getAttachment(RTAttachmentType::Depth, 0).used();
 
     if (doPrePass) {
-        // We need to add a barrier here for various buffer updates: grass/tree culling, draw command buffer updates, etc
-        GFX::MemoryBarrierCommand memCmd;
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
-
         GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
         beginDebugScopeCmd._scopeID = 0;
         beginDebugScopeCmd._scopeName = " - PrePass";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-        prepareRenderQueues(RenderPassType::PRE_PASS, params, nodes, true, bufferInOut);
+        prepareRenderQueues(params, nodes, true, bufferInOut);
 
         RTDrawDescriptor normalsAndDepthPolicy = {};
         normalsAndDepthPolicy.drawMask().disableAll();
@@ -642,24 +588,36 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassPa
     ACKNOWLEDGE_UNUSED(nodes);
     ACKNOWLEDGE_UNUSED(extraTargets);
 
+    const RenderStagePass& stagePass = params._stagePass;
+    assert(stagePass._passType == RenderPassType::PRE_PASS);
+
     if (params._targetHIZ._usage != RenderTargetUsage::COUNT) {
+        GFX::ResolveRenderTargetCommand resolveCmd = { };
+        resolveCmd._source = params._target;
+        resolveCmd._resolveDepth = true;
+        GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
         // Update HiZ Target
         const Texture_ptr& HiZTex = _context.constructHIZ(params._target, params._targetHIZ, bufferInOut);
 
-        // Run occlusion culling CS
-        RenderStagePass stagePass = params._stagePass;
-        stagePass._passType = RenderPassType::PRE_PASS;
+        // ToDo: This should not be needed as we unbind the render target before we dispatch the compute task anyway.
+        // See if we can remove this -Ionut
+        GFX::MemoryBarrierCommand memCmd = {};
+        memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET) | 
+                              to_base(MemoryBarrierType::TEXTURE_FETCH) | 
+                              to_base(MemoryBarrierType::TEXTURE_BARRIER);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
 
+        // Run occlusion culling CS
         const RenderPass::BufferData& bufferData = getBufferData(stagePass);
         _context.occlusionCull(bufferData, HiZTex, *params._camera, bufferInOut);
 
         // Occlusion culling barrier
-        GFX::MemoryBarrierCommand memCmd;
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+        memCmd._barrierMask = to_base(MemoryBarrierType::COMMAND_BUFFER) | //For rendering
+                              to_base(MemoryBarrierType::SHADER_STORAGE);  //For updating later on
 
         if (bufferData._cullCounter != nullptr) {
-            memCmd._barrierMask |= to_base(MemoryBarrierType::COUNTER);
+            memCmd._barrierMask |= to_base(MemoryBarrierType::ATOMIC_COUNTER);
             GFX::EnqueueCommand(bufferInOut, memCmd);
 
             _context.updateCullCount(bufferData, bufferInOut);
@@ -684,15 +642,15 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes, const PassPa
 void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, RenderTarget& target, bool prePassExecuted, bool hasHiZ, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
+    const RenderStagePass& stagePass = params._stagePass;
+    assert(stagePass._passType == RenderPassType::MAIN_PASS);
+
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = " - MainPass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    RenderStagePass stagePass = params._stagePass;
-    stagePass._passType = RenderPassType::MAIN_PASS;
-
-    prepareRenderQueues(RenderPassType::MAIN_PASS, params, nodes, !prePassExecuted, bufferInOut);
+    prepareRenderQueues(params, nodes, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
         SceneManager& sceneManager = parent().sceneManager();
@@ -779,17 +737,17 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
-    RenderStagePass stagePass = params._stagePass;
-    stagePass._passType = RenderPassType::OIT_PASS;;
+    const RenderStagePass& stagePass = params._stagePass;
+    assert(stagePass._passType == RenderPassType::OIT_PASS);
 
-    prepareRenderQueues(stagePass._passType, params, nodes, false, bufferInOut);
+    prepareRenderQueues(params, nodes, false, bufferInOut);
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 2;
     beginDebugScopeCmd._scopeName = " - W-OIT Pass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    if (renderQueueSize(stagePass) > 0) {
+    if (renderQueueSize(stagePass._stage) > 0) {
         GFX::ClearRenderTargetCommand clearRTCmd = {};
         clearRTCmd._target = RenderTargetID(RenderTargetUsage::OIT);
         if (Config::USE_COLOURED_WOIT) {
@@ -888,7 +846,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
-void RenderPassManager::doCustomPass(const PassParams& params, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     const RenderStage stage = params._stagePass._stage;
@@ -930,30 +888,18 @@ void RenderPassManager::doCustomPass(const PassParams& params, GFX::CommandBuffe
     bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
+    params._stagePass._passType = RenderPassType::PRE_PASS;
     const bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
-    bool hasHiZ = false;
 
-    GFX::MemoryBarrierCommand memCmd = {};
-    if (prePassExecuted) {
-        GFX::ResolveRenderTargetCommand resolveCmd = { };
-        resolveCmd._source = params._target;
-        resolveCmd._resolveDepth = true;
-        GFX::EnqueueCommand(bufferInOut, resolveCmd);
+    const bool hasHiZ = prePassExecuted && 
+                        occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
 
-        hasHiZ = occlusionPass(visibleNodes, params, extraTargets, target, prePassExecuted, bufferInOut);
-
-        memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET);
-    } else {
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
-    }
-    GFX::EnqueueCommand(bufferInOut, memCmd);
-
-    //ToDo: Might be worth having pre-pass operations per render stage, but currently, only the main pass needs SSAO, bloom and so forth
     if (stage == RenderStage::DISPLAY) {
-        PostFX& postFX = _context.getRenderer().postFX();
-        postFX.prepare(*params._camera, bufferInOut);
+        //ToDo: Might be worth having pre-pass operations per render stage, but currently, only the main pass needs SSAO, bloom and so forth
+        _context.getRenderer().postFX().prepare(*params._camera, bufferInOut);
     }
 
+    params._stagePass._passType = RenderPassType::MAIN_PASS;
     mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, hasHiZ, bufferInOut);
 
     if (stage != RenderStage::SHADOW) {
@@ -963,6 +909,7 @@ void RenderPassManager::doCustomPass(const PassParams& params, GFX::CommandBuffe
         resolveCmd._resolveColours = true;
         GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
+        params._stagePass._passType = RenderPassType::OIT_PASS;
         woitPass(visibleNodes, params, extraTargets, target, bufferInOut);
     }
 
@@ -997,8 +944,8 @@ void RenderPassManager::createFrameBuffer(const Rect<I32>& targetViewport, GFX::
 }
 
 // TEMP
-U32 RenderPassManager::renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement) const {
-    const vectorEASTLFast<RenderPackage*>& queue = _renderQueues[to_base(stagePass._stage)];
+U32 RenderPassManager::renderQueueSize(RenderStage stage, RenderPackage::MinQuality qualityRequirement) const {
+    const vectorEASTLFast<RenderPackage*>& queue = _renderQueues[to_base(stage)];
     if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
         return to_U32(queue.size());
     }

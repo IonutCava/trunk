@@ -70,7 +70,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
 
     vectorEASTL<I32> initData(totalLights, -1);
 
-    ShaderBufferDescriptor bufferDescriptor;
+    ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._elementCount = to_U32(initData.size());
     bufferDescriptor._elementSize = sizeof(I32);
@@ -172,7 +172,7 @@ void Renderer::preRender(RenderStagePass stagePass,
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 
     GFX::MemoryBarrierCommand memCmd = {};
-    memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_BUFFER);
+    memCmd._barrierMask = to_base(MemoryBarrierType::BUFFER_UPDATE);
     GFX::EnqueueCommand(bufferInOut, memCmd);
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;

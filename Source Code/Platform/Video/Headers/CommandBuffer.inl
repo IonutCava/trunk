@@ -119,6 +119,12 @@ inline bool CommandBuffer::exists(const CommandEntry& commandEntry) const noexce
 }
 
 template<typename T>
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
+CommandBuffer::exists(I24 index) const noexcept {
+    return exists(to_base(T::EType), index);
+}
+
+template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
 CommandBuffer::get(I24 index) noexcept {
     return get<T>({to_base(T::EType), index});
@@ -149,13 +155,13 @@ CommandBuffer::getPtr(const CommandEntry& commandEntry) const noexcept {
 template<typename T>
 typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::getPtr(I24 index) noexcept {
-    return _commands.getPtr(to_base(T::EType), index);
+    return static_cast<T*>(_commands.getPtr(to_base(T::EType), index));
 }
 
 template<typename T>
 typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
 CommandBuffer::getPtr(I24 index) const noexcept {
-    return _commands.getPtr(to_base(T::EType), index);
+    return static_cast<const T*>(_commands.getPtr(to_base(T::EType), index));
 }
 
 template<typename T>

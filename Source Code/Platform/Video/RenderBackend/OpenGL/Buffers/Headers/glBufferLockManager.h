@@ -43,12 +43,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BufferRange {
-    GLintptr _startOffset = 0;
-    GLsizeiptr _length = 0;
+    size_t _startOffset = 0;
+    size_t _length = 0;
 
     inline bool Overlaps(const BufferRange& _rhs) const noexcept {
-        return static_cast<GLsizeiptr>(_startOffset) < (_rhs._startOffset + _rhs._length) &&
-               static_cast<GLsizeiptr>(_rhs._startOffset) < (_startOffset + _length);
+        return _startOffset < (_rhs._startOffset + _rhs._length) && _rhs._startOffset < (_startOffset + _length);
     }
 };
 
@@ -56,6 +55,8 @@ struct BufferRange {
 struct BufferLock {
     BufferRange _range = {};
     GLsync _syncObj = nullptr;
+    U32 _frameID = 0;
+    bool _valid = true;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -65,51 +66,13 @@ class glBufferLockManager : public glLockManager {
     ~glBufferLockManager();
 
     // Return true if we found a lock to wait on
-    bool WaitForLockedRange(GLintptr lockBeginBytes, GLsizeiptr lockLength, bool blockClient, bool quickCheck = false);
-    void LockRange(GLintptr lockBeginBytes, GLsizeiptr lockLength);
+    bool WaitForLockedRange(size_t lockBeginBytes, size_t lockLength, bool blockClient, bool quickCheck = false);
+    void LockRange(size_t lockBeginBytes, size_t lockLength, U32 frameID);
 
    private:
     mutable std::mutex _lock;
     vectorEASTL<BufferLock> _bufferLocks;
     vectorEASTL<BufferLock> _swapLocks;
-};
-
-using LockEntries = vectorEASTL<BufferRange>;
-using BufferLockEntries = hashMap<GLuint /*buffer handle*/,  LockEntries>;
-
-class glGlobalLockManager : public glLockManager {
-public:
-    static const size_t MAX_LOCK_ENTRIES = 512;
-    static const size_t MAX_FRAME_AGE_BEFORE_AUTO_DELETE = 4;
-
-    glGlobalLockManager();
-    ~glGlobalLockManager() = default;
-
-    void clean(U32 frameID);
-
-    // Return true if  we found a lock to wait on
-    bool WaitForLockedRange(GLuint bufferHandle, GLintptr lockBeginBytes, GLsizeiptr lockLength, bool noWait = false);
-    void LockBuffers(BufferLockEntries&& entries, U32 frameID);
-
-protected:
-    struct GLLockEntry {
-        BufferLockEntries _entries;
-        GLsync _sync;
-        U64 _ageID = 0u;
-        U32 _frameID = 0u;
-        bool _valid = true;
-    };
-
-    // Quickly checks expired sync objects and removes them from our data store. Returns true if any items were found.
-    bool quickCheckOldEntries(U32 frameID);
-    // Quickly checks for duplicates between our internal data store and the new entries and, if found, marks the former as invalid.
-    // Returns true if any items were found.
-    bool markOldDuplicateRangesAsInvalid(U32 frameID, const BufferLockEntries& newEntries);
-private:
-    mutable SharedMutex _lock;
-    using LockEntries = eastl::fixed_vector<GLLockEntry, MAX_LOCK_ENTRIES, false>;
-    LockEntries _bufferLocks;
-    std::atomic<U64> _lockIndex;
 };
 
 };  // namespace Divide

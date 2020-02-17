@@ -68,19 +68,10 @@ struct RenderParams {
 using DrawCommandContainer = eastl::fixed_vector<IndirectDrawCommand, Config::MAX_VISIBLE_NODES, false>;
 
 struct RefreshNodeDataParams {
-    explicit RefreshNodeDataParams(DrawCommandContainer& commands, GFX::CommandBuffer& bufferInOut)
-        : _drawCommandsInOut(commands),
-          _bufferInOut(bufferInOut)
-    {
-
-    }
-
-    RenderStagePass _stagePass = {};
-    U32 _dataIdx = 0;
+    DrawCommandContainer* _drawCommandsInOut = nullptr;
+    GFX::CommandBuffer* _bufferInOut = nullptr;
+    const RenderStagePass* _stagePass = nullptr;
     const Camera* _camera = nullptr;
-    DrawCommandContainer& _drawCommandsInOut;
-    GFX::CommandBuffer& _bufferInOut;
-
 };
 
 struct RenderCbkParams {
@@ -142,9 +133,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void Update(const U64 deltaTimeUS) final;
 
-    inline PushConstants& pushConstants() { return _globalPushConstants; }
-    inline const PushConstants& pushConstants() const { return _globalPushConstants; }
-
     void toggleRenderOption(RenderOptions option, bool state);
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
@@ -168,10 +156,10 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void getRenderingProperties(const RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
 
-    RenderPackage& getDrawPackage(RenderStagePass renderStagePass);
-    const RenderPackage& getDrawPackage(RenderStagePass renderStagePass) const;
+    RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
+    const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
 
-    size_t getSortKeyHash(RenderStagePass renderStagePass) const;
+    size_t getSortKeyHash(const RenderStagePass& renderStagePass) const;
 
     inline const Material_ptr& getMaterialInstance() const { return _materialInstance; }
 
@@ -182,33 +170,27 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
     void drawDebugAxis();
-    void onRender(RenderStagePass renderStagePass);
+    void onRender(const RenderStagePass& renderStagePass);
 
     U8 getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
     inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
     inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }
 
-    bool getDataIndex(U32& idxOut) noexcept;
-    void setDataIndex(U32 idx) noexcept;
-
-    PROPERTY_RW(bool, useDataIndexAsUniform, false);
-
   protected:
-    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams);
+    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const U32 dataIndex);
     bool onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams);
-    void uploadDataIndexAsUniform(RenderStage stage, RenderPackage& pkg);
 
-    bool canDraw(RenderStagePass renderStagePass, U8 LoD, bool refreshData);
+    bool canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
-                    RenderStagePass renderStagePass,
+                    const RenderStagePass& renderStagePass,
                     GFX::CommandBuffer& bufferInOut);
 
-    void rebuildDrawCommands(RenderStagePass stagePass, RenderPackage& pkg);
+    void rebuildDrawCommands(const RenderStagePass& stagePass, RenderPackage& pkg);
 
-    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass, bool refreshData);
+    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData);
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
@@ -244,20 +226,17 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     RenderCallback _refractionCallback;
     std::array<Texture_ptr, (sizeof(g_texUsage) / sizeof(g_texUsage[0]))> _externalTextures;
 
-    PushConstants _globalPushConstants;
     EnvironmentProbeList _envProbes;
     vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
 
     std::pair<Texture_ptr, U32> _defaultReflection;
     std::pair<Texture_ptr, U32> _defaultRefraction;
-    std::array<U32, to_base(RenderStage::COUNT)> _drawDataIdx;
     Material_ptr _materialInstance;
     Material* _materialInstanceCache;
     GFXDevice& _context;
     const Configuration& _config;
 
     vec2<F32> _renderRange;
-    std::pair<U32, bool> _dataIndex;
 
     Pipeline*    _primitivePipeline[3];
     IMPrimitive* _boundingBoxPrimitive[2];
@@ -326,8 +305,8 @@ class RenderingCompRenderPass {
             renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
-        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams) {
-            return renderable.onRefreshNodeData(refreshParams);
+        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const U32 dataIndex) {
+            return renderable.onRefreshNodeData(refreshParams, dataIndex);
         }
 
         static bool onQuickRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams) {

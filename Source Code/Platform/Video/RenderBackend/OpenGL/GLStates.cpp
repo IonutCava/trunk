@@ -38,10 +38,6 @@ GLStateTracker& GL_API::getStateTracker() {
     return s_stateTracker;
 }
 
-glGlobalLockManager& GL_API::getLockManager() {
-    return s_globalLockManager;
-}
-
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) {
     static BlendingProperties defaultBlend = {};
@@ -54,7 +50,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
         stateTracker.setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         stateTracker.setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-        _commandBufferOffset = 0u;
+        stateTracker._commandBufferOffset = 0u;
         stateTracker._activePixelBuffer = nullptr;
         //stateTracker._activeViewport.set(-1);
     }

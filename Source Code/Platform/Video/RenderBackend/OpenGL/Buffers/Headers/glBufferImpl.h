@@ -54,14 +54,12 @@ struct BufferImplParams {
     BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
 };
 
-struct BufferWriteData {
-    BufferWriteData() noexcept : BufferWriteData(GLUtil::k_invalidObjectID) {};
-    BufferWriteData(GLuint bufferHandle) noexcept : BufferWriteData(bufferHandle, 0, 0) {}
-    BufferWriteData(GLuint bufferHandle, GLintptr offset, GLsizeiptr range) noexcept : _handle(bufferHandle), _offset(offset), _range(range) {}
-
-    GLuint _handle = GLUtil::k_invalidObjectID;
-    GLintptr _offset = 0;
-    GLsizeiptr _range = 0;
+class glBufferImpl;
+struct BufferLockEntry {
+    glBufferImpl* _buffer = nullptr;
+    size_t _offset = 0;
+    size_t _length = 0;
+    bool   _flush = false;
 };
 
 class glBufferLockManager;
@@ -72,32 +70,35 @@ public:
 
     GLuint bufferID() const noexcept;
 
-    bool bindRange(GLuint bindIndex, GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
-    void lockRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool flush);
-    bool waitRange(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bool blockClient);
+    bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
+    void lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID);
+    bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
 
-    void writeData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, bufferPtr data);
-    void readData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes, const bufferPtr data);
-    void zeroMem(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
+    void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data);
+    void readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data);
+    void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
 
     size_t elementSize() const noexcept;
 
     static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept;
+
 protected:
-    void invalidateData(GLintptr offsetInBytes, GLsizeiptr rangeInBytes);
+    void invalidateData(size_t offsetInBytes, size_t rangeInBytes);
 
 protected:
     GLenum _usage = GL_NONE;
     GLuint _handle = 0;
-    bufferPtr _mappedBuffer = nullptr;
+    Byte*  _mappedBuffer = nullptr;
     GFXDevice& _context;
     const size_t _elementSize;
-    const GLsizeiptr _alignedSize;
+    const size_t _alignedSize;
     const GLenum _target;
     const bool _unsynced;
     const bool _useExplicitFlush;
     const BufferUpdateFrequency _updateFrequency;
     const BufferUpdateUsage _updateUsage;
+
+    glBufferLockManager* _lockManager = nullptr;
 };
 }; //namespace Divide
 

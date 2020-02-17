@@ -112,9 +112,9 @@ glVertexArray::glVertexArray(GFXDevice& context)
 {
     // We assume everything is static draw
     _usage = GL_STATIC_DRAW;
-    _prevSize = -1;
-    _prevSizeIndices = -1;
-    _effectiveEntrySize = -1;
+    _prevSize = 0;
+    _prevSizeIndices = 0;
+    _effectiveEntrySize = 0;
     _IBid = 0;
     _lastDrawCount = 0;
     _lastIndexCount = 0;
@@ -132,8 +132,8 @@ glVertexArray::~glVertexArray()
 
 void glVertexArray::reset() {
     _usage = GL_STATIC_DRAW;
-    _prevSize = -1;
-    _prevSizeIndices = -1;
+    _prevSize = 0;
+    _prevSizeIndices = 0;
 
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
@@ -177,7 +177,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         prevOffset += sizeof(U32);
     }
 
-    _effectiveEntrySize = static_cast<GLsizei>(prevOffset);
+    _effectiveEntrySize = prevOffset;
 
     _smallData.reserve(_data.size() * _effectiveEntrySize);
 
@@ -216,7 +216,7 @@ bool glVertexArray::refresh() {
     // rendering system)
     assert(!_indices.empty() && "glVertexArray::refresh error: Invalid index data on Refresh()!");
 
-    const GLsizei nSizeIndices = (GLsizei)(_indices.size() * (usesLargeIndices() ? sizeof(U32) : sizeof(U16)));
+    const size_t nSizeIndices = (_indices.size() * (usesLargeIndices() ? sizeof(U32) : sizeof(U16)));
 
     const bool indicesChanged = (nSizeIndices != _prevSizeIndices);
     _prevSizeIndices = nSizeIndices;
@@ -237,7 +237,7 @@ bool glVertexArray::refresh() {
     // If any of the VBO's components changed size, we need to recreate the
     // entire buffer.
 
-    GLsizei size = static_cast<GLsizei>(bufferData.second);
+    size_t size = bufferData.second;
     const bool sizeChanged = size != _prevSize;
     bool needsReallocation = false;
     const U32 countRequirement = GLUtil::VBO::getChunkCountForSize(size);

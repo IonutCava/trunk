@@ -41,6 +41,8 @@ namespace Time {
 };
 
 struct Task;
+struct RenderStagePass;
+
 class SceneGraph;
 class ShaderBuffer;
 class SceneRenderState;
@@ -53,13 +55,13 @@ enum class RenderStage : U8;
 class RenderPass : private NonCopyable {
    public:
        struct BufferData {
-           ShaderBuffer* _renderData = nullptr;
+           ShaderBuffer* _nodeData = nullptr;
            ShaderBuffer* _cullCounter = nullptr;
            ShaderBuffer* _cmdBuffer = nullptr;
            U32* _lastCommandCount = nullptr;
-           U32 _renderDataElementOffset = 0;
-           U32 _cmdBufferElementOffset = 0;
-           U8  _cmdBufferElementFactor = 0;
+           U32* _lastNodeCount = nullptr;
+
+           U32 _elementOffset = 0;
        };
   public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
@@ -71,12 +73,12 @@ class RenderPass : private NonCopyable {
 
     inline U8 sortKey() const noexcept { return _sortKey; }
     inline const vector<U8>& dependencies() const noexcept { return _dependencies; }
-    inline U16 getLastTotalBinSize() const noexcept { return _lastTotalBinSize; }
+    inline U32 getLastTotalBinSize() const noexcept { return _lastNodeCount; }
     inline const Str64& name() const noexcept { return _name; }
 
     inline RenderStage stageFlag() const noexcept { return _stageFlag; }
 
-    BufferData getBufferData(RenderPassType type, U32 variant, U16 passIndexA, U16 passIndexB) const;
+    BufferData getBufferData(const RenderStagePass& stagePass) const;
 
     void initBufferData();
 
@@ -84,18 +86,19 @@ class RenderPass : private NonCopyable {
     GFXDevice & _context;
     RenderPassManager& _parent;
 
+    mutable U32 _lastCmdCount = 0u;
+    mutable U32 _lastNodeCount = 0u;
+
     U8 _sortKey = 0;
     vector<U8> _dependencies;
     Str64 _name = "";
-    U16 _lastTotalBinSize = 0;
     RenderStage _stageFlag = RenderStage::COUNT;
 
-    U32 _dataBufferSize = 0;
-    ShaderBuffer* _renderData = nullptr;
+    ShaderBuffer* _nodeData = nullptr;
 	ShaderBuffer* _cullCounter = nullptr;
+    ShaderBuffer* _cmdBuffer = nullptr;
+
 	const bool _performanceCounters;
-    mutable vectorEASTL<ShaderBuffer*> _cmdBuffers;
-    mutable vectorEASTL<U32> _lastNodeCount;
 };
 
 };  // namespace Divide

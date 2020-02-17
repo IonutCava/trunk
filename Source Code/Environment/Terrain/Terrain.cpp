@@ -59,8 +59,6 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
       _drawDistance(0.0f),
       _editorDataDirtyState(EditorDataState::IDLE)
 {
-    _nodeDataIndex = RenderPassManager::getUniqueNodeDataIndex();
-
     TerrainTessellator::Configuration shadowConfig = {};
     shadowConfig._useCameraDistance = false;
 
@@ -108,13 +106,13 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     _initBufferWriteCounter = ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
     _initBufferWriteCounter *= g_bufferFrameDelay;
 
-    ShaderBufferDescriptor bufferDescriptor;
+    ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
     bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
     bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::IMMUTABLE_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
                               
     //Should be once per frame
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
@@ -124,7 +122,6 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     _shaderData = _context.newSB(bufferDescriptor);
 
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
-    sgn.get<RenderingComponent>()->setDataIndex(_nodeDataIndex);
     sgn.get<RenderingComponent>()->lockLoD(true, 0u);
 
     _editorComponent.onChangedCbk([this](const char* field) {onEditorChange(field); });

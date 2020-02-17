@@ -1,6 +1,8 @@
 --Compute
 #include "HiZCullingAlgorithm.cmn";
 
+#define INVS_SQRT_3 0.57735026919f
+
 uniform uint countCulledItems = 0u;
 layout(binding = BUFFER_ATOMIC_COUNTER, offset = 0) uniform atomic_uint culledCount;
 
@@ -9,8 +11,6 @@ struct NodeData {
     mat4 _worldMatrix;
     mat4 _normalMatrix;
     mat4 _colourMatrix;
-    //Temp. w - unused
-    vec4 _bbHalfExtents;
 };
 
 struct IndirectDrawCommand {
@@ -60,7 +60,7 @@ void main()
     const vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrix[3];
     const vec3 center = bSphere.xyz;
     const float radius = bSphere.w;
-    const vec3 extents = dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
+    const vec3 extents = vec3(radius * INVS_SQRT_3);//dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
 
     if (HiZCull(center, extents, radius)) {
         CullItem(ident);

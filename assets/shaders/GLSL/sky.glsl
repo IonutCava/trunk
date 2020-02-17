@@ -3,10 +3,10 @@
 #include "vbInputData.vert"
 
 void main(void){
-    computeData();
-    VAR._vertexW.xyz += dvd_cameraPosition.xyz;
+    computeDataMinimal();
 
-    VAR._normalWV = normalize(dvd_NormalMatrixWV(DATA_IDX) * dvd_Normal);
+    VAR._vertexW = dvd_Vertex + vec4(dvd_cameraPosition.xyz, 0.0f);
+    VAR._normalWV = (dvd_ViewMatrix * vec4(dvd_Normal, 0.0f)).xyz;
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
     gl_Position.z = gl_Position.w - 0.000001f;
@@ -26,7 +26,7 @@ uniform vec3 sun_colour;
 #include "output.frag"
 
 vec3 sunColour(){
-    vec3 vert = normalize(_in._vertexW.xyz);
+    vec3 vert = normalize(VAR._vertexW.xyz);
     vec3 sun = normalize(sun_vector);
         
     float day_factor = max(-sun.y, 0.0);

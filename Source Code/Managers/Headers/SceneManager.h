@@ -208,12 +208,12 @@ protected:
 protected:
     bool frameStarted(const FrameEvent& evt)  noexcept override;
     bool frameEnded(const FrameEvent& evt)  noexcept override;
-    void preRender(RenderStagePass stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut);
-    void postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
+    void preRender(const RenderStagePass& stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut);
+    void postRender(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void preRenderAllPasses(const Camera& playerCamera);
     void postRenderAllPasses(const Camera& playerCamera);
     void drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
-    void debugDraw(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
+    void debugDraw(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void prepareLightData(RenderStage stage, const Camera& camera);
     void generateShadowMaps(GFX::CommandBuffer& bufferInOut);
 
@@ -382,17 +382,15 @@ class SceneManagerRenderPass {
         return mgr.cullSceneGraph(stage, camera, minLoD, minExtents);
     }
 
-    static void prepareLightData(Divide::SceneManager& mgr,
-                                 RenderStage stage,
-                                 const Camera& camera) {
+    static void prepareLightData(Divide::SceneManager& mgr, RenderStage stage, const Camera& camera) {
         mgr.prepareLightData(stage, camera);
     }
 
-    static void preRenderMainPass(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
+    static void preRenderMainPass(Divide::SceneManager& mgr, const RenderStagePass& stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
         mgr.preRender(stagePass, camera, hizColourTexture, bufferInOut);
     }
 
-    static void postRender(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    static void postRender(Divide::SceneManager& mgr, const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
         mgr.postRender(stagePass, camera, bufferInOut);
     }
 
@@ -404,7 +402,7 @@ class SceneManagerRenderPass {
         mgr.postRenderAllPasses(playerCamera);
     }
 
-    static void debugDraw(Divide::SceneManager& mgr, RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    static void debugDraw(Divide::SceneManager& mgr, const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
         mgr.debugDraw(stagePass, camera, bufferInOut);
     }
 

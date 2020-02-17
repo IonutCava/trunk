@@ -49,8 +49,8 @@ class glGenericVertexData final : public GenericVertexData {
         }
 
         BufferBindConfig(GLuint buffer,
-                         GLintptr offset,
-                         GLsizei stride) : _buffer(buffer),
+                         size_t offset,
+                         size_t stride) : _buffer(buffer),
                                            _offset(offset),
                                            _stride(stride)
         {
@@ -68,9 +68,9 @@ class glGenericVertexData final : public GenericVertexData {
                    _stride == other._stride;
         }
 
-        GLsizei  _stride;
-        GLuint   _buffer;
-        GLintptr _offset;
+        size_t _stride;
+        size_t _offset;
+        GLuint _buffer;
     };
 
    public:
@@ -108,7 +108,7 @@ class glGenericVertexData final : public GenericVertexData {
     GLuint _lastDrawCount = 0;
     GLuint _lastIndexCount = 0;
     GLuint _lastFirstIndex = 0;
-    std::array<GLsizei, Config::MAX_VISIBLE_NODES> _countData;
+    std::array<size_t, Config::MAX_VISIBLE_NODES> _countData;
     eastl::fixed_vector<GLuint, Config::MAX_VISIBLE_NODES * 256> _indexOffsetData;
 
     GLuint _indexBuffer;

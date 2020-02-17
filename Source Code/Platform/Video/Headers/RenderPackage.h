@@ -120,10 +120,9 @@ public:
 
     PROPERTY_RW(bool, autoIndexBuffer,  false);
     PROPERTY_RW(bool, textureDataDirty, true);
-    PROPERTY_RW(U32,  dataDrawIdxCache, 0u);
 
 protected:
-    bool updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel);
+    void updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel);
 
 protected:
     // Cached command buffer
@@ -134,6 +133,7 @@ private:
     I32 _drawCommandCount;
     U16 _drawCommandOptions;
     MinQuality _qualityRequirement;
+    bool _isInstanced = false;
 };
 
 
@@ -149,8 +149,8 @@ namespace Attorney {
 
     class RenderPackageRenderingComponent {
         private:
-        static bool updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset, U8 lodLevel) {
-            return pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
+        static void updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset, U8 lodLevel) {
+            pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
         }
 
         friend class Divide::RenderingComponent;

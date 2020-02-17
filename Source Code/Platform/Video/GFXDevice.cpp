@@ -120,9 +120,6 @@ GFXDevice::GFXDevice(Kernel & parent)
 {
     _viewport.set(-1);
 
-    _lastCommandCount.fill(0);
-    _lastNodeCount.fill(0);
-
     Line temp;
     temp.widthStart(3.0f);
     temp.widthEnd(3.0f);
@@ -245,7 +242,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     ShaderProgram::onStartup(*this, cache);
     EnvironmentProbe::onStartup(*this);
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
-    ShaderBufferDescriptor bufferDescriptor;
+    ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
@@ -258,7 +255,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
     // Persistent storage 
     if (g_UseImmutableDataStorageForGPUData) {
-        bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::IMMUTABLE_STORAGE);
+        bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
     }
     _gfxDataBuffer = newSB(bufferDescriptor);
 
@@ -1634,6 +1631,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     OPTICK_EVENT();
 
     constexpr U32 GROUP_SIZE_AABB = 64;
+    const U32 cmdCount = *bufferData._lastCommandCount;
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 0;
@@ -1645,7 +1643,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     ShaderBufferBinding shaderBuffer = {};
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
     shaderBuffer._buffer = bufferData._cmdBuffer;
-    shaderBuffer._elementRange.set(to_U16(bufferData._cmdBufferElementOffset), to_U16(bufferData._cmdBuffer->getPrimitiveCount() / bufferData._cmdBufferElementFactor));
+    shaderBuffer._elementRange = { bufferData._elementOffset, cmdCount };
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
     bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
@@ -1658,23 +1656,21 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
         bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
     }
 
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
-
-    const U32 cmdCount = *bufferData._lastCommandCount;
 
     const mat4<F32>& viewMatrix = camera.getViewMatrix();
     const mat4<F32>& projectionMatrix = camera.getProjectionMatrix();
 
     GFX::SendPushConstantsCommand HIZPushConstantsCMD = {};
-    HIZPushConstantsCMD._constants.countHint(GetHiZMethod() == HiZMethod::ARM ? 5 : 3);
+    HIZPushConstantsCMD._constants.countHint(GetHiZMethod() == HiZMethod::ARM ? 5 : 6);
+    HIZPushConstantsCMD._constants.set("countCulledItems", GFX::PushConstantType::UINT, bufferData._cullCounter != nullptr ? 1u : 0u);
     HIZPushConstantsCMD._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
+    HIZPushConstantsCMD._constants.set("viewMatrix", GFX::PushConstantType::MAT4, viewMatrix);
+    HIZPushConstantsCMD._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, projectionMatrix);
     HIZPushConstantsCMD._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(viewMatrix, projectionMatrix));
-    if (GetHiZMethod() == HiZMethod::ARM) {
-        HIZPushConstantsCMD._constants.set("viewMatrix", GFX::PushConstantType::MAT4, viewMatrix);
-        HIZPushConstantsCMD._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, projectionMatrix);
-        HIZPushConstantsCMD._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
-    } else {
+    HIZPushConstantsCMD._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
+    if (GetHiZMethod() != HiZMethod::ARM) {
         HIZPushConstantsCMD._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
     }
     GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMD);

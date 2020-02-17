@@ -11,7 +11,8 @@ RenderPackage::RenderPackage() noexcept
     : _commands(GFX::allocateCommandBuffer(true)),
       _drawCommandOptions(to_base(CmdRenderOptions::RENDER_GEOMETRY)),
       _drawCommandCount(0),
-      _qualityRequirement(MinQuality::FULL)
+      _qualityRequirement(MinQuality::FULL),
+      _isInstanced(false)
 {
     _lodIndexOffsets.fill({ 0u, 0u });
 }
@@ -27,6 +28,7 @@ void RenderPackage::clear() {
         _drawCommandCount = 0;
     }
     textureDataDirty(true);
+    _isInstanced = false;
     assert(_drawCommandCount == 0);
 }
 
@@ -34,6 +36,7 @@ void RenderPackage::set(const RenderPackage& other) {
     _commands->clear();
     _commands->add(*other._commands);
     textureDataDirty(other.textureDataDirty());
+    _isInstanced = other._isInstanced;
 }
 
 void RenderPackage::setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount) noexcept {
@@ -72,11 +75,20 @@ void RenderPackage::drawCommand(I32 index, I32 cmdIndex, const GenericDrawComman
 }
 
 void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
+    bool wasInstanced = _isInstanced;
+
     GFX::DrawCommand& newCmd = _commands->add(cmd);
     for (GenericDrawCommand& drawCmd : newCmd._drawCommands) {
         Divide::enableOptions(drawCmd, _drawCommandOptions);
+        _isInstanced = drawCmd._cmd.primCount > 1 || _isInstanced;
     }
     ++_drawCommandCount;
+
+    if (_isInstanced && !wasInstanced) {
+        PushConstants constants = {};
+        constants.set("DATA_IDX", GFX::PushConstantType::UINT, 0u);
+        addPushConstantsCommand(GFX::SendPushConstantsCommand{ constants });
+    }
 }
 
 void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
@@ -216,10 +228,8 @@ void RenderPackage::setTexture(I32 descriptorSetIndex, const TextureData& data, 
     cmd._set._textureData.setTexture(data, binding);
 }
 
-bool RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel) {
+void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel) {
     OPTICK_EVENT();
-
-    bool ret = false;
 
     lodLevel = std::min(lodLevel, to_U8(_lodIndexOffsets.size() - 1));
     const std::pair<U32, U32>& idxData = _lodIndexOffsets[lodLevel];
@@ -229,26 +239,22 @@ bool RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLev
     for (auto& cmd : cmds) {
         auto& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
         for (GenericDrawCommand& drawCmd : drawCommands) {
-            if (drawCmd._cmd.primCount == 1 && drawCmd._cmd.baseInstance != dataIndex) {
+            if (drawCmd._cmd.primCount == 1) {
                 drawCmd._cmd.baseInstance = dataIndex;
-                ret = true;
             }
-            const I24 newOffset = I24(startOffset++);
-            if (drawCmd._commandOffset != newOffset) {
-                drawCmd._commandOffset = newOffset;
-                ret = true;
-            }
+            drawCmd._commandOffset = startOffset++;
+
             if (setAutoIdx) {
-                if (drawCmd._cmd.firstIndex != idxData.first || drawCmd._cmd.firstIndex != idxData.first) {
-                    drawCmd._cmd.firstIndex = idxData.first;
-                    drawCmd._cmd.indexCount = idxData.second;
-                    ret = true;
-                }
+                drawCmd._cmd.firstIndex = idxData.first;
+                drawCmd._cmd.indexCount = idxData.second;
             }
         }
     }
 
-    return ret;
+    if (_isInstanced) {
+        assert(_commands->exists<GFX::SendPushConstantsCommand>(0));
+        pushConstants(0).set("DATA_IDX", GFX::PushConstantType::UINT, dataIndex);
+    }
 }
 
 }; //namespace Divide

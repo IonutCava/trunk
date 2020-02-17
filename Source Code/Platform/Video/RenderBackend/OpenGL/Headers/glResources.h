@@ -87,7 +87,7 @@ struct ImageBindSettings {
 
 class VAOBindings {
 public:
-    using BufferBindingParams = std::tuple<GLuint, GLintptr, GLsizei>;
+    using BufferBindingParams = std::tuple<GLuint, size_t, size_t>;
 
     VAOBindings() noexcept;
     ~VAOBindings();
@@ -204,7 +204,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool useIndirectBuffer,
                          GLuint cmdBufferOffset,
                          GLenum internalFormat,
-                         GLsizei* countData = nullptr,
+                         size_t* countData = nullptr,
                          bufferPtr indexData = nullptr);
 
 /// Populate enumeration tables with appropriate API values

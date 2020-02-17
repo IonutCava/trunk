@@ -12,7 +12,7 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
 {
     shadowingSettings(0.25f, 0.00002f, 1000.0f, 1500.0f);
 
-    ShaderBufferDescriptor bufferDescriptor;
+    ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(SceneShaderBufferData);

@@ -2,6 +2,7 @@
 #define _VB_INPUT_DATA_VERT_
 
 #include "vertexDefault.vert"
+#include "nodeBufferedInput.cmn"
 
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
@@ -33,9 +34,14 @@ void computeDataMinimal() {
     dvd_Tangent = UNPACK_FLOAT(inTangentData);
 #endif
     VAR._texCoord = inTexCoordData;
+#if defined(OPENGL_46)
+    VAR.dvd_baseInstance = gl_BaseInstance;
+    VAR.dvd_drawID = gl_DrawID;
+#else
     VAR.dvd_baseInstance = gl_BaseInstanceARB;
-    VAR.dvd_instanceID = gl_InstanceID;
     VAR.dvd_drawID = gl_DrawIDARB;
+#endif
+    VAR.dvd_instanceID = gl_InstanceID;
 
 #if defined(USE_GPU_SKINNING)
 #   if !defined(SHADOW_PASS)

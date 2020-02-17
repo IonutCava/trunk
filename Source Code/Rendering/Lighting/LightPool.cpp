@@ -60,7 +60,7 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
 LightPool::~LightPool()
 {
     SharedLock r_lock(_lightLock);
-    for (LightList& lightList : _lights) {
+    for (const LightList& lightList : _lights) {
         if (!lightList.empty()) {
             Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_LIGHT_LEAKED")));
         }
@@ -78,8 +78,7 @@ void LightPool::init() {
     bufferDescriptor._elementSize = sizeof(vec4<U32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 6;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::IMMUTABLE_STORAGE) | 
-                              to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
                               to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
 
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;

@@ -43,16 +43,25 @@ namespace Divide {
 
 typedef std::array<vector<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;
 
-enum class MemoryBarrierType : U8 {
-    BUFFER = toBit(1),
-    TEXTURE = toBit(2),
-    RENDER_TARGET = toBit(3),
-    TRANSFORM_FEEDBACK = toBit(4),
-    COUNTER = toBit(5),
-    QUERY = toBit(6),
-    SHADER_BUFFER = toBit(7),
-    ALL = BUFFER | TEXTURE | RENDER_TARGET | TRANSFORM_FEEDBACK | COUNTER | QUERY | SHADER_BUFFER,
-    COUNT = 7
+enum class MemoryBarrierType : U32 {
+    BUFFER_UPDATE = toBit(1),
+    SHADER_STORAGE = toBit(2),
+    COMMAND_BUFFER = toBit(3),
+    ATOMIC_COUNTER = toBit(4),
+    QUERY = toBit(5),
+    RENDER_TARGET = toBit(6),
+    TEXTURE_UPDATE = toBit(7),
+    TEXTURE_FETCH = toBit(8),
+    SHADER_IMAGE = toBit(9),
+    TRANSFORM_FEEDBACK = toBit(10),
+    VERTEX_ATTRIB_ARRAY = toBit(11),
+    INDEX_ARRAY = toBit(12),
+    UNIFORM_DATA = toBit(13),
+    PIXEL_BUFFER = toBit(14),
+    PERSISTENT_BUFFER = toBit(15),
+    ALL_MEM_BARRIERS = PERSISTENT_BUFFER + 256,
+    TEXTURE_BARRIER = toBit(16), //This is not included in ALL!
+    COUNT = 15
 };
 
 class PipelineDescriptor : public Hashable {

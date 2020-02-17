@@ -54,6 +54,32 @@ namespace {
         }
         return false;
     }
+
+    FORCE_INLINE bool IsCameraCommand(const U8 typeIndex) noexcept {
+        switch (static_cast<CommandType>(typeIndex)) {
+            case GFX::CommandType::PUSH_CAMERA:
+            case GFX::CommandType::POP_CAMERA:
+            case GFX::CommandType::SET_CAMERA:
+                return true;
+        }
+        return false;
+    }
+    
+    FORCE_INLINE bool DoesNotAffectRT(const U8 typeIndex) noexcept {
+        if (ShouldSkipType(typeIndex) || IsCameraCommand(typeIndex)) {
+            return true;
+        }
+        switch (static_cast<CommandType>(typeIndex)) {
+            case GFX::CommandType::SET_VIEWPORT:
+            case GFX::CommandType::SET_SCISSOR:
+            case GFX::CommandType::SET_CAMERA:
+            case GFX::CommandType::SET_CLIP_PLANES:
+            case GFX::CommandType::SEND_PUSH_CONSTANTS:
+            case GFX::CommandType::SET_CLIPING_STATE:
+                return true;
+        }
+        return false;
+    }
 };
 
 void CommandBuffer::add(const CommandBuffer& other) {
@@ -172,8 +198,28 @@ void CommandBuffer::batch() {
         }
     }
 
-
     eastl::erase_if(_commandOrder, ([](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; }));
+
+    // Now try and merge ONLY End/Begin render pass (don't unbind a render target if we immediatelly bind a new one
+    prevCommand = nullptr;
+    for (CommandEntry& entry : _commandOrder) {
+        if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID) {
+            continue;
+        }
+        if (DoesNotAffectRT(entry._typeIndex)) {
+            continue;
+        }
+
+        CommandBase* crtCommand = getPtr<CommandBase>(entry);
+        if (prevCommand != nullptr && entry._typeIndex == to_base(GFX::CommandType::BEGIN_RENDER_PASS)) {
+            static_cast<EndRenderPassCommand*>(prevCommand)->_ignore = true;
+            prevCommand = nullptr;
+        } else if (entry._typeIndex == to_base(GFX::CommandType::END_RENDER_PASS)) {
+            prevCommand = crtCommand;
+        } else {
+            prevCommand = nullptr;
+        }
+    }
 
     // If we don't have any actual work to do, clear everything
     bool hasWork = false;

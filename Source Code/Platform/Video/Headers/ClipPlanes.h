@@ -70,7 +70,7 @@ namespace Divide {
         PlaneList<N> _planes;
     };
     
-    typedef ClipPlaneList<to_base(ClipPlaneIndex::COUNT)> FrustumClipPlanes;
+    using FrustumClipPlanes = ClipPlaneList<to_base(ClipPlaneIndex::COUNT)> ;
 }; //namespace Divide
 
 #endif //_CLIP_PLANES_H_

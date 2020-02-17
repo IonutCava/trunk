@@ -42,54 +42,29 @@ namespace Divide {
 class AtomicCounter;
 class glBufferImpl;
 class glGenericBuffer;
-struct BufferWriteData;
+struct BufferLockEntry;
 
 /// Base class for shader uniform blocks
 class glUniformBuffer final : public ShaderBuffer {
-   public:
-    glUniformBuffer(GFXDevice& context,
-                    const ShaderBufferDescriptor& descriptor);
-    ~glUniformBuffer();
+    public:
+        static void onGLInit();
 
-    void clearData(U32 offsetElementCount,
-                   U32 rangeElementCount) override;
+    public:
+        glUniformBuffer(GFXDevice& context, const ShaderBufferDescriptor& descriptor);
+        ~glUniformBuffer();
 
-    void readData(U32 offsetElementCount,
-                  U32 rangeElementCount,
-                  bufferPtr result) const override;
+        void clearData(U32 offsetElementCount, U32 rangeElementCount) final;
+        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const final;
+        void writeData(U32 offsetElementCount, U32 rangeElementCount, const bufferPtr data) final;
+        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, const bufferPtr data) final;
+        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) final;
+        bool bind(U8 bindIndex) final;
 
-    void writeData(U32 offsetElementCount,
-                   U32 rangeElementCount,
-                   const bufferPtr data) override;
+        glBufferImpl* bufferImpl() const;
 
-    void writeBytes(ptrdiff_t offsetInBytes,
-                    ptrdiff_t rangeInBytes,
-                    const bufferPtr data) override;
-
-    bool bindRange(U8 bindIndex,
-                   U32 offsetElementCount,
-                   U32 rangeElementCount) override;
-
-    bool bindRange(U8 bindIndex,
-                   U32 offsetElementCount,
-                   U32 rangeElementCount,
-                   BufferWriteData& dataOut);
-
-    bool bind(U8 bindIndex) override;
-
-    GLuint bufferID() const;
-
-    static void onGLInit();
-
-    glBufferImpl* bufferImpl() const;
-
-   protected:
-    std::atomic_int _firstWriteIndex = -1;
-    std::atomic_bool _writeComplete ;
-
-    glBufferImpl* _buffer;
-    GLsizeiptr _allignedBufferSize;
-    std::atomic_bool _writesDirty;
+    protected:
+        glBufferImpl* _buffer;
+        size_t _allignedBufferSize;
 };
 
 };  // namespace Divide

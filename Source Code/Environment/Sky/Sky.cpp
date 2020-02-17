@@ -113,7 +113,7 @@ bool Sky::load() {
     _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor);
 
     assert(_skyShader && _skyShaderPrePass);
-    _boundingBox.set(vec3<F32>(-radius), vec3<F32>(radius));
+    setBounds(BoundingBox(vec3<F32>(-radius), vec3<F32>(radius)));
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
 
     return SceneNode::load();

@@ -5,8 +5,8 @@
 
 namespace Divide {
 glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
-    : _elementCount(params._elementCount),
-      _elementCountBindOffset(0),
+    : _elementCountBindOffset(0),
+      _elementCount(params._elementCount),
       _ringSizeFactor(params._ringSizeFactor)
 {
     const size_t bufferSizeInBytes = _elementCount * params._elementSizeInBytes;
@@ -28,7 +28,7 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     // Create sizeFactor copies of the data and store them in the buffer
     if (params._data != nullptr) {
         for (U8 i = 1; i < _ringSizeFactor; ++i) {
-            _buffer->writeData(i * bufferSizeInBytes, bufferSizeInBytes, params._data);
+            _buffer->writeData(i * bufferSizeInBytes, bufferSizeInBytes, (Byte*)params._data);
         }
     }
 }
@@ -56,7 +56,7 @@ void glGenericBuffer::writeData(GLuint elementCount,
         offsetInBytes += _elementCount * _buffer->elementSize() * ringWriteOffset;
     }
 
-    _buffer->writeData(offsetInBytes, dataCurrentSizeInBytes, data);
+    _buffer->writeData(offsetInBytes, dataCurrentSizeInBytes, (Byte*)data);
 }
 
 void glGenericBuffer::readData(GLuint elementCount,
@@ -73,22 +73,7 @@ void glGenericBuffer::readData(GLuint elementCount,
         offsetInBytes += _elementCount * _buffer->elementSize() * ringReadOffset;
     }
 
-    _buffer->readData(offsetInBytes, dataCurrentSizeInBytes, dataOut);
-}
-
-void glGenericBuffer::lockData(GLuint elementCount,
-                               GLuint elementOffset,
-                               GLuint ringReadOffset,
-                               bool flush)
-{
-    const size_t rangeInBytes = elementCount * _buffer->elementSize();
-    size_t offsetInBytes = elementOffset * _buffer->elementSize();
-
-    if (_ringSizeFactor > 1) {
-        offsetInBytes += _elementCount * _buffer->elementSize() * ringReadOffset;
-    }
-
-    _buffer->lockRange(offsetInBytes, rangeInBytes, flush);
+    _buffer->readData(offsetInBytes, dataCurrentSizeInBytes, (Byte*)dataOut);
 }
 
 void glGenericBuffer::clearData(GLuint elementOffset, GLuint ringWriteOffset)
@@ -103,9 +88,9 @@ void glGenericBuffer::clearData(GLuint elementOffset, GLuint ringWriteOffset)
     _buffer->zeroMem(offsetInBytes, rangeInBytes);
 }
 
-GLintptr glGenericBuffer::getBindOffset(GLuint ringReadOffset)
+size_t glGenericBuffer::getBindOffset(GLuint ringReadOffset)
 {
-    GLintptr retInBytes = static_cast<GLintptr>(_elementCountBindOffset * _buffer->elementSize());
+    size_t retInBytes = static_cast<size_t>(_elementCountBindOffset * _buffer->elementSize());
 
     if (_ringSizeFactor > 1) {
         retInBytes += _elementCount * _buffer->elementSize() * ringReadOffset;
