@@ -62,14 +62,18 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     blurDepthMapShader.propertyDescriptor(shaderDescriptor);
 
     _blurDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), blurDepthMapShader);
-    _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-    _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)0);
-    _blurDepthMapConstants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)0);
-    _horizBlur = 0;
-    _vertBlur = 0;
+    _blurDepthMapConstants.set(_ID("layerCount"), GFX::PushConstantType::INT, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+    _blurDepthMapConstants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, (I32)0);
+    _blurDepthMapConstants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, (I32)0);
 
-    _horizBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH");
-    _vertBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
+    PipelineDescriptor pipelineDescriptor = {};
+    pipelineDescriptor._stateHash = _context.get2DStateBlock();
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH"));
+    pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getGUID();
+    _horzBlurPipeline = _context.newPipeline(pipelineDescriptor);
+
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
+    _vertBlurPipeline = _context.newPipeline(pipelineDescriptor);
 
     std::array<vec2<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> blurSizes;
     blurSizes.fill(vec2<F32>(1.0f / g_shadowSettings.shadowMapResolution) /** g_shadowSettings.softness*/);
@@ -78,7 +82,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         blurSizes[i] = blurSizes[i - 1] / 2;
     }
 
-    _blurDepthMapConstants.set("blurSizes", GFX::PushConstantType::VEC2, blurSizes);
+    _blurDepthMapConstants.set(_ID("blurSizes"), GFX::PushConstantType::VEC2, blurSizes);
 
     SamplerDescriptor sampler = {};
     sampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
@@ -352,19 +356,14 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
     const RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(ShadowType::LAYERED));
 
     if (g_shadowSettings.enableBlurring) {
-        PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._stateHash = _context.get2DStateBlock();
-        pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_horizBlur);
 
         GenericDrawCommand pointsCmd = {};
         pointsCmd._primitiveType = PrimitiveType::API_POINTS;
         pointsCmd._drawCount = 1;
         
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-        GFX::BindPipelineCommand pipelineCmd = {};
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        GFX::EndRenderPassCommand endRenderPassCmd = {};
         GFX::DrawCommand drawCmd = { pointsCmd };
 
         // Blur horizontally
@@ -376,17 +375,15 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_HORIZONTAL";
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getGUID();
-        pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-        _blurDepthMapConstants.set("layerCount", GFX::PushConstantType::INT, (I32)light.csmSplitCount());
+        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _horzBlurPipeline });
+        _blurDepthMapConstants.set(_ID("layerCount"), GFX::PushConstantType::INT, (I32)light.csmSplitCount());
 
         pushConstantsCommand._constants = _blurDepthMapConstants;
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-        GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
         // Blur vertically
         texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
@@ -398,16 +395,14 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_VERTICAL";
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _vertBlur;
-        pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-        GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _vertBlurPipeline });
 
-        pushConstantsCommand._constants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)light.getShadowOffset());
+        pushConstantsCommand._constants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, (I32)light.getShadowOffset());
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-        GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
     } else {
         GFX::BlitRenderTargetCommand blitRenderTargetCommand = {};
         blitRenderTargetCommand._source = _drawBuffer._targetID;

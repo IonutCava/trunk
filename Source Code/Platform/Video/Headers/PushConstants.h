@@ -42,37 +42,36 @@ struct PushConstants {
     void set(const GFX::PushConstant& constant);
 
     template<typename T>
-    inline void set(const char* binding, GFX::PushConstantType type, const T* values, size_t count, bool flag = false) {
-        U64 bindingID = _ID(binding);
+    inline void set(U64 bindingHash, GFX::PushConstantType type, const T* values, size_t count, bool flag = false) {
         for (GFX::PushConstant& constant : _data) {
-            if (constant._bindingHash == bindingID) {
+            if (constant._bindingHash == bindingHash) {
                 assert(constant._type == type);
                 constant.set(values, count, flag);
                 return;
             }
         }
 
-        _data.emplace_back(binding, bindingID, type, values, count, flag);
+        _data.emplace_back(bindingHash, type, values, count, flag);
     }
 
     template<typename T>
-    inline void set(const char* binding, GFX::PushConstantType type, const T& value, bool flag = false) {
-        set(binding, type, &value, 1, flag);
+    inline void set(U64 bindingHash, GFX::PushConstantType type, const T& value, bool flag = false) {
+        set(bindingHash, type, &value, 1, flag);
     }
 
     template<typename T>
-    inline void set(const char* binding, GFX::PushConstantType type, const vector<T>& values, bool flag = false) {
-        set(binding, type, values.data(), values.size(), flag);
+    inline void set(U64 bindingHash, GFX::PushConstantType type, const vector<T>& values, bool flag = false) {
+        set(bindingHash, type, values.data(), values.size(), flag);
     }
 
     template<typename T>
-    inline void set(const char* binding, GFX::PushConstantType type, const vectorEASTL<T>& values, bool flag = false) {
-        set(binding, type, values.data(), values.size(), flag);
+    inline void set(U64 bindingHash, GFX::PushConstantType type, const vectorEASTL<T>& values, bool flag = false) {
+        set(bindingHash, type, values.data(), values.size(), flag);
     }
 
     template<typename T, size_t N>
-    inline void set(const char* binding, GFX::PushConstantType type, const std::array<T, N>& values, bool flag = false) {
-        set(binding, type, values.data(), N, flag);
+    inline void set(U64 bindingHash, GFX::PushConstantType type, const std::array<T, N>& values, bool flag = false) {
+        set(bindingHash, type, values.data(), N, flag);
     }
 
     inline void clear() noexcept { _data.clear(); }

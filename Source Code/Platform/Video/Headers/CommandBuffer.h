@@ -40,11 +40,13 @@ namespace Divide {
 
 namespace GFX {
 
+void DELETE_CMD(GFX::CommandBase*& cmd);
+
 class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend class CommandBufferPool;
   public:
       using CommandEntry = PolyContainerEntry;
-      using Container = PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)>;
+      using Container = PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT), DELETE_CMD>;
       using CommandOrderContainer = eastl::fixed_vector<CommandEntry, 256, true>;
 
   public:
@@ -58,23 +60,18 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     CommandBuffer & operator=(CommandBuffer&& other) = default;
 
     template<typename T>
-    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     add(const T& command);
-
     template<typename T>
-    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-    add(T&& command);
+    inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+    add(const T&& command);
 
     bool validate() const;
 
     void add(const CommandBuffer& other);
     void add(CommandBuffer** buffers, size_t count);
 
-    void addDestructive(CommandBuffer& other);
-    void addDestructive(CommandBuffer** buffers, size_t count);
-
     void clean();
-
     void batch();
 
     // Return true if merge is successful
@@ -85,44 +82,24 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     bool exists(const CommandEntry& commandEntry) const noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, Container::EntryList&>::type
-    get() noexcept;
-
-    template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, const Container::EntryList&>::type
     get() const noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     get(const CommandEntry& commandEntry) const  noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     get(const CommandEntry& commandEntry) noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     get(I24 index) noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
+    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     get(I24 index) const noexcept;
-
-    template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
-    getPtr(const CommandEntry& commandEntry) const  noexcept;
-
-    template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-    getPtr(const CommandEntry& commandEntry) noexcept;
-
-    template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-    getPtr(I24 index) noexcept;
-
-    template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
-    getPtr(I24 index) const noexcept;
 
     bool exists(U8 typeIndex, I24 index) const noexcept;
 
@@ -135,7 +112,6 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     inline vec_size size() const noexcept { return _commandOrder.size(); }
     inline void clear(bool clearMemory = true);
-    inline void nuke();
     inline bool empty() const noexcept;
 
     // Multi-line. indented list of all commands (and params for some of them)
@@ -149,18 +125,17 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     template<typename T, CommandType enumVal>
     friend struct Command;
 
-    void toString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out) const;
-
-  protected:
     template<typename T>
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     allocateCommand();
+
+    void toString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out) const;
 
   protected:
       CommandOrderContainer _commandOrder;
       eastl::array<I24, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
 
-      PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT)> _commands;
+      Container _commands;
       bool _batched = false;
 };
 
@@ -168,15 +143,15 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand);
 bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC);
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 EnqueueCommand(CommandBuffer& buffer, T& cmd) {
-    buffer.add(cmd);
+    return buffer.add(cmd);
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 EnqueueCommand(CommandBuffer& buffer, T&& cmd) {
-    buffer.add(cmd);
+    return buffer.add(cmd);
 }
 
 }; //namespace GFX

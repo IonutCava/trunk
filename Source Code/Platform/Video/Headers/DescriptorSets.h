@@ -80,7 +80,7 @@ namespace Divide {
     };
 
     struct ShaderBufferBinding {
-        vec2<U32>     _elementRange = {};
+        vec2<U32>     _elementRange;
         ShaderBuffer* _buffer = nullptr;
         ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
 
@@ -132,7 +132,7 @@ namespace Divide {
         }
     };
 
-    using ShaderBufferList = vectorEASTLFast<ShaderBufferBinding>;
+    using ShaderBufferList = eastl::fixed_vector<ShaderBufferBinding, 4, true>;
     using TextureViews = vectorEASTLFast<TextureViewEntry>;
     using Images = vectorEASTLFast<Image>;
 

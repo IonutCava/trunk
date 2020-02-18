@@ -157,10 +157,10 @@ void Renderer::preRender(RenderStagePass stagePass,
 
     GFX::SendPushConstantsCommand preRenderPushConstantsCmd;
     preRenderPushConstantsCmd._constants.countHint(4);
-    preRenderPushConstantsCmd._constants.set("viewMatrix", GFX::PushConstantType::MAT4, camera.getViewMatrix());
-    preRenderPushConstantsCmd._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-    preRenderPushConstantsCmd._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
-    preRenderPushConstantsCmd._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(renderTargetRes));
+    preRenderPushConstantsCmd._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, camera.getViewMatrix());
+    preRenderPushConstantsCmd._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+    preRenderPushConstantsCmd._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
+    preRenderPushConstantsCmd._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(renderTargetRes));
     GFX::EnqueueCommand(bufferInOut, preRenderPushConstantsCmd);
 
     const U8  tileRes = Light::GetThreadGroupSize(_context.config().rendering.lightThreadGroupSize);

@@ -79,7 +79,7 @@ void PostAAPreRenderOperator::setAASamples(U8 postAASamples)
 {
     if (_postAASamples != postAASamples) {
         _postAASamples = postAASamples;
-        _fxaaConstants.set("dvd_qualityMultiplier", GFX::PushConstantType::INT, to_I32(_postAASamples));
+        _fxaaConstants.set(_ID("dvd_qualityMultiplier"), GFX::PushConstantType::INT, to_I32(_postAASamples));
         _context.context().config().rendering.postFX.postAASamples = postAASamples;
     }
 }

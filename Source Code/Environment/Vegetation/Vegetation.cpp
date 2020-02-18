@@ -565,11 +565,11 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
 
         const vec3<F32>& extents = _treeParentNode->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
         _treeExtents.set(extents, 0);
-        _cullPushConstants.set("treeExtents", GFX::PushConstantType::VEC4, _treeExtents);
+        _cullPushConstants.set(_ID("treeExtents"), GFX::PushConstantType::VEC4, _treeExtents);
     }
 
-    _cullPushConstants.set("dvd_terrainChunkOffset", GFX::PushConstantType::UINT, _terrainChunk.ID());
-    _cullPushConstants.set("grassExtents", GFX::PushConstantType::VEC4, _grassExtents);
+    _cullPushConstants.set(_ID("dvd_terrainChunkOffset"), GFX::PushConstantType::UINT, _terrainChunk.ID());
+    _cullPushConstants.set(_ID("grassExtents"), GFX::PushConstantType::VEC4, _grassExtents);
 
     setState(ResourceState::RES_LOADED);
 }
@@ -619,11 +619,11 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         const F32 sceneTreeDistance = renderState.treeVisibility();
         if (sceneGrassDistance != _grassDistance) {
             _grassDistance = sceneGrassDistance;
-            _cullPushConstants.set("dvd_grassVisibilityDistance", GFX::PushConstantType::FLOAT, _grassDistance);
+            _cullPushConstants.set(_ID("dvd_grassVisibilityDistance"), GFX::PushConstantType::FLOAT, _grassDistance);
         }
         if (sceneTreeDistance != _treeDistance) {
             _treeDistance = sceneTreeDistance;
-            _cullPushConstants.set("dvd_treeVisibilityDistance", GFX::PushConstantType::FLOAT, _treeDistance);
+            _cullPushConstants.set(_ID("dvd_treeVisibilityDistance"), GFX::PushConstantType::FLOAT, _treeDistance);
         }
     }
 
@@ -651,10 +651,10 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
 
         GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
         cullConstants._constants.countHint(4 + _cullPushConstants.data().size());
-        cullConstants._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
-        cullConstants._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-        cullConstants._constants.set("viewMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
-        cullConstants._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
+        cullConstants._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
+        cullConstants._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+        cullConstants._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
+        cullConstants._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
 
         GFX::DispatchComputeCommand computeCmd = {};
 

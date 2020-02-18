@@ -40,6 +40,7 @@ namespace Divide {
 
 class Quad3D;
 class Camera;
+class Pipeline;
 class GFXDevice;
 class ShaderBuffer;
 class DirectionalLightComponent;
@@ -72,8 +73,8 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
                             const SplitDepths& splitDepths);
 
    protected:
-    U32 _vertBlur;
-    U32 _horizBlur;
+    Pipeline* _vertBlurPipeline = nullptr;
+    Pipeline* _horzBlurPipeline = nullptr;
     ShaderProgram_ptr _blurDepthMapShader;
     PushConstants     _blurDepthMapConstants;
     RenderTargetHandle _drawBuffer;

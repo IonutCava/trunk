@@ -126,6 +126,16 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
            IS_VISIBLE = toBit(8)
        };
 
+       struct NodeRenderingProperties {
+           U32 _reflectionIndex = 0u;
+           U32 _refractionIndex = 0u;
+           F32 _cullFlagValue = 1.0f;
+           U8 _lod = 0u;
+           bool _receivesShadows = false;
+           bool _isHovered = false;
+           bool _isSelected = false;
+       };
+
    public:
     explicit RenderingComponent(SceneGraphNode& parentSGN,
                                 PlatformContext& context);
@@ -154,7 +164,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
-    void getRenderingProperties(const RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
+    void getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const;
 
     RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
     const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;

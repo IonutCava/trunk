@@ -100,6 +100,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
                                 const ShaderLoadData& data);
    private:
      bool loadFromBinary();
+     void cacheActiveUniforms();
 
    private:
     friend class glShaderProgram;
@@ -109,12 +110,10 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
         return _usedAtoms;
     }
 
-    /// Cache uniform/attribute locations for shader programs
-    I32 binding(const char* name, U64 bindingHash);
     void reuploadUniforms(bool force);
     void UploadPushConstant(const GFX::PushConstant& constant, bool force);
     I32 cachedValueUpdate(const GFX::PushConstant& constant, bool force);
-    void Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const;
+    void Uniform(I32 binding, GFX::PushConstantType type, const Byte* const values, const GLsizei byteCount, bool flag) const;
 
     bool uploadToGPU(bool& previouslyUploaded);
 
@@ -156,9 +155,9 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     static SharedMutex _shaderNameLock;
 
     template<typename T_out, size_t T_out_count, typename T_in>
-    const T_out* castData(const vectorEASTL<char>& values) const {
+    const T_out* castData(const Byte* const values) const {
         static_assert(sizeof(T_out) * T_out_count == sizeof(T_in), "Invalid cast data");
-        return reinterpret_cast<const T_out*>(values.data());
+        return reinterpret_cast<const T_out*>(values);
     }
 };
 

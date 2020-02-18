@@ -60,14 +60,11 @@ struct NodeCullParams {
 };
 
 struct VisibleNode {
-    VisibleNode() = default;
-    VisibleNode(SceneGraphNode* node, F32 distSq)  noexcept : _node(node), _distanceToCameraSq(distSq) {}
-
     SceneGraphNode* _node = nullptr;
     F32 _distanceToCameraSq = 0.0f;
 };
 
-using VisibleNodeList = vectorEASTL<VisibleNode>;
+using VisibleNodeList = eastl::fixed_vector<VisibleNode, Config::MAX_VISIBLE_NODES>;
 using NodeListContainer = vectorEASTL<VisibleNodeList>;
 
 class RenderPassCuller {

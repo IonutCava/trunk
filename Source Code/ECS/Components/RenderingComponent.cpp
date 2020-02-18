@@ -360,20 +360,14 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     }
 }
 
-void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
-    const bool shadowMappingEnabled = _config.rendering.shadowMapping.enabled;
-
-    propertiesOut.set(_parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED)
-                                                     ? -1.0f
-                                                     : _parentSGN.hasFlag(SceneGraphNode::Flags::HOVERED)
-                                                                                      ? 1.0f
-                                                                                      : 0.0f,
-                      (shadowMappingEnabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS)) ? 1.0f : 0.0f,
-                      to_F32(_lodLevels[to_base(stagePass._stage)]),
-                      _cullFlagValue);
-
-    reflectionIndex = to_F32(defaultReflectionTextureIndex());
-    refractionIndex = to_F32(defaultRefractionTextureIndex());
+void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const {
+    propertiesOut._isHovered = _parentSGN.hasFlag(SceneGraphNode::Flags::HOVERED);
+    propertiesOut._isSelected = _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED);
+    propertiesOut._receivesShadows = _config.rendering.shadowMapping.enabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
+    propertiesOut._lod = _lodLevels[to_base(stagePass._stage)],
+    propertiesOut._cullFlagValue = _cullFlagValue;
+    propertiesOut._reflectionIndex = defaultReflectionTextureIndex();
+    propertiesOut._reflectionIndex = defaultRefractionTextureIndex();
 }
 
 /// Called after the current node was rendered
@@ -412,14 +406,11 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     SceneGraphNode* grandParent = _parentSGN.parent();
 
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
-    bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB) ||
-                      sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
-    bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE) ||
-                         sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
-
-
+    const bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
+    const bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
     const bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
-    bool setGrandparentFlag = false;
+
+    bool setGrandparentFlag = !grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
     if (renderBBox) {
         if (!_boundingBoxPrimitive[0]) {
             _boundingBoxPrimitive[0] = _context.newIMP();
@@ -434,7 +425,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
 
         if (isSubMesh) {
-            if (!grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED)) {
+            if (!setGrandparentFlag) {
                 if (!_boundingBoxPrimitive[1]) {
                     _boundingBoxPrimitive[1] = _context.newIMP();
                     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + _parentSGN.name());
@@ -468,7 +459,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         bufferInOut.add(_boundingSpherePrimitive[0]->toCommandBuffer());
 
         if (isSubMesh) {
-            if (!grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED)) {
+            if (!setGrandparentFlag) {
                 if (!_boundingSpherePrimitive[1]) {
                     _boundingSpherePrimitive[1] = _context.newIMP();
                     _boundingSpherePrimitive[1]->name("BoundingSphere_Parent_" + _parentSGN.name());
@@ -493,10 +484,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         grandParent->setFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
     }
 
-    bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON);
-    renderSkeleton = renderSkeleton || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
-
-    if (renderSkeleton) {
+    if (renderOptionEnabled(RenderOptions::RENDER_SKELETON) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS)) {
         // Continue only for skinned 3D objects
         if (_parentSGN.getNode<Object3D>().getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
         {
@@ -664,10 +652,10 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
             DebugView_ptr viewPtr = eastl::make_shared<DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _context.getRTPreviewShader(false);
-            viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+            viewPtr->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
             viewPtr->_name = Util::StringFormat("REFLECTION_%d", reflectRTID._index);
             debugView = _context.addDebugView(viewPtr);
@@ -741,10 +729,10 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
             DebugView_ptr viewPtr = eastl::make_shared<DebugView>();
             viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
             viewPtr->_shader = _context.getRTPreviewShader(false);
-            viewPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+            viewPtr->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
             viewPtr->_name = Util::StringFormat("REFRACTION_%d", refractRTID._index);
             debugView = _context.addDebugView(viewPtr);

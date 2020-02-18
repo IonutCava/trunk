@@ -70,35 +70,44 @@ struct PolyContainerEntry
 };
 #pragma pack(pop)
 
-template<typename T>
-using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*&)>>;
-
 constexpr bool VALIDATE_POLY_CONTAINERS = false;
 
-template<typename T, U8 N>
-struct PolyContainer {
+template<typename T>
+using PolyContainerDeleter = void (*)(T*&);
 
-    using EntryList = vectorEASTLFast<deleted_unique_ptr<T>>;
+template<typename T, U8 N, typename PolyContainerDeleter<T> DEL>
+struct PolyContainer {
+    using EntryList = vectorEASTLFast<T*>;
+
+    ~PolyContainer()
+    {
+        clear(true);
+    }
 
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, PolyContainerEntry>::type
-        insert(U8 index, deleted_unique_ptr<T>&& cmd) {
+        insert(U8 index, T* cmd) {
         if (VALIDATE_POLY_CONTAINERS) {
             assert(index < N);
         }
 
         EntryList& collection = _collection[index];
-        collection.push_back(std::move(cmd));
+        collection.emplace_back(cmd);
 
         return PolyContainerEntry{ index, to_I32(collection.size() - 1) };
     }
 
-    inline EntryList& get(U8 index) noexcept {
+    template<typename U>
+    inline typename std::enable_if<std::is_base_of<T, U>::value, T*>::type
+        emplace(U8 index) {
         if (VALIDATE_POLY_CONTAINERS) {
             assert(index < N);
         }
 
-        return  _collection[index];
+        EntryList& collection = _collection[index];
+        collection.emplace_back({});
+
+        return collection.back();
     }
 
     inline const EntryList& get(U8 index) const noexcept {
@@ -109,43 +118,17 @@ struct PolyContainer {
         return  _collection[index];
     }
 
-    inline T* getPtr(const PolyContainerEntry& entry) noexcept {
-        return getPtr(entry._typeIndex, entry.elementIndex());
+    FORCE_INLINE T* get(const PolyContainerEntry& entry) const noexcept {
+        return get(entry._typeIndex, entry.elementIndex());
     }
 
-    inline const T* getPtr(const PolyContainerEntry& entry) const noexcept {
-        return getPtr(entry._typeIndex, entry.elementIndex());
-    }
-
-    inline T* getPtr(U8 index, I32 entry) const noexcept {
+    inline T* get(U8 index, I32 entry) const noexcept {
         const EntryList& collection = get(index);
-        return collection[entry].get();
-    }
-
-    inline T* getPtrOrNull(U8 index, I32 entry) const noexcept {
-        const EntryList& collection = get(index);
-        assert(entry >= 0);
         if (entry < collection.size()) {
-            return collection[entry].get();
+            return collection[entry];
         }
 
         return nullptr;
-    }
-
-    inline T& get(U8 index, I32 entry) noexcept {
-        return *getPtr(index, entry);
-    }
-
-    inline const T& get(U8 index, I32 entry) const noexcept {
-        return *getPtr(index, entry);
-    }
-
-    inline T& get(const PolyContainerEntry& entry) noexcept {
-        return *getPtr(entry._typeIndex, entry.elementIndex());
-    }
-
-    inline const T& get(const PolyContainerEntry& entry) const noexcept {
-        return *getPtr(entry._typeIndex, entry.elementIndex());
     }
 
     inline bool exists(const PolyContainerEntry& entry) const noexcept {
@@ -153,20 +136,16 @@ struct PolyContainer {
     }
 
     inline bool exists(U8 index, I32 entry) const noexcept{
-        return index < N && entry < size(index);
-    }
-
-    inline vec_size_eastl size(U8 index) const noexcept{
-        return get(index).size();
+        return index < N && entry < _collection[index].size();
     }
 
     inline void reserve(size_t size) {
-        for (auto& col : _collection) {
+        for (EntryList& col : _collection) {
             col.reserve(size);
         }
     }
 
-    inline void reserve(const PolyContainer<T,N>& other) {
+    inline void reserveAdditional(const PolyContainer<T,N, DEL>& other) {
         for (U8 i = 0; i < N; ++i) {
             _collection[i].reserve(_collection[i].size() + other._collection[i].size());
         }
@@ -177,35 +156,27 @@ struct PolyContainer {
     }
 
     inline void clear(bool clearMemory = false) {
-        if (clearMemory) {
-            for (auto& col : _collection) {
-                col.clear();
-            }
-        } else {
-            for (auto& col : _collection) {
-                col.resize(0);
-            }
-        }
-    }
-
-    inline void nuke() {
-        for (auto& col : _collection) {
-            auto size = col.size();
-            col.reset_lose_memory();
-            col.reserve(size);
+        for (U8 i = 0; i < N; ++i) {
+            clear(i, clearMemory);
         }
     }
 
     inline void clear(U8 index, bool clearMemory = false) {
+        EntryList& col = _collection[index];
+
+        for (T*& cmd : col) {
+            DEL(cmd);
+        }
+
         if (clearMemory) {
-            get(index).clear();
+            col.clear();
         } else {
-            get(index).resize(0);
+            col.resize(0);
         }
     }
 
     inline bool empty() const noexcept {
-        for (const auto& col : _collection) {
+        for (const EntryList& col : _collection) {
             if (!col.empty()) {
                 return false;
             }

@@ -47,7 +47,7 @@ void RenderPackage::setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCou
 
 size_t RenderPackage::getSortKeyHash() const {
     if (_commands->count<GFX::BindPipelineCommand>() > 0) {
-        return _commands->get<GFX::BindPipelineCommand>(0)._pipeline->getHash();
+        return _commands->get<GFX::BindPipelineCommand>(0)->_pipeline->getHash();
     }
 
     return 0;
@@ -55,7 +55,7 @@ size_t RenderPackage::getSortKeyHash() const {
 
 const GFX::DrawCommand& RenderPackage::drawCommand(I32 index) const {
     DIVIDE_ASSERT(index < drawCommandCount(), "RenderPackage::drawCommand error: Invalid draw command index!");
-    return _commands->get<GFX::DrawCommand>(index);
+    return *_commands->get<GFX::DrawCommand>(index);
 }
 
 const GenericDrawCommand& RenderPackage::drawCommand(I32 index, I32 cmdIndex) const {
@@ -69,16 +69,16 @@ const GenericDrawCommand& RenderPackage::drawCommand(I32 index, I32 cmdIndex) co
 void RenderPackage::drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd) {
     DIVIDE_ASSERT(index < drawCommandCount(), "RenderPackage::drawCommand error: Invalid draw command index!");
     
-    GFX::DrawCommand & drawCmd = _commands->get<GFX::DrawCommand>(index);
-    DIVIDE_ASSERT(cmdIndex < to_I32(drawCmd._drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command sub-index!");
-    drawCmd._drawCommands[cmdIndex] = cmd;
+    GFX::DrawCommand* drawCmd = _commands->get<GFX::DrawCommand>(index);
+    DIVIDE_ASSERT(cmdIndex < to_I32(drawCmd->_drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command sub-index!");
+    drawCmd->_drawCommands[cmdIndex] = cmd;
 }
 
 void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
-    bool wasInstanced = _isInstanced;
+    const bool wasInstanced = _isInstanced;
 
-    GFX::DrawCommand& newCmd = _commands->add(cmd);
-    for (GenericDrawCommand& drawCmd : newCmd._drawCommands) {
+    GFX::DrawCommand* newCmd = _commands->add(cmd);
+    for (GenericDrawCommand& drawCmd : newCmd->_drawCommands) {
         Divide::enableOptions(drawCmd, _drawCommandOptions);
         _isInstanced = drawCmd._cmd.primCount > 1 || _isInstanced;
     }
@@ -86,7 +86,7 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
 
     if (_isInstanced && !wasInstanced) {
         PushConstants constants = {};
-        constants.set("DATA_IDX", GFX::PushConstantType::UINT, 0u);
+        constants.set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, 0u);
         addPushConstantsCommand(GFX::SendPushConstantsCommand{ constants });
     }
 }
@@ -101,7 +101,7 @@ void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
         ClearBit(_drawCommandOptions, option);
     }
 
-    auto& cmds = _commands->get<GFX::DrawCommand>();
+    const auto& cmds = _commands->get<GFX::DrawCommand>();
     for (auto& cmd : cmds) {
         auto& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
         for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
@@ -142,12 +142,12 @@ void RenderPackage::disableOptions(U16 optionMask) {
 
 const Pipeline* RenderPackage::pipeline(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::BindPipelineCommand>()), "RenderPackage::pipeline error: Invalid pipeline index!");
-    return _commands->get<GFX::BindPipelineCommand>(index)._pipeline;
+    return _commands->get<GFX::BindPipelineCommand>(index)->_pipeline;
 }
 
 void RenderPackage::pipeline(I32 index, const Pipeline& pipeline) {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::BindPipelineCommand>()), "RenderPackage::pipeline error: Invalid pipeline index!");
-    _commands->get<GFX::BindPipelineCommand>(index)._pipeline = &pipeline;
+    _commands->get<GFX::BindPipelineCommand>(index)->_pipeline = &pipeline;
 }
 
 void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline) {
@@ -156,12 +156,12 @@ void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline)
 
 const FrustumClipPlanes& RenderPackage::clipPlanes(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::SetClipPlanesCommand>()), "RenderPackage::clipPlanes error: Invalid clip plane list index!");
-    return _commands->get<GFX::SetClipPlanesCommand>(index)._clippingPlanes;
+    return _commands->get<GFX::SetClipPlanesCommand>(index)->_clippingPlanes;
 }
 
 void RenderPackage::clipPlanes(I32 index, const FrustumClipPlanes& clipPlanes) {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::SetClipPlanesCommand>()), "RenderPackage::clipPlanes error: Invalid clip plane list index!");
-    _commands->get<GFX::SetClipPlanesCommand>(index)._clippingPlanes = clipPlanes;
+    _commands->get<GFX::SetClipPlanesCommand>(index)->_clippingPlanes = clipPlanes;
 }
 
 void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPlanes) {
@@ -170,17 +170,17 @@ void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPl
 
 PushConstants& RenderPackage::pushConstants(I32 index) {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::SendPushConstantsCommand>()), "RenderPackage::pushConstants error: Invalid push constants index!");
-    return _commands->get<GFX::SendPushConstantsCommand>(index)._constants;
+    return _commands->get<GFX::SendPushConstantsCommand>(index)->_constants;
 }
 
 const PushConstants& RenderPackage::pushConstants(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::SendPushConstantsCommand>()), "RenderPackage::pushConstants error: Invalid push constants index!");
-    return _commands->get<GFX::SendPushConstantsCommand>(index)._constants;
+    return _commands->get<GFX::SendPushConstantsCommand>(index)->_constants;
 }
 
 void RenderPackage::pushConstants(I32 index, const PushConstants& constants) {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::SendPushConstantsCommand>()), "RenderPackage::pushConstants error: Invalid push constants index!");
-    _commands->get<GFX::SendPushConstantsCommand>(index)._constants = constants;
+    _commands->get<GFX::SendPushConstantsCommand>(index)->_constants = constants;
 }
 
 void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants) {
@@ -189,18 +189,18 @@ void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand&
 
 DescriptorSet& RenderPackage::descriptorSet(I32 index) {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::BindDescriptorSetsCommand>()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
-    return _commands->get<GFX::BindDescriptorSetsCommand>(index)._set;
+    return _commands->get<GFX::BindDescriptorSetsCommand>(index)->_set;
 }
 
 const DescriptorSet& RenderPackage::descriptorSet(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::BindDescriptorSetsCommand>()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
-    return _commands->get<GFX::BindDescriptorSetsCommand>(index)._set;
+    return _commands->get<GFX::BindDescriptorSetsCommand>(index)->_set;
 }
 
 void RenderPackage::descriptorSet(I32 index, const DescriptorSet& descriptorSets) {
     DIVIDE_ASSERT(index < to_I32(_commands->count<GFX::BindDescriptorSetsCommand>()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     
-    DescriptorSet & set = _commands->get<GFX::BindDescriptorSetsCommand>(index)._set;
+    DescriptorSet & set = _commands->get<GFX::BindDescriptorSetsCommand>(index)->_set;
     if (set != descriptorSets) {
         set = descriptorSets;
     }
@@ -218,14 +218,14 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
 void RenderPackage::addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer) {
     DIVIDE_ASSERT(descriptorSetIndex < to_I32(_commands->count<GFX::BindDescriptorSetsCommand>()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     
-    GFX::BindDescriptorSetsCommand & cmd = _commands->get<GFX::BindDescriptorSetsCommand>(descriptorSetIndex);
-    cmd._set.addShaderBuffer(buffer);
+    GFX::BindDescriptorSetsCommand* cmd = _commands->get<GFX::BindDescriptorSetsCommand>(descriptorSetIndex);
+    cmd->_set.addShaderBuffer(buffer);
 }
 
 void RenderPackage::setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding) {
     DIVIDE_ASSERT(descriptorSetIndex < to_I32(_commands->count<GFX::BindDescriptorSetsCommand>()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
-    GFX::BindDescriptorSetsCommand & cmd = _commands->get<GFX::BindDescriptorSetsCommand>(descriptorSetIndex);
-    cmd._set._textureData.setTexture(data, binding);
+    GFX::BindDescriptorSetsCommand* cmd = _commands->get<GFX::BindDescriptorSetsCommand>(descriptorSetIndex);
+    cmd->_set._textureData.setTexture(data, binding);
 }
 
 void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel) {
@@ -237,9 +237,9 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLev
 
     auto& cmds = _commands->get<GFX::DrawCommand>();
     for (auto& cmd : cmds) {
-        auto& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
+        GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
         for (GenericDrawCommand& drawCmd : drawCommands) {
-            if (drawCmd._cmd.primCount == 1) {
+            if (drawCmd._cmd.primCount == 1u) {
                 drawCmd._cmd.baseInstance = dataIndex;
             }
             drawCmd._commandOffset = startOffset++;
@@ -253,7 +253,7 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLev
 
     if (_isInstanced) {
         assert(_commands->exists<GFX::SendPushConstantsCommand>(0));
-        pushConstants(0).set("DATA_IDX", GFX::PushConstantType::UINT, dataIndex);
+        pushConstants(0).set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, dataIndex);
     }
 }
 

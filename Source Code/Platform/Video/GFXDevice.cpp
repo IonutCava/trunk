@@ -1094,12 +1094,12 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand(_BlurHPipeline));
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurHPipeline });
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants.countHint(2);
-    pushConstantsCommand._constants.set("kernelSize", GFX::PushConstantType::INT, kernelSize);
-    pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(blurTargetH._rt->getWidth(), blurTargetH._rt->getHeight()));
+    pushConstantsCommand._constants.set(_ID("kernelSize"), GFX::PushConstantType::INT, kernelSize);
+    pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTargetH._rt->getWidth(), blurTargetH._rt->getHeight()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     GFX::DrawCommand drawCmd = { triangleCmd };
@@ -1113,9 +1113,9 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     beginRenderPassCmd._name = "BLUR_RENDER_TARGET_VERTICAL";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand(_BlurVPipeline));
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurVPipeline });
 
-    pushConstantsCommand._constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(blurTargetV._rt->getWidth(), blurTargetV._rt->getHeight()));
+    pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTargetV._rt->getWidth(), blurTargetV._rt->getHeight()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     data = blurTargetH._rt->getAttachment(att, index).texture()->data();
@@ -1374,73 +1374,73 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
         const GFX::CommandType cmdType = static_cast<GFX::CommandType>(cmd._typeIndex);
         switch (cmdType) {
             case GFX::CommandType::BLIT_RT: {
-                const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.get<GFX::BlitRenderTargetCommand>(cmd);
-                RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
-                RenderTarget& destination = renderTargetPool().renderTarget(crtCmd._destination);
+                GFX::BlitRenderTargetCommand* crtCmd = commandBuffer.get<GFX::BlitRenderTargetCommand>(cmd);
+                RenderTarget& source = renderTargetPool().renderTarget(crtCmd->_source);
+                RenderTarget& destination = renderTargetPool().renderTarget(crtCmd->_destination);
 
                 RenderTarget::RTBlitParams params = {};
                 params._inputFB = &source;
-                params._blitDepth = crtCmd._blitDepth;
-                params._blitColours = crtCmd._blitColours;
+                params._blitDepth = crtCmd->_blitDepth;
+                params._blitColours = crtCmd->_blitColours;
 
                 destination.blitFrom(params);
             } break;
             case GFX::CommandType::CLEAR_RT: {
-                const GFX::ClearRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ClearRenderTargetCommand>(cmd);
+                const GFX::ClearRenderTargetCommand& crtCmd = *commandBuffer.get<GFX::ClearRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._target);
                 source.clear(crtCmd._descriptor);
             }break;
             case GFX::CommandType::RESET_RT: {
-                const GFX::ResetRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ResetRenderTargetCommand>(cmd);
+                const GFX::ResetRenderTargetCommand& crtCmd = *commandBuffer.get<GFX::ResetRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
                 source.setDefaultState(crtCmd._descriptor);
             } break;
             case GFX::CommandType::RESET_AND_CLEAR_RT: {
-                const GFX::ResetAndClearRenderTargetCommand& crtCmd = commandBuffer.get<GFX::ResetAndClearRenderTargetCommand>(cmd);
+                const GFX::ResetAndClearRenderTargetCommand& crtCmd = *commandBuffer.get<GFX::ResetAndClearRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
                 source.setDefaultState(crtCmd._drawDescriptor);
                 source.clear(crtCmd._clearDescriptor);
             } break;
             case GFX::CommandType::READ_BUFFER_DATA: {
-                const GFX::ReadBufferDataCommand& crtCmd = commandBuffer.get<GFX::ReadBufferDataCommand>(cmd);
+                const GFX::ReadBufferDataCommand& crtCmd = *commandBuffer.get<GFX::ReadBufferDataCommand>(cmd);
                 if (crtCmd._buffer != nullptr && crtCmd._target != nullptr) {
                     crtCmd._buffer->readData(crtCmd._offsetElementCount, crtCmd._elementCount, crtCmd._target);
                 }
             } break;
             case GFX::CommandType::CLEAR_BUFFER_DATA: {
-                const GFX::ClearBufferDataCommand& crtCmd = commandBuffer.get<GFX::ClearBufferDataCommand>(cmd);
+                const GFX::ClearBufferDataCommand& crtCmd = *commandBuffer.get<GFX::ClearBufferDataCommand>(cmd);
                 if (crtCmd._buffer != nullptr) {
                     crtCmd._buffer->clearData(crtCmd._offsetElementCount, crtCmd._elementCount);
                 }
             } break;
             case GFX::CommandType::SET_VIEWPORT:
-                setViewport(commandBuffer.get<GFX::SetViewportCommand>(cmd)._viewport);
+                setViewport(commandBuffer.get<GFX::SetViewportCommand>(cmd)->_viewport);
                 break;
             case GFX::CommandType::SET_CAMERA: {
-                const GFX::SetCameraCommand& crtCmd = commandBuffer.get<GFX::SetCameraCommand>(cmd);
+                GFX::SetCameraCommand* crtCmd = commandBuffer.get<GFX::SetCameraCommand>(cmd);
                 // Tell the Rendering API to draw from our desired PoV
-                renderFromCamera(crtCmd._cameraSnapshot);
+                renderFromCamera(crtCmd->_cameraSnapshot);
             } break;
             case GFX::CommandType::PUSH_CAMERA: {
-                const GFX::PushCameraCommand& crtCmd = commandBuffer.get<GFX::PushCameraCommand>(cmd);
+                GFX::PushCameraCommand* crtCmd = commandBuffer.get<GFX::PushCameraCommand>(cmd);
                 _cameraSnapshots.push(_activeCameraSnapshot);
-                renderFromCamera(crtCmd._cameraSnapshot);
+                renderFromCamera(crtCmd->_cameraSnapshot);
             } break;
             case GFX::CommandType::POP_CAMERA: {
                 renderFromCamera(_cameraSnapshots.top());
                 _cameraSnapshots.pop();
             } break;
             case GFX::CommandType::SET_MIP_LEVELS: {
-                const GFX::SetTextureMipLevelsCommand& crtCmd = commandBuffer.get<GFX::SetTextureMipLevelsCommand>(cmd);
-                if (crtCmd._texture != nullptr) {
-                    crtCmd._texture->setMipMapRange(crtCmd._baseLevel, crtCmd._maxLevel);
+                GFX::SetTextureMipLevelsCommand* crtCmd = commandBuffer.get<GFX::SetTextureMipLevelsCommand>(cmd);
+                if (crtCmd->_texture != nullptr) {
+                    crtCmd->_texture->setMipMapRange(crtCmd->_baseLevel, crtCmd->_maxLevel);
                 }
             }break;
             case GFX::CommandType::SET_CLIP_PLANES:
-                setClipPlanes(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd)._clippingPlanes);
+                setClipPlanes(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd)->_clippingPlanes);
                 break;
             case GFX::CommandType::EXTERNAL:
-                commandBuffer.get<GFX::ExternalCommand>(cmd)._cbk();
+                commandBuffer.get<GFX::ExternalCommand>(cmd)->_cbk();
                 break;
 
             case GFX::CommandType::DRAW_TEXT:
@@ -1570,14 +1570,14 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
                     GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
                     if (GetHiZMethod() == HiZMethod::NVIDIA) {
-                        pushConstantsCommand._constants.set("depthInfo", GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+                        pushConstantsCommand._constants.set(_ID("depthInfo"), GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
                     } else {
                         mipCommand._baseLevel = level - 1;
                         mipCommand._maxLevel = level - 1;
                         GFX::EnqueueCommand(cmdBufferInOut, mipCommand);
 
                         if (GetHiZMethod() == HiZMethod::RASTER_GRID) {
-                            pushConstantsCommand._constants.set("LastMipSize", GFX::PushConstantType::IVEC2, vec2<I32>(owidth, oheight));
+                            pushConstantsCommand._constants.set(_ID("LastMipSize"), GFX::PushConstantType::IVEC2, vec2<I32>(owidth, oheight));
                         }
                     }
 
@@ -1628,6 +1628,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
                               const Texture_ptr& depthBuffer,
                               const Camera& camera,
                               GFX::CommandBuffer& bufferInOut) {
+
     OPTICK_EVENT();
 
     constexpr U32 GROUP_SIZE_AABB = 64;
@@ -1664,14 +1665,14 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     GFX::SendPushConstantsCommand HIZPushConstantsCMD = {};
     HIZPushConstantsCMD._constants.countHint(GetHiZMethod() == HiZMethod::ARM ? 5 : 6);
-    HIZPushConstantsCMD._constants.set("countCulledItems", GFX::PushConstantType::UINT, bufferData._cullCounter != nullptr ? 1u : 0u);
-    HIZPushConstantsCMD._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
-    HIZPushConstantsCMD._constants.set("viewMatrix", GFX::PushConstantType::MAT4, viewMatrix);
-    HIZPushConstantsCMD._constants.set("projectionMatrix", GFX::PushConstantType::MAT4, projectionMatrix);
-    HIZPushConstantsCMD._constants.set("viewProjectionMatrix", GFX::PushConstantType::MAT4, mat4<F32>::Multiply(viewMatrix, projectionMatrix));
-    HIZPushConstantsCMD._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
+    HIZPushConstantsCMD._constants.set(_ID("countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounter != nullptr ? 1u : 0u);
+    HIZPushConstantsCMD._constants.set(_ID("dvd_numEntities"), GFX::PushConstantType::UINT, cmdCount);
+    HIZPushConstantsCMD._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, viewMatrix);
+    HIZPushConstantsCMD._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, projectionMatrix);
+    HIZPushConstantsCMD._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(viewMatrix, projectionMatrix));
+    HIZPushConstantsCMD._constants.set(_ID("dvd_nearPlaneDistance"), GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
     if (GetHiZMethod() != HiZMethod::ARM) {
-        HIZPushConstantsCMD._constants.set("viewportDimensions", GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
+        HIZPushConstantsCMD._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
     }
     GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMD);
 
@@ -1749,7 +1750,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     if (!drawToDepthOnly) {
 
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
-        pushConstantsCommand._constants.set("convertToSRGB", GFX::PushConstantType::UINT, convertToSrgb ? 1u : 0u);
+        pushConstantsCommand._constants.set(_ID("convertToSRGB"), GFX::PushConstantType::UINT, convertToSrgb ? 1u : 0u);
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
     }
 
@@ -1815,78 +1816,78 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         HiZ->_shader = _previewDepthMapShader;
         HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
         HiZ->_name = "Hierarchical-Z";
-        HiZ->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
-        HiZ->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+        HiZ->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
+        HiZ->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
         DebugView_ptr DepthPreview = eastl::make_shared<DebugView>();
         DepthPreview->_shader = _previewDepthMapShader;
         DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
         DepthPreview->_name = "Depth Buffer";
-        DepthPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-        DepthPreview->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+        DepthPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        DepthPreview->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
         DebugView_ptr NormalPreview = eastl::make_shared<DebugView>();
         NormalPreview->_shader = _renderTargetDraw;
         NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
         NormalPreview->_name = "Normals";
-        NormalPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-        NormalPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-        NormalPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 1u);
-        NormalPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        NormalPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        NormalPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+        NormalPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
+        NormalPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
         DebugView_ptr VelocityPreview = eastl::make_shared<DebugView>();
         VelocityPreview->_shader = _renderTargetDraw;
         VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
         VelocityPreview->_name = "Velocity Map";
-        VelocityPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-        VelocityPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-        VelocityPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-        VelocityPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 1u);
+        VelocityPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        VelocityPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+        VelocityPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        VelocityPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 1u);
             
         DebugView_ptr SSAOPreview = eastl::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
         SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
         SSAOPreview->_name = "SSAO Map";
-        SSAOPreview->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-        SSAOPreview->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
-        SSAOPreview->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-        SSAOPreview->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 1u);
+        SSAOPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        SSAOPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
+        SSAOPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        SSAOPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 1u);
 
         DebugView_ptr AlphaAccumulationHigh = eastl::make_shared<DebugView>();
         AlphaAccumulationHigh->_shader = _renderTargetDraw;
         AlphaAccumulationHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
         AlphaAccumulationHigh->_name = "Alpha Accumulation High";
-        AlphaAccumulationHigh->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-        AlphaAccumulationHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-        AlphaAccumulationHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-        AlphaAccumulationHigh->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        AlphaAccumulationHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
         DebugView_ptr AlphaRevealageHigh = eastl::make_shared<DebugView>();
         AlphaRevealageHigh->_shader = _renderTargetDraw;
         AlphaRevealageHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
         AlphaRevealageHigh->_name = "Alpha Revealage High";
-        AlphaRevealageHigh->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-        AlphaRevealageHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
-        AlphaRevealageHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-        AlphaRevealageHigh->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        AlphaRevealageHigh->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        AlphaRevealageHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
+        AlphaRevealageHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        AlphaRevealageHigh->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
         //DebugView_ptr AlphaAccumulationLow = eastl::make_shared<DebugView>();
         //AlphaAccumulationLow->_shader = _renderTargetDraw;
         //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
         //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
-        //AlphaAccumulationLow->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-        //AlphaAccumulationLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-        //AlphaAccumulationLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 0u);
-        //AlphaAccumulationLow->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        //AlphaAccumulationLow->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        //AlphaAccumulationLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        //AlphaAccumulationLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+        //AlphaAccumulationLow->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
         //DebugView_ptr AlphaRevealageLow = eastl::make_shared<DebugView>();
         //AlphaRevealageLow->_shader = _renderTargetDraw;
         //AlphaRevealageLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
         //AlphaRevealageLow->_name = "Alpha Revealage Low";
-        //AlphaRevealageLow->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, 0.0f);
-        //AlphaRevealageLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
-        //AlphaRevealageLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
-        //AlphaRevealageLow->_shaderData.set("startOnBlue", GFX::PushConstantType::UINT, 0u);
+        //AlphaRevealageLow->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        //AlphaRevealageLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
+        //AlphaRevealageLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        //AlphaRevealageLow->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
         HiZPtr = addDebugView(HiZ);
         addDebugView(DepthPreview);
@@ -1906,7 +1907,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         I32 LoDLevel = 0;
         RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
         LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
-        HiZPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
+        HiZPtr->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
     }
 
     constexpr I32 maxViewportColumnCount = 10;

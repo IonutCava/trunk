@@ -63,6 +63,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _lastDeltaTimeUS(0ULL),
       _relationshipCache(*this)
 {
+    Hacks._transformComponentCache = nullptr;
     _name = (descriptor._name.empty() ? Util::StringFormat("%s_SGN", (_node->resourceName().empty() ? "ERROR"   
                                                                                                     : _node->resourceName().c_str())).c_str()
                                       : descriptor._name);
@@ -107,8 +108,6 @@ SceneGraphNode::~SceneGraphNode()
     UnregisterAllEventCallbacks();
 
     _compManager->RemoveAllComponents(GetEntityID());
-    _editorComponents.clear();
-    _componentMask = 0;
 }
 
 ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
@@ -117,7 +116,7 @@ ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
 
 void SceneGraphNode::AddMissingComponents(U32 componentMask) {
 
-    for (ComponentType::_integral i = 1; i < ComponentType::COUNT; ++i) {
+    for (ComponentType::_integral i = 1; i < ComponentType::COUNT + 1; ++i) {
         const U16 componentBit = 1 << i;
 
         // Only add new components;
@@ -126,7 +125,6 @@ void SceneGraphNode::AddMissingComponents(U32 componentMask) {
             SGNComponent::construct(ComponentType::_from_integral(componentBit), *this);
         }
     };
-
 }
 
 void SceneGraphNode::setTransformDirty(U32 transformMask) {
@@ -219,7 +217,7 @@ SceneGraphNode* SceneGraphNode::addChildNode(const SceneGraphNodeDescriptor& des
 
 void SceneGraphNode::postLoad(SceneNode& sceneNode, SceneGraphNode& sgn) {
     Attorney::SceneNodeSceneGraph::postLoad(sceneNode, sgn);
-    sgn._editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(sceneNode));
+    sgn.Hacks._editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(sceneNode));
 }
 
 bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
@@ -681,7 +679,7 @@ bool SceneGraphNode::forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGra
 bool SceneGraphNode::saveCache(ByteBuffer& outputBuffer) const {
     getNode().saveCache(outputBuffer);
 
-    for (EditorComponent* editorComponent : _editorComponents) {
+    for (EditorComponent* editorComponent : Hacks._editorComponents) {
         if (!Attorney::EditorComponentSceneGraphNode::saveCache(*editorComponent, outputBuffer)) {
             return false;
         }
@@ -699,7 +697,7 @@ bool SceneGraphNode::saveCache(ByteBuffer& outputBuffer) const {
 bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
     getNode().loadCache(inputBuffer);
 
-    for (EditorComponent* editorComponent : _editorComponents) {
+    for (EditorComponent* editorComponent : Hacks._editorComponents) {
         if (!Attorney::EditorComponentSceneGraphNode::loadCache(*editorComponent, inputBuffer)) {
             return false;
         }
@@ -726,7 +724,7 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation) const {
 
     getNode().saveToXML(pt);
 
-    for (EditorComponent* editorComponent : _editorComponents) {
+    for (EditorComponent* editorComponent : Hacks._editorComponents) {
         Attorney::EditorComponentSceneGraphNode::saveToXML(*editorComponent, pt);
     }
 
@@ -759,7 +757,7 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
         AddMissingComponents(componentsToLoad);
     }
 
-    for (EditorComponent* editorComponent : _editorComponents) {
+    for (EditorComponent* editorComponent : Hacks._editorComponents) {
         Attorney::EditorComponentSceneGraphNode::loadFromXML(*editorComponent, pt);
     }
 }

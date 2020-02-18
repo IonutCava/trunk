@@ -866,14 +866,13 @@ size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
 }
 
 void Material::getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32& textureKey) const {
-    constexpr I16 invalidKey = -std::numeric_limits<I16>::max();
-
-    shaderKey = static_cast<I64>(invalidKey);
-    textureKey = _textureKeyCache == -1 ? invalidKey : _textureKeyCache;
+    textureKey = _textureKeyCache == -1 ? std::numeric_limits<I32>::lowest() : _textureKeyCache;
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
     if (info._shaderCompStage == ShaderProgramInfo::BuildStage::READY && info._shaderRef) {
         shaderKey = info._shaderRef->getGUID();
+    } else {
+        shaderKey = std::numeric_limits<I64>::lowest();
     }
 }
 

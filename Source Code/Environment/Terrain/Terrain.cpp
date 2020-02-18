@@ -264,9 +264,9 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
-        constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
-        constants.set("height_scale", GFX::PushConstantType::FLOAT, _descriptor->parallaxHeightScale());
-        constants.set("renderStage", GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
+        constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
+        constants.set(_ID("height_scale"), GFX::PushConstantType::FLOAT, _descriptor->parallaxHeightScale());
+        constants.set(_ID("renderStage"), GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
         pkg.pushConstants(0, constants);
     }
 
@@ -325,9 +325,9 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addShaderBuffer(0, buffer);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("tessTriangleWidth", GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
-    pushConstantsCommand._constants.set("height_scale", GFX::PushConstantType::FLOAT, 0.3f);
-    pushConstantsCommand._constants.set("renderStage", GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
+    pushConstantsCommand._constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
+    pushConstantsCommand._constants.set(_ID("height_scale"), GFX::PushConstantType::FLOAT, 0.3f);
+    pushConstantsCommand._constants.set(_ID("renderStage"), GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
 
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);

@@ -86,9 +86,8 @@ namespace GFX {
 
     struct PushConstant {
         template<typename T>
-        PushConstant(const char* binding, U64 bindingHash, PushConstantType type, const T* data, const size_t count, bool flag = false)
-            : _binding(binding),
-              _bindingHash(bindingHash),
+        PushConstant(U64 bindingHash, PushConstantType type, const T* data, const size_t count, bool flag = false)
+            : _bindingHash(bindingHash),
               _type(type)
         {
             set(data, count, flag);
@@ -122,8 +121,8 @@ namespace GFX {
 
         void clear();
 
-        Str64 _binding;
-        vectorEASTL<char> _buffer;
+        // Most often than not, data will be the size of a mat4 or lower, otherwise we'd just use shader storage buffers
+        eastl::fixed_vector<Byte, sizeof(F32) * 16, true> _buffer;
         U64               _bindingHash;
         PushConstantType  _type = PushConstantType::COUNT;
         bool _flag = false;

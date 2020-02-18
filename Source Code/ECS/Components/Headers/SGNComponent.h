@@ -46,11 +46,11 @@ class SceneRenderState;
 struct RenderStagePass;
 
 BETTER_ENUM(ComponentType, U16,
-    ANIMATION = toBit(1),
-    INVERSE_KINEMATICS = toBit(2),
-    RAGDOLL = toBit(3),
-    NAVIGATION = toBit(4),
-    TRANSFORM = toBit(5),
+    TRANSFORM = toBit(1),
+    ANIMATION = toBit(2),
+    INVERSE_KINEMATICS = toBit(3),
+    RAGDOLL = toBit(4),
+    NAVIGATION = toBit(5),
     BOUNDS = toBit(6),
     RENDERING = toBit(7),
     NETWORKING = toBit(8),
@@ -60,7 +60,7 @@ BETTER_ENUM(ComponentType, U16,
     DIRECTIONAL_LIGHT = toBit(12),
     POINT_LIGHT = toBit(13),
     SPOT_LIGHT = toBit(14),
-    COUNT = 15
+    COUNT = 14
 );
 
 enum class ECSCustomEventType : U8 {

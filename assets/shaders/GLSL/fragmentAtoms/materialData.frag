@@ -164,15 +164,15 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 }
 #endif
 
-vec3 getEmissive(mat4 colourMatrix) {
+vec3 getEmissive(in mat4 colourMatrix) {
     return colourMatrix[2].rgb;
 }
 
-void setEmissive(mat4 colourMatrix, vec3 value) {
+void setEmissive(in mat4 colourMatrix, in vec3 value) {
     colourMatrix[2].rgb = value;
 }
 
-vec3 getSpecular(mat4 colourMatrix, in vec2 uv) {
+vec3 getSpecular(in mat4 colourMatrix, in vec2 uv) {
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
     return vec3(colourMatrix[1].g);
 #else

@@ -103,13 +103,13 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
 
 void BloomPreRenderOperator::factor(F32 val) {
     _bloomFactor = val;
-    _bloomApplyConstants.set("bloomFactor", GFX::PushConstantType::FLOAT, _bloomFactor);
+    _bloomApplyConstants.set(_ID("bloomFactor"), GFX::PushConstantType::FLOAT, _bloomFactor);
     _context.context().config().rendering.postFX.bloomFactor = val;
 }
 
 void BloomPreRenderOperator::luminanceThreshold(F32 val) {
     _bloomThreshold = val;
-    _bloomCalcConstants.set("luminanceThreshold", GFX::PushConstantType::FLOAT, _bloomThreshold);
+    _bloomCalcConstants.set(_ID("luminanceThreshold"), GFX::PushConstantType::FLOAT, _bloomThreshold);
 }
 
 void BloomPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {

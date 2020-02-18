@@ -176,7 +176,7 @@ public:
     static void lockBuffers(U32 frameID);
     static void registerBufferBind(BufferLockEntry&& data);
 
-    using IMPrimitivePool = MemoryPool<glIMPrimitive, 1024>;
+    using IMPrimitivePool = MemoryPool<glIMPrimitive, 2048>;
 
     static IMPrimitive* newIMP(std::mutex& lock, GFXDevice& parent);
     static bool destroyIMP(std::mutex& lock, IMPrimitive*& primitive);
@@ -240,6 +240,7 @@ private:
     FontCache _fonts;
     hashAlg::pair<Str64, I32> _fontCache;
 
+    static bool s_glFlushQueued;
     static bool s_enabledDebugMSGGroups;
     /// Hardware query objects used for performance measurements
     std::shared_ptr<glHardwareQueryRing> _elapsedTimeQuery;

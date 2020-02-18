@@ -205,9 +205,9 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set("enable_sun", GFX::PushConstantType::BOOL, _enableSun);
-    pushConstantsCommand._constants.set("sun_vector", GFX::PushConstantType::VEC3, _sunVector);
-    pushConstantsCommand._constants.set("sun_colour", GFX::PushConstantType::VEC3, _sunColour);
+    pushConstantsCommand._constants.set(_ID("enable_sun"), GFX::PushConstantType::BOOL, _enableSun);
+    pushConstantsCommand._constants.set(_ID("sun_vector"), GFX::PushConstantType::VEC3, _sunVector);
+    pushConstantsCommand._constants.set(_ID("sun_colour"), GFX::PushConstantType::VEC3, _sunColour);
     pkgInOut.addPushConstantsCommand(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};

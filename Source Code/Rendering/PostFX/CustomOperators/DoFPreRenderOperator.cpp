@@ -46,7 +46,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     _dofShader = CreateResource<ShaderProgram>(cache, dof);
     focalDepth(0.5f);
     autoFocus(true);
-    _constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(desc._resolution.width, desc._resolution.height));
+    _constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(desc._resolution.width, desc._resolution.height));
 }
 
 DoFPreRenderOperator::~DoFPreRenderOperator()
@@ -55,7 +55,7 @@ DoFPreRenderOperator::~DoFPreRenderOperator()
 
 void DoFPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
-    _constants.set("size", GFX::PushConstantType::VEC2, vec2<F32>(width, height));
+    _constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(width, height));
 }
 
 void DoFPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
@@ -65,12 +65,12 @@ void DoFPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& buf
 
 void DoFPreRenderOperator::focalDepth(const F32 val) {
     _focalDepth = val;
-    _constants.set("focalDepth", GFX::PushConstantType::FLOAT, _focalDepth);
+    _constants.set(_ID("focalDepth"), GFX::PushConstantType::FLOAT, _focalDepth);
 }
 
 void DoFPreRenderOperator::autoFocus(const bool state) {
     _autoFocus = state;
-    _constants.set("autoFocus", GFX::PushConstantType::BOOL, _autoFocus);
+    _constants.set(_ID("autoFocus"), GFX::PushConstantType::BOOL, _autoFocus);
 }
 
 void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {

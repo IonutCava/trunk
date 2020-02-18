@@ -105,7 +105,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         ~SceneGraphNode();
 
         /// Return a reference to the parent graph. Operator= should be disabled
-        inline SceneGraph& sceneGraph() { return _sceneGraph; }
+        inline SceneGraph& sceneGraph() noexcept { return _sceneGraph; }
 
         /// Add child node increments the node's ref counter if the node was already added to the scene graph
         SceneGraphNode* addChildNode(const SceneGraphNodeDescriptor& descriptor);
@@ -148,10 +148,10 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         bool forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
 
         /// A "locked" call assumes that either access is guaranteed thread-safe or that the child lock is already aquired
-        inline const vectorEASTL<SceneGraphNode*>& getChildrenLocked() const { return _children; }
+        inline const vectorEASTL<SceneGraphNode*>& getChildrenLocked() const noexcept { return _children; }
 
         /// A "locked" call assumes that either access is guaranteed thread-safe or that the child lock is already aquired
-        inline U32 getChildCountLocked() const { return to_U32(_children.size()); }
+        inline U32 getChildCountLocked() const noexcept { return to_U32(_children.size()); }
 
         /// Return a specific child by indes. Does not recurse.
         inline SceneGraphNode& getChild(U32 idx) {
@@ -213,6 +213,9 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         template <typename T>
         inline T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } //< ToDo: Optimise this -Ionut
 
+        template <>
+        inline TransformComponent* get() const { return Hacks._transformComponentCache; }
+
         void SendEvent(ECSCustomEventType eventType);
 
         /// Sends a global event but dispatched is handled between update steps
@@ -228,9 +231,12 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         typename std::enable_if<std::is_base_of<SGNComponent, T>::value, T*>::type
         AddSGNComponent(P&&... param) {
             SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(*this, this->context(), std::forward<P>(param)...));
-            _editorComponents.emplace_back(&comp->getEditorComponent());
+            Hacks._editorComponents.emplace_back(&comp->getEditorComponent());
             SetBit(_componentMask, to_U32(comp->type()));
-
+            if (comp->type()._value == ComponentType::TRANSFORM) {
+                //Ewww
+                Hacks._transformComponentCache = (TransformComponent*)comp;
+            }
             return static_cast<T*>(comp);
         }
 
@@ -248,6 +254,9 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
                     std::end(_editorComponents));
                 ClearBit(_componentMask, comp->type());
                 RemoveComponent<T>();
+                if (comp->type()._value == ComponentType::TRANSFORM) {
+                    Hacks._transformComponentCache = nullptr;
+                }
             }
         }
 
@@ -295,7 +304,11 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         SGNRelationshipCache _relationshipCache;
         vectorEASTL<SceneGraphNode*> _children;
         // ToDo: Remove this HORRIBLE hack -Ionut
-        vectorFast<EditorComponent*> _editorComponents;
+        struct hacks {
+            vectorFast<EditorComponent*> _editorComponents;
+            TransformComponent* _transformComponentCache = nullptr;
+        } Hacks;
+
         moodycamel::ConcurrentQueue<ECSCustomEventType> _events;
         eastl::set<ECSCustomEventType> _uniqueEventsCache;
 
@@ -322,11 +335,11 @@ namespace Attorney {
     class SceneGraphNodeEditor {
     private:
         static vectorFast<EditorComponent*>& editorComponents(SceneGraphNode& node) {
-            return node._editorComponents;
+            return node.Hacks._editorComponents;
         }
 
         static const vectorFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
-            return node._editorComponents;
+            return node.Hacks._editorComponents;
         }
 
         friend class Divide::PropertyWindow;

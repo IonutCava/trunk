@@ -121,14 +121,14 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
 
         _previousLuminance = _context.renderTargetPool().allocateRT(desc);
     }
-    _toneMapConstants.set("luminanceMipLevel",
+    _toneMapConstants.set(_ID("luminanceMipLevel"),
                           GFX::PushConstantType::INT,
                           to_I32(_currentLuminance
                           ._rt
                           ->getAttachment(RTAttachmentType::Colour, 0)
                           .texture()
                           ->getMaxMipLevel()));
-    _toneMapConstants.set("exposureMipLevel",
+    _toneMapConstants.set(_ID("exposureMipLevel"),
                           GFX::PushConstantType::INT,
                           0);
     // Order is very important!
@@ -376,7 +376,7 @@ void PreRenderBatch::reshape(U16 width, U16 height) {
     _currentLuminance._rt->resize(lumaRez, lumaRez);
     _previousLuminance._rt->resize(1, 1);
 
-    _toneMapConstants.set("luminanceMipLevel",
+    _toneMapConstants.set(_ID("luminanceMipLevel"),
                           GFX::PushConstantType::INT,
                           _currentLuminance
                           ._rt

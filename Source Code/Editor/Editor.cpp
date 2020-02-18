@@ -793,9 +793,9 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     GFX::EnqueueCommand(buffer, pipelineCmd);
 
     PushConstants pushConstants = {};
-    pushConstants.set("toggleChannel", GFX::PushConstantType::IVEC4, vec4<I32>(1, 1, 1, 1));
-    pushConstants.set("depthTexture", GFX::PushConstantType::INT, 0);
-    pushConstants.set("depthRange", GFX::PushConstantType::VEC2, vec2<F32>(0.0f, 1.0f));
+    pushConstants.set(_ID("toggleChannel"), GFX::PushConstantType::IVEC4, vec4<I32>(1, 1, 1, 1));
+    pushConstants.set(_ID("depthTexture"), GFX::PushConstantType::INT, 0);
+    pushConstants.set(_ID("depthRange"), GFX::PushConstantType::VEC2, vec2<F32>(0.0f, 1.0f));
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants = pushConstants;
@@ -1261,10 +1261,10 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
         GFX::CommandBuffer& buffer = sBuffer();
 
         PushConstants pushConstants = {};
-        pushConstants.set("toggleChannel", GFX::PushConstantType::IVEC4, data._colourData);
-        pushConstants.set("depthTexture", GFX::PushConstantType::INT, data._isDepthTexture ? 1 : 0);
-        pushConstants.set("depthRange", GFX::PushConstantType::VEC2, data._depthRange);
-        pushConstants.set("flip", GFX::PushConstantType::INT, data._flip ? 1 : 0);
+        pushConstants.set(_ID("toggleChannel"), GFX::PushConstantType::IVEC4, data._colourData);
+        pushConstants.set(_ID("depthTexture"), GFX::PushConstantType::INT, data._isDepthTexture ? 1 : 0);
+        pushConstants.set(_ID("depthRange"), GFX::PushConstantType::VEC2, data._depthRange);
+        pushConstants.set(_ID("flip"), GFX::PushConstantType::INT, data._flip ? 1 : 0);
 
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
         pushConstantsCommand._constants = pushConstants;
@@ -1374,7 +1374,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
 bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
     if (mesh == nullptr) {
-        return nullptr;
+        return false;
     }
 
     static vec3<F32> scale(1.0f);

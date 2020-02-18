@@ -23,7 +23,7 @@ layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDe
 float getShadowFactor(int idx) {
     float ret = 1.0f;
 
-    if (idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
+    if (dvd_receivesShadow && idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
         const uint lightIndex = uint(idx);
         const vec4 crtDetails = dvd_shadowLightDetails[idx];
 

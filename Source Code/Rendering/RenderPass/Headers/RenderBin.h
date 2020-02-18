@@ -96,8 +96,7 @@ class RenderPassManager;
 class RenderBin {
    public:
     using RenderBinStack = vectorEASTLFast<RenderBinItem>;
-    using SortedQueueEntry = std::pair<SceneGraphNode*, RenderingComponent*>;
-    using SortedQueue = vectorEASTLFast<SortedQueueEntry>;
+    using SortedQueue = vectorEASTLFast<RenderingComponent*>;
     using SortedQueues = std::array<SortedQueue, RenderBinType::RBT_COUNT>;
 
     friend class RenderQueue;

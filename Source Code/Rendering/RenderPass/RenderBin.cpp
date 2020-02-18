@@ -71,8 +71,7 @@ const RenderBinItem& RenderBin::getItem(RenderStage stage, U16 index) const {
 
 void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
     // Lock w_lock(_renderBinGetMutex);
-    const U8 stageIndex = to_U8(stage);
-    RenderBinStack& stack = _renderBinStack[stageIndex];
+    RenderBinStack& stack = _renderBinStack[to_U8(stage)];
 
     switch (renderOrder) {
         case RenderingOrder::BY_STATE: {
@@ -110,14 +109,12 @@ void RenderBin::getSortedNodes(RenderStage stage, SortedQueue& nodes, U16& count
     nodes.resize(0);
     nodes.reserve(getBinSize(stage));
 
-    for (const RenderBinItem& item : _renderBinStack[to_base(stage)]) {
-        nodes.emplace_back(
-            &(item._renderable->getSGN()), 
-            item._renderable
-        );
-
-        ++countOut;
+    const RenderBinStack& stack = _renderBinStack[to_base(stage)];
+    for (const RenderBinItem& item : stack) {
+        nodes.emplace_back(item._renderable);
     }
+
+    countOut += to_U16(stack.size());
 }
 
 void RenderBin::refresh(RenderStage stage) {
@@ -127,23 +124,20 @@ void RenderBin::refresh(RenderStage stage) {
 }
 
 void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePass, F32 minDistToCameraSq) {
-    const U8 stageIndex = to_U8(stagePass._stage);
-
-    const size_t count = _renderBinStack[stageIndex].size() + 1;
-    I64 keyA = static_cast<I64>(count);
-    I32 keyB = to_I32(count);
-
     RenderingComponent* const rComp = sgn.get<RenderingComponent>();
+    const U8 stageIndex = to_U8(stagePass._stage);
+    // Sort by state hash depending on the current rendering stage
+    // Save the render state hash value for sorting
     const size_t sortHash = rComp->getSortKeyHash(stagePass);
+    RenderBinItem& item = _renderBinStack[stageIndex].emplace_back(rComp, 0, 0, sortHash, minDistToCameraSq);
 
     const Material_ptr& nodeMaterial = rComp->getMaterialInstance();
     if (nodeMaterial) {
-        nodeMaterial->getSortKeys(stagePass, keyA, keyB);
+        nodeMaterial->getSortKeys(stagePass, item._sortKeyA, item._sortKeyB);
+    } else {
+        item._sortKeyA = to_I64(_renderBinStack[stageIndex].size());
+        item._sortKeyB = to_I32(item._sortKeyA);
     }
-
-    // Sort by state hash depending on the current rendering stage
-    // Save the render state hash value for sorting
-    _renderBinStack[stageIndex].emplace_back(rComp, keyA, keyB, sortHash, minDistToCameraSq );
 }
 
 void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const {

@@ -86,10 +86,10 @@ void CommandBuffer::add(const CommandBuffer& other) {
     OPTICK_EVENT();
 
     static_assert(sizeof(PolyContainerEntry) == 4, "PolyContainerEntry has the wrong size!");
-    _commands.reserve(other._commands);
+    _commands.reserveAdditional(other._commands);
 
     for (const CommandEntry& cmd : other._commandOrder) {
-        other.getPtr<CommandBase>(cmd)->addToBuffer(*this);
+        other.get<CommandBase>(cmd)->addToBuffer(*this);
     }
     _batched = false;
 }
@@ -99,22 +99,6 @@ void CommandBuffer::add(CommandBuffer** buffers, size_t count) {
 
     for (size_t i = 0; i < count; ++i) {
         add(*buffers[i]);
-    }
-}
-
-void CommandBuffer::addDestructive(CommandBuffer& other) {
-    OPTICK_EVENT();
-
-    add(other);
-    other.clear(false);
-}
-
-void CommandBuffer::addDestructive(CommandBuffer** buffers, size_t count) {
-    OPTICK_EVENT();
-
-    add(buffers, count);
-    for (size_t i = 0; i < count; ++i) {
-        buffers[i]->clear(false);
     }
 }
 
@@ -150,7 +134,7 @@ void CommandBuffer::batch() {
             const U8 typeIndex = entry._typeIndex;
             const GFX::CommandType cmdType = static_cast<GFX::CommandType>(typeIndex);
 
-            CommandBase* crtCommand = getPtr<CommandBase>(entry);
+            CommandBase* crtCommand = get<CommandBase>(entry);
 
             if (prevCommand != nullptr && 
                 prevType == cmdType &&
@@ -182,7 +166,7 @@ void CommandBuffer::batch() {
                 continue;
             }
 
-            CommandBase* crtCommand = getPtr<CommandBase>(entry);
+            CommandBase* crtCommand = get<CommandBase>(entry);
             if (prevCommand != nullptr && 
                 entry._typeIndex == to_base(GFX::CommandType::BIND_DESCRIPTOR_SETS) &&
                 tryMergeCommands(GFX::CommandType::BIND_DESCRIPTOR_SETS, prevCommand, crtCommand))
@@ -210,7 +194,7 @@ void CommandBuffer::batch() {
             continue;
         }
 
-        CommandBase* crtCommand = getPtr<CommandBase>(entry);
+        CommandBase* crtCommand = get<CommandBase>(entry);
         if (prevCommand != nullptr && entry._typeIndex == to_base(GFX::CommandType::BEGIN_RENDER_PASS)) {
             static_cast<EndRenderPassCommand*>(prevCommand)->_ignore = true;
             prevCommand = nullptr;
@@ -231,7 +215,7 @@ void CommandBuffer::batch() {
         switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 // We may just wish to clear some state
-                if (getPtr<BeginRenderPassCommand>(cmd)->_descriptor.setViewport()) {
+                if (get<BeginRenderPassCommand>(cmd)->_descriptor.setViewport()) {
                     hasWork = true;
                     break;
                 }
@@ -263,15 +247,15 @@ void CommandBuffer::batch() {
                 break;
             }break;
             case GFX::CommandType::RESOLVE_RT: {
-                const ResolveRenderTargetCommand* crtCmd = getPtr<ResolveRenderTargetCommand>(cmd);
+                const ResolveRenderTargetCommand* crtCmd = get<ResolveRenderTargetCommand>(cmd);
                 hasWork = crtCmd->_resolveColours || crtCmd->_resolveDepth;
             } break;
             case GFX::CommandType::SET_MIP_LEVELS: {
-                const SetTextureMipLevelsCommand* crtCmd = getPtr<SetTextureMipLevelsCommand>(cmd);
+                const SetTextureMipLevelsCommand* crtCmd = get<SetTextureMipLevelsCommand>(cmd);
                 hasWork = crtCmd->_texture != nullptr && (crtCmd->_baseLevel != crtCmd->_texture->getBaseMipLevel() || crtCmd->_maxLevel != crtCmd->_texture->getMaxMipLevel());
             } break;
             case GFX::CommandType::COPY_TEXTURE: {
-                const CopyTextureCommand* crtCmd = getPtr<CopyTextureCommand>(cmd);
+                const CopyTextureCommand* crtCmd = get<CopyTextureCommand>(cmd);
                 hasWork = crtCmd->_source.type() != TextureType::COUNT && crtCmd->_destination.type() != TextureType::COUNT;
             }break;
         };
@@ -308,7 +292,7 @@ void CommandBuffer::clean() {
             {
                 OPTICK_EVENT("Clean Draw Commands");
 
-                vectorEASTLFast<GenericDrawCommand>& cmds = getPtr<DrawCommand>(cmd)->_drawCommands;
+                DrawCommand::CommandContainer& cmds = get<DrawCommand>(cmd)->_drawCommands;
                 eastl::erase_if(cmds,
                                 [](const GenericDrawCommand& cmd) noexcept -> bool {
                                     return cmd._drawCount == 0u;
@@ -319,7 +303,7 @@ void CommandBuffer::clean() {
             case CommandType::BIND_PIPELINE : {
                 OPTICK_EVENT("Clean Pipelines");
 
-                const Pipeline* pipeline = getPtr<BindPipelineCommand>(cmd)->_pipeline;
+                const Pipeline* pipeline = get<BindPipelineCommand>(cmd)->_pipeline;
                 // If the current pipeline is identical to the previous one, remove it
                 erase = (prevPipeline != nullptr && *prevPipeline == *pipeline);
 
@@ -330,13 +314,13 @@ void CommandBuffer::clean() {
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
                 OPTICK_EVENT("Clean Push Constants");
 
-                const PushConstants& constants = getPtr<SendPushConstantsCommand>(cmd)->_constants;
+                const PushConstants& constants = get<SendPushConstantsCommand>(cmd)->_constants;
                 erase = constants.empty();
             }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
                 OPTICK_EVENT("Clean Descriptor Sets");
 
-                const DescriptorSet& set = getPtr<BindDescriptorSetsCommand>(cmd)->_set;
+                const DescriptorSet& set = get<BindDescriptorSetsCommand>(cmd)->_set;
                 erase = (set.empty() || (prevDescriptorSet != nullptr && *prevDescriptorSet == set));
 
                 if (!erase) {
@@ -346,7 +330,7 @@ void CommandBuffer::clean() {
             case GFX::CommandType::DRAW_TEXT: {
                 OPTICK_EVENT("Clean Draw Text");
 
-                const TextElementBatch& textBatch = getPtr<DrawTextCommand>(cmd)->_batch;
+                const TextElementBatch& textBatch = get<DrawTextCommand>(cmd)->_batch;
                 bool hasText = !textBatch.empty();
                 if (hasText) {
                     hasText = false;
@@ -360,7 +344,7 @@ void CommandBuffer::clean() {
             case GFX::CommandType::SET_SCISSOR: {
                 OPTICK_EVENT("Clean Scissor");
 
-                const Rect<I32>* scissorRect = &getPtr<SetScissorCommand>(cmd)->_rect;
+                const Rect<I32>* scissorRect = &get<SetScissorCommand>(cmd)->_rect;
                 erase = (prevScissorRect != nullptr && *prevScissorRect == *scissorRect);
 
                 if (!erase) {
@@ -370,7 +354,7 @@ void CommandBuffer::clean() {
             case GFX::CommandType::SET_VIEWPORT: {
                 OPTICK_EVENT("Clean Viewport");
 
-                const Rect<I32>* viewportRect = &getPtr<SetViewportCommand>(cmd)->_viewport;
+                const Rect<I32>* viewportRect = &get<SetViewportCommand>(cmd)->_viewport;
                 erase = (prevViewportRect != nullptr && *prevViewportRect == *viewportRect);
 
                 if (!erase) {
@@ -380,7 +364,7 @@ void CommandBuffer::clean() {
             case GFX::CommandType::SET_BLEND: {
                 OPTICK_EVENT("Clean Viewport");
 
-                const BlendingProperties* blendProperties = &getPtr<SetBlendCommand>(cmd)->_blendProperties;
+                const BlendingProperties* blendProperties = &get<SetBlendCommand>(cmd)->_blendProperties;
                 erase = (prevBlendProperties != nullptr && *prevBlendProperties == *blendProperties);
 
                 if (!erase) {
@@ -543,7 +527,7 @@ stringImpl CommandBuffer::toString() const {
     I32 crtIndent = 0;
     stringImpl out = "\n\n\n\n";
     for (const CommandEntry& cmd : _commandOrder) {
-        toString(get<CommandBase>(cmd), static_cast<GFX::CommandType>(cmd._typeIndex), crtIndent, out);
+        toString(*get<CommandBase>(cmd), static_cast<GFX::CommandType>(cmd._typeIndex), crtIndent, out);
         out.append("\n");
     }
     out.append("\n\n\n\n");
@@ -586,7 +570,7 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
 bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     OPTICK_EVENT();
 
-    const auto BatchCommands = [](vectorEASTLFast<GenericDrawCommand>& commands, bool byBaseInstance) {
+    const auto BatchCommands = [](DrawCommand::CommandContainer& commands, bool byBaseInstance) {
         vec_size previousCommandIndex = 0;
         vec_size currentCommandIndex = 1;
         const vec_size commandCount = commands.size();
@@ -599,7 +583,7 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
         }
     };
 
-    const auto RemoveEmptyDrawCommands = [](vectorEASTLFast<GenericDrawCommand>& commands) {
+    const auto RemoveEmptyDrawCommands = [](DrawCommand::CommandContainer& commands) {
         const size_t startSize = commands.size();
         eastl::erase_if(commands,
                         [](const GenericDrawCommand& cmd) noexcept -> bool {
@@ -608,7 +592,7 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
         return startSize - commands.size() > 0;
     };
 
-    vectorEASTLFast<GenericDrawCommand>& commands = prevCommand->_drawCommands;
+    DrawCommand::CommandContainer& commands = prevCommand->_drawCommands;
     commands.insert(eastl::cend(commands),
                     eastl::make_move_iterator(eastl::begin(crtCommand->_drawCommands)),
                     eastl::make_move_iterator(eastl::end(crtCommand->_drawCommands)));

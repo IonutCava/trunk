@@ -65,10 +65,10 @@ PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
     postFXShader.threaded(false);
     postFXShader.propertyDescriptor(postFXShaderDescriptor);
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
-    _drawConstants.set("_noiseTile", GFX::PushConstantType::FLOAT, 0.1f);
-    _drawConstants.set("_noiseFactor", GFX::PushConstantType::FLOAT, 0.02f);
-    _drawConstants.set("_fadeActive", GFX::PushConstantType::BOOL, false);
-    _drawConstants.set("_zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
+    _drawConstants.set(_ID("_noiseTile"), GFX::PushConstantType::FLOAT, 0.1f);
+    _drawConstants.set(_ID("_noiseFactor"), GFX::PushConstantType::FLOAT, 0.02f);
+    _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
+    _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
 
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette"));  // 0
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise"));  // 1
@@ -193,7 +193,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     bindPipelineCmd._pipeline = _drawPipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
-    _drawConstants.set("_zPlanes", GFX::PushConstantType::VEC2, camera.getZPlanes());
+    _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, camera.getZPlanes());
     GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
@@ -224,8 +224,8 @@ void PostFX::idle(const Configuration& config) {
             _randomFlashCoefficient = Random(1000) * 0.001f;
         }
 
-        _drawConstants.set("randomCoeffNoise", GFX::PushConstantType::FLOAT, _randomNoiseCoefficient);
-        _drawConstants.set("randomCoeffNoise", GFX::PushConstantType::FLOAT, _randomFlashCoefficient);
+        _drawConstants.set(_ID("randomCoeffNoise"), GFX::PushConstantType::FLOAT, _randomNoiseCoefficient);
+        _drawConstants.set(_ID("randomCoeffNoise"), GFX::PushConstantType::FLOAT, _randomFlashCoefficient);
     }
 
     _preRenderBatch->idle(config);
@@ -252,11 +252,11 @@ void PostFX::update(const U64 deltaTimeUS) {
             }
         }
 
-        _drawConstants.set("_fadeStrength", GFX::PushConstantType::FLOAT, fadeStrength);
+        _drawConstants.set(_ID("_fadeStrength"), GFX::PushConstantType::FLOAT, fadeStrength);
         
         _fadeActive = fadeStrength > EPSILON_D64;
         if (!_fadeActive) {
-            _drawConstants.set("_fadeActive", GFX::PushConstantType::BOOL, false);
+            _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
             if (_fadeInComplete) {
                 _fadeInComplete();
                 _fadeInComplete = DELEGATE_CBK<void>();
@@ -266,8 +266,8 @@ void PostFX::update(const U64 deltaTimeUS) {
 }
 
 void PostFX::setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete) {
-    _drawConstants.set("_fadeColour", GFX::PushConstantType::VEC4, Util::ToFloatColour(targetColour));
-    _drawConstants.set("_fadeActive", GFX::PushConstantType::BOOL, true);
+    _drawConstants.set(_ID("_fadeColour"), GFX::PushConstantType::VEC4, Util::ToFloatColour(targetColour));
+    _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, true);
     _targetFadeTimeMS = durationMS;
     _currentFadeTimeMS = 0.0;
     _fadeWaitDurationMS = waitDurationMS;
@@ -283,7 +283,7 @@ void PostFX::setFadeIn(D64 durationMS, DELEGATE_CBK<void> onComplete) {
     _currentFadeTimeMS = 0.0;
     _fadeOut = false;
     _fadeActive = true;
-    _drawConstants.set("_fadeActive", GFX::PushConstantType::BOOL, true);
+    _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, true);
     _fadeInComplete = onComplete;
 }
 

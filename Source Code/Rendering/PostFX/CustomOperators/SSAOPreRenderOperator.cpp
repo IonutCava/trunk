@@ -122,8 +122,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ssaoBlur.waitForReady(false);
     _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
     
-    _ssaoGenerateConstants.set("sampleKernel", GFX::PushConstantType::VEC3, kernel);
-    _ssaoBlurConstants.set("passThrough", GFX::PushConstantType::BOOL, false);
+    _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, kernel);
+    _ssaoBlurConstants.set(_ID("passThrough"), GFX::PushConstantType::BOOL, false);
     
     radius(context.context().config().rendering.postFX.ssaoRadius);
     power(context.context().config().rendering.postFX.ssaoPower);
@@ -139,18 +139,18 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
 
     _ssaoOutput._rt->resize(width, height);
 
-    _ssaoGenerateConstants.set("noiseScale", GFX::PushConstantType::VEC2, vec2<F32>(width, height) / to_F32(_noiseTexture->width()));
+    _ssaoGenerateConstants.set(_ID("noiseScale"), GFX::PushConstantType::VEC2, vec2<F32>(width, height) / to_F32(_noiseTexture->width()));
 }
 
 void SSAOPreRenderOperator::radius(const F32 val) {
     _radius = val;
-    _ssaoGenerateConstants.set("radius", GFX::PushConstantType::FLOAT, _radius);
+    _ssaoGenerateConstants.set(_ID("radius"), GFX::PushConstantType::FLOAT, _radius);
     _context.context().config().rendering.postFX.ssaoRadius = val;
 }
 
 void SSAOPreRenderOperator::power(const F32 val) {
     _power = val;
-    _ssaoGenerateConstants.set("power", GFX::PushConstantType::FLOAT, _power);
+    _ssaoGenerateConstants.set(_ID("power"), GFX::PushConstantType::FLOAT, _power);
     _context.context().config().rendering.postFX.ssaoPower = val;
 }
 
@@ -163,8 +163,8 @@ void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bu
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     if (_enabled) {
-        _ssaoGenerateConstants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-        _ssaoGenerateConstants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, GetInverse(camera.getProjectionMatrix()));
+        _ssaoGenerateConstants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+        _ssaoGenerateConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, GetInverse(camera.getProjectionMatrix()));
 
         // Generate AO
         GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -230,6 +230,6 @@ TextureData SSAOPreRenderOperator::getDebugOutput() const {
 void SSAOPreRenderOperator::onToggle(const bool state) {
     PreRenderOperator::onToggle(state);
     _enabled = state;
-    _ssaoBlurConstants.set("passThrough", GFX::PushConstantType::BOOL, !state);
+    _ssaoBlurConstants.set(_ID("passThrough"), GFX::PushConstantType::BOOL, !state);
 }
 };

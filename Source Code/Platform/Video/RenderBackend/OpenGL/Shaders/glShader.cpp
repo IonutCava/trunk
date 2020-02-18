@@ -17,7 +17,7 @@ namespace {
 
     size_t g_validationBufferMaxSize = 4096 * 16;
 
-    ShaderType getShaderType(UseProgramStageMask mask) {
+    ShaderType getShaderType(UseProgramStageMask mask) noexcept {
         if (BitCompare(to_U32(mask), UseProgramStageMask::GL_VERTEX_SHADER_BIT)) {
             return ShaderType::VERTEX;
         } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT)) {
@@ -36,7 +36,7 @@ namespace {
         return ShaderType::COUNT;
     }
 
-    UseProgramStageMask getStageMask(ShaderType type) {
+    UseProgramStageMask getStageMask(ShaderType type) noexcept {
         switch (type) {
             case ShaderType::VERTEX: return UseProgramStageMask::GL_VERTEX_SHADER_BIT;
             case ShaderType::TESSELLATION_CTRL: return UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT;
@@ -206,6 +206,10 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
         }
     }
     _sourceCode.fill({});
+
+    if (_valid) {
+        cacheActiveUniforms();
+    }
 
     return _valid;
 }
@@ -396,69 +400,69 @@ void glShader::dumpBinary() {
     MemoryManager::DELETE(binary);
 }
 
-
-/// Cache uniform/attribute locations for shader programs
-/// When we call this function, we check our name<->address map to see if we queried the location before
-/// If we didn't, ask the GPU to give us the variables address and save it for later use
-I32 glShader::binding(const char* name, U64 bindingHash) {
-    // If the shader can't be used for rendering, just return an invalid address
-    if (_programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid()) {
-
-        // Check the cache for the location
-        const auto& it = _shaderVarLocation.find(bindingHash);
-        if (it != std::cend(_shaderVarLocation)) {
-            return it->second;
-        }
-
-        // Cache miss. Query OpenGL for the location
-        const GLint location = glGetUniformLocation(_programHandle, name);
-
-        // Save it for later reference
-        hashAlg::insert(_shaderVarLocation, bindingHash, location);
-
-        // Return the location
-        return location;
-    }
-
-    return -1;
-}
-
 I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, bool force) {
-    if (constant._type != GFX::PushConstantType::COUNT && constant._bindingHash > 0u) {
-        assert(!constant._binding.empty());
-
-        const U64 locationHash = constant._bindingHash;
-
-        const I32 bindingLoc = binding(constant._binding.c_str(), locationHash);
-
-        if (bindingLoc == -1 || _programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
+    if (constant._type != GFX::PushConstantType::COUNT && constant._bindingHash > 0u &&
+        _programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid())
+    {
+        // Check the cache for the location
+        const auto& locationIter = _shaderVarLocation.find(constant._bindingHash);
+        if (locationIter == std::cend(_shaderVarLocation)) {
             return -1;
         }
 
         UniformsByNameHash::ShaderVarMap& map = _uniformsByNameHash._shaderVars;
-        const auto& it = map.find(locationHash);
-        if (it != std::cend(map)) {
-            if (force || it->second != constant) {
-                it->second = constant;
+        const auto& constantIter = map.find(constant._bindingHash);
+        if (constantIter != std::cend(map)) {
+            if (force || constantIter->second != constant) {
+                constantIter->second = constant;
             } else {
                 return -1;
             }
         } else {
-            hashAlg::emplace(map, locationHash, constant);
+            hashAlg::emplace(map, constant._bindingHash, constant);
         }
 
-        return bindingLoc;
+        return locationIter->second;
     }
 
     return -1;
 }
 
-void glShader::UploadPushConstant(const GFX::PushConstant& constant, bool force) {
-    const I32 binding = cachedValueUpdate(constant, force);
+void glShader::cacheActiveUniforms() {
+    // If the shader can't be used for rendering, just return an invalid address
+    if (_programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid()) {
+        _shaderVarLocation.clear();
 
-    if (binding != -1) {
-        Uniform(binding, constant._type, constant._buffer, constant._flag);
+        GLint numActiveUniforms = 0;
+        glGetProgramInterfaceiv(_programHandle, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
+
+        vector<GLchar> nameData(256);
+        vector<GLenum> properties;
+        properties.push_back(GL_NAME_LENGTH);
+        properties.push_back(GL_TYPE);
+        properties.push_back(GL_ARRAY_SIZE);
+        properties.push_back(GL_BLOCK_INDEX);
+        properties.push_back(GL_LOCATION);
+
+        vector<GLint> values(properties.size());
+
+        for (GLint attrib = 0; attrib < numActiveUniforms; ++attrib) {
+            glGetProgramResourceiv(_programHandle, GL_UNIFORM, attrib, (GLsizei)properties.size(), properties.data(), (GLsizei)values.size(), NULL, &values[0]);
+            if (values[3] != -1 || values[4] == -1) {
+                continue;
+            }
+            nameData.resize(values[0]); //The length of the name.
+            glGetProgramResourceName(_programHandle, GL_UNIFORM, attrib, (GLsizei)nameData.size(), NULL, &nameData[0]);
+            std::string name((char*)&nameData[0], nameData.size() - 1);
+
+            const U64 hash = _ID(name.c_str());
+            hashAlg::insert(_shaderVarLocation, hash, values.back());
+        }
     }
+}
+
+void glShader::UploadPushConstant(const GFX::PushConstant& constant, bool force) {
+    Uniform(cachedValueUpdate(constant, force), constant._type, constant._buffer.data(), (GLsizei)constant._buffer.size(), constant._flag);
 }
 
 void glShader::reuploadUniforms(bool force) {
@@ -467,10 +471,12 @@ void glShader::reuploadUniforms(bool force) {
     }
 }
 
-void glShader::Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const {
-    const GLboolean transpose = (flag ? GL_TRUE : GL_FALSE);
-    const GLsizei byteCount = (GLsizei)values.size();
+void glShader::Uniform(I32 binding, GFX::PushConstantType type, const Byte* const values, const GLsizei byteCount, bool flag) const {
+    if (binding == -1) {
+        return;
+    }
 
+    const GLboolean transpose = (flag ? GL_TRUE : GL_FALSE);
     switch (type) {
         case GFX::PushConstantType::BOOL:
             glProgramUniform1iv(_programHandle, binding, byteCount / (1 * sizeof(GLint)), castData<GLint, 1, I32>(values));

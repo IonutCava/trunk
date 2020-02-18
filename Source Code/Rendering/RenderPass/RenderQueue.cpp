@@ -209,8 +209,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     Start(*sortTask);
 
     for (RenderBin* renderBin : _renderBins) {
-        const U16 size = renderBin->getBinSize(stagePass._stage);
-        if (size > 0 && size <= threadBias) {
+        if (renderBin->getBinSize(stagePass._stage) <= threadBias) {
             renderBin->sort(stagePass._stage, getSortOrder(stagePass, renderBin->getType()));
         }
     }

@@ -36,6 +36,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
+inline void DELETE_CMD(GFX::CommandBase*& cmd) {
+    assert(cmd != nullptr);
+    const GFX::Deleter& deleter = cmd->getDeleter();
+    deleter.operate(cmd);
+    assert(cmd == nullptr);
+}
+
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::allocateCommand() {
@@ -44,68 +51,50 @@ CommandBuffer::allocateCommand() {
     const I24 cmdIndex = _commandCount[index]++;
     _commandOrder.emplace_back(index, cmdIndex);
 
-    return static_cast<T*>(_commands.getPtrOrNull(index, cmdIndex));
+    return static_cast<T*>(_commands.get(index, cmdIndex));
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::add(const T& command) {
     T* mem = allocateCommand<T>();
+
     if (mem != nullptr) {
         *mem = command;
     } else {
         mem = CmdAllocator<T>::allocate(command);
-        _commands.insert<T>(to_base(T::EType),
-                            deleted_unique_ptr<CommandBase>(
-                                mem,
-                                [](CommandBase *& cmd) {
-                                    CmdAllocator<T>::deallocate((T*&)(cmd));
-                                }
-                            ));
+        _commands.insert<T>(to_base(T::EType), mem);
     }
 
     _batched = false;
-    return *mem;
+    return mem;
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
-CommandBuffer::add(T&& command) {
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+CommandBuffer::add(const T&& command) {
     T* mem = allocateCommand<T>();
     if (mem != nullptr) {
-        *mem = command;
+        *mem = std::move(command);
     } else {
-        mem = CmdAllocator<T>::allocate(command);
-        _commands.insert<T>(to_base(T::EType),
-                            deleted_unique_ptr<CommandBase>(
-                                mem,
-                                [](CommandBase *& cmd) {
-                                    CmdAllocator<T>::deallocate((T*&)(cmd));
-                                }
-                            ));
+        mem = CmdAllocator<T>::allocate(std::move(command));
+        _commands.insert<T>(to_base(T::EType), mem);
     }
 
     _batched = false;
-    return *mem;
+    return mem;
 }
 
-
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(const CommandEntry& commandEntry) noexcept {
-    return static_cast<T&>(_commands.get(commandEntry));
+    return static_cast<T*>(_commands.get(commandEntry));
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(const CommandEntry& commandEntry) const noexcept {
-    return static_cast<const T&>(_commands.get(commandEntry));
-}
-
-template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, CommandBuffer::Container::EntryList&>::type
-CommandBuffer::get() noexcept {
-    return _commands.get(to_base(T::EType));
+    return static_cast<T*>(_commands.get(commandEntry));
 }
 
 template<typename T>
@@ -125,13 +114,13 @@ CommandBuffer::exists(I24 index) const noexcept {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T&>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(I24 index) noexcept {
     return get<T>({to_base(T::EType), index});
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
+inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(I24 index) const noexcept {
     return get<T>({to_base(T::EType), index });
 }
@@ -141,33 +130,9 @@ inline bool CommandBuffer::exists(U8 typeIndex, I24 index) const noexcept {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-CommandBuffer::getPtr(const CommandEntry& commandEntry) noexcept {
-    return static_cast<T*>(_commands.getPtr(commandEntry));
-}
-
-template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
-CommandBuffer::getPtr(const CommandEntry& commandEntry) const noexcept {
-    return static_cast<const T*>(_commands.getPtr(commandEntry));
-}
-
-template<typename T>
-typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-CommandBuffer::getPtr(I24 index) noexcept {
-    return static_cast<T*>(_commands.getPtr(to_base(T::EType), index));
-}
-
-template<typename T>
-typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T*>::type
-CommandBuffer::getPtr(I24 index) const noexcept {
-    return static_cast<const T*>(_commands.getPtr(to_base(T::EType), index));
-}
-
-template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
 CommandBuffer::count() const noexcept {
-    return _commands.size(to_base(T::EType));
+    return _commands.get(to_base(T::EType)).size();
 }
 
 inline CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() noexcept {
@@ -187,13 +152,6 @@ inline void CommandBuffer::clear(bool clearMemory) {
         _commandOrder.resize(0);
     }
 
-    _batched = true;
-}
-
-inline void CommandBuffer::nuke() {
-    _commandOrder.clear();
-    _commandCount.fill(0);
-    _commands.nuke();
     _batched = true;
 }
 

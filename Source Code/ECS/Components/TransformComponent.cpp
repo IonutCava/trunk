@@ -497,7 +497,7 @@ namespace Divide {
     void TransformComponent::getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const {
         OPTICK_EVENT();
 
-        if (_parentUsageContext == NodeUsageContext::NODE_STATIC || interpolationFactor > 0.99) {
+        if (_parentUsageContext == NodeUsageContext::NODE_STATIC || interpolationFactor > 0.985) {
             matrixOut.set(getWorldMatrix());
         } else {
             getMatrix(interpolationFactor, matrixOut);

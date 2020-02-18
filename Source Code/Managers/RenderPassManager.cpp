@@ -189,6 +189,11 @@ namespace Divide {
 
             eastl::fill(eastl::begin(_completedPasses), eastl::end(_completedPasses), false);
 
+            Task* whileRendering = CreateTask(pool, nullptr, [](const Task& parentTask) {
+                //ToDo: Do other stuff here: some physx, some AI, some whatever.
+                // This will be called in parallel to flushing a command buffer so be aware of any CPU AND GPU race conditions
+            }, "Wait for renderer task");
+
             bool slowIdle = false;
             while (!all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), true)) {
                 OPTICK_EVENT("ON_LOOP");
@@ -222,9 +227,12 @@ namespace Divide {
 
                     if (!dependenciesRunning) {
                         OPTICK_TAG("Buffer ID: ", i);
+                        //Start(*whileRendering);
                         // No running dependency so we can flush the command buffer and add the pass to the skip list
                         _context.flushCommandBuffer(*_renderPassCommandBuffer[i], false);
                         _completedPasses[i] = true;
+                        //Wait(*whileRendering);
+
                     } else {
                         finished = false;
                     }
@@ -357,12 +365,6 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
         }
     }
 
-    vec4<F32> properties = {};
-    rComp.getRenderingProperties(stagePass,
-                                 properties,
-                                 dataOut._normalMatrixW.element(1, 3),
-                                 dataOut._normalMatrixW.element(2, 3));
-
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     const BoundsComponent* const bounds = node.get<BoundsComponent>();
     const BoundingBox& aabb = bounds->getBoundingBox();
@@ -372,21 +374,26 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
     // Get the colour matrix (diffuse, specular, etc.)
     rComp.getMaterialColourMatrix(dataOut._colourMatrix);
 
-    dataOut._colourMatrix.element(3, 2) = properties.z; // lod;
+    RenderingComponent::NodeRenderingProperties properties = {};
+    rComp.getRenderingProperties(stagePass, properties);
+
+    dataOut._normalMatrixW.element(1, 3) = to_F32(properties._reflectionIndex);
+    dataOut._normalMatrixW.element(2, 3) = to_F32(properties._refractionIndex);
+    dataOut._colourMatrix.element(2, 3) = properties._receivesShadows ? 1.0f : 0.0f;
+    dataOut._colourMatrix.element(3, 2) = to_F32(properties._lod);
     //set properties.w to negative value to skip occlusion culling for the node
-    dataOut._colourMatrix.element(3, 3) = properties.w;
+    dataOut._colourMatrix.element(3, 3) = properties._cullFlagValue;
 
     // Temp: Make the hovered/selected node brighter by setting emissive to something bright
-    if (properties.x > 0.5f || properties.x < -0.5f) {
+    if (properties._isSelected || properties._isHovered) {
         FColour4 matColour = dataOut._colourMatrix.getRow(2);
-        if (properties.x < -0.5f) {
+        if (properties._isSelected) {
             matColour.rgb({0.f, 0.50f, 0.f});
         } else {
             matColour.rgb({0.f, 0.25f, 0.f});
         }
         dataOut._colourMatrix.setRow(2, matColour);
     }
-    dataOut._colourMatrix.element(2, 3) = 0.0f;
 }
 
 void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
@@ -411,7 +418,7 @@ void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
 
         const mat4<F32>& viewMatrix = camera.getViewMatrix();
         const D64 interpFactor = _context.getFrameInterpolationFactor();
-        const bool needsInterp = interpFactor < 0.99;
+        const bool needsInterp = interpFactor < 0.985;
 
         U32 dataIdx = 0u;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
@@ -482,12 +489,21 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
     auto& rComps = passData.queuedRenderingComponents;
     rComps.resize(0);
 
-    for (const RenderBin::SortedQueue& queue : passData.sortedQueues) {
-        for (const RenderBin::SortedQueueEntry& entry : queue) {
-            if (params._sourceNode != nullptr && *params._sourceNode == *entry.first) {
-                continue;
+    if (params._sourceNode != nullptr) {
+        const I64 sourceGUID = params._sourceNode->getGUID();
+
+        for (const RenderBin::SortedQueue& queue : passData.sortedQueues) {
+            for (RenderingComponent* entry : queue) {
+                if (sourceGUID != entry->getSGN().getGUID()) {
+                    rComps.push_back(entry);
+                }
             }
-            rComps.push_back(entry.second);
+        }
+    } else {
+        for (const RenderBin::SortedQueue& queue : passData.sortedQueues) {
+            rComps.insert(eastl::cend(rComps),
+                          eastl::cbegin(queue),
+                          eastl::cend(queue));
         }
     }
 

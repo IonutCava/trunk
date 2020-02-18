@@ -65,6 +65,7 @@ struct CmdAllocator {
 #define DEFINE_POOL(Command) \
 decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex = {}; \
 decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool = {}; \
+decltype(Command::s_deleter) Command::s_deleter = {};
 
 #define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> { \
 typedef Command<Name, Enum> Base; \
@@ -114,6 +115,21 @@ enum class CommandType : U8 {
 };
 
 class CommandBuffer;
+struct CommandBase;
+
+struct Deleter {
+    virtual void operate(CommandBase*& cmd) const {
+        ACKNOWLEDGE_UNUSED(cmd);
+    }
+};
+
+template<typename T>
+struct DeleterImpl final : Deleter {
+    virtual void operate(CommandBase*& cmd) const final {
+        CmdAllocator<T>::deallocate((T*&)(cmd));
+        cmd = nullptr;
+    }
+};
 
 struct CommandBase
 {
@@ -122,10 +138,13 @@ struct CommandBase
     virtual void addToBuffer(CommandBuffer& buffer) const = 0;
     virtual stringImpl toString(U16 indent) const = 0;
     virtual const char* commandName() const noexcept = 0;
+
+    virtual Deleter& getDeleter() const noexcept = 0;
 };
 
 template<typename T, CommandType EnumVal>
 struct Command : public CommandBase {
+    static DeleterImpl<T> s_deleter;
 
     virtual ~Command() = default;
 
@@ -136,6 +155,10 @@ struct Command : public CommandBase {
     stringImpl toString(U16 indent) const override {
         ACKNOWLEDGE_UNUSED(indent);
         return stringImpl(commandName());
+    }
+
+    Deleter& getDeleter() const noexcept final {
+        return s_deleter;
     }
 
     static constexpr CommandType EType = EnumVal;
@@ -170,14 +193,16 @@ END_COMMAND(SendPushConstantsCommand);
 
 
 BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS);
+    using CommandContainer = eastl::fixed_vector<GenericDrawCommand, 4, true, eastl::dvd_eastl_allocator>;
+
     static_assert(sizeof(GenericDrawCommand) == 32, "Wrong command size! May cause performance issues. Disable assert to continue anyway.");
 
     DrawCommand() = default;
     DrawCommand(size_t reserveSize) { _drawCommands.reserve(reserveSize); }
     DrawCommand(const GenericDrawCommand& cmd) : _drawCommands({ cmd }) {}
-    DrawCommand(const vectorEASTLFast<GenericDrawCommand>& cmds) : _drawCommands(cmds) {}
+    DrawCommand(const CommandContainer& cmds) : _drawCommands(cmds) {}
 
-    vectorEASTLFast<GenericDrawCommand> _drawCommands;
+    CommandContainer _drawCommands;
 
     stringImpl toString(U16 indent) const final;
 END_COMMAND(DrawCommand);

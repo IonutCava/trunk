@@ -51,7 +51,7 @@ stringImpl SendPushConstantsCommand::toString(U16 indent) const {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Constant binding: %s\n", it._binding.c_str()));
+        ret.append(Util::StringFormat("Constant binding: %d\n", it._bindingHash));
     }
 
     return ret;
