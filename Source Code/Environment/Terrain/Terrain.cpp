@@ -62,11 +62,8 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
     TerrainTessellator::Configuration shadowConfig = {};
     shadowConfig._useCameraDistance = false;
 
-    constexpr U32 passPerLight = ShadowMap::MAX_PASSES_PER_LIGHT;
-    for (U32 i = 0; i < ShadowMap::MAX_SHADOW_PASSES; ++i) {
-        if (i % passPerLight > 0) {
-            _shadowTessellators[i].overrideConfig(shadowConfig);
-        }
+    for (TerrainTessellator& tessellator : _shadowTessellators) {
+        tessellator.overrideConfig(shadowConfig);
     }
 }
 
@@ -248,7 +245,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     const U8 stageIndex = to_U8(renderStagePass._stage);
 
-    U32 offset = 0;
+    U32 offset = 0u;
     TerrainTessellator* tessellator = nullptr;
 
     if (renderStagePass._stage == RenderStage::SHADOW) {
@@ -287,7 +284,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         if (update)
         {
             tessellator->createTree(camera.getEye(), crtPos, _descriptor->dimensions(), _descriptor->tessellationSettings().y);
-            U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
+            const U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
 
             bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(frustum, depth, LoD);
             _shaderData->writeData(offset, depth, data);
@@ -310,11 +307,11 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     U32 offset = 0;
     if (renderStagePass._stage == RenderStage::SHADOW) {
-        offset = Terrain::MAX_RENDER_NODES * renderStagePass._passIndex;
+        const U32 shadowOffset = renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB;
+        offset = Terrain::MAX_RENDER_NODES * shadowOffset;
     } else {
-        const U8 stageIndex = to_U8(renderStagePass._stage);
         offset = ShadowMap::MAX_SHADOW_PASSES * Terrain::MAX_RENDER_NODES;
-        offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));
+        offset += (to_U32((to_U8(renderStagePass._stage) - 1) * Terrain::MAX_RENDER_NODES));
     }
 
     ShaderBufferBinding buffer = {};

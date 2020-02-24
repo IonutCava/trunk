@@ -687,7 +687,6 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
         const bool hasNormalsTarget = extraTargets.x;
         const bool hasLightingTarget = extraTargets.y;
 
-        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         if (params._bindTargets) {
             // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
             RTDrawDescriptor drawPolicy = {};
@@ -695,6 +694,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
                 drawPolicy = *params._drawPolicy;
             }
 
+            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             if (hasNormalsTarget) {
                 GFX::ResolveRenderTargetCommand resolveCmd = { };
                 resolveCmd._source = params._target;
@@ -730,9 +730,10 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             beginRenderPassCommand._descriptor = drawPolicy;
             beginRenderPassCommand._name = "DO_MAIN_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
+
+            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
         }
 
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
         // We try and render translucent items in the shadow pass and due some alpha-discard tricks
         renderQueueToSubPasses(stagePass._stage, bufferInOut);
 
@@ -920,7 +921,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, hasHiZ, bufferInOut);
 
     if (stage != RenderStage::SHADOW) {
-        
+
         GFX::ResolveRenderTargetCommand resolveCmd = {};
         resolveCmd._source = params._target;
         resolveCmd._resolveColours = true;
