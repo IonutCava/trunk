@@ -198,21 +198,17 @@ void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceC
 
 void parallel_for(TaskPool& pool, 
                   const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                  U32 count,
-                  U32 partitionSize,
-                  TaskPriority priority,
-                  bool noWait,
-                  bool useCurrentThread,
+                  const ParallelForDescriptor& descriptor,
                   const char* debugName)
 {
-    if (count > 0) {
+    if (descriptor._iterCount > 0) {
 
-        const U32 crtPartitionSize = std::min(partitionSize, count);
-        const U32 partitionCount = count / crtPartitionSize;
-        const U32 remainder = count % crtPartitionSize;
+        const U32 crtPartitionSize = std::min(descriptor._partitionSize, descriptor._iterCount);
+        const U32 partitionCount = descriptor._iterCount / crtPartitionSize;
+        const U32 remainder = descriptor._iterCount % crtPartitionSize;
 
         U32 adjustedCount = partitionCount;
-        if (useCurrentThread) {
+        if (descriptor._useCurrentThread) {
             adjustedCount -= 1;
         }
 
@@ -230,9 +226,10 @@ void parallel_for(TaskPool& pool,
                            cbk(parentTask, start, end);
                            jobCount.fetch_sub(1);
                        },
-                debugName), priority);
+                debugName), descriptor._priority);
         }
         if (remainder > 0) {
+            const U32 count = descriptor._iterCount;
             Start(*CreateTask(pool,
                        nullptr,
                        [&cbk, &jobCount, count, remainder](const Task& parentTask) {
@@ -242,10 +239,10 @@ void parallel_for(TaskPool& pool,
                            cbk(parentTask, count - remainder, count);
                            jobCount.fetch_sub(1);
                        },
-                debugName), priority);
+                debugName), descriptor._priority);
         }
 
-        if (useCurrentThread) {
+        if (descriptor._useCurrentThread) {
             Task* threadTask = CreateTask(pool, [](const Task& parentTask) {ACKNOWLEDGE_UNUSED(parentTask); }, debugName);
             const U32 start = adjustedCount * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
@@ -255,9 +252,9 @@ void parallel_for(TaskPool& pool,
             cbk(*threadTask, start, end);
             threadTask->_unfinishedJobs.fetch_sub(1);
         }
-        if (!noWait) {
+        if (descriptor._waitForFinish) {
             while (jobCount.load() > 0) {
-                if (!Runtime::isMainThread()) {
+                if (descriptor._allowPoolIdle && !Runtime::isMainThread()) {
                     pool.threadWaiting();
                 }
             }

@@ -289,7 +289,11 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
         }
     };
 
-    parallel_for(_context.context(), updateDistToCamera, aliveCount, 1000);
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = aliveCount;
+    descriptor._partitionSize = 1000u;
+
+    parallel_for(_context.context(), updateDistToCamera, descriptor);
 
     _bufferUpdate = CreateTask(_context.context(),
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
@@ -369,7 +373,11 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
             }
         };
 
-        parallel_for(_context.context(), updateSize, aliveCount, s_particlesPerThread);
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = aliveCount;
+        descriptor._partitionSize = s_particlesPerThread;
+
+        parallel_for(_context.context(), updateSize, descriptor);
 
         ParticleData& data = *_particles;
         for (std::shared_ptr<ParticleUpdater>& up : _updaters) {

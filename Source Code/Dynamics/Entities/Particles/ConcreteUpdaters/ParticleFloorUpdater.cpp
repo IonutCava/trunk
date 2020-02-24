@@ -33,7 +33,11 @@ void ParticleFloorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
         }
     };
 
-    parallel_for(_context.context(), updateFloor, endID, s_particlesPerThread);
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = endID;
+    descriptor._partitionSize = s_particlesPerThread;
+
+    parallel_for(_context.context(), updateFloor, descriptor);
 }
 
 };

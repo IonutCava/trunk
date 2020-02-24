@@ -1255,7 +1255,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     inline bool compare(const vec4<U> &v) const;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    inline bool compare(const vec4<U> &v, U epsi) const;
+    inline bool compare(const vec4<U> &v, U epsi) const noexcept;
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 *iv) noexcept;
     /// swap the components  of this vector with that of the specified one

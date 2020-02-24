@@ -202,6 +202,10 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 
     PlatformContext& context = parentScene().context();
 
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = to_U32(_orderedNodeList.size());
+    descriptor._partitionSize = g_nodesPerEventPartition;
+
     parallel_for(context,
                     [this](const Task& parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
@@ -209,14 +213,15 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
                             Attorney::SceneGraphNodeSceneGraph::processEvents(*node);
                         }
                     },
-                    to_U32(_orderedNodeList.size()),
-                    g_nodesPerEventPartition,
-                    TaskPriority::DONT_CARE,
-                    false,
-                    true,
+                    descriptor,
                     "Process Node Events");
 
 #if 0 // need a flag maybe, per node, that returns true if the update can be run in parallel. Otherwise, add to a separate list and parse serially after the parallel_for
+
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = to_U32(_orderedNodeList.size());
+    descriptor._partitionSize = g_nodesPerUpdatePartition;
+
     parallel_for(context,
                     [this, deltaTimeUS, &sceneState](const Task& parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
@@ -224,11 +229,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
                             node->sceneUpdate(deltaTimeUS, sceneState);
                         }
                     },
-                    to_U32(_orderedNodeList.size()),
-                    g_nodesPerUpdatePartition,
-                    TaskPriority::DONT_CARE,
-                    false,
-                    true,
+                    descriptor,
                     "Process Node Events");
 #else
     for (SceneGraphNode* node : _orderedNodeList) {

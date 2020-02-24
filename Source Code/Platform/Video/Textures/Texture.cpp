@@ -229,7 +229,12 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                     }
                 };
 
-                parallel_for(_context.context(), findAlpha, width, std::max(16u, to_U32(width / 10)), TaskPriority::DONT_CARE, false, true, ("Find alpha task [ " + name + " ]").c_str());
+                ParallelForDescriptor descriptor = {};
+                descriptor._iterCount = width;
+                descriptor._partitionSize = std::max(16u, to_U32(width / 10));
+                descriptor._useCurrentThread = true;
+
+                parallel_for(_context.context(), findAlpha, descriptor, ("Find alpha task [ " + name + " ]").c_str());
 
                 metadataCache << _hasTransparency;
                 metadataCache << _hasTranslucency;

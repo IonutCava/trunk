@@ -48,6 +48,7 @@
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
     <EnableASAN>false</EnableASAN>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -88,9 +89,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_UnityBuild|x64'">
     <IntDir>$(Configuration)_ThirdPartyLibs\</IntDir>
@@ -98,13 +101,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;D:\Divide-Framework\3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -131,8 +136,10 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <ConformanceMode>true</ConformanceMode>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/bigobj /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -152,7 +159,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;D:\Divide-Framework\3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -178,9 +185,10 @@
       <StringPooling>true</StringPooling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/bigobj /Zc:twoPhase- </AdditionalOptions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -200,7 +208,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;D:\Divide-Framework\3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -221,10 +229,13 @@
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -244,7 +255,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;D:\Divide-Framework\3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Profile/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -263,7 +274,7 @@
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
@@ -294,7 +305,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_UnityBuild|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;D:\Divide-Framework\3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/ChaiScript/include/;$(SolutionDir)../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/assimp/include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalOptions>/bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>

@@ -703,7 +703,7 @@ inline bool vec4<F32>::compare(const vec4<F32> &v) const {
 /// compare this vector with the one specified and see if they match within the specified amount
 template <typename T>
 template <typename U>
-inline bool vec4<T>::compare(const vec4<U> &v, U epsi) const {
+inline bool vec4<T>::compare(const vec4<U> &v, U epsi) const noexcept{
     if (std::is_same<T, U>::value && std::is_same<U, F32>::value) {
         return !fneq128(_reg._reg, v._reg._reg, epsi);
     } else {

@@ -147,6 +147,12 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
         tempContainer.resize(rootChildren.size());
 
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = to_U32(rootChildren.size());
+        descriptor._partitionSize = g_nodesPerCullingPartition;
+        descriptor._priority = nodeParams._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+        descriptor._useCurrentThread = true;
+
         parallel_for(*params._context,
                      [this, &rootChildren, &nodeParams, &tempContainer](const Task& parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
@@ -155,11 +161,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
                             frustumCullNode(parentTask, *rootChildren[i], nodeParams, temp);
                         }
                      },
-                     to_U32(rootChildren.size()),
-                     g_nodesPerCullingPartition,
-                     nodeParams._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
-                     false, //Wait for all subtasks to finish! This means that the subtasks can run without waiting as the parent task should keep count of all running child taks
-                     true,
+                     descriptor,
                      "Frustum cull task");
         
         for (const VisibleNodeList& nodeListEntry : tempContainer) {
@@ -207,17 +209,21 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
                 U32 containerIdx = 0;
                 NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
                 tempContainer.resize(children.size());
+
+
+                ParallelForDescriptor descriptor = {};
+                descriptor._iterCount = to_U32(children.size());
+                descriptor._partitionSize = g_nodesPerCullingPartition;
+                descriptor._priority = params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+                descriptor._useCurrentThread = true;
+
                 parallel_for(*task._parentPool,
                              [this, &children, &params, &tempContainer](const Task & parentTask, U32 start, U32 end) {
                                  for (U32 i = start; i < end; ++i) {
                                     frustumCullNode(parentTask, *children[i], params, tempContainer[i]);
                                  }
                              },
-                             to_U32(children.size()),
-                             g_nodesPerCullingPartition,
-                             params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME,
-                             false,
-                             true,
+                             descriptor,
                              "Frustum cull node task");
                 for (const VisibleNodeList& nodeListEntry : tempContainer) {
                     nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));

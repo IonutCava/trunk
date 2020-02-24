@@ -508,17 +508,20 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
     }
 
     const Camera& cam = *params._camera;
+ 
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = to_U32(rComps.size());
+    descriptor._partitionSize = g_nodesPerPrepareDrawPartition;
+    descriptor._priority = g_singleThreadedCommandBufferCreation ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+    descriptor._useCurrentThread = true;
+
     parallel_for(_parent.platformContext(),
         [&rComps, &cam, &sceneRenderState, &stagePass, refresh](const Task& parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComps[i], cam, sceneRenderState, stagePass, refresh);
             }
         },
-        to_U32(rComps.size()),
-        g_nodesPerPrepareDrawPartition,
-        g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE,
-        false,
-        true,
+        descriptor,
         "Prepare Draw Task");
     
     buildBufferData(stagePass, sceneRenderState, *params._camera, passData.sortedQueues, refresh, bufferInOut);

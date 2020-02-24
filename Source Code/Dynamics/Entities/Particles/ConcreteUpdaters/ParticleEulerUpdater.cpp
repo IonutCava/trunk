@@ -36,7 +36,11 @@ void ParticleEulerUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
         }
     };
 
-    parallel_for(_context.context(), parseRange, endID, g_partitionSize);
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = endID;
+    descriptor._partitionSize = g_partitionSize;
+
+    parallel_for(_context.context(), parseRange, descriptor);
 }
 
 };

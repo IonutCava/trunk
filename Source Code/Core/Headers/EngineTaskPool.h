@@ -54,11 +54,7 @@ Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE_CBK<
 
 void parallel_for(PlatformContext& context,
                   const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                  U32 count,
-                  U32 partitionSize,
-                  TaskPriority priority = TaskPriority::DONT_CARE,
-                  bool noWait = false,
-                  bool useCurrentThread = false,
+                  const ParallelForDescriptor& descriptor,
                   const char* debugName = "");
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear);

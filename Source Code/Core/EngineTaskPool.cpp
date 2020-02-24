@@ -28,13 +28,9 @@ void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, 
 
 void parallel_for(PlatformContext& context,
                   const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                  U32 count,
-                  U32 partitionSize,
-                  TaskPriority priority,
-                  bool noWait,
-                  bool useCurrentThread,
+                  const ParallelForDescriptor& descriptor,
                   const char* debugName) {
-    parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), cbk, count, partitionSize, priority, noWait, useCurrentThread, debugName);
+    parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), cbk, descriptor, debugName);
 }
 
 }; //namespace Divide

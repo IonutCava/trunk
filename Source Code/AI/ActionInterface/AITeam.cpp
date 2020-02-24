@@ -100,11 +100,11 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
                 }
             }
         };
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = entityCount;
+        descriptor._partitionSize = g_entityThreadedThreashold;
 
-        parallel_for(parentPool,
-                     updateIterFunction,
-                     entityCount,
-                     g_entityThreadedThreashold);
+        parallel_for(parentPool, updateIterFunction, descriptor);
     }
     return true;
 }
@@ -127,11 +127,11 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
                 }
             }
         };
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = entityCount;
+        descriptor._partitionSize = g_entityThreadedThreashold;
 
-        parallel_for(parentPool,
-                    inputIterFunction,
-                    entityCount,
-                    g_entityThreadedThreashold);
+        parallel_for(parentPool, inputIterFunction, descriptor);
     }
 
     return true;
@@ -156,10 +156,11 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         };
 
-        parallel_for(parentPool,
-                     dataIterFunction,
-                     entityCount,
-                     g_entityThreadedThreashold);
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = entityCount;
+        descriptor._partitionSize = g_entityThreadedThreashold;
+
+        parallel_for(parentPool, dataIterFunction, descriptor);
     }
 
     return true;
@@ -187,7 +188,7 @@ bool AITeam::addTeamMember(AIEntity* entity) {
     return true;
 }
 
-/// Removes an entity from this list
+// Removes an entity from this list
 bool AITeam::removeTeamMember(AIEntity* entity) {
     if (!entity) {
         return false;

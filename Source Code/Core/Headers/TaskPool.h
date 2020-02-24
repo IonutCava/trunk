@@ -37,6 +37,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+struct ParallelForDescriptor {
+    /// For loop iteration count
+    U32 _iterCount = 0u;
+    /// How many elements should we process per async task
+    U32 _partitionSize = 0u;
+    /// Each async task will start with the same priority specified here
+    TaskPriority _priority = TaskPriority::DONT_CARE;
+    /// If this is false, the parallel_for call won't block the current thread
+    bool _waitForFinish = true;
+    /// If true, we'll process a for partition on the calling thread
+    bool _useCurrentThread = true;
+    /// If true, we'll inform the thread pool to execute other tasks while waiting for the all async tasks to finish
+    bool _allowPoolIdle = true;
+};
+
 class TaskPool : public GUIDWrapper {
 public:
     enum class TaskPoolType : U8 {
@@ -83,7 +98,7 @@ public:
     friend void TaskYield(const Task& task);
     friend Task& Start(Task& task, TaskPriority prio, DELEGATE_CBK<void>&& onCompletionFunction);
     friend bool StopRequested(const Task& task) noexcept;
-    friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, U32 count, U32 partitionSize, TaskPriority priority, bool noWait, bool useCurrentThread, const char* debugName);
+    friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, const ParallelForDescriptor& descriptor, const char* debugName);
 
     void taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCompletionFunction);
     
@@ -97,17 +112,15 @@ public:
     void onThreadDestroy(const std::thread::id& threadID);
 
   private:
-     stringImpl _threadNamePrefix;
-     DELEGATE_CBK<void, const std::thread::id&> _threadCreateCbk;
-     std::unique_ptr<ThreadPool> _poolImpl;
-     moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
-     std::atomic_uint _runningTaskCount;
-     std::atomic_bool _stopRequested = false;
      hashMap<U32, vectorEASTL<DELEGATE_CBK<void>>> _taskCallbacks;
-     U8 _workerThreadCount;
-
-
+     DELEGATE_CBK<void, const std::thread::id&> _threadCreateCbk;
+     moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
+     std::unique_ptr<ThreadPool> _poolImpl;
+     stringImpl _threadNamePrefix;
+     std::atomic_uint _runningTaskCount;
      std::atomic_uint _threadCount;
+     std::atomic_bool _stopRequested = false;
+     U8 _workerThreadCount;
 };
 
 Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName = "");
@@ -116,11 +129,7 @@ Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task
 
 void parallel_for(TaskPool& pool,
                   const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                  U32 count,
-                  U32 partitionSize,
-                  TaskPriority priority = TaskPriority::DONT_CARE,
-                  bool noWait = false,
-                  bool useCurrentThread = false,
+                  const ParallelForDescriptor& descriptor,
                   const char* debugName = "");
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);
