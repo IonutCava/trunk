@@ -147,7 +147,7 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCom
     _runningTaskCount.fetch_sub(1);
 }
 
-Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction) 
+Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle)
 {
     if (parentTask != nullptr) {
         parentTask->_unfinishedJobs.fetch_add(1, std::memory_order_relaxed);
@@ -167,6 +167,8 @@ Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& th
     task->_parent = parentTask;
     task->_parentPool = this;
     task->_callback = threadedFunction;
+    task->_runWhileIdle = allowedInIdle;
+
     if (task->_id == 0) {
         task->_id = g_taskIDCounter.fetch_add(1u);
     }
@@ -182,14 +184,14 @@ void TaskPool::threadWaiting() {
     _poolImpl->executeOneTask(false);
 }
 
-Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction)
+Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle)
 {
-    return CreateTask(pool, nullptr, threadedFunction);
+    return CreateTask(pool, nullptr, threadedFunction, allowedInIdle);
 }
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction)
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle)
 {
-    return pool.createTask(parentTask, threadedFunction);
+    return pool.createTask(parentTask, threadedFunction, allowedInIdle);
 }
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear) {
@@ -224,7 +226,7 @@ void parallel_for(TaskPool& pool,
                            }
                            cbk(&parentTask, start, end);
                            jobCount.fetch_sub(1);
-                       }), descriptor._priority);
+                       }, descriptor._allowRunInIdle), descriptor._priority);
         }
         if (remainder > 0) {
             const U32 count = descriptor._iterCount;

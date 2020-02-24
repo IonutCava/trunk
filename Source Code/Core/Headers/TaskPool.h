@@ -50,6 +50,8 @@ struct ParallelForDescriptor {
     bool _useCurrentThread = true;
     /// If true, we'll inform the thread pool to execute other tasks while waiting for the all async tasks to finish
     bool _allowPoolIdle = true;
+    /// If true, async tasks can be invoked from other task's idle callbacks
+    bool _allowRunInIdle = true;
 };
 
 class TaskPool : public GUIDWrapper {
@@ -73,7 +75,7 @@ public:
     void flushCallbackQueue();
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
-    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
+    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
     inline U8 workerThreadCount() const noexcept {
         return _workerThreadCount;
@@ -123,9 +125,9 @@ public:
      U8 _workerThreadCount;
 };
 
-Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction);
+Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
 void parallel_for(TaskPool& pool,
                   const DELEGATE_CBK<void, const Task*, U32, U32>& cbk,

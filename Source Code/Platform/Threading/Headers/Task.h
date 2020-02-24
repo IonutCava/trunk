@@ -54,6 +54,7 @@ struct alignas(64) Task {
     U32 _id = 0;
     std::atomic_ushort _unfinishedJobs;
     std::atomic_bool _stopRequested = false;
+    bool _runWhileIdle = true;
 };
 
 Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, DELEGATE_CBK<void>&& onCompletionFunction = {});

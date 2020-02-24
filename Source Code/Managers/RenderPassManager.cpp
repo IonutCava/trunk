@@ -143,7 +143,8 @@ namespace Divide {
                                                      buf->clear(false);
                                                      pass->render(parentTask, sceneRenderState, *buf);
                                                      buf->batch();
-                                                 });
+                                                 },
+                                                 false);
                     Start(*_renderTasks[i], g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE);
                 }
                 { //PostFX should be pretty fast
