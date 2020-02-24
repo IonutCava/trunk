@@ -194,7 +194,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     constexpr U16 threadBias = 64;
     
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
-    Task* sortTask = CreateTask(pool, DELEGATE_CBK<void, Task&>(), "Render queue parent sort task");
+    Task* sortTask = CreateTask(pool, DELEGATE_CBK<void, Task&>());
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin->getBinSize(stagePass._stage) > threadBias) {
             RenderingOrder sortOrder = getSortOrder(stagePass, renderBin->getType());
@@ -202,7 +202,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
                                 sortTask,
                                 [renderBin, sortOrder, stagePass](const Task& parentTask) {
                                     renderBin->sort(stagePass._stage, sortOrder, parentTask);
-                                },"Render queue sort task"));
+                                }));
         }
     }
 

@@ -143,8 +143,7 @@ namespace Divide {
                                                      buf->clear(false);
                                                      pass->render(parentTask, sceneRenderState, *buf);
                                                      buf->batch();
-                                                 },
-                                                 "Render pass task");
+                                                 });
                     Start(*_renderTasks[i], g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE);
                 }
                 { //PostFX should be pretty fast
@@ -177,8 +176,7 @@ namespace Divide {
                                                 GFX::EnqueueCommand(*buf, copyCmd);
 
                                                 buf->batch();
-                                            },
-                                            "PostFX pass task");
+                                            });
                     Start(*postFXTask, g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE);
                 }
             }
@@ -192,7 +190,7 @@ namespace Divide {
             Task* whileRendering = CreateTask(pool, nullptr, [](const Task& parentTask) {
                 //ToDo: Do other stuff here: some physx, some AI, some whatever.
                 // This will be called in parallel to flushing a command buffer so be aware of any CPU AND GPU race conditions
-            }, "Wait for renderer task");
+            });
 
             bool slowIdle = false;
             while (!all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), true)) {
@@ -516,13 +514,12 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
     descriptor._useCurrentThread = true;
 
     parallel_for(_parent.platformContext(),
-        [&rComps, &cam, &sceneRenderState, &stagePass, refresh](const Task& parentTask, U32 start, U32 end) {
+        [&rComps, &cam, &sceneRenderState, &stagePass, refresh](const Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComps[i], cam, sceneRenderState, stagePass, refresh);
             }
         },
-        descriptor,
-        "Prepare Draw Task");
+        descriptor);
     
     buildBufferData(stagePass, sceneRenderState, *params._camera, passData.sortedQueues, refresh, bufferInOut);
 }

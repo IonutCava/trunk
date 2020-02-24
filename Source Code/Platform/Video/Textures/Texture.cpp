@@ -60,8 +60,7 @@ bool Texture::load() {
         Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
             [this](const Task & parent) {
                 threadedLoad();
-        },
-        ("Texture load task [ " + resourceName() + " ]").c_str()));
+        }));
     } else {
         threadedLoad();
     }
@@ -201,13 +200,13 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         } else {
             STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
             if (fileData.alpha()) {
-                const auto findAlpha = [this, &fileData, height](const Task& parent, U32 start, U32 end) {
+                const auto findAlpha = [this, &fileData, height](const Task* parent, U32 start, U32 end) {
                     U8 tempA;
                     for (U32 i = start; i < end; ++i) {
                         for (I32 j = 0; j < height; ++j) {
                             if (_hasTransparency && _hasTranslucency) {
-                                if (parent._parent) {
-                                    Stop(*parent._parent);
+                                if (parent && parent->_parent) {
+                                    Stop(*parent->_parent);
                                 }
                                 return;
                             }
@@ -216,14 +215,14 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                                 _hasTransparency = true;
                                 _hasTranslucency = tempA > 1;
                                 if (_hasTranslucency) {
-                                    if (parent._parent) {
-                                        Stop(*parent._parent);
+                                    if (parent && parent->_parent) {
+                                        Stop(*parent->_parent);
                                     }
                                     return;
                                 }
                             }
                         }
-                        if ((parent._parent && StopRequested(*parent._parent)) || StopRequested(parent)) {
+                        if (parent && ((parent->_parent && StopRequested(*parent->_parent)) || StopRequested(*parent))) {
                             break;
                         }
                     }
@@ -234,7 +233,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                 descriptor._partitionSize = std::max(16u, to_U32(width / 10));
                 descriptor._useCurrentThread = true;
 
-                parallel_for(_context.context(), findAlpha, descriptor, ("Find alpha task [ " + name + " ]").c_str());
+                parallel_for(_context.context(), findAlpha, descriptor);
 
                 metadataCache << _hasTransparency;
                 metadataCache << _hasTranslucency;

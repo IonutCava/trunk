@@ -16,7 +16,7 @@ void ParticleFloorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
 
     F32 floorY = _floorY;
     F32 bounce = _bounceFactor;
-    auto updateFloor = [&p, floorY, bounce](const Task& parentTask, U32 start, U32 end) {
+    auto updateFloor = [&p, floorY, bounce](const Task* parentTask, U32 start, U32 end) {
         for (U32 i = start; i < end; ++i) {
             if ((p._position[i].y - (p._position[i].w / 2)) < floorY) {
                 vec3<F32> force(p._acceleration[i]);

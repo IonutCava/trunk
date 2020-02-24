@@ -132,8 +132,7 @@ void Kernel::startSplashScreen() {
 
             break;
         }
-    },
-    "Splash Task");
+    });
     Start(*_splashTask, TaskPriority::REALTIME/*HIGH*/);
 
     window.swapBuffers(false);
@@ -674,17 +673,15 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
 
-    U32 hardwareThreads = std::max(config.runtime.maxWorkerThreads < 0 
-                                                                   ? HARDWARE_THREAD_COUNT()
-                                                                   : to_U32(config.runtime.maxWorkerThreads) + 2u,
-                                   3u);
+    const U32 hardwareThreads = std::max(config.runtime.maxWorkerThreads < 0 
+                                                ? HARDWARE_THREAD_COUNT()
+                                                : to_U32(config.runtime.maxWorkerThreads),
+                                         to_base(RenderStage::COUNT) + 2u);
 
-    U8 threadCount = static_cast<U8>(std::max(hardwareThreads - 2u, to_base(RenderStage::COUNT) + 2u));
-
-    std::atomic_uint threadCounter = threadCount + 3;
+    std::atomic_uint threadCounter = hardwareThreads + 3;
 
     if (!_platformContext.taskPool(TaskPoolType::HIGH_PRIORITY).init(
-        threadCount,
+        to_U8(hardwareThreads),
         TaskPool::TaskPoolType::TYPE_BLOCKING,
         [this, &threadCounter](const std::thread::id& threadID) {
             Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);

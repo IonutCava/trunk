@@ -674,7 +674,7 @@ void glFramebuffer::end(bool resolveMSAAColour, bool resolveMSAAExternalColour, 
         resolve(-1, resolveMSAAColour && mask.isEnabled(RTAttachmentType::Colour), resolveMSAADepth && mask.isEnabled(RTAttachmentType::Depth), resolveMSAAExternalColour);
     }
 
-    if (needsUnbind) {
+    if (needsUnbind || true) {
         GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, 0);
         if (_previousPolicy.setViewport()) {
             _context.setViewport(_prevViewport);

@@ -207,14 +207,13 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     descriptor._partitionSize = g_nodesPerEventPartition;
 
     parallel_for(context,
-                    [this](const Task& parentTask, U32 start, U32 end) {
+                    [this](const Task* parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
                             SceneGraphNode* node = _orderedNodeList[i];
                             Attorney::SceneGraphNodeSceneGraph::processEvents(*node);
                         }
                     },
-                    descriptor,
-                    "Process Node Events");
+                    descriptor);
 
 #if 0 // need a flag maybe, per node, that returns true if the update can be run in parallel. Otherwise, add to a separate list and parse serially after the parallel_for
 
@@ -247,8 +246,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
                     _octree->updateTree();
                 }
                 _octree->update(deltaTimeUS);
-            },
-            "SceneGraph - update octree"), 
+            }), 
             //TaskPriority::DONT_CARE,
             TaskPriority::REALTIME,
             [this]() { _octreeUpdating = false; });

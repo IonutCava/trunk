@@ -545,7 +545,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     if (threadedLoading) {
         Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, &context](const Task & parent) {
             loadThreadedResources(terrain, context, terrainDescriptor);
-        }, ("TerrainLoader::loadTerrain [ " + name + " ]").c_str()));
+        }));
     } else {
         loadThreadedResources(terrain, context, terrainDescriptor);
     }

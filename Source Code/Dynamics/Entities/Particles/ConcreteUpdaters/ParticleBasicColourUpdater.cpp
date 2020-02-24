@@ -13,7 +13,7 @@ namespace {
 };
 
 void ParticleBasicColourUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
-   auto parseRange = [&p](const Task& parentTask, U32 start, U32 end) -> void {
+   auto parseRange = [&p](const Task* parentTask, U32 start, U32 end) -> void {
         for (U32 i = start; i < end; ++i) {
             p._colour[i].set(Lerp(p._startColour[i], p._endColour[i], p._misc[i].y));
         }

@@ -43,7 +43,7 @@ TEST(ParallelForTest)
 
     std::atomic_uint loopCounter = 0;
     std::atomic_uint totalCounter = 0;
-    auto loop = [&totalCounter, &loopCounter](const Task& parentTask, U32 start, U32 end) {
+    auto loop = [&totalCounter, &loopCounter](const Task* parentTask, U32 start, U32 end) {
         ++loopCounter;
         for (U32 i = start; i < end; ++i) {
             ++totalCounter;
@@ -151,16 +151,16 @@ TEST(TaskSpeedTest)
         timer.start();
         Task* job = CreateTask(test,
             [](const Task& parentTask) {
-            // NOP
-        }
+                NOP();
+            }
         );
 
         for (std::size_t i = 0; i < 60 * 1000; ++i)
         {
             Start(*CreateTask(test, job,
                 [](const Task& parentTask) {
-                // NOP
-            }
+                    NOP();
+                }
             ));
         }
 
@@ -179,16 +179,16 @@ TEST(TaskSpeedTest)
         timer.start();
         Task* job = CreateTask(test,
             [](const Task& parentTask) {
-            // NOP
-        }
+                NOP();
+            }
         );
 
         for (std::size_t i = 0; i < 60 * 1000; ++i)
         {
             Start(*CreateTask(test, job,
                 [](const Task& parentTask) {
-                // NOP
-            }
+                    NOP();
+                }
             ));
         }
 
@@ -214,8 +214,8 @@ TEST(TaskSpeedTest)
         descriptor._useCurrentThread = false;
 
         parallel_for(test,
-                     [](const Task& parentTask, U32 start, U32 end) {
-                        // NOP
+                     [](const Task* parentTask, U32 start, U32 end) {
+                        NOP();
                      },
                      descriptor);
         timer.stop();
@@ -239,8 +239,8 @@ TEST(TaskSpeedTest)
         descriptor._useCurrentThread = true;
 
         parallel_for(test,
-            [](const Task & parentTask, U32 start, U32 end) {
-                // NOP
+            [](const Task* parentTask, U32 start, U32 end) {
+                NOP();
             },
             descriptor);
 
@@ -264,8 +264,8 @@ TEST(TaskSpeedTest)
         Time::ProfileTimer timer;
         timer.start();
         parallel_for(test,
-                    [](const Task& parentTask, U32 start, U32 end) {
-                        // NOP
+                    [](const Task* parentTask, U32 start, U32 end) {
+                        NOP();
                     },
                     descriptor);
         timer.stop();
@@ -289,8 +289,8 @@ TEST(TaskSpeedTest)
         descriptor._useCurrentThread = true;
 
         parallel_for(test,
-            [](const Task & parentTask, U32 start, U32 end) {
-                // NOP
+            [](const Task* parentTask, U32 start, U32 end) {
+                NOP();
             },
             descriptor);
 

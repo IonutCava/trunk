@@ -355,8 +355,7 @@ bool glShaderProgram::load() {
         Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
             [this](const Task & parent) {
                 threadedLoad(false);
-            },
-            Util::StringFormat("Shader load task [ %s ]", resourceName().c_str()).c_str()));
+            }));
     } else {
         threadedLoad(false);
     }

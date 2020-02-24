@@ -113,9 +113,7 @@ Vegetation::Vegetation(GFXDevice& context,
             computeVegetationTransforms(parentTask, true);
             _instanceCountGrass = to_U32(_tempGrassData.size());
             _instanceCountTrees = to_U32(_tempTreeData.size());
-        },
-        "Vegetation compute transforms"
-        );
+        });
 
     Start(*_buildTask, TaskPriority::DONT_CARE);
 }

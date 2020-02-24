@@ -16,7 +16,7 @@
 namespace Divide {
 
 namespace {
-    constexpr U32 g_nodesPerCullingPartition = 16u;
+    constexpr U32 g_nodesPerCullingPartition = 32u;
     //Worst case scenario: one per each node
     std::array<NodeListContainer, Config::MAX_VISIBLE_NODES> g_tempContainers = {};
     std::array<std::atomic_bool, Config::MAX_VISIBLE_NODES> g_freeList;
@@ -154,15 +154,14 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         descriptor._useCurrentThread = true;
 
         parallel_for(*params._context,
-                     [this, &rootChildren, &nodeParams, &tempContainer](const Task& parentTask, U32 start, U32 end) {
+                     [this, &rootChildren, &nodeParams, &tempContainer](const Task* parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
                             auto& temp = tempContainer[i];
                             temp.resize(0);
-                            frustumCullNode(parentTask, *rootChildren[i], nodeParams, temp);
+                            frustumCullNode(parentTask, *rootChildren[i], nodeParams, 0u, temp);
                         }
                      },
-                     descriptor,
-                     "Frustum cull task");
+                     descriptor);
         
         for (const VisibleNodeList& nodeListEntry : tempContainer) {
             nodeCache.insert(eastl::end(nodeCache), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
@@ -174,7 +173,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
 }
 
 /// This method performs the visibility check on the given node and all of its children and adds them to the RenderQueue
-void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
+void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList& nodes) const {
     OPTICK_EVENT();
 
     // Early out for inactive nodes
@@ -194,9 +193,11 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
 
         // Internal node cull (check against camera frustum and all that ...)
         F32 distanceSqToCamera = 0.0f;
-        const bool isVisible = isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera);
-
-        if (isVisible && !StopRequested(task)) {
+        bool isVisible = isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera);
+        if (task != nullptr && StopRequested(*task)) {
+            isVisible = false;
+        }
+        if (isVisible) {
             if (!isTransformNode) {
                 nodes.push_back({ &currentNode, distanceSqToCamera });
             }
@@ -214,17 +215,16 @@ void RenderPassCuller::frustumCullNode(const Task& task, SceneGraphNode& current
                 ParallelForDescriptor descriptor = {};
                 descriptor._iterCount = to_U32(children.size());
                 descriptor._partitionSize = g_nodesPerCullingPartition;
-                descriptor._priority = params._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+                descriptor._priority = params._threaded  && recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
                 descriptor._useCurrentThread = true;
 
-                parallel_for(*task._parentPool,
-                             [this, &children, &params, &tempContainer](const Task & parentTask, U32 start, U32 end) {
+                parallel_for(currentNode.context(),
+                             [this, &children, &params, recursionLevel, &tempContainer](const Task* parentTask, U32 start, U32 end) {
                                  for (U32 i = start; i < end; ++i) {
-                                    frustumCullNode(parentTask, *children[i], params, tempContainer[i]);
+                                    frustumCullNode(parentTask, *children[i], params, recursionLevel + 1, tempContainer[i]);
                                  }
                              },
-                             descriptor,
-                             "Frustum cull node task");
+                             descriptor);
                 for (const VisibleNodeList& nodeListEntry : tempContainer) {
                     nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
                 }

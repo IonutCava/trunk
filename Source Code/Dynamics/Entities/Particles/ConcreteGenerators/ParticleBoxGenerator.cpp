@@ -27,8 +27,7 @@ void ParticleBoxGenerator::generate(Task& packagedTasksParent,
                 {
                     position.xyz(Random(min, max));
                 });
-            },
-            "ParticleBoxGenerator"));
+            }));
     });
 }
 

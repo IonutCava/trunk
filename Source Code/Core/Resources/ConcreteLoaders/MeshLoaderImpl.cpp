@@ -67,7 +67,7 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
     if (_descriptor.threaded()) {
         Start(*CreateTask(_context, [this, tempMeshData, loadingData](const Task & parent) {
             threadedMeshLoad(loadingData, tempMeshData);
-        }, ("Mesh load task: [" + _descriptor.assetName() + "]").c_str()));
+        }));
     } else {
         threadedMeshLoad(loadingData, tempMeshData);
     }

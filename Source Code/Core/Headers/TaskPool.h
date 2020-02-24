@@ -73,7 +73,7 @@ public:
     void flushCallbackQueue();
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
-    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName = "");
+    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
 
     inline U8 workerThreadCount() const noexcept {
         return _workerThreadCount;
@@ -98,7 +98,7 @@ public:
     friend void TaskYield(const Task& task);
     friend Task& Start(Task& task, TaskPriority prio, DELEGATE_CBK<void>&& onCompletionFunction);
     friend bool StopRequested(const Task& task) noexcept;
-    friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, const ParallelForDescriptor& descriptor, const char* debugName);
+    friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, const ParallelForDescriptor& descriptor);
 
     void taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCompletionFunction);
     
@@ -123,14 +123,13 @@ public:
      U8 _workerThreadCount;
 };
 
-Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName = "");
+Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction);
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName = "");
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction);
 
 void parallel_for(TaskPool& pool,
-                  const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                  const ParallelForDescriptor& descriptor,
-                  const char* debugName = "");
+                  const DELEGATE_CBK<void, const Task*, U32, U32>& cbk,
+                  const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);
 

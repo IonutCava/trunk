@@ -147,7 +147,7 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCom
     _runningTaskCount.fetch_sub(1);
 }
 
-Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName) 
+Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction) 
 {
     if (parentTask != nullptr) {
         parentTask->_unfinishedJobs.fetch_add(1, std::memory_order_relaxed);
@@ -182,14 +182,14 @@ void TaskPool::threadWaiting() {
     _poolImpl->executeOneTask(false);
 }
 
-Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName)
+Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction)
 {
-    return CreateTask(pool, nullptr, threadedFunction, debugName);
+    return CreateTask(pool, nullptr, threadedFunction);
 }
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName)
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction)
 {
-    return pool.createTask(parentTask, threadedFunction, debugName);
+    return pool.createTask(parentTask, threadedFunction);
 }
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear) {
@@ -197,9 +197,8 @@ void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceC
 }
 
 void parallel_for(TaskPool& pool, 
-                  const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                  const ParallelForDescriptor& descriptor,
-                  const char* debugName)
+                  const DELEGATE_CBK<void, const Task*, U32, U32>& cbk,
+                  const ParallelForDescriptor& descriptor)
 {
     if (descriptor._iterCount > 0) {
 
@@ -223,10 +222,9 @@ void parallel_for(TaskPool& pool,
                            if (TaskPool::USE_OPTICK_PROFILER) {
                                OPTICK_EVENT();
                            }
-                           cbk(parentTask, start, end);
+                           cbk(&parentTask, start, end);
                            jobCount.fetch_sub(1);
-                       },
-                debugName), descriptor._priority);
+                       }), descriptor._priority);
         }
         if (remainder > 0) {
             const U32 count = descriptor._iterCount;
@@ -236,21 +234,18 @@ void parallel_for(TaskPool& pool,
                            if (TaskPool::USE_OPTICK_PROFILER) {
                                OPTICK_EVENT();
                            }
-                           cbk(parentTask, count - remainder, count);
+                           cbk(&parentTask, count - remainder, count);
                            jobCount.fetch_sub(1);
-                       },
-                debugName), descriptor._priority);
+                       }), descriptor._priority);
         }
 
         if (descriptor._useCurrentThread) {
-            Task* threadTask = CreateTask(pool, [](const Task& parentTask) {ACKNOWLEDGE_UNUSED(parentTask); }, debugName);
             const U32 start = adjustedCount * crtPartitionSize;
             const U32 end = start + crtPartitionSize;
             if (TaskPool::USE_OPTICK_PROFILER) {
                 OPTICK_EVENT();
             }
-            cbk(*threadTask, start, end);
-            threadTask->_unfinishedJobs.fetch_sub(1);
+            cbk(nullptr, start, end);
         }
         if (descriptor._waitForFinish) {
             while (jobCount.load() > 0) {

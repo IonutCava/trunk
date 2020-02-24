@@ -189,8 +189,7 @@ bool NavigationMesh::buildThreaded() {
     _buildTask = CreateTask(_context,
                             [this](const Task& parentTask) {
                                 buildInternal(parentTask);
-                            },
-                            "NavMesh::buildTask");
+                            });
     Start(*_buildTask);
 
     return true;

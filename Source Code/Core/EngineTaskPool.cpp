@@ -12,14 +12,14 @@ namespace Divide {
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
-Task* CreateTask(PlatformContext& context, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName)
+Task* CreateTask(PlatformContext& context, const DELEGATE_CBK<void, Task&>& threadedFunction)
 {
-    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), threadedFunction, debugName);
+    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), threadedFunction);
 }
 
-Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, const char* debugName)
+Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction)
 {
-    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, threadedFunction, debugName);
+    return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, threadedFunction);
 }
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear) {
@@ -27,10 +27,9 @@ void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, 
 }
 
 void parallel_for(PlatformContext& context,
-                  const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
-                  const ParallelForDescriptor& descriptor,
-                  const char* debugName) {
-    parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), cbk, descriptor, debugName);
+                  const DELEGATE_CBK<void, const Task*, U32, U32>& cbk,
+                  const ParallelForDescriptor& descriptor) {
+    parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), cbk, descriptor);
 }
 
 }; //namespace Divide

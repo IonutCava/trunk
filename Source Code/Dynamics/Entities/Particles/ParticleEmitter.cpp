@@ -283,7 +283,7 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
     vectorBest<vec4<F32>>& misc = _particles->_misc;
     vectorBest<vec4<F32>>& pos = _particles->_position;
 
-    auto updateDistToCamera = [&eyePos, &misc, &pos](const Task& parent, U32 start, U32 end) {
+    auto updateDistToCamera = [&eyePos, &misc, &pos](const Task* parent, U32 start, U32 end) {
         for (U32 i = start; i < end; ++i) {
             misc[i].w = pos[i].xyz().distanceSquared(eyePos);
         }
@@ -300,7 +300,7 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
         // invalidateCache means that the existing particle data is no longer partially sorted
         _particles->sort(true);
         _buffersDirty[to_U32(renderStagePass._stage)] = true;
-    }, "ParticleEmitter - buffer update");
+    });
 
     Start(*_bufferUpdate);
 }
@@ -366,7 +366,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
 
         aliveCount = getAliveParticleCount();
 
-        auto updateSize = [this](const Task& parentTask, U32 start, U32 end) {
+        auto updateSize = [this](const Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 _particles->_position[i].w = _particles->_misc[i].z;
                 _particles->_acceleration[i].set(0.0f);
@@ -394,7 +394,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
                 aabb.add(_particles->_position[i]);
             }
             setBounds(aabb);
-        }, "ParticleEmitter - bb update");
+        });
         Start(*_bbUpdate);
     }
 
