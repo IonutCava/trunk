@@ -31,19 +31,19 @@ namespace {
     namespace ReflectionUtil {
         U16 g_reflectionBudget = 0;
 
-        inline bool isInBudget() { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
-        inline void resetBudget() { g_reflectionBudget = 0; }
-        inline void updateBudget() { ++g_reflectionBudget; }
-        inline U16  currentEntry() { return g_reflectionBudget; }
+        inline bool isInBudget() noexcept { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
+        inline void resetBudget() noexcept { g_reflectionBudget = 0; }
+        inline void updateBudget() noexcept { ++g_reflectionBudget; }
+        inline U16  currentEntry() noexcept { return g_reflectionBudget; }
     };
 
     namespace RefractionUtil {
         U16 g_refractionBudget = 0;
 
-        inline bool isInBudget() { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
-        inline void resetBudget() { g_refractionBudget = 0; }
-        inline void updateBudget() { ++g_refractionBudget;  }
-        inline U16  currentEntry() { return g_refractionBudget; }
+        inline bool isInBudget() noexcept { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
+        inline void resetBudget() noexcept { g_refractionBudget = 0; }
+        inline void updateBudget() noexcept { ++g_refractionBudget;  }
+        inline U16  currentEntry() noexcept { return g_refractionBudget; }
     };
 
     U32 getBufferFactor(RenderStage stage) noexcept {

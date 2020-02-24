@@ -1,8 +1,6 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
-uniform int renderStage = 0;
-
 #define STAGE_SHADOW 0
 #define STAGE_REFLECTION 1
 #define STAGE_REFRACTION 2

@@ -33,7 +33,7 @@ Task& Start(Task& task, TaskPriority priority, DELEGATE_CBK<void>&& onCompletion
                 return false;
             }
         }
-        if (wait && !task._runWhileIdle) {
+        if (!wait && !task._runWhileIdle) {
             return false;
         }
 

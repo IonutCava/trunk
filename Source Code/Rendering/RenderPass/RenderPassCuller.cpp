@@ -152,7 +152,6 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         descriptor._partitionSize = g_nodesPerCullingPartition;
         descriptor._priority = nodeParams._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
         descriptor._useCurrentThread = true;
-
         parallel_for(*params._context,
                      [this, &rootChildren, &nodeParams, &tempContainer](const Task* parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
@@ -162,7 +161,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
                         }
                      },
                      descriptor);
-        
+
         for (const VisibleNodeList& nodeListEntry : tempContainer) {
             nodeCache.insert(eastl::end(nodeCache), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
         }
@@ -215,7 +214,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
                 ParallelForDescriptor descriptor = {};
                 descriptor._iterCount = to_U32(children.size());
                 descriptor._partitionSize = g_nodesPerCullingPartition;
-                descriptor._priority = params._threaded  && recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+                descriptor._priority = params._threaded && recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
                 descriptor._useCurrentThread = true;
 
                 parallel_for(currentNode.context(),

@@ -414,7 +414,7 @@ class SceneManagerRenderPass {
         mgr.generateShadowMaps(bufferInOut);
     }
 
-    static const Camera& playerCamera(Divide::SceneManager& mgr) {
+    static const Camera& playerCamera(const Divide::SceneManager& mgr) {
         return *mgr.playerCamera();
     }
 
