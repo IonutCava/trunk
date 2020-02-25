@@ -236,11 +236,11 @@ inline void Transform::clone(const Transform* const transform) {
     _dirty = true;
     _rebuild = true;
 
-    transform->getValues(_transformValues);
+    _transformValues = transform->getValues();
 }
 
-inline void Transform::getValues(TransformValues& valuesOut) const {
-    std::memcpy(&valuesOut, &_transformValues, sizeof(TransformValues));
+inline TransformValues Transform::getValues() const {
+    return _transformValues;
 }
 
 /// Set position, scale and rotation based on the specified transform values

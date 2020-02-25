@@ -339,8 +339,7 @@ namespace Divide {
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
         flags |= readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
 
-        TransformValues transformValues;
-        transform->getValues(transformValues);
+        TransformValues transformValues = transform->getValues();
 
         vec3<F32> rot; transformValues._orientation.getEuler(rot); rot = Angle::to_DEGREES(rot);
         vec3<F32>& pos = transformValues._translation;

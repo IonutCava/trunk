@@ -73,11 +73,12 @@ vectorEASTL<AIEntity*> AITeam::getEntityList() const {
 
 bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
     // Crowds
-    SharedLock r1_lock(_crowdMutex);
-    for (AITeamCrowd::value_type& it : _aiTeamCrowd) {
-        it.second->update(deltaTimeUS);
+    {
+        SharedLock r1_lock(_crowdMutex);
+        for (AITeamCrowd::value_type& it : _aiTeamCrowd) {
+            it.second->update(deltaTimeUS);
+        }
     }
-    r1_lock.unlock();
 
     vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
     for (AIEntity* entity : entities) {

@@ -87,7 +87,7 @@ public:
 
     void getMatrix(mat4<F32>& matrixOut) override;
 
-    void getValues(TransformValues& valuesOut) const override;
+    TransformValues getValues() const override;
 
 protected:
     friend class PhysX;

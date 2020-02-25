@@ -38,14 +38,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct TransformValues {
+    /// All orientation/rotation info is stored in a Quaternion
+    /// (because they are awesome and also have an internal mat4 if needed)
+    Quaternion<F32> _orientation;
     /// The object's position in the world as a 3 component vector
     vec3<F32> _translation;
     /// Scaling is stored as a 3 component vector.
     /// This helps us check more easily if it's an uniform scale or not
     vec3<F32> _scale;
-    /// All orientation/rotation info is stored in a Quaternion
-    /// (because they are awesome and also have an internal mat4 if needed)
-    Quaternion<F32> _orientation;
 };
 
 bool operator==(const TransformValues& lhs, const TransformValues& rhs);
@@ -176,7 +176,7 @@ public:
     virtual void getMatrix(mat4<F32>& matrix) = 0;
 
     /// Get the current position, rotation and scale as a "TransformValues" package
-    virtual void getValues(TransformValues& valuesOut) const = 0;
+    virtual TransformValues getValues() const = 0;
 };
 
 

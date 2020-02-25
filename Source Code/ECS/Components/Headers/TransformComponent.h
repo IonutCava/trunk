@@ -138,7 +138,7 @@ namespace Divide {
 
          void setTransforms(const mat4<F32>& transform);
 
-         void getValues(TransformValues& valuesOut) const override;
+         TransformValues getValues() const override;
 
          void pushTransforms();
          bool popTransforms();

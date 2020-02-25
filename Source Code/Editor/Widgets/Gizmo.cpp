@@ -110,7 +110,7 @@ namespace Divide {
 
         if (ImGuizmo::IsUsing()) {
             if (!_wasUsed) {
-                transform->getValues(_undoEntry.oldVal);
+                _undoEntry.oldVal = transform->getValues();
             }
             _wasUsed = true;
             //ToDo: This seems slow as hell, but it works. Should I bother? -Ionut

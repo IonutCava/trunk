@@ -120,7 +120,7 @@ namespace Divide {
 
     void TransformComponent::OnUpdateLoop() {
         SharedLock r_lock(_lock);
-        _transformInterface.getValues(_prevTransformValues);
+        _prevTransformValues = _transformInterface.getValues();
     }
 
     void TransformComponent::setOffset(bool state, const mat4<F32>& offset) {
@@ -383,13 +383,8 @@ namespace Divide {
     }
 
     void TransformComponent::pushTransforms() {
-        TransformValues temp;
-        {
-            SharedLock r_lock(_lock);
-            _transformInterface.getValues(temp);
-        }
-
-        _transformStack.push(temp);
+        SharedLock r_lock(_lock);
+        _transformStack.push(_transformInterface.getValues());
     }
 
     bool TransformComponent::popTransforms() {
@@ -424,9 +419,9 @@ namespace Divide {
         setTransformDirty(TransformType::ALL);
     }
 
-    void TransformComponent::getValues(TransformValues& valuesOut) const {
+    TransformValues TransformComponent::getValues() const {
         SharedLock r_lock(_lock);
-        _transformInterface.getValues(valuesOut);
+        return _transformInterface.getValues();
     }
 
     void TransformComponent::getMatrix(mat4<F32>& matOut) {
@@ -637,11 +632,9 @@ namespace Divide {
         outputBuffer << _hasChanged;
 
         if (_hasChanged) {
-            TransformValues values = {};
-            {
-                SharedLock r_lock(_lock);
-                _transformInterface.getValues(values);
-            }
+            SharedLock r_lock(_lock);
+            TransformValues values = _transformInterface.getValues();
+            
             outputBuffer << values._translation;
             outputBuffer << values._scale;
             outputBuffer << values._orientation;

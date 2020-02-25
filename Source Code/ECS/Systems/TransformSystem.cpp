@@ -28,6 +28,7 @@ namespace Divide {
 
         // Keep memory in order to avoid mid-frame allocs
         _componentCache.resize(0);
+        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
 
         auto transform = _container->begin();
         auto transformEnd = _container->end();

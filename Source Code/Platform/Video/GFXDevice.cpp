@@ -1729,7 +1729,7 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 }
 
 void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut) {
-    GenericDrawCommand triangleCmd;
+    GenericDrawCommand triangleCmd = {};
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 

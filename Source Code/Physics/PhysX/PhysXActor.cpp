@@ -179,10 +179,12 @@ namespace Divide {
         matrixOut.set(_cachedLocalMatrix);
     }
 
-    void PhysXActor::getValues(TransformValues& valuesOut) const {
-        getPosition(valuesOut._translation);
-        getScale(valuesOut._scale);
-        getOrientation(valuesOut._orientation);
+    TransformValues PhysXActor::getValues() const {
+        TransformValues ret = {};
+        getPosition(ret._translation);
+        getScale(ret._scale);
+        getOrientation(ret._orientation);
+        return ret;
     }
 
 }; //namespace Divide

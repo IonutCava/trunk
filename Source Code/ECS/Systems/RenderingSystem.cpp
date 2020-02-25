@@ -21,6 +21,7 @@ namespace Divide {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         _componentCache.resize(0);
+        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
 
         auto rComp = _container->begin();
         auto rCompEnd = _container->end();

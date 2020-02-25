@@ -93,7 +93,7 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     void clone(const Transform* const transform);
 
     /// Extract the 3 transform values (position, scale, rotation) from the current instance
-    void getValues(TransformValues& valuesOut) const override;
+    TransformValues getValues() const override;
     /// Set position, scale and rotation based on the specified transform values
     void setValues(const TransformValues& values);
 
