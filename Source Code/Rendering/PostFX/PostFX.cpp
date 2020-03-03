@@ -245,7 +245,7 @@ void PostFX::update(const U64 deltaTimeUS) {
             if (_fadeWaitDurationMS < EPSILON_D64) {
                 if (_fadeOutComplete) {
                     _fadeOutComplete();
-                    _fadeOutComplete = DELEGATE_CBK<void>();
+                    _fadeOutComplete = DELEGATE<void>();
                 }
             } else {
                 _fadeWaitDurationMS -= Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
@@ -259,13 +259,13 @@ void PostFX::update(const U64 deltaTimeUS) {
             _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
             if (_fadeInComplete) {
                 _fadeInComplete();
-                _fadeInComplete = DELEGATE_CBK<void>();
+                _fadeInComplete = DELEGATE<void>();
             }
         }
     }
 }
 
-void PostFX::setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete) {
+void PostFX::setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE<void> onComplete) {
     _drawConstants.set(_ID("_fadeColour"), GFX::PushConstantType::VEC4, Util::ToFloatColour(targetColour));
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, true);
     _targetFadeTimeMS = durationMS;
@@ -278,7 +278,7 @@ void PostFX::setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDu
 
 // clear any fading effect currently active over the specified time interval
 // set durationMS to instantly clear the fade effect
-void PostFX::setFadeIn(D64 durationMS, DELEGATE_CBK<void> onComplete) {
+void PostFX::setFadeIn(D64 durationMS, DELEGATE<void> onComplete) {
     _targetFadeTimeMS = durationMS;
     _currentFadeTimeMS = 0.0;
     _fadeOut = false;

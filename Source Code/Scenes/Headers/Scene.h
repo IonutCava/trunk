@@ -158,7 +158,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void endDragSelection(PlayerIndex idx, bool editorRunning, vec2<I32> mousePos);
     bool isDragSelecting(PlayerIndex idx) const;
 
-    inline void addSelectionCallback(const DELEGATE_CBK<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
+    inline void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
 
@@ -307,7 +307,7 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorEASTL<Task*> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
-       vector<DELEGATE_CBK<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
+       vector<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
        vector<SGNRayResult> _sceneSelectionCandidates;
 
    protected:

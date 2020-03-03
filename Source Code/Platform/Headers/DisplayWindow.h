@@ -117,11 +117,11 @@ public:
         I32 id = -1;
     };
 
-    typedef DELEGATE_CBK<bool, const WindowEventArgs&> EventListener;
+    using EventListener = DELEGATE<bool, const WindowEventArgs&>;
 
 protected:
     SET_SAFE_DELETE_FRIEND
-    SET_DELETE_VECTOR_FRIEND
+    SET_DELETE_CONTAINER_FRIEND
 
     friend class WindowManager;
     DisplayWindow(WindowManager& parent, PlatformContext& context);
@@ -202,12 +202,12 @@ public:
     /// Mouse positioning is handled by SDL. Returns true on success
     bool setCursorPosition(I32 x, I32 y) noexcept;
 
-    inline I64 addEventListener(WindowEvent windowEvent, const EventListener& listener);
-    inline void removeEventlistener(WindowEvent windowEvent, I64 listenerGUID);
+    inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
+    inline void clearEventlisteners(WindowEvent windowEvent);
 
     void notifyListeners(WindowEvent event, const WindowEventArgs& args);
 
-    inline void destroyCbk(const DELEGATE_CBK<void>& destroyCbk);
+    inline void destroyCbk(const DELEGATE<void>& destroyCbk);
 
     inline Rect<I32> windowViewport() const;
 
@@ -229,9 +229,9 @@ private:
 
     vec2<U16> getDrawableSizeInternal() const;
 private:
-    typedef vector<std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>> EventListeners;
+    using EventListeners = vector<DELEGATE<bool, WindowEventArgs>>;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
-    DELEGATE_CBK<void> _destroyCbk;
+    DELEGATE<void> _destroyCbk;
 
     FColour4  _clearColour;
     Rect<I32> _renderingViewport;

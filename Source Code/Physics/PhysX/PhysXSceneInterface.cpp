@@ -84,7 +84,7 @@ void PhysXSceneInterface::release() {
         actor->_actor->release();
     }
 
-    MemoryManager::DELETE_VECTOR(_sceneRigidActors);
+    MemoryManager::DELETE_CONTAINER(_sceneRigidActors);
 
     if (_cpuDispatcher) {
         _cpuDispatcher->release();

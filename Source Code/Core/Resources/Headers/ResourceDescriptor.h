@@ -75,7 +75,7 @@ FWD_DECLARE_MANAGED_CLASS(CachedResource);
 
 class ResourceDescriptor : public Hashable {
    public:
-       using CBK = DELEGATE_CBK<void, CachedResource_wptr>;
+       using CBK = DELEGATE<void, CachedResource_wptr>;
 
     ///resourceName is the name of the resource instance, not an actual asset name! Use "assetName" for that
     explicit ResourceDescriptor(const Str128& resourceName);

@@ -129,13 +129,13 @@ void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& ar
         case WindowEvent::SHOWN:
         case WindowEvent::SIZE_CHANGED:
             _drawableSize = getDrawableSizeInternal();
-        break;
+            break;
         default:
-        break;
+            break;
     }
 
     for (auto listener : _eventListeners[to_base(event)]) {
-        if (!listener->_callback(args)) {
+        if (!listener(args)) {
             return;
         }
     }

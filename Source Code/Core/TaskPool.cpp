@@ -29,7 +29,7 @@ TaskPool::~TaskPool()
     shutdown();
 }
 
-bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const DELEGATE_CBK<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
+bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
     if (threadCount == 0 || _poolImpl != nullptr) {
         return false;
     }
@@ -73,7 +73,7 @@ void TaskPool::onThreadDestroy(const std::thread::id& threadID) {
     }
 }
 
-bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE_CBK<void>&& onCompletionFunction) {
+bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE<void>&& onCompletionFunction) {
     _runningTaskCount.fetch_add(1);
 
     if (priority == TaskPriority::REALTIME) {
@@ -147,7 +147,7 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCom
     _runningTaskCount.fetch_sub(1);
 }
 
-Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle)
+Task* TaskPool::createTask(Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle)
 {
     if (parentTask != nullptr) {
         parentTask->_unfinishedJobs.fetch_add(1, std::memory_order_relaxed);
@@ -184,12 +184,12 @@ void TaskPool::threadWaiting() {
     _poolImpl->executeOneTask(false);
 }
 
-Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle)
+Task* CreateTask(TaskPool& pool, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle)
 {
     return CreateTask(pool, nullptr, threadedFunction, allowedInIdle);
 }
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle)
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle)
 {
     return pool.createTask(parentTask, threadedFunction, allowedInIdle);
 }
@@ -199,7 +199,7 @@ void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceC
 }
 
 void parallel_for(TaskPool& pool, 
-                  const DELEGATE_CBK<void, const Task*, U32, U32>& cbk,
+                  const DELEGATE<void, const Task*, U32, U32>& cbk,
                   const ParallelForDescriptor& descriptor)
 {
     if (descriptor._iterCount > 0) {

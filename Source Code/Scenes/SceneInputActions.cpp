@@ -5,10 +5,10 @@
 namespace Divide {
 
 namespace {
-    static DELEGATE_CBK<void, InputParams> no_op = [](InputParams) {};
+    static DELEGATE<void, InputParams> no_op = [](InputParams) {};
 };
 
-InputAction::InputAction(const DELEGATE_CBK<void, InputParams>& action)
+InputAction::InputAction(const DELEGATE<void, InputParams>& action)
     : _action(action)
 {
 }
@@ -23,7 +23,7 @@ InputActionList::InputActionList()
     _noOPAction.displayName("no-op");
 }
 
-bool InputActionList::registerInputAction(U16 id, const DELEGATE_CBK<void, InputParams>& action) {
+bool InputActionList::registerInputAction(U16 id, const DELEGATE<void, InputParams>& action) {
     if (_inputActions.find(id) == std::cend(_inputActions)) {
         return _inputActions.emplace(id, action).second;
     }

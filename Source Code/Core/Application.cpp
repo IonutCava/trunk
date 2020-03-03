@@ -81,7 +81,7 @@ void Application::stop() {
         if (_kernel != nullptr) {
             Attorney::KernelApplication::shutdown(*_kernel);
         }
-        for (DELEGATE_CBK<void>& cbk : _shutdownCallback) {
+        for (DELEGATE<void>& cbk : _shutdownCallback) {
             cbk();
         }
 
@@ -144,7 +144,7 @@ void Application::onSizeChange(const SizeChangeParams& params) const {
     Attorney::KernelApplication::onSizeChange(*_kernel, params);
 }
 
-void Application::mainThreadTask(const DELEGATE_CBK<void>& task, bool wait) {
+void Application::mainThreadTask(const DELEGATE<void>& task, bool wait) {
     std::atomic_bool done = false;
     if (wait) {
         UniqueLock w_lock(_taskLock);

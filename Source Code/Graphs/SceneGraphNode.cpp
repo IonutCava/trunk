@@ -608,7 +608,7 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
     }
 }
 
-void SceneGraphNode::forEachChild(DELEGATE_CBK<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
+void SceneGraphNode::forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
     SharedLock r_lock(_childLock);
     const U32 childCount = getChildCountLocked();
     if (end > 0u) {
@@ -623,7 +623,7 @@ void SceneGraphNode::forEachChild(DELEGATE_CBK<void, SceneGraphNode*, I32>&& cal
     }
 }
 
-void SceneGraphNode::forEachChild(DELEGATE_CBK<void, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
+void SceneGraphNode::forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
     SharedLock r_lock(_childLock);
     const U32 childCount = getChildCountLocked();
     if (end > 0u) {
@@ -638,7 +638,7 @@ void SceneGraphNode::forEachChild(DELEGATE_CBK<void, const SceneGraphNode*, I32>
     }
 }
 
-bool SceneGraphNode::forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
+bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
     SharedLock r_lock(_childLock);
     const U32 childCount = getChildCountLocked();
     if (end > 0u) {
@@ -657,7 +657,7 @@ bool SceneGraphNode::forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode
     return true;
 }
 
-bool SceneGraphNode::forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
+bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
     SharedLock r_lock(_childLock);
     const U32 childCount = getChildCountLocked();
     if (end > 0u) {

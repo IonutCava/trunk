@@ -36,7 +36,6 @@
 #include "Core/Headers/ErrorCodes.h"
 
 #if defined(_DEBUG)
-
 #define STUBBED(x)                                  \
 do {                                                \
     static bool seen_this = false;                  \
@@ -52,15 +51,15 @@ do {                                                \
 #endif
 
 #ifndef TO_STRING
-#define TO_STRING(X) TO_STRING_NAME(X)
 #define TO_STRING_NAME(X) #X
+#define TO_STRING(X) TO_STRING_NAME(X)
 #endif //TO_STRING
 
-#define TYPEDEF_SMART_POINTERS_FOR_TYPE(T)       \
-    using T ## _wptr = eastl::weak_ptr<T>;         \
-    using T ## _ptr = eastl::shared_ptr<T>;        \
+#define TYPEDEF_SMART_POINTERS_FOR_TYPE(T)         \
+    using T ## _wptr  = eastl::weak_ptr<T>;        \
+    using T ## _ptr   = eastl::shared_ptr<T>;      \
     using T ## _cwptr = eastl::weak_ptr<const T>;  \
-    using T ## _cptr = eastl::shared_ptr<const T>; 
+    using T ## _cptr  = eastl::shared_ptr<const T>;
 
 
 #define FWD_DECLARE_MANAGED_CLASS(T)      \
@@ -81,7 +80,7 @@ inline auto highLevelF(Args&&... args) -> decltype(lowLevelF(std::forward<Args>(
 
 namespace Divide {
 
-typedef U8 PlayerIndex;
+using PlayerIndex = U8;
 
 // FNV1a c++11 constexpr compile time hash functions, 32 and 64 bit
 // str should be a null terminated string literal, value should be left out 
@@ -102,12 +101,6 @@ constexpr U64 _ID(const char* const str, const U64 value = val_64_const) noexcep
     return (str[0] == '\0') ? value : _ID(&str[1], (value ^ U64(str[0])) * prime_64_const);
 }
 
-FORCE_INLINE bufferPtr bufferOffset(size_t offset) noexcept {
-    return ((char *)NULL + (offset));
-}
-
-struct WindowHandle;
-
 struct SysInfo {
     SysInfo();
 
@@ -122,7 +115,9 @@ const SysInfo& const_sysInfo() noexcept;
 
 void InitSysInfo(SysInfo& info, I32 argc, char** argv);
 
+struct WindowHandle;
 extern void getWindowHandle(void* window, WindowHandle& handleOut) noexcept;
+
 extern void setThreadName(std::thread* thread, const char* threadName) noexcept;
 extern void setThreadName(const char* threadName) noexcept;
 extern bool createDirectory(const char* path);
@@ -152,29 +147,9 @@ void ToggleCursor(bool state) noexcept;
 
 bool CursorState() noexcept;
 
-template <typename T>
-struct synchronized {
-public:
-    synchronized& operator=(T const& newval) {
-        UniqueLockShared lock(mutex);
-        value = newval;
-        return *this;
-    }
-
-    operator T() const {
-        SharedLock lock(mutex);
-        return value;
-    }
-
-private:
-    T value;
-    SharedMutex mutex;
-};
-
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 template<typename T>
 constexpr T toBit(const T X) {
-    //static_assert(X > 0, "toBit(0) is currently disabled!");
     return 1 << X;
 }
 
@@ -192,37 +167,6 @@ constexpr bool isPowerOfTwo(U32 x) noexcept {
 
 constexpr size_t realign_offset(size_t offset, size_t align) noexcept {
     return (offset + align - 1) & ~(align - 1);
-}
-
-template<class T>
-std::unique_ptr<T> to_unique(T*&& t) {
-    auto* tmp = t;
-    t = 0;
-    return std::unique_ptr<T>(tmp);
-}
-
-template<class T>
-std::unique_ptr<T> to_unique(std::unique_ptr<T> t) {
-    return std::move(t);
-
-}
-
-template <typename T>
-struct reversion_wrapper { T& iterable; };
-
-template <typename T>
-auto begin(reversion_wrapper<T> w) { return std::rbegin(w.iterable); }
-
-template <typename T>
-auto end(reversion_wrapper<T> w) { return std::rend(w.iterable); }
-
-template <typename T>
-reversion_wrapper<T> reverse(T&& iterable) { return { iterable }; }
-
-template<typename T >
-std::unique_ptr<T> copy_unique(const std::unique_ptr<T>& source)
-{
-    return source ? std::make_unique<T>(*source) : nullptr;
 }
 
 //ref: http://stackoverflow.com/questions/14226952/partitioning-batch-chunk-a-container-into-equal-sized-pieces-using-std-algorithm
@@ -297,6 +241,18 @@ template< typename C >
 std::enable_if_t< has_reserve< C >::value > optional_reserve(C& c, std::size_t n) {
     c.reserve(c.size() + n);
 }
+
+// -------------------------------------------------------------------
+// --- Reversed iterable
+// ref: https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
+template <typename T>
+struct reversion_wrapper { T& iterable; };
+template <typename T>
+auto begin(reversion_wrapper<T> w) { return std::rbegin(w.iterable); }
+template <typename T>
+auto end(reversion_wrapper<T> w) { return std::rend(w.iterable); }
+template <typename T>
+reversion_wrapper<T> reverse(T&& iterable) { return { iterable }; }
 
 /* See
 http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/
@@ -418,21 +374,27 @@ namespace detail {
     class ScopeGuardImplBase
     {
     public:
-        void Dismiss() const throw()
-        {    dismissed_ = true;    }
+        void Dismiss() const {
+            dismissed_ = true;
+        }
+
     protected:
-        ScopeGuardImplBase() noexcept : dismissed_(false)
-        {}
+        ScopeGuardImplBase() noexcept
+            : dismissed_(false)
+        {
+        }
+
         ScopeGuardImplBase(const ScopeGuardImplBase& other) noexcept
             : dismissed_(other.dismissed_)
-        {    other.Dismiss();    }
-        ~ScopeGuardImplBase() {} // nonvirtual (see below why)
-        mutable bool dismissed_;
+        {
+            other.Dismiss();
+        }
 
-    private:
+        ~ScopeGuardImplBase() {} // nonvirtual (see below why)
+        mutable bool dismissed_ = false;
+
         // Disable assignment
-        ScopeGuardImplBase& operator=(
-            const ScopeGuardImplBase&);
+        ScopeGuardImplBase& operator=(const ScopeGuardImplBase&) = delete;
     };
 
     template <typename Fun, typename Parm>
@@ -441,24 +403,27 @@ namespace detail {
     public:
         ScopeGuardImpl1(const Fun& fun, const Parm& parm)
             : fun_(fun), parm_(parm) 
-        {}
+        {
+        }
+
         ~ScopeGuardImpl1()
         {
-            if (!dismissed_) fun_(parm_);
+            if (!dismissed_) {
+                fun_(parm_);
+            }
         }
+
     private:
         Fun fun_;
         const Parm parm_;
     };
 
     template <typename Fun, typename Parm>
-    ScopeGuardImpl1<Fun, Parm>
-        MakeGuard(const Fun& fun, const Parm& parm)
-    {
+    ScopeGuardImpl1<Fun, Parm> MakeGuard(const Fun& fun, const Parm& parm) {
         return ScopeGuardImpl1<Fun, Parm>(fun, parm);
     }
 
-    typedef const ScopeGuardImplBase& ScopeGuard;
+    using ScopeGuard = const ScopeGuardImplBase&;
 
     enum class ScopeGuardOnExit {};
 
@@ -468,37 +433,26 @@ namespace detail {
     }
 };
 
-#define SCOPE_EXIT\
-    auto ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) \
-    = ::boost_optional_detail::ScopeGuardOnExit() + [&]()
+#define SCOPE_EXIT \
+    auto ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) = detail::ScopeGuardOnExit() + [&]()
 
 constexpr F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 constexpr D64 EPSILON_D64 = std::numeric_limits<D64>::epsilon();
 
-template <typename T>
-inline bool IS_VALID_CONTAINER_RANGE(T elementCount, T min, T max) noexcept {
-    return min >= 0 && max < elementCount;
-}
-template <typename T, typename U>
+template <typename T, typename U = T>
 inline bool IS_IN_RANGE_INCLUSIVE(T x, U min, U max) noexcept {
     return x >= min && x <= max;
 }
-template <typename T, typename U>
+template <typename T, typename U = T>
 inline bool IS_IN_RANGE_EXCLUSIVE(T x, U min, U max) noexcept {
     return x > min && x < max;
 }
-template <typename T>
-inline bool IS_IN_RANGE_INCLUSIVE(T x, T min, T max) noexcept {
-    return x >= min && x <= max;
-}
-template <typename T>
-inline bool IS_IN_RANGE_EXCLUSIVE(T x, T min, T max) noexcept {
-    return x > min && x < max;
-}
+
 template <typename T>
 inline bool IS_ZERO(T X) noexcept {
     return X == 0;
 }
+
 template <>
 inline bool IS_ZERO(F32 X) noexcept {
     return (std::abs(X) < EPSILON_F32);
@@ -512,28 +466,15 @@ template <typename T>
 inline bool IS_TOLERANCE(T X, T TOLERANCE) noexcept {
     return (std::abs(X) <= TOLERANCE);
 }
-template <>
-inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) noexcept {
-    return (std::abs(X) <= TOLERANCE);
-}
-template <>
-inline bool IS_TOLERANCE(D64 X, D64 TOLERANCE) noexcept {
-    return (std::abs(X) <= TOLERANCE);
-}
 
-template<typename T, typename U>
+template<typename T, typename U = T>
 inline bool COMPARE_TOLERANCE(T X, U Y, T TOLERANCE) noexcept {
-    return COMPARE_TOLERANCE(X, static_cast<T>(Y), TOLERANCE);
+    return std::abs(X - static_cast<T>(Y)) <= TOLERANCE;
 }
 
-template<typename T>
-inline bool COMPARE_TOLERANCE(T X, T Y, T TOLERANCE) noexcept {
-    return std::abs(X - Y) <= TOLERANCE;
-}
-
-template<typename T>
+template<typename T, typename U = T>
 inline bool COMPARE_TOLERANCE_ACCURATE(T X, T Y, T TOLERANCE) noexcept {
-    return std::abs(X - Y) <= TOLERANCE;
+    return COMPARE_TOLERANCE(X, Y, TOLERANCE);
 }
 
 template<>
@@ -546,24 +487,9 @@ inline bool COMPARE_TOLERANCE_ACCURATE(D64 X, D64 Y, D64 TOLERANCE) noexcept {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
-template<>
-inline bool COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE) noexcept {
-    return std::fabs(X - Y) <= TOLERANCE;
-}
-
-template<>
-inline bool COMPARE_TOLERANCE(D64 X, D64 Y, D64 TOLERANCE) noexcept {
-    return std::abs(X - Y) <= TOLERANCE;
-}
-
-template<typename T, typename U>
+template<typename T, typename U = T>
 inline bool COMPARE(T X, U Y) noexcept {
-    return COMPARE(X, static_cast<T>(Y));
-}
-
-template<typename T>
-inline bool COMPARE(T X, T Y) noexcept {
-    return X == Y;
+    return X == static_cast<T>(Y);
 }
 
 template<>
@@ -661,18 +587,18 @@ struct safe_static_cast_helper<true, true>
     }
 };
 
-#if 0
+
 template <typename TO, typename FROM>
 inline TO safe_static_cast(FROM from)
 {
-/*#if defined(_DEBUG)
+#if defined(_DEBUG)
     // delegate the call to the proper helper class, depending on the signedness of both types
     return safe_static_cast_helper<std::numeric_limits<FROM>::is_signed,
                                    std::numeric_limits<TO>::is_signed>
            ::cast<TO>(from);
-#else*/
+#else
     return static_cast<TO>(from);
-//#endif
+#endif
 }
 
 template <typename TO>
@@ -686,7 +612,7 @@ inline TO safe_static_cast(D64 from)
 {
     return static_cast<TO>(from);
 } 
-#endif
+
 
 /// Performes extra asserts steps (logging, message boxes, etc). 
 /// Returns true if the assert should be processed.
@@ -705,30 +631,11 @@ FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage =
 
 FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED CALL") {
     DIVIDE_ASSERT(false, failMessage);
+    DebugBreak();
 }
 
 template <typename Ret, typename... Args >
-using DELEGATE_CBK = std::function< Ret(Args...) >;
-
-template <typename Ret, typename... Args >
-class GUID_DELEGATE_CBK : public GUIDWrapper {
-  public:
-    GUID_DELEGATE_CBK(const DELEGATE_CBK<Ret, Args...>& cbk)
-        : GUIDWrapper(),
-          _callback(cbk)
-    {
-    }
-
-    inline bool operator==(const GUID_DELEGATE_CBK& rhs) const {
-        return getGUID() == rhs.getGUID();
-    }
-
-    inline bool operator!=(const GUID_DELEGATE_CBK& rhs) const {
-        return getGUID() != rhs.getGUID();
-    }
-
-    DELEGATE_CBK<Ret, Args...> _callback;
-};
+using DELEGATE = std::function< Ret(Args...) >;
 
 U32 HARDWARE_THREAD_COUNT() noexcept;
 
@@ -736,13 +643,6 @@ template<typename T, typename U>
 constexpr void assert_type(const U& ) {
     static_assert(std::is_same<U, T>::value, "value type not satisfied");
 }
-
-
-template<typename U, typename V, size_t N>
-vector<U> copy_array_to_vector(const std::array<V, N>& input) {
-    return vector<U>(std::begin(input), std::end(input));
-}
-
 };  // namespace Divide
 
 void* malloc_aligned(const size_t size, size_t alignment);
@@ -766,14 +666,11 @@ void operator delete[](void* ptr, size_t alignment, size_t alignmentOffset,
                        Divide::U32 debugFlags, const char* file,
                        Divide::I32 line);
 
-// EASTL also wants us to define this (see string.h line 197)
-Divide::I32 Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
-                       va_list arguments);
-
 void* operator new(size_t size, const char* zFile, size_t nLine);
 void operator delete(void* ptr, const char* zFile, size_t nLine);
 void* operator new[](size_t size, const char* zFile, size_t nLine);
 void operator delete[](void* ptr, const char* zFile, size_t nLine);
+
 #if !defined(MemoryManager_NEW)
 #define MemoryManager_NEW new (__FILE__, __LINE__)
 #endif
@@ -791,7 +688,6 @@ inline void SAFE_FREE(T*& ptr) {
     }
 }
 
-
 /// Deletes and nullifies the specified pointer
 template <typename T>
 inline void DELETE(T*& ptr) {
@@ -799,11 +695,7 @@ inline void DELETE(T*& ptr) {
     delete ptr;
     ptr = nullptr;
 }
-   
-#define SET_DELETE_FRIEND \
-    template <typename T> \
-    friend void MemoryManager::DELETE(T*& ptr); \
-
+  
 /// Deletes and nullifies the specified pointer
 template <typename T>
 inline void SAFE_DELETE(T*& ptr) {
@@ -811,10 +703,6 @@ inline void SAFE_DELETE(T*& ptr) {
         DELETE(ptr);
     }
 }
-#define SET_SAFE_DELETE_FRIEND \
-    SET_DELETE_FRIEND \
-    template <typename T>      \
-    friend void MemoryManager::SAFE_DELETE(T*& ptr);
 
 /// Deletes and nullifies the specified array pointer
 template <typename T>
@@ -824,9 +712,6 @@ inline void DELETE_ARRAY(T*& ptr) {
     delete[] ptr;
     ptr = nullptr;
 }
-#define SET_DELETE_ARRAY_FRIEND \
-    template <typename T>       \
-    friend void MemoryManager::DELETE_ARRAY(T*& ptr);
 
 /// Deletes and nullifies the specified array pointer
 template <typename T>
@@ -835,72 +720,44 @@ inline void SAFE_DELETE_ARRAY(T*& ptr) {
         DELETE_ARRAY(ptr);
     }
 }
+
+#define SET_DELETE_FRIEND \
+    template <typename T> \
+    friend void MemoryManager::DELETE(T*& ptr); \
+
+#define SET_SAFE_DELETE_FRIEND \
+    SET_DELETE_FRIEND \
+    template <typename T>      \
+    friend void MemoryManager::SAFE_DELETE(T*& ptr);
+
+
+#define SET_DELETE_ARRAY_FRIEND \
+    template <typename T>       \
+    friend void MemoryManager::DELETE_ARRAY(T*& ptr);
+
 #define SET_SAFE_DELETE_ARRAY_FRIEND \
     SET_DELETE_ARRAY_FRIEND \
     template <typename T>            \
     friend void MemoryManager::DELETE_ARRAY(T*& ptr);
 
-/// Deletes and nullifies the specified pointer. Returns "false" if the pointer
-/// was already null
-template <typename T>
-inline bool DELETE_CHECK(T*& ptr) {
-    if (ptr == nullptr) {
-        return false;
-    }
-    DELETE(ptr);
-
-    return true;
-}
-#define SET_DELETE_CHECK_FRIEND \
-    SET_DELETE_FRIEND \
-    template <typename T>       \
-    friend void MemoryManager::DELETE_CHECK(T*& ptr);
-
-/// Deletes and nullifies the specified array pointer. Returns "false" if the
-/// pointer was already null
-template <typename T>
-inline bool DELETE_ARRAY_CHECK(T*& ptr) {
-    if (ptr == nullptr) {
-        return false;
-    }
-    DELETE_ARRAY(ptr);
-
-    return true;
-}
-
-#define SET_DELETE_ARRAY_CHECK_FRIEND \
-    SET_DELETE_ARRAY_FRIEND \
-    template <typename T>             \
-    friend void MemoryManager::DELETE_ARRAY_CHECK(T*& ptr);
-
 /// Deletes every element from the vector and clears it at the end
-template <typename T>
-inline void DELETE_VECTOR(vector<T*>& vec) {
-    if (!vec.empty()) {
-        for (T* iter : vec) {
-            log_delete(iter);
-            delete iter;
-        }
-        vec.clear();
+template <template <typename, typename> class Container,
+    typename Value,
+    typename Allocator = std::allocator<Value>>
+inline void DELETE_CONTAINER(Container<Value*, Allocator>& container) {
+    for (Value* iter : container) {
+        log_delete(iter);
+        delete iter;
     }
+
+    container.clear();
 }
 
-template <typename T>
-inline void DELETE_VECTOR(vectorEASTL<T*>& vec) {
-    if (!vec.empty()) {
-        for (T* iter : vec) {
-            log_delete(iter);
-            delete iter;
-        }
-        vec.clear();
-    }
-}
-
-#define SET_DELETE_VECTOR_FRIEND \
-    template <typename T>        \
-    friend void MemoryManager::DELETE_VECTOR(vector<T*>& vec); \
-    template <typename T>        \
-    friend void MemoryManager::DELETE_VECTOR(vectorEASTL<T*>& vec);
+#define SET_DELETE_CONTAINER_FRIEND \
+    template <template <typename, typename> class Container, \
+              typename Value, \
+              typename Allocator> \
+    friend void MemoryManager::DELETE_CONTAINER(Container<Value*, Allocator>& container);
 
 /// Deletes every element from the map and clears it at the end
 template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
@@ -915,8 +772,7 @@ inline void DELETE_HASHMAP(hashMap<K, V, HashFun>& map) {
 }
 #define SET_DELETE_HASHMAP_FRIEND                       \
     template <typename K, typename V, typename HashFun> \
-    friend void MemoryManager::DELETE_HASHMAP(          \
-        hashMap<K, V, HashFun>& map);
+    friend void MemoryManager::DELETE_HASHMAP(hashMap<K, V, HashFun>& map);
 
 /// Deletes the object pointed to by "OLD" and redirects that pointer to the
 /// object pointed by "NEW"
@@ -925,8 +781,7 @@ template <typename Base, typename Derived>
 inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
     static_assert(std::is_base_of<Base, Derived>::value,
                   "SAFE_UPDATE error: New must be a descendant of Old");
-    log_delete(OLD);
-    delete OLD;
+    SAFE_DELETE(OLD);
     OLD = NEW;
 }
 #define SET_SAFE_UPDATE_FRIEND                 \
@@ -936,42 +791,29 @@ inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
 };  // namespace MemoryManager
 
 
-bool createFileIfNotExist(const char* file);
-
 /// Wrapper that allows usage of atomic variables in containers
 /// Copy is not atomic! (e.g. push/pop from containers is not threadsafe!)
 /// ref: http://stackoverflow.com/questions/13193484/how-to-declare-a-vector-of-atomic-in-c
 template <typename T>
-struct AtomicWrapper
+struct AtomicWrapper : private NonMovable
 {
     std::atomic<T> _a;
 
-    AtomicWrapper() : _a()
-    {
-    }
+    AtomicWrapper() : _a() {}
+    AtomicWrapper(const std::atomic<T> &a) :_a(a.load()) {}
+    AtomicWrapper(const AtomicWrapper &other) : _a(other._a.load()) { }
 
-    AtomicWrapper(const std::atomic<T> &a) :_a(a.load())
-    {
-    }
-
-    AtomicWrapper(const AtomicWrapper &other) : _a(other._a.load())
-    {
-    }
-
-    AtomicWrapper &operator=(const AtomicWrapper &other)
-    {
+    AtomicWrapper &operator=(const AtomicWrapper &other) {
         _a.store(other._a.load());
         return *this;
     }
 
-    AtomicWrapper &operator=(const T &value)
-    {
+    AtomicWrapper &operator=(const T &value) {
         _a.store(value);
         return *this;
     }
 
-    bool operator==(const T &value) const
-    {
+    bool operator==(const T &value) const {
         return _a == value;
     }
 };
@@ -1088,7 +930,6 @@ protected: \
 /// RW properties are no better (actully a little worse) than just making the member public, but we need it to keep the same interface with read-only properties
 /// A _R can become a _RW and vice-versa depending on needs, but that shouldn't affect other parts of the implementation
 #define PROPERTY_RW(...) EXP(___DETAIL_PROPERTY_RW(__VA_ARGS__)(__VA_ARGS__))
-
 
 /// Convenience method to add a class member with public read access but protected write access
 #define POINTER_R(...) EXP(___DETAIL_POINTER_R(__VA_ARGS__)(__VA_ARGS__))

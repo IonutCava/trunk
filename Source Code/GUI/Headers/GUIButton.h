@@ -48,8 +48,8 @@ class AudioDescriptor;
 TYPEDEF_SMART_POINTERS_FOR_TYPE(AudioDescriptor);
 
 class GUIButton : public GUIElement {
-    typedef DELEGATE_CBK<void, I64> ButtonCallback;
-    typedef DELEGATE_CBK<void, AudioDescriptor_ptr> AudioCallback;
+    typedef DELEGATE<void, I64> ButtonCallback;
+    typedef DELEGATE<void, AudioDescriptor_ptr> AudioCallback;
 
     friend class GUIInterface;
     friend class SceneGUIElements;

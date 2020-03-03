@@ -342,7 +342,7 @@ class Camera : public Resource {
     virtual bool zoom(I32 zoomFactor);
 
     bool removeUpdateListener(U32 id);
-    U32 addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
+    U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
 
     virtual ~Camera();
 
@@ -388,7 +388,7 @@ class Camera : public Resource {
     bool _reflectionActive;
     Plane<F32> _reflectionPlane;
     U32 _updateCameraId;
-    typedef hashMap<U32, DELEGATE_CBK<void, const Camera&> > ListenerMap;
+    typedef hashMap<U32, DELEGATE<void, const Camera&> > ListenerMap;
     ListenerMap _updateCameraListeners;
 
     // Camera pool
@@ -406,7 +406,7 @@ class Camera : public Resource {
        static Camera* findCamera(U64 nameHash);
 
        static bool removeChangeListener(U32 id);
-       static U32 addChangeListener(const DELEGATE_CBK<void, const Camera& /*new camera*/>& f);
+       static U32 addChangeListener(const DELEGATE<void, const Camera& /*new camera*/>& f);
 
     private:
       typedef hashMap<U64, Camera*> CameraPool;

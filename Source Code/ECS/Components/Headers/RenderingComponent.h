@@ -101,7 +101,7 @@ struct RenderCbkParams {
     Camera* _camera;
 };
 
-typedef DELEGATE_CBK<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
+typedef DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
 
 constexpr std::pair<RenderTargetUsage, ShaderProgram::TextureUsage> g_texUsage[] = {
     { RenderTargetUsage::REFLECTION_PLANAR, ShaderProgram::TextureUsage::REFLECTION_PLANAR},

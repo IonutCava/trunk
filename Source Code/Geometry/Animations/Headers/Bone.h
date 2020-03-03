@@ -70,7 +70,7 @@ class Bone {
 
     ~Bone()
     {
-        MemoryManager::DELETE_VECTOR(_children);
+        MemoryManager::DELETE_CONTAINER(_children);
     }
 
     inline size_t hierarchyDepth() const {

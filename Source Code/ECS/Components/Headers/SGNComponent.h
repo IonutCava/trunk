@@ -82,7 +82,7 @@ namespace Divide {
 //ref: http://www.nirfriedman.com/2018/04/29/unforgettable-factory/
 template <typename Base, typename... Args>
 struct Factory {
-    using ConstructFunc = DELEGATE_CBK<void, SceneGraphNode&, Args...>;
+    using ConstructFunc = DELEGATE<void, SceneGraphNode&, Args...>;
     using FactoryContainer = ska::bytell_hash_map<ComponentType::_integral, ConstructFunc>;
 
     template <typename... ConstructArgs>

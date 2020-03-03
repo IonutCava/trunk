@@ -24,7 +24,7 @@ void glHardwareQueryPool::init(U32 size) {
 }
 
 void glHardwareQueryPool::destroy() {
-    MemoryManager::DELETE_VECTOR(_queryPool);
+    MemoryManager::DELETE_CONTAINER(_queryPool);
 }
 
 glHardwareQueryRing& glHardwareQueryPool::allocate() {

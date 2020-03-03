@@ -234,7 +234,7 @@ END_COMMAND(EndRenderPassCommand);
 
 BEGIN_COMMAND(BeginPixelBufferCommand, CommandType::BEGIN_PIXEL_BUFFER);
     PixelBuffer* _buffer = nullptr;
-    DELEGATE_CBK<void, bufferPtr> _command;
+    DELEGATE<void, bufferPtr> _command;
 END_COMMAND(BeginPixelBufferCommand);
 
 BEGIN_COMMAND(EndPixelBufferCommand, CommandType::END_PIXEL_BUFFER);

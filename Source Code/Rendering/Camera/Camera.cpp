@@ -327,7 +327,7 @@ bool Camera::removeUpdateListener(U32 id) {
     return false;
 }
 
-U32 Camera::addUpdateListener(const DELEGATE_CBK<void, const Camera&>& f) {
+U32 Camera::addUpdateListener(const DELEGATE<void, const Camera&>& f) {
     hashAlg::insert(_updateCameraListeners, ++_updateCameraId, f);
     return _updateCameraId;
 }

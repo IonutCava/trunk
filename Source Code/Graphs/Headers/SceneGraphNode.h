@@ -136,16 +136,16 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         bool isChild(const SceneGraphNode& target, bool recursive) const;
 
         /// Recursively call the delegate function on all children. Use start and end to only affect a range (useful for parallel algorithms)
-        void forEachChild(DELEGATE_CBK<void, SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u);
+        void forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u);
 
         /// Recursively call the delegate function on all children. Use start and end to only affect a range (useful for parallel algorithms)
-        void forEachChild(DELEGATE_CBK<void, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
+        void forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
 
         /// Recursively call the delegate function on all children. Returns false if the loop was interrupted. Use start and end to only affect a range (useful for parallel algorithms)
-        bool forEachChildInterruptible(DELEGATE_CBK<bool, SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u);
+        bool forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u);
 
         /// Recursively call the delegate function on all children. Returns false if the loop was interrupted. Use start and end to only affect a range (useful for parallel algorithms)
-        bool forEachChildInterruptible(DELEGATE_CBK<bool, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
+        bool forEachChildInterruptible(DELEGATE<bool, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
 
         /// A "locked" call assumes that either access is guaranteed thread-safe or that the child lock is already aquired
         inline const vectorEASTL<SceneGraphNode*>& getChildrenLocked() const noexcept { return _children; }

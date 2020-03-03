@@ -81,7 +81,7 @@ namespace Divide {
 
         GFX::deallocateCommandBuffer(_postFXCommandBuffer);
 
-        MemoryManager::DELETE_VECTOR(_renderPasses);
+        MemoryManager::DELETE_CONTAINER(_renderPasses);
     }
 
     void RenderPassManager::postInit() {
@@ -192,6 +192,7 @@ namespace Divide {
                 //ToDo: Do other stuff here: some physx, some AI, some whatever.
                 // This will be called in parallel to flushing a command buffer so be aware of any CPU AND GPU race conditions
             });
+            ACKNOWLEDGE_UNUSED(whileRendering);
 
             bool slowIdle = false;
             while (!all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), true)) {

@@ -81,7 +81,7 @@ class Application : public SDLEventListener {
     inline WindowManager& windowManager() noexcept;
     inline const WindowManager& windowManager() const noexcept;
 
-    void mainThreadTask(const DELEGATE_CBK<void>& task, bool wait = true);
+    void mainThreadTask(const DELEGATE<void>& task, bool wait = true);
 
     inline void setMemoryLogFile(const Str256& fileName);
 
@@ -101,7 +101,7 @@ class Application : public SDLEventListener {
     /// Add a list of callback functions that should be called when the application
     /// instance is destroyed
     /// (release hardware, file handlers, etc)
-    inline void registerShutdownCallback(const DELEGATE_CBK<void>& cbk);
+    inline void registerShutdownCallback(const DELEGATE<void>& cbk);
 
   private:
     bool onSDLEvent(SDL_Event event) override;
@@ -122,11 +122,11 @@ class Application : public SDLEventListener {
     Str256 _memLogBuffer;
     /// A list of callback functions that get called when the application instance
     /// is destroyed
-    vector<DELEGATE_CBK<void> > _shutdownCallback;
+    vector<DELEGATE<void> > _shutdownCallback;
 
     /// A list of callbacks to execute on the main thread
     mutable std::mutex _taskLock;
-    vector<DELEGATE_CBK<void> > _mainThreadCallbacks;
+    vector<DELEGATE<void> > _mainThreadCallbacks;
 };
 
 };  // namespace Divide

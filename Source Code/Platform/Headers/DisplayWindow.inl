@@ -130,24 +130,15 @@ namespace Divide {
         return SDL_GetWindowTitle(_sdlWindow);
     }
 
-    inline I64 DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
-        EventListeners& listeners = _eventListeners[to_base(windowEvent)];
-        listeners.emplace_back(std::make_shared<GUID_DELEGATE_CBK<bool, WindowEventArgs>>(listener));
-        return listeners.back()->getGUID();
+    inline void DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
+        _eventListeners[to_base(windowEvent)].push_back(listener);
     }
 
-    inline void DisplayWindow::removeEventlistener(WindowEvent windowEvent, I64 listenerGUID) {
-        EventListeners& listeners = _eventListeners[to_base(windowEvent)];
-        listeners.erase(
-            std::find_if(std::begin(listeners), std::end(listeners),
-                           [&listenerGUID](const std::shared_ptr<GUID_DELEGATE_CBK<bool, WindowEventArgs>>& it) noexcept -> bool
-                           { 
-                                return it->getGUID() == listenerGUID;
-                            }),
-            std::end(listeners));
+    inline void DisplayWindow::clearEventlisteners(WindowEvent windowEvent) {
+        _eventListeners[to_base(windowEvent)].clear();
     }
-    
-    inline void DisplayWindow::destroyCbk(const DELEGATE_CBK<void>& destroyCbk) {
+
+    inline void DisplayWindow::destroyCbk(const DELEGATE<void>& destroyCbk) {
         _destroyCbk = destroyCbk;
     }
 

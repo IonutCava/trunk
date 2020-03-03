@@ -94,11 +94,11 @@ public:
     // set durationMS to instantly set fade colour
     // optionally, set a callback when fade out completes
     // waitDurationMS = how much time to wait vefore calling the completeion callback after fade out completes
-    void setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete = DELEGATE_CBK<void>());
+    void setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE<void> onComplete = DELEGATE<void>());
     // clear any fading effect currently active over the specified time interval
     // set durationMS to instantly clear the fade effect
     // optionally, set a callback when fade in completes
-    void setFadeIn(D64 durationMS, DELEGATE_CBK<void> onComplete = DELEGATE_CBK<void>());
+    void setFadeIn(D64 durationMS, DELEGATE<void> onComplete = DELEGATE<void>());
     // fade out to specified colour and back again within the given time slice
     // if duration is 0.0, nothing happens
     // waitDurationMS is the ammount of time to wait before fading back in
@@ -130,8 +130,8 @@ private:
     D64 _fadeWaitDurationMS = 0.0;
     bool _fadeOut = false;
     bool _fadeActive = false;
-    DELEGATE_CBK<void> _fadeOutComplete;
-    DELEGATE_CBK<void> _fadeInComplete;
+    DELEGATE<void> _fadeOutComplete;
+    DELEGATE<void> _fadeInComplete;
 
     U16 _filterStack = 0;
     bool _filtersDirty = true;

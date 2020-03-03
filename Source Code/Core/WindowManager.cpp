@@ -232,7 +232,7 @@ void WindowManager::close() {
     for (DisplayWindow* window : _windows) {
         window->destroyWindow();
     }
-    MemoryManager::DELETE_VECTOR(_windows);
+    MemoryManager::DELETE_CONTAINER(_windows);
 
     for (auto it : s_cursors) {
         SDL_FreeCursor(it.second);

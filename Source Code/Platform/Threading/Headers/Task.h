@@ -48,7 +48,7 @@ enum class TaskPriority : U8 {
 };
 
 struct alignas(64) Task {
-    DELEGATE_CBK<void, Task&> _callback;
+    DELEGATE<void, Task&> _callback;
     TaskPool* _parentPool = nullptr;
     Task* _parent = nullptr;
     U32 _id = 0;
@@ -57,7 +57,7 @@ struct alignas(64) Task {
     bool _runWhileIdle = true;
 };
 
-Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, DELEGATE_CBK<void>&& onCompletionFunction = {});
+Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, DELEGATE<void>&& onCompletionFunction = {});
 Task& Stop(Task& task) noexcept;
 void Wait(const Task& task);
 bool StopRequested(const Task& task) noexcept;

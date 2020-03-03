@@ -31,8 +31,7 @@ PreRenderBatch::~PreRenderBatch()
 
 void PreRenderBatch::destroy() {
     for (OperatorBatch& batch : _operators) {
-        MemoryManager::DELETE_VECTOR(batch);
-        batch.clear();
+        MemoryManager::DELETE_CONTAINER(batch);
     }
     
     _context.renderTargetPool().deallocateRT(_previousLuminance);

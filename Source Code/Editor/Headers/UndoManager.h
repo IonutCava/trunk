@@ -41,7 +41,7 @@ namespace Divide {
         stringImpl _name = "";
         void* _data = nullptr;
         std::function<void(const void*)> _dataSetter = {};
-        DELEGATE_CBK<void, const char*> _onChangedCbk;
+        DELEGATE<void, const char*> _onChangedCbk;
 
         virtual void swapValues() = 0;
         virtual void apply() = 0;

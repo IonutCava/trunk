@@ -46,7 +46,7 @@ constexpr const char* const g_languageFileExtension = ".ini";
 
 class LanguageData {
 public:
-    typedef vector<DELEGATE_CBK<void, const char* /*new language*/>> LangCallbacks;
+    typedef vector<DELEGATE<void, const char* /*new language*/>> LangCallbacks;
 public:
     LanguageData() noexcept;
     ~LanguageData();
@@ -56,7 +56,7 @@ public:
     const char* get(U64 key, const char* defaultValue);
     void add(U64 key, const char* value);
 
-    void addLanguageChangeCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk);
+    void addLanguageChangeCallback(const DELEGATE<void, const char* /*new language*/>& cbk);
 
 private:
     /// Each string key in the map matches a key in the language ini file
@@ -76,7 +76,7 @@ void idle();
 /// language changes
 void changeLanguage(const char* newLanguage);
 /// Add a function to be called on each language change
-void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk);
+void addChangeLanguageCallback(const DELEGATE<void, const char* /*new language*/>& cbk);
 /// Query the current language code to detect changes
 const Str64& currentLanguage() noexcept;
 /// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the language key we want

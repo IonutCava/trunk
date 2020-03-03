@@ -956,7 +956,7 @@ bool Scene::load(const Str128& name) {
     loadDefaultCamera();
 
     TaskPool& pool = _context.taskPool(TaskPoolType::HIGH_PRIORITY);
-    Task* loadTask = CreateTask(pool, DELEGATE_CBK<void, Task&>());
+    Task* loadTask = CreateTask(pool, DELEGATE<void, Task&>());
     while (!_xmlSceneGraph.empty()) {
         XML::SceneNode node = _xmlSceneGraph.top();
         _xmlSceneGraph.pop();

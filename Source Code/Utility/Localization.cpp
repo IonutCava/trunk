@@ -45,7 +45,7 @@ LanguageData::~LanguageData()
 void LanguageData::changeLanguage(const char* newLanguage) {
     _languageTable.clear();
 
-    for (const DELEGATE_CBK<void, const char* /*new language*/>& languageChangeCbk : _languageChangeCallbacks) {
+    for (const DELEGATE<void, const char* /*new language*/>& languageChangeCbk : _languageChangeCallbacks) {
         languageChangeCbk(newLanguage);
     }
 }
@@ -66,7 +66,7 @@ void LanguageData::add(U64 key, const char* value) {
     hashAlg::emplace(_languageTable, key, value);
 }
 
-void LanguageData::addLanguageChangeCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk) {
+void LanguageData::addLanguageChangeCallback(const DELEGATE<void, const char* /*new language*/>& cbk) {
     _languageChangeCallbacks.push_back(cbk);
 }
 
@@ -141,7 +141,7 @@ const char* get(U64 key) {
     return get(key, "key not found");
 }
 
-void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk) {
+void addChangeLanguageCallback(const DELEGATE<void, const char* /*new language*/>& cbk) {
     assert(detail::g_data);
 
     detail::g_data->addLanguageChangeCallback(cbk);

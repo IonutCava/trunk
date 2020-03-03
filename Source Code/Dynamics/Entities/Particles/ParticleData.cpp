@@ -116,7 +116,7 @@ void ParticleData::sort(bool invalidateCache) {
     };
     
     TaskPool& pool = _context.context().taskPool(TaskPoolType::HIGH_PRIORITY);
-    Task* updateTask = CreateTask(pool, DELEGATE_CBK<void, Task&>());
+    Task* updateTask = CreateTask(pool, DELEGATE<void, Task&>());
     Start(*CreateTask(pool, updateTask, parsePositions));
     Start(*CreateTask(pool, updateTask, parseColours));
     Wait(Start(*updateTask));

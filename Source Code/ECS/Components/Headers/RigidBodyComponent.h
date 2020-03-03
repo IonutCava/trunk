@@ -67,7 +67,7 @@ namespace Divide {
 
         void onCollision(const RigidBodyComponent& collider);
 
-        inline void onCollisionCbk(const DELEGATE_CBK<void, const RigidBodyComponent&>& cbk) {
+        inline void onCollisionCbk(const DELEGATE<void, const RigidBodyComponent&>& cbk) {
             _collisionCbk = cbk;
         }
 
@@ -78,7 +78,7 @@ namespace Divide {
       private:
         PhysicsGroup _physicsCollisionGroup;
         std::unique_ptr<PhysicsAsset> _rigidBody;
-        DELEGATE_CBK<void, const RigidBodyComponent&> _collisionCbk;
+        DELEGATE<void, const RigidBodyComponent&> _collisionCbk;
         
     };
 

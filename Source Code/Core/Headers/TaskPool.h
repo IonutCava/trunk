@@ -69,13 +69,13 @@ public:
     explicit TaskPool();
     ~TaskPool();
     
-    bool init(U8 threadCount, TaskPoolType poolType, const DELEGATE_CBK<void, const std::thread::id&>& onThreadCreate = {}, const stringImpl& workerName = "DVD_WORKER");
+    bool init(U8 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate = {}, const stringImpl& workerName = "DVD_WORKER");
     void shutdown();
 
     void flushCallbackQueue();
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
-    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle = true);
+    Task* createTask(Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
     inline U8 workerThreadCount() const noexcept {
         return _workerThreadCount;
@@ -98,13 +98,13 @@ public:
     friend struct Task;
     friend void Wait(const Task& task);
     friend void TaskYield(const Task& task);
-    friend Task& Start(Task& task, TaskPriority prio, DELEGATE_CBK<void>&& onCompletionFunction);
+    friend Task& Start(Task& task, TaskPriority prio, DELEGATE<void>&& onCompletionFunction);
     friend bool StopRequested(const Task& task) noexcept;
-    friend void parallel_for(TaskPool& pool, const DELEGATE_CBK<void, const Task&, U32, U32>& cbk, const ParallelForDescriptor& descriptor);
+    friend void parallel_for(TaskPool& pool, const DELEGATE<void, const Task&, U32, U32>& cbk, const ParallelForDescriptor& descriptor);
 
     void taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCompletionFunction);
     
-    bool enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE_CBK<void>&& onCompletionFunction);
+    bool enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE<void>&& onCompletionFunction);
     bool stopRequested() const noexcept;
 
     void runCbkAndClearTask(U32 taskIdentifier);
@@ -114,8 +114,8 @@ public:
     void onThreadDestroy(const std::thread::id& threadID);
 
   private:
-     hashMap<U32, vectorEASTL<DELEGATE_CBK<void>>> _taskCallbacks;
-     DELEGATE_CBK<void, const std::thread::id&> _threadCreateCbk;
+     hashMap<U32, vectorEASTL<DELEGATE<void>>> _taskCallbacks;
+     DELEGATE<void, const std::thread::id&> _threadCreateCbk;
      moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
      std::unique_ptr<ThreadPool> _poolImpl;
      stringImpl _threadNamePrefix;
@@ -125,12 +125,12 @@ public:
      U8 _workerThreadCount;
 };
 
-Task* CreateTask(TaskPool& pool, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle = true);
+Task* CreateTask(TaskPool& pool, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE_CBK<void, Task&>& threadedFunction, bool allowedInIdle = true);
+Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
 void parallel_for(TaskPool& pool,
-                  const DELEGATE_CBK<void, const Task*, U32, U32>& cbk,
+                  const DELEGATE<void, const Task*, U32, U32>& cbk,
                   const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);

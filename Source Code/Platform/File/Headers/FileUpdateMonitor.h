@@ -44,7 +44,7 @@ enum class FileUpdateEvent : U8 {
     COUNT
 };
 
-typedef DELEGATE_CBK<void, const char* /*file*/, FileUpdateEvent> FileUpdateCbk;
+typedef DELEGATE<void, const char* /*file*/, FileUpdateEvent> FileUpdateCbk;
 
 class UpdateListener : public FW::FileWatchListener
 {

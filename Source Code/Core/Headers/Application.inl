@@ -197,7 +197,7 @@ inline ErrorCode Application::errorCode() const noexcept {
     return _errorCode;
 }
 
-inline void Application::registerShutdownCallback(const DELEGATE_CBK<void>& cbk) {
+inline void Application::registerShutdownCallback(const DELEGATE<void>& cbk) {
     _shutdownCallback.push_back(cbk);
 }
 

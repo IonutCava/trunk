@@ -47,7 +47,7 @@ namespace Divide {
     };
 // This is the callback equivalent of PressReleaseAction with IDs resolved
 struct PressReleaseActionCbks {
-    std::array<vector<DELEGATE_CBK<void, InputParams>>, to_base(PressReleaseActions::Action::COUNT)> _actions;
+    std::array<vector<DELEGATE<void, InputParams>>, to_base(PressReleaseActions::Action::COUNT)> _actions;
 
     void from(const PressReleaseActions& actions, const InputActionList& actionList);
 };

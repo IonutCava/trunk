@@ -22,7 +22,7 @@ void finish(Task& task) {
     }
 }
 
-Task& Start(Task& task, TaskPriority priority, DELEGATE_CBK<void>&& onCompletionFunction) {
+Task& Start(Task& task, TaskPriority priority, DELEGATE<void>&& onCompletionFunction) {
     const bool hasOnCompletionFunction = (priority != TaskPriority::REALTIME && onCompletionFunction);
 
     const auto run = [&task, priority, hasOnCompletionFunction](bool wait) {
@@ -46,7 +46,7 @@ Task& Start(Task& task, TaskPriority priority, DELEGATE_CBK<void>&& onCompletion
         return true;
     };
 
-    if (!task._parentPool->enqueue(run, priority, task._id, std::forward<DELEGATE_CBK<void>>(onCompletionFunction))) {
+    if (!task._parentPool->enqueue(run, priority, task._id, std::forward<DELEGATE<void>>(onCompletionFunction))) {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
         run(true);
         if (hasOnCompletionFunction) {
