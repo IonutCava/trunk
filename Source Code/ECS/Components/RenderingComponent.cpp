@@ -579,7 +579,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
                 rebuildDrawCommands(renderStagePass, pkg);
             }
 
-            if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, camera, renderStagePass, refreshData)) {
+            if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
                 pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY,
                                  (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY)  && sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
                 pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME,

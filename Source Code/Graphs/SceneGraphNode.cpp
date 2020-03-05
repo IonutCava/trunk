@@ -440,7 +440,7 @@ void SceneGraphNode::processEvents() {
 
     const ECS::EntityId id = GetEntityID();
     ECS::Data data = {};
-    for (ECSCustomEventType type2 : _uniqueEventsCache) {
+    for (const ECSCustomEventType type2 : _uniqueEventsCache) {
         switch (type2) {
             case ECSCustomEventType::RelationshipCacheInvalidated: {
                 if (!_relationshipCache.isValid()) {
@@ -461,28 +461,26 @@ bool SceneGraphNode::preRender(const Camera& camera, RenderStagePass renderStage
     return _node->preRender(*this, camera, renderStagePass, refreshData, rebuildCommandsOut);
 }
 
-bool SceneGraphNode::prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
+bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
     OPTICK_EVENT();
 
-    RenderingComponent* rComp = get<RenderingComponent>();
-    if (rComp != nullptr) {
-        AnimationComponent* aComp = get<AnimationComponent>();
-        if (aComp) {
-            std::pair<vec2<U32>, ShaderBuffer*> data = aComp->getAnimationData();
-            if (data.second != nullptr) {
-                RenderPackage& pkg = rComp->getDrawPackage(renderStagePass);
+    AnimationComponent* aComp = get<AnimationComponent>();
+    if (aComp) {
+        std::pair<vec2<U32>, ShaderBuffer*> data = aComp->getAnimationData();
+        if (data.second != nullptr) {
+            RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
 
-                ShaderBufferBinding buffer = {};
-                buffer._binding = ShaderBufferLocation::BONE_TRANSFORMS;
-                buffer._buffer = data.second;
-                buffer._elementRange = data.first;
+            ShaderBufferBinding buffer = {};
+            buffer._binding = ShaderBufferLocation::BONE_TRANSFORMS;
+            buffer._buffer = data.second;
+            buffer._elementRange = data.first;
 
-                pkg.addShaderBuffer(0, buffer);
-            }
+            pkg.addShaderBuffer(0, buffer);
         }
-        rComp->onRender(renderStagePass);
     }
-    return _node->onRender(*this, camera, renderStagePass, refreshData);
+    rComp.onRender(renderStagePass);
+    
+    return _node->onRender(*this, rComp, camera, renderStagePass, refreshData);
 }
 
 void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {
@@ -492,8 +490,6 @@ void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Ca
 }
 
 bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {
-    OPTICK_EVENT();
-
     return _node->renderState().drawState(stagePass, LoD);
 }
 
@@ -610,13 +606,7 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
 
 void SceneGraphNode::forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
     SharedLock r_lock(_childLock);
-    const U32 childCount = getChildCountLocked();
-    if (end > 0u) {
-        CLAMP<U32>(end, start, childCount);
-    } else {
-        end = childCount;
-    }
-    assert(start <= end);
+    CLAMP<U32>(end, start, getChildCountLocked());
 
     for (U32 i = start; i < end; ++i) {
         callback(_children[i], i);
@@ -624,14 +614,7 @@ void SceneGraphNode::forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callbac
 }
 
 void SceneGraphNode::forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
-    SharedLock r_lock(_childLock);
-    const U32 childCount = getChildCountLocked();
-    if (end > 0u) {
-        CLAMP<U32>(end, start, childCount);
-    } else {
-        end = childCount;
-    }
-    assert(start <= end);
+    CLAMP<U32>(end, start, getChildCountLocked());
 
     for (U32 i = start; i < end; ++i) {
         callback(_children[i], i);
@@ -640,13 +623,7 @@ void SceneGraphNode::forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& c
 
 bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
     SharedLock r_lock(_childLock);
-    const U32 childCount = getChildCountLocked();
-    if (end > 0u) {
-        CLAMP<U32>(end, start, childCount);
-    } else {
-        end = childCount;
-    }
-    assert(start <= end);
+    CLAMP<U32>(end, start, getChildCountLocked());
 
     for (U32 i = start; i < end; ++i) {
         if (!callback(_children[i], i)) {
@@ -659,13 +636,7 @@ bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I
 
 bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
     SharedLock r_lock(_childLock);
-    const U32 childCount = getChildCountLocked();
-    if (end > 0u) {
-        CLAMP<U32>(end, start, childCount);
-    } else {
-        end = childCount;
-    }
-    assert(start <= end);
+    CLAMP<U32>(end, start, getChildCountLocked());
 
     for (U32 i = start; i < end; ++i) {
         if (!callback(_children[i], i)) {

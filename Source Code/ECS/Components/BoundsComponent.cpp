@@ -20,7 +20,6 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
 
     _boundingBoxDirty.store(true);
 
-    //RegisterEventCallback(&BoundsComponent::onTransformUpdated);
     EditorComponentField bbField = {};
     bbField._name = "Bounding Box";
     bbField._data = &_boundingBox;
@@ -112,14 +111,6 @@ void BoundsComponent::OnData(const ECS::Data& data) {
         flagBoundingBoxDirty(true);
     }
 }
-
-/*void BoundsComponent::onTransformUpdated(const TransformUpdated* evt) {
-    if (GetOwner() != evt->GetSourceEntityId()) {
-        return;
-    }
-
-    flagBoundingBoxDirty(true);
-}*/
 
 void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) {
     // All the parents should already be dirty thanks to the bounds system

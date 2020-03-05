@@ -126,6 +126,7 @@ VertexBuffer* const Object3D::getGeometryVB() const {
 }
 
 bool Object3D::onRender(SceneGraphNode& sgn,
+                        RenderingComponent& rComp,
                         const Camera& camera,
                         RenderStagePass renderStagePass,
                         bool refreshData) {
@@ -133,7 +134,7 @@ bool Object3D::onRender(SceneGraphNode& sgn,
         rebuild();
     }
 
-    return SceneNode::onRender(sgn, camera, renderStagePass, refreshData);
+    return SceneNode::onRender(sgn, rComp, camera, renderStagePass, refreshData);
 }
 
 void Object3D::buildDrawCommands(SceneGraphNode& sgn,

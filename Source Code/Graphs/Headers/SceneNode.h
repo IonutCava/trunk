@@ -53,6 +53,7 @@ class RenderPackage;
 class SceneRenderState;
 class BoundsSystem;
 class BoundsComponent;
+class RenderingComponent;
 class NetworkingComponent;
 
 class Light;
@@ -116,6 +117,7 @@ class SceneNode : public CachedResource {
     /// Perform any pre-draw operations POST-command build
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
     virtual bool onRender(SceneGraphNode& sgn,
+                          RenderingComponent& rComp,
                           const Camera& camera,
                           RenderStagePass renderStagePass,
                           bool refreshData);

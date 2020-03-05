@@ -92,6 +92,7 @@ class Object3D : public SceneNode {
     void postLoad(SceneGraphNode& sgn) override;
 
     virtual bool onRender(SceneGraphNode& sgn,
+                          RenderingComponent& rComp,
                           const Camera& camera,
                           RenderStagePass renderStagePass,
                           bool refreshData) override;

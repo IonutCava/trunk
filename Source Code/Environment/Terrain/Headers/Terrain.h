@@ -137,6 +137,7 @@ class Terrain : public Object3D {
                            RenderPackage& pkgInOut) override;
 
     bool onRender(SceneGraphNode& sgn,
+                  RenderingComponent& rComp,
                   const Camera& camera,
                   RenderStagePass renderStagePass,
                   bool refreshData) override;

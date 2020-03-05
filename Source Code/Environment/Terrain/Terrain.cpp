@@ -239,6 +239,7 @@ bool Terrain::preRender(SceneGraphNode& sgn,
 }
 
 bool Terrain::onRender(SceneGraphNode& sgn,
+                       RenderingComponent& rComp,
                        const Camera& camera,
                        RenderStagePass renderStagePass,
                        bool refreshData) {
@@ -258,7 +259,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         tessellator = &_terrainTessellator[stageIndex - 1];
     }
 
-    RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
+    RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         PushConstants constants = pkg.pushConstants(0);
         constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
@@ -298,7 +299,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         pkg.drawCommand(0, 0, cmd);
     }
 
-    return Object3D::onRender(sgn, camera, renderStagePass, refreshData);
+    return Object3D::onRender(sgn, rComp, camera, renderStagePass, refreshData);
 }
 
 void Terrain::buildDrawCommands(SceneGraphNode& sgn,

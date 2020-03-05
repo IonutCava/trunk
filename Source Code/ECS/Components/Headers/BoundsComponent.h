@@ -61,7 +61,6 @@ namespace Divide {
         void Update(const U64 deltaTimeUS) final;
         void PostUpdate(const U64 deltaTimeUS) final;
 
-        //void onTransformUpdated(const TransformUpdated* evt);
         void OnData(const ECS::Data& data) final;
 
         void setRefBoundingBox(const BoundingBox& nodeBounds);

@@ -276,7 +276,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Called for every single stage of every render pass. Useful for checking materials, doing compute events, etc
         bool preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut);
         /// Called after preRender and after we rebuild our command buffers. Useful for modifying the command buffer that's going to be used for this RenderStagePass
-        bool prepareRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData);
+        bool prepareRender(RenderingComponent& rComp, const Camera& camera, RenderStagePass renderStagePass, bool refreshData);
         /// Called every time we are about to upload or validate our render data to the GPU. Perfect time for some more compute or verifying push constants.
         void onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut);
         /// Returns true if this node should be drawn based on the specified parameters. Does not do any culling. Just a "if it were to be in view, it would draw".
@@ -384,8 +384,8 @@ namespace Attorney {
             return node.preRender(camera, renderStagePass, refreshData, rebuildCommandsOut);
         }
 
-        static bool prepareRender(SceneGraphNode& node, const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
-            return node.prepareRender(camera, renderStagePass, refreshData);
+        static bool prepareRender(SceneGraphNode& node, RenderingComponent& rComp, const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
+            return node.prepareRender(rComp, camera, renderStagePass, refreshData);
         }
 
         static void onRefreshNodeData(SceneGraphNode& node, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {

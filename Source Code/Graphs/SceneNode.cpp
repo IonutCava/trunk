@@ -104,10 +104,12 @@ bool SceneNode::preRender(SceneGraphNode& sgn,
 }
 
 bool SceneNode::onRender(SceneGraphNode& sgn,
+                         RenderingComponent& rComp,
                          const Camera& camera,
                          RenderStagePass renderStagePass,
                          bool refreshData) {
     ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(rComp);
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(renderStagePass);
     ACKNOWLEDGE_UNUSED(refreshData);

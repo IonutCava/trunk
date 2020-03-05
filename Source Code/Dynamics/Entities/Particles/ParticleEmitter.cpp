@@ -307,6 +307,7 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
 
 /// The onRender call will emit particles
 bool ParticleEmitter::onRender(SceneGraphNode& sgn,
+                               RenderingComponent& rComp,
                                const Camera& camera, 
                                RenderStagePass renderStagePass,
                                bool refreshData) {
@@ -322,8 +323,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
             _buffersDirty[to_U32(renderStagePass._stage)] = false;
         }
 
-        RenderingComponent* renderComp = sgn.get<RenderingComponent>();
-        RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
+        RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
 
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
         cmd._cmd.primCount = to_U32(_particles->_renderingPositions.size());
@@ -333,7 +333,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
 
         prepareForRender(renderStagePass, camera);
 
-        return SceneNode::onRender(sgn, camera, renderStagePass, refreshData);
+        return SceneNode::onRender(sgn, rComp, camera, renderStagePass, refreshData);
     }
 
     return false;

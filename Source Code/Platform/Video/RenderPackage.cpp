@@ -235,8 +235,8 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLev
     const std::pair<U32, U32>& idxData = _lodIndexOffsets[lodLevel];
     const bool setAutoIdx = autoIndexBuffer() && (idxData.first != 0u || idxData.second != 0u);
 
-    auto& cmds = _commands->get<GFX::DrawCommand>();
-    for (auto& cmd : cmds) {
+    const GFX::CommandBuffer::Container::EntryList& cmds = _commands->get<GFX::DrawCommand>();
+    for (GFX::CommandBase* cmd : cmds) {
         GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
         for (GenericDrawCommand& drawCmd : drawCommands) {
             if (drawCmd._cmd.primCount == 1u) {

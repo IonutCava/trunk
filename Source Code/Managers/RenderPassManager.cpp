@@ -333,33 +333,27 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
     OPTICK_EVENT();
 
     const SceneGraphNode& node = rComp.getSGN();
-    // Extract transform data (if available)
-    // (Nodes without transforms just use identity matrices)
     const TransformComponent* const transform = node.get<TransformComponent>();
-    if (transform) {
-        // ... get the node's world matrix properly interpolated
-        if (needsInterp) {
-            transform->getWorldMatrix(interpolationFactor, dataOut._worldMatrix);
-        } else {
-            dataOut._worldMatrix.set(transform->getWorldMatrix());
-        }
+    assert(transform != nullptr);
 
-        dataOut._normalMatrixW.set(dataOut._worldMatrix);
-        if (!transform->isUniformScaled()) {
-            // Non-uniform scaling requires an inverseTranspose to negate
-            // scaling contribution but preserve rotation
-            dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
-            dataOut._normalMatrixW.inverseTranspose();
-        }
+    // ... get the node's world matrix properly interpolated
+    if (needsInterp) {
+        transform->getWorldMatrix(interpolationFactor, dataOut._worldMatrix);
     } else {
-        dataOut._worldMatrix.identity();
-        dataOut._normalMatrixW.identity();
+        dataOut._worldMatrix.set(transform->getWorldMatrix());
+    }
+
+    dataOut._normalMatrixW.set(dataOut._worldMatrix);
+    if (!transform->isUniformScaled()) {
+        // Non-uniform scaling requires an inverseTranspose to negate
+        // scaling contribution but preserve rotation
+        dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
+        dataOut._normalMatrixW.inverseTranspose();
     }
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
-    AnimationComponent* animComp = nullptr;
     if (playAnimations) {
-        animComp = node.get<AnimationComponent>();
+        AnimationComponent* animComp = node.get<AnimationComponent>();
         if (animComp && animComp->playAnimations()) {
             dataOut._normalMatrixW.element(0, 3) = to_F32(animComp->boneCount());
         }
