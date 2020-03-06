@@ -669,8 +669,7 @@ void main(void)
     BuildTerrainData(_waterDetails, data);
 
 #if defined(PRE_PASS)
-    const float crtDepth = computeDepth(_in._vertexWV);
-    outputWithVelocity(data.uv, 1.0f, crtDepth, data.normal);
+    writeOutput(data.uv, data.normal);
 #else
     _private_roughness = data.albedo.a;
 

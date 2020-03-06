@@ -384,6 +384,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.push_back(std::make_pair("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true));
         shaderModule._defines.push_back(std::make_pair("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true));
+        shaderModule._defines.push_back(std::make_pair("NODE_STATIC", true));
 
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._defines.push_back(std::make_pair(blendAmntStr, true));

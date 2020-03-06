@@ -326,7 +326,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         PROPERTY_R(U32, nodeFlags, 0u);
         PROPERTY_R(U32, instanceCount, 1u);
         PROPERTY_R(bool, serialize, true);
-        PROPERTY_RW(NodeUsageContext, usageContext, NodeUsageContext::NODE_STATIC);
+        PROPERTY_R(NodeUsageContext, usageContext, NodeUsageContext::NODE_STATIC);
         //ToDo: make this work in a multi-threaded environment
         //mutable I8 _frustPlaneCache;
 };

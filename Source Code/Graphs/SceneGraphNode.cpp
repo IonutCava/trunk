@@ -141,11 +141,16 @@ void SceneGraphNode::setTransformDirty(U32 transformMask) {
 }
 
 void SceneGraphNode::changeUsageContext(const NodeUsageContext& newContext) {
-    usageContext(newContext);
+    _usageContext = newContext;
 
     TransformComponent* tComp = get<TransformComponent>();
     if (tComp) {
         Attorney::TransformComponentSGN::onParentUsageChanged(*tComp, _usageContext);
+    }
+
+    RenderingComponent* rComp = get<RenderingComponent>();
+    if (rComp) {
+        Attorney::RenderingComponentSGN::onParentUsageChanged(*rComp, _usageContext);
     }
 }
 
@@ -184,7 +189,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
             }
         }
 
-        usageContext(parent.usageContext());
+        changeUsageContext(parent.usageContext());
     }
 }
 
@@ -714,7 +719,7 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
         return;
     }
 
-    usageContext(pt.get("static", false) ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC);
+    changeUsageContext(pt.get("static", false) ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC);
 
     U32 componentsToLoad = 0;
     for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {

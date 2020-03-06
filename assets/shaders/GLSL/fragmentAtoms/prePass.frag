@@ -15,7 +15,7 @@ layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
 layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
 #endif
 
-void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
+void writeOutput(in vec2 uv, in vec3 normal, in float alphaFactor, in float crtDepth) {
 #if defined(USE_ALPHA_DISCARD)
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     float alpha = getAlbedo(colourMatrix, uv).a;
@@ -30,34 +30,35 @@ void _output(in vec3 normal, in float alphaFactor, in vec2 uv) {
         //_extraDetailsOut[i] = getShadowFactor(i);
     }
 #endif
-}
 
-void outputNoVelocity(in vec2 uv, float alphaFactor) {
-    _output(getNormal(uv), alphaFactor, uv);
 #if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.ba = vec2(1.0f);
+#   if defined(NODE_STATIC)
+        _normalAndVelocityOut.ba = vec2(1.0f);
+#   else
+        _normalAndVelocityOut.ba = velocityCalc(crtDepth, dvd_InvProjectionMatrix, dvd_screenPositionNormalised);
+#   endif
 #endif
 }
 
-void outputNoVelocity(in vec2 uv, float alphaFactor, vec3 normal) {
-    _output(normal, alphaFactor, uv);
-#if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.ba = vec2(1.0f);
+void writeOutput(in vec2 uv, in vec3 normal, in float alphaFactor) {
+#if defined(NODE_STATIC)
+    const float crtDepth = 1.0f;
+#else
+    const float crtDepth = computeDepth(VAR._vertexWV);
 #endif
+    writeOutput(uv, normal, alphaFactor, crtDepth);
 }
 
-void outputWithVelocity(in vec2 uv, float alphaFactor, in float crtDepth) {
-    _output(getNormal(uv), alphaFactor, uv);
-#if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.ba = velocityCalc(crtDepth, dvd_InvProjectionMatrix, dvd_screenPositionNormalised);
-#endif
+void writeOutput(in vec2 uv, in vec3 normal) {
+    writeOutput(uv, normal, 1.0f);
 }
 
-void outputWithVelocity(in vec2 uv, float alphaFactor, in float crtDepth, vec3 normal) {
-    _output(normal, alphaFactor, uv);
-#if defined(USE_DEFERRED_NORMALS)
-    _normalAndVelocityOut.ba = velocityCalc(crtDepth, dvd_InvProjectionMatrix, dvd_screenPositionNormalised);
-#endif
+void writeOutput(in vec2 uv, in float alphaFactor) {
+    writeOutput(uv, getNormal(uv), alphaFactor);
+}
+
+void writeOutput(in vec2 uv) {
+    writeOutput(uv, 1.0f);
 }
 
 #endif //_PRE_PASS_FRAG_

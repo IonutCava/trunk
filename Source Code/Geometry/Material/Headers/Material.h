@@ -182,6 +182,7 @@ class Material : public CachedResource {
     void setReceivesShadows(const bool state);
     void setReflective(const bool state);
     void setRefractive(const bool state);
+    void setStatic(const bool state);
 
     void setTextureUseForDepth(ShaderProgram::TextureUsage slot, bool state);
 
@@ -292,20 +293,29 @@ class Material : public CachedResource {
    private:
     GFXDevice& _context;
     ResourceCache& _parentCache;
-    ShadingMode _shadingMode;
-    TranslucencySource _translucencySource;
-    /// parallax/relief factor (higher value > more pronounced effect)
-    F32  _parallaxFactor;
+
+    struct Properties {
+        ShadingMode _shadingMode = ShadingMode::COUNT;
+        TranslucencySource _translucencySource = TranslucencySource::COUNT;
+        /// parallax/relief factor (higher value > more pronounced effect)
+        F32  _parallaxFactor = 1.0f;
+        bool _doubleSided = false;
+        bool _translucent = false;
+        bool _translucencyDisabled = false;
+        bool _receivesShadows = true;
+        bool _isReflective = false;
+        bool _isRefractive = false;
+        bool _isStatic = false;
+        /// Use shaders that have bone transforms implemented
+        bool _hardwareSkinning = false;
+        /// use the below map to define texture operation
+        TextureOperation _operation = TextureOperation::NONE;
+        BumpMethod _bumpMethod = BumpMethod::NONE;
+        ColourData _colourData;
+    } _properties;
+
     bool _needsNewShader;
-    bool _doubleSided;
-    bool _translucent;
-    bool _translucencyDisabled;
-    bool _receivesShadows;
-    bool _isReflective;
-    bool _isRefractive;
     bool _ignoreXMLData;
-    /// Use shaders that have bone transforms implemented
-    bool _hardwareSkinning;
     std::array<ShaderProgramInfo, to_base(RenderStagePass::count())> _shaderInfo;
     std::array<std::array<size_t, 3>,  to_base(RenderStagePass::count())> _defaultRenderStates;
 
@@ -316,10 +326,6 @@ class Material : public CachedResource {
     ShaderData _baseShaderSources;
 
     I32 _textureKeyCache = -1;
-    /// use the below map to define texture operation
-    TextureOperation _operation;
-    BumpMethod _bumpMethod;
-    ColourData _colourData;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines;
 
     static SharedMutex s_shaderDBLock;

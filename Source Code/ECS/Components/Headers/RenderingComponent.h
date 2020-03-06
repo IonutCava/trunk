@@ -58,6 +58,7 @@ namespace Attorney {
     class RenderingCompRenderPass;
     class RenderingCompGFXDevice;
     class RenderingCompRenderBin;
+    class RenderingComponentSGN;
 };
 
 struct RenderParams {
@@ -113,6 +114,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
     friend class Attorney::RenderingCompRenderBin;
+    friend class Attorney::RenderingComponentSGN;
 
    public:
        enum class RenderOptions : U16 {
@@ -228,6 +230,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void updateRefractionIndex(ReflectorType type, I32 index);
 
     void onMaterialChanged();
+    void onParentUsageChanged(NodeUsageContext context);
 
    protected:
     std::array<RenderPackage, ShadowMap::MAX_SHADOW_PASSES> _renderPackagesShadow;
@@ -341,6 +344,12 @@ class RenderingCompRenderBin {
     friend struct Divide::RenderBinItem;
 };
 
+class RenderingComponentSGN {
+    static void onParentUsageChanged(RenderingComponent& comp, NodeUsageContext context) {
+        comp.onParentUsageChanged(context);
+    }
+    friend class Divide::SceneGraphNode;
+};
 };  // namespace Attorney
 };  // namespace Divide
 #endif

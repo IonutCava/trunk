@@ -63,7 +63,7 @@ void main()
     vec3 normal0 = getBump(uvNormal0);
     vec3 normal1 = getBump(uvNormal1);
 
-    outputWithVelocity(VAR._texCoord, 1.0f, computeDepth(VAR._vertexWV), normalize(VAR._tbn * normalize(normal0 + normal1)));
+    writeOutput(VAR._texCoord, normalize(VAR._tbn * normalize(normal0 + normal1)));
 #else
 
     vec3 normalWV = getNormal(VAR._texCoord);

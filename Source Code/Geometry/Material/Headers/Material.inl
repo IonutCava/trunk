@@ -35,12 +35,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 inline void Material::setColourData(const ColourData& other) {
-    _colourData = other;
+    _properties._colourData = other;
     updateTranslucency();
 }
 inline void Material::setHardwareSkinning(const bool state) {
     _needsNewShader = true;
-    _hardwareSkinning = state;
+    _properties._hardwareSkinning = state;
 }
 
 inline void Material::setTextureUseForDepth(ShaderProgram::TextureUsage slot, bool state) {
@@ -54,7 +54,7 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
 }
 
 inline void Material::disableTranslucency() {
-    _translucencyDisabled = true;
+    _properties._translucencyDisabled = true;
 }
 
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash, I32 variant) {
@@ -120,11 +120,11 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderSta
 }
 
 inline void Material::setParallaxFactor(F32 factor) {
-    _parallaxFactor = std::min(0.01f, factor);
+    _properties._parallaxFactor = std::min(0.01f, factor);
 }
 
 inline F32 Material::getParallaxFactor() const {
-    return _parallaxFactor;
+    return _properties._parallaxFactor;
 }
 
 inline eastl::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage textureUsage) const {
@@ -133,33 +133,33 @@ inline eastl::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage
 }
 
 inline const Material::TextureOperation& Material::getTextureOperation() const {
-    return _operation;
+    return _properties._operation;
 }
 
 inline Material::ColourData& Material::getColourData() {
-    return _colourData;
+    return _properties._colourData;
 }
 
 inline const Material::ColourData&  Material::getColourData()  const {
-    return _colourData;
+    return _properties._colourData;
 }
 
 inline const Material::ShadingMode& Material::getShadingMode() const {
-    return _shadingMode;
+    return _properties._shadingMode;
 }
 
 inline const Material::BumpMethod&  Material::getBumpMethod()  const {
-    return _bumpMethod;
+    return _properties._bumpMethod;
 }
 
 inline bool Material::hasTransparency() const {
-    return _translucencySource != TranslucencySource::COUNT;
+    return _properties._translucencySource != TranslucencySource::COUNT;
 }
 
 inline bool Material::hasTranslucency() const {
     assert(hasTransparency());
 
-    return _translucent;
+    return _properties._translucent;
 }
 
 inline bool Material::isPBRMaterial() const {
@@ -167,15 +167,15 @@ inline bool Material::isPBRMaterial() const {
 }
 
 inline bool Material::isDoubleSided() const {
-    return _doubleSided;
+    return _properties._doubleSided;
 }
 
 inline bool Material::receivesShadows() const {
-    return _receivesShadows;
+    return _properties._receivesShadows;
 }
 
 inline bool Material::isReflective() const {
-    if (_isReflective) {
+    if (_properties._isReflective) {
         return true;
     }
     if (getShadingMode() == ShadingMode::BLINN_PHONG ||
@@ -183,23 +183,23 @@ inline bool Material::isReflective() const {
         getShadingMode() == ShadingMode::FLAT ||
         getShadingMode() == ShadingMode::TOON)
     {
-        return _colourData.shininess() > PHONG_REFLECTIVITY_THRESHOLD;
+        return _properties._colourData.shininess() > PHONG_REFLECTIVITY_THRESHOLD;
     }
 
-    return  _colourData.reflectivity() > 0.0f;
+    return _properties._colourData.reflectivity() > 0.0f;
 }
 
 inline bool Material::isRefractive() const {
-    return hasTransparency() && _isRefractive;
+    return hasTransparency() && _properties._isRefractive;
 }
 
 inline void Material::setBumpMethod(const BumpMethod& newBumpMethod) {
-    _bumpMethod = newBumpMethod;
+    _properties._bumpMethod = newBumpMethod;
     _needsNewShader = true;
 }
 
 inline void Material::setShadingMode(const ShadingMode& mode) {
-    _shadingMode = mode;
+    _properties._shadingMode = mode;
     _needsNewShader = true;
 }
 

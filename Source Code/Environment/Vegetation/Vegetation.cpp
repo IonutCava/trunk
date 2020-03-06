@@ -310,6 +310,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vegMaterial->getColourData().specular(FColour3(0.1f, 0.1f, 0.1f));
     vegMaterial->getColourData().shininess(5.0f);
     vegMaterial->setDoubleSided(false);
+    vegMaterial->setStatic(false);
 
     Material::ApplyDefaultStateBlocks(*vegMaterial);
 
@@ -321,6 +322,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
     vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true));
     vertModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
+    vertModule._defines.push_back(std::make_pair("NODE_DYNAMIC", true));
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
@@ -329,6 +331,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     fragModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true));
     fragModule._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
     fragModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
+    fragModule._defines.push_back(std::make_pair("NODE_DYNAMIC", true));
     if (!gfxDevice.context().config().rendering.shadowMapping.enabled) {
         fragModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }

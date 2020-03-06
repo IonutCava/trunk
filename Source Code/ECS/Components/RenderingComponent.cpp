@@ -182,6 +182,9 @@ void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
         _editorComponent.registerField(std::move(lockLodLevelField));
 
         _materialInstanceCache = _materialInstance.get();
+        if (_materialInstanceCache != nullptr) {
+            _materialInstanceCache->setStatic(_parentSGN.usageContext() == NodeUsageContext::NODE_STATIC);
+        }
     }
 }
 
@@ -192,6 +195,9 @@ void RenderingComponent::useUniqueMaterialInstance() {
 
     _materialInstance = _materialInstance->clone("_instance_" + _parentSGN.name());
     _materialInstanceCache = _materialInstance.get();
+    if (_materialInstanceCache != nullptr) {
+        _materialInstanceCache->setStatic(_parentSGN.usageContext() == NodeUsageContext::NODE_STATIC);
+    }
 }
 
 void RenderingComponent::setMinRenderRange(F32 minRange) {
@@ -269,6 +275,12 @@ bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, U8 LoD,
     }
 
     return false;
+}
+
+void RenderingComponent::onParentUsageChanged(NodeUsageContext context) {
+    if (_materialInstanceCache != nullptr) {
+        _materialInstanceCache->setStatic(context == NodeUsageContext::NODE_STATIC);
+    }
 }
 
 void RenderingComponent::rebuildMaterial() {

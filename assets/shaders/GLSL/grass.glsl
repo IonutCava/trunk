@@ -92,7 +92,7 @@ layout(location = 1) flat in float _alphaFactor;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
-// This is needed so that the inner "outputNoVelocity" discards don't take place
+// This is needed so that the inner "output" discards don't take place
 // We still manually alpha-discard in main
 #if defined(USE_ALPHA_DISCARD)
 #undef USE_ALPHA_DISCARD
@@ -105,7 +105,7 @@ void main() {
         discard;
     }
 
-    outputNoVelocity(VAR._texCoord, _alphaFactor);
+    writeOutput(VAR._texCoord, _alphaFactor);
 }
 
 

@@ -70,11 +70,13 @@ bool InfinitePlane::load() {
     vertModule._sourceFile = "terrainPlane.glsl";
     vertModule._variant = "Colour";
     vertModule._defines.push_back(std::make_pair("UNDERWATER_TILE_SCALE 100", true));
+    vertModule._defines.push_back(std::make_pair("NODE_STATIC", true));
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "terrainPlane.glsl";
     fragModule._variant = "Colour";
+    fragModule._defines.push_back(std::make_pair("NODE_STATIC", true));
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);

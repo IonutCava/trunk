@@ -105,25 +105,11 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _context(context),
       _parentCache(parentCache),
       _textureKeyCache(-1),
-      _parallaxFactor(1.0f),
       _needsNewShader(false),
-      _doubleSided(false),
-      _translucent(false),
-      _translucencyDisabled(false),
-      _receivesShadows(true),
-      _isReflective(false),
-      _isRefractive(false),
-      _hardwareSkinning(false),
-      _ignoreXMLData(false),
-      _shadingMode(ShadingMode::COUNT),
-      _bumpMethod(BumpMethod::NONE),
-      _translucencySource(TranslucencySource::COUNT)
+      _ignoreXMLData(false)
 {
     _textures.fill(nullptr);
-
     _textureUseForDepth.fill(false);
-
-    _operation = TextureOperation::NONE;
 
     ApplyDefaultStateBlocks(*this);
 }
@@ -139,19 +125,8 @@ Material_ptr Material::clone(const Str128& nameSuffix) {
     const Material& base = *this;
     Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(resourceName() + nameSuffix.c_str()));
 
-    cloneMat->_shadingMode = base._shadingMode;
-    cloneMat->_doubleSided = base._doubleSided;
-    cloneMat->_translucent = base._translucent;
-    cloneMat->_translucencyDisabled = base._translucencyDisabled;
-    cloneMat->_receivesShadows = base._receivesShadows;
-    cloneMat->_isReflective = base._isReflective;
-    cloneMat->_isRefractive = base._isRefractive;
-    cloneMat->_hardwareSkinning = base._hardwareSkinning;
-    cloneMat->_operation = base._operation;
-    cloneMat->_bumpMethod = base._bumpMethod;
+    cloneMat->_properties = base._properties;
     cloneMat->_ignoreXMLData = base._ignoreXMLData;
-    cloneMat->_parallaxFactor = base._parallaxFactor;
-    cloneMat->_translucencySource = base._translucencySource;
     cloneMat->_baseShaderSources = base._baseShaderSources;
     cloneMat->_extraShaderDefines = base._extraShaderDefines;
 
@@ -170,8 +145,6 @@ Material_ptr Material::clone(const Str128& nameSuffix) {
         }
         
     }
-
-    cloneMat->_colourData = base._colourData;
 
     return cloneMat;
 }
@@ -196,7 +169,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     const U32 slot = to_U32(textureUsageSlot);
 
     if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT1) {
-        _operation = op;
+        _properties._operation = op;
     }
     
     assert(textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
@@ -429,7 +402,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     constexpr U32 slot1 = to_base(ShaderProgram::TextureUsage::UNIT1);
     constexpr U32 slotOpacity = to_base(ShaderProgram::TextureUsage::OPACITY);
 
-    DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT, "Material computeShader error: Invalid shading mode specified!");
+    DIVIDE_ASSERT(_properties._shadingMode != ShadingMode::COUNT, "Material computeShader error: Invalid shading mode specified!");
 
 
     ModuleDefines vertDefines = {};
@@ -496,13 +469,13 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     // Display pre-pass caches normal maps in a GBuffer, so it's the only exception
     if (!isDepthPass || renderStagePass._stage == RenderStage::DISPLAY) {
         // Bump mapping?
-        if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] && _bumpMethod != BumpMethod::NONE) {
+        if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] && _properties._bumpMethod != BumpMethod::NONE) {
             globalDefines.push_back(std::make_pair("COMPUTE_TBN", true));
 
-            if (_bumpMethod == BumpMethod::PARALLAX) {
+            if (_properties._bumpMethod == BumpMethod::PARALLAX) {
                 fragDefines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
                 shaderName += ".PMap";
-            } else if (_bumpMethod == BumpMethod::RELIEF) {
+            } else if (_properties._bumpMethod == BumpMethod::RELIEF) {
                 fragDefines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
                 shaderName += ".RMap";
             } else {
@@ -523,16 +496,16 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     updateTranslucency();
 
-    if (_translucencySource != TranslucencySource::COUNT && renderStagePass._passType != RenderPassType::OIT_PASS) {
+    if (_properties._translucencySource != TranslucencySource::COUNT && renderStagePass._passType != RenderPassType::OIT_PASS) {
         shaderName += ".AD";
         fragDefines.push_back(std::make_pair("USE_ALPHA_DISCARD", true));
     }
 
-    switch (_translucencySource) {
+    switch (_properties._translucencySource) {
         case TranslucencySource::OPACITY_MAP_A:
         case TranslucencySource::OPACITY_MAP_R: {
             fragDefines.push_back(std::make_pair("USE_OPACITY_MAP", true));
-            if (_translucencySource == TranslucencySource::OPACITY_MAP_R) {
+            if (_properties._translucencySource == TranslucencySource::OPACITY_MAP_R) {
                 shaderName += ".OMapR";
                 fragDefines.push_back(std::make_pair("USE_OPACITY_MAP_RED_CHANNEL", true));
             } else {
@@ -556,8 +529,17 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         fragDefines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
     }
 
+    if (!_properties._isStatic) {
+        shaderName += ".D";
+        vertDefines.push_back(std::make_pair("NODE_DYNAMIC", true));
+        fragDefines.push_back(std::make_pair("NODE_DYNAMIC", true));
+    } else {
+        vertDefines.push_back(std::make_pair("NODE_STATIC", true));
+        fragDefines.push_back(std::make_pair("NODE_STATIC", true));
+    }
+
     if (!isDepthPass) {
-        switch (_shadingMode) {
+        switch (_properties._shadingMode) {
             default:
             case ShadingMode::FLAT: {
                 fragDefines.push_back(std::make_pair("USE_SHADING_FLAT", true));
@@ -588,7 +570,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     }
 
     // Add the GPU skinning module to the vertex shader?
-    if (_hardwareSkinning) {
+    if (_properties._hardwareSkinning) {
         vertDefines.push_back(std::make_pair("USE_GPU_SKINNING", true));
         shaderName += ".Sknd";  //<Use "," instead of "." will add a Vertex only property
     }
@@ -763,56 +745,64 @@ bool Material::unload() noexcept {
 }
 
 void Material::setReflective(const bool state) {
-    if (_isReflective == state) {
+    if (_properties._isReflective == state) {
         return;
     }
 
-    _isReflective = state;
+    _properties._isReflective = state;
     _needsNewShader = true;
 }
 
 void Material::setRefractive(const bool state) {
-    if (_isRefractive == state) {
+    if (_properties._isRefractive == state) {
         return;
     }
 
-    _isRefractive = state;
+    _properties._isRefractive = state;
     _needsNewShader = true;
 }
 
 void Material::setDoubleSided(const bool state) {
-    if (_doubleSided == state) {
+    if (_properties._doubleSided == state) {
         return;
     }
 
-    _doubleSided = state;
-
+    _properties._doubleSided = state;
     _needsNewShader = true;
 }
 
 void Material::setReceivesShadows(const bool state) {
-    if (_receivesShadows == state) {
+    if (_properties._receivesShadows == state) {
         return;
     }
 
-    _receivesShadows = state;
+    _properties._receivesShadows = state;
+    _needsNewShader = true;
+}
+
+void Material::setStatic(const bool state) {
+    if (_properties._isStatic == state) {
+        return;
+    }
+
+    _properties._isStatic = state;
     _needsNewShader = true;
 }
 
 void Material::updateTranslucency() {
-    if (_translucencyDisabled) {
+    if (_properties._translucencyDisabled) {
         return;
     }
 
-    bool wasTranslucent = _translucent;
-    TranslucencySource oldSource = _translucencySource;
-    _translucencySource = TranslucencySource::COUNT;
+    bool wasTranslucent = _properties._translucent;
+    TranslucencySource oldSource = _properties._translucencySource;
+    _properties._translucencySource = TranslucencySource::COUNT;
 
     // In order of importance (less to more)!
     // diffuse channel alpha
-    if (_colourData.baseColour().a < 0.95f) {
-        _translucencySource = TranslucencySource::ALBEDO;
-        _translucent = true;
+    if (_properties._colourData.baseColour().a < 0.95f) {
+        _properties._translucencySource = TranslucencySource::ALBEDO;
+        _properties._translucent = true;
     }
 
     bool usingAlbedoTexAlpha = false;
@@ -820,10 +810,10 @@ void Material::updateTranslucency() {
     // base texture is translucent
     const Texture_ptr& albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
     if (albedo && albedo->hasTransparency()) {
-        _translucencySource = TranslucencySource::ALBEDO;
-        _translucent = albedo->hasTranslucency();
+        _properties._translucencySource = TranslucencySource::ALBEDO;
+        _properties._translucent = albedo->hasTranslucency();
 
-        usingAlbedoTexAlpha = oldSource != _translucencySource;
+        usingAlbedoTexAlpha = oldSource != _properties._translucencySource;
     }
 
     // opacity map
@@ -832,10 +822,10 @@ void Material::updateTranslucency() {
         const U8 channelCount = opacity->descriptor().numChannels();
         DIVIDE_ASSERT(channelCount == 1 || channelCount == 4, "Material::updateTranslucency: Opacity textures must be either single-channel or RGBA!");
 
-        _translucencySource = channelCount == 4 ? TranslucencySource::OPACITY_MAP_A : TranslucencySource::OPACITY_MAP_R;
-        _translucent = opacity->hasTranslucency();
+        _properties._translucencySource = channelCount == 4 ? TranslucencySource::OPACITY_MAP_A : TranslucencySource::OPACITY_MAP_R;
+        _properties._translucent = opacity->hasTranslucency();
         usingAlbedoTexAlpha = false;
-        usingOpacityTexAlpha = oldSource != _translucencySource || wasTranslucent != _translucent;
+        usingOpacityTexAlpha = oldSource != _properties._translucencySource || wasTranslucent != _properties._translucent;
     }
 
     if (usingAlbedoTexAlpha || usingOpacityTexAlpha) {
@@ -850,14 +840,14 @@ void Material::updateTranslucency() {
         }
     }
 
-    if (oldSource != _translucencySource || wasTranslucent != _translucent) {
+    if (oldSource != _properties._translucencySource || wasTranslucent != _properties._translucent) {
         _needsNewShader = true;
     }
 }
 
 size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
     const size_t ret = defaultRenderState(renderStagePass);
-    if (_doubleSided) {
+    if (_properties._doubleSided) {
         RenderStateBlock tempBlock = RenderStateBlock::get(ret);
         tempBlock.setCullMode(CullMode::NONE);
         return tempBlock.getHash();
@@ -877,9 +867,9 @@ void Material::getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32&
 }
 
 void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
-    retMatrix.setRow(0, _colourData._data[0]);
-    retMatrix.setRow(1, _colourData._data[1]);
-    retMatrix.setRow(2, _colourData._data[2]);
+    retMatrix.setRow(0, _properties._colourData._data[0]);
+    retMatrix.setRow(1, _properties._colourData._data[1]);
+    retMatrix.setRow(2, _properties._colourData._data[2]);
     retMatrix.setRow(3, vec4<F32>(0.0f, getParallaxFactor(), 0.0f, 0.0f));
 }
 
@@ -1149,7 +1139,7 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
             pt.put(textureNode + ".flipped", texture->flipped());
 
             if (usage == ShaderProgram::TextureUsage::UNIT1) {
-                pt.put(textureNode + ".usage", getTextureOperationName(_operation));
+                pt.put(textureNode + ".usage", getTextureOperationName(_properties._operation));
             }
             pt.put(textureNode + ".Map.<xmlattr>.U", getWrapModeName(sampler.wrapU()));
             pt.put(textureNode + ".Map.<xmlattr>.V", getWrapModeName(sampler.wrapV()));
@@ -1167,31 +1157,31 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
     }
     setShadingMode(getShadingModeByName(pt.get<stringImpl>(entryName + ".shadingMode", "FLAT")));
 
-    _colourData.baseColour(
+    _properties._colourData.baseColour(
         FColour4(pt.get<F32>(entryName + ".colour.<xmlattr>.r", 0.6f),
                  pt.get<F32>(entryName + ".colour.<xmlattr>.g", 0.6f),
                  pt.get<F32>(entryName + ".colour.<xmlattr>.b", 0.6f),
                  pt.get<F32>(entryName + ".colour.<xmlattr>.a", 1.f))
     );
 
-    _colourData.emissive(
+    _properties._colourData.emissive(
         FColour3(pt.get<F32>(entryName + ".emissive.<xmlattr>.r", 0.f),
                  pt.get<F32>(entryName + ".emissive.<xmlattr>.g", 0.f),
                  pt.get<F32>(entryName + ".emissive.<xmlattr>.b", 0.f))
     );
 
     if (!isPBRMaterial()) {
-        _colourData.specular(
+        _properties._colourData.specular(
             FColour3(pt.get<F32>(entryName + ".specular.<xmlattr>.r", 1.f),
                      pt.get<F32>(entryName + ".specular.<xmlattr>.g", 1.f),
                      pt.get<F32>(entryName + ".specular.<xmlattr>.b", 1.f))
         );
 
-        _colourData.shininess(pt.get<F32>(entryName + ".shininess", 0.0f));
+        _properties._colourData.shininess(pt.get<F32>(entryName + ".shininess", 0.0f));
     } else {
-        _colourData.metallic(pt.get<F32>(entryName + ".metallic", 0.0f));
-        _colourData.reflectivity(pt.get<F32>(entryName + ".reflectivity", 0.0f));
-        _colourData.roughness(pt.get<F32>(entryName + ".roughness", 0.0f));
+        _properties._colourData.metallic(pt.get<F32>(entryName + ".metallic", 0.0f));
+        _properties._colourData.reflectivity(pt.get<F32>(entryName + ".reflectivity", 0.0f));
+        _properties._colourData.roughness(pt.get<F32>(entryName + ".roughness", 0.0f));
     }
 
     setDoubleSided(pt.get<bool>(entryName + ".doubleSided", false));

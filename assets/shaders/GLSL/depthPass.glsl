@@ -3,7 +3,7 @@
 #include "prePass.frag"
 
 void main() {
-    outputWithVelocity(TexCoords, 1.0f, computeDepth(VAR._vertexWV));
+    writeOutput(TexCoords);
 }
 
 -- Fragment.Shadow
