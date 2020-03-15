@@ -522,7 +522,7 @@ void glTexturePool::init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes)
     //_pools.reserve(poolSizes.size());
 
     for (const auto& it : poolSizes) {
-        poolImpl pool = {};
+        poolImpl pool;
         pool._usageMap.reserve(it.second); 
         for (U32 i = 0; i < it.second; ++i) {
             pool._usageMap.push_back({ State::FREE });

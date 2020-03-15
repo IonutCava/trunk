@@ -976,18 +976,17 @@ static int stbir__edge_wrap_slow(stbir_edge edge, int n, int max)
     }
 
     case STBIR_EDGE_WRAP:
+    {
         if (n >= 0)
             return (n % max);
-        else
-        {
-            int m = (-n) % max;
 
-            if (m != 0)
-                m = max - m;
+        int m = (-n) % max;
 
-            return (m);
-        }
-        return n;  // NOTREACHED
+        if (m != 0)
+            m = max - m;
+
+        return (m);
+    }
 
     default:
         STBIR__UNIMPLEMENTED("Unimplemented edge type");

@@ -215,7 +215,7 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
                 _score--;
 
                 if (b == CallbackParam::TYPE_INTEGER) {
-                    I32 quote = a.cast<I32>();
+                    I32 quote = any_cast<I32>(a);
                     if (_score % 3 == 0)
                         _GUI->modifyText(_ID("insults"), _quotes[quote], false);
                 }

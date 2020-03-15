@@ -1313,14 +1313,14 @@ void Scene::processGUI(const U64 deltaTimeUS) {
     D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
 
     std::transform(std::begin(_guiTimersMS), std::end(_guiTimersMS), std::begin(_guiTimersMS),
-                   std::bind1st(std::plus<D64>(), delta));
+                    [delta](D64 timer) { return timer + delta; });
 }
 
 void Scene::processTasks(const U64 deltaTimeUS) {
     D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
 
     std::transform(std::begin(_taskTimers), std::end(_taskTimers), std::begin(_taskTimers),
-                   std::bind1st(std::plus<D64>(), delta));
+                   [delta](D64 timer) { return timer + delta; });
 }
 
 void Scene::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {

@@ -308,7 +308,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GAME;_CRT_SECURE_NO_WARNINGS;_DEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GAME;_ENFORCE_MATCHING_ALLOCATORS=0;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;_DEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -330,7 +330,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableModules>false</EnableModules>
@@ -360,7 +360,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GAME;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GAME;_ENFORCE_MATCHING_ALLOCATORS=0;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -382,7 +382,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableModules>false</EnableModules>
@@ -414,7 +414,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GAME;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GAME;_ENFORCE_MATCHING_ALLOCATORS=0;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -434,7 +434,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions> /Zc:twoPhase-</AdditionalOptions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -463,7 +463,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/Libs/fmt/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/DevIL\include/;$(SolutionDir)../3rdParty/cegui\include/;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/assimp\include/;$(SolutionDir)../3rdParty/sdl\include/;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../3rdParty/physx\PxShared\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/foundation\;$(SolutionDir)../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)../3rdParty/physx/Source\foundation\include/;$(SolutionDir)../3rdParty/freetype\include/;$(SolutionDir)../3rdParty/glbinding\include/;$(SolutionDir)../3rdParty/OIS\include/;$(SolutionDir)../3rdParty/ftgl\include/;$(SolutionDir)../3rdParty/glm\;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../3rdParty/GSL/include/</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>GAME;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GAME;_ENFORCE_MATCHING_ALLOCATORS=0;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -482,7 +482,7 @@
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>

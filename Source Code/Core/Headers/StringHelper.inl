@@ -246,8 +246,9 @@ inline T_str Ltrim(const T_str& s) {
 template<typename T_str>
 inline T_str& Ltrim(T_str& s) {
     s.erase(std::begin(s),
-        std::find_if(std::begin(s), std::end(s),
-            std::not1(std::ptr_fun<int, int>(std::isspace))));
+            std::find_if(std::begin(s),
+                         std::end(s),
+                         [](char c) { return !std::isspace(c); }));
     return s;
 }
 
@@ -259,10 +260,10 @@ inline T_str Rtrim(const T_str& s) {
 
 template<typename T_str>
 inline T_str& Rtrim(T_str& s) {
-    s.erase(
-        std::find_if(std::rbegin(s), std::rend(s),
-            std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
-        std::end(s));
+    s.erase(std::find_if(std::rbegin(s),
+                         std::rend(s),
+                         [](char c) { return !std::isspace(c); }).base(),
+            std::end(s));
     return s;
 }
 

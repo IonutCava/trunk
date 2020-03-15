@@ -24,7 +24,7 @@ namespace {
  const U32 g_myTeamContainer = 0;
  const U32 g_enemyTeamContainer = 1;
  const U32 g_flagContainer = 2;
-};
+ };
 
 vec3<F32> WarSceneAIProcessor::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAIProcessor::_globalWorkingMemory;
@@ -631,7 +631,7 @@ void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
         } break;
 
         case AIMsg::HAVE_DIED: {
-            bool hadFlag = msg_content.constant_cast<bool>();
+            bool hadFlag = ::any_cast<bool>(msg_content);
             if (hadFlag) {
                 U32 senderTeamID = sender.getTeamID();
                 U32 ownTeamID = _entity->getTeamID();

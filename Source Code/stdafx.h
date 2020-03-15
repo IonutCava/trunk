@@ -113,10 +113,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #if !defined(CPP_17_SUPPORT)
 #include "Core/Headers/cdigginsAny.h"
 namespace cd = ::cdiggins;
-typedef cd::any AnyParam;
+using AnyParam = cd::any;
+template <typename T>
+FORCE_INLINE T any_cast(const AnyParam& param) {
+    return param.constant_cast<T>();
+}
 #else
 #include <any>
-typedef std::any AnyParam;
+using AnyParam = std::any;
+template <typename T>
+FORCE_INLINE T any_cast(const AnyParam& param) {
+    return std::any_cast<T>(param);
+}
 #endif
 
 namespace boost {

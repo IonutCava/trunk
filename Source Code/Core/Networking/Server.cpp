@@ -52,7 +52,7 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
         acceptor_->async_accept(
             new_session->getSocket(),
             std::bind(&Server::handle_accept, this, new_session, std::placeholders::_1));
-        std::auto_ptr<boost::asio::io_service::work> work(
+        std::unique_ptr<boost::asio::io_service::work> work(
             new boost::asio::io_service::work(io_service_));
         
         thread_.reset(new std::thread([this]() {

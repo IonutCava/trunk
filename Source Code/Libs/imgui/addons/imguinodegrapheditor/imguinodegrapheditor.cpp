@@ -578,7 +578,7 @@ void NodeGraphEditor::render()
                 ImGui::Separator();
 #if             (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
                 const char* saveName = "nodeGraphEditor.nge.style";
-                const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge.style";
+                //const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge.style";
                 const char* pSaveName = saveName;
 #               ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
                 if (ImGui::SmallButton("Save##saveGNEStyle")) {
@@ -617,7 +617,7 @@ void NodeGraphEditor::render()
             if (ImGui::CollapsingHeader("Serialization##serialization",NULL,false))   {
                 ImGui::Separator();
                 const char* saveName = "nodeGraphEditor.nge";
-                const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge";
+                //const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge";
                 const char* pSaveName = saveName;
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
                 if (ImGui::SmallButton("Save##saveGNE")) {
