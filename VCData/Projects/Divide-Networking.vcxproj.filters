@@ -16,9 +16,6 @@
     <ClInclude Include="../../Source Code/Networking\Headers\ASIO.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/Networking\Headers\ByteConverter.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code/Networking\Headers\Client.h">
       <Filter>Headers</Filter>
     </ClInclude>

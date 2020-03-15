@@ -704,20 +704,8 @@
     <None Include="../../assets\Scripts\atoms\utility.chai">
       <Filter>Scripts\atoms</Filter>
     </None>
-    <None Include="..\..\XML\Scenes\defaultScene\musicPlaylist.xml.dev">
-      <Filter>XML\Scenes\defaultScene</Filter>
-    </None>
     <None Include="..\..\XML\Scenes\defaultScene\terrain.xml.dev">
       <Filter>XML\Scenes\defaultScene</Filter>
-    </None>
-    <None Include="..\..\XML\Scenes\WarScene\assets.xml.bak">
-      <Filter>XML\Scenes\WarScene</Filter>
-    </None>
-    <None Include="..\..\XML\Scenes\WarScene\assets.xml.dev">
-      <Filter>XML\Scenes\WarScene</Filter>
-    </None>
-    <None Include="..\..\XML\Scenes\WarScene\musicPlaylist.xml.dev">
-      <Filter>XML\Scenes\WarScene</Filter>
     </None>
     <None Include="..\..\XML\Scenes\WarScene\navMeshConfig.ini">
       <Filter>XML\Scenes\WarScene</Filter>

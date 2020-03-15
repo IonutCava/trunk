@@ -43,7 +43,6 @@
     <None Include="../../Source Code/Core\Headers\ByteBuffer.inl">
       <Filter>Headers</Filter>
     </None>
-    <None Include="cpp.hint" />
     <None Include="..\..\Source Code\Core\Headers\ObjectPool.inl">
       <Filter>Headers</Filter>
     </None>

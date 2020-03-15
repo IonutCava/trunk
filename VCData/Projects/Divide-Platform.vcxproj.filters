@@ -277,9 +277,6 @@
     <ClInclude Include="../../Source Code\Platform\Input\Headers\InputHandler.h">
       <Filter>Input\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/Platform\Video\Headers\OcclusionQuery.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Platform\Input\AutoKeyRepeat.cpp">
@@ -752,9 +749,6 @@
       <Filter>Video\ShaderSource\GLSL\common</Filter>
     </None>
     <None Include="../../assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
-      <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
-    </None>
-    <None Include="../../assets\shaders\GLSL\vertexAtoms\foliage.vert">
       <Filter>Video\ShaderSource\GLSL\vertexAtoms</Filter>
     </None>
     <None Include="../../assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">

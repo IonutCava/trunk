@@ -12,9 +12,6 @@
 
 #include "Platform/File/Headers/FileManagement.h"
 
-#if defined(USE_VLD)
-#include <vld.h>
-#endif
 #include <direct.h>
 
 #pragma comment(lib, "OpenAL32.lib")
