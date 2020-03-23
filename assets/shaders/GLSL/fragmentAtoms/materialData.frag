@@ -13,12 +13,8 @@
 #endif
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
-#if !defined(SKIP_TEXTURES)
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-#   if TEX_OPERATION != TEX_NONE
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
-#   endif //TEX_OPERATION != TEX_NONE
-#endif //SKIP_TEXTURES
 #endif
 
 #if !defined(PRE_PASS)
@@ -53,23 +49,6 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 
 #define TexCoords VAR._texCoord
 
-#if defined(USE_PARALLAX_MAPPING) || defined(USE_PARALLAX_OCCLUSION_MAPPING)
-#if defined(USE_PARALLAX_OCCLUSION_MAPPING) && defined(USE_PARALLAX_MAPPING)
-#undef USE_PARALLAX_MAPPING
-#endif
-
-uniform float height_scale = 0.3f;
-
-#if defined(USE_PARALLAX_MAPPING)
-//ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
-// Returned parallaxed texCoords
-vec2 ParallaxOffset(vec2 uv, vec3 viewDir, float height)
-{
-	return uv - (viewDir.xy / viewDir.z * (height * height_scale));
-}
-#endif
-
-#if defined(USE_PARALLAX_OCCLUSION_MAPPING)
 float getDisplacementValue(vec2 sampleUV);
 vec2 ParallaxOcclusionMapping(vec2 sampleUV, vec3 viewDir, float currentDepthMapValue)
 {
@@ -82,7 +61,7 @@ vec2 ParallaxOcclusionMapping(vec2 sampleUV, vec3 viewDir, float currentDepthMap
     // depth of current layer
     float currentLayerDepth = 0.0;
     // the amount to shift the texture coordinates per layer (from vector P)
-    vec2 P = viewDir.xy * height_scale;
+    vec2 P = viewDir.xy * dvd_parallaxFactor;
     vec2 deltaTexCoords = P / numLayers;
 
     // get initial values
@@ -109,9 +88,6 @@ vec2 ParallaxOcclusionMapping(vec2 sampleUV, vec3 viewDir, float currentDepthMap
 
     return finalTexCoords;
 }
-#endif //USE_PARALLAX_OCCLUSION_MAPPING
-
-#endif //USE_PARALLAX_MAPPING || USE_PARALLAX_OCCLUSION_MAPPING
 
 #if !defined(PRE_PASS)
 float Gloss(in vec3 bump, in vec2 uv)
@@ -201,7 +177,6 @@ float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
 }
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
-#if !defined(SKIP_TEXTURES)
 vec4 getTextureColour(in vec2 uv) {
 #define TEX_NONE 0
 #define TEX_MODULATE 1
@@ -213,33 +188,56 @@ vec4 getTextureColour(in vec2 uv) {
 #define TEX_DECAL  7
 #define TEX_REPLACE  8
 
+#if defined(SKIP_TEX0)
+    if (dvd_texOperation != TEX_NONE) {
+        return texture(texDiffuse1, uv);
+    }
+        
+    return vec4(0.0f, 0.0f, 0.0f, 1.0f); 
+#else
     vec4 colour = texture(texDiffuse0, uv);
-
-#if TEX_OPERATION != TEX_NONE
-    vec4 colour2 = texture(texDiffuse1, uv);
-
-    // Read from the texture
-    switch (TEX_OPERATION) {
-        default: colour = vec4(0.7743, 0.3188, 0.5465, 1.0);   break; // <hot pink to easily spot it in a crowd
-        case TEX_MODULATE: colour *= colour2;       break;
-        case TEX_REPLACE: colour = colour2;       break;
-        case TEX_SIGNED_ADD: colour += colour2 - 0.5; break;
-        case TEX_DIVIDE: colour /= colour2;       break;
-        case TEX_SUBTRACT: colour -= colour2;       break;
-        case TEX_DECAL: colour = vec4(mix(colour.rgb, colour2.rgb, colour2.a), colour.a); break;
+    // Read from the second texture (if any)
+    switch (dvd_texOperation) {
+        default:
+            //hot pink to easily spot it in a crowd
+            colour = vec4(0.7743, 0.3188, 0.5465, 1.0);
+            break;
+        case TEX_NONE:
+            //NOP
+            break;
+        case TEX_MODULATE:
+            colour *= texture(texDiffuse1, uv);
+            break;
+        case TEX_REPLACE:
+            colour = texture(texDiffuse1, uv);
+            break;
+        case TEX_SIGNED_ADD:
+            colour += texture(texDiffuse1, uv) - 0.5f;
+            break;
+        case TEX_DIVIDE:
+            colour /= texture(texDiffuse1, uv);
+            break;
+        case TEX_SUBTRACT:
+            colour -= texture(texDiffuse1, uv);
+            break;
+        case TEX_DECAL: {
+            vec4 colour2 = texture(texDiffuse1, uv);
+            colour = vec4(mix(colour.rgb, colour2.rgb, colour2.a), colour.a);
+        } break;
         case TEX_ADD: {
+            vec4 colour2 = texture(texDiffuse1, uv);
             colour.rgb += colour2.rgb;
             colour.a *= colour2.a;
         }break;
         case TEX_SMOOTH_ADD: {
+            vec4 colour2 = texture(texDiffuse1, uv);
             colour = (colour + colour2) - (colour * colour2);
         }break;
     }
-#endif
 
     return saturate(colour);
+#endif
 }
-#endif //SKIP_TEXTURES
 
 vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
 
@@ -261,8 +259,7 @@ vec3 getNormal(in vec2 uv) {
     vec3 normal = VAR._normalWV;
 
 #if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
-    //if (dvd_lodLevel == 0)
-    {
+    if (dvd_bumpMethod != BUMP_NONE) {
         normal = VAR._tbn * getBump(uv);
     }
 #endif //COMPUTE_TBN

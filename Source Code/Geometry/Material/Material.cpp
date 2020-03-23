@@ -455,15 +455,10 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         shaderName += ".OIT";
         fragDefines.push_back(std::make_pair("OIT_PASS", true));
     }
-    if (renderStagePass._stage == RenderStage::REFRACTION) {
-        fragDefines.push_back(std::make_pair("WRITE_DEPTH_TO_ALPHA", true));
-    }
 
     if (!_textures[slot0]) {
-        fragDefines.push_back(std::make_pair("SKIP_TEXTURES", true));
-        shaderName += ".NTex";
-    } else {
-        fragDefines.push_back(std::make_pair(Util::StringFormat("TEX_OPERATION %d", to_base(getTextureOperation())).c_str(), true));
+        fragDefines.push_back(std::make_pair("SKIP_TEX0", true));
+        shaderName += ".NTex0";
     }
 
     // Display pre-pass caches normal maps in a GBuffer, so it's the only exception
@@ -471,16 +466,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
         // Bump mapping?
         if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] && _properties._bumpMethod != BumpMethod::NONE) {
             globalDefines.push_back(std::make_pair("COMPUTE_TBN", true));
-
-            if (_properties._bumpMethod == BumpMethod::PARALLAX) {
-                fragDefines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
-                shaderName += ".PMap";
-            } else if (_properties._bumpMethod == BumpMethod::RELIEF) {
-                fragDefines.push_back(std::make_pair("USE_RELIEF_MAPPING", true));
-                shaderName += ".RMap";
-            } else {
-                shaderName += ".NMap";
-            }
         }
 
         if (_textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
@@ -917,88 +902,91 @@ ShaderProgram::TextureUsage getTexUsageByName(const stringImpl& name) {
     return ShaderProgram::TextureUsage::COUNT;
 }
 
-const char *getBumpMethodName(Material::BumpMethod bumpMethod) noexcept {
+const char *getBumpMethodName(BumpMethod bumpMethod) noexcept {
     switch(bumpMethod) {
-        case Material::BumpMethod::NORMAL   : return "NORMAL";
-        case Material::BumpMethod::PARALLAX : return "PARALLAX";
-        case Material::BumpMethod::RELIEF   : return "RELIEF";
+        case BumpMethod::NORMAL   : return "NORMAL";
+        case BumpMethod::PARALLAX : return "PARALLAX";
+        case BumpMethod::PARALLAX_OCCLUSION: return "PARALLAX_OCCLUSION";
+
+        default:break;
     }
 
     return "NONE";
 }
 
-Material::BumpMethod getBumpMethodByName(const stringImpl& name) {
+BumpMethod getBumpMethodByName(const stringImpl& name) {
     if (Util::CompareIgnoreCase(name, "NORMAL")) {
-        return Material::BumpMethod::NORMAL;
+        return BumpMethod::NORMAL;
     } else if (Util::CompareIgnoreCase(name, "PARALLAX")) {
-        return Material::BumpMethod::PARALLAX;
-    } else if (Util::CompareIgnoreCase(name, "RELIEF")) {
-        return Material::BumpMethod::RELIEF;
+        return BumpMethod::PARALLAX;
+    } else if (Util::CompareIgnoreCase(name, "PARALLAX_OCCLUSION")) {
+        return BumpMethod::PARALLAX_OCCLUSION;
     }
 
-    return Material::BumpMethod::COUNT;
+    return BumpMethod::COUNT;
 }
 
-const char *getShadingModeName(Material::ShadingMode shadingMode) noexcept {
+const char *getShadingModeName(ShadingMode shadingMode) noexcept {
     switch (shadingMode) {
-        case Material::ShadingMode::FLAT          : return "FLAT";
-        case Material::ShadingMode::PHONG         : return "PHONG";
-        case Material::ShadingMode::BLINN_PHONG   : return "BLINN_PHONG";
-        case Material::ShadingMode::TOON          : return "TOON";
-        case Material::ShadingMode::OREN_NAYAR    : return "OREN_NAYAR";
-        case Material::ShadingMode::COOK_TORRANCE : return "COOK_TORRANCE";
+        case ShadingMode::FLAT          : return "FLAT";
+        case ShadingMode::PHONG         : return "PHONG";
+        case ShadingMode::BLINN_PHONG   : return "BLINN_PHONG";
+        case ShadingMode::TOON          : return "TOON";
+        case ShadingMode::OREN_NAYAR    : return "OREN_NAYAR";
+        case ShadingMode::COOK_TORRANCE : return "COOK_TORRANCE";
+        default:break;
     }
 
     return "NONE";
 }
 
-Material::ShadingMode getShadingModeByName(const stringImpl& name) {
+ShadingMode getShadingModeByName(const stringImpl& name) {
     if (Util::CompareIgnoreCase(name, "FLAT")) {
-        return Material::ShadingMode::FLAT;
+        return ShadingMode::FLAT;
     } else if (Util::CompareIgnoreCase(name, "PHONG")) {
-        return Material::ShadingMode::PHONG;
+        return ShadingMode::PHONG;
     } else if (Util::CompareIgnoreCase(name, "BLINN_PHONG")) {
-        return Material::ShadingMode::BLINN_PHONG;
+        return ShadingMode::BLINN_PHONG;
     } else if (Util::CompareIgnoreCase(name, "TOON")) {
-            return Material::ShadingMode::TOON;
+            return ShadingMode::TOON;
     } else if (Util::CompareIgnoreCase(name, "OREN_NAYAR")) {
-            return Material::ShadingMode::OREN_NAYAR;
+            return ShadingMode::OREN_NAYAR;
     } else if (Util::CompareIgnoreCase(name, "COOK_TORRANCE")) {
-            return Material::ShadingMode::COOK_TORRANCE;
+            return ShadingMode::COOK_TORRANCE;
     }
 
-    return Material::ShadingMode::COUNT;
+    return ShadingMode::COUNT;
 }
 
-Material::TextureOperation getTextureOperationByName(const stringImpl& operation) {
+TextureOperation getTextureOperationByName(const stringImpl& operation) {
     if (Util::CompareIgnoreCase(operation, "TEX_OP_MULTIPLY")) {
-        return Material::TextureOperation::MULTIPLY;
+        return TextureOperation::MULTIPLY;
     } else if (Util::CompareIgnoreCase(operation, "TEX_OP_DECAL")) {
-        return Material::TextureOperation::DECAL;
+        return TextureOperation::DECAL;
     } else if (Util::CompareIgnoreCase(operation, "TEX_OP_ADD")) {
-        return Material::TextureOperation::ADD;
+        return TextureOperation::ADD;
     } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SMOOTH_ADD")) {
-        return Material::TextureOperation::SMOOTH_ADD;
+        return TextureOperation::SMOOTH_ADD;
     } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SIGNED_ADD")) {
-        return Material::TextureOperation::SIGNED_ADD;
+        return TextureOperation::SIGNED_ADD;
     } else if (Util::CompareIgnoreCase(operation, "TEX_OP_DIVIDE")) {
-        return Material::TextureOperation::DIVIDE;
+        return TextureOperation::DIVIDE;
     } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SUBTRACT")) {
-        return Material::TextureOperation::SUBTRACT;
+        return TextureOperation::SUBTRACT;
     }
 
-    return Material::TextureOperation::REPLACE;
+    return TextureOperation::REPLACE;
 }
 
-const char *getTextureOperationName(Material::TextureOperation textureOp) noexcept {
+const char *getTextureOperationName(TextureOperation textureOp) noexcept {
     switch(textureOp) {
-        case Material::TextureOperation::MULTIPLY   : return "TEX_OP_MULTIPLY";
-        case Material::TextureOperation::DECAL      : return "TEX_OP_DECAL";
-        case Material::TextureOperation::ADD        : return "TEX_OP_ADD";
-        case Material::TextureOperation::SMOOTH_ADD : return "TEX_OP_SMOOTH_ADD";
-        case Material::TextureOperation::SIGNED_ADD : return "TEX_OP_SIGNED_ADD";
-        case Material::TextureOperation::DIVIDE     : return "TEX_OP_DIVIDE";
-        case Material::TextureOperation::SUBTRACT   : return "TEX_OP_SUBTRACT";
+        case TextureOperation::MULTIPLY   : return "TEX_OP_MULTIPLY";
+        case TextureOperation::DECAL      : return "TEX_OP_DECAL";
+        case TextureOperation::ADD        : return "TEX_OP_ADD";
+        case TextureOperation::SMOOTH_ADD : return "TEX_OP_SMOOTH_ADD";
+        case TextureOperation::SIGNED_ADD : return "TEX_OP_SIGNED_ADD";
+        case TextureOperation::DIVIDE     : return "TEX_OP_DIVIDE";
+        case TextureOperation::SUBTRACT   : return "TEX_OP_SUBTRACT";
     }
 
     return "TEX_OP_REPLACE";

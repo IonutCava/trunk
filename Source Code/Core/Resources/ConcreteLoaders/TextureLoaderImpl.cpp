@@ -50,7 +50,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
             stringstreamImpl textureLocationList(resourceLocation);
             while (std::getline(textureLocationList, resourceLocation, ',')) {}
         }  else {
-            resourceLocation = (Paths::g_assetsLocation + Paths::g_texturesLocation).c_str();
+            resourceLocation = (Paths::g_assetsLocation + Paths::g_texturesLocation.c_str()).c_str();
         }
 
         for (size_t i = crtNumCommas; i < numCommas; ++i) {

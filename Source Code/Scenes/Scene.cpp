@@ -352,7 +352,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
             if (ret != nullptr) {
                 ResourceDescriptor materialDescriptor(sceneNode.name + "_material");
                 Material_ptr tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
-                tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+                tempMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
                 ret->setMaterialTpl(tempMaterial);
             }
             skipAdd = false;

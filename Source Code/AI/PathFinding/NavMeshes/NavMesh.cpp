@@ -772,8 +772,8 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
 
 Str128 NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
     return (sgn.getNode().type() != SceneNodeType::TYPE_ROOT)
-               ? "_node_[_" + sgn.name() + "_]"
-               : "_root_node";
+               ? Str128{"_node_[_" + sgn.name() + "_]"}
+               : Str128{ "_root_node" };
 }
 
 bool NavigationMesh::getClosestPosition(const vec3<F32>& destination,

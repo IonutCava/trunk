@@ -23,7 +23,7 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
     }
 
     if (_descriptor.assetLocation().empty()) {
-        _descriptor.assetLocation(Paths::g_assetsLocation + Paths::g_shadersLocation);
+        _descriptor.assetLocation(stringImpl(Paths::g_assetsLocation.c_str()) + Paths::g_shadersLocation.c_str());
     }
 
     const std::shared_ptr<ShaderProgramDescriptor>& shaderDescriptor = _descriptor.propertyDescriptor<ShaderProgramDescriptor>();

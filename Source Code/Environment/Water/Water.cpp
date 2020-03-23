@@ -77,7 +77,7 @@ bool WaterPlane::load() {
     Material_ptr waterMat = CreateResource<Material>(_parentCache, waterMaterial);
     assert(waterMat != nullptr);
 
-    waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+    waterMat->setShadingMode(ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterDUDV);
     waterMat->setTexture(ShaderProgram::TextureUsage::NORMALMAP, waterNM);
 

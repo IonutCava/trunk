@@ -91,14 +91,6 @@ inline bool readFile(const char* filePath, const char* fileName, vector<Byte>& c
     return fileSize > 0;
 }
 
-inline bool hasExtension(const stringImpl& filePath, const Str16& extension) {
-    return hasExtension(filePath.c_str(), extension);
-}
-
-inline FileWithPath splitPathToNameAndLocation(const stringImpl& input) {
-    return splitPathToNameAndLocation(input.c_str());
-}
-
 }; //namespace Divide
 
 #endif //_PLATFORM_FILE_FILE_MANAGEMENT_INL_

@@ -135,9 +135,9 @@ namespace Import {
         dataIn >> _colourData._data[1];
         dataIn >> _colourData._data[2];
         dataIn >> temp;
-        _shadingMode = static_cast<Material::ShadingMode>(temp);
+        _shadingMode = static_cast<ShadingMode>(temp);
         dataIn >> temp;
-        _bumpMethod = static_cast<Material::BumpMethod>(temp);
+        _bumpMethod = static_cast<BumpMethod>(temp);
         for (TextureEntry& texture : _textures) {
             if (!texture.deserialize(dataIn)) {
                 //handle error
@@ -171,7 +171,7 @@ namespace Import {
         dataIn >> data;
         _wrapW = static_cast<TextureWrap>(data);
         dataIn >> data;
-        _operation = static_cast<Material::TextureOperation>(data);
+        _operation = static_cast<TextureOperation>(data);
         return true;
     }
 };
@@ -341,7 +341,7 @@ namespace Import {
                 opacityDesc.propertyDescriptor(diffuse->descriptor());
 
                 Texture_ptr textureRes = CreateResource<Texture>(cache, opacityDesc);
-                tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, Material::TextureOperation::REPLACE);
+                tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, TextureOperation::REPLACE);
             }
         }
         

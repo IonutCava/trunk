@@ -1,5 +1,6 @@
 --Compute
 #include "HiZCullingAlgorithm.cmn";
+#include "nodeDataDefinition.cmn"
 
 #define INVS_SQRT_3 0.57735026919f
 
@@ -7,11 +8,6 @@ uniform uint countCulledItems = 0u;
 layout(binding = BUFFER_ATOMIC_COUNTER, offset = 0) uniform atomic_uint culledCount;
 
 //ref: http://malideveloper.arm.com/resources/sample-code/occlusion-culling-hierarchical-z/
-struct NodeData {
-    mat4 _worldMatrix;
-    mat4 _normalMatrix;
-    mat4 _colourMatrix;
-};
 
 struct IndirectDrawCommand {
     uint count;
@@ -57,7 +53,7 @@ void main()
         return;
     }
 
-    const vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrix[3];
+    const vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrixW[3];
     const vec3 center = bSphere.xyz;
     const float radius = bSphere.w;
     const vec3 extents = vec3(radius * INVS_SQRT_3);//dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;

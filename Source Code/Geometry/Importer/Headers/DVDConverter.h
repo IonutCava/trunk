@@ -105,13 +105,13 @@ class DVDConverter {
     void   buildGeometryBuffers(PlatformContext& context, Import::ImportData& target);
 
     static hashMap<U32, TextureWrap> fillTextureWrapMap();
-    static hashMap<U32, Material::ShadingMode> fillShadingModeMap();
-    static hashMap<U32, Material::TextureOperation> fillTextureOperationMap();
+    static hashMap<U32, ShadingMode> fillShadingModeMap();
+    static hashMap<U32, TextureOperation> fillTextureOperationMap();
 
   private:
     static hashMap<U32, TextureWrap> aiTextureMapModeTable;
-    static hashMap<U32, Material::ShadingMode> aiShadingModeInternalTable;
-    static hashMap<U32, Material::TextureOperation> aiTextureOperationTable;
+    static hashMap<U32, ShadingMode> aiShadingModeInternalTable;
+    static hashMap<U32, TextureOperation> aiTextureOperationTable;
 };
 
 };  // namespace Divide

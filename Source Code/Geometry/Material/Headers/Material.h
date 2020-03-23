@@ -33,6 +33,8 @@
 #ifndef _MATERIAL_H_
 #define _MATERIAL_H_
 
+#include "MaterialEnums.h"
+
 #include "Utility/Headers/XMLParser.h"
 #include "Utility/Headers/StateTracker.h"
 
@@ -64,48 +66,6 @@ constexpr F32 PHONG_REFLECTIVITY_THRESHOLD = 100.0f;
 
 class Material : public CachedResource {
    public:
-    enum class BumpMethod : U8 {
-        NONE = 0,    //<Use phong
-        NORMAL = 1,  //<Normal mapping
-        PARALLAX = 2,
-        RELIEF = 3,
-        COUNT
-    };
-
-    /// How should each texture be added
-    enum class TextureOperation : U8 {
-        NONE = 0,
-        MULTIPLY = 1,
-        ADD = 2,
-        SUBTRACT = 3,
-        DIVIDE = 4,
-        SMOOTH_ADD = 5,
-        SIGNED_ADD = 6,
-        DECAL = 7,
-        REPLACE = 8,
-        COUNT
-    };
-
-    enum class TranslucencySource : U8 {
-        ALBEDO,
-        OPACITY_MAP_R, //single channel
-        OPACITY_MAP_A, //rgba texture
-        COUNT
-    };
-    
-    /// Not used yet but implemented for shading model selection in shaders
-    /// This enum matches the ASSIMP one on a 1-to-1 basis
-    enum class ShadingMode : U8 {
-        FLAT = 0x1,
-        PHONG = 0x2,
-        BLINN_PHONG = 0x3,
-        TOON = 0x4,
-        // Use PBR for the following
-        OREN_NAYAR = 0x5,
-        COOK_TORRANCE = 0x6,
-        COUNT
-    };
-
     /// ShaderData stores information needed by the shader code to properly shade objects
     struct ColourData {
         ColourData() noexcept
@@ -334,17 +294,17 @@ class Material : public CachedResource {
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);
 
-const char* getShadingModeName(Material::ShadingMode shadingMode) noexcept;
-Material::ShadingMode getShadingModeByName(const stringImpl& name);
+const char* getShadingModeName(ShadingMode shadingMode) noexcept;
+ShadingMode getShadingModeByName(const stringImpl& name);
 
 const char* getTexUsageName(ShaderProgram::TextureUsage texUsage) noexcept;
 ShaderProgram::TextureUsage getTexUsageByName(const stringImpl& name);
 
-const char* getTextureOperationName(Material::TextureOperation textureOp) noexcept;
-Material::TextureOperation getTextureOperationByName(const stringImpl& operation);
+const char* getTextureOperationName(TextureOperation textureOp) noexcept;
+TextureOperation getTextureOperationByName(const stringImpl& operation);
 
-const char* getBumpMethodName(Material::BumpMethod bumpMethod) noexcept;
-Material::BumpMethod getBumpMethodByName(const stringImpl& name);
+const char* getBumpMethodName(BumpMethod bumpMethod) noexcept;
+BumpMethod getBumpMethodByName(const stringImpl& name);
 
 const char* getWrapModeName(TextureWrap wrapMode) noexcept;
 TextureWrap getWrapModeByName(const stringImpl& wrapMode);

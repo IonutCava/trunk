@@ -19,7 +19,7 @@ layout(binding = TEXTURE_EXTRA_TILE) uniform sampler2DArray texExtraMaps;
 
 #include "texturing.frag"
 
-#if DETAIL_LEVEL > 0 && (defined(USE_PARALLAX_OCCLUSION_MAPPING) || defined(USE_PARALLAX_MAPPING))
+#if DETAIL_LEVEL > 0
 #define HAS_PARALLAX
 #endif
 
@@ -92,17 +92,19 @@ float getDisplacementValue(vec2 sampleUV) {
 
 vec2 _getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
     const vec2 scaledCoords = scaledTextureCoords(uv, tiling[LoD]);
+
 #if defined(HAS_PARALLAX)
-    if (LoD == 0) {
+    if (LoD == 0 && dvd_bumpMethod != BUMP_NONE) {
         const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
-#if defined(USE_PARALLAX_MAPPING)
-        return ParallaxOffset(scaledCoords, viewDir, currentHeight);
-#else
-        return ParallaxOcclusionMapping(scaledCoords, viewDir, currentHeight);
-#endif //USE_PARALLAX_OCCLUSION_MAPPING
+        if (dvd_bumpMethod == BUMP_PARALLAX) {
+            return ParallaxOffset(scaledCoords, viewDir, currentHeight);
+        } else if (dvd_bumpMethod == BUMP_PARALLAX_OCCLUSION) {
+            return ParallaxOcclusionMapping(scaledCoords, viewDir, currentHeight);
+        }
     }
 #endif //HAS_PARALLAX
+
     return scaledCoords;
 }
 

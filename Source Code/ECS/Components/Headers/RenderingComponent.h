@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
+#include "Geometry/Material/Headers/MaterialEnums.h"
 #include "Rendering/Headers/EnvironmentProbe.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
@@ -82,7 +83,7 @@ struct RenderCbkParams {
                              const RenderTargetID& renderTarget,
                              U32 passIndex,
                              U8 passVariant,
-                             Camera* camera)
+                             Camera* camera) noexcept
         : _context(context),
           _sgn(sgn),
           _sceneRenderState(sceneRenderState),
@@ -102,7 +103,7 @@ struct RenderCbkParams {
     Camera* _camera;
 };
 
-typedef DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
+using RenderCallback = DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&>;
 
 constexpr std::pair<RenderTargetUsage, ShaderProgram::TextureUsage> g_texUsage[] = {
     { RenderTargetUsage::REFLECTION_PLANAR, ShaderProgram::TextureUsage::REFLECTION_PLANAR},
@@ -133,6 +134,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
            U32 _refractionIndex = 0u;
            F32 _cullFlagValue = 1.0f;
            U8 _lod = 0u;
+           TextureOperation _texOperation = TextureOperation::REPLACE;
+           BumpMethod _bumpMethod = BumpMethod::NONE;
            bool _receivesShadows = false;
            bool _isHovered = false;
            bool _isSelected = false;

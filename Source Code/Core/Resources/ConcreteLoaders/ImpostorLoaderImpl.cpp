@@ -21,7 +21,7 @@ CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
         dummyDesc.setFillMode(FillMode::WIREFRAME);
         matTemp->setRenderStateBlock(dummyDesc.getHash(), { RenderStage::DISPLAY, RenderPassType::MAIN_PASS });
         matTemp->setRenderStateBlock(dummyDesc.getHash(), { RenderStage::DISPLAY, RenderPassType::OIT_PASS });
-        matTemp->setShadingMode(Material::ShadingMode::FLAT);
+        matTemp->setShadingMode(ShadingMode::FLAT);
 
         ptr->setMaterialTpl(matTemp);
     }
@@ -45,7 +45,7 @@ CachedResource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
         dummyDesc.setFillMode(FillMode::WIREFRAME);
         matTemp->setRenderStateBlock(dummyDesc.getHash(), {RenderStage::DISPLAY, RenderPassType::MAIN_PASS});
         matTemp->setRenderStateBlock(dummyDesc.getHash(), {RenderStage::DISPLAY, RenderPassType::OIT_PASS});
-        matTemp->setShadingMode(Material::ShadingMode::FLAT);
+        matTemp->setShadingMode(ShadingMode::FLAT);
 
         ptr->setMaterialTpl(matTemp);
     }

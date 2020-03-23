@@ -86,10 +86,10 @@ namespace Divide {
             return ret;
         }
 
-        template<size_t N>
-        inline Str operator+(const Str<N>& other) const {
+        template<size_t M>
+        inline Str operator+(const Str<M>& other) const {
             Str ret(*this);
-            ret.append(other);
+            ret.append(other.c_str());
             return ret;
         }
 
@@ -105,6 +105,8 @@ namespace Divide {
         inline operator T_str() {
             return T_str{ this->c_str() };
         }
+
+        operator const char* () { return this->c_str(); }
 
         template<typename T_str>
         typename std::enable_if<std::is_same<stringImpl, T_str>::value ||
@@ -216,36 +218,10 @@ namespace Divide {
         }
     };
 
-
-    template<size_t N, size_t M>
-    Str<N> operator+(const Str<N>& lhs, const Str<M>& rhs) {
-        return lhs.append(rhs);
-    }
-
     template<size_t N>
     Str<N> operator+(const char* lhs, const Str<N>& rhs) {
         Str<N> ret(lhs);
-        return ret + rhs;
-    }
-
-    template<size_t N>
-    Str<N> operator+(char lhs, const Str<N>& rhs) {
-        rhs.append(rhs.begin(), lhs);
-        return rhs;
-    }
-
-    template<size_t N>
-    Str<N> operator+(const Str<N>& lhs, const char* rhs) {
-        Str<N> ret(lhs);
-        ret.append(rhs);
-        return ret;
-    }
-
-    template<size_t N>
-    Str<N> operator+(const Str<N>& lhs, char rhs) {
-        Str<N> ret(lhs);
-        ret.append(lhs.end(), rhs);
-        return ret;
+        return ret + rhs.c_str();
     }
 
     using Str8   = Str<8>;

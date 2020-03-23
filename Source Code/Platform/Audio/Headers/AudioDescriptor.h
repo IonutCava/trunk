@@ -63,7 +63,7 @@ class AudioDescriptor : public CachedResource {
     }
 
     inline void setAudioFile(const stringImpl& filePath) {
-        FileWithPath ret = splitPathToNameAndLocation(filePath);
+        FileWithPath ret = splitPathToNameAndLocation(filePath.c_str());
         assetName(ret._fileName);
         assetLocation(ret._path);
         _dirty = true;

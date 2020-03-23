@@ -376,10 +376,13 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
     propertiesOut._isHovered = _parentSGN.hasFlag(SceneGraphNode::Flags::HOVERED);
     propertiesOut._isSelected = _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED);
     propertiesOut._receivesShadows = _config.rendering.shadowMapping.enabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
-    propertiesOut._lod = _lodLevels[to_base(stagePass._stage)],
+    propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
     propertiesOut._cullFlagValue = _cullFlagValue;
     propertiesOut._reflectionIndex = defaultReflectionTextureIndex();
     propertiesOut._reflectionIndex = defaultRefractionTextureIndex();
+    if (_materialInstanceCache != nullptr) {
+        propertiesOut._texOperation = _materialInstanceCache->getTextureOperation();
+    }
 }
 
 /// Called after the current node was rendered

@@ -184,7 +184,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         const U16 height = fileData.dimensions().height;
         // If we have an alpha channel, we must check for translucency/transparency
 
-        FileWithPath fwp = splitPathToNameAndLocation(name);
+        FileWithPath fwp = splitPathToNameAndLocation(name.c_str());
         Util::ReplaceStringInPlace(fwp._path, { "//","\\" }, "/");
         Util::ReplaceStringInPlace(fwp._path, "/", "_");
         if (fwp._path.back() == '_') {

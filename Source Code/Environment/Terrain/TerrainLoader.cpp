@@ -248,10 +248,19 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
     const F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
-    terrainMaterial->setShadingMode(Material::ShadingMode::COOK_TORRANCE);
+    terrainMaterial->setShadingMode(ShadingMode::COOK_TORRANCE);
+    if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::NORMAL) {
+        terrainMaterial->setBumpMethod(BumpMethod::PARALLAX);
+    } else if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::OCCLUSION) {
+        terrainMaterial->setBumpMethod(BumpMethod::PARALLAX_OCCLUSION);
+    } else {
+        terrainMaterial->setBumpMethod(BumpMethod::NONE);
+    }
+
     terrainMaterial->getColourData().baseColour(FColour4(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
     terrainMaterial->getColourData().metallic(0.2f);
     terrainMaterial->getColourData().roughness(0.8f);
+    terrainMaterial->setParallaxFactor(terrainDescriptor->parallaxHeightScale());
     terrainMaterial->disableTranslucency();
 
     U8 totalLayerCount = 0;
@@ -436,11 +445,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._variant = "MainPass";
         }
-        if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::NORMAL) {
-            shaderModule._defines.push_back(std::make_pair("USE_PARALLAX_MAPPING", true));
-        } else if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::OCCLUSION) {
-            shaderModule._defines.push_back(std::make_pair("USE_PARALLAX_OCCLUSION_MAPPING", true));
-        }
         shaderModule._defines.push_back(std::make_pair("USE_SSAO", true));
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
         shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
@@ -488,7 +492,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._variant = "LQPass";
-            shaderModule._defines.push_back(std::make_pair("WRITE_DEPTH_TO_ALPHA", true));
         }
 
         shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));

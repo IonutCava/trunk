@@ -705,8 +705,10 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation) const {
     }
 
     stringImpl targetFile = sceneLocation + "/nodes/";
-    targetFile.append(parent()->name() + "_");
-    targetFile.append(name() + ".xml");
+    targetFile.append(parent()->name());
+    targetFile.append("_");
+    targetFile.append(name());
+    targetFile.append(".xml");
     write_xml(targetFile.c_str(), pt, std::locale(), settings);
 
     forEachChild([&sceneLocation](const SceneGraphNode* child, I32 /*childIdx*/){

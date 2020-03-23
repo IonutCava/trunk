@@ -147,13 +147,10 @@ bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath)
 
 /// will add '.' automatically at the start of 'extension'
 bool hasExtension(const char* filePath, const Str16& extension);
-inline bool hasExtension(const stringImpl& filePath, const Str16& extension);
 
 stringImpl stripQuotes(const char* input);
 
 FileWithPath splitPathToNameAndLocation(const char* input);
-
-inline FileWithPath splitPathToNameAndLocation(const stringImpl& input);
 
 bool clearCache();
 bool clearCache(CacheType type);

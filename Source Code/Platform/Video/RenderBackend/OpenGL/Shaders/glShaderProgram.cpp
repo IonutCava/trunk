@@ -312,7 +312,8 @@ vector<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
     if (!header.empty()) {
         fileName.append("." + to_stringImpl(_ID(header.c_str())));
     }
-    fileName.append("." + extension);
+    fileName.append(".");
+    fileName.append(extension);
 
     if (s_useShaderTextCache && !reloadExisting) {
         shaderFileRead((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText).c_str(),

@@ -1033,6 +1033,9 @@
     <ClInclude Include="..\..\Source Code\ECS\Events\Headers\TransformEvents.h">
       <Filter>ECS\Events\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\MaterialeEnums.h">
+      <Filter>Geometry\Material\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="../../localisation\enGB.ini">

@@ -175,19 +175,19 @@ bool clearCache() {
 bool clearCache(CacheType type) {
     switch (type) {
         case CacheType::SHADER_TEXT:
-           return deleteAllFiles((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText).c_str());
+           return deleteAllFiles(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText.c_str());
        
         case CacheType::SHADER_BIN:
-            return deleteAllFiles((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str());
+            return deleteAllFiles(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin.c_str());
 
         case CacheType::TERRAIN:
-            return deleteAllFiles((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str());
+            return deleteAllFiles(Paths::g_cacheLocation + Paths::g_terrainCacheLocation.c_str());
 
         case CacheType::MODELS:
-            return deleteAllFiles((Paths::g_cacheLocation + Paths::g_geometryCacheLocation).c_str());
+            return deleteAllFiles(Paths::g_cacheLocation + Paths::g_geometryCacheLocation.c_str());
 
         case CacheType::TEXTURES:
-            return deleteAllFiles((Paths::g_cacheLocation + Paths::Textures::g_metadataLocation).c_str());
+            return deleteAllFiles(Paths::g_cacheLocation + Paths::Textures::g_metadataLocation.c_str());
     }
 
     return false;

@@ -136,7 +136,7 @@ void loadScene(const Str256& scenePath, const Str128& sceneName, Scene* scene, c
     
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
-    const Str256 sceneLocation(scenePath + "/" + sceneName);
+    const Str256 sceneLocation(scenePath + "/" + sceneName.c_str());
     const Str256 sceneDataFile(sceneLocation + ".xml");
 
     // A scene does not necessarily need external data files
@@ -224,7 +224,7 @@ void loadScene(const Str256& scenePath, const Str128& sceneName, Scene* scene, c
 }
 
 void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config) {
-    stringImpl file = scenePath + "/" + fileName;
+    stringImpl file = scenePath + "/" + fileName.c_str();
 
     if (!fileExists(file.c_str())) {
         return;
@@ -243,7 +243,7 @@ void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* co
 }
 
 void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const scene) {
-    stringImpl file = scenePath + "/" + fileName;
+    stringImpl file = scenePath + "/" + fileName.c_str();
     if (!fileExists(file.c_str())) {
         return;
     }

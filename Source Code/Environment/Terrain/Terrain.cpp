@@ -261,9 +261,10 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
+        rComp.getMaterialInstance()->setParallaxFactor(_descriptor->parallaxHeightScale());
+
         PushConstants constants = pkg.pushConstants(0);
         constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
-        constants.set(_ID("height_scale"), GFX::PushConstantType::FLOAT, _descriptor->parallaxHeightScale());
         constants.set(_ID("renderStage"), GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
         pkg.pushConstants(0, constants);
     }

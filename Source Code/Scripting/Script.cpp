@@ -30,7 +30,7 @@ Script::Script(const stringImpl& scriptPathOrCode, FileType fileType)
 {
     if (!scriptPathOrCode.empty()) {
         if (hasExtension(scriptPathOrCode.c_str(), "chai")) {
-            _scriptFile = splitPathToNameAndLocation(scriptPathOrCode);
+            _scriptFile = splitPathToNameAndLocation(scriptPathOrCode.c_str());
         } else {
             _scriptSource = scriptPathOrCode;
         }

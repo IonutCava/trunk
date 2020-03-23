@@ -57,7 +57,7 @@ namespace Divide {
             PROPERTY_RW(TextureWrap, wrapU, TextureWrap::REPEAT);
             PROPERTY_RW(TextureWrap, wrapV, TextureWrap::REPEAT);
             PROPERTY_RW(TextureWrap, wrapW, TextureWrap::REPEAT);
-            PROPERTY_RW(Material::TextureOperation, operation, Material::TextureOperation::NONE);
+            PROPERTY_RW(TextureOperation, operation, TextureOperation::NONE);
         };
 
         struct MaterialData {
@@ -67,8 +67,8 @@ namespace Divide {
             PROPERTY_RW(bool, ignoreAlpha, false);
             PROPERTY_RW(bool, doubleSided, true);
             PROPERTY_RW(Str64, name);
-            PROPERTY_RW(Material::ShadingMode, shadingMode, Material::ShadingMode::FLAT);
-            PROPERTY_RW(Material::BumpMethod,  bumpMethod, Material::BumpMethod::NONE);
+            PROPERTY_RW(ShadingMode, shadingMode, ShadingMode::FLAT);
+            PROPERTY_RW(BumpMethod,  bumpMethod, BumpMethod::NONE);
 
             Material::ColourData _colourData;
             std::array<TextureEntry, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;

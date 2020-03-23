@@ -1,6 +1,11 @@
 #ifndef _BUMP_MAPPING_FRAG_
 #define _BUMP_MAPPING_FRAG_
 
+#define BUMP_NONE  0
+#define BUMP_NORMAL 1
+#define BUMP_PARALLAX 2
+#define BUMP_PARALLAX_OCCLUSION 3
+
 #if !defined(USE_CUSTOM_NORMAL_MAP)
 vec3 getBump(in vec2 uv) {
     return normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f);
@@ -99,4 +104,9 @@ vec3 normalUnityBlend(in vec3 n1, in vec3 n2) {
     return normalize(n2.x * nBasis[0] + n2.y * nBasis[1] + n2.z * nBasis[2]);
 }
 
+//ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+// Returned parallaxed texCoords
+vec2 ParallaxOffset(vec2 uv, vec3 viewDir, float height) {
+    return uv - (viewDir.xy / viewDir.z * (height * dvd_parallaxFactor));
+}
 #endif //_BUMP_MAPPING_FRAG_

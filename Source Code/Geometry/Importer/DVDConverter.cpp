@@ -86,39 +86,39 @@ namespace Divide {
         return wrapMap;
     }
 
-    hashMap<U32, Material::ShadingMode> DVDConverter::fillShadingModeMap() {
-        hashMap<U32, Material::ShadingMode> shadingMap;
-        shadingMap[aiShadingMode_Fresnel] = Material::ShadingMode::COOK_TORRANCE;
-        shadingMap[aiShadingMode_NoShading] = Material::ShadingMode::FLAT;
-        shadingMap[aiShadingMode_CookTorrance] = Material::ShadingMode::COOK_TORRANCE;
-        shadingMap[aiShadingMode_Minnaert] = Material::ShadingMode::OREN_NAYAR;
-        shadingMap[aiShadingMode_OrenNayar] = Material::ShadingMode::OREN_NAYAR;
-        shadingMap[aiShadingMode_Toon] = Material::ShadingMode::TOON;
-        shadingMap[aiShadingMode_Blinn] = Material::ShadingMode::BLINN_PHONG;
-        shadingMap[aiShadingMode_Phong] = Material::ShadingMode::PHONG;
-        shadingMap[aiShadingMode_Gouraud] = Material::ShadingMode::BLINN_PHONG;
-        shadingMap[aiShadingMode_Flat] = Material::ShadingMode::FLAT;
+    hashMap<U32, ShadingMode> DVDConverter::fillShadingModeMap() {
+        hashMap<U32, ShadingMode> shadingMap;
+        shadingMap[aiShadingMode_Fresnel] = ShadingMode::COOK_TORRANCE;
+        shadingMap[aiShadingMode_NoShading] = ShadingMode::FLAT;
+        shadingMap[aiShadingMode_CookTorrance] = ShadingMode::COOK_TORRANCE;
+        shadingMap[aiShadingMode_Minnaert] = ShadingMode::OREN_NAYAR;
+        shadingMap[aiShadingMode_OrenNayar] = ShadingMode::OREN_NAYAR;
+        shadingMap[aiShadingMode_Toon] = ShadingMode::TOON;
+        shadingMap[aiShadingMode_Blinn] = ShadingMode::BLINN_PHONG;
+        shadingMap[aiShadingMode_Phong] = ShadingMode::PHONG;
+        shadingMap[aiShadingMode_Gouraud] = ShadingMode::BLINN_PHONG;
+        shadingMap[aiShadingMode_Flat] = ShadingMode::FLAT;
         return shadingMap;
     }
 
-    hashMap<U32, Material::TextureOperation> DVDConverter::fillTextureOperationMap() {
-        hashMap<U32, Material::TextureOperation> operationMap;
-        operationMap[aiTextureOp_Multiply] = Material::TextureOperation::MULTIPLY;
-        operationMap[aiTextureOp_Add] = Material::TextureOperation::ADD;
-        operationMap[aiTextureOp_Subtract] = Material::TextureOperation::SUBTRACT;
-        operationMap[aiTextureOp_Divide] = Material::TextureOperation::DIVIDE;
-        operationMap[aiTextureOp_SmoothAdd] = Material::TextureOperation::SMOOTH_ADD;
-        operationMap[aiTextureOp_SignedAdd] = Material::TextureOperation::SIGNED_ADD;
-        operationMap[/*aiTextureOp_Replace*/ 7] = Material::TextureOperation::REPLACE;
+    hashMap<U32, TextureOperation> DVDConverter::fillTextureOperationMap() {
+        hashMap<U32, TextureOperation> operationMap;
+        operationMap[aiTextureOp_Multiply] = TextureOperation::MULTIPLY;
+        operationMap[aiTextureOp_Add] = TextureOperation::ADD;
+        operationMap[aiTextureOp_Subtract] = TextureOperation::SUBTRACT;
+        operationMap[aiTextureOp_Divide] = TextureOperation::DIVIDE;
+        operationMap[aiTextureOp_SmoothAdd] = TextureOperation::SMOOTH_ADD;
+        operationMap[aiTextureOp_SignedAdd] = TextureOperation::SIGNED_ADD;
+        operationMap[/*aiTextureOp_Replace*/ 7] = TextureOperation::REPLACE;
         return operationMap;
     }
 
 
     hashMap<U32, TextureWrap>
     DVDConverter::aiTextureMapModeTable = DVDConverter::fillTextureWrapMap();
-    hashMap<U32, Material::ShadingMode>
+    hashMap<U32, ShadingMode>
     DVDConverter::aiShadingModeInternalTable = DVDConverter::fillShadingModeMap();
-    hashMap<U32, Material::TextureOperation>
+    hashMap<U32, TextureOperation>
     DVDConverter::aiTextureOperationTable = DVDConverter::fillTextureOperationMap();
 
 DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target, bool& result) {
@@ -485,13 +485,13 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     Material::ColourData& data = material._colourData;
 
     // default shading model
-    I32 shadingModel = to_base(Material::ShadingMode::PHONG);
+    I32 shadingModel = to_base(ShadingMode::PHONG);
     // Load shading model
     aiGetMaterialInteger(mat, AI_MATKEY_SHADING_MODEL, &shadingModel);
     material.shadingMode(aiShadingModeInternalTable[shadingModel]);
 
-    const bool isPBRMaterial = !(material.shadingMode() != Material::ShadingMode::OREN_NAYAR && 
-                                 material.shadingMode() != Material::ShadingMode::COOK_TORRANCE);
+    const bool isPBRMaterial = !(material.shadingMode() != ShadingMode::OREN_NAYAR && 
+                                 material.shadingMode() != ShadingMode::COOK_TORRANCE);
     
     // Load material opacity value
     F32 alpha = 1.0f;
@@ -619,7 +619,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture.textureName(img_name);
             texture.texturePath(img_path);
             // The first texture is always "Replace"
-            texture.operation(count == 0 ? Material::TextureOperation::NONE
+            texture.operation(count == 0 ? TextureOperation::NONE
                                          : aiTextureOperationTable[op]);
             texture.srgb(true);
             material._textures[to_U32(usage)] = texture;
@@ -660,7 +660,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture.srgb(false);
 
             material._textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
-            material.bumpMethod(Material::BumpMethod::NORMAL);
+            material.bumpMethod(BumpMethod::NORMAL);
         }  // endif
     } // endif
 

@@ -168,7 +168,7 @@ FileWithPath getExecutableLocation(char* argv0) {
         return FileWithPath();
     }
 
-    return splitPathToNameAndLocation(extractFilePathAndName(argv0));
+    return splitPathToNameAndLocation(extractFilePathAndName(argv0).c_str());
 }
 
 const char* GetClipboardText(void* user_data) noexcept

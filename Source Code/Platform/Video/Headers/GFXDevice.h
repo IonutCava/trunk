@@ -162,8 +162,23 @@ public:
 
     struct NodeData {
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
+        // [0][0] ... [2][2] = normal matrix
+        // [0][3] = bone count
+        // [1][3] = reflection index
+        // [2][3] = refraction index
+        // [3][0] ... [3][3] = bounding sphere
         mat4<F32> _normalMatrixW = MAT4_IDENTITY;
+        // [0][0] ... [0][3] = base colour (PBR) / albedo (Phong)
+        // [1][0] ... [1][3] = metallic, specular, roughness, unused (PBR) / specular, shininess (Phong)
+        // [2][0] ... [2][2] = emissive
+        // [2][3] = receives shadows;
+        // [3][0] = texture operation
+        // [3][1] = parallax factor
+        // [3][2] = lod level
+        // [3][3] = occlusion cull flag (if negative - no culling. use value for something else. if positive - cull)
         mat4<F32> _colourMatrix = MAT4_ZERO;
+        // x = ; y = ; z = ; w = ;
+        vec4<F32> _extraProperties = VECTOR4_ZERO;
     };
 
     using ObjectArena = MyArena<Config::REQUIRED_RAM_SIZE / 4>;

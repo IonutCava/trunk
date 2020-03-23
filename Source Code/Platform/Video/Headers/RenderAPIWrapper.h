@@ -72,6 +72,10 @@ using AttribFlags = std::array<bool, to_base(AttribLocation::COUNT)>;
 
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
+
+public:
+    virtual ~RenderAPIWrapper() = default;
+
 protected:
     friend class GFXDevice;
     virtual void idle() = 0;

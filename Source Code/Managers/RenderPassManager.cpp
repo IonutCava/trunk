@@ -388,6 +388,9 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
         }
         dataOut._colourMatrix.setRow(2, matColour);
     }
+
+    dataOut._extraProperties.x = to_F32(properties._texOperation);
+    dataOut._extraProperties.y = to_F32(properties._bumpMethod);
 }
 
 void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,

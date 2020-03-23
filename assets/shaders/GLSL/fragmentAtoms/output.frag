@@ -71,9 +71,6 @@ void writeOutput(vec4 colour) {
 #else //OIT_PASS
     _colourOut = colour;
     // write depth value to alpha for refraction?
-#   if defined(WRITE_DEPTH_TO_ALPHA)
-        //ToDo: _colourOut.a = depth;
-#   endif
 #endif //OIT_PASS
 }
 

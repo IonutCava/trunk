@@ -97,7 +97,6 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_deltaTime (int(dvd_otherData.y))
 #define dvd_showDebugInfo (uint(dvd_otherData.z) == 1)
 
-
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
 void setClipPlanes(in vec4 worldSpaceVertex) {
 #if defined(USE_CUSTOM_CLIP_PLANES)

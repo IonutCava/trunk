@@ -278,7 +278,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ResourceDescriptor matDesc("Tree_material");
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);
-    s_treeMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+    s_treeMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
     s_treeMaterial->setBaseShaderData(treeShaderData);
     s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "USE_CULL_DISTANCE", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, "OVERRIDE_DATA_IDX", true);
@@ -305,7 +305,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ResourceDescriptor vegetationMaterial("grassMaterial");
     Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
-    vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+    vegMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
     vegMaterial->getColourData().baseColour(DefaultColours::WHITE);
     vegMaterial->getColourData().specular(FColour3(0.1f, 0.1f, 0.1f));
     vegMaterial->getColourData().shininess(5.0f);

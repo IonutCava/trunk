@@ -46,6 +46,8 @@ enum class SensorType : U8 {
 class AIEntity;
 class NOINITVTABLE Sensor {
    public:
+    virtual ~Sensor() = default;
+
     inline SensorType sensorType() const noexcept { return _type; }
     virtual void update(const U64 deltaTimeUS) = 0;
     inline void updateRange(const vec2<F32>& range) { _range.set(range); }

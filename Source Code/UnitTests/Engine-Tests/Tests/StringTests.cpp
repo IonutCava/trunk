@@ -174,9 +174,9 @@ TEST(TestCmpNoCase)
 }
 
 TEST(TestExtension) {
-    const stringImpl input("something.ext");
-    const stringImpl ext1("ext");
-    const stringImpl ext2("bak");
+    const char* input = "something.ext";
+    const Str16 ext1("ext");
+    const Str16 ext2("bak");
     CHECK_TRUE(hasExtension(input, ext1));
     CHECK_FALSE(hasExtension(input, ext2));
 }
@@ -194,7 +194,7 @@ TEST(TestStringSplit) {
 }
 
 TEST(TestFilePathSplit) {
-    const stringImpl input("/path/path2/path4/file.test");
+    const char* input = "/path/path2/path4/file.test";
     const stringImpl result1("file.test");
     const stringImpl result2("/path/path2/path4/");
 

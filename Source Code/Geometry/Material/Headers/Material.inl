@@ -132,7 +132,7 @@ inline eastl::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage
     return _textures[to_U32(textureUsage)];
 }
 
-inline const Material::TextureOperation& Material::getTextureOperation() const {
+inline const TextureOperation& Material::getTextureOperation() const {
     return _properties._operation;
 }
 
@@ -144,11 +144,11 @@ inline const Material::ColourData&  Material::getColourData()  const {
     return _properties._colourData;
 }
 
-inline const Material::ShadingMode& Material::getShadingMode() const {
+inline const ShadingMode& Material::getShadingMode() const {
     return _properties._shadingMode;
 }
 
-inline const Material::BumpMethod&  Material::getBumpMethod()  const {
+inline const BumpMethod&  Material::getBumpMethod()  const {
     return _properties._bumpMethod;
 }
 
