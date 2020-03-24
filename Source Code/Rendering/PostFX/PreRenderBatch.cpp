@@ -158,7 +158,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
 
         _toneMap = CreateResource<ShaderProgram>(_resCache, toneMap);
     
-        fragModule._defines.push_back(std::make_pair("USE_ADAPTIVE_LUMINANCE", true));
+        fragModule._defines.emplace_back("USE_ADAPTIVE_LUMINANCE", true);
 
         ShaderProgramDescriptor mapDescriptor2 = {};
         mapDescriptor2._modules.push_back(vertModule);

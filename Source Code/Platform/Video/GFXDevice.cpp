@@ -678,14 +678,14 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         compModule._moduleType = ShaderType::COMPUTE;
         switch (GetHiZMethod()) {
             case HiZMethod::ARM:
-                compModule._defines.push_back(std::make_pair("USE_ARM", true));
+                compModule._defines.emplace_back("USE_ARM", true);
                 break;
             case HiZMethod::NVIDIA:
-                compModule._defines.push_back(std::make_pair("USE_NVIDIA", true));
+                compModule._defines.emplace_back("USE_NVIDIA", true);
                 break;
             default:
             case HiZMethod::RASTER_GRID:
-                compModule._defines.push_back(std::make_pair("USE_RASTERGRID", true));
+                compModule._defines.emplace_back("USE_RASTERGRID", true);
                 break;
         };
         compModule._sourceFile = "HiZOcclusionCull.glsl";
@@ -716,7 +716,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
             _displayShader = CreateResource<ShaderProgram>(cache, descriptor3);
         }
         {
-            shaderDescriptor._modules.back()._defines.push_back(std::make_pair("DEPTH_ONLY", true));
+            shaderDescriptor._modules.back()._defines.emplace_back("DEPTH_ONLY", true);
             descriptor3.propertyDescriptor(shaderDescriptor);
             _depthShader = CreateResource<ShaderProgram>(cache, descriptor3);
         }

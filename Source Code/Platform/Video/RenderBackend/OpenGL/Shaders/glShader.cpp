@@ -582,7 +582,7 @@ void glShader::addShaderDefine(const stringImpl& define, bool appendPrefix) {
     auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, appendPrefix));
     // If we can't find it, we add it
     if (it == std::end(_definesList)) {
-        _definesList.push_back(std::make_pair(define, appendPrefix));
+        _definesList.emplace_back(define, appendPrefix);
         _shouldRecompile = true;
     } else {
         // If we did find it, we'll show an error message in debug builds about double add

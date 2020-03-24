@@ -512,7 +512,7 @@ bool WarScene::load(const Str128& name) {
             light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask);
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
-            _lightNodes2.push_back(std::make_pair(lightSGN, false));
+            _lightNodes2.emplace_back(lightSGN, false));
         }
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
@@ -525,7 +525,7 @@ bool WarScene::load(const Str128& name) {
             light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode* lightSGN = _sceneGraph->getRoot().addNode(light, lightMask);
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
-            _lightNodes2.push_back(std::make_pair(lightSGN, true));
+            _lightNodes2.emplace_back(lightSGN, true);
         }
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));

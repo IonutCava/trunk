@@ -418,7 +418,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             }
 
             std::pair<bool, stringImpl> sourceCode;
-            vector<Str64> atomsTemp = loadSourceCode(type, stageData._name, shaderAtomExtensionName[shaderIdx], header, _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()), reloadExisting, sourceCode);
+            vector<Str64> atomsTemp = loadSourceCode(type, stageData._name, shaderAtomExtensionName[shaderIdx], header, _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()) - 1u, reloadExisting, sourceCode);
             if (!sourceCode.first) {
                 continue;
             }

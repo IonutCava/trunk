@@ -39,9 +39,9 @@ namespace Divide {
 namespace GLUtil {
     class VBO {
     public:
-        // Allocate VBOs in 64K chunks. This will HIGHLY depend on actual data usage and requires testing.
-        static constexpr U32 MAX_VBO_CHUNK_SIZE_BYTES = 64 * 1024;
-        // nVidia recommended (years ago) to use up to 4 megs per VBO. Use 32 MEGS VBOs :D
+        // Allocate VBOs in 16K chunks. This will HIGHLY depend on actual data usage and requires testing.
+        static constexpr U32 MAX_VBO_CHUNK_SIZE_BYTES = 16 * 1024;
+        // nVidia recommended (years ago) to use up to 4 megs per VBO. Use 64 MEG VBOs :D
         static constexpr U32  MAX_VBO_SIZE_BYTES = 32 * 1024 * 1024;
         // The total number of available chunks per VBO is easy to figure out
         static constexpr U32 MAX_VBO_CHUNK_COUNT = MAX_VBO_SIZE_BYTES / MAX_VBO_CHUNK_SIZE_BYTES;

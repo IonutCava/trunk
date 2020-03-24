@@ -36,33 +36,33 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 // "Exact" number of bits
-typedef uint8_t  U8;
-typedef uint16_t U16;
-typedef uint32_t U32;
-typedef uint64_t U64;
-typedef int8_t   I8;
-typedef int16_t  I16;
-typedef int32_t  I32;
-typedef int64_t  I64;
+using U8  = uint8_t;
+using U16 = uint16_t;
+using U32 = uint32_t;
+using U64 = uint64_t;
+using I8  = int8_t;
+using I16 = int16_t;
+using I32 = int32_t;
+using I64 = int64_t;
 
 // "At least" number of bits
-typedef uint_least8_t  U8x;
-typedef uint_least16_t U16x;
-typedef uint_least32_t U32x;
-typedef uint_least64_t U64x;
-typedef int_least8_t   I8x;
-typedef int_least16_t  I16x;
-typedef int_least32_t  I32x;
-typedef int_least64_t  I64x;
+using U8x  = uint_least8_t;
+using U16x = uint_least16_t;
+using U32x = uint_least32_t;
+using U64x = uint_least64_t;
+using I8x  = int_least8_t;
+using I16x = int_least16_t;
+using I32x = int_least32_t;
+using I64x = int_least64_t;
 
 //double is 8 bytes with Microsoft's compiler)
-typedef float F32;
-typedef double D64;
-typedef long double D128;
+using F32  = float;
+using D64  = double;
+using D128 = long double;
 
-typedef void* bufferPtr;
+using bufferPtr = void*;
 
-typedef int8_t Byte;
+using Byte = int8_t;
 
 typedef union {
     U32 i;

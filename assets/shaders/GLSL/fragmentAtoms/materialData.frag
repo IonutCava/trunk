@@ -18,19 +18,25 @@ layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
 #endif
 
 #if !defined(PRE_PASS)
+
 #if defined(USE_PLANAR_REFLECTION)
 layout(binding = TEXTURE_REFLECTION_PLANAR) uniform sampler2D texReflectPlanar;
-#endif
+#endif //USE_PLANAR_REFLECTION
+
 #if defined(USE_PLANAR_REFRACTION)
 layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
-#endif
+#endif //USE_PLANAR_REFRACTION
+
 layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
+
 #if defined(USE_SPECULAR_MAP)
 layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif //USE_SPECULAR_MAP
+
 #if defined(USE_SSAO)
 layout(binding = TEXTURE_GBUFFER_EXTRA)  uniform sampler2D texGBufferExtra;
-#endif
+#endif //USE_SSAO
+
 #endif  //PRE_PASS
 
 //Specular and opacity maps are available even for non-textured geometry

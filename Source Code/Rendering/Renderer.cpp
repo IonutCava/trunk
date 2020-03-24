@@ -49,7 +49,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     computeDescriptor._moduleType = ShaderType::COMPUTE;
     computeDescriptor._sourceFile = "lightCull.glsl";
     if (g_useImageLoadStore) {
-        computeDescriptor._defines.push_back(std::make_pair("USE_IMAGE_LOAD_STORE", true));
+        computeDescriptor._defines.emplace_back("USE_IMAGE_LOAD_STORE", true);
     }
 
     ShaderProgramDescriptor cullDescritpor = {};

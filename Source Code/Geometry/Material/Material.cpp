@@ -417,7 +417,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
                        std::cbegin(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]),
                        std::cend(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]));
     
-    vertDefines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
+    vertDefines.emplace_back("USE_CUSTOM_CLIP_PLANES", true);
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
@@ -442,40 +442,41 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             shaderName += ".SHDW";
             vertVariant += "Shadow";
             fragVariant += "Shadow";
-            globalDefines.push_back(std::make_pair("SHADOW_PASS", true));
+            globalDefines.emplace_back("SHADOW_PASS", true);
         } else {
             shaderName += ".PP";
             vertVariant += "PrePass";
             fragVariant += "PrePass";
-            globalDefines.push_back(std::make_pair("PRE_PASS", true));
+            globalDefines.emplace_back("PRE_PASS", true);
         }
     }
 
     if (renderStagePass._passType == RenderPassType::OIT_PASS) {
         shaderName += ".OIT";
-        fragDefines.push_back(std::make_pair("OIT_PASS", true));
+        fragDefines.emplace_back("OIT_PASS", true);
     }
 
     if (!_textures[slot0]) {
-        fragDefines.push_back(std::make_pair("SKIP_TEX0", true));
+        fragDefines.emplace_back("SKIP_TEX0", true);
         shaderName += ".NTex0";
     }
 
     // Display pre-pass caches normal maps in a GBuffer, so it's the only exception
-    if (!isDepthPass || renderStagePass._stage == RenderStage::DISPLAY) {
+    if ((!isDepthPass || renderStagePass._stage == RenderStage::DISPLAY) &&
+        _textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] != nullptr &&
+        _properties._bumpMethod != BumpMethod::NONE) 
+    {
         // Bump mapping?
-        if (_textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] && _properties._bumpMethod != BumpMethod::NONE) {
-            globalDefines.push_back(std::make_pair("COMPUTE_TBN", true));
-        }
+        globalDefines.emplace_back("COMPUTE_TBN", true);
+    }
 
-        if (_textures[to_base(ShaderProgram::TextureUsage::SPECULAR)]) {
-            if (isPBRMaterial()) {
-                shaderName += ".MRgh";
-                fragDefines.push_back(std::make_pair("USE_METALLIC_ROUGHNESS_MAP", true));
-            } else {
-                shaderName += ".SMap";
-                fragDefines.push_back(std::make_pair("USE_SPECULAR_MAP", true));
-            }
+    if (!isDepthPass && _textures[to_base(ShaderProgram::TextureUsage::SPECULAR)] != nullptr) {
+        if (isPBRMaterial()) {
+            shaderName += ".MRgh";
+            fragDefines.emplace_back("USE_METALLIC_ROUGHNESS_MAP", true);
+        } else {
+            shaderName += ".SMap";
+            fragDefines.emplace_back("USE_SPECULAR_MAP", true);
         }
     }
 
@@ -483,72 +484,72 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     if (_properties._translucencySource != TranslucencySource::COUNT && renderStagePass._passType != RenderPassType::OIT_PASS) {
         shaderName += ".AD";
-        fragDefines.push_back(std::make_pair("USE_ALPHA_DISCARD", true));
+        fragDefines.emplace_back("USE_ALPHA_DISCARD", true);
     }
 
     switch (_properties._translucencySource) {
         case TranslucencySource::OPACITY_MAP_A:
         case TranslucencySource::OPACITY_MAP_R: {
-            fragDefines.push_back(std::make_pair("USE_OPACITY_MAP", true));
+            fragDefines.emplace_back("USE_OPACITY_MAP", true);
             if (_properties._translucencySource == TranslucencySource::OPACITY_MAP_R) {
                 shaderName += ".OMapR";
-                fragDefines.push_back(std::make_pair("USE_OPACITY_MAP_RED_CHANNEL", true));
+                fragDefines.emplace_back("USE_OPACITY_MAP_RED_CHANNEL", true);
             } else {
                 shaderName += ".OMapA";
             }
         } break;
         case TranslucencySource::ALBEDO: {
             shaderName += ".AAlpha";
-            fragDefines.push_back(std::make_pair("USE_ALBEDO_ALPHA", true));
+            fragDefines.emplace_back("USE_ALBEDO_ALPHA", true);
         } break;
         default: break;
     };
 
     if (isDoubleSided()) {
         shaderName += ".2Sided";
-        fragDefines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
+        fragDefines.emplace_back("USE_DOUBLE_SIDED", true);
     }
 
     if (!receivesShadows() || !_context.context().config().rendering.shadowMapping.enabled) {
         shaderName += ".NSHDW";
-        fragDefines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+        fragDefines.emplace_back("DISABLE_SHADOW_MAPPING", true);
     }
 
     if (!_properties._isStatic) {
         shaderName += ".D";
-        vertDefines.push_back(std::make_pair("NODE_DYNAMIC", true));
-        fragDefines.push_back(std::make_pair("NODE_DYNAMIC", true));
+        vertDefines.emplace_back("NODE_DYNAMIC", true);
+        fragDefines.emplace_back("NODE_DYNAMIC", true);
     } else {
-        vertDefines.push_back(std::make_pair("NODE_STATIC", true));
-        fragDefines.push_back(std::make_pair("NODE_STATIC", true));
+        vertDefines.emplace_back("NODE_STATIC", true);
+        fragDefines.emplace_back("NODE_STATIC", true);
     }
 
     if (!isDepthPass) {
         switch (_properties._shadingMode) {
             default:
             case ShadingMode::FLAT: {
-                fragDefines.push_back(std::make_pair("USE_SHADING_FLAT", true));
+                fragDefines.emplace_back("USE_SHADING_FLAT", true);
                 shaderName += ".Flat";
             } break;
             /*case ShadingMode::PHONG: {
-                fragDefines.push_back(std::make_pair("USE_SHADING_PHONG", true));
+                fragDefines.emplace_back("USE_SHADING_PHONG", true);
                 shaderName += ".Phong";
             } break;*/
             case ShadingMode::PHONG:
             case ShadingMode::BLINN_PHONG: {
-                fragDefines.push_back(std::make_pair("USE_SHADING_BLINN_PHONG", true));
+                fragDefines.emplace_back("USE_SHADING_BLINN_PHONG", true);
                 shaderName += ".Blinn";
             } break;
             case ShadingMode::TOON: {
-                fragDefines.push_back(std::make_pair("USE_SHADING_TOON", true));
+                fragDefines.emplace_back("USE_SHADING_TOON", true);
                 shaderName += ".Toon";
             } break;
             case ShadingMode::OREN_NAYAR: {
-                fragDefines.push_back(std::make_pair("USE_SHADING_OREN_NAYAR", true));
+                fragDefines.emplace_back("USE_SHADING_OREN_NAYAR", true);
                 shaderName += ".OrenN";
             } break;
             case ShadingMode::COOK_TORRANCE: {
-                fragDefines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
+                fragDefines.emplace_back("USE_SHADING_COOK_TORRANCE", true);
                 shaderName += ".CookT";
             } break;
         }
@@ -556,17 +557,19 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     // Add the GPU skinning module to the vertex shader?
     if (_properties._hardwareSkinning) {
-        vertDefines.push_back(std::make_pair("USE_GPU_SKINNING", true));
+        vertDefines.emplace_back("USE_GPU_SKINNING", true);
         shaderName += ".Sknd";  //<Use "," instead of "." will add a Vertex only property
     }
 
     if (renderStagePass._stage == RenderStage::DISPLAY) {
-        fragDefines.push_back(std::make_pair("USE_SSAO", true));
-        fragDefines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
+        if (!isDepthPass) {
+            fragDefines.emplace_back("USE_SSAO", true);
+        }
+        fragDefines.emplace_back("USE_DEFERRED_NORMALS", true);
         shaderName += ".DNrmls";
     }
 
-    globalDefines.push_back(std::make_pair("DEFINE_PLACEHOLDER", false));
+    globalDefines.emplace_back("DEFINE_PLACEHOLDER", false);
 
     vertDefines.insert(std::cend(vertDefines), std::cbegin(globalDefines), std::cend(globalDefines));
     fragDefines.insert(std::cend(fragDefines), std::cbegin(globalDefines), std::cend(globalDefines));

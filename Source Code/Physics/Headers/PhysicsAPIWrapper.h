@@ -58,6 +58,9 @@ enum class ErrorCode : I8;
 class RigidBodyComponent;
 
 class NOINITVTABLE PhysicsAPIWrapper {
+   public:
+    virtual ~PhysicsAPIWrapper() = default;
+
    protected:
     friend class PXDevice;
     virtual ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) = 0;

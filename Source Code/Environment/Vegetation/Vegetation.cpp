@@ -319,21 +319,21 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "grass.glsl";
 
-    vertModule._defines.push_back(std::make_pair("USE_CULL_DISTANCE", true));
-    vertModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true));
-    vertModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
-    vertModule._defines.push_back(std::make_pair("NODE_DYNAMIC", true));
+    vertModule._defines.emplace_back("USE_CULL_DISTANCE", true);
+    vertModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
+    vertModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
+    vertModule._defines.emplace_back("NODE_DYNAMIC", true);
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "grass.glsl";
-    fragModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-    fragModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true));
-    fragModule._defines.push_back(std::make_pair("USE_DOUBLE_SIDED", true));
-    fragModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
-    fragModule._defines.push_back(std::make_pair("NODE_DYNAMIC", true));
+    fragModule._defines.emplace_back("SKIP_TEXTURES", true);
+    fragModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
+    fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
+    fragModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
+    fragModule._defines.emplace_back("NODE_DYNAMIC", true);
     if (!gfxDevice.context().config().rendering.shadowMapping.enabled) {
-        fragModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+        fragModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
     }
     fragModule._variant = "Colour";
 
@@ -347,8 +347,8 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader);
 
     ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
-    shaderOitDescriptor._modules.back()._defines.push_back(std::make_pair("OIT_PASS", true));
-    //shaderOitDescriptor._modules.back()._defines.push_back(std::make_pair("USE_SSAO", true));
+    shaderOitDescriptor._modules.back()._defines.emplace_back("OIT_PASS", true);
+    //shaderOitDescriptor._modules.back()._defines.emplace_back("USE_SSAO", true);
     shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
 
     ResourceDescriptor grassColourOITShader("grassColourOIT");
@@ -387,19 +387,19 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ShaderModuleDescriptor compModule = {};
     compModule._moduleType = ShaderType::COMPUTE;
     compModule._sourceFile = "instanceCullVegetation.glsl";
-    compModule._defines.push_back(std::make_pair(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true));
-    compModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstances).c_str(), true));
-    compModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true));
+    compModule._defines.emplace_back(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true);
+    compModule._defines.emplace_back(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstances).c_str(), true);
+    compModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
     switch (GetHiZMethod()) {
         case HiZMethod::ARM:
-            compModule._defines.push_back(std::make_pair("USE_ARM", true));
+            compModule._defines.emplace_back("USE_ARM", true);
             break;
         case HiZMethod::NVIDIA:
-            compModule._defines.push_back(std::make_pair("USE_NVIDIA", true));
+            compModule._defines.emplace_back("USE_NVIDIA", true);
             break;
         default:
         case HiZMethod::RASTER_GRID:
-            compModule._defines.push_back(std::make_pair("USE_RASTERGRID", true));
+            compModule._defines.emplace_back("USE_RASTERGRID", true);
             break;
     };
 
@@ -411,7 +411,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     instanceCullShaderGrass.propertyDescriptor(shaderCompDescriptor);
     s_cullShaderGrass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderGrass);
 
-    compModule._defines.push_back(std::make_pair("CULL_TREES", true));
+    compModule._defines.emplace_back("CULL_TREES", true);
     shaderCompDescriptor = {};
     shaderCompDescriptor._modules.push_back(compModule);
 

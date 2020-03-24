@@ -56,7 +56,7 @@ SGNRelationshipCache::RelationshipType SGNRelationshipCache::clasifyNode(I64 GUI
 
 void SGNRelationshipCache::updateChildren(U8 level, vector<std::pair<I64, U8>>& cache) const {
     _parentNode.forEachChild([level, &cache](const SceneGraphNode* child, I32 /*childIdx*/) {
-        cache.push_back(std::make_pair(child->getGUID(), level));
+        cache.emplace_back(child->getGUID(), level);
         Attorney::SceneGraphNodeRelationshipCache::relationshipCache(*child).updateChildren(level + 1, cache);
     });
 }
@@ -65,7 +65,7 @@ void SGNRelationshipCache::updateParents(U8 level, vector<std::pair<I64, U8>>& c
     SceneGraphNode* parent = _parentNode.parent();
     // We ignore the root note when considering grandparent status
     if (parent && parent->parent()) {
-        cache.push_back(std::make_pair(parent->getGUID(), level));
+        cache.emplace_back(parent->getGUID(), level);
         Attorney::SceneGraphNodeRelationshipCache::relationshipCache(*parent).updateParents(level + 1, cache);
     }
 }

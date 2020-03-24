@@ -127,7 +127,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     fragModule._variant = useTexture ? "WithTexture" : "NoTexture";
 
     if (useTexture){
-        fragModule._defines.push_back(std::make_pair("HAS_TEXTURE", true));
+        fragModule._defines.emplace_back("HAS_TEXTURE", true);
     }
 
     ShaderProgramDescriptor shaderDescriptor = {};

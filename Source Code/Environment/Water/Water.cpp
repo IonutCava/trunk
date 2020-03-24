@@ -84,18 +84,18 @@ bool WaterPlane::load() {
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "water.glsl";
-    vertModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-    vertModule._defines.push_back(std::make_pair("NODE_STATIC", true));
+    vertModule._defines.emplace_back("COMPUTE_TBN", true);
+    vertModule._defines.emplace_back("NODE_STATIC", true);
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "water.glsl";
-    fragModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-    fragModule._defines.push_back(std::make_pair("NODE_STATIC", true));
+    fragModule._defines.emplace_back("COMPUTE_TBN", true);
+    fragModule._defines.emplace_back("NODE_STATIC", true);
 
     if (!_parentCache.context().config().rendering.shadowMapping.enabled) {
-        vertModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
-        fragModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+        vertModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
+        fragModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
     }
 
     ShaderProgramDescriptor shaderDescriptor = {};
@@ -107,9 +107,9 @@ bool WaterPlane::load() {
     waterColourShader.waitForReady(false);
     ShaderProgram_ptr waterColour = CreateResource<ShaderProgram>(_parentCache, waterColourShader);
 
-    vertModule._defines.push_back(std::make_pair("PRE_PASS", true));
+    vertModule._defines.emplace_back("PRE_PASS", true);
     fragModule._variant = "PrePass";
-    fragModule._defines.push_back(std::make_pair("PRE_PASS", true));
+    fragModule._defines.emplace_back("PRE_PASS", true);
 
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);

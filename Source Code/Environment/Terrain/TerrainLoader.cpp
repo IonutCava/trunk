@@ -368,56 +368,56 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     const U16 tileMapSize = albedoTile->width();
     for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
         if (terrainDescriptor->wireframeDebug() == TerrainDescriptor::WireframeMode::EDGES) {
-            shaderModule._defines.push_back(std::make_pair("TOGGLE_WIREFRAME", true));
+            shaderModule._defines.emplace_back("TOGGLE_WIREFRAME", true);
         } else if (terrainDescriptor->wireframeDebug() == TerrainDescriptor::WireframeMode::NORMALS) {
-            shaderModule._defines.push_back(std::make_pair("TOGGLE_NORMALS", true));
+            shaderModule._defines.emplace_back("TOGGLE_NORMALS", true);
         }
 
         if (GFXDevice::getGPUVendor() == GPUVendor::AMD) {
             if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? ShaderType::GEOMETRY : ShaderType::TESSELLATION_EVAL)) {
-                shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
+                shaderModule._defines.emplace_back("USE_CUSTOM_CLIP_PLANES", true);
             }
         } else {
-            shaderModule._defines.push_back(std::make_pair("USE_CUSTOM_CLIP_PLANES", true));
+            shaderModule._defines.emplace_back("USE_CUSTOM_CLIP_PLANES", true);
         }
 
-        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", Terrain::PATCHES_PER_TILE_EDGE), true));
-        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %5.2ff", to_F32(Terrain::VTX_PER_TILE_EDGE)), true));
-        shaderModule._defines.push_back(std::make_pair(Util::StringFormat("DETAIL_LEVEL %d", context.config().rendering.terrainDetailLevel), true));
-        shaderModule._defines.push_back(std::make_pair("COMPUTE_TBN", true));
-        shaderModule._defines.push_back(std::make_pair("OVERRIDE_DATA_IDX", true));
-        shaderModule._defines.push_back(std::make_pair("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true));
-        shaderModule._defines.push_back(std::make_pair("ALBEDO_TILING " + to_stringImpl(albedoTilingFactor), true));
-        shaderModule._defines.push_back(std::make_pair("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true));
-        shaderModule._defines.push_back(std::make_pair("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true));
-        shaderModule._defines.push_back(std::make_pair("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true));
-        shaderModule._defines.push_back(std::make_pair("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true));
-        shaderModule._defines.push_back(std::make_pair("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true));
-        shaderModule._defines.push_back(std::make_pair("NODE_STATIC", true));
+        shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", Terrain::PATCHES_PER_TILE_EDGE), true);
+        shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %5.2ff", to_F32(Terrain::VTX_PER_TILE_EDGE)), true);
+        shaderModule._defines.emplace_back(Util::StringFormat("DETAIL_LEVEL %d", context.config().rendering.terrainDetailLevel), true);
+        shaderModule._defines.emplace_back("COMPUTE_TBN", true);
+        shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
+        shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true);
+        shaderModule._defines.emplace_back("ALBEDO_TILING " + to_stringImpl(albedoTilingFactor), true);
+        shaderModule._defines.emplace_back("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true);
+        shaderModule._defines.emplace_back("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true);
+        shaderModule._defines.emplace_back("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true);
+        shaderModule._defines.emplace_back("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true);
+        shaderModule._defines.emplace_back("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true);
+        shaderModule._defines.emplace_back("NODE_STATIC", true);
 
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-            shaderModule._defines.push_back(std::make_pair(blendAmntStr, true));
+            shaderModule._defines.emplace_back(blendAmntStr, true);
 
             if (!context.config().rendering.shadowMapping.enabled) {
-                shaderModule._defines.push_back(std::make_pair("DISABLE_SHADOW_MAPPING", true));
+                shaderModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
             }
 
-            shaderModule._defines.push_back(std::make_pair("SKIP_TEXTURES", true));
-            shaderModule._defines.push_back(std::make_pair("USE_SHADING_COOK_TORRANCE", true));
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("UNDERWATER_TILE_SCALE %d", to_I32(underwaterTileScale)), true));
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TOTAL_LAYER_COUNT %d", totalLayerCount), true));
-            shaderModule._defines.push_back(std::make_pair(layerCountData, false));
+            shaderModule._defines.emplace_back("SKIP_TEXTURES", true);
+            shaderModule._defines.emplace_back("USE_SHADING_COOK_TORRANCE", true);
+            shaderModule._defines.emplace_back(Util::StringFormat("UNDERWATER_TILE_SCALE %d", to_I32(underwaterTileScale)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TOTAL_LAYER_COUNT %d", totalLayerCount), true);
+            shaderModule._defines.emplace_back(layerCountData, false);
             for (const stringImpl& str : indexData) {
-                shaderModule._defines.push_back(std::make_pair(str, false));
+                shaderModule._defines.emplace_back(str, false);
             }
 
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true));
+            shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);
 
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_SPLAT %d", to_base(ShaderProgram::TextureUsage::TERRAIN_SPLAT)), true));
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_ALBEDO_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE)), true));
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_NORMAL_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_NORMAL_TILE)), true));
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_EXTRA_TILE)), true));
-            shaderModule._defines.push_back(std::make_pair(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(ShaderProgram::TextureUsage::TERRAIN_HELPER_TEXTURES)), true));
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_SPLAT %d", to_base(ShaderProgram::TextureUsage::TERRAIN_SPLAT)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_ALBEDO_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_NORMAL_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_NORMAL_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_EXTRA_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(ShaderProgram::TextureUsage::TERRAIN_HELPER_TEXTURES)), true);
 
         }
     }
@@ -428,9 +428,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._variant = "Shadow";
         }
-        shaderModule._defines.push_back(std::make_pair("SHADOW_PASS", true));
-        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 16", true));
-        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 16", true));
+        shaderModule._defines.emplace_back("SHADOW_PASS", true);
+        shaderModule._defines.emplace_back("MAX_TESS_SCALE 16", true);
+        shaderModule._defines.emplace_back("MIN_TESS_SCALE 16", true);
     }
 
     ResourceDescriptor terrainShaderShadow("Terrain_Shadow-" + name);
@@ -445,10 +445,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._variant = "MainPass";
         }
-        shaderModule._defines.push_back(std::make_pair("USE_SSAO", true));
-        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 64", true));
-        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 2", true));
-        shaderModule._defines.push_back(std::make_pair("USE_DEFERRED_NORMALS", true));
+        shaderModule._defines.emplace_back("USE_SSAO", true);
+        shaderModule._defines.emplace_back("MAX_TESS_SCALE 64", true);
+        shaderModule._defines.emplace_back("MIN_TESS_SCALE 2", true);
+        shaderModule._defines.emplace_back("USE_DEFERRED_NORMALS", true);
     }
 
     ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name);
@@ -460,7 +460,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     // PRE PASS
     ShaderProgramDescriptor prePassDescriptor = colourDescriptor;
     for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
-        shaderModule._defines.push_back(std::make_pair("PRE_PASS", true));
+        shaderModule._defines.emplace_back("PRE_PASS", true);
     }
 
     ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name);
@@ -475,10 +475,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._variant = "";
         }
-        shaderModule._defines.push_back(std::make_pair("PRE_PASS", true));
-        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
-        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 4", true));
-        shaderModule._defines.push_back(std::make_pair("LOW_QUALITY", true));
+        shaderModule._defines.emplace_back("PRE_PASS", true);
+        shaderModule._defines.emplace_back("MAX_TESS_SCALE 32", true);
+        shaderModule._defines.emplace_back("MIN_TESS_SCALE 4", true);
+        shaderModule._defines.emplace_back("LOW_QUALITY", true);
     }
 
     ResourceDescriptor terrainShaderPrePassLQ("Terrain_PrePass_LowQuality-" + name);
@@ -494,9 +494,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             shaderModule._variant = "LQPass";
         }
 
-        shaderModule._defines.push_back(std::make_pair("MAX_TESS_SCALE 32", true));
-        shaderModule._defines.push_back(std::make_pair("MIN_TESS_SCALE 4", true));
-        shaderModule._defines.push_back(std::make_pair("LOW_QUALITY", true));
+        shaderModule._defines.emplace_back("MAX_TESS_SCALE 32", true);
+        shaderModule._defines.emplace_back("MIN_TESS_SCALE 4", true);
+        shaderModule._defines.emplace_back("LOW_QUALITY", true);
     }
 
     ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name);
