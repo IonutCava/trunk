@@ -345,7 +345,7 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", minGLVersion), lineOffsets);
 
-    appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2019 DIVIDE-Studio*/", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2020 DIVIDE-Studio*/", lineOffsets);
     if (getStateTracker()._opengl46Supported) {
         appendToShaderHeader(ShaderType::COUNT, "#define OPENGL_46", lineOffsets);
     } else {

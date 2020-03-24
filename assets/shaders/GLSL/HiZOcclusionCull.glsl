@@ -48,6 +48,13 @@ void main()
     }
 
     const uint nodeIndex = dvd_drawCommands[ident].baseInstance;
+    // We dont currently handle instanced nodes with this. We might need to in the future
+    // Usually this is just terrain, vegetation and the skybox. So not that bad all in all since those have
+    // their own culling routines
+    if (nodeIndex == 0u) {
+        return;
+    }
+
     // Skip occlusion cull if the flag is negative
     if (dvd_Matrices[nodeIndex]._colourMatrix[3].w < 0.0f) {
         return;
