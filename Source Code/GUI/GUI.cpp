@@ -114,7 +114,7 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
     TextElementBatch textBatch(elements.size());
     for (const GUIMap::value_type& guiStackIterator : elements) {
         const GUIText& textLabel = static_cast<GUIText&>(*guiStackIterator.second.first);
-        if (textLabel.isVisible() && !textLabel.text().empty()) {
+        if (textLabel.visible() && !textLabel.text().empty()) {
             textBatch._data.push_back(textLabel);
         }
     }
@@ -248,7 +248,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache) {
     assert(_console);
     _console->createCEGUIWindow();
 
-    _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
+    _defaultMsgBox = addMsgBox("AssertMsgBox",
                                "Assertion failure",
                                "Assertion failed with message: ");
 
@@ -273,8 +273,8 @@ void GUI::destroy() {
             UniqueLockShared w_lock(_guiStackLock);
             assert(_guiStack.empty());
             for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
-                for (GUIMap::value_type& it : _guiElements[i]) {
-                    MemoryManager::DELETE(it.second.first);
+                for (auto [nameHash, entry] : _guiElements[i]) {
+                    MemoryManager::DELETE(entry.first);
                 }
                 _guiElements[i].clear();
             }
@@ -449,7 +449,7 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) c
         SharedLock r_lock(_guiStackLock);
         const GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
-            return it->second->getGUIElement(elementName);
+            return it->second->getGUIElement<GUIElement>(elementName);
         }
     } else {
         return GUIInterface::getGUIElementImpl(elementName, type);
@@ -463,7 +463,7 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) con
         SharedLock r_lock(_guiStackLock);
         const GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
-            return it->second->getGUIElement(elementID);
+            return it->second->getGUIElement<GUIElement>(elementID);
         }
     } else {
         return GUIInterface::getGUIElementImpl(elementID, type);

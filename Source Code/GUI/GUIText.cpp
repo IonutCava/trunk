@@ -4,8 +4,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
-GUIText::GUIText(U64 guiID,
-                 const stringImpl& name,
+GUIText::GUIText(const stringImpl& name,
                  const stringImpl& text,
                  bool  multiLine,
                  const RelativePosition2D& relativePosition,
@@ -13,7 +12,7 @@ GUIText::GUIText(U64 guiID,
                  const UColour4& colour,
                  CEGUI::Window* parent,
                  U8 fontSize)
-    : GUIElement(guiID, name, parent, GUIType::GUI_TEXT),
+    : GUIElementBase(name, parent),
       TextElement(TextLabelStyle(font.c_str(), colour, fontSize), relativePosition)
 {
     this->text(text.c_str(), multiLine);

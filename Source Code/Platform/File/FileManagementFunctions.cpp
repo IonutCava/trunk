@@ -4,6 +4,8 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/StringHelper.h"
 
+#include <filesystem>
+
 namespace Divide {
 
 bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, size_t length, FileType fileType) {
@@ -65,6 +67,10 @@ bool pathExists(const char* filePath) {
     return false;
 }
 
+bool createDirectory(const char* path) {
+    return std::filesystem::create_directory(std::filesystem::path(path));
+}
+
 bool fileExists(const char* filePathAndName) {
     return std::ifstream(filePathAndName).good();
 }
@@ -84,8 +90,8 @@ bool deleteFile(const char* filePath, const char* fileName) {
     if (Util::IsEmptyOrNull(fileName)) {
         return false;
     }
-    boost::filesystem::path file(stringImpl{ filePath } +fileName);
-    boost::filesystem::remove(file);
+    std::filesystem::path file(stringImpl{ filePath } +fileName);
+    std::filesystem::remove(file);
     return true;
 }
 
@@ -107,19 +113,19 @@ bool copyFile(const char* sourcePath, const char* sourceName, const char* target
         return false;
     }
 
-    boost::filesystem::copy_file(boost::filesystem::path(source), boost::filesystem::path(target), boost::filesystem::copy_option::overwrite_if_exists);
+    std::filesystem::copy_file(std::filesystem::path(source), std::filesystem::path(target), std::filesystem::copy_options::overwrite_existing);
 
     return true;
 }
 
 bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath) {
 
-    boost::filesystem::path dir_path(filePath);
-    boost::filesystem::path file_name(fileName);
+    std::filesystem::path dir_path(filePath);
+    std::filesystem::path file_name(fileName);
 
-    const boost::filesystem::recursive_directory_iterator end;
-    const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(dir_path), end,
-        [&file_name](const boost::filesystem::directory_entry& e) {
+    const std::filesystem::recursive_directory_iterator end;
+    const auto it = std::find_if(std::filesystem::recursive_directory_iterator(dir_path), end,
+        [&file_name](const std::filesystem::directory_entry& e) {
         return e.path().filename() == file_name;
     });
     if (it == end) {
@@ -138,14 +144,14 @@ bool hasExtension(const char* filePath, const Str16& extension) {
 bool deleteAllFiles(const char* filePath, const char* extension) {
     bool ret = false;
 
-    boost::filesystem::path p(filePath);
-    if (boost::filesystem::exists(p) && boost::filesystem::is_directory(p)) {
-        boost::filesystem::directory_iterator end;
-        for (boost::filesystem::directory_iterator it(p); it != end; ++it) {
+    std::filesystem::path p(filePath);
+    if (std::filesystem::exists(p) && std::filesystem::is_directory(p)) {
+        std::filesystem::directory_iterator end;
+        for (std::filesystem::directory_iterator it(p); it != end; ++it) {
             try {
-                if (boost::filesystem::is_regular_file(it->status())) {
+                if (std::filesystem::is_regular_file(it->status())) {
                     if (!extension || (extension != nullptr && it->path().extension() == extension)) {
-                        if (boost::filesystem::remove(it->path())) {
+                        if (std::filesystem::remove(it->path())) {
                             ret = true;
                         }
                     }
@@ -194,8 +200,10 @@ bool clearCache(CacheType type) {
 }
 
 std::string extractFilePathAndName(char* argv0) {
-    boost::system::error_code ec;
-    boost::filesystem::path p(boost::filesystem::canonical(argv0, boost::filesystem::current_path(), ec));
+    std::error_code ec;
+    auto currentPath = std::filesystem::current_path();
+    currentPath.append(argv0);
+    std::filesystem::path p(std::filesystem::canonical(currentPath, ec));
     return p.make_preferred().string();
 }
 

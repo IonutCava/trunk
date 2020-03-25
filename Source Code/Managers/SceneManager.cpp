@@ -238,7 +238,7 @@ bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Re
             }
         }),
         threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME, 
-        [this, name, &targetRenderViewport, unloadPrevious, &sceneToUnload]()
+        [this, name, targetRenderViewport, unloadPrevious, &sceneToUnload]()
         {
             bool foundInCache = false;
             Scene* loadedScene = _scenePool->getOrCreateScene(*_platformContext, parent().resourceCache(), *this, name, foundInCache);
@@ -249,7 +249,7 @@ bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Re
                 if (loadedScene->getGUID() != _scenePool->defaultScene().getGUID())
                 {
                     SceneGUIElements* gui = Attorney::SceneManager::gui(*loadedScene);
-                    GUIButton* btn = gui->addButton(_ID("Back"),
+                    GUIButton* btn = gui->addButton("Back",
                                                     "Back",
                                                     pixelPosition(15, 15),
                                                     pixelScale(50, 25));

@@ -6,18 +6,10 @@
 
 namespace Divide {
 
-GUIElement::GUIElement(U64 guiID, const stringImpl& name, CEGUI::Window* const parent, const GUIType& type)
+GUIElement::GUIElement(const stringImpl& name, CEGUI::Window* const parent)
     : GUIDWrapper(),
-      _guiType(type),
       _parent(parent),
-      _active(false),
-      _guiID(guiID),
       _name(name)
-{
-    _visible = true;
-}
-
-GUIElement::~GUIElement()
 {
 }
 

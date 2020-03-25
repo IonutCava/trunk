@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug-UnityBuild|x64">
-      <Configuration>Debug-UnityBuild</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -180,11 +176,9 @@
     <ClCompile Include="../../Source Code/Platform\Video\Textures\Texture.cpp" />
     <ClCompile Include="../../Source Code/stdafx-platform.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -296,13 +290,6 @@
     <PlatformToolset>v142</PlatformToolset>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
-    <EnableASAN>false</EnableASAN>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -325,9 +312,6 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -338,19 +322,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
-    <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IntDir>$(Configuration)_Platform\</IntDir>
-    <TargetName>$(ProjectName)_d</TargetName>
-    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <EnableCppCoreCheck>true</EnableCppCoreCheck>
-    <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
-    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
     <IntDir>$(Configuration)_Platform\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
@@ -418,58 +390,6 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <ConformanceMode>true</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-    <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <Verbose>false</Verbose>
-    </Lib>
-    <ProjectReference>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-    </ProjectReference>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
-    <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher\;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/OpenAL\include/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM;_ENFORCE_MATCHING_ALLOCATORS=0;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
-      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>4913;4512;4201;4100;4503;4127;4996</DisableSpecificWarnings>
-      <MinimalRebuild>false</MinimalRebuild>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
-      <OpenMPSupport>true</OpenMPSupport>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>true</StringPooling>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalOptions>/bigobj %(AdditionalOptions) /Zc:twoPhase-</AdditionalOptions>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-      <EnableModules>false</EnableModules>
-      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ConformanceMode>true</ConformanceMode>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>

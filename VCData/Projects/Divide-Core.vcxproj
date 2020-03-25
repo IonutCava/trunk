@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug-UnityBuild|x64">
-      <Configuration>Debug-UnityBuild</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -19,126 +15,58 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../Source Code/Core\ByteBuffer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Console.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Debugging\DebugInterface.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\GUIDWrapper.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\BoundingVolumes\BoundingBox.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\BoundingVolumes\BoundingSphere.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\MathClasses.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\MathHelper.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\Transform.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\Resource.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ResourceCache.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ResourceDescriptor.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\RingBuffer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\StringHelper.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\TaskPool.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Time\ApplicationTimer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Time\FrameRateHandler.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Time\ProfileTimer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\WindowManager.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="../../Source Code/stdafx-core.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\CommandParser.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\CRC.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\EASTLImport.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\ImageTools.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\Localization.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\XMLParser.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\TextLabel.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\ByteBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingBox.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingSphere.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\InfinitePlaneLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\RingBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\StringHelper.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\TaskPool.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Time\ApplicationTimer.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Time\FrameRateHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Time\ProfileTimer.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\WindowManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\Localization.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\TextLabel.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/config.h" />
     <ClInclude Include="../../Source Code/Core\Debugging\Headers\DebugInterface.h" />
     <ClInclude Include="../../Source Code/Core\Headers\ByteBuffer.h" />
-    <ClInclude Include="../../Source Code/Core\Headers\cdigginsAny.h" />
     <ClInclude Include="../../Source Code/Core\Headers\Console.h" />
     <ClInclude Include="../../Source Code/Core\Headers\ErrorCodes.h" />
     <ClInclude Include="../../Source Code/Core\Headers\GUIDWrapper.h" />
@@ -221,13 +149,6 @@
     <PlatformToolset>v142</PlatformToolset>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
-    <EnableASAN>false</EnableASAN>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -250,9 +171,6 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -263,19 +181,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
-    <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IntDir>$(Configuration)_Core\</IntDir>
-    <TargetName>$(ProjectName)_d</TargetName>
-    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <EnableCppCoreCheck>true</EnableCppCoreCheck>
-    <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
-    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
     <IntDir>$(Configuration)_Core\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
@@ -343,58 +249,6 @@
       <ConformanceMode>true</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-    <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <Verbose>false</Verbose>
-    </Lib>
-    <ProjectReference>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-    </ProjectReference>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-UnityBuild|x64'">
-    <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB/;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/nv_dds/;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl/include/;$(SolutionDir)/../3rdParty/DevIL/include/;$(SolutionDir)/../3rdParty/cegui/include/;$(SolutionDir)/../3rdParty/assimp/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CORE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
-      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>4913;4512;4201;4100;4503;4127;4996</DisableSpecificWarnings>
-      <MinimalRebuild>false</MinimalRebuild>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
-      <OpenMPSupport>true</OpenMPSupport>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>true</StringPooling>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-      <EnableModules>false</EnableModules>
-      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions> /Zc:twoPhase-</AdditionalOptions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>

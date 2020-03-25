@@ -118,6 +118,10 @@ void DisplayWindow::update(const U64 deltaTimeUS) noexcept {
     }
 }
 
+void DisplayWindow::refreshDrawableSize() {
+    _drawableSize = getDrawableSizeInternal();
+}
+
 void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& args) {
     switch (event) {
         case WindowEvent::HIDDEN:
@@ -128,7 +132,7 @@ void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& ar
         case WindowEvent::RESTORED:
         case WindowEvent::SHOWN:
         case WindowEvent::SIZE_CHANGED:
-            _drawableSize = getDrawableSizeInternal();
+            refreshDrawableSize();
             break;
         default:
             break;

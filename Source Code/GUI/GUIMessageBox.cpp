@@ -5,13 +5,12 @@
 #include <CEGUI/CEGUI.h>
 namespace Divide {
 
-GUIMessageBox::GUIMessageBox(U64 guiID,
-                             const stringImpl& name,
+GUIMessageBox::GUIMessageBox(const stringImpl& name,
                              const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre,
                              CEGUI::Window* parent)
-    : GUIElement(guiID, name, parent, GUIType::GUI_MESSAGE_BOX)
+    : GUIElementBase(name, parent)
 {
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience
     // to reduce typing
@@ -30,8 +29,8 @@ GUIMessageBox::GUIMessageBox(U64 guiID,
     setTitle(title);
     setMessage(message);
     setOffset(offsetFromCentre);
-    setActive(true);
-    setVisible(false);
+    active(true);
+    visible(false);
 }
 
 GUIMessageBox::~GUIMessageBox()
@@ -41,20 +40,20 @@ GUIMessageBox::~GUIMessageBox()
 }
 
 bool GUIMessageBox::onConfirm(const CEGUI::EventArgs& /*e*/) {
-    setActive(false);
-    setVisible(false);
+    active(false);
+    visible(false);
     return true;
 }
 
-void GUIMessageBox::setVisible(const bool visible) {
+void GUIMessageBox::visible(const bool& visible) noexcept {
     _msgBoxWindow->setVisible(visible);
     _msgBoxWindow->setModalState(visible);
-    GUIElement::setVisible(visible);
+    GUIElement::visible(visible);
 }
 
-void GUIMessageBox::setActive(const bool active) {
+void GUIMessageBox::active(const bool& active) noexcept {
     _msgBoxWindow->setEnabled(active);
-    GUIElement::setActive(active);
+    GUIElement::active(active);
 }
 
 void GUIMessageBox::setTitle(const stringImpl& titleText) {

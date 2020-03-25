@@ -135,7 +135,7 @@ void tcp_session_tpl::start_write() {
 
     WorldPacket& p = _outputQueue.front();
     boost::archive::text_oarchive ar(os);
-    ar& p;  // Archive the packet
+    ar & p;  // Archive the packet
 
     size_t header = buf.size();
     vector<boost::asio::const_buffer> buffers;

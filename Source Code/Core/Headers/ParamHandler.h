@@ -45,7 +45,7 @@ class ParamHandler : public Singleton<ParamHandler> {
 public:
     using HashType = U32;
 
-    using ParamMap = hashMap<HashType, AnyParam>;
+    using ParamMap = hashMap<HashType, std::any>;
 
     /// A special map for string types (small perf. optimization for add/retrieve)
     typedef hashMap<HashType, stringImpl> ParamStringMap;

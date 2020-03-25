@@ -44,7 +44,7 @@ void PingPongScene::processGUI(const U64 deltaTimeUS) {
     constexpr D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
 
     if (_guiTimersMS[0] >= FpsDisplay) {
-        _GUI->modifyText(_ID("fpsDisplay"),
+        _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime()),
@@ -91,7 +91,7 @@ void PingPongScene::resetGame() {
 }
 
 void PingPongScene::serveBall(I64 btnGUID) {
-    _GUI->modifyText(_ID("insults"), "", false);
+    _GUI->modifyText("insults", "", false);
     resetGame();
 
     removeTask(*g_gameTaskID);
@@ -103,7 +103,7 @@ void PingPongScene::serveBall(I64 btnGUID) {
     registerTask(*g_gameTaskID);
 }
 
-void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
+void PingPongScene::test(const Task& parentTask, std::any a, CallbackParam b) {
     while (!StopRequested(parentTask)) {
         bool updated = false;
         stringImpl message;
@@ -215,17 +215,17 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
                 _score--;
 
                 if (b == CallbackParam::TYPE_INTEGER) {
-                    I32 quote = any_cast<I32>(a);
+                    I32 quote = std::any_cast<I32>(a);
                     if (_score % 3 == 0)
-                        _GUI->modifyText(_ID("insults"), _quotes[quote], false);
+                        _GUI->modifyText("insults", _quotes[quote], false);
                 }
             } else {
                 message = "You won!";
                 _score++;
             }
 
-            _GUI->modifyText(_ID("Score"), Util::StringFormat("Score: %d", _score), false);
-            _GUI->modifyText(_ID("Message"), (char*)message.c_str(), false);
+            _GUI->modifyText("Score", Util::StringFormat("Score: %d", _score), false);
+            _GUI->modifyText("Message", (char*)message.c_str(), false);
             resetGame();
         }
 
@@ -365,7 +365,7 @@ U16 PingPongScene::registerInputActions() {
 void PingPongScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     
     // Buttons and text labels
-    GUIButton* btn = _GUI->addButton(_ID("Serve"),
+    GUIButton* btn = _GUI->addButton("Serve",
                                      "Serve",
                                      pixelPosition(to_I32(targetRenderViewport.sizeX - 120),
                                                    to_I32(targetRenderViewport.sizeY / 1.1f)),

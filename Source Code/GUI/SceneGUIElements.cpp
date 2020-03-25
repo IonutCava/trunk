@@ -34,7 +34,7 @@ void SceneGUIElements::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut)
 
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
-        if (textElement.isVisible() && !textElement.text().empty()) {
+        if (textElement.visible() && !textElement.text().empty()) {
             drawTextCommand._batch._data.emplace_back(textElement);
         }
     }
@@ -47,7 +47,7 @@ void SceneGUIElements::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut)
 void SceneGUIElements::onEnable() {
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-            guiStackIterator.second.first->setVisible(guiStackIterator.second.second);
+            guiStackIterator.second.first->visible(guiStackIterator.second.second);
         }
     }
 }
@@ -55,7 +55,7 @@ void SceneGUIElements::onEnable() {
 void SceneGUIElements::onDisable() {
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-            guiStackIterator.second.first->setVisible(false);
+            guiStackIterator.second.first->visible(false);
         }
     }
 }

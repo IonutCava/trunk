@@ -98,106 +98,121 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../Source Code/Core\Math\MathClasses.cpp">
-      <Filter>Math</Filter>
+    <ClCompile Include="../../Source Code/stdafx-core.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\MathHelper.cpp">
-      <Filter>Math</Filter>
+    <ClCompile Include="..\..\Source Code\Core\TaskPool.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\Transform.cpp">
-      <Filter>Math</Filter>
+    <ClCompile Include="..\..\Source Code\Utility\CRC.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\BoundingVolumes\BoundingBox.cpp">
-      <Filter>Math\BoundingVolumes</Filter>
+    <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Math\BoundingVolumes\BoundingSphere.cpp">
-      <Filter>Math\BoundingVolumes</Filter>
+    <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\Resource.cpp">
-      <Filter>Resources</Filter>
+    <ClCompile Include="..\..\Source Code\Utility\Localization.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ResourceCache.cpp">
-      <Filter>Resources</Filter>
+    <ClCompile Include="..\..\Source Code\Utility\TextLabel.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ResourceDescriptor.cpp">
-      <Filter>Resources</Filter>
+    <ClCompile Include="..\..\Source Code\Core\WindowManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\ByteBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\RingBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\StringHelper.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Time\ApplicationTimer.cpp">
+      <Filter>Time</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Time\FrameRateHandler.cpp">
+      <Filter>Time</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Time\ProfileTimer.cpp">
+      <Filter>Time</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Debugging\DebugInterface.cpp">
+    <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp">
       <Filter>Debugging</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Time\ApplicationTimer.cpp">
-      <Filter>Time</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Time\FrameRateHandler.cpp">
-      <Filter>Time</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\Time\ProfileTimer.cpp">
-      <Filter>Time</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\CommandParser.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingBox.cpp">
+      <Filter>Math\BoundingVolumes</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\CRC.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingSphere.cpp">
+      <Filter>Math\BoundingVolumes</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\EASTLImport.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp">
+      <Filter>Resources</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\ImageTools.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp">
+      <Filter>Resources</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\Localization.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp">
+      <Filter>Resources</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Utility\XMLParser.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/stdafx-core.cpp" />
-    <ClCompile Include="../../Source Code/Utility\TextLabel.cpp">
-      <Filter>Utility</Filter>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Core\ByteBuffer.cpp" />
-    <ClCompile Include="../../Source Code/Core\Console.cpp" />
-    <ClCompile Include="../../Source Code/Core\GUIDWrapper.cpp" />
-    <ClCompile Include="../../Source Code/Core\RingBuffer.cpp" />
-    <ClCompile Include="../../Source Code/Core\StringHelper.cpp" />
-    <ClCompile Include="../../Source Code/Core\TaskPool.cpp" />
-    <ClCompile Include="../../Source Code/Core\WindowManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\InfinitePlaneLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../Source Code/Core\Headers\cdigginsAny.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code/Core\Headers\GUIDWrapper.h">
       <Filter>Headers</Filter>
     </ClInclude>

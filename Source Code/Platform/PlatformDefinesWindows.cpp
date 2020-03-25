@@ -221,15 +221,6 @@ namespace Divide {
         setThreadName(threadId, threadName);
     }
 
-    bool createDirectory(const char* path) {
-        const int ret = _mkdir(path);
-        if (ret != 0) {
-            return errno == EEXIST;
-        }
-
-        return true;
-    }
-
     FileWithPath getExecutableLocation(I32 argc, char** argv) {
         ACKNOWLEDGE_UNUSED(argc);
 

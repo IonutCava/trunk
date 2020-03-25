@@ -886,7 +886,7 @@ U16 Scene::registerInputActions() {
 }
 
 void Scene::loadKeyBindings() {
-    XML::loadDefaultKeybindings(Paths::g_xmlDataLocation + "keyBindings.xml", this);
+    XML::loadDefaultKeyBindings(Paths::g_xmlDataLocation + "keyBindings.xml", this);
 }
 
 bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {

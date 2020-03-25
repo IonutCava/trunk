@@ -228,6 +228,12 @@ ErrorCode WindowManager::init(PlatformContext& context,
     return err;
 }
 
+void WindowManager::postInit() {
+    for (DisplayWindow* window : _windows) {
+        window->refreshDrawableSize();
+    }
+}
+
 void WindowManager::close() {
     for (DisplayWindow* window : _windows) {
         window->destroyWindow();
@@ -295,41 +301,41 @@ DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descriptor, E
     if (err != ErrorCode::NO_ERR) {
         _windows.pop_back();
         MemoryManager::SAFE_DELETE(window);
-    }
+    } else {
+        window->addEventListener(WindowEvent::SIZE_CHANGED, [this](const DisplayWindow::WindowEventArgs& args) {
+            SizeChangeParams params;
+            params.width = to_U16(args.x);
+            params.height = to_U16(args.y);
+            params.isWindowResize = true;
+            params.isFullScreen = args._flag;
+            params.winGUID = args._windowGUID;
 
-    window->addEventListener(WindowEvent::SIZE_CHANGED, [this](const DisplayWindow::WindowEventArgs& args) {
-        SizeChangeParams params;
-        params.width = to_U16(args.x);
-        params.height = to_U16(args.y);
-        params.isWindowResize = true;
-        params.isFullScreen = args._flag;
-        params.winGUID = args._windowGUID;
-
-        // Only if rendering window
-        _context->app().onSizeChange(params);
-        return true;
-    });
-
-    if (!descriptor.externalClose) {
-        window->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) {
-            Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), args._windowGUID);
-
-            if (_mainWindowGUID == args._windowGUID) {
-                _context->app().RequestShutdown();
-            } else {
-                for (DisplayWindow*& win : _windows) {
-                    if (win->getGUID() == args._windowGUID) {
-                        if (!destroyWindow(win)) {
-                            Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), args._windowGUID);
-                            win->hidden(true);
-                        }
-                        break;
-                    }
-                }
-                return false;
-            }
+            // Only if rendering window
+            _context->app().onSizeChange(params);
             return true;
         });
+
+        if (!descriptor.externalClose) {
+            window->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) {
+                Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), args._windowGUID);
+
+                if (_mainWindowGUID == args._windowGUID) {
+                    _context->app().RequestShutdown();
+                } else {
+                    for (DisplayWindow*& win : _windows) {
+                        if (win->getGUID() == args._windowGUID) {
+                            if (!destroyWindow(win)) {
+                                Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), args._windowGUID);
+                                win->hidden(true);
+                            }
+                            break;
+                        }
+                    }
+                    return false;
+                }
+                return true;
+            });
+        }
     }
     return *window;
 }

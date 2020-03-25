@@ -244,7 +244,7 @@ void Kernel::onLoop() {
     }
 
     if (frameCount % (Config::TARGET_FRAME_RATE / 4) == 0) {
-        _platformContext.gui().modifyText(_ID("ProfileData"), platformContext().debug().output(), true);
+        _platformContext.gui().modifyText("ProfileData", platformContext().debug().output(), true);
         F32 fps = 0.f, frameTime = 0.f;
         Time::ApplicationTimer::instance().getFrameRateAndTime(fps, frameTime);
         DisplayWindow& window = _platformContext.activeWindow();
@@ -707,11 +707,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     WAIT_FOR_CONDITION(threadCounter.load() == 0);
 
     initError = _platformContext.gfx().postInitRenderingAPI();
-
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
+    winManager.postInit();
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
     _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext.gfx());

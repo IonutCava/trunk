@@ -582,7 +582,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
     if (terrain->_physicsVerts.empty()) {
 
-        vector<Byte> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), NULL);
+        vector<Byte> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), Byte{0});
         readFile((terrainMapLocation + "/").c_str(), terrainRawFile.c_str(), data, FileType::BINARY);
 
         constexpr F32 ushortMax = std::numeric_limits<U16>::max() + 1.0f;

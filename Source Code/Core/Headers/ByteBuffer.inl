@@ -300,15 +300,6 @@ inline void ByteBuffer::append(const T& value) {
     append((Byte *)&value, sizeof(value));
 }
 
-template <typename Archive>
-inline void ByteBuffer::serialize(Archive &ar, const unsigned int version) {
-    ACKNOWLEDGE_UNUSED(version);
-
-    ar & _rpos;
-    ar & _wpos;
-    ar & _storage;
-}
-
 //specializations
 template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, vec2<T> const &v) {

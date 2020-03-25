@@ -60,24 +60,19 @@ public:
     inline GUI& getParentContext() { return *_context; }
     inline const GUI& getParentContext() const { return *_context; }
     /// Get a pointer to an element by name/id
-    template<typename T = GUIElement>
-    inline T* getGUIElement(U64 elementName) const {
-        static_assert(std::is_base_of<GUIElement, T>::value,
-            "getGuiElement error: Target is not a valid GUI item");
-
-        return static_cast<T*>(getGUIElementImpl(elementName, getTypeEnum<T>()));
+    template <typename T>
+    typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
+    getGUIElement(U64 elementName) const {
+        return static_cast<T*>(getGUIElementImpl(elementName, T::Type));
     }
 
-    template<typename T = GUIElement>
-    inline T* getGUIElement(I64 elementID) const {
-        static_assert(std::is_base_of<GUIElement, T>::value,
-            "getGuiElement error: Target is not a valid GUI item");
-
-        return static_cast<T*>(getGUIElementImpl(elementID, getTypeEnum<T>()));
+    template <typename T>
+    typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
+    getGUIElement(I64 elementID) const {
+        return static_cast<T*>(getGUIElementImpl(elementID, T::Type));
     }
 
-    virtual GUIText* addText(U64 guiID,
-                             const stringImpl& name,
+    virtual GUIText* addText(const char* name,
                              const RelativePosition2D& position,
                              const stringImpl& font,
                              const UColour4& colour,
@@ -85,63 +80,23 @@ public:
                              bool multiLine = false,
                              U8 fontSize = 16u);
 
-    inline GUIText* addText(const stringImpl& name,
-                            const RelativePosition2D& position,
-                            const stringImpl& font,
-                            const UColour4& colour,
-                            const stringImpl& text,
-                            bool multiLine = false,
-                            U8 fontSize = 16u) {
+    virtual GUIText* modifyText(const char* name, const stringImpl& text, bool multiLine);
 
-        return addText(_ID(name.c_str()), name, position, font, colour, text, multiLine, fontSize);
-    }
-
-    virtual GUIText* modifyText(U64 guiID, const stringImpl& text, bool multiLine);
-
-    inline GUIText* modifyText(const stringImpl& name, const stringImpl& text, bool multiLine) {
-        return modifyText(_ID(name.c_str()), text, multiLine);
-    }
-
-    virtual GUIMessageBox* addMsgBox(U64 guiID,
-                                     const stringImpl& name,
+    virtual GUIMessageBox* addMsgBox(const char* name,
                                      const stringImpl& title,
                                      const stringImpl& message,
                                      const vec2<I32>& offsetFromCentre = vec2<I32>(0));
 
-    inline GUIMessageBox* addMsgBox(U64 guiID,
-                                    const stringImpl& title,
-                                    const stringImpl& message,
-                                    const vec2<I32>& offsetFromCentre = vec2<I32>(0)) {
-        return addMsgBox(guiID, title, title, message, offsetFromCentre);
-    }
-
-    virtual GUIButton* addButton(U64 guiID,
-                                 const stringImpl& name,
+    virtual GUIButton* addButton(const char* name,
                                  const stringImpl& text,
                                  const RelativePosition2D& offset,
                                  const RelativeScale2D& size,
                                  const stringImpl& rootSheetID = "");
 
-    inline GUIButton* addButton(U64 guiID,
-                                const stringImpl& text,
-                                const RelativePosition2D& offset,
-                                const RelativeScale2D& size,
-                                const stringImpl& rootSheetID = "") {
-        return addButton(guiID, text, text, offset, size, rootSheetID);
-   }
-
-    virtual GUIFlash* addFlash(U64 guiID,
-                               const stringImpl& name,
+    virtual GUIFlash* addFlash(const char* name,
                                stringImpl movie,
                                const RelativePosition2D& position,
                                const RelativeScale2D& size);
-
-    inline GUIFlash* addFlash(U64 guiID,
-                              stringImpl movie,
-                              const RelativePosition2D& position,
-                              const RelativeScale2D& size) {
-        return addFlash(guiID, movie, movie, position, size);
-    }
 
     virtual CEGUI::Window* createWindow(const CEGUI::String& type, const CEGUI::String& name);
     virtual CEGUI::Window* loadWindowFromLayoutFile(const char* layoutFileName);

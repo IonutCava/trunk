@@ -78,7 +78,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
 
             buttonPosition.d_x.d_offset = to_F32(localOffsetX);
             buttonPosition.d_y.d_offset = to_F32(localOffsetY);
-            GUIButton* btn = _GUI->addButton(_ID(("StartScene" + scene).c_str()),
+            GUIButton* btn = _GUI->addButton(("StartScene" + scene).c_str(),
                                              scene.c_str(),
                                              buttonPosition,
                                              buttonSize);
@@ -102,7 +102,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     RelativeScale2D quitScale(RelativeValue(0.0f, to_F32(quitButtonWidth)),
                               RelativeValue(0.0f, to_F32(quitButtonHeight)));
 
-    GUIButton* btn = _GUI->addButton(_ID("Quit"),
+    GUIButton* btn = _GUI->addButton("Quit",
                                      "Quit",
                                      quitPosition,
                                      quitScale);
@@ -117,10 +117,10 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
 
     RelativeScale2D playerChangeScale = pixelScale(quitButtonWidth, playerButtonHeight);
 
-    btn = _GUI->addButton(_ID("AddPlayer"),
-                    "Add Player",
-                    playerChangePosition,
-                    playerChangeScale);
+    btn = _GUI->addButton("AddPlayer",
+                          "Add Player",
+                          playerChangePosition,
+                          playerChangeScale);
 
     btn->setEventCallback(GUIButton::Event::MouseClick,
                           [this](I64 btnGUID) {
@@ -129,7 +129,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
 
     playerChangePosition.d_y.d_offset -= playerButtonHeight * 1.5f;
 
-    btn = _GUI->addButton(_ID("RemovePlayer"),
+    btn = _GUI->addButton("RemovePlayer",
                           "Remove Player",
                           playerChangePosition,
                           playerChangeScale);
@@ -157,7 +157,7 @@ void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (!_sceneToLoad.empty()) {
         const vec2<U16>& drawSize = _context.activeWindow().getDrawableSize();
 
-        _GUI->modifyText(_ID("globalMessage"),
+        _GUI->modifyText("globalMessage",
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()),
                          false);
         _parent.switchScene(_sceneToLoad, false, Rect<U16>(0, 0, drawSize.width, drawSize.height));
@@ -199,9 +199,9 @@ void DefaultScene::loadScene(I64 btnGUID) {
     selection->setText(_sceneToLoad + "\nLoading ...");
     for (hashMap<I64, Str128>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
-        btn->setActive(false);
+        btn->active(false);
         if (it.first != btnGUID) {
-            btn->setVisible(false);
+            btn->visible(false);
         }
     }
 }
@@ -211,8 +211,8 @@ void DefaultScene::onSetActive() {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         
         btn->setText(it.second);
-        btn->setActive(true);
-        btn->setVisible(true);
+        btn->active(true);
+        btn->visible(true);
     }
 
     Scene::onSetActive();

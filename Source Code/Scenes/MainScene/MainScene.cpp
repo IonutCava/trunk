@@ -86,11 +86,11 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
                     break;
                 }
             }
-            _GUI->modifyText(_ID("camPosition"),
+            _GUI->modifyText("camPosition",
                              Util::StringFormat("[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f] [TerHght: %5.2f ]",
                                                  eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw, terrainHeight), false);
         } else {
-            _GUI->modifyText(_ID("camPosition"),
+            _GUI->modifyText("camPosition",
                              Util::StringFormat("[ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
                                                 eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw), false);
         }
@@ -104,22 +104,22 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
     constexpr D64 TimeDisplay = Time::SecondsToMilliseconds(1.0);
 
     if (_guiTimersMS[0] >= FpsDisplay) {
-        _GUI->modifyText(_ID("fpsDisplay"),
+        _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime()), false);
-        _GUI->modifyText(_ID("underwater"),
+        _GUI->modifyText("underwater",
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
                                              state().playerState(0).cameraUnderwater() ? "true" : "false",
                                              state().globalWaterBodies()[0]._heightOffset), false);
-        _GUI->modifyText(_ID("RenderBinCount"),
+        _GUI->modifyText("RenderBinCount",
                          Util::StringFormat("Number of items in Render Bin: %d.",
                                             _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
         _guiTimersMS[0] = 0.0;
     }
 
     if (_guiTimersMS[1] >= TimeDisplay) {
-        _GUI->modifyText(_ID("timeDisplay"),
+        _GUI->modifyText("timeDisplay",
                          Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()), false);
         _guiTimersMS[1] = 0.0;
     }
@@ -271,7 +271,7 @@ bool MainScene::unload() {
     return Scene::unload();
 }
 
-void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
+void MainScene::test(const Task& parentTask, std::any a, CallbackParam b) {
     if(!StopRequested(parentTask)) {
         static bool switchAB = false;
         vec3<F32> pos;

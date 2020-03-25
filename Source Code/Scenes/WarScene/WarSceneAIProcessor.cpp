@@ -609,7 +609,7 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
 }
 
 void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
-                                         const AnyParam& msg_content) {
+                                         const std::any& msg_content) {
     SceneGraphNode* senderNode(sender.getUnitRef()->getBoundNode());
     switch (msg) {
         case AIMsg::RETURNED_FLAG:
@@ -631,7 +631,7 @@ void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
         } break;
 
         case AIMsg::HAVE_DIED: {
-            bool hadFlag = ::any_cast<bool>(msg_content);
+            bool hadFlag = std::any_cast<bool>(msg_content);
             if (hadFlag) {
                 U32 senderTeamID = sender.getTeamID();
                 U32 ownTeamID = _entity->getTeamID();

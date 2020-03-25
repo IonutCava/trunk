@@ -196,7 +196,7 @@ class WarSceneAIProcessor : public AIProcessor {
     bool processData(const U64 deltaTimeUS);
     bool processInput(const U64 deltaTimeUS);
     bool update(const U64 deltaTimeUS, NPC* unitRef = nullptr);
-    void processMessage(AIEntity& sender, AIMsg msg, const AnyParam& msg_content);
+    void processMessage(AIEntity& sender, AIMsg msg, const std::any& msg_content);
 
     static void registerFlags(SceneGraphNode* flag1, SceneGraphNode* flag2) {
         _globalWorkingMemory._flags[0].value(flag1);

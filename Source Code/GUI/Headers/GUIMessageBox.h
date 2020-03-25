@@ -44,7 +44,7 @@ class EventArgs;
 
 namespace Divide {
 
-class GUIMessageBox : public GUIElement {
+class GUIMessageBox : public GUIElementBase<GUIType::GUI_MESSAGE_BOX> {
     friend class GUIInterface;
     friend class SceneGUIElements;
 
@@ -61,21 +61,20 @@ class GUIMessageBox : public GUIElement {
     void setOffset(const vec2<I32>& offsetFromCentre);
     void setMessageType(MessageType type);
     inline void show() {
-        setActive(true);
-        setVisible(true);
+        active(true);
+        visible(true);
     }
 
    protected:
-    GUIMessageBox(U64 guiID,
-                  const stringImpl& name,
+    GUIMessageBox(const stringImpl& name,
                   const stringImpl& title,
                   const stringImpl& message,
                   const vec2<I32>& offsetFromCentre = vec2<I32>(0),
                   CEGUI::Window* parent = nullptr);
     ~GUIMessageBox();
 
-    void setVisible(const bool visible) override;
-    void setActive(const bool active) override;
+    void visible(const bool& visible) noexcept override;
+    void active(const bool& active) noexcept override;
 
    protected:
     vec2<I32> _offsetFromCentre;

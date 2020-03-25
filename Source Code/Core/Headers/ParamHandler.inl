@@ -80,7 +80,7 @@ inline void ParamHandler::setParam(HashType nameID, const T& value) {
         bool result = hashAlg::emplace(_params, nameID, value).second;
         DIVIDE_ASSERT(result,"ParamHandler error: can't add specified value to map!");
     } else {
-            it->second = AnyParam(value);
+        it->second = value;
     }
 }
 

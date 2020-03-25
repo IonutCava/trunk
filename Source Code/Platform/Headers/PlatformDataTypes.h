@@ -62,7 +62,11 @@ using D128 = long double;
 
 using bufferPtr = void*;
 
-using Byte = int8_t;
+#if !defined(CPP_17_SUPPORT)
+enum class Byte : U8 {};
+#else
+using Byte = std::byte;
+#endif
 
 typedef union {
     U32 i;

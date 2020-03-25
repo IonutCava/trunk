@@ -38,12 +38,11 @@
 
 namespace Divide {
 
-class GUIText : public GUIElement, public TextElement {
+class GUIText : public GUIElementBase<GUIType::GUI_TEXT>, public TextElement {
     friend class GUIInterface;
 
    public:
-    GUIText(U64 guiID,
-            const stringImpl& name,
+    GUIText(const stringImpl& name,
             const stringImpl& text,
             bool  multiLine,
             const RelativePosition2D& relativePosition,

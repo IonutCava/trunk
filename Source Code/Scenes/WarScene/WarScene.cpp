@@ -76,7 +76,7 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
             selectionText.append(it->name().c_str());
         }
 
-        _GUI->modifyText(_ID("entityState"), selectionText.c_str(), true);
+        _GUI->modifyText("entityState", selectionText.c_str(), true);
     });
 
     _runCount = 0;
@@ -103,16 +103,16 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         F32 frameTime = 0.f;
         Time::ApplicationTimer::instance().getFrameRateAndTime(fps, frameTime);
 
-        _GUI->modifyText(_ID("fpsDisplay"),
+        _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f. FrameIndex : %d",
                                             fps,
                                             frameTime,
                                             _context.gfx().getFrameCount()), false);
-        _GUI->modifyText(_ID("RenderBinCount"),
+        _GUI->modifyText("RenderBinCount",
             Util::StringFormat("Number of items in Render Bin: %d.",
                                _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
 
-        _GUI->modifyText(_ID("camPosition"),
+        _GUI->modifyText("camPosition",
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
                                             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw), false);
 
@@ -133,7 +133,7 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
             }
         }
         if (!selectionText.empty()) {
-            _GUI->modifyText(_ID("entityState"), selectionText.c_str(), true);
+            _GUI->modifyText("entityState", selectionText.c_str(), true);
         }
     }
 
@@ -147,7 +147,7 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         U32 limitTimeSeconds = 0;
         U32 limitTimeMilliseconds = 0;
 
-        _GUI->modifyText(_ID("scoreDisplay"),
+        _GUI->modifyText("scoreDisplay",
             Util::StringFormat("Score: A -  %d B - %d [Limit: %d]\nElapsed game time [ %d:%d:%d / %d:%d:%d]",
                                AI::WarSceneAIProcessor::getScore(0),
                                AI::WarSceneAIProcessor::getScore(1),
@@ -826,23 +826,23 @@ void WarScene::toggleCamera(InputParams param) {
 
 void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
 
-    GUIButton* btn = _GUI->addButton(_ID("Simulate"),
+    GUIButton* btn = _GUI->addButton("Simulate",
                                      "Simulate",
                                      pixelPosition(targetRenderViewport.sizeX - 220, 60),
                                      pixelScale(100, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) { startSimulation(btnGUID); });
 
-    btn = _GUI->addButton(_ID("ShaderReload"),
+    btn = _GUI->addButton("ShaderReload",
                           "Shader Reload",
                           pixelPosition(targetRenderViewport.sizeX - 220, 30),
                           pixelScale(100, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick,
                          [this](I64 btnID) { rebuildShaders(); });
 
-    btn = _GUI->addButton(_ID("TerrainMode"),
-                               "Terrain Mode Toggle",
-                               pixelPosition(targetRenderViewport.sizeX - 240, 90),
-                               pixelScale(120, 25));
+    btn = _GUI->addButton("TerrainMode",
+                          "Terrain Mode Toggle",
+                          pixelPosition(targetRenderViewport.sizeX - 240, 90),
+                          pixelScale(120, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick,
         [this](I64 btnID) { toggleTerrainMode(); });
 
@@ -877,7 +877,7 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                   "",
                   true);
 
-    _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
+    _infoBox = _GUI->addMsgBox("infoBox", "Info", "Blabla");
 
     // Add a first person camera
     Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);

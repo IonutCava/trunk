@@ -60,15 +60,6 @@ namespace Divide {
         pthread_setname_np(handle, threadName);
     }
 
-    bool createDirectory(const char* path) {
-        int ret = mkdir(path, 0777);
-        if (ret != 0) {
-            return errno == EEXIST;
-        }
-
-        return true;
-    }
-
     #include <sys/prctl.h>
     void setThreadName(const char* threadName) noexcept {
         prctl(PR_SET_NAME, threadName, 0, 0, 0);

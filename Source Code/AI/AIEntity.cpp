@@ -84,7 +84,7 @@ void AIEntity::unload() {
 
 void AIEntity::sendMessage(AIEntity& receiver,
                            AIMsg msg,
-                           const AnyParam& msg_content) {
+                           const std::any& msg_content) {
     
     if (getGUID() != receiver.getGUID()) {
         receiver.receiveMessage(*this, msg, msg_content);
@@ -93,13 +93,13 @@ void AIEntity::sendMessage(AIEntity& receiver,
 
 void AIEntity::receiveMessage(AIEntity& sender,
                               AIMsg msg,
-                              const AnyParam& msg_content) {
+                              const std::any& msg_content) {
     processMessage(sender, msg, msg_content);
 }
 
 void AIEntity::processMessage(AIEntity& sender,
                               AIMsg msg,
-                              const AnyParam& msg_content) {
+                              const std::any& msg_content) {
     assert(_processor);
     SharedLock r_lock(_updateMutex);
     _processor->processMessage(sender, msg, msg_content);

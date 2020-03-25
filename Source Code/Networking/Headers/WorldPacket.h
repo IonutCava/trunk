@@ -4,6 +4,8 @@
 #include "Core/Headers/ByteBuffer.h"
 #include "OPCodesTpl.h"
 
+#include <boost/serialization/vector.hpp>
+
 namespace Divide {
 
 class WorldPacket : public ByteBuffer {
@@ -49,7 +51,9 @@ class WorldPacket : public ByteBuffer {
     void serialize(Archive& ar, const unsigned int version) {
         ACKNOWLEDGE_UNUSED(version);
 
-        ar & boost::serialization::base_object<ByteBuffer>(*this);
+        ar & _rpos;
+        ar & _wpos;
+        ar & _storage;
         ar & m_opcode;
     }
 

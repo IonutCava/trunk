@@ -47,9 +47,9 @@ namespace Divide {
 class AudioDescriptor;
 TYPEDEF_SMART_POINTERS_FOR_TYPE(AudioDescriptor);
 
-class GUIButton : public GUIElement {
-    typedef DELEGATE<void, I64> ButtonCallback;
-    typedef DELEGATE<void, AudioDescriptor_ptr> AudioCallback;
+class GUIButton : public GUIElementBase<GUIType::GUI_BUTTON> {
+    using ButtonCallback = DELEGATE<void, I64>;
+    using AudioCallback = DELEGATE<void, AudioDescriptor_ptr>;
 
     friend class GUIInterface;
     friend class SceneGUIElements;
@@ -71,8 +71,8 @@ class GUIButton : public GUIElement {
     void setTooltip(const stringImpl& tooltipText) override;
     void setText(const stringImpl& text);
     void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
-    void setActive(const bool active) override;
-    void setVisible(const bool visible) override;
+    void active(const bool& active) noexcept override;
+    void visible(const bool& visible) noexcept override;
 
     void setEventCallback(Event event, ButtonCallback callback);
     void setEventSound(Event event, AudioDescriptor_ptr sound);
@@ -82,8 +82,7 @@ class GUIButton : public GUIElement {
     static bool soundCallback(const AudioCallback& cbk);
 
    protected:
-    GUIButton(U64 guiID,
-              const stringImpl& name,
+    GUIButton(const stringImpl& name,
               const stringImpl& text,
               const stringImpl& guiScheme, 
               const RelativePosition2D& offset,

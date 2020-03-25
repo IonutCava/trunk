@@ -21,12 +21,6 @@
 
 #include "Platform/Headers/ByteConverter.h"
 
-namespace boost {
-    namespace serialization {
-        class access;
-    };
-};
-
 namespace Divide {
 
 class ByteBufferException {
@@ -50,8 +44,8 @@ struct Unused {
 
 class ByteBuffer {
    public:
-    const static U8 BUFFER_FORMAT_VERSION = 10;
-    const static size_t DEFAULT_SIZE = 0x1000;
+    static const Byte BUFFER_FORMAT_VERSION { 10u };
+    static const size_t DEFAULT_SIZE { 0x1000 };
 
     // constructor
     ByteBuffer();
@@ -134,12 +128,6 @@ class ByteBuffer {
     /// pointer and etc) with hard detection problem
     template <typename T>
     void append(const T& value);
-
-   private:
-    friend class boost::serialization::access;
-
-    template <typename Archive>
-    void serialize(Archive &ar, const U32 version);
 
    protected:
     size_t _rpos, _wpos;

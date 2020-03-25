@@ -55,13 +55,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #   endif
 #endif 
 
-#if !defined(CPP_14_SUPPORT)
-#error "Divide Framework requires C++14 support at a minimum!."
+// As of March 2020
+#if !defined(CPP_17_SUPPORT) && !defined(ThirdPartyLibs)
+#error "Divide Framework requires C++17 support at a minimum!."
 #endif 
 
-#if defined(CPP_17_SUPPORT)
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
-#endif
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -107,42 +106,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <list>
 #include <set>
 #include <new>
-
 //#include <gsl/gsl>
 
-#if !defined(CPP_17_SUPPORT)
-#include "Core/Headers/cdigginsAny.h"
-namespace cd = ::cdiggins;
-using AnyParam = cd::any;
-template <typename T>
-FORCE_INLINE T any_cast(const AnyParam& param) {
-    return param.constant_cast<T>();
-}
-#else
+#if defined(CPP_17_SUPPORT)
 #include <any>
-using AnyParam = std::any;
-template <typename T>
-FORCE_INLINE T any_cast(const AnyParam& param) {
-    return std::any_cast<T>(param);
-}
 #endif
-
-namespace boost {
-    namespace asio {
-        class thread_pool;
-    };
-};
 
 #include <boost/intrusive/slist.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread/locks.hpp>
 #include <boost/functional/factory.hpp>
-//ToDo: Replace this with either the C++17 filesystem lib or with custom stuff in PlatformDefines
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ip/udp.hpp>
@@ -150,7 +123,6 @@ namespace boost {
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/strand.hpp>
-#include <boost/serialization/vector.hpp>
 #pragma warning(push)
 #pragma warning(disable:4458)
 #pragma warning(disable:4706)

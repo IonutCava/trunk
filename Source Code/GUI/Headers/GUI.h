@@ -87,20 +87,19 @@ public:
     /// Main update call
     void update(const U64 deltaTimeUS);
 
-    template<typename T = GUIElement>
-    inline T* getGUIElement(I64 sceneID, U64 elementName) {
-        static_assert(std::is_base_of<GUIElement, T>::value,
-            "getGuiElement error: Target is not a valid GUI item");
-
-        return static_cast<T*>(getGUIElementImpl(sceneID, elementName, getTypeEnum<T>()));
+    template <typename T>
+    typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
+    getGUIElement(I64 sceneID, U64 elementName) {
+        return static_cast<T*>(getGUIElementImpl(sceneID, elementName, T::Type));
     }
 
-    template<typename T = GUIElement>
-    inline T* getGUIElement(I64 sceneID, I64 elementID) {
+    template <typename T>
+    typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
+    getGUIElement(I64 sceneID, I64 elementID) {
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
 
-        return static_cast<T*>(getGUIElementImpl(sceneID, elementID, getTypeEnum<T>()));
+        return static_cast<T*>(getGUIElementImpl(sceneID, elementID, T::Type));
     }
 
     /// Get a pointer to our console window

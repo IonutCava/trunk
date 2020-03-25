@@ -58,65 +58,50 @@ enum class GUIType : U8 {
     COUNT
 };
 
-template<typename T = GUIElement>
-GUIType getTypeEnum() {
-    static_assert(std::is_base_of<GUIElement, T>::value,
-        "getGuiElement error: Target is not a valid GUI item");
-
-    if (std::is_same<T, GUIText>::value) {
-        return GUIType::GUI_TEXT;
-    } else if (std::is_same < T, GUIButton>::value) {
-        return GUIType::GUI_BUTTON;
-    } else if (std::is_same < T, GUIFlash>::value) {
-        return GUIType::GUI_FLASH;
-    } else if (std::is_same < T, GUIConsole>::value) {
-        return GUIType::GUI_CONSOLE;
-    } else if (std::is_same < T, GUIMessageBox>::value) {
-        return GUIType::GUI_MESSAGE_BOX;
-    } 
-    //else if (std::is_same < T, GUIConfirmDialog::value) {
-    //    return GUIType::GUI_CONFIRM_DIALOG;
-    //}
-
-    return GUIType::COUNT;
-}
-
 class GFXDevice;
 class RenderStateBlock;
 struct SizeChangeParams;
+
+template<GUIType TypeEnum>
+struct TypeHelper {
+    static const GUIType STATIC_GUI_TYPE_ID = TypeEnum;
+};
+
 class GUIElement : public GUIDWrapper {
     friend class GUI;
-
-   public:
-    GUIElement(U64 guiID, const stringImpl& name, CEGUI::Window* const parent, const GUIType& type);
-    virtual ~GUIElement();
+  public:
+    GUIElement(const stringImpl& name, CEGUI::Window* const parent);
+    virtual ~GUIElement() = default;
     
-    inline const stringImpl& name() const { return _name; }
-    inline const GUIType getType() const { return _guiType; }
-    inline const bool isActive() const { return _active; }
-    virtual const bool isVisible() const { return _visible; }
-
-    inline  void name(const stringImpl& name) { _name = name; }
-    virtual void setVisible(const bool visible) { _visible = visible; }
-    virtual void setActive(const bool active) { _active = active; }
-
-    inline void addChildElement(GUIElement* child) {
-        ACKNOWLEDGE_UNUSED(child);
-    }
-
     virtual void setTooltip(const stringImpl& tooltipText) {
         ACKNOWLEDGE_UNUSED(tooltipText);
     }
 
-   protected:
-    GUIType _guiType;
-    CEGUI::Window* _parent;
+    PROPERTY_RW(stringImpl, name, "");
 
-   private:
-    stringImpl _name;
-    bool _visible;
-    bool _active;
-    U64  _guiID;
+    VIRTUAL_PROPERTY_RW(bool, visible, true);
+    VIRTUAL_PROPERTY_RW(bool, active, false);
+
+    static constexpr GUIType Type = GUIType::COUNT;
+
+    virtual GUIType type() const noexcept { return Type; }
+
+  protected:
+    CEGUI::Window* _parent;
+};
+
+template<GUIType EnumVal>
+struct GUIElementBase : public GUIElement {
+
+    GUIElementBase(const stringImpl& name, CEGUI::Window* const parent)
+        : GUIElement(name, parent)
+    {}
+
+    virtual ~GUIElementBase() = default;
+
+    static constexpr GUIType Type = EnumVal;
+
+    GUIType type() const noexcept override { return Type; }
 };
 
 };  // namespace Divide

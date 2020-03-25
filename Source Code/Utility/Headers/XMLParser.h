@@ -89,7 +89,7 @@ bool loadFromXML(IXMLSerializable& object, const char* file);
 bool saveToXML(const IXMLSerializable& object, const char* file);
 
 /// Child Functions
-void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
+void loadDefaultKeyBindings(const stringImpl &file, Scene* scene);
 
 
 struct SceneNode {

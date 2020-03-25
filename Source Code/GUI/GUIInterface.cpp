@@ -29,8 +29,8 @@ GUIInterface::GUIInterface(GUI& context)
 GUIInterface::~GUIInterface()
 {
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
-        for (GUIMap::value_type& it : _guiElements[i]) {
-            MemoryManager::DELETE(it.second.first);
+        for (auto [nameHash, entry] : _guiElements[i]) {
+            MemoryManager::DELETE(entry.first);
         }
     }
 }
@@ -42,15 +42,15 @@ void GUIInterface::onLanguageChange(const char* newLanguage) {
 void GUIInterface::addElement(U64 id, GUIElement* element) {
     assert(Runtime::isMainThread());
 
-    U8 typeIndex = to_U8(element->getType());
+    U8 typeIndex = to_U8(element->type());
     GUIMap& targetMap = _guiElements[typeIndex];
 
-    GUIMap::iterator it = targetMap.find(id);
+    const GUIMap::iterator it = targetMap.find(id);
     if (it != std::end(targetMap)) {
         MemoryManager::SAFE_UPDATE(it->second.first, element);
-        it->second.second = element ? element->isVisible() : false;
+        it->second.second = element ? element->visible() : false;
     } else {
-        hashAlg::insert(targetMap, id, std::make_pair(element, element ? element->isVisible() : false));
+        hashAlg::insert(targetMap, id, std::make_pair(element, element ? element->visible() : false));
     }
 }
 
@@ -58,14 +58,14 @@ GUIElement* GUIInterface::getGUIElementImpl(U64 elementName, GUIType type) const
     GUIElement* ret = nullptr;
     if (type == GUIType::COUNT) {
         for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
-            GUIMap::const_iterator it = _guiElements[i].find(elementName);
+            const GUIMap::const_iterator it = _guiElements[i].find(elementName);
             if (it != std::cend(_guiElements[i])) {
                 ret = it->second.first;
                 break;
             }
         }
     } else {
-        GUIMap::const_iterator it = _guiElements[to_U32(type)].find(elementName);
+        const GUIMap::const_iterator it = _guiElements[to_U32(type)].find(elementName);
         if (it != std::cend(_guiElements[to_U32(type)])) {
             ret = it->second.first;
         }
@@ -102,13 +102,14 @@ GUIElement* GUIInterface::getGUIElementImpl(I64 elementID, GUIType type) const {
     return ret;
 }
 
-GUIButton* GUIInterface::addButton(U64 guiID,
-                                   const stringImpl& name,
+GUIButton* GUIInterface::addButton(const char* name,
                                    const stringImpl& text,
                                    const RelativePosition2D& position,
                                    const RelativeScale2D& size,
                                    const stringImpl& rootSheetID) {
-    assert(getGUIElement(guiID) == nullptr);
+    const U64 guiID = _ID(name);
+
+    assert(getGUIElement<GUIButton>(guiID) == nullptr);
 
     CEGUI::Window* parent = _context->getCEGUIContext().getRootWindow();
     if (!rootSheetID.empty()) {
@@ -121,8 +122,7 @@ GUIButton* GUIInterface::addButton(U64 guiID,
     beepSound.flag(false);
     AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->parent().resourceCache(), beepSound);
 
-    GUIButton* btn = MemoryManager_NEW GUIButton(guiID,
-                                                 name,
+    GUIButton* btn = MemoryManager_NEW GUIButton(name,
                                                  text,
                                                  _context->guiScheme(),
                                                  position,
@@ -136,15 +136,15 @@ GUIButton* GUIInterface::addButton(U64 guiID,
     return btn;
 }
 
-GUIMessageBox* GUIInterface::addMsgBox(U64 guiID,
-                                       const stringImpl& name,
+GUIMessageBox* GUIInterface::addMsgBox(const char* name,
                                        const stringImpl& title,
                                        const stringImpl& message,
                                        const vec2<I32>& offsetFromCentre) {
-    assert(getGUIElement(guiID) == nullptr);
+    const U64 guiID = _ID(name);
 
-    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(guiID,
-                                                         name,
+    assert(getGUIElement<GUIMessageBox>(guiID) == nullptr);
+
+    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(name,
                                                          title,
                                                          message,
                                                          offsetFromCentre,
@@ -154,18 +154,18 @@ GUIMessageBox* GUIInterface::addMsgBox(U64 guiID,
     return box;
 }
 
-GUIText* GUIInterface::addText(U64 guiID,
-                               const stringImpl& name,
+GUIText* GUIInterface::addText(const char* name,
                                const RelativePosition2D& position,
                                const stringImpl& font,
                                const UColour4& colour,
                                const stringImpl& text,
                                bool multiLine,
                                U8 fontSize) {
-    assert(getGUIElement(guiID) == nullptr);
+    const U64 guiID = _ID(name);
 
-    GUIText* t = MemoryManager_NEW GUIText(guiID,
-                                           name,
+    assert(getGUIElement<GUIText>(guiID) == nullptr);
+
+    GUIText* t = MemoryManager_NEW GUIText(name,
                                            text,
                                            multiLine,
                                            position,
@@ -178,23 +178,25 @@ GUIText* GUIInterface::addText(U64 guiID,
     return t;
 }
 
-GUIFlash* GUIInterface::addFlash(U64 guiID,
-                                 const stringImpl& name,
+GUIFlash* GUIInterface::addFlash(const char* name,
                                  stringImpl movie,
                                  const RelativePosition2D& position,
                                  const RelativeScale2D& size) {
     ACKNOWLEDGE_UNUSED(position);
     ACKNOWLEDGE_UNUSED(size);
 
-    assert(getGUIElement(guiID) == nullptr);
+    const U64 guiID = _ID(name);
+    assert(getGUIElement<GUIFlash>(guiID) == nullptr);
     
-    GUIFlash* flash = MemoryManager_NEW GUIFlash(guiID, name, _context->rootSheet());
+    GUIFlash* flash = MemoryManager_NEW GUIFlash(name, _context->rootSheet());
     addElement(guiID, flash);
 
     return flash;
 }
 
-GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text, bool multiLine) {
+GUIText* GUIInterface::modifyText(const char* name, const stringImpl& text, bool multiLine) {
+    const U64 guiID = _ID(name);
+
     GUIMap::iterator it = _guiElements[to_base(GUIType::GUI_TEXT)].find(guiID);
 
     if (it == std::cend(_guiElements[to_base(GUIType::GUI_TEXT)])) {

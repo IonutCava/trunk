@@ -120,7 +120,6 @@ extern void getWindowHandle(void* window, WindowHandle& handleOut) noexcept;
 
 extern void setThreadName(std::thread* thread, const char* threadName) noexcept;
 extern void setThreadName(const char* threadName) noexcept;
-extern bool createDirectory(const char* path);
 
 //ref: http://stackoverflow.com/questions/1528298/get-path-of-executable
 extern FileWithPath getExecutableLocation(I32 argc, char** argv);
@@ -836,6 +835,15 @@ public: \
 public: \
     FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
 
+#define VIRTUAL_PROPERTY_GET_SET(Type, Name) \
+public: \
+    virtual void Name(const Type& val) noexcept { _##Name = val; } \
+    virtual const Type& Name() const noexcept { return _##Name; }
+
+#define VIRTUAL_PROPERTY_GET(Type, Name) \
+public: \
+    virtual const Type& Name() const noexcept { return _##Name; }
+
 #define POINTER_GET_SET(Type, Name) \
 public: \
     FORCE_INLINE void Name(Type* const val) noexcept { _##Name = val; } \
@@ -847,11 +855,14 @@ public: \
 
 #define PROPERTY_R_1_ARGS(Type) 
 #define PROPERTY_RW_1_ARGS(Type) 
+#define VIRTUAL_PROPERTY_R_1_ARGS(Type) 
+#define VIRTUAL_PROPERTY_RW_1_ARGS(Type)
 #define POINTER_R_1_ARGS(Type) 
 #define POINTER_RW_1_ARGS(Type) 
 #define REFERENCE_R_1_ARGS(Type) 
 #define REFERENCE_RW_1_ARGS(Type) 
 
+//------------- PROPERTY_RW
 #define PROPERTY_R_3_ARGS(Type, Name, Val) \
 protected: \
     Type _##Name = Val; \
@@ -873,7 +884,29 @@ protected: \
     Type _##Name; \
     PROPERTY_GET_SET(Type, Name)
 
+//------------------- VIRTUAL_PROPERTY_RW
+#define VIRTUAL_PROPERTY_R_3_ARGS(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    VIRTUAL_PROPERTY_GET(Type, Name)
 
+#define VIRTUAL_PROPERTY_RW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    VIRTUAL_PROPERTY_GET_SET(Type, Name)
+
+
+#define VIRTUAL_PROPERTY_R_2_ARGS(Type, Name) \
+protected: \
+    Type _##Name; \
+    VIRTUAL_PROPERTY_GET(Type, Name)
+
+#define VIRTUAL_PROPERTY_RW_2_ARGS(Type, Name) \
+protected: \
+    Type _##Name; \
+    VIRTUAL_PROPERTY_GET_SET(Type, Name)
+
+//-------------------- POINTER_RW
 #define POINTER_R_3_ARGS(Type, Name, Val) \
 protected: \
     Type* _##Name = Val; \
@@ -895,6 +928,7 @@ protected: \
     Type* _##Name; \
     POINTER_GET_SET(Type, Name)
 
+//-------------------- REFERENCE_RW
 #define REFERENCE_R_3_ARGS(Type, Name, Val) \
 protected: \
     Type& _##Name = Val; \
@@ -919,6 +953,9 @@ protected: \
 #define ___DETAIL_PROPERTY_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_R_3_ARGS, PROPERTY_R_2_ARGS, PROPERTY_R_1_ARGS, ))
 #define ___DETAIL_PROPERTY_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_RW_3_ARGS, PROPERTY_RW_2_ARGS, PROPERTY_RW_1_ARGS, ))
 
+#define ___DETAIL_VIRTUAL_PROPERTY_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, VIRTUAL_PROPERTY_R_3_ARGS, VIRTUAL_PROPERTY_R_2_ARGS, VIRTUAL_PROPERTY_R_1_ARGS, ))
+#define ___DETAIL_VIRTUAL_PROPERTY_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, VIRTUAL_PROPERTY_RW_3_ARGS, VIRTUAL_PROPERTY_RW_2_ARGS, VIRTUAL_PROPERTY_RW_1_ARGS, ))
+
 #define ___DETAIL_POINTER_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_R_3_ARGS, POINTER_R_2_ARGS, POINTER_R_1_ARGS, ))
 #define ___DETAIL_POINTER_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_RW_3_ARGS, POINTER_RW_2_ARGS, POINTER_RW_1_ARGS, ))
 
@@ -930,6 +967,12 @@ protected: \
 /// RW properties are no better (actully a little worse) than just making the member public, but we need it to keep the same interface with read-only properties
 /// A _R can become a _RW and vice-versa depending on needs, but that shouldn't affect other parts of the implementation
 #define PROPERTY_RW(...) EXP(___DETAIL_PROPERTY_RW(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access but protected write access
+#define VIRTUAL_PROPERTY_R(...) EXP(___DETAIL_VIRTUAL_PROPERTY_R(__VA_ARGS__)(__VA_ARGS__))
+/// RW properties are no better (actully a little worse) than just making the member public, but we need it to keep the same interface with read-only properties
+/// A _R can become a _RW and vice-versa depending on needs, but that shouldn't affect other parts of the implementation
+#define VIRTUAL_PROPERTY_RW(...) EXP(___DETAIL_VIRTUAL_PROPERTY_RW(__VA_ARGS__)(__VA_ARGS__))
 
 /// Convenience method to add a class member with public read access but protected write access
 #define POINTER_R(...) EXP(___DETAIL_POINTER_R(__VA_ARGS__)(__VA_ARGS__))

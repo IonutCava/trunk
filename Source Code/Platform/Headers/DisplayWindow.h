@@ -205,6 +205,8 @@ public:
     inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void clearEventlisteners(WindowEvent windowEvent);
 
+    void refreshDrawableSize();
+
     void notifyListeners(WindowEvent event, const WindowEventArgs& args);
 
     inline void destroyCbk(const DELEGATE<void>& destroyCbk);

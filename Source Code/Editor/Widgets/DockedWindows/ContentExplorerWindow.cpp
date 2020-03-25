@@ -12,7 +12,7 @@
 
 #include <imgui/addons/imguifilesystem/imguifilesystem.h>
 
-using namespace boost::filesystem;
+#include <filesystem>
 
 namespace Divide {
     namespace {
@@ -133,16 +133,16 @@ namespace Divide {
     }
 
     void ContentExplorerWindow::getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut) {
-        path p(directoryPath.c_str());
+        std::filesystem::path p(directoryPath.c_str());
         if (is_directory(p)) {
             directoryOut._path = p.filename().generic_string();
-            for (auto&& x : directory_iterator(p)) {
-                if (is_regular_file(x.path())) {
+            for (auto&& x : std::filesystem::directory_iterator(p)) {
+                if (std::filesystem::is_regular_file(x.path())) {
                     if (IsValidFile(x.path().generic_string().c_str())) {
                         directoryOut._files.push_back({ directoryOut._path, x.path().filename().generic_string() });
 
                     }
-                } else if (is_directory(x.path())) {
+                } else if (std::filesystem::is_directory(x.path())) {
                     directoryOut._children.push_back(std::make_shared<Directory>());
                     getDirectoryStructureForPath(x.path().generic_string().c_str(), *directoryOut._children.back());
                 }

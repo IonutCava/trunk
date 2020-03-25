@@ -133,6 +133,7 @@ struct Paths {
 
 bool pathExists(const char* filePath);
 bool fileExists(const char* filePathAndName);
+bool createDirectory(const char* path);
 bool createFile(const char* filePathAndName, bool overwriteExisting);
 bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
 

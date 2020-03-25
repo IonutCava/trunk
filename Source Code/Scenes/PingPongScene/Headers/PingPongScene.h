@@ -52,7 +52,7 @@ class PingPongScene : public Scene {
     U16 registerInputActions() override;
 
    private:
-    void test(const Task& parentTask, AnyParam a, CallbackParam b);
+    void test(const Task& parentTask, std::any a, CallbackParam b);
     void serveBall(I64 btnGUID);
     void resetGame();
 

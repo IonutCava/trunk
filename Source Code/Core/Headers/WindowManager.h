@@ -86,12 +86,15 @@ public:
     WindowManager() noexcept;
     ~WindowManager();
 
+    // Can be called at startup directly
     ErrorCode init(PlatformContext& context,
                    RenderAPI renderingAPI,
                    const vec2<I16>& initialPosition,
                    const vec2<U16>& initialSize,
                    WindowMode windowMode,
                    I32 targetDisplayIndex);
+    // Needs to be called after the graphics system has fully initialized
+    void postInit();
 
     void close();
     void hideAll();

@@ -246,7 +246,7 @@ void glBufferImpl::invalidateData(size_t offsetInBytes, size_t rangeInBytes) {
 }
 
 void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
-    const vector<Byte> newData(rangeInBytes, 0);
+    const vector<Byte> newData(rangeInBytes, Byte{ 0 });
     writeData(offsetInBytes, rangeInBytes, newData.data());
 }
 

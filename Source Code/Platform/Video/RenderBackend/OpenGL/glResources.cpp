@@ -579,9 +579,9 @@ void glTexturePool::onFrameEndInternal(poolImpl & impl) {
         U32 newIndex = 0;
         for (U32 i = 0; i < entryCount; ++i) {
             if (impl._lifeLeft[i] == 0 && impl._usageMap[i]._a.load() == State::CLEAN) {
-                for (auto& it : impl._cache) {
-                    if (it.second == impl._handles[i]) {
-                        it.second = poolImpl::INVALID_IDX;
+                for (auto& [hash, handle] : impl._cache) {
+                    if (handle == impl._handles[i]) {
+                        handle = poolImpl::INVALID_IDX;
                     }
                 }
                 impl._handles[i] = impl._tempBuffer[newIndex++];
@@ -593,16 +593,15 @@ void glTexturePool::onFrameEndInternal(poolImpl & impl) {
 }
 
 void glTexturePool::destroy() {
-    for (auto& it : _pools) {
-        poolImpl& impl = it.second;
+    for (auto& [type, impl] : _pools) {
 
         const U32 entryCount = to_U32(impl._tempBuffer.size());
         glDeleteTextures((GLsizei)entryCount, impl._handles.data());
         std::memset(impl._handles.data(), 0, sizeof(GLuint) * entryCount);
         std::memset(impl._lifeLeft.data(), 0, sizeof(U32) * entryCount);
 
-        for (auto& it2 : impl._usageMap) {
-            it2._a.store(State::CLEAN);
+        for (auto& state : impl._usageMap) {
+            state._a.store(State::CLEAN);
         }
         impl._cache.clear();
     }
@@ -613,7 +612,7 @@ GLuint glTexturePool::allocate(GLenum type, bool retry) {
 }
 
 std::pair<GLuint, bool> glTexturePool::allocate(size_t hash, GLenum type, bool retry) {
-    const auto& it = _pools.find(type);
+    auto it = _pools.find(type);
     assert(it != _pools.cend());
 
     poolImpl& impl = it->second;

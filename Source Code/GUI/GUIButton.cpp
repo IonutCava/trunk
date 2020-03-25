@@ -11,14 +11,13 @@ namespace Divide {
 
 GUIButton::AudioCallback GUIButton::s_soundCallback;
 
-GUIButton::GUIButton(U64 guiID,
-                     const stringImpl& name,
+GUIButton::GUIButton(const stringImpl& name,
                      const stringImpl& text,
                      const stringImpl& guiScheme,
                      const RelativePosition2D& offset,
                      const RelativeScale2D& size,
                      CEGUI::Window* parent)
-    : GUIElement(guiID, name, parent, GUIType::GUI_BUTTON),
+    : GUIElementBase(name, parent),
       _btnWindow(nullptr)
 {
     
@@ -82,7 +81,7 @@ GUIButton::GUIButton(U64 guiID,
                                 }));
     _parent->addChild(_btnWindow);
 
-    setActive(true);
+    active(true);
 }
 
 GUIButton::~GUIButton()
@@ -91,17 +90,17 @@ GUIButton::~GUIButton()
     _parent->removeChild(_btnWindow);
 }
 
-void GUIButton::setActive(const bool active) {
-    if (isActive() != active) {
-        GUIElement::setActive(active);
-        _btnWindow->setEnabled(active);
+void GUIButton::active(const bool& state) noexcept {
+    if (GUIElement::active() != state) {
+        GUIElement::active(state);
+        _btnWindow->setEnabled(state);
     }
 }
 
-void GUIButton::setVisible(const bool visible) {
-    if (isVisible() != visible) {
-        GUIElement::setVisible(visible);
-        _btnWindow->setVisible(visible);
+void GUIButton::visible(const bool& state) noexcept {
+    if (GUIElement::visible() != state) {
+        GUIElement::visible(state);
+        _btnWindow->setVisible(state);
     }
 }
 
