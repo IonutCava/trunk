@@ -25,8 +25,7 @@ XMLEntryData::~XMLEntryData()
 bool XMLEntryData::fromXML(const char* xmlFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
 
-    LOAD_FILE(xmlFile);
-    if (FILE_VALID()) {
+    if (LoadSave.read(xmlFile)) {
         GET_PARAM(scriptLocation);
         GET_PARAM(config);
         GET_PARAM(startupScene);
@@ -40,15 +39,18 @@ bool XMLEntryData::fromXML(const char* xmlFile) {
 }
 
 bool XMLEntryData::toXML(const char* xmlFile) const {
-    PREPARE_FILE_FOR_WRITING(xmlFile);
-    PUT_PARAM(scriptLocation);
-    PUT_PARAM(config);
-    PUT_PARAM(startupScene);
-    PUT_PARAM(scenesLocation);
-    PUT_PARAM(assetsLocation);
-    PUT_PARAM(serverAddress);
-    SAVE_FILE(xmlFile);
-    return true;
+    if (LoadSave.prepareSaveFile(xmlFile)) {
+        PUT_PARAM(scriptLocation);
+        PUT_PARAM(config);
+        PUT_PARAM(startupScene);
+        PUT_PARAM(scenesLocation);
+        PUT_PARAM(assetsLocation);
+        PUT_PARAM(serverAddress);
+        LoadSave.write();
+        return true;
+    }
+
+    return false;
 }
 
 }; //namespace Divide

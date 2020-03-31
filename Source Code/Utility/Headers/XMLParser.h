@@ -46,34 +46,36 @@ FWD_DECLARE_MANAGED_CLASS(Material);
 
 namespace XML {
 
+namespace detail {
+    struct LoadSave {
+        bool _saveFileOK = false;
+        stringImpl _loadPath = "";
+
+        mutable stringImpl _savePath = "";
+        mutable boost::property_tree::iptree XmlTree;
+
+        bool read(const stringImpl& path);
+        bool prepareSaveFile(const stringImpl& path) const;
+        void write() const;
+    };
+};
+
 #ifndef GET_PARAM
-#define LOAD_FILE(X) boost::property_tree::iptree pt; \
-                     read_xml(X, pt);
-
-#define PREPARE_FILE_FOR_WRITING(X) boost::property_tree::iptree pt; \
-                                    createFile(X, true);
-
-#define SAVE_FILE(X) write_xml(X, \
-                               pt, \
-                               std::locale(), \
-                               boost::property_tree::xml_writer_make_settings<boost::property_tree::iptree::key_type>('\t', 1));
-
-#define FILE_VALID() (!pt.empty())
 #define CONCAT(first, second) first second
+
 #define GET_PARAM(X) GET_TEMP_PARAM(X, X)
-#define GET_TEMP_PARAM(X, TEMP) TEMP = pt.get(TO_STRING(X), TEMP)
+
+#define GET_TEMP_PARAM(X, TEMP) \
+    TEMP = LoadSave.XmlTree.get(TO_STRING(X), TEMP)
+
 #define GET_PARAM_ATTRIB(X, Y) \
-    X.Y = pt.get(CONCAT(CONCAT(TO_STRING(X), \
-                               ".<xmlattr>."),\
-                        TO_STRING(Y)), \
-                 X.Y)
+    X.Y = LoadSave.XmlTree.get(CONCAT(CONCAT(TO_STRING(X), ".<xmlattr>."), TO_STRING(Y)), X.Y)
 
 #define PUT_PARAM(X) PUT_TEMP_PARAM(X, X)
-#define PUT_TEMP_PARAM(X, TEMP) pt.put(TO_STRING(X), TEMP);
-#define PUT_PARAM_ATTRIB(X, Y) pt.put(CONCAT(CONCAT(TO_STRING(X), \
-                                                    ".<xmlattr>."),\
-                                              TO_STRING(Y)), \
-                                      X.Y)
+#define PUT_TEMP_PARAM(X, TEMP) \
+    LoadSave.XmlTree.put(TO_STRING(X), TEMP);
+#define PUT_PARAM_ATTRIB(X, Y) \
+    LoadSave.XmlTree.put(CONCAT(CONCAT(TO_STRING(X), ".<xmlattr>."), TO_STRING(Y)), X.Y)
 #endif
 
 class IXMLSerializable {
@@ -83,6 +85,9 @@ protected:
 
     virtual bool fromXML(const char* xmlFile) = 0;
     virtual bool toXML(const char* xmlFile) const = 0;
+
+protected:
+    XML::detail::LoadSave LoadSave;
 };
 
 bool loadFromXML(IXMLSerializable& object, const char* file);

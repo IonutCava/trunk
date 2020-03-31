@@ -37,6 +37,26 @@ const ptree& empty_ptree() {
 }
 }
 
+namespace detail {
+    bool LoadSave::read(const stringImpl& path) {
+        _loadPath = path;
+        read_xml(_loadPath.c_str(), XmlTree, boost::property_tree::xml_parser::trim_whitespace);
+        return !XmlTree.empty();
+    }
+
+    bool LoadSave::prepareSaveFile(const stringImpl& path) const {
+        _savePath = path;
+        return createFile(_savePath.c_str(), true);
+    }
+
+    void LoadSave::write() const {
+        write_xml(_savePath.c_str(),
+            XmlTree,
+            std::locale(),
+            boost::property_tree::xml_writer_make_settings<boost::property_tree::iptree::key_type>('\t', 1));
+    }
+};
+
 void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
     constexpr std::pair<PressReleaseActions::Action, const char*> actionNames[10] = {
         {PressReleaseActions::Action::PRESS, "actionDown"},

@@ -41,7 +41,9 @@ namespace Divide {
 class Configuration : public XML::IXMLSerializable {
 public:
     Configuration();
-    ~Configuration();
+    ~Configuration() = default;
+
+
 
 protected:
     bool fromXML(const char* xmlFile) override;

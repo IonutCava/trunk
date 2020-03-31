@@ -77,7 +77,7 @@ bool fileExists(const char* filePathAndName) {
 
 bool createFile(const char* filePathAndName, bool overwriteExisting) {
     if (overwriteExisting && fileExists(filePathAndName)) {
-        return std::ifstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
+        return std::ofstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
     }
 
     const SysInfo& systemInfo = const_sysInfo();

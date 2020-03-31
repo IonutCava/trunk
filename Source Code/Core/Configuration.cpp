@@ -87,14 +87,9 @@ Configuration::Configuration() : XML::IXMLSerializable()
     defaultShadersLocation = "shaders/";
 }
 
-Configuration::~Configuration()
-{
-}
-
 bool Configuration::fromXML(const char* xmlFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), xmlFile);
-    LOAD_FILE(xmlFile);
-    if (FILE_VALID()) {
+    if (LoadSave.read(xmlFile)) {
         GET_PARAM(debug.dumpCommandBuffersOnFrame);
         GET_PARAM(debug.enableRenderAPIDebugging);
         GET_PARAM(debug.enableDebugMsgGroups);
@@ -180,87 +175,90 @@ bool Configuration::fromXML(const char* xmlFile) {
 }
 
 bool Configuration::toXML(const char* xmlFile) const {
-    PREPARE_FILE_FOR_WRITING(xmlFile);
-    PUT_PARAM(debug.dumpCommandBuffersOnFrame);
-    PUT_PARAM(debug.enableRenderAPIDebugging);
-    PUT_PARAM(debug.enableDebugMsgGroups);
-    PUT_PARAM(debug.useGeometryCache);
-    PUT_PARAM(debug.useVegetationCache);
-    PUT_PARAM(debug.useShaderBinaryCache);
-    PUT_PARAM(debug.useShaderTextCache);
-    PUT_PARAM(debug.enableTreeInstances);
-    PUT_PARAM(debug.enableGrassInstances);
-    PUT_PARAM(debug.memFile);
-    PUT_PARAM(debug.mesh.playAnimations);
-    PUT_PARAM(language);
-    PUT_PARAM(runtime.targetDisplay);
-    PUT_PARAM(runtime.targetRenderingAPI);
-    PUT_PARAM(runtime.useFixedTimestep);
-    PUT_PARAM(runtime.maxWorkerThreads);
-    PUT_PARAM(runtime.windowedMode);
-    PUT_PARAM(runtime.windowResizable);
-    PUT_PARAM(runtime.frameRateLimit);
-    PUT_PARAM(runtime.enableVSync);
-    PUT_PARAM(runtime.adaptiveSync);
-    PUT_PARAM_ATTRIB(runtime.splashScreenSize, w);
-    PUT_PARAM_ATTRIB(runtime.splashScreenSize, h);
-    PUT_PARAM_ATTRIB(runtime.windowSize, w);
-    PUT_PARAM_ATTRIB(runtime.windowSize, h);
-    PUT_PARAM_ATTRIB(runtime.resolution, w);
-    PUT_PARAM_ATTRIB(runtime.resolution, h);
-    PUT_PARAM(runtime.simSpeed);
-    PUT_PARAM(runtime.zNear);
-    PUT_PARAM(runtime.zFar);
-    PUT_PARAM(runtime.verticalFOV);
-    PUT_PARAM(gui.cegui.enabled);
-    PUT_PARAM(gui.cegui.extraStates);
-    PUT_PARAM(gui.cegui.skipRendering);
-    PUT_PARAM(gui.cegui.showDebugCursor);
-    PUT_PARAM(gui.cegui.defaultGUIScheme);
-    PUT_PARAM(gui.imgui.multiViewportEnabled);
-    PUT_PARAM(gui.imgui.windowDecorationsEnabled);
-    PUT_PARAM(gui.imgui.dontMergeFloatingWindows);
-    PUT_PARAM(gui.consoleLayoutFile);
-    PUT_PARAM(gui.editorLayoutFile);
-    PUT_PARAM(rendering.msaaSamples);
-    PUT_PARAM(rendering.anisotropicFilteringLevel);
-    PUT_PARAM(rendering.reflectionResolutionFactor);
-    PUT_PARAM(rendering.terrainDetailLevel);
-    PUT_PARAM(rendering.terrainTextureQuality);
-    PUT_PARAM(rendering.numLightsPerScreenTile);
-    PUT_PARAM(rendering.lightThreadGroupSize);
-    PUT_PARAM(rendering.enableFog);
-    PUT_PARAM(rendering.fogDensity);
-    PUT_PARAM_ATTRIB(rendering.fogColour, r);
-    PUT_PARAM_ATTRIB(rendering.fogColour, g);
-    PUT_PARAM_ATTRIB(rendering.fogColour, b);
-    PUT_PARAM_ATTRIB(rendering.lodThresholds, x);
-    PUT_PARAM_ATTRIB(rendering.lodThresholds, y);
-    PUT_PARAM_ATTRIB(rendering.lodThresholds, z);
-    PUT_PARAM_ATTRIB(rendering.lodThresholds, w);
-    PUT_PARAM(rendering.postFX.postAAType);
-    PUT_PARAM(rendering.postFX.postAASamples);
-    PUT_PARAM(rendering.postFX.enableDepthOfField);
-    PUT_PARAM(rendering.postFX.enableBloom);
-    PUT_PARAM(rendering.postFX.bloomFactor);
-    PUT_PARAM(rendering.postFX.enableSSAO);
-    PUT_PARAM(rendering.postFX.ssaoRadius);
-    PUT_PARAM(rendering.postFX.ssaoPower);
+    if (LoadSave.prepareSaveFile(xmlFile)) {
+        PUT_PARAM(debug.dumpCommandBuffersOnFrame);
+        PUT_PARAM(debug.enableRenderAPIDebugging);
+        PUT_PARAM(debug.enableDebugMsgGroups);
+        PUT_PARAM(debug.useGeometryCache);
+        PUT_PARAM(debug.useVegetationCache);
+        PUT_PARAM(debug.useShaderBinaryCache);
+        PUT_PARAM(debug.useShaderTextCache);
+        PUT_PARAM(debug.enableTreeInstances);
+        PUT_PARAM(debug.enableGrassInstances);
+        PUT_PARAM(debug.memFile);
+        PUT_PARAM(debug.mesh.playAnimations);
+        PUT_PARAM(language);
+        PUT_PARAM(runtime.targetDisplay);
+        PUT_PARAM(runtime.targetRenderingAPI);
+        PUT_PARAM(runtime.useFixedTimestep);
+        PUT_PARAM(runtime.maxWorkerThreads);
+        PUT_PARAM(runtime.windowedMode);
+        PUT_PARAM(runtime.windowResizable);
+        PUT_PARAM(runtime.frameRateLimit);
+        PUT_PARAM(runtime.enableVSync);
+        PUT_PARAM(runtime.adaptiveSync);
+        PUT_PARAM_ATTRIB(runtime.splashScreenSize, w);
+        PUT_PARAM_ATTRIB(runtime.splashScreenSize, h);
+        PUT_PARAM_ATTRIB(runtime.windowSize, w);
+        PUT_PARAM_ATTRIB(runtime.windowSize, h);
+        PUT_PARAM_ATTRIB(runtime.resolution, w);
+        PUT_PARAM_ATTRIB(runtime.resolution, h);
+        PUT_PARAM(runtime.simSpeed);
+        PUT_PARAM(runtime.zNear);
+        PUT_PARAM(runtime.zFar);
+        PUT_PARAM(runtime.verticalFOV);
+        PUT_PARAM(gui.cegui.enabled);
+        PUT_PARAM(gui.cegui.extraStates);
+        PUT_PARAM(gui.cegui.skipRendering);
+        PUT_PARAM(gui.cegui.showDebugCursor);
+        PUT_PARAM(gui.cegui.defaultGUIScheme);
+        PUT_PARAM(gui.imgui.multiViewportEnabled);
+        PUT_PARAM(gui.imgui.windowDecorationsEnabled);
+        PUT_PARAM(gui.imgui.dontMergeFloatingWindows);
+        PUT_PARAM(gui.consoleLayoutFile);
+        PUT_PARAM(gui.editorLayoutFile);
+        PUT_PARAM(rendering.msaaSamples);
+        PUT_PARAM(rendering.anisotropicFilteringLevel);
+        PUT_PARAM(rendering.reflectionResolutionFactor);
+        PUT_PARAM(rendering.terrainDetailLevel);
+        PUT_PARAM(rendering.terrainTextureQuality);
+        PUT_PARAM(rendering.numLightsPerScreenTile);
+        PUT_PARAM(rendering.lightThreadGroupSize);
+        PUT_PARAM(rendering.enableFog);
+        PUT_PARAM(rendering.fogDensity);
+        PUT_PARAM_ATTRIB(rendering.fogColour, r);
+        PUT_PARAM_ATTRIB(rendering.fogColour, g);
+        PUT_PARAM_ATTRIB(rendering.fogColour, b);
+        PUT_PARAM_ATTRIB(rendering.lodThresholds, x);
+        PUT_PARAM_ATTRIB(rendering.lodThresholds, y);
+        PUT_PARAM_ATTRIB(rendering.lodThresholds, z);
+        PUT_PARAM_ATTRIB(rendering.lodThresholds, w);
+        PUT_PARAM(rendering.postFX.postAAType);
+        PUT_PARAM(rendering.postFX.postAASamples);
+        PUT_PARAM(rendering.postFX.enableDepthOfField);
+        PUT_PARAM(rendering.postFX.enableBloom);
+        PUT_PARAM(rendering.postFX.bloomFactor);
+        PUT_PARAM(rendering.postFX.enableSSAO);
+        PUT_PARAM(rendering.postFX.ssaoRadius);
+        PUT_PARAM(rendering.postFX.ssaoPower);
 
-    PUT_PARAM(rendering.shadowMapping.enabled);
-    PUT_PARAM(rendering.shadowMapping.shadowMapResolution);
-    PUT_PARAM(rendering.shadowMapping.msaaSamples);
-    PUT_PARAM(rendering.shadowMapping.anisotropicFilteringLevel);
-    PUT_PARAM(rendering.shadowMapping.enableBlurring);
-    PUT_PARAM(rendering.shadowMapping.defaultCSMSplitCount);
-    PUT_PARAM(rendering.shadowMapping.softness);
-    PUT_PARAM(rendering.shadowMapping.splitLambda);
+        PUT_PARAM(rendering.shadowMapping.enabled);
+        PUT_PARAM(rendering.shadowMapping.shadowMapResolution);
+        PUT_PARAM(rendering.shadowMapping.msaaSamples);
+        PUT_PARAM(rendering.shadowMapping.anisotropicFilteringLevel);
+        PUT_PARAM(rendering.shadowMapping.enableBlurring);
+        PUT_PARAM(rendering.shadowMapping.defaultCSMSplitCount);
+        PUT_PARAM(rendering.shadowMapping.softness);
+        PUT_PARAM(rendering.shadowMapping.splitLambda);
 
-    PUT_PARAM(title);
-    PUT_PARAM(defaultTextureLocation);
-    PUT_PARAM(defaultShadersLocation);
-    SAVE_FILE(xmlFile);
-    return true;
+        PUT_PARAM(title);
+        PUT_PARAM(defaultTextureLocation);
+        PUT_PARAM(defaultShadersLocation);
+        LoadSave.write();
+        return true;
+    }
+
+    return false;
 }
 
 }; //namespace Divide
