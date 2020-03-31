@@ -72,24 +72,6 @@ inline void debug_traverse(Turn const& , Operation, const char*, bool = true)
 }
 #endif
 
-
-//! Metafunction to define side_order (clockwise, ccw) by operation_type
-template <operation_type OpType>
-struct side_compare {};
-
-template <>
-struct side_compare<operation_union>
-{
-    typedef std::greater<int> type;
-};
-
-template <>
-struct side_compare<operation_intersection>
-{
-    typedef std::less<int> type;
-};
-
-
 template
 <
     bool Reverse1,
@@ -124,7 +106,7 @@ private :
 
     static const operation_type target_operation = operation_from_overlay<OverlayType>::value;
 
-    typedef typename side_compare<target_operation>::type side_compare_type;
+    typedef typename sort_by_side::side_compare<target_operation>::type side_compare_type;
     typedef typename boost::range_value<Turns>::type turn_type;
     typedef typename turn_type::turn_operation_type turn_operation_type;
 
@@ -282,7 +264,7 @@ public :
     {
         // For uu/ii, only switch sources if indicated
 
-        if (OverlayType == overlay_buffer)
+        if (BOOST_GEOMETRY_CONDITION(OverlayType == overlay_buffer))
         {
             // Buffer does not use source_index (always 0).
             return select_source_generic<&segment_identifier::multi_index>(
@@ -391,7 +373,8 @@ public :
             return true;
         }
 
-        if (OverlayType == overlay_buffer && possible[0] && possible[1])
+        if (BOOST_GEOMETRY_CONDITION(OverlayType == overlay_buffer)
+            && possible[0] && possible[1])
         {
             // Buffers sometimes have multiple overlapping pieces, where remaining
             // distance could lead to the wrong choice. Take the matching operation.
@@ -565,7 +548,7 @@ public :
             result = select_cc_operation(turn, start_turn_index,
                                          selected_op_index);
         }
-        else if (OverlayType == overlay_dissolve)
+        else if (BOOST_GEOMETRY_CONDITION(OverlayType == overlay_dissolve))
         {
             result = select_preferred_operation(turn, turn_index,
                 start_turn_index, selected_op_index);
@@ -636,7 +619,7 @@ public :
             return 0;
         }
 
-        if (OverlayType != overlay_dissolve
+        if (BOOST_GEOMETRY_CONDITION(OverlayType != overlay_dissolve)
             && (op.enriched.count_left != 0 || op.enriched.count_right == 0))
         {
             // Check counts: in some cases interior rings might be generated with
@@ -803,8 +786,7 @@ public :
             {
                 continue;
             }
-            if (is_self_turn<OverlayType>(cluster_turn)
-                || cluster_turn.both(target_operation))
+            if (cluster_turn.both(target_operation))
             {
                 // Not (yet) supported, can be cluster of u/u turns
                 return false;
@@ -898,7 +880,8 @@ public :
                     // Points to different target
                     return false;
                 }
-                if (OverlayType == overlay_buffer && target.turn_index > 0)
+                if (BOOST_GEOMETRY_CONDITION(OverlayType == overlay_buffer)
+                    && target.turn_index > 0)
                 {
                     // Target already assigned, so there are more targets
                     // or more ways to the same target
@@ -1029,7 +1012,8 @@ public :
                 turn_operation_type const& start_op,
                 int start_op_index) const
     {
-        if (OverlayType != overlay_buffer && OverlayType != overlay_dissolve)
+        if (BOOST_GEOMETRY_CONDITION(OverlayType != overlay_buffer
+                                     && OverlayType != overlay_dissolve))
         {
             return;
         }
@@ -1128,22 +1112,25 @@ public :
                      int previous_op_index,
                      signed_size_type previous_turn_index,
                      segment_identifier const& previous_seg_id,
-                     bool is_start)
+                     bool is_start, bool has_points)
     {
         turn_type const& current_turn = m_turns[turn_index];
 
         if (BOOST_GEOMETRY_CONDITION(target_operation == operation_intersection))
         {
-            bool const back_at_start_cluster
-                    = current_turn.is_clustered()
-                    && m_turns[start_turn_index].cluster_id == current_turn.cluster_id;
-
-            if (turn_index == start_turn_index || back_at_start_cluster)
+            if (has_points)
             {
-                // Intersection can always be finished if returning
-                turn_index = start_turn_index;
-                op_index = start_op_index;
-                return true;
+                bool const back_at_start_cluster
+                        = current_turn.is_clustered()
+                        && m_turns[start_turn_index].cluster_id == current_turn.cluster_id;
+
+                if (turn_index == start_turn_index || back_at_start_cluster)
+                {
+                    // Intersection can always be finished if returning
+                    turn_index = start_turn_index;
+                    op_index = start_op_index;
+                    return true;
+                }
             }
 
             if (! current_turn.is_clustered()

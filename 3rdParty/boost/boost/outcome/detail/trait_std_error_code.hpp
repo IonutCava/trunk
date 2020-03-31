@@ -1,5 +1,5 @@
 /* Traits for Outcome
-(C) 2018-2019 Niall Douglas <http://www.nedproductions.biz/> (59 commits)
+(C) 2018-2019 Niall Douglas <http://www.nedproductions.biz/> (6 commits)
 File Created: March 2018
 
 
@@ -105,6 +105,7 @@ namespace trait
     {
       // Shortcut this for lower build impact
       static constexpr bool value = true;
+      using type = std::error_code;
     };
   }  // namespace detail
 

@@ -10,16 +10,28 @@
 #define BOOST_HISTOGRAM_AXIS_OSTREAM_HPP
 
 #include <boost/assert.hpp>
-#include <boost/core/typeinfo.hpp>
 #include <boost/histogram/axis/regular.hpp>
-#include <boost/histogram/detail/cat.hpp>
-#include <boost/histogram/detail/meta.hpp>
+#include <boost/histogram/detail/static_if.hpp>
+#include <boost/histogram/detail/type_name.hpp>
 #include <boost/histogram/fwd.hpp>
 #include <boost/throw_exception.hpp>
 #include <iomanip>
 #include <iosfwd>
+#include <sstream>
 #include <stdexcept>
 #include <type_traits>
+
+/**
+  \file boost/histogram/axis/ostream.hpp
+  Simple streaming operators for the builtin axis types.
+
+  The text representation is not guaranteed to be stable between versions of
+  Boost.Histogram. This header is only included by
+  [boost/histogram/ostream.hpp](histogram/reference.html#header.boost.histogram.ostream_hpp).
+  To you use your own, include your own implementation instead of this header and do not
+  include
+  [boost/histogram/ostream.hpp](histogram/reference.html#header.boost.histogram.ostream_hpp).
+ */
 
 #ifndef BOOST_HISTOGRAM_DOXYGEN_INVOKED
 
@@ -40,10 +52,7 @@ void stream_metadata(OStream& os, const T& t) {
         oss << t;
         if (!oss.str().empty()) { os << ", metadata=" << std::quoted(oss.str()); }
       },
-      [&os](const auto&) {
-        os << ", metadata=" << boost::core::demangled_name(BOOST_CORE_TYPEID(T));
-      },
-      t);
+      [&os](const auto&) { os << ", metadata=" << detail::type_name<T>(); }, t);
 }
 
 template <class OStream>
@@ -170,15 +179,10 @@ std::basic_ostream<Ts...>& operator<<(std::basic_ostream<Ts...>& os,
                                       const variant<Us...>& v) {
   visit(
       [&os](const auto& x) {
-        using A = detail::remove_cvref_t<decltype(x)>;
+        using A = std::decay_t<decltype(x)>;
         detail::static_if<detail::is_streamable<A>>(
             [&os](const auto& x) { os << x; },
-            [](const auto&) {
-              BOOST_THROW_EXCEPTION(std::runtime_error(
-                  detail::cat(boost::core::demangled_name(BOOST_CORE_TYPEID(A)),
-                              " is not streamable")));
-            },
-            x);
+            [&os](const auto&) { os << "<unstreamable>"; }, x);
       },
       v);
   return os;

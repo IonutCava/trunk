@@ -719,7 +719,7 @@ boost
             TR sc=one;
             if( dp < one )
                 {
-                TR const theta = acosf(dp);
+                TR const theta = acos<TR>(dp);
                 TR const invsintheta = one/sin<TR>(theta);
                 TR const scale = sin<TR>(theta*(one-t)) * invsintheta;
                 TR const invscale = sin<TR>(theta*t) * invsintheta * sc;
@@ -1435,9 +1435,9 @@ boost
                 }
             else
                 {
-                typedef typename vec_traits<B>::scalar_type T;
-                vec_traits<B>::template write_element<0>(b) = scalar_traits<T>::value(1);
-                vec_traits<B>::template write_element<1>(b) = vec_traits<B>::template write_element<2>(b) = scalar_traits<T>::value(0);
+                typedef typename vec_traits<B>::scalar_type U;
+                vec_traits<B>::template write_element<0>(b) = scalar_traits<U>::value(1);
+                vec_traits<B>::template write_element<1>(b) = vec_traits<B>::template write_element<2>(b) = scalar_traits<U>::value(0);
                 }
             return scalar_traits<T>::value(2) * qvm::acos(a0);
             }

@@ -329,14 +329,17 @@ public:
 namespace detail
 {
 
-template<class T> struct cat_holder
+template<class T> struct BOOST_SYMBOL_VISIBLE cat_holder
 {
-    BOOST_SYSTEM_REQUIRE_CONST_INIT static constexpr system_error_category system_category_instance{};
-    BOOST_SYSTEM_REQUIRE_CONST_INIT static constexpr generic_error_category generic_category_instance{};
+    static constexpr system_error_category system_category_instance{};
+    static constexpr generic_error_category generic_category_instance{};
 };
 
-template<class T> BOOST_SYSTEM_REQUIRE_CONST_INIT constexpr system_error_category cat_holder<T>::system_category_instance;
-template<class T> BOOST_SYSTEM_REQUIRE_CONST_INIT constexpr generic_error_category cat_holder<T>::generic_category_instance;
+// Before C++17 it was mandatory to redeclare all static constexpr
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
+template<class T> constexpr system_error_category cat_holder<T>::system_category_instance;
+template<class T> constexpr generic_error_category cat_holder<T>::generic_category_instance;
+#endif
 
 } // namespace detail
 
@@ -352,11 +355,15 @@ constexpr error_category const & generic_category() BOOST_NOEXCEPT
 
 #else // #if defined(BOOST_SYSTEM_HAS_CONSTEXPR)
 
+inline error_category const & system_category() BOOST_NOEXCEPT BOOST_SYMBOL_VISIBLE;
+
 inline error_category const & system_category() BOOST_NOEXCEPT
 {
     static const detail::system_error_category system_category_instance;
     return system_category_instance;
 }
+
+inline error_category const & generic_category() BOOST_NOEXCEPT BOOST_SYMBOL_VISIBLE;
 
 inline error_category const & generic_category() BOOST_NOEXCEPT
 {
@@ -780,7 +787,7 @@ inline std::size_t hash_value( error_code const & ec )
 
     if( id == 0 )
     {
-        id = reinterpret_cast<boost::ulong_long_type>( &cat );
+        id = reinterpret_cast<boost::uintptr_t>( &cat );
     }
 
     boost::ulong_long_type hv = ( boost::ulong_long_type( 0xCBF29CE4 ) << 32 ) + 0x84222325;

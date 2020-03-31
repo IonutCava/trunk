@@ -995,7 +995,7 @@ bool adjacent_stringize = false;
                     BOOST_ASSERT(boost::wave::need_variadics(ctx.get_language()));
 
                 // ensure all variadic arguments to be expanded
-                    for (typename std::vector<ContainerT>::size_type arg = i;
+                    for (typename vector<ContainerT>::size_type arg = i;
                          arg < expanded_args.size(); ++arg)
                     {
                         expand_argument(arg, arguments, expanded_args,

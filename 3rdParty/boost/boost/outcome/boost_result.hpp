@@ -1,5 +1,5 @@
 /* A very simple result type
-(C) 2017-2019 Niall Douglas <http://www.nedproductions.biz/> (59 commits)
+(C) 2017-2019 Niall Douglas <http://www.nedproductions.biz/> (10 commits)
 File Created: June 2017
 
 
@@ -123,10 +123,12 @@ namespace trait
     template <> struct _is_error_code_available<boost::system::error_code>
     {
       static constexpr bool value = true;
+      using type = boost::system::error_code;
     };
     template <> struct _is_exception_ptr_available<boost::exception_ptr>
     {
       static constexpr bool value = true;
+      using type = boost::exception_ptr;
     };
   }  // namespace detail
 
