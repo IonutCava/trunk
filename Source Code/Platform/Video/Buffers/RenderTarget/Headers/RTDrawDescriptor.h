@@ -76,32 +76,19 @@ public:
     inline void clearColour(U8 index, const bool state) noexcept { _clearColourAttachment[index] = state; }
     inline bool clearColour(U8 index) const noexcept { return _clearColourAttachment[index]; }
 
-    void clearColours(bool state) noexcept { _clearColours = state; }
-    bool clearColours() const noexcept { return _clearColours; }
-
-    void clearDepth(bool state) noexcept { _clearDepth = state; }
-    bool clearDepth() const noexcept { return _clearDepth; }
-
-    void clearExternalColour(bool state) noexcept { _clearExternalColour = state; }
-    bool clearExternalColour() const noexcept { return _clearExternalColour; }
-
-    void clearExternalDepth(bool state) noexcept { _clearExternalDepth = state; }
-    bool clearExternalDepth() const noexcept { return _clearExternalDepth; }
+    PROPERTY_RW(bool, clearDepth, true);
+    PROPERTY_RW(bool, clearColours, true);
+    PROPERTY_RW(bool, clearExternalColour, false);
+    PROPERTY_RW(bool, clearExternalDepth, false);
+    PROPERTY_RW(bool, resetToDefault, true);
 
 protected:
     std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _clearColourAttachment;
-    bool _clearDepth = true;
-    bool _clearColours = true;
-    bool _clearExternalColour = false;
-    bool _clearExternalDepth = false;
 };
 
 class RTDrawDescriptor {
   public:
     RTDrawDescriptor();
-
-    inline bool setViewport() const noexcept { return _setViewport; }
-    inline void setViewport(const bool state) noexcept { _setViewport = state; }
 
     inline RTDrawMask& drawMask() noexcept { return _drawMask; }
     inline const RTDrawMask& drawMask() const noexcept { return _drawMask; }
@@ -112,10 +99,11 @@ class RTDrawDescriptor {
     inline bool operator==(const RTDrawDescriptor& other) const;
     inline bool operator!=(const RTDrawDescriptor& other) const;
 
+    PROPERTY_RW(bool, setViewport, true);
+
   protected:
     RTDrawMask _drawMask;
     std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;
-    bool _setViewport;
 };
 
 }; //namespace Divide

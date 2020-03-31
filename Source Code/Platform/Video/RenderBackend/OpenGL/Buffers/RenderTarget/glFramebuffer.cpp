@@ -609,9 +609,16 @@ void glFramebuffer::toggleAttachments() {
 void glFramebuffer::clear(const RTClearDescriptor& descriptor) {
     OPTICK_EVENT();
 
-    toggleAttachments();
+    if (descriptor.resetToDefault()) {
+        toggleAttachments();
+    }
+
     const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
-    prepareBuffers({}, colourAttachments);
+
+    if (descriptor.resetToDefault()) {
+        prepareBuffers({}, colourAttachments);
+    }
+
     /// Clear the draw buffers
     clear(descriptor, colourAttachments);
 }

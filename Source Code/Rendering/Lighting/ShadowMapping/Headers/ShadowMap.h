@@ -73,7 +73,7 @@ protected:
 
 protected:
     GFXDevice& _context;
-    ShadowType _type;
+    const ShadowType _type;
 };
 
 FWD_DECLARE_MANAGED_STRUCT(DebugView);

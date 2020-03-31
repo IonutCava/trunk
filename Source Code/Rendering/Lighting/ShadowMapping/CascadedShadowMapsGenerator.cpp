@@ -150,7 +150,13 @@ CascadedShadowMapsGenerator::~CascadedShadowMapsGenerator()
     _context.renderTargetPool().deallocateRT(_drawBuffer);
 }
 
+bool CascadedShadowMapsGenerator::renderLastSplit() const noexcept {
+    //return _context.getFrameCount() % 2 == 0;
+    return true;
+}
+
 void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
+
     DirectionalLightComponent& dirLight = static_cast<DirectionalLightComponent&>(light);
 
     const U8 numSplits = dirLight.csmSplitCount();
@@ -173,9 +179,15 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     beginRenderPassCmd._descriptor = {};
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
+    RTClearDescriptor clearDescriptor = {};
+    clearDescriptor.clearDepth(true);
+    // We can just clear all of the levels of the colour attachment here if we are doing a full re-draw
+    clearDescriptor.clearColours(renderLastSplit());
+    clearDescriptor.resetToDefault(renderLastSplit());
+
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;
-    clearMainTarget._descriptor = RTClearDescriptor{};
+    clearMainTarget._descriptor = clearDescriptor;
     GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 
     RenderTarget::DrawLayerParams drawParams = {};
@@ -184,8 +196,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
     auto& rpm = _context.parent().renderPassManager();
 
-    const bool renderLastSplit = true;//_context.getFrameCount() % 2 == 0;
-    I16 i = to_I16(numSplits) - (renderLastSplit ? 1 : 2);
+    I16 i = to_I16(numSplits) - (renderLastSplit() ? 1 : 2);
     for (i; i >= 0; i--) {
         drawParams._layer = i;
         params._passName = Util::StringFormat("CSM_PASS_%d", i).c_str();
@@ -194,11 +205,19 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
+        // Or we can just clear the current write level if we don't need to update everything
+        if (!renderLastSplit()) {
+            clearDescriptor.clearDepth(false);
+            clearDescriptor.clearColours(true);
+            clearMainTarget._descriptor = clearDescriptor;
+            GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+        }
+
         params._stagePass._indexA = to_U16(lightIndex);
         params._stagePass._indexB = i;
         params._camera = light.shadowCameras()[i];
-        //params._minLoD = i > 1 ? 1 : -1;
-        //params._minExtents.set(i > 1 ? 3.5f : (i > 0 ? 2.5f : 0.5f));
+        params._minLoD = i > 1 ? 1 : -1;
+        params._minExtents.set(i > 1 ? 3.5f : (i > 0 ? 2.5f : 0.5f));
 
         rpm->doCustomPass(params, bufferInOut);
 
@@ -357,6 +376,8 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
     if (g_shadowSettings.enableBlurring) {
 
+        const I32 layerCount = renderLastSplit() ? to_I32(light.csmSplitCount()) : to_I32(light.csmSplitCount()) - 1;
+        
         GenericDrawCommand pointsCmd = {};
         pointsCmd._primitiveType = PrimitiveType::API_POINTS;
         pointsCmd._drawCount = 1;
@@ -376,7 +397,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
         GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _horzBlurPipeline });
-        _blurDepthMapConstants.set(_ID("layerCount"), GFX::PushConstantType::INT, (I32)light.csmSplitCount());
+        _blurDepthMapConstants.set(_ID("layerCount"), GFX::PushConstantType::INT, layerCount);
 
         pushConstantsCommand._constants = _blurDepthMapConstants;
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);

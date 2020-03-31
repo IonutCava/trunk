@@ -966,9 +966,9 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     params._bindTargets = false;
     params._passName = "CubeMap";
 
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
-    GFX::EndRenderSubPassCommand endRenderSubPassCommand;
-    RenderTarget::DrawLayerParams drawParams;
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
+    GFX::EndRenderSubPassCommand endRenderSubPassCommand = {};
+    RenderTarget::DrawLayerParams drawParams = {};
     drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     drawParams._index = 0;
 
@@ -1046,10 +1046,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     beginRenderPassCmd._name = "GENERATE_DUAL_PARABOLOID_MAP";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
-    GFX::EndRenderSubPassCommand endRenderSubPassCommand;
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
+    GFX::EndRenderSubPassCommand endRenderSubPassCommand = {};
 
-    RenderTarget::DrawLayerParams drawParams;
+    RenderTarget::DrawLayerParams drawParams = {};
     drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     drawParams._index = 0;
 
