@@ -39,7 +39,7 @@ namespace NS_GLIM
         // the current value that shall be used for all new elements
         Glim4ByteData m_CurrentValue[4];
         // the actual array of accumulated elements
-        vector<Glim4ByteData> m_ArrayData;
+        std::vector<Glim4ByteData> m_ArrayData;
 
         // the offset into the GL buffer, needed for binding it
         unsigned int m_uiBufferOffset;
@@ -107,16 +107,16 @@ namespace NS_GLIM
         hashMap<unsigned int, GlimArrayData> m_Attributes;
 
         // Position data is stored separately, not as an attribute.
-        vector<Glim4ByteData> m_PositionData;
+        std::vector<Glim4ByteData> m_PositionData;
 
         // Index Buffer for points.
-        vector<unsigned int> m_IndexBuffer_Points;
+        std::vector<unsigned int> m_IndexBuffer_Points;
         // Index Buffer for Lines.
-        vector<unsigned int> m_IndexBuffer_Lines;
+        std::vector<unsigned int> m_IndexBuffer_Lines;
         // Index Buffer for Triangles.
-        vector<unsigned int> m_IndexBuffer_Triangles;
+        std::vector<unsigned int> m_IndexBuffer_Triangles;
         // Index Buffer for wireframe rendering of polygons.
-        vector<unsigned int> m_IndexBuffer_Wireframe;
+        std::vector<unsigned int> m_IndexBuffer_Wireframe;
 
         // Number of Points to render. Used after m_IndexBuffer_Points has been cleared. 
         unsigned int m_uiPointElements;
@@ -131,7 +131,7 @@ namespace NS_GLIM
         bool m_bUploadedToGPU;
         // Whether VBOs where ever created.
         bool m_bCreatedVBOs;
-        vector<Glim4ByteData> m_bufferData;
+        std::vector<Glim4ByteData> m_bufferData;
 #ifdef AE_RENDERAPI_OPENGL
         unsigned int m_VertexArrayObjectID;
         // GL attrib location of the vertex data in the shader program

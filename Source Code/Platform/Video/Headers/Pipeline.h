@@ -41,7 +41,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-typedef std::array<vector<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;
+using ShaderFunctions = std::array<std::vector<U32>, to_base(ShaderType::COUNT)>;
 
 enum class MemoryBarrierType : U32 {
     BUFFER_UPDATE = toBit(1),

@@ -213,7 +213,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     stringImpl refreshRates;
     const vec_size displayCount = gpuState().getDisplayCount();
     for (vec_size idx = 0; idx < displayCount; ++idx) {
-        const vector<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
+        const std::vector<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
         Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
 
         for (const GPUState::GPUVideoMode& mode : registeredModes) {
@@ -320,7 +320,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     lightingDetails.msaaSamples(msaaSamples);
 
     {
-        vector<RTAttachmentDescriptor> attachments = {
+        std::vector<RTAttachmentDescriptor> attachments = {
             { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
             { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
             { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
@@ -371,7 +371,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     hiZDescriptor.samplerDescriptor(hiZSampler);
     hiZDescriptor.autoMipMaps(false);
 
-    vector<RTAttachmentDescriptor> hiZAttachments = {
+    std::vector<RTAttachmentDescriptor> hiZAttachments = {
         { hiZDescriptor, RTAttachmentType::Depth, 0, VECTOR4_ZERO },
     };
 
@@ -403,7 +403,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
         editorDescriptor.samplerDescriptor(editorSampler);
 
-        vector<RTAttachmentDescriptor> attachments = {
+        std::vector<RTAttachmentDescriptor> attachments = {
             { editorDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
         };
 
@@ -433,7 +433,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         revealageDescriptor.autoMipMaps(false);
         revealageDescriptor.samplerDescriptor(accumulationSampler);
 
-        vector<RTAttachmentDescriptor> attachments = {
+        std::vector<RTAttachmentDescriptor> attachments = {
             { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
             { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
         };
@@ -441,7 +441,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         const RenderTarget& screenTarget = _rtPool->renderTarget(RenderTargetUsage::SCREEN);
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
         
-        vector<ExternalRTAttachmentDescriptor> externalAttachments = {
+        std::vector<ExternalRTAttachmentDescriptor> externalAttachments = {
                 { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
@@ -483,7 +483,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         hizRTDesc._attachments = hiZAttachments.data();
 
         {
-            vector<RTAttachmentDescriptor> attachments = {
+            std::vector<RTAttachmentDescriptor> attachments = {
                 { environmentDescriptorPlanar, RTAttachmentType::Colour },
                 { depthDescriptorPlanar, RTAttachmentType::Depth },
             };
@@ -515,7 +515,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
         depthDescriptorCube.samplerDescriptor(reflectionSampler);
 
-        vector<RTAttachmentDescriptor> attachments = {
+        std::vector<RTAttachmentDescriptor> attachments = {
             { environmentDescriptorCube, RTAttachmentType::Colour },
             { depthDescriptorCube, RTAttachmentType::Depth },
         };
@@ -1144,7 +1144,7 @@ void GFXDevice::stepResolution(bool increment) {
 
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
-    const vector<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
+    const std::vector<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
 
     bool found = false;
     vec2<U16> foundRes;
@@ -2013,13 +2013,12 @@ DebugView* GFXDevice::addDebugView(const eastl::shared_ptr<DebugView>& view) {
 
 bool GFXDevice::removeDebugView(DebugView* view) {
     if (view != nullptr) {
-        vector<eastl::shared_ptr<DebugView>>::iterator it;
-        it = std::find_if(std::begin(_debugViews),
-                          std::end(_debugViews),
-                         [view](const eastl::shared_ptr<DebugView>& entry) noexcept {
-                            return view->getGUID() == entry->getGUID();
-                         });
-
+        auto it = std::find_if(std::begin(_debugViews),
+                              std::end(_debugViews),
+                               [view](const eastl::shared_ptr<DebugView>& entry) noexcept {
+                                  return view->getGUID() == entry->getGUID();
+                               });
+                   
         if (it != std::cend(_debugViews)) {
             _debugViews.erase(it);
             return true;
@@ -2035,7 +2034,7 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
         _debugFrustum->getCornersViewSpace(viewMatrix, corners);
 
         Line temp;
-        vector<Line> lines;
+        std::vector<Line> lines;
         for (U8 i = 0; i < 4; ++i) {
             // Draw Near Plane
             temp.pointStart(corners[i]);

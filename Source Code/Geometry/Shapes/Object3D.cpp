@@ -208,7 +208,7 @@ bool Object3D::computeTriangleList() {
         U32 indiceEnd = indiceCount + partitionOffset;
         vec3<U32> curTriangle;
         _geometryTriangles.reserve(indiceCount / 2);
-        const vectorBest<U32>& indices = geometry->getIndices();
+        const std::vector<U32>& indices = geometry->getIndices();
         for (U32 i = indiceStart; i < indiceEnd; i++) {
             curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
             // Check for correct winding
@@ -220,7 +220,7 @@ bool Object3D::computeTriangleList() {
     } else if (type == PrimitiveType::TRIANGLES) {
         indiceCount /= 3;
         _geometryTriangles.reserve(indiceCount);
-        const vectorBest<U32>& indices = geometry->getIndices();
+        const std::vector<U32>& indices = geometry->getIndices();
         for (U32 i = 0; i < indiceCount; i += 3) {
             _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
                                                     indices[i + 1],
@@ -244,8 +244,8 @@ bool Object3D::computeTriangleList() {
     return true;
 }
 
-vector<SceneGraphNode*> Object3D::filterByType(const vector<SceneGraphNode*>& nodes, ObjectType filter) {
-    vector<SceneGraphNode*> result;
+std::vector<SceneGraphNode*> Object3D::filterByType(const std::vector<SceneGraphNode*>& nodes, ObjectType filter) {
+    std::vector<SceneGraphNode*> result;
     result.reserve(nodes.size());
 
     for (SceneGraphNode* ptr : nodes) {

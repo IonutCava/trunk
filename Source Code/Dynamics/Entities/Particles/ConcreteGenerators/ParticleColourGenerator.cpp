@@ -27,7 +27,7 @@ void ParticleColourGenerator::generate(Task& packagedTasksParent,
         Start(*CreateTask(tp,
                    &packagedTasksParent,
                    [from, to, minStartCol, maxStartCol](const Task& parentTask) {
-                       std::for_each(from, to, [&](iter_t_start::value_type& colour)
+                       std::for_each(from, to, [&](FColour4& colour)
                        {
                            colour.set(Random(minStartCol, maxStartCol));
                        });
@@ -42,7 +42,7 @@ void ParticleColourGenerator::generate(Task& packagedTasksParent,
         Start(*CreateTask(tp,
                    &packagedTasksParent,
                    [from, to, minEndCol, maxEndCol](const Task& parentTask) {
-                       std::for_each(from, to, [&](iter_t_end::value_type& colour)
+                       std::for_each(from, to, [&](FColour4& colour)
                        {
                            colour.set(Random(minEndCol, maxEndCol));
                        });

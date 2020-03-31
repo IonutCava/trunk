@@ -359,7 +359,7 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool sceneNodeGuid, bool rec
     return nullptr;
 }
 
-bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const {
+bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, std::vector<SGNRayResult>& intersections) const {
     // If we start from the root node, process children only
     if (_sceneGraph.getRoot() == *this) {
         forEachChild([&ray, start, end, &intersections](const SceneGraphNode* child, I32 /*childIdx*/) {
@@ -391,7 +391,7 @@ void SceneGraphNode::getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList) 
     nodeList.push_back(this);
 }
 
-void SceneGraphNode::processDeleteQueue(vector<vec_size>& childList) {
+void SceneGraphNode::processDeleteQueue(std::vector<vec_size>& childList) {
     // See if we have any children to delete
     if (!childList.empty()) {
         UniqueLockShared w_lock(_childLock);

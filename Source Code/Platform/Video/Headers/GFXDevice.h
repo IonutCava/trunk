@@ -388,9 +388,9 @@ private:
 
     ShaderComputeQueue* _shaderComputeQueue = nullptr;
 
-    vector<Line> _axisLines;
+    std::vector<Line> _axisLines;
     IMPrimitive* _axisGizmo = nullptr;
-    vector<Line> _axisLinesTransformed;
+    std::vector<Line> _axisLinesTransformed;
 
     const Frustum*  _debugFrustum = nullptr;
     IMPrimitive*    _debugFrustumPrimitive = nullptr;
@@ -447,7 +447,7 @@ private:
     Pipeline* _textRenderPipeline = nullptr;
         
     std::mutex _graphicsResourceMutex;
-    vector<std::tuple<GraphicsResource::Type, I64, U64>> _graphicResources;
+    std::vector<std::tuple<GraphicsResource::Type, I64, U64>> _graphicResources;
 
     Rect<I32> _viewport;
     vec2<U16> _renderingResolution;
@@ -456,7 +456,7 @@ private:
 
     std::mutex _debugViewLock;
     bool _debugViewsEnabled = false;
-    vector<DebugView_ptr> _debugViews;
+    std::vector<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer = nullptr;
     GenericDrawCommand _defaultDrawCmd;
@@ -516,8 +516,7 @@ namespace Attorney {
 
        static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID, U64 nameHash) {
            UniqueLock w_lock(device._graphicsResourceMutex);
-           vector<std::tuple<GraphicsResource::Type, I64, U64>>::iterator it;
-           it = std::find_if(std::begin(device._graphicResources),
+           auto it = std::find_if(std::begin(device._graphicResources),
                 std::end(device._graphicResources),
                 [type, GUID, nameHash](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) noexcept -> bool {
                     if (std::get<1>(crtEntry) == GUID) {

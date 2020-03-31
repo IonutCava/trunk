@@ -139,7 +139,7 @@ bool AnimationComponent::playPreviousAnimation() {
     return oldIndex != _currentAnimIndex;
 }
 
-const vector<Line>& AnimationComponent::skeletonLines() const {
+const std::vector<Line>& AnimationComponent::skeletonLines() const {
     assert(_animator != nullptr);
 
     D64 animTimeStamp = Time::MicrosecondsToSeconds<D64>(_currentTimeStamp);
@@ -167,7 +167,7 @@ U32 AnimationComponent::boneCount() const {
     return _animator != nullptr ? to_U32(_animator->boneCount()) : 0;
 }
 
-const vectorBest<mat4<F32>>& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
+const vectorEASTL<mat4<F32>>& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
     assert(_animator != nullptr);
 
     return _animator->transforms(animationID, index);

@@ -32,8 +32,8 @@ void Camera::update(const U64 deltaTimeUS) {
     }
 }
 
-vector<U64> Camera::cameraList() {
-    vector<U64> ret = {};
+std::vector<U64> Camera::cameraList() {
+    std::vector<U64> ret = {};
     ret.reserve(s_cameraPool.size());
 
     SharedLock r_lock(s_cameraPoolLock);

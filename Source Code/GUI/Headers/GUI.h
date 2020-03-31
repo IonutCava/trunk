@@ -184,7 +184,7 @@ private:
 
     U32 _debugVarCacheCount;
     // GROUP, VAR
-    vector<std::pair<I64, I64>> _debugDisplayEntries;
+    std::vector<std::pair<I64, I64>> _debugDisplayEntries;
 
     /// All the GUI elements created per scene
     GUIMapPerScene _guiStack;

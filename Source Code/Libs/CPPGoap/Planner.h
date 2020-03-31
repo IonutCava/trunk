@@ -20,8 +20,8 @@ namespace goap {
         // A master lookup table of ID-to-Node; useful during the action replay
         std::unordered_map<int, Node> known_nodes_;
 
-        vector<Node> open_;   // The A* open list
-        vector<Node> closed_; // The A* closed list
+        std::vector<Node> open_;   // The A* open list
+        std::vector<Node> closed_; // The A* closed list
 
         /**
          Is the given worldstate a member of the closed list? (And by that we mean,
@@ -37,7 +37,7 @@ namespace goap {
          @param ws the worldstate in question
          @return a pointer to the note if found, end(open_) if not
          */
-        vector<goap::Node>::iterator memberOfOpen(const WorldState& ws);
+        std::vector<goap::Node>::iterator memberOfOpen(const WorldState& ws);
 
         /**
          Pops the first Node from the 'open' list, moves it to the 'closed' list, and
@@ -84,6 +84,6 @@ namespace goap {
          @return a vector of Actions in REVERSE ORDER - use a reverse_iterator on this to get stepwise-order
          @exception std::runtime_error if no plan could be made with the available actions and states
          */
-        vector<const Action*> plan(const WorldState& start, const WorldState& goal, const vector<const Action*>& actions);
+        std::vector<const Action*> plan(const WorldState& start, const WorldState& goal, const std::vector<const Action*>& actions);
     };
 }

@@ -106,11 +106,11 @@ protected:
 
 private:
     GFXDevice& _context;
-    static vector<bool> s_availableSlices;
+    static std::vector<bool> s_availableSlices;
     static RenderTargetHandle s_reflection;
 };
 
-typedef vector<EnvironmentProbe_ptr> EnvironmentProbeList;
+using EnvironmentProbeList = std::vector<EnvironmentProbe_ptr>;
 
 }; //namespace Divide
 

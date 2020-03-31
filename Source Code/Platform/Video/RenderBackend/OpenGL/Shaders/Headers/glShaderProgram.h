@@ -87,28 +87,28 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void UploadPushConstants(const PushConstants& constants);
 
     static void onAtomChange(const char* atomName, FileUpdateEvent evt);
-    static const stringImpl& shaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed);
-    static const stringImpl& shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed);
+    static const stringImpl& shaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, std::vector<Str64>& foundAtoms, bool& wasParsed);
+    static const stringImpl& shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, std::vector<Str64>& foundAtoms, bool& wasParsed);
 
     static void shaderFileRead(const Str256& filePath, const Str128& fileName, stringImpl& sourceCodeOut);
     static void shaderFileWrite(const Str256& filePath, const Str128& fileName, const char* sourceCode);
     static stringImpl preprocessIncludes(const Str128& name,
                                          const stringImpl& source,
                                          GLint level,
-                                         vector<Str64>& foundAtoms,
+                                         std::vector<Str64>& foundAtoms,
                                          bool lock);
 
     void update(const U64 deltaTimeUS) override;
    protected:
 
     /// return a list of atom names
-    vector<Str64> loadSourceCode(ShaderType stage,
-                                 const Str64& stageName,
-                                 const Str8& extension,
-                                 const stringImpl& header,
-                                 U32 lineOffset,
-                                 bool reloadExisting,
-                                 std::pair<bool, stringImpl>& sourceCodeOut);
+    std::vector<Str64> loadSourceCode(ShaderType stage,
+                                      const Str64& stageName,
+                                      const Str8& extension,
+                                      const stringImpl& header,
+                                      U32 lineOffset,
+                                      bool reloadExisting,
+                                      std::pair<bool, stringImpl>& sourceCodeOut);
 
     bool rebindStages();
     void validatePreBind();
@@ -128,7 +128,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
-    void SetSubroutines(ShaderType type, const vector<U32>& indices) const;
+    void SetSubroutines(ShaderType type, const std::vector<U32>& indices) const;
     /// This works exactly like SetSubroutines, but for a single index.
     void SetSubroutine(ShaderType type, U32 index) const;
     /// Bind this shader program
@@ -178,7 +178,7 @@ namespace Attorney {
             }
         }
 
-        static void SetSubroutines(glShaderProgram& program, ShaderType type, const vector<U32>& indices) {
+        static void SetSubroutines(glShaderProgram& program, ShaderType type, const std::vector<U32>& indices) {
             program.SetSubroutines(type, indices);
         }
         static void SetSubroutine(glShaderProgram& program, ShaderType type, U32 index) {

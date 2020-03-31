@@ -141,7 +141,7 @@ namespace Divide {
         } else if (hasSelections) {
             const F32 smallButtonWidth = 60.0f;
             F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
-            const vector<I64>& crtSelections = selections();
+            const std::vector<I64>& crtSelections = selections();
 
             static bool closed = false;
             for (I64 nodeGUID : crtSelections) {
@@ -172,7 +172,7 @@ namespace Divide {
                             }
                             ImGui::Separator();
 
-                            vector<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
+                            std::vector<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
                                 ImGui::Text(field._name.c_str());
                                 //ImGui::NewLine();
@@ -237,7 +237,7 @@ namespace Divide {
         }
     }
     
-    vector<I64> PropertyWindow::selections() const {
+    std::vector<I64> PropertyWindow::selections() const {
         const SceneManager& sceneManager = context().kernel().sceneManager();
         const Scene& activeScene = sceneManager.getActiveScene();
 
@@ -831,7 +831,7 @@ namespace Divide {
          return ret;
      }
      const char* PropertyWindow::name() const {
-         const vector<I64> nodes = selections();
+         const std::vector<I64> nodes = selections();
          if (nodes.empty()) {
              return DockedWindow::name();
          }

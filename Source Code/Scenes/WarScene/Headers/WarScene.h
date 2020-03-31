@@ -79,9 +79,9 @@ class WarScene : public Scene {
 
    private:
     GUIMessageBox* _infoBox;
-    vector<TransformComponent*> _lightNodeTransforms;
-    vector<std::pair<SceneGraphNode*, bool>> _lightNodes2;
-    vector<SceneGraphNode*> _lightNodes3;
+    std::vector<TransformComponent*> _lightNodeTransforms;
+    std::vector<std::pair<SceneGraphNode*, bool>> _lightNodes2;
+    std::vector<SceneGraphNode*> _lightNodes3;
 
    private:  // Game
     U32  _timeLimitMinutes;
@@ -93,7 +93,7 @@ class WarScene : public Scene {
     bool _terrainMode;
     U64 _lastNavMeshBuildTime;
     /// NPC's are the actual game entities
-    vector<SceneGraphNode*> _armyNPCs[2];
+    std::vector<SceneGraphNode*> _armyNPCs[2];
     IMPrimitive* _targetLines;
     SceneGraphNode* _flag[2];
     SceneGraphNode* _particleEmitter;

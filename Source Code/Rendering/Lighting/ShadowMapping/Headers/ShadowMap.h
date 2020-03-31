@@ -114,8 +114,8 @@ class NOINITVTABLE ShadowMap {
     static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> s_depthMapUsage;
     static std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> s_shadowMapGenerators;
 
-    static vector<RenderTargetHandle> s_shadowMaps;
-    static vector<DebugView_ptr> s_debugViews;
+    static std::vector<RenderTargetHandle> s_shadowMaps;
+    static std::vector<DebugView_ptr> s_debugViews;
 
     static Light* s_shadowPreviewLight;
 };

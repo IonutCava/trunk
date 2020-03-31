@@ -77,12 +77,12 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     size_t boneCount = _transforms.front().size();
     U32 numberOfFrames = frameCount();
 
-    vectorBest<std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>> animationData;
+    vectorEASTL<std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>> animationData;
     animationData.resize(numberOfFrames, {MAT4_IDENTITY});
 
     for (U32 i = 0; i < numberOfFrames; ++i) {
         std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>& anim = animationData[i];
-        const vectorBest<mat4<F32>>& frameTransforms = _transforms[i];
+        const vectorEASTL<mat4<F32>>& frameTransforms = _transforms[i];
         size_t numberOfTransforms = frameTransforms.size();
         for (U32 j = 0; j < numberOfTransforms; ++j) {
             anim[j].set(frameTransforms[j]);

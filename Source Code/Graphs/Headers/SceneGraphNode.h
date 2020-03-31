@@ -186,7 +186,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void postLoad();
 
         /// Find the graph nodes whom's bounding boxes intersects the given ray
-        bool intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const;
+        bool intersect(const Ray& ray, F32 start, F32 end, std::vector<SGNRayResult>& intersections) const;
 
         void changeUsageContext(const NodeUsageContext& newContext);
 
@@ -286,7 +286,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Returns a bottom-up list(leafs -> root) of all of the nodes parented under the current one.
         void getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList);
         /// Destructs all of the nodes specified in the list and removes them from the _children container.
-        void processDeleteQueue(vector<vec_size>& childList);
+        void processDeleteQueue(std::vector<vec_size>& childList);
         /// Similar to the saveToXML call but is geared towards temporary state (e.g. save game)
         bool saveCache(ByteBuffer& outputBuffer) const;
         /// Similar to the loadFromXML call but is geared towards temporary state (e.g. save game)
@@ -359,7 +359,7 @@ namespace Attorney {
             node.getOrderedNodeList(nodeList);
         }
 
-        static void processDeleteQueue(SceneGraphNode& node, vector<vec_size>& childList) {
+        static void processDeleteQueue(SceneGraphNode& node, std::vector<vec_size>& childList) {
             node.processDeleteQueue(childList);
         }
 

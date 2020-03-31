@@ -330,7 +330,7 @@ bool glShader::loadFromBinary() {
     // Load the program from the binary file, if available and allowed, to avoid linking.
     if (ShaderProgram::useShaderBinaryCache()) {
         // Load the program's binary format from file
-        vector<Byte> data;
+        std::vector<Byte> data;
         if (readFile((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str(),
                      (glShaderProgram::decorateFileName(_name) + ".fmt").c_str(),
                      data,
@@ -436,15 +436,15 @@ void glShader::cacheActiveUniforms() {
         GLint numActiveUniforms = 0;
         glGetProgramInterfaceiv(_programHandle, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
 
-        vector<GLchar> nameData(256);
-        vector<GLenum> properties;
+        std::vector<GLchar> nameData(256);
+        std::vector<GLenum> properties;
         properties.push_back(GL_NAME_LENGTH);
         properties.push_back(GL_TYPE);
         properties.push_back(GL_ARRAY_SIZE);
         properties.push_back(GL_BLOCK_INDEX);
         properties.push_back(GL_LOCATION);
 
-        vector<GLint> values(properties.size());
+        std::vector<GLint> values(properties.size());
 
         for (GLint attrib = 0; attrib < numActiveUniforms; ++attrib) {
             glGetProgramResourceiv(_programHandle, GL_UNIFORM, attrib, (GLsizei)properties.size(), properties.data(), (GLsizei)values.size(), NULL, &values[0]);

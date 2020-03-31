@@ -42,31 +42,53 @@ enum class TextureType : U8;
 
 namespace ImageTools {
 
-class ImageLayer {
-   public:
-    ImageLayer() noexcept : _size(0)
+struct LayerData {
+    virtual ~LayerData() = default;
+    virtual bufferPtr data() const = 0;
+};
+
+template<typename T>
+struct ImageLayerData final : LayerData {
+    explicit ImageLayerData(size_t len)
+        : _data(len, {})
     {
-        _dimensions.set(0, 0, 1);
     }
 
-    inline void writeData(U8* data, U32 len) {
-        _data.assign(data, data + len);
+    explicit ImageLayerData(T* data, size_t len)
+        : _data(data, data + len)
+    {
     }
 
-    inline void writeData(U16* data, U32 len) {
-        _data16.assign(data, data + len);
+    ~ImageLayerData() = default;
+
+    bufferPtr data() const final { return _data.empty() ? nullptr : (bufferPtr)_data.data(); }
+
+protected:
+    std::vector<T> _data;
+};
+
+struct ImageLayer {
+    template<typename T>
+    inline void writeData(T* data, size_t len) {
+        _size = len;
+        _data.reset(new ImageLayerData<T>(data, len));
     }
 
-    inline void writeData(F32* data, U32 len) {
-        _dataf.assign(data, data + len);
+    template<typename T>
+    inline T* allocate(size_t len) {
+        _size = len;
+        _data.reset(new ImageLayerData<T>(len));
+        return (T*)_data->data();
     }
     /// the image data as it was read from the file / memory.
-    size_t _size;
-    vector<U8> _data;
-    vector<U16> _data16;
-    vector<F32> _dataf;
+    size_t _size = 0u;
     /// with and height
-    vec3<U16> _dimensions;
+    vec3<U16> _dimensions = { 0, 0, 1 };
+
+    bufferPtr data() const { return _data ? _data->data() : nullptr; }
+
+private:
+    std::unique_ptr<LayerData> _data;
 };
 
 class ImageData : private NonCopyable {
@@ -82,37 +104,18 @@ class ImageData : private NonCopyable {
     inline bool is16Bit() const noexcept { return _16Bit; }
 
     inline bool isHDR() const noexcept { return _isHDR; }
+
     /// set and get the image's actual data 
     inline const bufferPtr data(U32 mipLevel = 0) const { 
-        bufferPtr data = nullptr;
         if (mipLevel < mipCount()) {
             // triple data-ception
-            data = (bufferPtr)_data[mipLevel]._data.data();
+            return _data[mipLevel].data();
         }
 
-        return data;
-    }
-    inline const bufferPtr data16(U32 mipLevel = 0) const {
-        bufferPtr data = nullptr;
-        if (mipLevel < mipCount()) {
-            // triple data-ception
-            data = (bufferPtr)_data[mipLevel]._data16.data();
-        }
-
-        return data;
+        return nullptr;
     }
 
-    inline const bufferPtr dataf(U32 mipLevel = 0) const {
-        bufferPtr data = nullptr;
-        if (mipLevel < mipCount()) {
-            // triple data-ception
-            data = (bufferPtr)_data[mipLevel]._dataf.data();
-        }
-
-        return data;
-    }
-
-    inline const vector<ImageLayer>& imageLayers() const noexcept {
+    inline const std::vector<ImageLayer>& imageLayers() const noexcept {
         return _data;
     }
     /// image width, height and depth
@@ -155,8 +158,8 @@ class ImageData : private NonCopyable {
 
    private:
     //Each entry is a separate mip map.
-    vector<ImageLayer> _data;
-    vector<U8> _decompressedData;
+    std::vector<ImageLayer> _data;
+    std::vector<U8> _decompressedData;
     /// is the image stored as a regular image or in a compressed format? (eg. DXT1 / DXT3 / DXT5)
     bool _compressed;
     /// should we flip the image's origin on load?

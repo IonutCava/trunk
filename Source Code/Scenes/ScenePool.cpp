@@ -21,7 +21,7 @@ ScenePool::ScenePool(SceneManager& parentMgr)
 
 ScenePool::~ScenePool()
 {
-    vector<Scene*> tempScenes;
+    std::vector<Scene*> tempScenes;
     {   
         SharedLock r_lock(_sceneLock);
         tempScenes.insert(std::cend(tempScenes),
@@ -135,8 +135,8 @@ bool ScenePool::deleteScene(Scene*& scene) {
     return false;
 }
 
-vector<Str128> ScenePool::sceneNameList(bool sorted) const {
-    vector<Str128> scenes;
+std::vector<Str128> ScenePool::sceneNameList(bool sorted) const {
+    std::vector<Str128> scenes;
     for (SceneNameMap::value_type it : g_sceneNameMap) {
         scenes.push_back(it.second);
     }

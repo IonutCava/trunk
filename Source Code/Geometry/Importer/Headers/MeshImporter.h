@@ -128,9 +128,9 @@ namespace Divide {
             PROPERTY_RW(Str64, modelName);
             PROPERTY_RW(Str256, modelPath);
 
-            vector<Bone*> _bones;
-            vector<SubMeshData> _subMeshData;
-            vector<std::shared_ptr<AnimEvaluator>> _animations;
+            std::vector<Bone*> _bones;
+            std::vector<SubMeshData> _subMeshData;
+            std::vector<std::shared_ptr<AnimEvaluator>> _animations;
         };
     };
 

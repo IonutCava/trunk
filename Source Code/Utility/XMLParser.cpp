@@ -74,10 +74,10 @@ void populatePressRelease(PressReleaseActions& actions, const ptree & attributes
     actions.clear();
 
     U16 id = 0;
-    vector<std::string> actionsOut;
+    std::vector<std::string> actionsOut;
     for (const auto it : actionNames) {
         const std::string actionList = attributes.get<std::string>(it.second, "");
-        Util::Split<vector<std::string>, std::string>(actionList.c_str(), ',', actionsOut);
+        Util::Split<std::vector<std::string>, std::string>(actionList.c_str(), ',', actionsOut);
         for (const std::string& it2 : actionsOut) {
             if (!it2.empty()) {
                 std::stringstream ss(Util::Trim(it2));
@@ -294,7 +294,7 @@ void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const
     ptree pt;
     read_xml(file.c_str(), pt);
 
-    vector<SceneNode> sceneGraph;
+    std::vector<SceneNode> sceneGraph;
     for (const ptree::value_type & sceneGraphList : pt.get_child("entities", empty_ptree())){
         sceneGraph.emplace_back();
         readNode(sceneGraphList, sceneGraph.back());

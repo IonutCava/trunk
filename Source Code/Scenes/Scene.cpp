@@ -1517,7 +1517,7 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
         return false;
     }
 
-    vector<I64>& selections = _currentSelection[idx];
+    std::vector<I64>& selections = _currentSelection[idx];
     if (!selections.empty()) {
         if (std::find(std::cbegin(selections), std::cend(selections), hoverGUID) != std::cend(selections)) {
             //Already selected
@@ -1536,7 +1536,7 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
 
 
 void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
-    static vector<Line> s_lines(4);
+    static std::vector<Line> s_lines(4);
     static bool s_linesSet = false;
     if (!s_linesSet) {
         for (Line& line : s_lines) {

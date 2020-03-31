@@ -49,7 +49,7 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     U32 nHMWidth = heightmapDataSize.x;
     U32 nHMHeight = heightmapDataSize.y;
 
-    const vector<VertexBuffer::Vertex>& verts = _parentTerrain->_physicsVerts;
+    const std::vector<VertexBuffer::Vertex>& verts = _parentTerrain->_physicsVerts;
 
     for (U16 j = 0; j < nHMHeight - 1; ++j) {
         U32 jOffset = j * (offset)+pos.y;

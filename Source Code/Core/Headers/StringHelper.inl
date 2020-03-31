@@ -40,7 +40,7 @@ namespace Divide {
 namespace Util {
 
 template<typename T_vec, typename T_str>
-typename std::enable_if<std::is_same<T_vec, typename vector<T_str>>::value ||
+typename std::enable_if<std::is_same<T_vec, typename std::vector<T_str>>::value ||
                         std::is_same<T_vec, typename vectorFast<T_str>>::value, T_vec&>::type
 Split(const char* input, char delimiter, T_vec& elems) {
     elems.resize(0);
@@ -94,7 +94,7 @@ vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>&
 }
 
 template<typename T_vec, typename T_str>
-typename std::enable_if<std::is_same<T_vec, vector<T_str>>::value ||
+typename std::enable_if<std::is_same<T_vec, std::vector<T_str>>::value ||
                         std::is_same<T_vec, vectorFast<T_str>>::value ||
                         std::is_same<T_vec, vectorEASTL<T_str>>::value, T_vec>::type
 Split(const char* input, char delimiter) {
@@ -108,7 +108,7 @@ bool IsNumber(const T_str& s) {
 }
 
 template<typename T_str>
-void GetPermutations(const T_str& inputString, vector<T_str>& permutationContainer) {
+void GetPermutations(const T_str& inputString, std::vector<T_str>& permutationContainer) {
     permutationContainer.clear();
     T_str tempCpy(inputString);
     std::sort(std::begin(tempCpy), std::end(tempCpy));

@@ -53,7 +53,7 @@ class Bone {
     mat4<F32> _originalLocalTransform;
 
     Bone* _parent;
-    vector<Bone*> _children;
+    std::vector<Bone*> _children;
 
     // index in the current animation's channel array.
     Bone(const stringImpl& name) noexcept
@@ -101,7 +101,7 @@ class Bone {
         return nullptr;
     }
 
-    inline void createBoneList(vector<Bone*>& boneList) {
+    inline void createBoneList(std::vector<Bone*>& boneList) {
         boneList.push_back(this);
         for (Bone* child : _children) {
             child->createBoneList(boneList);

@@ -58,7 +58,7 @@ ShaderBuffer* Vegetation::s_grassData = nullptr;
 VertexBuffer* Vegetation::s_buffer = nullptr;
 ShaderProgram_ptr Vegetation::s_cullShaderGrass = nullptr;
 ShaderProgram_ptr Vegetation::s_cullShaderTrees = nullptr;
-vector<Mesh_ptr> Vegetation::s_treeMeshes;
+std::vector<Mesh_ptr> Vegetation::s_treeMeshes;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
 U32 Vegetation::s_maxChunks = 0u;
 

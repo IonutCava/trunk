@@ -250,7 +250,7 @@ void GL_API::appendToShaderHeader(ShaderType type,
     if (entry.find("#include") == stringImpl::npos) {
         inOutOffset[index] += Util::LineCount(entry);
     } else {
-        vector<Str64> tempAtoms;
+        std::vector<Str64> tempAtoms;
         tempAtoms.reserve(10);
         inOutOffset[index] += Util::LineCount(glShaderProgram::preprocessIncludes("header", entry, 0, tempAtoms, true));
     }
@@ -920,8 +920,8 @@ void GL_API::drawText(const TextElementBatch& batch) {
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
         
         const TextElement::TextType& text = entry.text();
-        const vec_size_eastl lineCount = text.size();
-        for (vec_size_eastl i = 0; i < lineCount; ++i) {
+        const vec_size lineCount = text.size();
+        for (vec_size i = 0; i < lineCount; ++i) {
             fonsDrawText(_fonsContext,
                          textX,
                          textY - (lh * i),

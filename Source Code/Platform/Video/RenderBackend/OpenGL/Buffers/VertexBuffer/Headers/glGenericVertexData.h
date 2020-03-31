@@ -115,8 +115,8 @@ class glGenericVertexData final : public GenericVertexData {
     GLuint _indexBufferSize;
     GLenum _indexBufferUsage;
     GLuint _vertexArray;
-    vector<glGenericBuffer*> _bufferObjects;
-    vector<U32> _instanceDivisor;
+    std::vector<glGenericBuffer*> _bufferObjects;
+    std::vector<U32> _instanceDivisor;
 };
 
 };  // namespace Divide

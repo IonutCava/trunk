@@ -66,12 +66,12 @@ struct alligned_base {
         return _mm_malloc(size, alignment);
     }
 
-        void *operator new[](size_t size)
+    void *operator new[](size_t size)
     {
         return _mm_malloc(size, alignment);
     }
 
-        void operator delete (void *mem)
+    void operator delete (void *mem)
     {
         _mm_free(mem);
     }

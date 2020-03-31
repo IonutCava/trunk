@@ -24,7 +24,7 @@ void ParticleVelocityGenerator::generate(Task& packagedTasksParent,
             &packagedTasksParent,
             [from, to, min, max](const Task& parentTask) mutable
             {
-                std::for_each(from, to, [&](iter_t::value_type& velocity)
+                std::for_each(from, to, [&](vec4<F32>& velocity)
                 {
                     velocity.set(Random(min, max));
                 });

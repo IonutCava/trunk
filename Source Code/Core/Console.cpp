@@ -13,7 +13,7 @@ bool Console::_immediateMode = true;
 bool Console::_errorStreamEnabled = true;
 
 std::atomic_bool Console::_running = false;
-vector<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
+std::vector<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue

@@ -47,27 +47,27 @@ namespace Divide {
     };
 // This is the callback equivalent of PressReleaseAction with IDs resolved
 struct PressReleaseActionCbks {
-    std::array<vector<DELEGATE<void, InputParams>>, to_base(PressReleaseActions::Action::COUNT)> _actions;
+    std::array<std::vector<DELEGATE<void, InputParams>>, to_base(PressReleaseActions::Action::COUNT)> _actions;
 
     void from(const PressReleaseActions& actions, const InputActionList& actionList);
 };
 
 class SceneInput : public Input::InputAggregatorInterface {
    public:
-    typedef std::pair<std::underlying_type_t<Input::JoystickElementType>, U32> JoystickMapKey;
+    using JoystickMapKey = std::pair<std::underlying_type_t<Input::JoystickElementType>, U32>;
 
-    typedef hashMap<Input::KeyCode, PressReleaseActionCbks> KeyMapCache;
-    typedef hashMap<Input::MouseButton, PressReleaseActionCbks> MouseMapCache;
-    typedef ska::bytell_hash_map<JoystickMapKey, PressReleaseActionCbks, pair_hash> JoystickMapCacheEntry;
-    typedef ska::bytell_hash_map<std::underlying_type_t<Input::Joystick>, JoystickMapCacheEntry> JoystickMapCache;
+    using KeyMapCache = hashMap<Input::KeyCode, PressReleaseActionCbks>;
+    using MouseMapCache = hashMap<Input::MouseButton, PressReleaseActionCbks>;
+    using JoystickMapCacheEntry  = ska::bytell_hash_map<JoystickMapKey, PressReleaseActionCbks, pair_hash>;
+    using JoystickMapCache = ska::bytell_hash_map<std::underlying_type_t<Input::Joystick>, JoystickMapCacheEntry>;
 
-    typedef hashMap<Input::KeyCode, PressReleaseActions> KeyMap;
-    typedef hashMap<Input::MouseButton, PressReleaseActions> MouseMap;
-    typedef ska::bytell_hash_map<JoystickMapKey, PressReleaseActions, pair_hash> JoystickMapEntry;
-    typedef ska::bytell_hash_map<std::underlying_type_t<Input::Joystick>, JoystickMapEntry> JoystickMap;
+    using KeyMap = hashMap<Input::KeyCode, PressReleaseActions>;
+    using MouseMap = hashMap<Input::MouseButton, PressReleaseActions>;
+    using JoystickMapEntry = ska::bytell_hash_map<JoystickMapKey, PressReleaseActions, pair_hash>;
+    using JoystickMap = ska::bytell_hash_map<std::underlying_type_t<Input::Joystick>, JoystickMapEntry>;
 
-    typedef vector<std::pair<Input::KeyCode, Input::InputState>> KeyLog;
-    typedef vector<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> MouseBtnLog;
+    using KeyLog = std::vector<std::pair<Input::KeyCode, Input::InputState>>;
+    using MouseBtnLog = std::vector<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>>;
 
     explicit SceneInput(Scene &parentScene, PlatformContext& context);
 

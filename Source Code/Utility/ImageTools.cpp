@@ -59,22 +59,20 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
     stbi_set_flip_vertically_on_load(_flip ? TRUE : FALSE);
 
     I32 width = 0, height = 0, comp = 0;
-    U8* data = nullptr;
-    U16* data16 = nullptr;
-    F32* dataf = nullptr;
+    bufferPtr data = nullptr;
     _isHDR = stbi_is_hdr(_name.c_str()) == TRUE;
     if (_isHDR) {
         set16Bit(false);
-        dataf = stbi_loadf(_name.c_str(), &width, &height, &comp, 0);
+        data = stbi_loadf(_name.c_str(), &width, &height, &comp, 0);
     } else {
         if (is16Bit()) {
-            data16 = stbi_load_16(_name.c_str(), &width, &height, &comp, 0);
+            data = stbi_load_16(_name.c_str(), &width, &height, &comp, 0);
         } else {
             data = stbi_load(_name.c_str(), &width, &height, &comp, 0);
         }
     }
 
-    if ((_isHDR && dataf == nullptr) || (!_isHDR && data == nullptr && data16 == nullptr)) {
+    if (data == nullptr) {
         Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         return false;
     }
@@ -112,45 +110,31 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
         _bpp *= 2;
     }
 
-    vector<U8> data2 = {};
-    vector<U16> data162 = {};
-    vector<F32> dataF2 = {};
-
+    std::vector<U32> resizedData = {};
     if (refWidth != 0 && refHeight != 0 && (refWidth != width || refHeight != height)) {
+        resizedData.resize(refWidth * refHeight, 0u);
         I32 ret = 0;
         if (is16Bit()) {
-            data162.resize(to_size(refWidth) * refHeight * comp, 0);
-            ret = stbir_resize_uint16_generic(data16, width, height, 0,
-                                              data162.data(), refWidth, refHeight, 0,
+            ret = stbir_resize_uint16_generic((U16*)data, width, height, 0,
+                                              (U16*)resizedData.data(), refWidth, refHeight, 0,
                                               comp, -1, 0,
                                               STBIR_EDGE_CLAMP, STBIR_FILTER_DEFAULT, STBIR_COLORSPACE_LINEAR,
                                               NULL);
-            if (ret == 1) {
-                stbi_image_free(data16);
-                data16 = nullptr;
-            }
         } else if (isHDR()) {
-            dataF2.resize(to_size(refWidth) * refHeight * comp, 0);
-            ret = stbir_resize_float(dataf, width, height, 0, dataF2.data(), refWidth, refHeight, 0, comp);
-            if (ret == 1) {
-                stbi_image_free(dataf);
-                dataf = nullptr;
-            }
+            ret = stbir_resize_float((F32*)data, width, height, 0, (F32*)resizedData.data(), refWidth, refHeight, 0, comp);
         } else {
-            data2.resize(to_size(refWidth) * refHeight * comp, 0);
             if (srgb) {
-                ret = stbir_resize_uint8_srgb(data, width, height, 0, data2.data(), refWidth, refHeight, 0, comp, -1, 0);
+                ret = stbir_resize_uint8_srgb((U8*)data, width, height, 0, (U8*)resizedData.data(), refWidth, refHeight, 0, comp, -1, 0);
             } else {
-                ret = stbir_resize_uint8(data, width, height, 0, data2.data(), refWidth, refHeight, 0, comp);
-            }
-            if (ret == 1) {
-                stbi_image_free(data);
-                data = nullptr;
+                ret = stbir_resize_uint8((U8*)data, width, height, 0, (U8*)resizedData.data(), refWidth, refHeight, 0, comp);
             }
         }
+
         if (ret == 1) {
             width = refWidth;
             height = refHeight;
+            stbi_image_free((U16*)data);
+            data = (bufferPtr)resizedData.data();
         }
     }
 
@@ -159,22 +143,15 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
     _alpha = comp % 2 == 0;
     _compressed = false;
     image._size = width * height * _bpp / 8;
-
-    if (_isHDR) {
-        image.writeData(dataf != nullptr ? dataf : dataF2.data(), to_U32(image._size / 4));
-        if (dataf != nullptr) {
-            stbi_image_free(dataf);
+    if (data != nullptr) {
+        if (_isHDR) {
+            image.writeData((F32*)data, to_U32(image._size / 4));
+        } else if (is16Bit()) {
+            image.writeData((U16*)data, to_U32(image._size / 2));
+        } else {
+            image.writeData((U8*)data, to_U32(image._size));
         }
-    } else if (is16Bit()) {
-        image.writeData(data16 != nullptr ? data16 : data162.data(), to_U32(image._size / 2));
-        if (data16 != nullptr) {
-            stbi_image_free(data16);
-        }
-    } else {
-        image.writeData(data != nullptr ? data : data2.data(), to_U32(image._size));
-        if (data != nullptr) {
-            stbi_image_free(data);
-        }
+        stbi_image_free(data);
     }
 
     return true;
@@ -305,7 +282,7 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
 
         const I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
         layer._size = to_size(size) * numImagePasses;
-        layer._data.resize(layer._size);
+        U8* data = layer.allocate<U8>(layer._size);
 
         for (I32 j = 0, offset = 0; j < numImagePasses; ++j, offset += size) {
             if (_compressedTextureType == TextureType::TEXTURE_CUBE_MAP) {
@@ -314,9 +291,9 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
                 ilActiveMipmap(i);
             }
             if (_compressed) {
-                ilGetDXTCData(&layer._data[0] + offset, size, dxtc);
+                ilGetDXTCData(data + offset, size, dxtc);
             } else {
-                memcpy(&layer._data[0] + offset, ilGetData(), size);
+                memcpy(data + offset, ilGetData(), size);
             }
         }
     }
@@ -390,7 +367,7 @@ bool ImageData::loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringI
                          image.get_height(),
                          image.get_depth());
     base._size = image.get_size();
-    base.writeData(image, base._dimensions.width * base._dimensions.height);
+    base.writeData((U8*)image, base._dimensions.width * base._dimensions.height);
 
     for (U8 i = 0; i < numMips; ++i) {
         ImageLayer& layer = _data[i + 1];
@@ -400,7 +377,7 @@ bool ImageData::loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringI
                               mipMap.get_height(),
                               mipMap.get_depth());
         layer._size = mipMap.get_size();
-        layer.writeData(mipMap, layer._dimensions.width * layer._dimensions.height);
+        layer.writeData((U8*)mipMap, layer._dimensions.width * layer._dimensions.height);
     }
 
     image.clear();
@@ -417,21 +394,21 @@ void ImageData::getRed(I32 x, I32 y, U8& r, U32 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
 
     const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    r = _compressed ? _decompressedData[idx + 0] : _data[mipLevel]._data[idx + 0];
+    r = _compressed ? _decompressedData[idx + 0] : ((U8*)_data[mipLevel].data())[idx + 0];
 }
 
 void ImageData::getGreen(I32 x, I32 y, U8& g, U32 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
 
     const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    g = _compressed ? _decompressedData[idx + 1] : _data[mipLevel]._data[idx + 1];
+    g = _compressed ? _decompressedData[idx + 1] : ((U8*)_data[mipLevel].data())[idx + 1];
 }
 
 void ImageData::getBlue(I32 x, I32 y, U8& b, U32 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
 
     const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    b = _compressed ? _decompressedData[idx + 2] : _data[mipLevel]._data[idx + 2];
+    b = _compressed ? _decompressedData[idx + 2] : ((U8*)_data[mipLevel].data())[idx + 2];
 }
 
 void ImageData::getAlpha(I32 x, I32 y, U8& a, U32 mipLevel) const {
@@ -440,7 +417,7 @@ void ImageData::getAlpha(I32 x, I32 y, U8& a, U32 mipLevel) const {
     a = 255;
     if (_alpha) {
         const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-        a = _compressed ? _decompressedData[idx + 3] : _data[mipLevel]._data[idx + 3];
+        a = _compressed ? _decompressedData[idx + 3] : ((U8*)_data[mipLevel].data())[idx + 3];
     }
 }
 
@@ -448,7 +425,7 @@ void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel
     assert(!_compressed || mipLevel == 0);
 
     const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    const U8* src = _compressed ? _decompressedData.data() : _data[mipLevel]._data.data();
+    const U8* src = _compressed ? _decompressedData.data() : ((U8*)_data[mipLevel].data());
 
     r = src[idx + 0]; g = src[idx + 1]; b = src[idx + 2]; a = _alpha ? src[idx + 3] : 255;
 }

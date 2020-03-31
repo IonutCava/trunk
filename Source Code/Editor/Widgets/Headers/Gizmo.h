@@ -111,7 +111,7 @@ namespace Divide {
         bool _visible = false;
         bool _wasUsed = false;
         bool _shouldRegisterUndo = false;
-        vector<SceneGraphNode*> _selectedNodes;
+        std::vector<SceneGraphNode*> _selectedNodes;
         ImGuiContext* _imguiContext = nullptr;
         TransformSettings _transformSettings;
         UndoEntry<TransformValues> _undoEntry;

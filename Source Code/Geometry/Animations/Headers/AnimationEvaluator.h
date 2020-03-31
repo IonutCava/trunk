@@ -58,9 +58,9 @@ class AnimationChannel {
 
     U64 _nameKey;
     stringImpl _name;
-    vector<aiVectorKey> _positionKeys;
-    vector<aiQuatKey> _rotationKeys;
-    vector<aiVectorKey> _scalingKeys;
+    std::vector<aiVectorKey> _positionKeys;
+    std::vector<aiQuatKey> _rotationKeys;
+    std::vector<aiVectorKey> _scalingKeys;
     /** The number of position keys */
     U32 _numPositionKeys;
     U32 _numRotationKeys;
@@ -83,42 +83,42 @@ class AnimEvaluator {
         return to_U32(_transforms.size());
     }
 
-    inline vector<vectorBest<mat4<F32>>>& transforms() noexcept {
+    inline std::vector<vectorEASTL<mat4<F32>>>& transforms() noexcept {
         return _transforms;
     }
     
-    inline const vector<vectorBest<mat4<F32>>>& transforms() const noexcept {
+    inline const std::vector<vectorEASTL<mat4<F32>>>& transforms() const noexcept {
         return _transforms;
     }
 
-    inline vectorBest<mat4<F32>>& transforms(const U32 frameIndex) {
+    inline vectorEASTL<mat4<F32>>& transforms(const U32 frameIndex) {
         assert(frameIndex < to_U32(_transforms.size()));
         return _transforms[frameIndex];
     }
 
-    inline const vectorBest<mat4<F32>>& transforms(const U32 frameIndex) const {
+    inline const vectorEASTL<mat4<F32>>& transforms(const U32 frameIndex) const {
         assert(frameIndex < to_U32(_transforms.size()));
         return _transforms[frameIndex];
     }
 
-    inline vectorBest<mat4<F32>>& transforms(const D64 elapsedTime,
+    inline vectorEASTL<mat4<F32>>& transforms(const D64 elapsedTime,
                                                     I32& resultingFrameIndex) {
         resultingFrameIndex = frameIndexAt(elapsedTime);
         return transforms(to_U32(resultingFrameIndex));
     }
 
-    inline vectorBest<mat4<F32>>& transforms(const D64 elapsedTime) {
+    inline vectorEASTL<mat4<F32>>& transforms(const D64 elapsedTime) {
         I32 resultingFrameIndex = 0;
         return transforms(elapsedTime, resultingFrameIndex);
     }
 
-    inline const vectorBest<mat4<F32>>& transforms(const D64 elapsedTime,
+    inline const vectorEASTL<mat4<F32>>& transforms(const D64 elapsedTime,
                                                           I32& resultingFrameIndex) const {
         resultingFrameIndex = frameIndexAt(elapsedTime);
         return transforms(to_U32(resultingFrameIndex));
     }
 
-    inline const vectorBest<mat4<F32>>& transforms(const D64 elapsedTime) const {
+    inline const vectorEASTL<mat4<F32>>& transforms(const D64 elapsedTime) const {
         I32 resultingFrameIndex = 0;
         return transforms(elapsedTime, resultingFrameIndex);
     }
@@ -159,7 +159,7 @@ class AnimEvaluator {
    protected:
     stringImpl _name;
     /// Array to return transformations results inside.
-    vector<vectorBest<mat4<F32>>> _transforms;
+    std::vector<vectorEASTL<mat4<F32>>> _transforms;
     /// play forward == true, play backward == false
     bool _playAnimationForward;
     D64 _lastTime;
@@ -167,9 +167,9 @@ class AnimEvaluator {
     D64 _ticksPerSecond;
 
    private:
-    vector<vec3<U32>> _lastPositions;
+    std::vector<vec3<U32>> _lastPositions;
     /// vector that holds all bone channels
-    vector<AnimationChannel> _channels;
+    std::vector<AnimationChannel> _channels;
     /// GPU buffer to hold bone transforms
     ShaderBuffer* _boneTransformBuffer;
 };

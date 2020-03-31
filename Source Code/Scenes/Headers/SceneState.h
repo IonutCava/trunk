@@ -324,8 +324,8 @@ class SceneState : public SceneComponent {
     inline void windDirZ(F32 factor) noexcept { _windDirZ = factor; }
     inline F32  windDirZ()     const noexcept { return _windDirZ; }
 
-    inline vector<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
-    inline const vector<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
+    inline std::vector<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
+    inline const std::vector<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
 
     inline void saveLoadDisabled(const bool state) noexcept { _saveLoadDisabled = state; }
     inline bool saveLoadDisabled()           const noexcept { return _saveLoadDisabled; }
@@ -337,10 +337,7 @@ protected:
 
     std::array<MusicPlaylist, to_base(MusicType::COUNT)> _music;
     std::array<SceneStatePerPlayer, Config::MAX_LOCAL_PLAYER_COUNT> _playerState;
-
-    bool _saveLoadDisabled;
-
-    vector<WaterDetails> _globalWaterBodies;
+    std::vector<WaterDetails> _globalWaterBodies;
 
     /// saves all the rendering information for the scene
     /// (camera position, light info, draw states)
@@ -349,6 +346,8 @@ protected:
     F32 _windDirX;
     F32 _windDirZ;
     U8  _playerPass;
+
+    bool _saveLoadDisabled;
 };
 
 namespace Attorney {

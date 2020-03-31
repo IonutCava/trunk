@@ -27,8 +27,8 @@ namespace Divide {
 
         _isRunning = false;
 
-        const vec_size_eastl threadCount = _threads.size();
-        for (vec_size_eastl idx = 0; idx < threadCount; ++idx) {
+        const vec_size threadCount = _threads.size();
+        for (vec_size idx = 0; idx < threadCount; ++idx) {
             addTask([](bool wait) noexcept { ACKNOWLEDGE_UNUSED(wait);  return true; });
         }
 

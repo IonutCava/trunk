@@ -56,19 +56,19 @@ FileWithPath splitPathToNameAndLocation(const char* input) {
 
 //ref: https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
 bool pathExists(const char* filePath) {
-    struct stat info;
+    auto targetPath = std::filesystem::path(filePath);
 
-    if (stat(filePath, &info) != 0) {
-        return false;
-    } else if (info.st_mode & S_IFDIR) {
-        return true;
-    }
-
-    return false;
+    return std::filesystem::is_directory(targetPath);
 }
 
 bool createDirectory(const char* path) {
-    return std::filesystem::create_directory(std::filesystem::path(path));
+    if (!pathExists(path)) {
+        auto targetPath = std::filesystem::path(path);
+        std::error_code ec = {};
+        return std::filesystem::create_directory(targetPath, ec);
+    }
+
+    return true;
 }
 
 bool fileExists(const char* filePathAndName) {

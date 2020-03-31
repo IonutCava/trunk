@@ -131,7 +131,7 @@ class ByteBuffer {
 
    protected:
     size_t _rpos, _wpos;
-    vector<Byte> _storage;
+    std::vector<Byte> _storage;
 };
 
 };  // namespace Divide

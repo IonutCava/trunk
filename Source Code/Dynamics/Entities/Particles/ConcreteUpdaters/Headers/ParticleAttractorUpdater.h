@@ -39,7 +39,7 @@ namespace Divide {
 class ParticleAttractorUpdater final : public ParticleUpdater {
    public:
     /// w = force
-    vector<vec4<F32>> _attractors;
+    std::vector<vec4<F32>> _attractors;
 
    public:
     ParticleAttractorUpdater(GFXDevice& context) : ParticleUpdater(context)

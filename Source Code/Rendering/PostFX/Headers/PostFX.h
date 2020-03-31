@@ -119,8 +119,8 @@ private:
     ShaderProgram_ptr _postProcessingShader;
     Texture_ptr _underwaterTexture;
     vec2<U16> _resolutionCache;
-    vector<U32> _shaderFunctionSelection;
-    vector<I32> _shaderFunctionList;
+    std::vector<U32> _shaderFunctionSelection;
+    std::vector<I32> _shaderFunctionList;
 
     RTDrawDescriptor _postFXTarget;
 

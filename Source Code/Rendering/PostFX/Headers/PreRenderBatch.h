@@ -66,7 +66,7 @@ class PreRenderBatch {
 
     void onFilterToggle(FilterType type, const bool state);
   private:
-    typedef vector<PreRenderOperator*> OperatorBatch;
+    using OperatorBatch = std::vector<PreRenderOperator*>;
     OperatorBatch _operators[to_base(FilterSpace::COUNT)];
 
     GFXDevice& _context;

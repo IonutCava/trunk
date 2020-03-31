@@ -144,7 +144,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
 
     /// Object picking
-    inline vector<I64> getCurrentSelection(PlayerIndex index = 0) const {
+    inline std::vector<I64> getCurrentSelection(PlayerIndex index = 0) const {
         const auto it = _currentSelection.find(index);
         if (it != eastl::cend(_currentSelection)) {
             return it->second;
@@ -281,15 +281,15 @@ class Scene : public Resource, public PlatformContextComponent {
 
        vectorEASTL<Player*> _scenePlayers;
        U64 _sceneTimerUS;
-       vector<D64> _taskTimers;
-       vector<D64> _guiTimersMS;
+       std::vector<D64> _taskTimers;
+       std::vector<D64> _guiTimersMS;
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
        std::stack<XML::SceneNode> _xmlSceneGraph;
 
        F32 _LRSpeedFactor;
        /// Current selection
-       hashMap<PlayerIndex, vector<I64>> _currentSelection;
+       hashMap<PlayerIndex, std::vector<I64>> _currentSelection;
        hashMap<PlayerIndex, I64> _currentHoverTarget;
        hashMap<PlayerIndex, DragSelectData> _dragSelectData;
 
@@ -307,8 +307,8 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorEASTL<Task*> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
-       vector<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
-       vector<SGNRayResult> _sceneSelectionCandidates;
+       std::vector<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
+       std::vector<SGNRayResult> _sceneSelectionCandidates;
 
    protected:
        LightPool* _lightPool;

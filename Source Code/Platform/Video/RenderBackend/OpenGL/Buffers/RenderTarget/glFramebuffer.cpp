@@ -178,7 +178,7 @@ bool glFramebuffer::create() {
 
     // If this is a multisampled FBO, make sure we have a resolve buffer
     if (_hasMultisampledColourAttachments && _resolveBuffer == nullptr) {
-        vector<RTAttachmentDescriptor> attachments;
+        std::vector<RTAttachmentDescriptor> attachments;
         for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
             for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachmentType>(i)); ++j) {
                 const RTAttachment* att = _attachmentPool->get(static_cast<RTAttachmentType>(i), j).get();
@@ -364,7 +364,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
         return;
     }
 
-    std::unordered_set<vec_size_eastl> blitDepthEntry;
+    std::unordered_set<vec_size> blitDepthEntry;
     // Multiple attachments, multiple layers, multiple everything ... what a mess ... -Ionut
     if (!params._blitColours.empty() && hasColour()) {
 
@@ -441,7 +441,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
 
             // We always change depth layers to satisfy whatever f**ked up completion requirements the OpenGL driver has (looking at you Nvidia)
             bool shouldBlitDepth = false;
-            for (vec_size_eastl idx = 0; idx < params._blitDepth.size(); ++idx) {
+            for (vec_size idx = 0; idx < params._blitDepth.size(); ++idx) {
                 const DepthBlitEntry& depthEntry = params._blitDepth[idx];
                 // MAYBE, we need to blit this combo of depth layers. 
                 if (depthEntry._inputLayer == entry._inputLayer && depthEntry._outputLayer == entry._outputLayer) {
@@ -467,7 +467,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
     }
 
     if (!params._blitDepth.empty() && hasDepth()) {
-        for (vec_size_eastl idx = 0; idx < params._blitDepth.size(); ++idx) {
+        for (vec_size idx = 0; idx < params._blitDepth.size(); ++idx) {
             // Already blitted
             if (blitDepthEntry.find(idx) != std::cend(blitDepthEntry)) {
                 continue;

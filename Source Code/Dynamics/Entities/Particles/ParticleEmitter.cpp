@@ -68,8 +68,8 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     // assert if double init!
     DIVIDE_ASSERT(particleData.get() != nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
     _particles = particleData;
-    const vector<vec3<F32>>& geometry = particleData->particleGeometryVertices();
-    const vector<U32>& indices = particleData->particleGeometryIndices();
+    const std::vector<vec3<F32>>& geometry = particleData->particleGeometryVertices();
+    const std::vector<U32>& indices = particleData->particleGeometryIndices();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
@@ -280,8 +280,8 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
     const vec3<F32>& eyePos = crtCamera.getEye();
     U32 aliveCount = getAliveParticleCount();
 
-    vectorBest<vec4<F32>>& misc = _particles->_misc;
-    vectorBest<vec4<F32>>& pos = _particles->_position;
+    vectorEASTL<vec4<F32>>& misc = _particles->_misc;
+    vectorEASTL<vec4<F32>>& pos = _particles->_position;
 
     auto updateDistToCamera = [&eyePos, &misc, &pos](const Task* parent, U32 start, U32 end) {
         for (U32 i = start; i < end; ++i) {

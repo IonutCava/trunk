@@ -59,15 +59,15 @@ class SceneAnimator {
     friend class Attorney::SceneAnimatorMeshImporter;
    public:
     // index = frameIndex; entry = vectorIndex;
-    typedef vector<I32> LineMap;
+    using LineMap = std::vector<I32>;
     // index = animationID;
-    typedef vector<LineMap> LineCollection;
+    using LineCollection = std::vector<LineMap>;
 
     SceneAnimator();
     ~SceneAnimator();
 
     /// This must be called to fill the SceneAnimator with valid data
-    bool init(PlatformContext& context, Bone* const skeleton, const vector<Bone*>& bones);
+    bool init(PlatformContext& context, Bone* const skeleton, const std::vector<Bone*>& bones);
     /// Frees all memory and initializes everything to a default state
     void release(bool releaseAnimations = true);
     void save(PlatformContext& context, ByteBuffer& dataOut) const;
@@ -108,7 +108,7 @@ class SceneAnimator {
         return _animations[animationIndex]->frameIndexAt(dt);
     }
 
-    inline const vectorBest<mat4<F32>>& transforms(I32 animationIndex, U32 index) const {
+    inline const vectorEASTL<mat4<F32>>& transforms(I32 animationIndex, U32 index) const {
         return _animations[animationIndex]->transforms(index);
     }
 
@@ -130,7 +130,7 @@ class SceneAnimator {
         return _animations[animationIndex]->frameCount();
     }
 
-    inline const vector<std::shared_ptr<AnimEvaluator>>& animations() const noexcept {
+    inline const std::vector<std::shared_ptr<AnimEvaluator>>& animations() const noexcept {
         return _animations;
     }
 
@@ -186,7 +186,7 @@ class SceneAnimator {
     /// The index can be used to index directly into the vector returned from
     /// GetTransform
     I32 boneIndex(const stringImpl& bname) const;
-    const vector<Line>& skeletonLines(I32 animationIndex, const D64 dt);
+    const std::vector<Line>& skeletonLines(I32 animationIndex, const D64 dt);
 
     /// Returns the frame count of the longest registered animation
     inline U32 getMaxAnimationFrames() const noexcept {
@@ -207,7 +207,7 @@ class SceneAnimator {
     void calculate(I32 animationIndex, const D64 pTime);
     I32 createSkeleton(Bone* piNode,
                        const mat4<F32>& parent,
-                       vector<Line>& lines);
+        std::vector<Line>& lines);
 
    private:
     /// Frame count of the longest registered animation
@@ -215,22 +215,22 @@ class SceneAnimator {
     /// Root node of the internal scene structure
     Bone* _skeleton;
     I32   _skeletonDepthCache;
-    vector<Bone*> _bones;
+    std::vector<Bone*> _bones;
     /// A vector that holds each animation
-    vector<std::shared_ptr<AnimEvaluator>> _animations;
+    std::vector<std::shared_ptr<AnimEvaluator>> _animations;
     /// find animations quickly
     hashMap<U64, U32> _animationNameToID;
     /// temp array of transforms
-    vector<aiMatrix4x4> _transforms;
+    std::vector<aiMatrix4x4> _transforms;
     mat4<F32> _boneTransformCache;
     LineCollection _skeletonLines;
-    vector<vector<Line>> _skeletonLinesContainer;
+    std::vector<std::vector<Line>> _skeletonLinesContainer;
 };
 
 namespace Attorney {
     class SceneAnimatorMeshImporter {
         private:
-        static void registerAnimations(SceneAnimator& animator, const vector<std::shared_ptr<AnimEvaluator>>& animations) {
+        static void registerAnimations(SceneAnimator& animator, const std::vector<std::shared_ptr<AnimEvaluator>>& animations) {
             const size_t animationCount = animations.size();
             animator._animations.reserve(animationCount);
             for (size_t i = 0; i < animationCount; ++i) {

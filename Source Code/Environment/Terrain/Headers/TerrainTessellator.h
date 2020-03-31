@@ -76,8 +76,8 @@ public:
         bool _useFrustumCulling = true;
     };
 
-    typedef vectorEASTL<TessellatedTerrainNode> TreeVector;
-    typedef vector<TessellatedNodeData> RenderDataVector;
+    using TreeVector = vectorEASTL<TessellatedTerrainNode>;
+    using RenderDataVector = std::vector<TessellatedNodeData>;
 
     static constexpr U32 MAX_TESS_NODES = 2048;
 

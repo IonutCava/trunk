@@ -164,7 +164,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         // Save file contents in  the "img" object
         ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor.srgb(), fileData);
 
-        bufferPtr data = fileData.is16Bit() ? fileData.data16() : fileData.isHDR() ? fileData.dataf() : fileData.data();
+        bufferPtr data = fileData.data();
         // Validate data
         if (data == nullptr) {
             if (info._layerIndex > 0) {

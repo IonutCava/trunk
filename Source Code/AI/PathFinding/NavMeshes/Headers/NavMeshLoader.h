@@ -114,7 +114,7 @@ class NavModelData {
     inline U32 getVertCount() const { return _vertexCount; }
     inline U32 getTriCount() const { return _triangleCount; }
 
-    inline vector<SamplePolyAreas>& getAreaTypes() {
+    inline std::vector<SamplePolyAreas>& getAreaTypes() {
         return _triangleAreaType;
     }
 
@@ -129,7 +129,7 @@ class NavModelData {
    private:
     bool _valid;
     Str128 _navMeshName;
-    vector<SamplePolyAreas> _triangleAreaType;
+    std::vector<SamplePolyAreas> _triangleAreaType;
 };
 
 namespace NavigationMeshLoader {

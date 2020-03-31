@@ -206,7 +206,7 @@ namespace Divide {
                     }
 
                     // Grab the list of dependencies
-                    const vector<U8>& dependencies = _renderPasses[i]->dependencies();
+                    const std::vector<U8>& dependencies = _renderPasses[i]->dependencies();
 
                     bool dependenciesRunning = false;
                     // For every dependency in the list
@@ -262,7 +262,7 @@ namespace Divide {
 RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
                                              U8 orderKey,
                                              RenderStage renderStage,
-                                             vector<U8> dependencies,
+                                             std::vector<U8> dependencies,
                                              bool usePerformanceCounters) {
     assert(!renderPassName.empty());
 

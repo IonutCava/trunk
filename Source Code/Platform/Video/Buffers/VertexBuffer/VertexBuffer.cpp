@@ -54,9 +54,9 @@ void VertexBuffer::computeNormals() {
     const size_t vertCount = getVertexCount();
     const size_t indexCount = getIndexCount();
 
-    typedef vector<vec3<F32>> normalVector;
+    using normalVector = std::vector<vec3<F32>>;
 
-    vector<normalVector> normalBuffer(vertCount);
+    std::vector<normalVector> normalBuffer(vertCount);
     for (U32 i = 0; i < indexCount; i += 3) {
 
         const U32 idx0 = getIndex(i + 0);

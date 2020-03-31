@@ -87,6 +87,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 #include <float.h>
 #include <cstdint>
+#include <variant>
 #include <string>
 #include <memory>
 #include <bitset>

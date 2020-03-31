@@ -49,7 +49,7 @@ class BoundingSphere {
    public:
     BoundingSphere();
     BoundingSphere(const vec3<F32>& center, F32 radius) noexcept;
-    BoundingSphere(const vector<vec3<F32>>& points) noexcept;
+    BoundingSphere(const std::vector<vec3<F32>>& points) noexcept;
     BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept;
 
     BoundingSphere(const BoundingSphere& s) noexcept;
@@ -66,7 +66,7 @@ class BoundingSphere {
     void addRadius(const BoundingSphere& bSphere);
     void addRadius(const vec3<F32>& point);
 
-    void createFromPoints(const vector<vec3<F32>>& points) noexcept;
+    void createFromPoints(const std::vector<vec3<F32>>& points) noexcept;
     void createFromPoints(const std::array<vec3<F32>, 8>& points) noexcept;
 
     void setRadius(F32 radius) noexcept;

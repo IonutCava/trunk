@@ -194,7 +194,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static void rebuildAllShaders();
 
-    static vector<Str256> getAllAtomLocations();
+    static std::vector<Str256> getAllAtomLocations();
 
     static bool useShaderTexCache() noexcept { return s_useShaderTextCache; }
     static bool useShaderBinaryCache() noexcept { return s_useShaderBinaryCache; }
@@ -225,8 +225,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static SharedMutex s_programLock;
 
     private:
-        std::array<vector<U32>, to_base(ShaderType::COUNT)> _functionIndex;
-        std::array<vector<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
+        std::array<std::vector<U32>, to_base(ShaderType::COUNT)> _functionIndex;
+        std::array<std::vector<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
 
     protected:
         template <typename T>

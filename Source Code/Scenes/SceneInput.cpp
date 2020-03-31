@@ -239,7 +239,7 @@ bool SceneInput::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
     if (g_recordInput) {
         _mouseBtnLog[arg._deviceIndex].emplace_back(
-            vectorAlg::make_tuple(arg.button, Input::InputState::PRESSED, vec2<I32>(arg.absPosition.x, arg.absPosition.y)));
+            std::make_tuple(arg.button, Input::InputState::PRESSED, vec2<I32>(arg.absPosition.x, arg.absPosition.y)));
     }
 
     PressReleaseActionCbks cbks;
@@ -256,7 +256,7 @@ bool SceneInput::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 bool SceneInput::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     if (g_recordInput) {
         _mouseBtnLog[arg._deviceIndex].emplace_back(
-                                vectorAlg::make_tuple(arg.button, Input::InputState::RELEASED, vec2<I32>(arg.absPosition.x, arg.absPosition.y)));
+                                std::make_tuple(arg.button, Input::InputState::RELEASED, vec2<I32>(arg.absPosition.x, arg.absPosition.y)));
     }
 
     PressReleaseActionCbks cbks;

@@ -71,7 +71,6 @@ namespace {
         context_type::iterator_type first = ctx.begin();
         context_type::iterator_type last = ctx.end();
 
-
         stringImpl ret = "";
         while (first != last) {
             ret.append((*first).get_value().c_str());
@@ -128,7 +127,7 @@ void glShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) 
         s_fileWatcherListener.addIgnoredEndCharacter('~');
         s_fileWatcherListener.addIgnoredExtension("tmp");
 
-        const vector<Str256> atomLocations = getAllAtomLocations();
+        const std::vector<Str256> atomLocations = getAllAtomLocations();
         for (const Str256& loc : atomLocations) {
             createDirectories(loc.c_str());
             watcher().addWatch(loc.c_str(), &s_fileWatcherListener);
@@ -295,15 +294,15 @@ void glShaderProgram::threadedLoad(bool reloadExisting) {
     }
 }
 
-vector<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
-                                              const Str64& stageName,
-                                              const Str8& extension,
-                                              const stringImpl& header,
-                                              U32 lineOffset,
-                                              bool reloadExisting,
-                                              std::pair<bool, stringImpl>& sourceCodeOut) {
-
-    vector<Str64> atoms = {};
+std::vector<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
+                                                   const Str64& stageName,
+                                                   const Str8& extension,
+                                                   const stringImpl& header,
+                                                   U32 lineOffset,
+                                                   bool reloadExisting,
+                                                   std::pair<bool, stringImpl>& sourceCodeOut) {
+                                             
+    std::vector<Str64> atoms = {};
 
     sourceCodeOut.first = false;
     sourceCodeOut.second.resize(0);
@@ -418,7 +417,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             }
 
             std::pair<bool, stringImpl> sourceCode;
-            vector<Str64> atomsTemp = loadSourceCode(type, stageData._name, shaderAtomExtensionName[shaderIdx], header, _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()) - 1u, reloadExisting, sourceCode);
+            std::vector<Str64> atomsTemp = loadSourceCode(type, stageData._name, shaderAtomExtensionName[shaderIdx], header, _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()) - 1u, reloadExisting, sourceCode);
             if (!sourceCode.first) {
                 continue;
             }
@@ -540,7 +539,7 @@ bool glShaderProgram::bind(bool& wasBound, bool& wasReady) {
 }
 
 /// This is used to set all of the subroutine indices for the specified shader stage for this program
-void glShaderProgram::SetSubroutines(ShaderType type, const vector<U32>& indices) const {
+void glShaderProgram::SetSubroutines(ShaderType type, const std::vector<U32>& indices) const {
     if (indices.empty()) {
         return;
     }
@@ -621,7 +620,7 @@ void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
 stringImpl glShaderProgram::preprocessIncludes(const Str128& name,
                                                const stringImpl& source,
                                                GLint level,
-                                               vector<Str64>& foundAtoms,
+                                               std::vector<Str64>& foundAtoms,
                                                bool lock) {
     if (level > 32) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
@@ -681,13 +680,13 @@ stringImpl glShaderProgram::preprocessIncludes(const Str128& name,
     return output;
 }
 
-const stringImpl& glShaderProgram::shaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed) {
+const stringImpl& glShaderProgram::shaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, std::vector<Str64>& foundAtoms, bool& wasParsed) {
     UniqueLockShared w_lock(s_atomLock);
     return shaderFileReadLocked(filePath, atomName, recurse, level, foundAtoms, wasParsed);
 }
 
 /// Open the file found at 'filePath' matching 'atomName' and return it's source code
-const stringImpl& glShaderProgram::shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vector<Str64>& foundAtoms, bool& wasParsed) {
+const stringImpl& glShaderProgram::shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, std::vector<Str64>& foundAtoms, bool& wasParsed) {
     U64 atomNameHash = _ID(atomName.c_str());
     // See if the atom was previously loaded and still in cache
     const AtomMap::iterator it = s_atoms.find(atomNameHash);

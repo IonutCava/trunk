@@ -244,8 +244,8 @@ void ShaderProgram::rebuildAllShaders() {
     }
 }
 
-vector<Str256> ShaderProgram::getAllAtomLocations() {
-    static vector<Str256> atomLocations;
+std::vector<Str256> ShaderProgram::getAllAtomLocations() {
+    static std::vector<Str256> atomLocations;
     if (atomLocations.empty()) {
         // General
         atomLocations.emplace_back(Paths::g_assetsLocation +

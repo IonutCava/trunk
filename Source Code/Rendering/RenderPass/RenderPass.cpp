@@ -66,7 +66,7 @@ namespace {
     }
 };
 
-RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const vector<U8>& dependencies, bool performanceCounters)
+RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const std::vector<U8>& dependencies, bool performanceCounters)
     : _parent(parent),
       _context(context),
       _sortKey(sortKey),

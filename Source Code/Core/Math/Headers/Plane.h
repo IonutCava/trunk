@@ -185,8 +185,8 @@ class Plane {
 
 template<size_t N>
 using PlaneList = std::array<Plane<F32>, N>;
+using PlaneDynamicList = std::vector<Plane<F32>>;
 
-typedef vector<Plane<F32>> PlaneDynamicList;
 };  // namespace Divide
 
 #endif

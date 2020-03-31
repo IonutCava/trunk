@@ -249,8 +249,8 @@ class Kernel : public Input::InputAggregatorInterface,
 
     U8 _prevPlayerCount;
     Rect<I32> _prevViewport;
-    vector<Rect<I32>> _editorViewports;
-    vector<Rect<I32>> _targetViewports;
+    std::vector<Rect<I32>> _editorViewports;
+    std::vector<Rect<I32>> _targetViewports;
     PlatformContext   _platformContext;
 
     Task* _splashTask = nullptr;
@@ -273,7 +273,7 @@ class Kernel : public Input::InputAggregatorInterface,
     Time::ProfileTimer& _preRenderTimer;
     Time::ProfileTimer& _postRenderTimer;
     Time::ProfileTimer& _blitToDisplayTimer;
-    vector<Time::ProfileTimer*> _renderTimer;
+    std::vector<Time::ProfileTimer*> _renderTimer;
 
     // Command line arguments
     I32 _argc;

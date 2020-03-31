@@ -246,7 +246,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
-                         const vector<ImageTools::ImageLayer>& imageLayers) {
+                         const std::vector<ImageTools::ImageLayer>& imageLayers) {
     if (info._layerIndex == 0) {
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
@@ -280,23 +280,15 @@ void glTexture::loadData(const TextureLoadInfo& info,
         //UniqueLock lock(GLUtil::_driverLock);
         loadDataCompressed(info, imageLayers);
     } else {
-        bufferPtr texData = nullptr;
-        if (!imageLayers[0]._dataf.empty()) {
-            texData = (bufferPtr)imageLayers[0]._dataf.data();
-        } else if (!imageLayers[0]._data16.empty()) {
-            texData = (bufferPtr)imageLayers[0]._data16.data();
-        } else {
-            texData = (bufferPtr)imageLayers[0]._data.data();
-        }
         //UniqueLock lock(GLUtil::_driverLock);
-        loadDataUncompressed(info, texData);
+        loadDataUncompressed(info, imageLayers[0].data());
     }
 
     assert(_width > 0 && _height > 0 && "glTexture error: Invalid texture dimensions!");
 }
 
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,
-                                   const vector<ImageTools::ImageLayer>& imageLayers) {
+                                   const std::vector<ImageTools::ImageLayer>& imageLayers) {
 
     _descriptor.autoMipMaps(false);
     const GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
@@ -314,7 +306,7 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                     layer._dimensions.width,
                     glFormat,
                     static_cast<GLsizei>(layer._size),
-                    layer._data.data());
+                    layer.data());
             } break;
             case TextureType::TEXTURE_2D: {
                 glCompressedTextureSubImage2D(
@@ -326,7 +318,7 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                     layer._dimensions.height,
                     glFormat,
                     static_cast<GLsizei>(layer._size),
-                    layer._data.data());
+                    layer.data());
             } break;
 
             case TextureType::TEXTURE_3D:
@@ -345,7 +337,7 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                     layer._dimensions.depth,
                     glFormat,
                     static_cast<GLsizei>(layer._size),
-                    layer._data.data());
+                    layer.data());
             } break;
             default:
                 DIVIDE_UNEXPECTED_CALL("Unsupported texture format!");

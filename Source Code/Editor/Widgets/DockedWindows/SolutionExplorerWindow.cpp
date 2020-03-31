@@ -101,7 +101,7 @@ namespace Divide {
         ImGui::Text("All scenes");
         ImGui::Separator();
 
-        const vector<Str128>& scenes = sceneManager.sceneNameList();
+        const std::vector<Str128>& scenes = sceneManager.sceneNameList();
         for (const Str128& scene : scenes) {
             if (scene != activeScene.resourceName()) {
                 if (ImGui::TreeNodeEx(scene.c_str(), ImGuiTreeNodeFlags_Leaf)) {

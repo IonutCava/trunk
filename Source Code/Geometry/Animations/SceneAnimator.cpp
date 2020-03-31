@@ -61,7 +61,7 @@ bool SceneAnimator::init(PlatformContext& context) {
     _transforms.resize(_skeletonDepthCache);
 
     D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
-    vectorBest<mat4<F32>> vec;
+    vectorEASTL<mat4<F32>> vec;
     vec_size animationCount = _animations.size();
     _skeletonLines.resize(animationCount);
 
@@ -100,7 +100,7 @@ bool SceneAnimator::init(PlatformContext& context) {
 }
 
 /// This will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
-bool SceneAnimator::init(PlatformContext& context, Bone* const skeleton, const vector<Bone*>& bones) {
+bool SceneAnimator::init(PlatformContext& context, Bone* const skeleton, const std::vector<Bone*>& bones) {
     release(false);
     _skeleton = skeleton;
     _bones = bones;
@@ -148,18 +148,18 @@ I32 SceneAnimator::boneIndex(const stringImpl& bname) const {
 }
 
 /// Renders the current skeleton pose at time index dt
-const vector<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
-                                                     const D64 dt) {
+const std::vector<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
+                                                      const D64 dt) {
     I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt) - 1, 0);
     I32& vecIndex = _skeletonLines.at(animationIndex).at(frameIndex);
 
     if (vecIndex == -1) {
         vecIndex = to_I32(_skeletonLinesContainer.size());
-        _skeletonLinesContainer.push_back(vector<Line>());
+        _skeletonLinesContainer.push_back(std::vector<Line>());
     }
 
     // create all the needed points
-    vector<Line>& lines = _skeletonLinesContainer.at(vecIndex);
+    std::vector<Line>& lines = _skeletonLinesContainer.at(vecIndex);
     if (lines.empty()) {
         lines.reserve(vec_size(boneCount()));
         // Construct skeleton
@@ -174,7 +174,7 @@ const vector<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
 /// Create animation skeleton
 I32 SceneAnimator::createSkeleton(Bone* piNode,
                                   const mat4<F32>& parent,
-                                  vector<Line>& lines) {
+                                  std::vector<Line>& lines) {
 
     const mat4<F32>& me = piNode->_globalTransform;
 

@@ -79,7 +79,7 @@ class ProfileTimer {
     bool hasChildTimer(ProfileTimer& child);
 
    protected:
-     vector<U32> _children;
+     std::vector<U32> _children;
      U32 _parent;
      ApplicationTimer& _appTimer;
 

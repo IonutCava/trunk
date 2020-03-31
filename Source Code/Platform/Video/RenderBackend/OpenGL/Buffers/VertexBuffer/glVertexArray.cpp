@@ -15,7 +15,7 @@ namespace {
 // Once vertex buffers reach a certain size, the for loop grows really really fast up to millions of iterations.
 // Multiple if-checks per loop are not an option, so do some template hacks to speed this function up
 template<bool texCoords, bool normals, bool tangents, bool colour, bool bones>
-void fillSmallData5(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut)
+void fillSmallData5(const std::vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut)
 {
     for (const VertexBuffer::Vertex& data : dataIn) {
         dataOut << data._position;
@@ -48,7 +48,7 @@ void fillSmallData5(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& data
 }
 
 template <bool texCoords, bool normals, bool tangents, bool colour>
-void fillSmallData4(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool bones)
+void fillSmallData4(const std::vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool bones)
 {
     if (bones) {
         fillSmallData5<texCoords, normals, tangents, colour, true>(dataIn, dataOut);
@@ -58,7 +58,7 @@ void fillSmallData4(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& data
 }
 
 template <bool texCoords, bool normals, bool tangents>
-void fillSmallData3(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool colour, bool bones)
+void fillSmallData3(const std::vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool colour, bool bones)
 {
     if (colour) {
         fillSmallData4<texCoords, normals, tangents, true>(dataIn, dataOut, bones);
@@ -68,7 +68,7 @@ void fillSmallData3(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& data
 }
 
 template <bool texCoords, bool normals>
-void fillSmallData2(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool tangents, bool colour, bool bones)
+void fillSmallData2(const std::vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool tangents, bool colour, bool bones)
 {
     if (tangents) {
         fillSmallData3<texCoords, normals, true>(dataIn, dataOut, colour, bones);
@@ -78,7 +78,7 @@ void fillSmallData2(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& data
 }
 
 template <bool texCoords>
-void fillSmallData1(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool normals, bool tangents, bool colour, bool bones)
+void fillSmallData1(const std::vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool normals, bool tangents, bool colour, bool bones)
 {
     if (normals) {
         fillSmallData2<texCoords, true>(dataIn, dataOut, tangents, colour, bones);
@@ -87,7 +87,7 @@ void fillSmallData1(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& data
     }
 }
 
-void fillSmallData(const vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool texCoords, bool normals, bool tangents, bool colour, bool bones)
+void fillSmallData(const std::vector<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool texCoords, bool normals, bool tangents, bool colour, bool bones)
 {
     if (texCoords) {
         fillSmallData1<true>(dataIn, dataOut, normals, tangents, colour, bones);
@@ -280,7 +280,7 @@ bool glVertexArray::refresh() {
             // Update our IB
             glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
         } else {
-            vectorBest<U16> smallIndices; 
+            vectorFast<U16> smallIndices;
             smallIndices.reserve(getIndexCount());
             std::transform(std::cbegin(_indices),
                            std::cend(_indices),

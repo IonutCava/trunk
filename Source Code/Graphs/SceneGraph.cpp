@@ -71,7 +71,7 @@ void SceneGraph::unload()
 
 void SceneGraph::addToDeleteQueue(SceneGraphNode* node, vec_size childIdx) {
     UniqueLockShared w_lock(_pendingDeletionLock);
-    vector<vec_size>& list = _pendingDeletion[node];
+    std::vector<vec_size>& list = _pendingDeletion[node];
     if (std::find(std::cbegin(list), std::cend(list), childIdx) == std::cend(list))
     {
         list.push_back(childIdx);
@@ -263,7 +263,7 @@ void SceneGraph::onNetworkSend(U32 frameCount) {
     Attorney::SceneGraphNodeSceneGraph::onNetworkSend(*_root, frameCount);
 }
 
-bool SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& intersections) const {
+bool SceneGraph::intersect(const Ray& ray, F32 start, F32 end, std::vector<SGNRayResult>& intersections) const {
     return _root->intersect(ray, start, end, intersections);
 
     /*if (_loadComplete) {

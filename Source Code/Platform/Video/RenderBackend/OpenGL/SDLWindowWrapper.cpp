@@ -85,7 +85,7 @@ namespace {
 
     private:
         std::mutex _glContextLock;
-        vector<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
+        std::vector<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
     } g_ContextPool;
 };
 

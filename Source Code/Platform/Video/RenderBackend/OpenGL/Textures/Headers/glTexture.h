@@ -61,7 +61,7 @@ class glTexture final : public Texture,
                 const vec2<U16>& dimensions) override;
 
     void loadData(const TextureLoadInfo& info,
-                  const vector<ImageTools::ImageLayer>& imageLayers) override;
+                  const std::vector<ImageTools::ImageLayer>& imageLayers) override;
 
     void loadData(const TextureLoadInfo& info,
                   const bufferPtr data,
@@ -77,7 +77,7 @@ class glTexture final : public Texture,
     void reserveStorage();
 
     void loadDataCompressed(const TextureLoadInfo& info,
-                            const vector<ImageTools::ImageLayer>& imageLayers);
+                            const std::vector<ImageTools::ImageLayer>& imageLayers);
 
     void loadDataUncompressed(const TextureLoadInfo& info,
                               bufferPtr data);

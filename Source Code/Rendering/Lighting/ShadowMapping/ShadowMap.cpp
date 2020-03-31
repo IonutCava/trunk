@@ -25,8 +25,8 @@ std::mutex ShadowMap::s_depthMapUsageLock;
 std::array<ShadowMap::LayerUsageMask, to_base(ShadowType::COUNT)> ShadowMap::s_depthMapUsage;
 std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> ShadowMap::s_shadowMapGenerators;
 
-vector<DebugView_ptr> ShadowMap::s_debugViews;
-vector<RenderTargetHandle> ShadowMap::s_shadowMaps;
+std::vector<DebugView_ptr> ShadowMap::s_debugViews;
+std::vector<RenderTargetHandle> ShadowMap::s_shadowMaps;
 Light* ShadowMap::s_shadowPreviewLight = nullptr;
 
 ShadowMapGenerator::ShadowMapGenerator(GFXDevice& context, ShadowType type)
@@ -89,7 +89,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
 
-                vector<RTAttachmentDescriptor> att = {
+                std::vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Depth },
                 };
 
@@ -119,7 +119,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.autoMipMaps(false);
 
-                vector<RTAttachmentDescriptor> att = {
+                std::vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Colour }
                 };
 
@@ -150,7 +150,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-                vector<RTAttachmentDescriptor> att = {
+                std::vector<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Depth },
                 };
 

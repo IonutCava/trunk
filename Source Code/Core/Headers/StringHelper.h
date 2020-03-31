@@ -54,7 +54,7 @@ namespace Divide {
         T_str ReplaceString(const T_str& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
 
         template<typename T_str = stringImpl>
-        void GetPermutations(const T_str& inputString, vector<T_str>& permutationContainer);
+        void GetPermutations(const T_str& inputString, std::vector<T_str>& permutationContainer);
 
         template<typename T_str = stringImpl>
         bool IsNumber(const T_str& s);
@@ -77,13 +77,13 @@ namespace Divide {
 
         /// http://stackoverflow.com/questions/236129/split-a-string-in-c
         template<typename T_vec, typename T_str = stringImpl>
-        typename std::enable_if<std::is_same<T_vec, vector<T_str>>::value ||
+        typename std::enable_if<std::is_same<T_vec, std::vector<T_str>>::value ||
                                 std::is_same<T_vec, vectorFast<T_str>>::value ||
                                 std::is_same<T_vec, vectorEASTL<T_str>>::value, T_vec>::type
         Split(const char* input, char delimiter);
 
         template<typename T_vec, typename T_str = stringImpl>
-        typename std::enable_if<std::is_same<T_vec, vector<T_str>>::value ||
+        typename std::enable_if<std::is_same<T_vec, std::vector<T_str>>::value ||
                                 std::is_same<T_vec, vectorFast<T_str>>::value, T_vec&>::type
         Split(const char* input, char delimiter, T_vec& elems);
 

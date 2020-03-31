@@ -70,7 +70,7 @@ void MenuBar::draw() {
 
         ImGui::EndMenuBar();
 
-       for (vector<Texture_ptr>::iterator it = std::begin(_previewTextures); it != std::end(_previewTextures); ) {
+       for (std::vector<Texture_ptr>::iterator it = std::begin(_previewTextures); it != std::end(_previewTextures); ) {
             if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), Util::StringFormat("Image Preview: %s", (*it)->resourceName().c_str()).c_str(), *it, vec2<F32>(512, 512), true, false)) {
                 it = _previewTextures.erase(it);
             } else {

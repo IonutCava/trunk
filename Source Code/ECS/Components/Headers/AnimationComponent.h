@@ -69,11 +69,11 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     inline I32 frameCount() const { return frameCount(_currentAnimIndex); }
     I32 frameCount(U32 animationID) const;
 
-    inline const vectorBest<mat4<F32> >& transformsByIndex(U32 index) const {
+    inline const vectorEASTL<mat4<F32> >& transformsByIndex(U32 index) const {
         return transformsByIndex(_currentAnimIndex, index);
     }
 
-    const vectorBest<mat4<F32> >& transformsByIndex(U32 animationID, U32 index) const;
+    const vectorEASTL<mat4<F32> >& transformsByIndex(U32 animationID, U32 index) const;
 
     U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
@@ -95,7 +95,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     void incParentTimeStamp(const U64 timestamp);
     void setParentTimeStamp(const U64 timestamp);
 
-    const vector<Line>& skeletonLines() const;
+    const std::vector<Line>& skeletonLines() const;
 
 
     std::pair<vec2<U32>, ShaderBuffer*> getAnimationData() const;

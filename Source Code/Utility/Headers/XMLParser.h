@@ -101,7 +101,7 @@ struct SceneNode {
     Str64 name;
     Str32 type;
 
-    vector<SceneNode> children;
+    std::vector<SceneNode> children;
 };
 
 void loadScene(const Str256& scenePath, const Str128& sceneName, Scene* scene, const Configuration& config);
