@@ -156,9 +156,9 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             aiProcess_GenSmoothNormals |
                             aiProcess_LimitBoneWeights |
                             aiProcess_RemoveRedundantMaterials |
-                            aiProcess_FixInfacingNormals |
+                             //aiProcess_FixInfacingNormals |
                             aiProcess_SplitLargeMeshes |
-                            //aiProcess_FindInstances |
+                            aiProcess_FindInstances |
                             aiProcess_Triangulate |
                             aiProcess_GenUVCoords |
                             aiProcess_SortByPType |
@@ -212,7 +212,12 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
             continue;
         }
 
-        Str64 name = currentMesh->mName.C_Str();
+        stringImpl fullName = currentMesh->mName.C_Str();
+        if (fullName.length() >= 64) {
+            fullName = fullName.substr(0, 64);
+        }
+
+        Str64 name = fullName.c_str();
         if (Util::CompareIgnoreCase(name, "defaultobject")) {
             name.append("_" + fileName);
         }
@@ -234,7 +239,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
         loadSubMeshMaterial(subMeshTemp._material,
                             aiScenePointer,
                             to_U16(currentMesh->mMaterialIndex),
-                            (subMeshTemp.name() + "_material").c_str(),
+                            Str128(subMeshTemp.name()) + "_material",
                             subMeshTemp.boneCount() > 0);
 
 
@@ -404,9 +409,9 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
     auto& target_indices = subMeshData._indices[0];
     auto& target_vertices = subMeshData._vertices[0];
 
+#if 1
     const size_t index_count = input_indices.size();
     target_indices.resize(index_count);
-
     size_t vertex_count = 0;
     { //Remap VB & IB
         vectorEASTL<U32> remap(source->mNumVertices);
@@ -430,8 +435,13 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
         // vertex fetch optimization should go last as it depends on the final index order
         meshopt_optimizeVertexFetch(&target_vertices[0], &target_indices[0], index_count, &target_vertices[0], target_vertices.size(), sizeof(Import::SubMeshData::Vertex));
     }
+#else
+    target_indices.insert(eastl::end(target_indices), eastl::cbegin(input_indices), eastl::cend(input_indices));
+    target_vertices.insert(eastl::end(target_vertices), eastl::cbegin(vertices), eastl::cend(vertices));
+#endif
     { // Generate LoD data and place inside VB & IB with proper offsets
 
+#if 0
         F32 threshold = 0.75f;
         size_t prevIndexCount = index_count;
         for (U8 i = 1; i < Import::MAX_LOD_LEVELS; ++i) {
@@ -470,13 +480,14 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
 
             prevIndexCount = lod_indices.size();
         }
+#endif
     }
 }
 
 void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                                        const aiScene* source,
                                        const U16 materialIndex,
-                                       const Str64& materialName,
+                                       Str128 materialName,
                                        bool skinned) {
 
     const aiMaterial* mat = source->mMaterials[materialIndex];

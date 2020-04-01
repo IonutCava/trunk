@@ -107,7 +107,7 @@
 		<defaultCSMSplitCount>3</defaultCSMSplitCount>
 		<!-- Unused at the moment -->
 		<softness>0.5</softness>
-		<splitLambda>0.999499977</splitLambda>
+		<splitLambda>0.9</splitLambda>
 	</shadowMapping>
 </rendering>
 <title>DIVIDE Framework - (C) Ionut Cava 2020</title>

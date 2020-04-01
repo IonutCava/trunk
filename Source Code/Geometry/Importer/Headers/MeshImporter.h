@@ -66,7 +66,7 @@ namespace Divide {
 
             PROPERTY_RW(bool, ignoreAlpha, false);
             PROPERTY_RW(bool, doubleSided, true);
-            PROPERTY_RW(Str64, name);
+            PROPERTY_RW(Str128, name);
             PROPERTY_RW(ShadingMode, shadingMode, ShadingMode::FLAT);
             PROPERTY_RW(BumpMethod,  bumpMethod, BumpMethod::NONE);
 
