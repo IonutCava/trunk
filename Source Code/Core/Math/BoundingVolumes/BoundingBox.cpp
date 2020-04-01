@@ -23,7 +23,7 @@ BoundingBox::BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 m
 {
 }
 
-BoundingBox::BoundingBox(const std::vector<vec3<F32>>& points) noexcept
+BoundingBox::BoundingBox(const vectorSTD<vec3<F32>>& points) noexcept
     : BoundingBox()
 {
     createFromPoints(points);
@@ -68,7 +68,7 @@ bool BoundingBox::containsSphere(const BoundingSphere& bSphere) const noexcept {
 }
 
 bool BoundingBox::collision(const BoundingBox& AABB2) const noexcept {
-    // SharedLock r_lock(_lock);
+    // SharedLock<SharedMutex> r_lock(_lock);
     const vec3<F32>& center = this->getCenter();
     const vec3<F32>& halfWidth = this->getHalfExtent();
     const vec3<F32>& otherCenter = AABB2.getCenter();
@@ -95,7 +95,7 @@ bool BoundingBox::collision(const BoundingSphere& bSphere) const noexcept {
 
 /// Optimized method: http://www.cs.utah.edu/~awilliam/box/box.pdf
 AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
-    // SharedLock r_lock(_lock);
+    // SharedLock<SharedMutex> r_lock(_lock);
     const vec3<F32> bounds[] = {_min, _max};
 
     F32 t_min = (bounds[r.sign[0]].x - r.origin.x) * r.inv_direction.x;

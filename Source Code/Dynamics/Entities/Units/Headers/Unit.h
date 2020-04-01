@@ -47,7 +47,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 /// Unit interface
 class Unit : public FrameListener {
    public:
-    typedef hashMap<U32, I32> AttributeMap;
+    using AttributeMap = hashMap<U32, I32>;
     friend class Attorney::UnitComponent;
 
    public:

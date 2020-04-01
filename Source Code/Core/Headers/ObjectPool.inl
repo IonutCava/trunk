@@ -37,7 +37,7 @@ namespace Divide {
 
 template<typename T, size_t N>
 T* ObjectPool<T, N>::find(PoolHandle handle) const {
-    SharedLock r_lock(_poolLock);
+    SharedLock<SharedMutex> r_lock(_poolLock);
     if (_ids[handle._id - 1]._generation == handle._generation) {
         return _pool[handle._id - 1];
     }
@@ -77,7 +77,7 @@ void ObjectPool<T, N>::deallocate(void* mem, PoolHandle handle) {
 
 template<typename T, size_t N>
 PoolHandle ObjectPool<T, N>::registerExisting(T& object) {
-    UniqueLockShared w_lock(_poolLock);
+    UniqueLock<SharedMutex> w_lock(_poolLock);
     for (size_t i = 0; i < N; ++i) {
         PoolHandle& handle = _ids[i];
         if (handle._id == 0) {
@@ -93,7 +93,7 @@ PoolHandle ObjectPool<T, N>::registerExisting(T& object) {
 
 template<typename T, size_t N>
 void ObjectPool<T, N>::unregisterExisting(PoolHandle handle) {
-    UniqueLockShared w_lock(_poolLock);
+    UniqueLock<SharedMutex> w_lock(_poolLock);
     PoolHandle& it = _ids[handle._id - 1];
     if (it._generation == handle._generation) {
         _pool[handle._id - 1] = nullptr;

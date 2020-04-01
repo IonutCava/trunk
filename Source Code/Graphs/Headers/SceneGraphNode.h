@@ -155,21 +155,21 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 
         /// Return a specific child by indes. Does not recurse.
         inline SceneGraphNode& getChild(U32 idx) {
-            SharedLock r_lock(_childLock);
+            SharedLock<SharedMutex> r_lock(_childLock);
             assert(idx <  getChildCountLocked());
             return *_children.at(idx);
         }
 
         /// Return a specific child by indes. Does not recurse.
         inline const SceneGraphNode& getChild(U32 idx) const {
-            SharedLock r_lock(_childLock);
+            SharedLock<SharedMutex> r_lock(_childLock);
             assert(idx <  getChildCountLocked());
             return *_children.at(idx);
         }
 
         /// Return the current number of children that the current node has
         inline U32 getChildCount() const {
-            SharedLock r_lock(_childLock);
+            SharedLock<SharedMutex> r_lock(_childLock);
             return getChildCountLocked();
         }
 
@@ -186,7 +186,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void postLoad();
 
         /// Find the graph nodes whom's bounding boxes intersects the given ray
-        bool intersect(const Ray& ray, F32 start, F32 end, std::vector<SGNRayResult>& intersections) const;
+        bool intersect(const Ray& ray, F32 start, F32 end, vectorSTD<SGNRayResult>& intersections) const;
 
         void changeUsageContext(const NodeUsageContext& newContext);
 
@@ -286,7 +286,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Returns a bottom-up list(leafs -> root) of all of the nodes parented under the current one.
         void getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList);
         /// Destructs all of the nodes specified in the list and removes them from the _children container.
-        void processDeleteQueue(std::vector<vec_size>& childList);
+        void processDeleteQueue(vectorSTD<vec_size>& childList);
         /// Similar to the saveToXML call but is geared towards temporary state (e.g. save game)
         bool saveCache(ByteBuffer& outputBuffer) const;
         /// Similar to the loadFromXML call but is geared towards temporary state (e.g. save game)
@@ -305,7 +305,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         vectorEASTL<SceneGraphNode*> _children;
         // ToDo: Remove this HORRIBLE hack -Ionut
         struct hacks {
-            vectorFast<EditorComponent*> _editorComponents;
+            vectorSTDFast<EditorComponent*> _editorComponents;
             TransformComponent* _transformComponentCache = nullptr;
         } Hacks;
 
@@ -334,11 +334,11 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 namespace Attorney {
     class SceneGraphNodeEditor {
     private:
-        static vectorFast<EditorComponent*>& editorComponents(SceneGraphNode& node) {
+        static vectorSTDFast<EditorComponent*>& editorComponents(SceneGraphNode& node) {
             return node.Hacks._editorComponents;
         }
 
-        static const vectorFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
+        static const vectorSTDFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
             return node.Hacks._editorComponents;
         }
 
@@ -359,7 +359,7 @@ namespace Attorney {
             node.getOrderedNodeList(nodeList);
         }
 
-        static void processDeleteQueue(SceneGraphNode& node, std::vector<vec_size>& childList) {
+        static void processDeleteQueue(SceneGraphNode& node, vectorSTD<vec_size>& childList) {
             node.processDeleteQueue(childList);
         }
 

@@ -16,7 +16,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     _focalDepth(0.5f),
     _autoFocus(true)
 {
-    std::vector<RTAttachmentDescriptor> att = {
+    vectorSTD<RTAttachmentDescriptor> att = {
         { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
     };
 

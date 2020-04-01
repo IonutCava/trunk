@@ -106,7 +106,7 @@ class MemoryTracker {
 
     inline void Add(void* p, size_t size, char const* file, size_t line) {
         if (!_locked) {
-            UniqueLock w_lock(_mutex);
+            UniqueLock<Mutex> w_lock(_mutex);
             MemoryTracker::Lock lock(*this);
             hashAlg::emplace(_allocations, p, file, line, size);
         }
@@ -115,7 +115,7 @@ class MemoryTracker {
     inline void Remove(void* p) {
         if (!_locked) {
             if (!MemoryTracker::LogAllAllocations) {
-                UniqueLock w_lock(_mutex);
+                UniqueLock<Mutex> w_lock(_mutex);
                 MemoryTracker::Lock lock(*this);
                 const hashMap<void*, Entry>::iterator it = _allocations.find(p);
                 if (it != std::cend(_allocations)) {
@@ -133,7 +133,7 @@ class MemoryTracker {
         leakDetected = false;
 
         MemoryTracker::Lock lock(*this);
-        UniqueLock w_lock(_mutex);
+        UniqueLock<Mutex> w_lock(_mutex);
         if (!_allocations.empty()) {
             stringImpl msg = "";
             if (MemoryTracker::LogAllAllocations) {

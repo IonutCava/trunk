@@ -56,7 +56,7 @@ namespace Divide {
         static void deallocateWatcher(const FileWatcher& fw);
 
       private:
-        static std::vector<std::unique_ptr<FileWatcher>> s_fileWatchers;
+        static vectorSTD<std::unique_ptr<FileWatcher>> s_fileWatchers;
     }; //FileWatcherManager
 }; //namespace Divide
 

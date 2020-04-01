@@ -194,7 +194,7 @@ void SceneAnimator::saveSkeleton(ByteBuffer& dataOut, Bone* parent) const {
     uint32_t nsize = static_cast<uint32_t>(parent->_children.size());
     dataOut << nsize;
     // continue for all children
-    for (std::vector<Bone*>::iterator it = std::begin(parent->_children); it != std::end(parent->_children); ++it) {
+    for (vectorSTD<Bone*>::iterator it = std::begin(parent->_children); it != std::end(parent->_children); ++it) {
         saveSkeleton(dataOut, *it);
     }
 }

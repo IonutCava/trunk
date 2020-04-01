@@ -27,7 +27,7 @@ class SceneNodeRenderState {
    protected:
     RenderStage _exclusionStage = RenderStage::COUNT;
     RenderPassType _exclusionPassType = RenderPassType::COUNT;
-    std::vector<RenderStagePass> _exclusionStagePasses;
+    vectorSTD<RenderStagePass> _exclusionStagePasses;
 };
 
 };  // namespace Divide

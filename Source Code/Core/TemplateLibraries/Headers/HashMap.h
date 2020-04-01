@@ -73,8 +73,8 @@ struct hasher {
 template<class T>
 struct hasher<T, true> {
     inline size_t operator() (const T& elem) {
-        typedef std::underlying_type_t<T> enumType;
-        return hashAlg::hash<enumType>()(static_cast<enumType>(elem));
+        using EnumType = std::underlying_type_t<T>;
+        return hashAlg::hash<EnumType>()(static_cast<EnumType>(elem));
     }
 };
 

@@ -110,7 +110,7 @@ class LightPool : public SceneComponent,
 
     bool clear();
     inline LightList& getLights(LightType type) { 
-        SharedLock r_lock(_lightLock); 
+        SharedLock<SharedMutex> r_lock(_lightLock); 
         return _lights[to_U32(type)];
     }
 
@@ -147,13 +147,13 @@ class LightPool : public SceneComponent,
     }
     
   protected:
-    typedef std::array<Light::ShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LightShadowProperties;
+    using LightShadowProperties = std::array<Light::ShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS>;
 
     friend class SceneManager;
     void generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
 
     inline LightList::const_iterator findLight(I64 GUID, LightType type) const {
-        SharedLock r_lock(_lightLock);
+        SharedLock<SharedMutex> r_lock(_lightLock);
         return findLightLocked(GUID, type);
     }
 

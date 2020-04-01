@@ -44,7 +44,7 @@ enum class FileUpdateEvent : U8 {
     COUNT
 };
 
-typedef DELEGATE<void, const char* /*file*/, FileUpdateEvent> FileUpdateCbk;
+using FileUpdateCbk = DELEGATE<void, const char* /*file*/, FileUpdateEvent>;
 
 class UpdateListener : public FW::FileWatchListener
 {
@@ -57,8 +57,8 @@ public:
 
 private:
     FileUpdateCbk _cbk;
-    std::vector<char> _ignoredEndingCharacters;
-    std::vector<Str8> _ignoredExtensions;
+    vectorSTD<char> _ignoredEndingCharacters;
+    vectorSTD<Str8> _ignoredExtensions;
 
 };
 

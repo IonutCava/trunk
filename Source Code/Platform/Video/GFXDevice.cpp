@@ -18,6 +18,7 @@
 #include "Managers/Headers/RenderPassManager.h"
 
 #include "Rendering/Headers/Renderer.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 #include "Geometry/Material/Headers/ShaderComputeQueue.h"
@@ -213,7 +214,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     stringImpl refreshRates;
     const vec_size displayCount = gpuState().getDisplayCount();
     for (vec_size idx = 0; idx < displayCount; ++idx) {
-        const std::vector<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
+        const vectorSTD<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
         Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
 
         for (const GPUState::GPUVideoMode& mode : registeredModes) {
@@ -320,7 +321,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     lightingDetails.msaaSamples(msaaSamples);
 
     {
-        std::vector<RTAttachmentDescriptor> attachments = {
+        vectorSTD<RTAttachmentDescriptor> attachments = {
             { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
             { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
             { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
@@ -371,7 +372,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     hiZDescriptor.samplerDescriptor(hiZSampler);
     hiZDescriptor.autoMipMaps(false);
 
-    std::vector<RTAttachmentDescriptor> hiZAttachments = {
+    vectorSTD<RTAttachmentDescriptor> hiZAttachments = {
         { hiZDescriptor, RTAttachmentType::Depth, 0, VECTOR4_ZERO },
     };
 
@@ -403,7 +404,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
         editorDescriptor.samplerDescriptor(editorSampler);
 
-        std::vector<RTAttachmentDescriptor> attachments = {
+        vectorSTD<RTAttachmentDescriptor> attachments = {
             { editorDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
         };
 
@@ -433,7 +434,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         revealageDescriptor.autoMipMaps(false);
         revealageDescriptor.samplerDescriptor(accumulationSampler);
 
-        std::vector<RTAttachmentDescriptor> attachments = {
+        vectorSTD<RTAttachmentDescriptor> attachments = {
             { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
             { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
         };
@@ -441,7 +442,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         const RenderTarget& screenTarget = _rtPool->renderTarget(RenderTargetUsage::SCREEN);
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
         
-        std::vector<ExternalRTAttachmentDescriptor> externalAttachments = {
+        vectorSTD<ExternalRTAttachmentDescriptor> externalAttachments = {
                 { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
@@ -483,7 +484,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         hizRTDesc._attachments = hiZAttachments.data();
 
         {
-            std::vector<RTAttachmentDescriptor> attachments = {
+            vectorSTD<RTAttachmentDescriptor> attachments = {
                 { environmentDescriptorPlanar, RTAttachmentType::Colour },
                 { depthDescriptorPlanar, RTAttachmentType::Depth },
             };
@@ -515,7 +516,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
         depthDescriptorCube.samplerDescriptor(reflectionSampler);
 
-        std::vector<RTAttachmentDescriptor> attachments = {
+        vectorSTD<RTAttachmentDescriptor> attachments = {
             { environmentDescriptorCube, RTAttachmentType::Colour },
             { depthDescriptorCube, RTAttachmentType::Depth },
         };
@@ -807,7 +808,7 @@ void GFXDevice::closeRenderingAPI() {
     _api->closeRenderingAPI();
     _api.reset();
 
-    UniqueLock lock(_graphicsResourceMutex);
+    UniqueLock<Mutex> lock(_graphicsResourceMutex);
     if (!_graphicResources.empty()) {
         stringImpl list = " [ ";
         for (const std::tuple<GraphicsResource::Type, I64, U64>& res : _graphicResources) {
@@ -1144,7 +1145,7 @@ void GFXDevice::stepResolution(bool increment) {
 
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
-    const std::vector<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
+    const vectorSTD<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
 
     bool found = false;
     vec2<U16> foundRes;
@@ -1889,6 +1890,15 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         //AlphaRevealageLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         //AlphaRevealageLow->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
+        DebugView_ptr Luminance = eastl::make_shared<DebugView>();
+        Luminance->_shader = _renderTargetDraw;
+        Luminance->_texture = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->luminanceRT()).getAttachment(RTAttachmentType::Colour, 0u).texture();
+        Luminance->_name = "Luminance";
+        Luminance->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        Luminance->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
+        Luminance->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        Luminance->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+
         HiZPtr = addDebugView(HiZ);
         addDebugView(DepthPreview);
         addDebugView(NormalPreview);
@@ -1898,7 +1908,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         addDebugView(AlphaRevealageHigh);
         //addDebugView(AlphaAccumulationLow);
         //addDebugView(AlphaRevealageLow);
-
+        addDebugView(Luminance);
         WAIT_FOR_CONDITION(_previewDepthMapShader->getState() == ResourceState::RES_LOADED);
     }
 
@@ -1939,7 +1949,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 
-    vectorFast <std::pair<stringImpl, Rect<I32>>> labelStack;
+    vectorSTDFast <std::pair<stringImpl, Rect<I32>>> labelStack;
 
     GFX::SetViewportCommand setViewport = {};
     GFX::SendPushConstantsCommand pushConstants = {};
@@ -1996,7 +2006,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
 
 
 DebugView* GFXDevice::addDebugView(const eastl::shared_ptr<DebugView>& view) {
-    UniqueLock lock(_debugViewLock);
+    UniqueLock<Mutex> lock(_debugViewLock);
 
     _debugViews.push_back(view);
     if (_debugViews.back()->_sortIndex == -1) {
@@ -2034,7 +2044,7 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
         _debugFrustum->getCornersViewSpace(viewMatrix, corners);
 
         Line temp;
-        std::vector<Line> lines;
+        vectorSTD<Line> lines;
         for (U8 i = 0; i < 4; ++i) {
             // Draw Near Plane
             temp.pointStart(corners[i]);
@@ -2119,7 +2129,7 @@ GFXDevice::ObjectArena& GFXDevice::objectArena() {
 RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) {
     RenderTarget* temp = nullptr;
     {
-        UniqueLock w_lock(objectArenaMutex());
+        UniqueLock<Mutex> w_lock(objectArenaMutex());
 
         switch (getRenderAPI()) {
             case RenderAPI::OpenGL:
@@ -2194,7 +2204,7 @@ bool GFXDevice::destroyIMP(IMPrimitive*& primitive) {
 
 VertexBuffer* GFXDevice::newVB() {
 
-    UniqueLock w_lock(objectArenaMutex());
+    UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     VertexBuffer* temp = nullptr;
     switch (getRenderAPI()) {
@@ -2222,7 +2232,7 @@ VertexBuffer* GFXDevice::newVB() {
 
 PixelBuffer* GFXDevice::newPB(PBType type, const char* name) {
 
-    UniqueLock w_lock(objectArenaMutex());
+    UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     PixelBuffer* temp = nullptr;
     switch (getRenderAPI()) {
@@ -2250,7 +2260,7 @@ PixelBuffer* GFXDevice::newPB(PBType type, const char* name) {
 
 GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* name) {
 
-    UniqueLock w_lock(objectArenaMutex());
+    UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     GenericVertexData* temp = nullptr;
     switch (getRenderAPI()) {
@@ -2284,7 +2294,7 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
                                bool asyncLoad,
                                const TextureDescriptor& texDescriptor) {
 
-    UniqueLock w_lock(objectArenaMutex());
+    UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     // Texture is a resource! Do not use object arena!
     Texture* temp = nullptr;
@@ -2317,7 +2327,7 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) {
 
     const size_t hash = descriptor.getHash();
 
-    UniqueLock lock(_pipelineCacheLock);
+    UniqueLock<Mutex> lock(_pipelineCacheLock);
     const hashMap<size_t, Pipeline, NoHash<size_t>>::iterator it = _pipelineCache.find(hash);
     if (it == std::cend(_pipelineCache)) {
         return &hashAlg::insert(_pipelineCache, hash, Pipeline(descriptor)).first->second;
@@ -2333,7 +2343,7 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
                                            const ShaderProgramDescriptor& descriptor,
                                            bool asyncLoad) {
 
-    UniqueLock w_lock(objectArenaMutex());
+    UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     ShaderProgram* temp = nullptr;
     switch (getRenderAPI()) {
@@ -2361,7 +2371,7 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
 
 ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) {
 
-    UniqueLock w_lock(objectArenaMutex());
+    UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     ShaderBuffer* temp = nullptr;
     switch (getRenderAPI()) {

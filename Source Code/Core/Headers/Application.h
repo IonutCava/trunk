@@ -122,11 +122,11 @@ class Application : public SDLEventListener {
     Str256 _memLogBuffer;
     /// A list of callback functions that get called when the application instance
     /// is destroyed
-    std::vector<DELEGATE<void> > _shutdownCallback;
+    vectorSTD<DELEGATE<void> > _shutdownCallback;
 
     /// A list of callbacks to execute on the main thread
     mutable std::mutex _taskLock;
-    std::vector<DELEGATE<void> > _mainThreadCallbacks;
+    vectorSTD<DELEGATE<void> > _mainThreadCallbacks;
 };
 
 };  // namespace Divide

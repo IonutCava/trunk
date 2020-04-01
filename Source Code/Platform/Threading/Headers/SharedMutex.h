@@ -37,11 +37,18 @@
 
 namespace Divide {
 
-/// Thread safety optimised for multiple-reades, single write
-typedef std::shared_mutex SharedMutex;
-typedef std::shared_lock<SharedMutex> SharedLock;
-typedef std::unique_lock<SharedMutex> UniqueLockShared;
-typedef std::unique_lock<std::mutex> UniqueLock;
+using Mutex = std::mutex;
+using TimedMutex = std::timed_mutex;
+
+using SharedMutex = std::shared_mutex;
+using SharedTimedMutex = std::shared_timed_mutex;
+
+template<typename T>
+using SharedLock = std::shared_lock<T>;
+
+template<typename T>
+using UniqueLock = std::unique_lock<T>;
+
 };  // namespace Divide
 
 #endif //_SHARED_MUTEX_BOOST_H_

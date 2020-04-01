@@ -14,7 +14,8 @@ void ParticleVelocityGenerator::generate(Task& packagedTasksParent,
     
     TaskPool& tp = *packagedTasksParent._parentPool;
 
-    typedef decltype(std::begin(p._velocity)) iter_t;
+    //ToDo: Use parallel-for for this
+    using iter_t = decltype(std::begin(p._velocity));
     for_each_interval<iter_t>(std::begin(p._velocity) + startIndex,
                               std::begin(p._velocity) + endIndex,
                               ParticleData::g_threadPartitionSize,

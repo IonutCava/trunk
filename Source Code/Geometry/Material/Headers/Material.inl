@@ -128,7 +128,7 @@ inline F32 Material::getParallaxFactor() const {
 }
 
 inline eastl::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage textureUsage) const {
-    SharedLock r_lock(_textureLock);
+    SharedLock<SharedMutex> r_lock(_textureLock);
     return _textures[to_U32(textureUsage)];
 }
 

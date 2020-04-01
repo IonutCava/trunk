@@ -185,8 +185,8 @@ namespace Divide {
                                                       BlendOperation::ADD };
         GLboolean _blendEnabledGlobal = GL_FALSE;
 
-        std::vector<BlendingProperties> _blendProperties;
-        std::vector<GLboolean> _blendEnabled;
+        vectorSTD<BlendingProperties> _blendProperties;
+        vectorSTD<GLboolean> _blendEnabled;
         GLenum    _currentCullMode = GL_BACK;
         GLenum    _currentFrontFace = GL_CCW;
         UColour4  _blendColour = UColour4(0, 0, 0, 0);

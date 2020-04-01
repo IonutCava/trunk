@@ -7,7 +7,7 @@
 namespace Divide{
 
 template<typename T>
-bool compareVectors(const std::vector<T>& a, const std::vector<T>& b) {
+bool compareVectors(const vectorSTD<T>& a, const vectorSTD<T>& b) {
     if (a.size() == b.size()) {
         for (size_t i = 0; i < a.size(); ++i) {
             if (a[i] != b[i]) {
@@ -110,12 +110,12 @@ TEST(ByteBufferRWString)
 
 TEST(ByteBufferRWVectorInt)
 {
-    const std::vector<I32> input = { -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 };
+    const vectorSTD<I32> input = { -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 };
 
     ByteBuffer test;
     test << input;
 
-    std::vector<I32> output;
+    vectorSTD<I32> output;
 
     test >> output;
 
@@ -125,12 +125,12 @@ TEST(ByteBufferRWVectorInt)
 
 TEST(ByteBufferRWVectorString)
 {
-    const std::vector<stringImpl> input = { "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5" };
+    const vectorSTD<stringImpl> input = { "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5" };
 
     ByteBuffer test;
     test << input;
 
-    std::vector<stringImpl> output;
+    vectorSTD<stringImpl> output;
 
     test >> output;
 
@@ -170,8 +170,8 @@ TEST(ByteBufferRWArrayString)
 TEST(ByteBufferRWMixedData)
 {
     const bool inputBool = false;
-    const std::vector<I32> inputVectorInt = { -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 };
-    const std::vector<stringImpl> inputVectorStr = { "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5" };
+    const vectorSTD<I32> inputVectorInt = { -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 };
+    const vectorSTD<stringImpl> inputVectorStr = { "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5" };
     const std::array<I32, 11> inputArrayInt = { -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 };
     const std::array<stringImpl, 11> inputArrayStr = { "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5" };
     const U8  inputU8 = 2;
@@ -185,8 +185,8 @@ TEST(ByteBufferRWMixedData)
     const D64 inputD64 = 1.14159;
 
     bool outputBool = true;
-    std::vector<I32> outputVectorInt;
-    std::vector<stringImpl> outputVectorStr;
+    vectorSTD<I32> outputVectorInt;
+    vectorSTD<stringImpl> outputVectorStr;
     std::array<I32, 11> outputArrayInt;
     std::array<stringImpl, 11> outputArrayStr;
     U8  outputU8 = 0;

@@ -77,7 +77,7 @@ public:
     };
 
     using TreeVector = vectorEASTL<TessellatedTerrainNode>;
-    using RenderDataVector = std::vector<TessellatedNodeData>;
+    using RenderDataVector = vectorSTD<TessellatedNodeData>;
 
     static constexpr U32 MAX_TESS_NODES = 2048;
 

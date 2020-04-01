@@ -52,7 +52,7 @@ class Console : private NonCopyable {
         EntryType _type = EntryType::Info;
     };
 
-    typedef std::function<void(const Console::OutputEntry&)> ConsolePrintCallback;
+    using ConsolePrintCallback = std::function<void(const Console::OutputEntry&)>;
 
    public:
     static void printAll();
@@ -147,7 +147,7 @@ class Console : private NonCopyable {
     static void printToFile(const OutputEntry& entry);
 
    private:
-    static std::vector<ConsolePrintCallback> _guiConsoleCallbacks;
+    static vectorSTD<ConsolePrintCallback> _guiConsoleCallbacks;
     static bool _timestamps;
     static bool _threadID;
     static bool _enabled;

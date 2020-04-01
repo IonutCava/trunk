@@ -110,7 +110,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         depthDescriptor.samplerDescriptor(sampler);
         depthDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
 
-        std::vector<RTAttachmentDescriptor> att = {
+        vectorSTD<RTAttachmentDescriptor> att = {
             { depthMapDescriptor, RTAttachmentType::Colour },
             { depthDescriptor, RTAttachmentType::Depth },
         };
@@ -130,7 +130,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         blurMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         blurMapDescriptor.samplerDescriptor(sampler);
 
-        std::vector<RTAttachmentDescriptor> att = {
+        vectorSTD<RTAttachmentDescriptor> att = {
             { blurMapDescriptor, RTAttachmentType::Colour }
         };
 

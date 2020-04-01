@@ -101,12 +101,12 @@ void AIEntity::processMessage(AIEntity& sender,
                               AIMsg msg,
                               const std::any& msg_content) {
     assert(_processor);
-    SharedLock r_lock(_updateMutex);
+    SharedLock<SharedMutex> r_lock(_updateMutex);
     _processor->processMessage(sender, msg, msg_content);
 }
 
 Sensor* AIEntity::getSensor(SensorType type) {
-    SharedLock r_lock(_updateMutex);
+    SharedLock<SharedMutex> r_lock(_updateMutex);
     SensorMap::const_iterator it = _sensorList.find(type);
     if (it != std::end(_sensorList)) {
         return it->second;
@@ -115,7 +115,7 @@ Sensor* AIEntity::getSensor(SensorType type) {
 }
 
 bool AIEntity::addSensor(SensorType type) {
-    UniqueLockShared w_lock(_updateMutex);
+    UniqueLock<SharedMutex> w_lock(_updateMutex);
     Sensor* sensor = nullptr;
     switch (type) {
         case SensorType::AUDIO_SENSOR: {
@@ -138,7 +138,7 @@ bool AIEntity::addSensor(SensorType type) {
 }
 
 bool AIEntity::setAIProcessor(AIProcessor* processor) {
-    UniqueLockShared w_lock(_updateMutex);
+    UniqueLock<SharedMutex> w_lock(_updateMutex);
     MemoryManager::SAFE_UPDATE(_processor, processor);
     if (_processor) {
         _processor->addEntityRef(this);

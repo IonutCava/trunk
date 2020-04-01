@@ -62,18 +62,19 @@ class Order {
 
 class AITeam : public GUIDWrapper {
    public:
-    typedef Navigation::DivideDtCrowd* CrowdPtr;
-    typedef hashMap<AIEntity::PresetAgentRadius, CrowdPtr> AITeamCrowd;
-    typedef hashMap<AIEntity*, F32> MemberVariable;
-    typedef hashMap<I64, AIEntity*> TeamMap;
-    typedef std::shared_ptr<Order> OrderPtr;
-    typedef vectorEASTL<OrderPtr> OrderList;
+    using CrowdPtr = Navigation::DivideDtCrowd*;
+    using AITeamCrowd = hashMap<AIEntity::PresetAgentRadius, CrowdPtr>;
+    using MemberVariable = hashMap<AIEntity*, F32>;
+    using TeamMap = hashMap<I64, AIEntity*>;
+    using OrderPtr = std::shared_ptr<Order>;
+    using OrderList = vectorEASTL<OrderPtr>;
+
    public:
     AITeam(U32 id, AIManager& parentManager);
     ~AITeam();
 
     inline CrowdPtr const getCrowd(AIEntity::PresetAgentRadius radius) const {
-        SharedLock r_lock(_crowdMutex);
+        SharedLock<SharedMutex> r_lock(_crowdMutex);
         AITeamCrowd::const_iterator it = _aiTeamCrowd.find(radius);
         if (it != std::end(_aiTeamCrowd)) {
             return it->second;
@@ -99,19 +100,19 @@ class AITeam : public GUIDWrapper {
     inline MemberVariable& getMemberVariable() { return _memberVariable; }
 
     inline void clearOrders() {
-        UniqueLockShared w_lock(_orderMutex);
+        UniqueLock<SharedMutex> w_lock(_orderMutex);
         _orders.clear();
     }
 
     inline void addOrder(const OrderPtr& order) {
-        UniqueLockShared w_lock(_orderMutex);
+        UniqueLock<SharedMutex> w_lock(_orderMutex);
         if (findOrder(order->getID()) == std::end(_orders)) {
             _orders.push_back(order);
         }
     }
 
     inline void removeOrder(const Order& order) {
-        UniqueLockShared w_lock(_orderMutex);
+        UniqueLock<SharedMutex> w_lock(_orderMutex);
         OrderList::iterator it = findOrder(order);
         if (it != std::end(_orders)) {
             _orders.erase(it);

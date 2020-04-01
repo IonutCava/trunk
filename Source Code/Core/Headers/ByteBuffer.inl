@@ -462,7 +462,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::array<stringImpl, N>& a) {
 }
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<T> const &v) {
+inline ByteBuffer &operator<<(ByteBuffer &b, vectorSTD<T> const &v) {
     b << to_U32(v.size());
     b.append(v.data(), v.size());
 
@@ -470,7 +470,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<T> const &v) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::vector<T> &v) {
+inline ByteBuffer &operator>>(ByteBuffer &b, vectorSTD<T> &v) {
     U32 vsize;
     b >> vsize;
     v.resize(vsize);
@@ -479,7 +479,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::vector<T> &v) {
 }
 
 template <>
-inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<stringImpl> const &v) {
+inline ByteBuffer &operator<<(ByteBuffer &b, vectorSTD<stringImpl> const &v) {
     b << to_U32(v.size());
     for (const stringImpl& str : v) {
         b << str;
@@ -489,7 +489,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<stringImpl> const &v) {
 }
 
 template <>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::vector<stringImpl> &v) {
+inline ByteBuffer &operator>>(ByteBuffer &b, vectorSTD<stringImpl> &v) {
     U32 vsize;
     b >> vsize;
     v.resize(vsize);

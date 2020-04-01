@@ -237,7 +237,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     GOAPWorldState _worldState;
 
     GOAPGoalList _goals;
-    std::vector<GOAPGoal*> _activeGoals;
+    vectorSTD<GOAPGoal*> _activeGoals;
     std::atomic_bool _init;
 
     stringImpl _planLog;

@@ -37,8 +37,9 @@ namespace Divide {
 namespace Navigation {
 
 class WaypointGraph {
-    typedef hashMap<U32, Waypoint*> WaypointMap;
-    // typedef hashMap<I32, WaypointPath> PathMap;
+    using WaypointMap = hashMap<U32, Waypoint*>;
+    using PathMap = hashMap<I32, WaypointPath>;
+
    public:
     WaypointGraph();
     ~WaypointGraph();
@@ -59,9 +60,9 @@ class WaypointGraph {
     U32 _id;
     bool _loop;
 
-    std::vector<vec3<F32> > _positions;
-    std::vector<Quaternion<F32> > _rotations;
-    std::vector<U32> _times;
+    vectorSTD<vec3<F32> > _positions;
+    vectorSTD<Quaternion<F32> > _rotations;
+    vectorSTD<U32> _times;
 };
 
 };  // namespace Navigation

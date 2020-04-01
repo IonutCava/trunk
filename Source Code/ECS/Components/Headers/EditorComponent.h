@@ -175,8 +175,8 @@ namespace Divide {
 
         void registerField(EditorComponentField&& field);
 
-        inline std::vector<EditorComponentField>& fields() { return _fields; }
-        inline const std::vector<EditorComponentField>& fields() const { return _fields; }
+        inline vectorSTD<EditorComponentField>& fields() { return _fields; }
+        inline const vectorSTD<EditorComponentField>& fields() const { return _fields; }
 
         inline void onChangedCbk(const DELEGATE<void, const char*> cbk) {
             _onChangedCbk = cbk;
@@ -196,17 +196,17 @@ namespace Divide {
       protected:
         Str128 _name;
         DELEGATE<void, const char*> _onChangedCbk;
-        std::vector<EditorComponentField> _fields;
+        vectorSTD<EditorComponentField> _fields;
     };
 
     namespace Attorney {
         class EditorComponentEditor {
           private:
-            static std::vector<EditorComponentField>& fields(EditorComponent& comp) {
+            static vectorSTD<EditorComponentField>& fields(EditorComponent& comp) {
                 return comp._fields;
             }
 
-            static const std::vector<EditorComponentField>& fields(const EditorComponent& comp) {
+            static const vectorSTD<EditorComponentField>& fields(const EditorComponent& comp) {
                 return comp._fields;
             }
 

@@ -21,7 +21,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 {
     U16 ssaoNoiseSize = 4;
     U16 noiseDataSize = ssaoNoiseSize * ssaoNoiseSize;
-    std::vector<vec3<F32>> noiseData(noiseDataSize);
+    vectorSTD<vec3<F32>> noiseData(noiseDataSize);
 
     for (vec3<F32>& noise : noiseData) {
         noise.set(Random(-1.0f, 1.0f),
@@ -30,7 +30,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
 
     U16 kernelSize = 64;
-    std::vector<vec3<F32>> kernel(kernelSize);
+    vectorSTD<vec3<F32>> kernel(kernelSize);
     for (U16 i = 0; i < kernelSize; ++i) {
         vec3<F32>& k = kernel[i];
         k.set(Random(-1.0f, 1.0f),
@@ -75,7 +75,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     outputDescriptor.samplerDescriptor(screenSampler);
 
     {
-        std::vector<RTAttachmentDescriptor> att = {
+        vectorSTD<RTAttachmentDescriptor> att = {
             { outputDescriptor, RTAttachmentType::Colour },
         };
 

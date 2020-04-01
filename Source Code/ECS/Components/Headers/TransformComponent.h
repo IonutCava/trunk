@@ -182,7 +182,7 @@ namespace Divide {
       private:
         std::pair<bool, mat4<F32>> _transformOffset;
 
-        typedef std::stack<TransformValues> TransformStack;
+        using TransformStack = std::stack<TransformValues>;
 
         std::atomic_uint _transformUpdatedMask;
         TransformValues  _prevTransformValues;

@@ -4,6 +4,18 @@
 #include "PreRenderOperator.h"
 
 namespace Divide {
+struct ToneMapParams
+{
+    U16 width = 1u;
+    U16 height = 1u;
+    F32 minLogLuminance = -4.0f;
+    F32 maxLogLuminance = 3.0f;
+    F32 tau = 1.1f;
+
+    F32 manualExposureAdaptive = 1.1f;
+    F32 manualExposure = 0.975f;
+    F32 manualWhitePoint = 0.975f;
+};
 
 class ResourceCache;
 class PreRenderBatch {
@@ -15,6 +27,8 @@ class PreRenderBatch {
     void destroy();
 
     void idle(const Configuration& config);
+    void update(const U64 deltaTimeUS);
+
     void prepare(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut);
     void execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut);
     void reshape(U16 width, U16 height);
@@ -27,9 +41,7 @@ class PreRenderBatch {
     RenderTargetHandle inputRT() const;
     RenderTargetHandle& outputRT();
 
-    inline void toggleAdaptiveExposure(const bool state) noexcept {
-        _adaptiveExposureControl = state;
-    }
+    RenderTargetHandle luminanceRT() const;
 
     inline PreRenderOperator& getOperator(FilterType type) {
         const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
@@ -53,6 +65,9 @@ class PreRenderBatch {
         return *(*it);
     }
 
+
+    PROPERTY_RW(ToneMapParams, toneMapParams, {});
+    PROPERTY_RW(bool,  adaptiveExposureControl, true);
    private:
 
     inline FilterSpace getOperatorSpace(FilterType type) const noexcept {
@@ -66,23 +81,24 @@ class PreRenderBatch {
 
     void onFilterToggle(FilterType type, const bool state);
   private:
-    using OperatorBatch = std::vector<PreRenderOperator*>;
+    using OperatorBatch = vectorSTD<PreRenderOperator*>;
     OperatorBatch _operators[to_base(FilterSpace::COUNT)];
 
     GFXDevice& _context;
     ResourceCache& _resCache;
 
-    bool _adaptiveExposureControl;
-
-    RenderTargetID     _renderTarget;
-    PreRenderOperator* _debugOperator;
+    RenderTargetID     _renderTarget = RenderTargetUsage::SCREEN;
+    PreRenderOperator* _debugOperator = nullptr;
+    ShaderBuffer*      _histogramBuffer = nullptr;
     RenderTargetHandle _postFXOutput;
-    RenderTargetHandle _previousLuminance;
     RenderTargetHandle _currentLuminance;
     ShaderProgram_ptr _toneMap;
     ShaderProgram_ptr _toneMapAdaptive;
-    ShaderProgram_ptr _luminanceCalc;
+    ShaderProgram_ptr _createHistogram;
+    ShaderProgram_ptr _averageHistogram;
     PushConstants     _toneMapConstants;
+
+    U64 _lastDeltaTimeUS = 0u;
 };
 
 };  // namespace Divide

@@ -40,7 +40,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     // ToDo: We need our own ... -Ionut
-    typedef CEGUI::UDim RelativeValue;
+    using RelativeValue = CEGUI::UDim;
     using RelativePosition2D = CEGUI::UVector2;
     using RelativeScale2D = CEGUI::USize;
 

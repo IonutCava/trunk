@@ -116,7 +116,7 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     endBatch();
 }
 
-void IMPrimitive::fromLines(const std::vector<Line>& lines) {
+void IMPrimitive::fromLines(const vectorSTD<Line>& lines) {
     static const vec3<F32> vertices[] = {
         vec3<F32>(-1.0f, -1.0f,  1.0f),
         vec3<F32>(1.0f, -1.0f,  1.0f),

@@ -388,7 +388,7 @@ class Camera : public Resource {
     bool _reflectionActive;
     Plane<F32> _reflectionPlane;
     U32 _updateCameraId;
-    typedef hashMap<U32, DELEGATE<void, const Camera&> > ListenerMap;
+    using ListenerMap = hashMap<U32, DELEGATE<void, const Camera&>>;
     ListenerMap _updateCameraListeners;
 
     // Camera pool
@@ -397,7 +397,7 @@ class Camera : public Resource {
        static void initPool();
        static void destroyPool();
 
-       static std::vector<U64> cameraList();
+       static vectorSTD<U64> cameraList();
 
        static Camera* utilityCamera(UtilityCamera type);
 
@@ -409,7 +409,7 @@ class Camera : public Resource {
        static U32 addChangeListener(const DELEGATE<void, const Camera& /*new camera*/>& f);
 
     private:
-      typedef hashMap<U64, Camera*> CameraPool;
+      using CameraPool = hashMap<U64, Camera*>;
 
       static std::array<Camera*, to_base(UtilityCamera::COUNT)> _utilityCameras;
 

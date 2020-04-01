@@ -279,7 +279,7 @@ bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Re
     return true;
 }
 
-std::vector<Str128> SceneManager::sceneNameList(bool sorted) const {
+vectorSTD<Str128> SceneManager::sceneNameList(bool sorted) const {
     return _scenePool->sceneNameList(sorted);
 }
 
@@ -384,7 +384,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         const F32 distanceToPoint = eye.distance(point);
 
         const Ray cameraRay(point, point.direction(eye));
-        std::vector<SGNRayResult> rayResults;
+        vectorSTD<SGNRayResult> rayResults;
         sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, rayResults);
         for (SGNRayResult& result : rayResults) {
             if (result.dist < distanceToPoint) {
@@ -509,7 +509,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
 
     U8 index = 0;
     
-    std::vector<WaterDetails>& waterBodies = activeScene.state().globalWaterBodies();
+    vectorSTD<WaterDetails>& waterBodies = activeScene.state().globalWaterBodies();
     for (auto body : waterBodies) {
         const vec3<F32> posW (0.0f, body._heightOffset, 0.0f);
         const vec3<F32> dim(std::numeric_limits<I16>::max(),

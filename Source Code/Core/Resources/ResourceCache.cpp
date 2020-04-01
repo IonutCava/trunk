@@ -69,7 +69,7 @@ ResourceCache::~ResourceCache()
 }
 
 void ResourceCache::printContents() const {
-    SharedLock r_lock(_creationMutex);
+    SharedLock<SharedMutex> r_lock(_creationMutex);
     for (ResourceMap::const_iterator it = std::cbegin(_resDB); it != std::cend(_resDB); ++it) {
         assert(!it->second.expired());
 
@@ -82,7 +82,7 @@ void ResourceCache::printContents() const {
 void ResourceCache::clear() {
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
 
-    UniqueLockShared w_lock(_creationMutex);
+    UniqueLock<SharedMutex> w_lock(_creationMutex);
     for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB); ++it) {
         assert(!it->second.expired());
         
@@ -104,14 +104,14 @@ void ResourceCache::add(CachedResource_wptr res) {
 
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->resourceName().c_str(), resource->getResourceTypeName(), resource->getGUID(), hash);
 
-    UniqueLockShared w_lock(_creationMutex);
+    UniqueLock<SharedMutex> w_lock(_creationMutex);
     const auto ret = _resDB.emplace(hash, res);
     DIVIDE_ASSERT(ret.second, Locale::get(_ID("ERROR_RESOURCE_CACHE_LOAD_RES")));
 }
 
 CachedResource_ptr ResourceCache::find(const size_t descriptorHash) {
     /// Search in our resource cache
-    SharedLock r_lock(_creationMutex);
+    SharedLock<SharedMutex> r_lock(_creationMutex);
     const ResourceMap::const_iterator it = _resDB.find(descriptorHash);
     if (it != std::end(_resDB)) {
         return it->second.lock();
@@ -131,7 +131,7 @@ void ResourceCache::remove(CachedResource* resource) {
 
     bool resDBEmpty = false;
     {
-        SharedLock r_lock(_creationMutex);
+        SharedLock<SharedMutex> r_lock(_creationMutex);
         resDBEmpty = _resDB.empty();
         DIVIDE_ASSERT(!resDBEmpty && _resDB.find(resourceHash) != std::end(_resDB), Locale::get(_ID("ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE")));
     }
@@ -149,7 +149,7 @@ void ResourceCache::remove(CachedResource* resource) {
     if (resDBEmpty) {
         Console::errorfn(Locale::get(_ID("RESOURCE_CACHE_REMOVE_NO_DB")), name.c_str());
     } else {
-        UniqueLockShared w_lock(_creationMutex);
+        UniqueLock<SharedMutex> w_lock(_creationMutex);
         _resDB.erase(_resDB.find(resourceHash));
     }
 }

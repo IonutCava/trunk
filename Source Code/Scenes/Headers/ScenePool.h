@@ -60,14 +60,14 @@ protected:
 
     void init();
 
-    std::vector<Str128> sceneNameList(bool sorted) const;
+    vectorSTD<Str128> sceneNameList(bool sorted) const;
 
 private:
     /// Pointer to the currently active scene
     Scene* _activeScene;
     Scene* _loadedScene;
     Scene* _defaultScene;
-    std::vector<Scene*> _createdScenes;
+    vectorSTD<Scene*> _createdScenes;
 
     SceneManager& _parentMgr;
 

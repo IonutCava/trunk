@@ -61,7 +61,7 @@ class ASIO {
     virtual void toggleDebugOutput(const bool debugOutput);
 
 
-    typedef DELEGATE<void, const char* /*msg*/, bool /*is_error*/> LOG_CBK;
+    using LOG_CBK = DELEGATE<void, const char* /*msg*/, bool /*is_error*/>;
     static void SET_LOG_FUNCTION(const LOG_CBK& cbk);
     static void LOG_PRINT(const char* msg, bool error = false);
 

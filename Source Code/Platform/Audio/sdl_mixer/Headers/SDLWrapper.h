@@ -59,8 +59,8 @@ protected:
     void musicFinished() override;
 
 private:
-    typedef hashMap<I64, Mix_Music*> MusicMap;
-    typedef hashMap<I64, Mix_Chunk*> SoundMap;
+    using MusicMap = hashMap<I64, Mix_Music*>;
+    using SoundMap = hashMap<I64, Mix_Chunk*>;
 
     MusicMap _musicMap;
     SoundMap _soundMap;

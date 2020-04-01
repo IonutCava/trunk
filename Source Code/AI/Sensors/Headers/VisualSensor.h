@@ -45,13 +45,13 @@ namespace Attorney {
 };
 
 /// SGN GUID, SGN pointer
-typedef hashMap<I64, SceneGraphNode*> NodeContainer;
+using NodeContainer = hashMap<I64, SceneGraphNode*>;
 /// Container ID, NodeContainer
-typedef hashMap<U32, NodeContainer> NodeContainerMap;
+using NodeContainerMap = hashMap<U32, NodeContainer>;
 /// SGN GUID, Last position
-typedef hashMap<I64, vec3<F32> > NodePositions;
+using NodePositions = hashMap<I64, vec3<F32> >;
 /// Container ID, NodePositions
-typedef hashMap<U32, NodePositions> NodePositionsMap;
+using NodePositionsMap = hashMap<U32, NodePositions>;
 
 class VisualSensor : public Sensor {
     friend class Attorney::VisualSensorConstructor;

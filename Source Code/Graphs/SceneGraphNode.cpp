@@ -130,7 +130,7 @@ void SceneGraphNode::AddMissingComponents(U32 componentMask) {
 void SceneGraphNode::setTransformDirty(U32 transformMask) {
     Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
 
-    SharedLock r_lock(_childLock);
+    SharedLock<SharedMutex> r_lock(_childLock);
     U32 childCount = getChildCountLocked();
     for (U32 i = 0; i < childCount; ++i) {
         TransformComponent* tComp = _children[i]->get<TransformComponent>();
@@ -172,7 +172,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
 
     {// Add ourselves in the new parent's children map
         {
-            UniqueLockShared w_lock(parent._childLock);
+            UniqueLock<SharedMutex> w_lock(parent._childLock);
             parent._children.push_back(this);
         }
         Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *this);
@@ -235,7 +235,7 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
     });
 
     {
-        SharedLock r_lock(_childLock);
+        SharedLock<SharedMutex> r_lock(_childLock);
         for (U32 i = 0; i < getChildCountLocked(); ++i) {
             if (_children[i]->getNode().type() == nodeType) {
                 {
@@ -257,7 +257,7 @@ bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive)
 
     I64 targetGUID = node.getGUID();
     {
-        SharedLock r_lock(_childLock);
+        SharedLock<SharedMutex> r_lock(_childLock);
         U32 childCount = getChildCountLocked();
         for (U32 i = 0; i < childCount; ++i) {
             if (_children[i]->getGUID() == targetGUID) {
@@ -320,7 +320,7 @@ bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const
 }
 
 SceneGraphNode* SceneGraphNode::findChild(const Str128& name, bool sceneNodeName, bool recursive) const {
-    SharedLock r_lock(_childLock);
+    SharedLock<SharedMutex> r_lock(_childLock);
     for (auto& child : _children) {
         if (sceneNodeName ? child->getNode().resourceName().compare(name) == 0
                           : child->name().compare(name) == 0)
@@ -341,7 +341,7 @@ SceneGraphNode* SceneGraphNode::findChild(const Str128& name, bool sceneNodeName
 }
 
 SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool sceneNodeGuid, bool recursive) const {
-    SharedLock r_lock(_childLock);
+    SharedLock<SharedMutex> r_lock(_childLock);
     for (auto& child : _children) {
         if (sceneNodeGuid ? (child->getNode().getGUID() == GUID) : (child->getGUID() == GUID)) {
             return child;
@@ -359,7 +359,7 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool sceneNodeGuid, bool rec
     return nullptr;
 }
 
-bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, std::vector<SGNRayResult>& intersections) const {
+bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vectorSTD<SGNRayResult>& intersections) const {
     // If we start from the root node, process children only
     if (_sceneGraph.getRoot() == *this) {
         forEachChild([&ray, start, end, &intersections](const SceneGraphNode* child, I32 /*childIdx*/) {
@@ -382,7 +382,7 @@ bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, std::vector<S
 void SceneGraphNode::getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList) {
     // Compute from leaf to root to ensure proper calculations
     {
-        SharedLock r_lock(_childLock);
+        SharedLock<SharedMutex> r_lock(_childLock);
         for (auto& child : _children) {
             child->getOrderedNodeList(nodeList);
         }
@@ -391,10 +391,10 @@ void SceneGraphNode::getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList) 
     nodeList.push_back(this);
 }
 
-void SceneGraphNode::processDeleteQueue(std::vector<vec_size>& childList) {
+void SceneGraphNode::processDeleteQueue(vectorSTD<vec_size>& childList) {
     // See if we have any children to delete
     if (!childList.empty()) {
-        UniqueLockShared w_lock(_childLock);
+        UniqueLock<SharedMutex> w_lock(_childLock);
         for (vec_size childIdx : childList) {
             _sceneGraph.destroySceneGraphNode(_children[childIdx]);
         }
@@ -610,7 +610,7 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
 }
 
 void SceneGraphNode::forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
-    SharedLock r_lock(_childLock);
+    SharedLock<SharedMutex> r_lock(_childLock);
     CLAMP<U32>(end, start, getChildCountLocked());
 
     for (U32 i = start; i < end; ++i) {
@@ -627,7 +627,7 @@ void SceneGraphNode::forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& c
 }
 
 bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
-    SharedLock r_lock(_childLock);
+    SharedLock<SharedMutex> r_lock(_childLock);
     CLAMP<U32>(end, start, getChildCountLocked());
 
     for (U32 i = start; i < end; ++i) {
@@ -640,7 +640,7 @@ bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I
 }
 
 bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
-    SharedLock r_lock(_childLock);
+    SharedLock<SharedMutex> r_lock(_childLock);
     CLAMP<U32>(end, start, getChildCountLocked());
 
     for (U32 i = start; i < end; ++i) {

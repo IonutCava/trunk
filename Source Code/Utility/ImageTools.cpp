@@ -110,7 +110,7 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
         _bpp *= 2;
     }
 
-    std::vector<U32> resizedData = {};
+    vectorSTD<U32> resizedData = {};
     if (refWidth != 0 && refHeight != 0 && (refWidth != width || refHeight != height)) {
         resizedData.resize(refWidth * refHeight, 0u);
         I32 ret = 0;

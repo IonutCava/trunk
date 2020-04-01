@@ -35,13 +35,13 @@
 namespace Divide {
 
 inline bool BoundingBox::containsPoint(const vec3<F32>& point) const noexcept {
-    // const SharedLock r_lock(_lock);
+    // const SharedLock<SharedMutex> r_lock(_lock);
     return (IS_GEQUAL(point.x, _min.x) && IS_GEQUAL(point.y, _min.y) && IS_GEQUAL(point.z, _min.z) &&
             IS_LEQUAL(point.x, _max.x) && IS_LEQUAL(point.y, _max.y) && IS_LEQUAL(point.z, _max.z));
 }
 
 inline bool BoundingBox::compare(const BoundingBox& bb) const  noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return _min == bb._min &&
            _max == bb._max;
 }
@@ -54,7 +54,7 @@ inline bool BoundingBox::operator!=(const BoundingBox& B) const noexcept {
     return !compare(B);
 }
 
-inline void BoundingBox::createFromPoints(const std::vector<vec3<F32>>& points) noexcept {
+inline void BoundingBox::createFromPoints(const vectorSTD<vec3<F32>>& points) noexcept {
     for (const vec3<F32>& p : points) {
         add(p);
     }
@@ -144,42 +144,42 @@ inline void BoundingBox::multiplyMin(const vec3<F32>& v) noexcept {
 }
 
 inline const vec3<F32>& BoundingBox::getMin() const noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return _min;
 }
 
 inline const vec3<F32>& BoundingBox::getMax() const noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return _max;
 }
 
 inline vec3<F32> BoundingBox::getCenter() const noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return (_max + _min) * 0.5f;
 }
 
 inline vec3<F32> BoundingBox::getExtent() const noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return _max - _min;
 }
 
 inline vec3<F32> BoundingBox::getHalfExtent() const noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return (_max - _min) * 0.5f;
 }
 
 inline F32 BoundingBox::getWidth() const noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return _max.x - _min.x;
 }
 
 inline F32 BoundingBox::getHeight() const noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return _max.y - _min.y;
 }
 
 inline F32 BoundingBox::getDepth() const noexcept {
-    /*SharedLock r_lock(_lock);*/
+    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return _max.z - _min.z;
 }
 

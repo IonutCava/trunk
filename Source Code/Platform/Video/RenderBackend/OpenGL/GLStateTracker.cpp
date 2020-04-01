@@ -211,7 +211,7 @@ bool GLStateTracker::bindTextures(GLushort unitOffset,
         unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
         if (textureHandles != nullptr) {
-            UniqueLockShared w_lock(GL_API::s_mipmapQueueSetLock);
+            UniqueLock<SharedMutex> w_lock(GL_API::s_mipmapQueueSetLock);
             for (GLuint i = 0; i < textureCount; ++i) {
                 const GLuint crtHandle = textureHandles[i];
                 if (crtHandle > 0) {

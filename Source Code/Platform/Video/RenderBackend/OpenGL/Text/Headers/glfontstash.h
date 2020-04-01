@@ -56,7 +56,8 @@ struct GLFONScontext {
     GLuint glfons_vboID;
     FONSvert* glfons_vboData;
 };
-typedef struct GLFONScontext GLFONScontext;
+
+using GLFONScontext = struct GLFONScontext;
 
 namespace {
     Divide::glBufferLockManager* g_lockManager = nullptr;

@@ -56,7 +56,7 @@ size_t TextLabelStyle::getHash() const {
         Util::Hash_combine(_hash, _italic);
 
         if (previousCache != _hash) {
-            UniqueLockShared w_lock(s_textLableStyleMutex);
+            UniqueLock<SharedMutex> w_lock(s_textLableStyleMutex);
             hashAlg::insert(s_textLabelStyle, _hash, *this);
         }
         _dirty = false;
@@ -75,7 +75,7 @@ const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash) {
 const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash, bool& styleFound) {
     styleFound = false;
 
-    SharedLock r_lock(s_textLableStyleMutex);
+    SharedLock<SharedMutex> r_lock(s_textLableStyleMutex);
     // Find the render state block associated with the received hash value
     const TextLabelStyleMap::const_iterator it = s_textLabelStyle.find(textLabelStyleHash);
     if (it != std::cend(s_textLabelStyle)) {

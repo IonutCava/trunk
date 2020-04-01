@@ -71,7 +71,7 @@ namespace Divide {
     class UndoManager {
 
     public:
-        typedef std::deque<std::shared_ptr<IUndoEntry>> UndoStack;
+        using UndoStack = std::deque<std::shared_ptr<IUndoEntry>>;
 
     public:
         UndoManager(U32 maxSize);

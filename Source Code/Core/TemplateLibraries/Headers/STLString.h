@@ -37,30 +37,30 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string>
 namespace stringAlg = std;
 
-typedef stringAlg::basic_string<char, stringAlg::char_traits<char>, dvd_allocator<char> > stringImplFast;
-typedef stringAlg::basic_string<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t> > wstringImplFast;
-typedef stringAlg::basic_stringstream<char, stringAlg::char_traits<char>, dvd_allocator<char> > stringstreamImplFast;
-typedef stringAlg::basic_ostringstream<char, stringAlg::char_traits<char>, dvd_allocator<char> > ostringstreamImplFast;
-typedef stringAlg::basic_stringstream<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t> > wstringstreamImplFast;
-typedef stringAlg::basic_ostringstream<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t> > wostringstreamImplFast;
-typedef stringAlg::basic_istringstream<char, stringAlg::char_traits<char>, dvd_allocator<char> > istringstreamImplFast;
-typedef stringAlg::basic_istringstream<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t> > wistringstreamImplFast;
-typedef stringAlg::basic_stringbuf<char, stringAlg::char_traits<char>, dvd_allocator<char> > stringbufImplFast;
-typedef stringAlg::basic_stringbuf<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t> > wstringbufImplFast;
+using stringImplFast = stringAlg::basic_string<char, stringAlg::char_traits<char>, dvd_allocator<char>>;
+using wstringImplFast = stringAlg::basic_string<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t>>;
+using stringstreamImplFast = stringAlg::basic_stringstream<char, stringAlg::char_traits<char>, dvd_allocator<char>>;
+using ostringstreamImplFast = stringAlg::basic_ostringstream<char, stringAlg::char_traits<char>, dvd_allocator<char>>;
+using wstringstreamImplFast = stringAlg::basic_stringstream<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t>>;
+using wostringstreamImplFast = stringAlg::basic_ostringstream<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t>>;
+using istringstreamImplFast = stringAlg::basic_istringstream<char, stringAlg::char_traits<char>, dvd_allocator<char>>;
+using wistringstreamImplFast = stringAlg::basic_istringstream<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t>>;
+using stringbufImplFast = stringAlg::basic_stringbuf<char, stringAlg::char_traits<char>, dvd_allocator<char>>;
+using wstringbufImplFast = stringAlg::basic_stringbuf<wchar_t, stringAlg::char_traits<wchar_t>, dvd_allocator<wchar_t>>;
 
-typedef stringAlg::basic_string<char, stringAlg::char_traits<char>, stringAlg::allocator<char>> stringImpl;
-typedef stringAlg::basic_string<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>> wstringImpl;
-typedef stringAlg::basic_stringstream<char, stringAlg::char_traits<char>, stringAlg::allocator<char>> stringstreamImpl;
-typedef stringAlg::basic_ostringstream<char, stringAlg::char_traits<char>, stringAlg::allocator<char>> ostringstreamImpl;
-typedef stringAlg::basic_stringstream<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>> wstringstreamImpl;
-typedef stringAlg::basic_ostringstream<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>> wostringstreamImpl;
-typedef stringAlg::basic_istringstream<char, stringAlg::char_traits<char>, stringAlg::allocator<char>> istringstreamImpl;
-typedef stringAlg::basic_istringstream<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>> wistringstreamImpl;
-typedef stringAlg::basic_stringbuf<char, stringAlg::char_traits<char>, stringAlg::allocator<char>> stringbufImpl;
-typedef stringAlg::basic_stringbuf<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>> wstringbufImpl;
+using stringImpl = stringAlg::basic_string<char, stringAlg::char_traits<char>, stringAlg::allocator<char>>;
+using wstringImpl = stringAlg::basic_string<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>>;
+using stringstreamImpl = stringAlg::basic_stringstream<char, stringAlg::char_traits<char>, stringAlg::allocator<char>>;
+using ostringstreamImpl = stringAlg::basic_ostringstream<char, stringAlg::char_traits<char>, stringAlg::allocator<char>>;
+using wstringstreamImpl = stringAlg::basic_stringstream<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>>;
+using wostringstreamImpl = stringAlg::basic_ostringstream<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>>;
+using istringstreamImpl = stringAlg::basic_istringstream<char, stringAlg::char_traits<char>, stringAlg::allocator<char>>;
+using wistringstreamImpl = stringAlg::basic_istringstream<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>>;
+using stringbufImpl = stringAlg::basic_stringbuf<char, stringAlg::char_traits<char>, stringAlg::allocator<char>>;
+using wstringbufImpl = stringAlg::basic_stringbuf<wchar_t, stringAlg::char_traits<wchar_t>, stringAlg::allocator<wchar_t>>;
 
 namespace std {
-    typedef size_t stringSize;
+    using stringSize = size_t;
 
     //ref: http://www.gotw.ca/gotw/029.htm
     struct ci_char_traits : public char_traits<char>
@@ -104,7 +104,7 @@ inline stringImpl to_stringImpl(T value) {
     return stringImpl(std::to_string(value).c_str());
 }
 
-typedef stringAlg::basic_string<char, stringAlg::ci_char_traits> stringImpl_IgnoreCase;
+using stringImpl_IgnoreCase = stringAlg::basic_string<char, stringAlg::ci_char_traits>;
 
 #endif //_STL_STRING_H_
 

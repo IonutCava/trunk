@@ -76,7 +76,7 @@ public:
 protected:
     U32 _id = 0;
     GFXDevice& _context;
-    std::vector<std::shared_ptr<glHardwareQuery>> _queries;
+    vectorSTD<std::shared_ptr<glHardwareQuery>> _queries;
 };
 
 };

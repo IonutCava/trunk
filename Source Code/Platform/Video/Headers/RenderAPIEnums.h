@@ -88,6 +88,7 @@ enum class ShaderBufferLocation : U8 {
     GRASS_DATA,
     TREE_DATA,
     CMD_BUFFER,
+    LUMINANCE_HISTOGRAM,
     COUNT
 };
 

@@ -11,10 +11,8 @@ namespace Divide {
 bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, size_t length, FileType fileType) {
 
     if (!Util::IsEmptyOrNull(filePath) && content != nullptr && length > 0) {
-        if (!pathExists(filePath)) {
-            if (!createDirectories(filePath)) {
-                return false;
-            }
+        if (!pathExists(filePath) && !createDirectories(filePath)) {
+            return false;
         }
 
         std::ofstream outputFile(stringImpl{ filePath } +fileName,
@@ -22,7 +20,7 @@ bool writeFile(const char* filePath, const char* fileName, const bufferPtr conte
                                            ? std::ios::out | std::ios::binary
                                            : std::ios::out);
 
-        outputFile.write(reinterpret_cast<char*>(content), length);
+        outputFile.write(static_cast<char*>(content), length);
         outputFile.close();
         return outputFile.good();
     }
@@ -54,16 +52,14 @@ FileWithPath splitPathToNameAndLocation(const char* input) {
     return ret;
 }
 
-//ref: https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
 bool pathExists(const char* filePath) {
-    auto targetPath = std::filesystem::path(filePath);
-
+    const auto targetPath = std::filesystem::path(filePath);
     return std::filesystem::is_directory(targetPath);
 }
 
 bool createDirectory(const char* path) {
     if (!pathExists(path)) {
-        auto targetPath = std::filesystem::path(path);
+        const auto targetPath = std::filesystem::path(path);
         std::error_code ec = {};
         return std::filesystem::create_directory(targetPath, ec);
     }
@@ -72,7 +68,8 @@ bool createDirectory(const char* path) {
 }
 
 bool fileExists(const char* filePathAndName) {
-    return std::ifstream(filePathAndName).good();
+    const auto targetPath = std::filesystem::path(filePathAndName);
+    return std::filesystem::is_regular_file(targetPath);
 }
 
 bool createFile(const char* filePathAndName, bool overwriteExisting) {
@@ -80,8 +77,7 @@ bool createFile(const char* filePathAndName, bool overwriteExisting) {
         return std::ofstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
     }
 
-    const SysInfo& systemInfo = const_sysInfo();
-    createDirectories((systemInfo._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePathAndName)._path).c_str());
+    createDirectories((const_sysInfo()._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePathAndName)._path).c_str());
 
     return std::ifstream(filePathAndName, std::fstream::in).good();
 }
@@ -113,7 +109,9 @@ bool copyFile(const char* sourcePath, const char* sourceName, const char* target
         return false;
     }
 
-    std::filesystem::copy_file(std::filesystem::path(source), std::filesystem::path(target), std::filesystem::copy_options::overwrite_existing);
+    std::filesystem::copy_file(std::filesystem::path(source),
+                               std::filesystem::path(target),
+                               std::filesystem::copy_options::overwrite_existing);
 
     return true;
 }
@@ -144,24 +142,22 @@ bool hasExtension(const char* filePath, const Str16& extension) {
 bool deleteAllFiles(const char* filePath, const char* extension) {
     bool ret = false;
 
-    std::filesystem::path p(filePath);
-    if (std::filesystem::exists(p) && std::filesystem::is_directory(p)) {
-        std::filesystem::directory_iterator end;
-        for (std::filesystem::directory_iterator it(p); it != end; ++it) {
+    if (pathExists(filePath)) {
+        const std::filesystem::path pathIn(filePath);
+        for (auto& p : std::filesystem::directory_iterator(pathIn)) {
             try {
-                if (std::filesystem::is_regular_file(it->status())) {
-                    if (!extension || (extension != nullptr && it->path().extension() == extension)) {
-                        if (std::filesystem::remove(it->path())) {
+                if (std::filesystem::is_regular_file(p.status())) {
+                    if (!extension || (extension != nullptr && p.path().extension() == extension)) {
+                        if (std::filesystem::remove(p.path())) {
                             ret = true;
                         }
                     }
                 } else {
                     //ToDo: check if this recurse in subfolders actually works
-                    deleteAllFiles(it->path().string().c_str(), extension);
+                    deleteAllFiles(p.path().string().c_str(), extension);
                 }
-            } catch (const std::exception &ex)
-            {
-                ex;
+            } catch (const std::exception &ex) {
+                ACKNOWLEDGE_UNUSED(ex);
             }
         }
     }

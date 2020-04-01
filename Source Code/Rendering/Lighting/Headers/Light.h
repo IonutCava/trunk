@@ -39,7 +39,7 @@
 
 namespace Divide {
 
-typedef std::array<Camera*, 6> ShadowCameraPool;
+using ShadowCameraPool = std::array<Camera*, 6>;
 
 /// The different types of lights supported
 enum class LightType : U8 {

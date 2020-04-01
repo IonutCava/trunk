@@ -53,7 +53,7 @@ namespace {
 
         bool init(U32 size, const DisplayWindow& window) {
             SDL_Window* raw = window.getRawWindow();
-            UniqueLock lock(_glContextLock);
+            UniqueLock<Mutex> lock(_glContextLock);
             _contexts.resize(size, std::make_pair(nullptr, false));
             for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
                 ctx.first = SDL_GL_CreateContext(raw);
@@ -62,7 +62,7 @@ namespace {
         }
 
         bool destroy() {
-            UniqueLock lock(_glContextLock);
+            UniqueLock<Mutex> lock(_glContextLock);
             for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
                 SDL_GL_DeleteContext(ctx.first);
             }
@@ -71,7 +71,7 @@ namespace {
         }
 
         bool getAvailableContext(SDL_GLContext& ctx) {
-            UniqueLock lock(_glContextLock);
+            UniqueLock<Mutex> lock(_glContextLock);
             for (std::pair<SDL_GLContext, bool>& ctxIt : _contexts) {
                 if (!ctxIt.second) {
                     ctx = ctxIt.first;
@@ -85,7 +85,7 @@ namespace {
 
     private:
         std::mutex _glContextLock;
-        std::vector<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
+        vectorSTD<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
     } g_ContextPool;
 };
 
@@ -403,7 +403,7 @@ void GL_API::closeRenderingAPI() {
     }
     // Destroy sampler objects
     {
-        UniqueLock w_lock(s_samplerMapLock);
+        UniqueLock<Mutex> w_lock(s_samplerMapLock);
         for (auto sampler : s_samplerMap) {
             glSamplerObject::destruct(sampler.second);
         }
@@ -434,7 +434,7 @@ vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
 }
 
 void GL_API::queueComputeMipMap(GLuint textureHandle) {
-    UniqueLockShared w_lock(s_mipmapQueueSetLock);
+    UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
     if (s_mipmapQueue.find(textureHandle) != std::cend(s_mipmapQueue)) {
         return;
     }
@@ -442,7 +442,7 @@ void GL_API::queueComputeMipMap(GLuint textureHandle) {
 }
 
 void GL_API::dequeueComputeMipMap(GLuint textureHandle) {
-    UniqueLockShared w_lock(s_mipmapQueueSetLock);
+    UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
     const auto it = s_mipmapQueue.find(textureHandle);
     if (it != std::cend(s_mipmapQueue)) {
         s_mipmapQueue.erase(it);
@@ -451,7 +451,7 @@ void GL_API::dequeueComputeMipMap(GLuint textureHandle) {
 
 void GL_API::onThreadCreated(const std::thread::id& threadID) {
     // Double check so that we don't run into a race condition!
-    UniqueLock lock(GLUtil::s_glSecondaryContextMutex);
+    UniqueLock<Mutex> lock(GLUtil::s_glSecondaryContextMutex);
     assert(SDL_GL_GetCurrentContext() == NULL);
 
     // This also makes the context current

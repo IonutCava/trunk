@@ -21,9 +21,9 @@ ScenePool::ScenePool(SceneManager& parentMgr)
 
 ScenePool::~ScenePool()
 {
-    std::vector<Scene*> tempScenes;
+    vectorSTD<Scene*> tempScenes;
     {   
-        SharedLock r_lock(_sceneLock);
+        SharedLock<SharedMutex> r_lock(_sceneLock);
         tempScenes.insert(std::cend(tempScenes),
                           std::cbegin(_createdScenes),
                           std::cend(_createdScenes));
@@ -35,7 +35,7 @@ ScenePool::~ScenePool()
     }
 
     {
-        UniqueLockShared w_lock(_sceneLock);
+        UniqueLock<SharedMutex> w_lock(_sceneLock);
         _createdScenes.clear();
     }
 }
@@ -76,7 +76,7 @@ Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cach
     foundInCache = false;
     Scene* ret = nullptr;
 
-    UniqueLockShared lock(_sceneLock);
+    UniqueLock<SharedMutex> lock(_sceneLock);
     for (Scene* scene : _createdScenes) {
         if (scene->resourceName().compare(name) == 0) {
             ret = scene;
@@ -116,7 +116,7 @@ bool ScenePool::deleteScene(Scene*& scene) {
         }
 
         {
-            UniqueLockShared w_lock(_sceneLock);
+            UniqueLock<SharedMutex> w_lock(_sceneLock);
             _createdScenes.erase(
                 std::find_if(std::cbegin(_createdScenes),
                              std::cend(_createdScenes),
@@ -135,8 +135,8 @@ bool ScenePool::deleteScene(Scene*& scene) {
     return false;
 }
 
-std::vector<Str128> ScenePool::sceneNameList(bool sorted) const {
-    std::vector<Str128> scenes;
+vectorSTD<Str128> ScenePool::sceneNameList(bool sorted) const {
+    vectorSTD<Str128> scenes;
     for (SceneNameMap::value_type it : g_sceneNameMap) {
         scenes.push_back(it.second);
     }

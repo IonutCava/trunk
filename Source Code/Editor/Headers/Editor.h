@@ -240,7 +240,7 @@ class Editor : public PlatformContextComponent,
 
     std::pair<bufferPtr, size_t> _memoryEditorData;
 
-    std::vector<I64> _unsavedElements;
+    vectorSTD<I64> _unsavedElements;
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
 
     hashMap<I64, CameraSnapshot> _cameraSnapshots;

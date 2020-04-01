@@ -111,7 +111,7 @@ class DivideRecast : public Singleton<DivideRecast> {
     *path is
     * defined or an invalid pathSlot index is given.
     **/
-    std::vector<vec3<F32> > getPath(I32 pathSlot);
+    vectorSTD<vec3<F32> > getPath(I32 pathSlot);
     /**
     * The ID number identifying the target for the path at specified slot. Targets
     *have

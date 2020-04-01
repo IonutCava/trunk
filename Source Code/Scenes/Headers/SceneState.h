@@ -271,7 +271,7 @@ struct WaterDetails {
 class SceneState : public SceneComponent {
    public:
     /// Background music map : trackName - track
-    typedef hashMap<U64, AudioDescriptor_ptr> MusicPlaylist;
+    using MusicPlaylist = hashMap<U64, AudioDescriptor_ptr>;
 
     SceneState(Scene& parentScene)
         : SceneComponent(parentScene),
@@ -324,8 +324,8 @@ class SceneState : public SceneComponent {
     inline void windDirZ(F32 factor) noexcept { _windDirZ = factor; }
     inline F32  windDirZ()     const noexcept { return _windDirZ; }
 
-    inline std::vector<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
-    inline const std::vector<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
+    inline vectorSTD<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
+    inline const vectorSTD<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
 
     inline void saveLoadDisabled(const bool state) noexcept { _saveLoadDisabled = state; }
     inline bool saveLoadDisabled()           const noexcept { return _saveLoadDisabled; }
@@ -337,7 +337,7 @@ protected:
 
     std::array<MusicPlaylist, to_base(MusicType::COUNT)> _music;
     std::array<SceneStatePerPlayer, Config::MAX_LOCAL_PLAYER_COUNT> _playerState;
-    std::vector<WaterDetails> _globalWaterBodies;
+    vectorSTD<WaterDetails> _globalWaterBodies;
 
     /// saves all the rendering information for the scene
     /// (camera position, light info, draw states)

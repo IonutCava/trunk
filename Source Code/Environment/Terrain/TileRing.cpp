@@ -135,7 +135,7 @@ namespace Divide {
     void TileRing::CreateInstanceDataVB()
     {
         I32 index = 0;
-        std::vector<InstanceData> vbData(_nTiles);
+        vectorSTD<InstanceData> vbData(_nTiles);
 
         const F32 halfWidth = 0.5f * (F32)_outerWidth;
         for (I32 y = 0; y < _outerWidth; ++y)

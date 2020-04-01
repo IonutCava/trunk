@@ -68,7 +68,7 @@ class GUI : public GUIInterface,
             public KernelComponent,
             public Input::InputAggregatorInterface {
 public:
-    typedef hashMap<I64, SceneGUIElements*> GUIMapPerScene;
+    using GUIMapPerScene = hashMap<I64, SceneGUIElements*>;
 
 public:
     explicit GUI(Kernel& parent);
@@ -184,7 +184,7 @@ private:
 
     U32 _debugVarCacheCount;
     // GROUP, VAR
-    std::vector<std::pair<I64, I64>> _debugDisplayEntries;
+    vectorSTD<std::pair<I64, I64>> _debugDisplayEntries;
 
     /// All the GUI elements created per scene
     GUIMapPerScene _guiStack;

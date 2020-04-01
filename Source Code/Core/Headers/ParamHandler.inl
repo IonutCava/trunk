@@ -40,13 +40,13 @@ inline void ParamHandler::setDebugOutput(bool logState) noexcept {
 
 template <typename T>
 inline bool ParamHandler::isParam(HashType paramID) const {
-    SharedLock r_lock(_mutex);
+    SharedLock<SharedMutex> r_lock(_mutex);
     return _params.find(paramID) != std::cend(_params);
 }
 
 template <typename T>
 inline T ParamHandler::getParam(HashType nameID, T defaultValue) const {
-    SharedLock r_lock(_mutex);
+    SharedLock<SharedMutex> r_lock(_mutex);
     ParamMap::const_iterator it = _params.find(nameID);
     if (it != std::cend(_params)) {
         bool success = false;
@@ -74,7 +74,7 @@ inline T ParamHandler::getParam(HashType nameID, T defaultValue) const {
 
 template <typename T>
 inline void ParamHandler::setParam(HashType nameID, const T& value) {
-    UniqueLockShared w_lock(_mutex);
+    UniqueLock<SharedMutex> w_lock(_mutex);
     ParamMap::iterator it = _params.find(nameID);
     if (it == std::end(_params)) {
         bool result = hashAlg::emplace(_params, nameID, value).second;
@@ -87,7 +87,7 @@ inline void ParamHandler::setParam(HashType nameID, const T& value) {
 template <typename T>
 inline void ParamHandler::delParam(HashType nameID) {
     if (isParam<T>(nameID)) {
-        UniqueLockShared w_lock(_mutex);
+        UniqueLock<SharedMutex> w_lock(_mutex);
         _params.erase(nameID);
         if (_logState) {
             Console::printfn(Locale::get(_ID("PARAM_REMOVE")), nameID);
@@ -99,7 +99,7 @@ inline void ParamHandler::delParam(HashType nameID) {
 
 template <>
 inline stringImpl ParamHandler::getParam(HashType paramID, stringImpl defaultValue) const {
-    SharedLock r_lock(_mutex);
+    SharedLock<SharedMutex> r_lock(_mutex);
     const ParamStringMap::const_iterator it = _paramsStr.find(paramID);
     if (it != std::cend(_paramsStr)) {
         return it->second;
@@ -111,7 +111,7 @@ inline stringImpl ParamHandler::getParam(HashType paramID, stringImpl defaultVal
 
 template <>
 inline void ParamHandler::setParam(HashType paramID, const stringImpl& value) {
-    UniqueLockShared w_lock(_mutex);
+    UniqueLock<SharedMutex> w_lock(_mutex);
     const ParamStringMap::iterator it = _paramsStr.find(paramID);
     if (it == std::end(_paramsStr)) {
         const bool result = hashAlg::insert(_paramsStr, paramID, value).second;
@@ -123,7 +123,7 @@ inline void ParamHandler::setParam(HashType paramID, const stringImpl& value) {
 
 template <>
 inline bool ParamHandler::isParam<stringImpl>(HashType paramID) const {
-    SharedLock r_lock(_mutex);
+    SharedLock<SharedMutex> r_lock(_mutex);
     return _paramsStr.find(paramID) != std::cend(_paramsStr);
 }
 
@@ -134,7 +134,7 @@ inline void ParamHandler::delParam<stringImpl>(HashType paramID) {
         if (_logState) {
             Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);
         }
-        UniqueLockShared w_lock(_mutex);
+        UniqueLock<SharedMutex> w_lock(_mutex);
         _paramsStr.erase(paramID);
     } else {
         Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), paramID);
@@ -143,7 +143,7 @@ inline void ParamHandler::delParam<stringImpl>(HashType paramID) {
 
 template <>
 inline bool ParamHandler::getParam(HashType paramID, bool defaultValue) const {
-    SharedLock r_lock(_mutex);
+    SharedLock<SharedMutex> r_lock(_mutex);
     const ParamBoolMap::const_iterator it = _paramBool.find(paramID);
     if (it != std::cend(_paramBool)) {
         return it->second;
@@ -155,7 +155,7 @@ inline bool ParamHandler::getParam(HashType paramID, bool defaultValue) const {
 
 template <>
 inline void ParamHandler::setParam(HashType paramID, const bool& value) {
-    UniqueLockShared w_lock(_mutex);
+    UniqueLock<SharedMutex> w_lock(_mutex);
     const ParamBoolMap::iterator it = _paramBool.find(paramID);
     if (it == std::end(_paramBool)) {
         const bool result = hashAlg::emplace(_paramBool, paramID, value).second;
@@ -167,14 +167,14 @@ inline void ParamHandler::setParam(HashType paramID, const bool& value) {
 
 template <>
 inline bool ParamHandler::isParam<bool>(HashType paramID) const {
-    SharedLock r_lock(_mutex);
+    SharedLock<SharedMutex> r_lock(_mutex);
     return _paramBool.find(paramID) != std::cend(_paramBool);
 }
 
 template <>
 inline void ParamHandler::delParam<bool>(HashType paramID) {
     if (isParam<bool>(paramID)) {
-        UniqueLockShared w_lock(_mutex);
+        UniqueLock<SharedMutex> w_lock(_mutex);
         _paramBool.erase(paramID);
         if (_logState) {
             Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);
@@ -186,7 +186,7 @@ inline void ParamHandler::delParam<bool>(HashType paramID) {
 
 template <>
 inline F32 ParamHandler::getParam(HashType paramID, F32 defaultValue) const {
-    SharedLock r_lock(_mutex);
+    SharedLock<SharedMutex> r_lock(_mutex);
     const ParamFloatMap::const_iterator it = _paramsFloat.find(paramID);
     if (it != std::cend(_paramsFloat)) {
         return it->second;
@@ -198,7 +198,7 @@ inline F32 ParamHandler::getParam(HashType paramID, F32 defaultValue) const {
 
 template <>
 inline void ParamHandler::setParam(HashType paramID, const F32& value) {
-    UniqueLockShared w_lock(_mutex);
+    UniqueLock<SharedMutex> w_lock(_mutex);
     const ParamFloatMap::iterator it = _paramsFloat.find(paramID);
     if (it == std::end(_paramsFloat)) {
         const bool result = hashAlg::emplace(_paramsFloat, paramID, value).second;
@@ -210,14 +210,14 @@ inline void ParamHandler::setParam(HashType paramID, const F32& value) {
 
 template <>
 inline bool ParamHandler::isParam<F32>(HashType paramID) const {
-    SharedLock r_lock(_mutex);
+    SharedLock<SharedMutex> r_lock(_mutex);
     return _paramsFloat.find(paramID) != std::cend(_paramsFloat);
 }
 
 template <>
 inline void ParamHandler::delParam<F32>(HashType paramID) {
     if (isParam<F32>(paramID)) {
-        UniqueLockShared w_lock(_mutex);
+        UniqueLock<SharedMutex> w_lock(_mutex);
         _paramsFloat.erase(paramID);
         if (_logState) {
             Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);

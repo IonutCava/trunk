@@ -28,7 +28,7 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener,
 
     listener->setCallOrder(callOrder);
 
-    UniqueLockShared w_lock(_listenerLock);
+    UniqueLock<SharedMutex> w_lock(_listenerLock);
     insert_sorted(_listeners, listener, eastl::less<>());
 }
 
@@ -38,7 +38,7 @@ void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
 
     I64 targetGUID = listener->getGUID();
 
-    UniqueLockShared lock(_listenerLock);
+    UniqueLock<SharedMutex> lock(_listenerLock);
     vectorEASTL<FrameListener*>::const_iterator it;
     it = eastl::find_if(eastl::cbegin(_listeners), eastl::cend(_listeners),
                       [targetGUID](FrameListener const* fl) -> bool
@@ -73,7 +73,7 @@ bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameStarted(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameStarted(evt)) {
             return false;
@@ -83,7 +83,7 @@ bool FrameListenerManager::frameStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePreRenderStarted(evt)) {
             return false;
@@ -93,7 +93,7 @@ bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePreRenderEnded(evt)) {
             return false;
@@ -103,7 +103,7 @@ bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameSceneRenderStarted(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameSceneRenderStarted(evt)) {
             return false;
@@ -113,7 +113,7 @@ bool FrameListenerManager::frameSceneRenderStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameSceneRenderEnded(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameSceneRenderEnded(evt)) {
             return false;
@@ -123,7 +123,7 @@ bool FrameListenerManager::frameSceneRenderEnded(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameRenderingQueued(evt)) {
             return false;
@@ -133,7 +133,7 @@ bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePostRenderStarted(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePostRenderStarted(evt)) {
             return false;
@@ -143,7 +143,7 @@ bool FrameListenerManager::framePostRenderStarted(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::framePostRenderEnded(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePostRenderEnded(evt)) {
             return false;
@@ -153,7 +153,7 @@ bool FrameListenerManager::framePostRenderEnded(const FrameEvent& evt) {
 }
 
 bool FrameListenerManager::frameEnded(const FrameEvent& evt) {
-    SharedLock r_lock(_listenerLock);
+    SharedLock<SharedMutex> r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->frameEnded(evt)) {
             return false;

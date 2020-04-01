@@ -54,8 +54,8 @@ namespace Divide {
         }
         if (ImGui::CollapsingHeader("SS Reflections")) {
             checkBox(FilterType::FILTER_SS_REFLECTIONS);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_SS_REFLECTIONS);
-            ACKNOWLEDGE_UNUSED(op);
+            //PreRenderOperator& op = batch->getOperator(FilterType::FILTER_SS_REFLECTIONS);
+            //ACKNOWLEDGE_UNUSED(op);
         }
         if (ImGui::CollapsingHeader("SS Ambient Occlusion")) {
             checkBox(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
@@ -85,8 +85,8 @@ namespace Divide {
         }
         if (ImGui::CollapsingHeader("Motion Blur")) {
             checkBox(FilterType::FILTER_MOTION_BLUR);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_MOTION_BLUR);
-            ACKNOWLEDGE_UNUSED(op);
+            //PreRenderOperator& op = batch->getOperator(FilterType::FILTER_MOTION_BLUR);
+            //ACKNOWLEDGE_UNUSED(op);
         }
         if (ImGui::CollapsingHeader("Bloom")) {
             checkBox(FilterType::FILTER_BLOOM);
@@ -101,10 +101,38 @@ namespace Divide {
                 bloomOp.luminanceThreshold(threshold);
             }
         }
+
         if (ImGui::CollapsingHeader("Tone Mapping")) {
+            bool adaptiveExposure = batch->adaptiveExposureControl();
+            if (ImGui::Checkbox("Adaptive Exposure", &adaptiveExposure)) {
+                batch->adaptiveExposureControl(adaptiveExposure);
+            }
+
+            ToneMapParams params = batch->toneMapParams();
+            if (adaptiveExposure) {
+                if (ImGui::SliderFloat("Min Log Luminance", &params.minLogLuminance, -16.0f, 0.0f)) {
+                    batch->toneMapParams(params);
+                }
+                if (ImGui::SliderFloat("Max Log Luminance", &params.maxLogLuminance, 0.0f, 16.0f)) {
+                    batch->toneMapParams(params);
+                }
+                if (ImGui::SliderFloat("Tau", &params.tau, 0.1f, 2.0f)) {
+                    batch->toneMapParams(params);
+                }
+                if (ImGui::SliderFloat("Exposure", &params.manualExposureAdaptive, 0.01f, 1.99f)) {
+                    batch->toneMapParams(params);
+                }
+            } else {
+                if (ImGui::SliderFloat("Exposure", &params.manualExposure, 0.01f, 1.99f)) {
+                    batch->toneMapParams(params);
+                }
+            }
+            if (ImGui::SliderFloat("White Balance", &params.manualWhitePoint, 0.01f, 1.99f)) {
+                batch->toneMapParams(params);
+            }
             checkBox(FilterType::FILTER_LUT_CORECTION);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_LUT_CORECTION);
-            ACKNOWLEDGE_UNUSED(op);
+            //PreRenderOperator& op = batch->getOperator(FilterType::FILTER_LUT_CORECTION);
+            //ACKNOWLEDGE_UNUSED(op);
         }
         if (ImGui::CollapsingHeader("Noise")) {
             checkBox(FilterType::FILTER_NOISE);

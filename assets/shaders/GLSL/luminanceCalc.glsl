@@ -1,22 +1,123 @@
--- Fragment
+--Compute.Create
 
-#include "utility.frag"
+#define EPSILON 0.000001
+// Taken from RTR vol 4 pg. 278
+#define RGB_TO_LUM vec3(0.2125, 0.7154, 0.0721)
 
-out float _colourOut;
+// Uniforms:
+uniform vec4 u_params;
+// u_params.x = minimum log_2 luminance
+// u_params.y = inverse of the log_2 luminance range
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texPrevLuminance;
+// Our two inputs, the read-only HDR color image, and the histogramBuffer
+layout(binding = 0, rgba16f) readonly uniform image2D s_texColor;
+layout(std430, binding = BUFFER_LUMINANCE_HISTOGRAM) coherent buffer histogramBuffer
+{
+    uint histogram[];
+};
 
+// Shared histogram buffer used for storing intermediate sums for each work group
+shared  uint histogramShared[GROUP_SIZE];
+
+// For a given color and luminance range, return the histogram bin index
+uint colorToBin(vec3 hdrColor, float minLogLum, float inverseLogLumRange) {
+    // Convert our RGB value to Luminance, see note for RGB_TO_LUM macro above
+    float lum = dot(hdrColor, RGB_TO_LUM);
+
+    // Avoid taking the log of zero
+    if (lum < EPSILON) {
+        return 0;
+    }
+
+    // Calculate the log_2 luminance and express it as a value in [0.0, 1.0]
+    // where 0.0 represents the minimum luminance, and 1.0 represents the max.
+    float logLum = clamp((log2(lum) - minLogLum) * inverseLogLumRange, 0.0, 1.0);
+
+    // Map [0, 1] to [1, 255]. The zeroth bin is handled by the epsilon check above.
+    return uint(logLum * 254.0 + 1.0);
+}
+
+layout(local_size_x = THREADS_X, local_size_y = THREADS_Y, local_size_z = 1) in;
 void main() {
-    //Human eye:
-    // - bright sunlight -> complete dark: 20-30 min
-    // - complete dark -> bright sunlight: 5 min
-    // - speed diff ~5
-    vec3 screenColour = texture(texScreen, VAR._texCoord).rgb;
-    float crtluminance = clamp(luminance(screenColour), 0.35, 0.75);
-    float prevLuminance = clamp(exp(texture(texPrevLuminance, VAR._texCoord).r), 0.35f, 0.75f);
-    // Slowly change luminance by mimicking human eye behaviour:
-    // bright->dark 5 times faster than dark->bright
-    float tau = mix(0.15f, 0.35f, prevLuminance > crtluminance);
-    _colourOut = prevLuminance + (crtluminance - prevLuminance) * (1.0f - exp(-(dvd_deltaTime * 0.001f) * tau));
+    // Initialize the bin for this thread to 0
+    histogramShared[gl_LocalInvocationIndex] = 0;
+    groupMemoryBarrier();
+
+    uvec2 dim = uvec2(u_params.zw);
+    // Ignore threads that map to areas beyond the bounds of our HDR image
+    if (gl_GlobalInvocationID.x < dim.x && gl_GlobalInvocationID.y < dim.y) {
+        vec3 hdrColor = imageLoad(s_texColor, ivec2(gl_GlobalInvocationID.xy)).rgb;
+        uint binIndex = colorToBin(hdrColor, u_params.x, u_params.y);
+
+        // We use an atomic add to ensure we don't write to the same bin in our
+        // histogram from two different threads at the same time.
+        atomicAdd(histogramShared[binIndex], 1);
+    }
+    // Wait for all threads in the work group to reach this point before adding our
+    // local histogram to the global one
+    groupMemoryBarrier();
+
+    // Technically there's no chance that two threads write to the same bin here,
+    // but different work groups might! So we still need the atomic add.
+    atomicAdd(histogram[gl_LocalInvocationIndex], histogramShared[gl_LocalInvocationIndex]);
+}
+
+//ToneMap ref: https://bruop.github.io/exposure/
+
+-- Compute.Average
+
+// Uniforms:
+uniform vec4 u_params;
+#define minLogLum u_params.x
+#define logLumRange u_params.y
+#define timeCoeff u_params.z
+#define numPixels u_params.w
+
+// We'll be writing our average to s_target
+layout(binding = 0, r16f) uniform image2D s_target;
+
+layout(std430, binding = BUFFER_LUMINANCE_HISTOGRAM) coherent buffer histogramBuffer
+{
+    uint histogram[];
+};
+
+shared  uint histogramShared[GROUP_SIZE];
+
+layout(local_size_x = GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    // Get the count from the histogram buffer
+    uint countForThisBin = histogram[gl_LocalInvocationIndex];
+    histogramShared[gl_LocalInvocationIndex] = countForThisBin * gl_LocalInvocationIndex;
+
+    groupMemoryBarrier();
+
+    // Reset the count stored in the buffer in anticipation of the next pass
+    histogram[gl_LocalInvocationIndex] = 0;
+
+    // This loop will perform a weighted count of the luminance range
+    for (uint binIndex = (GROUP_SIZE >> 1); binIndex > 0; binIndex >>= 1) {
+        if (uint(gl_LocalInvocationIndex) < binIndex) {
+            histogramShared[gl_LocalInvocationIndex] += histogramShared[gl_LocalInvocationIndex + binIndex];
+        }
+
+        groupMemoryBarrier();
+    }
+
+    // We only need to calculate this once, so only a single thread is needed.
+    if (gl_LocalInvocationIndex == 0) {
+        // Here we take our weighted sum and divide it by the number of pixels
+        // that had luminance greater than zero (since the index == 0, we can
+        // use countForThisBin to find the number of black pixels)
+        float weightedLogAverage = (histogramShared[0] / max(numPixels - float(countForThisBin), 1.0)) - 1.0;
+
+        // Map from our histogram space to actual luminance
+        float weightedAvgLum = exp2(weightedLogAverage / 254.0 * logLumRange + minLogLum);
+
+
+        // The new stored value will be interpolated using the last frames value
+        // to prevent sudden shifts in the exposure.
+        float lumLastFrame = imageLoad(s_target, ivec2(0, 0)).x;
+        float adaptedLum = lumLastFrame + (weightedAvgLum - lumLastFrame) * timeCoeff;
+        imageStore(s_target, ivec2(0, 0), vec4(adaptedLum, 0.0, 0.0, 0.0));
+    }
 }

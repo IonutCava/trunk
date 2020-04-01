@@ -22,7 +22,7 @@ void ShaderComputeQueue::idle() {
 
     constexpr U32 maxShadersPerCall = 32;
     {
-        SharedLock r_lock(_queueLock);
+        SharedLock<SharedMutex> r_lock(_queueLock);
         if (_shaderComputeQueue.empty()) {
             return;
         }
@@ -31,7 +31,7 @@ void ShaderComputeQueue::idle() {
     Time::ScopedTimer timer(_queueComputeTimer);
 
     U32 crtShaderCount = 0;
-    UniqueLockShared lock(_queueLock);
+    UniqueLock<SharedMutex> lock(_queueLock);
     while (stepQueueLocked()) {
         ++_totalShaderComputeCount;
         if (++crtShaderCount == maxShadersPerCall) {
@@ -41,7 +41,7 @@ void ShaderComputeQueue::idle() {
 }
 
 bool ShaderComputeQueue::stepQueue() {
-    UniqueLockShared lock(_queueLock);
+    UniqueLock<SharedMutex> lock(_queueLock);
     return stepQueueLocked();
 }
 
@@ -58,12 +58,12 @@ bool ShaderComputeQueue::stepQueueLocked() {
 }
 
 void ShaderComputeQueue::addToQueueFront(const ShaderQueueElement& element) {
-    UniqueLockShared w_lock(_queueLock);
+    UniqueLock<SharedMutex> w_lock(_queueLock);
     _shaderComputeQueue.push_front(element);
 }
 
 void ShaderComputeQueue::addToQueueBack(const ShaderQueueElement& element) {
-    UniqueLockShared w_lock(_queueLock);
+    UniqueLock<SharedMutex> w_lock(_queueLock);
     _shaderComputeQueue.push_back(element);
 }
 

@@ -393,7 +393,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
             }
             assert(geometry != nullptr);
 
-            const std::vector<VertexBuffer::Vertex >& vertices = geometry->getVertices();
+            const vectorSTD<VertexBuffer::Vertex >& vertices = geometry->getVertices();
             if (vertices.empty()) {
                 return false;
             }

@@ -263,7 +263,7 @@ void glShader::removeShader(glShader* s) {
 
     // Try to find it
     const U64 nameHash = s->nameHash();
-    UniqueLockShared w_lock(_shaderNameLock);
+    UniqueLock<SharedMutex> w_lock(_shaderNameLock);
     const ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {
         // Subtract one reference from it.
@@ -277,7 +277,7 @@ void glShader::removeShader(glShader* s) {
 /// Return a new shader reference
 glShader* glShader::getShader(const Str256& name) {
     // Try to find the shader
-    SharedLock r_lock(_shaderNameLock);
+    SharedLock<SharedMutex> r_lock(_shaderNameLock);
     const ShaderMap::iterator it = _shaderNameMap.find(_ID(name.c_str()));
     if (it != std::end(_shaderNameMap)) {
         return it->second;
@@ -297,7 +297,7 @@ glShader* glShader::loadShader(GFXDevice& context,
     // If we do, and don't need a recompile, just return it
     if (shader == nullptr) {
         // If we can't find it, we create a new one
-        UniqueLock w_lock(context.objectArenaMutex());
+        UniqueLock<Mutex> w_lock(context.objectArenaMutex());
         shader = new (context.objectArena()) glShader(context, name);
         context.objectArena().DTOR(shader);
         newShader = true;
@@ -316,7 +316,7 @@ glShader* glShader::loadShader(GFXDevice & context,
     if (shader->load(data)) {
         if (isNew) {
             // If we loaded the source code successfully,  register it
-            UniqueLockShared w_lock(_shaderNameLock);
+            UniqueLock<SharedMutex> w_lock(_shaderNameLock);
             _shaderNameMap.insert({ shader->nameHash(), shader });
         }
     }//else ignore. it's somewhere in the object arena
@@ -330,7 +330,7 @@ bool glShader::loadFromBinary() {
     // Load the program from the binary file, if available and allowed, to avoid linking.
     if (ShaderProgram::useShaderBinaryCache()) {
         // Load the program's binary format from file
-        std::vector<Byte> data;
+        vectorSTD<Byte> data;
         if (readFile((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str(),
                      (glShaderProgram::decorateFileName(_name) + ".fmt").c_str(),
                      data,
@@ -436,15 +436,15 @@ void glShader::cacheActiveUniforms() {
         GLint numActiveUniforms = 0;
         glGetProgramInterfaceiv(_programHandle, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
 
-        std::vector<GLchar> nameData(256);
-        std::vector<GLenum> properties;
+        vectorSTD<GLchar> nameData(256);
+        vectorSTD<GLenum> properties;
         properties.push_back(GL_NAME_LENGTH);
         properties.push_back(GL_TYPE);
         properties.push_back(GL_ARRAY_SIZE);
         properties.push_back(GL_BLOCK_INDEX);
         properties.push_back(GL_LOCATION);
 
-        std::vector<GLint> values(properties.size());
+        vectorSTD<GLint> values(properties.size());
 
         for (GLint attrib = 0; attrib < numActiveUniforms; ++attrib) {
             glGetProgramResourceiv(_programHandle, GL_UNIFORM, attrib, (GLsizei)properties.size(), properties.data(), (GLsizei)values.size(), NULL, &values[0]);

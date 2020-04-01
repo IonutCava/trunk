@@ -81,11 +81,11 @@ protected:
     stringImpl _scriptSource;
     FileWithPath _scriptFile;
     FileType     _scriptFileType;
-    std::vector<Str64> _usedAtoms;
+    vectorSTD<Str64> _usedAtoms;
 
     static I64 s_scriptFileWatcher;
 
-    typedef hashMap<I64, Script*> ScriptMap;
+    using ScriptMap = hashMap<I64, Script*>;
     static  ScriptMap s_scripts;
     static bool s_scriptsReady;
 };

@@ -58,7 +58,7 @@ ShaderBuffer* Vegetation::s_grassData = nullptr;
 VertexBuffer* Vegetation::s_buffer = nullptr;
 ShaderProgram_ptr Vegetation::s_cullShaderGrass = nullptr;
 ShaderProgram_ptr Vegetation::s_cullShaderTrees = nullptr;
-std::vector<Mesh_ptr> Vegetation::s_treeMeshes;
+vectorSTD<Mesh_ptr> Vegetation::s_treeMeshes;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
 U32 Vegetation::s_maxChunks = 0u;
 
@@ -140,7 +140,7 @@ Vegetation::~Vegetation()
 
 void Vegetation::destroyStaticData() {
     {
-        UniqueLockShared w_lock(g_treeMeshLock);
+        UniqueLock<SharedMutex> w_lock(g_treeMeshLock);
         s_treeMeshes.clear();
     }
     s_treeMaterial.reset();
@@ -497,7 +497,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
 
     if (_instanceCountTrees > 0 && !_treeMeshNames.empty()) {
         {
-            UniqueLockShared w_lock(g_treeMeshLock);
+            UniqueLock<SharedMutex> w_lock(g_treeMeshLock);
             if (s_treeMeshes.empty()) {
                 for (const stringImpl& meshName : _treeMeshNames) {
                     if (std::find_if(std::cbegin(s_treeMeshes), std::cend(s_treeMeshes),
@@ -527,7 +527,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
 
         Mesh_ptr crtMesh = nullptr;
         {
-            SharedLock r_lock(g_treeMeshLock);
+            SharedLock<SharedMutex> r_lock(g_treeMeshLock);
             crtMesh = s_treeMeshes.front();
             const stringImpl& meshName = _treeMeshNames[meshID];
             for (const Mesh_ptr& mesh : s_treeMeshes) {

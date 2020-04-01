@@ -84,7 +84,7 @@ void NavigationMesh::stopThreadedBuild() {
 }
 
 void NavigationMesh::freeIntermediates(bool freeAll) {
-    UniqueLock w_lock(_navigationMeshLock);
+    UniqueLock<Mutex> w_lock(_navigationMeshLock);
 
     rcFreeHeightField(_heightField);
     rcFreeCompactHeightfield(_compactHeightField);
@@ -256,7 +256,7 @@ bool NavigationMesh::buildProcess() {
                      Time::MicrosecondsToSeconds<F32>(importTimer.get()));
 
     {
-        UniqueLock w_lock(_navigationMeshLock);
+        UniqueLock<Mutex> w_lock(_navigationMeshLock);
         // Copy new NavigationMesh into old.
         dtNavMesh* old = _navMesh;
         // I am trusting that this is atomic.
@@ -592,7 +592,7 @@ GFX::CommandBuffer& NavigationMesh::draw(bool force) {
     _debugDrawInterface->beginBatch();
 
     {
-        UniqueLock w_lock(_navigationMeshLock);
+        UniqueLock<Mutex> w_lock(_navigationMeshLock);
 
         switch (mode) {
             case RenderMode::RENDER_NAVMESH:

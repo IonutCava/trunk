@@ -59,7 +59,7 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
 
 LightPool::~LightPool()
 {
-    SharedLock r_lock(_lightLock);
+    SharedLock<SharedMutex> r_lock(_lightLock);
     for (const LightList& lightList : _lights) {
         if (!lightList.empty()) {
             Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_LIGHT_LEAKED")));
@@ -155,7 +155,7 @@ bool LightPool::addLight(Light& light) {
     const LightType type = light.getLightType();
     const U32 lightTypeIdx = to_base(type);
 
-    UniqueLockShared r_lock(_lightLock);
+    UniqueLock<SharedMutex> r_lock(_lightLock);
     if (findLightLocked(light.getGUID(), type) != eastl::end(_lights[lightTypeIdx])) {
 
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_DUPLICATE")),
@@ -170,7 +170,7 @@ bool LightPool::addLight(Light& light) {
 
 // try to remove any leftover lights
 bool LightPool::removeLight(Light& light) {
-    UniqueLockShared lock(_lightLock);
+    UniqueLock<SharedMutex> lock(_lightLock);
     LightList::const_iterator it = findLightLocked(light.getGUID(), light.getLightType());
 
     if (it == eastl::end(_lights[to_U32(light.getLightType())])) {
@@ -255,7 +255,7 @@ void LightPool::togglePreviewShadowMaps(GFXDevice& context, Light& light) {
 }
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {
-    SharedLock r_lock(_lightLock);
+    SharedLock<SharedMutex> r_lock(_lightLock);
 
     LightList::const_iterator it = findLight(lightGUID, type);
     assert(it != eastl::end(_lights[to_U32(type)]));
@@ -270,7 +270,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     LightList& sortedLights = _sortedLights[stageIndex];
     sortedLights.resize(0);
     {
-        SharedLock r_lock(_lightLock);
+        SharedLock<SharedMutex> r_lock(_lightLock);
         size_t totalLightCount = 0;
         for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
             totalLightCount += _lights[i].size();
@@ -371,7 +371,7 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
 
     g_sortedLightsContainer.resize(0);
     {
-        SharedLock r_lock(_lightLock);
+        SharedLock<SharedMutex> r_lock(_lightLock);
         size_t totalLightCount = 0;
         for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
             totalLightCount += _lights[i].size();

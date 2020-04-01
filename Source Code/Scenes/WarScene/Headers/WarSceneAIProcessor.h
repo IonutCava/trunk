@@ -101,13 +101,13 @@ class WorkingMemoryFact {
     FactType _type;
 };
 
-typedef WorkingMemoryFact<AIEntity*, FactType::AI_NODE> AINodeFact;
-typedef WorkingMemoryFact<SceneGraphNode*, FactType::SGN_NODE> SGNNodeFact;
-typedef WorkingMemoryFact<vec3<F32>, FactType::POSITION> PositionFact;
-typedef WorkingMemoryFact<U8, FactType::COUNTER_SMALL> SmallCounterFact;
-typedef WorkingMemoryFact<U16, FactType::COUNTER_MEDIUM> MediumCounterFact;
-typedef WorkingMemoryFact<U32, FactType::COUNTER_LARGE> LargeCounterFact;
-typedef WorkingMemoryFact<bool, FactType::TOGGLE_STATE> ToggleStateFact;
+using AINodeFact = WorkingMemoryFact<AIEntity*, FactType::AI_NODE>;
+using SGNNodeFact = WorkingMemoryFact<SceneGraphNode*, FactType::SGN_NODE>;
+using PositionFact = WorkingMemoryFact<vec3<F32>, FactType::POSITION>;
+using SmallCounterFact = WorkingMemoryFact<U8, FactType::COUNTER_SMALL>;
+using MediumCounterFact = WorkingMemoryFact<U16, FactType::COUNTER_MEDIUM>;
+using LargeCounterFact = WorkingMemoryFact<U32, FactType::COUNTER_LARGE>;
+using ToggleStateFact = WorkingMemoryFact<bool, FactType::TOGGLE_STATE>;
 
 class GlobalWorkingMemory {
 public:
@@ -170,7 +170,7 @@ class WarSceneOrder : public Order {
 struct GOAPPackage {
     GOAPWorldState _worldState;
     GOAPGoalList _goalList;
-    std::vector<WarSceneAction> _actionSet;
+    vectorSTD<WarSceneAction> _actionSet;
 };
 
 namespace Attorney {
@@ -180,7 +180,7 @@ namespace Attorney {
 class WarSceneAIProcessor : public AIProcessor {
     friend class Attorney::WarAISceneWarAction;
    public:
-       typedef hashMap<I64, AIEntity*> NodeToUnitMap;
+       using NodeToUnitMap = hashMap<I64, AIEntity*>;
    public:
        enum class AIType {
            ANIMAL = 0,
@@ -261,7 +261,7 @@ class WarSceneAIProcessor : public AIProcessor {
     AudioSensor* _audioSensor;
     LocalWorkingMemory _localWorkingMemory;
     /// Keep this in memory at this level
-    std::vector<WarSceneAction> _actionList;
+    vectorSTD<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
     std::array<bool, to_base(ActionType::COUNT)> _actionState;
     static DELEGATE<void, U8, const stringImpl&> _scoreCallback;

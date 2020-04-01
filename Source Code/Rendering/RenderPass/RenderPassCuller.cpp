@@ -38,7 +38,7 @@ namespace {
                 }
             }
         } else {
-            UniqueLock w_lock(g_tempContainersLock);
+            UniqueLock<Mutex> w_lock(g_tempContainersLock);
             // Check again after lock
             if (!g_freeListInitialized.load()) {
                 for (auto& x : g_freeList) {

@@ -48,12 +48,12 @@ public:
     using ParamMap = hashMap<HashType, std::any>;
 
     /// A special map for string types (small perf. optimization for add/retrieve)
-    typedef hashMap<HashType, stringImpl> ParamStringMap;
+    using ParamStringMap = hashMap<HashType, stringImpl>;
     /// A special map for boolean types (small perf. optimization for add/retrieve)
     /// Used a lot as option toggles
-    typedef hashMap<HashType, bool> ParamBoolMap;
+    using ParamBoolMap = hashMap<HashType, bool>;
     /// Floats are also used often
-    typedef hashMap<HashType, F32> ParamFloatMap;
+    using ParamFloatMap = hashMap<HashType, F32>;
 
   public:
     void setDebugOutput(bool logState) noexcept;

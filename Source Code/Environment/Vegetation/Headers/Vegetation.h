@@ -155,7 +155,7 @@ class Vegetation : public SceneNode {
     static VertexBuffer* s_buffer;
     static ShaderBuffer* s_treeData;
     static ShaderBuffer* s_grassData;
-    static std::vector<Mesh_ptr> s_treeMeshes;
+    static vectorSTD<Mesh_ptr> s_treeMeshes;
 
     static std::unordered_set<vec2<F32>> s_treePositions;
     static std::unordered_set<vec2<F32>> s_grassPositions;

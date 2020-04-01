@@ -40,12 +40,12 @@
 namespace Divide {
 namespace AI {
 
-typedef I32 GOAPFact;
-typedef bool GOAPValue;
-typedef goap::Action GOAPAction;
-typedef goap::WorldState GOAPWorldState;
-typedef std::vector<const GOAPAction*> GOAPActionSet;
-typedef std::vector<const GOAPAction*> GOAPPlan;
+using GOAPFact = I32;
+using GOAPValue = bool;
+using GOAPAction = goap::Action;
+using GOAPWorldState = goap::WorldState;
+using GOAPActionSet = vectorSTD<const GOAPAction*>;
+using GOAPPlan = vectorSTD<const GOAPAction*>;
 
 inline const char* GOAPValueName(GOAPValue val) {
     return val ? "true" : "false";
@@ -86,7 +86,7 @@ class GOAPGoal : public goap::WorldState {
     GOAPPlan _currentPlan;
 };
 
-typedef std::vector<GOAPGoal> GOAPGoalList;
+using GOAPGoalList = vectorSTD<GOAPGoal>;
 
 }; // namespace AI
 };  // namespace Divide

@@ -68,7 +68,7 @@ decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool = {}; \
 decltype(Command::s_deleter) Command::s_deleter = {};
 
 #define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> { \
-typedef Command<Name, Enum> Base; \
+using Base = Command<Name, Enum>; \
 inline const char* commandName() const noexcept final { return TO_STR(Enum); }
 
 #define END_COMMAND(Name) \

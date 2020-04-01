@@ -186,7 +186,7 @@ namespace Divide {
         }
 
         inline void operator()(DescriptorSet* res) {
-            UniqueLock w_lock(_lock);
+            UniqueLock<Mutex> w_lock{ _lock };
             _context.deleteElement(res);
         }
 

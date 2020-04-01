@@ -62,6 +62,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 
+#ifndef BOOST_EXCEPTION_DISABLE
+#define BOOST_EXCEPTION_DISABLE
+#endif
+
+#ifndef BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
+#define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
+#endif 
+
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES
@@ -87,7 +95,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 #include <float.h>
 #include <cstdint>
-#include <variant>
 #include <string>
 #include <memory>
 #include <bitset>
@@ -111,6 +118,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #if defined(CPP_17_SUPPORT)
 #include <any>
+#include <variant>
+#else
+#include <boost/any.hpp>
+#include <boost/variant.hpp>
 #endif
 
 #include <boost/intrusive/slist.hpp>
@@ -138,15 +149,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <Optick/optick.h>
 
-#ifndef BOOST_EXCEPTION_DISABLE
-#define BOOST_EXCEPTION_DISABLE
-#endif
-
-#ifndef BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
-#define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
-#endif 
-
-
 #define HAVE_M_PI
 #define SDL_MAIN_HANDLED
 #include <sdl/include/SDL_mixer.h>
@@ -170,7 +172,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <chaiscript/include/chaiscript/chaiscript.hpp>
 #include <chaiscript/include/chaiscript/chaiscript_stdlib.hpp>
 #include <chaiscript/include/chaiscript/utility/utility.hpp>
-
 
 #include <ConcurrentQueue/concurrentqueue.h>
 #include <ConcurrentQueue/blockingconcurrentqueue.h>

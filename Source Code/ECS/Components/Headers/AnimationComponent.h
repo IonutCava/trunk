@@ -95,7 +95,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     void incParentTimeStamp(const U64 timestamp);
     void setParentTimeStamp(const U64 timestamp);
 
-    const std::vector<Line>& skeletonLines() const;
+    const vectorSTD<Line>& skeletonLines() const;
 
 
     std::pair<vec2<U32>, ShaderBuffer*> getAnimationData() const;

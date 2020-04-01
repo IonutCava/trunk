@@ -137,7 +137,7 @@ bool Scene::onShutdown() {
 }
 
 bool Scene::frameStarted() {
-    //UniqueLock lk(_perFrameArenaMutex);
+    //UniqueLock<Mutex> lk(_perFrameArenaMutex);
     //_perFrameArena.clear();
     return true;
 }
@@ -161,13 +161,13 @@ bool Scene::idle() {  // Called when application is idle
     _lightPool->idle();
 
     {
-        SharedLock r_lock(_tasksMutex);
+        SharedLock<SharedMutex> r_lock(_tasksMutex);
         if (_tasks.empty()) {
             return true;
         }
     }
 
-    UniqueLockShared r_lock(_tasksMutex);
+    UniqueLock<SharedMutex> r_lock(_tasksMutex);
     _tasks.erase(std::remove_if(eastl::begin(_tasks),
                                 eastl::end(_tasks),
                                 [](Task* handle) -> bool { 
@@ -1276,7 +1276,7 @@ void Scene::onLostFocus() {
 }
 
 void Scene::registerTask(Task& taskItem, bool start, TaskPriority priority) {
-    UniqueLockShared w_lock(_tasksMutex);
+    UniqueLock<SharedMutex> w_lock(_tasksMutex);
     _tasks.push_back(&taskItem);
     if (start) {
         Start(taskItem, priority);
@@ -1286,7 +1286,7 @@ void Scene::registerTask(Task& taskItem, bool start, TaskPriority priority) {
 void Scene::clearTasks() {
     Console::printfn(Locale::get(_ID("STOP_SCENE_TASKS")));
     // Performance shouldn't be an issue here
-    UniqueLockShared w_lock(_tasksMutex);
+    UniqueLock<SharedMutex> w_lock(_tasksMutex);
     for (Task* task : _tasks) {
         Wait(Stop(*task));
     }
@@ -1295,7 +1295,7 @@ void Scene::clearTasks() {
 }
 
 void Scene::removeTask(Task& task) {
-    UniqueLockShared w_lock(_tasksMutex);
+    UniqueLock<SharedMutex> w_lock(_tasksMutex);
     vectorEASTL<Task*>::iterator it;
     for (it = eastl::begin(_tasks); it != eastl::end(_tasks); ++it) {
         if ((*it)->_id == task._id) {
@@ -1517,7 +1517,7 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
         return false;
     }
 
-    std::vector<I64>& selections = _currentSelection[idx];
+    vectorSTD<I64>& selections = _currentSelection[idx];
     if (!selections.empty()) {
         if (std::find(std::cbegin(selections), std::cend(selections), hoverGUID) != std::cend(selections)) {
             //Already selected
@@ -1536,7 +1536,7 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
 
 
 void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
-    static std::vector<Line> s_lines(4);
+    static vectorSTD<Line> s_lines(4);
     static bool s_linesSet = false;
     if (!s_linesSet) {
         for (Line& line : s_lines) {

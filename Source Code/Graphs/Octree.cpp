@@ -153,7 +153,7 @@ bool Octree::addNode(SceneGraphNode* node) {
         !BitCompare(_nodeMask, to_U16(node->getNode<>().type())) &&  // check for valid type
         !node->isChildOfType(_nodeMask, true)) // parent is valid type as well
     {
-        UniqueLock w_lock(s_pendingInsertLock);
+        UniqueLock<Mutex> w_lock(s_pendingInsertLock);
         s_pendingInsertion.push(node);
         s_treeReady = false;
         return true;
@@ -411,7 +411,7 @@ void Octree::findEnclosingCube() {
 }
 
 void Octree::updateTree() {
-    UniqueLock w_lock(s_pendingInsertLock);
+    UniqueLock<Mutex> w_lock(s_pendingInsertLock);
     if (!s_treeBuilt) {
         while (!s_pendingInsertion.empty()) {
             _objects.push_back(s_pendingInsertion.front());

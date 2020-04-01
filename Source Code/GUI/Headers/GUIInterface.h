@@ -48,8 +48,8 @@ class GUIMessageBox;
 
 class GUIInterface {
 public:
-    typedef hashMap<U64, std::pair<GUIElement*, bool/*last state*/>> GUIMap;
-    typedef DELEGATE<void, I64> ButtonCallback;
+    using GUIMap = hashMap<U64, std::pair<GUIElement*, bool/*last state*/>>;
+    using ButtonCallback = DELEGATE<void, I64>;
 
 public:
     explicit GUIInterface(GUI& context);

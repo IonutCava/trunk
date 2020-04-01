@@ -166,7 +166,7 @@ class TextureDescriptor final : public PropertyDescriptor {
         return 0;
     }
 
-    const std::vector<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
+    const vectorSTD<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
 
     /// A TextureDescriptor will always have a sampler, even if it is the default one
     PROPERTY_RW(SamplerDescriptor, samplerDescriptor);
@@ -186,7 +186,7 @@ class TextureDescriptor final : public PropertyDescriptor {
 
    private:
      friend class Texture;
-     std::vector<stringImpl> _sourceFileList;
+     vectorSTD<stringImpl> _sourceFileList;
 };
 
 };  // namespace Divide

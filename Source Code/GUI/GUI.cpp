@@ -65,7 +65,7 @@ GUI::~GUI()
 
 void GUI::onChangeScene(Scene* newScene) {
     assert(newScene != nullptr);
-    SharedLock r_lock(_guiStackLock);
+    SharedLock<SharedMutex> r_lock(_guiStackLock);
     if (_activeScene != nullptr && _activeScene->getGUID() != newScene->getGUID()) {
         const GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
@@ -87,7 +87,7 @@ void GUI::onChangeScene(Scene* newScene) {
 
 void GUI::onUnloadScene(Scene* const scene) {
     assert(scene != nullptr);
-    UniqueLockShared w_lock(_guiStackLock);
+    UniqueLock<SharedMutex> w_lock(_guiStackLock);
     const GUIMapPerScene::const_iterator it = _guiStack.find(scene->getGUID());
     if (it != std::cend(_guiStack)) {
         _guiStack.erase(it);
@@ -124,7 +124,7 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
     }
 
     {
-        SharedLock r_lock(_guiStackLock);
+        SharedLock<SharedMutex> r_lock(_guiStackLock);
         // scene specific
         const GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
@@ -270,7 +270,7 @@ void GUI::destroy() {
         MemoryManager::DELETE(_console);
 
         {
-            UniqueLockShared w_lock(_guiStackLock);
+            UniqueLock<SharedMutex> w_lock(_guiStackLock);
             assert(_guiStack.empty());
             for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
                 for (auto [nameHash, entry] : _guiElements[i]) {
@@ -446,7 +446,7 @@ bool GUI::onUTF8(const Input::UTF8Event& arg) {
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const {
     if (sceneID != 0) {
-        SharedLock r_lock(_guiStackLock);
+        SharedLock<SharedMutex> r_lock(_guiStackLock);
         const GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
             return it->second->getGUIElement<GUIElement>(elementName);
@@ -460,7 +460,7 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) c
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const {
     if (sceneID != 0) {
-        SharedLock r_lock(_guiStackLock);
+        SharedLock<SharedMutex> r_lock(_guiStackLock);
         const GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
             return it->second->getGUIElement<GUIElement>(elementID);

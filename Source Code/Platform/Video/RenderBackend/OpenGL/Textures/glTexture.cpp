@@ -246,7 +246,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
-                         const std::vector<ImageTools::ImageLayer>& imageLayers) {
+                         const vectorSTD<ImageTools::ImageLayer>& imageLayers) {
     if (info._layerIndex == 0) {
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
@@ -259,7 +259,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
         validateDescriptor();
 
-        //UniqueLock lock(GLUtil::_driverLock);
+        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
         setMipRangeInternal(_descriptor.mipLevels().min, _descriptor.mipLevels().max);
     } else {
         assert(
@@ -271,16 +271,16 @@ void glTexture::loadData(const TextureLoadInfo& info,
     
     bool expected = false;
     if (_allocatedStorage.compare_exchange_strong(expected, true)) {
-        //UniqueLock lock(GLUtil::_driverLock);
+        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
         reserveStorage();
     }
     assert(_allocatedStorage);
 
     if (_descriptor.compressed()) {
-        //UniqueLock lock(GLUtil::_driverLock);
+        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
         loadDataCompressed(info, imageLayers);
     } else {
-        //UniqueLock lock(GLUtil::_driverLock);
+        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
         loadDataUncompressed(info, imageLayers[0].data());
     }
 
@@ -288,7 +288,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,
-                                   const std::vector<ImageTools::ImageLayer>& imageLayers) {
+                                   const vectorSTD<ImageTools::ImageLayer>& imageLayers) {
 
     _descriptor.autoMipMaps(false);
     const GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());

@@ -25,13 +25,13 @@ void glLockManager::Wait(bool blockClient) {
     OPTICK_EVENT();
 
     {
-        SharedLock r_lock(_syncMutex);
+        SharedLock<SharedMutex> r_lock(_syncMutex);
         if (_defaultSync == nullptr) {
             return;
         }
     }
 
-    UniqueLockShared w_lock(_syncMutex);
+    UniqueLock<SharedMutex> w_lock(_syncMutex);
     if (_defaultSync != nullptr) {
         wait(_defaultSync, blockClient);
         glDeleteSync(_defaultSync);
@@ -42,7 +42,7 @@ void glLockManager::Wait(bool blockClient) {
 void glLockManager::Lock(bool flush) {
     OPTICK_EVENT();
 
-    UniqueLockShared lock(_syncMutex);
+    UniqueLock<SharedMutex> lock(_syncMutex);
     assert(_defaultSync == nullptr);
     _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     // A glFlush call is needed after creating a new fence to make sure we don't end up with an infinite wait issue

@@ -388,9 +388,9 @@ private:
 
     ShaderComputeQueue* _shaderComputeQueue = nullptr;
 
-    std::vector<Line> _axisLines;
+    vectorSTD<Line> _axisLines;
     IMPrimitive* _axisGizmo = nullptr;
-    std::vector<Line> _axisLinesTransformed;
+    vectorSTD<Line> _axisLinesTransformed;
 
     const Frustum*  _debugFrustum = nullptr;
     IMPrimitive*    _debugFrustumPrimitive = nullptr;
@@ -447,7 +447,7 @@ private:
     Pipeline* _textRenderPipeline = nullptr;
         
     std::mutex _graphicsResourceMutex;
-    std::vector<std::tuple<GraphicsResource::Type, I64, U64>> _graphicResources;
+    vectorSTD<std::tuple<GraphicsResource::Type, I64, U64>> _graphicResources;
 
     Rect<I32> _viewport;
     vec2<U16> _renderingResolution;
@@ -456,7 +456,7 @@ private:
 
     std::mutex _debugViewLock;
     bool _debugViewsEnabled = false;
-    std::vector<DebugView_ptr> _debugViews;
+    vectorSTD<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer = nullptr;
     GenericDrawCommand _defaultDrawCmd;
@@ -510,12 +510,12 @@ namespace Attorney {
     class GFXDeviceGraphicsResource {
        private:
        static void onResourceCreate(GFXDevice& device, GraphicsResource::Type type, I64 GUID, U64 nameHash) {
-           UniqueLock w_lock(device._graphicsResourceMutex);
+           UniqueLock<Mutex> w_lock(device._graphicsResourceMutex);
            device._graphicResources.emplace_back(type, GUID, nameHash);
        }
 
        static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID, U64 nameHash) {
-           UniqueLock w_lock(device._graphicsResourceMutex);
+           UniqueLock<Mutex> w_lock(device._graphicsResourceMutex);
            auto it = std::find_if(std::begin(device._graphicResources),
                 std::end(device._graphicResources),
                 [type, GUID, nameHash](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) noexcept -> bool {

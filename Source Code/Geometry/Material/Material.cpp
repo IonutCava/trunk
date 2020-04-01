@@ -43,7 +43,7 @@ bool Material::onStartup() {
 }
 
 bool Material::onShutdown() {
-    UniqueLockShared w_lock(s_shaderDBLock);
+    UniqueLock<SharedMutex> w_lock(s_shaderDBLock);
     s_shaderDB.clear();
     return true;
 }
@@ -177,7 +177,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
            textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE);
 
     {
-        UniqueLockShared w_lock(_textureLock);
+        UniqueLock<SharedMutex> w_lock(_textureLock);
         if (!_textures[slot]) {
             // if we add a new type of texture recompute shaders
             computeShaders = true;
@@ -239,7 +239,7 @@ void Material::waitForShader(const ShaderProgram_ptr& shader, RenderStagePass st
 
     ShaderProgram* oldShader = shader.get();
     /*{
-        SharedLock r_lock(s_shaderDBLock);
+        SharedLock<SharedMutex> r_lock(s_shaderDBLock);
         auto it = s_shaderDB.find(shaderHash);
         if (it != std::cend(s_shaderDB)) {
             oldShader = it->second.get();
@@ -271,7 +271,7 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
     //info._shaderRefHash = shader == nullptr ? 0 : shader->getDescriptorHash();
 
     /*if (info._shaderRefHash != 0) {
-        UniqueLockShared w_lock(s_shaderDBLock);
+        UniqueLock<SharedMutex> w_lock(s_shaderDBLock);
         hashAlg::insert(s_shaderDB, info._shaderRefHash, shader);
     }*/
 
@@ -300,7 +300,7 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
             TypeUtil::RenderPassTypeToString(renderStagePass._passType));
     }
 
-    //UniqueLockShared w_lock(s_shaderDBLock);
+    //UniqueLock<SharedMutex> w_lock(s_shaderDBLock);
     //auto ret = hashAlg::insert(s_shaderDB, info._shaderRefHash, ShaderProgram_ptr());
 
     ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
@@ -340,7 +340,7 @@ I64 Material::getProgramID(RenderStagePass renderStagePass) const {
     }
     /*size_t hash = shaderInfo(renderStagePass)._shaderRefHash;
 
-    SharedLock r_lock(s_shaderDBLock);
+    SharedLock<SharedMutex> r_lock(s_shaderDBLock);
     auto it = s_shaderDB.find(hash);
     if (it != std::cend(s_shaderDB)) {
         return it->second->getGUID();
@@ -614,7 +614,7 @@ bool Material::getTextureData(ShaderProgram::TextureUsage slot, TextureDataConta
 
     TextureData data = {};
     {
-        SharedLock r_lock(_textureLock);
+        SharedLock<SharedMutex> r_lock(_textureLock);
         const Texture_ptr& crtTexture = _textures[slotValue];
         if (crtTexture != nullptr) {
             data = crtTexture->data();
@@ -688,7 +688,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
 
     bool ret = false;
     TextureDataContainer::DataEntries& textures = textureData.textures();
-    SharedLock r_lock(_textureLock);
+    SharedLock<SharedMutex> r_lock(_textureLock);
 
     const bool depthStage = renderStagePass.isDepthPass();
     for (const U8 slot : transparentSlots) {

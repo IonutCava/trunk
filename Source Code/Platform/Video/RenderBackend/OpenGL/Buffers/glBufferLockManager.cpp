@@ -27,7 +27,7 @@ glBufferLockManager::glBufferLockManager()
 
 // --------------------------------------------------------------------------------------------------------------------
 glBufferLockManager::~glBufferLockManager() {
-    const UniqueLock w_lock(_lock);
+    const UniqueLock<Mutex> w_lock(_lock);
     for (const BufferLock& lock : _bufferLocks) {
         glDeleteSync(lock._syncObj);
     }
@@ -47,7 +47,7 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
     const BufferRange testRange{lockBeginBytes, lockLength};
 
     bool error = false;
-    UniqueLock w_lock(_lock);
+    UniqueLock<Mutex> w_lock(_lock);
     _swapLocks.resize(0);
     for (BufferLock& lock : _bufferLocks) {
         if (!lock._valid || testRange.Overlaps(lock._range)) {
@@ -75,7 +75,7 @@ void glBufferLockManager::LockRange(size_t lockBeginBytes, size_t lockLength, U3
     OPTICK_EVENT();
 
     {//Delete old lock entries
-        UniqueLock w_lock(_lock);
+        UniqueLock<Mutex> w_lock(_lock);
         for (BufferLock& lock : _bufferLocks) {
             if (frameID - lock._frameID >= g_LockFrameLifetime) {
                 lock._valid = false;
@@ -93,7 +93,7 @@ void glBufferLockManager::LockRange(size_t lockBeginBytes, size_t lockLength, U3
     newLock._syncObj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
     {
-        UniqueLock w_lock(_lock);
+        UniqueLock<Mutex> w_lock(_lock);
         _bufferLocks.push_back(newLock);
     }
 }

@@ -52,7 +52,7 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
         const char* name() const override;
     protected:
 
-     std::vector<I64> selections() const;
+     vectorSTD<I64> selections() const;
      SceneGraphNode* node(I64 guid) const;
 
      //return true if the field has been modified

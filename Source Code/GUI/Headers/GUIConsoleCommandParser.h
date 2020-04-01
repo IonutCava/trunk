@@ -52,8 +52,7 @@ class GUIConsoleCommandParser : public CommandParser, public PlatformContextComp
     bool processCommand(const stringImpl& commandString) override;
 
    private:
-    typedef hashMap<U64 /*command name*/,
-                        std::function<void(stringImpl /*args*/)> > CommandMap;
+    using CommandMap = hashMap<U64 /*command name*/, std::function<void(stringImpl /*args*/)> >;
 
     void handleSayCommand(const stringImpl& args);
     void handleQuitCommand(const stringImpl& args);

@@ -54,9 +54,8 @@ namespace Navigation {
 class AIManager : public SceneComponent
 {
   public:
-    typedef hashMap<U32, AITeam*> AITeamMap;
-    typedef hashMap<AIEntity::PresetAgentRadius,
-                        Navigation::NavigationMesh*> NavMeshMap;
+    using AITeamMap = hashMap<U32, AITeam*>;
+    using NavMeshMap = hashMap<AIEntity::PresetAgentRadius, Navigation::NavigationMesh*>;
 
     explicit AIManager(Scene& parentScene, TaskPool& pool);
     ~AIManager();
@@ -98,7 +97,7 @@ class AIManager : public SceneComponent
     void destroyNavMesh(AIEntity::PresetAgentRadius radius);
 
     inline void setSceneCallback(const DELEGATE<void>& callback) {
-        UniqueLock w_lock(_updateMutex);
+        UniqueLock<Mutex> w_lock(_updateMutex);
         _sceneCallback = callback;
     }
     inline void pauseUpdate(bool state) noexcept { _pauseUpdate = state; }

@@ -100,7 +100,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _data.size();
     }
 
-    inline const std::vector<Vertex>& getVertices() const noexcept {
+    inline const vectorSTD<Vertex>& getVertices() const noexcept {
         return _data;
     }
 
@@ -171,7 +171,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _indices[index];
     }
 
-    const std::vector<U32>& getIndices() const noexcept {
+    const vectorSTD<U32>& getIndices() const noexcept {
         return _indices;
     }
 
@@ -181,7 +181,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     template <typename T>
-    inline void addIndices(const vectorFast<T>& indices, bool containsRestartIndex) {
+    inline void addIndices(const vectorSTDFast<T>& indices, bool containsRestartIndex) {
         std::transform(std::cbegin(indices),
                         std::cend(indices),
                         std::back_inserter(_indices),
@@ -201,13 +201,13 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         addIndex((usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L : Config::PRIMITIVE_RESTART_INDEX_S));
      }
 
-    inline void modifyPositionValues(U32 indexOffset, const std::vector<vec3<F32>>& newValues) {
+    inline void modifyPositionValues(U32 indexOffset, const vectorSTD<vec3<F32>>& newValues) {
        assert(indexOffset + newValues.size() - 1 < _data.size());
        DIVIDE_ASSERT(_staticBuffer == false ||
            (_staticBuffer == true && !_data.empty()),
            "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
-       std::vector<Vertex>::iterator it = _data.begin() + indexOffset;
+       vectorSTD<Vertex>::iterator it = _data.begin() + indexOffset;
        for (const vec3<F32>& value : newValues) {
             (it++)->_position.set(value);
        }
@@ -386,10 +386,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     /// The format of the buffer data
     GFXDataFormat _format;
     // first: offset, second: count
-    std::vector<std::pair<U32, U32> > _partitions;
+    vectorSTD<std::pair<U32, U32> > _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should provide the indices
-    std::vector<U32> _indices;
-    std::vector<Vertex> _data;
+    vectorSTD<U32> _indices;
+    vectorSTD<Vertex> _data;
     /// Cache system to update only required data
     std::array<bool, to_base(AttribLocation::COUNT)> _attribDirty;
     bool _primitiveRestartEnabled;

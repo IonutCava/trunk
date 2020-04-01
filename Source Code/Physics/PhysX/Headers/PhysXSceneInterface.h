@@ -41,7 +41,7 @@ namespace Divide {
 class Scene;
 
 class PhysXSceneInterface : public PhysicsSceneInterface {
-    typedef moodycamel::ConcurrentQueue<PhysXActor*> LoadQueue;
+    using LoadQueue = moodycamel::ConcurrentQueue<PhysXActor*>;
 
    public:
     PhysXSceneInterface(Scene& parentScene);
@@ -54,7 +54,7 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     virtual void process(const U64 deltaTimeUS) override;
 
     void addRigidActor(PhysXActor* const actor, bool threaded = true);
-    inline const std::vector<physx::PxMaterial*> getMaterials() {
+    inline const vectorSTD<physx::PxMaterial*> getMaterials() {
         return _materials;
     }
     inline physx::PxScene* getPhysXScene() noexcept { return _gScene; }
@@ -65,8 +65,8 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     void addToScene(PhysXActor& actor);
 
    private:
-    using RigidMap = std::vector<PhysXActor*>;
-    using MaterialMap = std::vector<physx::PxMaterial*>;
+    using RigidMap = vectorSTD<PhysXActor*>;
+    using MaterialMap = vectorSTD<physx::PxMaterial*>;
     physx::PxScene* _gScene;
     physx::PxDefaultCpuDispatcher* _cpuDispatcher;
     MaterialMap _materials;

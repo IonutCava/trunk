@@ -86,7 +86,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     // API-dependent loading function that uploads ptr data to the GPU using the
     // specified parameters
     virtual void loadData(const TextureLoadInfo& info,
-                          const std::vector<ImageTools::ImageLayer>& imageLayers) = 0;
+                          const vectorSTD<ImageTools::ImageLayer>& imageLayers) = 0;
 
     virtual void loadData(const TextureLoadInfo& info,
                           const bufferPtr data,

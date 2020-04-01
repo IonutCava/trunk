@@ -25,8 +25,8 @@ std::mutex ShadowMap::s_depthMapUsageLock;
 std::array<ShadowMap::LayerUsageMask, to_base(ShadowType::COUNT)> ShadowMap::s_depthMapUsage;
 std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> ShadowMap::s_shadowMapGenerators;
 
-std::vector<DebugView_ptr> ShadowMap::s_debugViews;
-std::vector<RenderTargetHandle> ShadowMap::s_shadowMaps;
+vectorSTD<DebugView_ptr> ShadowMap::s_debugViews;
+vectorSTD<RenderTargetHandle> ShadowMap::s_shadowMaps;
 Light* ShadowMap::s_shadowPreviewLight = nullptr;
 
 ShadowMapGenerator::ShadowMapGenerator(GFXDevice& context, ShadowType type)
@@ -89,7 +89,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
 
-                std::vector<RTAttachmentDescriptor> att = {
+                vectorSTD<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Depth },
                 };
 
@@ -119,7 +119,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.autoMipMaps(false);
 
-                std::vector<RTAttachmentDescriptor> att = {
+                vectorSTD<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Colour }
                 };
 
@@ -150,7 +150,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-                std::vector<RTAttachmentDescriptor> att = {
+                vectorSTD<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Depth },
                 };
 
@@ -187,7 +187,7 @@ void ShadowMap::destroyShadowMaps(GFXDevice& context) {
 }
 
 void ShadowMap::resetShadowMaps() {
-    UniqueLock w_lock(s_depthMapUsageLock);
+    UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
     for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         s_depthMapUsage[i].resize(0);
     }
@@ -241,7 +241,7 @@ void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
 }
 
 U16 ShadowMap::lastUsedDepthMapOffset(ShadowType shadowType) {
-    UniqueLock w_lock(s_depthMapUsageLock);
+    UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
     const LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
 
     for (U16 i = 0; i < to_U16(usageMask.size()); ++i) {
@@ -254,7 +254,7 @@ U16 ShadowMap::lastUsedDepthMapOffset(ShadowType shadowType) {
 }
 
 U16 ShadowMap::findFreeDepthMapOffset(ShadowType shadowType, U32 layerCount) {
-    UniqueLock w_lock(s_depthMapUsageLock);
+    UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
 
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
     U16 layer = std::numeric_limits<U16>::max();
@@ -275,7 +275,7 @@ U16 ShadowMap::findFreeDepthMapOffset(ShadowType shadowType, U32 layerCount) {
 }
 
 void ShadowMap::commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount) {
-    UniqueLock w_lock(s_depthMapUsageLock);
+    UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
 
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
     for (U32 i = layerOffest; i < layerOffest + layerCount; ++i) {
@@ -284,7 +284,7 @@ void ShadowMap::commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32
 }
 
 bool ShadowMap::freeDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount) {
-    UniqueLock w_lock(s_depthMapUsageLock);
+    UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
 
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
     for (U32 i = layerOffest; i < layerOffest + layerCount; ++i) {

@@ -170,15 +170,13 @@ constexpr size_t realign_offset(size_t offset, size_t align) noexcept {
 
 //ref: http://stackoverflow.com/questions/14226952/partitioning-batch-chunk-a-container-into-equal-sized-pieces-using-std-algorithm
 template<typename Iterator>
-void for_each_interval(Iterator from, Iterator to, std::ptrdiff_t partition_size,
-                       std::function<void(Iterator, Iterator)> operation) 
+void for_each_interval(Iterator from, Iterator to, std::ptrdiff_t partition_size, std::function<void(Iterator, Iterator)> operation) 
 {
     if (partition_size > 0) {
         Iterator partition_end = from;
         while (partition_end != to) 
         {
-            while (partition_end != to &&
-                   std::distance(from, partition_end) < partition_size) 
+            while (partition_end != to && std::distance(from, partition_end) < partition_size) 
             {
                 ++partition_end;
             }
@@ -561,7 +559,7 @@ struct safe_static_cast_helper<true, false>
         assert(from >= 0 && "Number to cast exceeds numeric limits.");
 
         // assuring a positive input, we can safely cast it into its unsigned type and check the numeric limits
-        typedef typename std::make_unsigned<FROM>::type UnsignedFrom;
+        using UnsignedFrom = typename std::make_unsigned<FROM>::type;
         assert(IS_IN_RANGE_INCLUSIVE(static_cast<UnsignedFrom>(from),
                                      std::numeric_limits<TO>::lowest(),
                                      std::numeric_limits<TO>::max()) &&

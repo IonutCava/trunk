@@ -13,7 +13,8 @@ void ParticleBoxGenerator::generate(Task& packagedTasksParent,
     vec3<F32> max(_posMax + _sourcePosition);
     
     TaskPool& tp = *packagedTasksParent._parentPool;
-    typedef decltype(std::begin(p._position)) iter_t;
+
+    using iter_t = decltype(std::begin(p._position));
     for_each_interval<iter_t>(std::begin(p._position) + startIndex,
                               std::begin(p._position) + endIndex,
                               ParticleData::g_threadPartitionSize,

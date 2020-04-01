@@ -263,6 +263,8 @@ void PostFX::update(const U64 deltaTimeUS) {
             }
         }
     }
+
+    _preRenderBatch->update(deltaTimeUS);
 }
 
 void PostFX::setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE<void> onComplete) {

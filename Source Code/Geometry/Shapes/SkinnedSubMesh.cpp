@@ -59,13 +59,13 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
         return;
     }
 
-    const std::vector<vectorEASTL<mat4<F32>>>& currentAnimation = animComp->getAnimationByIndex(animationIndex).transforms();
+    const vectorSTD<vectorEASTL<mat4<F32>>>& currentAnimation = animComp->getAnimationByIndex(animationIndex).transforms();
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionIDs[0]);
     U32 partitionCount = parentVB->getPartitionIndexCount(_geometryPartitionIDs[0]);
 
-    UniqueLock w_lock(_bbLock);
+    UniqueLock<Mutex> w_lock(_bbLock);
     BoundingBox& currentBB = _boundingBoxes.at(animationIndex);
     currentBB.reset();
     for (const vectorEASTL<mat4<F32> >& transforms : currentAnimation) {
@@ -92,13 +92,13 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
 }
 
 void SkinnedSubMesh::updateBB(I32 animIndex) {
-    UniqueLock r_lock(_bbLock);
+    UniqueLock<Mutex> r_lock(_bbLock);
     setBounds(_boundingBoxes[animIndex]);
 }
 
 void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {
     // Attempt to get the map of BBs for the current animation
-    UniqueLock w_lock(_bbStateLock);
+    UniqueLock<Mutex> w_lock(_bbStateLock);
     BoundingBoxState& state = _boundingBoxesState[animIndex];
 
     if (state != BoundingBoxState::COUNT) {
@@ -115,7 +115,7 @@ void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {
     };
 
     auto bbBuildComplete = [this, animComp, animIndex]() {
-        UniqueLock w_lock(_bbStateLock);
+        UniqueLock<Mutex> w_lock(_bbStateLock);
         _boundingBoxesState[animIndex] = BoundingBoxState::Computed;
         // We could've changed the animation while waiting for this task to end
         if (animComp->animationIndex() == animIndex) {

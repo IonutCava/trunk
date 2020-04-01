@@ -45,7 +45,7 @@
 using namespace gl;
 
 struct SDL_Window;
-typedef void *SDL_GLContext;
+typedef void* SDL_GLContext;
 
 namespace NS_GLIM {
     enum class GLIM_ENUM : int;
@@ -97,7 +97,7 @@ public:
     void bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams);
 
 private:
-    using VAOBufferData = std::vector<BufferBindingParams>;
+    using VAOBufferData = vectorSTD<BufferBindingParams>;
 
     mutable VAOBufferData* _cachedData = nullptr;
     mutable GLuint _cachedVao = 0;

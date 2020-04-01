@@ -16,7 +16,7 @@ class subscriber {
     virtual void sendPacket(const WorldPacket& p) = 0;
 };
 
-typedef std::shared_ptr<subscriber> subscriber_ptr;
+using subscriber_ptr = std::shared_ptr<subscriber>;
 
 //----------------------------------------------------------------------
 
@@ -103,7 +103,7 @@ class tcp_session_tpl : public subscriber,
     time_t _startTime;
 };
 
-typedef std::shared_ptr<tcp_session_tpl> tcp_session_ptr;
+using tcp_session_ptr = std::shared_ptr<tcp_session_tpl>;
 
 //----------------------------------------------------------------------
 

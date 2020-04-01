@@ -23,7 +23,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
 {
     vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
 
-    std::vector<RTAttachmentDescriptor> att = {
+    vectorSTD<RTAttachmentDescriptor> att = {
         {
             parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(),
             RTAttachmentType::Colour,

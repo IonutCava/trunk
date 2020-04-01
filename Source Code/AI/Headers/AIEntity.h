@@ -189,7 +189,7 @@ class AIEntity : public GUIDWrapper {
     mutable SharedMutex _updateMutex;
     mutable SharedMutex _managerQueryMutex;
 
-    typedef hashMap<SensorType, Sensor*> SensorMap;
+    using SensorMap = hashMap<SensorType, Sensor*>;
     SensorMap _sensorList;
     NPC* _unitRef;
     /// PathFinding

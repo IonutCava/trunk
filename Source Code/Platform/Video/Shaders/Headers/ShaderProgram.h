@@ -64,7 +64,7 @@ namespace Attorney {
     class ShaderProgramKernel;
 }
 
-typedef vectorEASTL<std::pair<stringImpl, bool>> ModuleDefines;
+using ModuleDefines = vectorEASTL<std::pair<stringImpl, bool>>;
 
 class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
@@ -74,7 +74,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     using ShaderProgramMapEntry = std::pair<ShaderProgram*, size_t>;
     using ShaderProgramMap = ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry>;
     using AtomMap = ska::bytell_hash_map<U64 /*name hash*/, stringImpl>;
-    using ShaderQueue = std::stack<ShaderProgram*, vectorFast<ShaderProgram*> >;
+    using ShaderQueue = std::stack<ShaderProgram*, vectorSTDFast<ShaderProgram*> >;
 
     /// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used
     enum class TextureUsage : U8 {
@@ -194,7 +194,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static void rebuildAllShaders();
 
-    static std::vector<Str256> getAllAtomLocations();
+    static vectorSTD<Str256> getAllAtomLocations();
 
     static bool useShaderTexCache() noexcept { return s_useShaderTextCache; }
     static bool useShaderBinaryCache() noexcept { return s_useShaderBinaryCache; }
@@ -225,8 +225,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static SharedMutex s_programLock;
 
     private:
-        std::array<std::vector<U32>, to_base(ShaderType::COUNT)> _functionIndex;
-        std::array<std::vector<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
+        std::array<vectorSTD<U32>, to_base(ShaderType::COUNT)> _functionIndex;
+        std::array<vectorSTD<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
 
     protected:
         template <typename T>

@@ -34,11 +34,10 @@ void WaypointGraph::removeWaypoint(Waypoint* wp) {
 }
 
 void WaypointGraph::updateGraph() {
-    typedef hashMap<U32, Waypoint*> wp;
     _positions.resize(0);
     _rotations.resize(0);
     _times.resize(0);
-    for (wp::value_type& waypoint : _waypoints) {
+    for (auto& waypoint : _waypoints) {
         _positions.push_back((waypoint.second)->position());
         _rotations.push_back((waypoint.second)->orientation());
         _times.push_back((waypoint.second)->time());

@@ -221,8 +221,8 @@ void glGenericVertexData::setBufferBindings() {
 /// Update the appropriate attributes 
 void glGenericVertexData::setAttributes() {
     // Get the appropriate list of attributes and update them in turn
-    for (attributeMap::value_type& it : _attributeMapDraw) {
-        setAttributeInternal(it.second);
+    for (auto& [buf, descriptor] : _attributeMapDraw) {
+        setAttributeInternal(descriptor);
     }
 }
 

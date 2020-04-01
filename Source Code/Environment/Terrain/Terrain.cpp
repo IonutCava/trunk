@@ -26,7 +26,7 @@ namespace Divide {
 namespace {
     constexpr U32 g_bufferFrameDelay = 3;
 
-    void CreateTileQuadListIB(vectorFast<U32>& indices)
+    void CreateTileQuadListIB(vectorSTDFast<U32>& indices)
     {
         indices.resize(Terrain::QUAD_LIST_INDEX_COUNT, 0u);
         I32 index = 0;
@@ -187,7 +187,7 @@ void Terrain::postBuild() {
     // The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
-    vectorFast<U32> indices;
+    vectorSTDFast<U32> indices;
     CreateTileQuadListIB(indices);
 
     VertexBuffer* vb = getGeometryVB();

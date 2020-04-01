@@ -97,8 +97,8 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     inline const IndexBuffer& indexBuffer() const { return _idxBuffer; }
 
    protected:
-    typedef hashMap<U32, AttributeDescriptor> attributeMap;
-    attributeMap _attributeMapDraw;
+    using AttributeMap = hashMap<U32, AttributeDescriptor>;
+    AttributeMap _attributeMapDraw;
 
     stringImpl _name;
     IndexBuffer _idxBuffer;

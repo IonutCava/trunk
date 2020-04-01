@@ -101,7 +101,7 @@ class SceneGraph : private NonCopyable,
     void idle();
 
     // Return true if intersections is not empty. Just shorthand ...
-    bool intersect(const Ray& ray, F32 start, F32 end, std::vector<SGNRayResult>& intersections) const;
+    bool intersect(const Ray& ray, F32 start, F32 end, vectorSTD<SGNRayResult>& intersections) const;
 
     SceneGraphNode* createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
 
@@ -162,7 +162,7 @@ class SceneGraph : private NonCopyable,
     std::array<vectorEASTL<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
 
     mutable SharedMutex _pendingDeletionLock;
-    hashMap<SceneGraphNode*, std::vector<vec_size>> _pendingDeletion;
+    hashMap<SceneGraphNode*, vectorSTD<vec_size>> _pendingDeletion;
 
     mutable std::mutex _nodeCreateMutex;
 

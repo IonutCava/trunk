@@ -178,7 +178,7 @@ bool glFramebuffer::create() {
 
     // If this is a multisampled FBO, make sure we have a resolve buffer
     if (_hasMultisampledColourAttachments && _resolveBuffer == nullptr) {
-        std::vector<RTAttachmentDescriptor> attachments;
+        vectorSTD<RTAttachmentDescriptor> attachments;
         for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
             for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachmentType>(i)); ++j) {
                 const RTAttachment* att = _attachmentPool->get(static_cast<RTAttachmentType>(i), j).get();

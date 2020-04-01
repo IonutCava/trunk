@@ -17,8 +17,7 @@ void ParticleColourGenerator::generate(Task& packagedTasksParent,
 
     TaskPool& tp = *packagedTasksParent._parentPool;
 
-    typedef decltype(std::begin(p._startColour)) iter_t_start;
-    typedef decltype(std::begin(p._endColour)) iter_t_end;
+    using iter_t_start = decltype(std::begin(p._startColour));
     for_each_interval<iter_t_start>(std::begin(p._startColour) + startIndex,
                                     std::begin(p._startColour) + endIndex,
                                     ParticleData::g_threadPartitionSize,
@@ -34,6 +33,7 @@ void ParticleColourGenerator::generate(Task& packagedTasksParent,
                    }));
     });
 
+    using iter_t_end = decltype(std::begin(p._endColour));
     for_each_interval<iter_t_end>(std::begin(p._endColour) + startIndex,
                                   std::begin(p._endColour) + endIndex,
                                   ParticleData::g_threadPartitionSize,

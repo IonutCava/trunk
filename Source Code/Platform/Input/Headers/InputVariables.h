@@ -131,9 +131,8 @@ class TriangleVariable : public LimitedVariable {
 //////////// Variable effect class
 /////////////////////////////////////////////////////////////
 
-typedef hashMap<U64, Variable*> MapVariables;
-typedef void (*EffectVariablesApplier)(MapVariables& mapVars,
-                                       OIS::Effect* pEffect);
+using MapVariables = hashMap<U64, Variable*>;
+typedef void (*EffectVariablesApplier)(MapVariables& mapVars, OIS::Effect* pEffect);
 
 class VariableEffect {
    protected:

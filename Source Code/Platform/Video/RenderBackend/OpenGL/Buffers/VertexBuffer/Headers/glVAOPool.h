@@ -54,7 +54,7 @@ protected:
     void destroy();
 
 protected:
-    std::vector<std::pair<GLuint, bool>> _pool;
+    vectorSTD<std::pair<GLuint, bool>> _pool;
 };
 
 }; //namespace GLUtil

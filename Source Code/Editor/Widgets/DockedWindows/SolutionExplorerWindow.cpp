@@ -16,7 +16,7 @@ namespace Divide {
     namespace {
         constexpr U8 g_maxEntryCount = 32;
         std::deque<F32> g_framerateBuffer;
-        std::vector<F32> g_framerateBufferCont;
+        vectorSTD<F32> g_framerateBufferCont;
     };
 
     SolutionExplorerWindow::SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
@@ -101,7 +101,7 @@ namespace Divide {
         ImGui::Text("All scenes");
         ImGui::Separator();
 
-        const std::vector<Str128>& scenes = sceneManager.sceneNameList();
+        const vectorSTD<Str128>& scenes = sceneManager.sceneNameList();
         for (const Str128& scene : scenes) {
             if (scene != activeScene.resourceName()) {
                 if (ImGui::TreeNodeEx(scene.c_str(), ImGuiTreeNodeFlags_Leaf)) {

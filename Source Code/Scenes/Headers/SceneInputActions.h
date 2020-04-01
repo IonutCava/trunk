@@ -104,7 +104,7 @@ public:
         return conflict;
     }
 
-    inline const std::vector<U16>& getActionIDs(Action action) const noexcept {
+    inline const vectorSTD<U16>& getActionIDs(Action action) const noexcept {
         return _actions[to_base(action)];
     }
 
@@ -112,13 +112,13 @@ public:
         insert_unique(_actions[to_base(action)], ID);
     }
 
-    inline void insertActionIDs(Action action, const std::vector<U16>& IDs) {
+    inline void insertActionIDs(Action action, const vectorSTD<U16>& IDs) {
         _actions[to_base(action)] = IDs;
     }
 
 private:
     // keys only
-    std::array<std::vector<U16>, to_base(Action::COUNT)> _actions;
+    std::array<vectorSTD<U16>, to_base(Action::COUNT)> _actions;
 };
 
 struct InputAction {

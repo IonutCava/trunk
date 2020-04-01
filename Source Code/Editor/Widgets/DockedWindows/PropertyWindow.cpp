@@ -141,7 +141,7 @@ namespace Divide {
         } else if (hasSelections) {
             const F32 smallButtonWidth = 60.0f;
             F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
-            const std::vector<I64>& crtSelections = selections();
+            const vectorSTD<I64>& crtSelections = selections();
 
             static bool closed = false;
             for (I64 nodeGUID : crtSelections) {
@@ -157,7 +157,7 @@ namespace Divide {
                     }
                     ImGui::Separator();
 
-                    vectorFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
+                    vectorSTDFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
                         if (ImGui::CollapsingHeader(comp->name().c_str(), ImGuiTreeNodeFlags_OpenOnArrow)) {
                             //const I32 RV = ImGui::AppendTreeNodeHeaderButtons(comp->name().c_str(), ImGui::GetCursorPosX(), 1, &closed, "Remove", NULL, 0);
@@ -172,7 +172,7 @@ namespace Divide {
                             }
                             ImGui::Separator();
 
-                            std::vector<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
+                            vectorSTD<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
                                 ImGui::Text(field._name.c_str());
                                 //ImGui::NewLine();
@@ -237,7 +237,7 @@ namespace Divide {
         }
     }
     
-    std::vector<I64> PropertyWindow::selections() const {
+    vectorSTD<I64> PropertyWindow::selections() const {
         const SceneManager& sceneManager = context().kernel().sceneManager();
         const Scene& activeScene = sceneManager.getActiveScene();
 
@@ -831,7 +831,7 @@ namespace Divide {
          return ret;
      }
      const char* PropertyWindow::name() const {
-         const std::vector<I64> nodes = selections();
+         const vectorSTD<I64> nodes = selections();
          if (nodes.empty()) {
              return DockedWindow::name();
          }

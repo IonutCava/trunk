@@ -110,7 +110,7 @@ class Terrain : public Object3D {
     inline const Quadtree& getQuadtree() const noexcept { return _terrainQuadtree; }
     void getVegetationStats(U32& maxGrassInstances, U32& maxTreeInstances) const;
 
-    inline const std::vector<TerrainChunk*>& terrainChunks() const { return _terrainChunks; }
+    inline const vectorSTD<TerrainChunk*>& terrainChunks() const { return _terrainChunks; }
     const std::shared_ptr<TerrainDescriptor>& descriptor() const { return _descriptor; }
 
     void saveToXML(boost::property_tree::ptree& pt) const override;
@@ -149,7 +149,7 @@ class Terrain : public Object3D {
     const char* getResourceTypeName() const override { return "Terrain"; }
 
    public:
-       std::vector<VertexBuffer::Vertex> _physicsVerts;
+       vectorSTD<VertexBuffer::Vertex> _physicsVerts;
 
    protected:
     enum class EditorDataState : U8 {
@@ -163,11 +163,11 @@ class Terrain : public Object3D {
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
 
-    typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)-1> TessellatorArray;
-    typedef hashMap<I64, bool> CameraUpdateFlagArray;
+    using TessellatorArray = std::array<TerrainTessellator, to_base(RenderStage::COUNT)-1>;
+    using CameraUpdateFlagArray = hashMap<I64, bool>;
 
     Quadtree _terrainQuadtree;
-    std::vector<TerrainChunk*> _terrainChunks;
+    vectorSTD<TerrainChunk*> _terrainChunks;
 
     TessellatorArray _terrainTessellator;
     std::array<TerrainTessellator, ShadowMap::MAX_SHADOW_PASSES> _shadowTessellators;

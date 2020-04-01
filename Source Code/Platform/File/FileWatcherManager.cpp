@@ -3,7 +3,7 @@
 #include "Headers/FileWatcherManager.h"
 
 namespace Divide {
-    std::vector<std::unique_ptr<FileWatcher>> FileWatcherManager::s_fileWatchers;
+    vectorSTD<std::unique_ptr<FileWatcher>> FileWatcherManager::s_fileWatchers;
 
     FileWatcher& FileWatcherManager::allocateWatcher() {
         s_fileWatchers.emplace_back(std::make_unique<FileWatcher>());

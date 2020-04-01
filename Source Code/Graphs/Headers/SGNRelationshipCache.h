@@ -57,16 +57,16 @@ public:
     // this will issue a rebuild if the cache is invalid
     RelationshipType clasifyNode(I64 GUID) const;
 protected:
-    void updateChildren(U8 level, std::vector<std::pair<I64, U8>>& cache) const;
-    void updateParents(U8 level, std::vector<std::pair<I64, U8>>& cache) const;
+    void updateChildren(U8 level, vectorSTD<std::pair<I64, U8>>& cache) const;
+    void updateParents(U8 level, vectorSTD<std::pair<I64, U8>>& cache) const;
 
 protected:
     // We need a way to accelerate relationship testing
     // We can cache a full recursive list of children
     // pair: GUID ... child level (0 = child, 1 = grandchild, ...)
-    std::vector<std::pair<I64, U8>> _childrenRecursiveCache;
+    vectorSTD<std::pair<I64, U8>> _childrenRecursiveCache;
     // pair: GUID ... parent level (0 = parent, 1 = grandparent, ...)
-    std::vector<std::pair<I64, U8>> _parentRecursiveCache;
+    vectorSTD<std::pair<I64, U8>> _parentRecursiveCache;
     std::atomic_bool _isValid;
     SceneGraphNode& _parentNode;
 

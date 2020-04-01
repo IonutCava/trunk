@@ -12,7 +12,7 @@ namespace Divide {
 /// structure to define them in each app:
 class OPCodes {
 public:
-    typedef int32_t ValueType;
+    using ValueType = int32_t;
 
     static const ValueType MSG_NOP = 0x000;
     static const ValueType MSG_HEARTBEAT = 0x001;

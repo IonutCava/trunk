@@ -46,7 +46,7 @@ constexpr const char* const g_languageFileExtension = ".ini";
 
 class LanguageData {
 public:
-    using LangCallbacks = std::vector<DELEGATE<void, const char* /*new language*/>>;
+    using LangCallbacks = vectorSTD<DELEGATE<void, const char* /*new language*/>>;
 public:
     LanguageData() noexcept;
     ~LanguageData();

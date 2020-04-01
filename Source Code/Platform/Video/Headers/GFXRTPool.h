@@ -40,7 +40,7 @@ namespace Divide {
 
 class GFXRTPool {
 protected:
-    using TargetsPerUsage = std::vector<std::shared_ptr<RenderTarget>>;
+    using TargetsPerUsage = vectorSTD<std::shared_ptr<RenderTarget>>;
     using RenderTargets = std::array<TargetsPerUsage, to_base(RenderTargetUsage::COUNT)>;
 
 protected:
@@ -77,11 +77,11 @@ public:
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
-    inline std::vector<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) noexcept {
+    inline vectorSTD<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) noexcept {
         return _renderTargets[to_U32(target)];
     }
 
-    inline const std::vector<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const noexcept {
+    inline const vectorSTD<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const noexcept {
         return _renderTargets[to_U32(target)];
     }
 

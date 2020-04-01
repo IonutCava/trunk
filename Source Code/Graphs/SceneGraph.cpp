@@ -70,8 +70,8 @@ void SceneGraph::unload()
 }
 
 void SceneGraph::addToDeleteQueue(SceneGraphNode* node, vec_size childIdx) {
-    UniqueLockShared w_lock(_pendingDeletionLock);
-    std::vector<vec_size>& list = _pendingDeletion[node];
+    UniqueLock<SharedMutex> w_lock(_pendingDeletionLock);
+    vectorSTD<vec_size>& list = _pendingDeletion[node];
     if (std::find(std::cbegin(list), std::cend(list), childIdx) == std::cend(list))
     {
         list.push_back(childIdx);
@@ -150,7 +150,7 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
 }
 
 bool SceneGraph::frameStarted(const FrameEvent& evt) noexcept {
-    UniqueLockShared lock(_pendingDeletionLock);
+    UniqueLock<SharedMutex> lock(_pendingDeletionLock);
     if (!_pendingDeletion.empty()) {
         for (auto entry : _pendingDeletion) {
             if (entry.first != nullptr) {
@@ -263,7 +263,7 @@ void SceneGraph::onNetworkSend(U32 frameCount) {
     Attorney::SceneGraphNodeSceneGraph::onNetworkSend(*_root, frameCount);
 }
 
-bool SceneGraph::intersect(const Ray& ray, F32 start, F32 end, std::vector<SGNRayResult>& intersections) const {
+bool SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorSTD<SGNRayResult>& intersections) const {
     return _root->intersect(ray, start, end, intersections);
 
     /*if (_loadComplete) {
@@ -283,7 +283,7 @@ void SceneGraph::postLoad() {
 }
 
 SceneGraphNode* SceneGraph::createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor) {
-    UniqueLock u_lock(_nodeCreateMutex);
+    UniqueLock<Mutex> u_lock(_nodeCreateMutex);
 
     ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(sceneGraph, descriptor);
     return static_cast<SceneGraphNode*>(GetEntityManager()->GetEntity(nodeID));

@@ -147,7 +147,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     UniformsByNameHash _uniformsByNameHash;
 
     /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
-    std::vector<std::pair<stringImpl, bool>> _definesList;
+    vectorSTD<std::pair<stringImpl, bool>> _definesList;
 
    private:
     /// Shader cache

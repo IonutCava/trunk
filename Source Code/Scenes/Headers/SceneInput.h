@@ -47,7 +47,7 @@ namespace Divide {
     };
 // This is the callback equivalent of PressReleaseAction with IDs resolved
 struct PressReleaseActionCbks {
-    std::array<std::vector<DELEGATE<void, InputParams>>, to_base(PressReleaseActions::Action::COUNT)> _actions;
+    std::array<vectorSTD<DELEGATE<void, InputParams>>, to_base(PressReleaseActions::Action::COUNT)> _actions;
 
     void from(const PressReleaseActions& actions, const InputActionList& actionList);
 };
@@ -66,8 +66,8 @@ class SceneInput : public Input::InputAggregatorInterface {
     using JoystickMapEntry = ska::bytell_hash_map<JoystickMapKey, PressReleaseActions, pair_hash>;
     using JoystickMap = ska::bytell_hash_map<std::underlying_type_t<Input::Joystick>, JoystickMapEntry>;
 
-    using KeyLog = std::vector<std::pair<Input::KeyCode, Input::InputState>>;
-    using MouseBtnLog = std::vector<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>>;
+    using KeyLog = vectorSTD<std::pair<Input::KeyCode, Input::InputState>>;
+    using MouseBtnLog = vectorSTD<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>>;
 
     explicit SceneInput(Scene &parentScene, PlatformContext& context);
 

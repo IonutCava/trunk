@@ -116,7 +116,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     };
 
    public:
-    typedef std::function<void(NavigationMesh*)> CreationCallback;
+    using CreationCallback = DELEGATE<void, NavigationMesh*>;
 
     inline void setFileName(const Str128& fileName) {
         _fileName.append(fileName);

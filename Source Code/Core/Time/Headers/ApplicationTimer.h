@@ -40,15 +40,15 @@
 namespace Divide {
 namespace Time {
   
-typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimeValue;
+using TimeValue = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 class ApplicationTimer : public Singleton<ApplicationTimer> {
     friend class Singleton<ApplicationTimer>;
 
-    typedef std::chrono::nanoseconds  NSec;
-    typedef std::chrono::microseconds USec;
-    typedef std::chrono::milliseconds MSec;
-    typedef std::chrono::seconds Sec;
+    using NSec = std::chrono::nanoseconds;
+    using USec = std::chrono::microseconds;
+    using MSec = std::chrono::milliseconds;
+    using Sec  = std::chrono::seconds;
 
   public:
     void update();

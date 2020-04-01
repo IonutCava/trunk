@@ -529,8 +529,8 @@ namespace std {
     template<typename T, size_t N>
     struct hash<array<T, N> >
     {
-        typedef array<T, N> argument_type;
-        typedef size_t result_type;
+        using argument_type = array<T, N>;
+        using result_type = size_t;
 
         result_type operator()(const argument_type& a) const
         {

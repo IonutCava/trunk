@@ -91,7 +91,7 @@ void ShaderProgram::idle() {
 /// that matches the name specified
 bool ShaderProgram::recompileShaderProgram(const Str128& name) {
     bool state = false;
-    SharedLock r_lock(s_programLock);
+    SharedLock<SharedMutex> r_lock(s_programLock);
 
     // Find the shader program
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
@@ -162,7 +162,7 @@ bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
     static bool onOddFrame = false;
 
     onOddFrame = !onOddFrame;
-    SharedLock r_lock(s_programLock);
+    SharedLock<SharedMutex> r_lock(s_programLock);
     // Pass the update call to all registered programs
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
         if (!Config::Build::IS_RELEASE_BUILD && onOddFrame) {
@@ -179,14 +179,14 @@ void ShaderProgram::registerShaderProgram(ShaderProgram* shaderProgram) {
     size_t shaderHash = shaderProgram->descriptorHash();
     unregisterShaderProgram(shaderHash);
 
-    UniqueLockShared w_lock(s_programLock);
+    UniqueLock<SharedMutex> w_lock(s_programLock);
     s_shaderPrograms[shaderProgram->getGUID()] = { shaderProgram, shaderHash };
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
 bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 
-    UniqueLockShared lock(s_programLock);
+    UniqueLock<SharedMutex> lock(s_programLock);
     if (s_shaderPrograms.empty()) {
         // application shutdown?
         return true;
@@ -209,7 +209,7 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 }
 
 ShaderProgram* ShaderProgram::findShaderProgram(I64 shaderHandle) {
-    SharedLock r_lock(s_programLock);
+    SharedLock<SharedMutex> r_lock(s_programLock);
     const auto& it = s_shaderPrograms.find(shaderHandle);
     if (it != std::cend(s_shaderPrograms)) {
         return it->second.first;
@@ -219,7 +219,7 @@ ShaderProgram* ShaderProgram::findShaderProgram(I64 shaderHandle) {
 }
 
 ShaderProgram* ShaderProgram::findShaderProgram(size_t shaderHash) {
-    SharedLock r_lock(s_programLock);
+    SharedLock<SharedMutex> r_lock(s_programLock);
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
         if (it.second.second == shaderHash) {
             return it.second.first;
@@ -238,14 +238,14 @@ const ShaderProgram_ptr& ShaderProgram::nullShader() {
 }
 
 void ShaderProgram::rebuildAllShaders() {
-    SharedLock r_lock(s_programLock);
+    SharedLock<SharedMutex> r_lock(s_programLock);
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
         s_recompileQueue.push(it.second.first);
     }
 }
 
-std::vector<Str256> ShaderProgram::getAllAtomLocations() {
-    static std::vector<Str256> atomLocations;
+vectorSTD<Str256> ShaderProgram::getAllAtomLocations() {
+    static vectorSTD<Str256> atomLocations;
     if (atomLocations.empty()) {
         // General
         atomLocations.emplace_back(Paths::g_assetsLocation +

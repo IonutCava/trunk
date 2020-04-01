@@ -71,13 +71,13 @@ enum class SamplePolyFlags : U16 {
 };
 
 // structure for storing output straight line paths
-typedef struct {
+struct PATHDATA {
     F32 PosX[MAX_PATHVERT];
     F32 PosY[MAX_PATHVERT];
     F32 PosZ[MAX_PATHVERT];
     I32 MaxVertex;
     I32 Target;
-} PATHDATA;
+};
 
 enum class PathErrorCode : I8 {
     PATH_ERROR_NONE = 0,

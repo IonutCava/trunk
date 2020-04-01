@@ -197,7 +197,7 @@ void RenderStateBlock::init() {
 }
 
 void RenderStateBlock::clear() {
-    UniqueLockShared w_lock(s_stateBlockMapMutex);
+    UniqueLock<SharedMutex> w_lock(s_stateBlockMapMutex);
     s_stateBlockMap.clear();
 }
 
@@ -214,7 +214,7 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash) {
 const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool& blockFound) {
     blockFound = false;
 
-    SharedLock r_lock(s_stateBlockMapMutex);
+    SharedLock<SharedMutex> r_lock(s_stateBlockMapMutex);
     // Find the render state block associated with the received hash value
     const RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
     if(it != std::cend(s_stateBlockMap) ) {
@@ -258,7 +258,7 @@ size_t RenderStateBlock::getHash() const {
     Util::Hash_combine(_hash, to_U32(_tessControlPoints));
 
     if (previousCache != _hash) {
-        UniqueLockShared w_lock(s_stateBlockMapMutex);
+        UniqueLock<SharedMutex> w_lock(s_stateBlockMapMutex);
         hashAlg::insert(s_stateBlockMap, _hash, *this);
     }
     _dirty = false;
