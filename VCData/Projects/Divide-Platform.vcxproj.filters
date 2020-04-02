@@ -841,9 +841,6 @@
     <None Include="../../assets/shaders\GLSL\terrainTess.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="../../assets/shaders\GLSL\terrainTessNvidia.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.inl">
       <Filter>Video\Buffers\RenderTarget\Headers</Filter>
     </None>

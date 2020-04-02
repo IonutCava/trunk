@@ -39,9 +39,11 @@ namespace Divide {
 
 class Scene;
 class GFXDevice;
-class Configuration;
 class SceneGraphNode;
 class PlatformContext;
+
+struct Configuration;
+
 FWD_DECLARE_MANAGED_CLASS(Material);
 
 namespace XML {

@@ -1,6 +1,7 @@
 #include "../src/meshoptimizer.h"
 
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <vector>
@@ -24,6 +25,14 @@ static const unsigned int kIndexBuffer[] = {0, 1, 2, 2, 1, 3, 4, 6, 5, 7, 8, 9};
 static const unsigned char kIndexDataV0[] = {
     0xe0, 0xf0, 0x10, 0xfe, 0xff, 0xf0, 0x0c, 0xff, 0x02, 0x02, 0x02, 0x00, 0x76, 0x87, 0x56, 0x67,
     0x78, 0xa9, 0x86, 0x65, 0x89, 0x68, 0x98, 0x01, 0x69, 0x00, 0x00, // clang-format :-/
+};
+
+// note: this exercises two features of v1 format, restarts (0 1 2) and last
+static const unsigned int kIndexBufferTricky[] = {0, 1, 2, 2, 1, 3, 0, 1, 2, 2, 1, 5, 2, 1, 4};
+
+static const unsigned char kIndexDataV1[] = {
+    0xe1, 0xf0, 0x10, 0xfe, 0x1f, 0x3d, 0x00, 0x0a, 0x00, 0x76, 0x87, 0x56, 0x67, 0x78, 0xa9, 0x86,
+    0x65, 0x89, 0x68, 0x98, 0x01, 0x69, 0x00, 0x00, // clang-format :-/
 };
 
 static const PV kVertexBuffer[] = {
@@ -51,6 +60,17 @@ static void decodeIndexV0()
 	unsigned int decoded[index_count];
 	assert(meshopt_decodeIndexBuffer(decoded, index_count, &buffer[0], buffer.size()) == 0);
 	assert(memcmp(decoded, kIndexBuffer, sizeof(kIndexBuffer)) == 0);
+}
+
+static void decodeIndexV1()
+{
+	const size_t index_count = sizeof(kIndexBufferTricky) / sizeof(kIndexBufferTricky[0]);
+
+	std::vector<unsigned char> buffer(kIndexDataV1, kIndexDataV1 + sizeof(kIndexDataV1));
+
+	unsigned int decoded[index_count];
+	assert(meshopt_decodeIndexBuffer(decoded, index_count, &buffer[0], buffer.size()) == 0);
+	assert(memcmp(decoded, kIndexBufferTricky, sizeof(kIndexBufferTricky)) == 0);
 }
 
 static void decodeIndex16()
@@ -144,6 +164,43 @@ static void decodeIndexRejectMalformedHeaders()
 	assert(meshopt_decodeIndexBuffer(decoded, index_count, &brokenbuffer[0], brokenbuffer.size()) < 0);
 }
 
+static void decodeIndexRejectInvalidVersion()
+{
+	const size_t index_count = sizeof(kIndexBuffer) / sizeof(kIndexBuffer[0]);
+	const size_t vertex_count = 10;
+
+	std::vector<unsigned char> buffer(meshopt_encodeIndexBufferBound(index_count, vertex_count));
+	buffer.resize(meshopt_encodeIndexBuffer(&buffer[0], buffer.size(), kIndexBuffer, index_count));
+
+	// check that decoder doesn't accept invalid version
+	std::vector<unsigned char> brokenbuffer(buffer);
+	brokenbuffer[0] |= 0x0f;
+
+	unsigned int decoded[index_count];
+	assert(meshopt_decodeIndexBuffer(decoded, index_count, &brokenbuffer[0], brokenbuffer.size()) < 0);
+}
+
+static void roundtripIndexTricky()
+{
+	const size_t index_count = sizeof(kIndexBufferTricky) / sizeof(kIndexBufferTricky[0]);
+	const size_t vertex_count = 6;
+
+	std::vector<unsigned char> buffer(meshopt_encodeIndexBufferBound(index_count, vertex_count));
+	buffer.resize(meshopt_encodeIndexBuffer(&buffer[0], buffer.size(), kIndexBufferTricky, index_count));
+
+	unsigned int decoded[index_count];
+	assert(meshopt_decodeIndexBuffer(decoded, index_count, &buffer[0], buffer.size()) == 0);
+	assert(memcmp(decoded, kIndexBufferTricky, sizeof(kIndexBufferTricky)) == 0);
+}
+
+static void encodeIndexEmpty()
+{
+	std::vector<unsigned char> buffer(meshopt_encodeIndexBufferBound(0, 0));
+	buffer.resize(meshopt_encodeIndexBuffer(&buffer[0], buffer.size(), NULL, 0));
+
+	assert(meshopt_decodeIndexBuffer(static_cast<unsigned int*>(NULL), 0, &buffer[0], buffer.size()) == 0);
+}
+
 static void decodeVertexV0()
 {
 	const size_t vertex_count = sizeof(kVertexBuffer) / sizeof(kVertexBuffer[0]);
@@ -228,6 +285,171 @@ static void decodeVertexRejectMalformedHeaders()
 	assert(meshopt_decodeVertexBuffer(decoded, vertex_count, sizeof(PV), &brokenbuffer[0], brokenbuffer.size()) < 0);
 }
 
+static void decodeVertexBitGroups()
+{
+	unsigned char data[16 * 4];
+
+	// this tests 0/2/4/8 bit groups in one stream
+	for (size_t i = 0; i < 16; ++i)
+	{
+		data[i * 4 + 0] = 0;
+		data[i * 4 + 1] = (unsigned char)(i * 1);
+		data[i * 4 + 2] = (unsigned char)(i * 2);
+		data[i * 4 + 3] = (unsigned char)(i * 8);
+	}
+
+	std::vector<unsigned char> buffer(meshopt_encodeVertexBufferBound(16, 4));
+	buffer.resize(meshopt_encodeVertexBuffer(&buffer[0], buffer.size(), data, 16, 4));
+
+	unsigned char decoded[16 * 4];
+	assert(meshopt_decodeVertexBuffer(decoded, 16, 4, &buffer[0], buffer.size()) == 0);
+	assert(memcmp(decoded, data, sizeof(data)) == 0);
+}
+
+static void decodeVertexBitGroupSentinels()
+{
+	unsigned char data[16 * 4];
+
+	// this tests 0/2/4/8 bit groups and sentinels in one stream
+	for (size_t i = 0; i < 16; ++i)
+	{
+		if (i == 7 || i == 13)
+		{
+			data[i * 4 + 0] = 42;
+			data[i * 4 + 1] = 42;
+			data[i * 4 + 2] = 42;
+			data[i * 4 + 3] = 42;
+		}
+		else
+		{
+			data[i * 4 + 0] = 0;
+			data[i * 4 + 1] = (unsigned char)(i * 1);
+			data[i * 4 + 2] = (unsigned char)(i * 2);
+			data[i * 4 + 3] = (unsigned char)(i * 8);
+		}
+	}
+
+	std::vector<unsigned char> buffer(meshopt_encodeVertexBufferBound(16, 4));
+	buffer.resize(meshopt_encodeVertexBuffer(&buffer[0], buffer.size(), data, 16, 4));
+
+	unsigned char decoded[16 * 4];
+	assert(meshopt_decodeVertexBuffer(decoded, 16, 4, &buffer[0], buffer.size()) == 0);
+	assert(memcmp(decoded, data, sizeof(data)) == 0);
+}
+
+static void decodeVertexLarge()
+{
+	unsigned char data[128 * 4];
+
+	// this tests 0/2/4/8 bit groups in one stream
+	for (size_t i = 0; i < 128; ++i)
+	{
+		data[i * 4 + 0] = 0;
+		data[i * 4 + 1] = (unsigned char)(i * 1);
+		data[i * 4 + 2] = (unsigned char)(i * 2);
+		data[i * 4 + 3] = (unsigned char)(i * 8);
+	}
+
+	std::vector<unsigned char> buffer(meshopt_encodeVertexBufferBound(128, 4));
+	buffer.resize(meshopt_encodeVertexBuffer(&buffer[0], buffer.size(), data, 128, 4));
+
+	unsigned char decoded[128 * 4];
+	assert(meshopt_decodeVertexBuffer(decoded, 128, 4, &buffer[0], buffer.size()) == 0);
+	assert(memcmp(decoded, data, sizeof(data)) == 0);
+}
+
+static void encodeVertexEmpty()
+{
+	std::vector<unsigned char> buffer(meshopt_encodeVertexBufferBound(0, 16));
+	buffer.resize(meshopt_encodeVertexBuffer(&buffer[0], buffer.size(), NULL, 0, 16));
+
+	assert(meshopt_decodeVertexBuffer(NULL, 0, 16, &buffer[0], buffer.size()) == 0);
+}
+
+static void decodeFilterOct8()
+{
+	unsigned char data[4 * 4] = {
+	    0, 1, 127, 0,
+	    0, 187, 127, 1,
+	    255, 1, 127, 0,
+	    14, 130, 127, 1, // clang-format :-/
+	};
+
+	meshopt_decodeFilterOct(data, 4, 4);
+
+	const unsigned char expected[4 * 4] = {
+	    0, 1, 127, 0,
+	    0, 159, 82, 1,
+	    255, 1, 127, 0,
+	    1, 130, 241, 1, // clang-format :-/
+	};
+
+	assert(memcmp(data, expected, sizeof(data)) == 0);
+}
+
+static void decodeFilterOct12()
+{
+	unsigned short data[4 * 4] = {
+	    0, 1, 2047, 0,
+	    0, 1870, 2047, 1,
+	    2017, 1, 2047, 0,
+	    14, 1300, 2047, 1, // clang-format :-/
+	};
+
+	meshopt_decodeFilterOct(data, 4, 8);
+
+	const unsigned short expected[4 * 4] = {
+	    0, 16, 32767, 0,
+	    0, 32621, 3088, 1,
+	    32764, 16, 471, 0,
+	    307, 28541, 16093, 1, // clang-format :-/
+	};
+
+	assert(memcmp(data, expected, sizeof(data)) == 0);
+}
+
+static void decodeFilterQuat12()
+{
+	unsigned short data[4 * 4] = {
+	    0, 1, 0, 0x7fc,
+	    0, 1870, 0, 0x7fd,
+	    2017, 1, 0, 0x7fe,
+	    14, 1300, 0, 0x7ff, // clang-format :-/
+	};
+
+	meshopt_decodeFilterQuat(data, 4, 8);
+
+	const unsigned short expected[4 * 4] = {
+	    32767, 0, 11, 0,
+	    0, 25013, 0, 21166,
+	    11, 0, 23504, 22830,
+	    158, 14715, 0, 29277, // clang-format :-/
+	};
+
+	assert(memcmp(data, expected, sizeof(data)) == 0);
+}
+
+static void decodeFilterExp()
+{
+	unsigned int data[4] = {
+	    0,
+	    0xff000003,
+	    0x02fffff7,
+	    0xfe7fffff, // clang-format :-/
+	};
+
+	meshopt_decodeFilterExp(data, 4, 4);
+
+	const unsigned int expected[4] = {
+	    0,
+	    0x3fc00000,
+	    0xc2100000,
+	    0x49fffffe, // clang-format :-/
+	};
+
+	assert(memcmp(data, expected, sizeof(data)) == 0);
+}
+
 static void clusterBoundsDegenerate()
 {
 	const float vbd[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -261,20 +483,159 @@ static void clusterBoundsDegenerate()
 	assert(bounds2.center[2] - bounds2.radius <= 0 && bounds2.center[2] + bounds2.radius >= 1);
 }
 
-void runTests()
+static size_t allocCount;
+static size_t freeCount;
+
+static void* customAlloc(size_t size)
+{
+	allocCount++;
+
+	return malloc(size);
+}
+
+static void customFree(void* ptr)
+{
+	freeCount++;
+
+	free(ptr);
+}
+
+static void customAllocator()
+{
+	meshopt_setAllocator(customAlloc, customFree);
+
+	assert(allocCount == 0 && freeCount == 0);
+
+	float vb[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+	unsigned int ib[] = {0, 1, 2};
+	unsigned short ibs[] = {0, 1, 2};
+
+	// meshopt_computeClusterBounds doesn't allocate
+	meshopt_computeClusterBounds(ib, 3, vb, 3, 12);
+	assert(allocCount == 0 && freeCount == 0);
+
+	// ... unless IndexAdapter is used
+	meshopt_computeClusterBounds(ibs, 3, vb, 3, 12);
+	assert(allocCount == 1 && freeCount == 1);
+
+	// meshopt_optimizeVertexFetch allocates internal remap table and temporary storage for in-place remaps
+	meshopt_optimizeVertexFetch(vb, ib, 3, vb, 3, 12);
+	assert(allocCount == 3 && freeCount == 3);
+
+	// ... plus one for IndexAdapter
+	meshopt_optimizeVertexFetch(vb, ibs, 3, vb, 3, 12);
+	assert(allocCount == 6 && freeCount == 6);
+
+	meshopt_setAllocator(operator new, operator delete);
+
+	// customAlloc & customFree should not get called anymore
+	meshopt_optimizeVertexFetch(vb, ib, 3, vb, 3, 12);
+	assert(allocCount == 6 && freeCount == 6);
+
+	allocCount = freeCount = 0;
+}
+
+static void emptyMesh()
+{
+	meshopt_optimizeVertexCache(0, 0, 0, 0);
+	meshopt_optimizeVertexCacheFifo(0, 0, 0, 0, 16);
+	meshopt_optimizeOverdraw(0, 0, 0, 0, 0, 12, 1.f);
+}
+
+static void simplifyStuck()
+{
+	// tetrahedron can't be simplified due to collapse error restrictions
+	float vb1[] = {0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
+	unsigned int ib1[] = {0, 1, 2, 0, 2, 3, 0, 3, 1, 2, 1, 3};
+
+	assert(meshopt_simplify(ib1, ib1, 12, vb1, 4, 12, 6, 1e-3f) == 12);
+
+	// 5-vertex strip can't be simplified due to topology restriction since middle triangle has flipped winding
+	float vb2[] = {0, 0, 0, 1, 0, 0, 2, 0, 0, 0.5f, 1, 0, 1.5f, 1, 0};
+	unsigned int ib2[] = {0, 1, 3, 3, 1, 4, 1, 2, 4}; // ok
+	unsigned int ib3[] = {0, 1, 3, 1, 3, 4, 1, 2, 4}; // flipped
+
+	assert(meshopt_simplify(ib2, ib2, 9, vb2, 5, 12, 6, 1e-3f) == 6);
+	assert(meshopt_simplify(ib3, ib3, 9, vb2, 5, 12, 6, 1e-3f) == 9);
+}
+
+static void simplifySloppyStuck()
+{
+	const float vb[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+	const unsigned int ib[] = {0, 1, 2, 0, 1, 2};
+
+	// simplifying down to 0 triangles results in 0 immediately
+	assert(meshopt_simplifySloppy(0, ib, 3, vb, 3, 12, 0) == 0);
+
+	// simplifying down to 2 triangles given that all triangles are degenerate results in 0 as well
+	assert(meshopt_simplifySloppy(0, ib, 6, vb, 3, 12, 6) == 0);
+}
+
+static void simplifyPointsStuck()
+{
+	const float vb[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+	// simplifying down to 0 points results in 0 immediately
+	assert(meshopt_simplifyPoints(0, vb, 3, 12, 0) == 0);
+}
+
+static void runTestsOnce()
 {
 	decodeIndexV0();
+	decodeIndexV1();
 	decodeIndex16();
 	encodeIndexMemorySafe();
 	decodeIndexMemorySafe();
 	decodeIndexRejectExtraBytes();
 	decodeIndexRejectMalformedHeaders();
+	decodeIndexRejectInvalidVersion();
+	roundtripIndexTricky();
+	encodeIndexEmpty();
 
 	decodeVertexV0();
 	encodeVertexMemorySafe();
 	decodeVertexMemorySafe();
 	decodeVertexRejectExtraBytes();
 	decodeVertexRejectMalformedHeaders();
+	decodeVertexBitGroups();
+	decodeVertexBitGroupSentinels();
+	decodeVertexLarge();
+	encodeVertexEmpty();
+
+	decodeFilterOct8();
+	decodeFilterOct12();
+	decodeFilterQuat12();
+	decodeFilterExp();
 
 	clusterBoundsDegenerate();
+
+	customAllocator();
+
+	emptyMesh();
+
+	simplifyStuck();
+	simplifySloppyStuck();
+	simplifyPointsStuck();
+}
+
+namespace meshopt
+{
+extern unsigned int cpuid;
+}
+
+void runTests()
+{
+	runTestsOnce();
+
+#if !(defined(__AVX__) || defined(__SSSE3__)) && (defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__))
+	// When SSSE3/AVX support isn't enabled unconditionally, we use a cpuid-based fallback
+	// It's useful to be able to test scalar code in this case, so we temporarily fake the feature bits
+	// and restore them later
+	unsigned int cpuid = meshopt::cpuid;
+	meshopt::cpuid = 0;
+
+	runTestsOnce();
+
+	meshopt::cpuid = cpuid;
+#endif
 }

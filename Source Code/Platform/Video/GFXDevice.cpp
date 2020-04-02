@@ -1317,6 +1317,17 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
         needsUpdate = true;
     }
 
+    const vec4<F32> otherProperties(
+        _context.config().debug.enableLighting ? 1.0f : 0.0f,
+        _context.config().debug.showShadowCascadeSplits ? 1.0f : 0.0f,
+        0.0f,
+        0.0f);
+
+    if (data._otherProperties != otherProperties) {
+        data._otherProperties.set(otherProperties);
+        needsUpdate = true;
+    }
+
     if (needsUpdate) {
         _gpuBlock._needsUpload = true;
         _activeCameraSnapshot = cameraSnapshot;

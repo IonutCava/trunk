@@ -38,18 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class Configuration : public XML::IXMLSerializable {
-public:
-    Configuration();
-    ~Configuration() = default;
-
-
-
-protected:
-    bool fromXML(const char* xmlFile) override;
-    bool toXML(const char* xmlFile) const override;
-
-public:
+struct Configuration final : public XML::IXMLSerializable {
     struct Debug {
         /// If true, load shader source code from cache files
         /// If false, materials recompute shader source code from shader atoms
@@ -63,27 +52,29 @@ public:
         bool useShaderTextCache = true;
         bool enableTreeInstances = true;
         bool enableGrassInstances = true;
-        stringImpl memFile = "";
+        bool showShadowCascadeSplits = true;
+        bool enableLighting = true;
+        stringImpl memFile = "none";
         struct Mesh {
             bool playAnimations = true;
         } mesh = {};
     } debug = {};
     
-    stringImpl language = "";
+    stringImpl language = "enGB";
     
     struct Runtime {
         U8 targetDisplay = 0;
         U8 targetRenderingAPI = 0;
         bool useFixedTimestep = true;
-        I16 maxWorkerThreads = 8;
+        I16 maxWorkerThreads = -1;
         U8   windowedMode = 0;
         bool windowResizable = false;
         bool enableVSync = true;
         bool adaptiveSync = false;
         I16  frameRateLimit = -1;
-        vec2<U16> splashScreenSize;
-        vec2<U16> windowSize;
-        vec2<U16> resolution;
+        vec2<U16> splashScreenSize = { 400, 300 };
+        vec2<U16> windowSize = { 1280, 720 };
+        vec2<U16> resolution = { 1024, 768 };
         F32 simSpeed = 1.f;
         F32 zNear = 0.1f;
         F32 zFar = 1000.0f;
@@ -96,15 +87,14 @@ public:
             bool extraStates = false;
             bool skipRendering = false;
             bool showDebugCursor = false;
-            stringImpl defaultGUIScheme = "";
+            stringImpl defaultGUIScheme = "GWEN";
         } cegui = {};
         struct IMGUI {
             bool multiViewportEnabled = true;
             bool windowDecorationsEnabled = true;
             bool dontMergeFloatingWindows = true;
         } imgui = {};
-        stringImpl consoleLayoutFile = "";
-        stringImpl editorLayoutFile = "";
+        stringImpl consoleLayoutFile = "console.layout";
     } gui = {};
 
     struct Rendering {
@@ -113,14 +103,14 @@ public:
         U8 reflectionResolutionFactor = 1;
         I32 terrainDetailLevel = 0;
         I32 terrainTextureQuality = 0;
-        I32 numLightsPerScreenTile = 512;
+        I32 numLightsPerScreenTile = -1;
         U8 lightThreadGroupSize = 1;
         bool enableFog = true;
         F32 fogDensity = 1.0f;
-        vec3<F32> fogColour = {};
-        vec4<U16> lodThresholds = {};
+        vec3<F32> fogColour = { 0.2f, 0.2f, 0.2f };
+        vec4<U16> lodThresholds = { 25u, 45u, 85u, 165u };
         struct PostFX {
-            stringImpl postAAType = "";
+            stringImpl postAAType = "FXAA";
             U8 postAASamples = 0;
             bool enableDepthOfField = false;
             bool enableBloom = false;
@@ -141,9 +131,17 @@ public:
         } shadowMapping = {};
     } rendering = {};
 
-    stringImpl title = "No Title";
-    stringImpl defaultTextureLocation = "";
-    stringImpl defaultShadersLocation = "";
+    stringImpl title = "DIVIDE Framework";
+    stringImpl defaultTextureLocation = "textures/";
+    stringImpl defaultShadersLocation = "shaders/";
+
+    PROPERTY_RW(bool, changed, false);
+
+    void save();
+
+protected:
+    bool fromXML(const char* xmlFile) override;
+    bool toXML(const char* xmlFile) const override;
 };
 }; //namespace Divide
 

@@ -12,81 +12,6 @@
 
 namespace Divide {
 
-Configuration::Configuration() : XML::IXMLSerializable()
-{
-    debug.dumpCommandBuffersOnFrame = -1;
-    debug.enableRenderAPIDebugging = true;
-    debug.enableDebugMsgGroups = false;
-    debug.useGeometryCache = true;
-    debug.useVegetationCache = true;
-    debug.useShaderBinaryCache = false;
-    debug.useShaderTextCache = false;
-    debug.enableTreeInstances = true;
-    debug.enableGrassInstances = true;
-    debug.memFile = "none";
-    debug.mesh.playAnimations = true;
-    language = "enGB";
-    runtime.targetDisplay = 0;
-    runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
-    runtime.useFixedTimestep = true;
-    runtime.maxWorkerThreads = -1;
-    runtime.windowedMode = to_U8(WindowMode::WINDOWED);
-    runtime.windowResizable = false;
-    runtime.enableVSync = false;
-    runtime.adaptiveSync = true;
-    runtime.frameRateLimit = -1;
-    runtime.splashScreenSize.set(400, 300);
-    runtime.windowSize.set(1280, 768);
-    runtime.resolution.set(1024, 768);
-    runtime.simSpeed = 1.0f;
-    runtime.zNear = 0.1f;
-    runtime.zFar = 700.0f;
-    runtime.verticalFOV = 60;
-
-    gui.cegui.enabled = true;
-    gui.cegui.extraStates = false;
-    gui.cegui.skipRendering = false;
-    gui.cegui.showDebugCursor = false;
-    gui.cegui.defaultGUIScheme = "GWEN";
-    gui.consoleLayoutFile = "console.layout";
-    gui.editorLayoutFile = "editor.layout";
-
-    gui.imgui.multiViewportEnabled = false;
-    gui.imgui.windowDecorationsEnabled = false;
-    gui.imgui.dontMergeFloatingWindows = false;
-
-    rendering.msaaSamples = 0;
-    rendering.anisotropicFilteringLevel = 1;
-    rendering.reflectionResolutionFactor = 1;
-    rendering.terrainDetailLevel = 3;
-    rendering.terrainTextureQuality = 0;
-    rendering.numLightsPerScreenTile = -1;
-    rendering.lightThreadGroupSize = 1;
-    rendering.enableFog = true;
-    rendering.fogDensity = 0.01f; 
-    rendering.fogColour.set(0.2f);
-    rendering.lodThresholds.set(25, 45, 85, 165);
-    rendering.postFX.postAAType = "FXAA";
-    rendering.postFX.postAASamples = 0;
-    rendering.postFX.enableDepthOfField = false;
-    rendering.postFX.enableBloom = false;
-    rendering.postFX.bloomFactor = 0.4f;
-    rendering.postFX.enableSSAO = false;
-    rendering.postFX.ssaoRadius = 0.5f;
-    rendering.postFX.ssaoPower = 2.0f;
-    rendering.shadowMapping.enabled = true;
-    rendering.shadowMapping.shadowMapResolution = 512;
-    rendering.shadowMapping.msaaSamples = 0;
-    rendering.shadowMapping.anisotropicFilteringLevel = 1;
-    rendering.shadowMapping.enableBlurring = false;
-    rendering.shadowMapping.defaultCSMSplitCount = 3;
-    rendering.shadowMapping.softness = 0.25f;
-    rendering.shadowMapping.splitLambda = 0.65f;
-    title = "DIVIDE Framework";
-    defaultTextureLocation = "textures/";
-    defaultShadersLocation = "shaders/";
-}
-
 bool Configuration::fromXML(const char* xmlFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), xmlFile);
     if (LoadSave.read(xmlFile)) {
@@ -95,10 +20,12 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.enableDebugMsgGroups);
         GET_PARAM(debug.useGeometryCache);
         GET_PARAM(debug.useVegetationCache);
-        GET_PARAM(debug.useShaderBinaryCache);
-        GET_PARAM(debug.useShaderTextCache);
         GET_PARAM(debug.enableTreeInstances);
         GET_PARAM(debug.enableGrassInstances);
+        GET_PARAM(debug.useShaderTextCache);
+        GET_PARAM(debug.useShaderBinaryCache);
+        GET_PARAM(debug.showShadowCascadeSplits);
+        GET_PARAM(debug.enableLighting);
         GET_PARAM(debug.memFile);
         GET_PARAM(debug.mesh.playAnimations);
         GET_PARAM(language);
@@ -130,7 +57,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(gui.imgui.windowDecorationsEnabled);
         GET_PARAM(gui.imgui.dontMergeFloatingWindows);
         GET_PARAM(gui.consoleLayoutFile);
-        GET_PARAM(gui.editorLayoutFile);
         GET_PARAM(rendering.msaaSamples);
         GET_PARAM(rendering.anisotropicFilteringLevel);
         GET_PARAM(rendering.reflectionResolutionFactor);
@@ -181,10 +107,12 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(debug.enableDebugMsgGroups);
         PUT_PARAM(debug.useGeometryCache);
         PUT_PARAM(debug.useVegetationCache);
-        PUT_PARAM(debug.useShaderBinaryCache);
-        PUT_PARAM(debug.useShaderTextCache);
         PUT_PARAM(debug.enableTreeInstances);
         PUT_PARAM(debug.enableGrassInstances);
+        PUT_PARAM(debug.useShaderTextCache);
+        PUT_PARAM(debug.useShaderBinaryCache);
+        PUT_PARAM(debug.showShadowCascadeSplits);
+        PUT_PARAM(debug.enableLighting);
         PUT_PARAM(debug.memFile);
         PUT_PARAM(debug.mesh.playAnimations);
         PUT_PARAM(language);
@@ -216,7 +144,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(gui.imgui.windowDecorationsEnabled);
         PUT_PARAM(gui.imgui.dontMergeFloatingWindows);
         PUT_PARAM(gui.consoleLayoutFile);
-        PUT_PARAM(gui.editorLayoutFile);
         PUT_PARAM(rendering.msaaSamples);
         PUT_PARAM(rendering.anisotropicFilteringLevel);
         PUT_PARAM(rendering.reflectionResolutionFactor);
@@ -261,4 +188,10 @@ bool Configuration::toXML(const char* xmlFile) const {
     return false;
 }
 
+void Configuration::save() {
+    if (changed()) {
+        toXML(LoadSave._loadPath.c_str());
+        changed(false);
+    }
+}
 }; //namespace Divide

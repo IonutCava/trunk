@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "../tools/fast_obj.h"
+#include "../extern/fast_obj.h"
 #include "miniz.h"
 
 // This file uses assert() to verify algorithm correctness
@@ -268,6 +268,11 @@ void optCacheFifo(Mesh& mesh)
 	meshopt_optimizeVertexCacheFifo(&mesh.indices[0], &mesh.indices[0], mesh.indices.size(), mesh.vertices.size(), kCacheSize);
 }
 
+void optCacheStrip(Mesh& mesh)
+{
+	meshopt_optimizeVertexCacheStrip(&mesh.indices[0], &mesh.indices[0], mesh.indices.size(), mesh.vertices.size());
+}
+
 void optOverdraw(Mesh& mesh)
 {
 	// use worst-case ACMR threshold so that overdraw optimizer can sort *all* triangles
@@ -411,6 +416,22 @@ void simplifySloppy(const Mesh& mesh, float threshold = 0.2f)
 	       int(mesh.indices.size() / 3), int(lod.indices.size() / 3), (end - start) * 1000);
 }
 
+void simplifyPoints(const Mesh& mesh, float threshold = 0.2f)
+{
+	double start = timestamp();
+
+	size_t target_vertex_count = size_t(mesh.vertices.size() * threshold);
+
+	std::vector<unsigned int> indices(target_vertex_count);
+	indices.resize(meshopt_simplifyPoints(&indices[0], &mesh.vertices[0].px, mesh.vertices.size(), sizeof(Vertex), target_vertex_count));
+
+	double end = timestamp();
+
+	printf("%-9s: %d points => %d points in %.2f msec\n",
+	       "SimplifyP",
+	       int(mesh.vertices.size()), int(indices.size()), (end - start) * 1000);
+}
+
 void simplifyComplete(const Mesh& mesh)
 {
 	static const size_t lod_count = 5;
@@ -549,7 +570,7 @@ size_t compress(const std::vector<T>& data)
 	return tdefl_compress_mem_to_mem(&cbuf[0], cbuf.size(), &data[0], data.size() * sizeof(T), flags);
 }
 
-void encodeIndex(const Mesh& mesh)
+void encodeIndex(const Mesh& mesh, char desc)
 {
 	// allocate result outside of the timing loop to exclude memset() from decode timing
 	std::vector<unsigned int> result(mesh.indices.size());
@@ -577,7 +598,8 @@ void encodeIndex(const Mesh& mesh)
 		    (result[i + 2] == mesh.indices[i + 0] && result[i + 0] == mesh.indices[i + 1] && result[i + 1] == mesh.indices[i + 2]));
 	}
 
-	printf("IdxCodec : %.1f bits/triangle (post-deflate %.1f bits/triangle); encode %.2f msec, decode %.2f msec (%.2f GB/s)\n",
+	printf("IdxCodec%c: %.1f bits/triangle (post-deflate %.1f bits/triangle); encode %.2f msec, decode %.2f msec (%.2f GB/s)\n",
+	       desc,
 	       double(buffer.size() * 8) / double(mesh.indices.size() / 3),
 	       double(csize * 8) / double(mesh.indices.size() / 3),
 	       (middle - start) * 1000,
@@ -632,7 +654,7 @@ void encodeVertex(const Mesh& mesh, const char* pvn)
 	       (double(result.size() * sizeof(PV)) / (1 << 30)) / (end - middle));
 }
 
-void stripify(const Mesh& mesh, bool use_restart)
+void stripify(const Mesh& mesh, bool use_restart, char desc)
 {
 	unsigned int restart_index = use_restart ? ~0u : 0;
 
@@ -655,7 +677,7 @@ void stripify(const Mesh& mesh, bool use_restart)
 	meshopt_VertexCacheStatistics vcs_intel = meshopt_analyzeVertexCache(&copy.indices[0], mesh.indices.size(), mesh.vertices.size(), 128, 0, 0);
 
 	printf("Stripify%c: ACMR %f ATVR %f (NV %f AMD %f Intel %f); %d strip indices (%.1f%%) in %.2f msec\n",
-	       use_restart ? 'R' : ' ',
+	       desc,
 	       vcs.acmr, vcs.atvr, vcs_nv.atvr, vcs_amd.atvr, vcs_intel.atvr,
 	       int(strip.size()), double(strip.size()) / double(mesh.indices.size()) * 100,
 	       (end - start) * 1000);
@@ -769,6 +791,68 @@ void meshlets(const Mesh& mesh)
 	       int(rejected_alt_s8), double(rejected_alt_s8) / double(meshlets.size()) * 100,
 	       int(accepted_s8), double(accepted_s8) / double(meshlets.size()) * 100,
 	       (endc - startc) * 1000);
+}
+
+void spatialSort(const Mesh& mesh)
+{
+	typedef PackedVertexOct PV;
+
+	std::vector<PV> pv(mesh.vertices.size());
+	packMesh(pv, mesh.vertices);
+
+	double start = timestamp();
+
+	std::vector<unsigned int> remap(mesh.vertices.size());
+	meshopt_spatialSortRemap(&remap[0], &mesh.vertices[0].px, mesh.vertices.size(), sizeof(Vertex));
+
+	double end = timestamp();
+
+	meshopt_remapVertexBuffer(&pv[0], &pv[0], mesh.vertices.size(), sizeof(PV), &remap[0]);
+
+	std::vector<unsigned char> vbuf(meshopt_encodeVertexBufferBound(mesh.vertices.size(), sizeof(PV)));
+	vbuf.resize(meshopt_encodeVertexBuffer(&vbuf[0], vbuf.size(), &pv[0], mesh.vertices.size(), sizeof(PV)));
+
+	size_t csize = compress(vbuf);
+
+	printf("Spatial  : %.1f bits/vertex (post-deflate %.1f bits/vertex); sort %.2f msec\n",
+	       double(vbuf.size() * 8) / double(mesh.vertices.size()),
+	       double(csize * 8) / double(mesh.vertices.size()),
+	       (end - start) * 1000);
+}
+
+void spatialSortTriangles(const Mesh& mesh)
+{
+	typedef PackedVertexOct PV;
+
+	Mesh copy = mesh;
+
+	double start = timestamp();
+
+	meshopt_spatialSortTriangles(&copy.indices[0], &copy.indices[0], mesh.indices.size(), &copy.vertices[0].px, copy.vertices.size(), sizeof(Vertex));
+
+	double end = timestamp();
+
+	meshopt_optimizeVertexCache(&copy.indices[0], &copy.indices[0], copy.indices.size(), copy.vertices.size());
+	meshopt_optimizeVertexFetch(&copy.vertices[0], &copy.indices[0], copy.indices.size(), &copy.vertices[0], copy.vertices.size(), sizeof(Vertex));
+
+	std::vector<PV> pv(mesh.vertices.size());
+	packMesh(pv, copy.vertices);
+
+	std::vector<unsigned char> vbuf(meshopt_encodeVertexBufferBound(mesh.vertices.size(), sizeof(PV)));
+	vbuf.resize(meshopt_encodeVertexBuffer(&vbuf[0], vbuf.size(), &pv[0], mesh.vertices.size(), sizeof(PV)));
+
+	std::vector<unsigned char> ibuf(meshopt_encodeIndexBufferBound(mesh.indices.size(), mesh.vertices.size()));
+	ibuf.resize(meshopt_encodeIndexBuffer(&ibuf[0], ibuf.size(), &copy.indices[0], mesh.indices.size()));
+
+	size_t csizev = compress(vbuf);
+	size_t csizei = compress(ibuf);
+
+	printf("SpatialT : %.1f bits/vertex (post-deflate %.1f bits/vertex); %.1f bits/triangle (post-deflate %.1f bits/triangle); sort %.2f msec\n",
+	       double(vbuf.size() * 8) / double(mesh.vertices.size()),
+	       double(csizev * 8) / double(mesh.vertices.size()),
+	       double(ibuf.size() * 8) / double(mesh.indices.size() / 3),
+	       double(csizei * 8) / double(mesh.indices.size() / 3),
+	       (end - start) * 1000);
 }
 
 bool loadMesh(Mesh& mesh, const char* path)
@@ -900,6 +984,7 @@ void process(const char* path)
 	optimize(mesh, "Random", optRandomShuffle);
 	optimize(mesh, "Cache", optCache);
 	optimize(mesh, "CacheFifo", optCacheFifo);
+	optimize(mesh, "CacheStrp", optCacheStrip);
 	optimize(mesh, "Overdraw", optOverdraw);
 	optimize(mesh, "Fetch", optFetch);
 	optimize(mesh, "FetchMap", optFetchRemap);
@@ -909,13 +994,20 @@ void process(const char* path)
 	meshopt_optimizeVertexCache(&copy.indices[0], &copy.indices[0], copy.indices.size(), copy.vertices.size());
 	meshopt_optimizeVertexFetch(&copy.vertices[0], &copy.indices[0], copy.indices.size(), &copy.vertices[0], copy.vertices.size(), sizeof(Vertex));
 
-	stripify(copy, false);
-	stripify(copy, true);
+	Mesh copystrip = mesh;
+	meshopt_optimizeVertexCacheStrip(&copystrip.indices[0], &copystrip.indices[0], copystrip.indices.size(), copystrip.vertices.size());
+	meshopt_optimizeVertexFetch(&copystrip.vertices[0], &copystrip.indices[0], copystrip.indices.size(), &copystrip.vertices[0], copystrip.vertices.size(), sizeof(Vertex));
+
+	stripify(copy, false, ' ');
+	stripify(copy, true, 'R');
+	stripify(copystrip, true, 'S');
 
 	meshlets(copy);
 	shadow(copy);
 
-	encodeIndex(copy);
+	encodeIndex(copy, ' ');
+	encodeIndex(copystrip, 'S');
+
 	packVertex<PackedVertex>(copy, "");
 	encodeVertex<PackedVertex>(copy, "");
 	encodeVertex<PackedVertexOct>(copy, "O");
@@ -923,6 +1015,10 @@ void process(const char* path)
 	simplify(mesh);
 	simplifySloppy(mesh);
 	simplifyComplete(mesh);
+	simplifyPoints(mesh);
+
+	spatialSort(mesh);
+	spatialSortTriangles(mesh);
 
 	if (path)
 		processDeinterleaved(path);
@@ -934,14 +1030,21 @@ void processDev(const char* path)
 	if (!loadMesh(mesh, path))
 		return;
 
-	simplifySloppy(mesh, 0.5f);
-	simplifySloppy(mesh, 0.1f);
-	simplifySloppy(mesh, 0.01f);
+	Mesh copy = mesh;
+	meshopt_optimizeVertexCacheStrip(&copy.indices[0], &copy.indices[0], copy.indices.size(), copy.vertices.size());
+	meshopt_optimizeVertexFetch(&copy.vertices[0], &copy.indices[0], copy.indices.size(), &copy.vertices[0], copy.vertices.size(), sizeof(Vertex));
+
+	encodeIndex(copy, ' ');
+	encodeVertex<PackedVertex>(copy, "");
+	encodeVertex<PackedVertexOct>(copy, "O");
 }
 
 int main(int argc, char** argv)
 {
 	void runTests();
+
+	meshopt_encodeVertexVersion(0);
+	meshopt_encodeIndexVersion(1);
 
 	if (argc == 1)
 	{

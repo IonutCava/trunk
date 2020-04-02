@@ -30,6 +30,8 @@
 namespace Divide {
 
 namespace {
+    constexpr U8 MAX_LOD_LEVEL = 4u;
+
     constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
 
     I32 getUsageIndex(RenderTargetUsage usage) noexcept {
@@ -58,8 +60,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
       _context(context.gfx()),
       _config(context.config()),
-      _lodLocked(false),
-      _lodLockedLevel(0u),
       _cullFlagValue(1.0f),
       _renderMask(0),
       _reflectionIndex(-1),
@@ -75,6 +75,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
       _axisGizmo(nullptr)
 {
     _lodLevels.fill(0u);
+    _lodLockLevels.fill({ false, to_U8(0u) });
 
     _renderRange.min = -1.0f * g_renderRangeLimit;
     _renderRange.max =  1.0f* g_renderRangeLimit;
@@ -168,16 +169,17 @@ void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
         renderLodField._name = "Lock LoD";
         renderLodField._type = EditorComponentFieldType::PUSH_TYPE;
         renderLodField._basicType = GFX::PushConstantType::BOOL;
-        renderLodField._data = &_lodLocked;
+        renderLodField._data = &_lodLockLevels[to_base(RenderStage::DISPLAY)].first;
         renderLodField._readOnly = false;
         _editorComponent.registerField(std::move(renderLodField));
 
         EditorComponentField lockLodLevelField = {};
         lockLodLevelField._name = "Lock LoD Level";
         lockLodLevelField._type = EditorComponentFieldType::PUSH_TYPE;
+        lockLodLevelField._range = { 0.0f, to_F32(MAX_LOD_LEVEL) };
         lockLodLevelField._basicType = GFX::PushConstantType::UINT;
         lockLodLevelField._basicTypeSize = GFX::PushConstantSize::BYTE;
-        lockLodLevelField._data = &_lodLockedLevel;
+        lockLodLevelField._data = &_lodLockLevels[to_base(RenderStage::DISPLAY)].second;
         lockLodLevelField._readOnly = false;
         _editorComponent.registerField(std::move(lockLodLevelField));
 
@@ -530,39 +532,25 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
 U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
     OPTICK_EVENT();
 
-    if (_lodLocked) {
-        return CLAMPED<U8>(to_U8(_lodLockedLevel), 0u, 4u);
+    auto[state, level] = _lodLockLevels[to_base(renderStage)];
+
+    if (state) {
+        return CLAMPED<U8>(to_U8(level), 0u, MAX_LOD_LEVEL);
     }
 
-    //ToDo: HACK for shadow rendering
-    if (renderStage == RenderStage::SHADOW) {
+    const F32 distSQtoCenter = std::max(bComp.getBoundingSphere().getCenter().distanceSquared(cameraEye), EPSILON_F32);
+
+    if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.x))) {
         return 0u;
+    } else if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.y))) {
+        return 1u;
+    } else if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.z))) {
+        return 2u;
+    } else if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.w))) {
+        return 3u;
     }
 
-    const BoundingSphere& bSphere = bComp.getBoundingSphere();
-    if (bSphere.getCenter().distanceSquared(cameraEye) <= SQUARED(lodThresholds.x)) {
-        return 0u;
-    }
-
-    U8 lodLevel = 1;
-
-    const F32 cameraDistanceSQ = bComp.getBoundingBox().nearestDistanceFromPointSquared(cameraEye);
-    if (cameraDistanceSQ > SQUARED(lodThresholds.y)) {
-        lodLevel += 1;
-        if (cameraDistanceSQ > SQUARED(lodThresholds.z)) {
-            lodLevel += 1;
-            if (cameraDistanceSQ > SQUARED(lodThresholds.w)) {
-                lodLevel += 1;
-            }
-        }
-    }
-
-    // ToDo: Hack for lower LoD rendering in reflection and refraction passes
-    if (lodLevel < 4 && (renderStage == RenderStage::REFLECTION || renderStage == RenderStage::REFRACTION)) {
-        lodLevel += 1;
-    }
-
-    return lodLevel;
+    return MAX_LOD_LEVEL;
 }
 
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData) {
@@ -572,7 +560,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     if (refreshData) {
         BoundsComponent* bComp = _parentSGN.get<BoundsComponent>();
         if (bComp != nullptr) {
-            lod = getLoDLevel(*bComp, *camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds());
+            lod = getLoDLevel(*bComp, camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
             const bool renderBS = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB);
             const bool renderAABB = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
 

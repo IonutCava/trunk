@@ -409,7 +409,7 @@ void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 
     }
 
     if (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex) {
-        const U32 idxCount = drawCount * getIndexCount();
+        const size_t idxCount = drawCount * getIndexCount();
         if (_indexOffsetData.size() < idxCount) {
             _indexOffsetData.resize(idxCount, firstIndex);
         }

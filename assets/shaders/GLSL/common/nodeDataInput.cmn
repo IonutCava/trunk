@@ -58,8 +58,10 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     ///xyz - position, w - aspect ratio
     vec4  dvd_cameraPosition; 
     //x - nearPlane, y - farPlane, z - FoV, w - lightTilesX
-    vec4  dvd_renderProperties;
     vec4  dvd_ViewPort;
+    vec4  dvd_renderProperties;
+    //x - lighting enabled, y - show CSM splits
+    vec4  dvd_otherProperties;
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
 
@@ -72,6 +74,8 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 #define dvd_zPlanes vec2(dvd_renderProperties.xy)
 #define dvd_aspectRatio dvd_cameraPosition.w
 #define dvd_fieldOfView dvd_renderProperties.z
+#define dvd_lightingEnabled (int(dvd_otherProperties.x) == 1)
+#define dvd_showCSMSplits (int(dvd_otherProperties.x) == 1)
 
 struct WaterBodyData {
     vec4 positionW;

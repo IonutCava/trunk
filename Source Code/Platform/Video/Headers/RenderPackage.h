@@ -116,7 +116,7 @@ public:
 
     inline bool empty() const noexcept { return _commands->empty(); }
 
-    void setLoDIndexOffset(U8 lodIndex, U32 indexOffset, U32 indexCount) noexcept;
+    void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
 
     PROPERTY_RW(bool, autoIndexBuffer,  false);
     PROPERTY_RW(bool, textureDataDirty, true);
@@ -129,7 +129,7 @@ protected:
     GFX::CommandBuffer* _commands;
 
 private:
-    std::array<std::pair<U32, U32>, 4> _lodIndexOffsets;
+    std::array<std::pair<size_t, size_t>, 4> _lodIndexOffsets;
     I32 _drawCommandCount;
     U16 _drawCommandOptions;
     MinQuality _qualityRequirement;

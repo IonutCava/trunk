@@ -95,6 +95,7 @@ struct FogDescriptor {
 class Scene;
 class LightPool;
 class RenderPass;
+
 namespace Attorney {
     class SceneRenderStateScene;
 };
@@ -164,14 +165,14 @@ class SceneRenderState : public SceneComponent {
     inline void renderPass(U8 renderPass) noexcept { _renderPass = renderPass; }
     inline U8   renderPass()        const noexcept { return _renderPass; }
 
-    inline vec4<U16>& lodThresholds() noexcept { return _lod; }
+    inline vec4<U16>& lodThresholds() noexcept { return _lodThresholds; }
     inline FogDescriptor& fogDescriptor() noexcept { return _fog; }
-    inline const vec4<U16>& lodThresholds() const noexcept { return _lod; }
     inline const FogDescriptor& fogDescriptor() const noexcept { return _fog; }
 
+    vec4<U16> lodThresholds(RenderStage stage = RenderStage::DISPLAY) const noexcept;
    protected:
        
-    vec4<U16> _lod;
+    vec4<U16> _lodThresholds;
     FogDescriptor _fog;
     GizmoState _gizmoState;
     F32 _grassVisibility;

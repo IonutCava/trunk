@@ -38,8 +38,10 @@
 namespace Divide {
 
 struct Task;
+struct Configuration;
+
 class Kernel;
-class Configuration;
+
 const char* getErrorCodeName(ErrorCode code) noexcept;
   
 namespace Attorney {

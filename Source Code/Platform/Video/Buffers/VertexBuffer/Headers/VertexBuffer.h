@@ -92,7 +92,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                         : GFXDataFormat::UNSIGNED_SHORT;
     }
 
-    inline void setVertexCount(U32 size) { 
+    inline void setVertexCount(size_t size) {
         _data.resize(size);
     }
 
@@ -104,11 +104,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _data;
     }
 
-    inline void reserveIndexCount(U32 size) {
+    inline void reserveIndexCount(size_t size) {
         _indices.reserve(size);
     }
 
-    inline void resizeVertexCount(U32 size, const Vertex& defaultValue = Vertex()) {
+    inline void resizeVertexCount(size_t size, const Vertex& defaultValue = Vertex()) {
         _data.resize(size, defaultValue);
     }
 
@@ -162,11 +162,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _format == GFXDataFormat::UNSIGNED_INT;
     }
 
-    inline U32 getIndexCount() const noexcept {
-        return to_U32(_indices.size());
+    inline size_t getIndexCount() const noexcept {
+        return _indices.size();
     }
 
-    inline U32 getIndex(U32 index) const {
+    inline U32 getIndex(size_t index) const {
         assert(index < getIndexCount());
         return _indices[index];
     }
@@ -322,14 +322,14 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     inline U16 partitionBuffer() {
-        const U32 previousIndexCount = _partitions.empty() ? 0 : _partitions.back().second;
-        const U32 previousOffset = _partitions.empty() ? 0 : _partitions.back().first;
-        U32 partitionedIndexCount = previousIndexCount + previousOffset;
+        const size_t previousIndexCount = _partitions.empty() ? 0 : _partitions.back().second;
+        const size_t previousOffset = _partitions.empty() ? 0 : _partitions.back().first;
+        size_t partitionedIndexCount = previousIndexCount + previousOffset;
         _partitions.emplace_back(partitionedIndexCount, getIndexCount() - partitionedIndexCount);
         return to_U16(_partitions.size() - 1);
     }
 
-    inline U32 getPartitionIndexCount(U16 partitionID) {
+    inline size_t getPartitionIndexCount(U16 partitionID) {
         if (_partitions.empty()) {
             return getIndexCount();
         }
@@ -337,7 +337,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _partitions[partitionID].second;
     }
 
-    inline U32 getPartitionOffset(U16 partitionID) noexcept {
+    inline size_t getPartitionOffset(U16 partitionID) noexcept {
         if (_partitions.empty()) {
             return 0;
         }
@@ -386,7 +386,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     /// The format of the buffer data
     GFXDataFormat _format;
     // first: offset, second: count
-    vectorSTD<std::pair<U32, U32> > _partitions;
+    vectorSTD<std::pair<size_t, size_t> > _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should provide the indices
     vectorSTD<U32> _indices;
     vectorSTD<Vertex> _data;

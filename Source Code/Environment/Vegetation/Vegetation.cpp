@@ -486,7 +486,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
 
     if (hasVegetation) {
         sgn.get<RenderingComponent>()->setMaterialTpl(s_vegetationMaterial);
-        sgn.get<RenderingComponent>()->lockLoD(true, 0u);
+        sgn.get<RenderingComponent>()->lockLoD(0u);
 
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = s_cullShaderGrass->getGUID();
@@ -688,7 +688,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
 
         GenericDrawCommand cmd = {};
         cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
-        cmd._cmd.indexCount = s_buffer->getIndexCount();
+        cmd._cmd.indexCount = to_U32(s_buffer->getIndexCount());
         cmd._sourceBuffer = s_buffer->handle();
         cmd._cmd.primCount = _instanceCountGrass;
 

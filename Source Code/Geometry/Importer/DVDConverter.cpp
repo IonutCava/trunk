@@ -33,14 +33,15 @@
 
 namespace Divide {
     namespace {
+        constexpr bool g_useSloppyMeshSimplification = false;
+        constexpr U8 g_SloppyTrianglePercentPerLoD = 80;
+        constexpr U8 g_PreciseTrianglePercentPerLoD = 70;
+        constexpr size_t g_minIndexCountForAutoLoD = 1024;
+
         std::atomic_bool g_wasSetUp = false;
 
-        class assimpStream : public Assimp::LogStream {
-        public:
-            assimpStream() = default;
-            ~assimpStream() = default;
-
-            void write(const char* message) override {
+        struct assimpStream final : public Assimp::LogStream {
+            void write(const char* message) final {
                 Console::printf("%s\n", message);
             }
         };
@@ -131,14 +132,6 @@ DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target,
     result = load(context, target);
 }
 
-DVDConverter::DVDConverter()
-{
-}
-
-DVDConverter::~DVDConverter()
-{
-}
-
 bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
     const Str256& filePath = target.modelPath();
     const Str64& fileName = target.modelName();
@@ -156,7 +149,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             aiProcess_GenSmoothNormals |
                             aiProcess_LimitBoneWeights |
                             aiProcess_RemoveRedundantMaterials |
-                             //aiProcess_FixInfacingNormals |
+                             //aiProcess_FixInfacingNormals | // Causes issues with backfaces inside the Sponza Atrium model
                             aiProcess_SplitLargeMeshes |
                             aiProcess_FindInstances |
                             aiProcess_Triangulate |
@@ -254,11 +247,11 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
     target.vertexBuffer(context.gfx().newVB());
     VertexBuffer* vb = target.vertexBuffer();
 
-    U32 indexCount = 0, vertexCount = 0;
+    size_t indexCount = 0, vertexCount = 0;
     for (U8 lod = 0; lod < Import::MAX_LOD_LEVELS; ++lod) {
         for (const Import::SubMeshData& data : target._subMeshData) {
-            indexCount += to_U32(data._indices[lod].size());
-            vertexCount += to_U32(data._vertices[lod].size());
+            indexCount += data._indices[lod].size();
+            vertexCount += data._vertices[lod].size();
         }
     }
 
@@ -409,13 +402,14 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
     auto& target_indices = subMeshData._indices[0];
     auto& target_vertices = subMeshData._vertices[0];
 
-#if 1
+    constexpr F32 kThreshold = 1.01f; // allow up to 1% worse ACMR to get more reordering opportunities for overdraw
+
     const size_t index_count = input_indices.size();
     target_indices.resize(index_count);
-    size_t vertex_count = 0;
+
     { //Remap VB & IB
         vectorEASTL<U32> remap(source->mNumVertices);
-        vertex_count = meshopt_generateVertexRemap(&remap[0], input_indices.data(), input_indices.size(), &vertices[0], source->mNumVertices, sizeof(Import::SubMeshData::Vertex));
+        const size_t vertex_count = meshopt_generateVertexRemap(&remap[0], input_indices.data(), input_indices.size(), &vertices[0], source->mNumVertices, sizeof(Import::SubMeshData::Vertex));
 
         meshopt_remapIndexBuffer(&target_indices[0], &input_indices[0], input_indices.size(), &remap[0]);
         input_indices.clear();
@@ -426,61 +420,79 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
         remap.clear();
     }
     { // Optimise VB & IB
-        meshopt_optimizeVertexCache(&target_indices[0], &target_indices[0], index_count, vertex_count);
+        meshopt_optimizeVertexCache(&target_indices[0], &target_indices[0], index_count, target_vertices.size());
 
-        // reorder indices for overdraw, balancing overdraw and vertex cache efficiency
-        const F32 kThreshold = 1.01f; // allow up to 1% worse ACMR to get more reordering opportunities for overdraw
+
         meshopt_optimizeOverdraw(&target_indices[0], &target_indices[0], index_count, &target_vertices[0].position.x, target_vertices.size(), sizeof(Import::SubMeshData::Vertex), kThreshold);
 
         // vertex fetch optimization should go last as it depends on the final index order
         meshopt_optimizeVertexFetch(&target_vertices[0], &target_indices[0], index_count, &target_vertices[0], target_vertices.size(), sizeof(Import::SubMeshData::Vertex));
     }
-#else
-    target_indices.insert(eastl::end(target_indices), eastl::cbegin(input_indices), eastl::cend(input_indices));
-    target_vertices.insert(eastl::end(target_vertices), eastl::cbegin(vertices), eastl::cend(vertices));
-#endif
     { // Generate LoD data and place inside VB & IB with proper offsets
+        // We only simplify from the base level. Simplifying from the previous level might be faster,
+        // but we cache the geometry anyway at the end
+        auto& source_indices = subMeshData._indices[0];
+        auto& source_vertices = subMeshData._vertices[0];
 
-#if 0
-        F32 threshold = 0.75f;
-        size_t prevIndexCount = index_count;
-        for (U8 i = 1; i < Import::MAX_LOD_LEVELS; ++i) {
-            threshold = pow(threshold, to_F32(i));
-            assert(threshold >= 0.0f);
+        const F32 targetSimplification = (g_useSloppyMeshSimplification ? g_SloppyTrianglePercentPerLoD : g_PreciseTrianglePercentPerLoD) * 0.01f;
 
-            size_t target_index_count = size_t(index_count * threshold) / 3 * 3;
+        if (source_indices.size() >= g_minIndexCountForAutoLoD) {
+            for (U8 i = 1; i < Import::MAX_LOD_LEVELS; ++i) {
+                auto& lod_indices = subMeshData._indices[i];
 
-            auto& source_indices = subMeshData._indices[i - 1];
-            auto& source_vertices = subMeshData._vertices[i - 1];
+                const F32 threshold = std::pow(targetSimplification, to_F32(i));
 
-            vertex_count = source_vertices.size();
+                const size_t target_index_count = std::min(source_indices.size(), to_size(index_count * threshold) / 3 * 3);
 
-            auto& lod_indices = subMeshData._indices[i];
-            auto& lod_vertices = subMeshData._vertices[i];
-
-            if (source_indices.size() < target_index_count) {
-                target_index_count = source_indices.size();
+                lod_indices.resize(source_indices.size());
+                if (g_useSloppyMeshSimplification) {
+                    lod_indices.resize(meshopt_simplifySloppy(lod_indices.data(),
+                                                              source_indices.data(),
+                                                              source_indices.size(),
+                                                              &source_vertices[0].position.x,
+                                                              source_vertices.size(),
+                                                              sizeof(Import::SubMeshData::Vertex),
+                                                              target_index_count));
+                } else {
+                    constexpr F32 target_error = 1e-2f;
+                    lod_indices.resize(meshopt_simplify(lod_indices.data(),
+                                                        source_indices.data(),
+                                                        source_indices.size(),
+                                                        &source_vertices[0].position.x,
+                                                        source_vertices.size(),
+                                                        sizeof(Import::SubMeshData::Vertex),
+                                                        target_index_count,
+                                                        target_error));
+                }
             }
-#if 0
-            lod_indices.resize(target_index_count); // note: simplifySloppy, unlike simplify, is guaranteed to output results that don't exceed the requested target_index_count
-            lod_indices.resize(meshopt_simplifySloppy(&lod_indices[0], &source_indices[0], index_count, &source_vertices[0].position.x, vertex_count, sizeof(Import::SubMeshData::Vertex), target_index_count));
-#else
-            const F32 target_error = 1e-2f;
-            lod_indices.resize(source_indices.size());
-            lod_indices.resize(meshopt_simplify(&lod_indices[0], &source_indices[0], source_indices.size(), &source_vertices[0].position.x, vertex_count, sizeof(Import::SubMeshData::Vertex), target_index_count, target_error));
-#endif
-            if (lod_indices.size() == prevIndexCount) {
-                lod_indices.clear();
-                continue;
+
+            // reorder indices for overdraw, balancing overdraw and vertex cache efficiency
+            for (U8 i = 1; i < Import::MAX_LOD_LEVELS; ++i) {
+                auto& lod_indices = subMeshData._indices[i];
+                auto& lod_vertices = subMeshData._vertices[i];
+
+                meshopt_optimizeVertexCache(lod_indices.data(),
+                                            lod_indices.data(),
+                                            lod_indices.size(),
+                                            source_vertices.size());
+
+                meshopt_optimizeOverdraw(lod_indices.data(),
+                                         lod_indices.data(),
+                                         lod_indices.size(),
+                                         &source_vertices[0].position.x,
+                                         source_vertices.size(),
+                                         sizeof(Import::SubMeshData::Vertex),
+                                         1.0f);
+
+                lod_vertices.resize(source_vertices.size());
+                lod_vertices.resize(meshopt_optimizeVertexFetch(lod_vertices.data(),
+                                                                lod_indices.data(),
+                                                                lod_indices.size(),
+                                                                source_vertices.data(),
+                                                                source_vertices.size(),
+                                                                sizeof(Import::SubMeshData::Vertex)));
             }
-
-            lod_vertices.resize(lod_indices.size() < vertex_count ? lod_indices.size() : vertex_count); // note: this is just to reduce the cost of resize()
-            lod_vertices.resize(meshopt_optimizeVertexFetch(&lod_vertices[0], &lod_indices[0], lod_indices.size(), &source_vertices[0], vertex_count, sizeof(Import::SubMeshData::Vertex)));
-            meshopt_optimizeOverdraw(&lod_indices[0], &lod_indices[0], lod_indices.size(), &source_vertices[0].position.x, vertex_count, sizeof(Import::SubMeshData::Vertex), 1.0f);
-
-            prevIndexCount = lod_indices.size();
         }
-#endif
     }
 }
 

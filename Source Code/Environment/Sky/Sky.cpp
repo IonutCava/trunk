@@ -135,7 +135,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     if (renderable) {
-        renderable->lockLoD(true);
+        renderable->lockLoD(0u);
         renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
     }
 
@@ -213,7 +213,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd = {};
     cmd._sourceBuffer = _sky->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.index();
-    cmd._cmd.indexCount = _sky->getGeometryVB()->getIndexCount();
+    cmd._cmd.indexCount = to_U32(_sky->getGeometryVB()->getIndexCount());
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
     GFX::DrawCommand drawCommand = {cmd};

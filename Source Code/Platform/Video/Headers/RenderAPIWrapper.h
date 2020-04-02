@@ -51,8 +51,9 @@ enum class ErrorCode : I8;
 template <typename T>
 class vec4;
 
-class Configuration;
 class DisplayWindow;
+
+struct Configuration;
 struct TextElementBatch;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);

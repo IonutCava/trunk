@@ -5,6 +5,7 @@
 #include "Editor/Headers/Editor.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 
 #include "Managers/Headers/SceneManager.h"
@@ -128,7 +129,7 @@ void MenuBar::drawFileMenu() {
     bool showFileOpenDialog = false;
     bool showFileSaveDialog = false;
 
-    bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedElements(_context.editor());
+    const bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedElements(_context.editor());
 
     if (ImGui::BeginMenu("File"))
     {
@@ -151,8 +152,14 @@ void MenuBar::drawFileMenu() {
         ImGui::Separator();
         if (ImGui::BeginMenu("Options"))
         {
-            static bool enabled = true;
-            ImGui::MenuItem("Enabled", "", &enabled);
+            bool& enableLighting = _context.config().debug.enableLighting;
+            if (ImGui::MenuItem("Enable lighting", "", &enableLighting)) {
+                _context.config().changed(true);
+            }
+            bool& showCSMSplits = _context.config().debug.showShadowCascadeSplits;
+            if (ImGui::MenuItem("Enable CSM Split View", "", &showCSMSplits)) {
+                _context.config().changed(true);
+            }
             ImGui::EndMenu();
         }
 
@@ -295,6 +302,7 @@ void MenuBar::drawPostFXMenu() {
                 }
             }
         }
+
         ImGui::EndMenu();
     }
 }

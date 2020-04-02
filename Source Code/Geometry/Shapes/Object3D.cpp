@@ -146,8 +146,8 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         GenericDrawCommand cmd;
         cmd._sourceBuffer = vb->handle();
         cmd._bufferIndex = renderStagePass.index();
-        cmd._cmd.indexCount = vb->getPartitionIndexCount(partitionID);
-        cmd._cmd.firstIndex = vb->getPartitionOffset(partitionID);
+        cmd._cmd.indexCount = to_U32(vb->getPartitionIndexCount(partitionID));
+        cmd._cmd.firstIndex = to_U32(vb->getPartitionOffset(partitionID));
         cmd._cmd.primCount = sgn.instanceCount();
         enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
@@ -187,8 +187,8 @@ bool Object3D::computeTriangleList() {
                   "Object3D error: computeTriangleList called with no position "
                   "data available!");
 
-    U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionIDs[0]);
-    U32 partitionCount = geometry->getPartitionIndexCount(_geometryPartitionIDs[0]);
+    size_t partitionOffset = geometry->getPartitionOffset(_geometryPartitionIDs[0]);
+    size_t partitionCount = geometry->getPartitionIndexCount(_geometryPartitionIDs[0]);
     PrimitiveType type = (_geometryType._value == ObjectType::MESH ||
                           _geometryType._value == ObjectType::SUBMESH
                               ? PrimitiveType::TRIANGLES
@@ -202,14 +202,14 @@ bool Object3D::computeTriangleList() {
         return false;
     }
 
-    U32 indiceCount = partitionCount;
+    size_t indiceCount = partitionCount;
     if (type == PrimitiveType::TRIANGLE_STRIP) {
-        U32 indiceStart = 2 + partitionOffset;
-        U32 indiceEnd = indiceCount + partitionOffset;
+        size_t indiceStart = 2 + partitionOffset;
+        size_t indiceEnd = indiceCount + partitionOffset;
         vec3<U32> curTriangle;
         _geometryTriangles.reserve(indiceCount / 2);
         const vectorSTD<U32>& indices = geometry->getIndices();
-        for (U32 i = indiceStart; i < indiceEnd; i++) {
+        for (size_t i = indiceStart; i < indiceEnd; i++) {
             curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
             // Check for correct winding
             if (i % 2 != 0) {
@@ -221,7 +221,7 @@ bool Object3D::computeTriangleList() {
         indiceCount /= 3;
         _geometryTriangles.reserve(indiceCount);
         const vectorSTD<U32>& indices = geometry->getIndices();
-        for (U32 i = 0; i < indiceCount; i += 3) {
+        for (size_t i = 0; i < indiceCount; i += 3) {
             _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
                                                     indices[i + 1],
                                                     indices[i + 2]));

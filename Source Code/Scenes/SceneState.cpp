@@ -7,6 +7,8 @@
 
 #include "Utility/Headers/Colours.h"
 
+#include "Platform/Video/Headers/RenderStagePass.h"
+
 namespace Divide {
 
 FogDescriptor::FogDescriptor()
@@ -27,7 +29,7 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
 {
     enableOption(RenderOptions::RENDER_GEOMETRY);
 
-    _lod.set(25, 45, 85, 165);
+    _lodThresholds.set(25, 45, 85, 165);
     _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);
 
     _gizmoState = GizmoState::NO_GIZMO;
@@ -133,4 +135,19 @@ void SceneRenderState::toggleOption(RenderOptions option, const bool state) {
     }
 }
 
+vec4<U16> SceneRenderState::lodThresholds(RenderStage stage) const noexcept {
+    // Hack dumping ground. Scene specific lod management can be tweaked here to keep the components clean
+    if (stage == RenderStage::REFLECTION || stage == RenderStage::REFRACTION) {
+        // cancel out LoD Level 0
+        return {
+            0u,
+            _lodThresholds.y,
+            _lodThresholds.z,
+            _lodThresholds.w };
+    } else if (stage == RenderStage::SHADOW) {
+        return _lodThresholds * 3u;
+    }
+
+    return _lodThresholds;
+}
 };  // namespace Divide

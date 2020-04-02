@@ -787,6 +787,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
+
+    _platformContext.config().save();
+
     for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
         WaitForAllTasks(_platformContext.taskPool(static_cast<TaskPoolType>(i)), true, true, true);
     }

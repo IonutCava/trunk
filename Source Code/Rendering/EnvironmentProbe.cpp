@@ -186,7 +186,7 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, pushConstants);
 
     GenericDrawCommand cmd = {};
-    cmd._cmd.indexCount = vb->getIndexCount();
+    cmd._cmd.indexCount = to_U32(vb->getIndexCount());
     cmd._sourceBuffer = vb->handle();
 
     GFX::DrawCommand drawCommand = { cmd };

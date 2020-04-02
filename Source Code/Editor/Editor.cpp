@@ -506,6 +506,9 @@ void Editor::toggle(const bool state) {
                 }
             }
         }
+
+        _context.config().save();
+
     } else {
         updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();

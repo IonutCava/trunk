@@ -132,7 +132,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
     if (params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         NodeCullParams nodeParams = {};
         nodeParams._currentCamera = params._camera;
-        nodeParams._lodThresholds =  params._sceneState->renderState().lodThresholds();
+        nodeParams._lodThresholds =  params._sceneState->renderState().lodThresholds(params._stage);
         nodeParams._cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(params._camera->getZPlanes().y));
         nodeParams._minLoD = params._minLoD;
         nodeParams._minExtents = params._minExtents;

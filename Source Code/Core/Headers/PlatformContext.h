@@ -45,9 +45,10 @@ class PXDevice;
 class Application;
 class LocalClient;
 class XMLEntryData;
-class Configuration;
 class DisplayWindow;
 class DebugInterface;
+
+struct Configuration;
 
 namespace Attorney {
     class PlatformContextKernel;

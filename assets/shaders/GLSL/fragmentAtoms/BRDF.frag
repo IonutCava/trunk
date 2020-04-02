@@ -96,6 +96,9 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 #if defined(USE_SHADING_FLAT)
     return albedo;
 #else //USE_SHADING_FLAT
+    if (!dvd_lightingEnabled) {
+        return albedo;
+    }
 
     const vec3 viewDirNorm = normalize(-VAR._vertexWV.xyz);
     const vec4 data = getExtraData(colourMatrix, uv);
@@ -139,13 +142,17 @@ vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normalWV, in v
 
 #if !defined(DISABLE_SHADOW_MAPPING) && defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo) {
-        switch (getShadowData()) {
-            case -1: colour.rgb = vec3(1.0f); break;
-            case  0: colour.r += 0.15f; break;
-            case  1: colour.g += 0.25f; break;
-            case  2: colour.b += 0.40f; break;
-            case  3: colour.rgb += vec3(0.15f, 0.25f, 0.40f); break;
-        };
+        // CSM Info
+        if (dvd_showCSMSplits) {
+            switch (getShadowData()) {
+                case -1: colour.rgb = vec3(1.0f); break;
+                case  0: colour.r += 0.15f; break;
+                case  1: colour.g += 0.25f; break;
+                case  2: colour.b += 0.40f; break;
+                case  3: colour.rgb += vec3(0.15f, 0.25f, 0.40f); break;
+            };
+        }
+        // Other stuff
     }
 #endif //DEBUG_SHADOWMAPPING
 

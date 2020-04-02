@@ -52,10 +52,10 @@ U16 TerrainTessellator::getPrevRenderDepth() const {
     return _prevRenderDepth;
 }
 
-bufferPtr TerrainTessellator::updateAndGetRenderData(const Frustum& frust, U16& renderDepth, U8 LoD) {
+bufferPtr TerrainTessellator::updateAndGetRenderData(const Frustum& frust, U16& renderDepth) {
     renderDepth = 0;
     _frustumCache.set(frust);
-    renderRecursive(_tree.data(), renderDepth, LoD);
+    renderRecursive(_tree.data(), renderDepth);
     _prevRenderDepth = _renderDepth;
     _renderDepth = renderDepth;
     return _renderData.data();
@@ -181,7 +181,7 @@ TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode* p
     return &terrainTreeTail;
 }
 
-void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD) {
+void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& renderDepth) {
     assert(node != nullptr);
 
     // If all children are null, render this node
@@ -207,7 +207,7 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
     } else {
         // Otherwise, recurse to the children.
         for (U8 i = 0; i < 4; ++i) {
-            renderRecursive(node->c[i], renderDepth, LoD);
+            renderRecursive(node->c[i], renderDepth);
         }
     }
 }

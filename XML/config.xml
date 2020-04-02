@@ -13,7 +13,9 @@
 	<!-- this is only taken into consideration if binary cache is disabled-->
 	<useShaderTextCache>false</useShaderTextCache>
 	<useShaderBinaryCache>false</useShaderBinaryCache>
-	<!-- memFile: file name that the application should use to write  memory allocation info -->
+    <showShadowCascadeSplits>true</showShadowCascadeSplits>
+    <enableLighting>true</enableLighting>
+    <!-- memFile: file name that the application should use to write  memory allocation info -->
 	<!-- leave empty for none! -->
 	<memFile>mem.log</memFile>
 	<mesh>
@@ -67,7 +69,6 @@
 		<dontMergeFloatingWindows>true</dontMergeFloatingWindows>
 	</IMGUI>
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
-	<editorLayoutFile>editor.layout</editorLayoutFile>
 </GUI>
 <rendering>
 	<MSAAsamples>0</MSAAsamples>

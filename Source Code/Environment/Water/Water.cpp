@@ -156,7 +156,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
 
     // If the reflector is reasonibly sized, we should keep LoD fixed so that we always update reflections
     if (sgn.context().config().rendering.lodThresholds.x < std::max(halfWidth, halfLength)) {
-        renderable->lockLoD(true);
+        renderable->lockLoD(0u);
     }
 
     renderable->setReflectionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
@@ -188,7 +188,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
-    cmd._cmd.indexCount = _plane->getGeometryVB()->getIndexCount();
+    cmd._cmd.indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
     cmd._sourceBuffer = _plane->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.index();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);

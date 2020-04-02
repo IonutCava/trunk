@@ -91,7 +91,7 @@ public:
     void createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions, const F32 patchSizeInMetres);
 
     // Prepare data to draw the terrain. Returns the final render depth
-    bufferPtr updateAndGetRenderData(const Frustum& frust, U16& renderDepth, U8 LoD);
+    bufferPtr updateAndGetRenderData(const Frustum& frust, U16& renderDepth);
 
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
@@ -122,7 +122,7 @@ protected:
     vec4<F32> calcTessScale(TessellatedTerrainNode* node);
 
     // Traverses the terrain quadtree to draw nodes with no children.
-    void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth, U8 LoD);
+    void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth);
 
     bool inDivideCheck(TessellatedTerrainNode* node) const;
 

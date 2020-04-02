@@ -119,7 +119,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     _shaderData = _context.newSB(bufferDescriptor);
 
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
-    sgn.get<RenderingComponent>()->lockLoD(true, 0u);
+    sgn.get<RenderingComponent>()->lockLoD(0u);
 
     _editorComponent.onChangedCbk([this](const char* field) {onEditorChange(field); });
 
@@ -265,7 +265,6 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
         PushConstants constants = pkg.pushConstants(0);
         constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
-        constants.set(_ID("renderStage"), GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
         pkg.pushConstants(0, constants);
     }
 
@@ -286,9 +285,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         if (update)
         {
             tessellator->createTree(camera.getEye(), crtPos, _descriptor->dimensions(), _descriptor->tessellationSettings().y);
-            const U8 LoD = (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) ? 1 : 0;
-
-            bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(frustum, depth, LoD);
+            bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(frustum, depth);
             _shaderData->writeData(offset, depth, data);
             _shaderDataDirty = true;
         }
@@ -325,8 +322,6 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
-    pushConstantsCommand._constants.set(_ID("height_scale"), GFX::PushConstantType::FLOAT, 0.3f);
-    pushConstantsCommand._constants.set(_ID("renderStage"), GFX::PushConstantType::INT, to_I32(renderStagePass._stage));
 
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);

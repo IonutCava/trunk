@@ -62,8 +62,8 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
     const vectorSTD<vectorEASTL<mat4<F32>>>& currentAnimation = animComp->getAnimationByIndex(animationIndex).transforms();
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
-    U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionIDs[0]);
-    U32 partitionCount = parentVB->getPartitionIndexCount(_geometryPartitionIDs[0]);
+    size_t partitionOffset = parentVB->getPartitionOffset(_geometryPartitionIDs[0]);
+    size_t partitionCount = parentVB->getPartitionIndexCount(_geometryPartitionIDs[0]);
 
     UniqueLock<Mutex> w_lock(_bbLock);
     BoundingBox& currentBB = _boundingBoxes.at(animationIndex);

@@ -49,7 +49,7 @@ namespace Divide {
         using Base::static_string;
         using Base::append;
 
-        Str() : Base() {}
+        Str() noexcept : Base() {}
 
         template<typename T_str,
                  typename std::enable_if<std::is_same<stringImpl, T_str>::value || 
@@ -76,7 +76,8 @@ namespace Divide {
             if (pos == 0) {
                 return boost::string_ref(Base::c_str(), Base::size());
             }
-            auto subStr = Base::substr(pos, Base::size() - pos);
+
+            const auto subStr = Base::substr(pos, Base::size() - pos);
             return boost::string_ref(subStr.data(), subStr.length());
         }
 
@@ -129,18 +130,6 @@ namespace Divide {
             return ret;
         }
 
-        inline Str& append(const char* other) {
-            Base::append(other);
-            return *this;
-        }
-
-        template<typename T_str, typename std::enable_if<std::is_same<stringImpl, T_str>::value || 
-                                                         std::is_same<stringImplFast, T_str>::value>::type>
-        inline Str& operator=(const T_str& other) {
-            Base::assign(other.c_str(), other.length());
-            return *this;
-        }
-
         operator stringImpl() const {
             return stringImpl(Base::c_str());
         }
@@ -171,7 +160,7 @@ namespace Divide {
         }
 
         inline size_t rfind(char other, size_t pos = 0) const {
-            size_t ret = as_ref(pos).rfind(other);
+            const size_t ret = as_ref(pos).rfind(other);
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
@@ -197,18 +186,8 @@ namespace Divide {
         }
 
         inline size_t find_first_of(const char* s, size_t pos = 0) const {
-            size_t ret = as_ref(pos).find_first_of(boost::string_ref(s));
+            const size_t ret = as_ref(pos).find_first_of(boost::string_ref(s));
             return ret != Str::npos ? ret + pos : Str::npos;
-        }
-
-        inline Str substr(size_t start, size_t count) const {
-            if (count > 0) {
-                count = std::min(count, Base::size());
-                const char* data = Base::substr(start, count).data();
-                return Str(data, count);
-            }
-
-            return "";
         }
 
         inline Str& replace(size_t start, size_t length, const char* s) {
@@ -220,8 +199,7 @@ namespace Divide {
 
     template<size_t N>
     Str<N> operator+(const char* lhs, const Str<N>& rhs) {
-        Str<N> ret(lhs);
-        return ret + rhs.c_str();
+        return Str<N>(lhs) + rhs.c_str();
     }
 
     using Str8   = Str<8>;

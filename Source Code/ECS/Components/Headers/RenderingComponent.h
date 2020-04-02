@@ -160,9 +160,11 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     // If the new value is negative, this disables occlusion culling!
     void cullFlagValue(F32 newValue);
 
-    inline void lockLoD(bool state) { _lodLocked = state; }
-    inline void lockLoD(bool state, U8 level) { _lodLocked = state; _lodLockedLevel = level; }
-    inline bool lodLocked() const { return _lodLocked; }
+    inline void lockLoD(U8 level) noexcept { _lodLockLevels.fill({ true, level }); }
+    inline void unlockLoD() noexcept { _lodLockLevels.fill({ false, to_U8(0u) }); }
+    inline void lockLoD(RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { true, level }; }
+    inline void unlockLoD(RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { false, to_U8(0u) }; }
+    inline bool lodLocked(RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
 
     void useUniqueMaterialInstance();
     void setMaterialTpl(const Material_ptr& material);
@@ -268,8 +270,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
     ReflectorType _reflectorType;
     RefractorType _refractorType;
-    U32 _lodLockedLevel;
-    bool _lodLocked;
+
+    std::array<std::pair<bool, U8>, to_base(RenderStage::COUNT)> _lodLockLevels;
 
     static hashMap<U32, DebugView*> s_debugViews[2];
 };
