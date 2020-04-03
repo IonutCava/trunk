@@ -384,6 +384,7 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
     propertiesOut._reflectionIndex = defaultRefractionTextureIndex();
     if (_materialInstanceCache != nullptr) {
         propertiesOut._texOperation = _materialInstanceCache->getTextureOperation();
+        propertiesOut._bumpMethod = _materialInstanceCache->getBumpMethod();
     }
 }
 
