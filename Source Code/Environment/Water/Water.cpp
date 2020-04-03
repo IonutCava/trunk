@@ -216,7 +216,8 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
 
     RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
-    params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFRACT);
+    params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
+    params._targetOIT = RenderTargetID(RenderTargetUsage::OIT_REFLECT);
     params._camera = renderParams._camera;
     params._minExtents.set(0.75f);
     params._stagePass = { RenderStage::REFRACTION, RenderPassType::COUNT, 0u, renderParams._passIndex };
@@ -252,6 +253,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
     params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
+    params._targetOIT = RenderTargetID(RenderTargetUsage::OIT_REFLECT);
     params._camera = _reflectionCam;
     params._minExtents.set(1.25f);
     params._stagePass = { RenderStage::REFLECTION, RenderPassType::COUNT, 0u, renderParams._passIndex };

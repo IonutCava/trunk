@@ -60,21 +60,15 @@ bool RenderTarget::hasAttachment(RTAttachmentType type, U8 index) const {
     return _attachmentPool->exists(type, index);
 }
 
-const RTAttachment_ptr& RenderTarget::getAttachmentPtr(RTAttachmentType type, U8 index, bool resolved) const {
-    ACKNOWLEDGE_UNUSED(resolved);
-
+const RTAttachment_ptr& RenderTarget::getAttachmentPtr(RTAttachmentType type, U8 index) const {
     return _attachmentPool->get(type, index);
 }
 
-const RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index, bool resolved) const {
-    ACKNOWLEDGE_UNUSED(resolved);
-
+const RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) const {
     return *_attachmentPool->get(type, index);
 }
 
-RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index, bool resolved) {
-    ACKNOWLEDGE_UNUSED(resolved);
-
+RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) {
     return *_attachmentPool->get(type, index);
 }
 
@@ -82,7 +76,7 @@ U8 RenderTarget::getAttachmentCount(RTAttachmentType type) const {
     return _attachmentPool->attachmentCount(type);
 }
 
-void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) {
+void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const {
     readData(vec4<U16>(0u, 0u, _descriptor._resolution.w, _descriptor._resolution.h), imageFormat, dataType, outData);
 }
 

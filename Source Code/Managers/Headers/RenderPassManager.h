@@ -66,6 +66,7 @@ public:
         I32 _minLoD = -1; //-1 = all
         RenderTargetID _target = {};
         RenderTargetID _targetHIZ = {};
+        RenderTargetID _targetOIT = {};
         RenderStagePass _stagePass = {};
         bool _bindTargets = true;
     };
@@ -102,10 +103,10 @@ private:
                  const RenderTarget& target,
                  GFX::CommandBuffer& bufferInOut);
     bool occlusionPass(const VisibleNodeList& nodes,
-                       const PassParams& params,
-                       vec2<bool> extraTargets, 
-                       const RenderTarget& target,
-                       bool prePassExecuted,
+                       const RenderStagePass& stagePass,
+                       const Camera& camera,
+                       const RenderTargetID& sourceDepthBuffer,
+                       const RenderTargetID& targetDepthBuffer,
                        GFX::CommandBuffer& bufferInOut);
     void mainPass(const VisibleNodeList& nodes,
                   const PassParams& params,
@@ -117,7 +118,6 @@ private:
 
     void woitPass(const VisibleNodeList& nodes,
                   const PassParams& params,
-                  vec2<bool> extraTargets,
                   const RenderTarget& target,
                   GFX::CommandBuffer& bufferInOut);
 

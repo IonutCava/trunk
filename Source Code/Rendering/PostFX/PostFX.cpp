@@ -207,9 +207,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::DrawCommand drawCommand = { _drawCommand };
     GFX::EnqueueCommand(bufferInOut, drawCommand);
 
-    GFX::EndRenderPassCommand endRenderPassCmd;
-    endRenderPassCmd._autoResolveMSAAColour = true;
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 
 void PostFX::idle(const Configuration& config) {

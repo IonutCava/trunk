@@ -149,17 +149,17 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     virtual bool resize(U16 width, U16 height) = 0;
 
     virtual bool hasAttachment(RTAttachmentType type, U8 index) const;
-    virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index, bool resolved = true) const;
-    virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true) const;
-    virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true);
+    virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;
+    virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
+    virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index);
     virtual U8 getAttachmentCount(RTAttachmentType type) const;
 
     virtual void clear(const RTClearDescriptor& descriptor) = 0;
     virtual void setDefaultState(const RTDrawDescriptor& drawPolicy) = 0;
-    virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
+    virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const = 0;
     virtual void blitFrom(const RTBlitParams& params) = 0;
 
-    void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData);
+    void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const;
 
     U16 getWidth()  const;
     U16 getHeight() const;

@@ -2,6 +2,8 @@
 
 #include "Headers/GFXRTPool.h"
 #include "Headers/GFXDevice.h"
+#include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/Configuration.h"
 
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
@@ -11,7 +13,9 @@ namespace {
     // Used to delete resources
     struct DeleteRT {
         void operator()(RenderTarget* res) {
-            res->destroy();
+            if (res != nullptr) {
+                res->destroy();
+            }
         }
     };
 
@@ -26,11 +30,14 @@ GFXRTPool::GFXRTPool(GFXDevice& parent)
     }
 
     _renderTargets[to_U32(RenderTargetUsage::SCREEN)].resize(1, nullptr);
-    _renderTargets[to_U32(RenderTargetUsage::HI_Z)].resize(1, nullptr);
-    _renderTargets[to_U32(RenderTargetUsage::HI_Z_REFLECT)].resize(1, nullptr);
-    _renderTargets[to_U32(RenderTargetUsage::HI_Z_REFRACT)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::SCREEN_MS)].resize(1, nullptr);
 
     _renderTargets[to_U32(RenderTargetUsage::OIT)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::OIT_MS)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::OIT_REFLECT)].resize(1, nullptr);
+    
+    _renderTargets[to_U32(RenderTargetUsage::HI_Z)].resize(1, nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::HI_Z_REFLECT)].resize(1, nullptr);
 
     _renderTargets[to_U32(RenderTargetUsage::SHADOW)].resize(to_base(ShadowType::COUNT), nullptr);
 
@@ -100,6 +107,15 @@ bool GFXRTPool::remove(RenderTargetHandle& handle) {
 RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor) {
     std::shared_ptr<RenderTarget> rt(Attorney::GFXDeviceGFXRTPool::newRT(_parent, descriptor), DeleteRT());
     return add(targetUsage, rt);
+}
+
+const RenderTargetID GFXRTPool::screenTargetID() const noexcept {
+    const RenderTargetUsage screenRT = _parent.context().config().rendering.MSAAsamples > 0 ? RenderTargetUsage::SCREEN_MS : RenderTargetUsage::SCREEN;
+    return RenderTargetID(screenRT);
+}
+
+const RenderTarget& GFXRTPool::screenTarget() const noexcept {
+    return renderTarget(screenTargetID());
 }
 
 }; //namespace Divide

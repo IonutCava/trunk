@@ -56,7 +56,7 @@ namespace Divide {
         bool resize(U16 width, U16 height) final { return true; }
         void clear(const RTClearDescriptor& descriptor) final {}
         void setDefaultState(const RTDrawDescriptor& drawPolicy) final {}
-        void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) final {}
+        void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const final {}
         void blitFrom(const RTBlitParams& params) final {}
     };
 

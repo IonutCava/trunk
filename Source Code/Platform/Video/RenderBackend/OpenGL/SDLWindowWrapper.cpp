@@ -34,8 +34,6 @@
 
 namespace Divide {
 namespace {
-    constexpr bool g_useAALines = true;
-
     const U32 g_maxVAOS = 512u;
     const U32 g_maxQueryRings = 64;
 
@@ -237,6 +235,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
     }
 
+    glEnable(GL_MULTISAMPLE);
+    // Line smoothing should almost always be used
+    glEnable(GL_LINE_SMOOTH);
+    glGetIntegerv(GL_SMOOTH_LINE_WIDTH_RANGE, &s_lineWidthLimit);
+
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel,
           to_U8(0),
@@ -245,14 +248,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
 
     // Number of sample buffers associated with the framebuffer & MSAA sample count
-    GLint samplerBuffers = GLUtil::getGLValue(GL_SAMPLES);
-    GLint sampleCount = GLUtil::getGLValue(GL_SAMPLE_BUFFERS);
-    Console::printfn(Locale::get(_ID("GL_MULTI_SAMPLE_INFO")), sampleCount, samplerBuffers);
+    const U8 maxGLSamples = to_U8(std::min(254, GLUtil::getGLValue(GL_MAX_SAMPLES)));
     // If we do not support MSAA on a hardware level for whatever reason, override user set MSAA levels
-    if (samplerBuffers == 0 || sampleCount == 0) {
-        config.rendering.msaaSamples = 0;
-        config.rendering.shadowMapping.msaaSamples = 0;
-    }
+    config.rendering.MSAAsamples = std::min(config.rendering.MSAAsamples, maxGLSamples);
+    config.rendering.shadowMapping.MSAAsamples = std::min(config.rendering.shadowMapping.MSAAsamples, maxGLSamples);
 
     if (s_stateTracker._opengl46Supported) {
         Console::printfn(Locale::get(_ID("GL_SHADER_THREADS")),
@@ -312,19 +311,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Seamless cubemaps are a nice feature to have enabled (core since 3.2)
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     //glEnable(GL_FRAMEBUFFER_SRGB);
-    // Enable multisampling if we actually support and request it
-    (config.rendering.msaaSamples > 0 || config.rendering.shadowMapping.msaaSamples > 0) 
-        ? glEnable(GL_MULTISAMPLE)
-        : glDisable(GL_MULTISAMPLE);
-
-    // Line smoothing should almost always be used
-    if (g_useAALines) {
-        glEnable(GL_LINE_SMOOTH);
-        glGetIntegerv(GL_SMOOTH_LINE_WIDTH_RANGE, &s_lineWidthLimit);
-    } else {
-        glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, &s_lineWidthLimit);
-    }
-
     // Culling is enabled by default, but RenderStateBlocks can toggle it on a per-draw call basis
     glEnable(GL_CULL_FACE);
 

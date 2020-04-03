@@ -728,7 +728,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     I32 fb_height = (I32)(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
 
     if (overlayOnScene) {
-        const RenderTarget& rt = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+        const RenderTarget& rt = context().gfx().renderTargetPool().screenTarget();
         fb_width = rt.getWidth();
         fb_height = rt.getHeight();
     }
@@ -761,12 +761,15 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     GFX::EnqueueCommand(buffer, beginDebugScopeCmd);
 
     if (overlayOnScene) {
+
+        const RenderTargetID screenRT = _context.gfx().renderTargetPool().screenTargetID();
+
         RTClearDescriptor clearTarget = {};
         clearTarget.clearDepth(false);
         clearTarget.clearColours(false);
 
         GFX::ClearRenderTargetCommand clearRenderTargetCmd = {};
-        clearRenderTargetCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
+        clearRenderTargetCmd._target = screenRT;
         clearRenderTargetCmd._descriptor = clearTarget;
         GFX::EnqueueCommand(buffer, clearRenderTargetCmd);
 
@@ -776,7 +779,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
         screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO), true);
 
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-        beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
+        beginRenderPassCmd._target = screenRT;
         beginRenderPassCmd._descriptor = screenTarget;
         beginRenderPassCmd._name = "DO_IMGUI_PRE_PASS";
         GFX::EnqueueCommand(buffer, beginRenderPassCmd);

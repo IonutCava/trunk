@@ -98,7 +98,7 @@ struct Configuration final : public XML::IXMLSerializable {
     } gui = {};
 
     struct Rendering {
-        U8 msaaSamples = 0;
+        U8 MSAAsamples = 0;
         U8 anisotropicFilteringLevel = 16;
         U8 reflectionResolutionFactor = 1;
         I32 terrainDetailLevel = 0;
@@ -122,7 +122,7 @@ struct Configuration final : public XML::IXMLSerializable {
         struct ShadowMapping {
             bool enabled = true;
             U32 shadowMapResolution = 512;
-            U8 msaaSamples = 0;
+            U8 MSAAsamples = 0;
             U8 anisotropicFilteringLevel = 0;
             bool enableBlurring = true;
             U8 defaultCSMSplitCount = 3;

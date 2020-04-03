@@ -356,7 +356,6 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
     
     appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#define MSAA_SAMPLES %d", config.rendering.msaaSamples), lineOffsets);
 
     // Add current build environment information to the shaders
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -1121,7 +1120,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             assert(GL_API::getStateTracker()._activeRenderTarget != nullptr);
             GL_API::popDebugMessage();
             glFramebuffer& fb = *GL_API::getStateTracker()._activeRenderTarget;
-            Attorney::GLAPIRenderTarget::end(fb, crtCmd->_autoResolveMSAAColour, crtCmd->_autoResolveMSAAExternalColour, crtCmd->_autoResolveMSAADepth, !crtCmd->_ignore);
+            Attorney::GLAPIRenderTarget::end(fb, crtCmd->_setDefaultRTState);
         }break;
         case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
             GFX::BeginPixelBufferCommand* crtCmd = commandBuffer.get<GFX::BeginPixelBufferCommand>(entry);
@@ -1147,11 +1146,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             GL_API::getStateTracker()._activeRenderTarget->setMipLevel(crtCmd->_mipWriteLevel, crtCmd->_validateWriteLevel);
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {
-        }break;
-        case GFX::CommandType::RESOLVE_RT: {
-            GFX::ResolveRenderTargetCommand* crtCmd = commandBuffer.get<GFX::ResolveRenderTargetCommand>(entry);
-            glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd->_source));
-            Attorney::GLAPIRenderTarget::resolve(rt, crtCmd->_resolveColour, crtCmd->_resolveColours, crtCmd->_resolveDepth, crtCmd->_resolveExternalColours);
         }break;
         case GFX::CommandType::COPY_TEXTURE: {
             GFX::CopyTextureCommand* crtCmd = commandBuffer.get<GFX::CopyTextureCommand>(entry);

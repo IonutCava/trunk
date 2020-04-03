@@ -77,6 +77,10 @@ public:
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
+    // Bit of a hack, but cleans up a lot of code
+    const RenderTarget& screenTarget() const noexcept;
+    const RenderTargetID screenTargetID() const noexcept;
+
     inline vectorSTD<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) noexcept {
         return _renderTargets[to_U32(target)];
     }

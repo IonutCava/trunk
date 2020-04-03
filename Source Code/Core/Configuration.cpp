@@ -57,7 +57,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(gui.imgui.windowDecorationsEnabled);
         GET_PARAM(gui.imgui.dontMergeFloatingWindows);
         GET_PARAM(gui.consoleLayoutFile);
-        GET_PARAM(rendering.msaaSamples);
+        GET_PARAM(rendering.MSAAsamples);
         GET_PARAM(rendering.anisotropicFilteringLevel);
         GET_PARAM(rendering.reflectionResolutionFactor);
         GET_PARAM(rendering.terrainDetailLevel);
@@ -83,7 +83,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.ssaoPower);
         GET_PARAM(rendering.shadowMapping.enabled);
         GET_PARAM(rendering.shadowMapping.shadowMapResolution);
-        GET_PARAM(rendering.shadowMapping.msaaSamples);
+        GET_PARAM(rendering.shadowMapping.MSAAsamples);
         GET_PARAM(rendering.shadowMapping.anisotropicFilteringLevel);
         GET_PARAM(rendering.shadowMapping.enableBlurring);
         GET_PARAM(rendering.shadowMapping.defaultCSMSplitCount);
@@ -144,7 +144,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(gui.imgui.windowDecorationsEnabled);
         PUT_PARAM(gui.imgui.dontMergeFloatingWindows);
         PUT_PARAM(gui.consoleLayoutFile);
-        PUT_PARAM(rendering.msaaSamples);
+        PUT_PARAM(rendering.MSAAsamples);
         PUT_PARAM(rendering.anisotropicFilteringLevel);
         PUT_PARAM(rendering.reflectionResolutionFactor);
         PUT_PARAM(rendering.terrainDetailLevel);
@@ -171,7 +171,7 @@ bool Configuration::toXML(const char* xmlFile) const {
 
         PUT_PARAM(rendering.shadowMapping.enabled);
         PUT_PARAM(rendering.shadowMapping.shadowMapResolution);
-        PUT_PARAM(rendering.shadowMapping.msaaSamples);
+        PUT_PARAM(rendering.shadowMapping.MSAAsamples);
         PUT_PARAM(rendering.shadowMapping.anisotropicFilteringLevel);
         PUT_PARAM(rendering.shadowMapping.enableBlurring);
         PUT_PARAM(rendering.shadowMapping.defaultCSMSplitCount);

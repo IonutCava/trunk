@@ -27,14 +27,16 @@ namespace {
             case RenderTargetUsage::ENVIRONMENT: return "Environment";
             case RenderTargetUsage::HI_Z: return "HI-Z";
             case RenderTargetUsage::HI_Z_REFLECT: return "HI-Z Reflect";
-            case RenderTargetUsage::HI_Z_REFRACT: return "HI-Z Refract";
             case RenderTargetUsage::OIT: return "OIT";
+            case RenderTargetUsage::OIT_MS: return "OIT_MS";
+            case RenderTargetUsage::OIT_REFLECT: return "OIT_REFLECT";
             case RenderTargetUsage::OTHER: return "Other";
             case RenderTargetUsage::REFLECTION_CUBE: return "Cube Reflection";
             case RenderTargetUsage::REFLECTION_PLANAR: return "Planar Reflection";
             case RenderTargetUsage::REFLECTION_PLANAR_BLUR: return "Planar Reflection Blur";
             case RenderTargetUsage::REFRACTION_PLANAR: return "Planar Refraction";
             case RenderTargetUsage::SCREEN: return "Screen";
+            case RenderTargetUsage::SCREEN_MS: return "Screen_MS";
             case RenderTargetUsage::SHADOW: return "Shadow";
         };
 
@@ -129,6 +131,9 @@ void MenuBar::drawFileMenu() {
     bool showFileOpenDialog = false;
     bool showFileSaveDialog = false;
 
+    static U8 defaultMSAASamples = _context.config().rendering.MSAAsamples;
+    static U8 defaultShadowMSAASamples = _context.config().rendering.shadowMapping.MSAAsamples;
+
     const bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedElements(_context.editor());
 
     if (ImGui::BeginMenu("File"))
@@ -160,6 +165,17 @@ void MenuBar::drawFileMenu() {
             if (ImGui::MenuItem("Enable CSM Split View", "", &showCSMSplits)) {
                 _context.config().changed(true);
             }
+
+            bool msaaEnabled = _context.config().rendering.MSAAsamples > 0;
+            if (ImGui::MenuItem("MSAA", "", &msaaEnabled)) {
+                _context.config().rendering.MSAAsamples = msaaEnabled ? defaultMSAASamples : 0;
+            }
+
+            bool shadowMsaaEnabled = _context.config().rendering.shadowMapping.MSAAsamples > 0;
+            if (ImGui::MenuItem("Shadow MSAA", "", &shadowMsaaEnabled)) {
+                _context.config().rendering.shadowMapping.MSAAsamples = shadowMsaaEnabled ? defaultShadowMSAASamples : 0;
+            }
+
             ImGui::EndMenu();
         }
 

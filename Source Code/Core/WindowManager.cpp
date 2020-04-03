@@ -118,33 +118,6 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
     _apiFlags = createAPIFlags(renderingAPI);
 
-    // Toggle multi-sampling if requested.
-    const I32 msaaSamples = to_I32(_context->config().rendering.msaaSamples);
-    const I32 shadowSamples = to_I32(_context->config().rendering.shadowMapping.msaaSamples);
-
-    I32 maxSamples = 0;
-    if (msaaSamples > 0 || shadowSamples > 0) {
-        maxSamples = std::max(msaaSamples, shadowSamples);
-        if (validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1))) {
-            while (!validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, maxSamples))) {
-                maxSamples = maxSamples / 2;
-                if (maxSamples == 0) {
-                    validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0));
-                    break;
-                }
-            }
-        } else {
-            maxSamples = 0;
-        }
-    }
-
-    if (maxSamples < msaaSamples) {
-        _context->config().rendering.msaaSamples = to_U8(maxSamples);
-    }
-    if (maxSamples < shadowSamples) {
-        _context->config().rendering.shadowMapping.msaaSamples = to_U8(maxSamples);
-    }
-
 
     WindowDescriptor descriptor = {};
     descriptor.position = initialPosition;
@@ -391,6 +364,8 @@ U32 WindowManager::createAPIFlags(RenderAPI api) noexcept {
         }
         windowFlags |= SDL_WINDOW_OPENGL;
     } 
+
+    validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
 
     return windowFlags;
 }

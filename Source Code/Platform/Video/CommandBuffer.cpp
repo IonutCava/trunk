@@ -23,7 +23,6 @@ DEFINE_POOL(BlitRenderTargetCommand);
 DEFINE_POOL(ClearRenderTargetCommand);
 DEFINE_POOL(ResetRenderTargetCommand);
 DEFINE_POOL(ResetAndClearRenderTargetCommand);
-DEFINE_POOL(ResolveRenderTargetCommand);
 DEFINE_POOL(CopyTextureCommand);
 DEFINE_POOL(ComputeMipMapsCommand);
 DEFINE_POOL(SetScissorCommand);
@@ -196,7 +195,7 @@ void CommandBuffer::batch() {
 
         CommandBase* crtCommand = get<CommandBase>(entry);
         if (prevCommand != nullptr && entry._typeIndex == to_base(GFX::CommandType::BEGIN_RENDER_PASS)) {
-            static_cast<EndRenderPassCommand*>(prevCommand)->_ignore = true;
+            static_cast<EndRenderPassCommand*>(prevCommand)->_setDefaultRTState = false;
             prevCommand = nullptr;
         } else if (entry._typeIndex == to_base(GFX::CommandType::END_RENDER_PASS)) {
             prevCommand = crtCommand;
@@ -246,10 +245,6 @@ void CommandBuffer::batch() {
                 hasWork = true;
                 break;
             }break;
-            case GFX::CommandType::RESOLVE_RT: {
-                const ResolveRenderTargetCommand* crtCmd = get<ResolveRenderTargetCommand>(cmd);
-                hasWork = crtCmd->_resolveColours || crtCmd->_resolveDepth;
-            } break;
             case GFX::CommandType::SET_MIP_LEVELS: {
                 const SetTextureMipLevelsCommand* crtCmd = get<SetTextureMipLevelsCommand>(cmd);
                 hasWork = crtCmd->_texture != nullptr && (crtCmd->_baseLevel != crtCmd->_texture->getBaseMipLevel() || crtCmd->_maxLevel != crtCmd->_texture->getMaxMipLevel());

@@ -8,13 +8,13 @@ namespace Divide {
 glHardwareQuery::glHardwareQuery(GFXDevice& context) 
     : glObject(glObjectType::TYPE_QUERY, context),
       _enabled(false),
-      _queryID(0)
+      _queryID(0u)
 {
 }
 
 glHardwareQuery::~glHardwareQuery()
 {
-    destroy();
+    assert(_queryID == 0u);
 }
 
 void glHardwareQuery::create() {
@@ -23,10 +23,10 @@ void glHardwareQuery::create() {
 }
 
 void glHardwareQuery::destroy() {
-    if (_queryID != 0) {
+    if (_queryID != 0u) {
         glDeleteQueries(1, &_queryID);
     }
-    _queryID = 0;
+    _queryID = 0u;
 }
 
 glHardwareQueryRing::glHardwareQueryRing(GFXDevice& context, U32 queueLength, U32 id)
@@ -35,35 +35,41 @@ glHardwareQueryRing::glHardwareQueryRing(GFXDevice& context, U32 queueLength, U3
       _id(id)
 {
     _queries.reserve(queueLength);
-    for (U32 i = 0; i < queueLength; ++i) {
-        _queries.push_back(std::make_shared<glHardwareQuery>(context));
-        _queries.back()->create();
-    }
+    resize(queueLength);
 }
 
 glHardwareQueryRing::~glHardwareQueryRing()
 {
+    for (glHardwareQuery& query : _queries) {
+        query.destroy();
+    }
     _queries.clear();
 }
 
 glHardwareQuery& glHardwareQueryRing::readQuery() {
-    return *_queries[queueReadIndex()];
+    return _queries[queueReadIndex()];
 }
 
 glHardwareQuery& glHardwareQueryRing::writeQuery() {
-    return *_queries[queueWriteIndex()];
+    return _queries[queueWriteIndex()];
 }
 
 void glHardwareQueryRing::resize(I32 queueLength) noexcept {
     RingBufferSeparateWrite::resize(queueLength);
 
-    while (queueLength < to_I32(_queries.size())) {
-        _queries.pop_back();
-    }
-    
-    while (queueLength > to_I32(_queries.size())) {
-        _queries.push_back(std::make_shared<glHardwareQuery>(_context));
-        _queries.back()->create();
+    const I32 crtCount = to_I32(_queries.size());
+    if (queueLength < crtCount) {
+        while (queueLength < to_I32(crtCount)) {
+            _queries.back().destroy();
+            _queries.pop_back();
+        }
+    } else {
+        const I32 countToAdd = queueLength - crtCount;
+
+        for (I32 i = 0; i < countToAdd; ++i) {
+            _queries.emplace_back(_context);
+            _queries.back().create();
+        }
     }
 }
 

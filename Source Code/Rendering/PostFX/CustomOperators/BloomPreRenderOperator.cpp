@@ -179,7 +179,6 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
 
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    endRenderPassCmd._autoResolveMSAAColour = true;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 

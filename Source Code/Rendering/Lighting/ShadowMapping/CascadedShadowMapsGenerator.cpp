@@ -98,20 +98,18 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     // Draw FBO
     {
         // MSAA rendering is supported
-        const TextureType texType = g_shadowSettings.msaaSamples > 0 ? TextureType::TEXTURE_2D_ARRAY_MS : TextureType::TEXTURE_2D_ARRAY;
+        TextureDescriptor colourDescriptor(TextureType::TEXTURE_2D_ARRAY_MS, texDescriptor.baseFormat(), texDescriptor.dataType());
+        colourDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+        colourDescriptor.samplerDescriptor(sampler);
+        colourDescriptor.msaaSamples(g_shadowSettings.MSAAsamples);
 
-        TextureDescriptor depthMapDescriptor(texType, texDescriptor.baseFormat(), texDescriptor.dataType());
-        depthMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-        depthMapDescriptor.samplerDescriptor(sampler);
-        depthMapDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
-
-        TextureDescriptor depthDescriptor(texType, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
+        TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
         depthDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         depthDescriptor.samplerDescriptor(sampler);
-        depthDescriptor.msaaSamples(g_shadowSettings.msaaSamples);
+        depthDescriptor.msaaSamples(g_shadowSettings.MSAAsamples);
 
         vectorSTD<RTAttachmentDescriptor> att = {
-            { depthMapDescriptor, RTAttachmentType::Colour },
+            { colourDescriptor, RTAttachmentType::Colour },
             { depthDescriptor, RTAttachmentType::Depth },
         };
 
@@ -224,9 +222,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
     }
 
-    GFX::EndRenderPassCommand endRenderPassCmd = {};
-    endRenderPassCmd._autoResolveMSAAColour = g_shadowSettings.enableBlurring;
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
     postRender(dirLight, bufferInOut);
 }
@@ -373,8 +369,23 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
 
 void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& light, GFX::CommandBuffer& bufferInOut) {
     const RenderTargetID depthMapID(RenderTargetUsage::SHADOW, to_base(ShadowType::LAYERED));
+    const I32 layerOffset = to_I32(light.getShadowOffset());
+
+    GFX::BlitRenderTargetCommand blitRenderTargetCommand = {};
+    blitRenderTargetCommand._source = _drawBuffer._targetID;
+    blitRenderTargetCommand._destination = depthMapID;
+
+    ColourBlitEntry blitEntry = {};
+    for (U8 i = 0; i < light.csmSplitCount(); ++i) {
+        blitEntry._inputLayer = i;
+        blitEntry._outputLayer = to_U16(layerOffset + i);
+        blitRenderTargetCommand._blitColours.emplace_back(blitEntry);
+    }
+    GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
 
     if (g_shadowSettings.enableBlurring) {
+
+        const RenderTarget& sourceRT = _context.renderTargetPool().renderTarget(depthMapID);
 
         const I32 layerCount = renderLastSplit() ? to_I32(light.csmSplitCount()) : to_I32(light.csmSplitCount()) - 1;
         
@@ -388,7 +399,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::DrawCommand drawCmd = { pointsCmd };
 
         // Blur horizontally
-        TextureData texData = _drawBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
+        TextureData texData = sourceRT.getAttachment(RTAttachmentType::Colour, 0).texture()->data();
         descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -398,6 +409,8 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
         GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _horzBlurPipeline });
         _blurDepthMapConstants.set(_ID("layerCount"), GFX::PushConstantType::INT, layerCount);
+        _blurDepthMapConstants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, layerOffset);
+        _blurDepthMapConstants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, 0);
 
         pushConstantsCommand._constants = _blurDepthMapConstants;
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
@@ -417,25 +430,14 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
         GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _vertBlurPipeline });
+        pushConstantsCommand._constants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, 0);
+        pushConstantsCommand._constants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, layerOffset);
 
-        pushConstantsCommand._constants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, (I32)light.getShadowOffset());
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
         GFX::EnqueueCommand(bufferInOut, drawCmd);
 
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
-    } else {
-        GFX::BlitRenderTargetCommand blitRenderTargetCommand = {};
-        blitRenderTargetCommand._source = _drawBuffer._targetID;
-        blitRenderTargetCommand._destination = depthMapID;
-
-        ColourBlitEntry blitEntry = {};
-        for (U8 i = 0; i < light.csmSplitCount(); ++i) {
-            blitEntry._inputLayer = i;
-            blitEntry._outputLayer = light.getShadowOffset() + i;
-            blitRenderTargetCommand._blitColours.emplace_back(blitEntry);
-        }
-        GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
     }
 
     const RenderTarget& rt = _context.renderTargetPool().renderTarget(depthMapID);

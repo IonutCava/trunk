@@ -294,13 +294,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
 
-    const U8 msaaSamples = config.rendering.msaaSamples;
-
-    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor lightingDetails(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-
     SamplerDescriptor defaultSampler = {};
     defaultSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
     defaultSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
@@ -308,36 +301,44 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     defaultSampler.minFilter(TextureFilter::NEAREST);
     defaultSampler.magFilter(TextureFilter::NEAREST);
 
-    screenDescriptor.samplerDescriptor(defaultSampler);
-    screenDescriptor.msaaSamples(msaaSamples);
+    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    TextureDescriptor lightingDetails(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
-    depthDescriptor.samplerDescriptor(defaultSampler);
-    depthDescriptor.msaaSamples(msaaSamples);
+    // Normal and MSAA
+    for (U8 i = 0; i < 2; ++i) {
+        const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAAsamples;
 
-    normalAndVelocityDescriptor.samplerDescriptor(defaultSampler);
-    normalAndVelocityDescriptor.msaaSamples(msaaSamples);
+        screenDescriptor.samplerDescriptor(defaultSampler);
+        screenDescriptor.msaaSamples(sampleCount);
 
-    lightingDetails.samplerDescriptor(defaultSampler);
-    lightingDetails.msaaSamples(msaaSamples);
+        depthDescriptor.samplerDescriptor(defaultSampler);
+        depthDescriptor.msaaSamples(sampleCount);
 
-    {
-        vectorSTD<RTAttachmentDescriptor> attachments = {
-            { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
-            { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
-            { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
-            { depthDescriptor,               RTAttachmentType::Depth }
-        };
+        normalAndVelocityDescriptor.samplerDescriptor(defaultSampler);
+        normalAndVelocityDescriptor.msaaSamples(sampleCount);
 
-        RenderTargetDescriptor screenDesc = {};
-        screenDesc._name = "Screen";
-        screenDesc._resolution = renderResolution;
-        screenDesc._attachmentCount = to_U8(attachments.size());
-        screenDesc._attachments = attachments.data();
+        lightingDetails.samplerDescriptor(defaultSampler);
+        lightingDetails.msaaSamples(sampleCount);
 
-        // Our default render targets hold the screen buffer, depth buffer, and a special, on demand,
-        // down-sampled version of the depth buffer
-        // Screen FB should use MSAA if available
-        _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
+        {
+            vectorSTD<RTAttachmentDescriptor> attachments = {
+                { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
+                { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
+                { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
+                { depthDescriptor,               RTAttachmentType::Depth }
+            };
+
+            RenderTargetDescriptor screenDesc = {};
+            screenDesc._name = "Screen";
+            screenDesc._resolution = renderResolution;
+            screenDesc._attachmentCount = to_U8(attachments.size());
+            screenDesc._attachments = attachments.data();
+
+            // Our default render targets hold the screen buffer, depth buffer, and a special, on demand, down-sampled version of the depth buffer
+            _rtPool->allocateRT(i == 0 ? RenderTargetUsage::SCREEN : RenderTargetUsage::SCREEN_MS, screenDesc);
+        }
     }
 
     const U16 reflectRes = 512 * config.rendering.reflectionResolutionFactor;
@@ -387,9 +388,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         hizRTDesc._resolution = reflectRes;
         hizRTDesc._name = "HiZ_Reflect";
         _rtPool->allocateRT(RenderTargetUsage::HI_Z_REFLECT, hizRTDesc);
-
-        hizRTDesc._name = "HiZ_Refract";
-        _rtPool->allocateRT(RenderTargetUsage::HI_Z_REFRACT, hizRTDesc);
     }
 
     if (Config::Build::ENABLE_EDITOR) {
@@ -416,7 +414,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         _rtPool->allocateRT(RenderTargetUsage::EDITOR, editorDesc);
     }
 
+    for (U8 i = 0; i < 2; ++i) 
     {
+        const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAAsamples;
+
         SamplerDescriptor accumulationSampler = {};
         accumulationSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
         accumulationSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
@@ -425,12 +426,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         accumulationSampler.magFilter(TextureFilter::NEAREST);
 
         TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-        accumulationDescriptor.msaaSamples(msaaSamples);
+        accumulationDescriptor.msaaSamples(sampleCount);
         accumulationDescriptor.autoMipMaps(false);
         accumulationDescriptor.samplerDescriptor(accumulationSampler);
 
         TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
-        revealageDescriptor.msaaSamples(msaaSamples);
+        revealageDescriptor.msaaSamples(sampleCount);
         revealageDescriptor.autoMipMaps(false);
         revealageDescriptor.samplerDescriptor(accumulationSampler);
 
@@ -439,11 +440,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
             { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
         };
 
-        const RenderTarget& screenTarget = _rtPool->renderTarget(RenderTargetUsage::SCREEN);
+        const RenderTarget& screenTarget = _rtPool->renderTarget(i == 0 ? RenderTargetUsage::SCREEN : RenderTargetUsage::SCREEN_MS);
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
         
         vectorSTD<ExternalRTAttachmentDescriptor> externalAttachments = {
-                { screenDepthAttachment,  RTAttachmentType::Depth }
+            { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
         if (Config::USE_COLOURED_WOIT) {
@@ -459,7 +460,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         oitDesc._attachments = attachments.data();
         oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
         oitDesc._externalAttachments = externalAttachments.data();
-        _rtPool->allocateRT(RenderTargetUsage::OIT, oitDesc);
+        _rtPool->allocateRT(i == 0 ? RenderTargetUsage::OIT : RenderTargetUsage::OIT_MS, oitDesc);
+
+        if (i == 0) {
+            oitDesc._resolution = reflectRes;
+            _rtPool->allocateRT(RenderTargetUsage::OIT_REFLECT, oitDesc);
+        }
     }
 
     // Reflection Targets
@@ -753,9 +759,9 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     }
     _renderer = std::make_unique<Renderer>(context(), cache);
 
-    SizeChangeParams params;
-    params.width = _rtPool->renderTarget(RenderTargetUsage::SCREEN).getWidth();
-    params.height = _rtPool->renderTarget(RenderTargetUsage::SCREEN).getHeight();
+    SizeChangeParams params = {};
+    params.width = _rtPool->screenTarget().getWidth();
+    params.height = _rtPool->screenTarget().getHeight();
     params.isWindowResize = false;
     params.winGUID = context().app().windowManager().getMainWindow().getGUID();
     context().app().onSizeChange(params);
@@ -1211,8 +1217,10 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
 
         // Update render targets with the new resolution
         _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
+        _rtPool->resizeTargets(RenderTargetUsage::SCREEN_MS, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::HI_Z, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
+        _rtPool->resizeTargets(RenderTargetUsage::OIT_MS, w, h);
         if (Config::Build::ENABLE_EDITOR) {
             _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
         }
@@ -1508,7 +1516,6 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     clearRenderTargetCmd._descriptor = clearTarget;
     GFX::EnqueueCommand(cmdBufferInOut, clearRenderTargetCmd);
 
-    // Blit the depth buffer to the HiZ target
     { // Copy depth buffer to the colour target for compute shaders to use later on
 
         GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -1730,7 +1737,7 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 
     // Assume full game window viewport for text
     GFX::SetViewportCommand viewportCommand;
-    const RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    const RenderTarget& screenRT = _rtPool->screenTarget();
     const U16 width = screenRT.getWidth();
     const U16 height = screenRT.getHeight();
     viewportCommand._viewport.set(0, 0, width, height);
@@ -2090,8 +2097,7 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
     }
 }
 
-/// Render all of our immediate mode primitives. This isn't very optimised and
-/// most are recreated per frame!
+/// Render all of our immediate mode primitives. This isn't very optimised and most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut) {
     if (Config::Build::ENABLE_EDITOR)
     {
@@ -2110,7 +2116,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // Apply the inverse view matrix so that it cancels out in the shader
             // Submit the draw command, rendering it in a tiny viewport in the lower
             // right corner
-            const U16 windowWidth = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
+            const U16 windowWidth = renderTargetPool().screenTarget().getWidth();
             _axisGizmo->viewport(Rect<I32>(windowWidth - 120, 8, 128, 128));
             _axisGizmo->fromLines(_axisLines);
         
@@ -2145,7 +2151,7 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) {
         switch (getRenderAPI()) {
             case RenderAPI::OpenGL:
             case RenderAPI::OpenGLES: {
-                temp =  new (objectArena()) glFramebuffer(*this, nullptr, descriptor);
+                temp =  new (objectArena()) glFramebuffer(*this, descriptor);
             } break;
             case RenderAPI::Vulkan: {
                 temp = new (objectArena()) vkRenderTarget(*this, descriptor);
@@ -2422,21 +2428,19 @@ const ShaderComputeQueue& GFXDevice::shaderComputeQueue() const {
 /// Extract the pixel data from the main render target's first colour attachment and save it as a TGA image
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
-    RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    const RenderTarget& screenRT = _rtPool->screenTarget();
     const U16 width = screenRT.getWidth();
     const U16 height = screenRT.getHeight();
     // Allocate sufficiently large buffers to hold the pixel data
     const U32 bufferSize = width * height * 4;
-    U8* imageData = MemoryManager_NEW U8[bufferSize];
+    vectorEASTL<U8> imageData(bufferSize, 0u);
     // Read the pixels from the main render target (RGBA16F)
-    screenRT.readData(GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
+    screenRT.readData(GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, (bufferPtr)(imageData.data()));
     // Save to file
     ImageTools::SaveSeries(filename,
                            vec2<U16>(width, height),
                            32,
-                           imageData);
-    // Delete local buffers
-    MemoryManager::DELETE_ARRAY(imageData);
+                           imageData.data());
 }
 
 };

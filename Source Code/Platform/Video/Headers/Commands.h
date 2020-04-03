@@ -88,7 +88,6 @@ enum class CommandType : U8 {
     RESET_RT,
     RESET_AND_CLEAR_RT,
     BLIT_RT,
-    RESOLVE_RT,
     COPY_TEXTURE,
     SET_MIP_LEVELS,
     COMPUTE_MIPMAPS,
@@ -226,10 +225,7 @@ BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
  END_COMMAND(BeginRenderPassCommand);
 
 BEGIN_COMMAND(EndRenderPassCommand, CommandType::END_RENDER_PASS);
-    bool _autoResolveMSAAColour = false;
-    bool _autoResolveMSAAExternalColour = false;
-    bool _autoResolveMSAADepth = false;
-    bool _ignore = false;
+    bool _setDefaultRTState = true;
 END_COMMAND(EndRenderPassCommand);
 
 BEGIN_COMMAND(BeginPixelBufferCommand, CommandType::BEGIN_PIXEL_BUFFER);
@@ -273,14 +269,6 @@ BEGIN_COMMAND(ResetAndClearRenderTargetCommand, CommandType::RESET_AND_CLEAR_RT)
     RTDrawDescriptor _drawDescriptor;
     RTClearDescriptor _clearDescriptor;
 END_COMMAND(ResetAndClearRenderTargetCommand);
-
-BEGIN_COMMAND(ResolveRenderTargetCommand, CommandType::RESOLVE_RT);
-    RenderTargetID _source;
-    I8   _resolveColour = -1; //must be less than MAX_RT_COLOUR_ATTACHMENTS
-    bool _resolveColours = false;
-    bool _resolveDepth = false;
-    bool _resolveExternalColours = false;
-END_COMMAND(ResolveRenderTargetCommand);
 
 BEGIN_COMMAND(CopyTextureCommand, CommandType::COPY_TEXTURE);
     TextureData _source;

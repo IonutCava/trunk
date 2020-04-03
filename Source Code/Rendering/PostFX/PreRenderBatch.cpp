@@ -291,13 +291,6 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     const Texture_ptr& screenTex = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
     const Texture_ptr& luminanceTex = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
 
-    // We don't know if our screen target has been resolved
-    GFX::ResolveRenderTargetCommand resolveCmd = { };
-    resolveCmd._source = inputRT()._targetID;
-    resolveCmd._resolveColours = true;
-    resolveCmd._resolveDepth = false;
-    GFX::EnqueueCommand(bufferInOut, resolveCmd);
-
     if (adaptiveExposureControl()) {
         const F32 logLumRange = _toneMapParams.maxLogLuminance - _toneMapParams.minLogLuminance;
         const F32 histogramParams[4] = {
@@ -397,9 +390,6 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
             op->execute(camera, bufferInOut);
         }
     }
-
-    // Post-HDR batch, our screen target has been written to again
-    GFX::EnqueueCommand(bufferInOut, resolveCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
 

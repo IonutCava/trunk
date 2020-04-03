@@ -50,16 +50,10 @@ class glFramebuffer : public RenderTarget,
 
     friend class Attorney::GLAPIRenderTarget;
    public:
-    /// if resolveBuffer is not null, we add all of our attachments to it and
-    /// initialize it with this buffer
-    explicit glFramebuffer(GFXDevice& context, glFramebuffer* parent, const RenderTargetDescriptor& descriptor);
+    explicit glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor);
     ~glFramebuffer();
 
-    bool resize(U16 width, U16 height) override;
-
-    const RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true) const override;
-    const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index, bool resolved = true) const override;
-    RTAttachment& getAttachment(RTAttachmentType type, U8 index, bool resolved = true) override;
+    bool resize(U16 width, U16 height) final;
 
     void drawToLayer(const DrawLayerParams& params);
 
@@ -68,12 +62,12 @@ class glFramebuffer : public RenderTarget,
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,
                   GFXDataFormat dataType,
-                  bufferPtr outData) override;
+                  bufferPtr outData) const final;
 
-    void blitFrom(const RTBlitParams& params) override;
+    void blitFrom(const RTBlitParams& params) final;
 
     /// Bake in all settings and attachments to prepare it for rendering
-    bool create() override;
+    bool create() final;
 
   protected:
     enum class AttachmentState : U8 {
@@ -88,14 +82,14 @@ class glFramebuffer : public RenderTarget,
         U16 _writeLayer = 0;
         bool _layeredRendering = false;
 
-        inline bool operator==(const BindingState& other) const {
+        inline bool operator==(const BindingState& other) const noexcept {
             return _attState == other._attState &&
                    _writeLevel == other._writeLevel &&
                    _writeLayer == other._writeLayer &&
                    _layeredRendering == other._layeredRendering;
         }
 
-        inline bool operator!=(const BindingState& other) const {
+        inline bool operator!=(const BindingState& other) const noexcept {
             return _attState != other._attState ||
                    _writeLevel != other._writeLevel ||
                    _writeLayer != other._writeLayer ||
@@ -103,11 +97,7 @@ class glFramebuffer : public RenderTarget,
         }
     };
 
-    RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index, bool resolved = true);
-    const RTAttachment& getInternalAttachment(RTAttachmentType type, U8 index, bool resolved = true) const;
 
-
-    void resolve(I8 colour, bool allColours, bool depth, bool externalColours);
     void queueCheckStatus();
     bool checkStatus();
 
@@ -125,8 +115,8 @@ class glFramebuffer : public RenderTarget,
     void setAttachmentState(GLenum binding, BindingState state);
     BindingState getAttachmentState(GLenum binding) const;
 
-    void clear(const RTClearDescriptor& descriptor) override;
-    void setDefaultState(const RTDrawDescriptor& drawPolicy) override;
+    void clear(const RTClearDescriptor& descriptor) final;
+    void setDefaultState(const RTDrawDescriptor& drawPolicy) final;
 
     void toggleAttachments();
 
@@ -144,7 +134,7 @@ class glFramebuffer : public RenderTarget,
 
     void clear(const RTClearDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const;
     void begin(const RTDrawDescriptor& drawPolicy);
-    void end(bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth, bool needsUnbind);
+    void end(bool needsUnbind);
     void queueMipMapRecomputation();
     void queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange);
 
@@ -161,15 +151,11 @@ class glFramebuffer : public RenderTarget,
     Rect<I32> _prevViewport;
     Str128 _debugMessage;
     glFramebuffer* _parent;
-    glFramebuffer* _resolveBuffer;
     GLuint _framebufferHandle;
 
     bool _isLayeredDepth;
     bool _statusCheckQueued;
     bool _activeDepthBuffer;
-    bool _hasMultisampledColourAttachments;
-
-
     static bool _zWriteEnabled;
 };
 
@@ -179,12 +165,10 @@ namespace Attorney {
         static void begin(glFramebuffer& buffer, const RTDrawDescriptor& drawPolicy) {
             buffer.begin(drawPolicy);
         }
-        static void end(glFramebuffer& buffer, bool resolveMSAAColour, bool resolveMSAAExternalColour, bool resolveMSAADepth, bool needsUnbind) {
-            buffer.end(resolveMSAAColour, resolveMSAAExternalColour, resolveMSAADepth, needsUnbind);
+        static void end(glFramebuffer& buffer, bool needsUnbind) {
+            buffer.end(needsUnbind);
         }
-        static void resolve(glFramebuffer& buffer, I8 colour, bool allColours, bool depth, bool externalColours) {
-            buffer.resolve(colour, allColours, depth, externalColours);
-        }
+
         friend class Divide::GL_API;
     };
 };  // namespace Attorney
