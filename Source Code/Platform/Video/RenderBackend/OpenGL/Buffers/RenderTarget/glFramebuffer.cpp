@@ -29,7 +29,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
       _framebufferHandle(0),
       _prevViewport(-1),
       _activeReadBuffer(GL_NONE),
-      _debugMessage(("FBO Begin [ " + name() + " ]"))
+      _debugMessage(("Render Target: [ " + name() + " ]"))
 {
     glCreateFramebuffers(1, &_framebufferHandle);
     assert(_framebufferHandle != 0 && "glFramebuffer error: Tried to bind an invalid framebuffer!");

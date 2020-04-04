@@ -471,6 +471,8 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
     OPTICK_EVENT();
 
     const RenderStagePass& stagePass = params._stagePass;
+    const bool isPrePass = stagePass._passType == RenderPassType::PRE_PASS;
+
     PerPassData& passData = g_passData[to_base(stagePass._stage)];
 
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
@@ -481,7 +483,7 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
         queue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-    getQueue().getSortedQueues(stagePass._stage, stagePass._passType, passData.sortedQueues, queueSize);
+    getQueue().getSortedQueues(stagePass._stage, isPrePass, passData.sortedQueues, queueSize);
 
     auto& rComps = passData.queuedRenderingComponents;
     rComps.resize(0);
@@ -523,9 +525,8 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
     buildBufferData(stagePass, sceneRenderState, *params._camera, passData.sortedQueues, refresh, bufferInOut);
 }
 
-void RenderPassManager::prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::prepareRenderQueues(const RenderStagePass& stagePass, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, RenderingOrder renderOrder) {
     OPTICK_EVENT();
-    const RenderStagePass& stagePass = params._stagePass;
 
     RenderQueue& queue = getQueue();
     queue.refresh(stagePass._stage);
@@ -533,7 +534,7 @@ void RenderPassManager::prepareRenderQueues(const PassParams& params, const Visi
         queue.addNodeToQueue(*node._node, stagePass, node._distanceToCameraSq);
     }
     // Sort all bins
-    queue.sort(stagePass);
+    queue.sort(stagePass, renderOrder);
     
     vectorEASTLFast<RenderPackage*>& packageQueue = _renderQueues[to_base(stagePass._stage)];
     packageQueue.resize(0);
@@ -547,8 +548,6 @@ void RenderPassManager::prepareRenderQueues(const PassParams& params, const Visi
         const bool oitPass = stagePass._passType == RenderPassType::OIT_PASS;
         queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_TRANSLUCENT, oitPass), packageQueue);
     }
-
-    buildDrawCommands(params, refreshNodeData, bufferInOut);
 }
 
 bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -567,7 +566,8 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         beginDebugScopeCmd._scopeName = " - PrePass";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-        prepareRenderQueues(params, nodes, true, bufferInOut);
+        prepareRenderQueues(params._stagePass, nodes, true, bufferInOut);
+        buildDrawCommands(params, true, bufferInOut);
 
         RTDrawDescriptor normalsAndDepthPolicy = {};
         normalsAndDepthPolicy.drawMask().disableAll();
@@ -576,7 +576,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
 
         if (params._bindTargets) {
-            GFX::BeginRenderPassCommand beginRenderPassCommand;
+            GFX::BeginRenderPassCommand beginRenderPassCommand = {};
             beginRenderPassCommand._target = params._target;
             beginRenderPassCommand._descriptor = normalsAndDepthPolicy;
             beginRenderPassCommand._name = "DO_PRE_PASS";
@@ -610,51 +610,51 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
 
     assert(stagePass._passType == RenderPassType::PRE_PASS);
 
-    if (targetDepthBuffer._usage != RenderTargetUsage::COUNT) {
+    //No HiZ
+    if (targetDepthBuffer._usage == RenderTargetUsage::COUNT) {
+        return false;
+    }
 
-        // Update HiZ Target
-        const Texture_ptr& HiZTex = _context.constructHIZ(sourceDepthBuffer, targetDepthBuffer, bufferInOut);
+    // Update HiZ Target
+    const Texture_ptr& HiZTex = _context.constructHIZ(sourceDepthBuffer, targetDepthBuffer, bufferInOut);
 
-        // ToDo: This should not be needed as we unbind the render target before we dispatch the compute task anyway.
-        // See if we can remove this -Ionut
-        GFX::MemoryBarrierCommand memCmd = {};
-        memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET) | 
-                              to_base(MemoryBarrierType::TEXTURE_FETCH) | 
-                              to_base(MemoryBarrierType::TEXTURE_BARRIER);
+    // ToDo: This should not be needed as we unbind the render target before we dispatch the compute task anyway.
+    // See if we can remove this -Ionut
+    GFX::MemoryBarrierCommand memCmd = {};
+    memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET) | 
+                            to_base(MemoryBarrierType::TEXTURE_FETCH) | 
+                            to_base(MemoryBarrierType::TEXTURE_BARRIER);
+    GFX::EnqueueCommand(bufferInOut, memCmd);
+
+    // Run occlusion culling CS
+    const RenderPass::BufferData& bufferData = getBufferData(stagePass);
+    _context.occlusionCull(bufferData, HiZTex, camera, bufferInOut);
+
+    // Occlusion culling barrier
+    memCmd._barrierMask = to_base(MemoryBarrierType::COMMAND_BUFFER) | //For rendering
+                            to_base(MemoryBarrierType::SHADER_STORAGE);  //For updating later on
+
+    if (bufferData._cullCounter != nullptr) {
+        memCmd._barrierMask |= to_base(MemoryBarrierType::ATOMIC_COUNTER);
         GFX::EnqueueCommand(bufferInOut, memCmd);
 
-        // Run occlusion culling CS
-        const RenderPass::BufferData& bufferData = getBufferData(stagePass);
-        _context.occlusionCull(bufferData, HiZTex, camera, bufferInOut);
+        _context.updateCullCount(bufferData, bufferInOut);
 
-        // Occlusion culling barrier
-        memCmd._barrierMask = to_base(MemoryBarrierType::COMMAND_BUFFER) | //For rendering
-                              to_base(MemoryBarrierType::SHADER_STORAGE);  //For updating later on
+        bufferData._cullCounter->incQueue();
 
-        if (bufferData._cullCounter != nullptr) {
-            memCmd._barrierMask |= to_base(MemoryBarrierType::ATOMIC_COUNTER);
-            GFX::EnqueueCommand(bufferInOut, memCmd);
-
-            _context.updateCullCount(bufferData, bufferInOut);
-
-            bufferData._cullCounter->incQueue();
-
-            GFX::ClearBufferDataCommand clearAtomicCounter;
-            clearAtomicCounter._buffer = bufferData._cullCounter;
-            clearAtomicCounter._offsetElementCount = 0;
-            clearAtomicCounter._elementCount = 1;
-            GFX::EnqueueCommand(bufferInOut, clearAtomicCounter);
-        } else {
-            GFX::EnqueueCommand(bufferInOut, memCmd);
-        }
-
-        return true;
+        GFX::ClearBufferDataCommand clearAtomicCounter = {};
+        clearAtomicCounter._buffer = bufferData._cullCounter;
+        clearAtomicCounter._offsetElementCount = 0;
+        clearAtomicCounter._elementCount = 1;
+        GFX::EnqueueCommand(bufferInOut, clearAtomicCounter);
+    } else {
+        GFX::EnqueueCommand(bufferInOut, memCmd);
     }
-     
-    return false; // no HIZ!
+
+    return true;
 }
 
-void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, vec2<bool> extraTargets, RenderTarget& target, bool prePassExecuted, bool hasHiZ, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams& params, ExtraTargetFlags extraTargets, RenderTarget& target, bool prePassExecuted, bool hasHiZ, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     const RenderStagePass& stagePass = params._stagePass;
@@ -665,7 +665,8 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
     beginDebugScopeCmd._scopeName = " - MainPass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    prepareRenderQueues(params, nodes, !prePassExecuted, bufferInOut);
+    prepareRenderQueues(stagePass, nodes, !prePassExecuted, bufferInOut);
+    buildDrawCommands(params, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
         SceneManager& sceneManager = parent().sceneManager();
@@ -689,8 +690,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
         Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, hizTex, bufferInOut);
 
-        const bool hasNormalsTarget = extraTargets.x;
-        const bool hasLightingTarget = extraTargets.y;
+        const auto[hasNormalsTarget, hasLightingTarget] = extraTargets;
 
         if (params._bindTargets) {
             // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
@@ -718,7 +718,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
                 descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::GBUFFER_EXTRA));
             }
 
-            GFX::BeginRenderPassCommand beginRenderPassCommand;
+            GFX::BeginRenderPassCommand beginRenderPassCommand = {};
             beginRenderPassCommand._target = params._target;
             beginRenderPassCommand._descriptor = drawPolicy;
             beginRenderPassCommand._name = "DO_MAIN_PASS";
@@ -746,14 +746,13 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 }
 
 void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
-    OPTICK_EVENT();
-
     const bool isMSAATarget = params._targetOIT._usage == RenderTargetUsage::OIT_MS;
 
     const RenderStagePass& stagePass = params._stagePass;
     assert(stagePass._passType == RenderPassType::OIT_PASS);
 
-    prepareRenderQueues(params, nodes, false, bufferInOut);
+    prepareRenderQueues(stagePass, nodes, false, bufferInOut);
+    buildDrawCommands(params, false, bufferInOut);
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 2;
@@ -804,7 +803,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
 
         GFX::EndRenderPassCommand endRenderPassCmd = {};
         endRenderPassCmd._setDefaultRTState = isMSAATarget; // We're gonna do a new bind soon enough
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
         if (isMSAATarget) {
             // Blit OIT_MS to OIT
@@ -825,7 +824,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         // Don't clear depth & colours and do not write to the depth buffer
         GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
 
-        GFX::BeginRenderPassCommand beginRenderPassCompCmd;
+        GFX::BeginRenderPassCommand beginRenderPassCompCmd = {};
         beginRenderPassCompCmd._name = "DO_OIT_PASS_2";
         beginRenderPassCompCmd._target = params._target;
         beginRenderPassCompCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
@@ -868,6 +867,51 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
+void RenderPassManager::transparencyPass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
+    if (params._stagePass._stage == RenderStage::SHADOW) {
+        return;
+    }
+
+    if (params._stagePass._passType == RenderPassType::OIT_PASS) {
+        woitPass(nodes, params, target, bufferInOut);
+    } else {
+        assert(params._stagePass._passType == RenderPassType::MAIN_PASS);
+
+        //Grab all transparent geometry
+        RenderStagePass tempStagePass = params._stagePass;
+        tempStagePass._passType = RenderPassType::OIT_PASS;
+        prepareRenderQueues(tempStagePass, nodes, false, bufferInOut, RenderingOrder::BACK_TO_FRONT);
+        buildDrawCommands(params, false, bufferInOut);
+
+        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+        beginDebugScopeCmd._scopeID = 2;
+        beginDebugScopeCmd._scopeName = " - Transparency Pass";
+        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+
+        if (renderQueueSize(tempStagePass._stage) > 0) {
+            GFX::BeginRenderPassCommand beginRenderPassTransparentCmd = {};
+            beginRenderPassTransparentCmd._name = "DO_TRANSPARENCY_PASS";
+            beginRenderPassTransparentCmd._target = params._target;
+            {
+                RTBlendState& state0 = beginRenderPassTransparentCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::ALBEDO));
+                state0._blendProperties._enabled = true;
+                state0._blendProperties._blendSrc = BlendProperty::SRC_ALPHA;
+                state0._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
+                state0._blendProperties._blendOp = BlendOperation::ADD;
+            }
+            beginRenderPassTransparentCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+            GFX::EnqueueCommand(bufferInOut, beginRenderPassTransparentCmd);
+
+            renderQueueToSubPasses(params._stagePass._stage, bufferInOut/*, quality*/);
+
+            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        }
+
+        GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    }
+}
+
 void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
@@ -880,16 +924,13 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
     Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), stage, *params._camera);
 
-    // Cull the scene and grab the visible nodes
-    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents);
-
     // Tell the Rendering API to draw from our desired PoV
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ params._camera->snapshot() });
     GFX::EnqueueCommand(bufferInOut, GFX::SetClipPlanesCommand{ params._clippingPlanes });
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
 
-    const vec2<bool> extraTargets = {
+    const std::pair<bool, bool> extraTargets = {
         target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)),
         target.hasAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA))
     };
@@ -910,8 +951,13 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
-    params._stagePass._passType = RenderPassType::PRE_PASS;
-    const bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
+    // Cull the scene and grab the visible nodes
+    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents);
+
+#   pragma region PRE_PASS
+        params._stagePass._passType = RenderPassType::PRE_PASS;
+        const bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);
+#   pragma endregion
 
     // If we rendered to the multisampled screen target, we can now copy the g-buffer data to our regular buffer as we are done with it at this point
     RenderTargetID sourceID = params._target;
@@ -935,21 +981,30 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
         sourceID = targetID;
     }
 
-    const bool hasHiZ = prePassExecuted && 
-                        occlusionPass(visibleNodes, params._stagePass, *params._camera, sourceID, params._targetHIZ, bufferInOut);
+#   pragma region HI_Z
+        const bool hasHiZ = prePassExecuted && 
+                            occlusionPass(visibleNodes, params._stagePass, *params._camera, sourceID, params._targetHIZ, bufferInOut);
+#   pragma endregion
 
     if (stage == RenderStage::DISPLAY) {
         //ToDo: Might be worth having pre-pass operations per render stage, but currently, only the main pass needs SSAO, bloom and so forth
         _context.getRenderer().postFX().prepare(*params._camera, bufferInOut);
     }
 
-    params._stagePass._passType = RenderPassType::MAIN_PASS;
-    mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, hasHiZ, bufferInOut);
+#   pragma region MAIN_PASS
+        params._stagePass._passType = RenderPassType::MAIN_PASS;
+        mainPass(visibleNodes, params, extraTargets, target, prePassExecuted, hasHiZ, bufferInOut);
+#   pragma endregion
 
+#   pragma region TRANSPARENCY_PASS
     if (params._targetOIT._usage != RenderTargetUsage::COUNT) {
         params._stagePass._passType = RenderPassType::OIT_PASS;
-        woitPass(visibleNodes, params, target, bufferInOut);
+    } else {
+        // Use forward pass shaders
+        params._stagePass._passType = RenderPassType::MAIN_PASS;
     }
+    transparencyPass(visibleNodes, params, target, bufferInOut);
+#   pragma endregion
 
     // If we rendered to the multisampled screen target, we can now copy the colour to our regular buffer as we are done with it at this point
     if (params._target._usage == RenderTargetUsage::SCREEN_MS) {

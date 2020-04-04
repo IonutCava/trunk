@@ -81,7 +81,8 @@ RenderingOrder RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinTyp
             sortOrder = RenderingOrder::WATER_FIRST;
         } break;
         case RenderBinType::RBT_TRANSLUCENT: {
-             // We are using weighted blended OIT. State is fine (and faster)
+            // We are using weighted blended OIT. State is fine (and faster)
+            // Use an override one level up from this if we need a regular forward-style pass
             sortOrder = RenderingOrder::BY_STATE;
         } break;
         default: {
@@ -161,9 +162,10 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stag
 
 void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTLFast<RenderPackage*>& queueInOut) {
     OPTICK_EVENT();
+    auto [binType, includeBin] = binAndFlag;
 
-    if (binAndFlag.first._value == RenderBinType::RBT_COUNT) {
-        if (!binAndFlag.second) {
+    if (binType._value == RenderBinType::RBT_COUNT) {
+        if (!includeBin) {
             // Why are we allowed to exclude everything? idk.
             return;
         }
@@ -174,7 +176,7 @@ void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<Rend
     } else {
         // Everything except the specified type or just the specified type
         for (RenderBin* renderBin : _renderBins) {
-            if ((renderBin->getType() == binAndFlag.first) == binAndFlag.second) {
+            if ((renderBin->getType() == binType) == includeBin) {
                 renderBin->populateRenderQueue(stagePass, queueInOut);
             }
         }
@@ -187,7 +189,7 @@ void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePas
     }
 }
 
-void RenderQueue::sort(RenderStagePass stagePass) {
+void RenderQueue::sort(RenderStagePass stagePass, RenderingOrder renderOrder) {
 
     OPTICK_EVENT();
     // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
@@ -197,7 +199,7 @@ void RenderQueue::sort(RenderStagePass stagePass) {
     Task* sortTask = CreateTask(pool, DELEGATE<void, Task&>());
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin->getBinSize(stagePass._stage) > threadBias) {
-            RenderingOrder sortOrder = getSortOrder(stagePass, renderBin->getType());
+            const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
             Start(*CreateTask(pool,
                                 sortTask,
                                 [renderBin, sortOrder, stagePass](const Task& parentTask) {
@@ -210,7 +212,8 @@ void RenderQueue::sort(RenderStagePass stagePass) {
 
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin->getBinSize(stagePass._stage) <= threadBias) {
-            renderBin->sort(stagePass._stage, getSortOrder(stagePass, renderBin->getType()));
+            const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
+            renderBin->sort(stagePass._stage, sortOrder);
         }
     }
 
@@ -223,10 +226,10 @@ void RenderQueue::refresh(RenderStage stage) {
     }
 }
 
-void RenderQueue::getSortedQueues(RenderStage stage, RenderPassType passType, RenderBin::SortedQueues& queuesOut, U16& countOut) const {
+void RenderQueue::getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut, U16& countOut) const {
     OPTICK_EVENT();
 
-    if (passType == RenderPassType::PRE_PASS) {
+    if (isPrePass) {
         constexpr RenderBinType rbTypes[] = {
             RenderBinType::RBT_OPAQUE,
             RenderBinType::RBT_IMPOSTOR,

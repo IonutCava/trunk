@@ -216,8 +216,8 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
 
     RenderPassManager::PassParams params = {};
     params._sourceNode = &renderParams._sgn;
-    params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
-    params._targetOIT = RenderTargetID(RenderTargetUsage::OIT_REFLECT);
+    params._targetHIZ = {}; // We don't need to HiZ cull refractions
+    params._targetOIT = {}; // We don't need to draw refracted transparents using woit 
     params._camera = renderParams._camera;
     params._minExtents.set(0.75f);
     params._stagePass = { RenderStage::REFRACTION, RenderPassType::COUNT, 0u, renderParams._passIndex };

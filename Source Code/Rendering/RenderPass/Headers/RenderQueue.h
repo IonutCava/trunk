@@ -56,7 +56,7 @@ class RenderQueue : public KernelComponent {
     void populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTLFast<RenderPackage*>& queueInOut);
 
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
-    void sort(RenderStagePass stagePass);
+    void sort(RenderStagePass stagePass, RenderingOrder renderOrder = RenderingOrder::COUNT);
     void refresh(RenderStage stage);
     void addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, F32 minDistToCameraSq);
     U16 getRenderQueueStackSize(RenderStage stage) const;
@@ -73,7 +73,7 @@ class RenderQueue : public KernelComponent {
         return _renderBins;
     }
 
-    void getSortedQueues(RenderStage stage, RenderPassType passType, RenderBin::SortedQueues& queuesOut, U16& countOut) const;
+    void getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut, U16& countOut) const;
 
   private:
 

@@ -18,7 +18,7 @@ namespace {
     constexpr U32 AVERAGE_BIN_SIZE = 127;
 
     auto RenderQueueDistanceBackToFront = [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
-        return a._distanceToCameraSq > b._distanceToCameraSq;
+        return a._distanceToCameraSq >= b._distanceToCameraSq;
     };
 
     auto RenderQueueDistanceFrontToBack = [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
