@@ -5,8 +5,7 @@
 namespace Divide {
 
 glHardwareQueryPool::glHardwareQueryPool(GFXDevice& context)
-    : _context(context),
-      _index(0)
+    : _context(context)
 {
 }
 
@@ -15,27 +14,37 @@ glHardwareQueryPool::~glHardwareQueryPool()
     destroy();
 }
 
-void glHardwareQueryPool::init(U32 size) {
+void glHardwareQueryPool::init(const hashMap<GLenum, U32>& sizes) {
     destroy();
-    const U32 j = std::max(size, 1u);
-    for (U32 i = 0; i < j; ++i) {
-        _queryPool.emplace_back(MemoryManager_NEW glHardwareQueryRing(_context, 1, i));
+    for (auto [type, size] : sizes) {
+        const U32 j = std::max(size, 1u);
+        _index[type] = 0;
+        auto& pool = _queryPool[type];
+        for (U32 i = 0; i < j; ++i) {
+            pool.emplace_back(MemoryManager_NEW glHardwareQueryRing(_context, type, 1, i));
+        }
     }
 }
 
 void glHardwareQueryPool::destroy() {
-    MemoryManager::DELETE_CONTAINER(_queryPool);
+    for (auto& [type, container] : _queryPool) {
+        MemoryManager::DELETE_CONTAINER(container);
+    }
+    _queryPool.clear();
 }
 
-glHardwareQueryRing& glHardwareQueryPool::allocate() {
-    return *_queryPool[++_index];
+glHardwareQueryRing& glHardwareQueryPool::allocate(GLenum queryType) {
+    return *_queryPool[queryType][++_index[queryType]];
 }
 
 void glHardwareQueryPool::deallocate(glHardwareQueryRing& query) {
-    for (U32 i = 0; i < _index; ++i) {
-        if (_queryPool[i]->id() == query.id()) {
-            std::swap(_queryPool[i], _queryPool[_index - 1]);
-            --_index;
+    GLenum type = query.type();
+    U32& index = _index[type];
+    auto& pool = _queryPool[type];
+    for (U32 i = 0; i < index; ++i) {
+        if (pool[i]->id() == query.id()) {
+            std::swap(pool[i], pool[index - 1]);
+            --index;
             return;
         }
     }

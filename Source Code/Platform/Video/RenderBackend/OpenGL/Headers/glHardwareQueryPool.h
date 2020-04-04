@@ -42,15 +42,16 @@ public:
     glHardwareQueryPool(GFXDevice& context);
     ~glHardwareQueryPool();
 
-    void init(U32 size);
+    void init(const hashMap<GLenum, U32>& sizes);
     void destroy();
 
-    glHardwareQueryRing& allocate();
+    glHardwareQueryRing& allocate(GLenum queryType);
     void deallocate(glHardwareQueryRing& query);
 
 private:
-    vectorSTD<glHardwareQueryRing*> _queryPool;
-    U32 _index;
+    hashMap<GLenum, vectorSTD<glHardwareQueryRing*>> _queryPool;
+    hashMap<GLenum, U32> _index;
+
     GFXDevice& _context;
 };
 

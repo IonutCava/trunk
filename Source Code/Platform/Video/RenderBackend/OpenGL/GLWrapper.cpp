@@ -105,8 +105,7 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 
     // Start a duration query in debug builds
     if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
-        const GLuint writeQuery = _elapsedTimeQuery->writeQuery().getID();
-        glBeginQuery(GL_TIME_ELAPSED, writeQuery);
+        _elapsedTimeQuery->begin();
     }
 
     GLStateTracker& stateTracker = getStateTracker();
@@ -153,7 +152,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
 
     // End the timing query started in beginFrame() in debug builds
     if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
-        glEndQuery(GL_TIME_ELAPSED);
+        _elapsedTimeQuery->end();
     }
     // Swap buffers
     {
@@ -183,20 +182,11 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
 
     if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
         // The returned results are 'g_performanceQueryRingLength - 1' frames old!
-        const GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
-        GLint available = 0;
-        glGetQueryObjectiv(readQuery, GL_QUERY_RESULT_AVAILABLE, &available);
-
-        if (available) {
-            GLuint time = 0;
-            glGetQueryObjectuiv(readQuery, GL_QUERY_RESULT, &time);
-            FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
-        }
-
+        const I64 time = _elapsedTimeQuery->getResultNoWait();
+        FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
         _elapsedTimeQuery->incQueue();
 
         g_frameTimeRequested = false;
-
     }
 }
 

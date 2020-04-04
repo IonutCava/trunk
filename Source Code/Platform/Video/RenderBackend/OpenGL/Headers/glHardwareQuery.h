@@ -45,38 +45,59 @@ public:
     explicit glHardwareQuery(GFXDevice& context);
     ~glHardwareQuery();
 
-    void create();
+    void create(GLenum queryType);
     void destroy();
 
-    inline U32 getID() const { return _queryID; }
-    inline bool enabled() const { return _enabled; }
-    inline void enabled(bool state) { _enabled = state; }
+    bool isResultAvailable() const;
+    I64 getResult() const;
+    I64 getResultNoWait() const;
+
+    inline U32 getID() const noexcept { return _queryID; }
+    inline bool enabled() const noexcept { return _enabled; }
+    inline void enabled(bool state) noexcept { _enabled = state; }
 
 protected:
-    bool _enabled;
-    U32 _queryID;
+    bool _enabled = true;
+    U32 _queryID = 0u;
 };
 
 class glHardwareQueryRing : public RingBufferSeparateWrite {
 
 public:
-    glHardwareQueryRing(GFXDevice& context, U32 queueLength, U32 id = 0);
+    glHardwareQueryRing(GFXDevice& context, GLenum queryType, U32 queueLength, U32 id = 0);
     ~glHardwareQueryRing();
-
-    glHardwareQuery& readQuery();
-    glHardwareQuery& writeQuery();
 
     void resize(I32 queueLength) noexcept override;
 
     inline U32 id() const noexcept { return _id; }
 
-    void onBeginFrame();
-    void onEndFrame();
+    void begin() const;
+    void end() const;
+
+    inline bool isResultAvailable() const {
+        return readQuery().isResultAvailable();
+    }
+
+    inline I64 getResult() const {
+        return readQuery().getResult();
+    }
+
+    inline I64 getResultNoWait() const {
+        return readQuery().getResultNoWait();
+    }
+
+    inline GLenum type() const {
+        return _queryType;
+    }
+protected:
+    const glHardwareQuery& readQuery() const;
+    const glHardwareQuery& writeQuery() const;
 
 protected:
-    U32 _id = 0;
     GFXDevice& _context;
     vectorSTD<glHardwareQuery> _queries;
+    U32 _id = 0u;
+    GLenum _queryType = GL_NONE;
 };
 
 };

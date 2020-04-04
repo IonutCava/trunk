@@ -35,7 +35,6 @@
 namespace Divide {
 namespace {
     const U32 g_maxVAOS = 512u;
-    const U32 g_maxQueryRings = 64;
 
     class ContextPool {
     public:
@@ -319,17 +318,17 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
     }
 
-    vectorEASTL<std::pair<GLenum, U32>> poolSizes = {
-        {GL_NONE, 256}, //Generic texture handles (created with glGen instead of glCreate)
-        {GL_TEXTURE_2D, 1024}, //Used by most renderable items
-        {GL_TEXTURE_2D_ARRAY, 256}, //Used mainly by shadow maps and some materials
-        {GL_TEXTURE_2D_MULTISAMPLE, 128}, //Used by render tartgets
-        {GL_TEXTURE_CUBE_MAP, 64}, //Used for reflections and environment probes
-        {GL_TEXTURE_2D_MULTISAMPLE_ARRAY, 16}, //Used by the CSM system mostly
-        {GL_TEXTURE_3D, 8} //Will eventually be usefull for volumetric stuff
-    };
-
-    s_texturePool.init(poolSizes);
+    s_texturePool.init(
+        {
+            {GL_NONE, 256}, //Generic texture handles (created with glGen instead of glCreate)
+            {GL_TEXTURE_2D, 1024}, //Used by most renderable items
+            {GL_TEXTURE_2D_ARRAY, 256}, //Used mainly by shadow maps and some materials
+            {GL_TEXTURE_2D_MULTISAMPLE, 128}, //Used by render tartgets
+            {GL_TEXTURE_CUBE_MAP, 64}, //Used for reflections and environment probes
+            {GL_TEXTURE_2D_MULTISAMPLE_ARRAY, 16}, //Used by the CSM system mostly
+            {GL_TEXTURE_3D, 8} //Will eventually be usefull for volumetric stuff
+        }
+    );
 
     // Prepare font rendering subsystem
     if (!createFonsContext()) {
@@ -341,8 +340,23 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     NS_GLIM::glim.SetVertexAttribLocation(to_base(AttribLocation::POSITION));
     // Initialize our VAO pool
     GL_API::s_vaoPool.init(g_maxVAOS);
+
     // Initialize our query pool
-    GL_API::s_hardwareQueryPool->init(g_maxQueryRings);
+    GL_API::s_hardwareQueryPool->init(
+        {
+            { GL_TIME_ELAPSED, 9 },
+            { GL_TRANSFORM_FEEDBACK_OVERFLOW, 6 },
+            { GL_VERTICES_SUBMITTED, 6 },
+            { GL_PRIMITIVES_SUBMITTED, 6 },
+            { GL_VERTEX_SHADER_INVOCATIONS, 6 },
+            { GL_SAMPLES_PASSED, 6 },
+            { GL_ANY_SAMPLES_PASSED, 6 },
+            { GL_PRIMITIVES_GENERATED, 6 },
+            { GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, 6 },
+            { GL_ANY_SAMPLES_PASSED_CONSERVATIVE, 6 },
+        }
+    );
+
     // Initialize shader buffers
     glUniformBuffer::onGLInit();
     // Init static program data
@@ -360,7 +374,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                  DefaultColours::DIVIDE_BLUE.b,
                  DefaultColours::DIVIDE_BLUE.a);
 
-    _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(_context, 6);
+    _elapsedTimeQuery = std::make_unique<glHardwareQueryRing>(_context, GL_TIME_ELAPSED, 6);
 
     // Prepare shader headers and various shader related states
     glShaderProgram::initStaticData();

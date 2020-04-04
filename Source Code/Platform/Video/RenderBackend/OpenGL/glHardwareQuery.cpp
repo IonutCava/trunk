@@ -17,7 +17,7 @@ glHardwareQuery::~glHardwareQuery()
     assert(_queryID == 0u);
 }
 
-void glHardwareQuery::create() {
+void glHardwareQuery::create(GLenum queryType) {
     destroy();
     glGenQueries(1, &_queryID);
 }
@@ -29,10 +29,29 @@ void glHardwareQuery::destroy() {
     _queryID = 0u;
 }
 
-glHardwareQueryRing::glHardwareQueryRing(GFXDevice& context, U32 queueLength, U32 id)
+bool glHardwareQuery::isResultAvailable() const {
+    GLint available = 0;
+    glGetQueryObjectiv(getID(), GL_QUERY_RESULT_AVAILABLE, &available);
+    return available != 0;
+}
+
+I64 glHardwareQuery::getResult() const {
+    GLint64 res = 0;
+    glGetQueryObjecti64v(getID(), GL_QUERY_RESULT, &res);
+    return res;
+}
+
+I64 glHardwareQuery::getResultNoWait() const {
+    GLint64 res = 0;
+    glGetQueryObjecti64v(getID(), GL_QUERY_RESULT_NO_WAIT, &res);
+    return res;
+}
+
+glHardwareQueryRing::glHardwareQueryRing(GFXDevice& context, GLenum queryType, U32 queueLength, U32 id)
     : RingBufferSeparateWrite(queueLength, true),
       _context(context),
-      _id(id)
+      _id(id),
+      _queryType(queryType)
 {
     _queries.reserve(queueLength);
     resize(queueLength);
@@ -46,11 +65,11 @@ glHardwareQueryRing::~glHardwareQueryRing()
     _queries.clear();
 }
 
-glHardwareQuery& glHardwareQueryRing::readQuery() {
+const glHardwareQuery& glHardwareQueryRing::readQuery() const {
     return _queries[queueReadIndex()];
 }
 
-glHardwareQuery& glHardwareQueryRing::writeQuery() {
+const glHardwareQuery& glHardwareQueryRing::writeQuery() const {
     return _queries[queueWriteIndex()];
 }
 
@@ -68,9 +87,21 @@ void glHardwareQueryRing::resize(I32 queueLength) noexcept {
 
         for (I32 i = 0; i < countToAdd; ++i) {
             _queries.emplace_back(_context);
-            _queries.back().create();
+            _queries.back().create(_queryType);
+
+            //Prime the query
+            glBeginQuery(_queryType, _queries.back().getID());
+            glEndQuery(_queryType);
         }
     }
 }
 
+
+void glHardwareQueryRing::begin() const {
+    glBeginQuery(_queryType, writeQuery().getID());
+}
+
+void glHardwareQueryRing::end() const {
+    glEndQuery(_queryType);
+}
 }; //namespace Divide

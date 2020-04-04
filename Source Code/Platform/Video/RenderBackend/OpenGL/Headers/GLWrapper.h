@@ -238,7 +238,7 @@ private:
     static bool s_glFlushQueued;
     static bool s_enabledDebugMSGGroups;
     /// Hardware query objects used for performance measurements
-    std::shared_ptr<glHardwareQueryRing> _elapsedTimeQuery;
+    std::unique_ptr<glHardwareQueryRing> _elapsedTimeQuery;
 
     /// Duration in milliseconds to render a frame
     F32 FRAME_DURATION_GPU;

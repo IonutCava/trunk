@@ -471,16 +471,16 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         glHardwareQueryRing* anySamplesQuery = nullptr;
 
         if (isEnabledOption(drawCommand, CmdRenderOptions::QUERY_PRIMITIVE_COUNT)) {
-            primitiveQuery = &GL_API::s_hardwareQueryPool->allocate();
-            glBeginQuery(GL_PRIMITIVES_GENERATED, primitiveQuery->writeQuery().getID());
+            primitiveQuery = &GL_API::s_hardwareQueryPool->allocate(GL_PRIMITIVES_GENERATED);
+            primitiveQuery->begin();
         }
         if (isEnabledOption(drawCommand, CmdRenderOptions::QUERY_SAMPLE_COUNT)) {
-            sampleCountQuery = &GL_API::s_hardwareQueryPool->allocate();
-            glBeginQuery(GL_SAMPLES_PASSED, sampleCountQuery->writeQuery().getID());
+            sampleCountQuery = &GL_API::s_hardwareQueryPool->allocate(GL_SAMPLES_PASSED);
+            sampleCountQuery->begin();
         }
         if (isEnabledOption(drawCommand, CmdRenderOptions::QUERY_ANY_SAMPLE_RENDERED)) {
-            anySamplesQuery = &GL_API::s_hardwareQueryPool->allocate();
-            glBeginQuery(GL_ANY_SAMPLES_PASSED, anySamplesQuery->writeQuery().getID());
+            anySamplesQuery = &GL_API::s_hardwareQueryPool->allocate(GL_ANY_SAMPLES_PASSED);
+            anySamplesQuery->begin();
         }
 
         //----- DRAW ------
@@ -489,24 +489,15 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 
         if (primitiveQuery != nullptr) {
             U64& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._id]._primitivesGenerated;
-            glEndQuery(GL_PRIMITIVES_GENERATED);
-            glGetQueryObjectui64v(primitiveQuery->readQuery().getID(),
-                                  GL_QUERY_RESULT,
-                                  &result);
+            result = to_U64(primitiveQuery->getResultNoWait());
         }
         if (sampleCountQuery != nullptr) {
             U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._id]._samplesPassed;
-            glEndQuery(GL_PRIMITIVES_GENERATED);
-            glGetQueryObjectuiv(sampleCountQuery->readQuery().getID(),
-                                GL_QUERY_RESULT,
-                                &result);
+            result = to_U32(sampleCountQuery->getResultNoWait());
         }
         if (anySamplesQuery != nullptr) {
             U32& result = GenericDrawCommandResults::g_queryResults[drawCommand._sourceBuffer._id]._anySamplesPassed;
-            glEndQuery(GL_PRIMITIVES_GENERATED);
-            glGetQueryObjectuiv(anySamplesQuery->readQuery().getID(),
-                                GL_QUERY_RESULT,
-                                &result);
+            result = to_U32(anySamplesQuery->getResultNoWait());
         }
     }
 
