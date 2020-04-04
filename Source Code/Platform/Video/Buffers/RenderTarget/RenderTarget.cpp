@@ -12,10 +12,6 @@ RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& des
      _descriptor(descriptor),
      _colourAttachmentCount(0)
 {
-    if (Config::Profile::USE_2x2_TEXTURES) {
-        _descriptor._resolution.set(2u);
-    }
-
     for (U8 i = 0; i < descriptor._attachmentCount; ++i) {
         if (descriptor._attachments[i]._type == RTAttachmentType::Colour) {
             ++_colourAttachmentCount;

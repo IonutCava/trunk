@@ -99,12 +99,12 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     {
         // MSAA rendering is supported
         TextureDescriptor colourDescriptor(TextureType::TEXTURE_2D_ARRAY_MS, texDescriptor.baseFormat(), texDescriptor.dataType());
-        colourDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+        colourDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         colourDescriptor.samplerDescriptor(sampler);
         colourDescriptor.msaaSamples(g_shadowSettings.MSAAsamples);
 
         TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-        depthDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+        depthDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         depthDescriptor.samplerDescriptor(sampler);
         depthDescriptor.msaaSamples(g_shadowSettings.MSAAsamples);
 
@@ -125,7 +125,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     //Blur FBO
     {
         TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY, texDescriptor.baseFormat(), texDescriptor.dataType());
-        blurMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+        blurMapDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         blurMapDescriptor.samplerDescriptor(sampler);
 
         vectorSTD<RTAttachmentDescriptor> att = {

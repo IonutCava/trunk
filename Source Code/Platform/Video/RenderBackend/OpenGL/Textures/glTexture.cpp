@@ -213,13 +213,9 @@ void glTexture::loadData(const TextureLoadInfo& info,
     // This should never be called for compressed textures                            
     assert(!_descriptor.compressed());
     if (info._layerIndex == 0) {
-        if (Config::Profile::USE_2x2_TEXTURES) {
-            _width = _height = 2;
-        } else {
-            _width = dimensions.width;
-            _height = dimensions.height;
-        }
-
+        _width = dimensions.width;
+        _height = dimensions.height;
+ 
         validateDescriptor();
         setMipRangeInternal(_descriptor.mipLevels().min, _descriptor.mipLevels().max);
 
@@ -248,12 +244,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
 void glTexture::loadData(const TextureLoadInfo& info,
                          const vectorSTD<ImageTools::ImageLayer>& imageLayers) {
     if (info._layerIndex == 0) {
-        if (Config::Profile::USE_2x2_TEXTURES) {
-            _width = _height = 2;
-        } else {
-            _width = imageLayers[0]._dimensions.width;
-            _height = imageLayers[0]._dimensions.height;
-        }
+        _width = imageLayers[0]._dimensions.width;
+        _height = imageLayers[0]._dimensions.height;
 
         assert(_width > 0 && _height > 0);
 

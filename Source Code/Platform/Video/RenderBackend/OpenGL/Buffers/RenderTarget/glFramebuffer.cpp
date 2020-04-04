@@ -18,6 +18,14 @@
 
 namespace Divide {
 
+namespace {
+    FORCE_INLINE bool IsValid(const DepthBlitEntry& entry) {
+        return entry._inputLayer != INVALID_DEPTH_LAYER &&
+               entry._outputLayer != INVALID_DEPTH_LAYER;
+    }
+};
+
+
 bool glFramebuffer::_zWriteEnabled = true;
 
 glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor)
@@ -46,8 +54,6 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
 
     // Everything disabled so that the initial "begin" will override this
     _previousPolicy.drawMask().disableAll();
-
-    _targetColourBuffers.fill(GL_NONE);
     _activeColourBuffers.fill(GL_NONE);
 }
 
@@ -152,16 +158,12 @@ bool glFramebuffer::create() {
     }
     ACKNOWLEDGE_UNUSED(attachmentCountTotal);
 
-    setDefaultState(RTDrawDescriptor());
+    setDefaultState({});
 
     return checkStatus();
 }
 
 bool glFramebuffer::resize(U16 width, U16 height) {
-    if (Config::Profile::USE_2x2_TEXTURES) {
-        width = height = 2u;
-    }
-
     if (getWidth() == width && getHeight() == height) {
         return false;
     }
@@ -171,108 +173,53 @@ bool glFramebuffer::resize(U16 width, U16 height) {
     return create();
 }
 
-void glFramebuffer::fastBlit(GLuint inputFB,
-                             const vec2<GLuint>& inputDim,
-                             const vec2<GLuint>& outputDim,
-                             GLenum colourAttIn,
-                             GLenum colourAttOut,
-                             ClearBufferMask mask)
-{
-    if (colourAttOut != GL_NONE) {
-        glNamedFramebufferDrawBuffer(_framebufferHandle, colourAttOut);
-    }
-    if (colourAttIn != GL_NONE) {
-        glNamedFramebufferReadBuffer(inputFB, colourAttIn);
-    }
+namespace BlitHelpers {
+    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, U16 layer) {
+        const bool layerChanged = att->writeLayer(layer);
+        if (layerChanged || att->numLayers() > 0) {
+            const glFramebuffer::BindingState& state = fbo->getAttachmentState(static_cast<GLenum>(att->binding()));
+            fbo->toggleAttachment(*att, state._attState, att->numLayers() > 0u || layer > 0u);
+        }
+        return att;
+    };
 
-    glBlitNamedFramebuffer(inputFB, _framebufferHandle,
-                           0, 0,
-                           inputDim.w, inputDim.h,
-                           0, 0,
-                           outputDim.w, outputDim.h,
-                           mask,
-                           GL_NEAREST);
+    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const ColourBlitEntry& entry, bool isInput) {
+        return prepareAttachments(fbo, att, isInput ? entry._inputLayer : entry._outputLayer);
+    };
 
-    _context.registerDrawCall();
-}
+    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const DepthBlitEntry& entry, bool isInput) {
+        return prepareAttachments(fbo, att, isInput ? entry._inputLayer : entry._outputLayer);
+    };
 
-void glFramebuffer::blitFrom(const RTBlitParams& params)
-{
+    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, const ColourBlitEntry& entry, bool isInput) {
+        RTAttachment* att = fbo->getAttachmentPtr(RTAttachmentType::Colour, to_U8(entry._inputIndex)).get();
+        return prepareAttachments(fbo, att, entry, isInput);
+    };
+
+    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, const DepthBlitEntry& entry, bool isInput) {
+        RTAttachment* att = fbo->getAttachmentPtr(RTAttachmentType::Depth, 0u).get();
+        return prepareAttachments(fbo, att, entry, isInput);
+    };
+};
+
+void glFramebuffer::blitFrom(const RTBlitParams& params) {
     OPTICK_EVENT();
 
-    if (!params._inputFB || (params._blitColours.empty() && params._blitDepth.empty())) {
+    if (!params._inputFB || (params._blitColours.empty() && !IsValid(params._blitDepth))) {
         return;
     }
 
     glFramebuffer* input = static_cast<glFramebuffer*>(params._inputFB);
-    const vec2<GLuint> inputDim(input->getWidth(), input->getHeight());
-    const vec2<GLuint> outputDim(this->getWidth(), this->getHeight());
+    glFramebuffer* output = this;
+    const vec2<U16>& inputDim = input->_descriptor._resolution;
+    const vec2<U16>& outputDim = output->_descriptor._resolution;
 
-    // This seems hacky but it is the most common blit case so it is a really good idea to add it as a fast path. -Ionut
-    // If we just blit depth, or just the first colour attachment (layer 0) or both colour 0 (layer 0) + depth
-    if (params._blitColours.empty() || (params._blitColours.size() == 1 && params._blitColours.front()._inputLayer == 0)) {
-        ClearBufferMask clearMask = GL_NONE_BIT;
-        const bool setDepthBlitFlag = !params._blitDepth.empty() && hasDepth();
-        if (setDepthBlitFlag) {
-            clearMask = GL_DEPTH_BUFFER_BIT;
-        }
-
-        GLenum colourAttIn = GL_NONE;
-        GLenum colourAttOut = GL_NONE;
-        if (!params._blitColours.empty() && hasColour()) {
-            const ColourBlitEntry& entry = params._blitColours.front();
-
-            clearMask |= GL_COLOR_BUFFER_BIT;
-            colourAttIn = GL_COLOR_ATTACHMENT0 + entry._inputIndex;
-            colourAttOut = GL_COLOR_ATTACHMENT0 + entry._outputIndex;
-
-            RTAttachment* inAtt = input->_attachmentPool->get(RTAttachmentType::Colour, to_U8(entry._inputIndex)).get();
-            RTAttachment* outAtt = this->_attachmentPool->get(RTAttachmentType::Colour, to_U8(entry._outputIndex)).get();
-
-            bool layerChanged = inAtt->writeLayer(entry._inputLayer);
-            if (layerChanged || inAtt->numLayers() > 0) {
-                const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(inAtt->binding()));
-                input->toggleAttachment(*inAtt, inState._attState, inAtt->numLayers() > 0 || entry._inputLayer > 0);
-            }
-
-            layerChanged = outAtt->writeLayer(entry._outputLayer);
-            if (layerChanged || outAtt->numLayers() > 0) {
-                const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(outAtt->binding()));
-                this->toggleAttachment(*outAtt, outState._attState, outAtt->numLayers() > 0 || entry._outputLayer > 0);
-            }
-
-            queueMipMapRecomputation(*outAtt, vec2<U32>(0, entry._outputLayer));
-        }
-
-        GLenum drawBuffer = GL_NONE;
-        bool set = _activeColourBuffers[0] != colourAttOut;
-        if (!set) {
-            for (size_t i = 1; i < _activeColourBuffers.size(); ++i) {
-                if (_activeColourBuffers[i] != GL_NONE) {
-                    set = true;
-                    break;
-                }
-            }
-        }
-        if (set) {
-            drawBuffer = colourAttOut;
-        }
-        GLenum readBuffer = GL_NONE;
-        if (input->_activeReadBuffer != colourAttIn) {
-            input->_activeReadBuffer = colourAttIn;
-            readBuffer = colourAttIn;
-        }
-        fastBlit(input->_framebufferHandle, inputDim, outputDim, readBuffer, drawBuffer, clearMask);
-        
-        return;
-    }
-
-    std::unordered_set<vec_size> blitDepthEntry;
+    bool blittedDepth = false;
     // Multiple attachments, multiple layers, multiple everything ... what a mess ... -Ionut
     if (!params._blitColours.empty() && hasColour()) {
 
         const RTAttachmentPool::PoolEntry& inputAttachments = input->_attachmentPool->get(RTAttachmentType::Colour);
-        const RTAttachmentPool::PoolEntry& outputAttachments = this->_attachmentPool->get(RTAttachmentType::Colour);
+        const RTAttachmentPool::PoolEntry& outputAttachments = output->_attachmentPool->get(RTAttachmentType::Colour);
 
         GLuint prevReadAtt = 0;
         GLuint prevWriteAtt = 0;
@@ -304,107 +251,59 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
                     }
                 }
                 if (set) {
-                    glNamedFramebufferDrawBuffer(this->_framebufferHandle, colourAttOut);
+                    output->_activeColourBuffers.fill(GL_NONE);
+                    output->_activeColourBuffers[0] = colourAttOut;
+                    glNamedFramebufferDrawBuffer(output->_framebufferHandle, colourAttOut);
                 }
 
                 
                 prevWriteAtt = crtWriteAtt;
             }
 
-            bool layerChanged = inAtt->writeLayer(entry._inputLayer);
-            const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(crtReadAtt));
-            if (layerChanged || inAtt->numLayers() > 0) {
-                input->toggleAttachment(*inAtt, inState._attState, inAtt->numLayers() > 0 || entry._inputLayer > 0);
-            }
-
-            layerChanged = outAtt->writeLayer(entry._outputLayer);
-            const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(crtWriteAtt));
-            if (layerChanged || outAtt->numLayers() > 0) {
-                this->toggleAttachment(*outAtt, outState._attState, outAtt->numLayers() > 0 || entry._outputLayer > 0);
-            }
+            BlitHelpers::prepareAttachments(input, inAtt.get(), entry, true);
+            BlitHelpers::prepareAttachments(output, outAtt.get(), entry, false);
 
             // If we change layers, then the depth buffer should match that ... I guess ... this sucks!
             if (input->hasDepth()) {
-                const RTAttachment_ptr& inDepthAtt = input->_attachmentPool->get(RTAttachmentType::Depth, 0);
-                layerChanged = inDepthAtt->writeLayer(entry._inputLayer);
-                const BindingState& inDepthState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
-                if (layerChanged || inDepthAtt->numLayers() > 0) {
-                    input->toggleAttachment(*inDepthAtt, inDepthState._attState, inDepthAtt->numLayers() > 0 || entry._inputLayer > 0);
-                }
+                BlitHelpers::prepareAttachments(input, entry, true);
             }
 
-            if (this->hasDepth()) {
-                const RTAttachment_ptr& outDepthAtt = this->_attachmentPool->get(RTAttachmentType::Depth, 0);
-                layerChanged = outDepthAtt->writeLayer(entry._outputLayer);
-                const BindingState& outDepthState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
-                if (layerChanged || outDepthAtt->numLayers() > 0) {
-                    this->toggleAttachment(*outDepthAtt, outDepthState._attState, outDepthAtt->numLayers() > 0 || entry._outputLayer > 0);
-                }
+            if (output->hasDepth()) {
+                BlitHelpers::prepareAttachments(output, entry, false);
             }
 
-            // We always change depth layers to satisfy whatever f**ked up completion requirements the OpenGL driver has (looking at you Nvidia)
-            bool shouldBlitDepth = false;
-            for (vec_size idx = 0; idx < params._blitDepth.size(); ++idx) {
-                const DepthBlitEntry& depthEntry = params._blitDepth[idx];
-                // MAYBE, we need to blit this combo of depth layers. 
-                if (depthEntry._inputLayer == entry._inputLayer && depthEntry._outputLayer == entry._outputLayer) {
-                    // If so, blit it now and skip it later. Hey ... micro-optimisation here :D
-                    shouldBlitDepth = blitDepthEntry.empty();
-                    blitDepthEntry.insert(idx);
-                    break;
-
-                }
-            }
+            blittedDepth = (!blittedDepth &&
+                            params._blitDepth._inputLayer == entry._inputLayer &&
+                            params._blitDepth._outputLayer == entry._outputLayer);
             
-            glBlitNamedFramebuffer(input->_framebufferHandle, this->_framebufferHandle,
+            glBlitNamedFramebuffer(input->_framebufferHandle,
+                                   output->_framebufferHandle,
                                    0, 0,
                                    inputDim.w, inputDim.h,
                                    0, 0,
                                    outputDim.w, outputDim.h,
-                                   shouldBlitDepth ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT 
-                                                   : GL_COLOR_BUFFER_BIT,
+                                   blittedDepth ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT 
+                                                : GL_COLOR_BUFFER_BIT,
                                    GL_NEAREST);
             _context.registerDrawCall();
-            queueMipMapRecomputation(*outAtt, vec2<U32>(0, entry._outputLayer));
+            queueMipMapRecomputation(*outAtt, 0u, entry._outputLayer);
         }
     }
 
-    if (!params._blitDepth.empty() && hasDepth()) {
-        for (vec_size idx = 0; idx < params._blitDepth.size(); ++idx) {
-            // Already blitted
-            if (blitDepthEntry.find(idx) != std::cend(blitDepthEntry)) {
-                continue;
-            }
+    if (!blittedDepth && hasDepth() && IsValid(params._blitDepth)) {
+                               BlitHelpers::prepareAttachments(input, params._blitDepth, true);
+        RTAttachment* outAtt = BlitHelpers::prepareAttachments(output,  params._blitDepth, false);
 
-            const DepthBlitEntry& entry = params._blitDepth[idx];
-        
-            const RTAttachment_ptr& inDepthAtt = input->_attachmentPool->get(RTAttachmentType::Depth, 0);
-            const RTAttachment_ptr& outDepthAtt = this->_attachmentPool->get(RTAttachmentType::Depth, 0);
-
-            const BindingState& inState = input->getAttachmentState(GL_DEPTH_ATTACHMENT);
-            bool layerChanged = inDepthAtt->writeLayer(entry._inputLayer);
-            if (layerChanged || inDepthAtt->numLayers() > 0) {
-                input->toggleAttachment(*inDepthAtt, inState._attState, inDepthAtt->numLayers() > 0 || entry._inputLayer > 0);
-            }
-            
-
-            const BindingState& outState = this->getAttachmentState(GL_DEPTH_ATTACHMENT);
-            layerChanged = outDepthAtt->writeLayer(entry._outputLayer);
-            if (layerChanged || outDepthAtt->numLayers() > 0) {
-                this->toggleAttachment(*outDepthAtt, outState._attState, outDepthAtt->numLayers() > 0 || entry._outputLayer > 0);
-            }
-            
-
-            glBlitNamedFramebuffer(input->_framebufferHandle, this->_framebufferHandle,
-                                   0, 0,
-                                   inputDim.w, inputDim.h,
-                                   0, 0,
-                                   outputDim.w, outputDim.h,
-                                   GL_DEPTH_BUFFER_BIT,
-                                   GL_NEAREST);
-            _context.registerDrawCall();
-            queueMipMapRecomputation(*outDepthAtt, vec2<U32>(0, entry._outputLayer));
-        }
+        glBlitNamedFramebuffer(input->_framebufferHandle,
+                               output->_framebufferHandle,
+                               0, 0,
+                               inputDim.w, inputDim.h,
+                               0, 0,
+                               outputDim.w, outputDim.h,
+                               GL_DEPTH_BUFFER_BIT,
+                               GL_NEAREST);
+        _context.registerDrawCall();
+        queueMipMapRecomputation(*outAtt, 0u, params._blitDepth._outputLayer);
     }
 }
 
@@ -432,20 +331,26 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTA
     const RTDrawMask& mask = drawPolicy.drawMask();
 
     if (_previousPolicy.drawMask() != mask) {
-        _targetColourBuffers.fill(GL_NONE);
+        bool set = false;
         // handle colour buffers first
         const U8 count = to_U8(std::min(to_size(MAX_RT_COLOUR_ATTACHMENTS), activeAttachments.size()));
-        for (U8 j = 0; j < count; ++j) {
-            const RTAttachment_ptr& colourAtt = activeAttachments[j];
-            _targetColourBuffers[j] =  mask.isEnabled(RTAttachmentType::Colour, j) ? static_cast<GLenum>(colourAtt->binding()) : GL_NONE;
+        for (U8 j = 0; j < MAX_RT_COLOUR_ATTACHMENTS; ++j) {
+            GLenum temp = GL_NONE;
+            if (j < count) {
+                temp = mask.isEnabled(RTAttachmentType::Colour, j) ? static_cast<GLenum>(activeAttachments[j]->binding()) : GL_NONE;
+            }
+            if (_activeColourBuffers[j] != temp) {
+                _activeColourBuffers[j] = temp;
+                set = true;
+            }
         }
 
-        if (_activeColourBuffers != _targetColourBuffers) {
+        if (set) {
             glNamedFramebufferDrawBuffers(_framebufferHandle,
-                                          static_cast<GLsizei>(_targetColourBuffers.size()),
-                                          _targetColourBuffers.data());
-            _activeColourBuffers = _targetColourBuffers;
+                                          MAX_RT_COLOUR_ATTACHMENTS,
+                                          _activeColourBuffers.data());
         }
+
         queueCheckStatus();
 
         const RTAttachment_ptr& depthAtt = _attachmentPool->get(RTAttachmentType::Depth, 0);
@@ -552,17 +457,17 @@ void glFramebuffer::queueMipMapRecomputation() {
     if (hasColour()) {
         const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
         for (const RTAttachment_ptr& att : colourAttachments) {
-            queueMipMapRecomputation(*att, vec2<U32>(0, att->descriptor()._texDescriptor.layerCount()));
+            queueMipMapRecomputation(*att, 0u, att->descriptor()._texDescriptor.layerCount());
         }
     }
 
     if (hasDepth()) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
-        queueMipMapRecomputation(*attDepth, vec2<U32>(0, attDepth->descriptor()._texDescriptor.layerCount()));
+        queueMipMapRecomputation(*attDepth, 0u, attDepth->descriptor()._texDescriptor.layerCount());
     }
 }
 
-void glFramebuffer::queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange) {
+void glFramebuffer::queueMipMapRecomputation(const RTAttachment& attachment, U16 startLayer, U16 layerCount) {
     const Texture_ptr& texture = attachment.texture(false);
     if (attachment.used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
         GL_API::queueComputeMipMap(texture->data().textureHandle());

@@ -79,9 +79,11 @@ struct ColourBlitEntry {
     U16 _outputLayer = 0;
 };
 
+constexpr U16 INVALID_DEPTH_LAYER = std::numeric_limits<U16>::max();
+
 struct DepthBlitEntry {
-    U16 _inputLayer = 0;
-    U16 _outputLayer = 0;
+    U16 _inputLayer = INVALID_DEPTH_LAYER;
+    U16 _outputLayer = INVALID_DEPTH_LAYER;
 };
 
 class RenderTarget;
@@ -132,8 +134,8 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
 
     struct RTBlitParams {
         RenderTarget* _inputFB = nullptr;
+        DepthBlitEntry _blitDepth;
         vectorEASTL<ColourBlitEntry> _blitColours;
-        vectorEASTL<DepthBlitEntry> _blitDepth;
     };
 
    protected:

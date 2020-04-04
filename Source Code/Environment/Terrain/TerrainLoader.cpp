@@ -152,7 +152,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     stringImpl normalMapArray = "";
     stringImpl extraMapArray = "";
 
-    U32 extraMapCount = 0;
+    U16 extraMapCount = 0;
     for (const stringImpl& tex : textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)]) {
         albedoMapArray += tex + ",";
     }
@@ -208,17 +208,17 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
     blendMapDescriptor.samplerDescriptor(blendMapSampler);
-    blendMapDescriptor.layerCount(to_U32(splatTextures.size()));
+    blendMapDescriptor.layerCount(to_U16(splatTextures.size()));
     blendMapDescriptor.srgb(false);
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
     albedoDescriptor.samplerDescriptor(albedoSampler);
-    albedoDescriptor.layerCount(to_U32(textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)].size()));
+    albedoDescriptor.layerCount(to_U16(textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)].size()));
     albedoDescriptor.srgb(false);
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
     normalDescriptor.samplerDescriptor(albedoSampler);
-    normalDescriptor.layerCount(to_U32(textures[to_base(TerrainTextureType::NORMAL)].size()));
+    normalDescriptor.layerCount(to_U16(textures[to_base(TerrainTextureType::NORMAL)].size()));
     normalDescriptor.srgb(false);
 
     TextureDescriptor extraDescriptor(TextureType::TEXTURE_2D_ARRAY);

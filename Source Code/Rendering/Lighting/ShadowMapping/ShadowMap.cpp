@@ -86,7 +86,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 
                 // Default filters, LINEAR is OK for this
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-                depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
 
                 vectorSTD<RTAttachmentDescriptor> att = {
@@ -115,7 +115,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler.anisotropyLevel(settings.anisotropicFilteringLevel);
 
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
-                depthMapDescriptor.setLayerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT * Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS);
+                depthMapDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT * Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS);
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.autoMipMaps(false);
 
@@ -148,7 +148,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
-                depthMapDescriptor.setLayerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
                 vectorSTD<RTAttachmentDescriptor> att = {
                     { depthMapDescriptor, RTAttachmentType::Depth },
@@ -211,7 +211,7 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
         const TextureData& data = shadowTexture.texture()->data();
         const TextureDescriptor& texDescriptor = shadowTexture.descriptor()._texDescriptor;
 
-        if (IS_IN_RANGE_EXCLUSIVE(useCount, 0u, texDescriptor.layerCount())) {
+        if (IS_IN_RANGE_EXCLUSIVE(useCount, to_U16(0u), texDescriptor.layerCount())) {
             TextureViewEntry entry = {};
             entry._binding = bindSlot;
             entry._view._texture = shadowTexture.texture().get();

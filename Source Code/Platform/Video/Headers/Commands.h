@@ -246,8 +246,8 @@ BEGIN_COMMAND(EndRenderSubPassCommand, CommandType::END_RENDER_SUB_PASS);
 END_COMMAND(EndRenderSubPassCommand);
 
 BEGIN_COMMAND(BlitRenderTargetCommand, CommandType::BLIT_RT);
-    // List of depth layers to blit
-    vectorEASTL<DepthBlitEntry> _blitDepth;
+    // Depth layer to blit
+    DepthBlitEntry _blitDepth;
     // List of colours + colour layer to blit
     vectorEASTL<ColourBlitEntry> _blitColours;
     RenderTargetID _source;

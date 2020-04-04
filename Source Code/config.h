@@ -126,10 +126,6 @@ constexpr unsigned int MAX_PROFILE_TIMERS = 1024;
 #endif
 /// Benchmark reset frequency in milliseconds
 constexpr unsigned int BENCHMARK_FREQUENCY = 500;
-/// use only a basic shader
-constexpr bool DISABLE_SHADING = false;
-/// textures are capped at 2x2 when uploaded to the GPU
-constexpr bool USE_2x2_TEXTURES = false;
 };  // namespace Profile
 
 namespace Assert {

@@ -393,11 +393,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     // At this point, only computation requests are processed
     assert(info._shaderCompStage == ShaderProgramInfo::BuildStage::REQUESTED);
 
-    if (Config::Profile::DISABLE_SHADING) {
-        setShaderProgramInternal(ResourceDescriptor(g_PassThroughMaterialShaderName), renderStagePass, false);
-        return false;
-    }
-
     constexpr U32 slot0 = to_base(ShaderProgram::TextureUsage::UNIT0);
     constexpr U32 slot1 = to_base(ShaderProgram::TextureUsage::UNIT1);
     constexpr U32 slotOpacity = to_base(ShaderProgram::TextureUsage::OPACITY);

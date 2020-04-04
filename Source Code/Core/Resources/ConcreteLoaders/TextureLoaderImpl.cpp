@@ -41,7 +41,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
                                            ',');
 
     if (texDescriptor->layerCount() < numCommas + 1) {
-        texDescriptor->layerCount(to_U32(numCommas + 1));
+        texDescriptor->layerCount(to_U16(numCommas + 1));
     }
 
     if (crtNumCommas < numCommas ) {

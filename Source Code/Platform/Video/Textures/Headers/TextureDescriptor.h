@@ -130,10 +130,6 @@ class TextureDescriptor final : public PropertyDescriptor {
         return target.reset(new TextureDescriptor(*this));
     }
 
-    inline void setLayerCount(U32 layerCount) noexcept {
-        _layerCount = layerCount;
-    }
-
     inline bool isCubeTexture() const noexcept {
         return (_type == TextureType::TEXTURE_CUBE_MAP ||
                 _type == TextureType::TEXTURE_CUBE_ARRAY);
@@ -170,7 +166,7 @@ class TextureDescriptor final : public PropertyDescriptor {
 
     /// A TextureDescriptor will always have a sampler, even if it is the default one
     PROPERTY_RW(SamplerDescriptor, samplerDescriptor);
-    PROPERTY_RW(U32, layerCount, 1);
+    PROPERTY_RW(U16, layerCount, 1);
     PROPERTY_RW(vec2<U16>, mipLevels);
     PROPERTY_RW(U16, mipCount, 1);
     /// How many MSAA samples to use: -1 (default) = max available, 0 = disabled

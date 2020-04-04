@@ -816,7 +816,6 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
                 colourBlitEntry._inputIndex = colourBlitEntry._outputIndex = i;
                 blitOITCmd._blitColours.push_back(colourBlitEntry);
             }
-            blitOITCmd._blitDepth.clear();
             GFX::EnqueueCommand(bufferInOut, blitOITCmd);
         }
 
@@ -964,9 +963,6 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     if (params._target._usage == RenderTargetUsage::SCREEN_MS) {
         const RenderTargetID targetID = { RenderTargetUsage::SCREEN, params._target._index };
 
-        DepthBlitEntry entry = {};
-        entry._inputLayer = entry._outputLayer = 0u;
-
         GFX::BlitRenderTargetCommand blitScreenDepthCmd = {};
         blitScreenDepthCmd._source = sourceID;
         blitScreenDepthCmd._destination = targetID;
@@ -975,7 +971,10 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
             colourBlitEntry._inputIndex = colourBlitEntry._outputIndex = i;
             blitScreenDepthCmd._blitColours.push_back(colourBlitEntry);
         }
-        blitScreenDepthCmd._blitDepth.emplace_back(entry);
+
+        DepthBlitEntry entry = {};
+        entry._inputLayer = entry._outputLayer = 0u;
+        blitScreenDepthCmd._blitDepth = entry;
         GFX::EnqueueCommand(bufferInOut, blitScreenDepthCmd);
 
         sourceID = targetID;

@@ -49,27 +49,8 @@ class glFramebuffer : public RenderTarget,
                       public glObject {
 
     friend class Attorney::GLAPIRenderTarget;
-   public:
-    explicit glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor);
-    ~glFramebuffer();
 
-    bool resize(U16 width, U16 height) final;
-
-    void drawToLayer(const DrawLayerParams& params);
-
-    void setMipLevel(U16 writeLevel, bool validate = true);
-
-    void readData(const vec4<U16>& rect,
-                  GFXImageFormat imageFormat,
-                  GFXDataFormat dataType,
-                  bufferPtr outData) const final;
-
-    void blitFrom(const RTBlitParams& params) final;
-
-    /// Bake in all settings and attachments to prepare it for rendering
-    bool create() final;
-
-  protected:
+  public:
     enum class AttachmentState : U8 {
         STATE_DISABLED = 0,
         STATE_ENABLED,
@@ -97,7 +78,30 @@ class glFramebuffer : public RenderTarget,
         }
     };
 
+   public:
+    explicit glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor);
+    ~glFramebuffer();
 
+    bool resize(U16 width, U16 height) final;
+
+    void drawToLayer(const DrawLayerParams& params);
+
+    void setMipLevel(U16 writeLevel, bool validate = true);
+
+    void readData(const vec4<U16>& rect,
+                  GFXImageFormat imageFormat,
+                  GFXDataFormat dataType,
+                  bufferPtr outData) const final;
+
+    void blitFrom(const RTBlitParams& params) final;
+
+    /// Bake in all settings and attachments to prepare it for rendering
+    bool create() final;
+
+    BindingState getAttachmentState(GLenum binding) const;
+    void toggleAttachment(const RTAttachment& attachment, AttachmentState state, bool layeredRendering);
+
+protected:
     void queueCheckStatus();
     bool checkStatus();
 
@@ -106,27 +110,16 @@ class glFramebuffer : public RenderTarget,
 
     void initAttachment(RTAttachmentType type, U8 index);
 
-    void toggleAttachment(const RTAttachment& attachment, AttachmentState state, bool layeredRendering);
-
     bool hasDepth() const;
 
     bool hasColour() const;
 
     void setAttachmentState(GLenum binding, BindingState state);
-    BindingState getAttachmentState(GLenum binding) const;
 
     void clear(const RTClearDescriptor& descriptor) final;
     void setDefaultState(const RTDrawDescriptor& drawPolicy) final;
 
     void toggleAttachments();
-
-
-    void fastBlit(GLuint inputFB,
-                  const vec2<GLuint>& inputDim,
-                  const vec2<GLuint>& outputDim,
-                  GLenum colourAttIn,
-                  GLenum colourAttOut,
-                  ClearBufferMask mask);
 
    protected:
 
@@ -136,12 +129,10 @@ class glFramebuffer : public RenderTarget,
     void begin(const RTDrawDescriptor& drawPolicy);
     void end(bool needsUnbind);
     void queueMipMapRecomputation();
-    void queueMipMapRecomputation(const RTAttachment& attachment, const vec2<U32>& layerRange);
+    void queueMipMapRecomputation(const RTAttachment& attachment, U16 startLayer, U16 layerCount);
 
    protected:
     RTDrawDescriptor _previousPolicy;
-
-    std::array<GLenum, MAX_RT_COLOUR_ATTACHMENTS> _targetColourBuffers;
     std::array<GLenum, MAX_RT_COLOUR_ATTACHMENTS> _activeColourBuffers;
     GLenum _activeReadBuffer;
 

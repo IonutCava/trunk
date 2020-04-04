@@ -84,7 +84,7 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptor.samplerDescriptor(reflectionSampler);
-    environmentDescriptor.setLayerCount(g_maxEnvironmentProbes);
+    environmentDescriptor.layerCount(g_maxEnvironmentProbes);
 
 
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
