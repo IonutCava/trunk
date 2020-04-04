@@ -35,6 +35,7 @@ layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBl
 {
     // x = directional light count, y = point light count, z = spot light count, w = shadow light count
     uvec4 dvd_LightData;
+    vec4  dvd_AmbientColour;
     Light dvd_LightSource[MAX_LIGHTS];
     //RenderDoc: vec3 colour; float cosOuterCone; vec3 positionWV; float range; vec3 directionWV; float spotAngle; int lightType; int castsShadows; ivec2 null;
 };

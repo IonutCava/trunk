@@ -363,7 +363,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(_context, 6);
 
     // Prepare shader headers and various shader related states
-    if (initShaders() && initGLSW(config)) {
+    glShaderProgram::initStaticData();
+    if (initGLSW(config)) {
         // That's it. Everything should be ready for draw calls
         Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
 
@@ -377,11 +378,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 /// Clear everything that was setup in initRenderingAPI()
 void GL_API::closeRenderingAPI() {
     glShaderProgram::onShutdown();
-    if (!deInitShaders()) {
-        DIVIDE_UNEXPECTED_CALL("GLSL failed to shutdown!");
-    } else {
-        deInitGLSW();
-    }
+    glShaderProgram::destroyStaticData();
+    deInitGLSW();
 
     if (_GUIGLrenderer) {
         CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);

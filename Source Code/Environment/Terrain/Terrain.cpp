@@ -489,7 +489,7 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
 
     pt.put("descriptor", _descriptor->getVariable("descriptor"));
     pt.put("wireframeDebugMode", to_base(_descriptor->wireframeDebug()));
-	pt.put("parallaxMappingMode", to_base(_descriptor->parallaxMode()));
+    pt.put("parallaxMappingMode", to_base(_descriptor->parallaxMode()));
     pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
     pt.put("underwaterDetailTexture", _descriptor->getVariable("underwaterDetailTexture"));

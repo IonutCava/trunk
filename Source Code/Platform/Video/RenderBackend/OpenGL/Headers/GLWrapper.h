@@ -181,11 +181,6 @@ public:
     static IMPrimitive* newIMP(std::mutex& lock, GFXDevice& parent);
     static bool destroyIMP(std::mutex& lock, IMPrimitive*& primitive);
 private:
-    /// Prepare our shader loading system
-    static bool initShaders();
-    /// Revert everything that was set up in "initShaders()"
-    static bool deInitShaders();
-
     static bool initGLSW(Configuration& config);
     static bool deInitGLSW();
 

@@ -1,9 +1,6 @@
 #ifndef _MATERIAL_DATA_FRAG_
 #define _MATERIAL_DATA_FRAG_
 
-#if defined(OIT_PASS)
-#define NEED_DEPTH_TEXTURE
-#endif
 #include "nodeBufferedInput.cmn"
 #include "utility.frag"
 
@@ -82,17 +79,15 @@ vec2 ParallaxOcclusionMapping(vec2 sampleUV, vec3 viewDir, float currentDepthMap
         currentLayerDepth += layerDepth;
     }
 
-    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+    const vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
 
     // get depth after and before collision for linear interpolation
-    float afterDepth = currentDepthMapValue - currentLayerDepth;
-    float beforeDepth = getDisplacementValue(prevTexCoords) - currentLayerDepth + layerDepth;
+    const float afterDepth = currentDepthMapValue - currentLayerDepth;
+    const float beforeDepth = getDisplacementValue(prevTexCoords) - currentLayerDepth + layerDepth;
 
     // interpolation of texture coordinates
-    float weight = afterDepth / (afterDepth - beforeDepth);
-    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0f - weight);
-
-    return finalTexCoords;
+    const float weight = afterDepth / (afterDepth - beforeDepth);
+    return prevTexCoords * weight + currentTexCoords * (1.0f - weight);
 }
 
 #if !defined(PRE_PASS)
@@ -264,16 +259,16 @@ vec3 getNormal(in vec2 uv) {
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
     vec3 normal = VAR._normalWV;
 
-#if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
-    if (dvd_bumpMethod != BUMP_NONE) {
-        normal = VAR._tbn * getBump(uv);
-    }
-#endif //COMPUTE_TBN
+#   if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
+        if (dvd_bumpMethod != BUMP_NONE) {
+            normal = VAR._tbn * getBump(uv);
+        }
+#   endif //COMPUTE_TBN
 
 #   if defined (USE_DOUBLE_SIDED)
-    if (!gl_FrontFacing) {
-        normal = -normal;
-    }
+        if (!gl_FrontFacing) {
+            normal = -normal;
+        }
 #   endif //USE_DOUBLE_SIDED
 
     return normal;

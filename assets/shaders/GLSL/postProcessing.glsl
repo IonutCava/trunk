@@ -1,6 +1,5 @@
 -- Fragment
 
-#define NEED_DEPTH_TEXTURE
 #include "utility.frag"
 
 out vec4 _colourOut;
@@ -9,6 +8,7 @@ layout(binding = TEX_BIND_POINT_SCREEN)     uniform sampler2D texScreen;
 layout(binding = TEX_BIND_POINT_NOISE)      uniform sampler2D texNoise;
 layout(binding = TEX_BIND_POINT_BORDER)     uniform sampler2D texVignette;
 layout(binding = TEX_BIND_POINT_UNDERWATER) uniform sampler2D texWaterNoiseNM;
+layout(binding = TEXTURE_DEPTH_MAP)         uniform sampler2D texDepthMap;
 
 uniform float _noiseTile;
 uniform float _noiseFactor;
@@ -81,7 +81,7 @@ void main(void){
         colour = mix(colour, _fadeColour, _fadeStrength);
     }
 
-    float depth = getDepthValue(dvd_screenPositionNormalised);
+    const float depth = textureLod(texDepthMap, dvd_screenPositionNormalised, 0).r;
     _colourOut = applyFog(depth, colour, _zPlanes);
     //_colourOut = screenNormal();
 }

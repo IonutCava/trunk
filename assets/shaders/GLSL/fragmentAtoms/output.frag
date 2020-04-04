@@ -14,6 +14,10 @@ layout(location = TARGET_REVEALAGE) out float _revealage;
 layout(location = TARGET_MODULATE) out vec4  _modulate;
 #endif
 
+#if !defined(USE_NVIDIA_SAMPLE)
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
+#endif
+
 // Shameless copy-paste from http://casual-effects.blogspot.co.uk/2015/03/colored-blended-order-independent.html
 void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
 #if defined(USE_NVIDIA_SAMPLE)
@@ -62,7 +66,7 @@ void writeOutput(vec4 colour) {
 #   if defined(USE_NVIDIA_SAMPLE)
         float linearDepth = abs(1.0 / gl_FragCoord.w);
 #   else
-        float linearDepth = ToLinearDepth(getDepthValue(dvd_screenPositionNormalised));
+        float linearDepth = ToLinearDepth(textureLod(texDepthMap, dvd_screenPositionNormalised, 0).r);
 #   endif
 
     colour.rgb *= colour.a;

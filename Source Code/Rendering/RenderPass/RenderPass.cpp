@@ -178,12 +178,6 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
             OPTICK_EVENT("RenderPass - Main");
-            RenderPassManager::PassParams params = {};
-            params._stagePass = { _stageFlag, RenderPassType::COUNT };
-            params._target = _context.renderTargetPool().screenTargetID();
-            params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
-            params._targetOIT = params._target._usage == RenderTargetUsage::SCREEN_MS ? RenderTargetID(RenderTargetUsage::OIT_MS) : RenderTargetID(RenderTargetUsage::OIT);
-            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
             RTClearDescriptor clearDescriptor = {};
             clearDescriptor.clearColours(true);
@@ -191,6 +185,13 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
             clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
             clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+
+            RenderPassManager::PassParams params = {};
+            params._stagePass = { _stageFlag, RenderPassType::COUNT };
+            params._target = _context.renderTargetPool().screenTargetID();
+            params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
+            params._targetOIT = params._target._usage == RenderTargetUsage::SCREEN_MS ? RenderTargetID(RenderTargetUsage::OIT_MS) : RenderTargetID(RenderTargetUsage::OIT);
+            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
             params._clearDescriptor = &clearDescriptor;
             params._passName = "MainRenderPass";
             _parent.doCustomPass(params, bufferInOut);

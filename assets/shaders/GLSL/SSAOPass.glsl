@@ -8,7 +8,6 @@ See "license.txt" or "http://copyfree.org/licenses/mit/license.txt".
 *******************************************************************************/
 /*And: https://github.com/McNopper/OpenGL/blob/master/Example28/shader/ssao.frag.glsl */
 
-#define NEED_DEPTH_TEXTURE
 #include "utility.frag"
 
 // This constant removes artifacts caused by neighbour fragments with minimal depth difference.
@@ -25,8 +24,9 @@ uniform mat4 invProjectionMatrix;
 uniform vec2 noiseScale;
 
 // Input screen texture
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texNoise;
+layout(binding = TEXTURE_UNIT0)     uniform sampler2D texNoise;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormal;
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 
 out float _ssaoOut;
 

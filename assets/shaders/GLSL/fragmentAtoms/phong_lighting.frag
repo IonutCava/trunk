@@ -5,8 +5,7 @@ vec4 Phong(in vec3 lightDirection,
            in vec4 lightColourAndAtt,
            in vec4 specular,
            in vec4 albedoAndShadow,
-           in vec3 normalWV,
-           in vec3 viewDir)
+           in vec3 normalWV)
 {
     const float kPi = 3.14159265;
     const float kShininess = specular.a;
@@ -19,13 +18,13 @@ vec4 Phong(in vec3 lightDirection,
 #if defined(USE_SHADING_BLINN_PHONG)
         const float kEnergyConservation = (8.0 + kShininess) / (8.0 * kPi);
 
-        const vec3 halfwayDir = normalize(lightDirection + viewDir);
+        const vec3 halfwayDir = normalize(lightDirection + VAR._viewDirectionWV);
         specPower = kEnergyConservation * pow(max(dot(normalWV, halfwayDir), 0.0), kShininess);
 #else
         const float kEnergyConservation = (2.0 + kShininess) / (2.0 * kPi);
 
         const vec3 reflectDir = reflect(-lightDirection, normalWV);
-        specPower = kEnergyConservation * pow(max(dot(viewDir, reflectDir), 0.0), kShininess);
+        specPower = kEnergyConservation * pow(max(dot(VAR._viewDirectionWV, reflectDir), 0.0), kShininess);
 #endif
     }
 #endif

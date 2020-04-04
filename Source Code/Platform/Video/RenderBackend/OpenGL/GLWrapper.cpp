@@ -256,26 +256,21 @@ void GL_API::appendToShaderHeader(ShaderType type,
     }
 }
 
-/// Prepare our shader loading system
-bool GL_API::initShaders() {
-    glShaderProgram::initStaticData();
-    return true;
-}
-
 bool GL_API::initGLSW(Configuration& config) {
     constexpr std::pair<const char*, const char*> shaderVaryings[] =
     {
         { "vec4"       , "_vertexW"},
         { "vec4"       , "_vertexWV"},
         { "vec3"       , "_normalWV"},
-        { "flat uvec3" , "dvd_drawParams"},
+        { "vec3"       , "_viewDirectionWV"},
+        { "flat uvec3" , "_drawParams"},
         { "vec2"       , "_texCoord"}
     };
 
     constexpr const char* drawParams = ""
-        "#define dvd_baseInstance dvd_drawParams.x\n"
-        "#define dvd_instanceID dvd_drawParams.y\n"
-        "#define dvd_drawID dvd_drawParams.z\n";
+        "#define dvd_baseInstance _drawParams.x\n"
+        "#define dvd_instanceID _drawParams.y\n"
+        "#define dvd_drawID _drawParams.z\n";
 
     constexpr std::pair<const char*, const char*> shaderVaryingsBump[] =
     {
@@ -825,12 +820,6 @@ bool GL_API::initGLSW(Configuration& config) {
 
     // Check initialization status for GLSL and glsl-optimizer
     return glswState == 1;
-}
-
-/// Revert everything that was set up in "initShaders()"
-bool GL_API::deInitShaders() {
-    glShaderProgram::destroyStaticData();
-    return true;
 }
 
 bool GL_API::deInitGLSW() {

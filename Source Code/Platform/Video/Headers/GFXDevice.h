@@ -240,6 +240,9 @@ public:  // GPU interface
     void increaseResolution();
     void decreaseResolution();
 
+    void toggleMSAA(const bool state);
+    void toggleShadowMSAA(const bool state);
+
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);
 

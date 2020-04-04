@@ -361,6 +361,7 @@ void main()
 
     _out._vertexW = vec4(pos, 1.0f);
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
+    _out._viewDirectionWV = normalize(-_out._vertexWV.xyz);
 
 #if !defined(SHADOW_PASS)
     const mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
@@ -567,14 +568,15 @@ void main(void)
 }
 
 --Fragment.LQPass
+
+#define NO_SPECULAR
+#if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
+#endif
 
 layout(location = 10) in flat int LoD;
 // x = distance, y = depth
 layout(location = 11) smooth in vec2 _waterDetails;
-
-#define NO_SPECULAR
-
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 12) in vec3 gs_wireColor;
 layout(location = 13) noperspective in vec3 gs_edgeDist;
@@ -582,7 +584,6 @@ layout(location = 13) noperspective in vec3 gs_edgeDist;
 
 #include "nodeBufferedInput.cmn"
 
-#define NEED_DEPTH_TEXTURE
 #define USE_CUSTOM_ROUGHNESS
 #include "BRDF.frag"
 #include "output.frag"
@@ -603,26 +604,29 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
-    TerrainData data;
-    BuildTerrainData(_waterDetails, data);
+#if defined(PRE_PASS)
+    writeOutput(TexCoords, VAR._normalWV);
+#else //PRE_PASS
+    vec4 albedo;
+    vec3 normalWV;
+    BuildTerrainData(_waterDetails, albedo, normalWV);
 
     const mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    vec4 colourOut = getPixelColour(vec4(data.albedo.rgb, 1.0f), colourMatrix, data.normal, data.uv);
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), colourMatrix, normalWV, TexCoords);
 
 #if defined(TOGGLE_NORMALS)
     colourOut = vec4(gs_WireColor, 1.0f);
 #elif defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.25f;
-    float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
+    const float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
 #endif
 
     writeOutput(colourOut);
+#endif //PRE_PASS
 }
 
 --Fragment.MainPass
-
-#include "nodeBufferedInput.cmn"
 
 #define NO_SPECULAR
 #if !defined(PRE_PASS)
@@ -631,22 +635,21 @@ layout(early_fragment_tests) in;
 #define USE_CUSTOM_NORMAL_MAP
 #endif
 
+#include "nodeBufferedInput.cmn"
+
 layout(location = 10) in flat int LoD;
 // x = distance, y = depth
 layout(location = 11) smooth in vec2 _waterDetails;
-
-
-#define SHADOW_INTENSITY_FACTOR 0.75f
-
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 12) in vec3 gs_wireColor;
 layout(location = 13) noperspective in vec3 gs_edgeDist;
 #endif
 
+#define SHADOW_INTENSITY_FACTOR 0.75f
+
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else
-#define NEED_DEPTH_TEXTURE
 #define USE_CUSTOM_ROUGHNESS
 #include "BRDF.frag"
 #include "output.frag"
@@ -664,27 +667,27 @@ vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
-
-    TerrainData data;
-    BuildTerrainData(_waterDetails, data);
-
 #if defined(PRE_PASS)
-    writeOutput(data.uv, data.normal);
-#else
-    _private_roughness = data.albedo.a;
+    writeOutput(TexCoords, getMixedNormal(1.0f - _waterDetails.x));
+#else //PRE_PASS
+    vec4 albedo;
+    vec3 normalWV;
+    BuildTerrainData(_waterDetails, albedo, normalWV);
+
+    _private_roughness = albedo.a;
 
     const mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    vec4 colourOut = getPixelColour(vec4(data.albedo.rgb, 1.0f), colourMatrix, data.normal, data.uv);
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), colourMatrix, normalWV, TexCoords);
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     const float LineWidth = 0.75f;
-    float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
+    const float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
-#endif
+#endif //WIREFRAME/NORMALS
 
     writeOutput(colourOut);
 
-#endif
+#endif //PRE_PASS
 }
 
 --Fragment.Shadow

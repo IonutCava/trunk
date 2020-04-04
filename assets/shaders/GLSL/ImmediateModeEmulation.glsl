@@ -81,6 +81,7 @@ void main(void) {
     vec3 dvd_Normal = UNPACK_FLOAT(inNormalData);
     VAR._vertexW = dvd_WorldMatrixOverride * dvd_Vertex;
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
+    VAR._viewDirectionWV = normalize(-VAR._vertexWV.xyz);
     VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_baseInstance) * dvd_Normal);
     //Compute the final vert position
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
@@ -95,7 +96,7 @@ uniform uint dvd_LayerIndex;
 layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
 
 void main() {
-    vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), VAR._normalWV);
+    vec3 reflectDirection = reflect(-VAR._viewDirectionWV, VAR._normalWV);
     vec4 colour = vec4(texture(texEnvironmentCube, vec4(reflectDirection, dvd_LayerIndex)).rgb, 1.0);
 
     writeOutput(colour);

@@ -41,7 +41,6 @@ void main(){
 
 -- Fragment
 
-#define NEED_DEPTH_TEXTURE
 #include "utility.frag"
 #include "output.frag"
 
@@ -51,6 +50,8 @@ layout(location = 0) in vec4 particleColour;
 #ifdef HAS_TEXTURE
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 #endif
+
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 
 void main(){
    

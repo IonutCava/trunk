@@ -414,26 +414,30 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         _rtPool->allocateRT(RenderTargetUsage::EDITOR, editorDesc);
     }
 
+    SamplerDescriptor accumulationSampler = {};
+    accumulationSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    accumulationSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    accumulationSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    accumulationSampler.minFilter(TextureFilter::NEAREST);
+    accumulationSampler.magFilter(TextureFilter::NEAREST);
+
+    TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    accumulationDescriptor.autoMipMaps(false);
+    accumulationDescriptor.samplerDescriptor(accumulationSampler);
+
+    TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
+    revealageDescriptor.autoMipMaps(false);
+    revealageDescriptor.samplerDescriptor(accumulationSampler);
+
+    RenderTargetDescriptor oitDesc = {};
+    oitDesc._name = "OIT_FULL_RES";
+
     for (U8 i = 0; i < 2; ++i) 
     {
         const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAAsamples;
 
-        SamplerDescriptor accumulationSampler = {};
-        accumulationSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-        accumulationSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-        accumulationSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
-        accumulationSampler.minFilter(TextureFilter::NEAREST);
-        accumulationSampler.magFilter(TextureFilter::NEAREST);
-
-        TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
         accumulationDescriptor.msaaSamples(sampleCount);
-        accumulationDescriptor.autoMipMaps(false);
-        accumulationDescriptor.samplerDescriptor(accumulationSampler);
-
-        TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
         revealageDescriptor.msaaSamples(sampleCount);
-        revealageDescriptor.autoMipMaps(false);
-        revealageDescriptor.samplerDescriptor(accumulationSampler);
 
         vectorSTD<RTAttachmentDescriptor> attachments = {
             { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
@@ -453,8 +457,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
                 { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) }
             );
         }
-        RenderTargetDescriptor oitDesc = {};
-        oitDesc._name = "OIT_FULL_RES";
+
         oitDesc._resolution = renderResolution;
         oitDesc._attachmentCount = to_U8(attachments.size());
         oitDesc._attachments = attachments.data();
@@ -1195,6 +1198,26 @@ void GFXDevice::toggleFullScreen() {
             winManager.getMainWindow().changeType(WindowType::WINDOW);
             break;
     };
+}
+
+void GFXDevice::toggleMSAA(const bool state) {
+    static U8 defaultMSAASamples = _context.config().rendering.MSAAsamples;
+
+    if (defaultMSAASamples == 0) {
+        defaultMSAASamples = 4;
+    }
+
+    _context.config().rendering.MSAAsamples = state ? defaultMSAASamples : 0;
+}
+
+void GFXDevice::toggleShadowMSAA(const bool state) {
+    static U8 defaultShadowMSAASamples = _context.config().rendering.shadowMapping.MSAAsamples;
+    if (defaultShadowMSAASamples == 0) {
+        defaultShadowMSAASamples = 4;
+    }
+
+    STUBBED("FINISH IMPLEMENTING THIS!!");
+    _context.config().rendering.shadowMapping.MSAAsamples = state ? defaultShadowMSAASamples : 0;
 }
 
 /// The main entry point for any resolution change request

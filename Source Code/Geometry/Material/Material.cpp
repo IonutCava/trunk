@@ -564,6 +564,7 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     if (renderStagePass._stage == RenderStage::DISPLAY) {
         if (!isDepthPass) {
             fragDefines.emplace_back("USE_SSAO", true);
+            shaderName += "SSAO";
         }
         fragDefines.emplace_back("USE_DEFERRED_NORMALS", true);
         shaderName += ".DNrmls";

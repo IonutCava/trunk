@@ -131,9 +131,6 @@ void MenuBar::drawFileMenu() {
     bool showFileOpenDialog = false;
     bool showFileSaveDialog = false;
 
-    static U8 defaultMSAASamples = _context.config().rendering.MSAAsamples;
-    static U8 defaultShadowMSAASamples = _context.config().rendering.shadowMapping.MSAAsamples;
-
     const bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedElements(_context.editor());
 
     if (ImGui::BeginMenu("File"))
@@ -168,12 +165,12 @@ void MenuBar::drawFileMenu() {
 
             bool msaaEnabled = _context.config().rendering.MSAAsamples > 0;
             if (ImGui::MenuItem("MSAA", "", &msaaEnabled)) {
-                _context.config().rendering.MSAAsamples = msaaEnabled ? defaultMSAASamples : 0;
+                _context.gfx().toggleMSAA(msaaEnabled);
             }
 
             bool shadowMsaaEnabled = _context.config().rendering.shadowMapping.MSAAsamples > 0;
             if (ImGui::MenuItem("Shadow MSAA", "", &shadowMsaaEnabled)) {
-                _context.config().rendering.shadowMapping.MSAAsamples = shadowMsaaEnabled ? defaultShadowMSAASamples : 0;
+                _context.gfx().toggleShadowMSAA(shadowMsaaEnabled);
             }
 
             ImGui::EndMenu();

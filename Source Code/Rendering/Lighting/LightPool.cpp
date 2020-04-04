@@ -75,7 +75,7 @@ void LightPool::init() {
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows
-    bufferDescriptor._elementSize = sizeof(vec4<U32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
+    bufferDescriptor._elementSize = sizeof(BufferData);
     bufferDescriptor._ringBufferLength = 6;
     bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
@@ -340,11 +340,14 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         _activeLightCount[stageIndex][to_base(LightType::SPOT)],
         to_U32(_sortedShadowLights.size())
     );
+
+    crtData._ambientColour = DefaultColours::BLACK;
+
     {
         OPTICK_EVENT("LightPool::UploadLightDataToGPU");
 
         _lightShaderBuffer->writeBytes((stageIndex - 1) * _lightShaderBuffer->getPrimitiveSize(),
-                                       sizeof(vec4<I32>) + (totalLightCount * sizeof(LightProperties)),
+                                       sizeof(vec4<U32>) + sizeof(vec4<F32>) + (totalLightCount * sizeof(LightProperties)),
                                        (bufferPtr)(&crtData));
     }
 }

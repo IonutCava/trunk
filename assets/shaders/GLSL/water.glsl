@@ -68,7 +68,7 @@ void main()
 
     vec3 normalWV = getNormal(VAR._texCoord);
     vec3 uvReflection = clamp(((_vertexWVP.xyz / _vertexWVP.w) + 1.0f) * 0.5f, vec3(0.001f), vec3(0.999f));
-    vec3 incident = normalize(-VAR._vertexWV.xyz);
+    vec3 incident = VAR._viewDirectionWV;
 
     vec2 uvFinalReflect = uvReflection.xy;
     vec2 uvFinalRefract = uvReflection.xy;

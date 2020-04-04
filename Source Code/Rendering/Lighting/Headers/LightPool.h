@@ -170,7 +170,9 @@ class LightPool : public SceneComponent,
   private:
      struct BufferData {
          // x = directional light count, y = point light count, z = spot light count, w = shadow light count
-         vec4<U32> _globalData;
+         vec4<U32> _globalData = {0, 0, 0, 0};
+         // a = reserved
+         vec4<F32> _ambientColour = DefaultColours::BLACK;
          std::array<LightProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightProperties;
      };
 

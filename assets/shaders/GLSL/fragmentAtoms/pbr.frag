@@ -157,8 +157,7 @@ vec4 PBR(in vec3 lightDirection,
          in vec4 lightColourAndAtt,
          in vec4 metallicRoughness, //r - metallic, g - roughness, b - rim lighting
          in vec4 albedoAndShadow,
-         in vec3 normalWV,
-         in vec3 viewDir)
+         in vec3 normalWV)
 {
     float metallic = metallicRoughness.r;
     float roughness = metallicRoughness.g;
@@ -168,11 +167,11 @@ vec4 PBR(in vec3 lightDirection,
     //vec3 envdiff = textureCubeLod(texEnvironmentCube, vec4(tnrm * N, 0), 10).xyz;
 
     // direction is NOT normalized
-    vec3 Hn = normalize(viewDir + lightDirection);
-    float vdh = clamp((dot(viewDir, Hn)), M_EPSILON, 1.0);
+    vec3 Hn = normalize(VAR._viewDirectionWV + lightDirection);
+    float vdh = clamp((dot(VAR._viewDirectionWV, Hn)), M_EPSILON, 1.0);
     float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
     float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0);
-    float ndv = clamp((dot(normalWV, viewDir)), M_EPSILON, 1.0);
+    float ndv = clamp((dot(normalWV, VAR._viewDirectionWV)), M_EPSILON, 1.0);
     vec3 diffuseFactor = Diffuse(albedoAndShadow.rgb, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
 
     vec3 fresnelTerm = Fresnel(specular, vdh);

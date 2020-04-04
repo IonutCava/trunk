@@ -249,6 +249,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     const F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
     terrainMaterial->setShadingMode(ShadingMode::COOK_TORRANCE);
+
     if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::NORMAL) {
         terrainMaterial->setBumpMethod(BumpMethod::PARALLAX);
     } else if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::OCCLUSION) {
@@ -383,7 +384,20 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
         shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", Terrain::PATCHES_PER_TILE_EDGE), true);
         shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %5.2ff", to_F32(Terrain::VTX_PER_TILE_EDGE)), true);
-        shaderModule._defines.emplace_back(Util::StringFormat("DETAIL_LEVEL %d", context.config().rendering.terrainDetailLevel), true);
+
+        if (context.config().rendering.terrainDetailLevel > 0) {
+            shaderModule._defines.emplace_back("HAS_PARALLAX", true);
+            if (context.config().rendering.terrainDetailLevel > 1) {
+                shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT", true);
+                if (context.config().rendering.terrainDetailLevel > 2) {
+                    shaderModule._defines.emplace_back("HIGH_QUALITY_TILE_ARTIFACT_REDUCTION", true);
+                    if (context.config().rendering.terrainDetailLevel > 2) {
+                        shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS", true);
+                    }
+                }
+            }
+        }
+
         shaderModule._defines.emplace_back("COMPUTE_TBN", true);
         shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
         shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true);

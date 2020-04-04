@@ -156,15 +156,6 @@ float Gloss(vec3 bump)
 
 #define dvd_screenPositionNormalised (gl_FragCoord.xy / dvd_ViewPort.zw)
 
-#if defined(NEED_DEPTH_TEXTURE)
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
-
-float getDepthValue(vec2 screenNormalisedPos) {
-    return textureLod(texDepthMap, screenNormalisedPos, 0).r;
-}
-#endif
-
-
 float computeDepth(in vec4 posWV) {
     const float near = gl_DepthRange.near;
     const float far = gl_DepthRange.far;

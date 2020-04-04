@@ -1,13 +1,9 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
-#define STAGE_SHADOW 0
-#define STAGE_REFLECTION 1
-#define STAGE_REFRACTION 2
-#define STAGE_DISPLAY 3
-
 layout(binding = TEXTURE_SPLAT) uniform sampler2DArray texBlendMaps;
 layout(binding = TEXTURE_HELPER_TEXTURES) uniform sampler2DArray helperTextures;
+layout(binding = TEXTURE_EXTRA_TILE) uniform sampler2DArray texExtraMaps;
 
 #if defined(PRE_PASS)
 layout(binding = TEXTURE_NORMAL_TILE) uniform sampler2DArray texNormalMaps;
@@ -15,22 +11,7 @@ layout(binding = TEXTURE_NORMAL_TILE) uniform sampler2DArray texNormalMaps;
 layout(binding = TEXTURE_ALBEDO_TILE) uniform sampler2DArray texTileMaps;
 #endif
 
-layout(binding = TEXTURE_EXTRA_TILE) uniform sampler2DArray texExtraMaps;
-
 #include "texturing.frag"
-
-#if DETAIL_LEVEL > 0
-#define HAS_PARALLAX
-#endif
-
-struct TerrainData {
-#if !defined(PRE_PASS)
-    vec4  albedo; // a = roughness
-#endif
-    vec3  normal;
-    vec2  uv;
-};
-
 
 const int tiling[] = {
     int(TEXTURE_TILE_SIZE * 1.0f), //LoD 0
@@ -43,17 +24,20 @@ const int tiling[] = {
 };
 
 
-vec4 _getTexture(in sampler2DArray tex, in vec2 uv, in uint arrayIdx) {
+vec4 sampleTexture(in sampler2DArray tex, in vec2 uv, in uint arrayIdx) {
     const vec3 texUV = vec3(uv, arrayIdx);
-#if (DETAIL_LEVEL > 1)
-    if (LoD == 0) {
-#if (DETAIL_LEVEL > 2)
+#if defined(REDUCE_TEXTURE_TILE_ARTIFACT) && !defined(LOW_QUALITY)
+#if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
+    if (LoD == 0) 
+#endif //REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS
+    {
+#if defined(HIGH_QUALITY_TILE_ARTIFACT_REDUCTION)
         return textureNoTile(tex, helperTextures, 3, texUV, 0.5f);
-#else
+#else  //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
         return textureNoTile(tex, texUV);
-#endif
+#endif //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
     }
-#endif
+#endif //REDUCE_TEXTURE_TILE_ARTIFACT
 
     return texture(tex, texUV);
 }
@@ -71,36 +55,34 @@ void getBlendFactor(in vec2 uv, inout float blendAmount[TOTAL_LAYER_COUNT]) {
 }
 
 #if defined(HAS_PARALLAX)
-
-float getDisplacementValueFromCoords(vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
+float getDisplacementValueFromCoords(in vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
     float ret = 0.0f;
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        ret = mix(ret, _getTexture(texExtraMaps, sampleUV, DISPLACEMENT_IDX[i]).r, amnt[i]);
+        ret = mix(ret, sampleTexture(texExtraMaps, sampleUV, DISPLACEMENT_IDX[i]).r, amnt[i]);
     }
     return ret;
 }
 
-float getDisplacementValue(vec2 sampleUV) {
-    vec2 blendUV = unscaledTextureCoords(sampleUV, tiling[LoD]);
+float getDisplacementValue(in vec2 sampleUV) {
+    const vec2 blendUV = unscaledTextureCoords(sampleUV, tiling[LoD]);
 
     INSERT_BLEND_AMNT_ARRAY;
     getBlendFactor(blendUV, blendAmount);
 
     return getDisplacementValueFromCoords(sampleUV, blendAmount);
 }
-#endif
+#endif //HAS_PARALLAX
 
-vec2 _getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
-    const vec2 scaledCoords = scaledTextureCoords(uv, tiling[LoD]);
+vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt) {
+    const vec2 scaledCoords = scaledTextureCoords(TexCoords, tiling[LoD]);
 
 #if defined(HAS_PARALLAX)
     if (LoD == 0 && dvd_bumpMethod != BUMP_NONE) {
-        const vec3 viewDir = normalize(-VAR._vertexWV.xyz);
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
         if (dvd_bumpMethod == BUMP_PARALLAX) {
-            return ParallaxOffset(scaledCoords, viewDir, currentHeight);
+            return ParallaxOffset(scaledCoords, VAR._viewDirectionWV, currentHeight);
         } else if (dvd_bumpMethod == BUMP_PARALLAX_OCCLUSION) {
-            return ParallaxOcclusionMapping(scaledCoords, viewDir, currentHeight);
+            return ParallaxOcclusionMapping(scaledCoords, VAR._viewDirectionWV, currentHeight);
         }
     }
 #endif //HAS_PARALLAX
@@ -109,76 +91,72 @@ vec2 _getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
 }
 
 #if defined(PRE_PASS)
-vec3 _getTerrainNormal(in vec2 uv) {
+
+vec3 getTerrainNormal() {
     INSERT_BLEND_AMNT_ARRAY;
-    getBlendFactor(uv, blendAmount);
-    const vec2 scaledUV = _getScaledCoords(uv, blendAmount);
+    getBlendFactor(TexCoords, blendAmount);
+    const vec2 scaledUV = getScaledCoords(blendAmount);
 
     vec3 normal = vec3(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        normal = mix(normal, _getTexture(texNormalMaps, scaledUV, NORMAL_IDX[i]).rgb, blendAmount[i]);
+        normal = mix(normal, sampleTexture(texNormalMaps, scaledUV, NORMAL_IDX[i]).rgb, blendAmount[i]);
     }
 
     return normal;
 }
 
-vec3 getMixedNormal(in vec2 uv, in float waterDepth) {
-    return VAR._tbn * (2.0f * mix(texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb,
-                                  _getTerrainNormal(uv),
-                                   saturate(waterDepth)) - 1.0f);
+vec3 getMixedNormal(in float waterDepth) {
+    vec3 ret = mix(texture(helperTextures, vec3(TexCoords * UNDERWATER_TILE_SCALE, 2)).rgb,
+                   getTerrainNormal(),
+                   saturate(waterDepth));
+
+    return VAR._tbn * (2.0f * ret - 1.0f);
 }
+
 #else //PRE_PASS
 
-vec4 _getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
+vec4 getUnderwaterAlbedo(in float waterDepth) {
+    const vec2 scaledUV = TexCoords * UNDERWATER_TILE_SCALE;
 #if defined(LOW_QUALITY)
-    return vec4(texture(helperTextures, vec3(uv, 1)).rgb, 0.3f);
+    return vec4(texture(helperTextures, vec3(scaledUV, 1)).rgb, 0.3f);
 #else //LOW_QUALITY
     float time2 = float(dvd_time) * 0.0001f;
-    vec4 scrollingUV = vec4(uv, uv + time2);
+    vec4 scrollingUV = vec4(scaledUV, scaledUV + time2);
     scrollingUV.s -= time2;
 
     return vec4(mix((texture(helperTextures, vec3(scrollingUV.st, 0)).rgb + texture(helperTextures, vec3(scrollingUV.pq, 0)).rgb) * 0.5f,
-                    texture(helperTextures, vec3(uv, 1)).rgb,
+                    texture(helperTextures, vec3(scaledUV, 1)).rgb,
                     waterDepth),
                 0.3f);
 #endif //LOW_QUALITY
 }
 
-vec4 _getTerrainAlbedo(in vec2 uv) {
+vec4 getTerrainAlbedo() {
     INSERT_BLEND_AMNT_ARRAY;
-    getBlendFactor(uv, blendAmount);
-    const vec2 scaledUV = _getScaledCoords(uv, blendAmount);
+    getBlendFactor(TexCoords, blendAmount);
+    const vec2 scaledUV = getScaledCoords(blendAmount);
 
     vec4 ret = vec4(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
         // Albedo & Roughness
-        ret = mix(ret, _getTexture(texTileMaps, scaledUV, ALBEDO_IDX[i]), blendAmount[i]);
+        ret = mix(ret, sampleTexture(texTileMaps, scaledUV, ALBEDO_IDX[i]), blendAmount[i]);
         // ToDo: AO
     }
 
     return ret;
 }
-#endif // PRE_PASS
 
-void BuildTerrainData(in vec2 waterDetails, out TerrainData data) {
-    data.uv = TexCoords;
-#   if defined(LOW_QUALITY)
-    data.normal = VAR._normalWV;
-#   endif
+void BuildTerrainData(in vec2 waterDetails, out vec4 albedo, out vec3 normalWV) {
+#if defined(LOW_QUALITY)
+    normalWV = VAR._normalWV;
+#else //LOW_QUALITY
+    normalWV = getNormal(TexCoords);
+#endif //LOW_QUALITY
 
-#if defined(PRE_PASS)
-#   if !defined(LOW_QUALITY)
-    data.normal = getMixedNormal(data.uv, 1.0f - waterDetails.x);
-#   endif //LOW_QUALITY
-#else // PRE_PASS
-#   if !defined(LOW_QUALITY)
-    data.normal = getNormal(data.uv);
-#   endif //LOW_QUALITY
-    data.albedo =  mix(_getUnderwaterAlbedo(data.uv * UNDERWATER_TILE_SCALE, waterDetails.y),
-                       _getTerrainAlbedo(data.uv),
-                       1.0f - waterDetails.x);
-#endif //PRE_PASS
+    albedo =  mix(getUnderwaterAlbedo(waterDetails.y),
+                  getTerrainAlbedo(),
+                  1.0f - waterDetails.x);
 }
-
+#endif // PRE_PASS
 
 #endif //_TERRAIN_SPLATTING_FRAG_
