@@ -521,7 +521,10 @@ bool SceneGraphNode::preCullNode(const BoundsComponent& bounds, const NodeCullPa
         // Check distance to sphere edge (center - radius)
         distanceToClosestPointSQ = bounds.distanceToBSpehereSQ(eye);
         if (distanceToClosestPointSQ < params._cullMaxDistanceSq) {
-            if (params._minExtents.maxComponent() > 0.0f && (bounds.getBoundingBox().getExtent() - params._minExtents).minComponent() < 0.f) {
+            const F32 upperBound = params._minExtents.maxComponent();
+            if (upperBound > 0.0f &&
+                bounds.getBoundingBox().getExtent().maxComponent() < upperBound)
+            {
                 return true;
             }
 
