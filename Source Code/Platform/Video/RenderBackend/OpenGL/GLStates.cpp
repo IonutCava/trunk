@@ -59,9 +59,9 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     stateTracker.setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     stateTracker.setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     stateTracker._activeClearColour.set(window.clearColour());
-    const GLuint blendCount = static_cast<GLuint>(stateTracker._blendEnabled.size());
-    for (GLuint i = 0; i < blendCount; ++i) {
-        stateTracker.setBlending(i, defaultBlend);
+    const size_t blendCount = stateTracker._blendEnabled.size();
+    for (size_t i = 0; i < blendCount; ++i) {
+        stateTracker.setBlending(to_U32(i), defaultBlend);
     }
     stateTracker.setBlendColour(UColour4(0u), true);
 

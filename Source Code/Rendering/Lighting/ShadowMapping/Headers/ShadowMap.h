@@ -108,6 +108,8 @@ class NOINITVTABLE ShadowMap {
     static void enableShadowDebugViewForLight(GFXDevice& context, Light& light);
     static void disableShadowDebugViews(GFXDevice& context);
 
+    static void setMSAASampleCount(U8 sampleCount);
+
   protected:
     using LayerUsageMask = vectorEASTL<bool>;
     static std::mutex s_depthMapUsageLock;

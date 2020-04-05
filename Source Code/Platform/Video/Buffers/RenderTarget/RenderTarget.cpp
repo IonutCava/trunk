@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/RenderTarget.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -73,22 +73,45 @@ U8 RenderTarget::getAttachmentCount(RTAttachmentType type) const {
 }
 
 void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const {
-    readData(vec4<U16>(0u, 0u, _descriptor._resolution.w, _descriptor._resolution.h), imageFormat, dataType, outData);
+    readData(vec4<U16>(0u, 0u, _descriptor._resolution.width, _descriptor._resolution.height), imageFormat, dataType, outData);
 }
 
-U16 RenderTarget::getWidth()  const {
-    return _descriptor._resolution.w;
+U16 RenderTarget::getWidth() const {
+    return getResolution().width;
 }
 
 U16 RenderTarget::getHeight() const {
-    return _descriptor._resolution.h;
+    return getResolution().height;
 }
 
+vec2<U16> RenderTarget::getResolution() const {
+    return _descriptor._resolution;
+}
 const Str64& RenderTarget::name() const {
     return _descriptor._name;
 }
 
 F32& RenderTarget::depthClearValue() {
     return _descriptor._depthValue;
+}
+
+bool RenderTarget::resize(U16 width, U16 height) {
+    if (_descriptor._resolution != vec2<U16>(width, height)) {
+        _descriptor._resolution.set(width, height);
+        return create();
+    }
+
+    return false;
+}
+
+bool RenderTarget::updateSampleCount(U8 newSampleCount) {
+    CLAMP(newSampleCount, to_U8(0u), _context.gpuState().maxMSAASampleCount());
+
+    if (_descriptor._msaaSamples != newSampleCount) {
+        _descriptor._msaaSamples = newSampleCount;
+        return create();
+    }
+
+    return false;
 }
 };

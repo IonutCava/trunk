@@ -104,16 +104,15 @@ struct RenderTargetHandle {
 };
 
 struct RenderTargetDescriptor {
-    U8 _attachmentCount = 0;
     Str64 _name = "";
-    vec2<U16>  _resolution = vec2<U16>(1u);
     RTAttachmentDescriptor* _attachments = nullptr;
-
-    U8 _externalAttachmentCount = 0;
     ExternalRTAttachmentDescriptor* _externalAttachments = nullptr;
-
-    F32 _depthValue = 1.0f;
     vec2<F32> _depthRange = vec2<F32>(0.f, 1.f);
+    vec2<U16>  _resolution = vec2<U16>(1u);
+    F32 _depthValue = 1.0f;
+    U8 _externalAttachmentCount = 0u;
+    U8 _attachmentCount = 0u;
+    U8 _msaaSamples = 0u;
 };
 
 class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
@@ -147,8 +146,6 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     /// Init all attachments. Returns false if already called
     virtual bool create();
     virtual void destroy();
-    /// Resize all attachments
-    virtual bool resize(U16 width, U16 height) = 0;
 
     virtual bool hasAttachment(RTAttachmentType type, U8 index) const;
     virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;
@@ -161,10 +158,16 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const = 0;
     virtual void blitFrom(const RTBlitParams& params) = 0;
 
+    /// Resize all attachments
+    bool resize(U16 width, U16 height);
+    /// Change msaa sampel count for all attachments
+    bool updateSampleCount(U8 newSampleCount);
+
     void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const;
 
     U16 getWidth()  const;
     U16 getHeight() const;
+    vec2<U16> getResolution() const;
 
     F32& depthClearValue();
 

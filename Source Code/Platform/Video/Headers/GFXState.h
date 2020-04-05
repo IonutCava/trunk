@@ -38,8 +38,7 @@
 
 namespace Divide {
     
-class GPUState : private NonCopyable {
-   public:
+struct GPUState : private NonCopyable {
     struct GPUVideoMode {
         // width x height
         vec2<U16> _resolution;
@@ -58,10 +57,6 @@ class GPUState : private NonCopyable {
         }
     };
 
-   public:
-    GPUState();
-    ~GPUState();
-
     /// register a new display mode (resolution, bitdepth, etc).
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
 
@@ -73,6 +68,8 @@ class GPUState : private NonCopyable {
         assert(displayIndex < _supportedDisplayModes.size());
         return _supportedDisplayModes[displayIndex];
     }
+
+    PROPERTY_RW(U8, maxMSAASampleCount, 0u);
 
    protected:
     // Display system

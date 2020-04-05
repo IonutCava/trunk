@@ -94,9 +94,10 @@ struct SamplerDescriptor : public Hashable {
 };
 
 /// Use to define a texture with details such as type, image formats, etc
-/// We do not define copy constructors as we must define descriptors only with
-/// POD
+/// We do not define copy constructors as we must define descriptors only with POD
 class TextureDescriptor final : public PropertyDescriptor {
+    friend class Texture;
+
    public:
     TextureDescriptor() noexcept
         : TextureDescriptor(TextureType::TEXTURE_2D)
@@ -114,15 +115,10 @@ class TextureDescriptor final : public PropertyDescriptor {
                       GFXImageFormat format,
                       GFXDataFormat dataType) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
-          _layerCount(1),
           _type(type),
           _baseFormat(format),
           _dataType(dataType),
-          _compressed(false),
-          _autoMipMaps(true),
-          _mipLevels(0u, 1u),
-          _mipCount(1u),
-          _msaaSamples(-1)
+          _mipLevels(0u, 1u)
     {
     }
 
@@ -169,8 +165,7 @@ class TextureDescriptor final : public PropertyDescriptor {
     PROPERTY_RW(U16, layerCount, 1);
     PROPERTY_RW(vec2<U16>, mipLevels);
     PROPERTY_RW(U16, mipCount, 1);
-    /// How many MSAA samples to use: -1 (default) = max available, 0 = disabled
-    PROPERTY_RW(I16, msaaSamples, -1);
+    PROPERTY_RW(U8, msaaSamples, 0);
     PROPERTY_RW(GFXDataFormat, dataType, GFXDataFormat::COUNT);
     PROPERTY_RW(GFXImageFormat, baseFormat, GFXImageFormat::COUNT);
     PROPERTY_RW(TextureType, type, TextureType::COUNT);
@@ -181,7 +176,6 @@ class TextureDescriptor final : public PropertyDescriptor {
     PROPERTY_RW(bool, compressed, false);
 
    private:
-     friend class Texture;
      vectorSTD<stringImpl> _sourceFileList;
 };
 

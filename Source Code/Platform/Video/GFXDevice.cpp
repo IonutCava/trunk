@@ -335,6 +335,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
             screenDesc._resolution = renderResolution;
             screenDesc._attachmentCount = to_U8(attachments.size());
             screenDesc._attachments = attachments.data();
+            screenDesc._msaaSamples = sampleCount;
 
             // Our default render targets hold the screen buffer, depth buffer, and a special, on demand, down-sampled version of the depth buffer
             _rtPool->allocateRT(i == 0 ? RenderTargetUsage::SCREEN : RenderTargetUsage::SCREEN_MS, screenDesc);
@@ -463,6 +464,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         oitDesc._attachments = attachments.data();
         oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
         oitDesc._externalAttachments = externalAttachments.data();
+        oitDesc._msaaSamples = sampleCount;
         _rtPool->allocateRT(i == 0 ? RenderTargetUsage::OIT : RenderTargetUsage::OIT_MS, oitDesc);
 
         if (i == 0) {
@@ -1200,24 +1202,21 @@ void GFXDevice::toggleFullScreen() {
     };
 }
 
-void GFXDevice::toggleMSAA(const bool state) {
-    static U8 defaultMSAASamples = _context.config().rendering.MSAAsamples;
-
-    if (defaultMSAASamples == 0) {
-        defaultMSAASamples = 4;
+void GFXDevice::setScreenMSAASampleCount(U8 sampleCount) {
+    CLAMP(sampleCount, to_U8(0u), gpuState().maxMSAASampleCount());
+    if (_context.config().rendering.MSAAsamples != sampleCount) {
+        _context.config().rendering.MSAAsamples = sampleCount;
+        _rtPool->updateSampleCount(RenderTargetUsage::SCREEN_MS, sampleCount);
+        _rtPool->updateSampleCount(RenderTargetUsage::OIT_MS, sampleCount);
     }
-
-    _context.config().rendering.MSAAsamples = state ? defaultMSAASamples : 0;
 }
 
-void GFXDevice::toggleShadowMSAA(const bool state) {
-    static U8 defaultShadowMSAASamples = _context.config().rendering.shadowMapping.MSAAsamples;
-    if (defaultShadowMSAASamples == 0) {
-        defaultShadowMSAASamples = 4;
+void GFXDevice::setShadowMSAASampleCount(U8 sampleCount) {
+    CLAMP(sampleCount, to_U8(0u), gpuState().maxMSAASampleCount());
+    if (_context.config().rendering.shadowMapping.MSAAsamples != sampleCount) {
+        _context.config().rendering.shadowMapping.MSAAsamples = sampleCount;
+        ShadowMap::setMSAASampleCount(sampleCount);
     }
-
-    STUBBED("FINISH IMPLEMENTING THIS!!");
-    _context.config().rendering.shadowMapping.MSAAsamples = state ? defaultShadowMSAASamples : 0;
 }
 
 /// The main entry point for any resolution change request

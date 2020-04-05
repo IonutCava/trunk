@@ -107,4 +107,30 @@ glBufferImpl* glGenericBuffer::bufferImpl() const noexcept {
     return _buffer;
 }
 
+
+
+void glVertexDataContainer::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex, size_t indexBufferSize) {
+    if (_lastDrawCount == drawCount && _lastIndexCount == indexCount && _lastFirstIndex == firstIndex) {
+        return;
+    }
+
+    if (_lastDrawCount != drawCount || _lastIndexCount != indexCount) {
+        eastl::fill(eastl::begin(_countData), eastl::begin(_countData) + drawCount, indexCount);
+    }
+
+    if (indexBufferSize > 0 && (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex)) {
+        const U32 idxCountInternal = to_U32(drawCount * indexBufferSize);
+
+        if (_indexOffsetData.size() < idxCountInternal) {
+            _indexOffsetData.resize(idxCountInternal, firstIndex);
+        }
+        if (_lastFirstIndex != firstIndex) {
+            eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
+        }
+    }
+    _lastDrawCount = drawCount;
+    _lastIndexCount = indexCount;
+    _lastFirstIndex = firstIndex;
+}
+
 }; //namespace Divide

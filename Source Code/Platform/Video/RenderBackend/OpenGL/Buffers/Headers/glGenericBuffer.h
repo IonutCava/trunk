@@ -79,6 +79,7 @@ class glGenericBuffer {
       void setBindOffset(GLuint elementCountOffset) noexcept;
 
       glBufferImpl* bufferImpl() const noexcept;
+
   protected:
       GLuint _elementCount;
       GLuint _elementCountBindOffset;

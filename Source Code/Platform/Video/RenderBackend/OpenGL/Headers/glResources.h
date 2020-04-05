@@ -106,6 +106,16 @@ private:
     U32 _maxBindings;
 };
 
+struct glVertexDataContainer {
+    GLuint _lastDrawCount = 0;
+    GLuint _lastIndexCount = 0;
+    GLuint _lastFirstIndex = 0;
+    std::array<size_t, Config::MAX_VISIBLE_NODES> _countData;
+    eastl::fixed_vector<GLuint, Config::MAX_VISIBLE_NODES * 256> _indexOffsetData;
+
+    void rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex, size_t indexBufferSize);
+};
+
 enum class glObjectType : U8 {
     TYPE_BUFFER = 0,
     TYPE_TEXTURE,

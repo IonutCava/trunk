@@ -54,7 +54,8 @@
 
 namespace Divide {
 
-class glVertexArray final : public VertexBuffer {
+class glVertexArray final : public VertexBuffer,
+                            public glVertexDataContainer {
    public:
     explicit glVertexArray(GFXDevice& context);
     ~glVertexArray();
@@ -88,8 +89,6 @@ class glVertexArray final : public VertexBuffer {
 
     static void cleanup();
 
-    void rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex);
-
    protected:
     GLenum _formatInternal;
     GLuint _IBid;
@@ -112,13 +111,6 @@ class glVertexArray final : public VertexBuffer {
     std::array<GLuint, to_base(RenderStagePass::count())> _vaoCaches;
     
     static GLUtil::glVAOCache _VAOMap;
-
-    U32 _lastDrawCount = 0;
-    U32 _lastIndexCount = 0;
-    U32 _lastFirstIndex = 0;
-
-    std::array<size_t, Config::MAX_VISIBLE_NODES> _countData;
-    eastl::fixed_vector<GLuint, Config::MAX_VISIBLE_NODES * 256> _indexOffsetData;
 };
 
 };  // namespace Divide

@@ -333,7 +333,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         platform_io.Platform_GetWindowSize = [](ImGuiViewport* viewport) -> ImVec2 {
             if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
                 const vec2<U16>& dim = data->_window->getDimensions();
-                return ImVec2((F32)dim.w, (F32)dim.h);
+                return ImVec2((F32)dim.width, (F32)dim.height);
             }
             DIVIDE_UNEXPECTED_CALL("Editor::Platform_GetWindowSize failed!");
             return {};
@@ -1348,7 +1348,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
         static F32 zoom = 1.0f;
         static ImVec2 zoomCenter(0.5f, 0.5f);
-        ImGui::ImageZoomAndPan((void*)(intptr_t)tex->data().textureHandle(), ImVec2(dimensions.w, dimensions.h / aspect), aspect, zoom, zoomCenter, 2, 3);
+        ImGui::ImageZoomAndPan((void*)(intptr_t)tex->data().textureHandle(), ImVec2(dimensions.width, dimensions.height / aspect), aspect, zoom, zoomCenter, 2, 3);
 
         if (nonDefaultColours) {
             ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);

@@ -353,6 +353,10 @@ const RenderTargetHandle& ShadowMap::getDepthMap(LightType type) {
     return s_shadowMaps[to_base(getShadowTypeForLightType(type))];
 }
 
+void ShadowMap::setMSAASampleCount(U8 sampleCount) {
+    getDepthMap(LightType::DIRECTIONAL)._rt->updateSampleCount(sampleCount);
+}
+
 void ShadowMap::disableShadowDebugViews(GFXDevice& context) {
     if (!s_debugViews.empty()) {
         for (const DebugView_ptr& view : s_debugViews) {

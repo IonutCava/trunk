@@ -49,6 +49,8 @@ protected:
     ~GFXRTPool();
 
     void resizeTargets(RenderTargetUsage target, U16 width, U16 height);
+    void updateSampleCount(RenderTargetUsage target, U8 sampleCount);
+
     void clear();
     void set(RenderTargetID target, const std::shared_ptr<RenderTarget>& newTarget);
     RenderTargetHandle add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget);

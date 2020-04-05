@@ -51,29 +51,28 @@ class glTexture final : public Texture,
                        const TextureDescriptor& texDescriptor);
     ~glTexture();
 
-    bool unload() noexcept override;
+    bool unload() noexcept final;
 
-    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override;
+    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) final;
 
-    void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept override;
+    void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept final;
 
-    void resize(const bufferPtr ptr,
-                const vec2<U16>& dimensions) override;
+    void resize(const bufferPtr ptr, const vec2<U16>& dimensions) final;
 
     void loadData(const TextureLoadInfo& info,
-                  const vectorSTD<ImageTools::ImageLayer>& imageLayers) override;
+                  const vectorSTD<ImageTools::ImageLayer>& imageLayers) final;
 
     void loadData(const TextureLoadInfo& info,
                   const bufferPtr data,
-                  const vec2<U16>& dimensions) override;
+                  const vec2<U16>& dimensions) final;
 
 
-    void setCurrentSampler(const SamplerDescriptor& descriptor) override;
+    void setCurrentSampler(const SamplerDescriptor& descriptor) final;
 
     static void copy(const TextureData& source, const TextureData& destination, const CopyTexParams& params);
 
    protected:
-    void threadedLoad() override;
+    void threadedLoad() final;
     void reserveStorage();
 
     void loadDataCompressed(const TextureLoadInfo& info,

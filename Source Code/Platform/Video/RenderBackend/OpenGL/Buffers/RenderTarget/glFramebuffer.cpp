@@ -81,6 +81,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     if (!attachment->used()) {
         return;
     }   
+
     Texture* tex = nullptr;
     if (!attachment->isExternal()) {
         tex = attachment->texture().get();
@@ -88,6 +89,10 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
         const bool shouldResize = tex->width() != getWidth() || tex->height() != getHeight();
         if (shouldResize) {
             tex->resize(NULL, vec2<U16>(getWidth(), getHeight()));
+        }
+        const bool updateSampleCount = tex->descriptor().msaaSamples() != _descriptor._msaaSamples;
+        if (updateSampleCount) {
+            tex->setSampleCount(_descriptor._msaaSamples);
         }
     } else {
         RTAttachment* attachmentTemp = getAttachmentInternal(type, index);
@@ -144,7 +149,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentS
 }
 
 bool glFramebuffer::create() {
-    if (!RenderTarget::create()) {
+    if (!RenderTarget::create() && _attachmentPool == nullptr) {
         return false;
     }
 
@@ -161,16 +166,6 @@ bool glFramebuffer::create() {
     setDefaultState({});
 
     return checkStatus();
-}
-
-bool glFramebuffer::resize(U16 width, U16 height) {
-    if (getWidth() == width && getHeight() == height) {
-        return false;
-    }
-
-    _descriptor._resolution.set(width, height);
-
-    return create();
 }
 
 namespace BlitHelpers {
@@ -279,9 +274,9 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
             glBlitNamedFramebuffer(input->_framebufferHandle,
                                    output->_framebufferHandle,
                                    0, 0,
-                                   inputDim.w, inputDim.h,
+                                   inputDim.width, inputDim.height,
                                    0, 0,
-                                   outputDim.w, outputDim.h,
+                                   outputDim.width, outputDim.height,
                                    blittedDepth ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT 
                                                 : GL_COLOR_BUFFER_BIT,
                                    GL_NEAREST);
@@ -297,9 +292,9 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
         glBlitNamedFramebuffer(input->_framebufferHandle,
                                output->_framebufferHandle,
                                0, 0,
-                               inputDim.w, inputDim.h,
+                               inputDim.width, inputDim.height,
                                0, 0,
-                               outputDim.w, outputDim.h,
+                               outputDim.width, outputDim.height,
                                GL_DEPTH_BUFFER_BIT,
                                GL_NEAREST);
         _context.registerDrawCall();

@@ -445,9 +445,6 @@ class vec2 {
             T width, height;
         };
         struct {
-            T w, h;
-        };
-        struct {
             T min, max;
         };
         T _v[2];

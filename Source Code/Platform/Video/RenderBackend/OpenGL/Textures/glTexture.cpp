@@ -102,6 +102,12 @@ void glTexture::setMipRangeInternal(U16 base, U16 max) {
 void glTexture::resize(const bufferPtr ptr,
                        const vec2<U16>& dimensions) {
 
+    const GLenum oldTexType = _type;
+    const TextureType oldTexTypeDescriptor = _descriptor.type();
+
+    processTextureType();
+    _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
+
     if (_data.textureHandle() > 0 && _allocatedStorage) {
         // Immutable storage requires us to create a new texture object 
         U32 tempHandle = 0;
@@ -113,10 +119,10 @@ void glTexture::resize(const bufferPtr ptr,
         assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
 
         U32 handle = _data.textureHandle();
-        if (GL_API::s_texturePool.typeSupported(_type)) {
-            GL_API::s_texturePool.deallocate(handle, _type);
+        if (GL_API::s_texturePool.typeSupported(oldTexType)) {
+            GL_API::s_texturePool.deallocate(handle, oldTexType);
         } else {
-            Divide::GL_API::deleteTextures(1, &handle, _descriptor.type());
+            Divide::GL_API::deleteTextures(1, &handle, oldTexTypeDescriptor);
         }
         setTextureHandle(tempHandle);
     }
@@ -127,8 +133,7 @@ void glTexture::resize(const bufferPtr ptr,
 
     _allocatedStorage = false;
     // We may have limited the number of mips
-    _descriptor.mipLevels({ mipLevels.x,
-                            std::min(_descriptor.mipLevels().y, mipLevels.y)});
+    _descriptor.mipLevels({ mipLevels.x, std::min(_descriptor.mipLevels().y, mipLevels.y)});
     _descriptor.mipCount(mipLevels.y);
 
     const TextureLoadInfo info = {};

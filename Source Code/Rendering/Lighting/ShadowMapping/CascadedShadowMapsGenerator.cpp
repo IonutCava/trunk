@@ -118,6 +118,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         desc._resolution = vec2<U16>(g_shadowSettings.shadowMapResolution);
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
+        desc._msaaSamples = g_shadowSettings.MSAAsamples;
 
         _drawBuffer = context.renderTargetPool().allocateRT(desc);
     }

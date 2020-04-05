@@ -871,8 +871,8 @@ void GL_API::drawText(const TextElementBatch& batch) {
     );
     getStateTracker().setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
 
-    const I32 width = _context.renderingResolution().w;
-    const I32 height = _context.renderingResolution().h;
+    const I32 width = _context.renderingResolution().width;
+    const I32 height = _context.renderingResolution().height;
         
     vec_size drawCount = 0;
     size_t previousStyle = 0;

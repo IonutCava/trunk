@@ -81,8 +81,10 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
     /// Resize the texture to the specified dimensions and upload the new data
-    virtual void resize(const bufferPtr ptr,
-                        const vec2<U16>& dimensions) = 0;
+    virtual void resize(const bufferPtr ptr, const vec2<U16>& dimensions) = 0;
+    /// Change the number of MSAA samples for this current texture
+    void setSampleCount(U8 newSampleCount) noexcept;
+
     // API-dependent loading function that uploads ptr data to the GPU using the
     // specified parameters
     virtual void loadData(const TextureLoadInfo& info,
@@ -136,6 +138,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     const char* getResourceTypeName() const noexcept override { return "Texture"; }
 
+    void processTextureType() noexcept;
    protected:
     bool _asyncLoad;
 

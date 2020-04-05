@@ -42,7 +42,8 @@
 
 namespace Divide {
 
-class glGenericVertexData final : public GenericVertexData {
+class glGenericVertexData final : public GenericVertexData,
+                                  public glVertexDataContainer {
     struct BufferBindConfig {
         BufferBindConfig() : BufferBindConfig(0, 0, 0)
         {
@@ -97,19 +98,10 @@ class glGenericVertexData final : public GenericVertexData {
     void setBufferBindings();
     void setAttributes();
     void setAttributeInternal(AttributeDescriptor& descriptor);
-    //HACK: Copied from glVertexArray. Move this somewhere common for both
-    void rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex);
 
    private:
     bool _smallIndices;
     bool _idxBufferDirty;
-
-    //HACK: Copied from glVertexArray. Move this somewhere common for both
-    GLuint _lastDrawCount = 0;
-    GLuint _lastIndexCount = 0;
-    GLuint _lastFirstIndex = 0;
-    std::array<size_t, Config::MAX_VISIBLE_NODES> _countData;
-    eastl::fixed_vector<GLuint, Config::MAX_VISIBLE_NODES * 256> _indexOffsetData;
 
     GLuint _indexBuffer;
     GLuint _indexBufferSize;

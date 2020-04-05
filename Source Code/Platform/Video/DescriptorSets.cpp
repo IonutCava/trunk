@@ -107,16 +107,11 @@ namespace Divide {
     }
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
-        STUBBED("ToDo: This is problematic because we don't know what the current state is. If the current descriptor set doesn't set a binding, that doesn't mean that that binding is empty");
-
         TextureDataContainer::DataEntries& otherTextureData = rhs._textureData.textures();
         for (auto it = eastl::begin(otherTextureData); it != eastl::end(otherTextureData);) {
             const TextureData* texData = lhs.findTexture(it->first);
             bool erase = false;
-            if (texData == nullptr) {
-                //lhs._textureData.setTexture(it->second, it->first);
-                //erase = true;
-            } else {
+            if (texData != nullptr) {
                 if (*texData == it->second) {
                     erase = true;
                 }
@@ -136,10 +131,7 @@ namespace Divide {
 
             const TextureView* texViewData = lhs.findTextureView(otherView._binding);
             bool erase = false;
-            if (texViewData == nullptr) {
-                //lhs._textureViews.push_back(otherView);
-                //erase = true;
-            } else {
+            if (texViewData != nullptr) {
                 if (*texViewData == otherView._view) {
                     erase = true;
                 }
@@ -159,10 +151,7 @@ namespace Divide {
 
             const Image* image = lhs.findImage(otherImage._binding);
             bool erase = false;
-            if (image == nullptr) {
-                //lhs._images.push_back(otherImage);
-                //erase = true;
-            } else {
+            if (image != nullptr) {
                 if (*image == otherImage) {
                     erase = true;
                 }
@@ -181,10 +170,7 @@ namespace Divide {
 
             const ShaderBufferBinding* binding = lhs.findBinding(otherBinding._binding);
             bool erase = false;
-            if (binding == nullptr) {
-                //lhs._shaderBuffers.push_back(otherBinding);
-                //erase = true;
-            } else {
+            if (binding != nullptr) {
                 if (*binding == otherBinding) {
                     erase = true;
                 }

@@ -43,7 +43,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     _bloomBlurBuffer[1] = _context.renderTargetPool().allocateRT(desc);
 
     desc._name = "Bloom";
-    desc._resolution = vec2<U16>(to_U16(res.w / 4.0f), to_U16(res.h / 4.0f));
+    desc._resolution = vec2<U16>(res / 4.0f);
     _bloomOutput = _context.renderTargetPool().allocateRT(desc);
 
     ShaderModuleDescriptor vertModule = {};

@@ -392,34 +392,9 @@ void glVertexArray::draw(const GenericDrawCommand& command, U32 cmdBufferOffset)
     if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
         GLUtil::submitRenderCommand(command, true, true, cmdBufferOffset, _formatInternal);
     } else {
-        rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
+        rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex, getIndexCount());
         GLUtil::submitRenderCommand(command, true, false, cmdBufferOffset, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
-}
-
-void glVertexArray::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex) {
-    STUBBED("ToDo: Move all of this somewhere outside of glVertexArray so that we can gather proper data from all of the batched commands -Ionut");
-
-    if (_lastDrawCount == drawCount && _lastIndexCount == indexCount && _lastFirstIndex == firstIndex) {
-        return;
-    }
-
-    if (_lastDrawCount != drawCount || _lastIndexCount != indexCount) {
-        eastl::fill(eastl::begin(_countData), eastl::begin(_countData) + drawCount, indexCount);
-    }
-
-    if (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex) {
-        const size_t idxCount = drawCount * getIndexCount();
-        if (_indexOffsetData.size() < idxCount) {
-            _indexOffsetData.resize(idxCount, firstIndex);
-        }
-        if (_lastFirstIndex != firstIndex) {
-            eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
-        }
-    }
-    _lastDrawCount = drawCount;
-    _lastIndexCount = indexCount;
-    _lastFirstIndex = firstIndex;
 }
 
 /// Activate and set all of the required vertex attributes.

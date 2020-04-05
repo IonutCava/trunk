@@ -69,37 +69,11 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, U32 cmdBufferO
     if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
         GLUtil::submitRenderCommand(command, _indexBuffer > 0, true, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
     } else {
-        rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex);
+        rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex, indexBuffer().count);
         GLUtil::submitRenderCommand(command, _indexBuffer > 0, false, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 
     GL_API::lockBuffers(_context.getFrameCount());
-}
-
-void glGenericVertexData::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex) {
-    STUBBED("ToDo: Move all of this somewhere outside of glVertexArray so that we can gather proper data from all of the batched commands -Ionut");
-
-    if (_lastDrawCount == drawCount && _lastIndexCount == indexCount && _lastFirstIndex == firstIndex) {
-        return;
-    }
-
-    if (_lastDrawCount != drawCount || _lastIndexCount != indexCount) {
-        eastl::fill(eastl::begin(_countData), eastl::begin(_countData) + drawCount, indexCount);
-    }
-
-    if (_indexBuffer > 0 && (_lastDrawCount != drawCount || _lastFirstIndex != firstIndex)) {
-        const U32 idxCount = to_U32(drawCount * _idxBuffer.count);
-
-        if (_indexOffsetData.size() < idxCount) {
-            _indexOffsetData.resize(idxCount, firstIndex);
-        }
-        if (_lastFirstIndex != firstIndex) {
-            eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
-        }
-    }
-    _lastDrawCount = drawCount;
-    _lastIndexCount = indexCount;
-    _lastFirstIndex = firstIndex;
 }
 
 void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) {

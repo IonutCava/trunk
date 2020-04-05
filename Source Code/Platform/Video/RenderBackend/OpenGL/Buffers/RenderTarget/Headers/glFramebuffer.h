@@ -82,8 +82,6 @@ class glFramebuffer : public RenderTarget,
     explicit glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor);
     ~glFramebuffer();
 
-    bool resize(U16 width, U16 height) final;
-
     void drawToLayer(const DrawLayerParams& params);
 
     void setMipLevel(U16 writeLevel, bool validate = true);

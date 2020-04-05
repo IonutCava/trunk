@@ -44,11 +44,11 @@
 	<!-- try to enable late v-swap. Only works with VSync. May fallback to regular vsync-->
 	<adaptiveSync>true</adaptiveSync>
 	<!-- splash screen dimensions -->
-	<splashScreenSize w="400" h="300"/>
+	<splashScreenSize width="400" height="300"/>
 	<!-- window size. Only for windowed mode! -->
-	<windowSize w="1280" h="720"/>
+	<windowSize width="1280" height="720"/>
 	<!-- rendering resolution -->
-	<resolution w="1920" h="1080"/>
+	<resolution width="1920" height="1080"/>
 	<!-- Physics simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
 	<simSpeed>0</simSpeed>
 	<zNear>0.25</zNear>

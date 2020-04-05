@@ -74,6 +74,14 @@ void GFXRTPool::resizeTargets(RenderTargetUsage target, U16 width, U16 height) {
     }
 }
 
+void GFXRTPool::updateSampleCount(RenderTargetUsage target, U8 sampleCount) {
+    for (const std::shared_ptr<RenderTarget>& rt : _renderTargets[to_U32(target)]) {
+        if (rt) {
+            rt->updateSampleCount(sampleCount);
+        }
+    }
+}
+
 void GFXRTPool::set(RenderTargetID target, const std::shared_ptr<RenderTarget>& newTarget) {
     _renderTargets[to_U32(target._usage)][target._index] = newTarget;
 }

@@ -34,10 +34,15 @@ Texture::Texture(GFXDevice& context,
       _flipped(isFlipped),
       _asyncLoad(asyncLoad)
 {
-    if (_descriptor.msaaSamples() == -1) {
-        _descriptor.msaaSamples(0);
-    }
+    processTextureType();
+    _width = _height = 0;
+}
 
+Texture::~Texture()
+{
+}
+
+void Texture::processTextureType() noexcept {
     if (_descriptor.msaaSamples() == 0) {
         if (_descriptor.type() == TextureType::TEXTURE_2D_MS) {
             _descriptor.type(TextureType::TEXTURE_2D);
@@ -46,13 +51,15 @@ Texture::Texture(GFXDevice& context,
             _descriptor.type(TextureType::TEXTURE_2D_ARRAY);
         }
     }
-
-    _width = _height = 0;
+    else {
+        if (_descriptor.type() == TextureType::TEXTURE_2D) {
+            _descriptor.type(TextureType::TEXTURE_2D_MS);
+        }
+        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY) {
+            _descriptor.type(TextureType::TEXTURE_2D_ARRAY_MS);
+        }
+    }
     _data._textureType = _descriptor.type();
-}
-
-Texture::~Texture()
-{
 }
 
 bool Texture::load() {
@@ -269,6 +276,14 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 void Texture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     // This can be called at any time
     _descriptor.samplerDescriptor(descriptor);
+}
+
+void Texture::setSampleCount(U8 newSampleCount) noexcept { 
+    CLAMP(newSampleCount, to_U8(0u), _context.gpuState().maxMSAASampleCount());
+    if (_descriptor._msaaSamples != newSampleCount) {
+        _descriptor._msaaSamples = newSampleCount;
+        resize(NULL, { width(), height() });
+    }
 }
 
 void Texture::validateDescriptor() {

@@ -7,14 +7,6 @@
 
 namespace Divide {
 
-GPUState::GPUState()
-{
-}
-
-GPUState::~GPUState()
-{
-}
-
 void GPUState::registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode) {
     if (displayIndex >= _supportedDisplayModes.size()) {
         _supportedDisplayModes.push_back(vectorSTD<GPUVideoMode>());

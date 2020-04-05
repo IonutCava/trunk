@@ -251,6 +251,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // If we do not support MSAA on a hardware level for whatever reason, override user set MSAA levels
     config.rendering.MSAAsamples = std::min(config.rendering.MSAAsamples, maxGLSamples);
     config.rendering.shadowMapping.MSAAsamples = std::min(config.rendering.shadowMapping.MSAAsamples, maxGLSamples);
+    _context.gpuState().maxMSAASampleCount(maxGLSamples);
 
     if (s_stateTracker._opengl46Supported) {
         Console::printfn(Locale::get(_ID("GL_SHADER_THREADS")),
