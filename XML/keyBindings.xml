@@ -34,7 +34,7 @@
 <action id="27" name="toggle geometry rendering"/>
 <action id="28" name="toggle debug lines"/>
 <action id="29" name="toggle bounding box rendering"/>
-<action id="30" name="toggle shadow map + depth buffer preview"/>
+<action id="30" name="placeholder"/>
 <action id="31" name="take screenshot"/>
 <action id="32" name="toggle fullscreen"/>
 <action id="33" name="toggle flashlight"/>
@@ -82,7 +82,6 @@
 <key actionUp="27">F7</key>
 <key actionUp="28">F8</key>
 <key actionUp="37">F9</key>
-<key actionUp="30">F10</key>
 <key actionUp="29">B</key>
 <key actionUp="31">SYSREQ</key>
 <key actionLAtlUp="32">RETURN</key>
@@ -110,7 +109,7 @@
 <button actionDown="39">POV</button>
 <button actionDown="40">AXIS</button>
 <button actionUp="29">BUTTON_0</button>
-<button actionUp="30">BUTTON_1</button>
+<button actionUp="37">BUTTON_1</button>
 <button actionUp="33">BUTTON_2</button>
 </joystick1>
 <joystick2>

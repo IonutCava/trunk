@@ -18,11 +18,10 @@ out gl_PerVertex
 #if defined(USE_CULL_DISTANCE)
   float gl_CullDistance[MAX_CULL_DISTANCES];
 #endif
-}
 #if defined(TESS_CTRL_SHADER)
-gl_out[];
+} gl_out[];
 #else //defined(TESS_CTRL_SHADER)
-;
+};
 #endif //defined(TESS_CTRL_SHADER)
 
 #if defined(GEOM_SHADER) || defined(TESS_CTRL_SHADER) || defined(TESS_EVAL_SHADER)
@@ -102,8 +101,8 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_showDebugInfo (uint(dvd_otherData.z) == 1)
 
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
-void setClipPlanes(in vec4 worldSpaceVertex) {
 #if defined(USE_CUSTOM_CLIP_PLANES)
+void setClipPlanes(in vec4 worldSpaceVertex) {
     for (int i = 0; i < MAX_CLIP_PLANES; ++i) {
 #   if defined(TESS_CTRL_SHADER)
         gl_out[gl_InvocationID].gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
@@ -111,8 +110,10 @@ void setClipPlanes(in vec4 worldSpaceVertex) {
         gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
 #   endif
     }
-#endif //USE_CUSTOM_CLIP_PLANES
 }
+#else
+#define setClipPlanes(X)
+#endif //USE_CUSTOM_CLIP_PLANES
 #endif
 
 #if 0

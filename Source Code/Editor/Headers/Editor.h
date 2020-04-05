@@ -66,6 +66,7 @@ class Gizmo;
 class Camera;
 class MenuBar;
 class StatusBar;
+class LightPool;
 class UndoManager;
 class DockedWindow;
 class OutputWindow;
@@ -195,6 +196,7 @@ class Editor : public PlatformContextComponent,
     ImGuiContext& imguizmoContext();
 
     inline ImGuiContext& imguiContext();
+
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
     void drawMenuBar();
@@ -208,6 +210,8 @@ class Editor : public PlatformContextComponent,
     bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
     // Return true if the model was spawned as a scene node
     bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name);
+
+    LightPool& getActiveLightPool();
 
     inline void toggleMemoryEditor(bool state);
     inline bool hasUnsavedElements() const;
@@ -350,9 +354,15 @@ namespace Attorney {
         static void setTransformSettings(Editor& editor, const TransformSettings& settings) {
             editor.setTransformSettings(settings);
         }
+
         static const TransformSettings& getTransformSettings(const Editor& editor) {
             return editor.getTransformSettings();
         }
+
+        static LightPool& getActiveLightPool(Editor& editor) {
+            return editor.getActiveLightPool();
+        }
+
         static void enableGizmo(const Editor& editor, bool state) {
             return editor._gizmo->enable(state);
         }
@@ -360,9 +370,11 @@ namespace Attorney {
         static bool enableGizmo(const Editor& editor) {
             return editor._gizmo->enabled();
         }
+
         static bool hasUnsavedElements(const Editor& editor) {
             return editor.hasUnsavedElements();
         }
+
         static void saveElement(Editor& editor, I64 elementGUID = -1) {
             editor.saveElement(elementGUID);
         }

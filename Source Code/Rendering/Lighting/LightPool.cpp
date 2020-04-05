@@ -32,16 +32,9 @@ namespace {
     LightPool::LightList g_sortedLightsContainer = {};
 };
 
-bool LightPool::_debugDraw = false;
-
 LightPool::LightPool(Scene& parentScene, PlatformContext& context)
     : SceneComponent(parentScene),
       PlatformContextComponent(context),
-      _init(false),
-      _lightImpostorShader(nullptr),
-      _lightIconsTexture(nullptr),
-      _lightShaderBuffer(nullptr),
-      _shadowBuffer(nullptr),
      // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
      _shadowPassTimer(Time::ADD_TIMER("Shadow Pass Timer"))
 {
@@ -239,18 +232,24 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     ShadowMap::bindShadowMaps(bufferInOut);
 }
 
-void LightPool::togglePreviewShadowMaps(GFXDevice& context, Light& light) {
-    _debugDraw = !_debugDraw;
-    // Stop if we have shadows disabled
-    if (!context.context().config().rendering.shadowMapping.enabled) {
-        return;
+void LightPool::setDebugLight(LightType type, U16 lightIndex) {
+   
+    bool debug = type != LightType::COUNT;
+    if (debug) {
+        const size_t count = _lights[to_base(type)].size();
+        if (count == 0) {
+            type = LightType::COUNT;
+            debug = false;
+        }
+        lightIndex = std::min(lightIndex, to_U16(count));
     }
-
-    ParamHandler::instance().setParam(_ID_32("rendering.debug.displayShadowDebugInfo"), _debugDraw);
-    if (_debugDraw) {
-        ShadowMap::enableShadowDebugViewForLight(context, light);
+    ParamHandler::instance().setParam(_ID_32("rendering.debug.displayShadowDebugInfo"), debug);
+    
+    _debugLightIndex = { type, lightIndex };
+    if (debug) {
+        ShadowMap::enableShadowDebugViewForLight(_context.gfx(), *_lights[to_base(type)][lightIndex]);
     } else {
-        ShadowMap::disableShadowDebugViews(context);
+        ShadowMap::disableShadowDebugViews(_context.gfx());
     }
 }
 
@@ -416,7 +415,7 @@ void LightPool::postRenderAllPasses(const Camera& playerCamera) {
 }
 
 void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& bufferInOut) const {
-    if (!_debugDraw) {
+    if (!lightImpostorsEnabled()) {
         return;
     }
 

@@ -9,8 +9,6 @@
 namespace Divide {
 
 namespace {
-    constexpr U32 MAX_RENDER_NODES = 256;
-
     FORCE_INLINE bool hasChildren(TessellatedTerrainNode& node) {
         for (U8 i = 0; i < 4; ++i) {
             if (node.c[i] != nullptr) {
@@ -20,21 +18,6 @@ namespace {
         return false;
     }
 };
-
-TerrainTessellator::TerrainTessellator()
-   : _numNodes(0),
-     _renderDepth(0),
-     _prevRenderDepth(0),
-     _lastFrustumPlaneCache(-1)
-{
-    _tree.reserve(MAX_TESS_NODES);
-    _renderData.resize(MAX_RENDER_NODES);
-}
-
-TerrainTessellator::~TerrainTessellator()
-{
-    _renderData.clear();
-}
 
 const vec3<F32>& TerrainTessellator::getOrigin() const {
     return _originCache;
@@ -61,19 +44,17 @@ bufferPtr TerrainTessellator::updateAndGetRenderData(const Frustum& frust, U16& 
     return _renderData.data();
 }
 
-const TerrainTessellator::RenderDataVector& TerrainTessellator::renderData() const {
+const TerrainTessellator::RenderData& TerrainTessellator::renderData() const {
     return _renderData;
 }
 
 bool TerrainTessellator::inDivideCheck(TessellatedTerrainNode* node) const {
     if (_config._useCameraDistance) {
         // Distance from current origin to camera
-        //F32 d = std::abs(_cameraEyeCache.xz().distanceSquared(node->origin.xz()));
         F32 d = std::abs(Sqrt(SQUARED(_cameraEyeCache[0] - node->origin[0]) + SQUARED(_cameraEyeCache[2] - node->origin[2])));
         if (d > 2.5 * Sqrt(SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height)) || node->dim.width < _config._cutoffDistance) {
             return false;
         }
-        //return d <= 2.5f * (SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height));
     }
 
     return true;
@@ -93,8 +74,8 @@ bool TerrainTessellator::checkDivide(TessellatedTerrainNode* node) {
 
 bool TerrainTessellator::divideNode(TessellatedTerrainNode* node) {
     // Subdivide
-    F32 w_new = node->dim.width * 0.5f;
-    F32 h_new = node->dim.height * 0.5f;
+    const F32 w_new = node->dim.width * 0.5f;
+    const F32 h_new = node->dim.height * 0.5f;
 
     // Create the child nodes
     node->c[0] = createNode(node, TessellatedTerrainNodeType::CHILD_1, node->origin.x - 0.5f * w_new, node->origin.y, node->origin.z - 0.5f * h_new, w_new, h_new);
@@ -138,18 +119,17 @@ bool TerrainTessellator::divideNode(TessellatedTerrainNode* node) {
     return divided;
 }
 
-void TerrainTessellator::createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions, const F32 patchSizeInMetres) {
+bufferPtr TerrainTessellator::createTree(const Frustum& frust, const vec3<F32>& camPos, const vec3<F32>& origin, U16& renderDepth) {
     _cameraEyeCache.set(camPos);
     _originCache.set(origin);
-    _config._cutoffDistance = patchSizeInMetres;
 
     _numNodes = 0;
-    _tree.resize(std::max(terrainDimensions.width, terrainDimensions.height));
+    _tree.resize(std::max(_config._terrainDimensions.width, _config._terrainDimensions.height));
 
     TessellatedTerrainNode& terrainTree = _tree[_numNodes];
     terrainTree.type = TessellatedTerrainNodeType::ROOT; // Root node
     terrainTree.origin = origin;
-    terrainTree.dim.set(terrainDimensions.width, terrainDimensions.height);
+    terrainTree.dim.set(_config._terrainDimensions.width, _config._terrainDimensions.height);
     std::memset(terrainTree.c, 0, sizeof(terrainTree.c));
 
     terrainTree.p = nullptr;
@@ -160,6 +140,8 @@ void TerrainTessellator::createTree(const vec3<F32>& camPos, const vec3<F32>& or
     
     // Recursively subdivide the terrain
     divideNode(&terrainTree);
+
+    return updateAndGetRenderData(frust, renderDepth);
 }
 
 TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode* parent, TessellatedTerrainNodeType type, F32 x, F32 y, F32 z, F32 width, F32 height) {
@@ -189,7 +171,7 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
         // We used a N x sized buffer, so we should allow for some margin in frustum culling
         const F32 radiusAdjustmentFactor = 1.75f;
 
-        assert(renderDepth < MAX_RENDER_NODES);
+        assert(renderDepth < MAX_TERRAIN_RENDER_NODES);
 
         bool inFrustum = true;
         if (_config._useFrustumCulling) {

@@ -13,9 +13,9 @@
 	<!-- this is only taken into consideration if binary cache is disabled-->
 	<useShaderTextCache>false</useShaderTextCache>
 	<useShaderBinaryCache>false</useShaderBinaryCache>
-    <showShadowCascadeSplits>true</showShadowCascadeSplits>
-    <enableLighting>true</enableLighting>
-    <!-- memFile: file name that the application should use to write  memory allocation info -->
+	<showShadowCascadeSplits>true</showShadowCascadeSplits>
+	<enableLighting>true</enableLighting>
+	<!-- memFile: file name that the application should use to write  memory allocation info -->
 	<!-- leave empty for none! -->
 	<memFile>mem.log</memFile>
 	<mesh>
@@ -79,7 +79,7 @@
 	<terrainDetailLevel>2</terrainDetailLevel>
 	<!-- 0 - low, 1 - med, 2 - high -->
 	<terrainTextureQuality>0</terrainTextureQuality>
-	<numLightsPerScreenTile>-1</numLightsPerScreenTile>
+	<numLightsPerScreenTile>512</numLightsPerScreenTile>
 	<!-- 0 - 8x8, 1 - 16x16, 2 - 32x32 -->
 	<lightThreadGroupSize>1</lightThreadGroupSize>
 	<enableFog>true</enableFog>
@@ -108,7 +108,7 @@
 		<defaultCSMSplitCount>3</defaultCSMSplitCount>
 		<!-- Unused at the moment -->
 		<softness>0.5</softness>
-		<splitLambda>0.9</splitLambda>
+		<splitLambda>0.899999976</splitLambda>
 	</shadowMapping>
 </rendering>
 <title>DIVIDE Framework - (C) Ionut Cava 2020</title>

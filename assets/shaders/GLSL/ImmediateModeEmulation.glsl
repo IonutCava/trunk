@@ -2,7 +2,7 @@
 
 layout(location = ATTRIB_POSITION) in vec3 inVertexData;
 layout(location = ATTRIB_TEXCOORD) in vec2 inTexCoordData;
-layout(location = ATTRIB_COLOR) in vec4 inColourData;
+layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
 layout(location = 0) out vec4 _colour;
 uniform mat4 dvd_WorldMatrix;

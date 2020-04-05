@@ -51,12 +51,10 @@ MenuBar::MenuBar(PlatformContext& context, bool mainMenu)
       _quitPopup(false),
       _closePopup(false)
 {
-
 }
 
 MenuBar::~MenuBar()
 {
-
 }
 
 void MenuBar::draw() {
@@ -69,6 +67,7 @@ void MenuBar::draw() {
         drawToolsMenu();
         drawWindowsMenu();
         drawPostFXMenu();
+        drawDebugMenu();
         drawHelpMenu();
 
         ImGui::EndMenuBar();
@@ -131,47 +130,47 @@ void MenuBar::drawFileMenu() {
     bool showFileOpenDialog = false;
     bool showFileSaveDialog = false;
 
-    const bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedElements(_context.editor());
-
     if (ImGui::BeginMenu("File"))
     {
-        if (ImGui::MenuItem("New")) {}
+        const bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedElements(_context.editor());
+
+        if (ImGui::MenuItem("New", "Ctrl+N", false, false))
+        {
+        }
+
         showFileOpenDialog = ImGui::MenuItem("Open", "Ctrl+O");
         if (ImGui::BeginMenu("Open Recent"))
         {
-            ImGui::MenuItem("_PLACEHOLDER_A");
-            ImGui::MenuItem("_PLACEHOLDER_B");
+            ImGui::Text("Empty");
             ImGui::EndMenu();
         }
+
         showFileSaveDialog = ImGui::MenuItem(hasUnsavedElements ? "Save*" : "Save", "Ctrl+S");
         
-        if (ImGui::MenuItem(hasUnsavedElements ? "Save All*" : "Save All")) {
+        if (ImGui::MenuItem(hasUnsavedElements ? "Save All*" : "Save All"))
+        {
             Attorney::EditorGeneralWidget::saveElement(_context.editor(), -1);
             _context.kernel().sceneManager().saveActiveScene(false);
+            _context.config().save();
             _context.editor().saveToXML();
         }
 
         ImGui::Separator();
         if (ImGui::BeginMenu("Options"))
         {
-            bool& enableLighting = _context.config().debug.enableLighting;
-            if (ImGui::MenuItem("Enable lighting", "", &enableLighting)) {
-                _context.config().changed(true);
-            }
-            bool& showCSMSplits = _context.config().debug.showShadowCascadeSplits;
-            if (ImGui::MenuItem("Enable CSM Split View", "", &showCSMSplits)) {
-                _context.config().changed(true);
-            }
+            GFXDevice& gfx = _context.gfx();
+            const Configuration& config = _context.config();
 
             if (ImGui::BeginMenu("MSAA"))
             {
-                const U8 maxMSAASamples = _context.gfx().gpuState().maxMSAASampleCount();
+                const U8 maxMSAASamples = gfx.gpuState().maxMSAASampleCount();
                 for (U8 i = 0; (1 << i) <= maxMSAASamples; ++i) {
                     const U8 sampleCount = i == 0u ? 0u : 1 << i;
                     if (sampleCount % 2 == 0) {
-                        bool msaaEntryEnabled = _context.config().rendering.MSAAsamples == sampleCount;
-                        if (ImGui::MenuItem(Util::StringFormat("%dx", to_U32(sampleCount)).c_str(), "", &msaaEntryEnabled)) {
-                            _context.gfx().setScreenMSAASampleCount(sampleCount);
+                        bool msaaEntryEnabled = config.rendering.MSAAsamples == sampleCount;
+                        if (ImGui::MenuItem(Util::StringFormat("%dx", to_U32(sampleCount)).c_str(), "", &msaaEntryEnabled))
+                        {
+                            gfx.setScreenMSAASampleCount(sampleCount);
                         }
                     }
                 }
@@ -180,13 +179,14 @@ void MenuBar::drawFileMenu() {
 
             if (ImGui::BeginMenu("CSM MSAA"))
             {
-                const U8 maxMSAASamples = _context.gfx().gpuState().maxMSAASampleCount();
+                const U8 maxMSAASamples = gfx.gpuState().maxMSAASampleCount();
                 for (U8 i = 0; (1 << i) <= maxMSAASamples; ++i) {
                     const U8 sampleCount = i == 0u ? 0u : 1 << i;
                     if (sampleCount % 2 == 0) {
-                        bool msaaEntryEnabled = _context.config().rendering.shadowMapping.MSAAsamples == sampleCount;
-                        if (ImGui::MenuItem(Util::StringFormat("%dx", to_U32(sampleCount)).c_str(), "", &msaaEntryEnabled)) {
-                            _context.gfx().setShadowMSAASampleCount(sampleCount);
+                        bool msaaEntryEnabled = config.rendering.shadowMapping.MSAAsamples == sampleCount;
+                        if (ImGui::MenuItem(Util::StringFormat("%dx", to_U32(sampleCount)).c_str(), "", &msaaEntryEnabled))
+                        {
+                            gfx.setShadowMSAASampleCount(sampleCount);
                         }
                     }
                 }
@@ -231,57 +231,99 @@ void MenuBar::drawFileMenu() {
 void MenuBar::drawEditMenu() {
     if (ImGui::BeginMenu("Edit"))
     {
-        if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-        if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+        if (ImGui::MenuItem("Undo", "CTRL+Z"))
+        {
+            _context.editor().Undo();
+        }
+
+        if (ImGui::MenuItem("Redo", "CTRL+Y"))
+        {
+            _context.editor().Redo();
+        }
+
         ImGui::Separator();
-        if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-        if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-        if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+
+        if (ImGui::MenuItem("Cut", "CTRL+X", false, false))
+        {
+        }
+
+        if (ImGui::MenuItem("Copy", "CTRL+C", false, false))
+        {
+        }
+
+        if (ImGui::MenuItem("Paste", "CTRL+V", false, false))
+        {
+        }
+
         ImGui::Separator();
         ImGui::EndMenu();
     }
 }
+
 void MenuBar::drawProjectMenu() {
     if (ImGui::BeginMenu("Project"))
     {
-        if(ImGui::MenuItem("Configuration")) {}
+        if(ImGui::MenuItem("Configuration", "", false, false))
+        {
+        }
+
         ImGui::EndMenu();
     }
 }
 void MenuBar::drawObjectMenu() {
     if (ImGui::BeginMenu("Object"))
     {
-        if(ImGui::MenuItem("New Node")) {}
+        if(ImGui::MenuItem("New Node", "", false, false))
+        {
+        }
+
         ImGui::EndMenu();
     }
 
 }
 void MenuBar::drawToolsMenu() {
-    if (ImGui::BeginMenu("Tools")) {
+    if (ImGui::BeginMenu("Tools"))
+    {
         bool memEditorEnabled = Attorney::EditorMenuBar::memoryEditorEnabled(_context.editor());
         if (ImGui::MenuItem("Memory Editor", NULL, memEditorEnabled)) {
             Attorney::EditorMenuBar::toggleMemoryEditor(_context.editor(), !memEditorEnabled);
             _context.editor().saveToXML();
         }
 
-        if (ImGui::BeginMenu("Render Targets")) {
+        if (ImGui::BeginMenu("Render Targets"))
+        {
             const GFXRTPool& pool = _context.gfx().renderTargetPool();
             for (U8 i = 0; i < to_U8(RenderTargetUsage::COUNT); ++i) {
-                RenderTargetUsage usage = static_cast<RenderTargetUsage>(i);
-                auto rTargets = pool.renderTargets(usage);
+                const RenderTargetUsage usage = static_cast<RenderTargetUsage>(i);
+                const auto& rTargets = pool.renderTargets(usage);
+
                 if (rTargets.empty()) {
-                    ImGui::MenuItem(UsageToString(usage));
+                    if (ImGui::MenuItem(UsageToString(usage), "", false, false))
+                    {
+                    }
                 } else {
-                    if (ImGui::BeginMenu(UsageToString(usage))) {
-                        for (const std::shared_ptr<RenderTarget>& rt : rTargets) {
-                            if (rt != nullptr && ImGui::BeginMenu(rt->name().c_str())) {
+                    if (ImGui::BeginMenu(UsageToString(usage)))
+                    {
+                        for (const auto& rt : rTargets) {
+                            if (rt == nullptr) {
+                                continue;
+                            }
+
+                            if (ImGui::BeginMenu(rt->name().c_str()))
+                            {
                                 for (U8 j = 0; j < to_U8(RTAttachmentType::COUNT); ++j) {
-                                    RTAttachmentType type = static_cast<RTAttachmentType>(j);
-                                    U8 count = rt->getAttachmentCount(type);
+                                    const RTAttachmentType type = static_cast<RTAttachmentType>(j);
+                                    const U8 count = rt->getAttachmentCount(type);
+
                                     for (U8 k = 0; k < count; ++k) {
                                         const RTAttachment& attachment = rt->getAttachment(type, k);
                                         const Texture_ptr& tex = attachment.texture();
-                                        if (tex != nullptr && ImGui::MenuItem(tex->resourceName().c_str())) {
+                                        if (tex == nullptr) {
+                                            continue;
+                                        }
+
+                                        if (ImGui::MenuItem(tex->resourceName().c_str()))
+                                        {
                                             _previewTextures.push_back(tex);
                                         }
                                     }
@@ -294,12 +336,17 @@ void MenuBar::drawToolsMenu() {
                     }
                 }
             }
+
             const Texture_ptr& prevDepthBufferTex = _context.gfx().getPrevDepthBuffer();
-            if (prevDepthBufferTex != nullptr && ImGui::BeginMenu("Misc")) {
-                if (ImGui::MenuItem(prevDepthBufferTex->resourceName().c_str())) {
-                    _previewTextures.push_back(prevDepthBufferTex);
+            if (prevDepthBufferTex != nullptr) {
+                if (ImGui::BeginMenu("Miscellaneous"))
+                {
+                    if (ImGui::MenuItem(prevDepthBufferTex->resourceName().c_str()))
+                    {
+                        _previewTextures.push_back(prevDepthBufferTex);
+                    }
+                    ImGui::EndMenu();
                 }
-                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
@@ -322,20 +369,71 @@ void MenuBar::drawWindowsMenu() {
 void MenuBar::drawPostFXMenu() {
     if (ImGui::BeginMenu("PostFX"))
     {
+        PostFX& postFX = _context.gfx().getRenderer().postFX();
         for (FilterType f : FilterType::_values()) {
-            bool filterEnabled = _context.gfx().getRenderer().postFX().getFilterState(f);
             if (f._value == FilterType::FILTER_COUNT) {
                 continue;
             }
-            if (ImGui::MenuItem(f._to_string(), NULL, &filterEnabled)) {
+
+            const bool filterEnabled = postFX.getFilterState(f);
+            if (ImGui::MenuItem(f._to_string(), NULL, &filterEnabled))
+            {
                 if (filterEnabled) {
-                    _context.gfx().getRenderer().postFX().pushFilter(f);
+                    postFX.pushFilter(f);
                 } else {
-                    _context.gfx().getRenderer().postFX().popFilter(f);
+                    postFX.popFilter(f);
                 }
             }
         }
+        ImGui::EndMenu();
+    }
+}
 
+void MenuBar::drawDebugMenu() {
+    if (ImGui::BeginMenu("Debug"))
+    {
+        GFXDevice& gfx = _context.gfx();
+        Configuration& config = _context.config();
+
+        bool& enableLighting = config.debug.enableLighting;
+        if (ImGui::MenuItem("Enable lighting", "", &enableLighting))
+        {
+            config.changed(true);
+        }
+
+        bool& showCSMSplits = config.debug.showShadowCascadeSplits;
+        if (ImGui::MenuItem("Enable CSM Split View", "", &showCSMSplits))
+        {
+            config.changed(true);
+        }
+
+        LightPool& pool = Attorney::EditorGeneralWidget::getActiveLightPool(_context.editor());
+
+        bool shadowDebug = pool.isDebugLight(LightType::DIRECTIONAL, 0);
+        if (ImGui::MenuItem("Debug Main CSM", "", &shadowDebug))
+        {
+            pool.setDebugLight(shadowDebug ? LightType::DIRECTIONAL : LightType::COUNT, 0u);
+        }
+
+        bool lightImpostors = pool.lightImpostorsEnabled();
+        if (ImGui::MenuItem("Draw Light Impostors", "", &lightImpostors))
+        {
+            pool.lightImpostorsEnabled(lightImpostors);
+        }
+
+        if (ImGui::BeginMenu("Debug Views"))
+        {
+            vectorEASTL<std::tuple<stringImpl, I16, bool>> viewNames = {};
+            gfx.getDebugViewNames(viewNames);
+
+            for (auto[name, index, enabled] : viewNames) {
+                if (ImGui::MenuItem(name.c_str(), "", &enabled))
+                {
+                    gfx.toggleDebugView(index, enabled);
+                }
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndMenu();
     }
 }

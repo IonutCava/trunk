@@ -125,8 +125,12 @@ class LightPool : public SceneComponent,
     void preRenderAllPasses(const Camera& playerCamera);
     void postRenderAllPasses(const Camera& playerCamera);
 
+    inline bool isDebugLight(LightType type, U16 lightIndex) const noexcept { return _debugLightIndex == std::pair{type, lightIndex}; }
+    /// LightType::COUNT = disabled
+    void setDebugLight(LightType type, U16 lightIndex);
+
     static void idle();
-    static void togglePreviewShadowMaps(GFXDevice& context, Light& light);
+    
 
     /// Get the appropriate shadow bind slot for every light's shadow
     static U8 getShadowBindSlotOffset(ShadowType type) noexcept {
@@ -146,6 +150,8 @@ class LightPool : public SceneComponent,
         };
     }
     
+    PROPERTY_RW(bool, lightImpostorsEnabled, false);
+
   protected:
     using LightShadowProperties = std::array<Light::ShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS>;
 
@@ -178,25 +184,22 @@ class LightPool : public SceneComponent,
 
     std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount;
     std::array<LightList, to_base(RenderStage::COUNT)> _sortedLights;
-
     std::array<BufferData, to_base(RenderStage::COUNT)> _sortedLightProperties;
-
-    ShaderBuffer* _lightShaderBuffer;
-    ShaderBuffer* _shadowBuffer;
+    std::array<LightList, to_base(LightType::COUNT)> _lights;
+    std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
 
     LightList _sortedShadowLights;
     ShadowProperties _shadowBufferData;
-
     mutable SharedMutex _lightLock;
-    std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
-    std::array<LightList, to_base(LightType::COUNT)> _lights;
-    bool _init;
-    Texture_ptr _lightIconsTexture;
-    ShaderProgram_ptr _lightImpostorShader;
 
+    Texture_ptr _lightIconsTexture = nullptr;
+    ShaderProgram_ptr _lightImpostorShader = nullptr;
+    ShaderBuffer* _lightShaderBuffer = nullptr;
+    ShaderBuffer* _shadowBuffer = nullptr;
     Time::ProfileTimer& _shadowPassTimer;
+    std::pair<LightType, U16> _debugLightIndex = { LightType::COUNT, to_U16(0u) };
+    bool _init = false;
 
-    static bool _debugDraw;
     static std::array<U8, to_base(ShadowType::COUNT)> _shadowLocation;
 };
 

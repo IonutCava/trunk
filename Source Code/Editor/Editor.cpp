@@ -1454,6 +1454,11 @@ bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const s
     return false;
 }
 
+LightPool& Editor::getActiveLightPool() {
+    Scene& activeScene = _context.kernel().sceneManager().getActiveScene();
+    return activeScene.lightPool();
+}
+
 void Editor::teleportToNode(SceneGraphNode* sgn) const {
     if (sgn != nullptr) {
         Attorney::SceneManagerCameraAccessor::moveCameraToNode(_context.kernel().sceneManager(), sgn, 3.0f);

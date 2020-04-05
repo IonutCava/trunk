@@ -843,11 +843,6 @@ void GFXDevice::closeRenderingAPI() {
 void GFXDevice::idle() {
     OPTICK_EVENT();
 
-    if (Config::ENABLE_GPU_VALIDATION) {
-        constexpr U32 previewDebugViews = _ID_32("rendering.previewDebugViews");
-        _debugViewsEnabled = ParamHandler::instance().getParam<bool>(previewDebugViews, false);
-    }
-
     _api->idle();
 
     _shaderComputeQueue->idle();
@@ -1807,7 +1802,7 @@ void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffe
     constexpr I32 padding = 5;
 
     // Early out if we didn't request the preview
-    if (_debugViewsEnabled) {
+    if (Config::ENABLE_GPU_VALIDATION) {
 
         GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
         beginDebugScopeCmd._scopeID = 1234567;
@@ -1826,11 +1821,11 @@ void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffe
     }
 }
 
-void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut) {
-    static DebugView* HiZPtr = nullptr;
-    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour4(128), 96).getHash();
+namespace {
+    static DebugView* HiZView = nullptr;
+};
 
-
+void GFXDevice::initDebugViews() {
     // Lazy-load preview shader
     if (!_previewDepthMapShader) {
         ShaderModuleDescriptor vertModule = {};
@@ -1884,7 +1879,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         VelocityPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         VelocityPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         VelocityPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 1u);
-            
+
         DebugView_ptr SSAOPreview = eastl::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
         SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
@@ -1939,7 +1934,7 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         Luminance->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         Luminance->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
-        HiZPtr = addDebugView(HiZ);
+        HiZView = addDebugView(HiZ);
         addDebugView(DepthPreview);
         addDebugView(NormalPreview);
         addDebugView(VelocityPreview);
@@ -1951,13 +1946,19 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         addDebugView(Luminance);
         WAIT_FOR_CONDITION(_previewDepthMapShader->getState() == ResourceState::RES_LOADED);
     }
+}
 
-    if (HiZPtr) {
+void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut) {
+    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour4(128), 96).getHash();
+
+    initDebugViews();
+
+    if (HiZView) {
         //HiZ preview
         I32 LoDLevel = 0;
         RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
         LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
-        HiZPtr->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
+        HiZView->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
     }
 
     constexpr I32 maxViewportColumnCount = 10;
@@ -1968,7 +1969,11 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         }
     }
 
-    const I32 columnCount = std::min(viewCount, maxViewportColumnCount);
+    if (viewCount == 0) {
+        return;
+    }
+
+    const I32 columnCount = viewCount < 4 ? 4 : std::min(viewCount, maxViewportColumnCount);
     I32 rowCount = viewCount / maxViewportColumnCount;
     if (viewCount % maxViewportColumnCount > 0) {
         rowCount++;
@@ -1996,8 +2001,9 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
     GFX::BindPipelineCommand bindPipeline = {};
     GFX::DrawCommand drawCommand = { triangleCmd };
 
-    for (I16 idx = 0; idx < to_I16(_debugViews.size()); ++idx) {
-        DebugView& view = *_debugViews[idx];
+    I16 idx = 0;
+    for (I16 i = 0; i < to_I16(_debugViews.size()); ++i) {
+        DebugView& view = *_debugViews[i];
 
         if (!view._enabled) {
             continue;
@@ -2024,12 +2030,13 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
             labelStack.emplace_back(view._name, viewport);
         }
 
-        if (idx > 0 && idx % (columnCount - 1) == 0) {
+        if (idx > 0 &&  idx % (columnCount - 1) == 0) {
             viewport.y += viewportHeight + targetViewport.y;
             viewport.x += viewportWidth * columnCount + targetViewport.x * columnCount;
         }
              
         viewport.x -= viewportWidth + targetViewport.x;
+        ++idx;
     }
 
     TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));
@@ -2043,7 +2050,6 @@ void GFXDevice::renderDebugViews(const Rect<I32>& targetViewport, const I32 padd
         drawText(text, bufferInOut);
     }
 }
-
 
 DebugView* GFXDevice::addDebugView(const eastl::shared_ptr<DebugView>& view) {
     UniqueLock<Mutex> lock(_debugViewLock);
@@ -2076,6 +2082,25 @@ bool GFXDevice::removeDebugView(DebugView* view) {
     }
 
     return false;
+}
+
+void GFXDevice::toggleDebugView(I16 index, const bool state) {
+    UniqueLock<Mutex> lock(_debugViewLock);
+    for (auto& view : _debugViews) {
+        if (view->_sortIndex == index) {
+            view->_enabled = state;
+            break;
+        }
+    }
+}
+
+void GFXDevice::getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, bool>>& namesOut) {
+    namesOut.resize(0);
+
+    UniqueLock<Mutex> lock(_debugViewLock);
+    for (auto& view : _debugViews) {
+        namesOut.emplace_back(view->_name, view->_sortIndex, view->_enabled);
+    }
 }
 
 void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut) {

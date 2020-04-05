@@ -313,7 +313,11 @@ void glVertexArray::upload() {
         for (U8 j = 0; j < to_base(AttribLocation::COUNT); ++j) {
             stageUsage[j] = _useAttribute[j] && stageMask[j];
         }
-
+        if (RenderStagePass::index(RenderStage::SHADOW, RenderPassType::MAIN_PASS) == i) {
+            if (stageUsage[to_base(AttribLocation::NORMAL)]) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
+        }
         size_t crtHash = 0;
         // Dirty on a VAO map cache miss
         if (!_VAOMap.getVAO(stageUsage, _vaoCaches[i], crtHash)) {

@@ -9,11 +9,12 @@
 #endif
 
 vec4   dvd_Vertex;
+#if !defined(SHADOW_PASS)
 vec3   dvd_Normal;
+#endif
 #if defined(COMPUTE_TBN)
 vec3   dvd_Tangent;
 #endif
-
 #if !defined(DEPTH_PASS)
 vec4   dvd_Colour;
 #endif
@@ -24,13 +25,13 @@ vec3 UNPACK_FLOAT(in float value) {
 
 void computeDataMinimal() {
     dvd_Vertex = vec4(inVertexData, 1.0);
+#if !defined(SHADOW_PASS)
     dvd_Normal = UNPACK_FLOAT(inNormalData);
-
+#endif
 #if !defined(DEPTH_PASS)
     dvd_Colour = inColourData;
 #endif
-
-#if defined(COMPUTE_TBN)
+    #if defined(COMPUTE_TBN)
     dvd_Tangent = UNPACK_FLOAT(inTangentData);
 #endif
     VAR._texCoord = inTexCoordData;
@@ -50,10 +51,10 @@ void computeDataMinimal() {
 #       else
             applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
 #       endif
-#   else
+#   else //SHADOW_PASS
         applyBoneTransforms(dvd_Vertex, dvd_lodLevel);
-#   endif
-#endif
+#   endif //SHADOW_PASS
+#endif // USE_GPU_SKINNING
 }
 
 void computeDataNoClip() {

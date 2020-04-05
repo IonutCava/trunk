@@ -726,12 +726,8 @@ U16 Scene::registerInputActions() {
             renderState().disableOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
         }
     };
-    auto toggleShadowMapDepthBufferPreview = [this](InputParams param) {
-        LightPool::togglePreviewShadowMaps(_context.gfx(), *_lightPool->getLights(LightType::DIRECTIONAL)[0]);
-
-        ParamHandler& par = ParamHandler::instance();
-        par.setParam<bool>(_ID_32("rendering.previewDebugViews"),
-                          !par.getParam<bool>(_ID_32("rendering.previewDebugViews"), false));
+    auto placeholder = [this](InputParams param) {
+        
     };
     auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
     auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
@@ -833,56 +829,55 @@ U16 Scene::registerInputActions() {
         endDragSelection(getPlayerIndexForDevice(param._deviceIndex), _context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
     };
 
-    U16 actionID = 0;
     InputActionList& actions = _input->actionList();
-    actions.registerInputAction(actionID++, none);
-    actions.registerInputAction(actionID++, deleteSelection);
-    actions.registerInputAction(actionID++, increaseCameraSpeed);
-    actions.registerInputAction(actionID++, decreaseCameraSpeed);
-    actions.registerInputAction(actionID++, increaseResolution);
-    actions.registerInputAction(actionID++, decreaseResolution);
-    actions.registerInputAction(actionID++, moveForward);
-    actions.registerInputAction(actionID++, moveBackwards);
-    actions.registerInputAction(actionID++, stopMoveFWDBCK);
-    actions.registerInputAction(actionID++, strafeLeft);
-    actions.registerInputAction(actionID++, strafeRight);
-    actions.registerInputAction(actionID++, stopStrafeLeftRight);
-    actions.registerInputAction(actionID++, rollCCW);
-    actions.registerInputAction(actionID++, rollCW);
-    actions.registerInputAction(actionID++, stopRollCCWCW);
-    actions.registerInputAction(actionID++, turnLeft);
-    actions.registerInputAction(actionID++, turnRight);
-    actions.registerInputAction(actionID++, stopTurnLeftRight);
-    actions.registerInputAction(actionID++, turnUp);
-    actions.registerInputAction(actionID++, turnDown);
-    actions.registerInputAction(actionID++, stopTurnUpDown);
-    actions.registerInputAction(actionID++, togglePauseState);
-    actions.registerInputAction(actionID++, toggleDepthOfField);
-    actions.registerInputAction(actionID++, toggleBloom);
-    actions.registerInputAction(actionID++, toggleSkeletonRendering);
-    actions.registerInputAction(actionID++, toggleAxisLineRendering);
-    actions.registerInputAction(actionID++, toggleWireframeRendering);
-    actions.registerInputAction(actionID++, toggleGeometryRendering);
-    actions.registerInputAction(actionID++, toggleDebugLines);
-    actions.registerInputAction(actionID++, toggleBoundingBoxRendering);
-    actions.registerInputAction(actionID++, toggleShadowMapDepthBufferPreview);
-    actions.registerInputAction(actionID++, takeScreenshot);
-    actions.registerInputAction(actionID++, toggleFullScreen);
-    actions.registerInputAction(actionID++, toggleFlashLight);
-    actions.registerInputAction(actionID++, toggleOctreeRegionRendering);
-    actions.registerInputAction(actionID++, lockCameraToMouse);
-    actions.registerInputAction(actionID++, releaseCameraFromMouse);
-    actions.registerInputAction(actionID++, rendererDebugView);
-    actions.registerInputAction(actionID++, shutdown);
-    actions.registerInputAction(actionID++, povNavigation);
-    actions.registerInputAction(actionID++, axisNavigation);
-    actions.registerInputAction(actionID++, toggleDebugInterface);
-    actions.registerInputAction(actionID++, toggleEditor);
-    actions.registerInputAction(actionID++, toggleConsole);
-    actions.registerInputAction(actionID++, dragSelectBegin);
-    actions.registerInputAction(actionID++, dragSelectEnd);
+    actions.registerInputAction(0,  none);
+    actions.registerInputAction(1,  deleteSelection);
+    actions.registerInputAction(2,  increaseCameraSpeed);
+    actions.registerInputAction(3,  decreaseCameraSpeed);
+    actions.registerInputAction(4,  increaseResolution);
+    actions.registerInputAction(5,  decreaseResolution);
+    actions.registerInputAction(6,  moveForward);
+    actions.registerInputAction(7,  moveBackwards);
+    actions.registerInputAction(8,  stopMoveFWDBCK);
+    actions.registerInputAction(9,  strafeLeft);
+    actions.registerInputAction(10, strafeRight);
+    actions.registerInputAction(11, stopStrafeLeftRight);
+    actions.registerInputAction(12, rollCCW);
+    actions.registerInputAction(13, rollCW);
+    actions.registerInputAction(14, stopRollCCWCW);
+    actions.registerInputAction(15, turnLeft);
+    actions.registerInputAction(16, turnRight);
+    actions.registerInputAction(17, stopTurnLeftRight);
+    actions.registerInputAction(18, turnUp);
+    actions.registerInputAction(19, turnDown);
+    actions.registerInputAction(20, stopTurnUpDown);
+    actions.registerInputAction(21, togglePauseState);
+    actions.registerInputAction(22, toggleDepthOfField);
+    actions.registerInputAction(23, toggleBloom);
+    actions.registerInputAction(24, toggleSkeletonRendering);
+    actions.registerInputAction(25, toggleAxisLineRendering);
+    actions.registerInputAction(26, toggleWireframeRendering);
+    actions.registerInputAction(27, toggleGeometryRendering);
+    actions.registerInputAction(28, toggleDebugLines);
+    actions.registerInputAction(29, toggleBoundingBoxRendering);
+    actions.registerInputAction(30, placeholder);
+    actions.registerInputAction(31, takeScreenshot);
+    actions.registerInputAction(32, toggleFullScreen);
+    actions.registerInputAction(33, toggleFlashLight);
+    actions.registerInputAction(34, toggleOctreeRegionRendering);
+    actions.registerInputAction(35, lockCameraToMouse);
+    actions.registerInputAction(36, releaseCameraFromMouse);
+    actions.registerInputAction(37, rendererDebugView);
+    actions.registerInputAction(38, shutdown);
+    actions.registerInputAction(39, povNavigation);
+    actions.registerInputAction(40, axisNavigation);
+    actions.registerInputAction(41, toggleDebugInterface);
+    actions.registerInputAction(42, toggleEditor);
+    actions.registerInputAction(43, toggleConsole);
+    actions.registerInputAction(44, dragSelectBegin);
+    actions.registerInputAction(45, dragSelectEnd);
 
-    return actionID;
+    return 46;
 }
 
 void Scene::loadKeyBindings() {

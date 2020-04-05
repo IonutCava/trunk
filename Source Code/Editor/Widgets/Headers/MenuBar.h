@@ -54,6 +54,7 @@ namespace Divide {
           void drawToolsMenu();
           void drawWindowsMenu();
           void drawPostFXMenu();
+          void drawDebugMenu();
           void drawHelpMenu();
 
       protected:

@@ -113,29 +113,23 @@ namespace TypeUtil {
 
 struct DebugView : public GUIDWrapper {
     DebugView() noexcept
-        : GUIDWrapper()
-        , _textureBindSlot(0)
-        , _sortIndex(-1)
-        , _enabled (true)
+        : DebugView(-1)
     {
     }
 
-    DebugView(I16 sortIndex) noexcept
+    DebugView(I16 sortIndex) noexcept 
         : GUIDWrapper()
-        , _textureBindSlot(0)
         , _sortIndex(to_I16(sortIndex))
-        , _enabled(true)
     {
     }
 
-    bool _enabled;
-    U8 _textureBindSlot;
-    Texture_ptr _texture;
-    ShaderProgram_ptr _shader;
     PushConstants _shaderData;
-
-    I16 _sortIndex;
     stringImpl _name;
+    ShaderProgram_ptr _shader = nullptr;
+    Texture_ptr _texture = nullptr;
+    I16 _sortIndex = -1;
+    U8 _textureBindSlot = 0u;
+    bool _enabled = false;
 };
 
 FWD_DECLARE_MANAGED_STRUCT(DebugView);
@@ -272,6 +266,8 @@ public:  // Accessors and Mutators
 
     DebugView* addDebugView(const eastl::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
+    void toggleDebugView(I16 index, const bool state);
+    void getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, bool>>& namesOut);
 
     /// In milliseconds
     inline F32 getFrameDurationGPU() const;
@@ -352,7 +348,8 @@ protected:
 
     void onSizeChange(const SizeChangeParams& params);
 
-    void renderDebugViews(const Rect<I32>& targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut);
+    void initDebugViews();
+    void renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut);
     
     void stepResolution(bool increment);
 
@@ -458,7 +455,6 @@ private:
     GFXShaderData _gpuBlock;
 
     std::mutex _debugViewLock;
-    bool _debugViewsEnabled = false;
     vectorSTD<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer = nullptr;

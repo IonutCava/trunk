@@ -22,13 +22,18 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 #define dvd_texOperation uint(dvd_Matrices[DATA_IDX]._extraProperties.x)
 #define dvd_bumpMethod uint(dvd_Matrices[DATA_IDX]._extraProperties.y)
 
-// x - reserved; y - parallax factor, z - lod level, w - data
+//buffer_matProperties:
+//  x - isSelected/isHighlighted
+//  y - isShadowMapped
+//  z - lodLevel
+//  w - occlusion cull flag
+
 #define buffer_matProperties dvd_Matrices[DATA_IDX]._colourMatrix[3]
 
-// x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull flag
+#define dvd_selectionFlag   buffer_matProperties.x
+#define dvd_parallaxFactor  buffer_matProperties.y
 #define dvd_lodLevel int(buffer_matProperties.z)
 #define dvd_dataFlag int(buffer_matProperties.w)
-#define dvd_parallaxFactor  buffer_matProperties.y
 
 #if defined(FRAG_SHADER)
 #define dvd_reflectionIndex uint(dvd_Matrices[DATA_IDX]._normalMatrixW[1][3])

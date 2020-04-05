@@ -110,6 +110,7 @@ private:
 protected:
     friend class Terrain;
 
+    //x - chunk size, y - patch size in meters
     PROPERTY_RW(vec2<F32>, tessellationSettings);
     PROPERTY_RW(vec2<F32>, altitudeRange);
     PROPERTY_RW(vec2<U16>, dimensions, { 1 });

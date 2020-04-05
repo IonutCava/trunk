@@ -405,8 +405,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.emplace_back("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true);
         shaderModule._defines.emplace_back("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true);
         shaderModule._defines.emplace_back("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true);
-        shaderModule._defines.emplace_back("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x), true);
-        shaderModule._defines.emplace_back("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x), true);
+        shaderModule._defines.emplace_back("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x) + "f", true);
+        shaderModule._defines.emplace_back("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x) + "f", true);
         shaderModule._defines.emplace_back("NODE_STATIC", true);
 
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
@@ -539,26 +539,23 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     RenderStateBlock terrainRenderStatePrePass = terrainRenderState;
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
-    RenderStateBlock terrainRenderStateReflection;
+    RenderStateBlock terrainRenderStateReflection = terrainRenderState;
     terrainRenderStateReflection.setCullMode(CullMode::CCW);
-    terrainRenderStateReflection.setTessControlPoints(4);
 
     RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
     terrainRenderStatePrePassReflection.setCullMode(CullMode::CCW);
 
     // Generate a shadow render state
-    RenderStateBlock terrainRenderStateDepth;
-    terrainRenderStateDepth.setCullMode(CullMode::CW);
-    terrainRenderStateDepth.setZBias(1.0f, 1.0f);
-    terrainRenderStateDepth.setZFunc(ComparisonFunction::LEQUAL);
-    terrainRenderStateDepth.setColourWrites(true, true, false, false);
-    terrainRenderStateDepth.setTessControlPoints(4);
+    RenderStateBlock terrainRenderStateShadow = terrainRenderState;
+    //terrainRenderStateShadow.setZBias(1.0f, 1.0f);
+    terrainRenderStateShadow.setZFunc(ComparisonFunction::LEQUAL);
+    terrainRenderStateShadow.setColourWrites(true, true, false, false);
 
     terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());
     terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderPassType::PRE_PASS);
     terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), { RenderStage::REFLECTION, RenderPassType::MAIN_PASS });
     terrainMaterial->setRenderStateBlock(terrainRenderStatePrePassReflection.getHash(), { RenderStage::REFLECTION, RenderPassType::PRE_PASS });
-    terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
+    terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW);
 
     if (threadedLoading) {
         Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, &context](const Task & parent) {

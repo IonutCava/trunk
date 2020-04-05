@@ -59,12 +59,6 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
       _drawDistance(0.0f),
       _editorDataDirtyState(EditorDataState::IDLE)
 {
-    TerrainTessellator::Configuration shadowConfig = {};
-    shadowConfig._useCameraDistance = false;
-
-    for (TerrainTessellator& tessellator : _shadowTessellators) {
-        tessellator.overrideConfig(shadowConfig);
-    }
 }
 
 Terrain::~Terrain()
@@ -154,6 +148,21 @@ void Terrain::onEditorChange(const char* field) {
 }
 
 void Terrain::postBuild() {
+    TerrainTessellator::Configuration config = {};
+    config._cutoffDistance = _descriptor->tessellationSettings().y;
+    config._terrainDimensions = _descriptor->dimensions();
+
+    for (TerrainTessellator& tessellator : _terrainTessellator) {
+        tessellator.overrideConfig(config);
+    }
+
+    TerrainTessellator::Configuration shadowConfig = config;
+    shadowConfig._useCameraDistance = false;
+
+    for (TerrainTessellator& tessellator : _shadowTessellators) {
+        tessellator.overrideConfig(shadowConfig);
+    }
+
     const U16 terrainWidth = _descriptor->dimensions().width;
     const U16 terrainHeight = _descriptor->dimensions().height;
 
@@ -263,8 +272,14 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         rComp.getMaterialInstance()->setParallaxFactor(_descriptor->parallaxHeightScale());
 
+        F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
+        // Lower detail for reflections, refraction, shadows, etc
+        if (renderStagePass._stage != RenderStage::DISPLAY) {
+            triangleWidth *= 1.25f;
+        }
+
         PushConstants constants = pkg.pushConstants(0);
-        constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
+        constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, triangleWidth);
         pkg.pushConstants(0, constants);
     }
 
@@ -276,16 +291,11 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         bool update = tessellator->getOrigin() != crtPos || tessellator->getFrustum() != frustum;
         if (_initBufferWriteCounter > 0) {
             update = true;
-            //if (renderStagePass._stage == RenderStage::DISPLAY) {
-            //    _context.debugDrawFrustum(&camera.getFrustum());
-            //}
-            _initBufferWriteCounter--;
+            --_initBufferWriteCounter;
         }
 
-        if (update)
-        {
-            tessellator->createTree(camera.getEye(), crtPos, _descriptor->dimensions(), _descriptor->tessellationSettings().y);
-            bufferPtr data = (bufferPtr)tessellator->updateAndGetRenderData(frustum, depth);
+        if (update) {
+            bufferPtr data = tessellator->createTree(frustum, camera.getEye(), crtPos, depth);
             _shaderData->writeData(offset, depth, data);
             _shaderDataDirty = true;
         }
@@ -320,8 +330,14 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     pkgInOut.addShaderBuffer(0, buffer);
 
+    F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
+    // Lower detail for reflections, refraction, shadows, etc
+    if (renderStagePass._stage != RenderStage::DISPLAY) {
+        triangleWidth *= 1.25f;
+    }
+
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, to_F32(_descriptor->tessellatedTriangleWidth()));
+    pushConstantsCommand._constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, triangleWidth);
 
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
