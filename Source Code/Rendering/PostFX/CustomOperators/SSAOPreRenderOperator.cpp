@@ -223,10 +223,6 @@ void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bu
     ACKNOWLEDGE_UNUSED(bufferInOut);
 }
 
-TextureData SSAOPreRenderOperator::getDebugOutput() const {
-    return _parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA)).texture()->data();
-}
-
 void SSAOPreRenderOperator::onToggle(const bool state) {
     PreRenderOperator::onToggle(state);
     _enabled = state;

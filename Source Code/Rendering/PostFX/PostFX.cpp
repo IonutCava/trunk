@@ -16,25 +16,25 @@
 
 namespace Divide {
 
+const char* PostFX::FilterName(FilterType filter) noexcept {
+    switch (filter) {
+        case FilterType::FILTER_SS_ANTIALIASING:  return "SS_ANTIALIASING";
+        case FilterType::FILTER_SS_REFLECTIONS:  return "SS_REFLECTIONS";
+        case FilterType::FILTER_SS_AMBIENT_OCCLUSION:  return "SS_AMBIENT_OCCLUSION";
+        case FilterType::FILTER_DEPTH_OF_FIELD:  return "DEPTH_OF_FIELD";
+        case FilterType::FILTER_MOTION_BLUR:  return "MOTION_BLUR";
+        case FilterType::FILTER_BLOOM: return "BLOOM";
+        case FilterType::FILTER_LUT_CORECTION:  return "LUT_CORRECTION";
+        case FilterType::FILTER_UNDERWATER: return "UNDERWATER";
+        case FilterType::FILTER_NOISE: return "NOISE";
+        case FilterType::FILTER_VIGNETTE: return "VIGNETTE";
+    }
+
+    return "Unknown";
+};
+
 PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
-    : PlatformContextComponent(context),
-      _preRenderBatch(nullptr),
-      _screenBorder(nullptr),
-      _noise(nullptr),
-      _randomNoiseCoefficient(0.0f),
-      _randomFlashCoefficient(0.0f),
-      _noiseTimer(0.0),
-      _tickInterval(1),
-      _postProcessingShader(nullptr),
-      _underwaterTexture(nullptr),
-      _drawPipeline(nullptr),
-      _filtersDirty(true),
-      _filterStack(0),
-      _currentFadeTimeMS(0.0),
-      _targetFadeTimeMS(0.0),
-      _fadeWaitDurationMS(0.0),
-      _fadeOut(false),
-      _fadeActive(false)
+    : PlatformContextComponent(context)
 {
     ParamHandler::instance().setParam<bool>(_ID_32("postProcessing.enableVignette"), false);
 
@@ -69,13 +69,13 @@ PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
 
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette"));  // 0
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise"));  // 1
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "screenUnderwater"));  // 2
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "screenNormal"));  // 3
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "ColourPassThrough"));  // 4
-
-    _shaderFunctionSelection.resize(_postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
+    _shaderFunctionList.fill(0);
+    _shaderFunctionList[to_base(FXDisplayFunction::Vignette)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette");
+    _shaderFunctionList[to_base(FXDisplayFunction::Noise)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise");
+    _shaderFunctionList[to_base(FXDisplayFunction::Underwater)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Underwater");
+    _shaderFunctionList[to_base(FXDisplayFunction::Normal)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Normal");
+    _shaderFunctionList[to_base(FXDisplayFunction::PassThrough)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "ColourPassThrough");
+    _shaderFunctionSelection.fill(0u);
 
     SamplerDescriptor defaultSampler = {};
     defaultSampler.wrapU(TextureWrap::REPEAT);
@@ -143,12 +143,23 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     if (_filtersDirty) {
-        _shaderFunctionSelection[0] = _shaderFunctionList[getFilterState(FilterType::FILTER_VIGNETTE) ? 0 : 4];
-        _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
-        _shaderFunctionSelection[2] = _shaderFunctionList[getFilterState(FilterType::FILTER_UNDERWATER) ? 2 : 3];
+        _shaderFunctionSelection[to_base(FXRoutines::Vignette)] =
+            _shaderFunctionList[to_base(getFilterState(FilterType::FILTER_VIGNETTE)
+                                                    ? FXDisplayFunction::Vignette
+                                                    : FXDisplayFunction::PassThrough)];
+
+        _shaderFunctionSelection[to_base(FXRoutines::Noise)] =
+            _shaderFunctionList[to_base(getFilterState(FilterType::FILTER_NOISE)
+                                                    ? FXDisplayFunction::Noise
+                                                    : FXDisplayFunction::PassThrough)];
+
+        _shaderFunctionSelection[to_base(FXRoutines::Screen)] =
+            _shaderFunctionList[to_base(getFilterState(FilterType::FILTER_UNDERWATER)
+                                                    ? FXDisplayFunction::Underwater
+                                                    : FXDisplayFunction::Normal)];
 
         PipelineDescriptor desc = _drawPipeline->descriptor();
-        desc._shaderFunctions[to_base(ShaderType::FRAGMENT)] = _shaderFunctionSelection;
+        desc._shaderFunctions[to_base(ShaderType::FRAGMENT)] = { std::cbegin(_shaderFunctionSelection), std::cend(_shaderFunctionSelection) };
         _drawPipeline = context().gfx().newPipeline(desc);
         _filtersDirty = false;
     };
@@ -159,7 +170,7 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
-    _preRenderBatch->prepare(camera, _filterStack, bufferInOut);
+    _preRenderBatch->prepare(camera, _filterStack | _overrideFilterStack, bufferInOut);
     GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
 
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -168,7 +179,7 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
 void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
 
-    _preRenderBatch->execute(camera, _filterStack, bufferInOut);
+    _preRenderBatch->execute(camera, _filterStack | _overrideFilterStack, bufferInOut);
 
     TextureData output = _preRenderBatch->getOutput();
     TextureData data0 = _underwaterTexture->data();

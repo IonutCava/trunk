@@ -39,8 +39,8 @@ class PreRenderBatch {
     void idle(const Configuration& config);
     void update(const U64 deltaTimeUS);
 
-    void prepare(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut);
-    void execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut);
+    void prepare(const Camera& camera, U32 filterStack, GFX::CommandBuffer& bufferInOut);
+    void execute(const Camera& camera, U32 filterStack, GFX::CommandBuffer& bufferInOut);
     void reshape(U16 width, U16 height);
 
     void onFilterEnabled(FilterType filter);
@@ -55,32 +55,32 @@ class PreRenderBatch {
     RenderTargetHandle luminanceRT() const noexcept;
 
     inline PreRenderOperator* getOperator(FilterType type) {
-        FilterSpace fSpace = getOperatorSpace(type);
+        const FilterSpace fSpace = getOperatorSpace(type);
         if (fSpace == FilterSpace::COUNT) {
             return nullptr;
         }
 
         const OperatorBatch& batch = _operators[to_U32(fSpace)];
-        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](PreRenderOperator* op) {
+        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const std::unique_ptr<PreRenderOperator>& op) {
                                     return op->operatorType() == type;
                               });
 
         assert(it != std::cend(batch));
-        return (*it);
+        return (*it).get();
     }
 
     inline const PreRenderOperator* getOperator(FilterType type) const {
-        FilterSpace fSpace = getOperatorSpace(type);
+        const FilterSpace fSpace = getOperatorSpace(type);
         if (fSpace == FilterSpace::COUNT) {
             return nullptr;
         }
 
         const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
-        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](PreRenderOperator* op) {
+        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const std::unique_ptr<PreRenderOperator>& op) {
                                     return op->operatorType() == type;
                               });
         assert(it != std::cend(batch));
-        return (*it);
+        return (*it).get();
     }
 
 
@@ -92,25 +92,27 @@ class PreRenderBatch {
    private:
 
     inline FilterSpace getOperatorSpace(FilterType type) const noexcept {
+        // ToDo: Always keep this up-to-date with every filter we add
         switch(type) {
             case FilterType::FILTER_SS_ANTIALIASING :
                 return FilterSpace::FILTER_SPACE_LDR;
+
+            case FilterType::FILTER_SS_AMBIENT_OCCLUSION:
+            case FilterType::FILTER_DEPTH_OF_FIELD:
+            case FilterType::FILTER_BLOOM:
+                return FilterSpace::FILTER_SPACE_HDR;
+
+            default: break;
         }
-        switch (type) {
-            case FilterType::FILTER_NOISE:
-            case FilterType::FILTER_VIGNETTE:
-            case FilterType::FILTER_UNDERWATER:
-                return FilterSpace::COUNT;
-        }
-        return FilterSpace::FILTER_SPACE_HDR;
+
+        return FilterSpace::COUNT;
     }
 
     void onFilterToggle(FilterType type, const bool state);
 
     void init();
-    void destroy();
   private:
-    using OperatorBatch = vectorSTD<PreRenderOperator*>;
+    using OperatorBatch = vectorEASTL<std::unique_ptr<PreRenderOperator>>;
     std::array<OperatorBatch, to_base(FilterSpace::COUNT)> _operators;
 
     GFXDevice& _context;
@@ -118,7 +120,6 @@ class PreRenderBatch {
     ResourceCache& _resCache;
 
     RenderTargetID     _renderTarget = RenderTargetUsage::SCREEN;
-    PreRenderOperator* _debugOperator = nullptr;
     ShaderBuffer*      _histogramBuffer = nullptr;
     RenderTargetHandle _postFXOutput;
     RenderTargetHandle _sceneEdges;

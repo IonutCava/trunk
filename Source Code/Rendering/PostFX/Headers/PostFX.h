@@ -46,6 +46,22 @@ class Texture;
 
 class PostFX : public PlatformContextComponent {
 private:
+    enum class FXDisplayFunction : U8 {
+        Vignette = 0,
+        Noise,
+        Underwater,
+        Normal,
+        PassThrough,
+        COUNT
+    };
+
+    enum class FXRoutines : U8 {
+        Vignette = 0,
+        Noise,
+        Screen,
+        COUNT
+    };
+
     enum class TexOperatorBindPoint : U8 {
         TEX_BIND_POINT_SCREEN = to_base(ShaderProgram::TextureUsage::UNIT0),
         TEX_BIND_POINT_BORDER = to_base(ShaderProgram::TextureUsage::UNIT1),
@@ -66,24 +82,33 @@ public:
 
     void updateResolution(U16 newWidth, U16 newHeight);
 
-    inline void pushFilter(FilterType filter) {
+    inline void pushFilter(FilterType filter, bool overrideScene = false) {
         if (!getFilterState(filter)) {
-            SetBit(_filterStack, to_U16(filter));
+            if (overrideScene) {
+                SetBit(_filterStack, to_U32(filter));
+            } else {
+                SetBit(_overrideFilterStack, to_U32(filter));
+            }
             _filtersDirty = true;
             getFilterBatch()->onFilterEnabled(filter);
         }
     }
 
-    inline void popFilter(FilterType filter) {
+    inline void popFilter(FilterType filter, bool overrideScene = false) {
         if (getFilterState(filter)) {
-            ClearBit(_filterStack, to_U16(filter));
+            if (overrideScene) {
+                ClearBit(_filterStack, to_U32(filter));
+            } else {
+                ClearBit(_overrideFilterStack, to_U32(filter));
+            }
             _filtersDirty = true;
             getFilterBatch()->onFilterDisabled(filter);
         }
     }
 
     inline bool getFilterState(FilterType filter) const noexcept {
-        return BitCompare(_filterStack, to_U16(filter));
+        return BitCompare(_filterStack, to_U32(filter)) ||
+               BitCompare(_overrideFilterStack, to_U32(filter));
     }
 
     inline PreRenderBatch* getFilterBatch() const noexcept {
@@ -105,22 +130,24 @@ public:
     void setFadeOutIn(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS);
     void setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
 
+    static const char* FilterName(FilterType filter) noexcept;
 private:
 
-    std::unique_ptr<PreRenderBatch> _preRenderBatch;
+    std::unique_ptr<PreRenderBatch> _preRenderBatch = nullptr;
     /// Screen Border
-    Texture_ptr _screenBorder;
+    Texture_ptr _screenBorder = nullptr;
     /// Noise
-    Texture_ptr _noise;
+    Texture_ptr _noise = nullptr;
 
     F32 _randomNoiseCoefficient = 0.0f, _randomFlashCoefficient = 0.0f;
-    D64 _noiseTimer = 0.0, _tickInterval = 0.0;
+    D64 _noiseTimer = 0.0, _tickInterval = 1.0;
 
-    ShaderProgram_ptr _postProcessingShader;
-    Texture_ptr _underwaterTexture;
+    ShaderProgram_ptr _postProcessingShader = nullptr;
+    Texture_ptr _underwaterTexture = nullptr;
     vec2<U16> _resolutionCache;
-    vectorSTD<U32> _shaderFunctionSelection;
-    vectorSTD<I32> _shaderFunctionList;
+
+    std::array<U32, to_base(FXRoutines::COUNT)> _shaderFunctionSelection;
+    std::array<I32, to_base(FXDisplayFunction::COUNT)> _shaderFunctionList;
 
     RTDrawDescriptor _postFXTarget;
 
@@ -133,7 +160,9 @@ private:
     DELEGATE<void> _fadeOutComplete;
     DELEGATE<void> _fadeInComplete;
 
-    U16 _filterStack = 0;
+    U32 _filterStack = 0u;
+    U32 _overrideFilterStack = 0u;
+
     bool _filtersDirty = true;
 
     GenericDrawCommand _drawCommand;

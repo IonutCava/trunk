@@ -24,29 +24,12 @@ namespace {
 
 PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache& cache, RenderTargetID renderTarget)
     : _context(context),
-      _resCache(cache),
-      _parent(parent),
-      _renderTarget(renderTarget)
+    _resCache(cache),
+    _parent(parent),
+    _renderTarget(renderTarget)
 {
     _edgeDetectionPipelines.fill(nullptr);
-    init();
-}
 
-PreRenderBatch::~PreRenderBatch()
-{
-    destroy();
-}
-
-void PreRenderBatch::destroy() {
-    for (OperatorBatch& batch : _operators) {
-        MemoryManager::DELETE_CONTAINER(batch);
-    }
-    
-    _context.renderTargetPool().deallocateRT(_currentLuminance);
-    _context.renderTargetPool().deallocateRT(_postFXOutput);
-}
-
-void PreRenderBatch::init() {
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
 
     const RenderTarget& rt = *inputRT()._rt;
@@ -61,7 +44,7 @@ void PreRenderBatch::init() {
 
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.samplerDescriptor(screenSampler);
-    
+
     {
         //Colour0 holds the LDR screen texture
         vectorSTD<RTAttachmentDescriptor> att = {
@@ -126,12 +109,44 @@ void PreRenderBatch::init() {
 
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
-    hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_context, *this, _resCache));
-    hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_context, *this, _resCache));
-    hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_context, *this, _resCache));
+    for (U16 i = 1; i < to_base(FilterType::FILTER_COUNT); ++i) {
+        const FilterType fType = static_cast<FilterType>(toBit(i));
+
+        if (getOperatorSpace(fType) == FilterSpace::FILTER_SPACE_HDR) {
+            switch (fType) {
+                case FilterType::FILTER_SS_AMBIENT_OCCLUSION:
+                    hdrBatch.emplace_back(std::make_unique<SSAOPreRenderOperator>(_context, *this, _resCache));
+                    break;
+
+                case FilterType::FILTER_DEPTH_OF_FIELD:
+                    hdrBatch.emplace_back(std::make_unique<DoFPreRenderOperator>(_context, *this, _resCache));
+                    break;
+
+                case FilterType::FILTER_BLOOM:
+                    hdrBatch.emplace_back(std::make_unique<BloomPreRenderOperator>(_context, *this, _resCache));
+                    break;
+                default:
+                    DIVIDE_UNEXPECTED_CALL();
+                    break;
+            }
+        }
+    }
 
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
-    ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, *this, _resCache));
+    for (U16 i = 1; i < to_base(FilterType::FILTER_COUNT); ++i) {
+        const FilterType fType = static_cast<FilterType>(toBit(i));
+
+        if (getOperatorSpace(fType) == FilterSpace::FILTER_SPACE_LDR) {
+            switch (fType) {
+                case FilterType::FILTER_SS_ANTIALIASING:
+                    ldrBatch.push_back(std::make_unique<PostAAPreRenderOperator>(_context, *this, _resCache));
+                    break;
+                default:
+                    DIVIDE_UNEXPECTED_CALL();
+                    break;
+            }
+        }
+    }
     {
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
@@ -248,23 +263,22 @@ void PreRenderBatch::init() {
     bufferDescriptor._separateReadWrite = false;
 
     _histogramBuffer = _context.newSB(bufferDescriptor);
-    //_debugOperator = hdrBatch[0];
+}
+
+PreRenderBatch::~PreRenderBatch()
+{
+    _context.renderTargetPool().deallocateRT(_currentLuminance);
+    _context.renderTargetPool().deallocateRT(_postFXOutput);
 }
 
 TextureData PreRenderBatch::getOutput() {
-    if (_debugOperator != nullptr) {
-        return _debugOperator->getDebugOutput();
-    }
-
     return _postFXOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
 }
 
 void PreRenderBatch::idle(const Configuration& config) {
     for (OperatorBatch& batch : _operators) {
-        for (PreRenderOperator* op : batch) {
-            if (op != nullptr) {
-                op->idle(config);
-            }
+        for (auto& op : batch) {
+            op->idle(config);
         }
     }
 }
@@ -298,38 +312,24 @@ void PreRenderBatch::onFilterDisabled(FilterType filter) {
 }
 
 void PreRenderBatch::onFilterToggle(FilterType filter, const bool state) {
-    OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
-    OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
-
-    for (PreRenderOperator* op : hdrBatch) {
-        if (op != nullptr && filter == op->operatorType()) {
-            op->onToggle(state);
-        }
-    }
-    for (PreRenderOperator* op : ldrBatch) {
-        if (op != nullptr && filter == op->operatorType()) {
-            op->onToggle(state);
+    for (OperatorBatch& batch : _operators) {
+        for (auto& op : batch) {
+            if (filter == op->operatorType()) {
+                op->onToggle(state);
+            }
         }
     }
 }
 
-void PreRenderBatch::prepare(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut) {
-    OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
-    OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
-
-    for (PreRenderOperator* op : hdrBatch) {
-        if (op != nullptr) {
-            op->prepare(camera, bufferInOut);
-        }
-    }
-    for (PreRenderOperator* op : ldrBatch) {
-        if (op != nullptr) {
+void PreRenderBatch::prepare(const Camera& camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
+    for (OperatorBatch& batch : _operators) {
+        for (auto& op : batch) {
             op->prepare(camera, bufferInOut);
         }
     }
 }
 
-void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::CommandBuffer& bufferInOut) {
+void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
     static Pipeline* pipelineLumCalcHistogram = nullptr, * pipelineLumCalcAverage = nullptr, * pipelineToneMap = nullptr, * pipelineToneMapAdaptive = nullptr;
     if (pipelineLumCalcHistogram == nullptr) {
         PipelineDescriptor pipelineDescriptor = {};
@@ -461,8 +461,8 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     }
 
     // Execute all HDR based operators
-    for (PreRenderOperator* op : hdrBatch) {
-        if (op != nullptr && BitCompare(filterStack, to_U16(op->operatorType()))) {
+    for (auto& op : hdrBatch) {
+        if (BitCompare(filterStack, to_U32(op->operatorType()))) {
             op->execute(camera, bufferInOut);
         }
     }
@@ -516,8 +516,8 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     }
 
     // Execute all LDR based operators
-    for (PreRenderOperator* op : ldrBatch) {
-        if (op != nullptr && BitCompare(filterStack, to_U16(op->operatorType()))) {
+    for (auto& op : ldrBatch) {
+        if (BitCompare(filterStack, to_U32(op->operatorType()))) {
             op->execute(camera, bufferInOut);
         }
     }
@@ -528,10 +528,8 @@ void PreRenderBatch::reshape(U16 width, U16 height) {
     const U16 lumaRez = to_U16(nextPOW2(to_U32(width / 3.0f)));
 
     for (OperatorBatch& batch : _operators) {
-        for (PreRenderOperator* op : batch) {
-            if (op != nullptr) {
-                op->reshape(width, height);
-            }
+        for (auto& op : batch) {
+            op->reshape(width, height);
         }
     }
 

@@ -20,21 +20,16 @@ namespace Divide {
     {
     }
 
-    PostFXWindow::~PostFXWindow()
-    {
-
-    }
-
     void PostFXWindow::drawInternal() {
         PreRenderBatch* batch = _postFX.getFilterBatch();
 
-        auto checkBox = [this](FilterType filter) {
+        const auto checkBox = [this](FilterType filter, bool overrideScene = false, const char* label = "Enabled") {
             bool filterEnabled = _postFX.getFilterState(filter);
-            if (ImGui::Checkbox("Enabled", &filterEnabled)) {
+            if (ImGui::Checkbox(label, &filterEnabled)) {
                 if (filterEnabled) {
-                    _postFX.pushFilter(filter);
+                    _postFX.pushFilter(filter, overrideScene);
                 } else {
-                    _postFX.popFilter(filter);
+                    _postFX.popFilter(filter, overrideScene);
                 }
             }
         };
@@ -64,8 +59,6 @@ namespace Divide {
 
         if (ImGui::CollapsingHeader("SS Reflections")) {
             checkBox(FilterType::FILTER_SS_REFLECTIONS);
-            //PreRenderOperator& op = batch->getOperator(FilterType::FILTER_SS_REFLECTIONS);
-            //ACKNOWLEDGE_UNUSED(op);
         }
         if (ImGui::CollapsingHeader("SS Ambient Occlusion")) {
             checkBox(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
@@ -95,8 +88,6 @@ namespace Divide {
         }
         if (ImGui::CollapsingHeader("Motion Blur")) {
             checkBox(FilterType::FILTER_MOTION_BLUR);
-            //PreRenderOperator& op = batch->getOperator(FilterType::FILTER_MOTION_BLUR);
-            //ACKNOWLEDGE_UNUSED(op);
         }
         if (ImGui::CollapsingHeader("Bloom")) {
             checkBox(FilterType::FILTER_BLOOM);
@@ -141,23 +132,11 @@ namespace Divide {
                 batch->toneMapParams(params);
             }
             checkBox(FilterType::FILTER_LUT_CORECTION);
-            //PreRenderOperator* op = batch->getOperator(FilterType::FILTER_LUT_CORECTION);
-            //ACKNOWLEDGE_UNUSED(op);
         }
-        if (ImGui::CollapsingHeader("Noise")) {
-            checkBox(FilterType::FILTER_NOISE);
-            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_NOISE);
-            ACKNOWLEDGE_UNUSED(op);
-        }
-        if (ImGui::CollapsingHeader("Vignette")) {
-            checkBox(FilterType::FILTER_VIGNETTE);
-            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_VIGNETTE);
-            ACKNOWLEDGE_UNUSED(op);
-        }
-        if (ImGui::CollapsingHeader("Underwater")) {
-            checkBox(FilterType::FILTER_UNDERWATER);
-            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_UNDERWATER);
-            ACKNOWLEDGE_UNUSED(op);
+        if (ImGui::CollapsingHeader("Test Effects")) {
+            checkBox(FilterType::FILTER_NOISE, true, PostFX::FilterName(FilterType::FILTER_NOISE));
+            checkBox(FilterType::FILTER_VIGNETTE, true, PostFX::FilterName(FilterType::FILTER_VIGNETTE));
+            checkBox(FilterType::FILTER_UNDERWATER, true, PostFX::FilterName(FilterType::FILTER_UNDERWATER));
         }
     }
 };

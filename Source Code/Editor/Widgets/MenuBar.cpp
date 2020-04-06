@@ -379,18 +379,19 @@ void MenuBar::drawPostFXMenu() {
     if (ImGui::BeginMenu("PostFX"))
     {
         PostFX& postFX = _context.gfx().getRenderer().postFX();
-        for (FilterType f : FilterType::_values()) {
-            if (f._value == FilterType::FILTER_COUNT) {
+        for (U8 i = 0; i < to_base(FilterType::FILTER_COUNT); ++i) {
+            if (i == to_U8(FilterType::FILTER_COUNT)) {
                 continue;
             }
 
+            const FilterType f = static_cast<FilterType>(toBit(i));
             const bool filterEnabled = postFX.getFilterState(f);
-            if (ImGui::MenuItem(f._to_string(), NULL, &filterEnabled))
+            if (ImGui::MenuItem(PostFX::FilterName(f), NULL, &filterEnabled))
             {
                 if (filterEnabled) {
-                    postFX.pushFilter(f);
+                    postFX.pushFilter(f, true);
                 } else {
-                    postFX.popFilter(f);
+                    postFX.popFilter(f, true);
                 }
             }
         }

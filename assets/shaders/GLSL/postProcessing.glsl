@@ -48,7 +48,7 @@ vec4 Noise(in vec4 colourIn){
 }
 
 subroutine(ScreenRoutineType)
-vec4 screenUnderwater(){
+vec4 Underwater() {
     float time2 = float(dvd_time) * 0.00001;
     vec2 uvNormal0 = VAR._texCoord * _noiseTile;
     uvNormal0.s += time2;
@@ -66,7 +66,7 @@ vec4 screenUnderwater(){
 }
 
 subroutine(ScreenRoutineType)
-vec4 screenNormal(){
+vec4 Normal(){
     return texture(texScreen, VAR._texCoord);
 }
 
@@ -83,5 +83,4 @@ void main(void){
 
     const float depth = textureLod(texDepthMap, dvd_screenPositionNormalised, 0).r;
     _colourOut = applyFog(depth, colour, _zPlanes);
-    //_colourOut = screenNormal();
 }

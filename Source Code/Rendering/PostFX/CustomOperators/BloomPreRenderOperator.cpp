@@ -190,8 +190,4 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 
-TextureData BloomPreRenderOperator::getDebugOutput() const {
-    return _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //Bloom
-}
-
 };

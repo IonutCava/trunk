@@ -15,7 +15,7 @@ class ShaderProgram;
 enum class RenderStage : U8;
 
 // ALL FILTERS MUST MODIFY THE INPUT RENDERTARGET ONLY!
-BETTER_ENUM(FilterType, U16,
+enum class FilterType : U16 {
     FILTER_SS_ANTIALIASING = toBit(1),
     FILTER_SS_REFLECTIONS = toBit(2),
     FILTER_SS_AMBIENT_OCCLUSION = toBit(3),
@@ -27,7 +27,7 @@ BETTER_ENUM(FilterType, U16,
     FILTER_NOISE = toBit(9),
     FILTER_VIGNETTE = toBit(10),
     FILTER_COUNT = 11
-);
+};
 
 enum class FilterSpace : U8 {
     FILTER_SPACE_HDR = 0,
@@ -55,7 +55,6 @@ class NOINITVTABLE PreRenderOperator {
 
     inline FilterType operatorType() const noexcept { return _operatorType; }
 
-    virtual TextureData getDebugOutput() const;
     virtual void idle(const Configuration& config);
     virtual void onToggle(const bool state);
 
