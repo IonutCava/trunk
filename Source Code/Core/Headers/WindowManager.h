@@ -77,8 +77,8 @@ class PlatformContext;
 class WindowManager : public SDLEventListener {
 public:
     struct MonitorData {
-        Rect<U16> viewport;
-        Rect<U16> drawableArea;
+        Rect<I16> viewport;
+        Rect<I16> drawableArea;
         float dpi = 0.f;
     };
 

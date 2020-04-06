@@ -87,7 +87,7 @@ public:
     }
 
     inline PreRenderBatch* getFilterBatch() const noexcept {
-        return _preRenderBatch;
+        return _preRenderBatch.get();
     }
 
     // fade the screen to the specified colour lerping over the specified time interval
@@ -107,7 +107,7 @@ public:
 
 private:
 
-    PreRenderBatch* _preRenderBatch;
+    std::unique_ptr<PreRenderBatch> _preRenderBatch;
     /// Screen Border
     Texture_ptr _screenBorder;
     /// Noise

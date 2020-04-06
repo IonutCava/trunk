@@ -221,6 +221,8 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 
+    ImGui::ResetStyle(_currentTheme);
+
     if (_context.config().gui.imgui.multiViewportEnabled) {
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
         io.ConfigViewportsNoDecoration = !_context.config().gui.imgui.windowDecorationsEnabled;
@@ -235,11 +237,12 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;        // We can honor io.WantSetMousePos requests (optional, rarely used)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;  // We can create multi-viewports on the Platform side (optional)
     io.BackendPlatformName = "Divide Framework";
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     InitBasicImGUIState(io);
 
-    io.DisplaySize.x = (F32)_mainWindow->getDimensions().width;
-    io.DisplaySize.y = (F32)_mainWindow->getDimensions().height;
+    io.DisplaySize.x = to_F32(_mainWindow->getDimensions().width);
+    io.DisplaySize.y = to_F32(_mainWindow->getDimensions().height);
 
     const vec2<U16> display_size = _mainWindow->getDrawableSize();
     io.DisplayFramebufferScale.x = io.DisplaySize.x > 0 ? ((F32)display_size.width / io.DisplaySize.x)  : 0.f;
@@ -262,7 +265,8 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                                       to_U16(WindowDescriptor::Flags::CLEAR_COLOUR) |
                                       to_U16(WindowDescriptor::Flags::CLEAR_DEPTH);
                 // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
-                winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED) | to_U32(WindowDescriptor::Flags::RESIZEABLE);
+                winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED);
+                winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::RESIZEABLE);
                 winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
                 winDescriptor.flags |= to_U32(WindowDescriptor::Flags::SHARE_CONTEXT);
 
@@ -278,12 +282,27 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
                     newWindow->hidden(false);
                     newWindow->bringToFront();
-                    newWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestClose = true; return true; });
-                    newWindow->addEventListener(WindowEvent::MOVED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args); viewport->PlatformRequestMove = true; return true; });
-                    newWindow->addEventListener(WindowEvent::RESIZED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept { ACKNOWLEDGE_UNUSED(args);  viewport->PlatformRequestResize = true;  return true; });
+
+                    newWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept {
+                        ACKNOWLEDGE_UNUSED(args);
+                        viewport->PlatformRequestClose = true;
+                        return true; 
+                    });
+
+                    newWindow->addEventListener(WindowEvent::MOVED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept {
+                        ACKNOWLEDGE_UNUSED(args);
+                        viewport->PlatformRequestMove = true;
+                        return true;
+                    });
+
+                    newWindow->addEventListener(WindowEvent::RESIZED, [viewport](const DisplayWindow::WindowEventArgs& args) noexcept {
+                        ACKNOWLEDGE_UNUSED(args);
+                        viewport->PlatformRequestResize = true;
+                        return true;
+                    });
 
                     viewport->PlatformHandle = (void*)newWindow;
-                    viewport->PlatformUserData = IM_NEW(ImGuiViewportData) {newWindow, true};
+                    viewport->PlatformUserData = IM_NEW(ImGuiViewportData){newWindow, true};
                 } else {
                     DIVIDE_UNEXPECTED_CALL("Editor::Platform_CreateWindow failed!");
                     g_windowManager->destroyWindow(newWindow);
@@ -396,7 +415,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         };
 
         const vectorEASTL<WindowManager::MonitorData>& monitors = g_windowManager->monitorData();
-        I32 monitorCount = to_I32(monitors.size());
+        const I32 monitorCount = to_I32(monitors.size());
 
         platform_io.Monitors.resize(monitorCount);
 
@@ -419,9 +438,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         main_viewport->PlatformUserData = data;
     }
 
-    ImGui::ResetStyle(_currentTheme);
-    
-    SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+    //SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
     DockedWindow::Descriptor descriptor = {};
     descriptor.position = ImVec2(0, 0);
@@ -1160,25 +1177,29 @@ void Editor::updateMousePosAndButtons() {
     io.MouseHoveredViewport = 0;
 
     bool mouseSet = false;
-    if (!io.WantSetMousePos) {
-        io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
-        mouseSet = true;
-    } else {
+    if (io.WantSetMousePos) {
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             mouseSet = g_windowManager->setGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
         } else {
             mouseSet = g_windowManager->setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
         }
+    } else {
+        io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+        mouseSet = true;
     }
 
     if (mouseSet) {
-        vec2<I32> mPos(-1);
-        WindowManager::GetMouseState(mPos, true);
-
-        if (ImGuiViewport * viewport = findViewportByPlatformHandle(_imguiContext, g_windowManager->getFocusedWindow())) {
-            //io.MousePos = ImVec2(viewport->Pos.x + (F32)mPos.x, viewport->Pos.y + (F32)mPos.y);
-            io.MousePos = ImVec2((F32)mPos.x, (F32)mPos.y);
+        vec2<I32> mPosGlobal(-1);
+        WindowManager::GetMouseState(mPosGlobal, true);
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            if (ImGuiViewport * viewport = findViewportByPlatformHandle(_imguiContext, g_windowManager->getFocusedWindow())) {
+                io.MousePos = ImVec2((F32)mPosGlobal.x, (F32)mPosGlobal.y);
+            }
+        } else {
+            vec2<I32> windowPos = mPosGlobal - g_windowManager->getFocusedWindow()->getPosition();
+            io.MousePos = ImVec2((F32)(windowPos.x), (F32)(windowPos.y));
         }
+        
     }
 
     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();

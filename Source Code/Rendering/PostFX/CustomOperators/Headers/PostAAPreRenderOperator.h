@@ -57,13 +57,18 @@ class PostAAPreRenderOperator final : public PreRenderOperator {
 
     ShaderProgram_ptr _fxaa = nullptr;
 
-    ShaderProgram_ptr _smaaEdgeDetection = nullptr;
     ShaderProgram_ptr _smaaWeightComputation = nullptr;
     ShaderProgram_ptr _smaaBlend = nullptr;
+
+    Texture_ptr _searchTexture = nullptr;
+    Texture_ptr _areaTexture = nullptr;
 
     RenderTargetHandle _smaaWeights;
 
     Pipeline* _fxaaPipeline = nullptr;
+    Pipeline* _smaaWeightPipeline = nullptr;
+    Pipeline* _smaaBlendPipeline = nullptr;
+
     GFX::SendPushConstantsCommand _pushConstantsCommand = {};
 };
 

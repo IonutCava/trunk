@@ -89,9 +89,9 @@
 	<postFX>
 		<!-- Select the type of post processing AA: FXAA or SMAA -->
 		<!-- Defaults to FXAA -->
-		<PostAAType>FXAA</PostAAType>
-		<!-- Quality level for FXAA or SMAA: 0 - lowest, 4 - highest-->
-		<PostAAQualityLevel>0</PostAAQualityLevel>
+		<PostAAType>SMAA</PostAAType>
+		<!-- Quality level for FXAA or SMAA: 0 - off, 1 - lowest, 5 - highest-->
+		<PostAAQualityLevel>5</PostAAQualityLevel>
 		<enableDepthOfField>false</enableDepthOfField>
 		<enableBloom>true</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>

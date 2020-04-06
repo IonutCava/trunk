@@ -42,7 +42,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
     Console::printfn(Locale::get(_ID("START_POST_FX")));
-    _preRenderBatch = MemoryManager_NEW PreRenderBatch(context.gfx(), cache);
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -115,7 +114,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
     _drawCommand._drawCount = 1;
     _drawPipeline = context.gfx().newPipeline(pipelineDescriptor);
 
-    _preRenderBatch->init(RenderTargetID(RenderTargetUsage::SCREEN));
+    _preRenderBatch = std::make_unique<PreRenderBatch>(context.gfx(), *this, cache, RenderTargetID(RenderTargetUsage::SCREEN));
 
     _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
@@ -125,10 +124,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
 
 PostFX::~PostFX()
 {
-    if (_preRenderBatch) {
-        _preRenderBatch->destroy();
-        MemoryManager::SAFE_DELETE(_preRenderBatch);
-    }
 }
 
 void PostFX::updateResolution(U16 width, U16 height) {

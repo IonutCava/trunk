@@ -22,11 +22,14 @@ namespace {
     constexpr U8  GROUP_Y_THREADS = 16u;
 };
 
-PreRenderBatch::PreRenderBatch(GFXDevice& context, ResourceCache& cache)
+PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache& cache, RenderTargetID renderTarget)
     : _context(context),
-      _resCache(cache)
+      _resCache(cache),
+      _parent(parent),
+      _renderTarget(renderTarget)
 {
     _edgeDetectionPipelines.fill(nullptr);
+    init();
 }
 
 PreRenderBatch::~PreRenderBatch()
@@ -43,9 +46,8 @@ void PreRenderBatch::destroy() {
     _context.renderTargetPool().deallocateRT(_postFXOutput);
 }
 
-void PreRenderBatch::init(RenderTargetID renderTarget) {
+void PreRenderBatch::init() {
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
-    _renderTarget = renderTarget;
 
     const RenderTarget& rt = *inputRT()._rt;
 

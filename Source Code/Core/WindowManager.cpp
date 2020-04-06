@@ -96,12 +96,12 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
         SDL_Rect r;
         SDL_GetDisplayBounds(i, &r);
-        data.viewport.xy(to_U16(r.x), to_U16(r.y));
-        data.viewport.zw(to_U16(r.w), to_U16(r.h));
+        data.viewport.xy(to_I16(r.x), to_I16(r.y));
+        data.viewport.zw(to_I16(r.w), to_I16(r.h));
 
         SDL_GetDisplayUsableBounds(i, &r);
-        data.drawableArea.xy(to_U16(r.x), to_U16(r.y));
-        data.drawableArea.zw(to_U16(r.w), to_U16(r.h));
+        data.drawableArea.xy(to_I16(r.x), to_I16(r.y));
+        data.drawableArea.zw(to_I16(r.w), to_I16(r.h));
 
         SDL_GetDisplayDPI(i, &data.dpi, nullptr, nullptr);
 

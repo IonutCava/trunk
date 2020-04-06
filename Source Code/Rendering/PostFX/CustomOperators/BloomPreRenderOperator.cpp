@@ -136,6 +136,15 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
      // Step 1: generate bloom
 
     // render all of the "bright spots"
+    RTClearDescriptor clearTarget = {};
+    clearTarget.clearDepth(false);
+    clearTarget.clearColours(true);
+
+    GFX::ClearRenderTargetCommand clearRenderTargetCmd = {};
+    clearRenderTargetCmd._target = _bloomOutput._targetID;
+    clearRenderTargetCmd._descriptor = clearTarget;
+    GFX::EnqueueCommand(bufferInOut, clearRenderTargetCmd);
+
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = _bloomOutput._targetID;
     beginRenderPassCmd._name = "DO_BLOOM_PASS";

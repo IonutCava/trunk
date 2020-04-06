@@ -45,16 +45,20 @@ namespace Divide {
         }
 
         if (ImGui::CollapsingHeader("SS Antialiasing")) {
-            checkBox(FilterType::FILTER_SS_ANTIALIASING);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_SS_ANTIALIASING);
-            PostAAPreRenderOperator& aaOp = static_cast<PostAAPreRenderOperator&>(op);
+            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_SS_ANTIALIASING);
+            PostAAPreRenderOperator& aaOp = static_cast<PostAAPreRenderOperator&>(*op);
             I32 level = to_I32(aaOp.postAAQualityLevel());
-            bool usesSMAA = aaOp.useSMAA();
-            if (ImGui::SliderInt("Quality Level", &level, 0, 4)) {
+
+            ImGui::Text("Quality level (0 = disabled): ");
+            if (ImGui::SliderInt("", &level, 0, 5)) {
                 aaOp.postAAQualityLevel(to_U8(level));
             }
-            if (ImGui::Checkbox("Use SMAA", &usesSMAA)) {
-                aaOp.useSMAA(usesSMAA);
+
+            static I32 selection = 0;
+            if (ImGui::RadioButton("SMAA", &selection, 0) ||
+                ImGui::RadioButton("FXAA", &selection, 1)) 
+            {
+                aaOp.useSMAA(selection == 0);
             }
         }
 
@@ -65,8 +69,8 @@ namespace Divide {
         }
         if (ImGui::CollapsingHeader("SS Ambient Occlusion")) {
             checkBox(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
-            SSAOPreRenderOperator& ssaoOp = static_cast<SSAOPreRenderOperator&>(op);
+            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
+            SSAOPreRenderOperator& ssaoOp = static_cast<SSAOPreRenderOperator&>(*op);
             F32 radius = ssaoOp.radius();
             F32 power = ssaoOp.power();
             if (ImGui::SliderFloat("Radius", &radius, 0.01f, 10.0f)) {
@@ -78,8 +82,8 @@ namespace Divide {
         }
         if (ImGui::CollapsingHeader("Depth of Field")) {
             checkBox(FilterType::FILTER_DEPTH_OF_FIELD);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
-            DoFPreRenderOperator& dofOp = static_cast<DoFPreRenderOperator&>(op);
+            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
+            DoFPreRenderOperator& dofOp = static_cast<DoFPreRenderOperator&>(*op);
             F32 focalDepth = dofOp.focalDepth();
             bool autoFocus = dofOp.autoFocus();
             if (ImGui::SliderFloat("Focal Depth", &focalDepth, 0.0f, 1.0f)) {
@@ -96,8 +100,8 @@ namespace Divide {
         }
         if (ImGui::CollapsingHeader("Bloom")) {
             checkBox(FilterType::FILTER_BLOOM);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_BLOOM);
-            BloomPreRenderOperator& bloomOp = static_cast<BloomPreRenderOperator&>(op);
+            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_BLOOM);
+            BloomPreRenderOperator& bloomOp = static_cast<BloomPreRenderOperator&>(*op);
             F32 factor = bloomOp.factor();
             F32 threshold = bloomOp.luminanceThreshold();
             if (ImGui::SliderFloat("Factor", &factor, 0.01f, 3.0f)) {
@@ -137,22 +141,22 @@ namespace Divide {
                 batch->toneMapParams(params);
             }
             checkBox(FilterType::FILTER_LUT_CORECTION);
-            //PreRenderOperator& op = batch->getOperator(FilterType::FILTER_LUT_CORECTION);
+            //PreRenderOperator* op = batch->getOperator(FilterType::FILTER_LUT_CORECTION);
             //ACKNOWLEDGE_UNUSED(op);
         }
         if (ImGui::CollapsingHeader("Noise")) {
             checkBox(FilterType::FILTER_NOISE);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_NOISE);
+            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_NOISE);
             ACKNOWLEDGE_UNUSED(op);
         }
         if (ImGui::CollapsingHeader("Vignette")) {
             checkBox(FilterType::FILTER_VIGNETTE);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_VIGNETTE);
+            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_VIGNETTE);
             ACKNOWLEDGE_UNUSED(op);
         }
         if (ImGui::CollapsingHeader("Underwater")) {
             checkBox(FilterType::FILTER_UNDERWATER);
-            PreRenderOperator& op = batch->getOperator(FilterType::FILTER_UNDERWATER);
+            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_UNDERWATER);
             ACKNOWLEDGE_UNUSED(op);
         }
     }
