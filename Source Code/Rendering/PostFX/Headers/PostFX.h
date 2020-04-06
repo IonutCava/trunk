@@ -85,9 +85,9 @@ public:
     inline void pushFilter(FilterType filter, bool overrideScene = false) {
         if (!getFilterState(filter)) {
             if (overrideScene) {
-                SetBit(_filterStack, to_U32(filter));
-            } else {
                 SetBit(_overrideFilterStack, to_U32(filter));
+            } else {
+                SetBit(_filterStack, to_U32(filter));
             }
             _filtersDirty = true;
             getFilterBatch()->onFilterEnabled(filter);
@@ -97,9 +97,9 @@ public:
     inline void popFilter(FilterType filter, bool overrideScene = false) {
         if (getFilterState(filter)) {
             if (overrideScene) {
-                ClearBit(_filterStack, to_U32(filter));
-            } else {
                 ClearBit(_overrideFilterStack, to_U32(filter));
+            } else {
+                ClearBit(_filterStack, to_U32(filter));
             }
             _filtersDirty = true;
             getFilterBatch()->onFilterDisabled(filter);
