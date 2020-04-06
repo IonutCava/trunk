@@ -74,7 +74,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM_ATTRIB(rendering.lodThresholds, z);
         GET_PARAM_ATTRIB(rendering.lodThresholds, w);
         GET_PARAM(rendering.postFX.postAAType);
-        GET_PARAM(rendering.postFX.postAASamples);
+        GET_PARAM(rendering.postFX.PostAAQualityLevel);
         GET_PARAM(rendering.postFX.enableDepthOfField);
         GET_PARAM(rendering.postFX.enableBloom);
         GET_PARAM(rendering.postFX.bloomFactor);
@@ -161,7 +161,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM_ATTRIB(rendering.lodThresholds, z);
         PUT_PARAM_ATTRIB(rendering.lodThresholds, w);
         PUT_PARAM(rendering.postFX.postAAType);
-        PUT_PARAM(rendering.postFX.postAASamples);
+        PUT_PARAM(rendering.postFX.PostAAQualityLevel);
         PUT_PARAM(rendering.postFX.enableDepthOfField);
         PUT_PARAM(rendering.postFX.enableBloom);
         PUT_PARAM(rendering.postFX.bloomFactor);

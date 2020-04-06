@@ -149,14 +149,16 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, F32 minDistToCameraSq) {
+void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, F32 minDistToCameraSq, RenderBinType targetBinType) {
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
     // We need a rendering component to render the node
     if (renderingCmp != nullptr) {
         RenderBin* rb = getBinForNode(sgn, renderingCmp->getMaterialInstance());
         assert(rb != nullptr);
 
-        rb->addNodeToBin(sgn, stage, minDistToCameraSq);
+        if (targetBinType._value == RenderBinType::RBT_COUNT || rb->getType() == targetBinType) {
+            rb->addNodeToBin(sgn, stage, minDistToCameraSq);
+        }
     }
 }
 
@@ -189,7 +191,7 @@ void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePas
     }
 }
 
-void RenderQueue::sort(RenderStagePass stagePass, RenderingOrder renderOrder) {
+void RenderQueue::sort(RenderStagePass stagePass, RenderBinType targetBinType, RenderingOrder renderOrder) {
 
     OPTICK_EVENT();
     // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
@@ -202,8 +204,10 @@ void RenderQueue::sort(RenderStagePass stagePass, RenderingOrder renderOrder) {
             const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
             Start(*CreateTask(pool,
                                 sortTask,
-                                [renderBin, sortOrder, stagePass](const Task& parentTask) {
-                                    renderBin->sort(stagePass._stage, sortOrder, parentTask);
+                                [renderBin, targetBinType, sortOrder, stagePass](const Task& parentTask) {
+                                    if (targetBinType._value == RenderBinType::RBT_COUNT || renderBin->getType() == targetBinType) {
+                                        renderBin->sort(stagePass._stage, sortOrder);
+                                    }
                                 }));
         }
     }
@@ -211,7 +215,7 @@ void RenderQueue::sort(RenderStagePass stagePass, RenderingOrder renderOrder) {
     Start(*sortTask);
 
     for (RenderBin* renderBin : _renderBins) {
-        if (renderBin->getBinSize(stagePass._stage) <= threadBias) {
+        if ((targetBinType._value == RenderBinType::RBT_COUNT || renderBin->getType() == targetBinType) && renderBin->getBinSize(stagePass._stage) <= threadBias) {
             const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
             renderBin->sort(stagePass._stage, sortOrder);
         }
@@ -220,9 +224,17 @@ void RenderQueue::sort(RenderStagePass stagePass, RenderingOrder renderOrder) {
     Wait(*sortTask);
 }
 
-void RenderQueue::refresh(RenderStage stage) {
-    for (RenderBin* renderBin : _renderBins) {
-        renderBin->refresh(stage);
+void RenderQueue::refresh(RenderStage stage, RenderBinType targetBinType) {
+    if (targetBinType._value == RenderBinType::RBT_COUNT) {
+        for (RenderBin* renderBin : _renderBins) {
+            renderBin->refresh(stage);
+        }
+    } else {
+        for (RenderBin* renderBin : _renderBins) {
+            if (renderBin->getType() == targetBinType) {
+                renderBin->refresh(stage);
+            }
+        }
     }
 }
 

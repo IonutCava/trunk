@@ -39,19 +39,25 @@ namespace Divide {
             }
         };
 
+        F32 edgeThreshold = batch->edgeDetectionThreshold();
+        if (ImGui::SliderFloat("Edge Detection Threshold", &edgeThreshold, 0.01f, 1.0f)) {
+            batch->edgeDetectionThreshold(edgeThreshold);
+        }
+
         if (ImGui::CollapsingHeader("SS Antialiasing")) {
             checkBox(FilterType::FILTER_SS_ANTIALIASING);
             PreRenderOperator& op = batch->getOperator(FilterType::FILTER_SS_ANTIALIASING);
             PostAAPreRenderOperator& aaOp = static_cast<PostAAPreRenderOperator&>(op);
-            I32 samples = to_I32(aaOp.aaSamples());
-            bool usesSMAA = aaOp.usesSMAA();
-            if (ImGui::SliderInt("Sample Count", &samples, 0, 16)) {
-                aaOp.setAASamples(to_U8(samples));
+            I32 level = to_I32(aaOp.postAAQualityLevel());
+            bool usesSMAA = aaOp.useSMAA();
+            if (ImGui::SliderInt("Quality Level", &level, 0, 4)) {
+                aaOp.postAAQualityLevel(to_U8(level));
             }
             if (ImGui::Checkbox("Use SMAA", &usesSMAA)) {
                 aaOp.useSMAA(usesSMAA);
             }
         }
+
         if (ImGui::CollapsingHeader("SS Reflections")) {
             checkBox(FilterType::FILTER_SS_REFLECTIONS);
             //PreRenderOperator& op = batch->getOperator(FilterType::FILTER_SS_REFLECTIONS);

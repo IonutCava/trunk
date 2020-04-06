@@ -824,6 +824,8 @@ struct AtomicWrapper : private NonMovable
 #define GET_6TH_ARG(arg1, arg2, arg3, arg4, arg5, arg6, ...) arg6
 #endif
 
+#pragma region PROPERTY_SETTERS_GETTERS
+
 #define PROPERTY_GET_SET(Type, Name) \
 public: \
     FORCE_INLINE void Name(const Type& val) noexcept { _##Name = val; } \
@@ -851,14 +853,35 @@ public: \
 public: \
     FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
 
-#define PROPERTY_R_1_ARGS(Type) 
-#define PROPERTY_RW_1_ARGS(Type) 
-#define VIRTUAL_PROPERTY_R_1_ARGS(Type) 
+
+#define PROPERTY_GET_SET_INTERNAL(Type, Name) \
+protected: \
+    FORCE_INLINE void Name(const Type& val) noexcept { _##Name = val; } \
+    FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
+
+#define VIRTUAL_PROPERTY_GET_SET_INTERNAL(Type, Name) \
+protected: \
+    virtual void Name(const Type& val) noexcept { _##Name = val; } \
+    virtual const Type& Name() const noexcept { return _##Name; }
+
+#define POINTER_GET_SET_INTERNAL(Type, Name) \
+protected: \
+    FORCE_INLINE void Name(Type* const val) noexcept { _##Name = val; } \
+    FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
+
+#define PROPERTY_R_1_ARGS(Type)
+#define PROPERTY_RW_1_ARGS(Type)
+#define VIRTUAL_PROPERTY_R_1_ARGS(Type)
+#define POINTER_R_1_ARGS(Type)
+#define POINTER_RW_1_ARGS(Type)
+#define REFERENCE_R_1_ARGS(Type)
+#define REFERENCE_RW_1_ARGS(Type)
+
+#define PROPERTY_RW_1_ARGS_INTERNAL(Type)
 #define VIRTUAL_PROPERTY_RW_1_ARGS(Type)
-#define POINTER_R_1_ARGS(Type) 
-#define POINTER_RW_1_ARGS(Type) 
-#define REFERENCE_R_1_ARGS(Type) 
-#define REFERENCE_RW_1_ARGS(Type) 
+#define VIRTUAL_PROPERTY_RW_1_ARGS_INTERNAL(Type)
+#define POINTER_RW_1_ARGS_INTERNAL(Type)
+#define REFERENCE_RW_1_ARGS_INTERNAL(Type)
 
 //------------- PROPERTY_RW
 #define PROPERTY_R_3_ARGS(Type, Name, Val) \
@@ -882,6 +905,18 @@ protected: \
     Type _##Name; \
     PROPERTY_GET_SET(Type, Name)
 
+//------------- PROPERTY_RW_INTERNAL
+#define PROPERTY_RW_3_ARGS_INTERNAL(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+#define PROPERTY_RW_2_ARGS_INTERNAL(Type, Name) \
+protected: \
+    Type _##Name; \
+    PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+
 //------------------- VIRTUAL_PROPERTY_RW
 #define VIRTUAL_PROPERTY_R_3_ARGS(Type, Name, Val) \
 protected: \
@@ -903,6 +938,17 @@ protected: \
 protected: \
     Type _##Name; \
     VIRTUAL_PROPERTY_GET_SET(Type, Name)
+
+//------------------- VIRTUAL_PROPERTY_RW_INTERNAL
+#define VIRTUAL_PROPERTY_RW_3_ARGS_INTERNAL(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    VIRTUAL_PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+#define VIRTUAL_PROPERTY_RW_2_ARGS_INTERNAL(Type, Name) \
+protected: \
+    Type _##Name; \
+    VIRTUAL_PROPERTY_GET_SET_INTERNAL(Type, Name)
 
 //-------------------- POINTER_RW
 #define POINTER_R_3_ARGS(Type, Name, Val) \
@@ -926,6 +972,17 @@ protected: \
     Type* _##Name; \
     POINTER_GET_SET(Type, Name)
 
+//-------------------- POINTER_RW_INTERNAL
+#define POINTER_RW_3_ARGS_INTERNAL(Type, Name, Val) \
+protected: \
+    Type* _##Name = Val; \
+    POINTER_GET_SET_INTERNAL(Type, Name)
+
+#define POINTER_RW_2_ARGS_INTERNAL(Type, Name) \
+protected: \
+    Type* _##Name; \
+    POINTER_GET_SET_INTERNAL(Type, Name)
+
 //-------------------- REFERENCE_RW
 #define REFERENCE_R_3_ARGS(Type, Name, Val) \
 protected: \
@@ -947,6 +1004,22 @@ protected: \
 protected: \
     Type& _##Name; \
     PROPERTY_GET_SET(Type, Name)
+
+//-------------------- REFERENCE_RW_INTERNAL
+#define REFERENCE_RW_3_ARGS_INTERNAL(Type, Name, Val) \
+protected: \
+    Type& _##Name = Val; \
+    PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+#define REFERENCE_RW_2_ARGS_INTERNAL(Type, Name) \
+protected: \
+    Type& _##Name; \
+    PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+#define ___DETAIL_PROPERTY_RW_INTERNAL(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_RW_3_ARGS_INTERNAL, PROPERTY_RW_2_ARGS_INTERNAL, PROPERTY_RW_1_ARGS_INTERNAL, ))
+#define ___DETAIL_VIRTUAL_PROPERTY_RW_INTERNAL(...) EXP(GET_4TH_ARG(__VA_ARGS__, VIRTUAL_PROPERTY_RW_3_ARGS_INTERNAL, VIRTUAL_PROPERTY_RW_2_ARGS_INTERNAL, VIRTUAL_PROPERTY_RW_1_ARGS_INTERNAL, ))
+#define ___DETAIL_POINTER_RW_INTERNAL(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_RW_3_ARGS_INTERNAL, POINTER_RW_2_ARGS_INTERNAL, POINTER_RW_1_ARGS_INTERNAL, ))
+#define ___DETAIL_REFERENCE_RW_INTERNAL(...) EXP(GET_4TH_ARG(__VA_ARGS__, REFERENCE_RW_3_ARGS_INTERNAL, REFERENCE_RW_2_ARGS_INTERNAL, REFERENCE_RW_1_ARGS_INTERNAL, ))
 
 #define ___DETAIL_PROPERTY_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_R_3_ARGS, PROPERTY_R_2_ARGS, PROPERTY_R_1_ARGS, ))
 #define ___DETAIL_PROPERTY_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_RW_3_ARGS, PROPERTY_RW_2_ARGS, PROPERTY_RW_1_ARGS, ))
@@ -983,5 +1056,14 @@ protected: \
 /// RW properties are no better (actully a little worse) than just making the member public, but we need it to keep the same interface with read-only properties
 /// A _R can become a _RW and vice-versa depending on needs, but that shouldn't affect other parts of the implementation
 #define REFERENCE_RW(...) EXP(___DETAIL_REFERENCE_RW(__VA_ARGS__)(__VA_ARGS__))
+
+
+// All of this will only set properties internal to the actual class
+#define PROPERTY_INTERNAL(...) EXP(___DETAIL_PROPERTY_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
+#define VIRTUAL_PROPERTY_INTERNAL(...) EXP(___DETAIL_VIRTUAL_PROPERTY_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
+#define POINTER_INTERNAL(...) EXP(___DETAIL_POINTER_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
+#define REFERENCE_INTERNAL(...) EXP(___DETAIL_REFERENCE_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
+#pragma endregion
+
 #endif
 };  // namespace Divide

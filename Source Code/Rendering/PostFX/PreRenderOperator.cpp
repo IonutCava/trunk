@@ -14,6 +14,12 @@ PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent,
     ACKNOWLEDGE_UNUSED(cache);
     _screenOnlyDraw.drawMask().disableAll();
     _screenOnlyDraw.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
+
+    GenericDrawCommand pointsCmd;
+    pointsCmd._primitiveType = PrimitiveType::API_POINTS;
+    pointsCmd._drawCount = 1;
+
+    _pointDrawCmd = { pointsCmd };
 }
 
 PreRenderOperator::~PreRenderOperator()

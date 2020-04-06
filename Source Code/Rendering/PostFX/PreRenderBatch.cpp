@@ -26,6 +26,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, ResourceCache& cache)
     : _context(context),
       _resCache(cache)
 {
+    _edgeDetectionPipelines.fill(nullptr);
 }
 
 PreRenderBatch::~PreRenderBatch()
@@ -62,12 +63,12 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     {
         //Colour0 holds the LDR screen texture
         vectorSTD<RTAttachmentDescriptor> att = {
-            { outputDescriptor, RTAttachmentType::Colour },
+            { outputDescriptor, RTAttachmentType::Colour }
         };
 
         RenderTargetDescriptor desc = {};
         desc._name = "PostFXOutput";
-        desc._resolution = vec2<U16>(rt.getWidth(), rt.getHeight());
+        desc._resolution = rt.getResolution();
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
@@ -95,6 +96,30 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         desc._attachments = att.data();
 
         _currentLuminance = _context.renderTargetPool().allocateRT(desc);
+    }
+    {
+        SamplerDescriptor sampler = {};
+        sampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+        sampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+        sampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+        sampler.minFilter(TextureFilter::LINEAR);
+        sampler.magFilter(TextureFilter::LINEAR);
+        sampler.anisotropyLevel(0);
+
+        TextureDescriptor edgeDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
+        edgeDescriptor.samplerDescriptor(sampler);
+
+        vectorSTD<RTAttachmentDescriptor> att = {
+            { edgeDescriptor, RTAttachmentType::Colour }
+        };
+
+        RenderTargetDescriptor desc = {};
+        desc._name = "SceneEdges";
+        desc._resolution = rt.getResolution();
+        desc._attachmentCount = to_U8(att.size());
+        desc._attachments = att.data();
+
+        _sceneEdges = _context.renderTargetPool().allocateRT(desc);
     }
 
     // Order is very important!
@@ -170,6 +195,45 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
             _averageHistogram = CreateResource<ShaderProgram>(_resCache, histogramAverage);
         }
     }
+    {
+        ShaderProgramDescriptor edgeDetectionDescriptor = {};
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "EdgeDetection.glsl";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "EdgeDetection.glsl";
+
+        {
+            fragModule._variant = "Depth";
+            edgeDetectionDescriptor._modules = { vertModule, fragModule };
+
+            ResourceDescriptor edgeDetectionDepth("edgeDetection.Depth");
+            edgeDetectionDepth.threaded(false);
+            edgeDetectionDepth.propertyDescriptor(edgeDetectionDescriptor);
+
+            _edgeDetection[to_base(EdgeDetectionMethod::Depth)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionDepth);
+        }
+        {
+            fragModule._variant = "Luma";
+            edgeDetectionDescriptor._modules = { vertModule, fragModule };
+
+            ResourceDescriptor edgeDetectionLuma("edgeDetection.Luma");
+            edgeDetectionLuma.threaded(false);
+            edgeDetectionLuma.propertyDescriptor(edgeDetectionDescriptor);
+            _edgeDetection[to_base(EdgeDetectionMethod::Luma)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionLuma);
+        }
+        {
+            fragModule._variant = "Colour";
+            edgeDetectionDescriptor._modules = { vertModule, fragModule };
+
+            ResourceDescriptor edgeDetectionColour("edgeDetection.Colour");
+            edgeDetectionColour.threaded(false);
+            edgeDetectionColour.propertyDescriptor(edgeDetectionDescriptor);
+            _edgeDetection[to_base(EdgeDetectionMethod::Colour)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionColour);
+        }
+    }
 
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._name = "LUMINANCE_HISTOGRAM_BUFFER";
@@ -207,15 +271,19 @@ void PreRenderBatch::update(const U64 deltaTimeUS) {
     _lastDeltaTimeUS = deltaTimeUS;
 }
 
-RenderTargetHandle PreRenderBatch::inputRT() const {
+RenderTargetHandle PreRenderBatch::inputRT() const noexcept {
     return RenderTargetHandle(_renderTarget, &_context.renderTargetPool().renderTarget(_renderTarget));
 }
 
-RenderTargetHandle PreRenderBatch::luminanceRT() const {
+RenderTargetHandle PreRenderBatch::edgesRT() const noexcept {
+    return _sceneEdges;
+}
+
+RenderTargetHandle PreRenderBatch::luminanceRT() const noexcept {
     return _currentLuminance;
 }
 
-RenderTargetHandle& PreRenderBatch::outputRT() {
+RenderTargetHandle& PreRenderBatch::outputRT() noexcept {
     return _postFXOutput;
 }
 
@@ -276,6 +344,11 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
 
         pipelineDescriptor._shaderProgramHandle = _toneMap->getGUID();
         pipelineToneMap = _context.newPipeline(pipelineDescriptor);
+
+        for (U8 i = 0; i < to_U8(EdgeDetectionMethod::COUNT); ++i) {
+            pipelineDescriptor._shaderProgramHandle = _edgeDetection[i]->getGUID();
+            _edgeDetectionPipelines[i] = _context.newPipeline(pipelineDescriptor);
+        }
     }
 
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
@@ -288,7 +361,8 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
     _toneMapParams.width = inputRT()._rt->getWidth();
     _toneMapParams.height = inputRT()._rt->getHeight();
 
-    const Texture_ptr& screenTex = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+    const Texture_ptr& screenColour = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+    const Texture_ptr& screenDepth = inputRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture();
     const Texture_ptr& luminanceTex = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
 
     if (adaptiveExposureControl()) {
@@ -310,7 +384,7 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
 
         {
             Image screenImage = {};
-            screenImage._texture = screenTex.get();
+            screenImage._texture = screenColour.get();
             screenImage._flag = Image::Flag::READ;
             screenImage._binding = 0u;
             screenImage._layer = 0u;
@@ -391,25 +465,53 @@ void PreRenderBatch::execute(const Camera& camera, U16 filterStack, GFX::Command
         }
     }
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
-
-    // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(screenTex->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(screenColour->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
     descriptorSetCmd._set._textureData.setTexture(luminanceTex->data(), to_U8(ShaderProgram::TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(screenDepth->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-    beginRenderPassCmd._target = _postFXOutput._targetID;
-    beginRenderPassCmd._name = "DO_TONEMAP_PASS";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+    // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
+    {
+        GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+        beginRenderPassCmd._target = _postFXOutput._targetID;
+        beginRenderPassCmd._name = "DO_TONEMAP_PASS";
+        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    _toneMapConstants.set(_ID("exposure"), GFX::PushConstantType::FLOAT, adaptiveExposureControl() ? _toneMapParams.manualExposureAdaptive : _toneMapParams.manualExposure);
-    _toneMapConstants.set(_ID("whitePoint"), GFX::PushConstantType::FLOAT, _toneMapParams.manualWhitePoint);
-    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
+        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
 
-    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{triangleCmd});
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        _toneMapConstants.set(_ID("exposure"), GFX::PushConstantType::FLOAT, adaptiveExposureControl() ? _toneMapParams.manualExposureAdaptive : _toneMapParams.manualExposure);
+        _toneMapConstants.set(_ID("whitePoint"), GFX::PushConstantType::FLOAT, _toneMapParams.manualWhitePoint);
+        GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
+
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+    }
+
+    // Now that we have an LDR target, proceed with edge detection
+    if (edgeDetectionMethod() != EdgeDetectionMethod::COUNT) {
+        RTClearDescriptor clearTarget = {};
+        clearTarget.clearColours(true);
+
+        GFX::ClearRenderTargetCommand clearEdgeTarget = {};
+        clearEdgeTarget._target = _sceneEdges._targetID;
+        clearEdgeTarget._descriptor = clearTarget;
+        GFX::EnqueueCommand(bufferInOut, clearEdgeTarget);
+
+        GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+        beginRenderPassCmd._target = _sceneEdges._targetID;
+        beginRenderPassCmd._name = "DO_EDGE_DETECT_PASS";
+        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _edgeDetectionPipelines[to_base(edgeDetectionMethod())] });
+        
+        GFX::SendPushConstantsCommand pushConstantsCommand = {};
+        pushConstantsCommand._constants.set(_ID("dvd_edgeThreshold"), GFX::PushConstantType::FLOAT, edgeDetectionThreshold());
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+    }
 
     // Execute all LDR based operators
     for (PreRenderOperator* op : ldrBatch) {
@@ -432,5 +534,6 @@ void PreRenderBatch::reshape(U16 width, U16 height) {
     }
 
     _postFXOutput._rt->resize(width, height);
+    _sceneEdges._rt->resize(width, height);
 }
 };

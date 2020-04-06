@@ -70,21 +70,22 @@ const RenderBinItem& RenderBin::getItem(RenderStage stage, U16 index) const {
 }
 
 void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
-    // Lock w_lock(_renderBinGetMutex);
+    OPTICK_EVENT();
+
     RenderBinStack& stack = _renderBinStack[to_U8(stage)];
 
     switch (renderOrder) {
         case RenderingOrder::BY_STATE: {
-            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueKeyCompare);
+            std::sort(stack.begin(), stack.end(), RenderQueueKeyCompare);
         } break;
         case RenderingOrder::BACK_TO_FRONT: {
-            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueDistanceBackToFront);
+            std::sort(stack.begin(), stack.end(), RenderQueueDistanceBackToFront);
         } break;
         case RenderingOrder::FRONT_TO_BACK: {
-            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueDistanceFrontToBack);
+            std::sort(stack.begin(), stack.end(), RenderQueueDistanceFrontToBack);
         } break;
         case RenderingOrder::WATER_FIRST: {
-            eastl::sort(eastl::begin(stack), eastl::end(stack), RenderQueueWaterFirst);
+            std::sort(stack.begin(), stack.end(), RenderQueueWaterFirst);
         } break;
         case RenderingOrder::NONE: {
             // no need to sort
@@ -94,13 +95,6 @@ void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_SORT_ORDER")), _rbType._to_string());
         } break;
     };
-}
-
-void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder, const Task& parentTask) {
-    OPTICK_EVENT();
-
-    ACKNOWLEDGE_UNUSED(parentTask);
-    sort(stage, renderOrder);
 }
 
 void RenderBin::getSortedNodes(RenderStage stage, SortedQueue& nodes, U16& countOut) const {
@@ -118,13 +112,13 @@ void RenderBin::getSortedNodes(RenderStage stage, SortedQueue& nodes, U16& count
 }
 
 void RenderBin::refresh(RenderStage stage) {
-    // Lock w_lock(_renderBinGetMutex);
-    _renderBinStack[to_base(stage)].resize(0);
+    _renderBinStack[to_base(stage)].clear();
     _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }
 
 void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePass, F32 minDistToCameraSq) {
     RenderingComponent* const rComp = sgn.get<RenderingComponent>();
+
     const U8 stageIndex = to_U8(stagePass._stage);
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting

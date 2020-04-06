@@ -64,9 +64,10 @@ class NOINITVTABLE PreRenderOperator {
 
     PreRenderBatch& _parent;
 
+    GFX::DrawCommand _pointDrawCmd = {};
     RenderTargetHandle _samplerCopy;
     RTDrawDescriptor _screenOnlyDraw;
-    FilterType  _operatorType;
+    FilterType  _operatorType = FilterType::FILTER_COUNT;
 };
 
 };  // namespace Divide

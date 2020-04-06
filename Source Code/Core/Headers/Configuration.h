@@ -111,7 +111,7 @@ struct Configuration final : public XML::IXMLSerializable {
         vec4<U16> lodThresholds = { 25u, 45u, 85u, 165u };
         struct PostFX {
             stringImpl postAAType = "FXAA";
-            U8 postAASamples = 0;
+            U8 PostAAQualityLevel = 2;
             bool enableDepthOfField = false;
             bool enableBloom = false;
             F32 bloomFactor = 0.f;

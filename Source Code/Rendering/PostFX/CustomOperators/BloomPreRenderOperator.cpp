@@ -120,7 +120,7 @@ void BloomPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& b
 // Order: luminance calc -> bloom -> tonemap
 void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
 
-    GenericDrawCommand triangleCmd;
+    GenericDrawCommand triangleCmd = {};
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 
@@ -136,7 +136,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
      // Step 1: generate bloom
 
     // render all of the "bright spots"
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = _bloomOutput._targetID;
     beginRenderPassCmd._name = "DO_BLOOM_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
@@ -144,8 +144,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
     // Step 2: blur bloom
     _context.blurTarget(_bloomOutput,
@@ -157,7 +156,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
                         bufferInOut);
 
     // Step 3: apply bloom
-    GFX::BlitRenderTargetCommand blitRTCommand;
+    GFX::BlitRenderTargetCommand blitRTCommand = {};
     blitRTCommand._source = screen._targetID;
     blitRTCommand._destination = _bloomBlurBuffer[0]._targetID;
     blitRTCommand._blitColours.emplace_back();
@@ -179,7 +178,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
 
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 
 TextureData BloomPreRenderOperator::getDebugOutput() const {

@@ -4,7 +4,7 @@
 	<!-- if this is not set to -1, then all command buffers used in that frame number will be dumped to the error log for inspection -->
 	<!-- requires a build with ENABLE_GPU_VALIDATION set-->
 	<dumpCommandBuffersOnFrame>-1</dumpCommandBuffersOnFrame>
-	<enableRenderAPIDebugging>true</enableRenderAPIDebugging>
+	<enableRenderAPIDebugging>false</enableRenderAPIDebugging>
 	<enableDebugMsgGroups>true</enableDebugMsgGroups>
 	<useGeometryCache>true</useGeometryCache>
 	<useVegetationCache>true</useVegetationCache>
@@ -90,7 +90,8 @@
 		<!-- Select the type of post processing AA: FXAA or SMAA -->
 		<!-- Defaults to FXAA -->
 		<PostAAType>FXAA</PostAAType>
-		<PostAASamples>0</PostAASamples>
+		<!-- Quality level for FXAA or SMAA: 0 - lowest, 4 - highest-->
+		<PostAAQualityLevel>0</PostAAQualityLevel>
 		<enableDepthOfField>false</enableDepthOfField>
 		<enableBloom>true</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>

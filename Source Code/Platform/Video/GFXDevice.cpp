@@ -1934,6 +1934,15 @@ void GFXDevice::initDebugViews() {
         Luminance->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         Luminance->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
 
+        DebugView_ptr Edges = eastl::make_shared<DebugView>();
+        Edges->_shader = _renderTargetDraw;
+        Edges->_texture = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->edgesRT()).getAttachment(RTAttachmentType::Colour, 0u).texture();
+        Edges->_name = "Edges";
+        Edges->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        Edges->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+        Edges->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
+        Edges->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+
         HiZView = addDebugView(HiZ);
         addDebugView(DepthPreview);
         addDebugView(NormalPreview);
@@ -1944,6 +1953,7 @@ void GFXDevice::initDebugViews() {
         //addDebugView(AlphaAccumulationLow);
         //addDebugView(AlphaRevealageLow);
         addDebugView(Luminance);
+        addDebugView(Edges);
         WAIT_FOR_CONDITION(_previewDepthMapShader->getState() == ResourceState::RES_LOADED);
     }
 }

@@ -42,25 +42,29 @@ namespace Divide {
 class PostAAPreRenderOperator final : public PreRenderOperator {
    public:
     PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
-    ~PostAAPreRenderOperator();
+    ~PostAAPreRenderOperator() = default;
 
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
-    inline U8 aaSamples() const { return _postAASamples; }
-    void setAASamples(U8 postAASamples);
+    PROPERTY_RW(U8, postAAQualityLevel, 2u);
+    PROPERTY_RW(bool, useSMAA, false);
 
-    inline void useSMAA(const bool state);
-    inline bool usesSMAA() const { return _useSMAA; }
+  private:
+    PROPERTY_INTERNAL(U8, currentPostAAQualityLevel, 2u);
+    PROPERTY_INTERNAL(bool, currentUseSMAA, false);
 
-   private:
-    PushConstants _fxaaConstants;
-    ShaderProgram_ptr _fxaa;
-    ShaderProgram_ptr _smaa;
-    Pipeline* _aaPipeline;
-    U8 _postAASamples;
-    bool _useSMAA;
+    ShaderProgram_ptr _fxaa = nullptr;
+
+    ShaderProgram_ptr _smaaEdgeDetection = nullptr;
+    ShaderProgram_ptr _smaaWeightComputation = nullptr;
+    ShaderProgram_ptr _smaaBlend = nullptr;
+
+    RenderTargetHandle _smaaWeights;
+
+    Pipeline* _fxaaPipeline = nullptr;
+    GFX::SendPushConstantsCommand _pushConstantsCommand = {};
 };
 
 };  // namespace Divide

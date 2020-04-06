@@ -20,6 +20,14 @@ struct ToneMapParams
 class ResourceCache;
 class PreRenderBatch {
    public:
+       // Ordered by cost
+       enum class EdgeDetectionMethod : U8 {
+           Depth = 0,
+           Luma,
+           Colour,
+           COUNT
+       };
+   public:
     PreRenderBatch(GFXDevice& context, ResourceCache& cache);
     ~PreRenderBatch();
 
@@ -38,36 +46,37 @@ class PreRenderBatch {
 
     TextureData getOutput();
 
-    RenderTargetHandle inputRT() const;
-    RenderTargetHandle& outputRT();
+    RenderTargetHandle& outputRT() noexcept;
 
-    RenderTargetHandle luminanceRT() const;
+    RenderTargetHandle inputRT() const noexcept;
+    RenderTargetHandle edgesRT() const noexcept;
+    RenderTargetHandle luminanceRT() const noexcept;
 
     inline PreRenderOperator& getOperator(FilterType type) {
         const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
-        OperatorBatch::const_iterator it =
-            std::find_if(std::cbegin(batch), std::cend(batch),
-                [type](PreRenderOperator* op) {
-            return op->operatorType() == type;
-        });
+        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](PreRenderOperator* op) {
+                                    return op->operatorType() == type;
+                              });
+
         assert(it != std::cend(batch));
         return *(*it);
     }
 
     inline const PreRenderOperator& getOperator(FilterType type) const {
         const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
-        OperatorBatch::const_iterator it =
-            std::find_if(std::cbegin(batch), std::cend(batch),
-                [type](PreRenderOperator* op) {
-            return op->operatorType() == type;
-        });
+        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](PreRenderOperator* op) {
+                                    return op->operatorType() == type;
+                              });
         assert(it != std::cend(batch));
         return *(*it);
     }
 
 
     PROPERTY_RW(ToneMapParams, toneMapParams, {});
+    PROPERTY_RW(F32, edgeDetectionThreshold, 0.1f);
     PROPERTY_RW(bool,  adaptiveExposureControl, true);
+    PROPERTY_RW(EdgeDetectionMethod, edgeDetectionMethod, EdgeDetectionMethod::Luma);
+
    private:
 
     inline FilterSpace getOperatorSpace(FilterType type) const noexcept {
@@ -91,11 +100,15 @@ class PreRenderBatch {
     PreRenderOperator* _debugOperator = nullptr;
     ShaderBuffer*      _histogramBuffer = nullptr;
     RenderTargetHandle _postFXOutput;
+    RenderTargetHandle _sceneEdges;
     RenderTargetHandle _currentLuminance;
     ShaderProgram_ptr _toneMap;
     ShaderProgram_ptr _toneMapAdaptive;
     ShaderProgram_ptr _createHistogram;
     ShaderProgram_ptr _averageHistogram;
+    std::array<ShaderProgram_ptr, to_base(EdgeDetectionMethod::COUNT)> _edgeDetection;
+    std::array<Pipeline*, to_base(EdgeDetectionMethod::COUNT)> _edgeDetectionPipelines;
+
     PushConstants     _toneMapConstants;
 
     U64 _lastDeltaTimeUS = 0u;

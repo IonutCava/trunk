@@ -83,7 +83,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 
     _postFX = std::make_unique<PostFX>(context, cache);
-    if (config.rendering.postFX.postAASamples > 0) {
+    if (config.rendering.postFX.PostAAQualityLevel > 0) {
         _postFX->pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
     if (false) {

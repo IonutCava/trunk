@@ -88,10 +88,6 @@ void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& buf
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
     pipelineDescriptor._shaderProgramHandle = _dofShader->getGUID();
 
-    GenericDrawCommand pointsCmd;
-    pointsCmd._primitiveType = PrimitiveType::API_POINTS;
-    pointsCmd._drawCount = 1;
-
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(bufferInOut, pipelineCmd);
@@ -111,11 +107,9 @@ void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& buf
     beginRenderPassCmd._name = "DO_DOF_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::DrawCommand drawCmd = { pointsCmd };
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, _pointDrawCmd);
 
-    GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 
 };

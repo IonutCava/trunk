@@ -95,8 +95,8 @@ class RenderPassManager;
 /// depending on designation
 class RenderBin {
    public:
-    using RenderBinStack = vectorEASTLFast<RenderBinItem>;
-    using SortedQueue = vectorEASTLFast<RenderingComponent*>;
+    using RenderBinStack = vectorSTD<RenderBinItem>;
+    using SortedQueue = vectorEASTL<RenderingComponent*>;
     using SortedQueues = std::array<SortedQueue, RenderBinType::RBT_COUNT>;
 
     friend class RenderQueue;
@@ -105,7 +105,6 @@ class RenderBin {
     ~RenderBin();
 
     void sort(RenderStage stage, RenderingOrder renderOrder);
-    void sort(RenderStage stage, RenderingOrder renderOrder, const Task& parentTask);
     void populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const;
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void refresh(RenderStage stage);

@@ -528,26 +528,28 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
 void RenderPassManager::prepareRenderQueues(const RenderStagePass& stagePass, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, RenderingOrder renderOrder) {
     OPTICK_EVENT();
 
+    const bool oitPass = !stagePass.isDepthPass() && stagePass._passType == RenderPassType::OIT_PASS;
+    const RenderBinType targetBin = oitPass ? RenderBinType::RBT_TRANSLUCENT : RenderBinType::RBT_COUNT;
+
     RenderQueue& queue = getQueue();
-    queue.refresh(stagePass._stage);
+
+    queue.refresh(stagePass._stage, targetBin);
     for (const VisibleNode& node : nodes) {
-        queue.addNodeToQueue(*node._node, stagePass, node._distanceToCameraSq);
+        queue.addNodeToQueue(*node._node, stagePass, node._distanceToCameraSq, targetBin);
     }
     // Sort all bins
-    queue.sort(stagePass, renderOrder);
+    queue.sort(stagePass, targetBin, renderOrder);
     
     vectorEASTLFast<RenderPackage*>& packageQueue = _renderQueues[to_base(stagePass._stage)];
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
     
-    // Draw everything in the depth pass
-    if (stagePass.isDepthPass()) {
-        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), packageQueue);
-    } else {
-        // Only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
-        const bool oitPass = stagePass._passType == RenderPassType::OIT_PASS;
-        queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_TRANSLUCENT, oitPass), packageQueue);
-    }
+    // Draw everything in the depth pass but only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
+    queue.populateRenderQueues(stagePass,
+                               stagePass.isDepthPass() 
+                                            ? std::make_pair(RenderBinType::RBT_COUNT, true)
+                                            : std::make_pair(RenderBinType::RBT_TRANSLUCENT, oitPass),
+                               packageQueue);
 }
 
 bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
