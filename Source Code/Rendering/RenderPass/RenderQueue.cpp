@@ -16,10 +16,6 @@
 
 namespace Divide {
 
-namespace {
-    constexpr bool g_useDiffSortForPrePass = false;
-};
-
 RenderQueue::RenderQueue(Kernel& parent)
     : KernelComponent(parent),
       _renderBins{nullptr}
@@ -56,25 +52,16 @@ RenderingOrder RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinTyp
     RenderingOrder sortOrder = RenderingOrder::BY_STATE;
     switch (rbType) {
         case RenderBinType::RBT_OPAQUE: {
-            if (g_useDiffSortForPrePass) {
-                // Opaque items should be rendered front to back in depth passes for early-Z reasons
-                sortOrder = stagePass.isDepthPass() ? RenderingOrder::FRONT_TO_BACK
-                                                    : RenderingOrder::BY_STATE;
-            } else {
-                sortOrder = RenderingOrder::BY_STATE;
-            }
+            // Opaque items should be rendered front to back in depth passes for early-Z reasons
+            sortOrder = stagePass.isDepthPass() ? RenderingOrder::FRONT_TO_BACK
+                                                : RenderingOrder::BY_STATE;
         } break;
         case RenderBinType::RBT_SKY: {
             sortOrder = RenderingOrder::NONE;
         } break;
         case RenderBinType::RBT_IMPOSTOR:
         case RenderBinType::RBT_TERRAIN: {
-            if (g_useDiffSortForPrePass) {
-                sortOrder = stagePass.isDepthPass() ? RenderingOrder::NONE
-                                                    : RenderingOrder::FRONT_TO_BACK;
-            } else {
-                sortOrder = RenderingOrder::FRONT_TO_BACK;
-            }
+            sortOrder = RenderingOrder::FRONT_TO_BACK;
         } break;
         case RenderBinType::RBT_TERRAIN_AUX: {
             // Water first, everything else after
@@ -149,7 +136,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, F32 minDistToCameraSq, RenderBinType targetBinType) {
+void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePass stage, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
     // We need a rendering component to render the node
     if (renderingCmp != nullptr) {

@@ -198,7 +198,11 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
         }
         if (isVisible) {
             if (!isTransformNode) {
-                nodes.push_back({ &currentNode, distanceSqToCamera });
+                VisibleNode node = {};
+                node._node = &currentNode;
+                node._distanceToCameraSq = distanceSqToCamera;
+
+                nodes.push_back(node);
             }
             // Parent node intersects the view, so check children
             if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
@@ -249,7 +253,11 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const N
         if (!shouldCullNode(params._stage, *child, isTransformNode)) {
             F32 distanceSqToCamera = std::numeric_limits<F32>::max();
             if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(*child, *(child->get<BoundsComponent>()), params, distanceSqToCamera)) {
-                nodes.push_back({ child, distanceSqToCamera });
+                VisibleNode node = {};
+                node._node = child;
+                node._distanceToCameraSq = distanceSqToCamera;
+
+                nodes.push_back(node);
                 addAllChildren(*child, params, nodes);
             }
         } else if (isTransformNode) {

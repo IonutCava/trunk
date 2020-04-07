@@ -195,6 +195,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
     auto& rpm = _context.parent().renderPassManager();
 
+    constexpr F32 minExtentsFactors[] = { 0.25f, 1.25f, 2.75f, 5.5f };
+
     I16 i = to_I16(numSplits) - (renderLastSplit() ? 1 : 2);
     for (i; i >= 0; i--) {
         drawParams._layer = i;
@@ -215,7 +217,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         params._stagePass._indexA = to_U16(lightIndex);
         params._stagePass._indexB = i;
         params._camera = light.shadowCameras()[i];
-        params._minExtents.set(i > 1 ? 1.5f : (i > 0 ? 0.75f : 0.05f));
+        params._minExtents.set(minExtentsFactors[i]);
 
         rpm->doCustomPass(params, bufferInOut);
 
