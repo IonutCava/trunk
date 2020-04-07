@@ -71,6 +71,12 @@ do {                                                \
     TYPEDEF_SMART_POINTERS_FOR_TYPE(T);
 
 
+#if !defined(CPP_17_SUPPORT)
+#define if_constexpr if
+#else
+#define if_constexpr if constexpr
+#endif
+
 #define ALIAS_TEMPLATE_FUNCTION(highLevelF, lowLevelF) \
 template<typename... Args> \
 inline auto highLevelF(Args&&... args) -> decltype(lowLevelF(std::forward<Args>(args)...)) \

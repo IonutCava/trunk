@@ -35,14 +35,14 @@ namespace Divide {
 
 namespace {
     //ref: http://stackoverflow.com/questions/6042399/how-to-compare-m128-types
-    bool fneq128(__m128 const& a, __m128 const& b) noexcept
+    FORCE_INLINE bool fneq128(__m128 const& a, __m128 const& b) noexcept
     {
         // returns true if at least one element in a is not equal to 
         // the corresponding element in b
         return _mm_movemask_ps(_mm_cmpeq_ps(a, b)) != 0xF;
     }
 
-    bool fneq128(__m128 const& a, __m128 const& b, F32 epsilon) noexcept
+    FORCE_INLINE bool fneq128(__m128 const& a, __m128 const& b, F32 epsilon) noexcept
     {
         // epsilon vector
         const auto eps = _mm_set1_ps(epsilon);
@@ -55,7 +55,7 @@ namespace {
     }
 
     //ref: https://www.opengl.org/discussion_boards/showthread.php/159586-my-SSE-code-is-slower-than-normal-why
-    inline __m128 DOT_SIMD(const __m128 &a, const __m128 &b) noexcept
+    FORCE_INLINE __m128 DOT_SIMD(const __m128 &a, const __m128 &b) noexcept
     {
         __m128 r;
 
@@ -66,14 +66,14 @@ namespace {
         return r;
     }
 
-    inline __m128 SIMPLE_DOT(__m128 a, __m128 b) noexcept
+    FORCE_INLINE __m128 SIMPLE_DOT(__m128 a, __m128 b) noexcept
     {
         a = _mm_mul_ps(a, b);
         b = _mm_hadd_ps(a, a);
         return _mm_hadd_ps(b, b);
     }
 
-    inline void DOT_SIMD(const __m128 &a, const __m128 &b, F32 &dot) noexcept
+    FORCE_INLINE void DOT_SIMD(const __m128 &a, const __m128 &b, F32 &dot) noexcept
     {
         _mm_store_ss(&dot, DOT_SIMD(a, b));
     }
@@ -100,8 +100,7 @@ inline vec2<T> Normalize(vec2<T> &vector) {
 template <typename T>
 //[[nodiscard]]
 inline vec2<T> Normalized(const vec2<T> &vector) {
-    vec2<T> result(vector);
-    return result.normalize();
+    return vec2<T>(vector).normalize();
 }
 
 /// multiply a vector by a value
@@ -117,13 +116,9 @@ inline T Dot(const vec2<T> &a, const vec2<T> &b) {
 }
 
 template <typename T>
-inline void OrthoNormalize(vec2<T> &v1, vec2<T> &v2) {
-    vec2<T>& n(v1); vec2<T>& u(v2);
-
+inline void OrthoNormalize(vec2<T> &n, vec2<T> &u) {
     n.normalize();
-    vec2<T> v(Cross(n, u));
-    v.normalize();
-    u.set(Cross(v, n));
+    u.set(Cross(Normalized(Cross(n, u)), n));
 }
 
 template <typename T>
@@ -134,8 +129,7 @@ inline vec3<T> Normalize(vec3<T> &vector) {
 template <typename T>
 //[[nodiscard]]
 inline vec3<T> Normalized(const vec3<T> &vector) {
-    vec3<T> result(vector);
-    return result.normalize();
+    return vec3<T>(vector).normalize();
 }
 
 /// multiply a vector by a value
@@ -153,7 +147,8 @@ inline T Dot(const vec3<T> &a, const vec3<T> &b) {
 /// general vec3 cross function
 template <typename T>
 inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) {
-    return vec3<T>(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
+    return vec3<T>(v1.y * v2.z - v1.z * v2.y, 
+                   v1.z * v2.x - v1.x * v2.z,
                    v1.x * v2.y - v1.y * v2.x);
 }
 
@@ -189,8 +184,7 @@ inline vec4<T> Normalize(vec4<T> &vector) {
 template <typename T>
 //[[nodiscard]]
 inline vec4<T> Normalized(const vec4<T> &vector) {
-    vec4<T> result(vector);
-    return result.normalize();
+    return vec4<T>(vector).normalize();
 }
 
 /// multiply a vector by a value
@@ -206,29 +200,26 @@ inline vec4<T> operator*(T fl, const vec4<T> &v) {
 /// return the squared distance of the vector
 template <typename T>
 inline T vec2<T>::lengthSquared() const {
-    return this->x * this->x + this->y * this->y;
+    return Divide::Dot(*this, *this);
 }
 
 /// compute the vector's distance to another specified vector
 template <typename T>
-inline T vec2<T>::distance(const vec2 &v, bool absolute) const {
-    T distanceSQ = distanceSquared(v);
-
-    return absolute ? std::abs(Divide::Sqrt(distanceSQ))
-                    : distanceSQ > EPSILON_F32 ? Divide::Sqrt(distanceSQ) : 0;
+inline T vec2<T>::distance(const vec2 &v) const {
+    return Divide::Sqrt(distanceSquared(v));
 }
 
 /// compute the vector's squared distance to another specified vector
 template <typename T>
 inline T vec2<T>::distanceSquared(const vec2 &v) const {
-    return ((v.x - this->x) * (v.x - this->x)) +
-           ((v.y - this->y) * (v.y - this->y));
+    const vec2 d = v - *this;
+    return Divide::Dot(d, d);
 }
 
 /// convert the vector to unit length
 template <typename T>
 inline vec2<T>& vec2<T>::normalize() {
-    T l = this->length();
+    const T l = this->length();
 
     if (l >= EPSILON_F32) {
         *this *= 1.0f / l;
@@ -251,7 +242,7 @@ inline T vec2<T>::maxComponent() const {
 /// compare 2 vectors
 template <typename T>
 template <typename U>
-inline bool vec2<T>::compare(const vec2<U> &v) const {
+inline bool vec2<T>::compare(const vec2<U> &v) const noexcept {
     return COMPARE(this->x, v.x) &&
            COMPARE(this->y, v.y);
 }
@@ -259,7 +250,7 @@ inline bool vec2<T>::compare(const vec2<U> &v) const {
 /// compare 2 vectors using the given tolerance
 template <typename T>
 template <typename U>
-inline bool vec2<T>::compare(const vec2<U> &v, U epsi) const {
+inline bool vec2<T>::compare(const vec2<U> &v, U epsi) const noexcept {
     return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
             COMPARE_TOLERANCE(this->y, v.y, epsi));
 }
@@ -303,7 +294,7 @@ inline vec2<T> vec2<T>::closestPointOnLine(const vec2 &vA, const vec2 &vB) {
 /// determined by points vA and vB
 template <typename T>
 inline vec2<T> vec2<T>::closestPointOnSegment(const vec2 &vA, const vec2 &vB) {
-    T factor = this->projectionOnLine(vA, vB);
+    const T factor = this->projectionOnLine(vA, vB);
 
     if (factor <= 0) return vA;
 
@@ -345,7 +336,7 @@ inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) {
 /// compare 2 vectors
 template <typename T>
 template <typename U>
-inline bool vec3<T>::compare(const vec3<U> &v) const {
+inline bool vec3<T>::compare(const vec3<U> &v) const noexcept {
     return COMPARE(this->x, v.x) &&
            COMPARE(this->y, v.y) &&
            COMPARE(this->z, v.z);
@@ -354,7 +345,7 @@ inline bool vec3<T>::compare(const vec3<U> &v) const {
 /// compare 2 vectors within the specified tolerance
 template <typename T>
 template <typename U>
-inline bool vec3<T>::compare(const vec3<U> &v, U epsi) const {
+inline bool vec3<T>::compare(const vec3<U> &v, U epsi) const noexcept {
     return COMPARE_TOLERANCE(this->x, v.x, epsi) &&
            COMPARE_TOLERANCE(this->y, v.y, epsi) &&
            COMPARE_TOLERANCE(this->z, v.z, epsi);
@@ -362,20 +353,20 @@ inline bool vec3<T>::compare(const vec3<U> &v, U epsi) const {
 
 /// uniform vector: x = y = z
 template <typename T>
-inline bool vec3<T>::isUniform() const {
+inline bool vec3<T>::isUniform() const noexcept {
     return COMPARE(this->x, this->y) && COMPARE(this->y, this->z);
 }
 
 /// return the squared distance of the vector
 template <typename T>
 inline T vec3<T>::lengthSquared() const noexcept {
-    return this->x * this->x + this->y * this->y + this->z * this->z;
+    return Divide::Dot(*this, *this);
 }
 
 /// transform the vector to unit length
 template <typename T>
 inline vec3<T>& vec3<T>::normalize() {
-    T l = this->length();
+    const T l = this->length();
 
     if (l >= EPSILON_F32) {
         // multiply by the inverse length
@@ -390,6 +381,7 @@ template <typename T>
 inline T vec3<T>::minComponent() const {
     return std::min(x, std::min(y, z));
 }
+
 /// get the largest value of X, Y or Z
 template <typename T>
 inline T vec3<T>::maxComponent() const {
@@ -419,44 +411,34 @@ inline T vec3<T>::dot(const vec3 &v) const {
 
 /// compute the vector's distance to another specified vector
 template <typename T>
-inline T vec3<T>::distance(const vec3 &v, bool absolute) const {
-    T distanceSQ = distanceSquared(v);
-
-    return absolute ? std::abs(Divide::Sqrt(distanceSQ))
-                    : distanceSQ > EPSILON_F32 ? Divide::Sqrt(distanceSQ) : 0;
+inline T vec3<T>::distance(const vec3 &v) const {
+    return Divide::Sqrt(distanceSquared(v));
 }
 
 /// compute the vector's squared distance to another specified vector
 template <typename T>
 inline T vec3<T>::distanceSquared(const vec3 &v) const noexcept {
-    return ((v.x - this->x) * (v.x - this->x)) +
-           ((v.y - this->y) * (v.y - this->y)) +
-           ((v.z - this->z) * (v.z - this->z));
+    const vec3 d = v - *this;
+    return Divide::Dot(d, d);
 }
 
 /// returns the angle in radians between '*this' and 'v'
 template <typename T>
 inline T vec3<T>::angle(vec3 &v) const {
-    T angle =
-        (T)std::abs(std::acos(this->dot(v) / (this->length() * v.length())));
-
-    if (angle < EPSILON_F32) {
-        return 0;
-    }
-    return angle;
+    const T angle = (T)std::abs(std::acos(this->dot(v) / (this->length() * v.length())));
+    return std::max(angle, EPSILON_F32);
 }
 
 /// get the direction vector to the specified point
 template <typename T>
 inline vec3<T> vec3<T>::direction(const vec3 &u) const {
-    vec3 vector(u.x - this->x, u.y - this->y, u.z - this->z);
-    return vector.normalize();
+    return Normalized(vec3(u.x - this->x, u.y - this->y, u.z - this->z));
 }
 
 /// project this vector on the line defined by the 2 points(A, B)
 template <typename T>
 inline T vec3<T>::projectionOnLine(const vec3 &vA, const vec3 &vB) const {
-    vec3 vector(vB - vA);
+    const vec3 vector(vB - vA);
     return vector.dot(*this - vA) / vector.dot(vector);
 }
 
@@ -551,7 +533,7 @@ inline vec3<T> vec3<T>::closestPointOnLine(const vec3 &vA, const vec3 &vB) {
 /// (A, B) and this vector
 template <typename T>
 inline vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
-    T factor = this->projectionOnLine(vA, vB);
+    const T factor = this->projectionOnLine(vA, vB);
 
     if (factor <= 0.0f) return vA;
 
@@ -685,7 +667,7 @@ inline vec4<F32>& vec4<F32>::operator*=(const vec4<F32>& v) noexcept {
 /// compare 2 vectors
 template <typename T>
 template <typename U>
-inline bool vec4<T>::compare(const vec4<U> &v) const {
+inline bool vec4<T>::compare(const vec4<U> &v) const noexcept {
     return COMPARE(this->x, v.x) &&
            COMPARE(this->y, v.y) &&
            COMPARE(this->z, v.z) &&
@@ -694,7 +676,7 @@ inline bool vec4<T>::compare(const vec4<U> &v) const {
 
 template <>
 template <>
-inline bool vec4<F32>::compare(const vec4<F32> &v) const {
+inline bool vec4<F32>::compare(const vec4<F32> &v) const noexcept {
     // returns true if at least one element in a is not equal to 
     // the corresponding element in b
     return compare(v, EPSILON_F32);
@@ -704,7 +686,7 @@ inline bool vec4<F32>::compare(const vec4<F32> &v) const {
 template <typename T>
 template <typename U>
 inline bool vec4<T>::compare(const vec4<U> &v, U epsi) const noexcept{
-    if (std::is_same<T, U>::value && std::is_same<U, F32>::value) {
+    if_constexpr(std::is_same<T, U>::value && std::is_same<U, F32>::value) {
         return !fneq128(_reg._reg, v._reg._reg, epsi);
     } else {
         return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
@@ -773,7 +755,7 @@ inline T vec4<T>::lengthSquared() const {
 /// transform the vector to unit length
 template <typename T>
 inline vec4<T>& vec4<T>::normalize() {
-    T l = this->length();
+    const T l = this->length();
 
     if (l >= EPSILON_F32) {
         // multiply by the inverse length

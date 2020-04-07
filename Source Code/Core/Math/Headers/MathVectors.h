@@ -244,9 +244,9 @@ class vec2 {
     bool operator!=(const vec2 &v) const noexcept { return !this->compare(v); }
 
     template<typename U>
-    bool operator!=(const vec2<U> &v) const { return !this->compare(v); }
+    bool operator!=(const vec2<U> &v) const noexcept { return !this->compare(v); }
     template<typename U>
-    bool operator==(const vec2<U> &v) const { return this->compare(v); }
+    bool operator==(const vec2<U> &v) const noexcept { return this->compare(v); }
 
     const vec2 operator-(T _f) const {
         return vec2(this->x - _f, this->y - _f);
@@ -399,7 +399,7 @@ class vec2 {
         return (T)std::atan2(v.y - this->y, v.x - this->x);
     }
     /// compute the vector's distance to another specified vector
-    inline T distance(const vec2 &v, bool absolute = true) const;
+    inline T distance(const vec2 &v) const;
     /// compute the vector's squared distance to another specified vector
     inline T distanceSquared(const vec2 &v) const;
     /// convert the vector to unit length
@@ -427,10 +427,10 @@ class vec2 {
     inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB);
     /// compare 2 vectors
     template<typename U>
-    inline bool compare(const vec2<U> &_v) const;
+    inline bool compare(const vec2<U> &_v) const noexcept;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    inline bool compare(const vec2<U> &_v, U epsi) const;
+    inline bool compare(const vec2<U> &_v, U epsi) const noexcept;
     /// export the vector's components in the first 2 positions of the specified array
     inline void get(T *v) const;
 
@@ -567,9 +567,9 @@ class vec3 {
     bool operator==(const vec3 &v) const noexcept { return this->compare(v); }
 
     template<typename U>
-    bool operator!=(const vec3<U> &v) const { return !this->compare(v); }
+    bool operator!=(const vec3<U> &v) const noexcept { return !this->compare(v); }
     template<typename U>
-    bool operator==(const vec3<U> &v) const { return this->compare(v); }
+    bool operator==(const vec3<U> &v) const noexcept { return this->compare(v); }
 
     template <typename U>
     vec3 &operator=(U _f) noexcept {
@@ -736,12 +736,12 @@ class vec3 {
     inline bool isZeroLength() const { return lengthSquared() < EPSILON_F32; }
     /// compare 2 vectors
     template<typename U>
-    inline bool compare(const vec3<U> &v) const;
+    inline bool compare(const vec3<U> &v) const noexcept;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    inline bool compare(const vec3<U> &v, U epsi) const;
+    inline bool compare(const vec3<U> &v, U epsi) const noexcept;
     /// uniform vector: x = y = z
-    inline bool isUniform() const;
+    inline bool isUniform() const noexcept;
     /// return the squared distance of the vector
     inline T lengthSquared() const noexcept;
     /// calculate the dot product between this vector and the specified one
@@ -749,7 +749,7 @@ class vec3 {
     /// returns the angle in radians between '*this' and 'v'
     inline T angle(vec3 &v) const;
     /// compute the vector's distance to another specified vector
-    inline T distance(const vec3 &v, bool absolute = true) const;
+    inline T distance(const vec3 &v) const;
     /// compute the vector's squared distance to another specified vector
     inline T distanceSquared(const vec3 &v) const noexcept;
     /// transform the vector to unit length
@@ -954,13 +954,13 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     bool operator<=(const vec4 &v) const { return *this < v || *this == v; }
     bool operator>=(const vec4 &v) const { return *this > v || *this == v; }
 
-    bool operator==(const vec4 &v) const { return this->compare(v); }
-    bool operator!=(const vec4 &v) const { return !this->compare(v); }
+    bool operator==(const vec4 &v) const noexcept { return this->compare(v); }
+    bool operator!=(const vec4 &v) const noexcept { return !this->compare(v); }
 
     template<typename U>
-    bool operator!=(const vec4<U> &v) const { return !this->compare(v); }
+    bool operator!=(const vec4<U> &v) const noexcept { return !this->compare(v); }
     template<typename U>
-    bool operator==(const vec4<U> &v) const { return this->compare(v); }
+    bool operator==(const vec4<U> &v) const noexcept { return this->compare(v); }
 
     vec4 &operator=(T _f) noexcept { this->set(_f); return *this; }
 
@@ -1249,7 +1249,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     inline void reset() { this->set((T)0); }
     /// compare 2 vectors
     template<typename U>
-    inline bool compare(const vec4<U> &v) const;
+    inline bool compare(const vec4<U> &v) const noexcept;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
     inline bool compare(const vec4<U> &v, U epsi) const noexcept;
