@@ -3,15 +3,19 @@
 <TRANSFORM>
     <Transform>
         <position x="140.618729" y="0" z="0"/>
-        <orientation x="-40.5091705" y="-40.5073471" z="0.00506386301"/>
+        <orientation x="-40.5091705" y="-40.5073471" z="0.00506421505"/>
         <scale x="0.99987042" y="0.999870777" z="0.999772847"/>
     </Transform>
-
 </TRANSFORM>
-<BOUNDS/>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
 <RENDERING/>
 <NETWORKING/>
 <DIRECTIONAL_LIGHT>
-    <Range__and__Cone x="500" y="45" z="0"/>
-    <Direction x="0.493959069" y="-0.649434388" z="-0.578134477"/>
+    <Range__and__Cone x="0" y="45"/>
+    <Direction x="-0.578134477" y="-0.649434388"/>
+    <Fit__CSM__To__AABB>true</Fit__CSM__To__AABB>
+    <CSM__Near__Clip__Offset>0</CSM__Near__Clip__Offset>
 </DIRECTIONAL_LIGHT>

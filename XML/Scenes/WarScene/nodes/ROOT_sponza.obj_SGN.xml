@@ -4,11 +4,14 @@
 <TRANSFORM>
     <Transform>
         <position x="784.863403" y="14.730073" z="79.9280167"/>
-        <orientation x="0" y="-52.5796127" z="0"/>
+        <orientation x="0" y="-52.5613365" z="0"/>
         <scale x="0.0299999993" y="0.0299999993" z="0.0299999993"/>
     </Transform>
 </TRANSFORM>
-<BOUNDS/>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
 <RENDERING/>
 <NETWORKING/>
 <MESH/>

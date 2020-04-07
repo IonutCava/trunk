@@ -71,10 +71,6 @@ inline void Editor::registerUndoEntry(const UndoEntry<T>& entry) {
     _undoManager->registerUndoEntry(entry);
 }
 
-inline bool Editor::hasUnsavedElements() const {
-    return !_unsavedElements.empty();
-}
-
 inline void Editor::toggleMemoryEditor(bool state) {
     _showMemoryEditor = state;
 }

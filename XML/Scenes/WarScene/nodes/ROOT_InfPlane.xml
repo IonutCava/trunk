@@ -2,15 +2,18 @@
 <static>true</static>
 <TRANSFORM>
     <Transform>
-        <position x="149.403458" y="-50" z="2.87982941"/>
+        <position x="769.400024" y="-50" z="101.419884"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
-
 </TRANSFORM>
-<BOUNDS/>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
 <RENDERING>
     <Material>
+        <shadingMode>BLINN_PHONG</shadingMode>
         <colour r="0.5" g="0.5" b="0.5" a="1"/>
         <emissive r="0" g="0" b="0"/>
         <specular r="0.100000001" g="0.100000001" b="0.100000001"/>
@@ -18,7 +21,6 @@
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
-        <shadingMode>BLINN_PHONG</shadingMode>
         <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
@@ -31,5 +33,8 @@
             </UNIT0>
         </texture>
     </Material>
+    <Rendered__LOD__Level>2</Rendered__LOD__Level>
+    <Lock__LoD>false</Lock__LoD>
+    <Lock__LoD__Level>0</Lock__LoD__Level>
 </RENDERING>
 <INFINITE_PLANE/>

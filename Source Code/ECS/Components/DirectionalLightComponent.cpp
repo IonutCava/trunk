@@ -17,9 +17,7 @@ namespace {
 
 DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, PlatformContext& context)
     : BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>(sgn, context), 
-      Light(sgn, -1, LightType::DIRECTIONAL, sgn.sceneGraph().parentScene().lightPool()),
-      _csmSplitCount(3),
-      _csmNearClipOffset(100.0f)
+      Light(sgn, -1, LightType::DIRECTIONAL, sgn.sceneGraph().parentScene().lightPool())
 {
     setRange(g_defaultLightDistance);
     _shadowProperties._lightDetails.y = to_F32(_csmSplitCount);
@@ -41,9 +39,30 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     directionField._dataSetter = [this](const void* data) { setDirection(*static_cast<const vec3<F32>*>(data)); };
     directionField._type = EditorComponentFieldType::PUSH_TYPE;
     directionField._readOnly = true;
-    rangeAndConeField._basicType = GFX::PushConstantType::VEC3;
+    directionField._basicType = GFX::PushConstantType::VEC3;
 
     getEditorComponent().registerField(std::move(directionField));
+
+
+
+    EditorComponentField sceneFitField = {};
+    sceneFitField._name = "Fit CSM To AABB";
+    sceneFitField._data = &_csmUseSceneAABBFit;
+    sceneFitField._type = EditorComponentFieldType::PUSH_TYPE;
+    sceneFitField._readOnly = false;
+    sceneFitField._basicType = GFX::PushConstantType::BOOL;
+
+    getEditorComponent().registerField(std::move(sceneFitField));
+
+    EditorComponentField csmNearClip = {};
+    csmNearClip._name = "CSM Near Clip Offset";
+    csmNearClip._data = &_csmNearClipOffset;
+    csmNearClip._range = { -g_defaultLightDistance, g_defaultLightDistance };
+    csmNearClip._type = EditorComponentFieldType::PUSH_TYPE;
+    csmNearClip._readOnly = false;
+    csmNearClip._basicType = GFX::PushConstantType::FLOAT;
+
+    getEditorComponent().registerField(std::move(csmNearClip));
 
     BoundingBox bb;
     bb.setMin(-g_defaultLightDistance * 0.5f);
@@ -51,10 +70,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
 
     _positionCache.set(VECTOR3_ZERO);
-}
-
-DirectionalLightComponent::~DirectionalLightComponent()
-{
+    _feedbackContainers.resize(csmSplitCount());
 }
 
 void DirectionalLightComponent::OnData(const ECS::Data& data) {

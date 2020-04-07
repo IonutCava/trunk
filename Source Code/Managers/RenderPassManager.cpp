@@ -955,6 +955,12 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     // Cull the scene and grab the visible nodes
     const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents);
 
+    if (params._feedBackContainer != nullptr) {
+        auto& container = params._feedBackContainer->_visibleNodes;
+        container.reserve(visibleNodes.size());
+        container.insert(container.cend(), visibleNodes.cbegin(), visibleNodes.cend());
+    }
+
 #   pragma region PRE_PASS
         params._stagePass._passType = RenderPassType::PRE_PASS;
         const bool prePassExecuted = prePass(visibleNodes, params, target, bufferInOut);

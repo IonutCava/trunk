@@ -7,6 +7,7 @@
 
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
 
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
@@ -200,6 +201,11 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     I16 i = to_I16(numSplits) - (renderLastSplit() ? 1 : 2);
     for (i; i >= 0; i--) {
         drawParams._layer = i;
+
+        if (dirLight.csmUseSceneAABBFit()) {
+            params._feedBackContainer = &dirLight.feedBackContainers()[i];
+        }
+
         params._passName = Util::StringFormat("CSM_PASS_%d", i).c_str();
 
         GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
@@ -273,6 +279,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
 {
     const mat4<F32> invViewProj = GetInverse(mat4<F32>::Multiply(viewMatrix, projectionMatrix));
 
+    F32 appliedDiff = 0.0f;
     for (U8 cascadeIterator = 0; cascadeIterator < numSplits; ++cascadeIterator) {
         Camera* lightCam = light.shadowCameras()[cascadeIterator];
 
@@ -305,7 +312,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
             frustumCornersWS[i] = frustumCornersWS[i] + nearCornerRay;
         }
 
-        vec3<F32> frustumCenter(0.0f);
+        vec3<F32> frustumCenter = VECTOR3_ZERO;
         for (U8 i = 0; i < 8; ++i) {
             frustumCenter += frustumCornersWS[i];
         }
@@ -317,13 +324,49 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
             radius = std::max(radius, distance);
         }
         radius = std::ceil(Sqrt(radius) * 16.0f) / 16.0f;
+        radius += appliedDiff;
 
-        const vec3<F32> maxExtents(radius, radius, radius);
-        const vec3<F32> minExtents = -maxExtents;
+        vec3<F32> maxExtents(radius, radius, radius);
+        vec3<F32> minExtents = -maxExtents;
 
-        //Position the viewmatrix looking down the center of the frustum with an arbitrary lighht direction
-        const vec3<F32> lightDirection = frustumCenter - light.directionCache() * -minExtents.z;
-        const mat4<F32>& lightViewMatrix = lightCam->lookAt(lightDirection, frustumCenter, WORLD_Y_AXIS);
+        //Position the viewmatrix looking down the center of the frustum with an arbitrary light direction
+        vec3<F32> lightPosition = frustumCenter - light.directionCache() * (light.csmNearClipOffset() - minExtents.z);
+        mat4<F32> lightViewMatrix = lightCam->lookAt(lightPosition, frustumCenter, WORLD_Y_AXIS);
+
+        if (light.csmUseSceneAABBFit()) {
+            // Only meshes should be enough
+            auto& prevPassResults = light.feedBackContainers()[cascadeIterator]._visibleNodes;
+            if (!prevPassResults.empty()) {
+                BoundingBox meshAABB = {};
+                for (auto& node : prevPassResults) {
+                    if (node._node->getNode().type() == SceneNodeType::TYPE_OBJECT3D) {
+                        if (node._node->getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH) {
+                            meshAABB.add(node._node->get<BoundsComponent>()->getBoundingBox());
+                        }
+                    }
+                }
+
+                meshAABB.transform(lightViewMatrix);
+
+                //const F32 newMax = meshAABB.getMax().y;
+                //const F32 newMax = meshAABB.getExtent().y;
+                //const F32 newMax = meshAABB.getExtent().maxComponent();
+                const F32 newMax = meshAABB.getHalfExtent().y;
+                //const F32 newMax = meshAABB.getHalfExtent().maxComponent();
+
+                appliedDiff = newMax - radius;
+                if (appliedDiff > 0.5f) {
+                    radius += appliedDiff;
+
+                    maxExtents.set(radius, radius, radius);
+                    minExtents = -maxExtents;
+
+                    //Position the viewmatrix looking down the center of the frustum with an arbitrary light direction
+                    lightPosition = frustumCenter - light.directionCache() * (light.csmNearClipOffset() - minExtents.z);
+                    lightViewMatrix = lightCam->lookAt(lightPosition, frustumCenter, WORLD_Y_AXIS);
+                }
+            }
+        }
 
         // Lets store the ortho rect in case we need it;
         const vec2<F32> clip = {
@@ -364,7 +407,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         mat4<F32>& lightVP = light.getShadowVPMatrix(cascadeIterator);
         mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix, lightVP);
 
-        light.setShadowLightPos(cascadeIterator, lightDirection);
+        light.setShadowLightPos(cascadeIterator, lightPosition);
         light.setShadowVPMatrix(cascadeIterator, mat4<F32>::Multiply(lightVP, MAT4_BIAS));
     }
 }

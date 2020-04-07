@@ -614,7 +614,11 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
 
 void SceneGraphNode::forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
     SharedLock<SharedMutex> r_lock(_childLock);
-    CLAMP<U32>(end, start, getChildCountLocked());
+    if (end == 0u) {
+        end = getChildCountLocked();
+    } else {
+        CLAMP<U32>(end, start, getChildCountLocked());
+    }
 
     for (U32 i = start; i < end; ++i) {
         callback(_children[i], i);
@@ -622,7 +626,12 @@ void SceneGraphNode::forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callbac
 }
 
 void SceneGraphNode::forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
-    CLAMP<U32>(end, start, getChildCountLocked());
+    SharedLock<SharedMutex> r_lock(_childLock);
+    if (end == 0u) {
+        end = getChildCountLocked();
+    } else {
+        CLAMP<U32>(end, start, getChildCountLocked());
+    }
 
     for (U32 i = start; i < end; ++i) {
         callback(_children[i], i);
@@ -631,7 +640,11 @@ void SceneGraphNode::forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& c
 
 bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
     SharedLock<SharedMutex> r_lock(_childLock);
-    CLAMP<U32>(end, start, getChildCountLocked());
+    if (end == 0u) {
+        end = getChildCountLocked();
+    } else {
+        CLAMP<U32>(end, start, getChildCountLocked());
+    }
 
     for (U32 i = start; i < end; ++i) {
         if (!callback(_children[i], i)) {
@@ -644,7 +657,11 @@ bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I
 
 bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
     SharedLock<SharedMutex> r_lock(_childLock);
-    CLAMP<U32>(end, start, getChildCountLocked());
+    if (end == 0u) {
+        end = getChildCountLocked();
+    } else {
+        CLAMP<U32>(end, start, getChildCountLocked());
+    }
 
     for (U32 i = start; i < end; ++i) {
         if (!callback(_children[i], i)) {

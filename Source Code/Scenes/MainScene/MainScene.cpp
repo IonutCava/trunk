@@ -157,9 +157,6 @@ bool MainScene::load(const Str128& name) {
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
     baseCamera->setMoveSpeedFactor(10.0f);
 
-    _sun->get<DirectionalLightComponent>()->csmSplitCount(3);  // 3 splits
-    _sun->get<DirectionalLightComponent>()->csmNearClipOffset(25.0f);
-
     constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
                                to_base(ComponentType::TRANSFORM) |
                                to_base(ComponentType::BOUNDS) |

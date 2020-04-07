@@ -54,12 +54,17 @@ class RenderPassManager : public KernelComponent {
 public:
     using ExtraTargetFlags = std::pair<bool, bool>;
 
+    struct FeedBackContainer {
+        vectorEASTL<VisibleNode> _visibleNodes;
+    };
+
     struct PassParams {
         FrustumClipPlanes _clippingPlanes = {};
         vec3<F32> _minExtents = { 0.0f };
         // source node is used to determine if the current pass is triggered by a specific node:
         // e.g. a light node for shadow mapping, a reflector for reflection (or refraction), etc
         // safe to be set to null
+        FeedBackContainer* _feedBackContainer = nullptr;
         const SceneGraphNode* _sourceNode = nullptr;
         const RTDrawDescriptor* _drawPolicy = nullptr;
         const RTClearDescriptor* _clearDescriptor = nullptr;

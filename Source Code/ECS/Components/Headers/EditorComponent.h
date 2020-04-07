@@ -67,7 +67,7 @@ namespace Divide {
         void* _data = nullptr;
         vec2<F32> _range = { 0.0f, 1.0f }; //< Used by slider_type as a min / max range or dropdown as selected_index / count
         Str32  _name = "";
-        F32 _step = 0.1f;
+        F32 _step = 0.0f; //< 0.0f == no +- buttons
 
         GFX::PushConstantType _basicType = GFX::PushConstantType::COUNT;
         EditorComponentFieldType _type = EditorComponentFieldType::COUNT;
@@ -160,7 +160,7 @@ namespace Divide {
       public:
 
         EditorComponent(const Str128& name);
-        virtual ~EditorComponent();
+        virtual ~EditorComponent() = default;
 
         inline void name(const Str128& nameStr) { _name = nameStr; }
         inline const Str128& name() const { return _name; }

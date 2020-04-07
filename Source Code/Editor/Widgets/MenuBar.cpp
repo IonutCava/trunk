@@ -112,6 +112,18 @@ void MenuBar::draw() {
             }
         }
 
+        if (!_errorMsg.empty()) {
+            ImGui::OpenPopup("Error!");
+            if (ImGui::BeginPopupModal("Error!", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text(_errorMsg.c_str());
+                if (ImGui::Button("Ok")) {
+                    ImGui::CloseCurrentPopup();
+                    _errorMsg.clear();
+                }
+                ImGui::EndPopup();
+            }
+        }
+
         if (_quitPopup) {
             ImGui::OpenPopup("Confirm Quit");
             if (ImGui::BeginPopupModal("Confirm Quit", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -137,11 +149,10 @@ void MenuBar::draw() {
 
 void MenuBar::drawFileMenu() {
     bool showFileOpenDialog = false;
-    bool showFileSaveDialog = false;
 
     if (ImGui::BeginMenu("File"))
     {
-        const bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedElements(_context.editor());
+        const bool hasUnsavedElements = Attorney::EditorGeneralWidget::hasUnsavedSceneChanges(_context.editor());
 
         if (ImGui::MenuItem("New", "Ctrl+N", false, false))
         {
@@ -154,14 +165,10 @@ void MenuBar::drawFileMenu() {
             ImGui::EndMenu();
         }
 
-        showFileSaveDialog = ImGui::MenuItem(hasUnsavedElements ? "Save*" : "Save", "Ctrl+S");
-        
-        if (ImGui::MenuItem(hasUnsavedElements ? "Save All*" : "Save All"))
-        {
-            Attorney::EditorGeneralWidget::saveElement(_context.editor(), -1);
-            _context.kernel().sceneManager().saveActiveScene(false);
-            _context.config().save();
-            _context.editor().saveToXML();
+        if (ImGui::MenuItem(hasUnsavedElements ? "Save Scene*" : "Save Scene")) {
+            if (!Attorney::EditorGeneralWidget::saveSceneChanges(_context.editor())) {
+                _errorMsg.append("Error occured while saving the current scene!\n Try again or check the logs for errors!\n");
+            }
         }
 
         ImGui::Separator();
@@ -223,17 +230,10 @@ void MenuBar::drawFileMenu() {
     }
 
     static ImGuiFs::Dialog s_fileOpenDialog(true, true);
-    static ImGuiFs::Dialog s_fileSaveDialog(true, true);
     s_fileOpenDialog.chooseFileDialog(showFileOpenDialog);
-    s_fileSaveDialog.chooseFileDialog(showFileSaveDialog);
 
     if (strlen(s_fileOpenDialog.getChosenPath()) > 0) {
         ImGui::Text("Chosen file: \"%s\"", s_fileOpenDialog.getChosenPath());
-    }
-
-    if (strlen(s_fileSaveDialog.getChosenPath()) > 0) {
-        ImGui::Text("Chosen file: \"%s\"", s_fileSaveDialog.getChosenPath());
-        Attorney::EditorGeneralWidget::saveElement(_context.editor(), -1);
     }
 }
 

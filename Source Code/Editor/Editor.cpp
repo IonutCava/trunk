@@ -109,17 +109,6 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
     : PlatformContextComponent(context),
       _currentTheme(theme),
       _currentDimmedTheme(dimmedTheme),
-      _mainWindow(nullptr),
-      _running(false),
-      _autoSaveCamera(false),
-      _showSampleWindow(false),
-      _showMemoryEditor(false),
-      _sceneHovered(false),
-      _scenePreviewFocused(false),
-      _selectedCamera(nullptr),
-      _gizmo(nullptr),
-      _imguiContext(nullptr),
-      _stepQueue(1),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
@@ -132,13 +121,6 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
     REGISTER_FRAME_LISTENER(this, 99999);
 
     _memoryEditorData = std::make_pair(nullptr, 0);
-
-    //Test stuff
-    _unsavedElements.push_back(1);
-    _unsavedElements.push_back(2);
-    _unsavedElements.push_back(3);
-    _unsavedElements.push_back(4);
-    _unsavedElements.push_back(5);
 }
 
 Editor::~Editor()
@@ -1257,19 +1239,15 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
     }
 }
 
-void Editor::saveElement(I64 elementGUID) {
-    if (elementGUID == -1) {
-        _unsavedElements.clear();
-        return;
+bool Editor::saveSceneChanges() {
+    if (_context.kernel().sceneManager().saveActiveScene(false, false)) {
+        if (saveToXML()) {
+            _context.config().save();
+            return true;
+        }
     }
 
-    auto it = std::find(std::cbegin(_unsavedElements),
-                        std::cend(_unsavedElements),
-                        elementGUID);
-
-    if (it != std::cend(_unsavedElements)) {
-        _unsavedElements.erase(it);
-    }
+    return false;
 }
 
 
@@ -1501,7 +1479,7 @@ ImGuiContext& Editor::imguizmoContext() {
     return _gizmo->getContext();
 }
 
-void Editor::saveToXML() const {
+bool Editor::saveToXML() const {
     boost::property_tree::ptree pt;
     const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
@@ -1510,17 +1488,24 @@ void Editor::saveToXML() const {
     pt.put("showSampleWindow", _showSampleWindow);
     pt.put("autoSaveCamera", _autoSaveCamera);
 
-    createDirectory(editorPath.c_str());
-    copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true);
-    boost::property_tree::write_xml(editorPath + g_editorSaveFile, pt, std::locale(), settings);
+    if (createDirectory(editorPath.c_str())) {
+        if (copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true)) {
+            boost::property_tree::write_xml(editorPath + g_editorSaveFile, pt, std::locale(), settings);
+            return true;
+        }
+    }
+
+    return false;
 }
 
-void Editor::loadFromXML() {
+bool Editor::loadFromXML() {
     boost::property_tree::ptree pt;
     const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
     if (!fileExists((editorPath + g_editorSaveFile).c_str())) {
         if (fileExists((editorPath + g_editorSaveFileBak).c_str())) {
-            copyFile(editorPath.c_str(), g_editorSaveFileBak, editorPath.c_str(), g_editorSaveFile, true);
+            if (!copyFile(editorPath.c_str(), g_editorSaveFileBak, editorPath.c_str(), g_editorSaveFile, true)) {
+                return false;
+            }
         }
     }
 
@@ -1529,6 +1514,10 @@ void Editor::loadFromXML() {
         _showMemoryEditor = pt.get("showMemEditor", false);
         _showSampleWindow = pt.get("showSampleWindow", false);
         _autoSaveCamera = pt.get("autoSaveCamera", false);
+
+        return true;
     }
+
+    return false;
 }
 }; //namespace Divide

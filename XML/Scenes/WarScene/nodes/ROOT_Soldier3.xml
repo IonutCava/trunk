@@ -7,9 +7,11 @@
         <orientation x="0" y="-0" z="0"/>
         <scale x="0.0199999996" y="0.0199999996" z="0.0199999996"/>
     </Transform>
-
 </TRANSFORM>
-<BOUNDS/>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
 <RENDERING/>
 <NETWORKING/>
 <SELECTION/>

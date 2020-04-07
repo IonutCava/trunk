@@ -33,6 +33,7 @@
 #define _DIRECTIONAL_LIGHT_COMPONENT_H_
 
 #include "Rendering/Lighting/Headers/Light.h"
+#include "Managers/Headers/RenderPassManager.h"
 
 namespace Divide {
 
@@ -45,24 +46,25 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
    public:
 
     explicit DirectionalLightComponent(SceneGraphNode& sgn, PlatformContext& context);
-    ~DirectionalLightComponent();
-
-    inline U8 csmSplitCount() const { return _csmSplitCount; }
-    inline void csmSplitCount(U8 splitCount) { _csmSplitCount = splitCount; }
-
-    inline F32 csmNearClipOffset() const { return _csmNearClipOffset; }
-    inline void csmNearClipOffset(F32 offset) { _csmNearClipOffset = offset; }
+    ~DirectionalLightComponent() = default;
 
     void setDirection(const vec3<F32>& direction);
 
-   protected:
+    // Quick hack to store previous frame's culling results
+    vectorEASTL<RenderPassManager::FeedBackContainer>& feedBackContainers() { return _feedbackContainers; }
+
+    PROPERTY_RW(U8, csmSplitCount, 3u);
+    /// CSM extra back up distance for light position
+    PROPERTY_RW(F32, csmNearClipOffset, 0.0f);
+    /// If this is true, we use the combined AABB of culled shadow casters to "correct" each split frustum to avoid near-clipping/culling artefacts.
+    PROPERTY_RW(bool, csmUseSceneAABBFit, true);
+
+protected:
      void OnData(const ECS::Data& data) final;
 
-   protected:
-    /// CSM split count
-    U8 _csmSplitCount;
-    /// CSM extra back up distance for light position
-    F32 _csmNearClipOffset;
+protected:
+    //Used to adjust ortho-matrice's near/far planes per pass
+    vectorEASTL<RenderPassManager::FeedBackContainer> _feedbackContainers;
 };
 
 INIT_COMPONENT(DirectionalLightComponent);

@@ -547,7 +547,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateShadow = terrainRenderState;
-    //terrainRenderStateShadow.setZBias(1.0f, 1.0f);
+    terrainRenderStateShadow.setZBias(1.0f, 1.0f);
     terrainRenderStateShadow.setZFunc(ComparisonFunction::LEQUAL);
     terrainRenderStateShadow.setColourWrites(true, true, false, false);
 

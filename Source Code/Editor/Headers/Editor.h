@@ -182,8 +182,8 @@ class Editor : public PlatformContextComponent,
     bool joystickRemap(const Input::JoystickEvent &arg) override;
     bool onUTF8(const Input::UTF8Event& arg) override;
         
-    void saveToXML() const;
-    void loadFromXML();
+    bool saveToXML() const;
+    bool loadFromXML();
 
   protected:
     inline bool isInit() const;
@@ -197,12 +197,14 @@ class Editor : public PlatformContextComponent,
 
     inline ImGuiContext& imguiContext();
 
+    PROPERTY_R_IW(bool, unsavedSceneChanges, false);
+
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
     void drawMenuBar();
     void drawStatusBar();
 
-    void saveElement(I64 elementGUID);
+    bool saveSceneChanges();
     void updateCameraSnapshot();
     // Returns true if the window was closed
     bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal);
@@ -214,40 +216,42 @@ class Editor : public PlatformContextComponent,
     LightPool& getActiveLightPool();
 
     inline void toggleMemoryEditor(bool state);
-    inline bool hasUnsavedElements() const;
     inline void setSelectedCamera(Camera* camera);
     inline Camera* getSelectedCamera() const;
 
   private:
-    ImGuiStyleEnum _currentTheme;
-    ImGuiStyleEnum _currentDimmedTheme;
-
-    std::unique_ptr<MenuBar> _menuBar;
-    std::unique_ptr<StatusBar> _statusBar;
-    std::unique_ptr<Gizmo> _gizmo;
-    Rect<I32>         _targetViewport;
-    U32               _stepQueue;
-    bool              _autoSaveCamera;
-    bool              _showSampleWindow;
-    bool              _showMemoryEditor;
-    bool              _running;
-    bool              _sceneHovered;
-    bool              _scenePreviewFocused;
-    Camera*           _selectedCamera;
-    DisplayWindow*    _mainWindow;
-    ImGuiContext*     _imguiContext;
-    Texture_ptr       _fontTexture;
-    ShaderProgram_ptr _imguiProgram;
-    std::unique_ptr<UndoManager>  _undoManager;
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 
-    std::pair<bufferPtr, size_t> _memoryEditorData;
+    std::unique_ptr<MenuBar> _menuBar = nullptr;
+    std::unique_ptr<StatusBar> _statusBar = nullptr;
+    std::unique_ptr<Gizmo> _gizmo = nullptr;
 
-    vectorSTD<I64> _unsavedElements;
+    Camera*           _selectedCamera = nullptr;
+    DisplayWindow*    _mainWindow = nullptr;
+    ImGuiContext*     _imguiContext = nullptr;
+    Texture_ptr       _fontTexture = nullptr;
+    ShaderProgram_ptr _imguiProgram = nullptr;
+    std::unique_ptr<UndoManager>  _undoManager = nullptr;
+
+    std::pair<bufferPtr, size_t> _memoryEditorData = { nullptr, 0 };
+
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
 
     hashMap<I64, CameraSnapshot> _cameraSnapshots;
+
+    Rect<I32>         _targetViewport = {0, 0, 1, 1};
+    U32               _stepQueue = 1u;
+
+    ImGuiStyleEnum _currentTheme = ImGuiStyle_Count;
+    ImGuiStyleEnum _currentDimmedTheme = ImGuiStyle_Count;
+
+    bool              _autoSaveCamera = false;
+    bool              _showSampleWindow = false;
+    bool              _showMemoryEditor = false;
+    bool              _running = false;
+    bool              _sceneHovered = false;
+    bool              _scenePreviewFocused = false;
 
 }; //Editor
 
@@ -371,12 +375,16 @@ namespace Attorney {
             return editor._gizmo->enabled();
         }
 
-        static bool hasUnsavedElements(const Editor& editor) {
-            return editor.hasUnsavedElements();
+        static bool hasUnsavedSceneChanges(const Editor& editor) {
+            return editor.unsavedSceneChanges();
         }
 
-        static void saveElement(Editor& editor, I64 elementGUID = -1) {
-            editor.saveElement(elementGUID);
+        static void registerUnsavedSceneChanges(Editor& editor) {
+            editor.unsavedSceneChanges(true);
+        }
+
+        static bool saveSceneChanges(Editor& editor) {
+            return editor.saveSceneChanges();
         }
 
         static void inspectMemory(Editor& editor, std::pair<bufferPtr, size_t> data) noexcept {

@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <model>defaultobject_cylinder.obj</model>
-<NAVIGATION/>
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="0.991229296" z="0.991229296"/>
     </Transform>
-
 </TRANSFORM>
-<BOUNDS/>
+<NAVIGATION/>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
 <RENDERING>
     <Material>
+        <shadingMode>PHONG</shadingMode>
         <colour r="0.639999986" g="0.639999986" b="0.639999986" a="1"/>
         <emissive r="0" g="0" b="0"/>
         <specular r="0.5" g="0.5" b="0.5"/>
@@ -20,7 +23,6 @@
         <doubleSided>true</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NORMAL</bumpMethod>
-        <shadingMode>PHONG</shadingMode>
         <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
@@ -41,5 +43,8 @@
             </NORMALMAP>
         </texture>
     </Material>
+    <Rendered__LOD__Level>0</Rendered__LOD__Level>
+    <Lock__LoD>false</Lock__LoD>
+    <Lock__LoD__Level>0</Lock__LoD__Level>
 </RENDERING>
 <SUBMESH/>

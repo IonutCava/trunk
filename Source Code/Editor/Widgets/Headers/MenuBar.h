@@ -61,6 +61,7 @@ namespace Divide {
         bool _isMainMenu = true;
         bool _quitPopup = false;
         bool _closePopup = false;
+        stringImpl _errorMsg = "";
         vectorSTD<Texture_ptr> _previewTextures;
     };
 }; //namespace Divide

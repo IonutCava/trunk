@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <model>sponza_41</model>
-<NAVIGATION/>
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
-
 </TRANSFORM>
-<BOUNDS/>
+<NAVIGATION/>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
 <RENDERING>
     <Material>
+        <shadingMode>PHONG</shadingMode>
         <colour r="0.588" g="0.588" b="0.588" a="1"/>
         <emissive r="0" g="0" b="0"/>
         <specular r="0" g="0" b="0"/>
@@ -20,12 +23,11 @@
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NORMAL</bumpMethod>
-        <shadingMode>PHONG</shadingMode>
         <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>sponza_arch_diff.png</name>
-                <path>assets/textures/sponza</path>
+                <path>assets/textures/sponza/</path>
                 <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
@@ -33,7 +35,7 @@
             </UNIT0>
             <NORMALMAP>
                 <name>sponza_arch_ddn.tga</name>
-                <path>assets/textures/sponza</path>
+                <path>assets/textures/sponza/</path>
                 <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
@@ -41,7 +43,7 @@
             </NORMALMAP>
             <SPECULAR>
                 <name>sponza_arch_spec.png</name>
-                <path>assets/textures/sponza</path>
+                <path>assets/textures/sponza/</path>
                 <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
@@ -49,5 +51,8 @@
             </SPECULAR>
         </texture>
     </Material>
+    <Rendered__LOD__Level>0</Rendered__LOD__Level>
+    <Lock__LoD>false</Lock__LoD>
+    <Lock__LoD__Level>0</Lock__LoD__Level>
 </RENDERING>
 <SUBMESH/>

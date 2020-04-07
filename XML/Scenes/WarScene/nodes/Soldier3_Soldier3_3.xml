@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
-<model>Bob.md5mesh-submesh-3</model>
-<ANIMATION/>
-<INVERSE_KINEMATICS/>
-<RAGDOLL/>
-<NAVIGATION/>
+<model>iron_grill.png.msh</model>
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
-
 </TRANSFORM>
-<BOUNDS/>
+<ANIMATION/>
+<INVERSE_KINEMATICS/>
+<RAGDOLL/>
+<NAVIGATION/>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
 <RENDERING>
     <Material>
+        <shadingMode>BLINN_PHONG</shadingMode>
         <colour r="0.800000012" g="0.800000012" b="0.800000012" a="1"/>
         <emissive r="0" g="0" b="0"/>
         <specular r="1" g="1" b="1"/>
@@ -23,18 +26,28 @@
         <doubleSided>true</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
-        <shadingMode>BLINN_PHONG</shadingMode>
         <parallaxFactor>0.00999999978</parallaxFactor>
         <texture>
             <UNIT0>
                 <name>iron_grill.png</name>
-                <path>assets/textures</path>
+                <path>assets/textures/</path>
                 <flipped>true</flipped>
                 <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>255</anisotropy>
             </UNIT0>
+            <OPACITY>
+                <name>iron_grill.png</name>
+                <path>assets/textures/</path>
+                <flipped>true</flipped>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                <anisotropy>255</anisotropy>
+            </OPACITY>
         </texture>
     </Material>
+    <Rendered__LOD__Level>0</Rendered__LOD__Level>
+    <Lock__LoD>false</Lock__LoD>
+    <Lock__LoD__Level>0</Lock__LoD__Level>
 </RENDERING>
 <SUBMESH/>
