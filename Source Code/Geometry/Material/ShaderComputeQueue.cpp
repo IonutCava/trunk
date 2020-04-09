@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-ShaderComputeQueue::ShaderComputeQueue(ResourceCache& cache)
+ShaderComputeQueue::ShaderComputeQueue(ResourceCache* cache)
     : _cache(cache),
       _queueComputeTimer(Time::ADD_TIMER("Shader Queue Timer"))
 {
@@ -40,6 +40,12 @@ void ShaderComputeQueue::idle() {
     }
 }
 
+// Processes a queue element on the spot
+void ShaderComputeQueue::process(ShaderQueueElement& element) {
+    element._shaderDescriptor.waitForReady(false);
+    element._shaderRef = CreateResource<ShaderProgram>(_cache, element._shaderDescriptor);
+}
+
 bool ShaderComputeQueue::stepQueue() {
     UniqueLock<SharedMutex> lock(_queueLock);
     return stepQueueLocked();
@@ -50,9 +56,7 @@ bool ShaderComputeQueue::stepQueueLocked() {
         return false;
     }
 
-    ShaderQueueElement& currentItem = _shaderComputeQueue.front();
-    currentItem._shaderDescriptor.waitForReady(false);
-    currentItem._shaderRef = CreateResource<ShaderProgram>(_cache, currentItem._shaderDescriptor);
+    process(_shaderComputeQueue.front());
     _shaderComputeQueue.pop_front();
     return true;
 }

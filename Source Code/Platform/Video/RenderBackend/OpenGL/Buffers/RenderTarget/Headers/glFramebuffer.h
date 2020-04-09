@@ -121,8 +121,6 @@ protected:
 
    protected:
 
-    RTAttachment* getAttachmentInternal(RTAttachmentType type, U8 index);
-
     void clear(const RTClearDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const;
     void begin(const RTDrawDescriptor& drawPolicy);
     void end(bool needsUnbind);
@@ -139,7 +137,6 @@ protected:
 
     Rect<I32> _prevViewport;
     Str128 _debugMessage;
-    glFramebuffer* _parent;
     GLuint _framebufferHandle;
 
     bool _isLayeredDepth;

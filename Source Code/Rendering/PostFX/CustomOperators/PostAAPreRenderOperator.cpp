@@ -14,11 +14,11 @@
 
 namespace Divide {
 
-PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
-    : PreRenderOperator(context, parent, cache, FilterType::FILTER_SS_ANTIALIASING)
+PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
+    : PreRenderOperator(context, parent, FilterType::FILTER_SS_ANTIALIASING)
 {
-    useSMAA(_ID(cache.context().config().rendering.postFX.postAAType.c_str()) == _ID("SMAA"));
-    postAAQualityLevel(cache.context().config().rendering.postFX.PostAAQualityLevel);
+    useSMAA(_ID(cache->context().config().rendering.postFX.postAAType.c_str()) == _ID("SMAA"));
+    postAAQualityLevel(cache->context().config().rendering.postFX.PostAAQualityLevel);
 
     RenderTargetDescriptor desc = {};
     desc._resolution = parent.inputRT()._rt->getResolution();

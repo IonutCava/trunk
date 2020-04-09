@@ -173,7 +173,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     //==================== static methods ===============================//
     static void idle();
-    static void onStartup(GFXDevice& context, ResourceCache& parentCache);
+    static void onStartup(GFXDevice& context, ResourceCache* parentCache);
     static void onShutdown();
     static bool updateAll(const U64 deltaTimeUS);
     /// Queue a shaderProgram recompile request

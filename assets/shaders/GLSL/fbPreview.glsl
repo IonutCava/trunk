@@ -91,7 +91,7 @@ void main()
 {
     float depth = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
-	float linearDepth = ToLinearPreviewDepth(depth, zPlanes);
+    float linearDepth = 0.5f * ToLinearPreviewDepth(depth, zPlanes) + 0.5f;
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 

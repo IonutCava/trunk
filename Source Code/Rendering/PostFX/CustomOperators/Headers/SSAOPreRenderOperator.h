@@ -38,7 +38,7 @@ namespace Divide {
 
 class SSAOPreRenderOperator final : public PreRenderOperator {
    public:
-    SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
+    SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~SSAOPreRenderOperator();
 
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;

@@ -343,9 +343,9 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
 
     // Add current build environment information to the shaders
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         appendToShaderHeader(ShaderType::COUNT, "#define _DEBUG", lineOffsets);
-    } else if (Config::Build::IS_PROFILE_BUILD) {
+    } else if_constexpr(Config::Build::IS_PROFILE_BUILD) {
         appendToShaderHeader(ShaderType::COUNT, "#define _PROFILE", lineOffsets);
     } else {
         appendToShaderHeader(ShaderType::COUNT, "#define _RELEASE", lineOffsets);
@@ -368,13 +368,13 @@ bool GL_API::initGLSW(Configuration& config) {
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option fastprecision on",lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option inline all", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option ifcvt none", lineOffsets);
-        if (Config::ENABLE_GPU_VALIDATION) {
+        if_constexpr(Config::ENABLE_GPU_VALIDATION) {
             appendToShaderHeader(ShaderType::COUNT, "#pragma option strict on", lineOffsets);
         }
         appendToShaderHeader(ShaderType::COUNT, "//#pragma option unroll all", lineOffsets);
     }
 
-    if (Config::USE_COLOURED_WOIT) {
+    if_constexpr(Config::USE_COLOURED_WOIT) {
         appendToShaderHeader(ShaderType::COUNT, "#define USE_COLOURED_WOIT", lineOffsets);
     }
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
@@ -638,6 +638,13 @@ bool GL_API::initGLSW(Configuration& config) {
         "#define TEXTURE_COUNT " +
         to_stringImpl(to_U32(ShaderProgram::TextureUsage::COUNT)),
         lineOffsets);
+
+    if_constexpr(Config::Lighting::USE_SEPARATE_VSM_PASS) {
+        appendToShaderHeader(
+            ShaderType::FRAGMENT,
+            "#define USE_SEPARATE_VSM_PASS",
+            lineOffsets);
+    }
 
     appendToShaderHeader(
         ShaderType::COUNT,

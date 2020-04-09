@@ -201,7 +201,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/bigobj /Zc:twoPhase-  /Zc:twoPhase-  </AdditionalOptions>
+      <AdditionalOptions>/bigobj /Zc:twoPhase-  /Zc:twoPhase-   /d2cgsummary</AdditionalOptions>
       <FloatingPointModel>Fast</FloatingPointModel>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

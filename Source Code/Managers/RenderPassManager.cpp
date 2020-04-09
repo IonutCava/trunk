@@ -50,7 +50,20 @@ namespace Divide {
           _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer"))
     {
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
+    }
 
+    RenderPassManager::~RenderPassManager()
+    {
+        for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
+            GFX::deallocateCommandBuffer(buf);
+        }
+
+        GFX::deallocateCommandBuffer(_postFXCommandBuffer);
+
+        MemoryManager::DELETE_CONTAINER(_renderPasses);
+    }
+
+    void RenderPassManager::postInit() {
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
         vertModule._sourceFile = "baseVertexShaders.glsl";
@@ -67,30 +80,16 @@ namespace Divide {
         ResourceDescriptor shaderResDesc("OITComposition");
         shaderResDesc.propertyDescriptor(shaderDescriptor);
         shaderResDesc.waitForReady(false);
-        _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderResDesc);
-
-        _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
-        _postFXCommandBuffer = GFX::allocateCommandBuffer(true);
-    }
-
-    RenderPassManager::~RenderPassManager()
-    {
-        for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
-            GFX::deallocateCommandBuffer(buf);
-        }
-
-        GFX::deallocateCommandBuffer(_postFXCommandBuffer);
-
-        MemoryManager::DELETE_CONTAINER(_renderPasses);
-    }
-
-    void RenderPassManager::postInit() {
+        _OITCompositionShader = CreateResource<ShaderProgram>(parent().resourceCache(), shaderResDesc);
         WAIT_FOR_CONDITION(_OITCompositionShader->getState() == ResourceState::RES_LOADED);
 
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getGUID();
         _OITCompositionPipeline = _context.newPipeline(pipelineDescriptor);
+
+        _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
+        _postFXCommandBuffer = GFX::allocateCommandBuffer(true);
     }
 
     namespace {
@@ -114,9 +113,9 @@ namespace Divide {
             parentTimer->addChildTimer(*_flushCommandBufferTimer);
         }
 
-        const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
+        const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(*parent().sceneManager());
 
-        Attorney::SceneManagerRenderPass::preRenderAllPasses(parent().sceneManager(), cam);
+        Attorney::SceneManagerRenderPass::preRenderAllPasses(*parent().sceneManager(), cam);
 
         TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
 
@@ -256,7 +255,7 @@ namespace Divide {
             _renderPasses[i]->postRender();
         }
 
-        Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
+        Attorney::SceneManagerRenderPass::postRenderAllPasses(*parent().sceneManager(), cam);
     }
 
 RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
@@ -475,7 +474,7 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
 
     PerPassData& passData = g_passData[to_base(stagePass._stage)];
 
-    const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
+    const SceneRenderState& sceneRenderState = parent().sceneManager()->getActiveScene().renderState();
 
     U16 queueSize = 0;
     for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
@@ -587,7 +586,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
 
         renderQueueToSubPasses(params._stagePass._stage, bufferInOut);
 
-        Attorney::SceneManagerRenderPass::postRender(parent().sceneManager(), params._stagePass, *params._camera, bufferInOut);
+        Attorney::SceneManagerRenderPass::postRender(*parent().sceneManager(), params._stagePass, *params._camera, bufferInOut);
 
         if (params._bindTargets) {
             GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
@@ -671,7 +670,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
     buildDrawCommands(params, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
-        SceneManager& sceneManager = parent().sceneManager();
+        SceneManager* sceneManager = parent().sceneManager();
 
         Texture_ptr hizTex = nullptr;
         Texture_ptr depthTex = nullptr;
@@ -690,7 +689,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             }
         }
 
-        Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, *params._camera, hizTex, bufferInOut);
+        Attorney::SceneManagerRenderPass::preRenderMainPass(*sceneManager, stagePass, *params._camera, hizTex, bufferInOut);
 
         const auto[hasNormalsTarget, hasLightingTarget] = extraTargets;
 
@@ -732,11 +731,11 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
         // We try and render translucent items in the shadow pass and due some alpha-discard tricks
         renderQueueToSubPasses(stagePass._stage, bufferInOut);
 
-        Attorney::SceneManagerRenderPass::postRender(sceneManager, stagePass, *params._camera, bufferInOut);
+        Attorney::SceneManagerRenderPass::postRender(*sceneManager, stagePass, *params._camera, bufferInOut);
 
         if (stagePass._stage == RenderStage::DISPLAY) {
             /// These should be OIT rendered as well since things like debug nav meshes have translucency
-            Attorney::SceneManagerRenderPass::debugDraw(sceneManager, stagePass, *params._camera, bufferInOut);
+            Attorney::SceneManagerRenderPass::debugDraw(*sceneManager, stagePass, *params._camera, bufferInOut);
         }
 
         if (params._bindTargets) {
@@ -764,7 +763,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
     if (renderQueueSize(stagePass._stage) > 0) {
         GFX::ClearRenderTargetCommand clearRTCmd = {};
         clearRTCmd._target = params._targetOIT;
-        if (Config::USE_COLOURED_WOIT) {
+        if_constexpr(Config::USE_COLOURED_WOIT) {
             // Don't clear our screen target. That would be BAD.
             clearRTCmd._descriptor.clearColour(to_U8(GFXDevice::ScreenTargets::MODULATE), false);
         }
@@ -789,7 +788,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
             state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
             state1._blendProperties._blendOp = BlendOperation::ADD;
 
-            if (Config::USE_COLOURED_WOIT) {
+            if_constexpr(Config::USE_COLOURED_WOIT) {
                 RTBlendState& state2 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::EXTRA));
                 state2._blendProperties._enabled = true;
                 state2._blendProperties._blendSrc = BlendProperty::ONE;
@@ -833,7 +832,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
             RTBlendState& state0 = beginRenderPassCompCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::ALBEDO));
             state0._blendProperties._enabled = true;
             state0._blendProperties._blendOp = BlendOperation::ADD;
-            if (Config::USE_COLOURED_WOIT) {
+            if_constexpr(Config::USE_COLOURED_WOIT) {
                 state0._blendProperties._blendSrc = BlendProperty::INV_SRC_ALPHA;
                 state0._blendProperties._blendDest = BlendProperty::ONE;
             } else {
@@ -923,7 +922,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s - %s )", TypeUtil::RenderStageToString(stage), params._passName.empty() ? "N/A" : params._passName.c_str()).c_str();
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), stage, *params._camera);
+    Attorney::SceneManagerRenderPass::prepareLightData(*parent().sceneManager(), stage, *params._camera);
 
     // Tell the Rendering API to draw from our desired PoV
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ params._camera->snapshot() });
@@ -953,10 +952,12 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
     // Cull the scene and grab the visible nodes
-    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents);
+    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(*parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents);
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;
+        assert(container.empty());
+
         container.reserve(visibleNodes.size());
         container.insert(container.cend(), visibleNodes.cbegin(), visibleNodes.cend());
     }
@@ -1045,7 +1046,7 @@ void RenderPassManager::createFrameBuffer(const Rect<I32>& targetViewport, GFX::
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     gfx.drawTextureInViewport(texData, targetViewport, true, false, bufferInOut);
-    Attorney::SceneManagerRenderPass::drawCustomUI(_parent.sceneManager(), targetViewport, bufferInOut);
+    Attorney::SceneManagerRenderPass::drawCustomUI(*_parent.sceneManager(), targetViewport, bufferInOut);
     context.gui().draw(gfx, targetViewport, bufferInOut);
     gfx.renderDebugUI(targetViewport, bufferInOut);
 

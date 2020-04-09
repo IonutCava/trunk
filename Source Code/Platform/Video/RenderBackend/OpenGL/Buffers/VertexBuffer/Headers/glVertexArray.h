@@ -108,7 +108,7 @@ class glVertexArray final : public VertexBuffer,
     AttribValues _attributeOffset;
 
     // Both for forward pass and pre-pass
-    std::array<GLuint, to_base(RenderStagePass::count())> _vaoCaches;
+    std::array<GLuint, to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT)> _vaoCaches;
     
     static GLUtil::glVAOCache _VAOMap;
 };

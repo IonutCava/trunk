@@ -11,7 +11,7 @@
 
 namespace Divide {
 
-SubMesh::SubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, ObjectFlag flag)
+SubMesh::SubMesh(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectFlag flag)
     : Object3D(context,
                parentCache,
                descriptorHash,
@@ -42,7 +42,7 @@ void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
     cmd._cmd.firstIndex = to_U32(getGeometryVB()->getPartitionOffset(_geometryPartitionIDs[0]));
     cmd._cmd.indexCount = to_U32(getGeometryVB()->getPartitionIndexCount(_geometryPartitionIDs[0]));
     cmd._cmd.primCount = sgn.instanceCount();
-    cmd._bufferIndex = renderStagePass.index();
+    cmd._bufferIndex = renderStagePass.baseIndex();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
     GFX::DrawCommand drawCommand = { cmd };

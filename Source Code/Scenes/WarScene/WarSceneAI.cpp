@@ -463,7 +463,7 @@ void WarScene::startSimulation(I64 btnGUID) {
             });
         } else {
             _aiManager->addNavMesh(aiEntity->getAgentRadiusCategory(), navMesh);
-            if (Config::Build::IS_DEBUG_BUILD) {
+            if_constexpr(Config::Build::IS_DEBUG_BUILD) {
                 navMesh->debugDraw(true);
             }
 

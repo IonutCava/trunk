@@ -48,7 +48,7 @@ namespace {
     }
 }
 
-Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
+Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
     : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
       _terrainQuadtree(context),
       _shaderData(nullptr),
@@ -341,7 +341,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
-    cmd._bufferIndex = renderStagePass.index();
+    cmd._bufferIndex = renderStagePass.baseIndex();
     cmd._primitiveType = PrimitiveType::PATCH;
     cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
 

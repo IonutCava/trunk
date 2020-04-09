@@ -32,7 +32,7 @@ void glVAOPool::init(U32 capacity) {
     _pool.resize(capacity, std::make_pair(0, false));
     for (std::pair<GLuint, bool>& entry : _pool) {
         glCreateVertexArrays(1, &entry.first);
-        if (Config::ENABLE_GPU_VALIDATION) {
+        if_constexpr(Config::ENABLE_GPU_VALIDATION) {
             glObjectLabel(GL_VERTEX_ARRAY,
                 entry.first,
                 -1,
@@ -84,7 +84,7 @@ void glVAOPool::deallocate(GLuint& vao) {
     Divide::GL_API::deleteVAOs(1, &(it->first));
     glCreateVertexArrays(1, &(it->first));
 
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_VERTEX_ARRAY,
             it->first,
             -1,

@@ -59,7 +59,7 @@ class SceneAnimator;
 class Mesh : public Object3D {
    public:
     explicit Mesh(GFXDevice& context,
-                  ResourceCache& parentCache,
+                  ResourceCache* parentCache,
                   size_t descriptorHash,
                   const Str128& name,
                   const Str128& resourceName,

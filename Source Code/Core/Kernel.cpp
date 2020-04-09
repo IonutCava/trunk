@@ -42,26 +42,10 @@ namespace {
 
 };
 
-LoopTimingData::LoopTimingData() : _updateLoops(0),
-                                   _previousTimeUS(0ULL),
-                                   _currentTimeUS(0ULL),
-                                   _currentTimeFrozenUS(0ULL),
-                                   _currentTimeDeltaUS(0ULL),
-                                   _nextGameTickUS(0ULL),
-                                   _keepAlive(true),
-                                   _freezeLoopTime(false)
-{
-}
-
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
-      _resCache(nullptr),
-      _prevViewport(-1),
-      _prevPlayerCount(0),
-      _sceneManager(nullptr),
       _renderPassManager(nullptr),
-      _splashScreenUpdating(false),
       _platformContext(PlatformContext(parentApp, *this)),
       _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
       _frameTimer(Time::ADD_TIMER("Total Frame Timer")),
@@ -77,8 +61,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _postRenderTimer(Time::ADD_TIMER("Post-render Timer")),
       _blitToDisplayTimer(Time::ADD_TIMER("Flush Buffers Timer"))
 {
-    _sceneManager = std::make_unique<SceneManager>(*this); // Scene Manager
-
+    std::atomic_init(&_splashScreenUpdating, false);
     _appLoopTimer.addChildTimer(_appIdleTimer);
     _appLoopTimer.addChildTimer(_frameTimer);
     _frameTimer.addChildTimer(_appScenePass);
@@ -92,13 +75,15 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _flushToScreenTimer.addChildTimer(_blitToDisplayTimer);
     _sceneUpdateTimer.addChildTimer(_sceneUpdateLoopTimer);
 
-    _resCache = std::make_unique<ResourceCache>(_platformContext);
-
-    FrameListenerManager::instance();
+    _sceneManager = MemoryManager_NEW SceneManager(*this); // Scene Manager
+    _resourceCache = MemoryManager_NEW ResourceCache(_platformContext);
+    _renderPassManager = MemoryManager_NEW RenderPassManager(*this, _platformContext.gfx());
 }
 
 Kernel::~Kernel()
 {
+    DIVIDE_ASSERT(sceneManager() == nullptr && resourceCache() == nullptr && renderPassManager() == nullptr,
+                  "Kernel destructor: not all resources have been released properly!");
 }
 
 void Kernel::startSplashScreen() {
@@ -111,19 +96,20 @@ void Kernel::startSplashScreen() {
     window.changeType(WindowType::WINDOW);
     window.decorated(false);
     WAIT_FOR_CONDITION(window.setDimensions(_platformContext.config().runtime.splashScreenSize));
+
     window.centerWindowPosition();
     window.hidden(false);
     SDLEventManager::pollEvents();
 
-    GUISplash splash(*_resCache, "divideLogo.jpg", _platformContext.config().runtime.splashScreenSize);
+    GUISplash splash(resourceCache(), "divideLogo.jpg", _platformContext.config().runtime.splashScreenSize);
 
     // Load and render the splash screen
     _splashTask = CreateTask(_platformContext,
         [this, &splash](const Task& /*task*/) {
         U64 previousTimeUS = 0;
-        U64 currentTimeUS = Time::ElapsedMicroseconds(true);
+        const U64 currentTimeUS = Time::ElapsedMicroseconds(true);
         while (_splashScreenUpdating) {
-            U64 deltaTimeUS = currentTimeUS - previousTimeUS;
+            const U64 deltaTimeUS = currentTimeUS - previousTimeUS;
             previousTimeUS = currentTimeUS;
             _platformContext.beginFrame(PlatformContext::ComponentType::GFXDevice);
             splash.render(_platformContext.gfx(), deltaTimeUS);
@@ -141,7 +127,7 @@ void Kernel::startSplashScreen() {
 void Kernel::stopSplashScreen() {
     DisplayWindow& window = _platformContext.activeWindow();
     window.swapBuffers(true);
-    vec2<U16> previousDimensions = window.getPreviousDimensions();
+    const vec2<U16> previousDimensions = window.getPreviousDimensions();
     _splashScreenUpdating = false;
     Wait(*_splashTask);
 
@@ -173,7 +159,7 @@ void Kernel::idle(bool fast) {
     constexpr ParamHandler::HashType paramName = _ID_32("freezeLoopTime");
     bool freezeLoopTime = ParamHandler::instance().getParam(paramName, false);
 
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         freezeLoopTime |= _platformContext.editor().simulationPauseRequested();
     }
 
@@ -183,10 +169,10 @@ void Kernel::idle(bool fast) {
 }
 
 void Kernel::onLoop() {
-    if (!_timingData._keepAlive) {
+    if (!_timingData.keepAlive()) {
         // exiting the rendering loop will return us to the last control point
         _platformContext.app().mainLoopActive(false);
-        sceneManager().saveActiveScene(true, false);
+        sceneManager()->saveActiveScene(true, false);
         return;
     }
 
@@ -197,7 +183,7 @@ void Kernel::onLoop() {
    
         // Update time at every render loop
         _timingData.update(Time::ElapsedMicroseconds());
-        FrameEvent evt;
+        FrameEvent evt = {};
         FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
         // Restore GPU to default state: clear buffers and set default render state
@@ -205,35 +191,35 @@ void Kernel::onLoop() {
         {
             Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
-            _timingData._keepAlive = frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt);
+            _timingData.keepAlive(frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt));
 
-            U64 deltaTimeUSApp = _timingData.currentTimeDeltaUS(true);
-            U64 deltaTimeUSReal = _timingData.currentTimeDeltaUS(false);
+            U64 deltaTimeUSApp = _timingData.currentTimeDeltaUS();
+            U64 deltaTimeUSReal = _timingData.timeDeltaUS();
             U64 deltaTimeUS = 0ULL;
-            if (!_timingData.freezeTime()) {
+            if (!_timingData.freezeLoopTime()) {
                 deltaTimeUS = _platformContext.config().runtime.useFixedTimestep
                                     ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
                                     : deltaTimeUSReal;
             }
             // Process the current frame
-            _timingData._keepAlive = mainLoopScene(evt, deltaTimeUS, deltaTimeUSReal, deltaTimeUSApp) && _timingData._keepAlive;
+            _timingData.keepAlive(_timingData.keepAlive() && mainLoopScene(evt, deltaTimeUS, deltaTimeUSReal, deltaTimeUSApp));
 
             // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-            _timingData._keepAlive = _timingData._keepAlive && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt);
+            _timingData.keepAlive(_timingData.keepAlive() && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt));
         }
         _platformContext.endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
 
-        _timingData._keepAlive = _timingData._keepAlive && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_ENDED, evt);
+        _timingData.keepAlive(_timingData.keepAlive() && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_ENDED, evt));
 
-        _timingData._keepAlive = !_platformContext.app().ShutdownRequested() && _timingData._keepAlive;
+        _timingData.keepAlive(_timingData.keepAlive() && !_platformContext.app().ShutdownRequested());
     
-        ErrorCode err = _platformContext.app().errorCode();
+        const ErrorCode err = _platformContext.app().errorCode();
 
         if (err != ErrorCode::NO_ERR) {
             Console::errorfn("Error detected: [ %s ]", getErrorCodeName(err));
-            _timingData._keepAlive = false;
+            _timingData.keepAlive(false);
         }
     }
 
@@ -243,19 +229,22 @@ void Kernel::onLoop() {
         Console::printfn(platformContext().debug().output().c_str());
     }
 
-    if (frameCount % (Config::TARGET_FRAME_RATE / 4) == 0) {
+    if (frameCount % (Config::TARGET_FRAME_RATE / 8) == 0u) {
         _platformContext.gui().modifyText("ProfileData", platformContext().debug().output(), true);
+    }
+
+    if (frameCount % 4 == 0u) {
         F32 fps = 0.f, frameTime = 0.f;
-        Time::ApplicationTimer::instance().getFrameRateAndTime(fps, frameTime);
         DisplayWindow& window = _platformContext.activeWindow();
         static stringImpl originalTitle = window.title();
-        window.title("%s - %d FPS - %d ms", originalTitle, to_U32(fps), to_U32(frameTime));
+        Time::ApplicationTimer::instance().getFrameRateAndTime(fps, frameTime);
+        window.title("%s - %5.2f FPS - %3.2f ms - FrameIndex: %d", originalTitle, fps, frameTime, platformContext().gfx().getFrameCount());
     }
 
     // Cap FPS
-    I16 frameLimit = _platformContext.config().runtime.frameRateLimit;
-    F32 deltaMilliseconds = Time::MicrosecondsToMilliseconds<F32>(_timingData.currentTimeDeltaUS());
-    F32 targetFrametime = 1000.0f / frameLimit;
+    const I16 frameLimit = _platformContext.config().runtime.frameRateLimit;
+    const F32 deltaMilliseconds = Time::MicrosecondsToMilliseconds<F32>(_timingData.timeDeltaUS());
+    const F32 targetFrametime = 1000.0f / frameLimit;
 
     if (deltaMilliseconds < targetFrametime) {
         {
@@ -336,19 +325,19 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
         }  // while
     }
 
-    U32 frameCount = _platformContext.gfx().getFrameCount();
+    const U32 frameCount = _platformContext.gfx().getFrameCount();
 
     if (frameCount % (Config::TARGET_FRAME_RATE / Config::Networking::NETWORK_SEND_FREQUENCY_HZ) == 0) {
         U32 retryCount = 0;
         while (!Attorney::SceneManagerKernel::networkUpdate(*_sceneManager, frameCount)) {
-            if (retryCount > Config::Networking::NETWORK_SEND_RETRY_COUNT) {
+            if (retryCount++ > Config::Networking::NETWORK_SEND_RETRY_COUNT) {
                 break;
             }
         }
     }
 
     D64 interpolationFactor = 1.0;
-    if (fixedTimestep && !_timingData.freezeTime()) {
+    if (fixedTimestep && !_timingData.freezeLoopTime()) {
         interpolationFactor = static_cast<D64>(_timingData.currentTimeUS() + deltaTimeUS - _timingData.nextGameTickUS()) / deltaTimeUS;
         CLAMP_01(interpolationFactor);
     }
@@ -373,7 +362,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
     // Update the graphical user interface
     _platformContext.gui().update(deltaTimeUS);
 
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         _platformContext.editor().update(appDeltaTimeUS);
     }
 
@@ -383,10 +372,10 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
 void computeViewports(const Rect<I32>& mainViewport, vectorSTD<Rect<I32>>& targetViewports, U8 count) {
     
     assert(count > 0);
-    I32 xOffset = mainViewport.x;
-    I32 yOffset = mainViewport.y;
-    I32 width = mainViewport.z;
-    I32 height = mainViewport.w;
+    const I32 xOffset = mainViewport.x;
+    const I32 yOffset = mainViewport.y;
+    const I32 width = mainViewport.z;
+    const I32 height = mainViewport.w;
 
     targetViewports.resize(0);
     if (count == 1) { //Single Player
@@ -418,11 +407,11 @@ void computeViewports(const Rect<I32>& mainViewport, vectorSTD<Rect<I32>>& targe
 
     // Allocates storage for a N x N matrix of viewports that will hold numViewports
     // Returns N;
-    auto resizeViewportContainer = [&rows](U32 numViewports) {
+    const auto resizeViewportContainer = [&rows](U32 numViewports) {
         //Try to fit all viewports into an appropriately sized matrix.
         //If the number of resulting rows is too large, drop empty rows.
         //If the last row has an odd number of elements, center them later.
-        U8 matrixSize = to_U8(minSquareMatrixSize(numViewports));
+        const U8 matrixSize = to_U8(minSquareMatrixSize(numViewports));
         rows.resize(matrixSize);
         std::for_each(std::begin(rows), std::end(rows), [matrixSize](ViewportRow& row) { row.resize(matrixSize); });
 
@@ -430,30 +419,30 @@ void computeViewports(const Rect<I32>& mainViewport, vectorSTD<Rect<I32>>& targe
     };
 
     // Remove extra rows and columns, if any
-    U8 columnCount = resizeViewportContainer(count);
-    U8 extraColumns = (columnCount * columnCount) - count;
-    U8 extraRows = extraColumns / columnCount;
+    const U8 columnCount = resizeViewportContainer(count);
+    const U8 extraColumns = (columnCount * columnCount) - count;
+    const U8 extraRows = extraColumns / columnCount;
     for (U8 i = 0; i < extraRows; ++i) {
         rows.pop_back();
     }
-    U8 columnsToRemove = extraColumns - (extraRows * columnCount);
+    const U8 columnsToRemove = extraColumns - (extraRows * columnCount);
     for (U8 i = 0; i < columnsToRemove; ++i) {
         rows.back().pop_back();
     }
 
-    U8 rowCount = to_U8(rows.size());
+    const U8 rowCount = to_U8(rows.size());
 
     // Calculate and set viewport dimensions
     // The number of columns is valid for the width;
-    I32 playerWidth = width / columnCount;
+    const I32 playerWidth = width / columnCount;
     // The number of rows is valid for the height;
-    I32 playerHeight = height / to_I32(rowCount);
+    const I32 playerHeight = height / to_I32(rowCount);
 
     for (U8 i = 0; i < rowCount; ++i) {
         ViewportRow& row = rows[i];
-        I32 playerYOffset = playerHeight * (rowCount - i - 1);
+        const I32 playerYOffset = playerHeight * (rowCount - i - 1);
         for (U8 j = 0; j < to_U8(row.size()); ++j) {
-            I32 playerXOffset = playerWidth * j;
+            const I32 playerXOffset = playerWidth * j;
             row[j].set(playerXOffset, playerYOffset, playerWidth, playerHeight);
         }
     }
@@ -461,9 +450,9 @@ void computeViewports(const Rect<I32>& mainViewport, vectorSTD<Rect<I32>>& targe
     //Slide the last row to center it
     if (extraColumns > 0) {
         ViewportRow& lastRow = rows.back();
-        I32 screenMidPoint = width / 2;
-        I32 rowMidPoint = to_I32((lastRow.size() * playerWidth) / 2);
-        I32 slideFactor = screenMidPoint - rowMidPoint;
+        const I32 screenMidPoint = width / 2;
+        const I32 rowMidPoint = to_I32((lastRow.size() * playerWidth) / 2);
+        const I32 slideFactor = screenMidPoint - rowMidPoint;
         for (Rect<I32>& viewport : lastRow) {
             viewport.x += slideFactor;
         }
@@ -714,7 +703,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     winManager.postInit();
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
-    _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext.gfx());
     _renderPassManager->addRenderPass("shadowPass",     0, RenderStage::SHADOW);
     _renderPassManager->addRenderPass("reflectionPass", 1, RenderStage::REFLECTION, { 0 });
     _renderPassManager->addRenderPass("refractionPass", 2, RenderStage::REFRACTION, { 0 });
@@ -731,7 +719,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     const Rect<U16> targetViewport(0, 0, drawArea.width, drawArea.height);
 
     // Initialize GUI with our current resolution
-    _platformContext.gui().init(_platformContext, *_resCache);
+    _platformContext.gui().init(_platformContext, resourceCache());
     startSplashScreen();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
@@ -756,7 +744,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                     12);                                           // Font size
 
     ShadowMap::initShadowMaps(_platformContext.gfx());
-    _sceneManager->init(_platformContext, *_resCache);
+    _sceneManager->init(_platformContext, resourceCache());
 
     if (!_sceneManager->switchScene(entryData.startupScene.c_str(), true, targetViewport, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
@@ -771,7 +759,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     _renderPassManager->postInit();
 
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
         if (!_platformContext.editor().init(config.runtime.resolution)) {
             return ErrorCode::EDITOR_INIT_ERROR;
         }
@@ -794,20 +782,21 @@ void Kernel::shutdown() {
         WaitForAllTasks(_platformContext.taskPool(static_cast<TaskPoolType>(i)), true, true, true);
     }
     
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
         _platformContext.editor().toggle(false);
     }
     SceneManager::onShutdown();
     Script::onShutdown();
-    _sceneManager.reset();
+    MemoryManager::SAFE_DELETE(_sceneManager);
     ECS::Terminate();
 
     ShadowMap::destroyShadowMaps(_platformContext.gfx());
-    _renderPassManager.reset();
+    MemoryManager::SAFE_DELETE(_renderPassManager);
 
     Camera::destroyPool();
     _platformContext.terminate();
-    _resCache->clear();
+    resourceCache()->clear();
+    MemoryManager::SAFE_DELETE(_resourceCache);
 
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
 }
@@ -820,7 +809,7 @@ void Kernel::onSizeChange(const SizeChangeParams& params) {
         _platformContext.gui().onSizeChange(params);
     }
 
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
         _platformContext.editor().onSizeChange(params);
     }
 
@@ -836,7 +825,7 @@ bool Kernel::setCursorPosition(I32 x, I32 y) {
 }
 
 bool Kernel::onKeyDown(const Input::KeyEvent& key) {
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
 
         Editor& editor = _platformContext.editor();
         if (editor.onKeyDown(key)) {
@@ -851,7 +840,7 @@ bool Kernel::onKeyDown(const Input::KeyEvent& key) {
 }
 
 bool Kernel::onKeyUp(const Input::KeyEvent& key) {
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
         if (editor.onKeyUp(key)) {
             return true;
@@ -866,7 +855,7 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
 }
 
 bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
         if (editor.mouseMoved(arg)) {
             return true;
@@ -883,7 +872,7 @@ bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
 
 bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
     
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
         if (editor.mouseButtonPressed(arg)) {
             return true;
@@ -900,7 +889,7 @@ bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
 bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
         if (editor.mouseButtonReleased(arg)) {
             return true;
@@ -979,7 +968,7 @@ bool Kernel::joystickRemap(const Input::JoystickEvent &arg) {
 }
 
 bool Kernel::onUTF8(const Input::UTF8Event& arg) {
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
         if (editor.onUTF8(arg)) {
             return true;

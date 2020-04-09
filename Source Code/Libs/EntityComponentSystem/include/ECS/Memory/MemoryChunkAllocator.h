@@ -140,6 +140,7 @@ namespace ECS { namespace Memory {
 	protected:
 
 		MemoryChunks m_Chunks;
+		std::shared_mutex m_lock;
 
 	public:
 
@@ -148,14 +149,16 @@ namespace ECS { namespace Memory {
 			m_AllocatorTag(allocatorTag)
 		{
 			
-
 			// create initial chunk
+			std::unique_lock<std::shared_mutex> lock(m_lock);
 			Allocator* allocator = new Allocator(ALLOC_SIZE, Allocate(ALLOC_SIZE, allocatorTag), sizeof(OBJECT_TYPE), alignof(OBJECT_TYPE));
 			this->m_Chunks.push_back(new MemoryChunk(allocator));
 		}
 
 		virtual ~MemoryChunkAllocator()
 		{
+			std::unique_lock<std::shared_mutex> lock(m_lock);
+
 			// make sure all entities will be released!
 			for (auto chunk : this->m_Chunks)
 			{
@@ -191,23 +194,26 @@ namespace ECS { namespace Memory {
 		{
 			void* slot = nullptr;
 
-			// get next free slot
-			for (auto chunk : this->m_Chunks)
 			{
-				if (chunk->objects.size() > MAX_OBJECTS)
-					continue;
-
-				slot = chunk->allocator->allocate(sizeof(OBJECT_TYPE), alignof(OBJECT_TYPE));
-				if (slot != nullptr)
+				std::shared_lock<std::shared_mutex> lock(m_lock);
+				// get next free slot
+				for (auto chunk : this->m_Chunks)
 				{
-					chunk->objects.push_back((OBJECT_TYPE*)slot);
-					break;
+					if (chunk->objects.size() > MAX_OBJECTS)
+						continue;
+
+					slot = chunk->allocator->allocate(sizeof(OBJECT_TYPE), alignof(OBJECT_TYPE));
+					if (slot != nullptr)
+					{
+						chunk->objects.push_back((OBJECT_TYPE*)slot);
+						break;
+					}
 				}
 			}
-
 			// all chunks are full... allocate a new one
 			if (slot == nullptr)
 			{
+				std::unique_lock<std::shared_mutex> lock(m_lock);
 				Allocator* allocator = new Allocator(ALLOC_SIZE, Allocate(ALLOC_SIZE, this->m_AllocatorTag), sizeof(OBJECT_TYPE), alignof(OBJECT_TYPE));
 				MemoryChunk* newChunk = new MemoryChunk(allocator);		
 
@@ -239,6 +245,7 @@ namespace ECS { namespace Memory {
 
 		void DestroyObject(void* object)
 		{
+			std::unique_lock<std::shared_mutex> lock(m_lock);
 			const uptr adr = reinterpret_cast<uptr>(object);
 
 			for (auto chunk : this->m_Chunks)

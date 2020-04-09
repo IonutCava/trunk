@@ -119,6 +119,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #if defined(CPP_17_SUPPORT)
 #include <any>
 #include <variant>
+#include <execution>
 #else
 #include <boost/any.hpp>
 #include <boost/variant.hpp>
@@ -128,20 +129,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/functional/factory.hpp>
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ip/udp.hpp>
 #include <boost/asio/streambuf.hpp>
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/strand.hpp>
-#pragma warning(push)
-#pragma warning(disable:4458)
-#pragma warning(disable:4706)
-#include <boost/wave.hpp>
-#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
-#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
-#pragma warning(pop)
 
 #include <simplefilewatcher/includes/FileWatcher.h>
 

@@ -60,7 +60,7 @@ class FrameListenerManager : public Singleton<FrameListenerManager> {
     /// Calls createEvent and frameEvent
     bool createAndProcessEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
   private:
-    FrameListenerManager();
+    FrameListenerManager() : Singleton() {}
     ~FrameListenerManager() = default;
 
     bool frameStarted(const FrameEvent& evt);

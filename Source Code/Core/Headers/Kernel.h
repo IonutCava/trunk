@@ -65,12 +65,18 @@ struct FrameEvent;
 /// Application update rate
 constexpr U32 TICKS_PER_SECOND = Config::TARGET_FRAME_RATE / Config::TICK_DIVISOR;
 
-class LoopTimingData {
-  public:
-    LoopTimingData();
+struct LoopTimingData {
+    PROPERTY_R(U64, currentTimeUS, 0ULL);
+    PROPERTY_R(U64, currentTimeFrozenUS, 0ULL);
+    PROPERTY_R(U64, currentTimeDeltaUS, 0ULL);
+    PROPERTY_R(U64, previousTimeUS, 0ULL);
+    PROPERTY_R(U64, nextGameTickUS, 0ULL);
+    // number of scene update loops
+    PROPERTY_R(U8, updateLoops, 0u);
+    PROPERTY_RW(bool, keepAlive, true);
+    PROPERTY_R(bool, freezeLoopTime, false);
 
-    bool _keepAlive;
-  
+
     inline void update(const U64 elapsedTimeUS) noexcept {
         _previousTimeUS = _currentTimeUS;
         _currentTimeUS = elapsedTimeUS;
@@ -115,35 +121,10 @@ class LoopTimingData {
         }
     }
 
-    inline bool freezeTime() const noexcept {
-        return _freezeLoopTime;
+    /// Returns 0 if the loop is frozen
+    inline U64 timeDeltaUS() const noexcept {
+        return _freezeLoopTime ? 0ULL : _currentTimeDeltaUS;
     }
-
-    inline U64 currentTimeUS() const noexcept {
-        return _currentTimeUS;
-    }
-
-    inline U64 currentTimeDeltaUS(bool ignoreFreeze = false) const noexcept {
-        return (!ignoreFreeze && _freezeLoopTime) ? 0ULL : _currentTimeDeltaUS;
-    }
-
-    inline U64 nextGameTickUS() const noexcept {
-        return _nextGameTickUS;
-    }
-
-    inline U8 updateLoops() const noexcept {
-        return _updateLoops;
-    }
-
-  protected:
-    // number of scene update loops
-    U8 _updateLoops;
-    bool _freezeLoopTime;
-    U64 _currentTimeUS;
-    U64 _currentTimeFrozenUS;
-    U64 _currentTimeDeltaUS;
-    U64 _previousTimeUS;
-    U64 _nextGameTickUS;
 };
 
 namespace Attorney {
@@ -202,33 +183,13 @@ class Kernel : public Input::InputAggregatorInterface,
 
     bool onUTF8(const Input::UTF8Event& arg) override;
 
-    ResourceCache& resourceCache() {
-        return *_resCache;
-    }
+    PROPERTY_R(PlatformContext, platformContext);
+    inline PlatformContext& platformContext() noexcept { return _platformContext; }
 
-    const ResourceCache& resourceCache() const {
-        return *_resCache;
-    }
-
-    PlatformContext& platformContext() {
-        return _platformContext;
-    }
-
-    const PlatformContext& platformContext() const {
-        return _platformContext;
-    }
-
-    SceneManager& sceneManager() {
-        return *_sceneManager;
-    }
-
-    const SceneManager& sceneManager() const {
-        return *_sceneManager;
-    }
-
-    const std::unique_ptr<RenderPassManager>& renderPassManager() const {
-        return _renderPassManager;
-    }
+    PROPERTY_R(LoopTimingData, timingData);
+    POINTER_R(ResourceCache, resourceCache, nullptr);
+    POINTER_R(SceneManager, sceneManager, nullptr)
+    POINTER_R(RenderPassManager, renderPassManager, nullptr);
 
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
@@ -246,19 +207,11 @@ class Kernel : public Input::InputAggregatorInterface,
     void onSizeChange(const SizeChangeParams& params);
 
    private:
-
-    U8 _prevPlayerCount;
-    Rect<I32> _prevViewport;
     vectorSTD<Rect<I32>> _editorViewports;
     vectorSTD<Rect<I32>> _targetViewports;
-    PlatformContext   _platformContext;
 
-    Task* _splashTask = nullptr;
     std::atomic_bool _splashScreenUpdating;
-    std::unique_ptr<ResourceCache>     _resCache;
-    std::unique_ptr<SceneManager>      _sceneManager;
-    std::unique_ptr<RenderPassManager> _renderPassManager;
-    LoopTimingData _timingData;
+    Task* _splashTask = nullptr;
 
     Time::ProfileTimer& _appLoopTimer;
     Time::ProfileTimer& _frameTimer;
@@ -278,6 +231,9 @@ class Kernel : public Input::InputAggregatorInterface,
     // Command line arguments
     I32 _argc;
     char** _argv;
+
+    Rect<I32> _prevViewport = { -1, -1, -1, -1 };
+    U8 _prevPlayerCount = 0u;
 };
 
 namespace Attorney {

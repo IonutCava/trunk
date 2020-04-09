@@ -21,7 +21,9 @@
 namespace Divide {
 
 namespace {
-    const U16 g_numMipsToKeepFromAlphaTextures = 1;
+    constexpr size_t g_invalidStateHash = std::numeric_limits<size_t>::max();
+
+    constexpr U16 g_numMipsToKeepFromAlphaTextures = 1;
     const char* g_PassThroughMaterialShaderName = "passThrough";
     
     constexpr ShaderProgram::TextureUsage g_materialTextures[] = {
@@ -35,22 +37,18 @@ namespace {
     constexpr U32 g_materialTexturesCount = sizeof(g_materialTextures) / sizeof(g_materialTextures[0]);
 };
 
-SharedMutex Material::s_shaderDBLock;
-hashMap<size_t, ShaderProgram_ptr> Material::s_shaderDB;
-
 bool Material::onStartup() {
     return true;
 }
 
 bool Material::onShutdown() {
-    UniqueLock<SharedMutex> w_lock(s_shaderDBLock);
-    s_shaderDB.clear();
     return true;
 }
 
 void Material::ApplyDefaultStateBlocks(Material& target) {
     /// Normal state for final rendering
     RenderStateBlock stateDescriptor;
+    stateDescriptor.setCullMode(CullMode::BACK);
     stateDescriptor.setZFunc(ComparisonFunction::EQUAL);
 
     RenderStateBlock oitDescriptor(stateDescriptor);
@@ -69,53 +67,55 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);
-
-    shadowDescriptor.setCullMode(CullMode::CCW);
+    //shadowDescriptor.setCullMode(CullMode::FRONT); //Do I need this?
     shadowDescriptor.setZFunc(ComparisonFunction::LESS);
     /// set a polygon offset
     shadowDescriptor.setZBias(1.0f, 1.0f);
-
-    RenderStateBlock shadowDescriptorNoColour(shadowDescriptor);
-    shadowDescriptorNoColour.setColourWrites(false, false, false, false);
+    shadowDescriptor.setColourWrites(false, false, false, false);
 
     RenderStateBlock shadowDescriptorCSM(shadowDescriptor);
-    shadowDescriptorCSM.setCullMode(CullMode::CW);
-    shadowDescriptorCSM.setZFunc(ComparisonFunction::LEQUAL);
     shadowDescriptorCSM.setColourWrites(true, true, false, false);
 
-    target.setRenderStateBlock(stateDescriptor.getHash(), { RenderStage::DISPLAY, RenderPassType::MAIN_PASS });
-    target.setRenderStateBlock(stateDescriptor.getHash(), { RenderStage::REFRACTION, RenderPassType::MAIN_PASS });
-    target.setRenderStateBlock(reflectorDescriptor.getHash(), { RenderStage::REFLECTION, RenderPassType::MAIN_PASS });
+    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::MAIN_PASS, 0u);
+    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::REFRACTION, RenderPassType::MAIN_PASS, 0u);
+    target.setRenderStateBlock(reflectorDescriptor.getHash(), RenderStage::REFLECTION, RenderPassType::MAIN_PASS, 0u);
 
-    target.setRenderStateBlock(shadowDescriptorNoColour.getHash(), { RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::POINT) });
-    target.setRenderStateBlock(shadowDescriptorNoColour.getHash(), { RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::SPOT) });
-    target.setRenderStateBlock(shadowDescriptorCSM.getHash(), { RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::DIRECTIONAL) });
+    target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::POINT));
+    target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::SPOT));
+    target.setRenderStateBlock(shadowDescriptorCSM.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::DIRECTIONAL));
 
-    target.setRenderStateBlock(oitDescriptor.getHash(), { RenderStage::DISPLAY, RenderPassType::OIT_PASS });
-    target.setRenderStateBlock(oitDescriptor.getHash(), { RenderStage::REFRACTION, RenderPassType::OIT_PASS });
-    target.setRenderStateBlock(reflectorOitDescriptor.getHash(), { RenderStage::REFLECTION, RenderPassType::OIT_PASS });
+    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::OIT_PASS, 0u);
+    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStage::REFRACTION, RenderPassType::OIT_PASS, 0u);
+    target.setRenderStateBlock(reflectorOitDescriptor.getHash(), RenderStage::REFLECTION, RenderPassType::OIT_PASS, 0u);
 
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), { RenderStage::DISPLAY, RenderPassType::PRE_PASS });
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), { RenderStage::REFRACTION, RenderPassType::PRE_PASS });
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), { RenderStage::REFLECTION, RenderPassType::PRE_PASS });
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u);
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::REFRACTION, RenderPassType::PRE_PASS, 0u);
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS, 0u);
 }
 
-Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
+Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
       _parentCache(parentCache),
       _textureKeyCache(-1),
-      _needsNewShader(false),
-      _ignoreXMLData(false)
+      _needsNewShader(false)
 {
     _textures.fill(nullptr);
     _textureUseForDepth.fill(false);
 
-    ApplyDefaultStateBlocks(*this);
-}
+    const ShaderProgramInfo defaultShaderInfo = {};
+    // Could just direct copy the arrays, but this looks cool
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        ShaderVariantsPerPass& perPassInfo = _shaderInfo[s];
+        StateVariantsPerPass& perPassStates = _defaultRenderStates[s];
 
-Material::~Material()
-{
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            perPassInfo[p].fill(defaultShaderInfo);
+            perPassStates[p].fill(g_invalidStateHash);
+        }
+    }
+
+    ApplyDefaultStateBlocks(*this);
 }
 
 Material_ptr Material::clone(const Str128& nameSuffix) {
@@ -126,24 +126,26 @@ Material_ptr Material::clone(const Str128& nameSuffix) {
     Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(resourceName() + nameSuffix.c_str()));
 
     cloneMat->_properties = base._properties;
-    cloneMat->_ignoreXMLData = base._ignoreXMLData;
-    cloneMat->_baseShaderSources = base._baseShaderSources;
     cloneMat->_extraShaderDefines = base._extraShaderDefines;
 
-    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        cloneMat->_shaderInfo[i] = _shaderInfo[i];
-        for (U8 j = 0; j < _defaultRenderStates[i].size(); ++j) {
-            cloneMat->_defaultRenderStates[i][j] = _defaultRenderStates[i][j];
+    cloneMat->baseShaderData(base.baseShaderData());
+    cloneMat->ignoreXMLData(base.ignoreXMLData());
+
+    // Could just direct copy the arrays, but this looks cool
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            for (U8 v = 0u; v < g_maxVariantsPerPass; ++v) {
+                cloneMat->_shaderInfo[s][p][v] = _shaderInfo[s][p][v];
+                cloneMat->_defaultRenderStates[s][p][v] = _defaultRenderStates[s][p][v];
+            }
         }
     }
 
     for (U8 i = 0; i < to_U8(base._textures.size()); ++i) {
-        ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
         const Texture_ptr& tex = base._textures[i];
         if (tex) {
-            cloneMat->setTexture(usage, tex);
+            cloneMat->setTexture(static_cast<ShaderProgram::TextureUsage>(i), tex);
         }
-        
     }
 
     return cloneMat;
@@ -232,119 +234,89 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     return true;
 }
 
-void Material::waitForShader(const ShaderProgram_ptr& shader, RenderStagePass stagePass, const char* newShader) {
-    if (shader == nullptr) {
-        return;
-    }
-
-    ShaderProgram* oldShader = shader.get();
-    /*{
-        SharedLock<SharedMutex> r_lock(s_shaderDBLock);
-        auto it = s_shaderDB.find(shaderHash);
-        if (it != std::cend(s_shaderDB)) {
-            oldShader = it->second.get();
-        }
-    }*/
-
-    if (oldShader == nullptr) {
-        return;
-    }
-
-    if (newShader == nullptr || strlen(newShader) == 0 || oldShader->resourceName().compare(newShader) != 0) {
-        // We cannot replace a shader that is still loading in the background
-        WAIT_FOR_CONDITION(oldShader->getState() == ResourceState::RES_LOADED);
-        Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
-            oldShader->resourceName().c_str(),
-            newShader != nullptr ? newShader : "NULL",
-            TypeUtil::RenderStageToString(stagePass._stage),
-            TypeUtil::RenderPassTypeToString(stagePass._passType));
-    }
-}
-
 void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
-                                        RenderStagePass renderStagePass) {
-    ShaderProgramInfo& info = shaderInfo(renderStagePass);
-    info._shaderRef = shader;
+                                        ShaderProgramInfo& shaderInfo,
+                                        RenderStage stage,
+                                        RenderPassType pass)
+{
+    shaderInfo._shaderRef = shader;
     // if we already have a different shader assigned ...
-    waitForShader(info._shaderRef, renderStagePass, shader == nullptr ? nullptr : shader->resourceName().c_str());
+    if (shader != nullptr) {
+        ShaderProgram* oldShader = shader.get();
+        if (oldShader != nullptr) {
+            const char* newShaderName = shader == nullptr ? nullptr : shader->resourceName().c_str();
 
-    //info._shaderRefHash = shader == nullptr ? 0 : shader->getDescriptorHash();
-
-    /*if (info._shaderRefHash != 0) {
-        UniqueLock<SharedMutex> w_lock(s_shaderDBLock);
-        hashAlg::insert(s_shaderDB, info._shaderRefHash, shader);
-    }*/
-
-    info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
-    if (shader == nullptr || shader->getState() == ResourceState::RES_LOADED) {
-        info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
-        info._shaderCache = shader.get();
+            if (newShaderName == nullptr || strlen(newShaderName) == 0 || oldShader->resourceName().compare(newShaderName) != 0) {
+                // We cannot replace a shader that is still loading in the background
+                WAIT_FOR_CONDITION(oldShader->getState() == ResourceState::RES_LOADED);
+                    Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
+                        oldShader->resourceName().c_str(),
+                        newShaderName != nullptr ? newShaderName : "NULL",
+                        TypeUtil::RenderStageToString(stage),
+                        TypeUtil::RenderPassTypeToString(pass));
+            }
+        }
     }
+
+    shaderInfo._shaderCompStage = (shader == nullptr || shader->getState() == ResourceState::RES_LOADED)
+                                                     ? ShaderBuildStage::READY
+                                                     : ShaderBuildStage::COMPUTED;
 }
 
 void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
-                                        RenderStagePass renderStagePass,
+                                        const RenderStagePass& stagePass,
                                         const bool computeOnAdd) {
     OPTICK_EVENT();
 
-    ShaderProgramInfo& info = shaderInfo(renderStagePass);
+    ShaderProgramInfo& info = shaderInfo(stagePass);
     // if we already have a different shader assigned ...
     if (info._shaderRef != nullptr && info._shaderRef->resourceName().compare(shaderDescriptor.resourceName()) != 0)
     {
         // We cannot replace a shader that is still loading in the background
         WAIT_FOR_CONDITION(info._shaderRef->getState() == ResourceState::RES_LOADED);
         Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
-            info._shaderRef->resourceName().c_str(), 
+            info._shaderRef->resourceName().c_str(),
             shaderDescriptor.resourceName().c_str(),
-            TypeUtil::RenderStageToString(renderStagePass._stage),
-            TypeUtil::RenderPassTypeToString(renderStagePass._passType));
+            TypeUtil::RenderStageToString(stagePass._stage),
+            TypeUtil::RenderPassTypeToString(stagePass._passType));
     }
 
-    //UniqueLock<SharedMutex> w_lock(s_shaderDBLock);
-    //auto ret = hashAlg::insert(s_shaderDB, info._shaderRefHash, ShaderProgram_ptr());
-
-    ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
-    
-    if (computeOnAdd)
-    {
-        shaderQueue.addToQueueFront(ShaderComputeQueue::ShaderQueueElement{info._shaderRef/*ret.first->second*/, shaderDescriptor});
-        shaderQueue.stepQueue();
-        info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
-    }
-    else
-    {
-        shaderQueue.addToQueueBack(ShaderComputeQueue::ShaderQueueElement{ info._shaderRef/*ret.first->second*/, shaderDescriptor });
-        info._shaderCompStage = ShaderProgramInfo::BuildStage::QUEUED;
+    ShaderComputeQueue::ShaderQueueElement shaderElement{ info._shaderRef, shaderDescriptor };
+    if (computeOnAdd) {
+        _context.shaderComputeQueue().process(shaderElement);
+        info._shaderCompStage = ShaderBuildStage::COMPUTED;
+    } else {
+        _context.shaderComputeQueue().addToQueueBack(shaderElement);
+        info._shaderCompStage = ShaderBuildStage::QUEUED;
     }
 }
 
 void Material::recomputeShaders() {
     OPTICK_EVENT();
 
-    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        ShaderProgramInfo& info = _shaderInfo[i];
-        if (!info._customShader) {
-            info._shaderCompStage = ShaderProgramInfo::BuildStage::REQUESTED;
-            computeShader(RenderStagePass::stagePass(i));
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            RenderStagePass stagePass{ static_cast<RenderStage>(s), static_cast<RenderPassType>(p) };
+            ShaderPerVariant& variantMap = _shaderInfo[s][p];
+
+            for (U8 v = 0; v < g_maxVariantsPerPass; ++v) {
+                ShaderProgramInfo& shaderInfo = variantMap[v];
+                if (!shaderInfo._customShader && shaderInfo._shaderCompStage != ShaderBuildStage::COUNT) {
+                    stagePass._variant = v;
+                    shaderInfo._shaderCompStage = ShaderBuildStage::REQUESTED;
+                    computeShader(stagePass);
+                }
+            }
         }
     }
 }
 
-I64 Material::getProgramID(RenderStagePass renderStagePass) const {
+I64 Material::getProgramGUID(RenderStagePass renderStagePass) const {
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
-    /*if (info._shaderCache == nullptr) {
-        return info._shaderCache->getID();
-    }*/
+
     if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
         return info._shaderRef->getGUID();
     }
-    /*size_t hash = shaderInfo(renderStagePass)._shaderRefHash;
-
-    SharedLock<SharedMutex> r_lock(s_shaderDBLock);
-    auto it = s_shaderDB.find(hash);
-    if (it != std::cend(s_shaderDB)) {
-        return it->second->getGUID();
-    }*/
 
     return ShaderProgram::defaultShader()->getGUID();
 }
@@ -353,18 +325,18 @@ bool Material::canDraw(RenderStagePass renderStagePass) {
     OPTICK_EVENT();
 
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
-    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::QUEUED && info._shaderRef != nullptr) {
-        info._shaderCompStage = ShaderProgramInfo::BuildStage::COMPUTED;
+    if (info._shaderCompStage == ShaderBuildStage::QUEUED && info._shaderRef != nullptr) {
+        info._shaderCompStage = ShaderBuildStage::COMPUTED;
     }
 
-    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COMPUTED) {
+    if (info._shaderCompStage == ShaderBuildStage::COMPUTED) {
         if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
-            info._shaderCompStage = ShaderProgramInfo::BuildStage::READY;
+            info._shaderCompStage = ShaderBuildStage::READY;
             return false;
         }
     }
 
-    if (info._shaderCompStage != ShaderProgramInfo::BuildStage::READY) {
+    if (info._shaderCompStage != ShaderBuildStage::READY) {
         return computeShader(renderStagePass);
     }
 
@@ -380,14 +352,14 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
     // If shader's invalid, try to request a recompute as it might fix it
-    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::COUNT) {
-        info._shaderCompStage = ShaderProgramInfo::BuildStage::REQUESTED;
+    if (info._shaderCompStage == ShaderBuildStage::COUNT) {
+        info._shaderCompStage = ShaderBuildStage::REQUESTED;
         return false;
     }
 
     // If the shader is valid and a recompute wasn't requested, just return true
-    if (info._shaderCompStage != ShaderProgramInfo::BuildStage::REQUESTED) {
-        return info._shaderCompStage == ShaderProgramInfo::BuildStage::READY;
+    if (info._shaderCompStage != ShaderBuildStage::REQUESTED) {
+        return info._shaderCompStage == ShaderBuildStage::READY;
     }
 
     // At this point, only computation requests are processed
@@ -420,15 +392,15 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             updateTranslucency();
         }
     }
-    const Str64 vertSource = isDepthPass ? _baseShaderSources._depthShaderVertSource : _baseShaderSources._colourShaderVertSource;
-    const Str64 fragSource = isDepthPass ? _baseShaderSources._depthShaderFragSource : _baseShaderSources._colourShaderFragSource;
+    const Str64 vertSource = isDepthPass ? baseShaderData()._depthShaderVertSource : baseShaderData()._colourShaderVertSource;
+    const Str64 fragSource = isDepthPass ? baseShaderData()._depthShaderFragSource : baseShaderData()._colourShaderFragSource;
 
     Str32 vertVariant = isDepthPass 
                             ? isShadowPass 
-                                ? _baseShaderSources._shadowShaderVertVariant
-                                : _baseShaderSources._depthShaderVertVariant
-                            : _baseShaderSources._colourShaderVertVariant;
-    Str32 fragVariant = isDepthPass ? _baseShaderSources._depthShaderFragVariant : _baseShaderSources._colourShaderFragVariant;
+                                ? baseShaderData()._shadowShaderVertVariant
+                                : baseShaderData()._depthShaderVertVariant
+                            : baseShaderData()._colourShaderVertVariant;
+    Str32 fragVariant = isDepthPass ? baseShaderData()._depthShaderFragVariant : baseShaderData()._colourShaderFragVariant;
     Str128 shaderName = vertSource + "_" + fragSource;
 
 
@@ -437,6 +409,9 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
             shaderName += ".SHDW";
             vertVariant += "Shadow";
             fragVariant += "Shadow";
+            if (renderStagePass._variant == to_U8(LightType::DIRECTIONAL)) {
+                fragVariant += ".VSM";
+            }
             globalDefines.emplace_back("SHADOW_PASS", true);
         } else {
             shaderName += ".PP";
@@ -593,7 +568,12 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
+
+    if(!Config::Lighting::USE_SEPARATE_VSM_PASS ||
+        (renderStagePass._stage != RenderStage::SHADOW || hasTransparency()))
+    {
+        shaderDescriptor._modules.push_back(fragModule);
+    }
 
     ResourceDescriptor shaderResDescriptor(shaderName);
     shaderResDescriptor.propertyDescriptor(shaderDescriptor);
@@ -723,7 +703,18 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
 
 bool Material::unload() noexcept {
     _textures.fill(nullptr);
-    _shaderInfo.fill(ShaderProgramInfo());
+
+    static ShaderProgramInfo defaultShaderInfo = {};
+
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        ShaderVariantsPerPass& passMapShaders = _shaderInfo[s];
+        StateVariantsPerPass& passMapStates = _defaultRenderStates[s];
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            passMapShaders[p].fill(defaultShaderInfo);
+            passMapStates[p].fill(g_invalidStateHash);
+        }
+    }
+    
 
     return true;
 }
@@ -779,7 +770,7 @@ void Material::updateTranslucency() {
     }
 
     bool wasTranslucent = _properties._translucent;
-    TranslucencySource oldSource = _properties._translucencySource;
+    const TranslucencySource oldSource = _properties._translucencySource;
     _properties._translucencySource = TranslucencySource::COUNT;
 
     // In order of importance (less to more)!
@@ -830,12 +821,24 @@ void Material::updateTranslucency() {
 }
 
 size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
-    const size_t ret = defaultRenderState(renderStagePass);
-    if (_properties._doubleSided) {
+    size_t ret = _context.getDefaultStateBlock(false);
+
+    const StatesPerVariant& variantMap = _defaultRenderStates[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)];
+
+    assert(renderStagePass._variant < g_maxVariantsPerPass);
+
+    ret = variantMap[renderStagePass._variant];
+    // If we haven't defined a state for this variant, use the default one
+    if (ret == g_invalidStateHash) {
+        ret = variantMap[0u];
+    }
+
+    if (_properties._doubleSided && renderStagePass._stage != RenderStage::SHADOW) {
         RenderStateBlock tempBlock = RenderStateBlock::get(ret);
         tempBlock.setCullMode(CullMode::NONE);
-        return tempBlock.getHash();
+        ret = tempBlock.getHash();
     }
+
     return ret;
 }
 
@@ -843,7 +846,7 @@ void Material::getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32&
     textureKey = _textureKeyCache == -1 ? std::numeric_limits<I32>::lowest() : _textureKeyCache;
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
-    if (info._shaderCompStage == ShaderProgramInfo::BuildStage::READY && info._shaderRef) {
+    if (info._shaderCompStage == ShaderBuildStage::READY) {
         shaderKey = info._shaderRef->getGUID();
     } else {
         shaderKey = std::numeric_limits<I64>::lowest();
@@ -860,9 +863,15 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
 void Material::rebuild() {
     recomputeShaders();
 
-    for (const ShaderProgramInfo& info : _shaderInfo) {
-        if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
-            info._shaderRef->recompile(true);
+    // Alternatively we could just copy the maps directly
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            ShaderPerVariant& shaders = _shaderInfo[s][p];
+            for (ShaderProgramInfo& info : shaders) {
+                if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
+                    info._shaderRef->recompile(true);
+                }
+            }
         }
     }
 }
@@ -1045,7 +1054,7 @@ TextureFilter getFilterByName(const stringImpl& filter) {
     return TextureFilter::NEAREST;
 }
 
-Texture_ptr loadTextureXML(ResourceCache& targetCache,
+Texture_ptr loadTextureXML(ResourceCache* targetCache,
                             const stringImpl &textureNode,
                             const stringImpl &textureName,
                             const boost::property_tree::ptree& pt)

@@ -56,7 +56,6 @@ struct NodeCullParams {
     F32 _cullMaxDistanceSq = 0.0f;
     I32 _minLoD = -1;
     RenderStage _stage = RenderStage::COUNT;;
-    bool _threaded = false;
 };
 
 struct VisibleNode {
@@ -78,13 +77,14 @@ class RenderPassCuller {
             F32 _visibilityDistanceSq = std::numeric_limits<F32>::max();
             I32 _minLoD = -1;
             RenderStage _stage = RenderStage::COUNT;
-            bool _threaded = true;
-
         };
 
     public:
         RenderPassCuller() = default;
         ~RenderPassCuller() = default;
+
+        static bool onStartup();
+        static bool onShutdown();
 
         void clear() noexcept;
 

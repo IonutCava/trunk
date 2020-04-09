@@ -216,6 +216,10 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         template <>
         inline TransformComponent* get() const { return Hacks._transformComponentCache; }
 
+        template <>
+        inline BoundsComponent* get() const { return Hacks._boundsComponentCache; }
+
+        
         void SendEvent(ECSCustomEventType eventType);
 
         /// Sends a global event but dispatched is handled between update steps
@@ -237,6 +241,10 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
                 //Ewww
                 Hacks._transformComponentCache = (TransformComponent*)comp;
             }
+            if (comp->type()._value == ComponentType::BOUNDS) {
+                //Ewww x2
+                Hacks._boundsComponentCache = (BoundsComponent*)comp;
+            }
             return static_cast<T*>(comp);
         }
 
@@ -256,6 +264,9 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
                 RemoveComponent<T>();
                 if (comp->type()._value == ComponentType::TRANSFORM) {
                     Hacks._transformComponentCache = nullptr;
+                }
+                if (comp->type()._value == ComponentType::BOUNDS) {
+                    Hacks._boundsComponentCache = nullptr;
                 }
             }
         }
@@ -307,6 +318,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         struct hacks {
             vectorSTDFast<EditorComponent*> _editorComponents;
             TransformComponent* _transformComponentCache = nullptr;
+            BoundsComponent* _boundsComponentCache = nullptr;
         } Hacks;
 
         moodycamel::ConcurrentQueue<ECSCustomEventType> _events;
@@ -315,7 +327,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         mutable SharedMutex _childLock;
 
         REFERENCE_R(SceneGraph, sceneGraph);
-        PROPERTY_R(SceneNode_ptr, node);
+        PROPERTY_R(SceneNode_ptr, node, nullptr);
         POINTER_R(ECS::ComponentManager, compManager, nullptr);
         POINTER_R(SceneGraphNode, parent, nullptr);
         PROPERTY_R(Str64, name, "");
@@ -334,11 +346,11 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 namespace Attorney {
     class SceneGraphNodeEditor {
     private:
-        static vectorSTDFast<EditorComponent*>& editorComponents(SceneGraphNode& node) {
+        static vectorSTDFast<EditorComponent*>& editorComponents(SceneGraphNode& node) noexcept {
             return node.Hacks._editorComponents;
         }
 
-        static const vectorSTDFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
+        static const vectorSTDFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) noexcept {
             return node.Hacks._editorComponents;
         }
 

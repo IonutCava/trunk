@@ -141,11 +141,11 @@ namespace Divide {
     class MeshImporter
     {
         public:
-            static bool loadMeshDataFromFile(PlatformContext& context, ResourceCache& cache, Import::ImportData& dataOut);
-            static bool loadMesh(Mesh_ptr mesh, PlatformContext& context, ResourceCache& cache, const Import::ImportData& dataIn);
+            static bool loadMeshDataFromFile(PlatformContext& context, ResourceCache* cache, Import::ImportData& dataOut);
+            static bool loadMesh(Mesh_ptr mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn);
 
         protected:
-            static Material_ptr loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned);
+            static Material_ptr loadSubMeshMaterial(PlatformContext& context, ResourceCache* cache, const Import::MaterialData& importData, bool skinned);
     };
 
 };  // namespace Divide

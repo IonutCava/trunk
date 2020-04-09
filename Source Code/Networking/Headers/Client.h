@@ -34,7 +34,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CLIENT_H_
 
 #include "WorldPacket.h"
+#include <boost/asio/ip/tcp.hpp>
 
+namespace boost {
+    namespace asio {
+        typedef io_context io_service;
+    };
+}
 
 namespace Divide {
 
@@ -43,17 +49,7 @@ class ASIO;
 
 class Client {
    public:
-    Client(ASIO* asioPointer, boost::asio::io_service& service, bool debugOutput)
-        : _header(0),
-          _fileSize(0),
-          _asioPointer(asioPointer),
-          _stopped(false),
-          _debugOutput(debugOutput),
-          _socket(service),
-          _deadline(service),
-          _heartbeatTimer(service)
-    {
-    }
+       Client(ASIO* asioPointer, boost::asio::io_service& service, bool debugOutput);
 
     // Start:: Called by the user of the client class to initiate the connection
     // process.

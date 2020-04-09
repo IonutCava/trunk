@@ -36,15 +36,19 @@ namespace Divide {
 
 bool SceneManager::onStartup() {
     if (Material::onStartup()) {
-        return Attorney::SceneManager::onStartup();
+        if (RenderPassCuller::onStartup()) {
+            return Attorney::SceneManager::onStartup();
+        }
     }
-
+    
     return false;
 }
 
 bool SceneManager::onShutdown() {
     if (Material::onShutdown()) {
-        return Attorney::SceneManager::onShutdown();
+        if (RenderPassCuller::onShutdown()) {
+            return Attorney::SceneManager::onShutdown();
+        }
     }
 
     return false;
@@ -113,10 +117,10 @@ void SceneManager::idle() {
     }
 }
 
-bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) {
+bool SceneManager::init(PlatformContext& platformContext, ResourceCache* cache) {
     if (_platformContext == nullptr) {
         _platformContext = &platformContext;
-        _resourceCache = &cache;
+        _resourceCache = cache;
         REGISTER_FRAME_LISTENER(this, 1);
 
         AI::Navigation::DivideRecast::instance();
@@ -412,9 +416,10 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
 
     const auto IsNodeInRect = [editorRunning, &screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node) -> SceneGraphNode* {
         assert(node != nullptr);
-        if (node->getNode().type() == SceneNodeType::TYPE_OBJECT3D)
+        const SceneNode& sNode = node->getNode();
+        if (sNode.type() == SceneNodeType::TYPE_OBJECT3D)
         {
-            U8 objectType = node->getNode<Object3D>().getObjectType()._value;
+            U8 objectType = static_cast<const Object3D&>(sNode).getObjectType()._value;
             while (objectType == ObjectType::SUBMESH) {
                 node = node->parent();
                 if (node) {
@@ -423,6 +428,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
                     return nullptr;
                 }
             }
+
             const bool selectable = (node->get<SelectionComponent>() && node->get<SelectionComponent>()->enabled()) || 
                                     editorRunning;
             if (selectable &&
@@ -507,6 +513,10 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                             activeSceneState.windDirZ(),
                             activeSceneState.windSpeed());
 
+    _sceneData->shadowingSettings(activeSceneState.lightBleedBias(),
+                                  activeSceneState.minShadowVariance(),
+                                  to_F32(activeSceneState.shadowFadeDistance()),
+                                  to_F32(activeSceneState.shadowDistance()));
     U8 index = 0;
     
     vectorSTD<WaterDetails>& waterBodies = activeScene.state().globalWaterBodies();
@@ -646,7 +656,6 @@ VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, Ren
 
     if (inView) {
         NodeCullParams cullParams = {};
-        cullParams._threaded = true;
         cullParams._lodThresholds = getActiveScene().state().renderState().lodThresholds();
         cullParams._stage = stage;
         cullParams._currentCamera = &camera;
@@ -682,7 +691,6 @@ VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, Ren
 
     if (inView) {
         NodeCullParams cullParams = {};
-        cullParams._threaded = true;
         cullParams._lodThresholds = getActiveScene().state().renderState().lodThresholds();
         cullParams._stage = stage;
         cullParams._currentCamera = &camera;
@@ -708,7 +716,6 @@ const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Cam
     cullParams._sceneState = &sceneState;
     cullParams._stage = stage;
     cullParams._camera = &camera;
-    cullParams._threaded = true;
     cullParams._minLoD = minLoD;
     cullParams._minExtents = minExtents;
     cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();

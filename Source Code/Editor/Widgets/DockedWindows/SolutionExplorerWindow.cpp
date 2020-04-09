@@ -78,7 +78,7 @@ namespace Divide {
     }
 
     void SolutionExplorerWindow::drawInternal() {
-        SceneManager& sceneManager = context().kernel().sceneManager();
+        SceneManager& sceneManager = *context().kernel().sceneManager();
         Scene& activeScene = sceneManager.getActiveScene();
         SceneGraphNode& root = activeScene.sceneGraph().getRoot();
 

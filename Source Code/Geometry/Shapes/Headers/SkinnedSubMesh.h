@@ -49,7 +49,7 @@ class SkinnedSubMesh : public SubMesh {
     using BoundingBoxPerAnimationStatus = vectorSTD<BoundingBoxState>;
 
    public:
-    explicit SkinnedSubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name);
+    explicit SkinnedSubMesh(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
     ~SkinnedSubMesh();
 
    public:

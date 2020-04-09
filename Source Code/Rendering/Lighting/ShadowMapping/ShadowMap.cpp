@@ -312,7 +312,7 @@ void ShadowMap::generateShadowMaps(const Camera& playerCamera, Light& light, U32
 
     const ShadowType sType = getShadowTypeForLightType(light.getLightType());
 
-    U16 offset = findFreeDepthMapOffset(sType, layerRequirement);
+    const U16 offset = findFreeDepthMapOffset(sType, layerRequirement);
     light.setShadowOffset(offset);
     commitDepthMapOffset(sType, offset, layerRequirement);
     

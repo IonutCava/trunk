@@ -279,7 +279,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ResourceDescriptor matDesc("Tree_material");
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);
     s_treeMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
-    s_treeMaterial->setBaseShaderData(treeShaderData);
+    s_treeMaterial->baseShaderData(treeShaderData);
     s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "USE_CULL_DISTANCE", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, "OVERRIDE_DATA_IDX", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstances).c_str(), true);
@@ -376,10 +376,18 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     grassShadowShader.waitForReady(false);
     ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
 
-    vegMaterial->setShaderProgram(grassColour);
-    vegMaterial->setShaderProgram(grassColourOIT, RenderPassType::OIT_PASS);
-    vegMaterial->setShaderProgram(grassPrePass, RenderPassType::PRE_PASS);
-    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW);
+    fragModule._variant = "Shadow.VSM";
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+    ShaderProgram_ptr grassShadowVSM = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
+
+    vegMaterial->setShaderProgram(grassColour, RenderStage::COUNT, RenderPassType::COUNT, 0u);
+    vegMaterial->setShaderProgram(grassColourOIT, RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
+    vegMaterial->setShaderProgram(grassPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
+    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL));
 
     vegMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, grassBillboardArray);
     s_vegetationMaterial = vegMaterial;

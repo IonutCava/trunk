@@ -103,7 +103,8 @@ void PlatformContext::idle(U32 componentMask) {
     if (BitCompare(componentMask, ComponentType::DebugInterface)) {
         _debug->idle();
     }
-    if (Config::Build::ENABLE_EDITOR) {
+
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         if (BitCompare(componentMask, ComponentType::Editor)) {
             _editor->idle();
         }

@@ -44,7 +44,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
 
     _isLayeredDepth = false;
 
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         // label this FB to be able to tell that it's internally created and nor from a 3rd party lib
         glObjectLabel(GL_FRAMEBUFFER,
                       _framebufferHandle,
@@ -60,16 +60,6 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
 glFramebuffer::~glFramebuffer()
 {
     GL_API::deleteFramebuffers(1, &_framebufferHandle);
-}
-
-RTAttachment* glFramebuffer::getAttachmentInternal(RTAttachmentType type, U8 index) {
-    RTAttachment* attachment = _attachmentPool->get(type, index).get();
-    if (attachment->isExternal()) {
-        RenderTarget& parent = attachment->parent().parent();
-        attachment = &parent.getAttachment(attachment->getExternal()->descriptor()._type, attachment->getExternal()->descriptor()._index);
-    }
-
-    return attachment;
 }
 
 void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
@@ -95,7 +85,12 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
             tex->setSampleCount(_descriptor._msaaSamples);
         }
     } else {
-        RTAttachment* attachmentTemp = getAttachmentInternal(type, index);
+        RTAttachment* attachmentTemp = _attachmentPool->get(type, index).get();
+        if (attachmentTemp->isExternal()) {
+            RenderTarget& parent = attachmentTemp->parent().parent();
+            attachmentTemp = &parent.getAttachment(attachmentTemp->getExternal()->descriptor()._type, attachmentTemp->getExternal()->descriptor()._index);
+        }
+
         attachment->setTexture(attachmentTemp->texture(true));
         attachment->clearChanged();
         tex = attachment->texture(false).get();
@@ -169,7 +164,7 @@ bool glFramebuffer::create() {
 }
 
 namespace BlitHelpers {
-    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, U16 layer) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, U16 layer) {
         const bool layerChanged = att->writeLayer(layer);
         if (layerChanged || att->numLayers() > 0) {
             const glFramebuffer::BindingState& state = fbo->getAttachmentState(static_cast<GLenum>(att->binding()));
@@ -178,20 +173,20 @@ namespace BlitHelpers {
         return att;
     };
 
-    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const ColourBlitEntry& entry, bool isInput) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const ColourBlitEntry& entry, bool isInput) {
         return prepareAttachments(fbo, att, isInput ? entry._inputLayer : entry._outputLayer);
     };
 
-    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const DepthBlitEntry& entry, bool isInput) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const DepthBlitEntry& entry, bool isInput) {
         return prepareAttachments(fbo, att, isInput ? entry._inputLayer : entry._outputLayer);
     };
 
-    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, const ColourBlitEntry& entry, bool isInput) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, const ColourBlitEntry& entry, bool isInput) {
         RTAttachment* att = fbo->getAttachmentPtr(RTAttachmentType::Colour, to_U8(entry._inputIndex)).get();
         return prepareAttachments(fbo, att, entry, isInput);
     };
 
-    FORCE_INLINE RTAttachment* prepareAttachments(glFramebuffer* fbo, const DepthBlitEntry& entry, bool isInput) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, const DepthBlitEntry& entry, bool isInput) {
         RTAttachment* att = fbo->getAttachmentPtr(RTAttachmentType::Depth, 0u).get();
         return prepareAttachments(fbo, att, entry, isInput);
     };
@@ -640,7 +635,7 @@ bool glFramebuffer::checkStatus() {
     }
 
     _statusCheckQueued = false;
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         // check FB status
         switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
         {

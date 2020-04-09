@@ -115,7 +115,7 @@ bool ShaderProgram::recompileShaderProgram(const Str128& name) {
     return state;
 }
 
-void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
+void ShaderProgram::onStartup(GFXDevice& context, ResourceCache* parentCache) {
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;

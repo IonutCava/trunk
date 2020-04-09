@@ -45,7 +45,7 @@ class PlatformContext;
 /// TiledForwardShading
 class Renderer : public PlatformContextComponent {
    public:
-    Renderer(PlatformContext& context, ResourceCache& cache);
+    Renderer(PlatformContext& context, ResourceCache* cache);
     ~Renderer();
 
     void preRender(RenderStagePass stagePass,
@@ -63,10 +63,10 @@ class Renderer : public PlatformContextComponent {
     inline const PostFX& postFX() const noexcept { return *_postFX; }
 
   private:
-    ResourceCache& _resCache;
+    ResourceCache* _resCache = nullptr;
 
-    ShaderProgram_ptr _lightCullComputeShader;
-    ShaderBuffer*     _perTileLightIndexBuffer;
+    ShaderProgram_ptr _lightCullComputeShader = nullptr;
+    ShaderBuffer*     _perTileLightIndexBuffer = nullptr;
     Pipeline*         _lightCullPipeline = nullptr;
     std::unique_ptr<PostFX> _postFX = nullptr;
 };

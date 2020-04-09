@@ -33,7 +33,7 @@ const char* PostFX::FilterName(FilterType filter) noexcept {
     return "Unknown";
 };
 
-PostFX::PostFX(PlatformContext& context, ResourceCache& cache)
+PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     : PlatformContextComponent(context)
 {
     ParamHandler::instance().setParam<bool>(_ID_32("postProcessing.enableVignette"), false);

@@ -58,7 +58,7 @@ namespace Divide {
 
 namespace {
     //Ref: http://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly
-    void M4x4_SSE(const F32 *A, const F32 *B, F32 *C) noexcept {
+    FORCE_INLINE void M4x4_SSE(const F32 *A, const F32 *B, F32 *C) noexcept {
         const __m128 row1 = _mm_load_ps(&B[0]);
         const __m128 row2 = _mm_load_ps(&B[4]);
         const __m128 row3 = _mm_load_ps(&B[8]);
@@ -80,7 +80,7 @@ namespace {
 #ifndef USE_AVX
     // linear combination:
     // a[0] * B.row[0] + a[1] * B.row[1] + a[2] * B.row[2] + a[3] * B.row[3]
-    static inline __m128 lincomb_SSE(const __m128 &a, const mat4<F32> &B)
+    static FORCE_INLINE __m128 lincomb_SSE(const __m128 &a, const mat4<F32> &B)
     {
         __m128 result = _mm_mul_ps(_mm_shuffle_ps(a, a, 0x00), B._reg[0]._reg);
         result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0x55), B._reg[1]._reg));
@@ -91,7 +91,7 @@ namespace {
     }
 
     // this is the right approach for SSE ... SSE4.2
-    static inline void M4x4_SSE(const mat4<F32>& A, const mat4<F32>& B, mat4<F32>& C)
+    static FORCE_INLINE void M4x4_SSE(const mat4<F32>& A, const mat4<F32>& B, mat4<F32>& C)
     {
         // out_ij = sum_k a_ik b_kj
         // => out_0j = a_00 * b_0j + a_01 * b_1j + a_02 * b_2j + a_03 * b_3j
@@ -101,7 +101,7 @@ namespace {
     }
 #else
     // another linear combination, using AVX instructions on XMM regs
-    static inline __m128 lincomb_AVX_4mem(const F32 *a, const mat4<F32> &B) noexcept
+    static FORCE_INLINE __m128 lincomb_AVX_4mem(const F32 *a, const mat4<F32> &B) noexcept
     {
         __m128 result = _mm_mul_ps(_mm_broadcast_ss(&a[0]), B._reg[0]._reg);
         for (U8 i = 1; i < 4; ++i) {
@@ -112,7 +112,7 @@ namespace {
 
     // using AVX instructions, 4-wide
     // this can be better if A is in memory.
-    static inline void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C)
+    static FORCE_INLINE void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C)
     {
         _mm256_zeroupper();
         for (U8 i = 0; i < 4; ++i) {
@@ -123,7 +123,7 @@ namespace {
 #endif
 
     //ref: https://lxjk.github.io/2017/09/03/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained.html
-    inline void GetTransformInverseNoScale(const mat4<F32>& inM, mat4<F32>& r) noexcept
+    FORCE_INLINE void GetTransformInverseNoScale(const mat4<F32>& inM, mat4<F32>& r) noexcept
     {
         // transpose 3x3, we know m03 = m13 = m23 = 0
         const __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
@@ -143,27 +143,27 @@ namespace {
     // we use __m128 to represent 2x2 matrix as A = | A0  A2 |
     //                                              | A1  A3 |
     // 2x2 column major Matrix multiply A*B
-    __forceinline __m128 Mat2Mul(__m128 vec1, __m128 vec2)
+    FORCE_INLINE __m128 Mat2Mul(__m128 vec1, __m128 vec2)
     {
         return  _mm_add_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 0, 0, 3, 3)),
                            _mm_mul_ps(VecSwizzle(vec1, 2, 3, 0, 1), VecSwizzle(vec2, 1, 1, 2, 2)));
     }
     // 2x2 column major Matrix adjugate multiply (A#)*B
-    __forceinline __m128 Mat2AdjMul(__m128 vec1, __m128 vec2)
+    FORCE_INLINE __m128 Mat2AdjMul(__m128 vec1, __m128 vec2)
     {
         return  _mm_sub_ps(_mm_mul_ps(VecSwizzle(vec1, 3, 0, 3, 0), vec2),
                             _mm_mul_ps(VecSwizzle(vec1, 2, 1, 2, 1), VecSwizzle(vec2, 1, 0, 3, 2)));
 
     }
     // 2x2 column major Matrix multiply adjugate A*(B#)
-    __forceinline __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
+    FORCE_INLINE __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
     {
         return  _mm_sub_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 3, 3, 0, 0)),
                            _mm_mul_ps(VecSwizzle(vec1, 2, 3, 0, 1), VecSwizzle(vec2, 1, 1, 2, 2)));
     }
 
     // Requires this matrix to be transform matrix
-    inline void GetTransformInverse(const mat4<F32>& inM, mat4<F32>& r)
+    FORCE_INLINE void GetTransformInverse(const mat4<F32>& inM, mat4<F32>& r)
     {
         // transpose 3x3, we know m03 = m13 = m23 = 0
         __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
@@ -200,7 +200,7 @@ namespace {
 
     // Inverse function is the same no matter column major or row major
     // this version treats it as column major
-    inline void GetInverse(const mat4<F32>& inM, mat4<F32>& r)
+    FORCE_INLINE void GetInverse(const mat4<F32>& inM, mat4<F32>& r)
     {
         // use block matrix method
         // A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
@@ -2036,7 +2036,7 @@ void mat4<T>::inverse() {
 }
 
 template<>
-FORCE_INLINE void mat4<F32>::inverse() {
+inline void mat4<F32>::inverse() {
     *this = GetInverse(*this);
 }
 
@@ -2071,7 +2071,7 @@ mat4<T> mat4<T>::getInverse() const {
 }
 
 template<>
-FORCE_INLINE mat4<F32> mat4<F32>::getInverse() const {
+inline mat4<F32> mat4<F32>::getInverse() const {
     mat4<F32> ret;
     GetInverse(*this, ret);
     return ret;
@@ -2083,7 +2083,7 @@ void mat4<T>::getInverse(mat4 &ret) const {
 }
 
 template<>
-FORCE_INLINE void mat4<F32>::getInverse(mat4<F32> &ret) const {
+inline void mat4<F32>::getInverse(mat4<F32> &ret) const {
     GetInverse(*this, ret);
 }
 
@@ -2112,7 +2112,7 @@ mat4<T> mat4<T>::getInverseTranspose() const {
 }
 
 template<>
-FORCE_INLINE mat4<F32> mat4<F32>::getInverseTranspose() const {
+inline mat4<F32> mat4<F32>::getInverseTranspose() const {
     mat4<F32> ret;
     GetInverse(*this, ret);
     ret.transpose();
@@ -2126,7 +2126,7 @@ void mat4<T>::getInverseTranspose(mat4 &ret) const {
 }
 
 template<>
-FORCE_INLINE void mat4<F32>::getInverseTranspose(mat4<F32> &ret) const {
+inline void mat4<F32>::getInverseTranspose(mat4<F32> &ret) const {
     GetInverse(*this, ret);
     ret.transpose();
 }
@@ -2437,7 +2437,7 @@ void mat4<T>::extractMat3(mat3<U> &matrix3) const {
 }
 
 template<typename T>
-FORCE_INLINE void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret) {
+void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret) {
     for (U8 i = 0; i < 4; ++i) {
         const vec4<T>& rowA = matrixA.getRow(i);
         ret.setRow(i, matrixB.getRow(0) * rowA[0] + matrixB.getRow(1) * rowA[1] + matrixB.getRow(2) * rowA[2] + matrixB.getRow(3) * rowA[3]);
@@ -2445,20 +2445,20 @@ FORCE_INLINE void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matri
 }
 
 template<typename T>
-FORCE_INLINE mat4<T> mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB) {
+mat4<T> mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB) {
     mat4<T> ret;
     Multiply(matrixA, matrixB, ret);
     return ret;
 }
 
 template<>
-FORCE_INLINE void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) {
+inline void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) {
     M4x4_SSE(matrixA, matrixB, ret);
 }
 
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.
 template<typename T>
-FORCE_INLINE void mat4<T>::Inverse(const T* in, T* out) {
+void mat4<T>::Inverse(const T* in, T* out) {
     T m00 = in[0], m10 = in[1], m20 = in[2], m30 = in[3];
     T m01 = in[4], m11 = in[5], m21 = in[6], m31 = in[7];
     T m02 = in[8], m12 = in[9], m22 = in[10], m32 = in[11];

@@ -129,23 +129,18 @@ constexpr unsigned int BENCHMARK_FREQUENCY = 500;
 };  // namespace Profile
 
 namespace Assert {
-#if defined(_DEBUG)
-/// Log assert fails messages to the error log file
-    constexpr bool LOG_ASSERTS = true;
-/// Do not call the platform "assert" function in order to continue application
-/// execution
-    constexpr bool CONTINUE_ON_ASSERT = false;
-/// Popup a GUI Message Box on asserts;
-    constexpr bool SHOW_MESSAGE_BOX = true;
-#elif defined(_PROFILE)
-    constexpr bool LOG_ASSERTS = true;
-    constexpr bool CONTINUE_ON_ASSERT = false;
-    constexpr bool SHOW_MESSAGE_BOX = false;
-#else  //_RELEASE
+#if defined(_RELEASE)
     constexpr bool LOG_ASSERTS = false;
-    constexpr bool CONTINUE_ON_ASSERT = false;
     constexpr bool SHOW_MESSAGE_BOX = false;
+#else
+    /// Log assert fails messages to the error log file
+    constexpr bool LOG_ASSERTS = true;
+    /// Popup a GUI Message Box on asserts;
+    constexpr bool SHOW_MESSAGE_BOX = true;
 #endif
+
+/// Do not call the platform "assert" function in order to continue application execution
+constexpr bool CONTINUE_ON_ASSERT = false;
 };  // namespace Assert
 
 namespace Lighting {
@@ -156,7 +151,7 @@ static_assert(MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS <= MAX_SHADOW_CASTING_LIGHTS
 /// Used for cube map shadows and for CSM or PSSM to determine the maximum number of frustum splits
 constexpr unsigned short MAX_CSM_SPLITS_PER_LIGHT = 4;
 static_assert(MAX_CSM_SPLITS_PER_LIGHT <= 6, "Too many CSM splits. Max = 6 (number of cube faces))");
-
+constexpr bool USE_SEPARATE_VSM_PASS = false;
 /// Used mainly for caching/memory efficiency reasons
 constexpr unsigned short MAX_POSSIBLE_LIGHTS = 4096u;
 

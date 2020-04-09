@@ -46,7 +46,7 @@ class ResourceCache;
 class PlatformContext;
 class GUIConsoleCommandParser : public CommandParser, public PlatformContextComponent {
    public:
-    GUIConsoleCommandParser(PlatformContext& context, ResourceCache& cache);
+    GUIConsoleCommandParser(PlatformContext& context, ResourceCache* cache);
     ~GUIConsoleCommandParser();
 
     bool processCommand(const stringImpl& commandString) override;
@@ -65,7 +65,7 @@ class GUIConsoleCommandParser : public CommandParser, public PlatformContextComp
     void handleInvalidCommand(const stringImpl& args);
 
    private:
-    ResourceCache& _resCache;
+    ResourceCache* _resCache = nullptr;
     /// Help text for every command
     hashMap<U64, const char*> _commandHelp;
     /// used for sound playback

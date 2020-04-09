@@ -44,7 +44,7 @@ class NOINITVTABLE PreRenderOperator {
     /// doing to set up apropriate states
     /// The target is the full screen quad to which we want to apply our
     /// operation to generate the result
-    PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache, FilterType operatorType);
+    PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, FilterType operatorType);
     virtual ~PreRenderOperator();
 
 

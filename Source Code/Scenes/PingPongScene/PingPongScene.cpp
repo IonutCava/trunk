@@ -24,7 +24,7 @@ namespace {
     Task* g_gameTaskID = nullptr;
 };
 
-PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)
+PingPongScene::PingPongScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)
     : Scene(context, cache, parent, name)
 {
     _sideDrift = 0;
@@ -44,11 +44,6 @@ void PingPongScene::processGUI(const U64 deltaTimeUS) {
     constexpr D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
 
     if (_guiTimersMS[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay",
-                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                            Time::ApplicationTimer::instance().getFps(),
-                                            Time::ApplicationTimer::instance().getFrameTime()),
-                        false);
         _guiTimersMS[0] = 0.0;
     }
     Scene::processGUI(deltaTimeUS);
@@ -394,11 +389,6 @@ void PingPongScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
         Font::DIVIDE_DEFAULT,
                   UColour4(0, 255, 0, 255),
         "");
-    _GUI->addText("fpsDisplay",  // Unique ID
-                  pixelPosition(60, 60),  // Position
-        Font::DIVIDE_DEFAULT,  // Font
-                  UColour4(0, 50, 255, 255),// Colour
-        Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     Scene::postLoadMainThread(targetRenderViewport);
 }

@@ -26,7 +26,7 @@ Application::Application() : _kernel(nullptr),
     _mainLoopActive = false;
     _errorCode = ErrorCode::NO_ERR;
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         MemoryManager::MemoryTracker::Ready = true; //< faster way of disabling memory tracking
         MemoryManager::MemoryTracker::LogAllAllocations = false;
     }
@@ -90,7 +90,7 @@ void Application::stop() {
         Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
         _isInitialized = false;
 
-        if (Config::Build::IS_DEBUG_BUILD) {
+        if_constexpr(Config::Build::IS_DEBUG_BUILD) {
             MemoryManager::MemoryTracker::Ready = false;
             bool leakDetected = false;
             size_t sizeLeaked = 0;

@@ -31,11 +31,19 @@ namespace {
 };
 
 void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
-    if (g_assertMsgBox) {
-        g_assertMsgBox->setTitle("Assertion Failed!");
-        g_assertMsgBox->setMessage(stringImpl("Assert: ") + failMessage);
-        g_assertMsgBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_ERROR);
-        g_assertMsgBox->show();
+    const stringImpl assertMsg = Util::StringFormat("Assert: %s", failMessage);
+
+    if_constexpr(Config::Assert::LOG_ASSERTS) {
+        Console::errorfn(assertMsg.c_str());
+    }
+
+    if_constexpr(Config::Assert::SHOW_MESSAGE_BOX) {
+        if (g_assertMsgBox) {
+            g_assertMsgBox->setTitle("Assertion Failed!");
+            g_assertMsgBox->setMessage(assertMsg);
+            g_assertMsgBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_ERROR);
+            g_assertMsgBox->show();
+        }
     }
 }
 
@@ -180,12 +188,12 @@ void GUI::update(const U64 deltaTimeUS) {
 void GUI::setRenderer(CEGUI::Renderer& renderer) {
     CEGUI::System::create(renderer, nullptr, nullptr, nullptr, nullptr, "", (Paths::g_logPath + "CEGUI.log").c_str());
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
     }
 }
 
-bool GUI::init(PlatformContext& context, ResourceCache& cache) {
+bool GUI::init(PlatformContext& context, ResourceCache* cache) {
     if (_init) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;

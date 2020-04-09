@@ -33,8 +33,8 @@ struct MeshLoadData {
 void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
     OPTICK_EVENT();
 
-    if (MeshImporter::loadMeshDataFromFile(*loadData._context, *loadData._cache, tempMeshData)) {
-        if (!MeshImporter::loadMesh(loadData._mesh, *loadData._context, *loadData._cache, tempMeshData)) {
+    if (MeshImporter::loadMeshDataFromFile(*loadData._context, loadData._cache, tempMeshData)) {
+        if (!MeshImporter::loadMesh(loadData._mesh, *loadData._context, loadData._cache, tempMeshData)) {
             loadData._mesh.reset();
         }
     } else {
@@ -63,7 +63,7 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
         ptr->setState(ResourceState::RES_LOADING);
     }
 
-    MeshLoadData loadingData(ptr, &_cache, &_context, _descriptor);
+    MeshLoadData loadingData(ptr, _cache, &_context, _descriptor);
     if (_descriptor.threaded()) {
         Start(*CreateTask(_context, [this, tempMeshData, loadingData](const Task & parent) {
             threadedMeshLoad(loadingData, tempMeshData);

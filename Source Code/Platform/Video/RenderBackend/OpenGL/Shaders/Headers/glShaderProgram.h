@@ -58,18 +58,18 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     static void initStaticData();
     static void destroyStaticData();
-    static void onStartup(GFXDevice& context, ResourceCache& parentCache);
+    static void onStartup(GFXDevice& context, ResourceCache* parentCache);
     static void onShutdown();
 
     template<size_t N>
     static Str<N> decorateFileName(const Str<N>& name) {
-        if (Config::Build::IS_DEBUG_BUILD) {
+        if_constexpr(Config::Build::IS_DEBUG_BUILD) {
             return "DEBUG." + name;
-        } else if (Config::Build::IS_PROFILE_BUILD) {
+        } else if_constexpr(Config::Build::IS_PROFILE_BUILD) {
             return "PROFILE." + name;
+        } else {
+            return "RELEASE." + name;
         }
-
-        return "RELEASE." + name;
     }
 
     /// Make sure this program is ready for deletion

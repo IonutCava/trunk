@@ -27,17 +27,39 @@ void main()
 }
 
 -- Fragment.Shadow
-// Ouput data
-out vec2 colour;
+
+#ifdef HAS_TEXTURE
+layout(location = 0) in vec4 particleColour;
 
 void main(){
-    //VAR._vertexWV is actually VAR._vertexWVP
-    float depth = (VAR._vertexWV.z / VAR._vertexWV.w) * 0.5 + 0.5;
-    // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    float dx = dFdx(depth);
-    float dy = dFdy(depth);
-    colour = vec2(depth, pow(depth, 2.0) + 0.25 * (dx * dx + dy * dy));
+    colour = particleColour * texture(texDiffuse0, VAR._texCoord);
+    if (colour.a < 1.0f - Z_TEST_SIGMA) {
+        discard;
+    }
 }
+#endif
+
+
+--Fragment.Shadow.VSM
+
+#ifdef HAS_TEXTURE
+#if !defined(USE_SEPARATE_VSM_PASS)
+#include "vsm.frag"
+out vec2 _colourOut;
+#endif
+
+layout(location = 0) in vec4 particleColour;
+
+void main() {
+    colour = particleColour * texture(texDiffuse0, VAR._texCoord);
+    if (colour.a < 1.0f - Z_TEST_SIGMA) {
+        discard;
+    }
+#if !defined(USE_SEPARATE_VSM_PASS)
+    _colourOut = computeMoments();
+#endif
+}
+#endif
 
 -- Fragment
 

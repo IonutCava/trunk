@@ -113,11 +113,7 @@ void main() {
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) flat in float _alphaFactor;
 
-#include "vsm.frag"
-
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
-
-out vec2 _colourOut;
 
 void main(void) {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
@@ -125,6 +121,28 @@ void main(void) {
     if (alpha <= 1.0f - Z_TEST_SIGMA) {
         discard;
     }
+}
 
+--Fragment.Shadow.VSM
+
+layout(location = 0) flat in int _arrayLayerFrag;
+layout(location = 1) flat in float _alphaFactor;
+
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
+
+#if !defined(USE_SEPARATE_VSM_PASS)
+#include "vsm.frag"
+out vec2 _colourOut;
+#endif
+
+void main(void) {
+    vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
+    float alpha = colour.a * _alphaFactor;
+    if (alpha <= 1.0f - Z_TEST_SIGMA) {
+        discard;
+    }
+#if !defined(USE_SEPARATE_VSM_PASS)
     _colourOut = computeMoments();
+#endif
+
 }

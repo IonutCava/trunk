@@ -9,7 +9,7 @@
 
 namespace Divide {
     namespace {
-        FORCE_INLINE stringImpl GetFullFieldName(const char* componentName, Str32 fieldName) {
+        inline stringImpl GetFullFieldName(const char* componentName, Str32 fieldName) {
             Util::ReplaceStringInPlace(fieldName, " ", "__");
             return Util::StringFormat("%s.%s", componentName, fieldName.c_str());
         }

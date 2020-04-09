@@ -36,7 +36,7 @@ void ApplicationTimer::update() {
     const U64 elapsedTime = getElapsedTimeInternal(currentTicks);
     _frameRateHandler.tick(elapsedTime);
     
-    if (Config::Profile::BENCHMARK_PERFORMANCE) {
+    if_constexpr (Config::Profile::BENCHMARK_PERFORMANCE) {
 
         if (elapsedTime - _lastBenchmarkTimeStamp > Time::MillisecondsToMicroseconds(Config::Profile::BENCHMARK_FREQUENCY))
         {

@@ -58,7 +58,7 @@ STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {             \
 
 #define INIT_SCENE_FACTORY \
     namespace { \
-        using SceneConstructor = std::function<Scene*(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)>; \
+        using SceneConstructor = std::function<Scene*(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)>; \
         using SceneFactoryMap = hashMap<U64, SceneConstructor>; \
         using SceneNameMap = hashMap<U64, Str128>; \
         SceneFactoryMap g_sceneFactory; \

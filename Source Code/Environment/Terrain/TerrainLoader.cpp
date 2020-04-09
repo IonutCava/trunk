@@ -437,14 +437,33 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     // SHADOW
-    ShaderProgramDescriptor shadowDescriptor = shaderDescriptor;
-    for (ShaderModuleDescriptor& shaderModule : shadowDescriptor._modules) {
-        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-            shaderModule._variant = "Shadow";
+
+    ShaderProgramDescriptor shadowDescriptorVSM = {}; ;
+    for (const ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
+        shadowDescriptorVSM._modules.push_back(shaderModule);
+        ShaderModuleDescriptor& tempModule = shadowDescriptorVSM._modules.back();
+
+        if (tempModule._moduleType == ShaderType::FRAGMENT) {
+            tempModule._variant = "Shadow.VSM";
         }
-        shaderModule._defines.emplace_back("SHADOW_PASS", true);
-        shaderModule._defines.emplace_back("MAX_TESS_SCALE 16", true);
-        shaderModule._defines.emplace_back("MIN_TESS_SCALE 16", true);
+        tempModule._defines.emplace_back("SHADOW_PASS", true);
+        tempModule._defines.emplace_back("MAX_TESS_SCALE 16", true);
+        tempModule._defines.emplace_back("MIN_TESS_SCALE 16", true);
+
+    }
+
+    ResourceDescriptor terrainShaderShadowVSM("Terrain_ShadowVSM-" + name);
+    terrainShaderShadowVSM.propertyDescriptor(shadowDescriptorVSM);
+    terrainShaderShadowVSM.waitForReadyCbk(waitForReasoureTask);
+
+    ShaderProgram_ptr terrainShadowShaderVSM = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadowVSM);
+
+    ShaderProgramDescriptor shadowDescriptor = {};
+    for (ShaderModuleDescriptor& shaderModule : shadowDescriptorVSM._modules) {
+        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+            continue;
+        } 
+        shadowDescriptor._modules.push_back(shaderModule);
     }
 
     ResourceDescriptor terrainShaderShadow("Terrain_Shadow-" + name);
@@ -452,6 +471,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainShaderShadow.waitForReadyCbk(waitForReasoureTask);
 
     ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
+
+
 
     // MAIN PASS
     ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
@@ -519,19 +540,22 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColourLQ);
 
-    terrainMaterial->setShaderProgram(terrainPrePassShader, RenderPassType::PRE_PASS);
-    terrainMaterial->setShaderProgram(terrainColourShader, { RenderStage::DISPLAY, RenderPassType::MAIN_PASS });
-    terrainMaterial->setShaderProgram(terrainColourShaderLQ, { RenderStage::REFLECTION, RenderPassType::MAIN_PASS });
-    terrainMaterial->setShaderProgram(terrainColourShaderLQ, { RenderStage::REFRACTION, RenderPassType::MAIN_PASS });
-    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, { RenderStage::REFLECTION, RenderPassType::PRE_PASS });
-    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, { RenderStage::REFRACTION, RenderPassType::PRE_PASS });
-    terrainMaterial->setShaderProgram(terrainShadowShader, { RenderStage::SHADOW, RenderPassType::MAIN_PASS });
+    terrainMaterial->setShaderProgram(terrainPrePassShader, RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u);
+    terrainMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY, RenderPassType::MAIN_PASS, 0u);
 
-    terrain->setMaterialTpl(terrainMaterial);
+    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFLECTION, RenderPassType::MAIN_PASS, 0u);
+    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStage::REFLECTION, RenderPassType::PRE_PASS, 0u);
+
+    terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFRACTION, RenderPassType::MAIN_PASS, 0u);
+    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStage::REFRACTION, RenderPassType::PRE_PASS, 0u);
+    
+    terrainMaterial->setShaderProgram(terrainShadowShader,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+    terrainMaterial->setShaderProgram(terrainShadowShader,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
+    terrainMaterial->setShaderProgram(terrainShadowShaderVSM,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
 
     // Generate a render state
     RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(CullMode::CW);
+    terrainRenderState.setCullMode(CullMode::BACK);
     terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
     terrainRenderState.setTessControlPoints(4);
 
@@ -540,22 +564,33 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
     RenderStateBlock terrainRenderStateReflection = terrainRenderState;
-    terrainRenderStateReflection.setCullMode(CullMode::CCW);
+    terrainRenderStateReflection.setCullMode(CullMode::FRONT);
 
-    RenderStateBlock terrainRenderStatePrePassReflection = terrainRenderStatePrePass;
-    terrainRenderStatePrePassReflection.setCullMode(CullMode::CCW);
+    RenderStateBlock terrainRenderStateReflectionPrePass = terrainRenderStateReflection;
+    terrainRenderStateReflectionPrePass.setZFunc(ComparisonFunction::LEQUAL);
 
     // Generate a shadow render state
     RenderStateBlock terrainRenderStateShadow = terrainRenderState;
     terrainRenderStateShadow.setZBias(1.0f, 1.0f);
     terrainRenderStateShadow.setZFunc(ComparisonFunction::LEQUAL);
-    terrainRenderStateShadow.setColourWrites(true, true, false, false);
+    terrainRenderStateShadow.setColourWrites(false, false, false, false);
 
-    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash());
-    terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderPassType::PRE_PASS);
-    terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), { RenderStage::REFLECTION, RenderPassType::MAIN_PASS });
-    terrainMaterial->setRenderStateBlock(terrainRenderStatePrePassReflection.getHash(), { RenderStage::REFLECTION, RenderPassType::PRE_PASS });
-    terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW);
+    RenderStateBlock terrainRenderStateShadowVSM = terrainRenderStateShadow;
+    if_constexpr(!Config::Lighting::USE_SEPARATE_VSM_PASS) {
+        terrainRenderStateShadowVSM.setColourWrites(true, true, false, false);
+    }
+
+    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
+    terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+
+    terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION, RenderPassType::MAIN_PASS, 0u);
+    terrainMaterial->setRenderStateBlock(terrainRenderStateReflectionPrePass.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS, 0u);
+    
+    terrainMaterial->setRenderStateBlock(terrainRenderStateShadowVSM.getHash(), RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
+    terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
+    terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+
+    terrain->setMaterialTpl(terrainMaterial);
 
     if (threadedLoading) {
         Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, &context](const Task & parent) {

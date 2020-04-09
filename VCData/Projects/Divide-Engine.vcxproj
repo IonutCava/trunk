@@ -256,7 +256,7 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/bigobj /Zc:twoPhase- /Zc:twoPhase-  </AdditionalOptions>
+      <AdditionalOptions>/bigobj /Zc:twoPhase- /Zc:twoPhase-   /d2cgsummary</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>

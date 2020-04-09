@@ -21,6 +21,14 @@
 #include "Core/Headers/EngineTaskPool.h"
 #include "Utility/Headers/Localization.h"
 
+#pragma warning(push)
+#pragma warning(disable:4458)
+#pragma warning(disable:4706)
+#include <boost/wave.hpp>
+#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
+#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
+#pragma warning(pop)
+
 namespace Divide {
 
 namespace {
@@ -120,7 +128,7 @@ void glShaderProgram::initStaticData() {
 void glShaderProgram::destroyStaticData() {
 }
 
-void glShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
+void glShaderProgram::onStartup(GFXDevice& context, ResourceCache* parentCache) {
     if (!Config::Build::IS_SHIPPING_BUILD) {
         FileWatcher& watcher = FileWatcherManager::allocateWatcher();
         s_shaderFileWatcherID = watcher.getGUID();
@@ -224,7 +232,7 @@ void glShaderProgram::validatePostBind() {
         _validationQueued = false;
 
         // Call the internal validation function
-        if (Config::ENABLE_GPU_VALIDATION) {
+        if_constexpr(Config::ENABLE_GPU_VALIDATION) {
             glValidateProgramPipeline(_handle);
 
             GLint status = 0;
@@ -335,7 +343,7 @@ vectorSTD<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
         stringImpl srcTemp = preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, true);
         if (!srcTemp.empty()) {
             sourceCodeOut.first = true;
-            if (Config::Build::IS_DEBUG_BUILD) {
+            if_constexpr(Config::Build::IS_DEBUG_BUILD) {
                 sourceCodeOut.second = srcTemp;
             } else {
                 sourceCodeOut.second = preProcess(srcTemp, fileName.c_str());

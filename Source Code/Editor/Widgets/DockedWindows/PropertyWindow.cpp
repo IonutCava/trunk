@@ -12,6 +12,9 @@
 #include "Geometry/Material/Headers/Material.h"
 
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/SpotLightComponent.h"
+#include "ECS/Components/Headers/PointLightComponent.h"
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 #undef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -74,6 +77,87 @@ namespace Divide {
 
     }
 
+    bool PropertyWindow::drawCamera(Camera* cam) {
+        bool sceneChanged = false;
+        if (cam == nullptr) {
+            return false;
+        }
+
+        if (ImGui::CollapsingHeader(cam->resourceName().c_str())) {
+            vec3<F32> eye = cam->getEye();
+            if (ImGui::InputFloat3("Eye", eye._v)) {
+                cam->setEye(eye);
+                sceneChanged = true;
+            }
+            vec3<F32> euler = cam->getEuler();
+            if (ImGui::InputFloat3("Euler", euler._v)) {
+                cam->setEuler(euler);
+                sceneChanged = true;
+            }
+
+            F32 aspect = cam->getAspectRatio();
+            if (ImGui::InputFloat("Aspect", &aspect)) {
+                cam->setAspectRatio(aspect);
+                sceneChanged = true;
+            }
+
+            F32 horizontalFoV = cam->getHorizontalFoV();
+            if (ImGui::InputFloat("FoV (horizontal)", &horizontalFoV)) {
+                cam->setHorizontalFoV(horizontalFoV);
+                sceneChanged = true;
+            }
+
+            vec2<F32> zPlanes = cam->getZPlanes();
+            if (ImGui::InputFloat2("zPlanes", zPlanes._v)) {
+                if (cam->isOrthoProjected()) {
+                    cam->setProjection(cam->orthoRect(), zPlanes);
+                }
+                else {
+                    cam->setProjection(cam->getAspectRatio(), cam->getVerticalFoV(), zPlanes);
+                }
+                sceneChanged = true;
+            }
+
+            if (cam->isOrthoProjected()) {
+                vec4<F32> orthoRect = cam->orthoRect();
+                if (ImGui::InputFloat4("Ortho", orthoRect._v)) {
+                    cam->setProjection(orthoRect, cam->getZPlanes());
+                    sceneChanged = true;
+                }
+            }
+
+            ImGui::Text("View Matrix");
+            ImGui::Spacing();
+            mat4<F32> viewMatrix = cam->getViewMatrix();
+            EditorComponentField worldMatrixField;
+            worldMatrixField._name = "View Matrix";
+            worldMatrixField._basicType = GFX::PushConstantType::MAT4;
+            worldMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
+            worldMatrixField._readOnly = true;
+            worldMatrixField._data = &viewMatrix;
+
+            if (processBasicField(worldMatrixField)) {
+                sceneChanged = true;
+            }
+
+            ImGui::Text("Projection Matrix");
+            ImGui::Spacing();
+            mat4<F32> projMatrix = cam->getProjectionMatrix();
+            EditorComponentField projMatrixField;
+            projMatrixField._basicType = GFX::PushConstantType::MAT4;
+            projMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
+            projMatrixField._readOnly = true;
+            projMatrixField._name = "Projection Matrix";
+            projMatrixField._data = &projMatrix;
+
+            if (processBasicField(projMatrixField)) {
+                sceneChanged = true;
+            }
+        }
+
+        return sceneChanged;
+    }
+
     void PropertyWindow::drawInternal() {
         bool sceneChanged = false;
 
@@ -81,83 +165,14 @@ namespace Divide {
 
         Camera* selectedCamera = Attorney::EditorPropertyWindow::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
-            if (ImGui::CollapsingHeader(selectedCamera->resourceName().c_str())) {
-                vec3<F32> eye = selectedCamera->getEye();
-                if (ImGui::InputFloat3("Eye", eye._v)) {
-                    selectedCamera->setEye(eye);
-                    sceneChanged = true;
-                }
-                vec3<F32> euler = selectedCamera->getEuler();
-                if (ImGui::InputFloat3("Euler", euler._v)) {
-                    selectedCamera->setEuler(euler);
-                    sceneChanged = true;
-                }
-
-                F32 aspect = selectedCamera->getAspectRatio();
-                if (ImGui::InputFloat("Aspect", &aspect)) {
-                    selectedCamera->setAspectRatio(aspect);
-                    sceneChanged = true;
-                }
-
-                F32 horizontalFoV = selectedCamera->getHorizontalFoV();
-                if (ImGui::InputFloat("FoV (horizontal)", &horizontalFoV)) {
-                    selectedCamera->setHorizontalFoV(horizontalFoV);
-                    sceneChanged = true;
-                }
-
-                vec2<F32> zPlanes = selectedCamera->getZPlanes();
-                if (ImGui::InputFloat2("zPlanes", zPlanes._v)) {
-                    if (selectedCamera->isOrthoProjected()) {
-                        selectedCamera->setProjection(selectedCamera->orthoRect(), zPlanes);
-                    } else {
-                        selectedCamera->setProjection(selectedCamera->getAspectRatio(), selectedCamera->getVerticalFoV(), zPlanes);
-                    }
-                    sceneChanged = true;
-                }
-
-                if (selectedCamera->isOrthoProjected()) {
-                    vec4<F32> orthoRect = selectedCamera->orthoRect();
-                    if (ImGui::InputFloat4("Ortho", orthoRect._v)) {
-                        selectedCamera->setProjection(orthoRect, selectedCamera->getZPlanes());
-                        sceneChanged = true;
-                    }
-                }
-
-                ImGui::Text("View Matrix");
-                ImGui::Spacing();
-                mat4<F32> viewMatrix = selectedCamera->getViewMatrix();
-                EditorComponentField worldMatrixField;
-                worldMatrixField._name = "View Matrix";
-                worldMatrixField._basicType = GFX::PushConstantType::MAT4;
-                worldMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
-                worldMatrixField._readOnly = true;
-                worldMatrixField._data = &viewMatrix;
-                
-                if (processBasicField(worldMatrixField)) {
-                    sceneChanged = true;
-                }
-
-                ImGui::Text("Projection Matrix");
-                ImGui::Spacing();
-                mat4<F32> projMatrix = selectedCamera->getProjectionMatrix();
-                EditorComponentField projMatrixField;
-                projMatrixField._basicType = GFX::PushConstantType::MAT4;
-                projMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
-                projMatrixField._readOnly = true;
-                projMatrixField._name = "Projection Matrix";
-                projMatrixField._data = &projMatrix;
-                
-                if (processBasicField(projMatrixField)) {
-                    sceneChanged = true;
-                }
-            }
+            sceneChanged = drawCamera(selectedCamera);
         } else if (hasSelections) {
             const F32 smallButtonWidth = 60.0f;
-            F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
+            const F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
             const vectorSTD<I64>& crtSelections = selections();
 
             static bool closed = false;
-            for (I64 nodeGUID : crtSelections) {
+            for (const I64 nodeGUID : crtSelections) {
                 SceneGraphNode* sgnNode = node(nodeGUID);
                 if (sgnNode != nullptr) {
                     bool enabled = sgnNode->hasFlag(SceneGraphNode::Flags::ACTIVE);
@@ -196,6 +211,84 @@ namespace Divide {
                                 }
                                 ImGui::Spacing();
                             }
+
+                            // Show light/shadow specific options (if any)
+                            const U32 componentMask = sgnNode->componentMask();
+                            Light* light = nullptr;
+                            if (BitCompare(componentMask, ComponentType::SPOT_LIGHT)) {
+                                light = sgnNode->get<SpotLightComponent>();
+                            } else if (BitCompare(componentMask, ComponentType::POINT_LIGHT)) {
+                                light = sgnNode->get<PointLightComponent>();
+                            } else if (BitCompare(componentMask, ComponentType::DIRECTIONAL_LIGHT)) {
+                                light = sgnNode->get<DirectionalLightComponent>();
+                            }
+                            if (light != nullptr) {
+                                bool isShadowCaster = light->castsShadows();
+                                if (ImGui::Checkbox("Is Shadow Caster", &isShadowCaster)) {
+                                    light->castsShadows(isShadowCaster);
+                                    sceneChanged = true;
+                                }
+                                if (isShadowCaster) {
+                                    if (ImGui::CollapsingHeader("Light Shadow Settings", ImGuiTreeNodeFlags_OpenOnArrow)) {
+                                        ImGui::Text(Util::StringFormat("Shadow Offset: %d", to_U32(light->getShadowOffset())).c_str());
+
+                                        switch (light->getLightType()) {
+                                            case LightType::POINT: {
+                                                PointLightComponent* pointLight = static_cast<PointLightComponent*>(light);
+                                                ACKNOWLEDGE_UNUSED(pointLight);
+                                            } break;
+
+                                            case LightType::SPOT: {
+                                                SpotLightComponent* spotLight = static_cast<SpotLightComponent*>(light);
+                                                ACKNOWLEDGE_UNUSED(spotLight);
+                                            } break;
+
+                                            case LightType::DIRECTIONAL: {
+                                                DirectionalLightComponent* dirLight = static_cast<DirectionalLightComponent*>(light);
+                                                for (U8 i = 0; i < dirLight->csmSplitCount(); ++i) {
+                                                    Camera* shadowCamera = dirLight->shadowCameras()[i];
+                                                    if (drawCamera(shadowCamera)) {
+                                                        sceneChanged = true;
+                                                    }
+                                                }
+                                            } break;
+
+                                            default: {
+                                                DIVIDE_UNEXPECTED_CALL();
+                                            } break;
+                                        }
+                                    }
+                                }
+
+                                if (ImGui::CollapsingHeader("Scene Shadow Settings", ImGuiTreeNodeFlags_OpenOnArrow)) {
+                                    SceneManager* sceneManager = context().kernel().sceneManager();
+                                    SceneState& activeSceneState = sceneManager->getActiveScene().state();
+                                    F32 bleedBias = activeSceneState.lightBleedBias();
+                                    if (ImGui::SliderFloat("Light bleed bias", &bleedBias, 0.0f, 1.0f)) {
+                                        activeSceneState.lightBleedBias(bleedBias);
+                                        sceneChanged = true;
+                                    }
+
+                                    F32 shadowVariance = activeSceneState.minShadowVariance();
+                                    if (ImGui::SliderFloat("Min shadow variance", &shadowVariance, 0.0f, 1.0f)) {
+                                        activeSceneState.minShadowVariance(shadowVariance);
+                                        sceneChanged = true;
+                                    }
+
+                                    const U16 min = 1u, max = 1000u;
+                                    U16 shadowFadeDistance = activeSceneState.shadowFadeDistance();
+                                    if (ImGui::SliderScalar("Shadow fade distance", ImGuiDataType_U16, &shadowFadeDistance, &min, &max)) {
+                                        activeSceneState.shadowFadeDistance(shadowFadeDistance);
+                                        sceneChanged = true;
+                                    } 
+                                    
+                                    U16 shadowMaxDistance = activeSceneState.shadowDistance();
+                                    if (ImGui::SliderScalar("Shadow max distance", ImGuiDataType_U16, &shadowMaxDistance, &min, &max)) {
+                                        activeSceneState.shadowDistance(shadowMaxDistance);
+                                        sceneChanged = true;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -204,7 +297,7 @@ namespace Divide {
 
         if (hasSelections) {
             const F32 buttonWidth = 80.0f;
-            F32 xOffset = ImGui::GetWindowSize().x - buttonWidth - 20.0f;
+            const F32 xOffset = ImGui::GetWindowSize().x - buttonWidth - 20.0f;
             ImGui::NewLine();
             ImGui::Separator();
             ImGui::NewLine();
@@ -258,15 +351,15 @@ namespace Divide {
     }
     
     vectorSTD<I64> PropertyWindow::selections() const {
-        const SceneManager& sceneManager = context().kernel().sceneManager();
-        const Scene& activeScene = sceneManager.getActiveScene();
+        const SceneManager* sceneManager = context().kernel().sceneManager();
+        const Scene& activeScene = sceneManager->getActiveScene();
 
         return activeScene.getCurrentSelection();
     }
     
     SceneGraphNode* PropertyWindow::node(I64 guid) const {
-        const SceneManager& sceneManager = context().kernel().sceneManager();
-        const Scene& activeScene = sceneManager.getActiveScene();
+        const SceneManager* sceneManager = context().kernel().sceneManager();
+        const Scene& activeScene = sceneManager->getActiveScene();
 
         return activeScene.sceneGraph().findNode(guid);
     }

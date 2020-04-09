@@ -101,7 +101,7 @@ class Scene : public Resource, public PlatformContextComponent {
     static bool onShutdown();
 
    public:
-    explicit Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name);
+    explicit Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name);
     virtual ~Scene();
 
     /**Begin scene logic loop*/
@@ -169,8 +169,8 @@ class Scene : public Resource, public PlatformContextComponent {
     inline AI::AIManager& aiManager() noexcept { return *_aiManager; }
     inline const AI::AIManager& aiManager() const noexcept { return *_aiManager; }
 
-    inline ResourceCache& resourceCache() noexcept { return _resCache; }
-    inline const ResourceCache& resourceCache() const noexcept { return _resCache; }
+    inline ResourceCache* resourceCache() noexcept { return _resCache; }
+    inline const ResourceCache* resourceCache() const noexcept { return _resCache; }
 
     Camera* playerCamera() const;
     Camera* playerCamera(U8 index) const;
@@ -271,52 +271,53 @@ class Scene : public Resource, public PlatformContextComponent {
    protected:
        /// Global info
        SceneManager& _parent;
-       ResourceCache& _resCache;
-       ParamHandler&  _paramHandler;
-       SceneGraph*    _sceneGraph;
-       AI::AIManager* _aiManager;
-       SceneGUIElements* _GUI;
+       ParamHandler& _paramHandler;
 
-       SceneGraphNode* _sun;
+       ResourceCache* _resCache = nullptr;
+       SceneGraph*    _sceneGraph = nullptr;
+       AI::AIManager* _aiManager = nullptr;
+       SceneGUIElements* _GUI = nullptr;
+
+       SceneGraphNode* _sun = nullptr;
 
        vectorEASTL<Player*> _scenePlayers;
-       U64 _sceneTimerUS;
+       U64 _sceneTimerUS = 0ULL;
        vectorSTD<D64> _taskTimers;
        vectorSTD<D64> _guiTimersMS;
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
        std::stack<XML::SceneNode> _xmlSceneGraph;
 
-       F32 _LRSpeedFactor;
+       F32 _LRSpeedFactor = 1.0f;
        /// Current selection
        hashMap<PlayerIndex, vectorSTD<I64>> _currentSelection;
        hashMap<PlayerIndex, I64> _currentHoverTarget;
        hashMap<PlayerIndex, DragSelectData> _dragSelectData;
 
-       SceneGraphNode* _currentSky;
+       SceneGraphNode* _currentSky = nullptr;
        hashMap<PlayerIndex, SceneGraphNode*> _flashLight;
        hashMap<PlayerIndex, U32> _cameraUpdateListeners;
        /// Scene::load must be called by every scene. Add a load flag to make sure!
-       bool _loadComplete;
+       bool _loadComplete = false;
        /// Schedule a scene graph parse with the physics engine to recreate/recheck
        /// the collision meshes used by each node
-       bool _cookCollisionMeshesScheduled;
+       bool _cookCollisionMeshesScheduled = false;
 
    private:
        SharedMutex _tasksMutex;
        vectorEASTL<Task*> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
-       SceneState* _sceneState;
+       SceneState* _sceneState = nullptr;
        vectorSTD<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
        vectorSTD<SGNRayResult> _sceneSelectionCandidates;
 
    protected:
-       LightPool* _lightPool;
-       SceneInput* _input;
-       PhysicsSceneInterface* _pxScene;
-       SceneEnvironmentProbePool* _envProbePool;
+       LightPool* _lightPool = nullptr;
+       SceneInput* _input = nullptr;
+       PhysicsSceneInterface* _pxScene = nullptr;
+       SceneEnvironmentProbePool* _envProbePool = nullptr;
 
-       IMPrimitive* _linesPrimitive;
+       IMPrimitive* _linesPrimitive = nullptr;
        vectorEASTL<IMPrimitive*> _octreePrimitives;
        vectorEASTL<BoundingBox> _octreeBoundingBoxes;
 

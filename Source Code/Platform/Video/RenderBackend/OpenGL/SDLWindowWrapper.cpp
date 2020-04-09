@@ -465,7 +465,7 @@ void GL_API::onThreadCreated(const std::thread::id& threadID) {
     });
     
     // Enable OpenGL debug callbacks for this context as well
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         // Debug callback in a separate thread requires a flag to distinguish it

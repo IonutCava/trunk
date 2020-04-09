@@ -90,33 +90,31 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     defaultReflectionTexture(nullptr, 0);
     defaultRefractionTexture(nullptr, 0);
 
-    // Do not cull the sky
-    if (_parentSGN.getNode<Object3D>().type() == SceneNodeType::TYPE_SKY) {
-        _cullFlagValue = -1.0f;
-    }
-
-    const Object3D& node = parentSGN.getNode<Object3D>();
-
-    // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock = {};
     PipelineDescriptor pipelineDescriptor = {};
-
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
     pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-    _primitivePipeline[0] = _context.newPipeline(pipelineDescriptor);
 
-    if (node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
-        RenderStateBlock primitiveStateBlockNoZRead = {};
-        primitiveStateBlockNoZRead.depthTestEnabled(false);
-        pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
-        _primitivePipeline[1] = _context.newPipeline(pipelineDescriptor);
+    const SceneNode& node = _parentSGN.getNode();
+    if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
+        // Prepare it for rendering lines
+        // Do not cull the sky
+        if (static_cast<const Object3D&>(node).type() == SceneNodeType::TYPE_SKY) {
+            _cullFlagValue = -1.0f;
+        }
+        if (static_cast<const Object3D&>(node).getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+            RenderStateBlock primitiveStateBlockNoZRead = {};
+            primitiveStateBlockNoZRead.depthTestEnabled(false);
+            pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
+            _primitivePipeline[1] = _context.newPipeline(pipelineDescriptor);
+        }
+
+        _primitivePipeline[0] = _context.newPipeline(pipelineDescriptor);
     }
-    
-    if (Config::Build::ENABLE_EDITOR) {
-        // Prepare it for line rendering
-        RenderStateBlock stateBlock(RenderStateBlock::get(_context.getDefaultStateBlock(true)));
 
-        pipelineDescriptor._stateHash = stateBlock.getHash();
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
+        // Prepare it for line rendering
+        pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
         _primitivePipeline[2] = _context.newPipeline(pipelineDescriptor);
     }
 }
@@ -136,7 +134,7 @@ RenderingComponent::~RenderingComponent()
         _context.destroyIMP(_skeletonPrimitive);
     }
 
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr (Config::Build::ENABLE_EDITOR) {
         if (_axisGizmo) {
             _context.destroyIMP(_axisGizmo);
         }
@@ -219,7 +217,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, R
     if (_materialInstanceCache != nullptr) {
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _materialInstanceCache->getRenderStateBlock(stagePass);
-        pipelineDescriptor._shaderProgramHandle = _materialInstanceCache->getProgramID(stagePass);
+        pipelineDescriptor._shaderProgramHandle = _materialInstanceCache->getProgramGUID(stagePass);
 
         pkg.addPipelineCommand(GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
@@ -240,12 +238,15 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         onMaterialChanged();
     }
 
-    const Object3D& node = _parentSGN.getNode<Object3D>();
-    if (node.getObjectType()._value == ObjectType::SUBMESH) {
-        _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
+    const SceneNode& node = _parentSGN.getNode();
+    if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
+        const Object3D& node3D = static_cast<const Object3D&>(node);
+        if (node3D.getObjectType()._value == ObjectType::SUBMESH) {
+            _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
 
-        if (node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
-            _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::SKELETON_RENDERED);
+            if (node3D.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+                _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::SKELETON_RENDERED);
+            }
         }
     }
 
@@ -397,11 +398,11 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
 
     const SceneNode& node = _parentSGN.getNode();
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         switch(sceneRenderState.gizmoState()){
             case SceneRenderState::GizmoState::ALL_GIZMO: {
                 if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
-                    if (_parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH) {
+                    if (static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH) {
                         drawDebugAxis();
                         bufferInOut.add(_axisGizmo->toCommandBuffer());
                     }
@@ -426,7 +427,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
     const bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
     const bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
-    const bool isSubMesh = _parentSGN.getNode<Object3D>().getObjectType()._value == ObjectType::SUBMESH;
+    const bool isSubMesh = static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH;
 
     bool setGrandparentFlag = !grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
     if (renderBBox) {
@@ -648,7 +649,7 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
                                                                        : RenderTargetUsage::REFLECTION_CUBE, 
                                reflectionIndex);
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         const RenderTarget& target = _context.renderTargetPool().renderTarget(reflectRTID);
 
         DebugView* debugView = s_debugViews[0][reflectionIndex];
@@ -725,7 +726,7 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
 
     RenderTargetID refractRTID(RenderTargetUsage::REFRACTION_PLANAR, refractionIndex);
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         const RenderTarget& target = _context.renderTargetPool().renderTarget(refractRTID);
 
         DebugView* debugView = s_debugViews[1][refractionIndex];

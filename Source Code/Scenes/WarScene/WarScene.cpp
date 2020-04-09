@@ -51,7 +51,7 @@ namespace {
     U64 elapsedGameTimeUs = 0;
 };
 
-WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)
+WarScene::WarScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)
    : Scene(context, cache, parent, name),
     _flag{ nullptr, nullptr },
     _particleEmitter(nullptr),
@@ -99,15 +99,7 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         const Camera& cam = _scenePlayers.front()->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
-        F32 fps = 0.f;
-        F32 frameTime = 0.f;
-        Time::ApplicationTimer::instance().getFrameRateAndTime(fps, frameTime);
 
-        _GUI->modifyText("fpsDisplay",
-                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f. FrameIndex : %d",
-                                            fps,
-                                            frameTime,
-                                            _context.gfx().getFrameCount()), false);
         _GUI->modifyText("RenderBinCount",
             Util::StringFormat("Number of items in Render Bin: %d.",
                                _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
@@ -844,12 +836,6 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     btn->setEventCallback(GUIButton::Event::MouseClick,
         [this](I64 btnID) { toggleTerrainMode(); });
 
-
-    _GUI->addText("fpsDisplay",  // Unique ID
-                  pixelPosition(60, 63),  // Position
-        Font::DIVIDE_DEFAULT,  // Font
-                  UColour4(0, 50, 255, 255), // Colour
-        Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
     _GUI->addText("RenderBinCount",
                   pixelPosition(60, 83),
         Font::DIVIDE_DEFAULT,

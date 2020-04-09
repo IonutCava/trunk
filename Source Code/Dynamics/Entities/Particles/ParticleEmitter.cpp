@@ -34,7 +34,7 @@ namespace {
     constexpr U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
 
-ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
+ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_PARTICLE_EMITTER),
       _particleGPUBuffers{nullptr},
       _context(context),
@@ -44,7 +44,7 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache,
       _enabled(false),
       _particleTexture(nullptr),
       _particleShader(nullptr),
-      _particleDepthShader(nullptr)
+      _particleDepthShader{nullptr, nullptr}
 {
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
@@ -146,16 +146,30 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 
     ResourceDescriptor particleDepthShaderDescriptor("particles_Shadow");
     particleDepthShaderDescriptor.propertyDescriptor(shaderDescriptor);
-    _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
+    _particleDepthShader[0] = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
+
+
+    fragModule._variant = "Shadow.VSM";
+
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+    ResourceDescriptor particleDepthVSMShaderDescriptor("particles_ShadowVSM");
+    particleDepthVSMShaderDescriptor.propertyDescriptor(shaderDescriptor);
+    _particleDepthShader[1] = CreateResource<ShaderProgram>(_parentCache, particleDepthVSMShaderDescriptor);
 
     if (_particleShader != nullptr) {
         Material_ptr mat = CreateResource<Material>(_parentCache, ResourceDescriptor("Material_particles"));
 
-        mat->setShaderProgram(_particleShader);
-        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW);
-        mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::MAIN_PASS);
-        mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::OIT_PASS);
-        mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderPassType::PRE_PASS);
+        mat->setShaderProgram(_particleShader, RenderStage::COUNT, RenderPassType::COUNT, 0u);
+        mat->setShaderProgram(_particleDepthShader[0], RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+        mat->setShaderProgram(_particleDepthShader[0], RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
+        mat->setShaderProgram(_particleDepthShader[1], RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
+
+        mat->setRenderStateBlock(_particleStateBlockHash, RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
+        mat->setRenderStateBlock(_particleStateBlockHash, RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
+        mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+
         setMaterialTpl(mat);
 
         return true;
@@ -328,7 +342,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
         cmd._cmd.primCount = to_U32(_particles->_renderingPositions.size());
         cmd._sourceBuffer = getDataBuffer(renderStagePass._stage, 0).handle();
-        cmd._bufferIndex = renderStagePass.index();
+        cmd._bufferIndex = renderStagePass.baseIndex();
         pkg.drawCommand(0, 0, cmd);
 
         prepareForRender(renderStagePass, camera);

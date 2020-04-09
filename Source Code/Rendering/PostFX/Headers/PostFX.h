@@ -71,7 +71,7 @@ private:
     };
 
 public:
-    explicit PostFX(PlatformContext& context, ResourceCache& cache);
+    explicit PostFX(PlatformContext& context, ResourceCache* cache);
     ~PostFX();
 
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut);

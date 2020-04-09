@@ -11,8 +11,8 @@
 
 namespace Divide {
 
-DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
-    : PreRenderOperator(context, parent, cache, FilterType::FILTER_DEPTH_OF_FIELD),
+DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
+    : PreRenderOperator(context, parent, FilterType::FILTER_DEPTH_OF_FIELD),
     _focalDepth(0.5f),
     _autoFocus(true)
 {

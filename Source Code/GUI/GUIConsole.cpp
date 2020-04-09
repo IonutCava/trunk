@@ -21,7 +21,7 @@ namespace {
     constexpr U32 _CEGUI_MAX_CONSOLE_ENTRIES = Config::Build::IS_DEBUG_BUILD ? 128 : 512;
 };
 
-GUIConsole::GUIConsole(GUI& parent, PlatformContext& context, ResourceCache& cache)
+GUIConsole::GUIConsole(GUI& parent, PlatformContext& context, ResourceCache* cache)
     : PlatformContextComponent(context),
       _parent(parent),
       _init(false),

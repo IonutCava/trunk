@@ -87,7 +87,7 @@ bool SceneRenderState::isEnabledOption(RenderOptions option) const {
 }
 
 void SceneRenderState::enableOption(RenderOptions option) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         DIVIDE_ASSERT(option != RenderOptions::PLAY_ANIMATIONS,
                       "SceneRenderState::enableOption error: can't update animation state directly!");
 
@@ -104,7 +104,7 @@ void SceneRenderState::enableOption(RenderOptions option) {
 }
 
 void SceneRenderState::disableOption(RenderOptions option) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         DIVIDE_ASSERT(option != RenderOptions::PLAY_ANIMATIONS,
                       "SceneRenderState::disableOption error: can't update animation state directly!");
 

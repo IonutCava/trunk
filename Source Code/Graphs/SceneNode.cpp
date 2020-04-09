@@ -27,12 +27,12 @@ namespace {
     }
 };
 
-SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const SceneNodeType& type)
+SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const SceneNodeType& type)
     : SceneNode(parentCache, descriptorHash, name, name, "", type)
 {
 }
 
-SceneNode::SceneNode(ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type)
+SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name, resourceName, resourceLocation),
      _parentCache(parentCache),
      _materialTemplate(nullptr),

@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class Camera;
 class Material;
 class SceneGraphNode;
 class TransformComponent;
@@ -51,6 +52,8 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
 
         const char* name() const override;
     protected:
+
+     bool drawCamera(Camera* cam);
 
      vectorSTD<I64> selections() const;
      SceneGraphNode* node(I64 guid) const;

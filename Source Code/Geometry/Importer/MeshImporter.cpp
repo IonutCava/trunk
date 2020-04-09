@@ -175,7 +175,7 @@ namespace Import {
         return true;
     }
 };
-    bool MeshImporter::loadMeshDataFromFile(PlatformContext& context, ResourceCache& cache, Import::ImportData& dataOut) {
+    bool MeshImporter::loadMeshDataFromFile(PlatformContext& context, ResourceCache* cache, Import::ImportData& dataOut) {
         Time::ProfileTimer importTimer = {};
         importTimer.start();
 
@@ -204,7 +204,7 @@ namespace Import {
         return success;
     }
 
-    bool MeshImporter::loadMesh(Mesh_ptr mesh, PlatformContext& context, ResourceCache& cache, const Import::ImportData& dataIn) {
+    bool MeshImporter::loadMesh(Mesh_ptr mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn) {
         Time::ProfileTimer importTimer;
         importTimer.start();
 
@@ -287,7 +287,7 @@ namespace Import {
     }
 
     /// Load the material for the current SubMesh
-    Material_ptr MeshImporter::loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned) {
+    Material_ptr MeshImporter::loadSubMeshMaterial(PlatformContext& context, ResourceCache* cache, const Import::MaterialData& importData, bool skinned) {
         ResourceDescriptor materialDesc(importData.name());
         if (skinned) {
             materialDesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));

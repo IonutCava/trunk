@@ -62,10 +62,10 @@ class Object3D : public SceneNode {
     };
 
 
-    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, ObjectType type, U32 flagMask = 0);
-    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, ObjectType type, ObjectFlag flag);
-    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag);
-    explicit Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
+    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectType type, U32 flagMask = 0);
+    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectType type, ObjectFlag flag);
+    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag);
+    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
 
     virtual ~Object3D();
 

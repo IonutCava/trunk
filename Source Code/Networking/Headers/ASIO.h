@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DIVIDE_BOOST_ASIO_TPL_H_
 
 #include "WorldPacket.h"
+#include <boost/asio/io_service.hpp>
 
 namespace Divide {
 

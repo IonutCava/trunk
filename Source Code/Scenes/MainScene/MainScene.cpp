@@ -27,7 +27,7 @@ namespace {
     Task* g_boxMoveTaskID = nullptr;
 };
 
-MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)
+MainScene::MainScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)
    : Scene(context, cache, parent, name),
     _beep(nullptr),
     _freeflyCamera(true/*false*/),
@@ -104,10 +104,6 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
     constexpr D64 TimeDisplay = Time::SecondsToMilliseconds(1.0);
 
     if (_guiTimersMS[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay",
-                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
-                                            Time::ApplicationTimer::instance().getFps(),
-                                            Time::ApplicationTimer::instance().getFrameTime()), false);
         _GUI->modifyText("underwater",
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
                                              state().playerState(0).cameraUnderwater() ? "true" : "false",
@@ -315,12 +311,6 @@ void MainScene::test(const Task& parentTask, std::any a, CallbackParam b) {
 }
 
 void MainScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
-    _GUI->addText("fpsDisplay",  // Unique ID
-        pixelPosition(60, 60),  // Position
-        Font::DIVIDE_DEFAULT,  // Font
-        vec3<F32>(0.0f, 0.2f, 1.0f),  // Colour
-        Util::StringFormat("FPS: %d", 0));  // Text and arguments
-
     _GUI->addText("timeDisplay", pixelPosition(60, 80), Font::DIVIDE_DEFAULT,
         UColour4(164, 64, 64, 255),
         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));

@@ -90,7 +90,7 @@ public:
 
     void setActiveScene(Scene* const scene);
 
-    bool init(PlatformContext& platformContext, ResourceCache& cache);
+    bool init(PlatformContext& platformContext, ResourceCache* cache);
     void destroy();
 
     inline U8 getActivePlayerCount() const { return _activePlayerCount; }

@@ -109,7 +109,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
         PROPERTY_R(StencilOperation, stencilPassOp, StencilOperation::KEEP);
         PROPERTY_R(ComparisonFunction, stencilFunc, ComparisonFunction::NEVER);
 
-        PROPERTY_R(CullMode, cullMode, CullMode::CW);
+        PROPERTY_R(CullMode, cullMode, CullMode::BACK);
         PROPERTY_R(FillMode, fillMode, FillMode::SOLID);
 
         PROPERTY_R(bool, frontFaceCCW, true);

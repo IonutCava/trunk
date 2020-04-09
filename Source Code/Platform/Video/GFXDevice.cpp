@@ -146,17 +146,17 @@ GFXDevice::GFXDevice(Kernel & parent)
 
     AttribFlags flags;
     flags.fill(true);
-    VertexBuffer::setAttribMasks(to_size(RenderStagePass::count()), flags);
+    VertexBuffer::setAttribMasks(to_size(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT)), flags);
 
     // Don't (currently) need these for shadow passes
     flags[to_base(AttribLocation::COLOR)] = false;
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        VertexBuffer::setAttribMask(RenderStagePass{ static_cast<RenderStage>(stage), RenderPassType::PRE_PASS }.index(), flags);
+        VertexBuffer::setAttribMask(RenderStagePass::baseIndex(static_cast<RenderStage>(stage), RenderPassType::PRE_PASS), flags);
     }
     flags[to_base(AttribLocation::NORMAL)] = false;
     flags[to_base(AttribLocation::TANGENT)] = false;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        VertexBuffer::setAttribMask(RenderStagePass{ RenderStage::SHADOW, static_cast<RenderPassType>(pass) }.index(), flags);
+        VertexBuffer::setAttribMask(RenderStagePass::baseIndex(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), flags);
     }
 }
 
@@ -197,7 +197,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
     if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
-        if (Config::ENABLE_GPU_VALIDATION) {
+        if_constexpr(Config::ENABLE_GPU_VALIDATION) {
             //_renderDocManager = 
             //   std::make_shared<RenderDocManager>(const_sysInfo()._windowHandle,
             //                                      ".\\RenderDoc\\renderdoc.dll",
@@ -233,7 +233,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         }
     }
 
-    ResourceCache& cache = parent().resourceCache();
+    ResourceCache* cache = parent().resourceCache();
     _rtPool = MemoryManager_NEW GFXRTPool(*this);
 
     // Quarter of a megabyte in size should work. I think.
@@ -348,7 +348,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     depthDescriptor.msaaSamples(0);
     prevDepthTex.propertyDescriptor(depthDescriptor);
     prevDepthTex.threaded(false);
-    _prevDepthBuffer = CreateResource<Texture>(parent().resourceCache(), prevDepthTex);
+    _prevDepthBuffer = CreateResource<Texture>(cache, prevDepthTex);
     assert(_prevDepthBuffer);
     const Texture::TextureLoadInfo info = {};
     _prevDepthBuffer->loadData(info, NULL, renderResolution);
@@ -391,7 +391,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         _rtPool->allocateRT(RenderTargetUsage::HI_Z_REFLECT, hizRTDesc);
     }
 
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         SamplerDescriptor editorSampler = {};
         editorSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
         editorSampler.magFilter(TextureFilter::LINEAR);
@@ -452,7 +452,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
             { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
-        if (Config::USE_COLOURED_WOIT) {
+        if_constexpr(Config::USE_COLOURED_WOIT) {
             const RTAttachment_ptr& screenAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
             externalAttachments.push_back(
                 { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) }
@@ -545,7 +545,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 }
 
 ErrorCode GFXDevice::postInitRenderingAPI() {
-    ResourceCache& cache = parent().resourceCache();
+    ResourceCache* cache = parent().resourceCache();
     {
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
@@ -962,7 +962,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
 
-    auto& passMgr = parent().renderPassManager();
+    RenderPassManager* passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
     params._camera = camera;
@@ -1036,7 +1036,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     // Set a 90 degree vertical FoV perspective projection
     camera->setProjection(1.0f, 180.0f, zPlanes);
 
-    auto& passMgr = parent().renderPassManager();
+    RenderPassManager* passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
     params._camera = camera;
@@ -1238,7 +1238,7 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         _rtPool->resizeTargets(RenderTargetUsage::HI_Z, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::OIT_MS, w, h);
-        if (Config::Build::ENABLE_EDITOR) {
+        if_constexpr(Config::Build::ENABLE_EDITOR) {
             _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
         }
 
@@ -1385,7 +1385,7 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 #pragma region Command buffers, occlusion culling, etc
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch) {
     OPTICK_EVENT();
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
 
         const I32 debugFrame = _context.config().debug.dumpCommandBuffersOnFrame;
@@ -1802,7 +1802,7 @@ void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffe
     constexpr I32 padding = 5;
 
     // Early out if we didn't request the preview
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
 
         GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
         beginDebugScopeCmd._scopeID = 1234567;
@@ -2156,7 +2156,7 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
 
 /// Render all of our immediate mode primitives. This isn't very optimised and most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut) {
-    if (Config::Build::ENABLE_EDITOR)
+    if_constexpr(Config::Build::ENABLE_EDITOR)
     {
         drawDebugFrustum(activeCamera.getViewMatrix(), bufferInOut);
 

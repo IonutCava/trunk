@@ -201,8 +201,10 @@ enum class CullMode : U8 {
     NONE = 0,
     /// Cull Back facing polygons
     CW,
+    BACK = CW,
     /// Cull Front facing polygons
     CCW,
+    FRONT = CCW,
     /// Cull All polygons
     ALL,
     /// Place all properties above this.

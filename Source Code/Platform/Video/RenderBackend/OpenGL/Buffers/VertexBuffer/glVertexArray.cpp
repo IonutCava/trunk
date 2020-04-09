@@ -303,21 +303,20 @@ bool glVertexArray::refresh() {
 void glVertexArray::upload() {
     Console::printfn("VAO HASHES: ");
 
+    constexpr size_t stageCount = to_size(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT));
+
     vectorEASTL<GLuint> vaos;
-    vaos.reserve(RenderStagePass::count());
-    std::array<AttribFlags, to_base(RenderStagePass::count())> attributesPerStage;
-    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
+    vaos.reserve(stageCount);
+    std::array<AttribFlags, stageCount> attributesPerStage;
+
+    for (size_t i = 0; i < stageCount; ++i) {
         const AttribFlags& stageMask = _attribMasks[i];
 
         AttribFlags& stageUsage = attributesPerStage[i];
         for (U8 j = 0; j < to_base(AttribLocation::COUNT); ++j) {
             stageUsage[j] = _useAttribute[j] && stageMask[j];
         }
-        if (RenderStagePass::index(RenderStage::SHADOW, RenderPassType::MAIN_PASS) == i) {
-            if (stageUsage[to_base(AttribLocation::NORMAL)]) {
-                DIVIDE_UNEXPECTED_CALL();
-            }
-        }
+
         size_t crtHash = 0;
         // Dirty on a VAO map cache miss
         if (!_VAOMap.getVAO(stageUsage, _vaoCaches[i], crtHash)) {
@@ -328,8 +327,9 @@ void glVertexArray::upload() {
                 uploadVBAttributes(crtVao);
             }
         }
-
-        Console::printfn("      %s : %zu (pass: %s)", TypeUtil::RenderStageToString(RenderStagePass::stage(i)), crtHash, TypeUtil::RenderPassTypeToString(RenderStagePass::pass(i)));
+        const RenderStage stage = static_cast<RenderStage>(i % to_base(RenderStage::COUNT));
+        const RenderPassType pass = static_cast<RenderPassType>(i / to_base(RenderStage::COUNT));
+        Console::printfn("      %s : %zu (pass: %s)", TypeUtil::RenderStageToString(stage), crtHash, TypeUtil::RenderPassTypeToString(pass));
     }
 
     _uploadQueued = false;
@@ -349,7 +349,7 @@ bool glVertexArray::createInternal() {
     _formatInternal = GLUtil::glDataFormat[to_U32(_format)];
     // Generate an "Index Buffer Object"
     glCreateBuffers(1, &_IBid);
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_BUFFER,
             _IBid,
             -1,

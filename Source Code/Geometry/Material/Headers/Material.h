@@ -64,6 +64,9 @@ constexpr F32 Specular_Milk = 0.277f;
 constexpr F32 Specular_Skin = 0.35f;
 constexpr F32 PHONG_REFLECTIVITY_THRESHOLD = 100.0f;
 
+/// Since most variants come from different light sources, this seems like a good idea (famous last words ...)
+constexpr size_t g_maxVariantsPerPass = 3;
+
 class Material : public CachedResource {
    public:
     /// ShaderData stores information needed by the shader code to properly shade objects
@@ -118,8 +121,8 @@ class Material : public CachedResource {
     };
 
    public:
-    explicit Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name);
-    ~Material();
+    explicit Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
+    ~Material() = default;
 
     static bool onStartup();
     static bool onShutdown();
@@ -153,19 +156,13 @@ class Material : public CachedResource {
     /// Set the desired bump mapping method.
     void setBumpMethod(const BumpMethod& newBumpMethod);
 
-    /// Add the specified shader to all of the available stage passes
-    void setShaderProgram(const ShaderProgram_ptr& shader);
-    /// Add the specified shader to the specified Stage Pass (stage and pass type)
-    void setShaderProgram(const ShaderProgram_ptr& shader, RenderStagePass renderStagePass);
-    /// Add the specified shader to the specified render stage (for all pass types)
-    void setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage);
-    /// Add the specified shader to the specified pass type (for all render stages)
-    void setShaderProgram(const ShaderProgram_ptr& shader, RenderPassType passType);
+    /// Add the specified shader to specific RenderStagePass parameters. Use "COUNT" or "0" for global options
+    /// e.g. a RenderPassType::COUNT will use the shader in the specified stage+variant combo but for all of the passes
+    void setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage, RenderPassType pass, U8 variant);
 
-    void setRenderStateBlock(size_t renderStateBlockHash, I32 variant = -1);
-    void setRenderStateBlock(size_t renderStateBlockHash, RenderStage renderStage, I32 variant = -1);
-    void setRenderStateBlock(size_t renderStateBlockHash, RenderPassType renderPassType, I32 variant = -1);
-    void setRenderStateBlock(size_t renderStateBlockHash, RenderStagePass renderStagePass, I32 variant = -1);
+    /// Add the specified renderStateBlockHash to specific RenderStagePass parameters. Use "COUNT" or "0" for global options
+    /// e.g. a RenderPassType::COUNT will use the block in the specified stage+variant combo but for all of the passes
+    void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant);
 
     void setParallaxFactor(F32 factor);
 
@@ -179,11 +176,9 @@ class Material : public CachedResource {
 
     size_t getRenderStateBlock(RenderStagePass renderStagePass);
 
-    I64 getProgramID(RenderStagePass renderStagePass) const;
+    I64 getProgramGUID(RenderStagePass renderStagePass) const;
 
     eastl::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const;
-
-    ShaderProgramInfo& getShaderInfo(RenderStagePass renderStagePass);
 
     const TextureOperation& getTextureOperation() const;
 
@@ -204,26 +199,20 @@ class Material : public CachedResource {
     bool isReflective() const;
     bool isRefractive() const;
 
-    // Checks if the shader needed for the current stage is already constructed.
-    // Returns false if the shader was already ready.
-    bool computeShader(RenderStagePass renderStagePass);
-
     bool canDraw(RenderStagePass renderStagePass);
-
-    void ignoreXMLData(const bool state);
-    bool ignoreXMLData() const;
 
     void saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
     void loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
-
-    void setBaseShaderData(const ShaderData& data);
-    const ShaderData& getBaseShaderData() const;
 
     // type == ShaderType::Count = add to all stages
     void addShaderDefine(ShaderType type, const Str128& define, bool addPrefix);
     const ModuleDefines& shaderDefines(ShaderType type) const;
 
    private:
+    /// Checks if the shader needed for the current stage is already constructed.
+    /// Returns false if the shader was already ready.
+    bool computeShader(RenderStagePass renderStagePass);
+
     void addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix);
 
     void updateTranslucency();
@@ -233,32 +222,36 @@ class Material : public CachedResource {
 
     void recomputeShaders();
     void setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
-                                  RenderStagePass renderStagePass,
+                                  const RenderStagePass& stage,
                                   const bool computeOnAdd);
 
     void setShaderProgramInternal(const ShaderProgram_ptr& shader,
-                                  RenderStagePass renderStagePass);
+                                  ShaderProgramInfo& shaderInfo,
+                                  RenderStage stage,
+                                  RenderPassType pass);
 
     ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass);
 
     const ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass) const;
 
-    size_t& defaultRenderState(RenderStagePass renderStagePass);
-    std::array<size_t, 3>& defaultRenderStates(RenderStagePass renderStagePass);
-
-    void waitForShader(const ShaderProgram_ptr& shader, RenderStagePass stagePass, const char* newShader);
-
     const char* getResourceTypeName() const override { return "Material"; }
+
+    PROPERTY_RW(bool, ignoreXMLData, false);
+    PROPERTY_RW(ShaderData, baseShaderData);
 
    private:
     GFXDevice& _context;
-    ResourceCache& _parentCache;
+    ResourceCache* _parentCache = nullptr;
 
     struct Properties {
-        ShadingMode _shadingMode = ShadingMode::COUNT;
-        TranslucencySource _translucencySource = TranslucencySource::COUNT;
+        ColourData _colourData;
         /// parallax/relief factor (higher value > more pronounced effect)
         F32  _parallaxFactor = 1.0f;
+        ShadingMode _shadingMode = ShadingMode::COUNT;
+        TranslucencySource _translucencySource = TranslucencySource::COUNT;
+        /// use the below map to define texture operation
+        TextureOperation _operation = TextureOperation::NONE;
+        BumpMethod _bumpMethod = BumpMethod::NONE;
         bool _doubleSided = false;
         bool _translucent = false;
         bool _translucencyDisabled = false;
@@ -268,28 +261,27 @@ class Material : public CachedResource {
         bool _isStatic = false;
         /// Use shaders that have bone transforms implemented
         bool _hardwareSkinning = false;
-        /// use the below map to define texture operation
-        TextureOperation _operation = TextureOperation::NONE;
-        BumpMethod _bumpMethod = BumpMethod::NONE;
-        ColourData _colourData;
     } _properties;
 
     bool _needsNewShader;
-    bool _ignoreXMLData;
-    std::array<ShaderProgramInfo, to_base(RenderStagePass::count())> _shaderInfo;
-    std::array<std::array<size_t, 3>,  to_base(RenderStagePass::count())> _defaultRenderStates;
+
+    using ShaderPerVariant = std::array<ShaderProgramInfo, g_maxVariantsPerPass>;
+    using ShaderVariantsPerPass = eastl::array<ShaderPerVariant, to_base(RenderPassType::COUNT)>;
+    using ShaderPassesPerStage = eastl::array<ShaderVariantsPerPass, to_base(RenderStage::COUNT)>;
+    ShaderPassesPerStage _shaderInfo;
+
+    using StatesPerVariant = std::array<size_t, g_maxVariantsPerPass>;
+    using StateVariantsPerPass = eastl::array<StatesPerVariant, to_base(RenderPassType::COUNT)>;
+    using StatePassesPerStage = eastl::array<StateVariantsPerPass, to_base(RenderStage::COUNT)>;
+    StatePassesPerStage _defaultRenderStates;
 
     /// use this map to add textures to the material
     mutable SharedMutex _textureLock;
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureUseForDepth;
-    ShaderData _baseShaderSources;
 
     I32 _textureKeyCache = -1;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines;
-
-    static SharedMutex s_shaderDBLock;
-    static hashMap<size_t, ShaderProgram_ptr> s_shaderDB;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);

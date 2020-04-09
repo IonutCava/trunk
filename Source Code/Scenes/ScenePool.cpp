@@ -70,7 +70,7 @@ void ScenePool::init() {
 }
 
 
-Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name, bool& foundInCache) {
+Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name, bool& foundInCache) {
     assert(!name.empty());
 
     foundInCache = false;

@@ -13,22 +13,22 @@
 
 namespace Divide {
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, ObjectType type, ObjectFlag flag)
+Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectType type, ObjectFlag flag)
     : Object3D(context, parentCache, descriptorHash, name, name, "", type, to_U32(flag))
 {
 }
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, ObjectType type, U32 flagMask)
+Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectType type, U32 flagMask)
     : Object3D(context, parentCache, descriptorHash, name, name, "", type, flagMask)
 {
 }
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
+Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
     : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, type, to_U32(flag))
 {
 }
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
+Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
     : SceneNode(parentCache, descriptorHash, name, resourceName, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
     _context(context),
     _geometryDirty(true),
@@ -145,7 +145,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         const U16 partitionID = _geometryPartitionIDs[0];
         GenericDrawCommand cmd;
         cmd._sourceBuffer = vb->handle();
-        cmd._bufferIndex = renderStagePass.index();
+        cmd._bufferIndex = renderStagePass.baseIndex();
         cmd._cmd.indexCount = to_U32(vb->getPartitionIndexCount(partitionID));
         cmd._cmd.firstIndex = to_U32(vb->getPartitionOffset(partitionID));
         cmd._cmd.primCount = sgn.instanceCount();

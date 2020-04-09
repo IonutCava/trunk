@@ -106,8 +106,6 @@ struct SceneNode {
     vectorSTD<SceneNode> children;
 };
 
-void loadScene(const Str256& scenePath, const Str128& sceneName, Scene* scene, const Configuration& config);
-
 void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene* const scene);
 void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config);
 

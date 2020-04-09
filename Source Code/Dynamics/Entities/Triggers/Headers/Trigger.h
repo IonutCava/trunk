@@ -42,7 +42,7 @@ class ImpostorSphere;
 /// When a unit touches the circle described by
 class Trigger : public SceneNode {
    public:
-    explicit Trigger(ResourceCache& parentCache, size_t descriptorHash, const Str128& name);
+    explicit Trigger(ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
     ~Trigger();
 
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;

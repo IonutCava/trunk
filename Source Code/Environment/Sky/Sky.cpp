@@ -13,7 +13,7 @@
 
 namespace Divide {
 
-Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, U32 diameter)
+Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, U32 diameter)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_SKY),
       _context(context),
       _enableSun(true),
@@ -30,18 +30,18 @@ Sky::Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, 
 
     // Generate a render state
     RenderStateBlock skyboxRenderState;
-    skyboxRenderState.setCullMode(CullMode::CW);
+    skyboxRenderState.setCullMode(CullMode::BACK);
     skyboxRenderState.setZFunc(ComparisonFunction::EQUAL);
     _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
 
-    skyboxRenderState.setCullMode(CullMode::CCW);
+    skyboxRenderState.setCullMode(CullMode::FRONT);
     _skyboxRenderStateHash = skyboxRenderState.getHash();
 
     skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
     skyboxRenderState.setColourWrites(false, false, false, false);
     _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
 
-    skyboxRenderState.setCullMode(CullMode::CW);
+    skyboxRenderState.setCullMode(CullMode::BACK);
     _skyboxRenderStateReflectedHashPrePass = skyboxRenderState.getHash();
 }
 
@@ -212,7 +212,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand cmd = {};
     cmd._sourceBuffer = _sky->getGeometryVB()->handle();
-    cmd._bufferIndex = renderStagePass.index();
+    cmd._bufferIndex = renderStagePass.baseIndex();
     cmd._cmd.indexCount = to_U32(_sky->getGeometryVB()->getIndexCount());
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 

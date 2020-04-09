@@ -16,57 +16,41 @@
 namespace Divide {
 
 namespace {
+    constexpr size_t g_maxParallelCullingRequests = 32u;
     constexpr U32 g_nodesPerCullingPartition = 32u;
+
     //Worst case scenario: one per each node
-    std::array<NodeListContainer, Config::MAX_VISIBLE_NODES> g_tempContainers = {};
-    std::array<std::atomic_bool, Config::MAX_VISIBLE_NODES> g_freeList;
-    std::atomic_bool g_freeListInitialized = false;
-    std::mutex g_tempContainersLock = {};
+    std::array<NodeListContainer, g_maxParallelCullingRequests> g_tempContainers = {};
+    std::array<std::atomic_bool, g_maxParallelCullingRequests> g_freeList;
 
     // This would be messy to return as a pair (std::reference_wrapper and the like)
     NodeListContainer& GetAvailableContainer(U32& idxOut) {
         idxOut = 0;
-        if (g_freeListInitialized.load()) {
-            while(true) {
-                bool expected = true;
-                if (g_freeList[idxOut].compare_exchange_weak(expected, false)) {
-                    return g_tempContainers[idxOut];
-                }
-                (++idxOut) %= Config::MAX_VISIBLE_NODES;
-                if (Config::Build::IS_DEBUG_BUILD && idxOut == 0) {
-                    DIVIDE_ASSERT(false, "RenderPassCuller::GetAvailableContainer looped! Please resize container array");
-                }
+        while(true) {
+            bool expected = true;
+            if (g_freeList[idxOut].compare_exchange_weak(expected, false)) {
+                return g_tempContainers[idxOut];
             }
-        } else {
-            UniqueLock<Mutex> w_lock(g_tempContainersLock);
-            // Check again after lock
-            if (!g_freeListInitialized.load()) {
-                for (auto& x : g_freeList) {
-                    std::atomic_init(&x, true);
-                }
-                g_freeListInitialized = true;
-                g_freeList[0] = false;
-                g_freeListInitialized.store(true);
-            }
-            return GetAvailableContainer(idxOut);
+            (++idxOut) %= g_maxParallelCullingRequests;
+            DIVIDE_ASSERT(idxOut != 0, "RenderPassCuller::GetAvailableContainer looped! Please resize container array");
         }
     };
 
     void FreeContainer(NodeListContainer& container, const U32 idx) {
-        assert(!g_freeList[idx].load());
+        DIVIDE_ASSERT(!g_freeList[idx].load(), "RenderPassCuller::FreeContainer received an invalid idx!");
         // Don't use clear(). Keep memory allocated
         g_tempContainers[idx].resize(0); 
         g_freeList[idx].store(true);
     }
 
-    FORCE_INLINE bool isTransformNode(SceneNodeType nodeType, ObjectType objType) noexcept {
+    inline bool isTransformNode(SceneNodeType nodeType, ObjectType objType) noexcept {
         return nodeType == SceneNodeType::TYPE_EMPTY ||
                nodeType == SceneNodeType::TYPE_TRANSFORM ||
                objType._value == ObjectType::MESH;
     }
 
     // Return true if the node type is capable of generating draw commands
-    FORCE_INLINE bool generatesDrawCommands(SceneNodeType nodeType, ObjectType objType, bool &isTransformNodeOut) {
+    inline bool generatesDrawCommands(SceneNodeType nodeType, ObjectType objType, bool &isTransformNodeOut) {
         if (nodeType == SceneNodeType::TYPE_ROOT || nodeType == SceneNodeType::TYPE_TRIGGER) {
             isTransformNodeOut = false;
             return false;
@@ -90,7 +74,7 @@ namespace {
         return !rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
     }
 
-    FORCE_INLINE bool shouldCullNode(RenderStage stage, const SceneGraphNode& node, bool& isTransformNodeOut) {
+    inline bool shouldCullNode(RenderStage stage, const SceneGraphNode& node, bool& isTransformNodeOut) {
         const SceneNode& sceneNode = node.getNode();
         const SceneNodeType snType = sceneNode.type();
 
@@ -111,6 +95,17 @@ namespace {
         return true;
     }
 };
+
+bool RenderPassCuller::onStartup() {
+    for (auto& x : g_freeList) {
+        std::atomic_init(&x, true);
+    }
+    return true;
+}
+
+bool RenderPassCuller::onShutdown() {
+    return true;
+}
 
 void RenderPassCuller::clear() noexcept {
     for (VisibleNodeList& cache : _visibleNodes) {
@@ -136,7 +131,6 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         nodeParams._cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(params._camera->getZPlanes().y));
         nodeParams._minLoD = params._minLoD;
         nodeParams._minExtents = params._minExtents;
-        nodeParams._threaded = params._threaded;
         nodeParams._stage = stage;
 
         // Snapshot current child list. We shouldn't be modifying child list mid-frame anyway, but it's worth it to be careful!
@@ -150,8 +144,9 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         ParallelForDescriptor descriptor = {};
         descriptor._iterCount = to_U32(rootChildren.size());
         descriptor._partitionSize = g_nodesPerCullingPartition;
-        descriptor._priority = nodeParams._threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+        descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
+
         parallel_for(*params._context,
                      [this, &rootChildren, &nodeParams, &tempContainer](const Task* parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
@@ -218,7 +213,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
                 ParallelForDescriptor descriptor = {};
                 descriptor._iterCount = to_U32(children.size());
                 descriptor._partitionSize = g_nodesPerCullingPartition;
-                descriptor._priority = params._threaded && recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+                descriptor._priority = recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
                 descriptor._useCurrentThread = true;
 
                 parallel_for(currentNode.context(),

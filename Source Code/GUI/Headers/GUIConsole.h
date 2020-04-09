@@ -54,7 +54,7 @@ class GUIConsoleCommandParser;
 /// GUIConsole implementation, CEGUI based, as in the practical tutorial series
 class GUIConsole : public PlatformContextComponent {
    public:
-    explicit GUIConsole(GUI& parent, PlatformContext& context, ResourceCache& cache);
+    explicit GUIConsole(GUI& parent, PlatformContext& context, ResourceCache* cache);
     ~GUIConsole();
 
     /// Hide or show the console

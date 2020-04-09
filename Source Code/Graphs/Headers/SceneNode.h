@@ -102,8 +102,8 @@ class SceneNode : public CachedResource {
     friend class Attorney::SceneNodeNetworkComponent;
 
   public:
-    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const SceneNodeType& type = SceneNodeType::TYPE_EMPTY);
-    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
+    explicit SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const SceneNodeType& type = SceneNodeType::TYPE_EMPTY);
+    explicit SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
 
     /// Perform any pre-draw operations PRE-command build
@@ -144,8 +144,8 @@ class SceneNode : public CachedResource {
 
     virtual const char* getTypeName() const;
 
-    inline ResourceCache& parentResourceCache() { return _parentCache; }
-    inline const ResourceCache& parentResourceCache() const { return _parentCache; }
+    inline ResourceCache* parentResourceCache() { return _parentCache; }
+    inline const ResourceCache* parentResourceCache() const { return _parentCache; }
 
     inline const BoundingBox& getBounds() const { return _boundingBox; }
 
@@ -181,7 +181,7 @@ class SceneNode : public CachedResource {
    protected:
     EditorComponent _editorComponent;
 
-    ResourceCache& _parentCache;
+    ResourceCache* _parentCache = nullptr;
     /// The various states needed for rendering
     SceneNodeRenderState _renderState;
 

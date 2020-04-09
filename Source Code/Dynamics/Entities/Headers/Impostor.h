@@ -40,14 +40,14 @@ namespace Divide {
 /// Renders a sphere at the parent node's position using the desired radius;
 class ImpostorSphere : public Sphere3D {
    public:
-    ImpostorSphere(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, F32 radius = 1.0f);
+    ImpostorSphere(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, F32 radius = 1.0f);
     ~ImpostorSphere();
 };
 
 /// Renders a box at the parent node's position using the desired radius;
 class ImpostorBox : public Box3D {
    public:
-    ImpostorBox(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name, const vec3<F32>& size = vec3<F32>());
+    ImpostorBox(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const vec3<F32>& size = vec3<F32>());
     ~ImpostorBox();
 };
 };  // namespace Divide

@@ -41,7 +41,7 @@ class ShaderProgram;
 
 class BloomPreRenderOperator : public PreRenderOperator {
    public:
-    BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
+    BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~BloomPreRenderOperator();
 
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;

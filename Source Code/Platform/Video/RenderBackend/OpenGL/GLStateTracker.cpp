@@ -12,7 +12,7 @@ namespace Divide {
     
 namespace {
 
-    FORCE_INLINE GLint getBufferTargetIndex(GLenum target) {
+    inline GLint getBufferTargetIndex(GLenum target) {
         // Select the appropriate index in the array based on the buffer target
         switch (target) {
             case GL_TEXTURE_BUFFER: return 0;
@@ -342,6 +342,7 @@ bool GLStateTracker::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint I
         case RenderTarget::RenderTargetUsage::RT_WRITE_ONLY: {
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ID);
         } break;
+        default: DIVIDE_UNEXPECTED_CALL(); break;
     };
 
     // Remember the new binding state for future reference

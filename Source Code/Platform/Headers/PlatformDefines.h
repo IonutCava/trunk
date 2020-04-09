@@ -71,10 +71,12 @@ do {                                                \
     TYPEDEF_SMART_POINTERS_FOR_TYPE(T);
 
 
+#if !defined(if_constexpr)
 #if !defined(CPP_17_SUPPORT)
 #define if_constexpr if
 #else
 #define if_constexpr if constexpr
+#endif
 #endif
 
 #define ALIAS_TEMPLATE_FUNCTION(highLevelF, lowLevelF) \
@@ -616,20 +618,22 @@ inline TO safe_static_cast(D64 from)
     return static_cast<TO>(from);
 } 
 
-
-/// Performes extra asserts steps (logging, message boxes, etc). 
-/// Returns true if the assert should be processed.
-bool preAssert(const bool expression, const char* failMessage);
+extern void DIVIDE_ASSERT_MSG_BOX(const char* failMessage);
 
 /// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
 FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage = "UNEXPECTED CALL") {
-    if (!Config::Build::IS_RELEASE_BUILD) {
-        if (preAssert(expression, failMessage)) {
-            assert(expression && failMessage);
+    if_constexpr(!Config::Build::IS_RELEASE_BUILD) {
+        if (!expression) {
+            DIVIDE_ASSERT_MSG_BOX(failMessage);
+
+            if_constexpr (!Config::Assert::CONTINUE_ON_ASSERT) {
+                assert(expression && failMessage);
+            }
         }
+    } else {
+        ACKNOWLEDGE_UNUSED(expression);
+        ACKNOWLEDGE_UNUSED(failMessage);
     }
-      
-    ACKNOWLEDGE_UNUSED(failMessage);
 }
 
 FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED CALL") {

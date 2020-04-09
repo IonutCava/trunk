@@ -91,7 +91,7 @@ public:
                 Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
 
                 /// ...aquire the resource's loader and get our resource as the loader creates it
-                ptr = eastl::static_pointer_cast<T>(ImplResourceLoader<T>(*this, _context, descriptor, loadingHash)());
+                ptr = eastl::static_pointer_cast<T>(ImplResourceLoader<T>(this, _context, descriptor, loadingHash)());
                 assert(ptr != nullptr);
                 add(ptr);
             }
@@ -160,13 +160,13 @@ protected:
 
 template <typename T>
 typename std::enable_if<std::is_base_of<CachedResource, T>::value, eastl::shared_ptr<T>>::type
-CreateResource(ResourceCache& cache, const ResourceDescriptor& descriptor, bool& wasInCache) {
-    return cache.loadResource<T>(descriptor, wasInCache);
+CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor, bool& wasInCache) {
+    return cache->loadResource<T>(descriptor, wasInCache);
 }
 
 template <typename T>
 typename std::enable_if<std::is_base_of<CachedResource, T>::value, eastl::shared_ptr<T>>::type
-CreateResource(ResourceCache& cache, const ResourceDescriptor& descriptor) {
+CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor) {
     bool wasInCache = false;
     return CreateResource<T>(cache, descriptor, wasInCache);
 }

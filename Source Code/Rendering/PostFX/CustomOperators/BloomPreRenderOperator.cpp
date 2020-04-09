@@ -16,8 +16,8 @@
 
 namespace Divide {
 
-BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
-    : PreRenderOperator(context, parent, cache, FilterType::FILTER_BLOOM),
+BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
+    : PreRenderOperator(context, parent, FilterType::FILTER_BLOOM),
       _bloomFactor(0.8f),
       _bloomThreshold(0.75f)
 {

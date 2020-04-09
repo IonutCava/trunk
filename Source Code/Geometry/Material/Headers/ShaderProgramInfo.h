@@ -37,21 +37,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+enum class ShaderBuildStage : U8 {
+    QUEUED = 0,
+    REQUESTED,
+    COMPUTED,
+    READY,
+    COUNT
+};
+
 struct ShaderProgramInfo {
-public:
-    enum class BuildStage : U8 {
-        QUEUED = 0,
-        REQUESTED,
-        COMPUTED,
-        READY,
-        COUNT
-    };
-    
-    bool _customShader = false;
-    size_t _shaderRefHash = 0;
     ShaderProgram_ptr _shaderRef = nullptr;
-    BuildStage _shaderCompStage = BuildStage::COUNT;
-    ShaderProgram* _shaderCache = nullptr;
+    ShaderBuildStage _shaderCompStage = ShaderBuildStage::COUNT;
+    bool _customShader = false;
 };
 
 }; //namespace Divide

@@ -31,7 +31,7 @@ class PreRenderBatch {
            COUNT
        };
    public:
-    PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache& cache, RenderTargetID renderTarget);
+    PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache* cache, RenderTargetID renderTarget);
     ~PreRenderBatch();
 
     PostFX& parent() const noexcept { return _parent; }
@@ -117,7 +117,7 @@ class PreRenderBatch {
 
     GFXDevice& _context;
     PostFX&    _parent;
-    ResourceCache& _resCache;
+    ResourceCache* _resCache = nullptr;
 
     RenderTargetID     _renderTarget = RenderTargetUsage::SCREEN;
     ShaderBuffer*      _histogramBuffer = nullptr;

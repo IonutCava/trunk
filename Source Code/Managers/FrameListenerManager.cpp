@@ -10,12 +10,6 @@
 
 namespace Divide {
 
-FrameListenerManager::FrameListenerManager()
-    : Singleton()
-{
-}
-
-
 /// Register a new Frame Listener to be processed every frame
 void FrameListenerManager::registerFrameListener(FrameListener* listener,
                                                  U32 callOrder) {

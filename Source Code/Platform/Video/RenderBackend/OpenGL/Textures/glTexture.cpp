@@ -43,7 +43,7 @@ glTexture::glTexture(GFXDevice& context,
     assert(data().textureHandle() != 0 && "glTexture error: failed to generate new texture handle!");
     setSamplerHandle(GL_API::getOrCreateSamplerObject(_descriptor.samplerDescriptor()));
 
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_TEXTURE, _data.textureHandle(), -1, name.c_str());
     }
 }

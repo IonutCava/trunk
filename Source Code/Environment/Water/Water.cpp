@@ -21,7 +21,7 @@ namespace {
     constexpr F32 g_reflectionPlaneCorrectionHeight = 1.0f;
 };
 
-WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const Str128& name)
+WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
     : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
       _reflectionCam(nullptr)
@@ -93,7 +93,7 @@ bool WaterPlane::load() {
     fragModule._defines.emplace_back("COMPUTE_TBN", true);
     fragModule._defines.emplace_back("NODE_STATIC", true);
 
-    if (!_parentCache.context().config().rendering.shadowMapping.enabled) {
+    if (!_parentCache->context().config().rendering.shadowMapping.enabled) {
         vertModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
         fragModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
     }
@@ -120,8 +120,8 @@ bool WaterPlane::load() {
     waterPrePassShader.waitForReady(false);
     ShaderProgram_ptr waterPrePass = CreateResource<ShaderProgram>(_parentCache, waterPrePassShader);
 
-    waterMat->setShaderProgram(waterColour, RenderPassType::MAIN_PASS);
-    waterMat->setShaderProgram(waterPrePass, RenderPassType::PRE_PASS);
+    waterMat->setShaderProgram(waterColour, RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
+    waterMat->setShaderProgram(waterPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
     waterMat->getColourData().shininess(75.0f);
 
     setMaterialTpl(waterMat);
@@ -190,7 +190,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
     cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
     cmd._cmd.indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
     cmd._sourceBuffer = _plane->getGeometryVB()->handle();
-    cmd._bufferIndex = renderStagePass.index();
+    cmd._bufferIndex = renderStagePass.baseIndex();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     {
         GFX::DrawCommand drawCommand = {cmd};

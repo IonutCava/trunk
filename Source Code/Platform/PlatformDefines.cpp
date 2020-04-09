@@ -28,7 +28,7 @@ namespace {
 
 namespace MemoryManager {
 void log_new(void* p, size_t size, const char* zFile, size_t nLine) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         if (MemoryTracker::Ready) {
              AllocTracer.Add( p, size, zFile, nLine );
         }
@@ -36,7 +36,7 @@ void log_new(void* p, size_t size, const char* zFile, size_t nLine) {
 }
 
 void log_delete(void* p) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         if (MemoryTracker::Ready) {
             AllocTracer.Remove( p );
         }
@@ -124,22 +124,6 @@ U32 HARDWARE_THREAD_COUNT() noexcept {
     return std::max(std::thread::hardware_concurrency(), 2u);
 }
 
-extern void DIVIDE_ASSERT_MSG_BOX(const char* failMessage);
-
-bool preAssert(const bool expression, const char* failMessage) {
-    if (expression) {
-        return false;
-    }
-    if (Config::Assert::LOG_ASSERTS) {
-        Console::errorfn("Assert: %s", failMessage);
-    }
-    /// Message boxes without continue on assert don't render!
-    if (Config::Assert::SHOW_MESSAGE_BOX && Config::Assert::CONTINUE_ON_ASSERT) {
-        DIVIDE_ASSERT_MSG_BOX(failMessage);
-    }
-
-    return !Config::Assert::CONTINUE_ON_ASSERT;
-}
 
 bool createDirectories(const char* path) {
     assert(path != nullptr && strlen(path) > 0);

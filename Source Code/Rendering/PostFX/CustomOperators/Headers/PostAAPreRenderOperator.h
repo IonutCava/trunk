@@ -41,7 +41,7 @@ namespace Divide {
 
 class PostAAPreRenderOperator final : public PreRenderOperator {
    public:
-    PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
+    PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~PostAAPreRenderOperator() = default;
 
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;

@@ -17,7 +17,7 @@
 #include <CEGUI/CEGUI.h>
 
 namespace Divide {
-DefaultScene::DefaultScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)
+DefaultScene::DefaultScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)
     : Scene(context, cache, parent, name)
 {
 }

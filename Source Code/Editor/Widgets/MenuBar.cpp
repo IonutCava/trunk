@@ -379,12 +379,9 @@ void MenuBar::drawPostFXMenu() {
     if (ImGui::BeginMenu("PostFX"))
     {
         PostFX& postFX = _context.gfx().getRenderer().postFX();
-        for (U8 i = 0; i < to_base(FilterType::FILTER_COUNT); ++i) {
-            if (i == to_U8(FilterType::FILTER_COUNT)) {
-                continue;
-            }
-
+        for (U8 i = 1; i < to_base(FilterType::FILTER_COUNT); ++i) {
             const FilterType f = static_cast<FilterType>(toBit(i));
+
             const bool filterEnabled = postFX.getFilterState(f);
             if (ImGui::MenuItem(PostFX::FilterName(f), NULL, &filterEnabled))
             {

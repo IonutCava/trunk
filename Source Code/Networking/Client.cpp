@@ -14,6 +14,17 @@
 #include <boost/serialization/vector.hpp>
 
 namespace Divide {
+Client::Client(ASIO* asioPointer, boost::asio::io_service& service, bool debugOutput)
+    : _header(0),
+    _fileSize(0),
+    _asioPointer(asioPointer),
+    _stopped(false),
+    _debugOutput(debugOutput),
+    _socket(service),
+    _deadline(service),
+    _heartbeatTimer(service)
+{
+}
 
 bool Client::sendPacket(WorldPacket& p)
 {

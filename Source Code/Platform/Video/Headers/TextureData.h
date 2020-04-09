@@ -59,13 +59,13 @@ struct TextureData {
     inline U32 samplerHandle() const noexcept { return _samplerHandle; }
     inline TextureType  type() const noexcept { return _textureType;   }
 
-    FORCE_INLINE bool operator==(const TextureData& other) const noexcept {
+    inline bool operator==(const TextureData& other) const noexcept {
         return _textureHandle == other._textureHandle &&
                _samplerHandle == other._samplerHandle &&
                _textureType == other._textureType;
     }
 
-    FORCE_INLINE bool operator!=(const TextureData& other) const noexcept {
+    inline bool operator!=(const TextureData& other) const noexcept {
         return _textureHandle != other._textureHandle ||
                _samplerHandle != other._samplerHandle ||
                _textureType != other._textureType;

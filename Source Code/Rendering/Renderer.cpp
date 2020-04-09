@@ -39,7 +39,7 @@ namespace {
     }
 };
 
-Renderer::Renderer(PlatformContext& context, ResourceCache& cache)
+Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     : PlatformContextComponent(context),
       _resCache(cache)
 {
@@ -131,7 +131,7 @@ void Renderer::preRender(RenderStagePass stagePass,
     const Rect<I32> viewport(0u, 0u, renderTargetRes.x, renderTargetRes.y);
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = to_I32(stagePass.index());
+    beginDebugScopeCmd._scopeID = to_I32(stagePass.baseIndex());
     beginDebugScopeCmd._scopeName = "Renderer PrePass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 

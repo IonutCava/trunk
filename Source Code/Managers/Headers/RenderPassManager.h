@@ -154,15 +154,15 @@ private:
     vectorEASTL<bool> _completedPasses;
     vectorEASTL<RenderPass*> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
-    GFX::CommandBuffer* _postFXCommandBuffer;
+    GFX::CommandBuffer* _postFXCommandBuffer = nullptr;
 
     Pipeline* _OITCompositionPipeline = nullptr;
 
-    ShaderProgram_ptr _OITCompositionShader;
-    Time::ProfileTimer* _renderPassTimer;
-    Time::ProfileTimer* _buildCommandBufferTimer;
-    Time::ProfileTimer* _flushCommandBufferTimer;
-    Time::ProfileTimer* _postFxRenderTimer;
+    ShaderProgram_ptr _OITCompositionShader = nullptr;
+    Time::ProfileTimer* _renderPassTimer = nullptr;
+    Time::ProfileTimer* _buildCommandBufferTimer = nullptr;
+    Time::ProfileTimer* _flushCommandBufferTimer = nullptr;
+    Time::ProfileTimer* _postFxRenderTimer = nullptr;
     std::array<vectorEASTLFast<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
 };
 

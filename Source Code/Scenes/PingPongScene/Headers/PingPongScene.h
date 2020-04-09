@@ -40,7 +40,7 @@ class Sphere3D;
 
 class PingPongScene : public Scene {
    public:
-    explicit PingPongScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name);
+    explicit PingPongScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name);
 
     ~PingPongScene() {}
 

@@ -32,45 +32,53 @@
 #ifndef _CORE_CONSOLE_INL_
 #define _CORE_CONSOLE_INL_
 
+#if !defined(if_constexpr)
+#if !defined(CPP_17_SUPPORT)
+#define if_constexpr if
+#else
+#define if_constexpr if constexpr
+#endif
+#endif
+
 namespace Divide {
 template <typename... Args>
 NO_INLINE void Console::d_printfn(const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         printfn(format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_printf(const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         printf(format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_warnfn(const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         warnfn(format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_warnf(const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         warnf(format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_errorfn(const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         errorfn(format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_errorf(const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         errorf(format, std::forward<Args>(args)...);
     }
 }
@@ -137,42 +145,42 @@ NO_INLINE void Console::errorf(std::ofstream& outStream, const char* format, Arg
 
 template <typename... Args>
 NO_INLINE void Console::d_printfn(std::ofstream& outStream, const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         printfn(outStream, format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_printf(std::ofstream& outStream, const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         printf(outStream, format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_warnfn(std::ofstream& outStream, const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         warnfn(outStream, format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_warnf(std::ofstream& outStream, const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         warnf(outStream, format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_errorfn(std::ofstream& outStream, const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         errorfn(outStream, format, std::forward<Args>(args)...);
     }
 }
 
 template <typename... Args>
 NO_INLINE void Console::d_errorf(std::ofstream& outStream, const char* format, Args&&... args) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         errorf(outStream, format, std::forward<Args>(args)...);
     }
 }

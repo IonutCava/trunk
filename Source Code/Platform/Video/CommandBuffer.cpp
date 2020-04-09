@@ -45,7 +45,7 @@ DEFINE_POOL(SetClippingStateCommand);
 DEFINE_POOL(ExternalCommand);
 
 namespace {
-    FORCE_INLINE bool ShouldSkipType(const U8 typeIndex) noexcept {
+    inline bool ShouldSkipType(const U8 typeIndex) noexcept {
         switch (static_cast<CommandType>(typeIndex)) {
             case GFX::CommandType::BEGIN_DEBUG_SCOPE:
             case GFX::CommandType::END_DEBUG_SCOPE:
@@ -54,7 +54,7 @@ namespace {
         return false;
     }
 
-    FORCE_INLINE bool IsCameraCommand(const U8 typeIndex) noexcept {
+    inline bool IsCameraCommand(const U8 typeIndex) noexcept {
         switch (static_cast<CommandType>(typeIndex)) {
             case GFX::CommandType::PUSH_CAMERA:
             case GFX::CommandType::POP_CAMERA:
@@ -63,8 +63,8 @@ namespace {
         }
         return false;
     }
-    
-    FORCE_INLINE bool DoesNotAffectRT(const U8 typeIndex) noexcept {
+
+    inline bool DoesNotAffectRT(const U8 typeIndex) noexcept {
         if (ShouldSkipType(typeIndex) || IsCameraCommand(typeIndex)) {
             return true;
         }
@@ -400,7 +400,7 @@ void CommandBuffer::clean() {
 bool CommandBuffer::validate() const {
     OPTICK_EVENT();
 
-    if (Config::ENABLE_GPU_VALIDATION) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         bool pushedPass = false, pushedSubPass = false, pushedPixelBuffer = false;
         bool hasPipeline = false, hasDescriptorSets = false;
         I32 pushedDebugScope = 0, pushedCamera = 0;

@@ -60,12 +60,14 @@ public:
     };
 
 public:
-    explicit ShaderComputeQueue(ResourceCache& cache);
+    explicit ShaderComputeQueue(ResourceCache* cache);
     ~ShaderComputeQueue();
 
     // This is the main loop that steps through the queue and 
     // processes each entry
     void idle();
+    // Processes a queue element on the spot
+    void process(ShaderQueueElement& element);
     // Push a process request at the front of the queue
     void addToQueueFront(const ShaderQueueElement& element);
     // Push a process request at the end of the queue
@@ -80,7 +82,7 @@ private:
     bool stepQueueLocked();
 
 private:
-    ResourceCache& _cache;
+    ResourceCache* _cache = nullptr;
 
     Time::ProfileTimer& _queueComputeTimer;
 

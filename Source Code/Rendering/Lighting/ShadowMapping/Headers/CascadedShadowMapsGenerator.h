@@ -72,14 +72,18 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
                             U8 numSplits,
                             const SplitDepths& splitDepths);
 
-    bool renderLastSplit() const noexcept;
+    bool useMSAA() const noexcept;
 
-   protected:
+  protected:
     Pipeline* _vertBlurPipeline = nullptr;
     Pipeline* _horzBlurPipeline = nullptr;
-    ShaderProgram_ptr _blurDepthMapShader;
-    PushConstants     _blurDepthMapConstants;
-    RenderTargetHandle _drawBuffer;
+    Pipeline* _computeVSMPipeline[2] = { nullptr, nullptr };
+
+    ShaderProgram_ptr _blurDepthMapShader = nullptr;
+    ShaderProgram_ptr _computeVSMShader[2] = { nullptr, nullptr };
+    PushConstants     _shaderConstants;
+    RenderTargetHandle _drawBufferDepth;
+    RenderTargetHandle _drawBufferResolve;
     RenderTargetHandle _blurBuffer;
 };
 

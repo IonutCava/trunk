@@ -197,7 +197,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
 
             Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), _name.c_str(), validationBuffer.c_str(), getGUID());
         } else {
-            if (Config::ENABLE_GPU_VALIDATION) {
+            if_constexpr(Config::ENABLE_GPU_VALIDATION) {
                 Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), "[OK]", getGUID(), _programHandle);
                 glObjectLabel(GL_PROGRAM, _programHandle, -1, _name.c_str());
             }

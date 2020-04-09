@@ -58,7 +58,7 @@ struct PolyContainerEntry
     
     ~PolyContainerEntry() = default;
 
-    FORCE_INLINE const I32 elementIndex() const noexcept { return to_I32(_elementIndex); }
+    inline const I32 elementIndex() const noexcept { return to_I32(_elementIndex); }
 
     union {
         struct {
@@ -118,7 +118,7 @@ struct PolyContainer {
         return  _collection[index];
     }
 
-    FORCE_INLINE T* get(const PolyContainerEntry& entry) const noexcept {
+    inline T* get(const PolyContainerEntry& entry) const noexcept {
         return get(entry._typeIndex, entry.elementIndex());
     }
 

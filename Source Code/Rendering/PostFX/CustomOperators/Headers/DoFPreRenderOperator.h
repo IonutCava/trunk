@@ -38,7 +38,7 @@ namespace Divide {
 
 class DoFPreRenderOperator final : public PreRenderOperator {
    public:
-    DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache);
+    DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~DoFPreRenderOperator();
 
     void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;

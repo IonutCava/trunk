@@ -15,8 +15,8 @@
 namespace Divide {
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
-SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
-    : PreRenderOperator(context, parent, cache, FilterType::FILTER_SS_AMBIENT_OCCLUSION),
+SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
+    : PreRenderOperator(context, parent, FilterType::FILTER_SS_AMBIENT_OCCLUSION),
       _enabled(true)
 {
     U16 ssaoNoiseSize = 4;

@@ -76,7 +76,7 @@ struct selectionQueueDistanceFrontToBack {
 constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
-Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name)
+Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)
     : Resource(ResourceType::DEFAULT, name),
       PlatformContextComponent(context),
       _parent(parent),
@@ -245,6 +245,11 @@ bool Scene::saveXML() const {
         pt.put("lod.lodThresholds.<xmlattr>.z", state().renderState().lodThresholds().z);
         pt.put("lod.lodThresholds.<xmlattr>.w", state().renderState().lodThresholds().w);
 
+        pt.put("shadowing.<xmlattr>.lightBleedBias", state().lightBleedBias());
+        pt.put("shadowing.<xmlattr>.minShadowVariance", state().minShadowVariance());
+        pt.put("shadowing.<xmlattr>.shadowFadeDistance", state().shadowFadeDistance());
+        pt.put("shadowing.<xmlattr>.shadowDistance", state().shadowDistance());
+
         copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true);
         write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
     }
@@ -258,6 +263,107 @@ bool Scene::saveXML() const {
     }
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_END")), resourceName().c_str());
+
+    return true;
+}
+
+bool Scene::loadXML(const Str128& name) {
+    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    Configuration& config = _context.config();
+
+    ParamHandler& par = ParamHandler::instance();
+
+    boost::property_tree::ptree pt;
+
+    Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), name.c_str());
+    const Str256 sceneLocation(scenePath + "/" + name.c_str());
+    const Str256 sceneDataFile(sceneLocation + ".xml");
+
+    // A scene does not necessarily need external data files
+    // Data can be added in code for simple scenes
+    if (!fileExists(sceneDataFile.c_str())) {
+        XML::loadSceneGraph(sceneLocation, "assets.xml", this);
+        XML::loadMusicPlaylist(sceneLocation, "musicPlaylist.xml", this, config);
+        return true;
+    }
+
+    try {
+        read_xml(sceneDataFile.c_str(), pt);
+    } catch (const boost::property_tree::xml_parser_error& e) {
+        Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_SCENE")), name.c_str());
+        stringImpl error(e.what());
+        error += " [check error log!]";
+        throw error.c_str();
+    }
+
+    state().renderState().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
+    state().renderState().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
+    state().renderState().generalVisibility(pt.get("options.visibility", 1000.0f));
+
+    state().windDirX(pt.get("wind.windDirX", 1.0f));
+    state().windDirZ(pt.get("wind.windDirZ", 1.0f));
+    state().windSpeed(pt.get("wind.windSpeed", 1.0f));
+
+    state().lightBleedBias(pt.get("shadowing.<xmlattr>.lightBleedBias", 0.2f));
+    state().minShadowVariance(pt.get("shadowing.<xmlattr>.minShadowVariance", 0.001f));
+    state().shadowFadeDistance(pt.get("shadowing.<xmlattr>.shadowFadeDistance", to_U16(900u)));
+    state().shadowDistance(pt.get("shadowing.<xmlattr>.shadowDistance", to_U16(1000u)));
+
+    if (boost::optional<boost::property_tree::ptree&> waterOverride = pt.get_child_optional("water")) {
+        WaterDetails waterDetails = {};
+        waterDetails._heightOffset = pt.get("water.waterLevel", 0.0f);
+        waterDetails._depth = pt.get("water.waterDepth", -75.0f);
+        state().globalWaterBodies().push_back(waterDetails);
+    }
+
+    if (boost::optional<boost::property_tree::ptree&> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")) {
+        par.setParam(_ID_32((name + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
+        par.setParam(_ID_32((name + ".options.cameraStartPosition.y").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
+        par.setParam(_ID_32((name + ".options.cameraStartPosition.z").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
+        par.setParam(_ID_32((name + ".options.cameraStartOrientation.xOffsetDegrees").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees", 0.0f));
+        par.setParam(_ID_32((name + ".options.cameraStartOrientation.yOffsetDegrees").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees", 0.0f));
+        par.setParam(_ID_32((name + ".options.cameraStartPositionOverride").c_str()), true);
+    } else {
+        par.setParam(_ID_32((name + ".options.cameraStartPositionOverride").c_str()), false);
+    }
+
+    if (boost::optional<boost::property_tree::ptree&> physicsCook = pt.get_child_optional("options.autoCookPhysicsAssets")) {
+        par.setParam(_ID_32((name + ".options.autoCookPhysicsAssets").c_str()), pt.get<bool>("options.autoCookPhysicsAssets", false));
+    } else {
+        par.setParam(_ID_32((name + ".options.autoCookPhysicsAssets").c_str()), false);
+    }
+
+    if (boost::optional<boost::property_tree::ptree&> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")) {
+        par.setParam(_ID_32((name + ".options.cameraSpeed.move").c_str()), pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
+        par.setParam(_ID_32((name + ".options.cameraSpeed.turn").c_str()), pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
+    } else {
+        par.setParam(_ID_32((name + ".options.cameraSpeed.move").c_str()), 35.0f);
+        par.setParam(_ID_32((name + ".options.cameraSpeed.turn").c_str()), 35.0f);
+    }
+
+    vec3<F32> fogColour(config.rendering.fogColour);
+    F32 fogDensity = config.rendering.fogDensity;
+
+    if (boost::optional<boost::property_tree::ptree&> fog = pt.get_child_optional("fog")) {
+        fogDensity = pt.get("fog.fogDensity", fogDensity);
+        fogColour.set(pt.get<F32>("fog.fogColour.<xmlattr>.r", fogColour.r),
+                      pt.get<F32>("fog.fogColour.<xmlattr>.g", fogColour.g),
+                      pt.get<F32>("fog.fogColour.<xmlattr>.b", fogColour.b));
+    }
+    state().renderState().fogDescriptor().set(fogColour, fogDensity);
+
+    vec4<U16> lodThresholds(config.rendering.lodThresholds);
+
+    if (boost::optional<boost::property_tree::ptree&> fog = pt.get_child_optional("lod")) {
+        lodThresholds.set(pt.get<U16>("lod.lodThresholds.<xmlattr>.x", lodThresholds.x),
+                          pt.get<U16>("lod.lodThresholds.<xmlattr>.y", lodThresholds.y),
+                          pt.get<U16>("lod.lodThresholds.<xmlattr>.z", lodThresholds.z),
+                          pt.get<U16>("lod.lodThresholds.<xmlattr>.w", lodThresholds.w));
+    }
+    state().renderState().lodThresholds().set(lodThresholds);
+
+    XML::loadSceneGraph(sceneLocation, pt.get("assets", ""), this);
+    XML::loadMusicPlaylist(sceneLocation, pt.get("musicPlaylist", ""), this, config);
 
     return true;
 }
@@ -810,13 +916,13 @@ U16 Scene::registerInputActions() {
     };
 
     auto toggleEditor = [this](InputParams param) {
-        if (Config::Build::ENABLE_EDITOR) {
+        if_constexpr(Config::Build::ENABLE_EDITOR) {
             _context.editor().toggle(!_context.editor().running());
         }
     };
 
     auto toggleConsole = [this](InputParams param) {
-        if (Config::Build::ENABLE_EDITOR) {
+        if_constexpr(Config::Build::ENABLE_EDITOR) {
             _context.gui().getConsole().setVisible(!_context.gui().getConsole().isVisible());
         }
     };
@@ -936,11 +1042,6 @@ void Scene::loadDefaultCamera() {
                               _context.config().runtime.verticalFOV,
                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
-}
-
-bool Scene::loadXML(const Str128& name) {
-    XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, name, this, _context.config());
-    return true;
 }
 
 bool Scene::load(const Str128& name) {
@@ -1391,7 +1492,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
     vec2<I32> aimPos = COORD_REMAP(aimPosIn, Rect<I32>(0, 0, displaySize.width, displaySize.height), viewport);
 
     bool editorRunning = false;
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         if (_context.editor().running() && _context.editor().scenePreviewFocused()) {
             editorRunning = true;
             const Rect<I32>& sceneRect = _context.editor().scenePreviewRect(false);
@@ -1611,7 +1712,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data) {
 void Scene::beginDragSelection(PlayerIndex idx, bool editorRunning, vec2<I32> mousePos) {
     bool inEditor = false;
     Rect<I32> targetViewport = {};
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _context.editor();
         inEditor = editorRunning && editor.scenePreviewFocused();
         if (inEditor) {

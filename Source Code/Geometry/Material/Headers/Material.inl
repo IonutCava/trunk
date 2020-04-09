@@ -47,76 +47,38 @@ inline void Material::setTextureUseForDepth(ShaderProgram::TextureUsage slot, bo
     _textureUseForDepth[to_base(slot)] = state;
 }
 
-inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
-    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        setShaderProgram(shader, RenderStagePass::stagePass(i));
+inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage, RenderPassType pass, U8 variant) {
+    assert(variant < g_maxVariantsPerPass);
+
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            const RenderStage crtStage = static_cast<RenderStage>(s);
+            const RenderPassType crtPass = static_cast<RenderPassType>(p);
+            if ((stage == RenderStage::COUNT || stage == crtStage) && (pass == RenderPassType::COUNT || pass == crtPass)) {
+                ShaderProgramInfo& shaderInfo = _shaderInfo[s][p][variant];
+                shaderInfo._customShader = true;
+                setShaderProgramInternal(shader, shaderInfo, crtStage, crtPass);
+            }
+        }
+    }
+}
+
+inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant) {
+    assert(variant < g_maxVariantsPerPass);
+
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            const RenderStage crtStage = static_cast<RenderStage>(s);
+            const RenderPassType crtPass = static_cast<RenderPassType>(p);
+            if ((stage == RenderStage::COUNT || stage == crtStage) && (pass == RenderPassType::COUNT || pass == crtPass)) {
+                _defaultRenderStates[s][p][variant] = renderStateBlockHash;
+            }
+        }
     }
 }
 
 inline void Material::disableTranslucency() {
     _properties._translucencyDisabled = true;
-}
-
-inline void Material::setRenderStateBlock(size_t renderStateBlockHash, I32 variant) {
-    for (RenderStagePass::StagePassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        setRenderStateBlock(renderStateBlockHash, RenderStagePass::stagePass(i), variant);
-    }
-}
-
-inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStage renderStage, I32 variant) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        RenderStagePass renderStagePass{ 
-            renderStage, 
-            static_cast<RenderPassType>(pass)
-        };
-
-        if (variant < 0) {
-            renderStagePass._variant = 0;
-            for (size_t& state : defaultRenderStates(renderStagePass)) {
-                state = renderStateBlockHash;
-                ++renderStagePass._variant;
-            }
-        } else {
-            assert(variant < std::numeric_limits<U8>::max());
-            renderStagePass._variant = to_U8(variant);
-            defaultRenderStates(renderStagePass)[variant] = renderStateBlockHash;
-        }
-    }
-}
-
-inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderPassType renderPassType, I32 variant) {
-    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        RenderStagePass renderStagePass{
-            static_cast<RenderStage>(stage),
-            renderPassType
-        };
-
-        if (variant < 0 ) {
-            renderStagePass._variant = 0;
-            for (size_t& state : defaultRenderStates(renderStagePass)) {
-                state = renderStateBlockHash;
-                ++renderStagePass._variant;
-            }
-        } else {
-            assert(variant < std::numeric_limits<U8>::max());
-            renderStagePass._variant = to_U8(variant);
-            defaultRenderState(renderStagePass) = renderStateBlockHash;
-        }
-    }
-}
-
-inline void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStagePass renderStagePass, I32 variant) {
-    if (variant < 0) {
-        renderStagePass._variant = 0;
-        for (size_t& state : defaultRenderStates(renderStagePass)) {
-            state = renderStateBlockHash;
-            ++renderStagePass._variant;
-        }
-    } else {
-        assert(variant < std::numeric_limits<U8>::max());
-        renderStagePass._variant = to_U8(variant);
-        defaultRenderStates(renderStagePass)[variant] = renderStateBlockHash;
-    }
 }
 
 inline void Material::setParallaxFactor(F32 factor) {
@@ -203,57 +165,18 @@ inline void Material::setShadingMode(const ShadingMode& mode) {
     _needsNewShader = true;
 }
 
-inline ShaderProgramInfo& Material::getShaderInfo(RenderStagePass renderStagePass) {
-    return shaderInfo(renderStagePass);
-}
-
 inline ShaderProgramInfo& Material::shaderInfo(RenderStagePass renderStagePass) {
-    return _shaderInfo[renderStagePass.index()];
+    ShaderPerVariant& variantMap = _shaderInfo[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)];
+    assert(renderStagePass._variant < g_maxVariantsPerPass);
+
+    return variantMap[renderStagePass._variant];
 }
 
 inline const ShaderProgramInfo& Material::shaderInfo(RenderStagePass renderStagePass) const {
-    return _shaderInfo[renderStagePass.index()];
-}
+    const ShaderPerVariant& variantMap = _shaderInfo[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)];
+    assert(renderStagePass._variant < g_maxVariantsPerPass);
 
-inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStagePass renderStagePass) {
-    shaderInfo(renderStagePass)._customShader = true;
-    setShaderProgramInternal(shader, renderStagePass);
-}
-
-inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        setShaderProgram(shader, RenderStagePass{ stage, static_cast<RenderPassType>(pass) });
-    }
-}
-
-inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderPassType passType) {
-    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        setShaderProgram(shader, RenderStagePass{static_cast<RenderStage>(stage), passType});
-    }
-}
-
-inline size_t& Material::defaultRenderState(RenderStagePass renderStagePass) {
-    return _defaultRenderStates[renderStagePass.index()][renderStagePass._variant];
-}
-
-inline std::array<size_t, 3>& Material::defaultRenderStates(RenderStagePass renderStagePass) {
-    return _defaultRenderStates[renderStagePass.index()];
-}
-
-inline void Material::ignoreXMLData(const bool state) {
-    _ignoreXMLData = state;
-}
-
-inline bool Material::ignoreXMLData() const {
-    return _ignoreXMLData;
-}
-
-inline void Material::setBaseShaderData(const ShaderData& data) {
-    _baseShaderSources = data;
-}
-
-inline const Material::ShaderData& Material::getBaseShaderData() const {
-    return _baseShaderSources;
+    return variantMap[renderStagePass._variant];
 }
 
 inline void Material::addShaderDefine(ShaderType type, const Str128& define, bool addPrefix) {

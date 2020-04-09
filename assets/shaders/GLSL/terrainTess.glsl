@@ -690,14 +690,15 @@ void main(void)
 #endif //PRE_PASS
 }
 
---Fragment.Shadow
+--Fragment.Shadow.VSM
 
+#if !defined(USE_SEPARATE_VSM_PASS)
+
+#include "vsm.frag"
 out vec2 _colourOut;
 
-#include "nodeBufferedInput.cmn"
-#include "vsm.frag"
-
 void main() {
-
     _colourOut = computeMoments();
 }
+
+#endif

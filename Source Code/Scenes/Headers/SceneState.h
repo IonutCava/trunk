@@ -276,14 +276,9 @@ class SceneState : public SceneComponent {
 
     SceneState(Scene& parentScene)
         : SceneComponent(parentScene),
-          _renderState(parentScene),
-          _saveLoadDisabled(false),
-          _playerPass(0),
-          _windSpeed(1.0f),
-          _windDirX(0.0f),
-          _windDirZ(1.0f)
-    {
-    }
+          _renderState(parentScene)
+     {
+     }
 
     inline void onPlayerAdd(U8 index) {
         // Just reset everything
@@ -316,39 +311,24 @@ class SceneState : public SceneComponent {
     inline const SceneRenderState& renderState() const noexcept { return _renderState; }
     inline const MusicPlaylist& music(MusicType type) const noexcept { return _music[to_U32(type)]; }
 
-    inline void windSpeed(F32 speed) noexcept { _windSpeed = speed; }
-    inline F32  windSpeed()    const noexcept { return _windSpeed; }
-
-    inline void windDirX(F32 factor) noexcept { _windDirX = factor; }
-    inline F32  windDirX()     const noexcept { return _windDirX; }
-
-    inline void windDirZ(F32 factor) noexcept { _windDirZ = factor; }
-    inline F32  windDirZ()     const noexcept { return _windDirZ; }
-
     inline vectorSTD<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
     inline const vectorSTD<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
 
-    inline void saveLoadDisabled(const bool state) noexcept { _saveLoadDisabled = state; }
-    inline bool saveLoadDisabled()           const noexcept { return _saveLoadDisabled; }
-
-    inline void playerPass(U8 pass) noexcept { _playerPass = pass; }
-    inline U8   playerPass()  const noexcept { return _playerPass; }
+    PROPERTY_RW(U8, playerPass, 0u);
+    PROPERTY_RW(bool, saveLoadDisabled, false);
+    PROPERTY_RW(F32, windSpeed, 1.0f);
+    PROPERTY_RW(F32, windDirX, 0.1f);
+    PROPERTY_RW(F32, windDirZ, 0.7f);
+    PROPERTY_RW(F32, lightBleedBias, 0.2f);
+    PROPERTY_RW(F32, minShadowVariance, 0.001f);
+    PROPERTY_RW(U16, shadowFadeDistance, 900u);
+    PROPERTY_RW(U16, shadowDistance, 1000u);
 
 protected:
-
+    SceneRenderState _renderState;
     std::array<MusicPlaylist, to_base(MusicType::COUNT)> _music;
     std::array<SceneStatePerPlayer, Config::MAX_LOCAL_PLAYER_COUNT> _playerState;
     vectorSTD<WaterDetails> _globalWaterBodies;
-
-    /// saves all the rendering information for the scene
-    /// (camera position, light info, draw states)
-    SceneRenderState _renderState;
-    F32 _windSpeed;
-    F32 _windDirX;
-    F32 _windDirZ;
-    U8  _playerPass;
-
-    bool _saveLoadDisabled;
 };
 
 namespace Attorney {

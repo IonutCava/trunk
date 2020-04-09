@@ -25,7 +25,7 @@ namespace {
 GFXRTPool::GFXRTPool(GFXDevice& parent)
     : _parent(parent)
 {
-    if (Config::Build::ENABLE_EDITOR) {
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         _renderTargets[to_U32(RenderTargetUsage::EDITOR)].resize(1, nullptr);
     }
 

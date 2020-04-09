@@ -910,6 +910,9 @@
     <None Include="..\..\assets\shaders\GLSL\EdgeDetection.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\computeVSM.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl">

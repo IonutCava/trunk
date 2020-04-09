@@ -47,7 +47,7 @@ FWD_DECLARE_MANAGED_CLASS(Texture);
 /// A Particle emitter scene node. Nothing smarter to say, sorry :"> - Ionut
 class ParticleEmitter : public SceneNode {
    public:
-    explicit ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const Str128& name);
+    explicit ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
     ~ParticleEmitter();
 
     bool onRender(SceneGraphNode& sgn, RenderingComponent& rComp, const Camera& camera, RenderStagePass renderStagePass, bool refreshData) override;
@@ -115,7 +115,7 @@ class ParticleEmitter : public SceneNode {
     Task* _bufferUpdate = nullptr;
     Task* _bbUpdate = nullptr;
     ShaderProgram_ptr _particleShader;
-    ShaderProgram_ptr _particleDepthShader;
+    ShaderProgram_ptr _particleDepthShader[2];
     Texture_ptr _particleTexture;
 };
 

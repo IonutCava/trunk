@@ -19,8 +19,8 @@ CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
 
         RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock({ RenderStage::DISPLAY, RenderPassType::MAIN_PASS })));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), { RenderStage::DISPLAY, RenderPassType::MAIN_PASS });
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), { RenderStage::DISPLAY, RenderPassType::OIT_PASS });
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStage::DISPLAY, RenderPassType::MAIN_PASS, 0u);
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStage::DISPLAY, RenderPassType::OIT_PASS, 0u);
         matTemp->setShadingMode(ShadingMode::FLAT);
 
         ptr->setMaterialTpl(matTemp);
@@ -43,8 +43,8 @@ CachedResource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
 
         RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock({ RenderStage::DISPLAY, RenderPassType::MAIN_PASS })));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), {RenderStage::DISPLAY, RenderPassType::MAIN_PASS});
-        matTemp->setRenderStateBlock(dummyDesc.getHash(), {RenderStage::DISPLAY, RenderPassType::OIT_PASS});
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStage::DISPLAY, RenderPassType::MAIN_PASS, 0u);
+        matTemp->setRenderStateBlock(dummyDesc.getHash(), RenderStage::DISPLAY, RenderPassType::OIT_PASS, 0u);
         matTemp->setShadingMode(ShadingMode::FLAT);
 
         ptr->setMaterialTpl(matTemp);

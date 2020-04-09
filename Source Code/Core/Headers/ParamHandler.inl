@@ -56,7 +56,7 @@ inline T ParamHandler::getParam(HashType nameID, T defaultValue) const {
         const T& ret = std::any_cast<T>(it->second);
         success = true;
 #       endif
-        if (Config::Build::IS_DEBUG_BUILD) {
+        if_constexpr (Config::Build::IS_DEBUG_BUILD) {
             if (!success) {
                 Console::errorfn(Locale::get(_ID("ERROR_PARAM_CAST")), nameID);
                 DIVIDE_ASSERT(success,

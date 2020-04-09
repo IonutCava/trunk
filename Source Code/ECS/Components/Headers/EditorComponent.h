@@ -163,7 +163,7 @@ namespace Divide {
         virtual ~EditorComponent() = default;
 
         inline void name(const Str128& nameStr) { _name = nameStr; }
-        inline const Str128& name() const { return _name; }
+        inline const Str128& name() const noexcept { return _name; }
 
         inline void addHeader(const Str32& name) {
             EditorComponentField field = {};
@@ -175,8 +175,8 @@ namespace Divide {
 
         void registerField(EditorComponentField&& field);
 
-        inline vectorSTD<EditorComponentField>& fields() { return _fields; }
-        inline const vectorSTD<EditorComponentField>& fields() const { return _fields; }
+        inline vectorSTD<EditorComponentField>& fields() noexcept { return _fields; }
+        inline const vectorSTD<EditorComponentField>& fields() const noexcept { return _fields; }
 
         inline void onChangedCbk(const DELEGATE<void, const char*> cbk) {
             _onChangedCbk = cbk;
@@ -202,15 +202,15 @@ namespace Divide {
     namespace Attorney {
         class EditorComponentEditor {
           private:
-            static vectorSTD<EditorComponentField>& fields(EditorComponent& comp) {
+            static vectorSTD<EditorComponentField>& fields(EditorComponent& comp) noexcept {
                 return comp._fields;
             }
 
-            static const vectorSTD<EditorComponentField>& fields(const EditorComponent& comp) {
+            static const vectorSTD<EditorComponentField>& fields(const EditorComponent& comp) noexcept {
                 return comp._fields;
             }
 
-            static void onChanged(EditorComponent& comp, EditorComponentField& field) {
+            static void onChanged(const EditorComponent& comp, EditorComponentField& field) {
                 comp.onChanged(field);
             }
             friend class Divide::PropertyWindow;
@@ -218,14 +218,14 @@ namespace Divide {
 
         class EditorComponentSceneGraphNode {
            private:
-            static bool saveCache(EditorComponent& comp, ByteBuffer& outputBuffer) {
+            static bool saveCache(const EditorComponent& comp, ByteBuffer& outputBuffer) {
                 return comp.saveCache(outputBuffer);
             }
             static bool loadCache(EditorComponent& comp, ByteBuffer& inputBuffer) {
                 return comp.loadCache(inputBuffer);
             }
 
-            static void saveToXML(EditorComponent& comp, boost::property_tree::ptree& pt) {
+            static void saveToXML(const EditorComponent& comp, boost::property_tree::ptree& pt) {
                 comp.saveToXML(pt);
             }
 

@@ -15,7 +15,7 @@
 namespace Divide {
 
 Mesh::Mesh(GFXDevice& context,
-           ResourceCache& parentCache,
+           ResourceCache* parentCache,
            size_t descriptorHash,
            const Str128& name,
            const Str128& resourceName,
@@ -53,7 +53,7 @@ void Mesh::setMaterialTpl(const Material_ptr& material) {
         if (material != nullptr) {
             const Material_ptr& submeshMaterial = submesh->getMaterialTpl();
             if (submeshMaterial != nullptr) {
-                submeshMaterial->setBaseShaderData(material->getBaseShaderData());
+                submeshMaterial->baseShaderData(material->baseShaderData());
                 for (U8 i = 0; i < to_base(ShaderType::COUNT); ++i) {
                     for (auto it : material->shaderDefines(static_cast<ShaderType>(i))) {
                         submeshMaterial->addShaderDefine(static_cast<ShaderType>(i), it.first, it.second);

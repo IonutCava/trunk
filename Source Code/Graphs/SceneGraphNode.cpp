@@ -63,7 +63,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _lastDeltaTimeUS(0ULL),
       _relationshipCache(*this)
 {
-    Hacks._transformComponentCache = nullptr;
     _name = (descriptor._name.empty() ? Util::StringFormat("%s_SGN", (_node->resourceName().empty() ? "ERROR"   
                                                                                                     : _node->resourceName().c_str())).c_str()
                                       : descriptor._name);

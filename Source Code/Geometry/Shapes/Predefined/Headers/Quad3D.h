@@ -48,7 +48,7 @@ class Quad3D : public Object3D {
     };
 
     explicit Quad3D(GFXDevice& context,
-                    ResourceCache& parentCache,
+                    ResourceCache* parentCache,
                     size_t descriptorHash,
                     const Str128& name,
                     const bool doubleSided);

@@ -47,7 +47,7 @@ protected:
     ScenePool(SceneManager& parentMgr);
     ~ScenePool();
 
-    Scene* getOrCreateScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name, bool& foundInCache);
+    Scene* getOrCreateScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name, bool& foundInCache);
     bool   deleteScene(Scene*& scene);
 
     bool   defaultSceneActive() const;

@@ -38,10 +38,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct RenderStagePass {
-    using StagePassIndex = U8;
     RenderStage _stage = RenderStage::COUNT;
     RenderPassType _passType = RenderPassType::COUNT;
     U8 _variant = 0;
+
     union {
         U32 _passIndex = 0;
         struct {
@@ -50,33 +50,23 @@ struct RenderStagePass {
         };
     };
 
-    inline StagePassIndex index() const noexcept {
-        return index(_stage, _passType);
-    }
-
     inline bool isDepthPass() const noexcept {
-        return _stage == RenderStage::SHADOW ||
-               _passType == RenderPassType::PRE_PASS;
+        return _stage == RenderStage::SHADOW || _passType == RenderPassType::PRE_PASS;
     }
 
-    constexpr static StagePassIndex count() noexcept {
-        return static_cast<StagePassIndex>(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT));
+    /// This ignores the variant and pass index flags!
+    inline U8 baseIndex() const noexcept {
+        return baseIndex(_stage, _passType);
     }
 
-    static StagePassIndex index(const RenderStage stage, const RenderPassType type) noexcept {
-        return static_cast<StagePassIndex>(to_base(stage) + to_base(type) * to_base(RenderStage::COUNT));
+    static U8 baseIndex(RenderStage stage, RenderPassType passType) noexcept {
+        return static_cast<U8>(to_base(stage) + to_base(passType) * to_base(RenderStage::COUNT));
     }
 
-    static RenderStage stage(StagePassIndex index) noexcept {
-        return static_cast<RenderStage>(index % to_base(RenderStage::COUNT));
-    }
-
-    static RenderPassType pass(StagePassIndex index) noexcept {
-        return static_cast<RenderPassType>(index / to_base(RenderStage::COUNT));
-    }
-
-    static RenderStagePass stagePass(StagePassIndex index) noexcept {
-        return { RenderStagePass::stage(index), RenderStagePass::pass(index) };
+    static RenderStagePass fromBaseIndex(U8 baseIndex) noexcept {
+        const RenderStage stage = static_cast<RenderStage>(baseIndex % to_base(RenderStage::COUNT));
+        const RenderPassType pass = static_cast<RenderPassType>(baseIndex / to_base(RenderStage::COUNT));
+        return { stage, pass };
     }
 
     inline bool operator==(const RenderStagePass& other) const noexcept {

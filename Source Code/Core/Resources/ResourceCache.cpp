@@ -46,7 +46,7 @@ void ResourceLoadLock::notifyTaskPool(PlatformContext& context) {
 void DeleteResource::operator()(CachedResource* res) {
     WAIT_FOR_CONDITION(res->getState() == ResourceState::RES_LOADED, false);
 
-    _context.remove(res);
+    _context->remove(res);
 
     if (res) {
         if (res->resourceType() != ResourceType::GPU_OBJECT) {

@@ -262,7 +262,7 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
-      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
+      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase- /d2cgsummary</AdditionalOptions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAs>CompileAsCpp</CompileAs>

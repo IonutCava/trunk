@@ -64,7 +64,7 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
 
     bool recordMemoryAllocations = false;
 
-    if (Config::Build::IS_DEBUG_BUILD || Config::Build::IS_PROFILE_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD || Config::Build::IS_PROFILE_BUILD) {
 
         recordMemoryAllocations = Config::Build::IS_DEBUG_BUILD;
         createPvdConnection(g_pvd_target_ip,

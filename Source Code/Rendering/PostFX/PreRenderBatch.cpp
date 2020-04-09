@@ -22,7 +22,7 @@ namespace {
     constexpr U8  GROUP_Y_THREADS = 16u;
 };
 
-PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache& cache, RenderTargetID renderTarget)
+PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache* cache, RenderTargetID renderTarget)
     : _context(context),
     _resCache(cache),
     _parent(parent),

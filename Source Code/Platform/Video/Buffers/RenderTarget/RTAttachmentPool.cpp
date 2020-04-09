@@ -94,7 +94,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     textureAttachment.propertyDescriptor(descriptor._texDescriptor);
 
     GFXDevice& context = _parent.context();
-    ResourceCache& parentCache = context.parent().resourceCache();
+    ResourceCache* parentCache = context.parent().resourceCache();
     Texture_ptr tex = CreateResource<Texture>(parentCache, textureAttachment);
     assert(tex);
 

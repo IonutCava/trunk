@@ -173,7 +173,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     resDescriptor.flag(true);
     resDescriptor.propertyDescriptor(texDescriptor);
 
-    ResourceCache& parentCache = _context.kernel().resourceCache();
+    ResourceCache* parentCache = _context.kernel().resourceCache();
     _fontTexture = CreateResource<Texture>(parentCache, resDescriptor);
     assert(_fontTexture);
 
@@ -476,7 +476,7 @@ void Editor::close() {
 }
 
 void Editor::updateCameraSnapshot() {
-    Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+    Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
     if (playerCam != nullptr) {
         _cameraSnapshots[playerCam->getGUID()] = playerCam->snapshot();
     }
@@ -497,7 +497,7 @@ void Editor::toggle(const bool state) {
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme);
 
         if (!_autoSaveCamera) {
-            Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+            Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
             if (playerCam != nullptr) {
                 auto it = _cameraSnapshots.find(playerCam->getGUID());
                 if (it != std::end(_cameraSnapshots)) {
@@ -650,7 +650,7 @@ bool Editor::render(const U64 deltaTime) {
 bool Editor::frameSceneRenderEnded(const FrameEvent& evt) noexcept {
     ACKNOWLEDGE_UNUSED(evt);
     Attorney::GizmoEditor::render(*_gizmo, 
-                                  *Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager()));
+                                  *Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager()));
     return true;
 }
 
@@ -1240,7 +1240,7 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
 }
 
 bool Editor::saveSceneChanges() {
-    if (_context.kernel().sceneManager().saveActiveScene(false, false)) {
+    if (_context.kernel().sceneManager()->saveActiveScene(false, false)) {
         if (saveToXML()) {
             _context.config().save();
             return true;
@@ -1437,10 +1437,10 @@ bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const s
     nodeDescriptor._componentMask = normalMask;
     nodeDescriptor._node = mesh;
 
-    Scene& activeScene = _context.kernel().sceneManager().getActiveScene();
+    Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
     const SceneGraphNode* node = activeScene.sceneGraph().getRoot().addChildNode(nodeDescriptor);
     if (node != nullptr) {
-        const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
+        const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
 
         TransformComponent* tComp = node->get<TransformComponent>();
         tComp->setPosition(playerCam->getEye());
@@ -1454,13 +1454,13 @@ bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const s
 }
 
 LightPool& Editor::getActiveLightPool() {
-    Scene& activeScene = _context.kernel().sceneManager().getActiveScene();
+    Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
     return activeScene.lightPool();
 }
 
 void Editor::teleportToNode(SceneGraphNode* sgn) const {
     if (sgn != nullptr) {
-        Attorney::SceneManagerCameraAccessor::moveCameraToNode(_context.kernel().sceneManager(), sgn, 3.0f);
+        Attorney::SceneManagerCameraAccessor::moveCameraToNode(*_context.kernel().sceneManager(), sgn, 3.0f);
     }
 }
 

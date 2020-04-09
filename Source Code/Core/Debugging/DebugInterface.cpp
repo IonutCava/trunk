@@ -40,13 +40,13 @@ void DebugInterface::idle() {
     {
         _output = Util::StringFormat("Scene Update Loops: %d", timingData.updateLoops());
 
-        if (Config::Profile::BENCHMARK_PERFORMANCE) {
+        if_constexpr (Config::Profile::BENCHMARK_PERFORMANCE) {
             _output.append("\n");
             _output.append(Time::ApplicationTimer::instance().benchmarkReport());
             _output.append("\n");
             _output.append(Util::StringFormat("GPU: [ %5.5f ms] [DrawCalls: %d]", gfx.getFrameDurationGPU(), gfx.getDrawCallCount()));
         }
-        if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
+        if_constexpr (Config::Profile::ENABLE_FUNCTION_PROFILING) {
             _output.append("\n");
             _output.append(Time::ProfileTimer::printAll());
         }

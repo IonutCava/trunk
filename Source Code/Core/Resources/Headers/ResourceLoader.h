@@ -42,20 +42,20 @@ namespace Divide {
 class CachedResource;
 // Used to delete resources
 struct DeleteResource {
-    DeleteResource(ResourceCache& context)
+    DeleteResource(ResourceCache* context)
         : _context(context)
     {
     }
 
     void operator()(CachedResource* res);
 
-    ResourceCache& _context;
+    ResourceCache* _context = nullptr;
 };
 
 class PlatformContext;
 class NOINITVTABLE ResourceLoader : public PlatformContextComponent {
    public:
-    ResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
+    ResourceLoader(ResourceCache* cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
         : PlatformContextComponent(context),
           _cache(cache),
           _descriptor(descriptor),
@@ -66,7 +66,7 @@ class NOINITVTABLE ResourceLoader : public PlatformContextComponent {
     virtual CachedResource_ptr operator()() = 0;
 
    protected:
-    ResourceCache& _cache;
+    ResourceCache* _cache;
     ResourceDescriptor _descriptor;
     size_t _loadingDescriptorHash;
 };
@@ -74,7 +74,7 @@ class NOINITVTABLE ResourceLoader : public PlatformContextComponent {
 template <typename ResourceType>
 class ImplResourceLoader : public ResourceLoader {
    public:
-    ImplResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
+    ImplResourceLoader(ResourceCache* cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
         : ResourceLoader(cache, context, descriptor, loadingDescriptorHash)
     {
     }

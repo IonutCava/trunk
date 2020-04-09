@@ -38,7 +38,7 @@ namespace Divide {
 
 class DefaultScene : public Scene {
 public:
-    DefaultScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const Str128& name);
+    DefaultScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name);
 
     bool load(const Str128& name) override;
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
