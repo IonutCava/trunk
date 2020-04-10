@@ -635,23 +635,13 @@ void SceneManager::moveCameraToNode(SceneGraphNode* targetNode, F32 targetDistan
 VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
     OPTICK_EVENT();
 
-    const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
-    const vectorEASTL<SceneGraphNode*>& waterNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
-    const vectorEASTL<SceneGraphNode*>& otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
+    static vectorEASTL<SceneGraphNode*> allNodes = {};
+    getActiveScene().sceneGraph().getNodesByType({ SceneNodeType::TYPE_WATER, SceneNodeType::TYPE_OBJECT3D }, allNodes);
 
-    vectorEASTL<SceneGraphNode*> allNodes;
-    allNodes.reserve(waterNodes.size() + otherNodes.size());
-
-    eastl::copy(eastl::cbegin(waterNodes),
-                eastl::cend(waterNodes),
-                eastl::back_inserter(allNodes));
-
-    eastl::copy_if(eastl::cbegin(otherNodes),
-                   eastl::cend(otherNodes),
-                   eastl::back_inserter(allNodes),
-                   [](SceneGraphNode* node) -> bool {
-                        RenderingComponent* rComp = node->get<RenderingComponent>();
-                        return rComp->getMaterialInstance() && rComp->getMaterialInstance()->isReflective();
+    eastl::erase_if(allNodes,
+                   [](SceneGraphNode* node) noexcept ->  bool {
+                        const Material_ptr& mat = node->get<RenderingComponent>()->getMaterialInstance();
+                        return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->isReflective());
                    });
 
     if (inView) {
@@ -670,25 +660,14 @@ VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, Ren
 VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
     OPTICK_EVENT();
 
-    const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
-    const vectorEASTL<SceneGraphNode*>& waterNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
-    const vectorEASTL<SceneGraphNode*>& otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
+    static vectorEASTL<SceneGraphNode*> allNodes = {};
+    getActiveScene().sceneGraph().getNodesByType({ SceneNodeType::TYPE_WATER, SceneNodeType::TYPE_OBJECT3D }, allNodes);
 
-    vectorEASTL<SceneGraphNode*> allNodes;
-    allNodes.reserve(waterNodes.size() + otherNodes.size());
-
-    eastl::copy(eastl::cbegin(waterNodes),
-                eastl::cend(waterNodes),
-                eastl::back_inserter(allNodes));
-
-    eastl::copy_if(eastl::cbegin(otherNodes),
-                   eastl::cend(otherNodes),
-                   eastl::back_inserter(allNodes),
-                   [](SceneGraphNode* node) -> bool {
-                        RenderingComponent* rComp = node->get<RenderingComponent>();
-                        return rComp->getMaterialInstance() && rComp->getMaterialInstance()->isRefractive();
+    eastl::erase_if(allNodes,
+                   [](SceneGraphNode* node) noexcept ->  bool {
+                        const Material_ptr& mat = node->get<RenderingComponent>()->getMaterialInstance();
+                        return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->isRefractive());
                    });
-
     if (inView) {
         NodeCullParams cullParams = {};
         cullParams._lodThresholds = getActiveScene().state().renderState().lodThresholds();

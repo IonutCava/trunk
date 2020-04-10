@@ -140,7 +140,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 };
 
 bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand);
-bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC);
+bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) noexcept;
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type

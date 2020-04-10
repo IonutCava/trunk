@@ -63,9 +63,9 @@ struct CmdAllocator {
 #define TO_STR(arg) #arg
 
 #define DEFINE_POOL(Command) \
-decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex = {}; \
-decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool = {}; \
-decltype(Command::s_deleter) Command::s_deleter = {};
+decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex; \
+decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool; \
+decltype(Command::s_deleter) Command::s_deleter;
 
 #define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> { \
 using Base = Command<Name, Enum>; \

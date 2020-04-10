@@ -145,9 +145,9 @@ struct PolyContainer {
         }
     }
 
-    inline void reserveAdditional(const PolyContainer<T,N, DEL>& other) {
+    inline void reserveAdditional(const PolyContainer<T,N, DEL>& other, const size_t count = 1) {
         for (U8 i = 0; i < N; ++i) {
-            _collection[i].reserve(_collection[i].size() + other._collection[i].size());
+            _collection[i].reserve(_collection[i].size() + other._collection[i].size() * count);
         }
     }
 

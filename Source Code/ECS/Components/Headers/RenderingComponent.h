@@ -155,7 +155,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void setMinRenderRange(F32 minRange);
     void setMaxRenderRange(F32 maxRange);
     inline void setRenderRange(F32 minRange, F32 maxRange) { setMinRenderRange(minRange); setMaxRenderRange(maxRange); }
-    inline const vec2<F32>& renderRange() const { return _renderRange; }
+    inline const vec2<F32>& renderRange() const noexcept { return _renderRange; }
 
     // If the new value is negative, this disables occlusion culling!
     void cullFlagValue(F32 newValue);
@@ -178,11 +178,11 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     size_t getSortKeyHash(const RenderStagePass& renderStagePass) const;
 
-    inline const Material_ptr& getMaterialInstance() const { return _materialInstance; }
+    inline const Material_ptr& getMaterialInstance() const noexcept { return _materialInstance; }
 
     void rebuildMaterial();
 
-    inline void setReflectionAndRefractionType(ReflectorType reflectType, RefractorType refractType) { _reflectorType = reflectType;  _refractorType = refractType; }
+    inline void setReflectionAndRefractionType(ReflectorType reflectType, RefractorType refractType) noexcept { _reflectorType = reflectType;  _refractorType = refractType; }
     inline void setReflectionCallback(RenderCallback cbk) { _reflectionCallback = cbk; }
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
@@ -192,7 +192,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     U8 getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
     inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
-    inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const { return _externalBufferBindings; }
+    inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
   protected:
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const U32 dataIndex);
