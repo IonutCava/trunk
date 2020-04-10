@@ -64,11 +64,12 @@ constexpr F32 Specular_Milk = 0.277f;
 constexpr F32 Specular_Skin = 0.35f;
 constexpr F32 PHONG_REFLECTIVITY_THRESHOLD = 100.0f;
 
-/// Since most variants come from different light sources, this seems like a good idea (famous last words ...)
-constexpr size_t g_maxVariantsPerPass = 3;
 
 class Material : public CachedResource {
    public:
+    /// Since most variants come from different light sources, this seems like a good idea (famous last words ...)
+    static const size_t g_maxVariantsPerPass = 3;
+
     /// ShaderData stores information needed by the shader code to properly shade objects
     struct ColourData {
         ColourData() noexcept

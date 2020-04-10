@@ -99,9 +99,14 @@ Vegetation::Vegetation(GFXDevice& context,
 
     setBounds(parentChunk.bounds());
 
-    renderState().addToDrawExclusionMask(RenderPassType::MAIN_PASS);
-    renderState().addToDrawExclusionMask(RenderStage::REFLECTION);
-    renderState().addToDrawExclusionMask(RenderStage::REFRACTION);
+    renderState().addToDrawExclusionMask(RenderStage::COUNT, RenderPassType::MAIN_PASS, -1);
+    renderState().addToDrawExclusionMask(RenderStage::REFLECTION, RenderPassType::COUNT, -1);
+    renderState().addToDrawExclusionMask(RenderStage::REFRACTION, RenderPassType::COUNT, -1);
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_base(LightType::POINT));
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_base(LightType::SPOT));
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL), 1u);
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL), 2u);
+
     renderState().minLodLevel(2u);
     renderState().drawState(false);
 
@@ -521,9 +526,9 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
                         Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
                         meshPtr->setMaterialTpl(s_treeMaterial);
                         // CSM last split should probably avoid rendering trees since it would cover most of the scene :/
-                        meshPtr->renderState().addToDrawExclusionMask({ RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2 });
+                        meshPtr->renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL), 2u);
                         for (const SubMesh_ptr& subMesh : meshPtr->subMeshList()) {
-                            subMesh->renderState().addToDrawExclusionMask({ RenderStage::SHADOW, RenderPassType::MAIN_PASS, 0, 2 });
+                            subMesh->renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL), 2u);
                         }
                         s_treeMeshes.push_back(meshPtr);
                     }

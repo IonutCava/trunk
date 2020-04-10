@@ -917,15 +917,17 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
     const RenderStage stage = params._stagePass._stage;
 
+    const CameraSnapshot& camSnapshot = params._camera->snapshot();
+
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 0;
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s - %s )", TypeUtil::RenderStageToString(stage), params._passName.empty() ? "N/A" : params._passName.c_str()).c_str();
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    Attorney::SceneManagerRenderPass::prepareLightData(*parent().sceneManager(), stage, *params._camera);
+    Attorney::SceneManagerRenderPass::prepareLightData(*parent().sceneManager(), stage, camSnapshot._eye, camSnapshot._viewMatrix);
 
     // Tell the Rendering API to draw from our desired PoV
-    GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ params._camera->snapshot() });
+    GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ camSnapshot });
     GFX::EnqueueCommand(bufferInOut, GFX::SetClipPlanesCommand{ params._clippingPlanes });
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params._target);
@@ -947,9 +949,11 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
         GFX::EnqueueCommand(bufferInOut, clearMainTarget);
     }
 
-    GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-    bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
-    GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+    if (params._target._usage == _context.renderTargetPool().screenTargetID()._usage) {
+        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
+        bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
+        GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
+    }
 
     // Cull the scene and grab the visible nodes
     const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(*parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents);

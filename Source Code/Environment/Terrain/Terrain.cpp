@@ -71,6 +71,52 @@ bool Terrain::unload() noexcept {
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
 
+    static_assert(MAX_RENDER_NODES * sizeof(TessellatedNodeData) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
+    if (!_initialSetupDone) {
+        _initBufferWriteCounter = ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
+        _initBufferWriteCounter *= g_bufferFrameDelay;
+
+
+        _editorComponent.onChangedCbk([this](const char* field) {onEditorChange(field); });
+
+        EditorComponentField tessTriangleWidthField = {};
+        tessTriangleWidthField._name = "Tessellated Triangle Width";
+        tessTriangleWidthField._data = &_descriptor->_tessellatedTriangleWidth;
+        tessTriangleWidthField._type = EditorComponentFieldType::SLIDER_TYPE;
+        tessTriangleWidthField._readOnly = false;
+        tessTriangleWidthField._basicType = GFX::PushConstantType::UINT;
+        tessTriangleWidthField._range = { 1.0f, 150.0f };
+        tessTriangleWidthField._step = 1.0f;
+
+        _editorComponent.registerField(std::move(tessTriangleWidthField));
+
+        EditorComponentField parallaxHeightField = {};
+        parallaxHeightField._name = "Parallax Height";
+        parallaxHeightField._data = &_descriptor->_parallaxHeightScale;
+        parallaxHeightField._type = EditorComponentFieldType::SLIDER_TYPE;
+        parallaxHeightField._readOnly = false;
+        parallaxHeightField._basicType = GFX::PushConstantType::FLOAT;
+        parallaxHeightField._range = { 0.01f, 10.0f };
+
+        _editorComponent.registerField(std::move(parallaxHeightField));
+
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
+        bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
+        bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
+        bufferDescriptor._separateReadWrite = false;
+        bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+                              
+        //Should be once per frame
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+
+        bufferDescriptor._name = "TERRAIN_RENDER_NODES";
+        _shaderData = _context.newSB(bufferDescriptor);
+        _initialSetupDone = true;
+    }
+
     SceneGraphNodeDescriptor vegetationParentNode;
     vegetationParentNode._serialize = false;
     vegetationParentNode._name = "Vegetation";
@@ -83,8 +129,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     vegetationNodeDescriptor._serialize = false;
     vegetationNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
     vegetationNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
-                                              to_base(ComponentType::BOUNDS) |
-                                              to_base(ComponentType::RENDERING);
+        to_base(ComponentType::BOUNDS) |
+        to_base(ComponentType::RENDERING);
 
     for (TerrainChunk* chunk : _terrainChunks) {
         vegetationNodeDescriptor._node = Attorney::TerrainChunkTerrain::getVegetation(*chunk);
@@ -92,51 +138,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         vegParent->addChildNode(vegetationNodeDescriptor);
     }
 
-    static_assert(MAX_RENDER_NODES * sizeof(TessellatedNodeData) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
-
-    _initBufferWriteCounter = ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
-    _initBufferWriteCounter *= g_bufferFrameDelay;
-
-    ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
-    bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
-    bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
-    bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-                              
-    //Should be once per frame
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-
-    bufferDescriptor._name = "TERRAIN_RENDER_NODES";
-    _shaderData = _context.newSB(bufferDescriptor);
-
     sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
     sgn.get<RenderingComponent>()->lockLoD(0u);
-
-    _editorComponent.onChangedCbk([this](const char* field) {onEditorChange(field); });
-
-    EditorComponentField tessTriangleWidthField = {};
-    tessTriangleWidthField._name = "Tessellated Triangle Width";
-    tessTriangleWidthField._data = &_descriptor->_tessellatedTriangleWidth;
-    tessTriangleWidthField._type = EditorComponentFieldType::SLIDER_TYPE;
-    tessTriangleWidthField._readOnly = false;
-    tessTriangleWidthField._basicType = GFX::PushConstantType::UINT;
-    tessTriangleWidthField._range = { 1.0f, 150.0f };
-    tessTriangleWidthField._step = 1.0f;
-
-    _editorComponent.registerField(std::move(tessTriangleWidthField));
-
-    EditorComponentField parallaxHeightField = {};
-    parallaxHeightField._name = "Parallax Height";
-    parallaxHeightField._data = &_descriptor->_parallaxHeightScale;
-    parallaxHeightField._type = EditorComponentFieldType::SLIDER_TYPE;
-    parallaxHeightField._readOnly = false;
-    parallaxHeightField._basicType = GFX::PushConstantType::FLOAT;
-    parallaxHeightField._range = { 0.01f, 10.0f };
-
-    _editorComponent.registerField(std::move(parallaxHeightField));
 
     SceneNode::postLoad(sgn);
 }

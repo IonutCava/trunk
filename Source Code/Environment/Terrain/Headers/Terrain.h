@@ -158,7 +158,7 @@ class Terrain : public Object3D {
         IDLE
     };
 
-    F32 _drawDistance;
+    F32 _drawDistance = 1.0f;
     I32 _initBufferWriteCounter = 0;
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
@@ -174,6 +174,8 @@ class Terrain : public Object3D {
     EditorDataState _editorDataDirtyState;
     bool _shaderDataDirty;
     bool _drawCommandsDirty;
+    bool _initialSetupDone = false;
+
     SceneGraphNode* _vegetationGrassNode;
     std::shared_ptr<TerrainDescriptor> _descriptor;
 

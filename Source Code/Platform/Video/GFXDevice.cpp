@@ -1078,8 +1078,8 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 }
 
 void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
-                           RenderTargetHandle& blurTargetH,
-                           RenderTargetHandle& blurTargetV,
+                           RenderTargetHandle& blurBuffer,
+                           RenderTargetHandle& blurTarget,
                            RTAttachmentType att,
                            U8 index,
                            I32 kernelSize,
@@ -1092,7 +1092,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
 
     // Blur horizontally
     GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = blurTargetH._targetID;
+    beginRenderPassCmd._target = blurBuffer._targetID;
     beginRenderPassCmd._name = "BLUR_RENDER_TARGET_HORIZONTAL";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
@@ -1106,7 +1106,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants.countHint(2);
     pushConstantsCommand._constants.set(_ID("kernelSize"), GFX::PushConstantType::INT, kernelSize);
-    pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTargetH._rt->getWidth(), blurTargetH._rt->getHeight()));
+    pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurBuffer._rt->getResolution()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     GFX::DrawCommand drawCmd = { triangleCmd };
@@ -1116,16 +1116,16 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     // Blur vertically
-    beginRenderPassCmd._target = blurTargetV._targetID;
+    beginRenderPassCmd._target = blurTarget._targetID;
     beginRenderPassCmd._name = "BLUR_RENDER_TARGET_VERTICAL";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurVPipeline });
 
-    pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTargetV._rt->getWidth(), blurTargetV._rt->getHeight()));
+    pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTarget._rt->getResolution()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    data = blurTargetH._rt->getAttachment(att, index).texture()->data();
+    data = blurBuffer._rt->getAttachment(att, index).texture()->data();
     descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 

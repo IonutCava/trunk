@@ -16,18 +16,36 @@
 namespace Divide {
 
 namespace {
-    constexpr bool g_occlusionCullReflection = false;
     // how far to offset the clipping planes for reflections in order to avoid artefacts at water/geometry intersections with high wave noise factors
-    constexpr F32 g_reflectionPlaneCorrectionHeight = 1.0f;
+    constexpr F32 g_reflectionPlaneCorrectionHeight = -1.0f;
 };
 
 WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
-    : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
-      _plane(nullptr),
-      _reflectionCam(nullptr)
+    : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER)
 {
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-    renderState().addToDrawExclusionMask(RenderStage::SHADOW);
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, -1);
+
+    EditorComponentField blurReflectionField = {};
+    blurReflectionField._name = "Blur reflections";
+    blurReflectionField._data = &_blurReflections;
+    blurReflectionField._type = EditorComponentFieldType::PUSH_TYPE;
+    blurReflectionField._readOnly = false;
+    blurReflectionField._basicType = GFX::PushConstantType::BOOL;
+
+    _editorComponent.registerField(std::move(blurReflectionField));
+    
+    EditorComponentField blurKernelSizeField = {};
+    blurKernelSizeField._name = "Blur reflections";
+    blurKernelSizeField._data = &_blurKernelSize;
+    blurKernelSizeField._type = EditorComponentFieldType::SLIDER_TYPE;
+    blurKernelSizeField._readOnly = false;
+    blurKernelSizeField._basicType = GFX::PushConstantType::UINT;
+    blurKernelSizeField._basicTypeSize = GFX::PushConstantSize::WORD;
+    blurKernelSizeField._range = { 2.f, 20.f };
+    blurKernelSizeField._step = 1.f;
+
+    _editorComponent.registerField(std::move(blurKernelSizeField));
 }
 
 WaterPlane::~WaterPlane()
@@ -68,14 +86,10 @@ bool WaterPlane::load() {
     waterTextureDUDV.propertyDescriptor(texDescriptor);
 
     Texture_ptr waterNM = CreateResource<Texture>(_parentCache, waterTexture);
-    assert(waterNM != nullptr);
-
     Texture_ptr waterDUDV = CreateResource<Texture>(_parentCache, waterTextureDUDV);
-    assert(waterDUDV != nullptr);
 
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     Material_ptr waterMat = CreateResource<Material>(_parentCache, waterMaterial);
-    assert(waterMat != nullptr);
 
     waterMat->setShadingMode(ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterDUDV);
@@ -241,10 +255,9 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     // Reset reflection cam
     _reflectionCam->fromCamera(*renderParams._camera);
     if (!underwater) {
+        reflectionPlane._distance += g_reflectionPlaneCorrectionHeight;
         _reflectionCam->setReflection(reflectionPlane);
     }
-
-    reflectionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
     //Don't clear colour attachment because we'll always draw something for every texel, even if that something is just the sky
     RTClearDescriptor clearDescriptor = {};
@@ -264,22 +277,25 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
 
     renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 
-    RenderTarget& reflectTarget = renderParams._context.renderTargetPool().renderTarget(renderParams._renderTarget);
-    RenderTarget& reflectBlurTarget = renderParams._context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR_BLUR));
+    if (_blurReflections) {
+        RenderTarget& reflectTarget = renderParams._context.renderTargetPool().renderTarget(renderParams._renderTarget);
+        RenderTargetHandle reflectionTargetHandle(renderParams._renderTarget, &reflectTarget);
 
-    RenderTargetHandle source(renderParams._renderTarget, &reflectTarget);
-    RenderTargetHandle buffer(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR_BLUR), &reflectBlurTarget);
-    /*renderParams._context.blurTarget(source,
-                                     buffer,
-                                     source,
-                                     RTAttachmentType::Colour,
-                                     0, 
-                                     9,
-                                     bufferInOut);*/
+        RenderTarget& reflectBlurTarget = renderParams._context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR_BLUR));
+        RenderTargetHandle reflectionBlurBuffer(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR_BLUR), &reflectBlurTarget);
+
+        renderParams._context.blurTarget(reflectionTargetHandle,
+                                         reflectionBlurBuffer,
+                                         reflectionTargetHandle,
+                                         RTAttachmentType::Colour,
+                                         0, 
+                                         _blurKernelSize,
+                                         bufferInOut);
+    }
 }
 
 void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {
-    F32 waterLevel = sgn.get<TransformComponent>()->getPosition().y;
+    const F32 waterLevel = sgn.get<TransformComponent>()->getPosition().y;
     const Quaternion<F32>& orientation = sgn.get<TransformComponent>()->getOrientation();
 
     vec3<F32> normal(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS));
@@ -295,6 +311,8 @@ void WaterPlane::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("dimensions.<xmlattr>.width", _dimensions.width);
     pt.put("dimensions.<xmlattr>.length", _dimensions.height);
     pt.put("dimensions.<xmlattr>.depth", _dimensions.depth);
+    pt.put("blurReflections", _blurReflections);
+    pt.put("blurKernelSize", _blurKernelSize);
 
     SceneNode::saveToXML(pt);
 }
@@ -303,6 +321,8 @@ void WaterPlane::loadFromXML(const boost::property_tree::ptree& pt) {
     _dimensions.width = pt.get<U16>("dimensions.<xmlattr>.width", 500u);
     _dimensions.height = pt.get<U16>("dimensions.<xmlattr>.length", 500u);
     _dimensions.depth = pt.get<U16>("dimensions.<xmlattr>.depth", 500u);
+    _blurReflections = pt.get<bool>("blurReflections", true);
+    _blurKernelSize = pt.get<U16>("_blurKernelSize", 3u);
 
     SceneNode::loadFromXML(pt);
 }

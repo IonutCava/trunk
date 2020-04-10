@@ -329,8 +329,8 @@ public:
     void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut);
 
     void blurTarget(RenderTargetHandle& blurSource, 
-                    RenderTargetHandle& blurTargetH,
-                    RenderTargetHandle& blurTargetV,
+                    RenderTargetHandle& blurBuffer,
+                    RenderTargetHandle& blurTarget, //< can be the same as source
                     RTAttachmentType att,
                     U8 index,
                     I32 kernelSize,

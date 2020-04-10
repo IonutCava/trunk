@@ -727,11 +727,11 @@ const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Cam
     return _renderPassCuller->frustumCull(cullParams);
 }
 
-void SceneManager::prepareLightData(RenderStage stage, const Camera& camera) {
+void SceneManager::prepareLightData(RenderStage stage, const vec3<F32>& cameraPos, const mat4<F32>& viewMatrix) {
     OPTICK_EVENT();
 
     if (stage != RenderStage::SHADOW) {
-        getActiveScene().lightPool().prepareLightData(stage, camera.getEye(), camera.getViewMatrix());
+        getActiveScene().lightPool().prepareLightData(stage, cameraPos, viewMatrix);
     }
 }
 

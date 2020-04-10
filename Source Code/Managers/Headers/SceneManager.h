@@ -214,7 +214,7 @@ protected:
     void postRenderAllPasses(const Camera& playerCamera);
     void drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
     void debugDraw(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
-    void prepareLightData(RenderStage stage, const Camera& camera);
+    void prepareLightData(RenderStage stage, const vec3<F32>& cameraPos, const mat4<F32>& viewMatrix);
     void generateShadowMaps(GFX::CommandBuffer& bufferInOut);
 
     Camera* playerCamera() const;
@@ -382,8 +382,8 @@ class SceneManagerRenderPass {
         return mgr.cullSceneGraph(stage, camera, minLoD, minExtents);
     }
 
-    static void prepareLightData(Divide::SceneManager& mgr, RenderStage stage, const Camera& camera) {
-        mgr.prepareLightData(stage, camera);
+    static void prepareLightData(Divide::SceneManager& mgr, RenderStage stage, const vec3<F32>& camPosition, const mat4<F32>& viewMatrix) {
+        mgr.prepareLightData(stage, camPosition, viewMatrix);
     }
 
     static void preRenderMainPass(Divide::SceneManager& mgr, const RenderStagePass& stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {

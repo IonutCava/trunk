@@ -13,7 +13,7 @@
 	<!-- this is only taken into consideration if binary cache is disabled-->
 	<useShaderTextCache>false</useShaderTextCache>
 	<useShaderBinaryCache>false</useShaderBinaryCache>
-	<showShadowCascadeSplits>true</showShadowCascadeSplits>
+	<showShadowCascadeSplits>false</showShadowCascadeSplits>
 	<enableLighting>true</enableLighting>
 	<!-- memFile: file name that the application should use to write  memory allocation info -->
 	<!-- leave empty for none! -->

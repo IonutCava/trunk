@@ -16,7 +16,7 @@ ImpostorSphere::ImpostorSphere(GFXDevice& context,
     : Sphere3D(context, parentCache, descriptorHash, name, radius, 8)
 {
     renderState().drawState(false);
-    renderState().addToDrawExclusionMask(RenderStage::SHADOW);
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, -1);
 }
 
 ImpostorSphere::~ImpostorSphere()
@@ -31,7 +31,7 @@ ImpostorBox::ImpostorBox(GFXDevice& context,
     : Box3D(context, parentCache, descriptorHash, name, size)
 {
     renderState().drawState(false);
-    renderState().addToDrawExclusionMask(RenderStage::SHADOW);
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, -1);
 }
 
 ImpostorBox::~ImpostorBox()

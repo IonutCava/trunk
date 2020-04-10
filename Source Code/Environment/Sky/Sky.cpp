@@ -26,7 +26,8 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
 {
     _sunColour = FColour3(1.0f, 1.0f, 0.2f);
 
-    _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
+    _renderState.addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, -1);
+    _renderState.addToDrawExclusionMask(RenderStage::REFRACTION, RenderPassType::COUNT, -1);
 
     // Generate a render state
     RenderStateBlock skyboxRenderState;

@@ -8,25 +8,20 @@ namespace Divide {
 
 struct RenderStagePass;
 
-class SceneNodeRenderState {
-   public:
+struct SceneNodeRenderState {
+
+    static const  U32 g_AllPassIndexesID = std::numeric_limits<U32>::max();
+
     bool drawState(const RenderStagePass& stagePass, const U8 LoD) const;
 
-    void addToDrawExclusionMask(RenderStagePass stagePass);
-    void removeFromDrawExclusionMask(RenderStagePass stagePass);
-
-    void addToDrawExclusionMask(RenderStage stage);
-    void removeFromDrawExclusionMask(RenderStage stage);
-
-    void addToDrawExclusionMask(RenderPassType passType);
-    void removeFromDrawExclusionMask(RenderPassType passType);
+    /// variant = -1 => all variants
+    void addToDrawExclusionMask(RenderStage stage, RenderPassType passType, I16 variant, U32 passIndex = g_AllPassIndexesID);
+    void removeFromDrawExclusionMask(RenderStage stage, RenderPassType passType, I64 variant, U32 passIndex = g_AllPassIndexesID);
 
     PROPERTY_RW(bool, drawState, true);
     PROPERTY_RW(U8, minLodLevel, 255u);
 
    protected:
-    RenderStage _exclusionStage = RenderStage::COUNT;
-    RenderPassType _exclusionPassType = RenderPassType::COUNT;
     vectorSTD<RenderStagePass> _exclusionStagePasses;
 };
 

@@ -84,9 +84,11 @@ class WaterPlane : public SceneNode {
    private:
     vec3<U16> _dimensions;
     /// the water's "geometry"
-    eastl::shared_ptr<Quad3D> _plane;
+    eastl::shared_ptr<Quad3D> _plane = nullptr;
 
-    Camera* _reflectionCam;
+    Camera* _reflectionCam = nullptr;
+    U16     _blurKernelSize = 3u;
+    bool    _blurReflections = true;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(WaterPlane);
