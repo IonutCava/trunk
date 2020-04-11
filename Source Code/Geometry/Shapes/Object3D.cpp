@@ -13,26 +13,16 @@
 
 namespace Divide {
 
-Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectType type, ObjectFlag flag)
-    : Object3D(context, parentCache, descriptorHash, name, name, "", type, to_U32(flag))
-{
-}
-
-Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectType type, U32 flagMask)
-    : Object3D(context, parentCache, descriptorHash, name, name, "", type, flagMask)
-{
-}
-
-Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
-    : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, type, to_U32(flag))
-{
-}
-
 Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
-    : SceneNode(parentCache, descriptorHash, name, resourceName, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
+    : SceneNode(parentCache,
+                descriptorHash,
+                name,
+                resourceName,
+                resourceLocation,
+                SceneNodeType::TYPE_OBJECT3D,
+                to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING)),
+
     _context(context),
-    _geometryDirty(true),
-    _buffer(nullptr),
     _geometryType(type),
     _geometryFlagMask(flagMask)
 {
@@ -89,7 +79,7 @@ const char* Object3D::getTypeName() const {
     return SceneNode::getTypeName();
 }
 
-bool Object3D::isPrimitive() const {
+bool Object3D::isPrimitive() const noexcept {
     return _geometryType._value == ObjectType::BOX_3D ||
            _geometryType._value == ObjectType::QUAD_3D ||
            _geometryType._value == ObjectType::PATCH_3D ||

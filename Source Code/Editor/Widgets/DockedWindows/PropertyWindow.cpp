@@ -158,10 +158,22 @@ namespace Divide {
         return sceneChanged;
     }
 
+    namespace {
+        bool isRequiredComponentType(SceneGraphNode* selection, const ComponentType componentType) {
+            if (selection != nullptr) {
+                return BitCompare(selection->getNode().requiredComponentMask(), to_U32(componentType));
+            }
+
+            return false;
+        }
+    };
+
     void PropertyWindow::drawInternal() {
         bool sceneChanged = false;
 
-        bool hasSelections = !selections().empty();
+        Selections crtSelections = selections();
+
+        bool hasSelections = crtSelections._selectionCount > 0u;
 
         Camera* selectedCamera = Attorney::EditorPropertyWindow::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
@@ -169,11 +181,11 @@ namespace Divide {
         } else if (hasSelections) {
             const F32 smallButtonWidth = 60.0f;
             const F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
-            const vectorSTD<I64>& crtSelections = selections();
 
             static bool closed = false;
-            for (const I64 nodeGUID : crtSelections) {
-                SceneGraphNode* sgnNode = node(nodeGUID);
+            for (U8 i = 0u; i < crtSelections._selectionCount; ++i) {
+                SceneGraphNode* sgnNode = node(crtSelections._selections[i]);
+
                 if (sgnNode != nullptr) {
                     bool enabled = sgnNode->hasFlag(SceneGraphNode::Flags::ACTIVE);
                     if (ImGui::Checkbox(sgnNode->name().c_str(), &enabled)) {
@@ -195,10 +207,19 @@ namespace Divide {
                             if (ImGui::Button("INSPECT", ImVec2(smallButtonWidth, 20))) {
                                 Attorney::EditorGeneralWidget::inspectMemory(_context.editor(), std::make_pair(comp, sizeof(EditorComponent)));
                             }
-                            ImGui::SameLine();
-                            if (ImGui::Button("REMOVE", ImVec2(smallButtonWidth, 20))) {
-                                Attorney::EditorGeneralWidget::inspectMemory(_context.editor(), std::make_pair(nullptr, 0));
+
+                            if (comp->parentComponentType()._value != ComponentType::COUNT && !isRequiredComponentType(sgnNode, comp->parentComponentType())) {
+                                ImGui::SameLine();
+                                if (ImGui::Button("REMOVE", ImVec2(smallButtonWidth, 20))) {
+                                    Attorney::EditorGeneralWidget::inspectMemory(_context.editor(), std::make_pair(nullptr, 0));
+
+                                    if (Attorney::EditorGeneralWidget::removeComponent(_context.editor(), sgnNode, comp->parentComponentType())) {
+                                        sceneChanged = true;
+                                        continue;
+                                    }
+                                }
                             }
+
                             ImGui::Separator();
 
                             vectorSTD<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
@@ -245,8 +266,8 @@ namespace Divide {
 
                                             case LightType::DIRECTIONAL: {
                                                 DirectionalLightComponent* dirLight = static_cast<DirectionalLightComponent*>(light);
-                                                for (U8 i = 0; i < dirLight->csmSplitCount(); ++i) {
-                                                    Camera* shadowCamera = dirLight->shadowCameras()[i];
+                                                for (U8 split = 0; split < dirLight->csmSplitCount(); ++split) {
+                                                    Camera* shadowCamera = dirLight->shadowCameras()[split];
                                                     if (drawCamera(shadowCamera)) {
                                                         sceneChanged = true;
                                                     }
@@ -275,7 +296,7 @@ namespace Divide {
                                         sceneChanged = true;
                                     }
 
-                                    const U16 min = 1u, max = 1000u;
+                                    constexpr U16 min = 1u, max = 1000u;
                                     U16 shadowFadeDistance = activeSceneState.shadowFadeDistance();
                                     if (ImGui::SliderScalar("Shadow fade distance", ImGuiDataType_U16, &shadowFadeDistance, &min, &max)) {
                                         activeSceneState.shadowFadeDistance(shadowFadeDistance);
@@ -296,7 +317,30 @@ namespace Divide {
         }
 
         if (hasSelections) {
-            const F32 buttonWidth = 80.0f;
+            //ToDo: Speed this up. Also, how do we handle adding stuff like RenderingComponents and creating materials and the like?
+            const auto validComponentToAdd = [this, &crtSelections](const ComponentType type) -> bool {
+                if (type._value == ComponentType::COUNT) {
+                    return false;
+                }
+
+                if (type._value == ComponentType::SCRIPT) {
+                    return true;
+                }
+
+                bool missing = false;
+                for (U8 i = 0u; i < crtSelections._selectionCount; ++i) {
+                    SceneGraphNode* sgn = node(crtSelections._selections[i]);
+                    if (sgn != nullptr && !BitCompare(sgn->componentMask(), to_U32(type))) {
+                        missing = true;
+                        break;
+                    }
+                }
+
+                return missing;
+            };
+
+            constexpr F32 buttonWidth = 80.0f;
+
             const F32 xOffset = ImGui::GetWindowSize().x - buttonWidth - 20.0f;
             ImGui::NewLine();
             ImGui::Separator();
@@ -309,8 +353,8 @@ namespace Divide {
             static ComponentType selectedType = ComponentType::COUNT;
 
             if (ImGui::BeginPopup("COMP_SELECTION_GROUP")) {
-                for (ComponentType type : ComponentType::_values()) {
-                    if (type._to_integral() == ComponentType::COUNT) {
+                for (const ComponentType type : ComponentType::_values()) {
+                    if (type._to_integral() == ComponentType::COUNT || !validComponentToAdd(type)) {
                         continue;
                     }
 
@@ -329,8 +373,10 @@ namespace Divide {
                 ImGui::Separator();
 
                 if (ImGui::Button("OK", ImVec2(120, 0))) {
+                    if (Attorney::EditorGeneralWidget::addComponent(_context.editor(), crtSelections, selectedType)) {
+                        sceneChanged = true;
+                    }
                     selectedType = ComponentType::COUNT;
-                    sceneChanged = true;
                     ImGui::CloseCurrentPopup();
                 }
 
@@ -342,7 +388,6 @@ namespace Divide {
                 }
                 ImGui::EndPopup();
             }
-            
         }
 
         if (sceneChanged) {
@@ -350,16 +395,17 @@ namespace Divide {
         }
     }
     
-    vectorSTD<I64> PropertyWindow::selections() const {
-        const SceneManager* sceneManager = context().kernel().sceneManager();
-        const Scene& activeScene = sceneManager->getActiveScene();
+    const Selections& PropertyWindow::selections() const {
+        static Selections selections;
 
-        return activeScene.getCurrentSelection();
+        const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
+
+        selections = activeScene.getCurrentSelection();
+        return selections;
     }
     
     SceneGraphNode* PropertyWindow::node(I64 guid) const {
-        const SceneManager* sceneManager = context().kernel().sceneManager();
-        const Scene& activeScene = sceneManager->getActiveScene();
+        const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
 
         return activeScene.sceneGraph().findNode(guid);
     }
@@ -949,15 +995,16 @@ namespace Divide {
 
          return ret;
      }
+
      const char* PropertyWindow::name() const {
-         const vectorSTD<I64> nodes = selections();
-         if (nodes.empty()) {
+         const Selections& nodes = selections();
+         if (nodes._selectionCount == 0) {
              return DockedWindow::name();
          }
-         if (nodes.size() == 1) {
-             return node(nodes.front())->name().c_str();
+         if (nodes._selectionCount == 1) {
+             return node(nodes._selections[0])->name().c_str();
          }
 
-         return Util::StringFormat("%s, %s, ...", node(nodes[0])->name().c_str(), node(nodes[1])->name().c_str()).c_str();
+         return Util::StringFormat("%s, %s, ...", node(nodes._selections[0])->name().c_str(), node(nodes._selections[1])->name().c_str()).c_str();
      }
 }; //namespace Divide

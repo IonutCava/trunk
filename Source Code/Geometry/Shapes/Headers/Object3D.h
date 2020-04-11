@@ -61,31 +61,27 @@ class Object3D : public SceneNode {
         OBJECT_FLAG_NO_VB = toBit(2)
     };
 
-
-    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectType type, U32 flagMask = 0);
-    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, ObjectType type, ObjectFlag flag);
-    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag);
     explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
 
     virtual ~Object3D();
 
     virtual VertexBuffer* const getGeometryVB() const;
-    inline void setGeometryVBDirty() { _geometryDirty = true; }
+    inline void setGeometryVBDirty() noexcept { _geometryDirty = true; }
 
-    inline ObjectType getObjectType() const { return _geometryType; }
+    inline ObjectType getObjectType() const noexcept { return _geometryType; }
 
-    inline void setObjectFlag(ObjectFlag flag) {
+    inline void setObjectFlag(ObjectFlag flag) noexcept {
         SetBit(_geometryFlagMask, to_U32(flag));
     }
-    inline void clearObjectFlag(ObjectFlag flag) {
+    inline void clearObjectFlag(ObjectFlag flag) noexcept {
         ClearBit(_geometryFlagMask, to_U32(flag));
     }
 
-    inline bool getObjectFlag(ObjectFlag flag) const {
+    inline bool getObjectFlag(ObjectFlag flag) const noexcept {
         return BitCompare(_geometryFlagMask, to_U32(flag));
     }
 
-    inline U32 getObjectFlagMask() const {
+    inline U32 getObjectFlagMask() const noexcept {
         return _geometryFlagMask;
     }
 
@@ -112,11 +108,11 @@ class Object3D : public SceneNode {
     }
 
     // Procedural geometry deformation support?
-    inline vectorEASTL<vec3<U32> >& getTriangles() {
+    inline vectorEASTL<vec3<U32> >& getTriangles() noexcept {
         return _geometryTriangles;
     }
 
-    inline const vectorEASTL<vec3<U32> >& getTriangles() const {
+    inline const vectorEASTL<vec3<U32> >& getTriangles() const noexcept {
         return _geometryTriangles;
     }
 
@@ -143,7 +139,7 @@ class Object3D : public SceneNode {
 
     virtual const char* getTypeName() const override;
 
-    bool isPrimitive() const;
+    bool isPrimitive() const noexcept;
 
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
@@ -160,22 +156,22 @@ class Object3D : public SceneNode {
                                    RenderStagePass renderStagePass,
                                    RenderPackage& pkgInOut) override;
 
-    virtual const char* getResourceTypeName() const override { return "Object3D"; }
+    virtual const char* getResourceTypeName() const noexcept override { return "Object3D"; }
 
    protected:
     GFXDevice& _context;
     std::array<U16, 4> _geometryPartitionIDs;
-    U32 _geometryFlagMask;
-    ObjectType _geometryType;
-    RigidBodyShape _rigidBodyShape;
+    U32 _geometryFlagMask = 0u;
+    ObjectType _geometryType = ObjectType::COUNT;
+    RigidBodyShape _rigidBodyShape = RigidBodyShape::SHAPE_COUNT;
     /// 3 indices, pointing to position values, that form a triangle in the mesh.
     /// used, for example, for cooking collision meshes
     vectorEASTL<vec3<U32> > _geometryTriangles;
 
   private:
-     bool _geometryDirty;
+     bool _geometryDirty = true;;
      /// A custom, override vertex buffer
-     VertexBuffer* _buffer;
+     VertexBuffer* _buffer = nullptr;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Object3D);

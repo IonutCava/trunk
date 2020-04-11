@@ -67,7 +67,7 @@ enum class TaskPoolType : U8 {
 class PlatformContext {
     friend class Attorney::PlatformContextKernel;
 public:
-    enum class ComponentType : U32 {
+    enum class SystemComponentType : U32 {
         Application = 1 << 1,
         GFXDevice = 1 << 2,
         SFXDevice = 1 << 3,
@@ -87,51 +87,51 @@ public:
     explicit PlatformContext(Application& app, Kernel& kernel);
     ~PlatformContext();
 
-    void beginFrame(U32 mask = to_base(ComponentType::ALL));
-    void idle(U32 mask = to_base(ComponentType::ALL));
-    void endFrame(U32 mask = to_base(ComponentType::ALL));
+    void beginFrame(U32 mask = to_base(SystemComponentType::ALL));
+    void idle(U32 mask = to_base(SystemComponentType::ALL));
+    void endFrame(U32 mask = to_base(SystemComponentType::ALL));
 
-    inline void beginFrame(ComponentType component) { beginFrame(to_base(component)); }
-    inline void idle(ComponentType component) { idle(to_base(component)); }
-    inline void endFrame(ComponentType component) { endFrame(to_base(component)); }
+    inline void beginFrame(SystemComponentType component) { beginFrame(to_base(component)); }
+    inline void idle(SystemComponentType component) { idle(to_base(component)); }
+    inline void endFrame(SystemComponentType component) { endFrame(to_base(component)); }
 
     void terminate();
 
     inline Application& app()  noexcept { return _app; }
     inline const Application& app() const noexcept { return _app; }
 
-    inline GFXDevice& gfx() { return *_gfx; }
-    inline const GFXDevice& gfx() const { return *_gfx; }
+    inline GFXDevice& gfx() noexcept { return *_gfx; }
+    inline const GFXDevice& gfx() const noexcept { return *_gfx; }
 
-    inline GUI& gui() { return *_gui; }
-    inline const GUI& gui() const { return *_gui; }
+    inline GUI& gui() noexcept { return *_gui; }
+    inline const GUI& gui() const noexcept { return *_gui; }
 
-    inline SFXDevice& sfx() { return *_sfx; }
-    inline const SFXDevice& sfx() const { return *_sfx; }
+    inline SFXDevice& sfx() noexcept { return *_sfx; }
+    inline const SFXDevice& sfx() const noexcept { return *_sfx; }
 
-    inline PXDevice& pfx() { return *_pfx; }
-    inline const PXDevice& pfx() const { return *_pfx; }
+    inline PXDevice& pfx() noexcept { return *_pfx; }
+    inline const PXDevice& pfx() const noexcept { return *_pfx; }
 
-    inline XMLEntryData& entryData() { return *_entryData; }
-    inline const XMLEntryData& entryData() const { return *_entryData; }
+    inline XMLEntryData& entryData() noexcept { return *_entryData; }
+    inline const XMLEntryData& entryData() const noexcept { return *_entryData; }
 
-    inline Configuration& config() { return *_config; }
-    inline const Configuration& config() const { return *_config; }
+    inline Configuration& config() noexcept { return *_config; }
+    inline const Configuration& config() const noexcept { return *_config; }
 
-    inline LocalClient& client() { return *_client; }
-    inline const LocalClient& client() const { return *_client; }
+    inline LocalClient& client() noexcept { return *_client; }
+    inline const LocalClient& client() const noexcept { return *_client; }
 
-    inline DebugInterface& debug() { return *_debug; }
-    inline const DebugInterface& debug() const { return *_debug; }
+    inline DebugInterface& debug() noexcept { return *_debug; }
+    inline const DebugInterface& debug() const noexcept { return *_debug; }
 
-    inline Editor& editor() { return *_editor; }
-    inline const Editor& editor() const { return *_editor; }
+    inline Editor& editor() noexcept { return *_editor; }
+    inline const Editor& editor() const noexcept { return *_editor; }
 
-    inline TaskPool& taskPool(TaskPoolType type) {return *_taskPool[to_base(type)]; }
-    inline const TaskPool& taskPool(TaskPoolType type) const { return *_taskPool[to_base(type)]; }
+    inline TaskPool& taskPool(TaskPoolType type) noexcept {return *_taskPool[to_base(type)]; }
+    inline const TaskPool& taskPool(TaskPoolType type) const noexcept { return *_taskPool[to_base(type)]; }
 
-    inline Input::InputHandler& input() { return *_inputHandler; }
-    inline const Input::InputHandler& input() const { return *_inputHandler; }
+    inline Input::InputHandler& input() noexcept { return *_inputHandler; }
+    inline const Input::InputHandler& input() const noexcept { return *_inputHandler; }
 
     Kernel& kernel();
     const Kernel& kernel() const;

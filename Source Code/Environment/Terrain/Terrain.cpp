@@ -49,7 +49,7 @@ namespace {
 }
 
 Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
-    : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN),
+    : Object3D(context, parentCache, descriptorHash, name, name, "", ObjectType::TERRAIN, 0u),
       _terrainQuadtree(context),
       _shaderData(nullptr),
       _drawCommandsDirty(false),

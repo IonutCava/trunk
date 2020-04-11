@@ -87,7 +87,7 @@ class SubMesh : public Object3D {
                            RenderStagePass renderStagePass,
                            RenderPackage& pkgInOut) override;
 
-    virtual const char* getResourceTypeName() const override { return "SubMesh"; }
+    virtual const char* getResourceTypeName() const noexcept override { return "SubMesh"; }
 
     void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,

@@ -585,6 +585,9 @@
     <ClCompile Include="..\..\Source Code\ECS\Systems\TransformSystem.cpp">
       <Filter>ECS\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\ScriptComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1035,6 +1038,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\MaterialEnums.h">
       <Filter>Geometry\Material\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\ScriptComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

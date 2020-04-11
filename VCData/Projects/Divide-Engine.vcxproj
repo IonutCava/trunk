@@ -390,6 +390,7 @@
     <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponentState.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\RigidBodyComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\ScriptComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\SelectionComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\SGNComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\SpotLightComponent.cpp" />
@@ -526,6 +527,7 @@
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RagdollComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RenderingComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\RigidBodyComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\ScriptComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SelectionComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SpotLightComponent.h" />

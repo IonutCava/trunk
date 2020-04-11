@@ -111,9 +111,9 @@ void Kernel::startSplashScreen() {
         while (_splashScreenUpdating) {
             const U64 deltaTimeUS = currentTimeUS - previousTimeUS;
             previousTimeUS = currentTimeUS;
-            _platformContext.beginFrame(PlatformContext::ComponentType::GFXDevice);
+            _platformContext.beginFrame(PlatformContext::SystemComponentType::GFXDevice);
             splash.render(_platformContext.gfx(), deltaTimeUS);
-            _platformContext.endFrame(PlatformContext::ComponentType::GFXDevice);
+            _platformContext.endFrame(PlatformContext::SystemComponentType::GFXDevice);
             std::this_thread::sleep_for(std::chrono::milliseconds(15));
 
             break;

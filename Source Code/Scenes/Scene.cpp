@@ -754,11 +754,14 @@ U16 Scene::registerInputActions() {
     auto none = [](InputParams param) {};
     auto deleteSelection = [this](InputParams param) { 
         PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
-        for (auto selection : _currentSelection[idx]) {
-            _sceneGraph->removeNode(selection);
+        Selections& playerSelections = _currentSelection[idx];
+        for (U8 i = 0u; i < playerSelections._selectionCount; ++i) {
+            _sceneGraph->removeNode(playerSelections._selections[i]);
         }
-        _currentSelection[idx].clear();
+        playerSelections._selectionCount = 0u;
+        playerSelections._selections.fill(-1);
     };
+
     auto increaseCameraSpeed = [this](InputParams param){
         Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 
@@ -1150,9 +1153,9 @@ void Scene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
 
 void Scene::rebuildShaders() {
     bool rebuilt = false;
-    for (auto iter : _currentSelection) {
-        for (I64 selection : iter.second) {
-            SceneGraphNode* node = sceneGraph().findNode(selection);
+    for (auto& [playerIdx, selections] : _currentSelection) {
+        for (U8 i = 0u; i < selections._selectionCount; ++i) {
+            SceneGraphNode* node = sceneGraph().findNode(selections._selections[i]);
             if (node != nullptr) {
                 node->get<RenderingComponent>()->rebuildMaterial();
                 rebuilt = true;
@@ -1230,7 +1233,7 @@ void Scene::addPlayerInternal(bool queue) {
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
         playerNodeDescriptor._serialize = false;
-        playerNodeDescriptor._node = eastl::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName);
+        playerNodeDescriptor._node = eastl::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName, playerName, "", SceneNodeType::TYPE_EMPTY, 0u);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |
@@ -1560,31 +1563,34 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
 }
 
 void Scene::onNodeDestroy(SceneGraphNode& node) {
-    I64 guid = node.getGUID();
+    const I64 guid = node.getGUID();
     for (auto iter : _currentHoverTarget) {
         if (iter.second == guid) {
             iter.second = -1;
         }
     }
 
-    for (auto iter : _currentSelection) {
-        iter.second.erase(
-            std::remove_if(std::begin(iter.second), std::end(iter.second),
-                           [guid](I64 crtGUID) -> bool { return guid == crtGUID; }),
-            std::end(iter.second));
+    for (auto& [playerIdx, playerSelections] : _currentSelection) {
+        for (I8 i = playerSelections._selectionCount; i > 0; --i) {
+            I64 crtGUID = playerSelections._selections[i];
+            if (crtGUID == guid) {
+                std::swap(playerSelections._selections[i], playerSelections._selections[playerSelections._selectionCount--]);
+            }
+        }
     }
 }
 
 void Scene::resetSelection(PlayerIndex idx) {
-    for (const I64 selectionGUID : _currentSelection[idx]) {
-        SceneGraphNode* node = sceneGraph().findNode(selectionGUID);
+    Selections& playerSelections = _currentSelection[idx];
+    for (I8 i = 0; i < playerSelections._selectionCount; ++i) {
+        SceneGraphNode* node = sceneGraph().findNode(playerSelections._selections[i]);
         if (node != nullptr) {
             node->clearFlag(SceneGraphNode::Flags::HOVERED);
             node->clearFlag(SceneGraphNode::Flags::SELECTED);
         }
     }
-
-    _currentSelection[idx].resize(0);
+    playerSelections._selections.fill(-1);
+    playerSelections._selectionCount = 0u;
 
     for (auto& cbk : _selectionChangeCallbacks) {
         cbk(idx, {});
@@ -1592,8 +1598,10 @@ void Scene::resetSelection(PlayerIndex idx) {
 }
 
 void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
+    Selections& playerSelections = _currentSelection[idx];
+
     for (SceneGraphNode* sgn : sgns) {
-        _currentSelection[idx].push_back(sgn->getGUID());
+        playerSelections._selections[playerSelections._selectionCount++] = sgn->getGUID();
         sgn->setFlag(SceneGraphNode::Flags::SELECTED);
     }
     for (auto& cbk : _selectionChangeCallbacks) {
@@ -1613,9 +1621,9 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
         return false;
     }
 
-    vectorSTD<I64>& selections = _currentSelection[idx];
-    if (!selections.empty()) {
-        if (std::find(std::cbegin(selections), std::cend(selections), hoverGUID) != std::cend(selections)) {
+    Selections& playerSelections = _currentSelection[idx];
+    for (U8 i = 0; i < playerSelections._selectionCount; ++i) {
+        if (playerSelections._selections[i] == hoverGUID) {
             //Already selected
             return true;
         }

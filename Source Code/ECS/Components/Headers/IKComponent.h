@@ -37,12 +37,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 
 namespace Divide {
-    class IKComponent final : public BaseComponentType<IKComponent, ComponentType::INVERSE_KINEMATICS>{
-        public:
-            IKComponent(SceneGraphNode& parentSGN, PlatformContext& context);
-    };
+class IKComponent final : public BaseComponentType<IKComponent, ComponentType::INVERSE_KINEMATICS>{
+    public:
+        IKComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+};
 
-    INIT_COMPONENT(IKComponent);
+INIT_COMPONENT(IKComponent);
 }; //namespace Divide
 
 #endif //_IK_COMPONENT_H_

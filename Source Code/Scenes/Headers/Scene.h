@@ -77,6 +77,12 @@ namespace Attorney {
     class SceneInput;
 };
 
+struct Selections {
+    static constexpr U8 MaxSelections = 254u;
+    std::array<I64, MaxSelections> _selections;
+    U8 _selectionCount = 0u;
+};
+
 struct DragSelectData {
     Rect<I32> _targetViewport;
     vec2<I32> _startDragPos;
@@ -144,7 +150,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
 
     /// Object picking
-    inline vectorSTD<I64> getCurrentSelection(PlayerIndex index = 0) const {
+    inline Selections getCurrentSelection(PlayerIndex index = 0) const {
         const auto it = _currentSelection.find(index);
         if (it != eastl::cend(_currentSelection)) {
             return it->second;
@@ -290,7 +296,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
        F32 _LRSpeedFactor = 1.0f;
        /// Current selection
-       hashMap<PlayerIndex, vectorSTD<I64>> _currentSelection;
+       hashMap<PlayerIndex, Selections> _currentSelection;
        hashMap<PlayerIndex, I64> _currentHoverTarget;
        hashMap<PlayerIndex, DragSelectData> _dragSelectData;
 

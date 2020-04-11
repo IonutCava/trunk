@@ -42,6 +42,8 @@ class Material;
 class SceneGraphNode;
 class TransformComponent;
 
+struct Selections;
+
 struct EditorComponentField;
 class PropertyWindow : public DockedWindow, public PlatformContextComponent {
     public:
@@ -55,7 +57,7 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
 
      bool drawCamera(Camera* cam);
 
-     vectorSTD<I64> selections() const;
+     const Selections& selections() const;
      SceneGraphNode* node(I64 guid) const;
 
      //return true if the field has been modified

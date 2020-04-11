@@ -69,7 +69,14 @@ U32 Vegetation::s_maxTreeInstances = 0u;
 Vegetation::Vegetation(GFXDevice& context, 
                        TerrainChunk& parentChunk,
                        const VegetationDetails& details)
-    : SceneNode(context.parent().resourceCache(), parentChunk.parent().descriptorHash() + parentChunk.ID(), details.name + "_" + to_stringImpl(parentChunk.ID()), SceneNodeType::TYPE_VEGETATION),
+    : SceneNode(context.parent().resourceCache(), 
+                parentChunk.parent().descriptorHash() + parentChunk.ID(),
+                details.name,
+                details.name + "_" + to_stringImpl(parentChunk.ID()),
+                "",
+                SceneNodeType::TYPE_VEGETATION,
+                to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING)),
+
       _context(context),
       _terrainChunk(parentChunk),
       _billboardCount(details.billboardCount),

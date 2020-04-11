@@ -47,6 +47,25 @@ namespace Divide {
         class EditorComponentSceneGraphNode;
     }; //namespace Attorney
 
+    BETTER_ENUM(ComponentType, U32,
+        TRANSFORM = toBit(1),
+        ANIMATION = toBit(2),
+        INVERSE_KINEMATICS = toBit(3),
+        RAGDOLL = toBit(4),
+        NAVIGATION = toBit(5),
+        BOUNDS = toBit(6),
+        RENDERING = toBit(7),
+        NETWORKING = toBit(8),
+        UNIT = toBit(9),
+        RIGID_BODY = toBit(10),
+        SELECTION = toBit(11),
+        DIRECTIONAL_LIGHT = toBit(12),
+        POINT_LIGHT = toBit(13),
+        SPOT_LIGHT = toBit(14),
+        SCRIPT = toBit(15),
+        COUNT = 15
+    );
+
     enum class EditorComponentFieldType : U8 {
         PUSH_TYPE = 0,
         SLIDER_TYPE,
@@ -119,7 +138,7 @@ namespace Divide {
             }
         }
 
-        inline bool supportsByteCount() const {
+        inline bool supportsByteCount() const noexcept {
             return _basicType == GFX::PushConstantType::INT ||
                    _basicType == GFX::PushConstantType::UINT ||
                    _basicType == GFX::PushConstantType::IVEC2 ||
@@ -136,7 +155,7 @@ namespace Divide {
                    _basicType == GFX::PushConstantType::UMAT4;
         }
 
-        inline bool isMatrix() const {
+        inline bool isMatrix() const noexcept {
             return _basicType == GFX::PushConstantType::IMAT2 ||
                    _basicType == GFX::PushConstantType::IMAT3 ||
                    _basicType == GFX::PushConstantType::IMAT4 ||
@@ -159,11 +178,10 @@ namespace Divide {
 
       public:
 
-        EditorComponent(const Str128& name);
-        virtual ~EditorComponent() = default;
+        explicit EditorComponent(ComponentType parentComponentType, const Str128& name);
+        explicit EditorComponent(const Str128& name);
 
-        inline void name(const Str128& nameStr) { _name = nameStr; }
-        inline const Str128& name() const noexcept { return _name; }
+        virtual ~EditorComponent() = default;
 
         inline void addHeader(const Str32& name) {
             EditorComponentField field = {};
@@ -185,6 +203,9 @@ namespace Divide {
         bool saveCache(ByteBuffer& outputBuffer) const;
         bool loadCache(ByteBuffer& inputBuffer);
 
+        PROPERTY_RW(Str128, name, "");
+        PROPERTY_RW(ComponentType, parentComponentType, ComponentType::COUNT);
+
       protected:
         void onChanged(EditorComponentField& field) const;
         virtual void saveToXML(boost::property_tree::ptree& pt) const;
@@ -194,7 +215,6 @@ namespace Divide {
         void loadFieldFromXML(EditorComponentField& field, const boost::property_tree::ptree& pt);
 
       protected:
-        Str128 _name;
         DELEGATE<void, const char*> _onChangedCbk;
         vectorSTD<EditorComponentField> _fields;
     };

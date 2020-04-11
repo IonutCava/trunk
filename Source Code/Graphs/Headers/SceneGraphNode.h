@@ -214,12 +214,11 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         inline T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } //< ToDo: Optimise this -Ionut
 
         template <>
-        inline TransformComponent* get() const { return Hacks._transformComponentCache; }
+        inline TransformComponent* get() const noexcept { return Hacks._transformComponentCache; }
 
         template <>
-        inline BoundsComponent* get() const { return Hacks._boundsComponentCache; }
+        inline BoundsComponent* get() const noexcept { return Hacks._boundsComponentCache; }
 
-        
         void SendEvent(ECSCustomEventType eventType);
 
         /// Sends a global event but dispatched is handled between update steps
@@ -235,8 +234,11 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         typename std::enable_if<std::is_base_of<SGNComponent, T>::value, T*>::type
         AddSGNComponent(P&&... param) {
             SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(*this, this->context(), std::forward<P>(param)...));
+
             Hacks._editorComponents.emplace_back(&comp->getEditorComponent());
+
             SetBit(_componentMask, to_U32(comp->type()));
+
             if (comp->type()._value == ComponentType::TRANSFORM) {
                 //Ewww
                 Hacks._transformComponentCache = (TransformComponent*)comp;
@@ -245,6 +247,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
                 //Ewww x2
                 Hacks._boundsComponentCache = (BoundsComponent*)comp;
             }
+
             return static_cast<T*>(comp);
         }
 
@@ -252,16 +255,20 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         template<class T>
         typename std::enable_if<std::is_base_of<SGNComponent, T>::value, void>::type
         RemoveSGNComponent() {
-            SGNComponent* comp = static_cast<SGNComponent>(GetComponent<T>());
-            if (comp) {
-                I64 targetGUID = comp->getEditorComponent().getGUID();
-                _editorComponents.erase(
-                    std::remove_if(std::begin(_editorComponents), std::end(_editorComponents),
-                        [targetGUID](EditorComponent* editorComp)
-                        -> bool { return editorComp->getGUID() == targetGUID; }),
-                    std::end(_editorComponents));
-                ClearBit(_componentMask, comp->type());
+            SGNComponent* comp = (SGNComponent*)(GetComponent<T>());
+            if (comp != nullptr) {
+                const I64 targetGUID = comp->getEditorComponent().getGUID();
+
+                Hacks._editorComponents.erase(std::remove_if(std::begin(Hacks._editorComponents),
+                                                             std::end(Hacks._editorComponents),
+                                                             [targetGUID](EditorComponent* editorComp) -> bool {
+                                                                 return editorComp->getGUID() == targetGUID;
+                                                             }),
+                                              std::end(Hacks._editorComponents));
+
+                ClearBit(_componentMask, to_U32(comp->type()));
                 RemoveComponent<T>();
+
                 if (comp->type()._value == ComponentType::TRANSFORM) {
                     Hacks._transformComponentCache = nullptr;
                 }
@@ -271,7 +278,9 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
             }
         }
 
-        void AddMissingComponents(U32 componentMask);
+        void AddComponents(U32 componentMask, bool allowDuplicates);
+        void RemoveComponents(U32 componentMask);
+
         /// Serialization: save to XML file
         void saveToXML(const Str256& sceneLocation) const;
         /// Serialization: load from XML file (expressed as a boost property_tree)

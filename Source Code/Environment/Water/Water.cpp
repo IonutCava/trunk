@@ -21,7 +21,7 @@ namespace {
 };
 
 WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
-    : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER)
+    : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_WATER, to_base(ComponentType::TRANSFORM))
 {
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, -1);

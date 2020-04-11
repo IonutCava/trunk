@@ -146,7 +146,7 @@ class Terrain : public Object3D {
 
     void onEditorChange(const char* field);
 
-    const char* getResourceTypeName() const override { return "Terrain"; }
+    const char* getResourceTypeName() const noexcept override { return "Terrain"; }
 
    public:
        vectorSTD<VertexBuffer::Vertex> _physicsVerts;

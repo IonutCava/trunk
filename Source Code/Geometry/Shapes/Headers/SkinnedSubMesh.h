@@ -57,7 +57,7 @@ class SkinnedSubMesh : public SubMesh {
 
    protected:
     void onAnimationChange(SceneGraphNode& sgn, I32 newIndex) override;
-    const char* getResourceTypeName() const override { return "SkinnedSubMesh"; }
+    const char* getResourceTypeName() const noexcept override { return "SkinnedSubMesh"; }
 
     void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,

@@ -5,7 +5,7 @@
 namespace Divide {
 
 Box3D::Box3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const vec3<F32>& size)
-    : Object3D(context, parentCache, descriptorHash, name, ObjectType::BOX_3D)
+    : Object3D(context, parentCache, descriptorHash, name, "", "", ObjectType::BOX_3D, 0u)
 {
     _halfExtent.set(size / 2);
 

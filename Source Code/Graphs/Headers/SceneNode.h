@@ -39,6 +39,7 @@
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include "Physics/Headers/PhysicsAPIWrapper.h"
 #include "ECS/Components/Headers/EditorComponent.h"
 
 namespace Divide {
@@ -102,8 +103,7 @@ class SceneNode : public CachedResource {
     friend class Attorney::SceneNodeNetworkComponent;
 
   public:
-    explicit SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const SceneNodeType& type = SceneNodeType::TYPE_EMPTY);
-    explicit SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
+    explicit SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, SceneNodeType type, U32 requiredComponentMask);
     virtual ~SceneNode();
 
     /// Perform any pre-draw operations PRE-command build
@@ -137,17 +137,16 @@ class SceneNode : public CachedResource {
     virtual void setMaterialTpl(const Material_ptr& material);
     const Material_ptr& getMaterialTpl() const;
 
-    inline void type(const SceneNodeType& type) { _type = type; }
-    inline const SceneNodeType& type() const { return _type; }
-
-    inline SceneNodeRenderState& renderState() { return _renderState; }
+    inline SceneNodeRenderState& renderState() noexcept { return _renderState; }
 
     virtual const char* getTypeName() const;
 
-    inline ResourceCache* parentResourceCache() { return _parentCache; }
-    inline const ResourceCache* parentResourceCache() const { return _parentCache; }
+    inline ResourceCache* parentResourceCache() noexcept { return _parentCache; }
+    inline const ResourceCache* parentResourceCache() const noexcept { return _parentCache; }
 
-    inline const BoundingBox& getBounds() const { return _boundingBox; }
+    inline const BoundingBox& getBounds() const noexcept { return _boundingBox; }
+
+    inline U32 requiredComponentMask() const noexcept { return _requiredComponentMask; }
 
     virtual void saveCache(ByteBuffer& outputBuffer) const;
     virtual void loadCache(ByteBuffer& inputBuffer);
@@ -166,12 +165,14 @@ class SceneNode : public CachedResource {
 
     virtual void setBounds(const BoundingBox& aabb);
 
-    EditorComponent& getEditorComponent() { return _editorComponent; }
-    const EditorComponent& getEditorComponent() const { return _editorComponent; }
+    EditorComponent& getEditorComponent() noexcept { return _editorComponent; }
+    const EditorComponent& getEditorComponent() const noexcept { return _editorComponent; }
 
-    virtual size_t maxReferenceCount() const { return 1; }
+    virtual size_t maxReferenceCount() const noexcept { return 1; }
 
-    virtual const char* getResourceTypeName() const override { return "SceneNode"; }
+    virtual const char* getResourceTypeName() const noexcept override { return "SceneNode"; }
+
+    PROPERTY_RW(SceneNodeType, type, SceneNodeType::COUNT);
 
    protected:
      virtual void editorFieldChanged(const char* field);
@@ -190,10 +191,11 @@ class SceneNode : public CachedResource {
     bool _boundsChanged = false;
 
    private:
-    SceneNodeType _type;
-    Material_ptr _materialTemplate;
+    Material_ptr _materialTemplate = nullptr;
 
     std::atomic_size_t _sgnParentCount = 0;
+
+    U32 _requiredComponentMask = 0u;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneNode);

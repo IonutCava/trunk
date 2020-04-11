@@ -45,24 +45,6 @@ class SceneGraphNode;
 class SceneRenderState;
 struct RenderStagePass;
 
-BETTER_ENUM(ComponentType, U16,
-    TRANSFORM = toBit(1),
-    ANIMATION = toBit(2),
-    INVERSE_KINEMATICS = toBit(3),
-    RAGDOLL = toBit(4),
-    NAVIGATION = toBit(5),
-    BOUNDS = toBit(6),
-    RENDERING = toBit(7),
-    NETWORKING = toBit(8),
-    UNIT = toBit(9),
-    RIGID_BODY = toBit(10),
-    SELECTION = toBit(11),
-    DIRECTIONAL_LIGHT = toBit(12),
-    POINT_LIGHT = toBit(13),
-    SPOT_LIGHT = toBit(14),
-    COUNT = 14
-);
-
 enum class ECSCustomEventType : U8 {
     TransformUpdated = 0,
     RelationshipCacheInvalidated,
@@ -83,11 +65,17 @@ namespace Divide {
 template <typename Base, typename... Args>
 struct Factory {
     using ConstructFunc = DELEGATE<void, SceneGraphNode&, Args...>;
-    using FactoryContainer = ska::bytell_hash_map<ComponentType::_integral, ConstructFunc>;
+    using DestructFunc = DELEGATE<void, SceneGraphNode&>;
+    using FactoryContainerConstruct = ska::bytell_hash_map<ComponentType::_integral, ConstructFunc>;
+    using FactoryContainerDestruct = ska::bytell_hash_map<ComponentType::_integral, DestructFunc>;
 
     template <typename... ConstructArgs>
     static void construct(ComponentType type, SceneGraphNode& node, ConstructArgs&&... args) {
-        data().at(type)(node, std::forward<ConstructArgs>(args)...);
+        constructData().at(type)(node, std::forward<ConstructArgs>(args)...);
+    }
+
+    static void destruct(ComponentType type, SceneGraphNode& node) {
+        destructData().at(type)(node);
     }
 
     template <typename T, ComponentType::_enumerated C>
@@ -101,14 +89,19 @@ struct Factory {
             ACKNOWLEDGE_UNUSED(s_registered);
         }
 
-        virtual void OnData(const ECS::Data& data) override {
+        void OnData(const ECS::Data& data) override {
             ACKNOWLEDGE_UNUSED(data);
         }
 
-        static bool registerComponentType() {
-            Factory::data()[C] = [](SceneGraphNode& node, Args... args) -> void {
+        static bool RegisterComponentType() {
+            Factory::constructData().emplace(C, [](SceneGraphNode& node, Args... args) -> void {
                 node.AddSGNComponent<T>(std::forward<Args>(args)...);
-            };
+            });
+
+            Factory::destructData().emplace(C, [](SceneGraphNode& node) -> void {
+                node.RemoveSGNComponent<T>();
+            });
+
             return true;
         }
 
@@ -125,20 +118,26 @@ private:
 
       private:
         bool _registered = false;
-        template <typename T, ComponentType::_enumerated C> friend struct Registrar;
+
+        template <typename T, ComponentType::_enumerated C>
+        friend struct Registrar;
     };
 
     Factory() = default;
 
-    static FactoryContainer& data() {
-        static FactoryContainer container;
+    static FactoryContainerConstruct& constructData() {
+        static FactoryContainerConstruct container;
+        return container;
+    }
+    static FactoryContainerDestruct& destructData() {
+        static FactoryContainerDestruct container;
         return container;
     }
 };
 
 template <typename Base, typename... Args>
 template <typename T, ComponentType::_enumerated C>
-bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args...>::template Registrar<T, C>::registerComponentType();
+bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args...>::template Registrar<T, C>::RegisterComponentType();
 
 struct EntityOnUpdate;
 struct EntityActiveStateChange;
@@ -159,11 +158,11 @@ class SGNComponent : private PlatformContextComponent,
 
         virtual void OnData(const ECS::Data& data);
 
-        inline SceneGraphNode& getSGN() const { return _parentSGN; }
-        inline ComponentType type() const { return _type; }
+        inline SceneGraphNode& getSGN() const noexcept { return _parentSGN; }
+        inline ComponentType type() const noexcept { return _type; }
 
-        EditorComponent& getEditorComponent() { return _editorComponent; }
-        const EditorComponent& getEditorComponent() const { return _editorComponent; }
+        EditorComponent& getEditorComponent() noexcept { return _editorComponent; }
+        const EditorComponent& getEditorComponent() const noexcept { return _editorComponent; }
 
         virtual bool saveCache(ByteBuffer& outputBuffer) const;
         virtual bool loadCache(ByteBuffer& inputBuffer);
@@ -179,10 +178,9 @@ class SGNComponent : private PlatformContextComponent,
     protected:
         EditorComponent _editorComponent;
         SceneGraphNode& _parentSGN;
-        ComponentType _type;
+        ComponentType _type = ComponentType::COUNT;
         std::atomic_bool _enabled;
         mutable std::atomic_bool _hasChanged;
-
 };
 
 template<typename T, ComponentType::_enumerated C>

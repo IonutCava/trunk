@@ -78,7 +78,7 @@ class Sky : public SceneNode {
 
     bool load() override;
 
-    const char* getResourceTypeName() const override { return "Sky"; }
+    const char* getResourceTypeName() const noexcept  override { return "Sky"; }
 
   private:
     bool _enableSun;

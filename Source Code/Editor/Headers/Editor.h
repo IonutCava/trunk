@@ -84,6 +84,7 @@ FWD_DECLARE_MANAGED_CLASS(Mesh);
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
+struct Selections;
 struct SizeChangeParams;
 struct TransformSettings;
 
@@ -218,6 +219,11 @@ class Editor : public PlatformContextComponent,
     inline void toggleMemoryEditor(bool state);
     inline void setSelectedCamera(Camera* camera);
     inline Camera* getSelectedCamera() const;
+
+    bool addComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
+    bool addComponent(const Selections& selections, ComponentType newComponentType) const;
+    bool removeComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
+    bool removeComponent(const Selections& selections, ComponentType newComponentType) const;
 
   private:
     Time::ProfileTimer& _editorUpdateTimer;
@@ -375,11 +381,11 @@ namespace Attorney {
             return editor._gizmo->enabled();
         }
 
-        static bool hasUnsavedSceneChanges(const Editor& editor) {
+        static bool hasUnsavedSceneChanges(const Editor& editor) noexcept {
             return editor.unsavedSceneChanges();
         }
 
-        static void registerUnsavedSceneChanges(Editor& editor) {
+        static void registerUnsavedSceneChanges(Editor& editor) noexcept {
             editor.unsavedSceneChanges(true);
         }
 
@@ -405,6 +411,18 @@ namespace Attorney {
 
         static ImGuiContext& imguizmoContext(Editor& editor) {
             return editor.imguizmoContext();
+        }
+
+        static bool addComponent(const Editor& editor, const Selections& selections, ComponentType newComponentType) {
+            return editor.addComponent(selections, newComponentType);
+        }
+
+        static bool removeComponent(const Editor& editor, SceneGraphNode* selection, ComponentType newComponentType) {
+            return editor.removeComponent(selection, newComponentType);
+        }
+
+        static bool removeComponent(const Editor& editor, const Selections& selections, ComponentType newComponentType) {
+            return editor.removeComponent(selections, newComponentType);
         }
 
         friend class Divide::Gizmo;

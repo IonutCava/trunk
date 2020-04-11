@@ -93,7 +93,7 @@ class Mesh : public Object3D {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) final;
 
-    const char* getResourceTypeName() const override { return "Mesh"; }
+    const char* getResourceTypeName() const noexcept override { return "Mesh"; }
 
     friend class MeshImporter;
     void postImport();

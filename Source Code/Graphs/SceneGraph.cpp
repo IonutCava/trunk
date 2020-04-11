@@ -30,9 +30,9 @@ SceneGraph::SceneGraph(Scene& parentScene)
 
     REGISTER_FRAME_LISTENER(this, 1);
 
-    SceneGraphNodeDescriptor rootDescriptor;
+    SceneGraphNodeDescriptor rootDescriptor = {};
     rootDescriptor._name = "ROOT";
-    rootDescriptor._node = eastl::make_shared<SceneNode>(parentScene.resourceCache(), GUIDWrapper::generateGUID(), "ROOT", SceneNodeType::TYPE_ROOT);
+    rootDescriptor._node = eastl::make_shared<SceneNode>(parentScene.resourceCache(), GUIDWrapper::generateGUID(), "ROOT", "ROOT", "", SceneNodeType::TYPE_ROOT, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS));
     rootDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
     rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
 

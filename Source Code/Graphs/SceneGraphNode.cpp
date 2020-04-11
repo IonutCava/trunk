@@ -71,7 +71,13 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     clearFlag(Flags::VISIBILITY_LOCKED);
 
     if (_node == nullptr) {
-        _node = eastl::make_shared<SceneNode>(sceneGraph.parentScene().resourceCache(), GUIDWrapper::generateGUID(), "");
+        _node = eastl::make_shared<SceneNode>(sceneGraph.parentScene().resourceCache(),
+                                              GUIDWrapper::generateGUID(),
+                                              "EMPTY",
+                                              "EMPTY",
+                                              "",
+                                              SceneNodeType::TYPE_EMPTY,
+                                              to_base(ComponentType::TRANSFORM));
     }
 
     if (_node->type() == SceneNodeType::TYPE_EMPTY || _node->type() == SceneNodeType::TYPE_ROOT) {
@@ -81,7 +87,9 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     assert(_node != nullptr);
     _children.reserve(INITIAL_CHILD_COUNT);
 
-    AddMissingComponents(descriptor._componentMask);
+    AddComponents(descriptor._componentMask, false);
+    AddComponents(_node->requiredComponentMask(), false);
+
     Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, this);
 }
 
@@ -113,17 +121,26 @@ ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
     return _sceneGraph.GetECSEngine();
 }
 
-void SceneGraphNode::AddMissingComponents(U32 componentMask) {
+void SceneGraphNode::AddComponents(U32 componentMask, bool allowDuplicates) {
 
     for (ComponentType::_integral i = 1; i < ComponentType::COUNT + 1; ++i) {
         const U16 componentBit = 1 << i;
 
         // Only add new components;
-        if (BitCompare(componentMask, to_U32(componentBit)) && !BitCompare(_componentMask, to_U32(componentBit))) {
+        if (BitCompare(componentMask, to_U32(componentBit)) && (allowDuplicates || !BitCompare(_componentMask, to_U32(componentBit)))) {
             _componentMask |= componentBit;
             SGNComponent::construct(ComponentType::_from_integral(componentBit), *this);
         }
     };
+}
+
+void SceneGraphNode::RemoveComponents(U32 componentMask) {
+    for (ComponentType::_integral i = 1; i < ComponentType::COUNT + 1; ++i) {
+        const U16 componentBit = 1 << i;
+        if (BitCompare(componentMask, to_U32(componentBit)) && BitCompare(_componentMask, to_U32(componentBit))) {
+            SGNComponent::destruct(ComponentType::_from_integral(componentBit), *this);
+        }
+    }
 }
 
 void SceneGraphNode::setTransformDirty(U32 transformMask) {
@@ -751,7 +768,7 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
     }
 
     if (componentsToLoad != 0) {
-        AddMissingComponents(componentsToLoad);
+        AddComponents(componentsToLoad, false);
     }
 
     for (EditorComponent* editorComponent : Hacks._editorComponents) {

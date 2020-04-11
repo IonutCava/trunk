@@ -113,9 +113,9 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
 
     if (_guiTimersMS[1] >= Time::SecondsToMilliseconds(1)) {
         stringImpl selectionText = "";
-        auto& selections = _currentSelection[0];
-        for (auto selection : selections) {
-            SceneGraphNode* node = sceneGraph().findNode(selection);
+        const Selections& selections = _currentSelection[0];
+        for (U8 i = 0u; i < selections._selectionCount; ++i) {
+            SceneGraphNode* node = sceneGraph().findNode(selections._selections[i]);
             if (node != nullptr) {
                 AI::AIEntity* entity = findAI(node);
                 if (entity) {
@@ -795,8 +795,8 @@ void WarScene::toggleCamera(InputParams param) {
     }
 
     PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
-    if (!_currentSelection[idx].empty()) {
-        SceneGraphNode* node = sceneGraph().findNode(_currentSelection[idx].front());
+    if (_currentSelection[idx]._selectionCount > 0u) {
+        SceneGraphNode* node = sceneGraph().findNode(_currentSelection[idx]._selections[0]);
         if (node != nullptr) {
             if (flyCameraActive) {
                 state().playerState(idx).overrideCamera(tpsCamera);

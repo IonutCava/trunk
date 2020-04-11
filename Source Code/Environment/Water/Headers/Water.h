@@ -75,7 +75,7 @@ class WaterPlane : public SceneNode {
 
     bool load() override;
 
-    const char* getResourceTypeName() const override { return "WaterPlane"; }
+    const char* getResourceTypeName() const noexcept override { return "WaterPlane"; }
 
    private:
     void updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);

@@ -1479,6 +1479,52 @@ ImGuiContext& Editor::imguizmoContext() {
     return _gizmo->getContext();
 }
 
+bool Editor::addComponent(SceneGraphNode* selection, ComponentType newComponentType) const {
+    if (selection != nullptr && newComponentType._value != ComponentType::COUNT) {
+        selection->AddComponents(to_U32(newComponentType), true);
+        return BitCompare(selection->componentMask(), to_U32(newComponentType));
+    }
+
+    return false;
+}
+
+bool Editor::addComponent(const Selections& selections, ComponentType newComponentType) const {
+    bool ret = false;
+    if (selections._selectionCount > 0) {
+        const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
+
+        for (U8 i = 0; i < selections._selectionCount; ++i) {
+            SceneGraphNode* sgn = activeScene.sceneGraph().findNode(selections._selections[i]);
+            ret = addComponent(sgn, newComponentType) || ret;
+        }
+    }
+
+    return ret;
+}
+
+bool Editor::removeComponent(SceneGraphNode* selection, ComponentType newComponentType) const {
+    if (selection != nullptr && newComponentType._value != ComponentType::COUNT) {
+        selection->RemoveComponents(to_U32(newComponentType));
+        return !BitCompare(selection->componentMask(), to_U32(newComponentType));
+    }
+
+    return false;
+}
+
+bool Editor::removeComponent(const Selections& selections, ComponentType newComponentType) const {
+    bool ret = false;
+    if (selections._selectionCount > 0) {
+        const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
+
+        for (U8 i = 0; i < selections._selectionCount; ++i) {
+            SceneGraphNode* sgn = activeScene.sceneGraph().findNode(selections._selections[i]);
+            ret = removeComponent(sgn, newComponentType) || ret;
+        }
+    }
+
+    return ret;
+}
+
 bool Editor::saveToXML() const {
     boost::property_tree::ptree pt;
     const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;

@@ -27,20 +27,15 @@ namespace {
     }
 };
 
-SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const SceneNodeType& type)
-    : SceneNode(parentCache, descriptorHash, name, name, "", type)
-{
-}
-
-SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type)
+SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, SceneNodeType type, U32 requiredComponentMask)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name, resourceName, resourceLocation),
      _parentCache(parentCache),
-     _materialTemplate(nullptr),
      _type(type),
-     _sgnParentCount(0),
-     _boundsChanged(false),
      _editorComponent("")
 {
+    std::atomic_init(&_sgnParentCount, 0);
+    _requiredComponentMask |= requiredComponentMask;
+
     _boundingBox.setMin(-1.0f);
     _boundingBox.setMax(1.0f);
 

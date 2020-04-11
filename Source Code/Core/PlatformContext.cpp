@@ -68,11 +68,11 @@ void PlatformContext::terminate() {
 void PlatformContext::beginFrame(U32 componentMask) {
     OPTICK_EVENT();
 
-    if (BitCompare(componentMask, ComponentType::GFXDevice)) {
+    if (BitCompare(componentMask, SystemComponentType::GFXDevice)) {
         _gfx->beginFrame(app().windowManager().getMainWindow(), true);
     }
 
-    if (BitCompare(componentMask, ComponentType::SFXDevice)) {
+    if (BitCompare(componentMask, SystemComponentType::SFXDevice)) {
         _sfx->beginFrame();
     }
 }
@@ -84,28 +84,28 @@ void PlatformContext::idle(U32 componentMask) {
         _taskPool[i]->flushCallbackQueue();
     }
 
-    if (BitCompare(componentMask, ComponentType::Application)) {
+    if (BitCompare(componentMask, SystemComponentType::Application)) {
        
     }
 
-    if (BitCompare(componentMask, ComponentType::GFXDevice)) {
+    if (BitCompare(componentMask, SystemComponentType::GFXDevice)) {
         _gfx->idle();
     }
-    if (BitCompare(componentMask, ComponentType::SFXDevice)) {
+    if (BitCompare(componentMask, SystemComponentType::SFXDevice)) {
         //_sfx->idle();
     }
-    if (BitCompare(componentMask, ComponentType::PXDevice)) {
+    if (BitCompare(componentMask, SystemComponentType::PXDevice)) {
         _pfx->idle();
     }
-    if (BitCompare(componentMask, ComponentType::GUI)) {
+    if (BitCompare(componentMask, SystemComponentType::GUI)) {
         //_gui->idle();
     }
-    if (BitCompare(componentMask, ComponentType::DebugInterface)) {
+    if (BitCompare(componentMask, SystemComponentType::DebugInterface)) {
         _debug->idle();
     }
 
     if_constexpr(Config::Build::ENABLE_EDITOR) {
-        if (BitCompare(componentMask, ComponentType::Editor)) {
+        if (BitCompare(componentMask, SystemComponentType::Editor)) {
             _editor->idle();
         }
     }
@@ -114,11 +114,11 @@ void PlatformContext::idle(U32 componentMask) {
 void PlatformContext::endFrame(U32 componentMask) {
     OPTICK_EVENT();
 
-    if (BitCompare(componentMask, ComponentType::GFXDevice)) {
+    if (BitCompare(componentMask, SystemComponentType::GFXDevice)) {
         _gfx->endFrame(app().windowManager().getMainWindow(), true);
     }
 
-    if (BitCompare(componentMask, ComponentType::SFXDevice)) {
+    if (BitCompare(componentMask, SystemComponentType::SFXDevice)) {
         _sfx->endFrame();
     }
 }

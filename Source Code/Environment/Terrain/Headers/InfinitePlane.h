@@ -55,7 +55,7 @@ protected:
 
     bool load() override;
 
-    const char* getResourceTypeName() const override { return "InfinitePlane"; }
+    const char* getResourceTypeName() const noexcept override { return "InfinitePlane"; }
 
 private:
     GFXDevice& _context;
