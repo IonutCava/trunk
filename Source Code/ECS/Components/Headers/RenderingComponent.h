@@ -105,10 +105,10 @@ struct RenderCbkParams {
 
 using RenderCallback = DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&>;
 
-constexpr std::pair<RenderTargetUsage, ShaderProgram::TextureUsage> g_texUsage[] = {
-    { RenderTargetUsage::REFLECTION_PLANAR, ShaderProgram::TextureUsage::REFLECTION_PLANAR},
-    { RenderTargetUsage::REFRACTION_PLANAR, ShaderProgram::TextureUsage::REFRACTION_PLANAR},
-    { RenderTargetUsage::REFLECTION_CUBE, ShaderProgram::TextureUsage::REFLECTION_CUBE }
+constexpr std::pair<RenderTargetUsage, TextureUsage> g_texUsage[] = {
+    { RenderTargetUsage::REFLECTION_PLANAR, TextureUsage::REFLECTION_PLANAR},
+    { RenderTargetUsage::REFRACTION_PLANAR, TextureUsage::REFRACTION_PLANAR},
+    { RenderTargetUsage::REFLECTION_CUBE, TextureUsage::REFLECTION_CUBE }
 };
 
 class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {

@@ -1098,7 +1098,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
 
     TextureData data = blurSource._rt->getAttachment(att, index).texture()->data();
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurHPipeline });
@@ -1126,7 +1126,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     data = blurBuffer._rt->getAttachment(att, index).texture()->data();
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, drawCmd);
@@ -1583,7 +1583,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
             // for i > 0, use texture views?
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(hizData, to_U8(ShaderProgram::TextureUsage::DEPTH));
+            descriptorSetCmd._set._textureData.setTexture(hizData, to_U8(TextureUsage::DEPTH));
             GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
 
             // We skip the first level as that's our full resolution image
@@ -1693,7 +1693,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
         bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
     }
 
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), to_U8(TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     const mat4<F32>& viewMatrix = camera.getViewMatrix();
@@ -1778,7 +1778,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ (drawToDepthOnly ? _DrawFSDepthPipeline : _DrawFSTexturePipeline) });
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    bindDescriptorSetsCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ viewport });

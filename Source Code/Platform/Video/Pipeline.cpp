@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-size_t PipelineDescriptor::getHash() const {
+size_t PipelineDescriptor::getHash() const noexcept {
     _hash = _stateHash;
     Util::Hash_combine(_hash, _multiSampleCount);
     Util::Hash_combine(_hash, _shaderProgramHandle);

@@ -41,12 +41,13 @@ namespace Divide {
 namespace GFX {
 
 void DELETE_CMD(GFX::CommandBase*& cmd);
+size_t RESERVE_CMD(U8 typeIndex);
 
 class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend class CommandBufferPool;
   public:
       using CommandEntry = PolyContainerEntry;
-      using Container = PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT), DELETE_CMD>;
+      using Container = PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT), DELETE_CMD, RESERVE_CMD>;
       using CommandOrderContainer = eastl::fixed_vector<CommandEntry, 256, true>;
 
   public:
@@ -95,17 +96,17 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-    get(I24 index) noexcept;
+    get(U24 index) noexcept;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-    get(I24 index) const noexcept;
+    get(U24 index) const noexcept;
 
-    bool exists(U8 typeIndex, I24 index) const noexcept;
+    bool exists(U8 typeIndex, U24 index) const noexcept;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
-    exists(I24 index) const noexcept;
+    exists(U24 index) const noexcept;
 
     inline CommandOrderContainer& operator()() noexcept;
     inline const CommandOrderContainer& operator()() const noexcept;
@@ -133,7 +134,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
 
   protected:
       CommandOrderContainer _commandOrder;
-      eastl::array<I24, to_base(GFX::CommandType::COUNT)> _commandCount = {0};
+      eastl::array<U24, to_base(GFX::CommandType::COUNT)> _commandCount;
 
       Container _commands;
       bool _batched = false;

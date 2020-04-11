@@ -527,7 +527,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
                 shadowDepth = _drawBufferResolve._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
             }
 
-            descriptorSetCmd._set._textureData.setTexture(shadowDepth, to_U8(ShaderProgram::TextureUsage::UNIT0));
+            descriptorSetCmd._set._textureData.setTexture(shadowDepth, to_U8(TextureUsage::UNIT0));
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             _shaderConstants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, 0);
@@ -566,7 +566,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _horzBlurPipeline });
 
         TextureData texData = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         _shaderConstants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, layerOffset);
@@ -581,7 +581,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
         // Blur vertically
         texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(texData, to_U8(TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         beginRenderPassCmd._target = shadowMapID;

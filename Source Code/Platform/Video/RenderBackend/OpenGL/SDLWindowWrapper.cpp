@@ -205,7 +205,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     s_maxTextureUnits = std::max(GLUtil::getGLValue(GL_MAX_TEXTURE_IMAGE_UNITS), 8);
     GLUtil::getGLValue(GL_MAX_VERTEX_ATTRIB_BINDINGS, s_maxAttribBindings);
 
-    if (to_base(ShaderProgram::TextureUsage::COUNT) >= to_U32(s_maxTextureUnits)) {
+    if (to_base(TextureUsage::COUNT) >= to_U32(s_maxTextureUnits)) {
         Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_TEXTURE_UNITS")));
         return ErrorCode::GFX_NOT_SUPPORTED;
     }

@@ -76,7 +76,7 @@ enum class CmdRenderOptions : U16 {
 struct GenericDrawCommand {
     IndirectDrawCommand _cmd = {};                                   // 32 bytes
     PoolHandle _sourceBuffer = {};                                   // 12 bytes
-    I24 _commandOffset = {0};                                        // 9  bytes
+    U24 _commandOffset = {0};                                        // 9  bytes
     U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 6  bytes
     U16 _drawCount = 1;                                              // 4  bytes
     U8  _bufferIndex  = 0;                                           // 2  bytes

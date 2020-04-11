@@ -134,7 +134,7 @@ struct CommandBase
 {
     virtual ~CommandBase() = default;
 
-    virtual void addToBuffer(CommandBuffer& buffer) const = 0;
+    virtual void addToBuffer(CommandBuffer* buffer) const = 0;
     virtual stringImpl toString(U16 indent) const = 0;
     virtual const char* commandName() const noexcept = 0;
 
@@ -147,8 +147,8 @@ struct Command : public CommandBase {
 
     virtual ~Command() = default;
 
-    inline void addToBuffer(CommandBuffer& buffer) const final {
-        buffer.add(reinterpret_cast<const T&>(*this));
+    inline void addToBuffer(CommandBuffer* buffer) const final {
+        buffer->add(reinterpret_cast<const T&>(*this));
     }
 
     stringImpl toString(U16 indent) const override {

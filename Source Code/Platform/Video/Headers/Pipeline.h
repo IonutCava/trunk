@@ -66,7 +66,7 @@ enum class MemoryBarrierType : U32 {
 
 class PipelineDescriptor : public Hashable {
   public:
-    size_t getHash() const override;
+    size_t getHash() const noexcept override;
     bool operator==(const PipelineDescriptor &other) const;
     bool operator!=(const PipelineDescriptor &other) const;
 

@@ -54,11 +54,9 @@ class PropertyDescriptor : public Hashable {
     {
     }
 
-    virtual ~PropertyDescriptor()
-    {
-    }
+    virtual ~PropertyDescriptor() = default;
 
-    virtual size_t getHash() const override;
+    virtual size_t getHash() const noexcept override;
 
    protected:
     friend class ResourceDescriptor;
@@ -80,7 +78,7 @@ class ResourceDescriptor : public Hashable {
     ///resourceName is the name of the resource instance, not an actual asset name! Use "assetName" for that
     explicit ResourceDescriptor(const Str128& resourceName);
 
-    ~ResourceDescriptor();
+    ~ResourceDescriptor() = default;
 
     ResourceDescriptor(const ResourceDescriptor& old);
     ResourceDescriptor& operator=(ResourceDescriptor const& old);
@@ -94,9 +92,9 @@ class ResourceDescriptor : public Hashable {
     inline typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, void>::type
     propertyDescriptor(const T& descriptor) { _propertyDescriptor.reset(new T(descriptor)); }
 
-    inline bool hasPropertyDescriptor() const { return _propertyDescriptor != nullptr; }
+    inline bool hasPropertyDescriptor() const noexcept { return _propertyDescriptor != nullptr; }
 
-    size_t getHash() const final;
+    size_t getHash() const noexcept final;
 
     PROPERTY_RW(stringImpl, assetLocation); //<Can't be fixed size due to the need to handle array textures, cube maps, etc
     PROPERTY_RW(stringImpl, assetName); //< Resource instance name (for lookup)

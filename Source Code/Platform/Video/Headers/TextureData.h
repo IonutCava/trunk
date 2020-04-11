@@ -78,58 +78,48 @@ private:
     TextureType _textureType = TextureType::COUNT;
 };
 
-class TextureDataContainer {
-    public:
-      enum class UpdateState : U8 {
-          ADDED = 0,
-          REPLACED,
-          NOTHING,
-          COUNT
-      };
+enum class TextureUpdateState : U8 {
+    ADDED = 0,
+    REPLACED,
+    NOTHING,
+    COUNT
+};
+
+template<size_t Size = to_size(TextureUsage::COUNT)>
+struct TextureDataContainer : public Hashable {
+      static constexpr U8 INVALID_BINDING = std::numeric_limits<U8>::max();
+
+      using DataEntries = eastl::array<std::pair<U8/*binding*/, TextureData>, Size>;
 
       TextureDataContainer();
-      ~TextureDataContainer();
-
-      using DataEntries = eastl::vector_map<U8/*binding*/, TextureData, eastl::less<U8>, eastl::dvd_eastl_allocator>;
+      ~TextureDataContainer() = default;
 
       bool set(const TextureDataContainer& other);
-
-      UpdateState setTextures(const TextureDataContainer& textureEntries, bool force = false);
-      UpdateState setTextures(const DataEntries& textureEntries, bool force = false);
-      UpdateState setTexture(const TextureData& data, U8 binding, bool force = false);
+      TextureUpdateState setTextures(const TextureDataContainer& textureEntries);
+      TextureUpdateState setTextures(const DataEntries& textureEntries);
+      TextureUpdateState setTexture(const TextureData& data, U8 binding);
 
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
+      void clear();
 
-      inline void clear() noexcept { _textures.clear(); }
+      inline  bool empty() const noexcept { return _count == 0; };
+      inline  U8   textureCount() const noexcept { return to_U8(_count); }
 
-      inline bool empty() const noexcept { return _textures.empty(); }
-
-      inline DataEntries& textures() noexcept { return _textures; }
       inline const DataEntries& textures() const noexcept { return _textures; }
 
-      inline bool operator==(const TextureDataContainer &other) const { return _textures == other._textures; }
-      inline bool operator!=(const TextureDataContainer &other) const { return _textures != other._textures; }
+      inline bool operator==(const TextureDataContainer& other) const noexcept { return _count == other._count && getHash() == other.getHash(); }
+      inline bool operator!=(const TextureDataContainer &other) const noexcept { return _count != other._count || getHash() != other.getHash(); }
+
+      size_t getHash() const noexcept override;
 
     protected:
-        inline UpdateState setTextureInternal(const TextureData& data, U8 binding, bool force) {
-            OPTICK_EVENT();
+        TextureUpdateState setTextureInternal(const TextureData& data, U8 binding);
 
-            const auto& result = _textures.emplace(binding, data);
-            if (result.second) {
-                return UpdateState::ADDED;
-            }
-
-            if (result.first->second != data || force) {
-                result.first->second = data;
-                return UpdateState::REPLACED;
-            }
-
-            return UpdateState::NOTHING;
-        }
-
-    private:
+     private:
         DataEntries _textures;
+        size_t _count = 0;
+        mutable bool _hashDirty = true;
 
     XALLOCATOR
 };
@@ -137,3 +127,5 @@ class TextureDataContainer {
 }; //namespace Divide
 
 #endif //_TEXTURE_DATA_H_
+
+#include "TextureData.inl"

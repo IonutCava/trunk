@@ -278,7 +278,7 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.addDrawCommand(drawCommand);
 
     if (_particleTexture) {
-        pkgInOut.setTexture(0, _particleTexture->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        pkgInOut.setTexture(0, _particleTexture->data(), to_U8(TextureUsage::UNIT0));
     }
 
     const Pipeline* pipeline = pkgInOut.pipeline(0);

@@ -63,7 +63,7 @@ bool InfinitePlane::load() {
     textureWaterCaustics.assetName("terrain_water_caustics.jpg");
     textureWaterCaustics.propertyDescriptor(miscTexDescriptor);
 
-    planeMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics));
+    planeMaterial->setTexture(TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics));
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;

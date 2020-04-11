@@ -183,31 +183,37 @@ void RenderQueue::sort(RenderStagePass stagePass, RenderBinType targetBinType, R
     // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
     constexpr U16 threadBias = 64;
     
-    TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
-    Task* sortTask = CreateTask(pool, DELEGATE<void, Task&>());
-    for (RenderBin* renderBin : _renderBins) {
-        if (renderBin->getBinSize(stagePass._stage) > threadBias) {
-            const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
-            Start(*CreateTask(pool,
-                                sortTask,
-                                [renderBin, targetBinType, sortOrder, stagePass](const Task& parentTask) {
-                                    if (targetBinType._value == RenderBinType::RBT_COUNT || renderBin->getType() == targetBinType) {
+    if (targetBinType._value != RenderBinType::RBT_COUNT)
+    {
+        const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, targetBinType) : renderOrder;
+        _renderBins[to_base(targetBinType._value)]->sort(stagePass._stage, sortOrder);
+    }
+    else
+    {
+        TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
+        Task* sortTask = CreateTask(pool, DELEGATE<void, Task&>());
+        for (RenderBin* renderBin : _renderBins) {
+            if (renderBin->getBinSize(stagePass._stage) > threadBias) {
+                const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
+                Start(*CreateTask(pool,
+                                    sortTask,
+                                    [renderBin, targetBinType, sortOrder, stagePass](const Task& parentTask) {
                                         renderBin->sort(stagePass._stage, sortOrder);
-                                    }
-                                }));
+                                    }));
+            }
         }
-    }
 
-    Start(*sortTask);
+        Start(*sortTask);
 
-    for (RenderBin* renderBin : _renderBins) {
-        if ((targetBinType._value == RenderBinType::RBT_COUNT || renderBin->getType() == targetBinType) && renderBin->getBinSize(stagePass._stage) <= threadBias) {
-            const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
-            renderBin->sort(stagePass._stage, sortOrder);
+        for (RenderBin* renderBin : _renderBins) {
+            if (renderBin->getBinSize(stagePass._stage) <= threadBias) {
+                const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
+                renderBin->sort(stagePass._stage, sortOrder);
+            }
         }
-    }
 
-    Wait(*sortTask);
+        Wait(*sortTask);
+    }
 }
 
 void RenderQueue::refresh(RenderStage stage, RenderBinType targetBinType) {

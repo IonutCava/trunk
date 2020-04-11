@@ -69,7 +69,7 @@ class TextLabelStyle : public Hashable {
                   const UColour4& colour,
                   U8 fontSize);
 
-    size_t getHash() const override;
+    size_t getHash() const noexcept override;
 
     inline size_t font() const noexcept { return _font; }
     inline U8 fontSize() const noexcept { return _fontSize; }

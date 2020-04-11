@@ -70,7 +70,7 @@ void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
             std::sort(stack.begin(),
                       stack.end(),
                       [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
-                          return a._distanceToCameraSq >= b._distanceToCameraSq;
+                          return a._distanceToCameraSq > b._distanceToCameraSq;
                       });
         } break;
         case RenderingOrder::FRONT_TO_BACK: {

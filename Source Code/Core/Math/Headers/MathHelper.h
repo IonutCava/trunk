@@ -436,7 +436,7 @@ bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) 
 
 /// a la Boost
 template <typename T>
-void Hash_combine(size_t& seed, const T& v);
+void Hash_combine(size_t& seed, const T& v) noexcept;
 
 // U = to data type, T = from data type
 template <typename U, typename T>

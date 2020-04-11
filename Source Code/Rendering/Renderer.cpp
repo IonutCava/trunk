@@ -144,13 +144,13 @@ void Renderer::preRender(RenderStagePass stagePass,
         Image depthImage = {};
         depthImage._texture = hizColourTexture.get();
         depthImage._flag = Image::Flag::READ;
-        depthImage._binding = to_U8(ShaderProgram::TextureUsage::DEPTH);
+        depthImage._binding = to_U8(TextureUsage::DEPTH);
         depthImage._layer = 0u;
         depthImage._level = 0u;
 
         bindDescriptorSetsCmd._set._images.push_back(depthImage);
     } else {
-        bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+        bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), to_U8(TextureUsage::DEPTH));
     }
 
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);

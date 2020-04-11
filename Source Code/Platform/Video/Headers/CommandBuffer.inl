@@ -43,15 +43,23 @@ inline void DELETE_CMD(GFX::CommandBase*& cmd) {
     assert(cmd == nullptr);
 }
 
+inline size_t RESERVE_CMD(U8 typeIndex) {
+    const CommandType cmdType = static_cast<CommandType>(typeIndex);
+    switch (cmdType) {
+        case CommandType::DRAW_COMMANDS: return 10;
+    }
+
+    return 5;
+}
+
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::allocateCommand() {
-    constexpr U8 index = static_cast<U8>(T::EType);
+    CommandEntry& newEntry = _commandOrder.emplace_back();
+    newEntry._typeIndex = static_cast<U8>(T::EType);
+    newEntry._elementIndex = _commandCount[newEntry._typeIndex]++;
 
-    const I24 cmdIndex = _commandCount[index]++;
-    _commandOrder.emplace_back(index, cmdIndex);
-
-    return static_cast<T*>(_commands.get(index, cmdIndex));
+    return static_cast<T*>(_commands.get(newEntry));
 }
 
 template<typename T>
@@ -104,29 +112,29 @@ CommandBuffer::get() const noexcept {
 }
 
 inline bool CommandBuffer::exists(const CommandEntry& commandEntry) const noexcept {
-    return _commands.exists(commandEntry._typeIndex, commandEntry._elementIndex);
+    return _commands.exists(commandEntry);
 }
 
 template<typename T>
 typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
-CommandBuffer::exists(I24 index) const noexcept {
+CommandBuffer::exists(U24 index) const noexcept {
     return exists(to_base(T::EType), index);
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-CommandBuffer::get(I24 index) noexcept {
+CommandBuffer::get(U24 index) noexcept {
     return get<T>({to_base(T::EType), index});
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-CommandBuffer::get(I24 index) const noexcept {
+CommandBuffer::get(U24 index) const noexcept {
     return get<T>({to_base(T::EType), index });
 }
 
-inline bool CommandBuffer::exists(U8 typeIndex, I24 index) const noexcept {
-    return _commands.exists(typeIndex, index);
+inline bool CommandBuffer::exists(U8 typeIndex, U24 index) const noexcept {
+    return _commands.exists({ typeIndex, index });
 }
 
 template<typename T>
@@ -144,7 +152,7 @@ inline const CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() c
 }
 
 inline void CommandBuffer::clear(bool clearMemory) {
-    _commandCount.fill(0);
+    _commandCount.fill(0u);
     if (clearMemory) {
         _commandOrder.clear();
         _commands.clear(true);

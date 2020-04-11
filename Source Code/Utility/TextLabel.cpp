@@ -37,7 +37,7 @@ TextLabelStyle::TextLabelStyle(const char* font,
     }
 }
 
-size_t TextLabelStyle::getHash() const {
+size_t TextLabelStyle::getHash() const noexcept {
     if (_dirty) {
         const size_t previousCache = Hashable::getHash();
 

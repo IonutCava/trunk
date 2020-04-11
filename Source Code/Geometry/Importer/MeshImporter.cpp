@@ -307,7 +307,7 @@ namespace Import {
 
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
 
-        for (U32 i = 0; i < to_base(ShaderProgram::TextureUsage::COUNT); ++i) {
+        for (U32 i = 0; i < to_base(TextureUsage::COUNT); ++i) {
             const Import::TextureEntry& tex = importData._textures[i];
             if (!tex.textureName().empty()) {
                 textureSampler.wrapU(tex.wrapU());
@@ -325,14 +325,14 @@ namespace Import {
                 Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
                 assert(textureRes != nullptr);
 
-                tempMaterial->setTexture(static_cast<ShaderProgram::TextureUsage>(i), textureRes, tex.operation());
+                tempMaterial->setTexture(static_cast<TextureUsage>(i), textureRes, tex.operation());
             }
         }
 
         // If we don't have a valid opacity map, try to find out whether the diffuse texture has any non-opaque pixels.
         // If we find a few, use it as opacity texture
-        if (!importData.ignoreAlpha() && importData._textures[to_base(ShaderProgram::TextureUsage::OPACITY)].textureName().empty()) {
-            Texture_ptr diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
+        if (!importData.ignoreAlpha() && importData._textures[to_base(TextureUsage::OPACITY)].textureName().empty()) {
+            Texture_ptr diffuse = tempMaterial->getTexture(TextureUsage::UNIT0).lock();
             if (diffuse && diffuse->hasTransparency()) {
                 ResourceDescriptor opacityDesc(diffuse->resourceName());
                 //These should not be needed. We should be able to just find the resource in cache!
@@ -341,7 +341,7 @@ namespace Import {
                 opacityDesc.propertyDescriptor(diffuse->descriptor());
 
                 Texture_ptr textureRes = CreateResource<Texture>(cache, opacityDesc);
-                tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, TextureOperation::REPLACE);
+                tempMaterial->setTexture(TextureUsage::OPACITY, textureRes, TextureOperation::REPLACE);
             }
         }
         

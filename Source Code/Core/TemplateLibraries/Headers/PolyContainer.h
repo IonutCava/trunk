@@ -38,34 +38,28 @@ namespace Divide {
 #pragma pack(push, 1)
 struct PolyContainerEntry
 {
-    static constexpr I32 INVALID_ENTRY_ID = std::numeric_limits<I32>::min();
+    static constexpr U32 INVALID_ENTRY_ID = std::numeric_limits<U32>::max();
 
-    PolyContainerEntry() : _data(0) {}
-    PolyContainerEntry(U8 type, I24 element) : _typeIndex(type), _elementIndex(element) {}
+    PolyContainerEntry() : PolyContainerEntry(0u, 0u) {}
+    PolyContainerEntry(U8 typeIndex, U24 elementIndex) : _typeIndex(typeIndex), _elementIndex(elementIndex) {}
     PolyContainerEntry(const PolyContainerEntry& other) : _data(other._data) {}
     PolyContainerEntry(PolyContainerEntry&& other) noexcept : _data(std::move(other._data)) {}
-    
+    inline PolyContainerEntry& operator= (PolyContainerEntry&& other) noexcept {
+        _data = std::move(other._data);
+        return *this;
+    }
 
-    PolyContainerEntry& operator=(const PolyContainerEntry& other) {
+    inline PolyContainerEntry& operator= (const PolyContainerEntry& other) noexcept {
         _data = other._data;
         return *this;
     }
 
-    PolyContainerEntry& operator=(PolyContainerEntry&& other) noexcept {
-        _data = std::move(other._data);
-        return *this;
-    }
-    
-    ~PolyContainerEntry() = default;
-
-    inline const I32 elementIndex() const noexcept { return to_I32(_elementIndex); }
-
     union {
         struct {
             U8 _typeIndex;
-            I24 _elementIndex;
+            U24 _elementIndex;
         };
-        I32 _data = INVALID_ENTRY_ID;
+        U32 _data = INVALID_ENTRY_ID;
     };
 };
 #pragma pack(pop)
@@ -75,9 +69,25 @@ constexpr bool VALIDATE_POLY_CONTAINERS = false;
 template<typename T>
 using PolyContainerDeleter = void (*)(T*&);
 
-template<typename T, U8 N, typename PolyContainerDeleter<T> DEL>
+template<typename T>
+using PolyContainerReserver = size_t(*)(U8);
+
+template<typename T>
+void DEFAULT_DEL(T*&) {}
+
+template<typename T>
+size_t DEFAULT_RES(U8) { return 0; }
+
+template<typename T, U8 N, typename PolyContainerDeleter<T> DEL = DEFAULT_DEL<T>, typename PolyContainerReserver<T> RES = DEFAULT_RES<T>>
 struct PolyContainer {
     using EntryList = vectorEASTLFast<T*>;
+
+    PolyContainer()
+    {
+        for (U8 i = 0; i < N; ++i) {
+            _collection[i].reserve(RES(i));
+        }
+    }
 
     ~PolyContainer()
     {
@@ -86,93 +96,56 @@ struct PolyContainer {
 
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, PolyContainerEntry>::type
-        insert(U8 index, T* cmd) {
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(index < N);
-        }
-
+    insert(U8 index, T* cmd) {
         EntryList& collection = _collection[index];
         collection.emplace_back(cmd);
 
-        return PolyContainerEntry{ index, to_I32(collection.size() - 1) };
+        return PolyContainerEntry{ index, to_U32(collection.size() - 1) };
     }
 
     template<typename U>
     inline typename std::enable_if<std::is_base_of<T, U>::value, T*>::type
-        emplace(U8 index) {
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(index < N);
-        }
-
-        EntryList& collection = _collection[index];
-        collection.emplace_back({});
-
-        return collection.back();
+    emplace(U8 index) {
+        return _collection[index].emplace_back();
     }
 
     inline const EntryList& get(U8 index) const noexcept {
-        if (VALIDATE_POLY_CONTAINERS) {
-            assert(index < N);
-        }
-
         return  _collection[index];
     }
 
     inline T* get(const PolyContainerEntry& entry) const noexcept {
-        return get(entry._typeIndex, entry.elementIndex());
-    }
-
-    inline T* get(U8 index, I32 entry) const noexcept {
-        const EntryList& collection = get(index);
-        if (entry < collection.size()) {
-            return collection[entry];
+        const EntryList& collection = _collection[entry._typeIndex];
+        const U32 elementIndex = to_U32(entry._elementIndex);
+        if (elementIndex < collection.size()) {
+            return collection[elementIndex];
         }
 
         return nullptr;
     }
 
     inline bool exists(const PolyContainerEntry& entry) const noexcept {
-        return exists(entry._typeIndex, entry.elementIndex());
+        return entry._typeIndex < N && entry._elementIndex < _collection[entry._typeIndex].size();
     }
 
-    inline bool exists(U8 index, I32 entry) const noexcept{
-        return index < N && entry < _collection[index].size();
-    }
-
-    inline void reserve(size_t size) {
-        for (EntryList& col : _collection) {
-            col.reserve(size);
-        }
-    }
-
-    inline void reserveAdditional(const PolyContainer<T,N, DEL>& other, const size_t count = 1) {
+    inline void reserveAdditional(const PolyContainer<T,N, DEL, RES>& other) {
         for (U8 i = 0; i < N; ++i) {
-            _collection[i].reserve(_collection[i].size() + other._collection[i].size() * count);
+            _collection[i].reserve(_collection[i].size() + other._collection[i].size());
         }
     }
 
-    inline void reserve(U8 index, size_t reserveSize) {
-        get(index).reserve(reserveSize);
-    }
-
-    inline void clear(bool clearMemory = false) {
+    inline void clear() {
         for (U8 i = 0; i < N; ++i) {
-            clear(i, clearMemory);
+            clear(i);
         }
     }
 
-    inline void clear(U8 index, bool clearMemory = false) {
+    inline void clear(U8 index) {
         EntryList& col = _collection[index];
 
         for (T*& cmd : col) {
             DEL(cmd);
         }
-
-        if (clearMemory) {
-            col.clear();
-        } else {
-            col.resize(0);
-        }
+        col.clear();
     }
 
     inline bool empty() const noexcept {

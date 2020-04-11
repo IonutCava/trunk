@@ -903,6 +903,11 @@ bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
     const Scene& activeScene = getActiveScene();
 
     if (_saveTask != nullptr) {
+        if_constexpr(Config::Build::IS_DEBUG_BUILD) {
+            if (!Finished(*_saveTask)) {
+                DebugBreak();
+            }
+        }
         Wait(*_saveTask);
     }
 

@@ -16,9 +16,9 @@ bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) no
     //check_size<GenericDrawCommand, 32>();
 
     return
-        (lhs._renderOptions & ~(to_base(CmdRenderOptions::CONVERT_TO_INDIRECT))) == (rhs._renderOptions & ~(to_base(CmdRenderOptions::CONVERT_TO_INDIRECT))) &&
         lhs._bufferIndex == rhs._bufferIndex &&
         lhs._primitiveType == rhs._primitiveType &&
+        (lhs._renderOptions & ~(to_base(CmdRenderOptions::CONVERT_TO_INDIRECT))) == (rhs._renderOptions & ~(to_base(CmdRenderOptions::CONVERT_TO_INDIRECT))) &&
         lhs._sourceBuffer == rhs._sourceBuffer;
 }
 

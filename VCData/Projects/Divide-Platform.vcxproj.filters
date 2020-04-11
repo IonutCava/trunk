@@ -413,9 +413,6 @@
     <ClCompile Include="../../Source Code/Platform\Video\GraphicsResource.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Platform\Video\TextureData.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Platform\Video\RenderPackage.cpp">
       <Filter>Video</Filter>
     </ClCompile>
@@ -912,6 +909,9 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\computeVSM.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\Source Code\Platform\Video\Headers\TextureData.inl">
+      <Filter>Video\Headers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

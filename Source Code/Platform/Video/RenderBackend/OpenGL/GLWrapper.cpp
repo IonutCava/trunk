@@ -522,121 +522,121 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_UNIT0 " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::UNIT0)),
+        to_stringImpl(to_base(TextureUsage::UNIT0)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_HEIGHT " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::HEIGHTMAP)),
+        to_stringImpl(to_base(TextureUsage::HEIGHTMAP)),
         lineOffsets);
     
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_UNIT1 " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::UNIT1)),
+        to_stringImpl(to_base(TextureUsage::UNIT1)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COMPUTE,
         "#define TEXTURE_UNIT1 " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::UNIT1)),
+        to_stringImpl(to_base(TextureUsage::UNIT1)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_NORMALMAP " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::NORMALMAP)),
+        to_stringImpl(to_base(TextureUsage::NORMALMAP)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_OPACITY " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::OPACITY)),
+        to_stringImpl(to_base(TextureUsage::OPACITY)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_SPECULAR " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::SPECULAR)),
+        to_stringImpl(to_base(TextureUsage::SPECULAR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_GLOSS " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::GLOSS)),
+        to_stringImpl(to_base(TextureUsage::GLOSS)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_ROUGHNESS " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::ROUGHNESS)),
+        to_stringImpl(to_base(TextureUsage::ROUGHNESS)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_PROJECTION " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::PROJECTION)),
+        to_stringImpl(to_base(TextureUsage::PROJECTION)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::DEPTH)),
+        to_stringImpl(to_base(TextureUsage::DEPTH)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP_PREV " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::DEPTH_PREV)),
+        to_stringImpl(to_base(TextureUsage::DEPTH_PREV)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_REFLECTION_PLANAR " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::REFLECTION_PLANAR)),
+        to_stringImpl(to_base(TextureUsage::REFLECTION_PLANAR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_REFRACTION_PLANAR " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::REFRACTION_PLANAR)),
+        to_stringImpl(to_base(TextureUsage::REFRACTION_PLANAR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_REFLECTION_CUBE " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::REFLECTION_CUBE)),
+        to_stringImpl(to_base(TextureUsage::REFLECTION_CUBE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_GBUFFER_EXTRA " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::GBUFFER_EXTRA)),
+        to_stringImpl(to_base(TextureUsage::GBUFFER_EXTRA)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +
-        to_stringImpl(to_base(ShaderProgram::TextureUsage::SHADOW_CUBE)),
+        to_stringImpl(to_base(TextureUsage::SHADOW_CUBE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_LAYERED_MAP_ARRAY " +
-        to_stringImpl(to_U32(ShaderProgram::TextureUsage::SHADOW_LAYERED)),
+        to_stringImpl(to_U32(TextureUsage::SHADOW_LAYERED)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_SINGLE_MAP_ARRAY " +
-        to_stringImpl(to_U32(ShaderProgram::TextureUsage::SHADOW_SINGLE)),
+        to_stringImpl(to_U32(TextureUsage::SHADOW_SINGLE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_COUNT " +
-        to_stringImpl(to_U32(ShaderProgram::TextureUsage::COUNT)),
+        to_stringImpl(to_U32(TextureUsage::COUNT)),
         lineOffsets);
 
     if_constexpr(Config::Lighting::USE_SEPARATE_VSM_PASS) {
@@ -1444,14 +1444,14 @@ bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) {
     return true;
 }
 
-bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) {
+bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) {
     OPTICK_EVENT();
 
     bool bound = false;
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
     constexpr vec_size k_textureThreshold = 3;
-    const size_t texCount = textureData.textures().size();
+    const U8 texCount = textureData.textureCount();
     if (texCount > k_textureThreshold && false) {
         const GLushort offset = 0;
         vectorEASTL<TextureType> types;
@@ -1462,22 +1462,28 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData, const
         handles.reserve(texCount);
         samplers.reserve(texCount);
 
-        for (const auto& data : textureData.textures()) {
-            types.push_back(data.second.type());
-            handles.push_back(data.second.textureHandle());
-            samplers.push_back(data.second.samplerHandle());
+        for (const auto& [binding, data] : textureData.textures()) {
+            if (binding == TextureDataContainer<>::INVALID_BINDING) {
+                continue;
+            }
+
+            types.push_back(data.type());
+            handles.push_back(data.textureHandle());
+            samplers.push_back(data.samplerHandle());
         }
 
         bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
     } else {
         GLStateTracker& stateTracker = getStateTracker();
-        for (const auto& data : textureData.textures()) {
-            const TextureData& texData = data.second;
+        for (const auto&[binding, data] : textureData.textures()) {
+            if (binding == TextureDataContainer<>::INVALID_BINDING) {
+                continue;
+            }
 
-            bound = stateTracker.bindTexture(static_cast<GLushort>(data.first),
-                                             texData.type(),
-                                             texData.textureHandle(),
-                                             texData.samplerHandle()) || bound;
+            bound = stateTracker.bindTexture(static_cast<GLushort>(binding),
+                                             data.type(),
+                                             data.textureHandle(),
+                                             data.samplerHandle()) || bound;
         }
     }
 

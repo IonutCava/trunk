@@ -172,7 +172,6 @@
     <ClCompile Include="../../Source Code/Platform\Video\RenderPackage.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\RenderStateBlock.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\Shaders\ShaderProgram.cpp" />
-    <ClCompile Include="../../Source Code/Platform\Video\TextureData.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\Textures\Texture.cpp" />
     <ClCompile Include="../../Source Code/stdafx-platform.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -273,6 +272,7 @@
     <None Include="..\..\assets\shaders\GLSL\computeVSM.glsl" />
     <None Include="..\..\assets\shaders\GLSL\EdgeDetection.glsl" />
     <None Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.inl" />
+    <None Include="..\..\Source Code\Platform\Video\Headers\TextureData.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl" />

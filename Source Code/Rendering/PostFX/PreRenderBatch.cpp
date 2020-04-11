@@ -468,9 +468,9 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
     }
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(screenColour->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-    descriptorSetCmd._set._textureData.setTexture(luminanceTex->data(), to_U8(ShaderProgram::TextureUsage::UNIT1));
-    descriptorSetCmd._set._textureData.setTexture(screenDepth->data(), to_U8(ShaderProgram::TextureUsage::DEPTH));
+    descriptorSetCmd._set._textureData.setTexture(screenColour->data(), to_U8(TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(luminanceTex->data(), to_U8(TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(screenDepth->data(), to_U8(TextureUsage::DEPTH));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)

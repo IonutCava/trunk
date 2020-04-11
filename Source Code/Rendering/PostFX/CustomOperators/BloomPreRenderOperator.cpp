@@ -127,7 +127,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     RenderTargetHandle screen = _parent.inputRT();
     TextureData data = screen._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //screen
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomCalcPipeline });
@@ -174,8 +174,8 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     TextureData data0 = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //Screen
     TextureData data1 = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //Bloom
 
-    descriptorSetCmd._set._textureData.setTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    descriptorSetCmd._set._textureData.setTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(data0, to_U8(TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(data1, to_U8(TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomApplyPipeline });

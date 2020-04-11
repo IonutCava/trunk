@@ -43,7 +43,7 @@ inline void Material::setHardwareSkinning(const bool state) {
     _properties._hardwareSkinning = state;
 }
 
-inline void Material::setTextureUseForDepth(ShaderProgram::TextureUsage slot, bool state) {
+inline void Material::setTextureUseForDepth(TextureUsage slot, bool state) {
     _textureUseForDepth[to_base(slot)] = state;
 }
 
@@ -89,7 +89,7 @@ inline F32 Material::getParallaxFactor() const {
     return _properties._parallaxFactor;
 }
 
-inline eastl::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage textureUsage) const {
+inline eastl::weak_ptr<Texture> Material::getTexture(TextureUsage textureUsage) const {
     SharedLock<SharedMutex> r_lock(_textureLock);
     return _textures[to_U32(textureUsage)];
 }

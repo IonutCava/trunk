@@ -79,6 +79,10 @@ namespace {
         }
         return false;
     }
+
+    const auto IsEmptyDrawCommand = [](const GenericDrawCommand& cmd) noexcept -> bool {
+        return cmd._drawCount == 0u;
+    };
 };
 
 void CommandBuffer::add(const CommandBuffer& other) {
@@ -88,7 +92,7 @@ void CommandBuffer::add(const CommandBuffer& other) {
     _commands.reserveAdditional(other._commands);
 
     for (const CommandEntry& cmd : other._commandOrder) {
-        other.get<CommandBase>(cmd)->addToBuffer(*this);
+        other.get<CommandBase>(cmd)->addToBuffer(this);
     }
     _batched = false;
 }
@@ -96,16 +100,13 @@ void CommandBuffer::add(const CommandBuffer& other) {
 void CommandBuffer::add(CommandBuffer** buffers, size_t count) {
     OPTICK_EVENT();
 
-    if (count > 0) {
-        static_assert(sizeof(PolyContainerEntry) == 4, "PolyContainerEntry has the wrong size!");
-        _commands.reserveAdditional(buffers[0]->_commands, count);
+    static_assert(sizeof(PolyContainerEntry) == 4, "PolyContainerEntry has the wrong size!");
+    for (size_t i = 0; i < count; ++i) {
+        CommandBuffer* other = buffers[i];
 
-        for (size_t i = 0; i < count; ++i) {
-            CommandBuffer* other = buffers[i];
-
-            for (const CommandEntry& cmd : other->_commandOrder) {
-                other->get<CommandBase>(cmd)->addToBuffer(*this);
-            }
+        _commands.reserveAdditional(other->_commands);
+        for (const CommandEntry& cmd : other->_commandOrder) {
+            other->get<CommandBase>(cmd)->addToBuffer(this);
         }
 
         _batched = false;
@@ -197,10 +198,7 @@ void CommandBuffer::batch() {
     // Now try and merge ONLY End/Begin render pass (don't unbind a render target if we immediatelly bind a new one
     prevCommand = nullptr;
     for (const CommandEntry& entry : _commandOrder) {
-        if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID) {
-            continue;
-        }
-        if (DoesNotAffectRT(entry._typeIndex)) {
+        if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID || DoesNotAffectRT(entry._typeIndex)) {
             continue;
         }
 
@@ -269,7 +267,7 @@ void CommandBuffer::batch() {
 
     if (!hasWork) {
         _commandOrder.resize(0);
-        std::memset(_commandCount.data(), 0, sizeof(I24) * to_base(GFX::CommandType::COUNT));
+        std::memset(_commandCount.data(), 0, sizeof(U24) * to_base(GFX::CommandType::COUNT));
     }
 
     _batched = true;
@@ -301,11 +299,7 @@ void CommandBuffer::clean() {
                 if (cmds.size() == 1) {
                     erase = cmds.begin()->_drawCount == 0u;
                 } else {
-                    eastl::erase_if(cmds,
-                                    [](const GenericDrawCommand& cmd) noexcept -> bool {
-                                        return cmd._drawCount == 0u;
-                                    });
-
+                    eastl::erase_if(cmds, IsEmptyDrawCommand);
                     erase = cmds.empty();
                 }
             } break;
@@ -400,7 +394,7 @@ void CommandBuffer::clean() {
                 eastl::prev(entry)->_typeIndex == typeIndex)
             {
                 --_commandCount[typeIndex];
-                entry->_data = -1;
+                entry->_data = PolyContainerEntry::INVALID_ENTRY_ID;
             }
         }
     }
@@ -561,7 +555,7 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
                 return false;
             }
         } else {// Command offset compatibility
-            if (previousIDC._commandOffset + to_I32(previousIDC._drawCount) != currentIDC._commandOffset) {
+            if (previousIDC._commandOffset + to_U32(previousIDC._drawCount) != currentIDC._commandOffset) {
                 return false;
             }
         }
@@ -594,10 +588,7 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
 
     const auto RemoveEmptyDrawCommands = [](DrawCommand::CommandContainer& commands) {
         const size_t startSize = commands.size();
-        eastl::erase_if(commands,
-                        [](const GenericDrawCommand& cmd) noexcept -> bool {
-                            return cmd._drawCount == 0;
-                        });
+        eastl::erase_if(commands, IsEmptyDrawCommand);
         return startSize - commands.size() > 0;
     };
 

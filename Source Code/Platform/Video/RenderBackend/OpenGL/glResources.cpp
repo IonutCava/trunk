@@ -439,9 +439,9 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     if (useIndirectBuffer) {
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
         if (drawCommand._drawCount > 1) {
-            submitMultiIndirectCommand(to_I32(drawCommand._commandOffset) + cmdBufferOffset, drawCommand._drawCount, mode, internalFormat, drawIndexed);
+            submitMultiIndirectCommand(to_U32(drawCommand._commandOffset) + cmdBufferOffset, drawCommand._drawCount, mode, internalFormat, drawIndexed);
         } else if (drawCommand._drawCount == 1) {
-            submitIndirectCommand(drawCommand._cmd, to_I32(drawCommand._commandOffset) + cmdBufferOffset, mode, internalFormat, drawIndexed);
+            submitIndirectCommand(drawCommand._cmd, to_U32(drawCommand._commandOffset) + cmdBufferOffset, mode, internalFormat, drawIndexed);
         }
     } else {
         submitDirectMultiCommand(drawCommand._cmd, drawCommand._drawCount, mode, internalFormat, drawIndexed, countData, indexData);

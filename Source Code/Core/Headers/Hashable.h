@@ -38,11 +38,11 @@ namespace Divide {
 class Hashable {
   public:
     virtual ~Hashable() = default;
-    virtual size_t getHash() const {
+    virtual size_t getHash() const noexcept {
         return _hash;
     }
 
-    virtual Hashable& operator=(Hashable const& old) {
+    virtual Hashable& operator=(Hashable const& old) noexcept {
         if (&old != this) {
             _hash = old._hash;
         }

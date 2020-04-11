@@ -305,7 +305,7 @@ void RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     if (pkg.textureDataDirty()) {
-        TextureDataContainer& textures = pkg.descriptorSet(0)._textureData;
+        TextureDataContainer<>& textures = pkg.descriptorSet(0)._textureData;
 
         if (_materialInstanceCache != nullptr) {
             _materialInstanceCache->getTextureData(renderStagePass, textures);

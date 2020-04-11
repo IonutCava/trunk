@@ -181,7 +181,7 @@ void IMPrimitive::pipeline(const Pipeline& pipeline) noexcept {
 void IMPrimitive::texture(const Texture& texture) {
     _texture = &texture;
     _descriptorSet._textureData.clear();
-    _descriptorSet._textureData.setTexture(_texture->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+    _descriptorSet._textureData.setTexture(_texture->data(), to_U8(TextureUsage::UNIT0));
     _cmdBufferDirty = true;
 }
 };

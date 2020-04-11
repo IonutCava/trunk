@@ -45,7 +45,7 @@ struct SamplerDescriptor : public Hashable {
     SamplerDescriptor() = default;
     ~SamplerDescriptor() = default;
 
-    inline size_t getHash() const override {
+    inline size_t getHash() const noexcept override {
         _hash = 23;
         Util::Hash_combine(_hash, to_U32(_cmpFunc));
         Util::Hash_combine(_hash, _useRefCompare);

@@ -92,8 +92,8 @@ bool WaterPlane::load() {
     Material_ptr waterMat = CreateResource<Material>(_parentCache, waterMaterial);
 
     waterMat->setShadingMode(ShadingMode::BLINN_PHONG);
-    waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterDUDV);
-    waterMat->setTexture(ShaderProgram::TextureUsage::NORMALMAP, waterNM);
+    waterMat->setTexture(TextureUsage::UNIT0, waterDUDV);
+    waterMat->setTexture(TextureUsage::NORMALMAP, waterNM);
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;

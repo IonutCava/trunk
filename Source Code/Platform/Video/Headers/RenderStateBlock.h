@@ -92,7 +92,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
 
         void setColourWrites(bool red, bool green, bool blue, bool alpha);
 
-        size_t getHash() const override;
+        size_t getHash() const noexcept override;
 
     public:
         PROPERTY_R(P32, colourWrite);

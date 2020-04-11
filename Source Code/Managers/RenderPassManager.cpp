@@ -703,7 +703,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             if (hasNormalsTarget) {
                 const TextureData& data = nonMSTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY))->texture()->data();
-                descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::NORMALMAP));
+                descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::NORMALMAP));
             }
 
             if (prePassExecuted) {
@@ -711,12 +711,12 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), false);
                 const TextureData& depthData = hasHiZ ? hizTex->data() : depthTex->data();
-                descriptorSetCmd._set._textureData.setTexture(depthData, to_base(ShaderProgram::TextureUsage::DEPTH));
+                descriptorSetCmd._set._textureData.setTexture(depthData, to_base(TextureUsage::DEPTH));
             }
 
             if (hasLightingTarget) {
                 const TextureData& data = nonMSTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->data();
-                descriptorSetCmd._set._textureData.setTexture(data, to_U8(ShaderProgram::TextureUsage::GBUFFER_EXTRA));
+                descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::GBUFFER_EXTRA));
             }
 
             GFX::BeginRenderPassCommand beginRenderPassCommand = {};
@@ -849,12 +849,8 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
         TextureData revealage = oitRT.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->data();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTextures(
-            {
-                { to_base(ShaderProgram::TextureUsage::UNIT0), accum },
-                { to_base(ShaderProgram::TextureUsage::UNIT1), revealage }
-            }
-        );
+        descriptorSetCmd._set._textureData.setTexture(accum, to_base(TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(revealage, to_base(TextureUsage::UNIT1));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GenericDrawCommand drawCommand = {};
@@ -951,7 +947,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
     if (params._target._usage == _context.renderTargetPool().screenTargetID()._usage) {
         GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-        bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
+        bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(TextureUsage::DEPTH_PREV));
         GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
     }
 

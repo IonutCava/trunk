@@ -887,9 +887,9 @@ namespace Util {
 
 /// a la Boost
 template <typename T>
-FORCE_INLINE void Hash_combine(size_t& seed, const T& v) {
-    std::hash<T> hasher;
-    Hash_combine<size_t>(seed, hasher(v));
+inline void Hash_combine(size_t& seed, const T& v) noexcept {
+    eastl::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
 template<>

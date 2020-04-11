@@ -8,7 +8,7 @@
 namespace Divide {
 
 
-size_t PropertyDescriptor::getHash() const {
+size_t PropertyDescriptor::getHash() const noexcept {
     Util::Hash_combine(_hash, to_base(_type));
     return _hash;
 }
@@ -25,10 +25,6 @@ ResourceDescriptor::ResourceDescriptor(const Str128& resourceName)
 {
     _mask.i = 0;
     _threaded = true;
-}
-
-ResourceDescriptor::~ResourceDescriptor()
-{
 }
 
 ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
@@ -89,7 +85,7 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
     old._propertyDescriptor = nullptr;
 }
 
-size_t ResourceDescriptor::getHash() const {
+size_t ResourceDescriptor::getHash() const noexcept {
     _hash = 31;
     stringImpl fullPath = _assetLocation;
     fullPath.append("/");

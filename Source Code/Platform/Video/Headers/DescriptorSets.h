@@ -59,7 +59,7 @@ namespace Divide {
                    _texture != other._texture;
         }
 
-        size_t getHash() const override;
+        size_t getHash() const noexcept override;
     };
 
     struct TextureViewEntry : public Hashable {
@@ -76,7 +76,7 @@ namespace Divide {
                    _view != other._view;
         }
 
-        size_t getHash() const override;
+        size_t getHash() const noexcept override;
     };
 
     struct ShaderBufferBinding {
@@ -138,7 +138,7 @@ namespace Divide {
 
     struct DescriptorSet {
         //This needs a lot more work!
-        TextureDataContainer _textureData = {};
+        TextureDataContainer<> _textureData = {};
         ShaderBufferList _shaderBuffers = {};
         TextureViews _textureViews = {};
         Images _images = {};
@@ -151,17 +151,17 @@ namespace Divide {
         const Image* findImage(U8 binding) const noexcept;
 
         inline bool operator==(const DescriptorSet &other) const {
-            return _shaderBuffers == other._shaderBuffers &&
+            return _textureData == other._textureData &&
+                   _shaderBuffers == other._shaderBuffers &&
                    _textureViews == other._textureViews &&
-                   _images == other._images &&
-                   _textureData == other._textureData;
+                   _images == other._images;
         }
 
         inline bool operator!=(const DescriptorSet &other) const {
-            return _shaderBuffers != other._shaderBuffers ||
+            return _textureData != other._textureData ||
+                   _shaderBuffers != other._shaderBuffers ||
                    _textureViews != other._textureViews ||
-                   _images != other._images ||
-                   _textureData != other._textureData;
+                   _images != other._images;
         }
 
         inline bool empty() const noexcept {

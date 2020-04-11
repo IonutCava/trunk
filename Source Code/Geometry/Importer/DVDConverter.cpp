@@ -624,8 +624,8 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         // if we have a name and an extension
         if (!img_name.substr(img_name.find_first_of("."), Str64::npos).empty()) {
 
-            const ShaderProgram::TextureUsage usage = count == 1 ? ShaderProgram::TextureUsage::UNIT1
-                                                                 : ShaderProgram::TextureUsage::UNIT0;
+            const TextureUsage usage = count == 1 ? TextureUsage::UNIT1
+                                                                 : TextureUsage::UNIT0;
 
             Import::TextureEntry& texture = material._textures[to_U32(usage)];
 
@@ -666,7 +666,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         const Str64& img_name = fileResult._fileName.c_str();
         const Str256& img_path = fileResult._path.c_str();
 
-        Import::TextureEntry& texture = material._textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)];
+        Import::TextureEntry& texture = material._textures[to_base(TextureUsage::NORMALMAP)];
 
         if (img_name.rfind('.') != Str64::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
@@ -682,7 +682,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture.operation(aiTextureOperationTable[op]);
             texture.srgb(false);
 
-            material._textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
+            material._textures[to_base(TextureUsage::NORMALMAP)] = texture;
             material.bumpMethod(BumpMethod::NORMAL);
         }  // endif
     } // endif
@@ -696,7 +696,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         const Str64& img_name = fileResult._fileName.c_str();
         const Str256& img_path = fileResult._path.c_str();
 
-        Import::TextureEntry& texture = material._textures[to_base(ShaderProgram::TextureUsage::HEIGHTMAP)];
+        Import::TextureEntry& texture = material._textures[to_base(TextureUsage::HEIGHTMAP)];
         if (img_name.rfind('.') != Str64::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
@@ -710,7 +710,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture.texturePath(img_path);
             texture.operation(aiTextureOperationTable[op]);
             texture.srgb(false);
-            material._textures[to_base(ShaderProgram::TextureUsage::HEIGHTMAP)] = texture;
+            material._textures[to_base(TextureUsage::HEIGHTMAP)] = texture;
         }  // endif
     } // endif
 
@@ -727,7 +727,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             const Str64& img_name = fileResult._fileName.c_str();
             const Str256& img_path = fileResult._path.c_str();
 
-            Import::TextureEntry& texture = material._textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
+            Import::TextureEntry& texture = material._textures[to_base(TextureUsage::OPACITY)];
 
             if (img_name.rfind('.') != Str64::npos) {
                 if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
@@ -743,7 +743,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 texture.operation(aiTextureOperationTable[op]);
                 texture.srgb(false);
                 material.doubleSided(true);
-                material._textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = texture;
+                material._textures[to_base(TextureUsage::OPACITY)] = texture;
             }  // endif
         } 
     }
@@ -761,7 +761,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         const Str64& img_name = fileResult._fileName.c_str();
         const Str256& img_path = fileResult._path.c_str();
 
-        Import::TextureEntry& texture = material._textures[to_base(ShaderProgram::TextureUsage::SPECULAR)];
+        Import::TextureEntry& texture = material._textures[to_base(TextureUsage::SPECULAR)];
         if (img_name.rfind('.') != Str64::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
@@ -776,7 +776,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture.operation(aiTextureOperationTable[op]);
             texture.srgb(false);
 
-            material._textures[to_base(ShaderProgram::TextureUsage::SPECULAR)] = texture;
+            material._textures[to_base(TextureUsage::SPECULAR)] = texture;
         }
     }
 }

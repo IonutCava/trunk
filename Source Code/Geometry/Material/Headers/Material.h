@@ -148,9 +148,9 @@ class Material : public CachedResource {
     void setRefractive(const bool state);
     void setStatic(const bool state);
 
-    void setTextureUseForDepth(ShaderProgram::TextureUsage slot, bool state);
+    void setTextureUseForDepth(TextureUsage slot, bool state);
 
-    bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
+    bool setTexture(TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
                     const TextureOperation& op = TextureOperation::NONE);
 
@@ -179,7 +179,7 @@ class Material : public CachedResource {
 
     I64 getProgramGUID(RenderStagePass renderStagePass) const;
 
-    eastl::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const;
+    eastl::weak_ptr<Texture> getTexture(TextureUsage textureUsage) const;
 
     const TextureOperation& getTextureOperation() const;
 
@@ -188,7 +188,7 @@ class Material : public CachedResource {
     const ShadingMode& getShadingMode() const;
     const BumpMethod&  getBumpMethod()  const;
 
-    bool getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData);
+    bool getTextureData(RenderStagePass renderStagePass, TextureDataContainer<>& textureData);
 
     void rebuild();
     bool hasTransparency() const;
@@ -218,8 +218,8 @@ class Material : public CachedResource {
 
     void updateTranslucency();
 
-    bool getTextureDataFast(RenderStagePass renderStagePass, TextureDataContainer& textureData);
-    bool getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container, bool force = false);
+    bool getTextureDataFast(RenderStagePass renderStagePass, TextureDataContainer<>& textureData);
+    bool getTextureData(TextureUsage slot, TextureDataContainer<>& container);
 
     void recomputeShaders();
     void setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
@@ -278,8 +278,8 @@ class Material : public CachedResource {
 
     /// use this map to add textures to the material
     mutable SharedMutex _textureLock;
-    std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
-    std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureUseForDepth;
+    std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures;
+    std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth;
 
     I32 _textureKeyCache = -1;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines;
@@ -290,8 +290,8 @@ TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);
 const char* getShadingModeName(ShadingMode shadingMode) noexcept;
 ShadingMode getShadingModeByName(const stringImpl& name);
 
-const char* getTexUsageName(ShaderProgram::TextureUsage texUsage) noexcept;
-ShaderProgram::TextureUsage getTexUsageByName(const stringImpl& name);
+const char* getTexUsageName(TextureUsage texUsage) noexcept;
+TextureUsage getTexUsageByName(const stringImpl& name);
 
 const char* getTextureOperationName(TextureOperation textureOp) noexcept;
 TextureOperation getTextureOperationByName(const stringImpl& operation);

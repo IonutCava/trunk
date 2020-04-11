@@ -61,6 +61,34 @@ enum class RenderTargetUsage : U8 {
     OTHER = 14,
     COUNT
 };
+/// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used
+enum class TextureUsage : U8 {
+    UNIT0 = 0,
+    NORMALMAP = 1,
+    HEIGHTMAP = 2,
+    SHADOW_LAYERED = 3,
+    DEPTH = 4,
+    SHADOW_SINGLE = 5,
+    REFLECTION_CUBE = 6,
+    SHADOW_CUBE = 7,
+    OPACITY = 8,
+    SPECULAR = 9,
+    UNIT1 = 10,
+    PROJECTION = 11,
+    REFLECTION_PLANAR = 12,
+    REFRACTION_PLANAR = 13,
+    GBUFFER_EXTRA = 14,
+    DEPTH_PREV = 15,
+    COUNT,
+
+    GLOSS = SPECULAR,
+    ROUGHNESS = GLOSS,
+    TERRAIN_SPLAT = OPACITY,
+    TERRAIN_ALBEDO_TILE = UNIT0,
+    TERRAIN_NORMAL_TILE = UNIT1,
+    TERRAIN_EXTRA_TILE = PROJECTION,
+    TERRAIN_HELPER_TEXTURES = ROUGHNESS
+};
 
 /// State the various attribute locations to use in shaders with VAO/VB's
 enum class AttribLocation : U8 {

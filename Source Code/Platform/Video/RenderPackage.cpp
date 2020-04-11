@@ -233,23 +233,18 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLev
 
     lodLevel = std::min(lodLevel, to_U8(_lodIndexOffsets.size() - 1));
     const auto& [offset, count] = _lodIndexOffsets[lodLevel];
-    const bool setAutoIdx = autoIndexBuffer() && (offset != 0u || count != 0u);
 
     const GFX::CommandBuffer::Container::EntryList& cmds = _commands->get<GFX::DrawCommand>();
+    const bool autoIndex = autoIndexBuffer() && (offset != 0u || count != 0u);
+
     for (GFX::CommandBase* cmd : cmds) {
         GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
         for (GenericDrawCommand& drawCmd : drawCommands) {
-            if (_isInstanced || drawCmd._cmd.primCount > 1u) {
-                drawCmd._cmd.baseInstance = 0u;
-            } else  {
-                drawCmd._cmd.baseInstance = dataIndex;
-            }
             drawCmd._commandOffset = startOffset++;
 
-            if (setAutoIdx) {
-                drawCmd._cmd.firstIndex = to_U32(offset);
-                drawCmd._cmd.indexCount = to_U32(count);
-            }
+            drawCmd._cmd.baseInstance = (_isInstanced || drawCmd._cmd.primCount > 1u) ? 0u : dataIndex;
+            drawCmd._cmd.firstIndex = autoIndex ? to_U32(offset) : drawCmd._cmd.firstIndex;
+            drawCmd._cmd.indexCount = autoIndex ? to_U32(count) : drawCmd._cmd.indexCount;
         }
     }
 

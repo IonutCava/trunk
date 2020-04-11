@@ -107,21 +107,14 @@ namespace Divide {
     }
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
-        TextureDataContainer::DataEntries& otherTextureData = rhs._textureData.textures();
-        for (auto it = eastl::begin(otherTextureData); it != eastl::end(otherTextureData);) {
-            const TextureData* texData = lhs.findTexture(it->first);
-            bool erase = false;
-            if (texData != nullptr) {
-                if (*texData == it->second) {
-                    erase = true;
+        const size_t texCount = rhs._textureData.textures().size();
+        for (size_t i = 0; i < texCount; ++i) {
+            const auto& it = rhs._textureData.textures()[i];
+            if (it.first != TextureDataContainer<>::INVALID_BINDING) {
+                const TextureData* texData = lhs.findTexture(it.first);
+                if (texData != nullptr && *texData == it.second) {
+                    partial = rhs._textureData.removeTexture(it.first) || partial;
                 }
-            }
-
-            if (erase) {
-                it = otherTextureData.erase(it);
-                partial = true;
-            } else {
-                ++it;
             }
         }
 
@@ -130,14 +123,7 @@ namespace Divide {
             const TextureViewEntry& otherView = *it;
 
             const TextureView* texViewData = lhs.findTextureView(otherView._binding);
-            bool erase = false;
-            if (texViewData != nullptr) {
-                if (*texViewData == otherView._view) {
-                    erase = true;
-                }
-            }
-
-            if (erase) {
+            if (texViewData != nullptr && *texViewData == otherView._view) {
                 it = otherViewList.erase(it);
                 partial = true;
             } else {
@@ -150,14 +136,7 @@ namespace Divide {
             const Image& otherImage = *it;
 
             const Image* image = lhs.findImage(otherImage._binding);
-            bool erase = false;
-            if (image != nullptr) {
-                if (*image == otherImage) {
-                    erase = true;
-                }
-            }
-
-            if (erase) {
+            if (image != nullptr && *image == otherImage) {
                 it = otherImageList.erase(it);
                 partial = true;
             } else {
@@ -169,14 +148,7 @@ namespace Divide {
             const ShaderBufferBinding& otherBinding = *it;
 
             const ShaderBufferBinding* binding = lhs.findBinding(otherBinding._binding);
-            bool erase = false;
-            if (binding != nullptr) {
-                if (*binding == otherBinding) {
-                    erase = true;
-                }
-            }
-
-            if (erase) {
+            if (binding != nullptr && *binding == otherBinding) {
                 it = rhs._shaderBuffers.erase(it);
                 partial = true;
             } else {
@@ -184,10 +156,10 @@ namespace Divide {
             }
         }
 
-        return rhs._shaderBuffers.empty() && rhs._textureData.textures().empty() && rhs._textureViews.empty() && rhs._images.empty();
+        return rhs._shaderBuffers.empty() && rhs._textureData.empty() && rhs._textureViews.empty() && rhs._images.empty();
     }
 
-    size_t TextureView::getHash() const {
+    size_t TextureView::getHash() const noexcept {
         _hash = 109;
         if (_texture != nullptr) {
             Util::Hash_combine(_hash, _texture->data().textureHandle());
@@ -202,7 +174,7 @@ namespace Divide {
         return _hash;
     }
 
-    size_t TextureViewEntry::getHash() const {
+    size_t TextureViewEntry::getHash() const noexcept {
         _hash = _view.getHash();
         Util::Hash_combine(_hash, _binding);
 

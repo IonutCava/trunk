@@ -23,9 +23,9 @@
 namespace Divide {
 
 std::array<U8, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {
-    to_U8(ShaderProgram::TextureUsage::SHADOW_SINGLE),
-    to_U8(ShaderProgram::TextureUsage::SHADOW_LAYERED),
-    to_U8(ShaderProgram::TextureUsage::SHADOW_CUBE)
+    to_U8(TextureUsage::SHADOW_SINGLE),
+    to_U8(TextureUsage::SHADOW_LAYERED),
+    to_U8(TextureUsage::SHADOW_CUBE)
 }};
 
 namespace {
@@ -442,7 +442,7 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
         GFX::EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.setTexture(_lightIconsTexture->data(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(_lightIconsTexture->data(), to_U8(TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DrawCommand drawCommand = { pointsCmd };

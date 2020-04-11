@@ -225,7 +225,7 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool&
     return s_stateBlockMap.find(s_defaultCacheValue)->second;
 }
 
-size_t RenderStateBlock::getHash() const {
+size_t RenderStateBlock::getHash() const noexcept {
     const size_t previousCache = Hashable::getHash();
 
     if (!_dirty) {

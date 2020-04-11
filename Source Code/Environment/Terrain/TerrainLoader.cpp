@@ -321,17 +321,17 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     heightMapTexture.flag(true);
 
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_SPLAT, CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_NORMAL_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_EXTRA_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::TERRAIN_HELPER_TEXTURES, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_SPLAT, CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_ALBEDO_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps));
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_NORMAL_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_EXTRA_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps));
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_HELPER_TEXTURES, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
+    terrainMaterial->setTexture(TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
-    terrainMaterial->setTextureUseForDepth(ShaderProgram::TextureUsage::TERRAIN_SPLAT, true);
-    terrainMaterial->setTextureUseForDepth(ShaderProgram::TextureUsage::TERRAIN_NORMAL_TILE, true);
-    terrainMaterial->setTextureUseForDepth(ShaderProgram::TextureUsage::TERRAIN_HELPER_TEXTURES, true);
-    terrainMaterial->setTextureUseForDepth(ShaderProgram::TextureUsage::HEIGHTMAP, true);
+    terrainMaterial->setTextureUseForDepth(TextureUsage::TERRAIN_SPLAT, true);
+    terrainMaterial->setTextureUseForDepth(TextureUsage::TERRAIN_NORMAL_TILE, true);
+    terrainMaterial->setTextureUseForDepth(TextureUsage::TERRAIN_HELPER_TEXTURES, true);
+    terrainMaterial->setTextureUseForDepth(TextureUsage::HEIGHTMAP, true);
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -363,7 +363,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
     shaderDescriptor._modules.push_back(fragModule);
 
-    Texture_ptr albedoTile = terrainMaterial->getTexture(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE).lock();
+    Texture_ptr albedoTile = terrainMaterial->getTexture(TextureUsage::TERRAIN_ALBEDO_TILE).lock();
     WAIT_FOR_CONDITION(albedoTile->getState() == ResourceState::RES_LOADED);
 
     const U16 tileMapSize = albedoTile->width();
@@ -427,11 +427,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
             shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);
 
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_SPLAT %d", to_base(ShaderProgram::TextureUsage::TERRAIN_SPLAT)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_ALBEDO_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_ALBEDO_TILE)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_NORMAL_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_NORMAL_TILE)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(ShaderProgram::TextureUsage::TERRAIN_EXTRA_TILE)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(ShaderProgram::TextureUsage::TERRAIN_HELPER_TEXTURES)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_SPLAT %d", to_base(TextureUsage::TERRAIN_SPLAT)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_ALBEDO_TILE %d", to_base(TextureUsage::TERRAIN_ALBEDO_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_NORMAL_TILE %d", to_base(TextureUsage::TERRAIN_NORMAL_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(TextureUsage::TERRAIN_EXTRA_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(TextureUsage::TERRAIN_HELPER_TEXTURES)), true);
 
         }
     }

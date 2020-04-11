@@ -109,7 +109,7 @@ stringImpl SetCameraCommand::toString(U16 indent) const {
 stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
     stringImpl ret = Base::toString(indent);
 
-    ret.append(Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", _set._shaderBuffers.size(), _set._textureData.textures().size()));
+    ret.append(Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", _set._shaderBuffers.size(), _set._textureData.textureCount()));
     for (auto it : _set._shaderBuffers) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
@@ -117,12 +117,16 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
         }
         ret.append(Util::StringFormat("Buffer [ %d - %d ] Range [%d - %d] ]\n", to_base(it._binding), it._buffer->getGUID(), it._elementRange.x, it._elementRange.y));
     }
-    for (auto it : _set._textureData.textures()) {
+    for (const auto&[binding, data] : _set._textureData.textures()) {
+        if (binding == TextureDataContainer<>::INVALID_BINDING) {
+            continue;
+        }
+
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Texture [ %d - %d ]\n", it.first, it.second.textureHandle()));
+        ret.append(Util::StringFormat("Texture [ %d - %d ]\n", binding, data.textureHandle()));
     }
 
     for (auto it : _set._textureViews) {
