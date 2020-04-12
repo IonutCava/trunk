@@ -94,7 +94,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        auto updateIterFunction = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
+        auto updateIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::update(*entities[i], deltaTimeUS)) {
                     //print error;
@@ -121,7 +121,7 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        auto inputIterFunction = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
+        auto inputIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::processInput(*entities[i], deltaTimeUS)) {
                     //print error;
@@ -149,7 +149,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        auto dataIterFunction = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
+        auto dataIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::processData(*entities[i], deltaTimeUS)) {
                     //print error;

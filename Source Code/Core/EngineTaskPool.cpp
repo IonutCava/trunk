@@ -27,7 +27,7 @@ void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, 
 }
 
 void parallel_for(PlatformContext& context,
-                  const DELEGATE<void, const Task*, U32, U32>& cbk,
+                  const DELEGATE<void, Task*, U32, U32>& cbk,
                   const ParallelForDescriptor& descriptor) {
     parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), cbk, descriptor);
 }

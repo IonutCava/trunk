@@ -73,6 +73,7 @@ struct selectionQueueDistanceFrontToBack {
     vec3<F32> _eyePos;
 };
 
+constexpr U32 g_NodesPerLoadPartition = 6u;
 constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
@@ -387,12 +388,12 @@ namespace {
 };
 
 
-void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
+void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
     assert(parent != nullptr);
 
     auto waitForReasoureTask = [&parentTask](const CachedResource_wptr& res) {
         ACKNOWLEDGE_UNUSED(res);
-        TaskYield(parentTask);
+        TaskYield(*parentTask);
     };
 
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
@@ -410,9 +411,9 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         boost::property_tree::ptree nodeTree = {};
         read_xml(nodePath, nodeTree);
 
-        auto loadModelComplete = [this, &nodeTree, &parentTask](CachedResource_wptr res) {
+        auto loadModelComplete = [this, &nodeTree/*, &parentTask*/](CachedResource_wptr res) {
             while (res.lock()->getState() != ResourceState::RES_LOADED) {
-                //TaskYield(parentTask);
+                //TaskYield(*parentTask);
             }
 
             eastl::static_pointer_cast<SceneNode>(res.lock())->loadFromXML(nodeTree);
@@ -505,7 +506,7 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         // Submesh (change component properties, as the meshes should already be loaded)
         else if (Util::CompareIgnoreCase(sceneNode.type, "SUBMESH")) {
             while (parent->getNode().getState() != ResourceState::RES_LOADED) {
-                TaskYield(parentTask);
+                TaskYield(*parentTask);
             }
 
             normalMask |= to_base(ComponentType::RENDERING);
@@ -543,12 +544,19 @@ void Scene::loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGr
         }
     }
 
-    for (const XML::SceneNode& node : sceneNode.children) {
-        //loadAsset(parentTask, node, crtNode, waitForReady);
-        Start(*CreateTask(*parentTask._parentPool, &parentTask, [this, node, waitForReady, crtNode](Task& subTask) -> void {
-            loadAsset(subTask, node, crtNode, waitForReady);
-        }));
-    }
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = to_U32(sceneNode.children.size());
+    descriptor._partitionSize = g_NodesPerLoadPartition;
+    descriptor._priority = TaskPriority::DONT_CARE;
+    descriptor._useCurrentThread = true;
+
+    parallel_for(_context,
+        [this, &sceneNode, &crtNode, &waitForReady](Task* parentTask, U32 start, U32 end) {
+            for (U32 i = start; i < end; ++i) {
+                loadAsset(parentTask, sceneNode.children[i], crtNode, waitForReady);
+            }
+        },
+        descriptor);
 }
 
 SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
@@ -1054,36 +1062,26 @@ bool Scene::load(const Str128& name) {
 
     loadDefaultCamera();
 
-    TaskPool& pool = _context.taskPool(TaskPoolType::HIGH_PRIORITY);
-    Task* loadTask = CreateTask(pool, DELEGATE<void, Task&>());
-    while (!_xmlSceneGraph.empty()) {
-        XML::SceneNode node = _xmlSceneGraph.top();
-        _xmlSceneGraph.pop();
+    SceneGraphNode& rootNode = _sceneGraph->getRoot();
 
-        Start(
-        *CreateTask(pool, loadTask, [this, node](Task & parentTask) -> void {
-            loadAsset(parentTask, node, &_sceneGraph->getRoot(), false);
-        }));
-    }
-    Start(*loadTask);
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = to_U32(_xmlSceneGraph.size());
+    descriptor._partitionSize = g_NodesPerLoadPartition;
+    descriptor._priority = TaskPriority::DONT_CARE;
+    descriptor._useCurrentThread = true;
 
-    U32 totalLoadingTasks = _loadingTasks.load();
-    Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
+    parallel_for(_context,
+        [this, &rootNode](Task* parentTask, U32 start, U32 end) {
+            for (U32 i = start; i < end; ++i) {
+                loadAsset(parentTask, _xmlSceneGraph[i], &rootNode, false);
+            }
+        },
+        descriptor);
 
-    while (totalLoadingTasks > 0) {
-        U32 actualTasks = _loadingTasks.load();
-        if (totalLoadingTasks != actualTasks) {
-            totalLoadingTasks = actualTasks;
-            Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
-        }
-        idle();
-        std::this_thread::yield();
-    }
-
-    Wait(*loadTask);
+    Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), _loadingTasks.load());
 
     // We always add a sky
-    auto skies = sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
+    const auto& skies = sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
     assert(!skies.empty());
     _currentSky = skies[0];
 
@@ -1298,10 +1296,7 @@ U8 Scene::getPlayerIndexForDevice(U8 deviceIndex) const {
 }
 
 void Scene::clearObjects() {
-    while (!_xmlSceneGraph.empty()) {
-        _xmlSceneGraph.pop();
-    }
-
+    _xmlSceneGraph.clear();
     _flashLight.clear();
     _sceneGraph->unload();
 }

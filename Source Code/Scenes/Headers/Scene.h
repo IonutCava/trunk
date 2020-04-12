@@ -141,7 +141,10 @@ class Scene : public Resource, public PlatformContextComponent {
     void clearTasks();
     void removeTask(Task& task);
 
-    inline void addSceneGraph(const XML::SceneNode& sceneGraph) { _xmlSceneGraph.push(sceneGraph); }
+    inline void addSceneGraphToLoad(const vectorEASTL<XML::SceneNode>& graph) {
+        _xmlSceneGraph.insert(eastl::cend(_xmlSceneGraph), eastl::cbegin(graph), eastl::cend(graph));
+    }
+
     void addMusic(MusicType type, const Str64& name, const Str256& srcFile);
 
     SceneGraphNode* addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
@@ -215,7 +218,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool loadXML(const Str128& name);
 
     virtual bool load(const Str128& name);
-    void loadAsset(Task& parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady);
+    void loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady);
     virtual bool unload();
     virtual void postLoad();
     // gets called on the main thread when the scene finishes loading (e.g. used by the GUI system)
@@ -292,7 +295,7 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorSTD<D64> _guiTimersMS;
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
-       std::stack<XML::SceneNode> _xmlSceneGraph;
+       vectorEASTL<XML::SceneNode> _xmlSceneGraph;
 
        F32 _LRSpeedFactor = 1.0f;
        /// Current selection

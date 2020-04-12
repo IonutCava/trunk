@@ -199,7 +199,7 @@ void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceC
 }
 
 void parallel_for(TaskPool& pool, 
-                  const DELEGATE<void, const Task*, U32, U32>& cbk,
+                  const DELEGATE<void, Task*, U32, U32>& cbk,
                   const ParallelForDescriptor& descriptor)
 {
     if (descriptor._iterCount > 0) {
@@ -220,7 +220,7 @@ void parallel_for(TaskPool& pool,
             const U32 end = start + crtPartitionSize;
             Start(*CreateTask(pool,
                        nullptr,
-                       [&cbk, &jobCount, start, end](const Task& parentTask) {
+                       [&cbk, &jobCount, start, end](Task& parentTask) {
                            if (TaskPool::USE_OPTICK_PROFILER) {
                                OPTICK_EVENT();
                            }
@@ -232,7 +232,7 @@ void parallel_for(TaskPool& pool,
             const U32 count = descriptor._iterCount;
             Start(*CreateTask(pool,
                        nullptr,
-                       [&cbk, &jobCount, count, remainder](const Task& parentTask) {
+                       [&cbk, &jobCount, count, remainder](Task& parentTask) {
                            if (TaskPool::USE_OPTICK_PROFILER) {
                                OPTICK_EVENT();
                            }

@@ -52,7 +52,6 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
     _name = filename;
 
     if (Util::CompareIgnoreCase(_name.substr(_name.find_last_of('.') + 1), "DDS")) {
-        std::lock_guard<std::mutex> lock(ImageDataInterface::_loadingMutex);
         return loadDDS_IL(srgb, refWidth, refHeight, filename);
     }
 
@@ -159,6 +158,7 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
 
 bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename) {
     ACKNOWLEDGE_UNUSED(srgb);
+    std::lock_guard<std::mutex> lock(ImageDataInterface::_loadingMutex);
 
     U32 ilTexture = 0;
     ilInit();

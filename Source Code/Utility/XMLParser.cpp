@@ -202,18 +202,14 @@ void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const
     ptree pt;
     read_xml(file.c_str(), pt);
 
-    vectorSTD<SceneNode> sceneGraph;
+    vectorEASTL<SceneNode> sceneGraph;
     for (const ptree::value_type & sceneGraphList : pt.get_child("entities", empty_ptree())){
-        sceneGraph.emplace_back();
-        readNode(sceneGraphList, sceneGraph.back());
-    }
-
-    for (const SceneNode& rootNode : sceneGraph) {
+        SceneNode& node = sceneGraph.emplace_back();
+        readNode(sceneGraphList, node);
         // This may not be needed;
-        assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
-        scene->addSceneGraph(rootNode);
+        assert(Util::CompareIgnoreCase(node.type, "ROOT"));
     }
-    //loadTerrain(sceneLocation, pt.get("terrain", ""), scene);
+    scene->addSceneGraphToLoad(sceneGraph);
 }
 
 

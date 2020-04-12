@@ -130,7 +130,7 @@ Task* CreateTask(TaskPool& pool, const DELEGATE<void, Task&>& threadedFunction, 
 Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
 void parallel_for(TaskPool& pool,
-                  const DELEGATE<void, const Task*, U32, U32>& cbk,
+                  const DELEGATE<void, Task*, U32, U32>& cbk,
                   const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);

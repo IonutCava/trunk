@@ -53,7 +53,7 @@ Task* CreateTask(PlatformContext& context, const DELEGATE<void, Task&>& threaded
 Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
 void parallel_for(PlatformContext& context,
-                  const DELEGATE<void, const Task*, U32, U32>& cbk,
+                  const DELEGATE<void, Task*, U32, U32>& cbk,
                   const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear);

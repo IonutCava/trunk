@@ -322,10 +322,7 @@ namespace Import {
                 texture.assetLocation(tex.texturePath());
                 texture.propertyDescriptor(textureDescriptor);
                 texture.threaded(false);
-                Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
-                assert(textureRes != nullptr);
-
-                tempMaterial->setTexture(static_cast<TextureUsage>(i), textureRes, tex.operation());
+                tempMaterial->setTexture(static_cast<TextureUsage>(i), CreateResource<Texture>(cache, texture), tex.operation());
             }
         }
 
