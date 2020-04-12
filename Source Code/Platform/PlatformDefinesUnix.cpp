@@ -81,6 +81,10 @@ namespace Divide {
         return splitPathToNameAndLocation(stringImpl(buf, size));
     }
 
+    bool ShowOpenWithDialog(const char* targetFile) {
+        return std::system(targetFile) == 0;
+    }
+
 }; //namespace Divide
 
 #endif //defined(_UNIX)

@@ -10,6 +10,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/SpotLightComponent.h"
@@ -171,16 +172,15 @@ namespace Divide {
     void PropertyWindow::drawInternal() {
         bool sceneChanged = false;
 
-        Selections crtSelections = selections();
-
-        bool hasSelections = crtSelections._selectionCount > 0u;
+        const Selections crtSelections = selections();
+        const bool hasSelections = crtSelections._selectionCount > 0u;
 
         Camera* selectedCamera = Attorney::EditorPropertyWindow::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
             sceneChanged = drawCamera(selectedCamera);
         } else if (hasSelections) {
             const F32 smallButtonWidth = 60.0f;
-            const F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
+            F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
 
             static bool closed = false;
             for (U8 i = 0u; i < crtSelections._selectionCount; ++i) {
@@ -251,7 +251,7 @@ namespace Divide {
                                 }
                                 if (isShadowCaster) {
                                     if (ImGui::CollapsingHeader("Light Shadow Settings", ImGuiTreeNodeFlags_OpenOnArrow)) {
-                                        ImGui::Text(Util::StringFormat("Shadow Offset: %d", to_U32(light->getShadowOffset())).c_str());
+                                        ImGui::Text("Shadow Offset: %d", to_U32(light->getShadowOffset()));
 
                                         switch (light->getLightType()) {
                                             case LightType::POINT: {
@@ -314,9 +314,7 @@ namespace Divide {
                     }
                 }
             }
-        }
 
-        if (hasSelections) {
             //ToDo: Speed this up. Also, how do we handle adding stuff like RenderingComponents and creating materials and the like?
             const auto validComponentToAdd = [this, &crtSelections](const ComponentType type) -> bool {
                 if (type._value == ComponentType::COUNT) {
@@ -341,7 +339,7 @@ namespace Divide {
 
             constexpr F32 buttonWidth = 80.0f;
 
-            const F32 xOffset = ImGui::GetWindowSize().x - buttonWidth - 20.0f;
+            xOffset = ImGui::GetWindowSize().x - buttonWidth - 20.0f;
             ImGui::NewLine();
             ImGui::Separator();
             ImGui::NewLine();
@@ -388,6 +386,10 @@ namespace Divide {
                 }
                 ImGui::EndPopup();
             }
+        } else {
+            ImGui::Separator();
+            ImGui::Text("Please select a scene node to inspect its properties");
+            ImGui::Separator();
         }
 
         if (sceneChanged) {
@@ -706,79 +708,406 @@ namespace Divide {
          bool ret = false;
 
          if (material) {
-
              if (readOnly) {
                  ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                  ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
              }
 
-             ImGui::Text(Util::StringFormat("Shading Mode [ %s ]", getShadingModeName(material->getShadingMode())).c_str());
+             static RenderStagePass currentStagePass = {};
+             {
+                 const char* crtStage = TypeUtil::RenderStageToString(currentStagePass._stage);
+                 if (ImGui::BeginCombo("Stage", crtStage, ImGuiComboFlags_PopupAlignLeft)) {
+                     for (U8 n = 0; n < to_U8(RenderStage::COUNT); ++n) {
+                        const RenderStage stage = static_cast<RenderStage>(n);
+                        const bool isSelected = currentStagePass._stage == stage;
 
-             auto diffuseSetter = [material](const void* data) {
-                 material->getColourData().baseColour(*(FColour4*)data);
-             };
-             FColour4 diffuse = material->getColourData().baseColour();
-             if (colourInput4(_parent, " - BaseColour", diffuse, readOnly, diffuseSetter)) {
-                 diffuseSetter(diffuse._v);
-                 ret = true;
+                        if (ImGui::Selectable(TypeUtil::RenderStageToString(stage), isSelected)) {
+                            currentStagePass._stage = stage;
+                        }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                     }
+                     ImGui::EndCombo();
+                 }
+
+                 const char* crtPass = TypeUtil::RenderPassTypeToString(currentStagePass._passType);
+                 if (ImGui::BeginCombo("Pass", crtPass, ImGuiComboFlags_PopupAlignLeft)) {
+                     for (U8 n = 0; n < to_U8(RenderPassType::COUNT); ++n) {
+                         const RenderPassType pass = static_cast<RenderPassType>(n);
+                         const bool isSelected = currentStagePass._passType == pass;
+
+                         if (ImGui::Selectable(TypeUtil::RenderPassTypeToString(pass), isSelected)) {
+                             currentStagePass._passType = pass;
+                         }
+                         if (isSelected) {
+                             ImGui::SetItemDefaultFocus();
+                         }
+                     }
+                     ImGui::EndCombo();
+                 }
+
+                 constexpr U8 min = 0u, max = Material::g_maxVariantsPerPass;
+                 ImGui::SliderScalar("Variant", ImGuiDataType_U8, &currentStagePass._variant, &min, &max);
+                 ImGui::InputScalar("Pass Index", ImGuiDataType_U32, &currentStagePass._passIndex);
+                 ImGui::InputScalar("Index A", ImGuiDataType_U16, &currentStagePass._indexA);
+                 ImGui::InputScalar("Index B", ImGuiDataType_U16, &currentStagePass._indexA);
              }
-                 
-             auto emissiveSetter = [material](const void* data) {
-                 material->getColourData().emissive(*(FColour3*)data);
-             };
-             FColour3 emissive = material->getColourData().emissive();
-             if (colourInput3(_parent, " - Emissive", emissive, readOnly, emissiveSetter)) {
-                 emissiveSetter(emissive._v);
-                 ret = true;
+
+             size_t stateHash = 0;
+             stringImpl shaderName = "None";
+             ShaderProgram* program = nullptr;
+             if (currentStagePass._stage != RenderStage::COUNT && currentStagePass._passType != RenderPassType::COUNT) {
+                 const I64 shaderGUID = material->getProgramGUID(currentStagePass);
+                 program = ShaderProgram::findShaderProgram(shaderGUID);
+                 if (program != nullptr) {
+                     shaderName = program->resourceName().c_str();
+                 }
+                 stateHash = material->getRenderStateBlock(currentStagePass);
              }
-             
-             if (material->isPBRMaterial()) {
-                 F32 reflectivity = material->getColourData().reflectivity();
-                 if (ImGui::SliderFloat(" - Specular", &reflectivity, 0.0f, 1.0f)) {
-                     material->getColourData().reflectivity(reflectivity);
-                     ret = true;
+
+             if (ImGui::CollapsingHeader(("Program: " + shaderName).c_str())) {
+                 if (program != nullptr) {
+                     const ShaderProgramDescriptor& descriptor = program->descriptor();
+                     for (const ShaderModuleDescriptor& module : descriptor._modules) {
+                         const char* stages[] = { "PS", "VS", "GS" "HS", "DS","CS" };
+                         if (ImGui::CollapsingHeader(Util::StringFormat("%s: File [ %s ] Variant [ %s ]",
+                                                                        stages[to_base(module._moduleType)],
+                                                                        module._sourceFile.c_str(),
+                                                                        module._variant.empty() ? "-" : module._variant.c_str()).c_str())) 
+                         {
+                             ImGui::Text("Defines: ");
+                             ImGui::Separator();
+                             for (const auto& define : module._defines) {
+                                ImGui::Text(define.first.c_str());
+                             }
+                             if (ImGui::Button("Open Source File")) {
+                                 if (!openFile((program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), module._sourceFile.c_str())) {
+                                     Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Couldn't open specified source file!", Time::SecondsToMilliseconds<F32>(3));
+                                 }
+                             }
+                         }
+                     }
+                     ImGui::Separator();
+                     if (ImGui::Button("Rebuild from source") && !readOnly) {
+                         Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Rebuilding shader from source ...", Time::SecondsToMilliseconds<F32>(3));
+                         if (!program->recompile(true)) {
+                             Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Failed to rebuild shader from source!", Time::SecondsToMilliseconds<F32>(3));
+                         } else {
+                             Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Rebuilt shader from source!", Time::SecondsToMilliseconds<F32>(3));
+                             ret = true;
+                         }
+                     }
+                     ImGui::Separator();
                  }
-                 F32 metallic = material->getColourData().metallic();
-                 if (ImGui::SliderFloat(" - Shininess", &metallic, 0.0f, 1.0f)) {
-                     material->getColourData().metallic(metallic);
-                     ret = true;
-                 }
-                 F32 roughness = material->getColourData().roughness();
-                 if (ImGui::SliderFloat(" - Roughness", &roughness, 0.0f, 1.0f)) {
-                     material->getColourData().roughness(roughness);
-                     ret = true;
-                 }
-             } else {
-                 auto specularSetter = [material](const void* data) {
-                     material->getColourData().specular(*(FColour3*)data);
+             }
+
+             if (ImGui::CollapsingHeader(Util::StringFormat("Render State: %zu", stateHash).c_str()) && stateHash > 0)
+             {
+                RenderStateBlock block = RenderStateBlock::get(stateHash);
+                bool changed = false;
+                {
+                    const P32 colourWrite = block.colourWrite();
+                    bool R = colourWrite.b[0] == 1;
+                    bool G = colourWrite.b[1] == 1;
+                    bool B = colourWrite.b[2] == 1;
+                    bool A = colourWrite.b[3] == 1;
+                    if (ImGui::Checkbox("R", &R)) {
+                        block.setColourWrites(R, G, B, A);
+                        changed = true;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Checkbox("R", &G)) {
+                        block.setColourWrites(R, G, B, A);
+                        changed = true;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Checkbox("R", &B)) {
+                        block.setColourWrites(R, G, B, A);
+                        changed = true;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Checkbox("R", &A)) {
+                        block.setColourWrites(R, G, B, A);
+                        changed = true;
+                    }
+                }
+
+                F32 bias[] = { block.zBias(), block.zUnits() };
+                if (ImGui::InputFloat2("ZBias", bias)) {
+                    block.setZBias(bias[0], bias[1]);
+                    changed = true;
+                }
+
+                ImGui::Text("Tessellation control points: %d", block.tessControlPoints());
+                {
+                    CullMode cMode = block.cullMode();
+                    const char* cullModes[] = { "None", "CW/BACK", "CCW/FRONT", "ALL", "ERROR!" };
+                    const char* crtMode = cullModes[to_base(cMode)];
+                    if (ImGui::BeginCombo("Cull Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                        for (U8 n = 0; n < to_U8(CullMode::COUNT); ++n) {
+                            const CullMode mode = static_cast<CullMode>(n);
+                            const bool isSelected = cMode == mode;
+
+                            if (ImGui::Selectable(cullModes[to_base(mode)], isSelected)) {
+                                cMode = mode;
+                                block.setCullMode(mode);
+                                changed = true;
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+
+                {
+                    FillMode fMode = block.fillMode();
+                    const char* fillModes[] = { "Point", "Wireframe", "Solid", "ERROR!" };
+                    const char* crtMode = fillModes[to_base(fMode)];
+                    if (ImGui::BeginCombo("Cull Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                        for (U8 n = 0; n < to_U8(FillMode::COUNT); ++n) {
+                            const FillMode mode = static_cast<FillMode>(n);
+                            const bool isSelected = fMode == mode;
+
+                            if (ImGui::Selectable(fillModes[to_base(mode)], isSelected)) {
+                                fMode = mode;
+                                block.setFillMode(mode);
+                                changed = true;
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+
+                U32 stencilReadMask = block.stencilMask();
+                U32 stencilWriteMask = block.stencilWriteMask();
+                if (ImGui::InputScalar("Stencil mask", ImGuiDataType_U32, &stencilReadMask, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                    block.setStencilReadWriteMask(stencilReadMask, stencilWriteMask);
+                    changed = true;
+                }
+
+                if (ImGui::InputScalar("Stencil write mask", ImGuiDataType_U32, &stencilWriteMask, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                    block.setStencilReadWriteMask(stencilReadMask, stencilWriteMask);
+                    changed = true;
+                }
+
+                bool stencilDirty = false;
+                U32 stencilRef = block.stencilRef();
+                if (ImGui::InputScalar("Stencil reference mask", ImGuiDataType_U32, &stencilRef, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                    stencilDirty = true;
+                }
+
+                const char* compFunctionNames[] = {
+                "NEVER", "LESS", "EQUAL", "LEQUAL", "GREATER", "NEQUAL", "GEQUAL", "ALWAYS", "ERROR"
+                };
+
+                const char* stencilOpNames[] = {
+                "KEEP", "ZERO", "REPLACE", "INCREMENT", "DECREMENT", "INVERT", "INCREMENT_WRAP", "DECREMENT_WRAP", "ERROR"
+                };
+
+                {
+                    ComparisonFunction zFunc = block.zFunc();
+                    const char* crtMode = compFunctionNames[to_base(zFunc)];
+                    if (ImGui::BeginCombo("Depth function", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                        for (U8 n = 0; n < to_U8(ComparisonFunction::COUNT); ++n) {
+                            const ComparisonFunction func = static_cast<ComparisonFunction>(n);
+                            const bool isSelected = zFunc == func;
+
+                            if (ImGui::Selectable(compFunctionNames[to_base(func)], isSelected)) {
+                                zFunc = func;
+                                block.setZFunc(func);
+                                changed = true;
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+                StencilOperation sFailOp = block.stencilFailOp();
+                {
+                    const char* crtMode = stencilOpNames[to_base(sFailOp)];
+                    if (ImGui::BeginCombo("Stencil fail op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                        for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
+                            const StencilOperation op = static_cast<StencilOperation>(n);
+                            const bool isSelected = sFailOp == op;
+
+                            if (ImGui::Selectable(stencilOpNames[to_base(op)], isSelected)) {
+                                sFailOp = op;
+                                stencilDirty = true;
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+                StencilOperation sZFailOp = block.stencilZFailOp();
+                {
+                    const char* crtMode = stencilOpNames[to_base(sZFailOp)];
+                    if (ImGui::BeginCombo("Stencil depth fail op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                        for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
+                            const StencilOperation op = static_cast<StencilOperation>(n);
+                            const bool isSelected = sZFailOp == op;
+
+                            if (ImGui::Selectable(stencilOpNames[to_base(op)], isSelected)) {
+                                sZFailOp = op;
+                                stencilDirty = true;
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+                StencilOperation sPassOp = block.stencilPassOp();
+                {
+                    const char* crtMode = stencilOpNames[to_base(sPassOp)];
+                    if (ImGui::BeginCombo("Stencil pass op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                        for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
+                            const StencilOperation op = static_cast<StencilOperation>(n);
+                            const bool isSelected = sPassOp == op;
+
+                            if (ImGui::Selectable(stencilOpNames[to_base(op)], isSelected)) {
+                                sPassOp = op;
+                                stencilDirty = true;
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+                ComparisonFunction sFunc = block.stencilFunc();
+                {
+                    const char* crtMode = compFunctionNames[to_base(sFunc)];
+                    if (ImGui::BeginCombo("Stencil function", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                        for (U8 n = 0; n < to_U8(ComparisonFunction::COUNT); ++n) {
+                            const ComparisonFunction mode = static_cast<ComparisonFunction>(n);
+                            const bool isSelected = sFunc == mode;
+
+                            if (ImGui::Selectable(compFunctionNames[to_base(mode)], isSelected)) {
+                                sFunc = mode;
+                                stencilDirty = true;
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+
+                bool frontFaceCCW = block.frontFaceCCW();
+                if (ImGui::Checkbox("CCW front face", &frontFaceCCW)) {
+                    block.setFrontFaceCCW(frontFaceCCW);
+                    changed = true;
+                }
+
+                bool scissorEnabled = block.scissorTestEnabled();
+                if (ImGui::Checkbox("Scissor test", &scissorEnabled)) {
+                    block.setScissorTest(scissorEnabled);
+                    changed = true;
+                }
+
+                bool depthTestEnabled = block.depthTestEnabled();
+                if (ImGui::Checkbox("Depth test", &depthTestEnabled)) {
+                    block.depthTestEnabled(depthTestEnabled);
+                    changed = true;
+                }
+
+                bool stencilEnabled = block.stencilEnable();
+                if (ImGui::Checkbox("Stencil test", &stencilEnabled)) {
+                    stencilDirty = true;
+                }
+
+                if (stencilDirty) {
+                    block.setStencil(stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc);
+                    changed = true;
+                }
+
+                if (changed && !readOnly) {
+                    material->setRenderStateBlock(block.getHash(), currentStagePass._stage, currentStagePass._passType, currentStagePass._variant);
+                    ret = true;
+                }
+             }
+
+             if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", getShadingModeName(material->getShadingMode())).c_str())) {
+                 const auto diffuseSetter = [material](const void* data) {
+                     material->getColourData().baseColour(*(FColour4*)data);
                  };
-                 FColour3 specular = material->getColourData().specular();
-                 if (colourInput3(_parent, " - Specular", specular, readOnly, specularSetter)) {
-                     specularSetter(specular._v);
+
+                 FColour4 diffuse = material->getColourData().baseColour();
+                 if (colourInput4(_parent, " - BaseColour", diffuse, readOnly, diffuseSetter)) {
+                     diffuseSetter(diffuse._v);
                      ret = true;
                  }
-
-                 F32 shininess = material->getColourData().shininess();
-                 if (ImGui::SliderFloat(" - Shininess", &shininess, 0.0f, 1.0f)) {
-                     material->getColourData().shininess(shininess);
+                 
+                 const auto emissiveSetter = [material](const void* data) {
+                     material->getColourData().emissive(*(FColour3*)data);
+                 };
+                 FColour3 emissive = material->getColourData().emissive();
+                 if (colourInput3(_parent, " - Emissive", emissive, readOnly, emissiveSetter)) {
+                     emissiveSetter(emissive._v);
                      ret = true;
                  }
-             }
+             
+                 if (material->isPBRMaterial()) {
+                     F32 reflectivity = material->getColourData().reflectivity();
+                     if (ImGui::SliderFloat(" - Specular", &reflectivity, 0.0f, 1.0f)) {
+                         material->getColourData().reflectivity(reflectivity);
+                         ret = true;
+                     }
+                     F32 metallic = material->getColourData().metallic();
+                     if (ImGui::SliderFloat(" - Shininess", &metallic, 0.0f, 1.0f)) {
+                         material->getColourData().metallic(metallic);
+                         ret = true;
+                     }
+                     F32 roughness = material->getColourData().roughness();
+                     if (ImGui::SliderFloat(" - Roughness", &roughness, 0.0f, 1.0f)) {
+                         material->getColourData().roughness(roughness);
+                         ret = true;
+                     }
+                 } else {
+                     const auto specularSetter = [material](const void* data) {
+                         material->getColourData().specular(*(FColour3*)data);
+                     };
+                     FColour3 specular = material->getColourData().specular();
+                     if (colourInput3(_parent, " - Specular", specular, readOnly, specularSetter)) {
+                         specularSetter(specular._v);
+                         ret = true;
+                     }
 
-             bool doubleSided = material->isDoubleSided();
-             bool receivesShadows = material->receivesShadows();
+                     F32 shininess = material->getColourData().shininess();
+                     if (ImGui::SliderFloat(" - Shininess", &shininess, 0.0f, 1.0f)) {
+                         material->getColourData().shininess(shininess);
+                         ret = true;
+                     }
+                 }
 
-             ret = ImGui::Checkbox("DoubleSided", &doubleSided) || ret;
-             ret = ImGui::Checkbox("ReceivesShadows", &receivesShadows) || ret;
-             if (!readOnly) {
-                 material->setDoubleSided(doubleSided);
-                 material->setReceivesShadows(receivesShadows);
-             } else {
-                 ImGui::PopStyleVar();
-                 ImGui::PopItemFlag();
+                 bool doubleSided = material->isDoubleSided();
+                 bool receivesShadows = material->receivesShadows();
+
+                 ret = ImGui::Checkbox("DoubleSided", &doubleSided) || ret;
+                 ret = ImGui::Checkbox("ReceivesShadows", &receivesShadows) || ret;
+                 if (!readOnly) {
+                     material->setDoubleSided(doubleSided);
+                     material->setReceivesShadows(receivesShadows);
+                 }
              }
 
              if (readOnly) {
+                 ImGui::PopStyleVar();
+                 ImGui::PopItemFlag();
                  ret = false;
              }
          }

@@ -85,7 +85,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
                         U32 stencilRef = 0,
                         StencilOperation stencilFailOp  = StencilOperation::KEEP,
                         StencilOperation stencilZFailOp = StencilOperation::KEEP,
-                        StencilOperation stencilPassOp  = StencilOperation::KEEP,
+                        StencilOperation stencilZPassOp  = StencilOperation::KEEP,
                         ComparisonFunction stencilFunc = ComparisonFunction::NEVER);
 
         void setStencilReadWriteMask(U32 read, U32 write);

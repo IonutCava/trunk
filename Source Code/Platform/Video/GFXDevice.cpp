@@ -78,7 +78,7 @@ namespace TypeUtil {
             case RenderStage::SHADOW:     return "SHADOW";
         };
 
-        return "ERROR!";
+        return "NONE";
     }
 
     RenderStage StringToRenderStage(const char* stage) noexcept {
@@ -97,7 +97,7 @@ namespace TypeUtil {
             case RenderPassType::OIT_PASS:  return "OIT_PASS";
         };
 
-        return "ERROR!";
+        return "NONE";
     }
 
     RenderPassType StringToRenderPassType(const char* pass) noexcept {

@@ -72,6 +72,11 @@ bool fileExists(const char* filePathAndName) {
     return std::filesystem::is_regular_file(targetPath);
 }
 
+bool fileExists(const char* filePath, const char* fileName) {
+    const auto targetPath = std::filesystem::path(stringImpl{ filePath } +fileName);
+    return std::filesystem::is_regular_file(targetPath);
+}
+
 bool createFile(const char* filePathAndName, bool overwriteExisting) {
     if (overwriteExisting && fileExists(filePathAndName)) {
         return std::ofstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
@@ -80,6 +85,16 @@ bool createFile(const char* filePathAndName, bool overwriteExisting) {
     createDirectories((const_sysInfo()._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePathAndName)._path).c_str());
 
     return std::ifstream(filePathAndName, std::fstream::in).good();
+}
+
+bool openFile(const char* filePath, const char* fileName) {
+    if (Util::IsEmptyOrNull(fileName) || !fileExists(filePath, fileName)) {
+        return false;
+    }
+
+    const stringImpl file{ const_sysInfo()._pathAndFilename._path + "/" + filePath + fileName};
+
+    return ShowOpenWithDialog(file.c_str());
 }
 
 bool deleteFile(const char* filePath, const char* fileName) {

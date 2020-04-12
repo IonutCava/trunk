@@ -428,13 +428,13 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     descriptor.name = "Solution Explorer";
     _dockedWindows[to_base(WindowType::SolutionExplorer)] = MemoryManager_NEW SolutionExplorerWindow(*this, _context, descriptor);
 
+    descriptor.position = ImVec2(0, 0);
+    descriptor.name = "PostFX Settings";
+    _dockedWindows[to_base(WindowType::PostFX)] = MemoryManager_NEW PostFXWindow(*this, _context, descriptor);
+
     descriptor.position = ImVec2(to_F32(renderResolution.width) - 300, 0);
     descriptor.name = "Property Explorer";
     _dockedWindows[to_base(WindowType::Properties)] = MemoryManager_NEW PropertyWindow(*this, _context, descriptor);
-
-    descriptor.position = ImVec2(to_F32(renderResolution.width) - 300, 0);
-    descriptor.name = "PostFX Settings";
-    _dockedWindows[to_base(WindowType::PostFX)] = MemoryManager_NEW PostFXWindow(*this, _context, descriptor);
 
     descriptor.position = ImVec2(0, 550.0f);
     descriptor.size = ImVec2(to_F32(renderResolution.width * 0.5f), to_F32(renderResolution.height) - 550 - 3);
@@ -511,6 +511,12 @@ void Editor::toggle(const bool state) {
     } else {
         updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
+        Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
+        Selections selections = activeScene.getCurrentSelection();
+        if (selections._selectionCount == 0) {
+            //SceneGraphNode& root = activeScene.sceneGraph().getRoot();
+            //_context.kernel().sceneManager()->setSelected(0, { &root });
+        }
     }
 }
 
@@ -885,21 +891,21 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 }
 
 bool Editor::Undo() {
-    bool ret = _undoManager->Undo();
-    if (ret && _statusBar) {
-        _statusBar->showMessage(Util::StringFormat("Undo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
+    if (_undoManager->Undo()) {
+        showStatusMessage(Util::StringFormat("Undo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
+        return true;
     }
 
-    return ret;
+    return false;
 }
 
 bool Editor::Redo() {
-    bool ret = _undoManager->Redo();
-    if (ret && _statusBar) {
-        _statusBar->showMessage(Util::StringFormat("Redo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
+    if (_undoManager->Redo()) {
+        showStatusMessage(Util::StringFormat("Redo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
+        return true;
     }
 
-    return ret;
+    return false;
 }
 
 // Key released: return true if input was consumed
@@ -1424,6 +1430,12 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
     }
 
     return closed;
+}
+
+void Editor::showStatusMessage(const stringImpl& message, F32 durationMS) {
+    if (_statusBar != nullptr) {
+        _statusBar->showMessage(message, durationMS);
+    }
 }
 
 bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) {

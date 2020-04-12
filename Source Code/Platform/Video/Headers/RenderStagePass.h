@@ -59,11 +59,11 @@ struct RenderStagePass {
         return baseIndex(_stage, _passType);
     }
 
-    static U8 baseIndex(RenderStage stage, RenderPassType passType) noexcept {
+    static constexpr U8 baseIndex(RenderStage stage, RenderPassType passType) noexcept {
         return static_cast<U8>(to_base(stage) + to_base(passType) * to_base(RenderStage::COUNT));
     }
 
-    static RenderStagePass fromBaseIndex(U8 baseIndex) noexcept {
+    static constexpr RenderStagePass fromBaseIndex(U8 baseIndex) noexcept {
         const RenderStage stage = static_cast<RenderStage>(baseIndex % to_base(RenderStage::COUNT));
         const RenderPassType pass = static_cast<RenderPassType>(baseIndex / to_base(RenderStage::COUNT));
         return { stage, pass };

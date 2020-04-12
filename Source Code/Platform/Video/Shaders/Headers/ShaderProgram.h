@@ -66,6 +66,31 @@ namespace Attorney {
 
 using ModuleDefines = vectorEASTL<std::pair<stringImpl, bool>>;
 
+struct ShaderModuleDescriptor {
+    ModuleDefines _defines;
+    Str64 _sourceFile;
+    Str64 _variant;
+    ShaderType _moduleType = ShaderType::COUNT;
+    bool _batchSameFile = true;
+};
+
+class ShaderProgramDescriptor final : public PropertyDescriptor {
+public:
+    ShaderProgramDescriptor() noexcept
+        : PropertyDescriptor(DescriptorType::DESCRIPTOR_SHADER) {
+
+    }
+
+    void clone(std::shared_ptr<PropertyDescriptor>& target) const final {
+        target.reset(new ShaderProgramDescriptor(*this));
+    }
+
+    size_t getHash() const noexcept final;
+
+    vectorEASTL<ShaderModuleDescriptor> _modules;
+
+};
+
 class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
     friend class Attorney::ShaderProgramKernel;
@@ -107,14 +132,11 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         return _functionIndex[to_U32(shader)].size();
     }
 
-    inline void setFunctionCount(ShaderType shader,
-                                 vec_size count) {
+    inline void setFunctionCount(ShaderType shader, vec_size count) {
         _functionIndex[to_U32(shader)].resize(count, 0);
     }
 
-    inline void setFunctionIndex(ShaderType shader,
-                                 U32 index,
-                                 U32 functionEntry) {
+    inline void setFunctionIndex(ShaderType shader, U32 index, U32 functionEntry) {
         const U32 shaderTypeValue = to_U32(shader);
 
         if (_functionIndex[shaderTypeValue].empty()) {
@@ -131,8 +153,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         DIVIDE_ASSERT(
             functionEntry < _availableFunctionIndex[shaderTypeValue].size(),
             "ShaderProgram error: Specified function entry does not exist!");
-        _functionIndex[shaderTypeValue][index] =
-            _availableFunctionIndex[shaderTypeValue][functionEntry];
+        _functionIndex[shaderTypeValue][index] = _availableFunctionIndex[shaderTypeValue][functionEntry];
     }
 
     inline U32 addFunctionIndex(ShaderType shader, U32 index) {
@@ -175,6 +196,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static I32 shaderProgramCount() noexcept { return s_shaderCount.load(std::memory_order_relaxed); }
 
+    const ShaderProgramDescriptor& descriptor() const noexcept { return _descriptor; }
+
     const char* getResourceTypeName() const noexcept override { return "ShaderProgram"; }
 
    protected:
@@ -204,6 +227,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         template <typename T>
         friend class ImplResourceLoader;
 
+        const ShaderProgramDescriptor _descriptor;
+
         PROPERTY_RW(bool, highPriority, true);
 
         bool _shouldRecompile;
@@ -228,40 +253,6 @@ namespace Attorney {
         friend class Divide::Kernel;
     };
 }
-
-struct ShaderModuleDescriptor {
-    ModuleDefines _defines;
-    Str64 _sourceFile;
-    Str64 _variant;
-    ShaderType _moduleType = ShaderType::COUNT;
-    bool _batchSameFile = true;
-};
-
-class ShaderProgramDescriptor final : public PropertyDescriptor {
-public:
-    ShaderProgramDescriptor() noexcept
-        : PropertyDescriptor(DescriptorType::DESCRIPTOR_SHADER) {
-
-    }
-
-    void clone(std::shared_ptr<PropertyDescriptor>& target) const final {
-        target.reset(new ShaderProgramDescriptor(*this));
-    }
-
-    inline size_t getHash() const noexcept final {
-        _hash = PropertyDescriptor::getHash();
-        for (const ShaderModuleDescriptor& desc : _modules) {
-            Util::Hash_combine(_hash, ShaderProgram::definesHash(desc._defines));
-            Util::Hash_combine(_hash, std::string(desc._variant.c_str()));
-            Util::Hash_combine(_hash, std::string(desc._sourceFile.c_str()));
-            Util::Hash_combine(_hash, desc._moduleType);
-            Util::Hash_combine(_hash, desc._batchSameFile);
-        }
-        return _hash;
-    }
-    vectorEASTL<ShaderModuleDescriptor> _modules;
-    
-};
 
 };  // namespace Divide
 #endif //_SHADER_PROGRAM_H_

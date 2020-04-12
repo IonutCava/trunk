@@ -160,7 +160,6 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
       _stageMask(UseProgramStageMask::GL_NONE_BIT),
       _validated(false),
       _validationQueued(false),
-      _descriptor(descriptor),
       _handle(GLUtil::k_invalidObjectID)
 {
 }

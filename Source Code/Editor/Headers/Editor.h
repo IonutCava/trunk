@@ -110,8 +110,8 @@ class Editor : public PlatformContextComponent,
     static std::array<Input::MouseButton, 5> g_oisButtons;
 
     enum class WindowType : U8 {
-        SolutionExplorer = 0,
-        PostFX,
+        PostFX = 0,
+        SolutionExplorer,
         Properties,
         ContentExplorer,
         Output,
@@ -213,6 +213,8 @@ class Editor : public PlatformContextComponent,
     bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
     // Return true if the model was spawned as a scene node
     bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name);
+
+    void showStatusMessage(const stringImpl& message, F32 durationMS);
 
     LightPool& getActiveLightPool();
 
@@ -423,6 +425,10 @@ namespace Attorney {
 
         static bool removeComponent(const Editor& editor, const Selections& selections, ComponentType newComponentType) {
             return editor.removeComponent(selections, newComponentType);
+        }
+
+        static void showStatusMessage(Editor& editor, const stringImpl& message, F32 durationMS) {
+            editor.showStatusMessage(message, durationMS);
         }
 
         friend class Divide::Gizmo;

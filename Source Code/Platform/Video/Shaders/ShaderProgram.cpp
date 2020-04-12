@@ -24,6 +24,18 @@ ShaderProgram::ShaderProgramMap ShaderProgram::s_shaderPrograms;
 SharedMutex ShaderProgram::s_programLock;
 std::atomic_int ShaderProgram::s_shaderCount;
 
+size_t ShaderProgramDescriptor::getHash() const noexcept {
+    _hash = PropertyDescriptor::getHash();
+    for (const ShaderModuleDescriptor& desc : _modules) {
+        Util::Hash_combine(_hash, ShaderProgram::definesHash(desc._defines));
+        Util::Hash_combine(_hash, std::string(desc._variant.c_str()));
+        Util::Hash_combine(_hash, std::string(desc._sourceFile.c_str()));
+        Util::Hash_combine(_hash, desc._moduleType);
+        Util::Hash_combine(_hash, desc._batchSameFile);
+    }
+    return _hash;
+}
+
 ShaderProgram::ShaderProgram(GFXDevice& context, 
                              size_t descriptorHash,
                              const Str128& shaderName,
@@ -33,6 +45,7 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
                              bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, shaderFileName, shaderFileLocation),
       GraphicsResource(context, GraphicsResource::Type::SHADER_PROGRAM, getGUID(), _ID(shaderName.c_str())),
+      _descriptor(descriptor),
       _asyncLoad(asyncLoad),
       _shouldRecompile(false)
 {

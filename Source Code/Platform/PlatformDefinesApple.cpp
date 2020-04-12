@@ -78,6 +78,9 @@ namespace Divide {
         return splitPathToNameAndLocation(buf);
     }
 
+    bool ShowOpenWithDialog(const char* targetFile) {
+        return std::system(targetFile) == 0;
+    }
 }; //namespace Divide
 
 #endif //defined(__APPLE_CC__)
