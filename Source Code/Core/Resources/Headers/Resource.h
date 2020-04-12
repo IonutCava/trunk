@@ -83,7 +83,7 @@ class Resource : public GUIDWrapper
 
    protected:
     virtual void setState(ResourceState currentState) noexcept;
-    virtual const char* getResourceTypeName() const { return "Resource"; }
+    virtual const char* getResourceTypeName() const noexcept { return "Resource"; }
 
    protected:
     std::atomic<ResourceState> _resourceState;
@@ -120,7 +120,7 @@ public:
 
 protected:
     void setState(ResourceState currentState) noexcept override;
-    virtual const char* getResourceTypeName() const override { return "Cached Resource"; }
+    virtual const char* getResourceTypeName() const noexcept override { return "Cached Resource"; }
 
 protected:
     std::array<DELEGATE<void, Resource_wptr>, to_base(ResourceState::COUNT)> _loadingCallbacks;

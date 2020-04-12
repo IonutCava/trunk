@@ -57,53 +57,33 @@ namespace Divide {
 
 namespace TypeUtil {
     const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept {
-        switch (type) {
-            case GraphicsResource::Type::PIXEL_BUFFER: return "PIXEL_BUFFER";
-            case GraphicsResource::Type::RENDER_TARGET: return "RENDER_TARGET";
-            case GraphicsResource::Type::SHADER: return "SHADER";
-            case GraphicsResource::Type::SHADER_BUFFER: return "SHADER_BUFFER";
-            case GraphicsResource::Type::SHADER_PROGRAM: return "SHADER_PROGRAM";
-            case GraphicsResource::Type::TEXTURE: return "TEXTURE";
-            case GraphicsResource::Type::VERTEX_BUFFER: return "VERTEX_BUFFER";
-        };
-
-        return "UNKNOWN";
+        return Names::resourceTypes[to_base(type)];
     };
 
     const char* RenderStageToString(RenderStage stage) noexcept {
-        switch (stage) {
-            case RenderStage::DISPLAY:    return "DISPLAY";
-            case RenderStage::REFLECTION: return "REFLECTION";
-            case RenderStage::REFRACTION: return "REFRACTION";
-            case RenderStage::SHADOW:     return "SHADOW";
-        };
-
-        return "NONE";
+        return Names::renderStage[to_base(stage)];
     }
 
     RenderStage StringToRenderStage(const char* stage) noexcept {
-             if (strcmp(stage, "DISPLAY") == 0)    { return RenderStage::DISPLAY;}
-        else if (strcmp(stage, "REFLECTION") == 0) { return RenderStage::REFLECTION; }
-        else if (strcmp(stage, "REFRACTION") == 0) { return RenderStage::REFRACTION; }
-        else if (strcmp(stage, "SHADOW") == 0)     { return RenderStage::SHADOW; }
+        for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
+            if (strcmp(stage, Names::renderStage[i]) == 0) {
+                return static_cast<RenderStage>(i);
+            }
+        }
 
         return RenderStage::COUNT;
     }
 
     const char* RenderPassTypeToString(RenderPassType pass) noexcept {
-        switch (pass) {
-            case RenderPassType::PRE_PASS:  return "PRE_PASS";
-            case RenderPassType::MAIN_PASS: return "MAIN_PASS";
-            case RenderPassType::OIT_PASS:  return "OIT_PASS";
-        };
-
-        return "NONE";
+        return Names::renderPassType[to_base(pass)];
     }
 
     RenderPassType StringToRenderPassType(const char* pass) noexcept {
-             if (strcmp(pass, "PRE_PASS") == 0)  { return RenderPassType::PRE_PASS; }
-        else if (strcmp(pass, "MAIN_PASS") == 0) { return RenderPassType::MAIN_PASS; }
-        else if (strcmp(pass, "OIT_PASS") == 0)  { return RenderPassType::OIT_PASS; }
+        for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
+            if (strcmp(pass, Names::renderPassType[i]) == 0) {
+                return static_cast<RenderPassType>(i);
+            }
+        }
 
         return RenderPassType::COUNT;
     }
@@ -263,7 +243,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
     // Create general purpose render state blocks
-    RenderStateBlock::init();
     RenderStateBlock defaultState;
     _defaultStateBlockHash = defaultState.getHash();
 

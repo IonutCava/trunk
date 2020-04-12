@@ -48,7 +48,6 @@ public:
         TEXTURE,
         COUNT
     };
-
     virtual ~GraphicsResource();
 
 protected:
@@ -65,6 +64,12 @@ private:
     I64 _GUID;
     U64 _nameHash;
     Type _type;
+};
+
+namespace Names {
+    static const char* resourceTypes[] = {
+        "PIXEL_BUFFER", "RENDER_TARGET", "SHADER_BUFFER", "VERTEX_BUFFER", "SHADER", "SHADER_PROGRAM", "TEXTURE", "UNKNOWN"
+    };
 };
 
 }; //namespace Divide

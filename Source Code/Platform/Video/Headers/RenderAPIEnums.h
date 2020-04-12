@@ -90,6 +90,13 @@ enum class TextureUsage : U8 {
     TERRAIN_HELPER_TEXTURES = ROUGHNESS
 };
 
+namespace Names {
+    static const char* textureUsage[] = {
+        "UNIT0", "NORMALMAP", "HEIGHTMAP", "SHADOW_LAYERED", "DEPTH", "SHADOW_SINGLE", "REFLECTION_CUBE", "SHADOW_CUBE", "OPACITY",
+        "SPECULAR", "UNIT1", "PROJECTION", "REFLECTION_PLANAR", "REFRACTION_PLANAR", "GBUFFER_EXTRA", "DEPTH_PREV", "NONE"
+    };
+};
+
 /// State the various attribute locations to use in shaders with VAO/VB's
 enum class AttribLocation : U8 {
     POSITION = 0,
@@ -130,11 +137,24 @@ enum class RenderStage : U8 {
     COUNT
 };
 
+namespace Names {
+    static const char* renderStage[] = {
+        "SHADOW", "REFLECTION", "REFRACTION", "DISPLAY", "NONE"
+    };
+};
+
+
 enum class RenderPassType : U8 {
     PRE_PASS = 0,
     MAIN_PASS = 1,
     OIT_PASS = 2,
     COUNT
+};
+
+namespace Names {
+    static const char* renderPassType[] = {
+        "PRE_PASS", "MAIN_PASS", "OIT_PASS", "NONE"
+    };
 };
 
 enum class PBType : U8 { 
@@ -224,6 +244,12 @@ enum class ComparisonFunction : U8 {
     COUNT
 };
 
+namespace Names {
+    static const char* compFunctionNames[] = {
+        "NEVER", "LESS", "EQUAL", "LEQUAL", "GREATER", "NEQUAL", "GEQUAL", "ALWAYS", "ERROR"
+    };
+};
+
 /// Specifies whether front- or back-facing facets are candidates for culling.
 enum class CullMode : U8 {
     NONE = 0,
@@ -237,6 +263,12 @@ enum class CullMode : U8 {
     ALL,
     /// Place all properties above this.
     COUNT
+};
+
+namespace Names {
+    static const char* cullModes[] = {
+        "None", "CW/BACK", "CCW/FRONT", "ALL", "ERROR!"
+    };
 };
 
 /// Available shader stages
@@ -277,17 +309,29 @@ enum class StencilOperation : U8 {
     COUNT
 };
 
+namespace Names {
+    static const char* stencilOpNames[] = {
+        "KEEP", "ZERO", "REPLACE", "INCREMENT", "DECREMENT", "INVERT", "INCREMENT_WRAP", "DECREMENT_WRAP", "ERROR"
+    };
+};
+
 /// Defines all available fill modes for primitives
 enum class FillMode : U8 {
     /// Polygon vertices that are marked as the start of a boundary edge are
     /// drawn as points.
-    POINT = 1,
+    POINT = 0,
     /// Boundary edges of the polygon are drawn as line segments.
     WIREFRAME,
     /// The interior of the polygon is filled.
     SOLID,
     /// Place all properties above this.
     COUNT
+};
+
+namespace Names {
+    static const char* fillModes[] = {
+        "Point", "Wireframe", "Solid", "ERROR!"
+    };
 };
 
 enum class TextureType : U8 {
@@ -312,6 +356,12 @@ enum class TextureFilter : U8 {
     COUNT
 };
 
+namespace Names {
+    static const char* textureFilter[] = {
+        "LINEAR", "NEAREST", "NEAREST_MIPMAP_NEAREST", "LINEAR_MIPMAP_NEAREST", "NEAREST_MIPMAP_LINEAR", "LINEAR_MIPMAP_LINEAR", "NONE"
+    };
+};
+
 enum class TextureWrap : U8 {
     /** Texture coordinates outside [0...1] are clamped to the nearest valid
        value.     */
@@ -324,6 +374,12 @@ enum class TextureWrap : U8 {
     REPEAT = 0x4,
     MIRROR_REPEAT = 0x5,
     COUNT
+};
+
+namespace Names {
+    static const char* textureWrap[] = {
+        "CLAMP", "CLAMP_TO_EDGE", "CLAMP_TO_BORDER", "DECAL", "REPEAT", "MIRROR_REPEAT", "NONE"
+    };
 };
 
 enum class GFXImageFormat : U8 {

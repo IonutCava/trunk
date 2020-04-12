@@ -21,6 +21,8 @@
 namespace Divide {
 
 namespace {
+    constexpr size_t g_materialXMLVersion = 1;
+
     constexpr size_t g_invalidStateHash = std::numeric_limits<size_t>::max();
 
     constexpr U16 g_numMipsToKeepFromAlphaTextures = 1;
@@ -37,13 +39,65 @@ namespace {
     constexpr U32 g_materialTexturesCount = sizeof(g_materialTextures) / sizeof(g_materialTextures[0]);
 };
 
-bool Material::onStartup() {
-    return true;
-}
 
-bool Material::onShutdown() {
-    return true;
-}
+namespace TypeUtil {
+    const char* TextureUsageToString(TextureUsage texUsage) noexcept {
+        return Names::textureUsage[to_base(texUsage)];
+    }
+
+    TextureUsage StringToTextureUsage(const stringImpl& name) {
+        for (U8 i = 0; i < to_U8(TextureUsage::COUNT); ++i) {
+            if (strcmp(name.c_str(), Names::textureUsage[i]) == 0) {
+                return static_cast<TextureUsage>(i);
+            }
+        }
+
+        return TextureUsage::COUNT;
+    }
+
+    const char* BumpMethodToString(BumpMethod bumpMethod) noexcept {
+        return Names::bumpMethod[to_base(bumpMethod)];
+    }
+
+    BumpMethod StringToBumpMethod(const stringImpl& name) {
+        for (U8 i = 0; i < to_U8(BumpMethod::COUNT); ++i) {
+            if (strcmp(name.c_str(), Names::bumpMethod[i]) == 0) {
+                return static_cast<BumpMethod>(i);
+            }
+        }
+
+        return BumpMethod::COUNT;
+    }
+
+    const char* ShadingModeToString(ShadingMode shadingMode) noexcept {
+        return Names::shadingMode[to_base(shadingMode)];
+    }
+
+    ShadingMode StringToShadingMode(const stringImpl& name) {
+        for (U8 i = 0; i < to_U8(ShadingMode::COUNT); ++i) {
+            if (strcmp(name.c_str(), Names::shadingMode[i]) == 0) {
+                return static_cast<ShadingMode>(i);
+            }
+        }
+
+        return ShadingMode::COUNT;
+    }
+
+    const char* TextureOperationToString(TextureOperation textureOp) noexcept {
+        return Names::textureOperation[to_base(textureOp)];
+    }
+
+    TextureOperation StringToTextureOperation(const stringImpl& operation) {
+        for (U8 i = 0; i < to_U8(TextureOperation::COUNT); ++i) {
+            if (strcmp(operation.c_str(), Names::textureOperation[i]) == 0) {
+                return static_cast<TextureOperation>(i);
+            }
+        }
+
+        return TextureOperation::COUNT;
+    }
+
+};
 
 void Material::ApplyDefaultStateBlocks(Material& target) {
     /// Normal state for final rendering
@@ -874,216 +928,10 @@ void Material::rebuild() {
     }
 }
 
-const char* getTexUsageName(TextureUsage texUsage) noexcept {
-    switch (texUsage) {
-        case TextureUsage::UNIT0      : return "UNIT0";
-        case TextureUsage::NORMALMAP: return "NORMALMAP";
-        case TextureUsage::HEIGHTMAP  : return "HEIGHT";
-        case TextureUsage::OPACITY: return "OPACITY";
-        case TextureUsage::SPECULAR: return "SPECULAR";
-        case TextureUsage::UNIT1      : return "UNIT1";
-        case TextureUsage::PROJECTION : return "PROJECTION";
-    };
-
-    return "";
-}
-
-TextureUsage getTexUsageByName(const stringImpl& name) {
-    if (Util::CompareIgnoreCase(name, "UNIT0")) {
-        return TextureUsage::UNIT0;
-    } else if (Util::CompareIgnoreCase(name, "NORMALMAP")) {
-        return TextureUsage::NORMALMAP;
-    } else if (Util::CompareIgnoreCase(name, "HEIGHT")) {
-        return TextureUsage::HEIGHTMAP;
-    } else if (Util::CompareIgnoreCase(name, "OPACITY")) {
-        return TextureUsage::OPACITY;
-    } else if (Util::CompareIgnoreCase(name, "SPECULAR")) {
-        return TextureUsage::SPECULAR;
-    } else if (Util::CompareIgnoreCase(name, "UNIT1")) {
-        return TextureUsage::UNIT1;
-    } else if (Util::CompareIgnoreCase(name, "PROJECTION")) {
-        return TextureUsage::PROJECTION;
-    }
-
-    return TextureUsage::COUNT;
-}
-
-const char *getBumpMethodName(BumpMethod bumpMethod) noexcept {
-    switch(bumpMethod) {
-        case BumpMethod::NORMAL   : return "NORMAL";
-        case BumpMethod::PARALLAX : return "PARALLAX";
-        case BumpMethod::PARALLAX_OCCLUSION: return "PARALLAX_OCCLUSION";
-
-        default:break;
-    }
-
-    return "NONE";
-}
-
-BumpMethod getBumpMethodByName(const stringImpl& name) {
-    if (Util::CompareIgnoreCase(name, "NORMAL")) {
-        return BumpMethod::NORMAL;
-    } else if (Util::CompareIgnoreCase(name, "PARALLAX")) {
-        return BumpMethod::PARALLAX;
-    } else if (Util::CompareIgnoreCase(name, "PARALLAX_OCCLUSION")) {
-        return BumpMethod::PARALLAX_OCCLUSION;
-    }
-
-    return BumpMethod::COUNT;
-}
-
-const char *getShadingModeName(ShadingMode shadingMode) noexcept {
-    switch (shadingMode) {
-        case ShadingMode::FLAT          : return "FLAT";
-        case ShadingMode::PHONG         : return "PHONG";
-        case ShadingMode::BLINN_PHONG   : return "BLINN_PHONG";
-        case ShadingMode::TOON          : return "TOON";
-        case ShadingMode::OREN_NAYAR    : return "OREN_NAYAR";
-        case ShadingMode::COOK_TORRANCE : return "COOK_TORRANCE";
-        default:break;
-    }
-
-    return "NONE";
-}
-
-ShadingMode getShadingModeByName(const stringImpl& name) {
-    if (Util::CompareIgnoreCase(name, "FLAT")) {
-        return ShadingMode::FLAT;
-    } else if (Util::CompareIgnoreCase(name, "PHONG")) {
-        return ShadingMode::PHONG;
-    } else if (Util::CompareIgnoreCase(name, "BLINN_PHONG")) {
-        return ShadingMode::BLINN_PHONG;
-    } else if (Util::CompareIgnoreCase(name, "TOON")) {
-            return ShadingMode::TOON;
-    } else if (Util::CompareIgnoreCase(name, "OREN_NAYAR")) {
-            return ShadingMode::OREN_NAYAR;
-    } else if (Util::CompareIgnoreCase(name, "COOK_TORRANCE")) {
-            return ShadingMode::COOK_TORRANCE;
-    }
-
-    return ShadingMode::COUNT;
-}
-
-TextureOperation getTextureOperationByName(const stringImpl& operation) {
-    if (Util::CompareIgnoreCase(operation, "TEX_OP_MULTIPLY")) {
-        return TextureOperation::MULTIPLY;
-    } else if (Util::CompareIgnoreCase(operation, "TEX_OP_DECAL")) {
-        return TextureOperation::DECAL;
-    } else if (Util::CompareIgnoreCase(operation, "TEX_OP_ADD")) {
-        return TextureOperation::ADD;
-    } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SMOOTH_ADD")) {
-        return TextureOperation::SMOOTH_ADD;
-    } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SIGNED_ADD")) {
-        return TextureOperation::SIGNED_ADD;
-    } else if (Util::CompareIgnoreCase(operation, "TEX_OP_DIVIDE")) {
-        return TextureOperation::DIVIDE;
-    } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SUBTRACT")) {
-        return TextureOperation::SUBTRACT;
-    }
-
-    return TextureOperation::REPLACE;
-}
-
-const char *getTextureOperationName(TextureOperation textureOp) noexcept {
-    switch(textureOp) {
-        case TextureOperation::MULTIPLY   : return "TEX_OP_MULTIPLY";
-        case TextureOperation::DECAL      : return "TEX_OP_DECAL";
-        case TextureOperation::ADD        : return "TEX_OP_ADD";
-        case TextureOperation::SMOOTH_ADD : return "TEX_OP_SMOOTH_ADD";
-        case TextureOperation::SIGNED_ADD : return "TEX_OP_SIGNED_ADD";
-        case TextureOperation::DIVIDE     : return "TEX_OP_DIVIDE";
-        case TextureOperation::SUBTRACT   : return "TEX_OP_SUBTRACT";
-    }
-
-    return "TEX_OP_REPLACE";
-}
-
-const char *getWrapModeName(TextureWrap wrapMode) noexcept {
-    switch(wrapMode) {
-        case TextureWrap::CLAMP           : return "CLAMP";
-        case TextureWrap::CLAMP_TO_EDGE   : return "CLAMP_TO_EDGE";
-        case TextureWrap::CLAMP_TO_BORDER : return "CLAMP_TO_BORDER";
-        case TextureWrap::DECAL           : return "DECAL";
-    }
-
-    return "REPEAT";
-}
-
-TextureWrap getWrapModeByName(const stringImpl& wrapMode) {
-    if (Util::CompareIgnoreCase(wrapMode, "CLAMP")) {
-        return TextureWrap::CLAMP;
-    } else if (Util::CompareIgnoreCase(wrapMode, "CLAMP_TO_EDGE")) {
-        return TextureWrap::CLAMP_TO_EDGE;
-    } else if (Util::CompareIgnoreCase(wrapMode, "CLAMP_TO_BORDER")) {
-        return TextureWrap::CLAMP_TO_BORDER;
-    } else if (Util::CompareIgnoreCase(wrapMode, "DECAL")) {
-        return TextureWrap::DECAL;
-    }
-
-    return TextureWrap::REPEAT;
-}
-
-const char *getFilterName(TextureFilter filter) noexcept {
-    switch(filter) {
-        case TextureFilter::LINEAR: return "LINEAR";
-        case TextureFilter::NEAREST_MIPMAP_NEAREST : return "NEAREST_MIPMAP_NEAREST";
-        case TextureFilter::LINEAR_MIPMAP_NEAREST : return "LINEAR_MIPMAP_NEAREST";
-        case TextureFilter::NEAREST_MIPMAP_LINEAR : return "NEAREST_MIPMAP_LINEAR";
-        case TextureFilter::LINEAR_MIPMAP_LINEAR : return "LINEAR_MIPMAP_LINEAR";
-    }
-
-    return "NEAREST";
-}
-
-
-TextureFilter getFilterByName(const stringImpl& filter) {
-    if (Util::CompareIgnoreCase(filter, "LINEAR")) {
-        return TextureFilter::LINEAR;
-    } else if (Util::CompareIgnoreCase(filter, "NEAREST_MIPMAP_NEAREST")) {
-        return TextureFilter::NEAREST_MIPMAP_NEAREST;
-    } else if (Util::CompareIgnoreCase(filter, "LINEAR_MIPMAP_NEAREST")) {
-        return TextureFilter::LINEAR_MIPMAP_NEAREST;
-    } else if (Util::CompareIgnoreCase(filter, "NEAREST_MIPMAP_LINEAR")) {
-        return TextureFilter::NEAREST_MIPMAP_LINEAR;
-    } else if (Util::CompareIgnoreCase(filter, "LINEAR_MIPMAP_LINEAR")) {
-        return TextureFilter::LINEAR_MIPMAP_LINEAR;
-    }
-
-    return TextureFilter::NEAREST;
-}
-
-Texture_ptr loadTextureXML(ResourceCache* targetCache,
-                            const stringImpl &textureNode,
-                            const stringImpl &textureName,
-                            const boost::property_tree::ptree& pt)
-{
-    const Str64 img_name(textureName.substr(textureName.find_last_of('/') + 1).c_str());
-    const Str256 pathName(textureName.substr(0, textureName.rfind("/")).c_str());
-
-    SamplerDescriptor sampDesc = {};
-
-    sampDesc.wrapU(getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.U", "REPEAT")));
-    sampDesc.wrapV(getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.V", "REPEAT")));
-    sampDesc.wrapW(getWrapModeByName(pt.get<stringImpl>(textureNode + ".Map.<xmlattr>.W", "REPEAT")));
-    sampDesc.minFilter(getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.min", "LINEAR")));
-    sampDesc.magFilter(getFilterByName(pt.get<stringImpl>(textureNode + ".Filter.<xmlattr>.mag", "LINEAR")));
-    sampDesc.anisotropyLevel(to_U8(pt.get(textureNode + ".anisotropy", 0U)));
-
-    TextureDescriptor texDesc(TextureType::TEXTURE_2D);
-    texDesc.samplerDescriptor(sampDesc);
-
-    ResourceDescriptor texture(img_name);
-    texture.assetName(img_name);
-    texture.assetLocation(pathName);
-    texture.propertyDescriptor(texDesc);
-    texture.waitForReady(false);
-    texture.flag(!pt.get(textureNode + ".flipped", false));
-
-    return CreateResource<Texture>(targetCache, texture);
-}
-
 void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
-    pt.put(entryName + ".shadingMode", getShadingModeName(getShadingMode()));
+    pt.put(entryName + ".version", g_materialXMLVersion);
+
+    pt.put(entryName + ".shadingMode", TypeUtil::ShadingModeToString(getShadingMode()));
 
     pt.put(entryName + ".colour.<xmlattr>.r", getColourData().baseColour().r);
     pt.put(entryName + ".colour.<xmlattr>.g", getColourData().baseColour().g);
@@ -1111,45 +959,26 @@ void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptre
 
     pt.put(entryName + ".receivesShadows", receivesShadows());
 
-    pt.put(entryName + ".bumpMethod", getBumpMethodName(getBumpMethod()));
+    pt.put(entryName + ".bumpMethod", TypeUtil::BumpMethodToString(getBumpMethod()));
 
     pt.put(entryName + ".parallaxFactor", getParallaxFactor());
 
-
-    for (U8 i = 0; i < g_materialTexturesCount; ++i) {
-        TextureUsage usage = g_materialTextures[i];
-
-        Texture_wptr tex = getTexture(usage);
-        if (!tex.expired()) {
-            Texture_ptr texture = tex.lock();
-
-            const SamplerDescriptor &sampler = texture->getCurrentSampler();
-
-            stringImpl textureNode = entryName + ".texture.";
-            textureNode += getTexUsageName(usage);
-
-            pt.put(textureNode + ".name", texture->assetName().c_str());
-            pt.put(textureNode + ".path", texture->assetLocation());
-            pt.put(textureNode + ".flipped", texture->flipped());
-
-            if (usage == TextureUsage::UNIT1) {
-                pt.put(textureNode + ".usage", getTextureOperationName(_properties._operation));
-            }
-            pt.put(textureNode + ".Map.<xmlattr>.U", getWrapModeName(sampler.wrapU()));
-            pt.put(textureNode + ".Map.<xmlattr>.V", getWrapModeName(sampler.wrapV()));
-            pt.put(textureNode + ".Map.<xmlattr>.W", getWrapModeName(sampler.wrapW()));
-            pt.put(textureNode + ".Filter.<xmlattr>.min", getFilterName(sampler.minFilter()));
-            pt.put(textureNode + ".Filter.<xmlattr>.mag", getFilterName(sampler.magFilter()));
-            pt.put(textureNode + ".anisotropy", to_U32(sampler.anisotropyLevel()));
-        }
-    }
+    saveRenderStatesToXML(entryName, pt);
+    saveTextureDataToXML(entryName, pt);
 }
 
 void Material::loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
     if (ignoreXMLData()) {
         return;
     }
-    setShadingMode(getShadingModeByName(pt.get<stringImpl>(entryName + ".shadingMode", "FLAT")));
+
+    const size_t detectedVersion = pt.get<size_t>(entryName + ".version", 0);
+    if (detectedVersion != g_materialXMLVersion) {
+        Console::printfn(Locale::get(_ID("MATERIAL_WRONG_VERSION")), assetName().c_str(), detectedVersion, g_materialXMLVersion);
+        return;
+    }
+
+    setShadingMode(TypeUtil::StringToShadingMode(pt.get<stringImpl>(entryName + ".shadingMode", "FLAT")));
 
     _properties._colourData.baseColour(
         FColour4(pt.get<F32>(entryName + ".colour.<xmlattr>.r", 0.6f),
@@ -1182,27 +1011,131 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
 
     setReceivesShadows(pt.get<bool>(entryName + ".receivesShadows", true));
 
-    setBumpMethod(getBumpMethodByName(pt.get<stringImpl>(entryName + ".bumpMethod", "NORMAL")));
+    setBumpMethod(TypeUtil::StringToBumpMethod(pt.get<stringImpl>(entryName + ".bumpMethod", "NORMAL")));
 
     setParallaxFactor(pt.get<F32>(entryName + ".parallaxFactor", 1.0f));
 
+    loadRenderStatesFromXML(entryName, pt);
+    loadTextureDataFromXML(entryName, pt);
+}
 
-    STUBBED("ToDo: Set texture is currently disabled!");
+void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
+    stringImpl perStagePath = "", perPassPath = "", perVariantPath = "", fullPath = "";
 
+    size_t previousHashValue = g_invalidStateHash;
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        perStagePath = entryName + "." + TypeUtil::RenderStageToString(static_cast<RenderStage>(s));
+        const StateVariantsPerPass& stageStates = _defaultRenderStates[s];
+
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            perPassPath = TypeUtil::RenderPassTypeToString(static_cast<RenderPassType>(p));
+            const StatesPerVariant& passStates = stageStates[p];
+
+            for (U8 v = 0u; v < g_maxVariantsPerPass; ++v) {
+                perVariantPath = to_stringImpl(to_U32(v));
+                fullPath = perStagePath + "." + perPassPath + "." + perVariantPath;
+
+                const size_t stateHash = passStates[v];
+                pt.put(fullPath + ".hash", stateHash);
+
+                if (stateHash != g_invalidStateHash && stateHash != previousHashValue) {
+                    RenderStateBlock::saveToXML(RenderStateBlock::get(stateHash), fullPath, pt);
+                    previousHashValue = stateHash;
+                }
+            }
+        }
+    }
+}
+
+void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
+    stringImpl perStagePath = "", perPassPath = "", perVariantPath = "", fullPath = "";
+    RenderStateBlock block = {};
+
+    size_t previousHashValue = g_invalidStateHash;
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        perStagePath = entryName + "." + TypeUtil::RenderStageToString(static_cast<RenderStage>(s));
+        StateVariantsPerPass& stageStates = _defaultRenderStates[s];
+
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            perPassPath = TypeUtil::RenderPassTypeToString(static_cast<RenderPassType>(p));
+            StatesPerVariant& passStates = stageStates[p];
+
+            for (U8 v = 0u; v < g_maxVariantsPerPass; ++v) {
+                perVariantPath = to_stringImpl(to_U32(v));
+                fullPath = perStagePath + "." + perPassPath + "." + perVariantPath;
+
+                const size_t stateHash = pt.get<size_t>(fullPath + ".hash", g_invalidStateHash);
+                if (stateHash != g_invalidStateHash) {
+                    if (stateHash != previousHashValue) {
+                        if (RenderStateBlock::loadFromXML(stateHash, fullPath, pt)) {
+                            //Cache miss
+                        }
+                        previousHashValue = stateHash;
+                    } else {
+                        passStates[v] = previousHashValue;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
     for (U8 i = 0; i < g_materialTexturesCount; ++i) {
         const TextureUsage usage = g_materialTextures[i];
 
-        if (auto child = pt.get_child_optional(((entryName + ".texture.") + getTexUsageName(usage)) + ".name")) {
-            stringImpl textureNode = entryName + ".texture.";
-            textureNode += getTexUsageName(usage);
+        Texture_wptr tex = getTexture(usage);
+        if (!tex.expired()) {
+            Texture_ptr texture = tex.lock();
 
-            stringImpl texName = pt.get<stringImpl>(textureNode + ".name", "");
+
+            const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
+
+            pt.put(textureNode + ".name", texture->assetName().c_str());
+            pt.put(textureNode + ".path", texture->assetLocation());
+            pt.put(textureNode + ".flipped", texture->flipped());
+
+            if (usage == TextureUsage::UNIT1) {
+                pt.put(textureNode + ".usage", TypeUtil::TextureOperationToString(_properties._operation));
+            }
+            XMLParser::saveToXML(texture->getCurrentSampler(), textureNode, pt);
+        }
+    }
+}
+
+void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
+    for (U8 i = 0; i < g_materialTexturesCount; ++i) {
+        const TextureUsage usage = g_materialTextures[i];
+
+        SamplerDescriptor sampDesc = {};
+        if (auto child = pt.get_child_optional(((entryName + ".texture.") + TypeUtil::TextureUsageToString(usage)) + ".name")) {
+            const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
+
+            const stringImpl texName = pt.get<stringImpl>(textureNode + ".name", "");
+            const stringImpl texPath = pt.get<stringImpl>(textureNode + ".path", "");
+            const bool flipped = pt.get(textureNode + ".flipped", false);
+
             if (!texName.empty()) {
-                stringImpl texLocation = pt.get<stringImpl>(textureNode + ".path", "");
-                Texture_ptr tex = loadTextureXML(_context.parent().resourceCache(), textureNode, texLocation + "/" + texName, pt);
+                XMLParser::loadFromXML(sampDesc, textureNode, pt);
+
+                const stringImpl textureName = texPath + "/" + texName;
+                const Str64 img_name(textureName.substr(textureName.find_last_of('/') + 1).c_str());
+                const Str256 pathName(textureName.substr(0, textureName.rfind("/")).c_str());
+
+                TextureDescriptor texDesc(TextureType::TEXTURE_2D);
+                texDesc.samplerDescriptor(sampDesc);
+
+                ResourceDescriptor texture(img_name);
+                texture.assetName(img_name);
+                texture.assetLocation(pathName);
+                texture.propertyDescriptor(texDesc);
+                texture.waitForReady(false);
+                texture.flag(!flipped);
+
+                Texture_ptr tex =  CreateResource<Texture>(_context.parent().resourceCache(), texture);
                 if (tex != nullptr) {
                     if (usage == TextureUsage::UNIT1) {
-                        TextureOperation op = getTextureOperationByName(pt.get<stringImpl>(textureNode + ".usage", "REPLACE"));
+                        const TextureOperation op = TypeUtil::StringToTextureOperation(pt.get<stringImpl>(textureNode + ".usage", "REPLACE"));
                         setTexture(usage, tex, op);
                     } else {
                         setTexture(usage, tex);

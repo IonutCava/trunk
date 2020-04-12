@@ -43,6 +43,14 @@
 
 namespace Divide {
     
+namespace TypeUtil {
+    const char* WrapModeToString(TextureWrap wrapMode) noexcept;
+    TextureWrap StringToWrapMode(const stringImpl& wrapMode);
+
+    const char* TextureFilterToString(TextureFilter filter) noexcept;
+    TextureFilter StringToTextureFilter(const stringImpl& filter);
+};
+
  TYPEDEF_SMART_POINTERS_FOR_TYPE(Texture);
 
 /// An API-independent representation of a texture
@@ -122,7 +130,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Flipped Y-coord
     PROPERTY_R(bool, flipped, false);
 
-    static U16 computeMipCount(U16 width, U16 height);
+    static U16 computeMipCount(U16 width, U16 height) noexcept;
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
@@ -144,6 +152,11 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
   protected:
     static const char* s_missingTextureFileName;
+};
+
+namespace XMLParser {
+    void saveToXML(const SamplerDescriptor& sampler, const stringImpl& entryName, boost::property_tree::ptree& pt);
+    void loadFromXML(SamplerDescriptor& sampler, const stringImpl& entryName, const boost::property_tree::ptree& pt);
 };
 
 };  // namespace Divide

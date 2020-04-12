@@ -64,6 +64,19 @@ constexpr F32 Specular_Milk = 0.277f;
 constexpr F32 Specular_Skin = 0.35f;
 constexpr F32 PHONG_REFLECTIVITY_THRESHOLD = 100.0f;
 
+namespace TypeUtil {
+    const char* ShadingModeToString(ShadingMode shadingMode) noexcept;
+    ShadingMode StringToShadingMode(const stringImpl& name);
+
+    const char* TextureUsageToString(TextureUsage texUsage) noexcept;
+    TextureUsage StringToTextureUsage(const stringImpl& name);
+
+    const char* TextureOperationToString(TextureOperation textureOp) noexcept;
+    TextureOperation StringToTextureOperation(const stringImpl& operation);
+
+    const char* BumpMethodToString(BumpMethod bumpMethod) noexcept;
+    BumpMethod StringToBumpMethod(const stringImpl& name);
+};
 
 class Material : public CachedResource {
    public:
@@ -124,9 +137,6 @@ class Material : public CachedResource {
    public:
     explicit Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
     ~Material() = default;
-
-    static bool onStartup();
-    static bool onShutdown();
 
     static void ApplyDefaultStateBlocks(Material& target);
 
@@ -235,7 +245,13 @@ class Material : public CachedResource {
 
     const ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass) const;
 
-    const char* getResourceTypeName() const override { return "Material"; }
+    const char* getResourceTypeName() const noexcept override { return "Material"; }
+
+    void saveRenderStatesToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
+    void loadRenderStatesFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
+
+    void saveTextureDataToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
+    void loadTextureDataFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
     PROPERTY_RW(bool, ignoreXMLData, false);
     PROPERTY_RW(ShaderData, baseShaderData);
@@ -287,23 +303,6 @@ class Material : public CachedResource {
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);
 
-const char* getShadingModeName(ShadingMode shadingMode) noexcept;
-ShadingMode getShadingModeByName(const stringImpl& name);
-
-const char* getTexUsageName(TextureUsage texUsage) noexcept;
-TextureUsage getTexUsageByName(const stringImpl& name);
-
-const char* getTextureOperationName(TextureOperation textureOp) noexcept;
-TextureOperation getTextureOperationByName(const stringImpl& operation);
-
-const char* getBumpMethodName(BumpMethod bumpMethod) noexcept;
-BumpMethod getBumpMethodByName(const stringImpl& name);
-
-const char* getWrapModeName(TextureWrap wrapMode) noexcept;
-TextureWrap getWrapModeByName(const stringImpl& wrapMode);
-
-const char* getFilterName(TextureFilter filter) noexcept;
-TextureFilter getFilterByName(const stringImpl& filter);
 };  // namespace Divide
 
 #endif //_MATERIAL_H_

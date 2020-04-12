@@ -35,20 +35,16 @@
 namespace Divide {
 
 bool SceneManager::onStartup() {
-    if (Material::onStartup()) {
-        if (RenderPassCuller::onStartup()) {
-            return Attorney::SceneManager::onStartup();
-        }
+    if (RenderPassCuller::onStartup()) {
+        return Attorney::SceneManager::onStartup();
     }
     
     return false;
 }
 
 bool SceneManager::onShutdown() {
-    if (Material::onShutdown()) {
-        if (RenderPassCuller::onShutdown()) {
-            return Attorney::SceneManager::onShutdown();
-        }
+    if (RenderPassCuller::onShutdown()) {
+        return Attorney::SceneManager::onShutdown();
     }
 
     return false;

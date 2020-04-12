@@ -39,17 +39,33 @@
 
 namespace Divide {
 
+namespace TypeUtil {
+    const char* ComparisonFunctionToString(ComparisonFunction func) noexcept;
+    const char* StencilOperationToString(StencilOperation op) noexcept;
+    const char* FillModeToString(FillMode mode) noexcept;
+    const char* CullModeToString(CullMode mode) noexcept;
+
+    ComparisonFunction StringToComparisonFunction(const char* name) noexcept;
+    StencilOperation StringToStencilOperation(const char* name) noexcept;
+    FillMode StringToFillMode(const char* name) noexcept;
+    CullMode StringToCullMode(const char* name) noexcept;
+};
+
 class RenderStateBlock : public GUIDWrapper, public Hashable {
     public:
         using RenderStateMap = hashMap<size_t, RenderStateBlock, NoHash<size_t>>;
 
-       static void init();
        static void clear();
        /// Retrieve a state block by hash value.
        /// If the hash value doesn't exist in the state block map, return the default state block
        static const RenderStateBlock& get(size_t renderStateBlockHash);
        /// Returns false if the specified hash is not found in the map
        static const RenderStateBlock& get(size_t renderStateBlockHash, bool& blockFound);
+
+       static void saveToXML(const RenderStateBlock& block, const stringImpl& entryName, boost::property_tree::ptree& pt);
+
+       //Returns true if we needed a full XML parse (block wasn't in cache)
+       static bool loadFromXML(size_t stateHash, const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
     protected:
         static RenderStateMap s_stateBlockMap;
@@ -58,39 +74,41 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
 
     public:
         RenderStateBlock() noexcept;
-        RenderStateBlock(const RenderStateBlock& b);
+        RenderStateBlock(const RenderStateBlock& b) noexcept;
 
-        inline bool operator==(const RenderStateBlock& rhs) const {
+        inline bool operator==(const RenderStateBlock& rhs) const noexcept {
             return getHash() == rhs.getHash();
         }
 
-        inline bool operator!=(const RenderStateBlock& rhs) const {
+        inline bool operator!=(const RenderStateBlock& rhs) const noexcept {
             return getHash() != rhs.getHash();
         }
 
-        void setDefaultValues();
+        void setDefaultValues() noexcept;
 
-        void setFillMode(FillMode mode);
-        void setTessControlPoints(U32 count);
-        void setZBias(F32 zBias, F32 zUnits);
-        void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
-        void flipCullMode();
-        void flipFrontFace();
-        void setCullMode(CullMode mode);
-        void setFrontFaceCCW(bool state);
-        void depthTestEnabled(const bool enable);
-        void setScissorTest(const bool enable);
+        void setFillMode(FillMode mode) noexcept;
+        void setTessControlPoints(U32 count) noexcept;
+        void setZBias(F32 zBias, F32 zUnits) noexcept;
+        void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL) noexcept;
+        void flipCullMode() noexcept;
+        void flipFrontFace() noexcept;
+        void setCullMode(CullMode mode) noexcept;
+        void setFrontFaceCCW(bool state) noexcept;
+        void depthTestEnabled(const bool enable) noexcept;
+        void setScissorTest(const bool enable) noexcept;
 
         void setStencil(bool enable,
-                        U32 stencilRef = 0,
+                        U32 stencilRef = 0u,
                         StencilOperation stencilFailOp  = StencilOperation::KEEP,
                         StencilOperation stencilZFailOp = StencilOperation::KEEP,
                         StencilOperation stencilZPassOp  = StencilOperation::KEEP,
-                        ComparisonFunction stencilFunc = ComparisonFunction::NEVER);
+                        ComparisonFunction stencilFunc = ComparisonFunction::NEVER) noexcept;
 
-        void setStencilReadWriteMask(U32 read, U32 write);
+        void setStencilReadWriteMask(U32 read, U32 write) noexcept;
 
-        void setColourWrites(bool red, bool green, bool blue, bool alpha);
+        void setColourWrites(bool red, bool green, bool blue, bool alpha) noexcept;
+
+        bool cullEnabled() const noexcept;
 
         size_t getHash() const noexcept override;
 
@@ -113,7 +131,6 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
         PROPERTY_R(FillMode, fillMode, FillMode::SOLID);
 
         PROPERTY_R(bool, frontFaceCCW, true);
-        PROPERTY_R(bool, cullEnabled, true);
         PROPERTY_R(bool, scissorTestEnabled, false);
         PROPERTY_R(bool, depthTestEnabled, true);
         PROPERTY_R(bool, stencilEnable, false);

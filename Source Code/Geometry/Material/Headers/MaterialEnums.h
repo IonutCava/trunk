@@ -44,6 +44,11 @@ namespace Divide {
         PARALLAX_OCCLUSION = 3,
         COUNT
     };
+    namespace Names {
+        static const char* bumpMethod[] = {
+            "NONE", "NORMAL", "PARALLAX", "PARALLAX_OCCLUSION", "UNKNOWN"
+        };
+    };
 
     /// How should each texture be added
     enum class TextureOperation : U8 {
@@ -57,6 +62,11 @@ namespace Divide {
         DECAL = 7,
         REPLACE = 8,
         COUNT
+    };
+    namespace Names {
+        static const char* textureOperation[] = {
+            "NONE", "MULTIPLY", "ADD", "SUBTRACT", "DIVIDE", "SMOOTH_ADD", "SIGNED_ADD", "DECAL", "REPLACE", "UNKNOW",
+        };
     };
 
     enum class TranslucencySource : U8 {
@@ -78,6 +88,12 @@ namespace Divide {
         COOK_TORRANCE = 0x6,
         COUNT
     };
+    namespace Names {
+        static const char* shadingMode[] = {
+            "FLAT", "PHONG", "BLINN_PHONG", "TOON", "OREN_NAYAR", "COOK_TORRANCE", "NONE"
+        };
+    };
+
 }; //namespace Divide
 
 #endif //_MATERIAL_ENUMS_H_

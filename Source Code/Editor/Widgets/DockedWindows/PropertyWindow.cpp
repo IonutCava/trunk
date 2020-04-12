@@ -842,14 +842,14 @@ namespace Divide {
                 ImGui::Text("Tessellation control points: %d", block.tessControlPoints());
                 {
                     CullMode cMode = block.cullMode();
-                    const char* cullModes[] = { "None", "CW/BACK", "CCW/FRONT", "ALL", "ERROR!" };
-                    const char* crtMode = cullModes[to_base(cMode)];
+
+                    const char* crtMode = TypeUtil::CullModeToString(cMode);
                     if (ImGui::BeginCombo("Cull Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
                         for (U8 n = 0; n < to_U8(CullMode::COUNT); ++n) {
                             const CullMode mode = static_cast<CullMode>(n);
                             const bool isSelected = cMode == mode;
 
-                            if (ImGui::Selectable(cullModes[to_base(mode)], isSelected)) {
+                            if (ImGui::Selectable(TypeUtil::CullModeToString(mode), isSelected)) {
                                 cMode = mode;
                                 block.setCullMode(mode);
                                 changed = true;
@@ -864,14 +864,13 @@ namespace Divide {
 
                 {
                     FillMode fMode = block.fillMode();
-                    const char* fillModes[] = { "Point", "Wireframe", "Solid", "ERROR!" };
-                    const char* crtMode = fillModes[to_base(fMode)];
-                    if (ImGui::BeginCombo("Cull Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                    const char* crtMode = TypeUtil::FillModeToString(fMode);
+                    if (ImGui::BeginCombo("Fill Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
                         for (U8 n = 0; n < to_U8(FillMode::COUNT); ++n) {
                             const FillMode mode = static_cast<FillMode>(n);
                             const bool isSelected = fMode == mode;
 
-                            if (ImGui::Selectable(fillModes[to_base(mode)], isSelected)) {
+                            if (ImGui::Selectable(TypeUtil::FillModeToString(mode), isSelected)) {
                                 fMode = mode;
                                 block.setFillMode(mode);
                                 changed = true;
@@ -902,23 +901,15 @@ namespace Divide {
                     stencilDirty = true;
                 }
 
-                const char* compFunctionNames[] = {
-                "NEVER", "LESS", "EQUAL", "LEQUAL", "GREATER", "NEQUAL", "GEQUAL", "ALWAYS", "ERROR"
-                };
-
-                const char* stencilOpNames[] = {
-                "KEEP", "ZERO", "REPLACE", "INCREMENT", "DECREMENT", "INVERT", "INCREMENT_WRAP", "DECREMENT_WRAP", "ERROR"
-                };
-
                 {
                     ComparisonFunction zFunc = block.zFunc();
-                    const char* crtMode = compFunctionNames[to_base(zFunc)];
+                    const char* crtMode = TypeUtil::ComparisonFunctionToString(zFunc);
                     if (ImGui::BeginCombo("Depth function", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
                         for (U8 n = 0; n < to_U8(ComparisonFunction::COUNT); ++n) {
                             const ComparisonFunction func = static_cast<ComparisonFunction>(n);
                             const bool isSelected = zFunc == func;
 
-                            if (ImGui::Selectable(compFunctionNames[to_base(func)], isSelected)) {
+                            if (ImGui::Selectable(TypeUtil::ComparisonFunctionToString(func), isSelected)) {
                                 zFunc = func;
                                 block.setZFunc(func);
                                 changed = true;
@@ -932,13 +923,13 @@ namespace Divide {
                 }
                 StencilOperation sFailOp = block.stencilFailOp();
                 {
-                    const char* crtMode = stencilOpNames[to_base(sFailOp)];
+                    const char* crtMode = TypeUtil::StencilOperationToString(sFailOp);
                     if (ImGui::BeginCombo("Stencil fail op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
                         for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
                             const StencilOperation op = static_cast<StencilOperation>(n);
                             const bool isSelected = sFailOp == op;
 
-                            if (ImGui::Selectable(stencilOpNames[to_base(op)], isSelected)) {
+                            if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
                                 sFailOp = op;
                                 stencilDirty = true;
                             }
@@ -951,13 +942,13 @@ namespace Divide {
                 }
                 StencilOperation sZFailOp = block.stencilZFailOp();
                 {
-                    const char* crtMode = stencilOpNames[to_base(sZFailOp)];
+                    const char* crtMode = TypeUtil::StencilOperationToString(sZFailOp);
                     if (ImGui::BeginCombo("Stencil depth fail op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
                         for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
                             const StencilOperation op = static_cast<StencilOperation>(n);
                             const bool isSelected = sZFailOp == op;
 
-                            if (ImGui::Selectable(stencilOpNames[to_base(op)], isSelected)) {
+                            if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
                                 sZFailOp = op;
                                 stencilDirty = true;
                             }
@@ -970,13 +961,13 @@ namespace Divide {
                 }
                 StencilOperation sPassOp = block.stencilPassOp();
                 {
-                    const char* crtMode = stencilOpNames[to_base(sPassOp)];
+                    const char* crtMode = TypeUtil::StencilOperationToString(sPassOp);
                     if (ImGui::BeginCombo("Stencil pass op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
                         for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
                             const StencilOperation op = static_cast<StencilOperation>(n);
                             const bool isSelected = sPassOp == op;
 
-                            if (ImGui::Selectable(stencilOpNames[to_base(op)], isSelected)) {
+                            if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
                                 sPassOp = op;
                                 stencilDirty = true;
                             }
@@ -989,13 +980,13 @@ namespace Divide {
                 }
                 ComparisonFunction sFunc = block.stencilFunc();
                 {
-                    const char* crtMode = compFunctionNames[to_base(sFunc)];
+                    const char* crtMode = TypeUtil::ComparisonFunctionToString(sFunc);
                     if (ImGui::BeginCombo("Stencil function", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
                         for (U8 n = 0; n < to_U8(ComparisonFunction::COUNT); ++n) {
                             const ComparisonFunction mode = static_cast<ComparisonFunction>(n);
                             const bool isSelected = sFunc == mode;
 
-                            if (ImGui::Selectable(compFunctionNames[to_base(mode)], isSelected)) {
+                            if (ImGui::Selectable(TypeUtil::ComparisonFunctionToString(mode), isSelected)) {
                                 sFunc = mode;
                                 stencilDirty = true;
                             }
@@ -1041,7 +1032,7 @@ namespace Divide {
                 }
              }
 
-             if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", getShadingModeName(material->getShadingMode())).c_str())) {
+             if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", TypeUtil::ShadingModeToString(material->getShadingMode())).c_str())) {
                  const auto diffuseSetter = [material](const void* data) {
                      material->getColourData().baseColour(*(FColour4*)data);
                  };

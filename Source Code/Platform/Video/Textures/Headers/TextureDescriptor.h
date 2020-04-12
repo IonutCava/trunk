@@ -38,6 +38,7 @@
 #include "Utility/Headers/Colours.h"
 
 namespace Divide {
+
 /// This struct is used to define all of the sampler settings needed to use a texture
 /// We do not define copy constructors as we must define descriptors only with POD
 struct SamplerDescriptor : public Hashable {
