@@ -74,9 +74,6 @@ public:
     void clear();
     void set(const RenderPackage& other);
 
-    inline void qualityRequirement(MinQuality state) noexcept { _qualityRequirement = state; }
-    inline MinQuality qualityRequirement() const noexcept { return  _qualityRequirement; }
-
     size_t getSortKeyHash() const;
 
     inline I32 drawCommandCount() const noexcept { return _drawCommandCount; }
@@ -114,25 +111,26 @@ public:
     void enableOptions(U16 optionMask);
     void disableOptions(U16 optionMask);
 
-    inline bool empty() const noexcept { return _commands->empty(); }
+    inline bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
 
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
 
     PROPERTY_RW(bool, autoIndexBuffer,  false);
     PROPERTY_RW(bool, textureDataDirty, true);
+    PROPERTY_RW(MinQuality, qualityRequirement, MinQuality::FULL);
 
 protected:
     void updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel);
+    GFX::CommandBuffer* commands();
 
 protected:
     // Cached command buffer
-    GFX::CommandBuffer* _commands;
+    GFX::CommandBuffer* _commands = nullptr;
 
 private:
     std::array<std::pair<size_t, size_t>, 4> _lodIndexOffsets;
-    I32 _drawCommandCount;
-    U16 _drawCommandOptions;
-    MinQuality _qualityRequirement;
+    I32 _drawCommandCount = 0;
+    U16 _drawCommandOptions = to_U16(CmdRenderOptions::RENDER_GEOMETRY);
     bool _isInstanced = false;
 };
 
@@ -141,7 +139,7 @@ namespace Attorney {
     class RenderPackageRenderPassManager {
         private:
         static GFX::CommandBuffer* getCommandBuffer(RenderPackage& pkg) {
-            return pkg._commands;
+            return pkg.commands();
         }
 
         friend class Divide::RenderPassManager;

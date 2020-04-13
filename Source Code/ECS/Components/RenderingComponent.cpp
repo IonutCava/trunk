@@ -334,8 +334,11 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     OPTICK_EVENT();
 
     RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
-    const I32 drawCommandCount = pkg.drawCommandCount();
+    if (pkg.empty()) {
+        return false;
+    }
 
+    const I32 drawCommandCount = pkg.drawCommandCount();
     if (drawCommandCount == 0) {
         return false;
     }
@@ -555,7 +558,7 @@ U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>
     return MAX_LOD_LEVEL;
 }
 
-void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData) {
+bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData) {
     OPTICK_EVENT();
 
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
@@ -591,7 +594,11 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
                                  (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
             }
         }
+
+        return true;
     }
+
+    return false;
 }
 
 RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
@@ -611,7 +618,12 @@ const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& r
 }
 
 size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass) const {
-    return getDrawPackage(renderStagePass).getSortKeyHash();
+    const RenderPackage& pkg = getDrawPackage(renderStagePass);
+    if (!pkg.empty()) {
+        return pkg.getSortKeyHash();
+    }
+    
+    return 0;
 }
 
 void RenderingComponent::updateReflectionIndex(ReflectorType type, I32 index) {

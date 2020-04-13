@@ -207,7 +207,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void rebuildDrawCommands(const RenderStagePass& stagePass, RenderPackage& pkg);
 
-    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData);
+    bool prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData);
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
@@ -240,6 +240,13 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
    protected:
     std::array<RenderPackage, ShadowMap::MAX_SHADOW_PASSES> _renderPackagesShadow;
     std::array<RenderPackage, (to_base(RenderStage::COUNT) - 1) * to_base(RenderPassType::COUNT)> _renderPackagesNormal;
+
+    using PackagesPerIndex = vectorEASTLFast<RenderPackage>;
+    using PackagesPerPassType = std::array<PackagesPerIndex, to_base(RenderPassType::COUNT)>;
+    using PackagesPerStage = std::array<PackagesPerPassType, to_base(RenderStage::COUNT)>;
+    
+    //PackagesPerStage _renderPackages;
+
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;
     std::array<Texture_ptr, (sizeof(g_texUsage) / sizeof(g_texUsage[0]))> _externalTextures;
@@ -313,14 +320,12 @@ class RenderingCompRenderPass {
             renderable.updateEnvProbeList(probes);
         }
 
-        friend class Divide::RenderPass;
-
-        static void prepareDrawPackage(RenderingComponent& renderable,
+        static bool prepareDrawPackage(RenderingComponent& renderable,
                                        const Camera& camera,
                                        const SceneRenderState& sceneRenderState,
                                        RenderStagePass renderStagePass,
                                        bool refreshData) {
-            renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
+            return renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
         static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const U32 dataIndex) {
@@ -332,8 +337,8 @@ class RenderingCompRenderPass {
         }
 
 
-    friend class Divide::RenderPass;
-    friend class Divide::RenderPassManager;
+        friend class Divide::RenderPass;
+        friend class Divide::RenderPassManager;
 };
 
 class RenderingCompRenderBin {

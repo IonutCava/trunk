@@ -524,11 +524,13 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
     buildBufferData(stagePass, sceneRenderState, *params._camera, passData.sortedQueues, refresh, bufferInOut);
 }
 
-void RenderPassManager::prepareRenderQueues(const RenderStagePass& stagePass, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, RenderingOrder renderOrder) {
+void RenderPassManager::prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, RenderingOrder renderOrder) {
     OPTICK_EVENT();
 
+    const RenderStagePass& stagePass = params._stagePass;
     const bool oitPass = !stagePass.isDepthPass() && stagePass._passType == RenderPassType::OIT_PASS;
     const RenderBinType targetBin = oitPass ? RenderBinType::RBT_TRANSLUCENT : RenderBinType::RBT_COUNT;
+    //const SceneRenderState& sceneRenderState = parent().sceneManager()->getActiveScene().renderState();
 
     RenderQueue& queue = getQueue();
 
@@ -567,7 +569,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
         beginDebugScopeCmd._scopeName = " - PrePass";
         GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-        prepareRenderQueues(params._stagePass, nodes, true, bufferInOut);
+        prepareRenderQueues(params, nodes, true, bufferInOut);
         buildDrawCommands(params, true, bufferInOut);
 
         RTDrawDescriptor normalsAndDepthPolicy = {};
@@ -666,7 +668,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
     beginDebugScopeCmd._scopeName = " - MainPass";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-    prepareRenderQueues(stagePass, nodes, !prePassExecuted, bufferInOut);
+    prepareRenderQueues(params, nodes, !prePassExecuted, bufferInOut);
     buildDrawCommands(params, !prePassExecuted, bufferInOut);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
@@ -752,7 +754,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
     const RenderStagePass& stagePass = params._stagePass;
     assert(stagePass._passType == RenderPassType::OIT_PASS);
 
-    prepareRenderQueues(stagePass, nodes, false, bufferInOut);
+    prepareRenderQueues(params, nodes, false, bufferInOut);
     buildDrawCommands(params, false, bufferInOut);
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
@@ -877,7 +879,7 @@ void RenderPassManager::transparencyPass(const VisibleNodeList& nodes, const Pas
         //Grab all transparent geometry
         RenderStagePass tempStagePass = params._stagePass;
         tempStagePass._passType = RenderPassType::OIT_PASS;
-        prepareRenderQueues(tempStagePass, nodes, false, bufferInOut, RenderingOrder::BACK_TO_FRONT);
+        prepareRenderQueues(params, nodes, false, bufferInOut, RenderingOrder::BACK_TO_FRONT);
         buildDrawCommands(params, false, bufferInOut);
 
         GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
