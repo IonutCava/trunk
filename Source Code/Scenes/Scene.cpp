@@ -73,7 +73,7 @@ struct selectionQueueDistanceFrontToBack {
     vec3<F32> _eyePos;
 };
 
-constexpr U32 g_NodesPerLoadPartition = 6u;
+constexpr U32 g_NodesPerLoadPartition = 10u;
 constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
@@ -411,7 +411,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
         boost::property_tree::ptree nodeTree = {};
         read_xml(nodePath, nodeTree);
 
-        auto loadModelComplete = [this, &nodeTree/*, &parentTask*/](CachedResource_wptr res) {
+        const auto loadModelComplete = [this, &nodeTree/*, &parentTask*/](CachedResource_wptr res) {
             while (res.lock()->getState() != ResourceState::RES_LOADED) {
                 //TaskYield(*parentTask);
             }
@@ -609,7 +609,12 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
                                                to_base(ComponentType::BOUNDS) |
                                                to_base(ComponentType::RENDERING) |
                                                to_base(ComponentType::NETWORKING);
-
+        terrainNodeDescriptor._node->addStateCallback(ResourceState::RES_LOADED,
+            [this](Resource_wptr res) {
+                ACKNOWLEDGE_UNUSED(res);
+                _loadingTasks.fetch_sub(1);
+            }
+        );
         terrainNodeDescriptor._node->loadFromXML(pt);
 
         SceneGraphNode* terrainTemp = parentNode.addChildNode(terrainNodeDescriptor);
@@ -620,9 +625,6 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
 
         terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
         terrainTemp->loadFromXML(pt);
-
-        WAIT_FOR_CONDITION(terrainNodeDescriptor._node->getState() == ResourceState::RES_LOADED);
-        _loadingTasks.fetch_sub(1);
     };
 
     ResourceDescriptor descriptor(ter->getVariable("terrainName"));
@@ -1057,6 +1059,7 @@ void Scene::loadDefaultCamera() {
 
 bool Scene::load(const Str128& name) {
     setState(ResourceState::RES_LOADING);
+    std::atomic_init(&_loadingTasks, 0u);
 
     _resourceName = name;
 
@@ -1078,7 +1081,7 @@ bool Scene::load(const Str128& name) {
         },
         descriptor);
 
-    Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), _loadingTasks.load());
+    WAIT_FOR_CONDITION(_loadingTasks.load() == 0u);
 
     // We always add a sky
     const auto& skies = sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
@@ -1106,10 +1109,9 @@ bool Scene::unload() {
 
     U32 totalLoadingTasks = _loadingTasks.load();
     while (totalLoadingTasks > 0) {
-        U32 actualTasks = _loadingTasks.load();
+        const U32 actualTasks = _loadingTasks.load();
         if (totalLoadingTasks != actualTasks) {
             totalLoadingTasks = actualTasks;
-            Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
         }
         std::this_thread::yield();
     }

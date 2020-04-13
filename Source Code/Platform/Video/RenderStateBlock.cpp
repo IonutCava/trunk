@@ -348,7 +348,7 @@ void RenderStateBlock::saveToXML(const RenderStateBlock& block, const stringImpl
 
 bool RenderStateBlock::loadFromXML(size_t stateHash, const stringImpl& entryName, const boost::property_tree::ptree& pt) {
     bool alreadyExists = false;
-    const RenderStateBlock& tempBlock = RenderStateBlock::get(stateHash, alreadyExists);
+    RenderStateBlock::get(stateHash, alreadyExists);
     if (alreadyExists) {
         return false;
     }

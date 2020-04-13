@@ -116,14 +116,15 @@ public:
     virtual bool unload() noexcept;
 
     inline stringImpl assetPath() const { return stringImpl(assetLocation().c_str()) + "/" + assetName().c_str(); }
-    void setStateCallback(ResourceState targetState, const DELEGATE<void, Resource_wptr>& cbk);
+    void addStateCallback(ResourceState targetState, const DELEGATE<void, Resource_wptr>& cbk);
 
 protected:
     void setState(ResourceState currentState) noexcept override;
     virtual const char* getResourceTypeName() const noexcept override { return "Cached Resource"; }
 
 protected:
-    std::array<DELEGATE<void, Resource_wptr>, to_base(ResourceState::COUNT)> _loadingCallbacks;
+    using CallbackList = vectorEASTL<DELEGATE<void, Resource_wptr>>;
+    std::array<CallbackList, to_base(ResourceState::COUNT)> _loadingCallbacks;
     mutable std::mutex _callbackLock;
     PROPERTY_RW(stringImpl, assetLocation);
     PROPERTY_RW(stringImpl, assetName);

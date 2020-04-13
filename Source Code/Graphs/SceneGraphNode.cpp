@@ -225,7 +225,7 @@ SceneGraphNode* SceneGraphNode::addChildNode(const SceneGraphNodeDescriptor& des
         postLoad(*sceneGraphNode->_node, *sceneGraphNode);
     } else if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADING) {
         setFlag(Flags::LOADING);
-        sceneGraphNode->_node->setStateCallback(ResourceState::RES_LOADED,
+        sceneGraphNode->_node->addStateCallback(ResourceState::RES_LOADED,
             [this, sceneGraphNode](Resource_wptr res) {
                 postLoad(*(eastl::dynamic_pointer_cast<SceneNode>(res.lock())), *(sceneGraphNode));
                 clearFlag(Flags::LOADING);

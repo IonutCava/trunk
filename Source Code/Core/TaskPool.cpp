@@ -250,8 +250,9 @@ void parallel_for(TaskPool& pool,
             cbk(nullptr, start, end);
         }
         if (descriptor._waitForFinish) {
+            const bool isMainThread = Runtime::isMainThread();
             while (jobCount.load() > 0) {
-                if (descriptor._allowPoolIdle && !Runtime::isMainThread()) {
+                if (descriptor._allowPoolIdle && !isMainThread) {
                     pool.threadWaiting();
                 }
             }

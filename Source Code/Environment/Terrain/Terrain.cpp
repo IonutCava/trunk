@@ -192,7 +192,7 @@ void Terrain::postBuild() {
     _boundingBox.setMin(-halfWidth, _descriptor->altitudeRange().min, -halfWidth);
     _boundingBox.setMax(halfWidth, _descriptor->altitudeRange().max, halfWidth);
 
-    U32 chunkSize = to_U32(_descriptor->tessellationSettings().x);
+    const U32 chunkSize = to_U32(_descriptor->tessellationSettings().x);
 
     _terrainQuadtree.build(_boundingBox, _descriptor->dimensions(), chunkSize, this);
 
@@ -208,6 +208,7 @@ void Terrain::postBuild() {
     vb->keepData(false);
     vb->create(true);
 }
+
 
 void Terrain::frameStarted(SceneGraphNode& sgn) {
     switch (_editorDataDirtyState) {
