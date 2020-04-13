@@ -23,8 +23,8 @@
         <shininess>10</shininess>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
-        <bumpMethod>NONE</bumpMethod>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <bumpMethod>NORMAL</bumpMethod>
+        <parallaxFactor>1</parallaxFactor>
         <SHADOW>
             <PRE_PASS>
                 <0>
@@ -336,6 +336,14 @@
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>255</anisotropy>
             </UNIT0>
+            <NORMALMAP>
+                <name>sponza_arch_ddn.tga</name>
+                <path>assets/textures/sponza/</path>
+                <flipped>true</flipped>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                <anisotropy>255</anisotropy>
+            </NORMALMAP>
             <SPECULAR>
                 <name>sponza_arch_spec.png</name>
                 <path>assets/textures/sponza/</path>

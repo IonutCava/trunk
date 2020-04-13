@@ -100,7 +100,8 @@ class DVDConverter {
                              const aiScene* source,
                              const U16 materialIndex,
                              Str128 materialName,
-                             bool skinned);
+                             bool skinned,
+                             bool convertHeightToBumpMap);
 
   private:
     void   buildGeometryBuffers(PlatformContext& context, Import::ImportData& target);

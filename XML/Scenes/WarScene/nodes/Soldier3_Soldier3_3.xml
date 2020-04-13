@@ -27,7 +27,7 @@
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <parallaxFactor>1</parallaxFactor>
         <SHADOW>
             <PRE_PASS>
                 <0>
@@ -339,6 +339,14 @@
                 <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                 <anisotropy>255</anisotropy>
             </UNIT0>
+            <OPACITY>
+                <name>iron_grill.png</name>
+                <path>assets/textures/</path>
+                <flipped>true</flipped>
+                <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                <anisotropy>255</anisotropy>
+            </OPACITY>
         </texture>
     </Material>
     <Rendered__LOD__Level>0</Rendered__LOD__Level>

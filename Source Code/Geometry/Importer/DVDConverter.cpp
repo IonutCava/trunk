@@ -233,7 +233,8 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             aiScenePointer,
                             to_U16(currentMesh->mMaterialIndex),
                             Str128(subMeshTemp.name()) + "_material",
-                            subMeshTemp.boneCount() > 0);
+                            subMeshTemp.boneCount() > 0,
+                            true);
 
 
         target._subMeshData.push_back(subMeshTemp);
@@ -500,7 +501,8 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                                        const aiScene* source,
                                        const U16 materialIndex,
                                        Str128 materialName,
-                                       bool skinned) {
+                                       bool skinned,
+                                       bool convertHeightToBumpMap) {
 
     const aiMaterial* mat = source->mMaterials[materialIndex];
 
@@ -658,6 +660,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         STUBBED("ToDo: Use more than 2 textures for each material. Fix This! -Ionut")
     }  // endwhile
 
+    bool hasNormalMap = false;
     result = mat->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
         const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
@@ -684,6 +687,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
 
             material._textures[to_base(TextureUsage::NORMALMAP)] = texture;
             material.bumpMethod(BumpMethod::NORMAL);
+            hasNormalMap = true;
         }  // endif
     } // endif
 
@@ -710,7 +714,14 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture.texturePath(img_path);
             texture.operation(aiTextureOperationTable[op]);
             texture.srgb(false);
-            material._textures[to_base(TextureUsage::HEIGHTMAP)] = texture;
+            if (convertHeightToBumpMap && !hasNormalMap) {
+                material._textures[to_base(TextureUsage::NORMALMAP)] = texture;
+                material.bumpMethod(BumpMethod::NORMAL);
+                hasNormalMap = true;
+            } else {
+                material._textures[to_base(TextureUsage::HEIGHTMAP)] = texture;
+                material.bumpMethod(BumpMethod::PARALLAX);
+            }
         }  // endif
     } // endif
 
