@@ -97,18 +97,26 @@ void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
     };
 }
 
-void RenderBin::getSortedNodes(RenderStage stage, SortedQueue& nodes, U16& countOut) const {
+U16 RenderBin::getSortedNodes(RenderStage stage, SortedQueue& nodes, I64 sourceGUID) const {
     OPTICK_EVENT();
 
     nodes.resize(0);
     nodes.reserve(getBinSize(stage));
 
     const RenderBinStack& stack = _renderBinStack[to_base(stage)];
-    for (const RenderBinItem& item : stack) {
-        nodes.emplace_back(item._renderable);
+    if (sourceGUID == -1) {
+        for (const RenderBinItem& item : stack) {
+            nodes.emplace_back(item._renderable);
+        }
+    } else {
+        for (const RenderBinItem& item : stack) {
+            if (item._renderable->getSGN().getGUID() != sourceGUID) {
+                nodes.emplace_back(item._renderable);
+            }
+        }
     }
 
-    countOut += to_U16(stack.size());
+    return to_U16(stack.size());
 }
 
 void RenderBin::refresh(RenderStage stage) {

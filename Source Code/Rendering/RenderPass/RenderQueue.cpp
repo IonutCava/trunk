@@ -135,15 +135,16 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePass stage, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
+void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
     // We need a rendering component to render the node
-    if (renderingCmp != nullptr) {
+    assert(renderingCmp != nullptr);
+    if (!renderingCmp->getDrawPackage(stagePass).empty()) {
         RenderBin* rb = getBinForNode(sgn, renderingCmp->getMaterialInstance());
         assert(rb != nullptr);
 
         if (targetBinType._value == RenderBinType::RBT_COUNT || rb->getType() == targetBinType) {
-            rb->addNodeToBin(sgn, stage, minDistToCameraSq);
+            rb->addNodeToBin(sgn, stagePass, minDistToCameraSq);
         }
     }
 }
@@ -230,9 +231,10 @@ void RenderQueue::refresh(RenderStage stage, RenderBinType targetBinType) {
     }
 }
 
-void RenderQueue::getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut, U16& countOut) const {
+U16 RenderQueue::getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut, I64 sourceGUID) const {
     OPTICK_EVENT();
 
+    U16 countOut = 0u;
     if (isPrePass) {
         constexpr RenderBinType rbTypes[] = {
             RenderBinType::RBT_OPAQUE,
@@ -246,14 +248,16 @@ void RenderQueue::getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::
         for (const RenderBinType type : rbTypes) {
             const RenderBin* renderBin = _renderBins[type];
             RenderBin::SortedQueue& nodes = queuesOut[type];
-            renderBin->getSortedNodes(stage, nodes, countOut);
+            countOut += renderBin->getSortedNodes(stage, nodes, sourceGUID);
         }
     } else {
         for (const RenderBin* renderBin : _renderBins) {
             RenderBin::SortedQueue& nodes = queuesOut[renderBin->getType()];
-            renderBin->getSortedNodes(stage, nodes, countOut);
+            countOut += renderBin->getSortedNodes(stage, nodes, sourceGUID);
         }
     }
+
+    return countOut;
 }
 
 };

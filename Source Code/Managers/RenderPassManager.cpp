@@ -26,14 +26,12 @@ namespace Divide {
 
     namespace {
         constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
-        constexpr bool g_singleThreadedCommandBufferCreation = false;
 
         struct PerPassData {
             RenderBin::SortedQueues sortedQueues;
             DrawCommandContainer drawCommands;
 
             std::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> nodeData;
-            eastl::fixed_vector<RenderingComponent*, Config::MAX_VISIBLE_NODES, false> queuedRenderingComponents;
         };
 
         std::array<PerPassData, to_base(RenderStage::COUNT)> g_passData;
@@ -144,7 +142,7 @@ namespace Divide {
                                                      buf->batch();
                                                  },
                                                  false);
-                    Start(*_renderTasks[i], g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE);
+                    Start(*_renderTasks[i], TaskPriority::DONT_CARE);
                 }
                 { //PostFX should be pretty fast
                     GFX::CommandBuffer* buf = _postFXCommandBuffer;
@@ -177,7 +175,7 @@ namespace Divide {
 
                                                 buf->batch();
                                             });
-                    Start(*postFXTask, g_singleThreadedCommandBufferCreation ? TaskPriority::REALTIME : TaskPriority::DONT_CARE);
+                    Start(*postFXTask, TaskPriority::DONT_CARE);
                 }
             }
         }
@@ -416,20 +414,23 @@ void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         const D64 interpFactor = _context.getFrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.985;
 
-        U32 dataIdx = 0u;
+        U32 dataIdx = 0u, nodeCount = 0u;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
 
-        for(RenderingComponent * rComp : passData.queuedRenderingComponents) {
-            if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, dataIdx)) {
-                GFXDevice::NodeData& data = passData.nodeData[dataIdx];
-                processVisibleNode(*rComp, stagePass, playAnimations, viewMatrix, interpFactor, needsInterp, data);
-                ++dataIdx;
+        for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
+            for (RenderingComponent* rComp : queue) {
+                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, dataIdx)) {
+                    GFXDevice::NodeData& data = passData.nodeData[dataIdx];
+                    processVisibleNode(*rComp, stagePass, playAnimations, viewMatrix, interpFactor, needsInterp, data);
+                    ++dataIdx;
+                    ++nodeCount;
+                }
             }
         }
 
         RenderPass::BufferData bufferData = getPassForStage(stagePass._stage).getBufferData(stagePass);
         *bufferData._lastCommandCount = to_U32(passData.drawCommands.size());
-        *bufferData._lastNodeCount = to_U32(passData.queuedRenderingComponents.size());
+        *bufferData._lastNodeCount = nodeCount;
 
         {
             OPTICK_EVENT("RenderPassManager::buildBufferData - UpdateBuffers");
@@ -459,8 +460,10 @@ void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         descriptorSetCmd._set.addShaderBuffer(dataBuffer);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
     } else {
-        for (RenderingComponent* rComp : passData.queuedRenderingComponents) {
-            Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(*rComp, params);
+        for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
+            for (RenderingComponent* rComp : queue) {
+                Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(*rComp, params);
+            }
         }
     }
 }
@@ -476,51 +479,16 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
 
     const SceneRenderState& sceneRenderState = parent().sceneManager()->getActiveScene().renderState();
 
-    U16 queueSize = 0;
     for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
         queue.resize(0);
         queue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-    getQueue().getSortedQueues(stagePass._stage, isPrePass, passData.sortedQueues, queueSize);
 
-    auto& rComps = passData.queuedRenderingComponents;
-    rComps.resize(0);
+    const I64 sourceGUID = (params._sourceNode != nullptr) ? params._sourceNode->getGUID() : -1;
+    U16 queueSize = getQueue().getSortedQueues(stagePass._stage, isPrePass, passData.sortedQueues, sourceGUID);
+    ACKNOWLEDGE_UNUSED(queueSize);
 
-    if (params._sourceNode != nullptr) {
-        const I64 sourceGUID = params._sourceNode->getGUID();
-
-        for (const RenderBin::SortedQueue& queue : passData.sortedQueues) {
-            for (RenderingComponent* entry : queue) {
-                if (sourceGUID != entry->getSGN().getGUID()) {
-                    rComps.push_back(entry);
-                }
-            }
-        }
-    } else {
-        for (const RenderBin::SortedQueue& queue : passData.sortedQueues) {
-            rComps.insert(eastl::cend(rComps),
-                          eastl::cbegin(queue),
-                          eastl::cend(queue));
-        }
-    }
-
-    const Camera& cam = *params._camera;
- 
-    ParallelForDescriptor descriptor = {};
-    descriptor._iterCount = to_U32(rComps.size());
-    descriptor._partitionSize = g_nodesPerPrepareDrawPartition;
-    descriptor._priority = g_singleThreadedCommandBufferCreation ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
-    descriptor._useCurrentThread = true;
-
-    parallel_for(_parent.platformContext(),
-        [&rComps, &cam, &sceneRenderState, &stagePass, refresh](const Task* parentTask, U32 start, U32 end) {
-            for (U32 i = start; i < end; ++i) {
-                Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComps[i], cam, sceneRenderState, stagePass, refresh);
-            }
-        },
-        descriptor);
-    
     buildBufferData(stagePass, sceneRenderState, *params._camera, passData.sortedQueues, refresh, bufferInOut);
 }
 
@@ -530,7 +498,24 @@ void RenderPassManager::prepareRenderQueues(const PassParams& params, const Visi
     const RenderStagePass& stagePass = params._stagePass;
     const bool oitPass = !stagePass.isDepthPass() && stagePass._passType == RenderPassType::OIT_PASS;
     const RenderBinType targetBin = oitPass ? RenderBinType::RBT_TRANSLUCENT : RenderBinType::RBT_COUNT;
-    //const SceneRenderState& sceneRenderState = parent().sceneManager()->getActiveScene().renderState();
+    const SceneRenderState& sceneRenderState = parent().sceneManager()->getActiveScene().renderState();
+
+    const Camera& cam = *params._camera;
+
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = to_U32(nodes.size());
+    descriptor._partitionSize = g_nodesPerPrepareDrawPartition;
+    descriptor._priority = TaskPriority::DONT_CARE;
+    descriptor._useCurrentThread = true;
+
+    parallel_for(_parent.platformContext(),
+                [&nodes, &cam, &sceneRenderState, &stagePass, refreshNodeData](const Task* parentTask, U32 start, U32 end) {
+                for (U32 i = start; i < end; ++i) {
+                    RenderingComponent * rComp = nodes[i]._node->get<RenderingComponent>();
+                    Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, refreshNodeData);
+                }
+            },
+        descriptor);
 
     RenderQueue& queue = getQueue();
 

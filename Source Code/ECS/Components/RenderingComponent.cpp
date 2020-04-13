@@ -537,7 +537,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
 U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
     OPTICK_EVENT();
 
-    auto[state, level] = _lodLockLevels[to_base(renderStage)];
+    const auto[state, level] = _lodLockLevels[to_base(renderStage)];
 
     if (state) {
         return CLAMPED<U8>(to_U8(level), 0u, MAX_LOD_LEVEL);

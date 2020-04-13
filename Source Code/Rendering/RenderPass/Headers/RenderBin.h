@@ -108,7 +108,7 @@ class RenderBin {
 
     const RenderBinItem& getItem(RenderStage stage, U16 index) const;
 
-    void getSortedNodes(RenderStage stage, SortedQueue& nodes, U16& countOut) const;
+    U16 getSortedNodes(RenderStage stage, SortedQueue& nodes, I64 sourceGUID) const;
 
     U16 getBinSize(RenderStage stage) const;
 
