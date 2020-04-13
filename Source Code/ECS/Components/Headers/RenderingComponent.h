@@ -238,14 +238,10 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void onParentUsageChanged(NodeUsageContext context);
 
    protected:
-    std::array<RenderPackage, ShadowMap::MAX_SHADOW_PASSES> _renderPackagesShadow;
-    std::array<RenderPackage, (to_base(RenderStage::COUNT) - 1) * to_base(RenderPassType::COUNT)> _renderPackagesNormal;
-
     using PackagesPerIndex = vectorEASTLFast<RenderPackage>;
     using PackagesPerPassType = std::array<PackagesPerIndex, to_base(RenderPassType::COUNT)>;
     using PackagesPerStage = std::array<PackagesPerPassType, to_base(RenderStage::COUNT)>;
-    
-    //PackagesPerStage _renderPackages;
+    PackagesPerStage _renderPackages;
 
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;

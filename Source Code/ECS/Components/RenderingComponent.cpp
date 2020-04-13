@@ -43,15 +43,6 @@ namespace {
 
         return -1;
     }
-
-    FORCE_INLINE U8 getPackageIndexNoShadow(RenderStage stage, RenderPassType passType) noexcept {
-        constexpr U8 stageCountNoShadow = to_base(RenderStage::COUNT) - 1;
-        const U8 stageNoShadowIdx = to_base(stage) - 1;
-        const U8 passTypeIdx = to_base(passType);
-
-        return stageNoShadowIdx * stageCountNoShadow + passTypeIdx;
-    }
-
 };
 
 hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
@@ -116,6 +107,17 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
         // Prepare it for line rendering
         pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
         _primitivePipeline[2] = _context.newPipeline(pipelineDescriptor);
+    }
+
+    for (U8 s = 0; s < to_U8(RenderStage::COUNT); ++s) {
+        if (s == to_U8(RenderStage::SHADOW)) {
+            _renderPackages[s][to_base(RenderPassType::MAIN_PASS)].resize(ShadowMap::MAX_SHADOW_PASSES);
+        } else {
+            PackagesPerPassType & perPassPkgs = _renderPackages[s];
+            for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
+                perPassPkgs[p].resize(1);
+            }
+        }
     }
 }
 
@@ -257,12 +259,17 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
 void RenderingComponent::onMaterialChanged() {
     OPTICK_EVENT();
 
-    for (RenderPackage& pkg : _renderPackagesNormal) {
-        pkg.textureDataDirty(true);
-    }
-
-    for (RenderPackage& pkg : _renderPackagesShadow) {
-        pkg.textureDataDirty(true);
+    for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+        if (s == to_U8(RenderStage::SHADOW)) {
+            continue;
+        }
+        PackagesPerPassType& perPassPkg = _renderPackages[s];
+        for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+            PackagesPerIndex& perIndexPkg = perPassPkg[p];
+            for (RenderPackage& pkg : perIndexPkg) {
+                pkg.textureDataDirty(true);
+            }
+        }
     }
 }
 
@@ -347,13 +354,20 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     const U8 stageIdx = to_base(stage);
     const U8 lodLevel = _lodLevels[stageIdx];
 
+    RenderStagePass tempStagePass = *refreshParams._stagePass;
+
     const U32 startOffset = to_U32(refreshParams._drawCommandsInOut->size());
-    if (stage == RenderStage::SHADOW) {
-        Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
-    } else {
+
+    Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
+
+    if (stage != RenderStage::SHADOW) {
         for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
-            const U8 cIdx = getPackageIndexNoShadow(stage, static_cast<RenderPassType>(i));
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(_renderPackagesNormal[cIdx], dataIndex, startOffset, lodLevel);
+            if (i == to_U8(refreshParams._stagePass->_passType)) {
+                continue;
+            }
+
+            tempStagePass._passType = static_cast<RenderPassType>(i);
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(getDrawPackage(tempStagePass), dataIndex, startOffset, lodLevel);
         }
     }
 
@@ -602,28 +616,24 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 }
 
 RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
-    if (renderStagePass._stage == RenderStage::SHADOW) {
-        return _renderPackagesShadow[renderStagePass._indexA * 6u + renderStagePass._indexB];
-    }
+    const U8 s = to_U8(renderStagePass._stage);
+    const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
+    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) : renderStagePass._passIndex;
 
-    return _renderPackagesNormal[getPackageIndexNoShadow(renderStagePass._stage, renderStagePass._passType)];
+    return _renderPackages[s][p][i];
 }
 
 const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) const {
-    if (renderStagePass._stage == RenderStage::SHADOW) {
-        return _renderPackagesShadow[renderStagePass._indexA * 6u + renderStagePass._indexB];
-    }
+    const U8 s = to_U8(renderStagePass._stage);
+    const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
+    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) : renderStagePass._passIndex;
 
-    return _renderPackagesNormal[getPackageIndexNoShadow(renderStagePass._stage, renderStagePass._passType)];
+    return _renderPackages[s][p][i];
 }
 
 size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass) const {
     const RenderPackage& pkg = getDrawPackage(renderStagePass);
-    if (!pkg.empty()) {
-        return pkg.getSortKeyHash();
-    }
-    
-    return 0;
+    return (pkg.empty() ? 0 : pkg.getSortKeyHash());
 }
 
 void RenderingComponent::updateReflectionIndex(ReflectorType type, I32 index) {
