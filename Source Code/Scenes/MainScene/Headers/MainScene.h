@@ -54,7 +54,7 @@ class MainScene : public Scene {
     void processInput(PlayerIndex idx, const U64 deltaTimeUS)override;
     void processTasks(const U64 deltaTimeUS)override;
     void processGUI(const U64 deltaTimeUS)override;
-    void test(const Task& parentTask, std::any a, CallbackParam b);
+    void test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size);
     U16 registerInputActions() override;
 
    private:

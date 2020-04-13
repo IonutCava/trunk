@@ -639,7 +639,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
 
-    RenderAPI renderingAPI = static_cast<RenderAPI>(config.runtime.targetRenderingAPI);
+    const RenderAPI renderingAPI = static_cast<RenderAPI>(config.runtime.targetRenderingAPI);
 
     WindowManager& winManager = _platformContext.app().windowManager();
     ErrorCode initError = winManager.init(_platformContext,

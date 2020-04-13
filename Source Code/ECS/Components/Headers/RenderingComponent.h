@@ -67,6 +67,11 @@ struct RenderParams {
     Pipeline _pipeline;
 };
 
+struct TargetDataBufferParams {
+    I32 _writeIndex = 0;
+    U32 _dataIndex = 0u;
+};
+
 using DrawCommandContainer = eastl::fixed_vector<IndirectDrawCommand, Config::MAX_VISIBLE_NODES, false>;
 
 struct RefreshNodeDataParams {
@@ -195,7 +200,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
   protected:
-    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const U32 dataIndex);
+    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams);
     bool onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams);
 
     bool canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData);
@@ -324,8 +329,8 @@ class RenderingCompRenderPass {
             return renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
-        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const U32 dataIndex) {
-            return renderable.onRefreshNodeData(refreshParams, dataIndex);
+        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams) {
+            return renderable.onRefreshNodeData(refreshParams, bufferParams);
         }
 
         static bool onQuickRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams) {

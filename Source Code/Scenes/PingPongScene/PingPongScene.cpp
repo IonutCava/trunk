@@ -92,13 +92,13 @@ void PingPongScene::serveBall(I64 btnGUID) {
     removeTask(*g_gameTaskID);
 
     g_gameTaskID = CreateTask(context(), [this](const Task& parent) {
-        test(parent, Random(4), CallbackParam::TYPE_INTEGER);
+        test(parent, Random(4), GFX::PushConstantType::INT, GFX::PushConstantSize::DWORD);
     });
 
     registerTask(*g_gameTaskID);
 }
 
-void PingPongScene::test(const Task& parentTask, std::any a, CallbackParam b) {
+void PingPongScene::test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size) {
     while (!StopRequested(parentTask)) {
         bool updated = false;
         stringImpl message;
@@ -209,7 +209,7 @@ void PingPongScene::test(const Task& parentTask, std::any a, CallbackParam b) {
                 message = "You lost!";
                 _score--;
 
-                if (b == CallbackParam::TYPE_INTEGER) {
+                if (type == GFX::PushConstantType::INT) {
                     I32 quote = std::any_cast<I32>(a);
                     if (_score % 3 == 0)
                         _GUI->modifyText("insults", _quotes[quote], false);

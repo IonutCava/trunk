@@ -124,10 +124,7 @@ protected:
     GFX::CommandBuffer* commands();
 
 protected:
-    // Cached command buffer
     GFX::CommandBuffer* _commands = nullptr;
-
-private:
     std::array<std::pair<size_t, size_t>, 4> _lodIndexOffsets;
     I32 _drawCommandCount = 0;
     U16 _drawCommandOptions = to_U16(CmdRenderOptions::RENDER_GEOMETRY);

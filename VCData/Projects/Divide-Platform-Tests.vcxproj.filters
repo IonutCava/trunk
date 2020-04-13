@@ -40,5 +40,8 @@
       <Filter>Tests</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/stdafx-test-engine.cpp" />
+    <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\DataTypeTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

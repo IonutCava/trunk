@@ -125,91 +125,78 @@ void CommandBuffer::batch() {
     CommandBase* prevCommand = nullptr;
     CommandType prevType = CommandType::COUNT;
 
-    bool tryMerge = true;
+    const auto  EraseEmptyCommands = [this]() {
+        const size_t initialSize = _commandOrder.size();
+        eastl::erase_if(_commandOrder, ([](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; }));
+        return initialSize != _commandOrder.size();
+    };
 
-    while (tryMerge) {
-        OPTICK_EVENT("TRY_MERGE_LOOP_1");
+    do {
+        OPTICK_EVENT("TRY_MERGE_LOOP");
 
-        tryMerge = false;
-        prevCommand = nullptr;
-        prevType = CommandType::COUNT;
+        bool tryMerge = true;
+        // Try and merge ONLY descriptor sets as these don't care about commands between them (they only set global state
+        while (tryMerge) {
+            OPTICK_EVENT("TRY_MERGE_LOOP_STEP_1");
 
-        for (CommandEntry& entry : _commandOrder)  {
-            if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID) {
-                continue;
-            }
-            if (ShouldSkipType(entry._typeIndex)) {
-                continue;
-            }
+            tryMerge = false;
+            prevCommand = nullptr;
+            for (CommandEntry& entry : _commandOrder) {
+                if (entry._data != PolyContainerEntry::INVALID_ENTRY_ID && !ShouldSkipType(entry._typeIndex)) {
+                    const GFX::CommandType cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
+                    if (cmdType == GFX::CommandType::BIND_DESCRIPTOR_SETS) {
+                        CommandBase* crtCommand = get<CommandBase>(entry);
 
-            const U8 typeIndex = entry._typeIndex;
-            const GFX::CommandType cmdType = static_cast<GFX::CommandType>(typeIndex);
-
-            CommandBase* crtCommand = get<CommandBase>(entry);
-
-            if (prevCommand != nullptr && 
-                prevType == cmdType &&
-                tryMergeCommands(cmdType, prevCommand, crtCommand))
-            {
-                --_commandCount[typeIndex];
-                entry._data = PolyContainerEntry::INVALID_ENTRY_ID;
-                tryMerge = true;
-            } else {
-                prevType = cmdType;
-                prevCommand = crtCommand;
-            }
-        }
-    }
-
-    // Now try and merge ONLY descriptor sets
-    tryMerge = true;
-    while (tryMerge) {
-        OPTICK_EVENT("TRY_MERGE_LOOP_2");
-
-        tryMerge = false;
-
-        prevCommand = nullptr;
-        for (CommandEntry& entry : _commandOrder) {
-            if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID) {
-                continue;
-            }
-            if (ShouldSkipType(entry._typeIndex)) {
-                continue;
-            }
-
-            CommandBase* crtCommand = get<CommandBase>(entry);
-            if (prevCommand != nullptr && 
-                entry._typeIndex == to_base(GFX::CommandType::BIND_DESCRIPTOR_SETS) &&
-                tryMergeCommands(GFX::CommandType::BIND_DESCRIPTOR_SETS, prevCommand, crtCommand))
-            {
-                --_commandCount[entry._typeIndex];
-                entry._data = PolyContainerEntry::INVALID_ENTRY_ID;
-                tryMerge = true;
-            }
-            else if (entry._typeIndex == to_base(GFX::CommandType::BIND_DESCRIPTOR_SETS))
-            {
-                prevCommand = crtCommand;
+                        if (prevCommand != nullptr && tryMergeCommands(cmdType, prevCommand, crtCommand)) {
+                            --_commandCount[entry._typeIndex];
+                            entry._data = PolyContainerEntry::INVALID_ENTRY_ID;
+                            tryMerge = true;
+                        } else {
+                            prevCommand = crtCommand;
+                        }
+                    }
+                }
             }
         }
-    }
 
-    eastl::erase_if(_commandOrder, ([](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; }));
+        tryMerge = true;
+        while (tryMerge) {
+            OPTICK_EVENT("TRY_MERGE_LOOP_STEP_2");
+
+            tryMerge = false;
+            prevCommand = nullptr;
+            prevType = CommandType::COUNT;
+            for (CommandEntry& entry : _commandOrder) {
+                if (entry._data != PolyContainerEntry::INVALID_ENTRY_ID && !ShouldSkipType(entry._typeIndex)) {
+                    const GFX::CommandType cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
+                    CommandBase* crtCommand = get<CommandBase>(entry);
+
+                    if (prevCommand != nullptr && prevType == cmdType && tryMergeCommands(cmdType, prevCommand, crtCommand)) {
+                        --_commandCount[entry._typeIndex];
+                        entry._data = PolyContainerEntry::INVALID_ENTRY_ID;
+                        tryMerge = true;
+                    } else {
+                        prevType = cmdType;
+                        prevCommand = crtCommand;
+                    }
+                }
+            }
+        }
+    } while (EraseEmptyCommands());
 
     // Now try and merge ONLY End/Begin render pass (don't unbind a render target if we immediatelly bind a new one
     prevCommand = nullptr;
     for (const CommandEntry& entry : _commandOrder) {
-        if (entry._data == PolyContainerEntry::INVALID_ENTRY_ID || DoesNotAffectRT(entry._typeIndex)) {
-            continue;
-        }
-
-        CommandBase* crtCommand = get<CommandBase>(entry);
-        if (prevCommand != nullptr && entry._typeIndex == to_base(GFX::CommandType::BEGIN_RENDER_PASS)) {
-            static_cast<EndRenderPassCommand*>(prevCommand)->_setDefaultRTState = false;
-            prevCommand = nullptr;
-        } else if (entry._typeIndex == to_base(GFX::CommandType::END_RENDER_PASS)) {
-            prevCommand = crtCommand;
-        } else {
-            prevCommand = nullptr;
+        if (entry._data != PolyContainerEntry::INVALID_ENTRY_ID && !DoesNotAffectRT(entry._typeIndex)) {
+            CommandBase* crtCommand = get<CommandBase>(entry);
+            if (prevCommand != nullptr && entry._typeIndex == to_base(GFX::CommandType::BEGIN_RENDER_PASS)) {
+                static_cast<EndRenderPassCommand*>(prevCommand)->_setDefaultRTState = false;
+                prevCommand = nullptr;
+            } else if (entry._typeIndex == to_base(GFX::CommandType::END_RENDER_PASS)) {
+                prevCommand = crtCommand;
+            } else {
+                prevCommand = nullptr;
+            }
         }
     }
 
@@ -550,21 +537,22 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
 
     // Batchable commands must share the same buffer and other various state
     if (compatible(previousIDC, currentIDC)) {
-        if (byBaseInstance) { // Base instance compatibility
-            if (previousIDC._cmd.baseInstance + previousIDC._drawCount != currentIDC._cmd.baseInstance) {
-                return false;
-            }
-        } else {// Command offset compatibility
-            if (previousIDC._commandOffset + to_U32(previousIDC._drawCount) != currentIDC._commandOffset) {
-                return false;
-            }
-        }
+        const U32 prev_base_instance = to_U32(previousIDC._cmd.baseInstance);
+        const U32 curr_base_instance = to_U32(currentIDC._cmd.baseInstance);
+        const U32 prev_cmd_offset = to_U32(previousIDC._commandOffset);
+        const U32 curr_cmd_offset = to_U32(currentIDC._commandOffset);
+        const U32 prev_draw_count = to_U32(previousIDC._drawCount);
 
-        // If the rendering commands are batchable, increase the draw count for the previous one
-        previousIDC._drawCount += currentIDC._drawCount;
-        // And set the current command's draw count to zero so it gets removed from the list later on
-        currentIDC._drawCount = 0;
-        return true;
+        const U32 start_offset = byBaseInstance ? prev_base_instance : prev_cmd_offset;
+        const U32 end_offset = byBaseInstance ? curr_base_instance : curr_cmd_offset;
+
+        if (start_offset + prev_draw_count == end_offset) {
+            // If the rendering commands are batchable, increase the draw count for the previous one
+            previousIDC._drawCount += currentIDC._drawCount;
+            // And set the current command's draw count to zero so it gets removed from the list later on
+            currentIDC._drawCount = 0;
+            return true;
+        }
     }
 
     return false;
@@ -574,13 +562,12 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     OPTICK_EVENT();
 
     const auto BatchCommands = [](DrawCommand::CommandContainer& commands, bool byBaseInstance) {
-        vec_size previousCommandIndex = 0;
-        vec_size currentCommandIndex = 1;
         const vec_size commandCount = commands.size();
-        for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-            GenericDrawCommand& previousCommand = commands[previousCommandIndex];
-            GenericDrawCommand& currentCommand = commands[currentCommandIndex];
-            if (!BatchDrawCommands(byBaseInstance, previousCommand, currentCommand)) {
+        for (vec_size previousCommandIndex = 0, currentCommandIndex = 1;
+             currentCommandIndex < commandCount;
+             ++currentCommandIndex)
+        {
+            if (!BatchDrawCommands(byBaseInstance, commands[previousCommandIndex], commands[currentCommandIndex])) {
                 previousCommandIndex = currentCommandIndex;
             }
         }
@@ -589,7 +576,7 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     const auto RemoveEmptyDrawCommands = [](DrawCommand::CommandContainer& commands) {
         const size_t startSize = commands.size();
         eastl::erase_if(commands, IsEmptyDrawCommand);
-        return startSize - commands.size() > 0;
+        return startSize != commands.size();
     };
 
     DrawCommand::CommandContainer& commands = prevCommand->_drawCommands;
@@ -605,17 +592,18 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
                     [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
                         return a._cmd.baseInstance < b._cmd.baseInstance;
                     });
-        do { 
-            BatchCommands(commands, true); 
+        do {
+            BatchCommands(commands, true);
         } while (RemoveEmptyDrawCommands(commands));
     }
+
     {
         OPTICK_EVENT("Merge by offset");
         eastl::sort(eastl::begin(commands),
-                    eastl::end(commands),
-                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
-                        return a._commandOffset < b._commandOffset;
-                    });
+            eastl::end(commands),
+            [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
+            return a._commandOffset < b._commandOffset;
+        });
 
         do {
             BatchCommands(commands, false);

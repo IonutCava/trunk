@@ -32,6 +32,7 @@
     <ClCompile Include="../../Source Code/UnitTests\Engine-Tests\Tests\StringTests.cpp" />
     <ClCompile Include="../../Source Code/UnitTests\Engine-Tests\Tests\ThreadingTests.cpp" />
     <ClCompile Include="../../Source Code/UnitTests\Engine-Tests\Tests\ConversionTests.cpp" />
+    <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\DataTypeTests.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EF7E2000-C5F8-4345-8082-9F97341F804D}</ProjectGuid>

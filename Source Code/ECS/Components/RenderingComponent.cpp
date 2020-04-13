@@ -337,7 +337,7 @@ bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshPa
     return true;
 }
 
-bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, const U32 dataIndex) {
+bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams) {
     OPTICK_EVENT();
 
     RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
@@ -358,6 +358,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
 
     const U32 startOffset = to_U32(refreshParams._drawCommandsInOut->size());
 
+    const U32 dataIndex = bufferParams._dataIndex;
     Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
 
     if (stage != RenderStage::SHADOW) {
@@ -372,12 +373,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     }
 
     for (I32 i = 0; i < drawCommandCount; ++i) {
-        const GenericDrawCommand& cmd = pkg.drawCommand(i, 0);
-        if (cmd._drawCount > 1 && isEnabledOption(cmd, CmdRenderOptions::CONVERT_TO_INDIRECT)) {
-            eastl::fill_n(eastl::back_inserter(*refreshParams._drawCommandsInOut), cmd._drawCount, cmd._cmd);
-        } else {
-            refreshParams._drawCommandsInOut->push_back(cmd._cmd);
-        }
+        refreshParams._drawCommandsInOut->push_back(pkg.drawCommand(i, 0)._cmd);
     }
 
     Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *refreshParams._camera, false, *refreshParams._bufferInOut);

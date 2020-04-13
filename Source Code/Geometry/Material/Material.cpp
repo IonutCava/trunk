@@ -384,14 +384,16 @@ bool Material::canDraw(RenderStagePass renderStagePass) {
     }
 
     if (info._shaderCompStage == ShaderBuildStage::COMPUTED) {
-        if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
-            info._shaderCompStage = ShaderBuildStage::READY;
+        assert(info._shaderRef != nullptr);
+        if (info._shaderRef->getState() != ResourceState::RES_LOADED) {
             return false;
         }
+
+        info._shaderCompStage = ShaderBuildStage::READY;
     }
 
     if (info._shaderCompStage != ShaderBuildStage::READY) {
-        return computeShader(renderStagePass);
+        return info._customShader ? false : computeShader(renderStagePass);
     }
 
     return true;
@@ -408,17 +410,12 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
     // If shader's invalid, try to request a recompute as it might fix it
     if (info._shaderCompStage == ShaderBuildStage::COUNT) {
         info._shaderCompStage = ShaderBuildStage::REQUESTED;
-        return false;
-    }
-
-    // If the shader is valid and a recompute wasn't requested, just return true
-    if (info._shaderCompStage != ShaderBuildStage::REQUESTED) {
+    } else if (info._shaderCompStage != ShaderBuildStage::REQUESTED) {
+        // If the shader is valid and a recompute wasn't requested, just return true
         return info._shaderCompStage == ShaderBuildStage::READY;
     }
 
     // At this point, only computation requests are processed
-    assert(info._shaderCompStage == ShaderBuildStage::REQUESTED);
-
     constexpr U32 slot0 = to_base(TextureUsage::UNIT0);
     constexpr U32 slot1 = to_base(TextureUsage::UNIT1);
     constexpr U32 slotOpacity = to_base(TextureUsage::OPACITY);
@@ -555,10 +552,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
                 fragDefines.emplace_back("USE_SHADING_FLAT", true);
                 shaderName += ".Flat";
             } break;
-            /*case ShadingMode::PHONG: {
-                fragDefines.emplace_back("USE_SHADING_PHONG", true);
-                shaderName += ".Phong";
-            } break;*/
             case ShadingMode::PHONG:
             case ShadingMode::BLINN_PHONG: {
                 fragDefines.emplace_back("USE_SHADING_BLINN_PHONG", true);

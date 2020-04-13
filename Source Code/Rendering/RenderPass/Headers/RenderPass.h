@@ -66,7 +66,7 @@ class RenderPass : private NonCopyable {
   public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
     explicit RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlags, const vectorSTD<U8>& dependencies, bool performanceCounters = false);
-    ~RenderPass();
+    ~RenderPass() = default;
 
     void render(const Task& parentTask, const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut);
     void postRender();
@@ -81,6 +81,8 @@ class RenderPass : private NonCopyable {
     BufferData getBufferData(const RenderStagePass& stagePass) const;
 
     void initBufferData();
+
+    static U8 DataBufferRingSize();
 
    private:
     GFXDevice & _context;

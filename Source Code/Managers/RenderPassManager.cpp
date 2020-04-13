@@ -410,25 +410,30 @@ void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
     if (fullRefresh) {
         params._drawCommandsInOut->clear();
 
+        RenderPass::BufferData bufferData = getPassForStage(stagePass._stage).getBufferData(stagePass);
         const mat4<F32>& viewMatrix = camera.getViewMatrix();
         const D64 interpFactor = _context.getFrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.985;
 
-        U32 dataIdx = 0u, nodeCount = 0u;
+        TargetDataBufferParams bufferParams = {};
+        bufferParams._writeIndex = bufferData._cmdBuffer->queueWriteIndex();
+        bufferParams._dataIndex = 0u;
+
+        U32 nodeCount = 0u;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
 
         for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
             for (RenderingComponent* rComp : queue) {
-                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, dataIdx)) {
-                    GFXDevice::NodeData& data = passData.nodeData[dataIdx];
+                
+                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams)) {
+                    GFXDevice::NodeData& data = passData.nodeData[bufferParams._dataIndex];
                     processVisibleNode(*rComp, stagePass, playAnimations, viewMatrix, interpFactor, needsInterp, data);
-                    ++dataIdx;
+                    ++bufferParams._dataIndex;
                     ++nodeCount;
                 }
             }
         }
 
-        RenderPass::BufferData bufferData = getPassForStage(stagePass._stage).getBufferData(stagePass);
         *bufferData._lastCommandCount = to_U32(passData.drawCommands.size());
         *bufferData._lastNodeCount = nodeCount;
 

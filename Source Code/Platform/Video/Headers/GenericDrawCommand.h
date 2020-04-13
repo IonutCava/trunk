@@ -65,18 +65,17 @@ enum class CmdRenderOptions : U16 {
     RENDER_WIREFRAME = toBit(2),
     RENDER_NO_RASTERIZE = toBit(3),
     RENDER_INDIRECT = toBit(4),
-    CONVERT_TO_INDIRECT = toBit(5),
-    QUERY_PRIMITIVE_COUNT = toBit(6),
-    QUERY_SAMPLE_COUNT = toBit(7),
-    QUERY_ANY_SAMPLE_RENDERED = toBit(8),
-    COUNT = 8
+    QUERY_PRIMITIVE_COUNT = toBit(5),
+    QUERY_SAMPLE_COUNT = toBit(6),
+    QUERY_ANY_SAMPLE_RENDERED = toBit(7),
+    COUNT = 7
 };
 
 #pragma pack(push, 1)
 struct GenericDrawCommand {
     IndirectDrawCommand _cmd = {};                                   // 32 bytes
     PoolHandle _sourceBuffer = {};                                   // 12 bytes
-    U24 _commandOffset = {0};                                        // 9  bytes
+    U24 _commandOffset = 0u;                                         // 9  bytes
     U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 6  bytes
     U16 _drawCount = 1;                                              // 4  bytes
     U8  _bufferIndex  = 0;                                           // 2  bytes

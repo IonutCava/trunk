@@ -24,9 +24,6 @@
 namespace Divide {
 
 namespace {
-    // How many cmd buffers should we create (as a factor) so that we can swap them between frames
-    constexpr U8 g_cmdBufferFrameCount = 3;
-
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
         U16 g_reflectionBudget = 0;
@@ -60,11 +57,14 @@ namespace {
         DIVIDE_UNEXPECTED_CALL();
         return 0u;
     }
-
-    U32 getDataBufferSize(RenderStage stage) noexcept {
-        return getBufferFactor(stage) * Config::MAX_VISIBLE_NODES;
-    }
 };
+
+U8 RenderPass::DataBufferRingSize() {
+    // Size factor for command and data bufeers
+    constexpr U8 g_bufferSizeFactor = 3;
+
+    return g_bufferSizeFactor;
+}
 
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const vectorSTD<U8>& dependencies, bool performanceCounters)
     : _parent(parent),
@@ -76,10 +76,6 @@ RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name
       _performanceCounters(performanceCounters),
       _lastCmdCount(0u),
       _lastNodeCount(0u)
-{
-}
-
-RenderPass::~RenderPass() 
 {
 }
 
@@ -102,11 +98,11 @@ void RenderPass::initBufferData() {
     {// Node Data buffer
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = getDataBufferSize(_stageFlag);
+        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
         bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
+        bufferDescriptor._ringBufferLength = DataBufferRingSize();
         bufferDescriptor._separateReadWrite = false;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         { 
@@ -117,11 +113,11 @@ void RenderPass::initBufferData() {
     {// Indirect draw command buffer
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = getDataBufferSize(_stageFlag);
+        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
         bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._ringBufferLength = g_cmdBufferFrameCount;
+        bufferDescriptor._ringBufferLength = DataBufferRingSize();
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         bufferDescriptor._separateReadWrite = false;
         {

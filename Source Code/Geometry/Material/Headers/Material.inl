@@ -57,6 +57,7 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderSt
             if ((stage == RenderStage::COUNT || stage == crtStage) && (pass == RenderPassType::COUNT || pass == crtPass)) {
                 ShaderProgramInfo& shaderInfo = _shaderInfo[s][p][variant];
                 shaderInfo._customShader = true;
+                shaderInfo._shaderCompStage = ShaderBuildStage::COUNT;
                 setShaderProgramInternal(shader, shaderInfo, crtStage, crtPass);
             }
         }

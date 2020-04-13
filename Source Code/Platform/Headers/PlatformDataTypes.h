@@ -103,6 +103,7 @@ struct I24
     I24(I32 val) noexcept 
         : value{ ((U8*)&val)[0], ((U8*)&val)[1], ((U8*)&val)[2] }
     {
+        assert(val < INT24_MAX && val > -INT24_MAX);
     }
 
     I24(const I24& val) noexcept
@@ -128,6 +129,8 @@ struct I24
     }
 
     FORCE_INLINE I24& operator= (const I32 input) noexcept {
+        assert(input < INT24_MAX && input > -INT24_MAX);
+
         value[0] = ((U8*)&input)[0];
         value[1] = ((U8*)&input)[1];
         value[2] = ((U8*)&input)[2];
@@ -172,6 +175,13 @@ struct I24
     FORCE_INLINE bool operator>  (const I24& val) const noexcept { return static_cast<I32>(*this) >  static_cast<I32>(val); }
     FORCE_INLINE bool operator<  (const I24& val) const noexcept { return static_cast<I32>(*this) <  static_cast<I32>(val); }
 
+    FORCE_INLINE bool operator==  (const I32& val) const noexcept { return static_cast<I32>(*this) == val; }
+    FORCE_INLINE bool operator!=  (const I32& val) const noexcept { return static_cast<I32>(*this) != val; }
+    FORCE_INLINE bool operator>= (const I32& val) const noexcept { return static_cast<I32>(*this) >= val; }
+    FORCE_INLINE bool operator<= (const I32& val) const noexcept { return static_cast<I32>(*this) <= val; }
+    FORCE_INLINE bool operator>  (const I32& val) const noexcept { return static_cast<I32>(*this) > val; }
+    FORCE_INLINE bool operator<  (const I32& val) const noexcept { return static_cast<I32>(*this) < val; }
+
     FORCE_INLINE bool operator>  (const size_t& val) const noexcept {
         const I32 lhs = static_cast<I32>(*this);
         return lhs >= 0 && lhs > val;
@@ -194,11 +204,14 @@ struct U24
 {
     U8 value[3] = { 0u, 0u, 0u };
 
-    U24() : U24(0u) {}
+    U24() : U24(0u)
+    {
+    }
 
     U24(U32 val) noexcept
         : value{ ((U8*)&val)[0], ((U8*)&val)[1], ((U8*)&val)[2] }
     {
+        assert(val < UINT24_MAX);
     }
 
     U24(const U24& val) noexcept
@@ -224,6 +237,8 @@ struct U24
     }
 
     FORCE_INLINE U24& operator= (const U32 input) noexcept {
+        assert(input < UINT24_MAX);
+
         value[2] = input >> 16 & 0xff;
         value[1] = input >> 8 & 0xff;
         value[0] = input & 0xff;
@@ -262,39 +277,33 @@ struct U24
     FORCE_INLINE bool operator>  (const U24& val) const noexcept { return static_cast<U32>(*this) > static_cast<U32>(val); }
     FORCE_INLINE bool operator<  (const U24& val) const noexcept { return static_cast<U32>(*this) < static_cast<U32>(val); }
 
+    FORCE_INLINE bool operator==  (const U32& val) const noexcept { return static_cast<U32>(*this) == val; }
+    FORCE_INLINE bool operator!=  (const U32& val) const noexcept { return static_cast<U32>(*this) != val; }
+    FORCE_INLINE bool operator>= (const U32& val) const noexcept { return static_cast<U32>(*this) >= val; }
+    FORCE_INLINE bool operator<= (const U32& val) const noexcept { return static_cast<U32>(*this) <= val; }
+    FORCE_INLINE bool operator>  (const U32& val) const noexcept { return static_cast<U32>(*this) > val; }
+    FORCE_INLINE bool operator<  (const U32& val) const noexcept { return static_cast<U32>(*this) < val; }
+
     FORCE_INLINE bool operator>  (const size_t& val) const noexcept {
         return static_cast<U32>(*this) > val;
     }
     FORCE_INLINE bool operator<  (const size_t& val) const noexcept {
         return static_cast<U32>(*this) < val;
     }
-    FORCE_INLINE bool operator>  (const U32& val) const noexcept {
-        return static_cast<U32>(*this) > val;
+    FORCE_INLINE bool operator>  (const I32& val) const noexcept {
+        return (val >= 0) && static_cast<U32>(*this) > static_cast<U32>(val);
     }
-    FORCE_INLINE bool operator<  (const U32& val) const noexcept {
-        return static_cast<U32>(*this) < val;
+    FORCE_INLINE bool operator<  (const I32& val) const noexcept {
+        return (val < 0) || static_cast<U32>(*this) < static_cast<U32>(val);
+    }
+    FORCE_INLINE bool operator==  (const I32& val) const noexcept {
+        return (val >= 0) && static_cast<U32>(*this) == static_cast<U32>(val);
+    }
+    FORCE_INLINE bool operator!=  (const I32& val) const noexcept {
+        return (val < 0) || static_cast<U32>(*this) != static_cast<U32>(val);
     }
 };
 #pragma pack(pop)
-
-enum class CallbackParam : U8 {
-    TYPE_SMALL_INTEGER = 0,
-    TYPE_MEDIUM_INTEGER,
-    TYPE_INTEGER,
-    TYPE_LARGE_INTEGER,
-    TYPE_SMALL_UNSIGNED_INTEGER,
-    TYPE_MEDIUM_UNSIGNED_INTEGER,
-    TYPE_UNSIGNED_INTEGER,
-    TYPE_LARGE_UNSIGNED_INTEGER,
-    TYPE_STRING,
-    TYPE_FLOAT,
-    TYPE_DOUBLE,
-    TYPE_LONG_DOUBLE,
-    TYPE_CHAR,
-    TYPE_BOOL,
-    TYPE_VOID,
-    COUNT
-};
 
 template <typename From, typename To>
 struct static_caster

@@ -189,7 +189,7 @@ bool MainScene::load(const Str128& name) {
 
         removeTask(*g_boxMoveTaskID);
         g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
-            test(parent, stringImpl("test"), CallbackParam::TYPE_STRING);
+            test(parent, stringImpl("test"), GFX::PushConstantType::COUNT, GFX::PushConstantSize::COUNT);
         });
 
         registerTask(*g_boxMoveTaskID);
@@ -264,7 +264,7 @@ bool MainScene::unload() {
     return Scene::unload();
 }
 
-void MainScene::test(const Task& parentTask, std::any a, CallbackParam b) {
+void MainScene::test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size) {
     if(!StopRequested(parentTask)) {
         static bool switchAB = false;
         vec3<F32> pos;
@@ -301,7 +301,7 @@ void MainScene::test(const Task& parentTask, std::any a, CallbackParam b) {
         if (g_boxMoveTaskID != nullptr) {
             if (!StopRequested(parentTask)) {
                 g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
-                    test(parent, stringImpl("test"), CallbackParam::TYPE_STRING);
+                    test(parent, stringImpl("test"), GFX::PushConstantType::COUNT, GFX::PushConstantSize::COUNT);
                 });
 
                 registerTask(*g_boxMoveTaskID);
