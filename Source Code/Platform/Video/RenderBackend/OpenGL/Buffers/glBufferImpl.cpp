@@ -110,10 +110,6 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     if (_mappedBuffer != nullptr && !_unsynced) {
         _lockManager = MemoryManager_NEW glBufferLockManager();
     }
-
-    if (params._zeroMem) {
-        zeroMem(0, _alignedSize);
-    }
 }
 
 glBufferImpl::~glBufferImpl()

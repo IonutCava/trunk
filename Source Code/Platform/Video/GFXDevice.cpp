@@ -199,11 +199,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
         for (const GPUState::GPUVideoMode& mode : registeredModes) {
             // Optionally, output to console/file each display mode
-            refreshRates = Util::StringFormat("%d", mode._refreshRate.front());
-            const vec_size refreshRateCount = mode._refreshRate.size();
-            for (vec_size i = 1; i < refreshRateCount; ++i) {
-                refreshRates += Util::StringFormat(", %d", mode._refreshRate[i]);
-            }
+            refreshRates = Util::StringFormat("%d", mode._refreshRate);
             Console::printfn(Locale::get(_ID("CURRENT_DISPLAY_MODE")),
                 mode._resolution.width,
                 mode._resolution.height,

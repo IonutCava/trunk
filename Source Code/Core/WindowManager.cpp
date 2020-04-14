@@ -170,25 +170,28 @@ ErrorCode WindowManager::init(PlatformContext& context,
         });
 
         GPUState& gState = _context->gfx().gpuState();
-        // Query available display modes (resolution, bit depth per channel and
-        // refresh rates)
-        I32 numberOfDisplayModes = 0;
-        const I32 numDisplays = SDL_GetNumVideoDisplays();
+        // Query available display modes (resolution, bit depth per channel and refresh rates)
+        I32 numberOfDisplayModes[GPUState::maxDisplayCount()];
+        const I32 numDisplays = std::min(SDL_GetNumVideoDisplays(), to_I32(gState.maxDisplayCount()));
+
         for (I32 display = 0; display < numDisplays; ++display) {
-            numberOfDisplayModes = SDL_GetNumDisplayModes(display);
-            for (I32 mode = 0; mode < numberOfDisplayModes; ++mode) {
+            numberOfDisplayModes[display] = SDL_GetNumDisplayModes(display);
+        }
+
+        GPUState::GPUVideoMode tempDisplayMode = {};
+        for (I32 display = 0; display < numDisplays; ++display) {
+            gState.setDisplayModeCount(to_U8(display), numberOfDisplayModes[display]);
+
+            // Register the display modes with the GFXDevice object
+            for (I32 mode = 0; mode < numberOfDisplayModes[display]; ++mode) {
                 SDL_GetDisplayMode(display, mode, &displayMode);
                 // Register the display modes with the GFXDevice object
-                GPUState::GPUVideoMode tempDisplayMode;
-                for (I32 i = 0; i < numberOfDisplayModes; ++i) {
-                    tempDisplayMode._resolution.set(displayMode.w, displayMode.h);
-                    tempDisplayMode._bitDepth = SDL_BITSPERPIXEL(displayMode.format);
-                    tempDisplayMode._formatName = SDL_GetPixelFormatName(displayMode.format);
-                    tempDisplayMode._refreshRate.push_back(to_U8(displayMode.refresh_rate));
-                    Util::ReplaceStringInPlace(tempDisplayMode._formatName, "SDL_PIXELFORMAT_", "");
-                    gState.registerDisplayMode(to_U8(display), tempDisplayMode);
-                    tempDisplayMode._refreshRate.clear();
-                }
+                tempDisplayMode._resolution.set(displayMode.w, displayMode.h);
+                tempDisplayMode._bitDepth = SDL_BITSPERPIXEL(displayMode.format);
+                tempDisplayMode._refreshRate = to_U8(displayMode.refresh_rate);
+                tempDisplayMode._formatName = SDL_GetPixelFormatName(displayMode.format);
+                Util::ReplaceStringInPlace(tempDisplayMode._formatName, "SDL_PIXELFORMAT_", "");
+                gState.registerDisplayMode(to_U8(display), tempDisplayMode);
             }
         }
     }

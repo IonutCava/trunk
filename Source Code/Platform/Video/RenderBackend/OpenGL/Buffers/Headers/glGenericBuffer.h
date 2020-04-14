@@ -39,7 +39,6 @@ namespace Divide {
 
 struct BufferParams {
     GLenum _usage = GL_NONE;
-    bool   _zeroMem = false;
     bool   _unsynced = true;
     GLuint _ringSizeFactor = 1;
     GLuint _elementCount = 0;

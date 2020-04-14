@@ -19,7 +19,6 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     implParams._target = params._usage;
     implParams._name = params._name;
     implParams._initialData = params._data;
-    implParams._zeroMem = params._zeroMem;
     implParams._storageType = params._storageType;
     implParams._unsynced = params._unsynced;
 

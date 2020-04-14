@@ -44,7 +44,6 @@ struct BufferImplParams {
 
     /// Buffer primitive size in bytes
     size_t _elementSize = 0;
-    bool _zeroMem = false;
     bool _explicitFlush = true;
     bool _unsynced = true;
     const char* _name = nullptr;

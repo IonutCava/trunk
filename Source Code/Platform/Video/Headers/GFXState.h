@@ -39,6 +39,8 @@
 namespace Divide {
     
 struct GPUState : private NonCopyable {
+    static constexpr U8 g_maxDisplays = 4u;
+
     struct GPUVideoMode {
         // width x height
         vec2<U16> _resolution;
@@ -47,7 +49,7 @@ struct GPUState : private NonCopyable {
         // format name;
         stringImpl _formatName;
         // Max supported
-        vectorSTD<U8> _refreshRate;
+        U8 _refreshRate = 0u;
 
         bool operator==(const GPUVideoMode& other) const {
             return _resolution == other._resolution &&
@@ -56,6 +58,8 @@ struct GPUState : private NonCopyable {
                    _formatName.compare(other._formatName) == 0;
         }
     };
+
+    void setDisplayModeCount(U8 displayIndex, I32 count);
 
     /// register a new display mode (resolution, bitdepth, etc).
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
@@ -69,11 +73,13 @@ struct GPUState : private NonCopyable {
         return _supportedDisplayModes[displayIndex];
     }
 
+    static constexpr U8 maxDisplayCount() { return g_maxDisplays; }
+
     PROPERTY_RW(U8, maxMSAASampleCount, 0u);
 
    protected:
     // Display system
-    vectorSTD<vectorSTD<GPUVideoMode>> _supportedDisplayModes;
+    std::array<vectorSTD<GPUVideoMode>, g_maxDisplays> _supportedDisplayModes;
 };
 
 };  // namespace Divide
