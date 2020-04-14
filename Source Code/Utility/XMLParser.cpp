@@ -202,10 +202,8 @@ void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const
     ptree pt;
     read_xml(file.c_str(), pt);
 
-    auto none = empty_ptree();
-
     SceneNode rootNode = {};
-    for (const ptree::value_type& sceneGraphList : pt.get_child("entities", none)) {
+    for (const ptree::value_type& sceneGraphList : pt.get_child("entities", empty_ptree())) {
         readNode(sceneGraphList.second, rootNode);
         // This may not be needed;
         assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));

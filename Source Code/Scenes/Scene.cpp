@@ -408,7 +408,7 @@ namespace {
 void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
     assert(parent != nullptr);
 
-    auto waitForReasoureTask = [&parentTask](const CachedResource_wptr& res) {
+    auto waitForReasoureTask = [&parentTask](const Resource_wptr& res) {
         ACKNOWLEDGE_UNUSED(res);
         if (parentTask != nullptr) {
             TaskYield(*parentTask);
@@ -430,11 +430,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
         boost::property_tree::ptree nodeTree = {};
         read_xml(nodePath, nodeTree);
 
-        const auto loadModelComplete = [this, &nodeTree, &waitForReasoureTask](CachedResource_wptr res) {
-            while (res.lock()->getState() != ResourceState::RES_LOADED) {
-                waitForReasoureTask(res);
-            }
-
+        const auto loadModelComplete = [this, &nodeTree, &waitForReasoureTask](Resource_wptr res) {
             eastl::static_pointer_cast<SceneNode>(res.lock())->loadFromXML(nodeTree);
             _loadingTasks.fetch_sub(1);
         };
@@ -452,10 +448,9 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
             if (!modelName.empty()) {
                 _loadingTasks.fetch_add(1);
                 ResourceDescriptor item(sceneNode.name);
-                item.onLoadCallback(loadModelComplete);
                 item.assetName(modelName);
+                item.waitForReady(true);
                 item.waitForReadyCbk(waitForReasoureTask);
-                //item.waitForReady(waitForReady);
 
                 if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
                     ret = CreateResource<Box3D>(_resCache, item);
@@ -480,6 +475,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
                 Material_ptr tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
                 tempMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
                 ret->setMaterialTpl(tempMaterial);
+                ret->addStateCallback(ResourceState::RES_LOADED, loadModelComplete);
             }
             skipAdd = false;
         }
@@ -515,9 +511,11 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
                 model.flag(true);
                 model.threaded(false);
                 model.waitForReady(waitForReady);
-                model.waitForReadyCbk(waitForReasoureTask);
-                model.onLoadCallback(loadModelComplete);
+                if (waitForReady) {
+                    model.waitForReadyCbk(waitForReasoureTask);
+                }
                 ret = CreateResource<Mesh>(_resCache, model);
+                ret->addStateCallback(ResourceState::RES_LOADED, loadModelComplete);
             }
 
             skipAdd = false;
@@ -617,12 +615,12 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), name.c_str());
 
     // Load the rest of the terrain
-    std::shared_ptr<TerrainDescriptor> ter(new TerrainDescriptor((name + "_descriptor").c_str()));
+    std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((name + "_descriptor").c_str());
     if (!ter->loadFromXML(pt, name.c_str())) {
         return;
     }
 
-    auto registerTerrain = [this, name, &parentNode, pt](CachedResource_wptr res) {
+    const auto registerTerrain = [this, name, &parentNode, pt](Resource_wptr res) {
         SceneGraphNodeDescriptor terrainNodeDescriptor;
         terrainNodeDescriptor._name = name;
         terrainNodeDescriptor._node = eastl::static_pointer_cast<Terrain>(res.lock());
@@ -633,32 +631,25 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
                                                to_base(ComponentType::BOUNDS) |
                                                to_base(ComponentType::RENDERING) |
                                                to_base(ComponentType::NETWORKING);
-        terrainNodeDescriptor._node->addStateCallback(ResourceState::RES_LOADED,
-            [this](Resource_wptr res) {
-                ACKNOWLEDGE_UNUSED(res);
-                _loadingTasks.fetch_sub(1);
-            }
-        );
         terrainNodeDescriptor._node->loadFromXML(pt);
 
         SceneGraphNode* terrainTemp = parentNode.addChildNode(terrainNodeDescriptor);
-
 
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
         terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
         terrainTemp->loadFromXML(pt);
+        _loadingTasks.fetch_sub(1);
     };
 
     ResourceDescriptor descriptor(ter->getVariable("terrainName"));
     descriptor.propertyDescriptor(*ter);
     descriptor.threaded(true);
-    descriptor.onLoadCallback(registerTerrain);
     descriptor.flag(ter->active());
     descriptor.waitForReady(false);
     auto ret = CreateResource<Terrain>(_resCache, descriptor);
-    ACKNOWLEDGE_UNUSED(ret);
+    ret->addStateCallback(ResourceState::RES_LOADED, registerTerrain);
 }
 
 void Scene::toggleFlashlight(PlayerIndex idx) {
@@ -719,7 +710,7 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
 }
 
 void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
-    auto registerWater = [this, nodeName, &parentNode, pt](CachedResource_wptr res) {
+    auto registerWater = [this, nodeName, &parentNode, pt](Resource_wptr res) {
         SceneGraphNodeDescriptor waterNodeDescriptor;
         waterNodeDescriptor._name = nodeName;
         waterNodeDescriptor._node = eastl::static_pointer_cast<WaterPlane>(res.lock());
@@ -746,14 +737,13 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
 
     ResourceDescriptor waterDescriptor("Water_" + nodeName);
     waterDescriptor.threaded(true);
-    waterDescriptor.onLoadCallback(registerWater);
     waterDescriptor.waitForReady(false);
     auto ret = CreateResource<WaterPlane>(_resCache, waterDescriptor);
-    ACKNOWLEDGE_UNUSED(ret);
+    ret->addStateCallback(ResourceState::RES_LOADED, registerWater);
 }
 
 SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
-    auto registerPlane = [this](CachedResource_wptr res) {
+    auto registerPlane = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
         _loadingTasks.fetch_sub(1);
     };
@@ -763,10 +753,10 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
 
     planeDescriptor.ID(to_U32(baseCamera->getZPlanes().max));
-    planeDescriptor.onLoadCallback(registerPlane);
 
-    eastl::shared_ptr<InfinitePlane> planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
+    auto planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
     DIVIDE_ASSERT(planeItem != nullptr, "Scene::addInfPlane error: Could not create infinite plane resource!");
+    planeItem->addStateCallback(ResourceState::RES_LOADED, registerPlane);
     planeItem->loadFromXML(pt);
 
     SceneGraphNodeDescriptor planeNodeDescriptor;

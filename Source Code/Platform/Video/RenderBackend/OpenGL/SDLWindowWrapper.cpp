@@ -36,43 +36,30 @@ namespace Divide {
 namespace {
     const U32 g_maxVAOS = 512u;
 
-    class ContextPool {
-    public:
-        ContextPool() noexcept
-        {
-            _contexts.reserve((size_t)HARDWARE_THREAD_COUNT() * 2);
-        }
-
-        ~ContextPool() 
-        {
-            assert(_contexts.empty());
-        }
-
-        bool init(U32 size, const DisplayWindow& window) {
+    struct ContextPool {
+        bool init(size_t size, const DisplayWindow& window) {
             SDL_Window* raw = window.getRawWindow();
-            UniqueLock<Mutex> lock(_glContextLock);
             _contexts.resize(size, std::make_pair(nullptr, false));
-            for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
-                ctx.first = SDL_GL_CreateContext(raw);
+            for (auto&[context, used] : _contexts) {
+                context = SDL_GL_CreateContext(raw);
             }
             return true;
         }
 
         bool destroy() {
-            UniqueLock<Mutex> lock(_glContextLock);
-            for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
-                SDL_GL_DeleteContext(ctx.first);
+            for (auto& [context, used] : _contexts) {
+                SDL_GL_DeleteContext(context);
             }
             _contexts.clear();
             return true;
         }
 
         bool getAvailableContext(SDL_GLContext& ctx) {
-            UniqueLock<Mutex> lock(_glContextLock);
-            for (std::pair<SDL_GLContext, bool>& ctxIt : _contexts) {
-                if (!ctxIt.second) {
-                    ctx = ctxIt.first;
-                    ctxIt.second = true;
+            assert(!_contexts.empty());
+            for (auto& [context, used] : _contexts) {
+                if (!used) {
+                    ctx = context;
+                    used = true;
                     return true;
                 }
             }
@@ -80,9 +67,7 @@ namespace {
             return false;
         }
 
-    private:
-        std::mutex _glContextLock;
-        vectorSTD<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
+        vectorEASTL<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
     } g_ContextPool;
 };
 
@@ -98,7 +83,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GLUtil::fillEnumTables();
 
     const DisplayWindow& window = _context.context().app().windowManager().getMainWindow();
-    g_ContextPool.init((size_t)HARDWARE_THREAD_COUNT() * 2, window);
+    g_ContextPool.init(_context.parent().totalThreadCount(), window);
 
     SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());
     GLUtil::s_glMainRenderWindow = &window;

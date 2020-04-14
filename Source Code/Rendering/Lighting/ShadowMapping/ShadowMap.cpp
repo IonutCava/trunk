@@ -21,7 +21,7 @@
 
 namespace Divide {
 
-std::mutex ShadowMap::s_depthMapUsageLock;
+Mutex ShadowMap::s_depthMapUsageLock;
 std::array<ShadowMap::LayerUsageMask, to_base(ShadowType::COUNT)> ShadowMap::s_depthMapUsage;
 std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> ShadowMap::s_shadowMapGenerators;
 

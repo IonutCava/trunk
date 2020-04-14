@@ -189,7 +189,7 @@ public:
 protected:
     friend class ImageData;
     /// used to lock image loader in a sequential operating mode in a multithreaded environment
-    static std::mutex _loadingMutex;
+    static Mutex _loadingMutex;
 };
 
 /// save a single file to TGA

@@ -53,7 +53,7 @@ public:
 private:
     const size_t _loadingHash;
 
-    static std::shared_mutex s_hashLock;
+    static SharedMutex s_hashLock;
     static std::unordered_set<size_t> s_loadingHashes;
 };
 /// Resource Cache responsibilities:
@@ -107,10 +107,6 @@ public:
                     WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
                 }
             }
-        }
-
-        if (descriptor.onLoadCallback()) {
-            descriptor.onLoadCallback()(ptr);
         }
 
         loadTimer.stop();

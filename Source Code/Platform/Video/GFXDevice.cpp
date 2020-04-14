@@ -520,28 +520,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 }
 
 ErrorCode GFXDevice::postInitRenderingAPI() {
+    std::atomic_int loadTasks = 0;
+
     ResourceCache* cache = parent().resourceCache();
-    {
-        ShaderModuleDescriptor vertModule = {};
-        vertModule._moduleType = ShaderType::VERTEX;
-        vertModule._sourceFile = "baseVertexShaders.glsl";
-        vertModule._variant = "FullScreenQuad";
-
-        ShaderModuleDescriptor fragModule = {};
-        fragModule._moduleType = ShaderType::FRAGMENT;
-        fragModule._sourceFile = "fbPreview.glsl";
-
-        ShaderProgramDescriptor shaderDescriptor = {};
-        shaderDescriptor._modules.push_back(vertModule);
-        shaderDescriptor._modules.push_back(fragModule);
-
-        ResourceDescriptor previewNormalsShader("fbPreview");
-        previewNormalsShader.threaded(false);
-        previewNormalsShader.propertyDescriptor(shaderDescriptor);
-        previewNormalsShader.waitForReady(false);
-        _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
-        assert(_renderTargetDraw != nullptr);
-    }
     {
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
@@ -557,77 +538,19 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
+        loadTasks.fetch_add(1);
         ResourceDescriptor immediateModeShader("ImmediateModeEmulationGUI");
         immediateModeShader.threaded(true);
+        immediateModeShader.waitForReady(false);
         immediateModeShader.propertyDescriptor(shaderDescriptor);
-        immediateModeShader.onLoadCallback([this](CachedResource_wptr res) {
+        _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
+        _textRenderShader->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](Resource_wptr res) {
             PipelineDescriptor descriptor = {};
             descriptor._shaderProgramHandle = res.lock()->getGUID();
             descriptor._stateHash = get2DStateBlock();
             _textRenderPipeline = newPipeline(descriptor);
+            loadTasks.fetch_sub(1);
         });
-        _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
-        assert(_textRenderShader != nullptr);
-    }
-    {
-        ShaderModuleDescriptor vertModule = {};
-        vertModule._moduleType = ShaderType::VERTEX;
-        vertModule._sourceFile = "baseVertexShaders.glsl";
-        vertModule._variant = "FullScreenQuad";
-
-        ShaderModuleDescriptor fragModule = {};
-        fragModule._moduleType = ShaderType::FRAGMENT;
-        fragModule._sourceFile = "blur.glsl";
-        fragModule._variant = "Generic";
-
-        ShaderProgramDescriptor shaderDescriptor = {};
-        shaderDescriptor._modules.push_back(vertModule);
-        shaderDescriptor._modules.push_back(fragModule);
-
-        ResourceDescriptor blur("blurGeneric");
-        blur.threaded(true);
-        blur.propertyDescriptor(shaderDescriptor);
-        blur.onLoadCallback([this](CachedResource_wptr res) {
-            ShaderProgram_ptr blurShader = eastl::static_pointer_cast<ShaderProgram>(res.lock());
-            _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
-            _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
-
-            {
-                PipelineDescriptor pipelineDescriptor;
-                pipelineDescriptor._stateHash = get2DStateBlock();
-                pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
-                pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
-                _BlurHPipeline = newPipeline(pipelineDescriptor);
-                pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
-                _BlurVPipeline = newPipeline(pipelineDescriptor);
-            }
-
-        });
-        _blurShader = CreateResource<ShaderProgram>(cache, blur);
-    }
-
-    _previewRenderTargetColour = _renderTargetDraw;;
-
-    {
-        ShaderModuleDescriptor vertModule = {};
-        vertModule._moduleType = ShaderType::VERTEX;
-        vertModule._sourceFile = "baseVertexShaders.glsl";
-        vertModule._variant = "FullScreenQuad";
-
-        ShaderModuleDescriptor fragModule = {};
-        fragModule._moduleType = ShaderType::FRAGMENT;
-        fragModule._sourceFile = "fbPreview.glsl";
-        fragModule._variant = "LinearDepth.ScenePlanes";
-
-        ShaderProgramDescriptor shaderDescriptor = {};
-        shaderDescriptor._modules.push_back(vertModule);
-        shaderDescriptor._modules.push_back(fragModule);
-
-        ResourceDescriptor previewReflectionRefractionDepth("fbPreviewLinearDepthScenePlanes");
-        previewReflectionRefractionDepth.threaded(false);
-        previewReflectionRefractionDepth.waitForReady(false);
-        previewReflectionRefractionDepth.propertyDescriptor(shaderDescriptor);
-        _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth);
     }
     {
         ShaderModuleDescriptor vertModule = {};
@@ -655,10 +578,20 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
+        loadTasks.fetch_add(1);
         // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
         ResourceDescriptor descriptor1("HiZConstruct");
+        descriptor1.threaded(true);
+        descriptor1.waitForReady(false);
         descriptor1.propertyDescriptor(shaderDescriptor);
         _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1);
+        _HIZConstructProgram->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](Resource_wptr res) {
+            PipelineDescriptor pipelineDesc;
+            pipelineDesc._stateHash = _stateDepthOnlyRenderingHash;
+            pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getGUID();
+            _HIZPipeline = newPipeline(pipelineDesc);
+            loadTasks.fetch_sub(1);
+        });
     }
     {
         ShaderModuleDescriptor compModule = {};
@@ -680,9 +613,105 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         ShaderProgramDescriptor shaderDescriptor = {};
         shaderDescriptor._modules.push_back(compModule);
 
+        loadTasks.fetch_add(1);
         ResourceDescriptor descriptor2("HiZOcclusionCull");
+        descriptor2.threaded(true);
+        descriptor2.waitForReady(false);
         descriptor2.propertyDescriptor(shaderDescriptor);
         _HIZCullProgram = CreateResource<ShaderProgram>(cache, descriptor2);
+        _HIZCullProgram->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](Resource_wptr res) {
+            PipelineDescriptor pipelineDescriptor = {};
+            pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getGUID();
+            _HIZCullPipeline = newPipeline(pipelineDescriptor);
+            loadTasks.fetch_sub(1);
+        });
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "fbPreview.glsl";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        loadTasks.fetch_add(1);
+        ResourceDescriptor previewNormalsShader("fbPreview");
+        previewNormalsShader.threaded(true);
+        previewNormalsShader.waitForReady(false);
+        previewNormalsShader.propertyDescriptor(shaderDescriptor);
+        _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
+        _renderTargetDraw->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](Resource_wptr res) {
+            _previewRenderTargetColour = _renderTargetDraw;
+            loadTasks.fetch_sub(1);
+        });
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "fbPreview.glsl";
+        fragModule._variant = "LinearDepth.ScenePlanes";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        loadTasks.fetch_add(1);
+        ResourceDescriptor previewReflectionRefractionDepth("fbPreviewLinearDepthScenePlanes");
+        previewReflectionRefractionDepth.threaded(true);
+        previewReflectionRefractionDepth.waitForReady(false);
+        previewReflectionRefractionDepth.propertyDescriptor(shaderDescriptor);
+        _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth);
+        _previewRenderTargetDepth->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](Resource_wptr res) {
+            loadTasks.fetch_sub(1);
+        });
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "blur.glsl";
+        fragModule._variant = "Generic";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        loadTasks.fetch_add(1);
+        ResourceDescriptor blur("blurGeneric");
+        blur.threaded(false);
+        blur.propertyDescriptor(shaderDescriptor);
+        _blurShader = CreateResource<ShaderProgram>(cache, blur);
+        _blurShader->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](Resource_wptr res) {
+            ShaderProgram_ptr blurShader = eastl::static_pointer_cast<ShaderProgram>(res.lock());
+            _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
+            _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
+
+            {
+                PipelineDescriptor pipelineDescriptor;
+                pipelineDescriptor._stateHash = get2DStateBlock();
+                pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
+                pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
+                _BlurHPipeline = newPipeline(pipelineDescriptor);
+                pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
+                _BlurVPipeline = newPipeline(pipelineDescriptor);
+            }
+            loadTasks.fetch_sub(1);
+        });
     }
     {
         ShaderModuleDescriptor vertModule = {};
@@ -700,35 +729,32 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(fragModule);
         descriptor3.propertyDescriptor(shaderDescriptor);
         {
+            loadTasks.fetch_add(1);
             _displayShader = CreateResource<ShaderProgram>(cache, descriptor3);
+            _displayShader->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](Resource_wptr res) {
+                PipelineDescriptor pipelineDescriptor = {};
+                pipelineDescriptor._stateHash = get2DStateBlock();
+                pipelineDescriptor._shaderProgramHandle = _displayShader->getGUID();
+                _DrawFSTexturePipeline = newPipeline(pipelineDescriptor);
+                loadTasks.fetch_sub(1);
+            });
         }
         {
+            loadTasks.fetch_add(1);
             shaderDescriptor._modules.back()._defines.emplace_back("DEPTH_ONLY", true);
             descriptor3.propertyDescriptor(shaderDescriptor);
             _depthShader = CreateResource<ShaderProgram>(cache, descriptor3);
+            _depthShader->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](Resource_wptr res) {
+                PipelineDescriptor pipelineDescriptor = {};
+                pipelineDescriptor._stateHash = get2DStateBlock();
+                pipelineDescriptor._stateHash = _stateDepthOnlyRenderingHash;
+                pipelineDescriptor._shaderProgramHandle = _depthShader->getGUID();
+                _DrawFSDepthPipeline = newPipeline(pipelineDescriptor);
+                loadTasks.fetch_sub(1);
+            });
         }
     }
-    {
-        PipelineDescriptor pipelineDesc;
-        pipelineDesc._stateHash = _stateDepthOnlyRenderingHash;
-        pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getGUID();
-        _HIZPipeline = newPipeline(pipelineDesc);
-    }
-    {
-        PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getGUID();
-        _HIZCullPipeline = newPipeline(pipelineDescriptor);
-    }
-    {
-        PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._stateHash = get2DStateBlock();
-        pipelineDescriptor._shaderProgramHandle = _displayShader->getGUID();
-        _DrawFSTexturePipeline = newPipeline(pipelineDescriptor);
 
-        pipelineDescriptor._stateHash = _stateDepthOnlyRenderingHash;
-        pipelineDescriptor._shaderProgramHandle = _depthShader->getGUID();
-        _DrawFSDepthPipeline = newPipeline(pipelineDescriptor);
-    }
     ParamHandler::instance().setParam<bool>(_ID_32("rendering.previewDebugViews"), false);
     {
         PipelineDescriptor pipelineDesc;
@@ -738,6 +764,8 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         _AxisGizmoPipeline = newPipeline(pipelineDesc);
     }
     _renderer = std::make_unique<Renderer>(context(), cache);
+
+    WAIT_FOR_CONDITION(loadTasks.load() == 0);
 
     SizeChangeParams params = {};
     params.width = _rtPool->screenTarget().getWidth();
@@ -2167,11 +2195,11 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
 #pragma endregion
 
 #pragma region GPU Object instantiation
-std::mutex& GFXDevice::objectArenaMutex() {
+Mutex& GFXDevice::objectArenaMutex() noexcept {
     return _gpuObjectArenaMutex;
 }
 
-GFXDevice::ObjectArena& GFXDevice::objectArena() {
+GFXDevice::ObjectArena& GFXDevice::objectArena() noexcept {
     return _gpuObjectArena;
 }
 

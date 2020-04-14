@@ -111,6 +111,8 @@ class PreRenderBatch {
     void onFilterToggle(FilterType type, const bool state);
 
     void init();
+
+    bool operatorsReady() const;
   private:
     using OperatorBatch = vectorEASTL<std::unique_ptr<PreRenderOperator>>;
     std::array<OperatorBatch, to_base(FilterSpace::COUNT)> _operators;

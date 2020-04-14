@@ -616,6 +616,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         config.runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
     }
 
+    I32 threadCount = config.runtime.maxWorkerThreads;
+    if (config.runtime.maxWorkerThreads < 0) {
+        threadCount = to_I32(HARDWARE_THREAD_COUNT());
+    }
+
+    totalThreadCount(std::max(threadCount, to_I32(RenderStage::COUNT) + 2) + 3);
+
     // Create mem log file
     const Str256& mem = config.debug.memFile.c_str();
     _platformContext.app().setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
@@ -661,34 +668,27 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
+    std::atomic_size_t threadCounter = totalThreadCount();
+    assert(threadCounter.load() > 3);
 
-    const U32 hardwareThreads = std::max(config.runtime.maxWorkerThreads < 0 
-                                                ? HARDWARE_THREAD_COUNT()
-                                                : to_U32(config.runtime.maxWorkerThreads),
-                                         to_base(RenderStage::COUNT) + 2u);
-
-    std::atomic_uint threadCounter = hardwareThreads + 3;
-
-    if (!_platformContext.taskPool(TaskPoolType::HIGH_PRIORITY).init(
-        to_U8(hardwareThreads),
-        TaskPool::TaskPoolType::TYPE_BLOCKING,
-        [this, &threadCounter](const std::thread::id& threadID) {
-            Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
-            threadCounter.fetch_sub(1);
-        },
-        "DIVIDE_WORKER_THREAD_"))
+    if (!_platformContext.taskPool(TaskPoolType::HIGH_PRIORITY).init(to_U32(totalThreadCount()) - 3u,
+                                                                     TaskPool::TaskPoolType::TYPE_BLOCKING,
+                                                                     [this, &threadCounter](const std::thread::id& threadID) {
+                                                                         Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
+                                                                         threadCounter.fetch_sub(1);
+                                                                     },
+                                                                     "DIVIDE_WORKER_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 
-    if (!_platformContext.taskPool(TaskPoolType::LOW_PRIORITY).init(
-        3,
-        TaskPool::TaskPoolType::TYPE_BLOCKING,
-        [this, &threadCounter](const std::thread::id& threadID) {
-            Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
-            threadCounter.fetch_sub(1);
-        },
-        "DIVIDE_BACKUP_THREAD_"))
+    if (!_platformContext.taskPool(TaskPoolType::LOW_PRIORITY).init(3,
+                                                                    TaskPool::TaskPoolType::TYPE_BLOCKING,
+                                                                    [this, &threadCounter](const std::thread::id& threadID) {
+                                                                        Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
+                                                                        threadCounter.fetch_sub(1);
+                                                                    },
+                                                                    "DIVIDE_BACKUP_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }

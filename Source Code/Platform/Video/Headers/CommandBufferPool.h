@@ -45,7 +45,7 @@ class CommandBufferPool {
     void deallocateBuffer(CommandBuffer*& buffer);
 
  private:
-    mutable std::mutex _mutex;
+    mutable Mutex _mutex;
     MemoryPool<CommandBuffer, 8192 * 2> _pool;
 };
 

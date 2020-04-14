@@ -183,7 +183,7 @@ class MemoryTracker {
     }
 
    private:
-    mutable std::mutex _mutex;
+    mutable Mutex _mutex;
     hashMap<void*, Entry> _allocations;
     std::atomic_bool _locked;
 };

@@ -125,7 +125,7 @@ protected:
 protected:
     using CallbackList = vectorEASTL<DELEGATE<void, Resource_wptr>>;
     std::array<CallbackList, to_base(ResourceState::COUNT)> _loadingCallbacks;
-    mutable std::mutex _callbackLock;
+    mutable Mutex _callbackLock;
     PROPERTY_RW(stringImpl, assetLocation);
     PROPERTY_RW(stringImpl, assetName);
     PROPERTY_R(size_t, descriptorHash);

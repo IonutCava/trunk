@@ -174,7 +174,7 @@ class SceneGraph : private NonCopyable,
     mutable SharedMutex _pendingDeletionLock;
     hashMap<SceneGraphNode*, vectorSTD<vec_size>> _pendingDeletion;
 
-    mutable std::mutex _nodeCreateMutex;
+    mutable Mutex _nodeCreateMutex;
 
 };
 

@@ -58,6 +58,8 @@ class NOINITVTABLE PreRenderOperator {
     virtual void idle(const Configuration& config);
     virtual void onToggle(const bool state);
 
+    virtual bool ready() const { return true; }
+
    protected:
     GFXDevice& _context;
 

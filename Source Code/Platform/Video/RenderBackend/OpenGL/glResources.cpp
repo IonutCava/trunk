@@ -81,8 +81,8 @@ GLuint s_lastQueryResult = GL_INVALID_INDEX;
 
 const DisplayWindow* s_glMainRenderWindow;
 thread_local SDL_GLContext s_glSecondaryContext = nullptr;
-std::mutex s_driverLock;
-std::mutex s_glSecondaryContextMutex;
+Mutex s_driverLock;
+Mutex s_glSecondaryContextMutex;
 
 std::array<GLenum, to_base(BlendProperty::COUNT)> glBlendTable;
 std::array<GLenum, to_base(BlendOperation::COUNT)> glBlendOpTable;

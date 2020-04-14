@@ -51,6 +51,8 @@ class DoFPreRenderOperator final : public PreRenderOperator {
     inline bool autoFocus() const { return _autoFocus; }
     void autoFocus(const bool state);
 
+    bool ready() const final;
+
    private:
      ShaderProgram_ptr _dofShader;
      PushConstants _constants;

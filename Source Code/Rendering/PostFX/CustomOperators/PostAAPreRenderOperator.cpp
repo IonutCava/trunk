@@ -72,8 +72,15 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
         ResourceDescriptor fxaa("FXAA");
         fxaa.propertyDescriptor(aaShaderDescriptor);
+        fxaa.threaded(true);
         fxaa.waitForReady(false);
         _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
+        _fxaa->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+            PipelineDescriptor pipelineDescriptor;
+            pipelineDescriptor._stateHash = _context.get2DStateBlock();
+            pipelineDescriptor._shaderProgramHandle = _fxaa->getGUID();
+            _fxaaPipeline = _context.newPipeline(pipelineDescriptor);
+        });
     }
     { //SMAA Shaders
         ShaderModuleDescriptor vertModule = {};
@@ -92,8 +99,15 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
         ResourceDescriptor smaaWeights("SMAA.Weights");
         smaaWeights.propertyDescriptor(weightsDescriptor);
+        smaaWeights.threaded(true);
         smaaWeights.waitForReady(false);
         _smaaWeightComputation = CreateResource<ShaderProgram>(cache, smaaWeights);
+        _smaaWeightComputation->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+            PipelineDescriptor pipelineDescriptor;
+            pipelineDescriptor._stateHash = _context.get2DStateBlock();
+            pipelineDescriptor._shaderProgramHandle = _smaaWeightComputation->getGUID();
+            _smaaWeightPipeline = _context.newPipeline(pipelineDescriptor);
+        });
 
         vertModule._variant = "Blend";
         fragModule._variant = "Blend";
@@ -102,8 +116,15 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
         ResourceDescriptor smaaBlend("SMAA.Blend");
         smaaBlend.propertyDescriptor(blendDescriptor);
+        smaaWeights.threaded(true);
         smaaBlend.waitForReady(false);
         _smaaBlend = CreateResource<ShaderProgram>(cache, smaaBlend);
+        _smaaBlend->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+            PipelineDescriptor pipelineDescriptor;
+            pipelineDescriptor._stateHash = _context.get2DStateBlock();
+            pipelineDescriptor._shaderProgramHandle = _smaaBlend->getGUID();
+            _smaaBlendPipeline = _context.newPipeline(pipelineDescriptor);
+        });
     }
     { //SMAA Textures
         SamplerDescriptor textureSampler = {};
@@ -115,26 +136,29 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         searchDescriptor.assetName("smaa_search.png");
         searchDescriptor.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
         searchDescriptor.propertyDescriptor(textureDescriptor);
+        searchDescriptor.threaded(true);
+        searchDescriptor.waitForReady(false);
         _searchTexture = CreateResource<Texture>(cache, searchDescriptor);
 
         ResourceDescriptor areaDescriptor("SMAA_Area");
         areaDescriptor.assetName("smaa_area.png");
         areaDescriptor.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
         areaDescriptor.propertyDescriptor(textureDescriptor);
+        areaDescriptor.threaded(true);
+        areaDescriptor.waitForReady(false);
         _areaTexture = CreateResource<Texture>(cache, areaDescriptor);
     }
     _pushConstantsCommand._constants.set(_ID("dvd_qualityMultiplier"), GFX::PushConstantType::INT, to_I32(postAAQualityLevel() - 1));
+}
 
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _fxaa->getGUID();
-    _fxaaPipeline = _context.newPipeline(pipelineDescriptor);
+bool PostAAPreRenderOperator::ready() const {
+    if (_smaaBlendPipeline != nullptr && _smaaWeightPipeline != nullptr && _fxaaPipeline != nullptr) {
+        if (_searchTexture->getState() == ResourceState::RES_LOADED && _areaTexture->getState() == ResourceState::RES_LOADED) {
+            return PreRenderOperator::ready();
+        }
+    }
 
-    pipelineDescriptor._shaderProgramHandle = _smaaWeightComputation->getGUID();
-    _smaaWeightPipeline = _context.newPipeline(pipelineDescriptor);
-
-    pipelineDescriptor._shaderProgramHandle = _smaaBlend->getGUID();
-    _smaaBlendPipeline = _context.newPipeline(pipelineDescriptor);
+    return false;
 }
 
 void PostAAPreRenderOperator::reshape(U16 width, U16 height) {

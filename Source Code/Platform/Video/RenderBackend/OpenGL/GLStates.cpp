@@ -30,7 +30,7 @@ SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
 
 GL_API::SamplerObjectMap GL_API::s_samplerMap;
-std::mutex GL_API::s_samplerMapLock;
+Mutex GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
 

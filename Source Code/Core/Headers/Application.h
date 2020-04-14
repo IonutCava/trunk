@@ -127,7 +127,7 @@ class Application : public SDLEventListener {
     vectorSTD<DELEGATE<void> > _shutdownCallback;
 
     /// A list of callbacks to execute on the main thread
-    mutable std::mutex _taskLock;
+    mutable Mutex _taskLock;
     vectorSTD<DELEGATE<void> > _mainThreadCallbacks;
 };
 

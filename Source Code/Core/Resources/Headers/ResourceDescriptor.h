@@ -107,7 +107,6 @@ class ResourceDescriptor : public Hashable {
     PROPERTY_RW(P32, mask); //< 4 bool values representing  ... anything ...
     PROPERTY_RW(vec3<U16>, data); //< general data
     PROPERTY_RW(CBK, waitForReadyCbk);
-    PROPERTY_RW(CBK, onLoadCallback); //< Callback to use when the resource finished loading (includes threaded loading)
 
    private:
     /// Use for extra resource properties: textures, samplers, terrain etc.

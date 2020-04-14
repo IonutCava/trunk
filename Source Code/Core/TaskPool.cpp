@@ -29,7 +29,7 @@ TaskPool::~TaskPool()
     shutdown();
 }
 
-bool TaskPool::init(U8 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
+bool TaskPool::init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
     if (threadCount == 0 || _poolImpl != nullptr) {
         return false;
     }
@@ -62,6 +62,7 @@ void TaskPool::onThreadCreate(const std::thread::id& threadID) {
     }
 
     setThreadName(threadName.c_str());
+    OPTICK_THREAD(threadName.c_str());
     if (_threadCreateCbk) {
         _threadCreateCbk(threadID);
     }
@@ -122,9 +123,9 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
         _stopRequested.store(true);
     }
 
-    bool finished = _workerThreadCount == 0;
+    bool finished = _workerThreadCount == 0u;
     while (!finished) {
-        finished = _runningTaskCount.load() == 0;
+        finished = _runningTaskCount.load() == 0u;
         if (!finished && yield) {
             std::this_thread::yield();
         }

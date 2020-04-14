@@ -28,6 +28,8 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     _parent(parent),
     _renderTarget(renderTarget)
 {
+    std::atomic_int loadTasks = 0;
+
     _edgeDetectionPipelines.fill(nullptr);
 
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
@@ -161,12 +163,16 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         mapDescriptor1._modules.push_back(vertModule);
         mapDescriptor1._modules.push_back(fragModule);
 
+        loadTasks.fetch_add(1);
         ResourceDescriptor toneMap("toneMap");
-        toneMap.threaded(false);
+        toneMap.threaded(true);
+        toneMap.waitForReady(false);
         toneMap.propertyDescriptor(mapDescriptor1);
-
         _toneMap = CreateResource<ShaderProgram>(_resCache, toneMap);
-    
+        _toneMap->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+            loadTasks.fetch_sub(1);
+        });
+
         fragModule._defines.emplace_back("USE_ADAPTIVE_LUMINANCE", true);
 
         ShaderProgramDescriptor mapDescriptor2 = {};
@@ -177,11 +183,16 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         toneMapAdaptiveDescriptor._modules.push_back(vertModule);
         toneMapAdaptiveDescriptor._modules.push_back(fragModule);
 
+        loadTasks.fetch_add(1);
         ResourceDescriptor toneMapAdaptive("toneMap.Adaptive");
-        toneMapAdaptive.threaded(false);
+        toneMapAdaptive.threaded(true);
+        toneMapAdaptive.waitForReady(false);
         toneMapAdaptive.propertyDescriptor(toneMapAdaptiveDescriptor);
 
         _toneMapAdaptive = CreateResource<ShaderProgram>(_resCache, toneMapAdaptive);
+        _toneMapAdaptive->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+            loadTasks.fetch_sub(1);
+        });
     }
     {
         ShaderModuleDescriptor computeModule = {};
@@ -196,20 +207,31 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
             ShaderProgramDescriptor calcDescriptor = {};
             calcDescriptor._modules.push_back(computeModule);
 
+            loadTasks.fetch_add(1);
             ResourceDescriptor histogramCreate("luminanceCalc.HistogramCreate");
-            histogramCreate.threaded(false);
+            histogramCreate.threaded(true);
+            histogramCreate.waitForReady(false);
             histogramCreate.propertyDescriptor(calcDescriptor);
             _createHistogram = CreateResource<ShaderProgram>(_resCache, histogramCreate);
+            _createHistogram->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+                loadTasks.fetch_sub(1);
+            });
+
         }
         {
             computeModule._variant = "Average";
             ShaderProgramDescriptor calcDescriptor = {};
             calcDescriptor._modules.push_back(computeModule);
 
+            loadTasks.fetch_add(1);
             ResourceDescriptor histogramAverage("luminanceCalc.HistogramAverage");
-            histogramAverage.threaded(false);
+            histogramAverage.threaded(true);
+            histogramAverage.waitForReady(false);
             histogramAverage.propertyDescriptor(calcDescriptor);
             _averageHistogram = CreateResource<ShaderProgram>(_resCache, histogramAverage);
+            _averageHistogram->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+                loadTasks.fetch_sub(1);
+            });
         }
     }
     {
@@ -226,29 +248,47 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
             fragModule._variant = "Depth";
             edgeDetectionDescriptor._modules = { vertModule, fragModule };
 
+            loadTasks.fetch_add(1);
             ResourceDescriptor edgeDetectionDepth("edgeDetection.Depth");
-            edgeDetectionDepth.threaded(false);
+            edgeDetectionDepth.threaded(true);
+            edgeDetectionDepth.waitForReady(false);
             edgeDetectionDepth.propertyDescriptor(edgeDetectionDescriptor);
 
             _edgeDetection[to_base(EdgeDetectionMethod::Depth)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionDepth);
+            _edgeDetection[to_base(EdgeDetectionMethod::Depth)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+                loadTasks.fetch_sub(1);
+            });
+
         }
         {
             fragModule._variant = "Luma";
             edgeDetectionDescriptor._modules = { vertModule, fragModule };
 
+            loadTasks.fetch_add(1);
             ResourceDescriptor edgeDetectionLuma("edgeDetection.Luma");
-            edgeDetectionLuma.threaded(false);
+            edgeDetectionLuma.threaded(true);
+            edgeDetectionLuma.waitForReady(false);
             edgeDetectionLuma.propertyDescriptor(edgeDetectionDescriptor);
             _edgeDetection[to_base(EdgeDetectionMethod::Luma)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionLuma);
+            _edgeDetection[to_base(EdgeDetectionMethod::Luma)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+                loadTasks.fetch_sub(1);
+            });
+
         }
         {
             fragModule._variant = "Colour";
             edgeDetectionDescriptor._modules = { vertModule, fragModule };
 
+            loadTasks.fetch_add(1);
             ResourceDescriptor edgeDetectionColour("edgeDetection.Colour");
-            edgeDetectionColour.threaded(false);
+            edgeDetectionColour.threaded(true);
+            edgeDetectionColour.waitForReady(false);
             edgeDetectionColour.propertyDescriptor(edgeDetectionDescriptor);
             _edgeDetection[to_base(EdgeDetectionMethod::Colour)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionColour);
+            _edgeDetection[to_base(EdgeDetectionMethod::Colour)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+                loadTasks.fetch_sub(1);
+            });
+
         }
     }
 
@@ -263,12 +303,27 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     bufferDescriptor._separateReadWrite = false;
 
     _histogramBuffer = _context.newSB(bufferDescriptor);
+
+    WAIT_FOR_CONDITION(operatorsReady());
+    WAIT_FOR_CONDITION(loadTasks.load() == 0);
 }
 
 PreRenderBatch::~PreRenderBatch()
 {
     _context.renderTargetPool().deallocateRT(_currentLuminance);
     _context.renderTargetPool().deallocateRT(_postFXOutput);
+}
+
+bool PreRenderBatch::operatorsReady() const {
+    for (const OperatorBatch& batch : _operators) {
+        for (const auto& op : batch) {
+            if (!op->ready()) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 TextureData PreRenderBatch::getOutput() {

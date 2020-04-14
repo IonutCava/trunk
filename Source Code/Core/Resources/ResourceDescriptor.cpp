@@ -38,7 +38,6 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
       _mask(old._mask),
       _enumValue(old._enumValue),
       _data(old._data),
-      _onLoadCallback(old._onLoadCallback),
       _waitForReadyCbk(old._waitForReadyCbk)
 {
     if (old._propertyDescriptor != nullptr) {
@@ -57,7 +56,6 @@ ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old)
         _mask = old._mask;
         _enumValue = old._enumValue;
         _data = old._data;
-        _onLoadCallback = old._onLoadCallback;
         _waitForReadyCbk = old._waitForReadyCbk;
 
         if (old._propertyDescriptor != nullptr) {
@@ -78,7 +76,6 @@ ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept
        _mask(std::move(old._mask)),
        _enumValue(std::move(old._enumValue)),
        _data(std::move(old._data)),
-       _onLoadCallback(std::move(old._onLoadCallback)),
        _waitForReadyCbk(std::move(old._waitForReadyCbk)),
        _propertyDescriptor(std::move(old._propertyDescriptor))
 {

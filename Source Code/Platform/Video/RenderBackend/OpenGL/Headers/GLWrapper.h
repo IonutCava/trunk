@@ -178,8 +178,8 @@ public:
 
     using IMPrimitivePool = MemoryPool<glIMPrimitive, 2048>;
 
-    static IMPrimitive* newIMP(std::mutex& lock, GFXDevice& parent);
-    static bool destroyIMP(std::mutex& lock, IMPrimitive*& primitive);
+    static IMPrimitive* newIMP(Mutex& lock, GFXDevice& parent);
+    static bool destroyIMP(Mutex& lock, IMPrimitive*& primitive);
 private:
     static bool initGLSW(Configuration& config);
     static bool deInitGLSW();
@@ -252,7 +252,7 @@ private:
 
     /// /*sampler hash value*/ /*sampler object*/
     using SamplerObjectMap = hashMap<size_t, GLuint, NoHash<size_t>>;
-    static std::mutex s_samplerMapLock;
+    static Mutex s_samplerMapLock;
     static SamplerObjectMap s_samplerMap;
 
     I32 _glswState;

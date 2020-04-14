@@ -75,8 +75,6 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
 }
 
 void Application::stop() {
-    OPTICK_SHUTDOWN();
-
     if (_isInitialized) {
         if (_kernel != nullptr) {
             Attorney::KernelApplication::shutdown(*_kernel);
@@ -103,6 +101,9 @@ void Application::stop() {
             memLog << allocLog;
             memLog.close();
         }
+
+
+        OPTICK_SHUTDOWN();
     }
 }
 

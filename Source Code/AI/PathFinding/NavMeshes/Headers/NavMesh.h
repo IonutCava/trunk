@@ -204,7 +204,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// A thread for us to update in.
     I64 _buildJobGUID;
     /// A mutex for accessing our actual NavigationMesh.
-    std::mutex _navigationMeshLock;
+    Mutex _navigationMeshLock;
     /// A simple flag to say we are building.
     std::atomic_bool _building;
     /// A callback function to call after building is complete

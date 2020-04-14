@@ -112,7 +112,7 @@ class NOINITVTABLE ShadowMap {
 
   protected:
     using LayerUsageMask = vectorEASTL<bool>;
-    static std::mutex s_depthMapUsageLock;
+    static Mutex s_depthMapUsageLock;
     static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> s_depthMapUsage;
     static std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> s_shadowMapGenerators;
 

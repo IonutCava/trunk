@@ -28,7 +28,7 @@
 namespace Divide {
 namespace ImageTools {
 
-std::mutex ImageDataInterface::_loadingMutex;
+Mutex ImageDataInterface::_loadingMutex;
 
 ImageData::ImageData() noexcept 
     : _compressed(false),
@@ -158,7 +158,7 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
 
 bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename) {
     ACKNOWLEDGE_UNUSED(srgb);
-    std::lock_guard<std::mutex> lock(ImageDataInterface::_loadingMutex);
+    std::lock_guard<Mutex> lock(ImageDataInterface::_loadingMutex);
 
     U32 ilTexture = 0;
     ilInit();
@@ -433,7 +433,6 @@ void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel
 
 void ImageDataInterface::CreateImageData(const stringImpl& filename, U16 refWidth, U16 refHeight, bool srgb, ImageData& imgOut) {
     if (fileExists(filename.c_str())) {
-        //std::lock_guard<std::mutex> lock(_loadingMutex);
         imgOut.create(srgb, refWidth, refHeight, filename);
     }
 }

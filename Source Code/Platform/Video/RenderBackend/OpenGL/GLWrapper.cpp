@@ -1568,11 +1568,11 @@ U32 GL_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
     return to_U32(static_cast<const CEGUI::OpenGLTexture&>(textureIn).getOpenGLTexture());
 }
 
-IMPrimitive* GL_API::newIMP(std::mutex& lock, GFXDevice& parent) {
+IMPrimitive* GL_API::newIMP(Mutex& lock, GFXDevice& parent) {
     return s_IMPrimitivePool.newElement(lock, parent);
 }
 
-bool GL_API::destroyIMP(std::mutex& lock, IMPrimitive*& primitive) {
+bool GL_API::destroyIMP(Mutex& lock, IMPrimitive*& primitive) {
     if (primitive != nullptr) {
         s_IMPrimitivePool.deleteElement(lock, static_cast<glIMPrimitive*>(primitive));
         primitive = nullptr;

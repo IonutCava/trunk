@@ -284,8 +284,8 @@ public:  // Accessors and Mutators
     static GPURenderer getGPURenderer() noexcept { return s_GPURenderer; }
 
 public:
-    std::mutex&       objectArenaMutex();
-    ObjectArena&      objectArena();
+    Mutex&       objectArenaMutex() noexcept;
+    ObjectArena&      objectArena() noexcept;
 
     /// Create and return a new immediate mode emulation primitive.
     IMPrimitive*       newIMP();
@@ -446,7 +446,7 @@ private:
     PushConstants _textRenderConstants;
     Pipeline* _textRenderPipeline = nullptr;
         
-    std::mutex _graphicsResourceMutex;
+    Mutex _graphicsResourceMutex;
     vectorSTD<std::tuple<GraphicsResource::Type, I64, U64>> _graphicResources;
 
     Rect<I32> _viewport;
@@ -454,7 +454,7 @@ private:
 
     GFXShaderData _gpuBlock;
 
-    std::mutex _debugViewLock;
+    Mutex _debugViewLock;
     vectorSTD<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer = nullptr;
@@ -462,17 +462,17 @@ private:
 
     MemoryPool<GenericDrawCommand> _commandPool;
 
-    std::mutex _descriptorSetPoolLock;
+    Mutex _descriptorSetPoolLock;
     DescriptorSetPool _descriptorSetPool;
     
-    std::mutex _pipelineCacheLock;
+    Mutex _pipelineCacheLock;
     hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager = nullptr;
 
     std::stack<CameraSnapshot> _cameraSnapshots;
 
-    std::mutex _gpuObjectArenaMutex;
-    std::mutex _imprimitiveMutex;
+    Mutex _gpuObjectArenaMutex;
+    Mutex _imprimitiveMutex;
 
     ObjectArena _gpuObjectArena;
 

@@ -51,6 +51,8 @@ class PostAAPreRenderOperator final : public PreRenderOperator {
     PROPERTY_RW(U8, postAAQualityLevel, 2u);
     PROPERTY_RW(bool, useSMAA, false);
 
+    bool ready() const final;
+
   private:
     PROPERTY_INTERNAL(U8, currentPostAAQualityLevel, 2u);
     PROPERTY_INTERNAL(bool, currentUseSMAA, false);

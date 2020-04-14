@@ -21,8 +21,49 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
       _bloomFactor(0.8f),
       _bloomThreshold(0.75f)
 {
-    vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
+    ShaderModuleDescriptor vertModule = {};
+    vertModule._moduleType = ShaderType::VERTEX;
+    vertModule._sourceFile = "baseVertexShaders.glsl";
+    vertModule._variant = "FullScreenQuad";
 
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "bloom.glsl";
+    fragModule._variant = "BloomCalc";
+
+    ShaderProgramDescriptor shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor bloomCalc("BloomCalc");
+    bloomCalc.propertyDescriptor(shaderDescriptor);
+    _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
+    _bloomCalc->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+        pipelineDescriptor._shaderProgramHandle = _bloomCalc->getGUID();
+
+        _bloomCalcPipeline = _context.newPipeline(pipelineDescriptor);
+    });
+
+    fragModule._variant = "BloomApply";
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor bloomApply("BloomApply");
+    bloomApply.propertyDescriptor(shaderDescriptor);
+    bloomApply.threaded(true);
+    bloomApply.waitForReady(false);
+    _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
+    _bloomApply->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+        pipelineDescriptor._shaderProgramHandle = _bloomApply->getGUID();
+        _bloomApplyPipeline = _context.newPipeline(pipelineDescriptor);
+    });
+
+    vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
     vectorSTD<RTAttachmentDescriptor> att = {
         {
             parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(),
@@ -46,42 +87,6 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     desc._resolution = vec2<U16>(res / 4.0f);
     _bloomOutput = _context.renderTargetPool().allocateRT(desc);
 
-    ShaderModuleDescriptor vertModule = {};
-    vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "baseVertexShaders.glsl";
-    vertModule._variant = "FullScreenQuad";
-
-    ShaderModuleDescriptor fragModule = {};
-    fragModule._moduleType = ShaderType::FRAGMENT;
-    fragModule._sourceFile = "bloom.glsl";
-    fragModule._variant = "BloomCalc";
-
-    ShaderProgramDescriptor shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-
-    ResourceDescriptor bloomCalc("BloomCalc");
-    bloomCalc.propertyDescriptor(shaderDescriptor);
-    _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
-
-    fragModule._variant = "BloomApply";
-    shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-
-    ResourceDescriptor bloomApply("BloomApply");
-    bloomApply.propertyDescriptor(shaderDescriptor);
-    _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
-
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _bloomCalc->getGUID();
-
-    _bloomCalcPipeline = _context.newPipeline(pipelineDescriptor);
-
-    pipelineDescriptor._shaderProgramHandle = _bloomApply->getGUID();
-    _bloomApplyPipeline = _context.newPipeline(pipelineDescriptor);
-
     factor(_context.context().config().rendering.postFX.bloomFactor);
 }
 
@@ -89,6 +94,14 @@ BloomPreRenderOperator::~BloomPreRenderOperator() {
     _context.renderTargetPool().deallocateRT(_bloomOutput);
     _context.renderTargetPool().deallocateRT(_bloomBlurBuffer[0]);
     _context.renderTargetPool().deallocateRT(_bloomBlurBuffer[1]);
+}
+
+bool BloomPreRenderOperator::ready() const {
+    if (_bloomCalcPipeline != nullptr && _bloomApplyPipeline != nullptr) {
+        return PreRenderOperator::ready();
+    }
+
+    return false;
 }
 
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {

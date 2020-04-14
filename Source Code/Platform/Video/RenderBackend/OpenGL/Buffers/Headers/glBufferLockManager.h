@@ -70,7 +70,7 @@ class glBufferLockManager : public glLockManager {
     void LockRange(size_t lockBeginBytes, size_t lockLength, U32 frameID);
 
    private:
-    mutable std::mutex _lock;
+    mutable Mutex _lock;
     vectorEASTL<BufferLock> _bufferLocks;
     vectorEASTL<BufferLock> _swapLocks;
 };

@@ -191,6 +191,8 @@ class Kernel : public Input::InputAggregatorInterface,
     POINTER_R(SceneManager, sceneManager, nullptr)
     POINTER_R(RenderPassManager, renderPassManager, nullptr);
 
+    PROPERTY_R_IW(size_t, totalThreadCount, 0);
+
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();

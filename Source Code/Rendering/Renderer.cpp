@@ -24,7 +24,7 @@ namespace {
     constexpr U16 MAX_WIDTH = 3840u;
 
     vec2<U32> GetNumTiles(U8 threadGroupSize) {
-        const U8  TILE_RES = Light::GetThreadGroupSize(threadGroupSize);
+        const U8 TILE_RES = Light::GetThreadGroupSize(threadGroupSize);
 
         return
         {
@@ -33,9 +33,9 @@ namespace {
         };
     }
 
-    U64 GetMaxNumTiles(U8 threadGroupSize) {
-        vec2<U32> tileCount = GetNumTiles(threadGroupSize);
-        return to_U64(tileCount.x) * tileCount.y;
+    U32 GetMaxNumTiles(U8 threadGroupSize) {
+        const vec2<U32> tileCount = GetNumTiles(threadGroupSize);
+        return tileCount.x * tileCount.y;
     }
 };
 
@@ -56,31 +56,34 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     cullDescritpor._modules.push_back(computeDescriptor);
 
     ResourceDescriptor cullShaderDesc("lightCull");
-    cullShaderDesc.threaded(false);
+    cullShaderDesc.threaded(true);
+    cullShaderDesc.waitForReady(false);
     cullShaderDesc.propertyDescriptor(cullDescritpor);
 
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
+    _lightCullComputeShader->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
+        _lightCullPipeline = _context.gfx().newPipeline(pipelineDescriptor);
+    });
 
-    PipelineDescriptor pipelineDescriptor = {};
-    pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
-    _lightCullPipeline = _context.gfx().newPipeline(pipelineDescriptor);
-
-    U64 totalLights = static_cast<U64>(context.config().rendering.numLightsPerScreenTile);
+    U32 totalLights = static_cast<U32>(context.config().rendering.numLightsPerScreenTile);
     totalLights *= GetMaxNumTiles(config.rendering.lightThreadGroupSize);
-
-    vectorEASTL<I32> initData(totalLights, -1);
+    I32* bufferData = MemoryManager_NEW I32[totalLights];
+    std::memset(bufferData, -1, totalLights * sizeof(I32));
 
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-    bufferDescriptor._elementCount = to_U32(initData.size());
+    bufferDescriptor._elementCount = totalLights;
     bufferDescriptor._elementSize = sizeof(I32);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
     bufferDescriptor._name = "PER_TILE_LIGHT_INDEX";
-    bufferDescriptor._initialData = initData.data();
+    bufferDescriptor._initialData = bufferData;
     _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
+    MemoryManager::DELETE_ARRAY(bufferData);
 
     _postFX = std::make_unique<PostFX>(context, cache);
     if (config.rendering.postFX.PostAAQualityLevel > 0) {

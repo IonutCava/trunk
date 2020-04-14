@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-    ThreadPool::ThreadPool(TaskPool& parent, const U8 threadCount)
+    ThreadPool::ThreadPool(TaskPool& parent, const U32 threadCount)
         : _parent(parent),
           _isRunning(true)
     {
@@ -60,10 +60,10 @@ namespace Divide {
         _parent.onThreadDestroy(threadID);
     }
 
-    BlockingThreadPool::BlockingThreadPool(TaskPool& parent, const U8 threadCount)
+    BlockingThreadPool::BlockingThreadPool(TaskPool& parent, const U32 threadCount)
         : ThreadPool(parent, threadCount)
     {
-        for (U8 idx = 0; idx < threadCount; ++idx) {
+        for (U32 idx = 0; idx < threadCount; ++idx) {
             _threads.push_back(std::thread([&]
             {
                 const std::thread::id threadID = std::this_thread::get_id();
@@ -104,10 +104,10 @@ namespace Divide {
         _tasksLeft.fetch_sub(1);
     }
 
-    LockFreeThreadPool::LockFreeThreadPool(TaskPool& parent, const U8 threadCount)
+    LockFreeThreadPool::LockFreeThreadPool(TaskPool& parent, const U32 threadCount)
         : ThreadPool(parent, threadCount)
     {
-        for (U8 idx = 0; idx < threadCount; ++idx) {
+        for (U32 idx = 0; idx < threadCount; ++idx) {
             _threads.push_back(std::thread([&]
             {
                 const std::thread::id threadID = std::this_thread::get_id();

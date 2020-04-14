@@ -209,7 +209,7 @@ void NavigationMesh::buildInternal(const Task& parentTask) {
                          Time::MicrosecondsToSeconds<F32>(importTimer.get()));
 
         {
-            std::lock_guard<std::mutex> lock (_navigationMeshLock);
+            std::lock_guard<Mutex> lock (_navigationMeshLock);
             // Copy new NavigationMesh into old.
             dtNavMesh* old = _navMesh;
             // I am trusting that this is atomic.
@@ -669,7 +669,7 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
         return false;
     }
 
-    std::lock_guard<std::mutex> lock(_navigationMeshLock);
+    std::lock_guard<Mutex> lock(_navigationMeshLock);
     temp = dtAllocNavMesh();
 
     if (!temp) {
@@ -727,7 +727,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
         return false;
     }
 
-    std::lock_guard<std::mutex> lock(_navigationMeshLock);
+    std::lock_guard<Mutex> lock(_navigationMeshLock);
 
     // Store header.
     NavMeshSetHeader header;

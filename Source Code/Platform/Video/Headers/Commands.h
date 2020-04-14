@@ -47,7 +47,7 @@ constexpr size_t g_commandPoolSizeFactor = 256;
 
 template<typename T>
 struct CmdAllocator {
-    static std::mutex s_PoolMutex;
+    static Mutex s_PoolMutex;
     static MemoryPool<T, prevPOW2(sizeof(T) * g_commandPoolSizeFactor)> s_Pool;
 
     template <class... Args>

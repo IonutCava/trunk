@@ -44,7 +44,7 @@ class ThreadPool
 {
 public:
 
-    explicit ThreadPool(TaskPool& parent, const U8 threadCount);
+    explicit ThreadPool(TaskPool& parent, const U32 threadCount);
     virtual ~ThreadPool();
 
     // Add a new task to the pool's queue
@@ -76,7 +76,7 @@ class BlockingThreadPool final : public ThreadPool
 {
 public:
 
-    explicit BlockingThreadPool(TaskPool& parent, const U8 threadCount);
+    explicit BlockingThreadPool(TaskPool& parent, const U32 threadCount);
     ~BlockingThreadPool() = default;
 
     // Add a new task to the pool's queue
@@ -92,7 +92,7 @@ class LockFreeThreadPool final : public ThreadPool
 {
 public:
 
-    explicit LockFreeThreadPool(TaskPool& parent, const U8 threadCount);
+    explicit LockFreeThreadPool(TaskPool& parent, const U32 threadCount);
     ~LockFreeThreadPool() = default;
 
     // Add a new task to the pool's queue

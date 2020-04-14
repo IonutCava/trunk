@@ -179,7 +179,7 @@ namespace Divide {
     using DescriptorSetPool = MemoryPool<DescriptorSet, nextPOW2(sizeof(DescriptorSet) * 256)>;
 
     struct DeleteDescriptorSet {
-        DeleteDescriptorSet(std::mutex& lock, DescriptorSetPool& context) noexcept
+        DeleteDescriptorSet(Mutex& lock, DescriptorSetPool& context) noexcept
             : _lock(lock),
               _context(context)
         {
@@ -190,7 +190,7 @@ namespace Divide {
             _context.deleteElement(res);
         }
 
-        std::mutex& _lock;
+        Mutex& _lock;
         DescriptorSetPool& _context;
     };
 

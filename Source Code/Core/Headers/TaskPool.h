@@ -69,7 +69,7 @@ public:
     explicit TaskPool();
     ~TaskPool();
     
-    bool init(U8 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate = {}, const stringImpl& workerName = "DVD_WORKER");
+    bool init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate = {}, const stringImpl& workerName = "DVD_WORKER");
     void shutdown();
 
     void flushCallbackQueue();
@@ -77,7 +77,7 @@ public:
 
     Task* createTask(Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
-    inline U8 workerThreadCount() const noexcept {
+    inline U32 workerThreadCount() const noexcept {
         return _workerThreadCount;
     }
 
@@ -122,7 +122,7 @@ public:
      std::atomic_uint _runningTaskCount;
      std::atomic_uint _threadCount;
      std::atomic_bool _stopRequested = false;
-     U8 _workerThreadCount;
+     U32 _workerThreadCount;
 };
 
 Task* CreateTask(TaskPool& pool, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);

@@ -327,7 +327,7 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorEASTL<IMPrimitive*> _octreePrimitives;
        vectorEASTL<BoundingBox> _octreeBoundingBoxes;
 
-       //mutable std::mutex _perFrameArenaMutex;
+       //mutable Mutex _perFrameArenaMutex;
        //mutable MyArena<Config::REQUIRED_RAM_SIZE / 3> _perFrameArena;
 };
 

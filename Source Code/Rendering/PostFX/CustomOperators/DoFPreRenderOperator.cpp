@@ -16,18 +16,6 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     _focalDepth(0.5f),
     _autoFocus(true)
 {
-    vectorSTD<RTAttachmentDescriptor> att = {
-        { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
-    };
-
-    RenderTargetDescriptor desc = {};
-    desc._name = "DoF";
-    desc._resolution = vec2<U16>(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
-    desc._attachmentCount = to_U8(att.size());
-    desc._attachments = att.data();
-
-    _samplerCopy = _context.renderTargetPool().allocateRT(desc);
-
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "baseVertexShaders.glsl";
@@ -42,8 +30,23 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor dof("DepthOfField");
+    dof.threaded(true);
+    dof.waitForReady(false);
     dof.propertyDescriptor(shaderDescriptor);
     _dofShader = CreateResource<ShaderProgram>(cache, dof);
+
+    vectorSTD<RTAttachmentDescriptor> att = {
+        { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
+    };
+
+    RenderTargetDescriptor desc = {};
+    desc._name = "DoF";
+    desc._resolution = vec2<U16>(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
+    desc._attachmentCount = to_U8(att.size());
+    desc._attachments = att.data();
+
+    _samplerCopy = _context.renderTargetPool().allocateRT(desc);
+
     focalDepth(0.5f);
     autoFocus(true);
     _constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(desc._resolution.width, desc._resolution.height));
@@ -51,6 +54,14 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
 
 DoFPreRenderOperator::~DoFPreRenderOperator()
 {
+}
+
+bool DoFPreRenderOperator::ready() const {
+    if (_dofShader->getState() == ResourceState::RES_LOADED) {
+        return PreRenderOperator::ready();
+    }
+
+    return false;
 }
 
 void DoFPreRenderOperator::reshape(U16 width, U16 height) {

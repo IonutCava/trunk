@@ -59,10 +59,22 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         shaderDescriptor._modules.push_back(fragModule);
 
         ResourceDescriptor blurDepthMapShader(Util::StringFormat("GaussBlur_%d_invocations", Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT).c_str());
-        blurDepthMapShader.threaded(false);
+        blurDepthMapShader.threaded(true);
+        blurDepthMapShader.waitForReady(false);
         blurDepthMapShader.propertyDescriptor(shaderDescriptor);
 
         _blurDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), blurDepthMapShader);
+        _blurDepthMapShader->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+            PipelineDescriptor pipelineDescriptor = {};
+            pipelineDescriptor._stateHash = _context.get2DStateBlock();
+
+            pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH"));
+            pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getGUID();
+            _horzBlurPipeline = _context.newPipeline(pipelineDescriptor);
+
+            pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
+            _vertBlurPipeline = _context.newPipeline(pipelineDescriptor);
+        });
     }
 
     PipelineDescriptor pipelineDescriptor = {};
@@ -104,13 +116,6 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     _shaderConstants.set(_ID("layerCount"), GFX::PushConstantType::INT, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
     _shaderConstants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, (I32)0);
     _shaderConstants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, (I32)0);
-
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH"));
-    pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getGUID();
-    _horzBlurPipeline = _context.newPipeline(pipelineDescriptor);
-
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
-    _vertBlurPipeline = _context.newPipeline(pipelineDescriptor);
 
     std::array<vec2<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> blurSizes;
     blurSizes.fill(vec2<F32>(1.0f / g_shadowSettings.shadowMapResolution) /** g_shadowSettings.softness*/);
@@ -210,6 +215,8 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
 
         _blurBuffer = _context.renderTargetPool().allocateRT(desc);
     }
+
+    WAIT_FOR_CONDITION(_vertBlurPipeline != nullptr);
 }
 
 CascadedShadowMapsGenerator::~CascadedShadowMapsGenerator()

@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-std::shared_mutex ResourceLoadLock::s_hashLock;
+SharedMutex ResourceLoadLock::s_hashLock;
 std::unordered_set<size_t> ResourceLoadLock::s_loadingHashes;
 
 ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded)
@@ -17,10 +17,10 @@ ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context, const 
 {
     while (true) {
         {
-            std::shared_lock<std::shared_mutex> r_lock(s_hashLock);
+            SharedLock<SharedMutex> r_lock(s_hashLock);
             if (std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), hash) == std::cend(s_loadingHashes)) {
                 r_lock.unlock();
-                std::unique_lock<std::shared_mutex> u_lock(s_hashLock);
+                UniqueLock<SharedMutex> u_lock(s_hashLock);
                 if (std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), hash) == std::cend(s_loadingHashes)) {
                     s_loadingHashes.insert(_loadingHash);
                     return;
@@ -35,7 +35,7 @@ ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context, const 
 
 ResourceLoadLock::~ResourceLoadLock()
 {
-    std::unique_lock<std::shared_mutex> w_lock(s_hashLock);
+    UniqueLock<SharedMutex> w_lock(s_hashLock);
     s_loadingHashes.erase(std::find(std::cbegin(s_loadingHashes), std::cend(s_loadingHashes), _loadingHash));
 }
 

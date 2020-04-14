@@ -54,6 +54,8 @@ class BloomPreRenderOperator : public PreRenderOperator {
     inline F32 luminanceThreshold() const { return _bloomThreshold; }
     void luminanceThreshold(F32 val);
 
+    bool ready() const final;
+
    private:
     RenderTargetHandle _bloomOutput;
     RenderTargetHandle _bloomBlurBuffer[2];
