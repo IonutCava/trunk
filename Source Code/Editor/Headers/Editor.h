@@ -198,6 +198,7 @@ class Editor : public PlatformContextComponent,
 
     inline ImGuiContext& imguiContext();
 
+    U32 saveItemCount() const;
     PROPERTY_R_IW(bool, unsavedSceneChanges, false);
 
   protected: // attorney
@@ -205,7 +206,7 @@ class Editor : public PlatformContextComponent,
     void drawMenuBar();
     void drawStatusBar();
 
-    bool saveSceneChanges();
+    bool saveSceneChanges(DELEGATE<void, const char*> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
     void updateCameraSnapshot();
     // Returns true if the window was closed
     bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal);
@@ -383,6 +384,10 @@ namespace Attorney {
             return editor._gizmo->enabled();
         }
 
+        static U32 saveItemCount(const Editor& editor) noexcept {
+            return editor.saveItemCount();
+        }
+
         static bool hasUnsavedSceneChanges(const Editor& editor) noexcept {
             return editor.unsavedSceneChanges();
         }
@@ -391,8 +396,8 @@ namespace Attorney {
             editor.unsavedSceneChanges(true);
         }
 
-        static bool saveSceneChanges(Editor& editor) {
-            return editor.saveSceneChanges();
+        static bool saveSceneChanges(Editor& editor, DELEGATE<void, const char*> msgCallback = {}, DELEGATE<void, bool> finishCallback = {}) {
+            return editor.saveSceneChanges(msgCallback, finishCallback);
         }
 
         static void inspectMemory(Editor& editor, std::pair<bufferPtr, size_t> data) noexcept {

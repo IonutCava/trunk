@@ -188,7 +188,7 @@ class Scene : public Resource, public PlatformContextComponent {
     inline const LightPool& lightPool() const noexcept { return *_lightPool; }
 
     // can save at any time, I guess?
-    virtual bool saveXML() const;
+    virtual bool saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) const;
 
    protected:
 

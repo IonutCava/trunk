@@ -21,6 +21,19 @@
 
 namespace Divide {
 namespace {
+    const stringImpl s_messages[] = {
+        "Please wait while saving current scene! App may appear frozen or stuttery for up to 30 seconds ...",
+        "Saved scene succesfully",
+        "Failed to save the current scene"
+    };
+
+    struct SaveSceneParams {
+        stringImpl _saveMessage = "";
+        U32 _saveElementCount = 0u;
+        U32 _saveProgress = 0u;
+        bool _closePopup = false;
+    } g_saveSceneParams;
+
     const char* UsageToString(RenderTargetUsage usage) {
         switch (usage) {
             case RenderTargetUsage::EDITOR: return "Editor";
@@ -144,6 +157,29 @@ void MenuBar::draw() {
                 ImGui::EndPopup();
             }
         }
+        if (_savePopup) {
+            ImGui::OpenPopup("Saving Scene");
+            if (ImGui::BeginPopupModal("Saving Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                constexpr U32 maxSize = 40u;
+                const U32 ident = MAP(g_saveSceneParams._saveProgress, 0u, g_saveSceneParams._saveElementCount, 0u, maxSize - 5u /*overestimate a bit*/);
+
+                ImGui::Text("Saving Scene!\n\n%s", g_saveSceneParams._saveMessage.c_str());
+                ImGui::Separator();
+
+                stringImpl progress = "";
+                for (U32 i = 0; i < maxSize; ++i) {
+                    progress.append(i < ident ? "=" : " ");
+                }
+                ImGui::Text("[%s]", progress.c_str());
+                ImGui::Separator();
+
+                if (g_saveSceneParams._closePopup) {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
     }
 }
 
@@ -166,7 +202,23 @@ void MenuBar::drawFileMenu() {
         }
 
         if (ImGui::MenuItem(hasUnsavedElements ? "Save Scene*" : "Save Scene")) {
-            if (!Attorney::EditorGeneralWidget::saveSceneChanges(_context.editor())) {
+            _savePopup = true;
+            g_saveSceneParams._closePopup = false;
+            g_saveSceneParams._saveProgress = 0u;
+            g_saveSceneParams._saveElementCount = Attorney::EditorGeneralWidget::saveItemCount(_context.editor());
+
+            const auto messageCbk = [](const char* msg) {
+                g_saveSceneParams._saveMessage = msg;
+                ++g_saveSceneParams._saveProgress;
+            };
+
+            const auto closeDialog = [this](bool success) {
+                Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), s_messages[success ? 1 : 2], Time::SecondsToMilliseconds<F32>(6));
+                g_saveSceneParams._closePopup = true;
+            };
+
+            Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), s_messages[0], Time::SecondsToMilliseconds<F32>(6));
+            if (!Attorney::EditorGeneralWidget::saveSceneChanges(_context.editor(), messageCbk, closeDialog)) {
                 _errorMsg.append("Error occured while saving the current scene!\n Try again or check the logs for errors!\n");
             }
         }

@@ -282,7 +282,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void RemoveComponents(U32 componentMask);
 
         /// Serialization: save to XML file
-        void saveToXML(const Str256& sceneLocation) const;
+        void saveToXML(const Str256& sceneLocation, DELEGATE<void, const char*> msgCallback = {}) const;
         /// Serialization: load from XML file (expressed as a boost property_tree)
         void loadFromXML(const boost::property_tree::ptree& pt);
 

@@ -195,7 +195,7 @@ void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) {
 }
 
 
-bool Scene::saveXML() const {
+bool Scene::saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) const {
     using boost::property_tree::ptree;
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_START")), resourceName().c_str());
@@ -206,6 +206,10 @@ bool Scene::saveXML() const {
     const Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
     const Str256 sceneDataFile(sceneLocation + ".xml");
 
+    if (msgCallback) {
+        msgCallback("Validating directory structure ...");
+    }
+
     createDirectory((sceneLocation + "/collisionMeshes/").c_str());
     createDirectory((sceneLocation + "/navMeshes/").c_str());
     createDirectory((sceneLocation + "/nodes/").c_str());
@@ -213,6 +217,10 @@ bool Scene::saveXML() const {
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
     {
+        if (msgCallback) {
+            msgCallback("Saving scene settings ...");
+        }
+
         ParamHandler& par = ParamHandler::instance();
 
         ptree pt;
@@ -254,10 +262,17 @@ bool Scene::saveXML() const {
         copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true);
         write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
     }
-    sceneGraph().saveToXML();
+
+    if (msgCallback) {
+        msgCallback("Saving scene graph data ...");
+    }
+    sceneGraph().saveToXML(msgCallback);
 
     //save music
     {
+        if (msgCallback) {
+            msgCallback("Saving music data ...");
+        }
         ptree pt;
         copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true);
         write_xml((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt, std::locale(), settings);
@@ -265,6 +280,9 @@ bool Scene::saveXML() const {
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_END")), resourceName().c_str());
 
+    if (finishCallback) {
+        finishCallback(true);
+    }
     return true;
 }
 

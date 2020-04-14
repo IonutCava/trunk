@@ -54,7 +54,7 @@ class TextLabelStyle : public Hashable {
     using TextLabelStyleMap = hashMap<size_t, TextLabelStyle>;
     static TextLabelStyleMap s_textLabelStyle;
     static SharedMutex s_textLableStyleMutex;
-    static size_t s_defaultCacheValue;
+    static size_t s_defaultHashValue;
 
     using FontNameHashMap = hashMap<size_t, Str64>;
     static FontNameHashMap s_fontName;

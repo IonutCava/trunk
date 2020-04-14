@@ -53,8 +53,6 @@ namespace TypeUtil {
 
 class RenderStateBlock : public GUIDWrapper, public Hashable {
     public:
-        using RenderStateMap = hashMap<size_t, RenderStateBlock, NoHash<size_t>>;
-
        static void clear();
        /// Retrieve a state block by hash value.
        /// If the hash value doesn't exist in the state block map, return the default state block
@@ -68,9 +66,10 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
        static bool loadFromXML(size_t stateHash, const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
     protected:
+        using RenderStateMap = hashMap<size_t, RenderStateBlock, NoHash<size_t>>;
         static RenderStateMap s_stateBlockMap;
         static SharedMutex s_stateBlockMapMutex;
-        static size_t s_defaultCacheValue;
+        static size_t s_defaultHashValue;
 
     public:
         RenderStateBlock() noexcept;

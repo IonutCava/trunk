@@ -535,8 +535,8 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
 
     _saveTimer += deltaTimeUS;
 
-    if (_saveTimer >= Time::SecondsToMicroseconds(5)) {
-        saveActiveScene(true);
+    if (_saveTimer >= Time::SecondsToMicroseconds(Config::Build::IS_DEBUG_BUILD ? 5 : 10)) {
+        saveActiveScene(true, true);
         _saveTimer = 0ULL;
     }
 }
@@ -867,41 +867,48 @@ bool LoadSave::loadScene(Scene& activeScene) {
     return false;
 }
 
-bool LoadSave::saveScene(const Scene& activeScene, bool toCache) {
+bool LoadSave::saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) {
     if (!toCache) {
-        return activeScene.saveXML();
+        return activeScene.saveXML(msgCallback, finishCallback);
     }
 
+    bool ret = false;
     if (activeScene.state().saveLoadDisabled()) {
-        return true;
+        ret = true;
+    } else {
+        const Str128& sceneName = activeScene.resourceName();
+        const Str256 path = Paths::g_saveLocation + sceneName + "/";
+        const char* saveFile = "current_save.sav";
+        const char* bakSaveFile = "save.bak";
+
+        if (fileExists((path + saveFile).c_str())) {
+            copyFile(path.c_str(), saveFile, path.c_str(), bakSaveFile, true);
+        }
+
+        ByteBuffer save;
+        if (Attorney::SceneLoadSave::save(activeScene, save)) {
+            ret = save.dumpToFile(path.c_str(), saveFile);
+        }
     }
-
-    const Str128& sceneName = activeScene.resourceName();
-    const Str256 path = Paths::g_saveLocation + sceneName + "/";
-    const char* saveFile = "current_save.sav";
-    const char* bakSaveFile = "save.bak";
-
-    if (fileExists((path + saveFile).c_str())) {
-        copyFile(path.c_str(), saveFile, path.c_str(), bakSaveFile, true);
+    if (finishCallback) {
+        finishCallback(ret);
     }
-
-    ByteBuffer save;
-    if (Attorney::SceneLoadSave::save(activeScene, save)) {
-        return save.dumpToFile(path.c_str(), saveFile);
-    }
-
-    return false;
+    return ret;
 }
 
-bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
+bool SceneManager::saveActiveScene(bool toCache, bool deferred, DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) {
     OPTICK_EVENT();
 
     const Scene& activeScene = getActiveScene();
 
     if (_saveTask != nullptr) {
-        if_constexpr(Config::Build::IS_DEBUG_BUILD) {
-            if (!Finished(*_saveTask)) {
-                DebugBreak();
+        if (!Finished(*_saveTask)) {
+            if (toCache) {
+                return false;
+            } else {
+                if_constexpr(Config::Build::IS_DEBUG_BUILD) {
+                    DebugBreak();
+                }
             }
         }
         Wait(*_saveTask);
@@ -910,8 +917,8 @@ bool SceneManager::saveActiveScene(bool toCache, bool deferred) {
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::LOW_PRIORITY);
     _saveTask = CreateTask(pool,
                            nullptr,
-                           [&activeScene, toCache](const Task& parentTask) {
-                               LoadSave::saveScene(activeScene, toCache);
+                           [&activeScene, msgCallback, finishCallback, toCache](const Task& parentTask) {
+                               LoadSave::saveScene(activeScene, toCache, msgCallback, finishCallback);
                            });
     Start(*_saveTask, deferred ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 

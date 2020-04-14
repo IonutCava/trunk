@@ -14,36 +14,6 @@
 
 namespace Divide {
 
-namespace TypeUtil {
-    const char* WrapModeToString(TextureWrap wrapMode) noexcept {
-        return Names::textureWrap[to_base(wrapMode)];
-    }
-
-    TextureWrap StringToWrapMode(const stringImpl& wrapMode) {
-        for (U8 i = 0; i < to_U8(TextureWrap::COUNT); ++i) {
-            if (strcmp(wrapMode.c_str(), Names::textureWrap[i]) == 0) {
-                return static_cast<TextureWrap>(i);
-            }
-        }
-
-        return TextureWrap::COUNT;
-    }
-
-    const char* TextureFilterToString(TextureFilter filter) noexcept {
-        return Names::textureFilter[to_base(filter)];
-    }
-
-    TextureFilter StringToTextureFilter(const stringImpl& filter) {
-        for (U8 i = 0; i < to_U8(TextureFilter::COUNT); ++i) {
-            if (strcmp(filter.c_str(), Names::textureFilter[i]) == 0) {
-                return static_cast<TextureFilter>(i);
-            }
-        }
-
-        return TextureFilter::COUNT;
-    }
-};
-
 const char* Texture::s_missingTextureFileName = nullptr;
 
 Texture::Texture(GFXDevice& context,
@@ -358,23 +328,4 @@ U16 Texture::computeMipCount(U16 width, U16 height) noexcept {
     return to_U16(std::floorf(std::log2f(std::fmaxf(to_F32(width), to_F32(height)))));
 }
 
-namespace XMLParser {
-    void saveToXML(const SamplerDescriptor& sampler, const stringImpl& entryName, boost::property_tree::ptree& pt) {
-        pt.put(entryName + ".Map.<xmlattr>.U", TypeUtil::WrapModeToString(sampler.wrapU()));
-        pt.put(entryName + ".Map.<xmlattr>.V", TypeUtil::WrapModeToString(sampler.wrapV()));
-        pt.put(entryName + ".Map.<xmlattr>.W", TypeUtil::WrapModeToString(sampler.wrapW()));
-        pt.put(entryName + ".Filter.<xmlattr>.min", TypeUtil::TextureFilterToString(sampler.minFilter()));
-        pt.put(entryName + ".Filter.<xmlattr>.mag", TypeUtil::TextureFilterToString(sampler.magFilter()));
-        pt.put(entryName + ".anisotropy", to_U32(sampler.anisotropyLevel()));
-    }
-
-    void loadFromXML(SamplerDescriptor& sampler, const stringImpl& entryName, const boost::property_tree::ptree& pt) {
-        sampler.wrapU(TypeUtil::StringToWrapMode(pt.get<stringImpl>(entryName + ".Map.<xmlattr>.U", TypeUtil::WrapModeToString(TextureWrap::REPEAT))));
-        sampler.wrapV(TypeUtil::StringToWrapMode(pt.get<stringImpl>(entryName + ".Map.<xmlattr>.V", TypeUtil::WrapModeToString(TextureWrap::REPEAT))));
-        sampler.wrapW(TypeUtil::StringToWrapMode(pt.get<stringImpl>(entryName + ".Map.<xmlattr>.W", TypeUtil::WrapModeToString(TextureWrap::REPEAT))));
-        sampler.minFilter(TypeUtil::StringToTextureFilter(pt.get<stringImpl>(entryName + ".Filter.<xmlattr>.min", TypeUtil::TextureFilterToString(TextureFilter::LINEAR))));
-        sampler.magFilter(TypeUtil::StringToTextureFilter(pt.get<stringImpl>(entryName + ".Filter.<xmlattr>.mag", TypeUtil::TextureFilterToString(TextureFilter::LINEAR))));
-        sampler.anisotropyLevel(to_U8(pt.get(entryName + ".anisotropy", 0U)));
-    }
-};
 };

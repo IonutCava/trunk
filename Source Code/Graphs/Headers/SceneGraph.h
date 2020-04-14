@@ -124,11 +124,13 @@ class SceneGraph : private NonCopyable,
         }
     }
 
+    inline U32 getTotalNodeCount() const noexcept { return to_U32(_allNodes.size()); }
+
     void onNetworkSend(U32 frameCount);
 
     void postLoad();
 
-    void saveToXML() const;
+    void saveToXML(DELEGATE<void, const char*> msgCallback) const;
     void loadFromXML();
 
     ECSManager& GetECSManager() noexcept { return *_ecsManager; }

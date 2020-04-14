@@ -1245,8 +1245,8 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
     }
 }
 
-bool Editor::saveSceneChanges() {
-    if (_context.kernel().sceneManager()->saveActiveScene(false, false)) {
+bool Editor::saveSceneChanges(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) {
+    if (_context.kernel().sceneManager()->saveActiveScene(false, true, msgCallback, finishCallback)) {
         if (saveToXML()) {
             _context.config().save();
             return true;
@@ -1256,6 +1256,14 @@ bool Editor::saveSceneChanges() {
     return false;
 }
 
+U32 Editor::saveItemCount() const {
+    U32 ret = 10u; // All of the scene stuff (settings, music, etc)
+
+    const SceneGraph& graph = _context.kernel().sceneManager()->getActiveScene().sceneGraph();
+    ret += graph.getTotalNodeCount();
+
+    return ret;
+}
 
 bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
 

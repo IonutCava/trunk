@@ -154,10 +154,5 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     static const char* s_missingTextureFileName;
 };
 
-namespace XMLParser {
-    void saveToXML(const SamplerDescriptor& sampler, const stringImpl& entryName, boost::property_tree::ptree& pt);
-    void loadFromXML(SamplerDescriptor& sampler, const stringImpl& entryName, const boost::property_tree::ptree& pt);
-};
-
 };  // namespace Divide
 #endif // _TEXTURE_H_

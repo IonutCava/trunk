@@ -6,7 +6,7 @@ namespace Divide {
 
 TextLabelStyle::TextLabelStyleMap TextLabelStyle::s_textLabelStyle;
 SharedMutex TextLabelStyle::s_textLableStyleMutex = {};
-size_t TextLabelStyle::s_defaultCacheValue = 0;
+size_t TextLabelStyle::s_defaultHashValue = 0;
 
 TextLabelStyle::FontNameHashMap TextLabelStyle::s_fontName;
 
@@ -25,8 +25,8 @@ TextLabelStyle::TextLabelStyle(const char* font,
     _dirty(true)
 {
     // First one found
-    if (s_defaultCacheValue == 0) {
-        s_defaultCacheValue = getHash();
+    if (s_defaultHashValue == 0) {
+        s_defaultHashValue = getHash();
 
         s_fontName[_ID(Font::DIVIDE_DEFAULT)] = Font::DIVIDE_DEFAULT;
         s_fontName[_ID(Font::BATANG)] = Font::BATANG;
@@ -83,7 +83,7 @@ const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash, bool& style
         return it->second;
     }
 
-    return s_textLabelStyle.find(s_defaultCacheValue)->second;
+    return s_textLabelStyle.find(s_defaultHashValue)->second;
 }
 
 const Str64& TextLabelStyle::fontName(size_t fontNameHash) {

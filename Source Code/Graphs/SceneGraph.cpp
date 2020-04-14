@@ -345,7 +345,7 @@ namespace {
     }
 };
 
-void SceneGraph::saveToXML() const {
+void SceneGraph::saveToXML(DELEGATE<void, const char*> msgCallback) const {
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
@@ -359,8 +359,8 @@ void SceneGraph::saveToXML() const {
         write_xml((sceneLocation + "/" + "assets.xml").c_str(), pt, std::locale(), settings);
     }
 
-    getRoot().forEachChild([&sceneLocation](const SceneGraphNode* child, I32 /*childIdx*/) {
-        child->saveToXML(sceneLocation);
+    getRoot().forEachChild([&sceneLocation, &msgCallback](const SceneGraphNode* child, I32 /*childIdx*/) {
+        child->saveToXML(sceneLocation, msgCallback);
     });
 }
 

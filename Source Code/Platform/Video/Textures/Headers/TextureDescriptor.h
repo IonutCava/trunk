@@ -43,28 +43,10 @@ namespace Divide {
 /// We do not define copy constructors as we must define descriptors only with POD
 struct SamplerDescriptor : public Hashable {
    
-    SamplerDescriptor() = default;
+    SamplerDescriptor();
     ~SamplerDescriptor() = default;
 
-    inline size_t getHash() const noexcept override {
-        _hash = 23;
-        Util::Hash_combine(_hash, to_U32(_cmpFunc));
-        Util::Hash_combine(_hash, _useRefCompare);
-        Util::Hash_combine(_hash, to_U32(_wrapU));
-        Util::Hash_combine(_hash, to_U32(_wrapV));
-        Util::Hash_combine(_hash, to_U32(_wrapW));
-        Util::Hash_combine(_hash, to_U32(_minFilter));
-        Util::Hash_combine(_hash, to_U32(_magFilter));
-        Util::Hash_combine(_hash, _minLOD);
-        Util::Hash_combine(_hash, _maxLOD);
-        Util::Hash_combine(_hash, _biasLOD);
-        Util::Hash_combine(_hash, _anisotropyLevel);
-        Util::Hash_combine(_hash, _borderColour.r);
-        Util::Hash_combine(_hash, _borderColour.g);
-        Util::Hash_combine(_hash, _borderColour.b);
-        Util::Hash_combine(_hash, _borderColour.a);
-        return _hash;
-    }
+    size_t getHash() const noexcept override;
 
     inline bool generateMipMaps() const noexcept {
         return minFilter() != TextureFilter::LINEAR &&
@@ -86,12 +68,28 @@ struct SamplerDescriptor : public Hashable {
     /// The value must be in the range [0...255] and is automatically clamped by the max HW supported level
     PROPERTY_RW(U8, anisotropyLevel, 255);
     /// OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
-    PROPERTY_RW(F32, minLOD, -1000.f);
-    PROPERTY_RW(F32, maxLOD, 1000.f);
+    PROPERTY_RW(I32, minLOD, -1000);
+    PROPERTY_RW(I32, maxLOD, 1000);
     /// OpenGL eg: used by TEXTURE_LOD_BIAS
-    PROPERTY_RW(F32, biasLOD, 0.f);
+    PROPERTY_RW(I32, biasLOD, 0);
     /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
     PROPERTY_RW(FColour4, borderColour, DefaultColours::BLACK);
+
+public:
+    static void clear();
+    /// Retrieve a sampler descriptor by hash value.
+    /// If the hash value doesn't exist in the descriptor map, return the default descriptor
+    static const SamplerDescriptor& get(size_t samplerDescriptorHash);
+    /// Returns false if the specified hash is not found in the map
+    static const SamplerDescriptor& get(size_t samplerDescriptorHash, bool& descriptorFound);
+
+protected:
+    using SamplerDescriptorMap = hashMap<size_t, SamplerDescriptor, NoHash<size_t>>;
+    static SamplerDescriptorMap s_samplerDescriptorMap;
+    static SharedMutex s_samplerDescriptorMapMutex;
+
+public:
+    static size_t s_defaultHashValue;
 };
 
 /// Use to define a texture with details such as type, image formats, etc
@@ -180,5 +178,9 @@ class TextureDescriptor final : public PropertyDescriptor {
      vectorSTD<stringImpl> _sourceFileList;
 };
 
+namespace XMLParser {
+    void saveToXML(const SamplerDescriptor& sampler, const stringImpl& entryName, boost::property_tree::ptree& pt);
+    const SamplerDescriptor& loadFromXML(size_t hash, const stringImpl& entryName, const boost::property_tree::ptree& pt);
+};
 };  // namespace Divide
 #endif

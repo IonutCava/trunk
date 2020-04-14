@@ -8,7 +8,7 @@ namespace Divide {
 
 RenderStateBlock::RenderStateMap RenderStateBlock::s_stateBlockMap;
 SharedMutex RenderStateBlock::s_stateBlockMapMutex;
-size_t RenderStateBlock::s_defaultCacheValue = 0;
+size_t RenderStateBlock::s_defaultHashValue = 0;
 
 namespace TypeUtil {
     const char* ComparisonFunctionToString(ComparisonFunction func) noexcept {
@@ -68,10 +68,10 @@ RenderStateBlock::RenderStateBlock() noexcept
     : GUIDWrapper()
 {
     setDefaultValues();
-    if (s_defaultCacheValue == 0) {
+    if (s_defaultHashValue == 0) {
         _dirty = true;
-        s_defaultCacheValue = getHash();
-        _hash = s_defaultCacheValue;
+        s_defaultHashValue = getHash();
+        _hash = s_defaultHashValue;
     }
 }
 
@@ -241,7 +241,7 @@ void RenderStateBlock::setDefaultValues()  noexcept {
     _stencilZFailOp = StencilOperation::KEEP;
     _stencilPassOp = StencilOperation::KEEP;
     _stencilFunc = ComparisonFunction::NEVER;
-    _hash = s_defaultCacheValue;
+    _hash = s_defaultHashValue;
 }
 
 void RenderStateBlock::clear() {
@@ -270,7 +270,7 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool&
         return it->second;
     }
 
-    return s_stateBlockMap.find(s_defaultCacheValue)->second;
+    return s_stateBlockMap.find(s_defaultHashValue)->second;
 }
 
 bool RenderStateBlock::cullEnabled() const noexcept {

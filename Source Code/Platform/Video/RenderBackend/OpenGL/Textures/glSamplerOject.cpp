@@ -11,9 +11,9 @@ GLuint glSamplerObject::construct(const SamplerDescriptor& descriptor) {
     GLuint samplerID = 0;
 
     glCreateSamplers(1, &samplerID);
-    glSamplerParameterf(samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD());
-    glSamplerParameterf(samplerID, GL_TEXTURE_MIN_LOD, descriptor.minLOD());
-    glSamplerParameterf(samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD());
+    glSamplerParameterf(samplerID, GL_TEXTURE_LOD_BIAS, to_F32(descriptor.biasLOD()));
+    glSamplerParameterf(samplerID, GL_TEXTURE_MIN_LOD, to_F32(descriptor.minLOD()));
+    glSamplerParameterf(samplerID, GL_TEXTURE_MAX_LOD, to_F32(descriptor.maxLOD()));
     glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, to_U32(GLUtil::glTextureFilterTable[to_U32(descriptor.minFilter())]));
     glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, to_U32(GLUtil::glTextureFilterTable[to_U32(descriptor.magFilter())]));
     glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_S, to_U32(GLUtil::glWrapTable[to_U32(descriptor.wrapU())]));

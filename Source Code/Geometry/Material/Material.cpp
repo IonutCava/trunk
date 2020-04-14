@@ -1013,9 +1013,9 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
 }
 
 void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
-    stringImpl perStagePath = "", perPassPath = "", perVariantPath = "", fullPath = "";
+    stringImpl perStagePath = "", perPassPath = "", perVariantPath = "", fullPath = "", hashPath = entryName + ".RenderStates.";
 
-    size_t previousHashValue = g_invalidStateHash;
+    std::set<size_t> previousHashValues = {};
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
         perStagePath = entryName + "." + TypeUtil::RenderStageToString(static_cast<RenderStage>(s));
         const StateVariantsPerPass& stageStates = _defaultRenderStates[s];
@@ -1031,9 +1031,9 @@ void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::propert
                 const size_t stateHash = passStates[v];
                 pt.put(fullPath + ".hash", stateHash);
 
-                if (stateHash != g_invalidStateHash && stateHash != previousHashValue) {
-                    RenderStateBlock::saveToXML(RenderStateBlock::get(stateHash), fullPath, pt);
-                    previousHashValue = stateHash;
+                if (stateHash != g_invalidStateHash && previousHashValues.find(stateHash) == std::cend(previousHashValues)) {
+                    RenderStateBlock::saveToXML(RenderStateBlock::get(stateHash), hashPath + to_stringImpl(stateHash), pt);
+                    previousHashValues.insert(stateHash);
                 }
             }
         }
@@ -1041,10 +1041,11 @@ void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::propert
 }
 
 void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
-    stringImpl perStagePath = "", perPassPath = "", perVariantPath = "", fullPath = "";
+    stringImpl perStagePath = "", perPassPath = "", perVariantPath = "", fullPath = "", hashPath = entryName + ".RenderStates.";
+
     RenderStateBlock block = {};
 
-    size_t previousHashValue = g_invalidStateHash;
+    std::set<size_t> loadedHashes = {};
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
         perStagePath = entryName + "." + TypeUtil::RenderStageToString(static_cast<RenderStage>(s));
         StateVariantsPerPass& stageStates = _defaultRenderStates[s];
@@ -1059,14 +1060,14 @@ void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost:
 
                 const size_t stateHash = pt.get<size_t>(fullPath + ".hash", g_invalidStateHash);
                 if (stateHash != g_invalidStateHash) {
-                    if (stateHash != previousHashValue) {
-                        if (RenderStateBlock::loadFromXML(stateHash, fullPath, pt)) {
+                    if (loadedHashes.find(stateHash) == std::cend(loadedHashes)) {
+                        if (RenderStateBlock::loadFromXML(stateHash, hashPath + to_stringImpl(stateHash), pt)) {
                             //Cache miss
                         }
-                        previousHashValue = stateHash;
-                    } else {
-                        passStates[v] = previousHashValue;
+                        loadedHashes.insert(stateHash);
                     }
+
+                    passStates[v] = stateHash;
                 }
             }
         }
@@ -1074,6 +1075,9 @@ void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost:
 }
 
 void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
+    stringImpl hashPath = entryName + ".SamplerDescriptors.";
+
+    std::set<size_t> savedSamplers = {};
     for (U8 i = 0; i < g_materialTexturesCount; ++i) {
         const TextureUsage usage = g_materialTextures[i];
 
@@ -1091,12 +1095,23 @@ void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property
             if (usage == TextureUsage::UNIT1) {
                 pt.put(textureNode + ".usage", TypeUtil::TextureOperationToString(_properties._operation));
             }
-            XMLParser::saveToXML(texture->getCurrentSampler(), textureNode, pt);
+
+            const SamplerDescriptor& sampler = texture->getCurrentSampler();
+            const size_t hash = sampler.getHash();
+
+            pt.put(textureNode + ".Sampler.hash", hash);
+
+            if (savedSamplers.find(hash) == std::cend(savedSamplers)) {
+                XMLParser::saveToXML(sampler, hashPath + to_stringImpl(hash), pt);
+                savedSamplers.insert(hash);
+            }
         }
     }
 }
 
 void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
+    stringImpl hashPath = entryName + ".SamplerDescriptors.";
+
     for (U8 i = 0; i < g_materialTexturesCount; ++i) {
         const TextureUsage usage = g_materialTextures[i];
 
@@ -1109,7 +1124,8 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
             const bool flipped = pt.get(textureNode + ".flipped", false);
 
             if (!texName.empty()) {
-                XMLParser::loadFromXML(sampDesc, textureNode, pt);
+                const size_t hash = pt.get<size_t>(textureNode + ".Sampler.hash", 0);
+                sampDesc = XMLParser::loadFromXML(hash, hashPath + to_stringImpl(hash), pt);
 
                 const stringImpl textureName = texPath + "/" + texName;
                 const Str64 img_name(textureName.substr(textureName.find_last_of('/') + 1).c_str());
