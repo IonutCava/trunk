@@ -209,6 +209,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         typename std::enable_if<std::is_base_of<SceneNode, T>::value, const T&>::type
         getNode() const { return static_cast<const T&>(*_node); }
 
+        const SceneNode_ptr& getNodePtr() const { return _node; }
+
         /// Returns a pointer to a specific component. Returns null if the SGN doesn't have the component requested
         template <typename T>
         inline T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } //< ToDo: Optimise this -Ionut

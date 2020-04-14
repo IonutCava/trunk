@@ -140,10 +140,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void registerTask(Task& taskItem, bool start = true, TaskPriority priority = TaskPriority::DONT_CARE);
     void clearTasks();
     void removeTask(Task& task);
-
-    inline void addSceneGraphToLoad(const vectorEASTL<XML::SceneNode>& graph) {
-        _xmlSceneGraph.insert(eastl::cend(_xmlSceneGraph), eastl::cbegin(graph), eastl::cend(graph));
-    }
+    inline void addSceneGraphToLoad(XML::SceneNode& rootNode) { _xmlSceneGraphRootNode = rootNode; }
 
     void addMusic(MusicType type, const Str64& name, const Str256& srcFile);
 
@@ -295,7 +292,7 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorSTD<D64> _guiTimersMS;
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
-       vectorEASTL<XML::SceneNode> _xmlSceneGraph;
+       XML::SceneNode _xmlSceneGraphRootNode;
 
        F32 _LRSpeedFactor = 1.0f;
        /// Current selection

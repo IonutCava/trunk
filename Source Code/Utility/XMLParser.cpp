@@ -178,10 +178,10 @@ void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const
 
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
 
-    std::function<void(const ptree::value_type& rootNode, SceneNode& graphOut)> readNode;
+    std::function<void(const ptree& rootNode, SceneNode& graphOut)> readNode;
 
-    readNode = [&readNode](const ptree::value_type& rootNode, SceneNode& graphOut) {
-        const ptree& attributes = rootNode.second.get_child("<xmlattr>", empty_ptree());
+    readNode = [&readNode](const ptree& rootNode, SceneNode& graphOut) {
+        const ptree& attributes = rootNode.get_child("<xmlattr>", empty_ptree());
         for (const ptree::value_type& attribute : attributes) {
             if (attribute.first == "name") {
                 graphOut.name = attribute.second.data();
@@ -190,11 +190,11 @@ void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const
             }
         }
         
-        const ptree& children = rootNode.second.get_child("");
+        const ptree& children = rootNode.get_child("");
         for (const ptree::value_type& child : children) {
             if (child.first == "node") {
                 graphOut.children.emplace_back();
-                readNode(child, graphOut.children.back());
+                readNode(child.second, graphOut.children.back());
             }
         }
     };
@@ -202,14 +202,17 @@ void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const
     ptree pt;
     read_xml(file.c_str(), pt);
 
-    vectorEASTL<SceneNode> sceneGraph;
-    for (const ptree::value_type & sceneGraphList : pt.get_child("entities", empty_ptree())){
-        SceneNode& node = sceneGraph.emplace_back();
-        readNode(sceneGraphList, node);
+    auto none = empty_ptree();
+
+    SceneNode rootNode = {};
+    for (const ptree::value_type& sceneGraphList : pt.get_child("entities", none)) {
+        readNode(sceneGraphList.second, rootNode);
         // This may not be needed;
-        assert(Util::CompareIgnoreCase(node.type, "ROOT"));
+        assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
+        break;
     }
-    scene->addSceneGraphToLoad(sceneGraph);
+
+    scene->addSceneGraphToLoad(rootNode);
 }
 
 
