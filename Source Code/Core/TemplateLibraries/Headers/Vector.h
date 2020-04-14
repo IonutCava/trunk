@@ -115,6 +115,13 @@ void unchecked_copy(vectorSTD<T, A>& dst, const vectorSTD<T, A>& src)
     memcpy(dst.data(), src.data(), src.size() * sizeof(T));
 }
 
+template<typename T, typename A>
+void unchecked_copy(vectorEASTL<T, A>& dst, const vectorEASTL<T, A>& src)
+{
+    dst.resize(src.size());
+    memcpy(dst.data(), src.data(), src.size() * sizeof(T));
+}
+
 template<typename T, typename U, typename A>
 vectorSTD<T, A> convert(const vectorSTD<U, A>& data) {
     return vector<T, A>(std::cbegin(data), std::cend(data));

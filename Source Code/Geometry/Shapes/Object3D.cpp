@@ -198,7 +198,7 @@ bool Object3D::computeTriangleList() {
         size_t indiceEnd = indiceCount + partitionOffset;
         vec3<U32> curTriangle;
         _geometryTriangles.reserve(indiceCount / 2);
-        const vectorSTD<U32>& indices = geometry->getIndices();
+        const vectorEASTL<U32>& indices = geometry->getIndices();
         for (size_t i = indiceStart; i < indiceEnd; i++) {
             curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
             // Check for correct winding
@@ -210,7 +210,7 @@ bool Object3D::computeTriangleList() {
     } else if (type == PrimitiveType::TRIANGLES) {
         indiceCount /= 3;
         _geometryTriangles.reserve(indiceCount);
-        const vectorSTD<U32>& indices = geometry->getIndices();
+        const vectorEASTL<U32>& indices = geometry->getIndices();
         for (size_t i = 0; i < indiceCount; i += 3) {
             _geometryTriangles.push_back(vec3<U32>(indices[i + 0],
                                                     indices[i + 1],

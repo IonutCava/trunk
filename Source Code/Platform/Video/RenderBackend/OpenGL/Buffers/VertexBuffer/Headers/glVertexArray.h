@@ -84,8 +84,11 @@ class glVertexArray final : public VertexBuffer,
     bool createInternal() final;
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
     void uploadVBAttributes(GLuint VAO);
-    /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
-    std::pair<bufferPtr, size_t> getMinimalData();
+    
+    /// Calculates the aporpriate attribute offsets and returns the total size of a vertex for this buffer
+    size_t populateAttributeSize();
+
+    bool getMinimalData(const vectorEASTL<Vertex>& dataIn, Byte* dataOut, size_t dataOutBufferLength);
 
     static void cleanup();
 
@@ -102,7 +105,6 @@ class glVertexArray final : public VertexBuffer,
     size_t _prevSize;
     size_t _prevSizeIndices;
     size_t _effectiveEntrySize;
-    ByteBuffer _smallData;
     AttribFlags _useAttribute;
     using AttribValues = std::array<GLuint, to_base(AttribLocation::COUNT)>;
     AttribValues _attributeOffset;

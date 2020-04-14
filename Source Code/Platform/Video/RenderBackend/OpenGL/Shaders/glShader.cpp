@@ -366,7 +366,7 @@ bool glShader::loadFromBinary() {
 }
 
 void glShader::dumpBinary() {
-    if (!valid()) {
+    if (!valid() || _loadedFromBinary) {
         return;
     }
 

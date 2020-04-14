@@ -100,7 +100,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _data.size();
     }
 
-    inline const vectorSTD<Vertex>& getVertices() const noexcept {
+    inline const vectorEASTL<Vertex>& getVertices() const noexcept {
         return _data;
     }
 
@@ -171,7 +171,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _indices[index];
     }
 
-    const vectorSTD<U32>& getIndices() const noexcept {
+    const vectorEASTL<U32>& getIndices() const noexcept {
         return _indices;
     }
 
@@ -181,11 +181,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     template <typename T>
-    inline void addIndices(const vectorSTDFast<T>& indices, bool containsRestartIndex) {
-        std::transform(std::cbegin(indices),
-                        std::cend(indices),
-                        std::back_inserter(_indices),
-                        static_caster<T, U32>());
+    inline void addIndices(const vectorEASTLFast<T>& indices, bool containsRestartIndex) {
+        eastl::transform(eastl::cbegin(indices),
+                         eastl::cend(indices),
+                         eastl::back_inserter(_indices),
+                         static_caster<T, U32>());
 
         if (containsRestartIndex) {
             hasRestartIndex(true);
@@ -201,13 +201,13 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         addIndex((usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L : Config::PRIMITIVE_RESTART_INDEX_S));
      }
 
-    inline void modifyPositionValues(U32 indexOffset, const vectorSTD<vec3<F32>>& newValues) {
+    inline void modifyPositionValues(U32 indexOffset, const vectorEASTL<vec3<F32>>& newValues) {
        assert(indexOffset + newValues.size() - 1 < _data.size());
        DIVIDE_ASSERT(_staticBuffer == false ||
            (_staticBuffer == true && !_data.empty()),
            "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
-       vectorSTD<Vertex>::iterator it = _data.begin() + indexOffset;
+       vectorEASTL<Vertex>::iterator it = _data.begin() + indexOffset;
        for (const vec3<F32>& value : newValues) {
             (it++)->_position.set(value);
        }
@@ -386,10 +386,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     /// The format of the buffer data
     GFXDataFormat _format;
     // first: offset, second: count
-    vectorSTD<std::pair<size_t, size_t> > _partitions;
+    vectorEASTL<std::pair<size_t, size_t> > _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should provide the indices
-    vectorSTD<U32> _indices;
-    vectorSTD<Vertex> _data;
+    vectorEASTL<U32> _indices;
+    vectorEASTL<Vertex> _data;
     /// Cache system to update only required data
     std::array<bool, to_base(AttribLocation::COUNT)> _attribDirty;
     bool _primitiveRestartEnabled;

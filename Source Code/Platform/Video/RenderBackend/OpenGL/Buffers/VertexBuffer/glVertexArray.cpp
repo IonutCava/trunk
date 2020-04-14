@@ -15,40 +15,44 @@ namespace {
 // Once vertex buffers reach a certain size, the for loop grows really really fast up to millions of iterations.
 // Multiple if-checks per loop are not an option, so do some template hacks to speed this function up
 template<bool texCoords, bool normals, bool tangents, bool colour, bool bones>
-void fillSmallData5(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut)
+void fillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut)
 {
     for (const VertexBuffer::Vertex& data : dataIn) {
-        dataOut << data._position;
+        std::memcpy(dataOut, data._position._v, sizeof(data._position));
+        dataOut += sizeof(data._position);
 
         if (texCoords) {
-            dataOut << data._texcoord.s;
-            dataOut << data._texcoord.t;
+            std::memcpy(dataOut, data._texcoord._v, sizeof(data._texcoord));
+            dataOut += sizeof(data._texcoord);
         }
 
         if (normals) {
-            dataOut << data._normal;
+            std::memcpy(dataOut, &data._normal, sizeof(data._normal));
+            dataOut += sizeof(data._normal);
         }
 
         if (tangents) {
-            dataOut << data._tangent;
+            std::memcpy(dataOut, &data._tangent, sizeof(data._tangent));
+            dataOut += sizeof(data._tangent);
         }
 
         if (colour) {
-            dataOut << data._colour.r;
-            dataOut << data._colour.g;
-            dataOut << data._colour.b;
-            dataOut << data._colour.a;
+            std::memcpy(dataOut, data._colour._v, sizeof(data._colour));
+            dataOut += sizeof(data._colour);
         }
 
         if (bones) {
-            dataOut << data._weights.i;
-            dataOut << data._indices.i;
+            std::memcpy(dataOut, &data._weights.i, sizeof(data._weights.i));
+            dataOut += sizeof(data._weights.i);
+
+            std::memcpy(dataOut, &data._indices.i, sizeof(data._indices.i));
+            dataOut += sizeof(data._indices.i);
         }
     }
 }
 
 template <bool texCoords, bool normals, bool tangents, bool colour>
-void fillSmallData4(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool bones)
+void fillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool bones)
 {
     if (bones) {
         fillSmallData5<texCoords, normals, tangents, colour, true>(dataIn, dataOut);
@@ -58,7 +62,7 @@ void fillSmallData4(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& d
 }
 
 template <bool texCoords, bool normals, bool tangents>
-void fillSmallData3(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool colour, bool bones)
+void fillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool colour, bool bones)
 {
     if (colour) {
         fillSmallData4<texCoords, normals, tangents, true>(dataIn, dataOut, bones);
@@ -68,7 +72,7 @@ void fillSmallData3(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& d
 }
 
 template <bool texCoords, bool normals>
-void fillSmallData2(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool tangents, bool colour, bool bones)
+void fillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool tangents, bool colour, bool bones)
 {
     if (tangents) {
         fillSmallData3<texCoords, normals, true>(dataIn, dataOut, colour, bones);
@@ -78,7 +82,7 @@ void fillSmallData2(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& d
 }
 
 template <bool texCoords>
-void fillSmallData1(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool normals, bool tangents, bool colour, bool bones)
+void fillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool normals, bool tangents, bool colour, bool bones)
 {
     if (normals) {
         fillSmallData2<texCoords, true>(dataIn, dataOut, tangents, colour, bones);
@@ -87,7 +91,7 @@ void fillSmallData1(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& d
     }
 }
 
-void fillSmallData(const vectorSTD<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool texCoords, bool normals, bool tangents, bool colour, bool bones)
+void fillSmallData(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool texCoords, bool normals, bool tangents, bool colour, bool bones)
 {
     if (texCoords) {
         fillSmallData1<true>(dataIn, dataOut, normals, tangents, colour, bones);
@@ -140,13 +144,12 @@ void glVertexArray::reset() {
     VertexBuffer::reset();
 }
 
-/// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
-std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
+size_t glVertexArray::populateAttributeSize() {
     const bool useTexcoords = _useAttribute[to_base(AttribLocation::TEXCOORD)];
-    const bool useNormals   = _useAttribute[to_base(AttribLocation::NORMAL)];
-    const bool useTangents  = _useAttribute[to_base(AttribLocation::TANGENT)];
-    const bool useColour    = _useAttribute[to_base(AttribLocation::COLOR)];
-    const bool useBoneData  = _useAttribute[to_base(AttribLocation::BONE_INDICE)];
+    const bool useNormals = _useAttribute[to_base(AttribLocation::NORMAL)];
+    const bool useTangents = _useAttribute[to_base(AttribLocation::TANGENT)];
+    const bool useColour = _useAttribute[to_base(AttribLocation::COLOR)];
+    const bool useBoneData = _useAttribute[to_base(AttribLocation::BONE_INDICE)];
 
     size_t prevOffset = sizeof(vec3<F32>);
 
@@ -177,19 +180,26 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         prevOffset += sizeof(U32);
     }
 
-    _effectiveEntrySize = prevOffset;
+    return prevOffset;
+}
 
-    _smallData.reserve(_data.size() * _effectiveEntrySize);
+/// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
+bool glVertexArray::getMinimalData(const vectorEASTL<Vertex>& dataIn, Byte* dataOut, size_t dataOutBufferLength) {
+    assert(dataOut != nullptr);
 
-    fillSmallData(_data, _smallData, useTexcoords, useNormals, useTangents, useColour, useBoneData);
+    if (dataOutBufferLength == dataIn.size() * _effectiveEntrySize) {
 
-    if (_staticBuffer && !keepData()) {
-        _data.clear();
-    } else {
-        _data.shrink_to_fit();
+        const bool useTexcoords = _useAttribute[to_base(AttribLocation::TEXCOORD)];
+        const bool useNormals = _useAttribute[to_base(AttribLocation::NORMAL)];
+        const bool useTangents = _useAttribute[to_base(AttribLocation::TANGENT)];
+        const bool useColour = _useAttribute[to_base(AttribLocation::COLOR)];
+        const bool useBoneData = _useAttribute[to_base(AttribLocation::BONE_INDICE)];
+        fillSmallData(dataIn, dataOut, useTexcoords, useNormals, useTangents, useColour, useBoneData);
+
+        return true;
     }
 
-    return std::make_pair((bufferPtr)_smallData.contents(), _smallData.size());
+    return false;
 }
 
 /// Create a dynamic or static VB
@@ -233,17 +243,17 @@ bool glVertexArray::refresh() {
     }
     _attribDirty.fill(false);
 
-    const std::pair<bufferPtr, size_t> bufferData = getMinimalData();
+    _effectiveEntrySize = populateAttributeSize();
+    const size_t totalSize = _data.size() * _effectiveEntrySize;
+
     // If any of the VBO's components changed size, we need to recreate the
     // entire buffer.
-
-    size_t size = bufferData.second;
-    const bool sizeChanged = size != _prevSize;
+    const bool sizeChanged = totalSize != _prevSize;
     bool needsReallocation = false;
-    const U32 countRequirement = GLUtil::VBO::getChunkCountForSize(size);
+    const U32 countRequirement = GLUtil::VBO::getChunkCountForSize(totalSize);
     if (sizeChanged) {
         needsReallocation = countRequirement > GLUtil::VBO::getChunkCountForSize(_prevSize);
-        _prevSize = size;
+        _prevSize = totalSize;
     }
 
     if (!_refreshQueued && !sizeChanged) {
@@ -262,16 +272,27 @@ bool glVertexArray::refresh() {
     if (sizeChanged) {
         Console::d_printfn(Locale::get(_ID("DISPLAY_VB_METRICS")),
                            _VBHandle._id,
-                           size,
+                           totalSize,
                            countRequirement * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                            GLUtil::getVBOMemUsage(_VBHandle._id),
                            GLUtil::getVBOCount());
     }
 
     // Allocate sufficient space in our buffer
-    glNamedBufferSubData(_VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, size, bufferData.first);
+    {
+        vectorEASTLFast<Byte> smallData(_data.size() * _effectiveEntrySize);
+        if (getMinimalData(_data, smallData.data(), smallData.size())) {
+            glNamedBufferSubData(_VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, smallData.size(), (bufferPtr)smallData.data());
+        } else {
+            DIVIDE_UNEXPECTED_CALL();
+        }
+    }
 
-    _smallData.clear();
+    if (_staticBuffer && !keepData()) {
+        _data.clear();
+    } else {
+        _data.shrink_to_fit();
+    }
 
     // Check if we need to update the IBO (will be true for the first Refresh() call)
     if (indicesChanged) {
@@ -280,15 +301,14 @@ bool glVertexArray::refresh() {
             // Update our IB
             glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
         } else {
-            vectorSTDFast<U16> smallIndices;
+            vectorEASTL<U16> smallIndices;
             smallIndices.reserve(getIndexCount());
-            std::transform(std::cbegin(_indices),
-                           std::cend(_indices),
-                           std::back_inserter(smallIndices),
-                           static_caster<U32, U16>());
-            bufferPtr data = static_cast<bufferPtr>(smallIndices.data());
+            eastl::transform(eastl::cbegin(_indices),
+                             eastl::cend(_indices),
+                             eastl::back_inserter(smallIndices),
+                             static_caster<U32, U16>());
             // Update our IB
-            glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
+            glNamedBufferData(_IBid, nSizeIndices, (bufferPtr)smallIndices.data(), GL_STATIC_DRAW);
         }
     }
 
