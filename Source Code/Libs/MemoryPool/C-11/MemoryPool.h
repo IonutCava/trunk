@@ -25,6 +25,7 @@
 
 #include <climits>
 #include <cstddef>
+#include "Platform/Threading/Headers/SharedMutex.h"
 
 template <typename T, size_t BlockSize = 4096>
 class MemoryPool
@@ -72,8 +73,8 @@ class MemoryPool
     template <class... Args> pointer newElement(Args&&... args);
     void deleteElement(pointer p);
 
-    template <class... Args> pointer newElement(std::mutex& lock, Args&&... args);
-    void deleteElement(std::mutex& lock, pointer p);
+    template <class... Args> pointer newElement(Divide::Mutex& lock, Args&&... args);
+    void deleteElement(Divide::Mutex& lock, pointer p);
   private:
     union Slot_ {
       value_type element;

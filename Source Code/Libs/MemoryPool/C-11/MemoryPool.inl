@@ -237,11 +237,11 @@ MemoryPool<T, BlockSize>::deleteElement(pointer p)
 template <typename T, size_t BlockSize>
 template <class... Args>
 inline typename MemoryPool<T, BlockSize>::pointer
-MemoryPool<T, BlockSize>::newElement(std::mutex& lock, Args&&... args)
+MemoryPool<T, BlockSize>::newElement(Divide::Mutex& lock, Args&&... args)
 {
     pointer result = nullptr;
     {
-        std::unique_lock<std::mutex> w_lock(lock);
+        Divide::UniqueLock<Divide::Mutex> w_lock(lock);
         result = allocate();
     }
     construct<value_type>(result, std::forward<Args>(args)...);
@@ -252,11 +252,11 @@ MemoryPool<T, BlockSize>::newElement(std::mutex& lock, Args&&... args)
 
 template <typename T, size_t BlockSize>
 inline void
-MemoryPool<T, BlockSize>::deleteElement(std::mutex& lock, pointer p)
+MemoryPool<T, BlockSize>::deleteElement(Divide::Mutex& lock, pointer p)
 {
     if (p != nullptr) {
         p->~value_type();
-        std::unique_lock<std::mutex> w_lock(lock);
+        Divide::UniqueLock<Divide::Mutex> w_lock(lock);
         deallocate(p);
     }
 }

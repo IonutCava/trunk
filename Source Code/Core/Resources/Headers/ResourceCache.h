@@ -43,7 +43,7 @@
 
 namespace Divide {
 
-class ResourceLoadLock {
+class ResourceLoadLock : private NonMovable {
 public:
     explicit ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded);
     ~ResourceLoadLock();
@@ -53,7 +53,7 @@ public:
 private:
     const size_t _loadingHash;
 
-    static SharedMutex s_hashLock;
+    static Mutex s_hashLock;
     static std::unordered_set<size_t> s_loadingHashes;
 };
 /// Resource Cache responsibilities:

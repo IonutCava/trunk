@@ -36,7 +36,7 @@ const char* PostFX::FilterName(FilterType filter) noexcept {
 PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     : PlatformContextComponent(context)
 {
-    std::atomic_int loadTasks = 4;
+    std::atomic_int loadTasks = 0;
 
     ParamHandler::instance().setParam<bool>(_ID_32("postProcessing.enableVignette"), false);
 
@@ -62,22 +62,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     postFXShaderDescriptor._modules.push_back(vertModule);
     postFXShaderDescriptor._modules.push_back(fragModule);
 
-    ResourceDescriptor postFXShader("postProcessing");
-    postFXShader.threaded(true);
-    postFXShader.waitForReady(false);
-    postFXShader.propertyDescriptor(postFXShaderDescriptor);
-    _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
-    _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context, &loadTasks](Resource_wptr res) {
-        PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = context.gfx().get2DStateBlock();
-        pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getGUID();
-
-        _drawCommand._primitiveType = PrimitiveType::TRIANGLES;
-        _drawCommand._drawCount = 1;
-        _drawPipeline = context.gfx().newPipeline(pipelineDescriptor);
-        loadTasks.fetch_sub(1);
-    });
-
     _drawConstants.set(_ID("_noiseTile"), GFX::PushConstantType::FLOAT, 0.1f);
     _drawConstants.set(_ID("_noiseFactor"), GFX::PushConstantType::FLOAT, 0.02f);
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
@@ -94,6 +78,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
     texDescriptor.samplerDescriptor(defaultSampler);
 
+    loadTasks.fetch_add(1);
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.assetName("terrain_water_NM.jpg");
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
@@ -105,6 +90,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
         loadTasks.fetch_sub(1);
     });
 
+    loadTasks.fetch_add(1);
     ResourceDescriptor noiseTexture("noiseTexture");
     noiseTexture.assetName("bruit_gaussien.jpg");
     noiseTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
@@ -116,6 +102,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
         loadTasks.fetch_sub(1);
     });
 
+    loadTasks.fetch_add(1);
     ResourceDescriptor borderTexture("borderTexture");
     borderTexture.assetName("vignette.jpeg");
     borderTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
@@ -134,12 +121,27 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     _randomNoiseCoefficient = 0;
     _randomFlashCoefficient = 0;
 
-    WAIT_FOR_CONDITION(loadTasks.load() == 0);
+    ResourceDescriptor postFXShader("postProcessing");
+    postFXShader.threaded(false);
+    postFXShader.propertyDescriptor(postFXShaderDescriptor);
+    _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
+    _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context, &loadTasks](Resource_wptr res) {
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = context.gfx().get2DStateBlock();
+        pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getGUID();
+
+        _drawCommand._primitiveType = PrimitiveType::TRIANGLES;
+        _drawCommand._drawCount = 1;
+        _drawPipeline = context.gfx().newPipeline(pipelineDescriptor);
+    });
+
     _shaderFunctionList[to_base(FXDisplayFunction::Vignette)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette");
     _shaderFunctionList[to_base(FXDisplayFunction::Noise)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise");
     _shaderFunctionList[to_base(FXDisplayFunction::Underwater)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Underwater");
     _shaderFunctionList[to_base(FXDisplayFunction::Normal)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Normal");
     _shaderFunctionList[to_base(FXDisplayFunction::PassThrough)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "ColourPassThrough");
+
+    WAIT_FOR_CONDITION(loadTasks.load() == 0);
 }
 
 PostFX::~PostFX()

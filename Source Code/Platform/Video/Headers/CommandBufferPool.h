@@ -44,9 +44,12 @@ class CommandBufferPool {
     CommandBuffer* allocateBuffer();
     void deallocateBuffer(CommandBuffer*& buffer);
 
+    void init();
+    void clear();
+
  private:
-    mutable Mutex _mutex;
-    MemoryPool<CommandBuffer, 8192 * 2> _pool;
+    Mutex _mutex;
+    std::unique_ptr<MemoryPool<CommandBuffer, 8192 * 2>> _pool = nullptr;
 };
 
 class ScopedCommandBuffer {
@@ -67,12 +70,11 @@ class ScopedCommandBuffer {
     bool _useSecondaryBuffers;
 };
 
+void initPools();
+void destroyPools();
 ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false);
 CommandBuffer* allocateCommandBuffer(bool useSecondaryBuffers = false);
 void deallocateCommandBuffer(CommandBuffer*& buffer, bool useSecondaryBuffers = false);
-
-static CommandBufferPool s_commandBufferPool;
-static CommandBufferPool s_secondaryCommandBufferPool;
 
 }; //namespace GFX
 }; //namespace Divide

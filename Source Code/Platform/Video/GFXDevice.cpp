@@ -218,6 +218,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     // Initialize the shader manager
     ShaderProgram::onStartup(*this, cache);
     EnvironmentProbe::onStartup(*this);
+    GFX::initPools();
+
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
@@ -798,6 +800,7 @@ void GFXDevice::closeRenderingAPI() {
     RenderStateBlock::clear();
 
     EnvironmentProbe::onShutdown(*this);
+    GFX::destroyPools();
     MemoryManager::SAFE_DELETE(_rtPool);
 
     _previewDepthMapShader = nullptr;

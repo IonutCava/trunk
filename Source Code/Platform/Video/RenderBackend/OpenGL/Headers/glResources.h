@@ -34,10 +34,6 @@
 #define _GL_RESOURCES_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-#ifndef GLBINDING_STATIC
-#define GLBINDING_STATIC
-#endif
-
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 #include <glbinding/gl46/gl.h>

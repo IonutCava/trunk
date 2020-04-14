@@ -33,21 +33,38 @@
 #ifndef _SHARED_MUTEX_BOOST_H_
 #define _SHARED_MUTEX_BOOST_H_
 
+//#define USE_BOOST_LOCKS
+
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
+#if defined(USE_BOOST_LOCKS)
+namespace thread = boost;
+#else
 #include <shared_mutex>
+namespace thread = std;
+#endif
+
 
 namespace Divide {
 
-using Mutex = std::mutex;
-using TimedMutex = std::timed_mutex;
+using Mutex = thread::mutex;
+using TimedMutex = thread::timed_mutex;
 
-using SharedMutex = std::shared_mutex;
-using SharedTimedMutex = std::shared_timed_mutex;
-
-template<typename T>
-using SharedLock = std::shared_lock<T>;
+using SharedMutex = thread::shared_mutex;
+using SharedTimedMutex = thread::shared_timed_mutex;
 
 template<typename T>
-using UniqueLock = std::unique_lock<T>;
+using SharedLock = thread::shared_lock<T>;
+
+template<typename T>
+using UniqueLock = thread::unique_lock<T>;
+
+using UpgradeMutex = boost::shared_mutex;
+using UpgradeWriteLock = boost::unique_lock<UpgradeMutex>;
+using UpgradeReadLock = boost::shared_lock<UpgradeMutex>;
+using UpgradeLock = boost::upgrade_lock<UpgradeMutex>;
+using UpgradeUniqueLock = boost::upgrade_to_unique_lock<UpgradeMutex>;
 
 };  // namespace Divide
 

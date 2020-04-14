@@ -62,7 +62,6 @@ void TaskPool::onThreadCreate(const std::thread::id& threadID) {
     }
 
     setThreadName(threadName.c_str());
-    OPTICK_THREAD(threadName.c_str());
     if (_threadCreateCbk) {
         _threadCreateCbk(threadID);
     }

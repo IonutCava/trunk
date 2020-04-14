@@ -9,10 +9,10 @@
 #  ifndef GLBINDING_AUX_API
 #    ifdef glbinding_aux_EXPORTS
         /* We are building this library */
-#      define GLBINDING_AUX_API 
+#      define GLBINDING_AUX_API __declspec(dllexport)
 #    else
         /* We are using this library */
-#      define GLBINDING_AUX_API 
+#      define GLBINDING_AUX_API __declspec(dllimport)
 #    endif
 #  endif
 
