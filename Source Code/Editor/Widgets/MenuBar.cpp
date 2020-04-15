@@ -461,13 +461,24 @@ void MenuBar::drawDebugMenu() {
             config.changed(true);
         }
 
+        LightPool& pool = Attorney::EditorGeneralWidget::getActiveLightPool(_context.editor());
+        if (ImGui::BeginMenu("Toggle Light Types")) {
+            for (U8 i = 0; i < to_U8(LightType::COUNT); ++i) {
+                const LightType type = static_cast<LightType>(i);
+
+                bool state = pool.lightTypeEnabled(type);
+                if (ImGui::MenuItem(TypeUtil::LightTypeToString(type), "", &state)) {
+                    pool.toggleLightType(type, state);
+                }
+            }
+            ImGui::EndMenu();
+        }
+
         bool& showCSMSplits = config.debug.showShadowCascadeSplits;
         if (ImGui::MenuItem("Enable CSM Split View", "", &showCSMSplits))
         {
             config.changed(true);
         }
-
-        LightPool& pool = Attorney::EditorGeneralWidget::getActiveLightPool(_context.editor());
 
         bool shadowDebug = pool.isDebugLight(LightType::DIRECTIONAL, 0);
         if (ImGui::MenuItem("Debug Main CSM", "", &shadowDebug))

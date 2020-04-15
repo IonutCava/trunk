@@ -652,7 +652,7 @@ void Vegetation::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut){
+bool Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut){
     OPTICK_EVENT();
 
     if (!quick && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
@@ -691,7 +691,7 @@ void Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         }
     }
 
-    SceneNode::onRefreshNodeData(sgn, renderStagePass, camera, quick, bufferInOut);
+    return SceneNode::onRefreshNodeData(sgn, renderStagePass, camera, quick, bufferInOut);
 }
 
 void Vegetation::buildDrawCommands(SceneGraphNode& sgn,

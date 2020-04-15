@@ -13,6 +13,22 @@
 
 namespace Divide {
 
+namespace TypeUtil {
+    const char* LightTypeToString(LightType lightType) noexcept {
+        return Names::lightType[to_base(lightType)];
+    }
+
+    LightType StringToLightType(const stringImpl& name) {
+        for (U8 i = 0; i < to_U8(LightType::COUNT); ++i) {
+            if (strcmp(name.c_str(), Names::lightType[i]) == 0) {
+                return static_cast<LightType>(i);
+            }
+        }
+
+        return LightType::COUNT;
+    }
+};
+
 Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool)
     : ECS::Event::IEventListener(sgn.sceneGraph().GetECSEngine()), 
       _parentPool(parentPool),

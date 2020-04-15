@@ -48,6 +48,16 @@ enum class LightType : U8 {
     SPOT = 2,
     COUNT
 };
+namespace Names {
+    static const char* lightType[] = {
+          "DIRECTIONAL", "POINT", "SPOT", "UNKNOWN"
+    };
+};
+
+namespace TypeUtil {
+    const char* LightTypeToString(LightType lightType) noexcept;
+    LightType StringToLightType(const stringImpl& name);
+};
 
 struct TransformUpdated;
 

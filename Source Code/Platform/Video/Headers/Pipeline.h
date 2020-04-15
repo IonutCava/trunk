@@ -64,16 +64,15 @@ enum class MemoryBarrierType : U32 {
     COUNT = 15
 };
 
-class PipelineDescriptor : public Hashable {
-  public:
+struct PipelineDescriptor : public Hashable {
     size_t getHash() const noexcept override;
-    bool operator==(const PipelineDescriptor &other) const;
-    bool operator!=(const PipelineDescriptor &other) const;
+    bool operator==(const PipelineDescriptor& other) const;
+    bool operator!=(const PipelineDescriptor& other) const;
 
-    U8 _multiSampleCount = 0;
-    I64 _shaderProgramHandle = 0;
-    size_t _stateHash = 0;
     ShaderFunctions _shaderFunctions;
+    size_t _stateHash = 0;
+    I64 _shaderProgramHandle = 0;
+    U8 _multiSampleCount = 0u;
 }; //struct PipelineDescriptor
 
 class Pipeline {

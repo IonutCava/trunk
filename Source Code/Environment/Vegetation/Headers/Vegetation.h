@@ -103,7 +103,7 @@ class Vegetation : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) final;
 
-    void onRefreshNodeData(SceneGraphNode& sgn,
+    bool onRefreshNodeData(SceneGraphNode& sgn,
                            RenderStagePass renderStagePass,
                            const Camera& camera,
                            bool quick,

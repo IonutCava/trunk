@@ -158,16 +158,16 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
 
-    void setMinRenderRange(F32 minRange);
-    void setMaxRenderRange(F32 maxRange);
-    inline void setRenderRange(F32 minRange, F32 maxRange) { setMinRenderRange(minRange); setMaxRenderRange(maxRange); }
+    void setMinRenderRange(F32 minRange) noexcept;
+    void setMaxRenderRange(F32 maxRange) noexcept;
+    inline void setRenderRange(F32 minRange, F32 maxRange) noexcept { setMinRenderRange(minRange); setMaxRenderRange(maxRange); }
     inline const vec2<F32>& renderRange() const noexcept { return _renderRange; }
 
     // If the new value is negative, this disables occlusion culling!
-    void cullFlagValue(F32 newValue);
+    void cullFlagValue(F32 newValue) noexcept;
 
-    inline void lockLoD(U8 level) noexcept { _lodLockLevels.fill({ true, level }); }
-    inline void unlockLoD() noexcept { _lodLockLevels.fill({ false, to_U8(0u) }); }
+    inline void lockLoD(U8 level) { _lodLockLevels.fill({ true, level }); }
+    inline void unlockLoD() { _lodLockLevels.fill({ false, to_U8(0u) }); }
     inline void lockLoD(RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { true, level }; }
     inline void unlockLoD(RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { false, to_U8(0u) }; }
     inline bool lodLocked(RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
@@ -192,13 +192,16 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline void setReflectionCallback(RenderCallback cbk) { _reflectionCallback = cbk; }
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
-    void drawDebugAxis();
+    void drawDebugAxis(GFX::CommandBuffer& bufferInOut);
+    void drawSkeleton(GFX::CommandBuffer& bufferInOut);
+    void drawBounds(const bool AABB, const bool Sphere, GFX::CommandBuffer& bufferInOut);
+    
     void onRender(const RenderStagePass& renderStagePass);
 
     U8 getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
     inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
-    inline const vectorEASTL<ShaderBufferBinding>& getShaderBuffers() const noexcept { return _externalBufferBindings; }
+    inline const ShaderBufferList& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
   protected:
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams);
@@ -256,7 +259,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     std::array<Texture_ptr, (sizeof(g_texUsage) / sizeof(g_texUsage[0]))> _externalTextures;
 
     EnvironmentProbeList _envProbes;
-    vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
+    ShaderBufferList _externalBufferBindings;
 
     std::pair<Texture_ptr, U32> _defaultReflection = {nullptr, 0u};
     std::pair<Texture_ptr, U32> _defaultRefraction = {nullptr, 0u};

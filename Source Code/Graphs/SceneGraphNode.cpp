@@ -504,10 +504,10 @@ bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const Camera& came
     return _node->onRender(*this, rComp, camera, renderStagePass, refreshData);
 }
 
-void SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {
+bool SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
-    _node->onRefreshNodeData(*this, renderStagePass, camera, quick, bufferInOut);
+    return _node->onRefreshNodeData(*this, renderStagePass, camera, quick, bufferInOut);
 }
 
 bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {

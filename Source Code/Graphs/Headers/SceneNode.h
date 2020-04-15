@@ -122,7 +122,7 @@ class SceneNode : public CachedResource {
                           RenderStagePass renderStagePass,
                           bool refreshData);
 
-    virtual void onRefreshNodeData(SceneGraphNode& sgn,
+    virtual bool onRefreshNodeData(SceneGraphNode& sgn,
                                    RenderStagePass renderStagePass,
                                    const Camera& camera,
                                    bool quick,

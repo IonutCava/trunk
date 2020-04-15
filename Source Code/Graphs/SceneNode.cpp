@@ -112,7 +112,7 @@ bool SceneNode::onRender(SceneGraphNode& sgn,
     return getState() == ResourceState::RES_LOADED;
 }
 
-void SceneNode::onRefreshNodeData(SceneGraphNode& sgn,
+bool SceneNode::onRefreshNodeData(SceneGraphNode& sgn,
                                   RenderStagePass renderStagePass,
                                   const Camera& camera,
                                   bool quick,
@@ -122,6 +122,8 @@ void SceneNode::onRefreshNodeData(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(quick);
     ACKNOWLEDGE_UNUSED(bufferInOut);
+
+    return true;
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
