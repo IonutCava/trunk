@@ -12,7 +12,7 @@ CachedResource_ptr ImplResourceLoader<Box3D>::operator()() {
     const U32 sizeTemp = _descriptor.ID();
     const D64 size = sizeTemp == 0 ? 1.0 : to_D64(sizeTemp);
    
-    eastl::shared_ptr<Box3D> ptr(MemoryManager_NEW Box3D(_context.gfx(),
+    std::shared_ptr<Box3D> ptr(MemoryManager_NEW Box3D(_context.gfx(),
                                                          _cache,
                                                          _loadingDescriptorHash,
                                                          _descriptor.resourceName(),

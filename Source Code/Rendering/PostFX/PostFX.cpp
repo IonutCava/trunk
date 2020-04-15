@@ -86,7 +86,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     textureWaterCaustics.threaded(true);
     textureWaterCaustics.waitForReady(false);
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
-    _underwaterTexture->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+    _underwaterTexture->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
         loadTasks.fetch_sub(1);
     });
 
@@ -98,7 +98,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     noiseTexture.threaded(true);
     noiseTexture.waitForReady(false);
     _noise = CreateResource<Texture>(cache, noiseTexture);
-    _noise->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+    _noise->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
         loadTasks.fetch_sub(1);
     });
 
@@ -110,7 +110,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     borderTexture.threaded(true);
     borderTexture.waitForReady(false);
     _screenBorder = CreateResource<Texture>(cache, borderTexture);
-    _screenBorder->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+    _screenBorder->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
         loadTasks.fetch_sub(1);
     });
 
@@ -125,7 +125,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     postFXShader.threaded(false);
     postFXShader.propertyDescriptor(postFXShaderDescriptor);
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
-    _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context, &loadTasks](Resource_wptr res) {
+    _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context, &loadTasks](CachedResource* res) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = context.gfx().get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getGUID();

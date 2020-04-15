@@ -189,7 +189,7 @@ class Material : public CachedResource {
 
     I64 getProgramGUID(RenderStagePass renderStagePass) const;
 
-    eastl::weak_ptr<Texture> getTexture(TextureUsage textureUsage) const;
+    Texture_wptr getTexture(TextureUsage textureUsage) const;
 
     const TextureOperation& getTextureOperation() const;
 

@@ -67,13 +67,13 @@ public:
 
     /// Each resource entity should have a 'resource name'Loader implementation.
     template <typename T>
-    typename std::enable_if<std::is_base_of<CachedResource, T>::value, eastl::shared_ptr<T>>::type
+    typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
     loadResource(const ResourceDescriptor& descriptor, bool& wasInCache)
     {
         Time::ProfileTimer loadTimer = {};
         loadTimer.start();
 
-        eastl::shared_ptr<T> ptr;
+        std::shared_ptr<T> ptr;
         {
             // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
             const size_t loadingHash = descriptor.getHash();
@@ -84,14 +84,14 @@ public:
             ResourceLoadLock res_lock(loadingHash, _context, !Runtime::isMainThread());
 
             /// Check cache first to avoid loading the same resource twice
-            ptr = eastl::static_pointer_cast<T>(find(loadingHash));
+            ptr = std::static_pointer_cast<T>(find(loadingHash));
             /// If the cache did not contain our resource ...
             wasInCache = ptr != nullptr;
             if (!wasInCache) {
                 Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
 
                 /// ...aquire the resource's loader and get our resource as the loader creates it
-                ptr = eastl::static_pointer_cast<T>(ImplResourceLoader<T>(this, _context, descriptor, loadingHash)());
+                ptr = std::static_pointer_cast<T>(ImplResourceLoader<T>(this, _context, descriptor, loadingHash)());
                 assert(ptr != nullptr);
                 add(ptr);
             }
@@ -155,13 +155,13 @@ protected:
 };
 
 template <typename T>
-typename std::enable_if<std::is_base_of<CachedResource, T>::value, eastl::shared_ptr<T>>::type
+typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
 CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor, bool& wasInCache) {
     return cache->loadResource<T>(descriptor, wasInCache);
 }
 
 template <typename T>
-typename std::enable_if<std::is_base_of<CachedResource, T>::value, eastl::shared_ptr<T>>::type
+typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
 CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor) {
     bool wasInCache = false;
     return CreateResource<T>(cache, descriptor, wasInCache);

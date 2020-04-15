@@ -118,6 +118,7 @@ CachedResource_ptr ResourceCache::find(const size_t descriptorHash) {
 
 void ResourceCache::remove(CachedResource* resource) {
     WAIT_FOR_CONDITION(resource->getState() != ResourceState::RES_LOADING);
+    resource->setState(ResourceState::RES_UNLOADING);
 
     const size_t resourceHash = resource->descriptorHash();
     const Str128& name = resource->resourceName();
@@ -134,20 +135,17 @@ void ResourceCache::remove(CachedResource* resource) {
 
 
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_REM_RES")), name.c_str(), resourceHash);
-    resource->setState(ResourceState::RES_LOADING);
-    if (resource->unload()) {
-        resource->setState(ResourceState::RES_CREATED);
-    } else {
+    if (!resource->unload()) {
         Console::errorfn(Locale::get(_ID("ERROR_RESOURCE_REM")), name.c_str(), guid);
-        resource->setState(ResourceState::RES_UNKNOWN);
     }
-    
+
     if (resDBEmpty) {
         Console::errorfn(Locale::get(_ID("RESOURCE_CACHE_REMOVE_NO_DB")), name.c_str());
     } else {
         UniqueLock<SharedMutex> w_lock(_creationMutex);
         _resDB.erase(_resDB.find(resourceHash));
     }
+    resource->setState(ResourceState::RES_UNKNOWN);
 }
 
 };

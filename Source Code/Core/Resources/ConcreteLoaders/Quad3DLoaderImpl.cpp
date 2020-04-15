@@ -9,7 +9,7 @@ namespace Divide {
 
 template<>
 CachedResource_ptr ImplResourceLoader<Quad3D>::operator()() {
-    eastl::shared_ptr<Quad3D> ptr(MemoryManager_NEW Quad3D(_context.gfx(),
+    std::shared_ptr<Quad3D> ptr(MemoryManager_NEW Quad3D(_context.gfx(),
                                                           _cache,
                                                           _loadingDescriptorHash,
                                                           _descriptor.resourceName(),

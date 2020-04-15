@@ -60,7 +60,7 @@ class PingPongScene : public Scene {
     I8 _score;
     vectorSTD<stringImpl> _quotes;
     vec3<F32> _sunvector;
-    eastl::shared_ptr<Sphere3D> _ball;
+    std::shared_ptr<Sphere3D> _ball;
     SceneGraphNode* _ballSGN;
     Camera* _paddleCam;
 

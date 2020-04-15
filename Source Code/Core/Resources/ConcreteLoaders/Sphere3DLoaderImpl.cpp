@@ -9,7 +9,7 @@
 namespace Divide {
 
 CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
-    eastl::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_context.gfx(),
+    std::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_context.gfx(),
                                                                _cache,
                                                                _loadingDescriptorHash,
                                                                _descriptor.resourceName(),

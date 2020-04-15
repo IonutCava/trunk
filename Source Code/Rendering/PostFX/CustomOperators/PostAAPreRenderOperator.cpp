@@ -75,7 +75,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         fxaa.threaded(true);
         fxaa.waitForReady(false);
         _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
-        _fxaa->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+        _fxaa->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             PipelineDescriptor pipelineDescriptor;
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
             pipelineDescriptor._shaderProgramHandle = _fxaa->getGUID();
@@ -102,7 +102,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         smaaWeights.threaded(true);
         smaaWeights.waitForReady(false);
         _smaaWeightComputation = CreateResource<ShaderProgram>(cache, smaaWeights);
-        _smaaWeightComputation->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+        _smaaWeightComputation->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             PipelineDescriptor pipelineDescriptor;
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
             pipelineDescriptor._shaderProgramHandle = _smaaWeightComputation->getGUID();
@@ -119,7 +119,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         smaaWeights.threaded(true);
         smaaBlend.waitForReady(false);
         _smaaBlend = CreateResource<ShaderProgram>(cache, smaaBlend);
-        _smaaBlend->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+        _smaaBlend->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             PipelineDescriptor pipelineDescriptor;
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
             pipelineDescriptor._shaderProgramHandle = _smaaBlend->getGUID();

@@ -56,7 +56,7 @@ namespace Divide {
 
     template<size_t Size>
     TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, U8 binding) {
-        assert(data.type() != TextureType::COUNT);
+        assert(data._textureType != TextureType::COUNT);
         return setTextureInternal(data, binding);
     }
 
@@ -80,13 +80,8 @@ namespace Divide {
 
     template<size_t Size>
     bool TextureDataContainer<Size>::removeTexture(U8 binding) {
-#if !defined(CPP_17_SUPPORT)
         for (auto& it : _textures) {
             auto& crtBinding = it.first;
-            auto& crtData = it.second;
-#else
-        for (auto& [crtBinding, crtData] : _textures) {
-#endif
             assert(_count > 0);
             if (crtBinding == binding) {
                 crtBinding = INVALID_BINDING;
@@ -101,15 +96,10 @@ namespace Divide {
 
     template<size_t Size>
     bool TextureDataContainer<Size>::removeTexture(const TextureData& data) {
-#if !defined(CPP_17_SUPPORT)
+        assert(_count > 0);
         for (auto& it : _textures) {
             auto& crtBinding = it.first;
-            auto& crtData = it.second;
-#else
-        for (auto& [crtBinding, crtData] : _textures) {
-#endif
-            assert(_count > 0);
-            if (crtData == data) {
+            if (it.second == data) {
                 crtBinding = INVALID_BINDING;
                 --_count;
                 _hashDirty = true;
@@ -122,14 +112,8 @@ namespace Divide {
 
     template<size_t Size>
     void TextureDataContainer<Size>::clear() {
-#if !defined(CPP_17_SUPPORT)
         for (const auto& it : _textures) {
-            const auto& crtBinding = it.first;
-            const auto& crtData = it.second;
-#else
-        for (const auto& [crtBinding, crtData] : _textures) {
-#endif
-            removeTexture(crtBinding);
+            removeTexture(it.first);
         }
     }
 
@@ -137,14 +121,9 @@ namespace Divide {
     TextureUpdateState TextureDataContainer<Size>::setTextureInternal(const TextureData& data, U8 binding) {
         OPTICK_EVENT();
         if (binding != INVALID_BINDING) {
-#if !defined(CPP_17_SUPPORT)
             for (auto& it : _textures) {
-                auto& crtBinding = it.first;
-                auto& crtData = it.second;
-#else
-            for (auto& [crtBinding, crtData] : _textures) {
-#endif
-                if (crtBinding == binding) {
+                if (it.first == binding) {
+                    auto& crtData = it.second;
                     if (crtData == data) {
                         crtData = data;
                         _hashDirty = true;
@@ -154,16 +133,11 @@ namespace Divide {
                     }
                 }
             }
-#if !defined(CPP_17_SUPPORT)
             for (auto& it : _textures) {
                 auto& crtBinding = it.first;
-                auto& crtData = it.second;
-#else
-            for (auto& [crtBinding, crtData] : _textures) {
-#endif
                 if (crtBinding == INVALID_BINDING) {
                     crtBinding = binding;
-                    crtData = data;
+                    it.second = data;
                     ++_count;
                     _hashDirty = true;
                     return TextureUpdateState::ADDED;
@@ -178,18 +152,11 @@ namespace Divide {
     size_t TextureDataContainer<Size>::getHash() const noexcept {
         if (_hashDirty) {
             _hash = 109;
-#if !defined(CPP_17_SUPPORT)
             for (const auto& it : _textures) {
-                const auto& binding = it.first;
-                const auto& data = it.second;
-#else
-            for (const auto& [binding, data] : _textures) {
-#endif
+                const U8 binding = it.first;
                 Util::Hash_combine(_hash, binding);
                 if (binding != INVALID_BINDING) {
-                    Util::Hash_combine(_hash, data.textureHandle());
-                    Util::Hash_combine(_hash, data.samplerHandle());
-                    Util::Hash_combine(_hash, data.type());
+                    Util::Hash_combine(_hash, GetHash(it.second));
                 }
             }
             _hashDirty = false;

@@ -40,15 +40,15 @@ namespace Divide {
 
 #pragma pack(push, 1)
 struct PoolHandle {
-    U16 _id = 0;
-    U8  _generation = 0;
+    U16 _id = 0u;
+    U8  _generation = 0u;
 
     inline bool operator== (const PoolHandle& val) const noexcept {
-        return _id == val._id && _generation == val._generation;
+        return _generation == val._generation && _id == val._id;
     }
 
     inline bool operator!= (const PoolHandle& val) const noexcept {
-        return _id != val._id || _generation != val._generation;
+        return _generation != val._generation || _id != val._id;
     }
 };
 #pragma pack(pop)

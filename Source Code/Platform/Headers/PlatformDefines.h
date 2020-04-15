@@ -55,11 +55,11 @@ do {                                                \
 #define TO_STRING(X) TO_STRING_NAME(X)
 #endif //TO_STRING
 
-#define TYPEDEF_SMART_POINTERS_FOR_TYPE(T)         \
-    using T ## _wptr  = eastl::weak_ptr<T>;        \
-    using T ## _ptr   = eastl::shared_ptr<T>;      \
-    using T ## _cwptr = eastl::weak_ptr<const T>;  \
-    using T ## _cptr  = eastl::shared_ptr<const T>;
+#define TYPEDEF_SMART_POINTERS_FOR_TYPE(T)       \
+    using T ## _wptr  = std::weak_ptr<T>;        \
+    using T ## _ptr   = std::shared_ptr<T>;      \
+    using T ## _cwptr = std::weak_ptr<const T>;  \
+    using T ## _cptr  = std::shared_ptr<const T>;
 
 
 #define FWD_DECLARE_MANAGED_CLASS(T)      \

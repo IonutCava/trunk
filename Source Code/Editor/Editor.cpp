@@ -198,7 +198,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderResDescriptor);
 
     // Store our identifier
-    io.Fonts->TexID = (void *)(intptr_t)_fontTexture->data().textureHandle();
+    io.Fonts->TexID = (void *)(intptr_t)_fontTexture->data()._textureHandle;
 
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
@@ -1361,7 +1361,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
 
         static F32 zoom = 1.0f;
         static ImVec2 zoomCenter(0.5f, 0.5f);
-        ImGui::ImageZoomAndPan((void*)(intptr_t)tex->data().textureHandle(), ImVec2(dimensions.width, dimensions.height / aspect), aspect, zoom, zoomCenter, 2, 3);
+        ImGui::ImageZoomAndPan((void*)(intptr_t)tex->data()._textureHandle, ImVec2(dimensions.width, dimensions.height / aspect), aspect, zoom, zoomCenter, 2, 3);
 
         if (nonDefaultColours) {
             ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);

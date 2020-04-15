@@ -53,11 +53,10 @@ namespace Divide {
 
 enum class ResourceState : U8 {
     RES_UNKNOWN = 0,  //<The resource exists, but it's state is undefined
-    RES_CREATED = 1,  //<The pointer has been created and instantiated, but no
-                      //data has been loaded
-    RES_LOADING = 2,  //<The resource is loading or unloading, creating or
-                      //deleting data, parsing scripts, etc
-    RES_LOADED  = 3,  //<The resource is loaded and available
+    RES_CREATED = 1,  //<The pointer has been created and instantiated, but no data has been loaded
+    RES_LOADING = 2,  //<The resource is loading, creating data, parsing scripts, etc
+    RES_UNLOADING = 3,  //<The resource is unloading, deleting data, etc
+    RES_LOADED  = 4,  //<The resource is loaded and available
     COUNT
 };
 
@@ -90,7 +89,7 @@ class Resource : public GUIDWrapper
 };
 
 class CachedResource : public Resource,
-                       public eastl::enable_shared_from_this<CachedResource>
+                       public std::enable_shared_from_this<CachedResource>
 {
     friend class ResourceCache;
     friend class ResourceLoader;
@@ -116,14 +115,14 @@ public:
     virtual bool unload() noexcept;
 
     inline stringImpl assetPath() const { return stringImpl(assetLocation().c_str()) + "/" + assetName().c_str(); }
-    void addStateCallback(ResourceState targetState, const DELEGATE<void, Resource_wptr>& cbk);
+    void addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk);
 
 protected:
     void setState(ResourceState currentState) noexcept override;
     virtual const char* getResourceTypeName() const noexcept override { return "Cached Resource"; }
 
 protected:
-    using CallbackList = vectorEASTL<DELEGATE<void, Resource_wptr>>;
+    using CallbackList = vectorEASTL<DELEGATE<void, CachedResource*>>;
     std::array<CallbackList, to_base(ResourceState::COUNT)> _loadingCallbacks;
     mutable Mutex _callbackLock;
     PROPERTY_RW(stringImpl, assetLocation);

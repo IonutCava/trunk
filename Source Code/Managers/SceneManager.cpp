@@ -336,7 +336,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
     }
 
     if (i < Config::MAX_LOCAL_PLAYER_COUNT) {
-        Player_ptr player = eastl::make_shared<Player>(to_U8(i));
+        Player_ptr player = std::make_shared<Player>(to_U8(i));
         player->getCamera().fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
         player->getCamera().setFixedYawAxis(true);
         playerNode->get<UnitComponent>()->setUnit(player);

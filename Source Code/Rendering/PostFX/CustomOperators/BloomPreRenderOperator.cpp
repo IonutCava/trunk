@@ -38,7 +38,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     ResourceDescriptor bloomCalc("BloomCalc");
     bloomCalc.propertyDescriptor(shaderDescriptor);
     _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
-    _bloomCalc->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+    _bloomCalc->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _bloomCalc->getGUID();
@@ -56,7 +56,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     bloomApply.threaded(true);
     bloomApply.waitForReady(false);
     _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
-    _bloomApply->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+    _bloomApply->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _bloomApply->getGUID();

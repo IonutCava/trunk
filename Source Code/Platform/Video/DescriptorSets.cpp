@@ -107,9 +107,10 @@ namespace Divide {
     }
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
-        const size_t texCount = rhs._textureData.textures().size();
+        const auto& rhsTextures = rhs._textureData.textures();
+        const size_t texCount = rhsTextures.size();
         for (size_t i = 0; i < texCount; ++i) {
-            const auto& it = rhs._textureData.textures()[i];
+            const auto& it = rhsTextures[i];
             if (it.first != TextureDataContainer<>::INVALID_BINDING) {
                 const TextureData* texData = lhs.findTexture(it.first);
                 if (texData != nullptr && *texData == it.second) {
@@ -120,10 +121,8 @@ namespace Divide {
 
         TextureViews& otherViewList = rhs._textureViews;
         for (auto it = eastl::begin(otherViewList); it != eastl::end(otherViewList);) {
-            const TextureViewEntry& otherView = *it;
-
-            const TextureView* texViewData = lhs.findTextureView(otherView._binding);
-            if (texViewData != nullptr && *texViewData == otherView._view) {
+            const TextureView* texViewData = lhs.findTextureView(it->_binding);
+            if (texViewData != nullptr && *texViewData == it->_view) {
                 it = otherViewList.erase(it);
                 partial = true;
             } else {
@@ -133,10 +132,8 @@ namespace Divide {
 
         Images& otherImageList = rhs._images;
         for (auto it = eastl::begin(otherImageList); it != eastl::end(otherImageList);) {
-            const Image& otherImage = *it;
-
-            const Image* image = lhs.findImage(otherImage._binding);
-            if (image != nullptr && *image == otherImage) {
+            const Image* image = lhs.findImage(it->_binding);
+            if (image != nullptr && *image == *it) {
                 it = otherImageList.erase(it);
                 partial = true;
             } else {
@@ -145,10 +142,8 @@ namespace Divide {
         }
 
         for (auto it = eastl::begin(rhs._shaderBuffers); it != eastl::end(rhs._shaderBuffers);) {
-            const ShaderBufferBinding& otherBinding = *it;
-
-            const ShaderBufferBinding* binding = lhs.findBinding(otherBinding._binding);
-            if (binding != nullptr && *binding == otherBinding) {
+            const ShaderBufferBinding* binding = lhs.findBinding(it->_binding);
+            if (binding != nullptr && *binding == *it) {
                 it = rhs._shaderBuffers.erase(it);
                 partial = true;
             } else {
@@ -162,8 +157,8 @@ namespace Divide {
     size_t TextureView::getHash() const noexcept {
         _hash = 109;
         if (_texture != nullptr) {
-            Util::Hash_combine(_hash, _texture->data().textureHandle());
-            Util::Hash_combine(_hash, to_base(_texture->data().type()));
+            Util::Hash_combine(_hash, _texture->data()._textureHandle);
+            Util::Hash_combine(_hash, to_base(_texture->data()._textureType));
         }
 
         Util::Hash_combine(_hash, _mipLevels.x);

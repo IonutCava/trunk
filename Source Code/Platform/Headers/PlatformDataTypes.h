@@ -305,6 +305,11 @@ struct U24
 };
 #pragma pack(pop)
 
+// Use for draw command batching so this gives us a slight speedup in debug builds
+FORCE_INLINE U32 u32Diff(const U24& lhs, const U24& rhs) noexcept {
+    return static_cast<U32>(lhs) - static_cast<U32>(rhs); 
+}
+
 template <typename From, typename To>
 struct static_caster
 {

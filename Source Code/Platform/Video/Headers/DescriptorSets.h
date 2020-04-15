@@ -150,18 +150,18 @@ namespace Divide {
         const TextureView* findTextureView(U8 binding) const noexcept;
         const Image* findImage(U8 binding) const noexcept;
 
-        inline bool operator==(const DescriptorSet &other) const {
-            return _textureData == other._textureData &&
-                   _shaderBuffers == other._shaderBuffers &&
+        inline bool operator==(const DescriptorSet &other) const noexcept {
+            return _shaderBuffers == other._shaderBuffers &&
                    _textureViews == other._textureViews &&
-                   _images == other._images;
+                   _images == other._images &&
+                   _textureData == other._textureData;
         }
 
-        inline bool operator!=(const DescriptorSet &other) const {
-            return _textureData != other._textureData ||
-                   _shaderBuffers != other._shaderBuffers ||
+        inline bool operator!=(const DescriptorSet &other) const noexcept {
+            return _shaderBuffers != other._shaderBuffers ||
                    _textureViews != other._textureViews ||
-                   _images != other._images;
+                   _images != other._images ||
+                   _textureData != other._textureData;
         }
 
         inline bool empty() const noexcept {
@@ -176,23 +176,6 @@ namespace Divide {
 
     bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
 
-    using DescriptorSetPool = MemoryPool<DescriptorSet, nextPOW2(sizeof(DescriptorSet) * 256)>;
-
-    struct DeleteDescriptorSet {
-        DeleteDescriptorSet(Mutex& lock, DescriptorSetPool& context) noexcept
-            : _lock(lock),
-              _context(context)
-        {
-        }
-
-        inline void operator()(DescriptorSet* res) {
-            UniqueLock<Mutex> w_lock{ _lock };
-            _context.deleteElement(res);
-        }
-
-        Mutex& _lock;
-        DescriptorSetPool& _context;
-    };
 
 }; //namespace Divide
 

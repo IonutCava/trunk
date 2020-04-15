@@ -1186,7 +1186,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             OPTICK_EVENT("GL: Compute MipMaps");
             GFX::ComputeMipMapsCommand* crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
             if (crtCmd->_layerRange.x == 0 && crtCmd->_layerRange.y <= 1) {
-                glGenerateTextureMipmap(crtCmd->_texture->data().textureHandle());
+                glGenerateTextureMipmap(crtCmd->_texture->data()._textureHandle);
             } else {
                 TextureView view = {};
                 view._texture = crtCmd->_texture;
@@ -1197,13 +1197,13 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
                 const TextureData& data = view._texture->data();
-                const GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
+                const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
 
                 std::pair<GLuint, bool> handle = s_texturePool.allocate(view.getHash(), GL_NONE);
                 if (!handle.second) {
                     glTextureView(handle.first,
                         type,
-                        data.textureHandle(),
+                        data._textureHandle,
                         glInternalFormat,
                         (GLuint)view._mipLevels.x,
                         (GLuint)view._mipLevels.y,
@@ -1467,9 +1467,9 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
                 continue;
             }
 
-            types.push_back(data.type());
-            handles.push_back(data.textureHandle());
-            samplers.push_back(data.samplerHandle());
+            types.push_back(data._textureType);
+            handles.push_back(data._textureHandle);
+            samplers.push_back(data._samplerHandle);
         }
 
         bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
@@ -1481,9 +1481,9 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
             }
 
             bound = stateTracker.bindTexture(static_cast<GLushort>(binding),
-                                             data.type(),
-                                             data.textureHandle(),
-                                             data.samplerHandle()) || bound;
+                                             data._textureType,
+                                             data._textureHandle,
+                                             data._samplerHandle) || bound;
         }
     }
 
@@ -1502,19 +1502,19 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
 
         if (!handle.second) {
             const TextureDescriptor& descriptor = tex->descriptor();
-            const GLenum type = GLUtil::glTextureTypeTable[to_base(data.type())];
+            const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
             const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
             glTextureView(handle.first,
                 type,
-                data.textureHandle(),
+                data._textureHandle,
                 glInternalFormat,
                 (GLuint)it._view._mipLevels.x,
                 (GLuint)it._view._mipLevels.y,
                 (GLuint)it._view._layerRange.x,
                 (GLuint)it._view._layerRange.y);
         }
-        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data.type(), handle.first, data.samplerHandle()) || bound;
+        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, handle.first, data._samplerHandle) || bound;
         // Self delete after 3 frames unless we use it again
         s_texturePool.deallocate(handle.first, GL_NONE, 3u);
     }

@@ -12,7 +12,7 @@ namespace Divide {
 template<>
 CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
 
-    eastl::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache,
+    std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache,
                                                                    _loadingDescriptorHash,
                                                                    _descriptor.resourceName()),
                                     DeleteResource(_cache));

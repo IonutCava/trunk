@@ -61,7 +61,7 @@ bool CachedResource::unload() noexcept {
     return true;
 }
 
-void CachedResource::addStateCallback(ResourceState targetState, const DELEGATE<void, Resource_wptr>& cbk) {
+void CachedResource::addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk) {
     {
         UniqueLock<Mutex> w_lock(_callbackLock);
         _loadingCallbacks[to_U32(targetState)].push_back(cbk);
@@ -71,14 +71,16 @@ void CachedResource::addStateCallback(ResourceState targetState, const DELEGATE<
 
 void CachedResource::setState(ResourceState currentState) noexcept {
     Resource::setState(currentState);
-
     for (U8 i = 0; i < to_base(currentState) + 1; ++i) {
         const ResourceState tempState = static_cast<ResourceState>(i);
-
+        CachedResource* ptr = nullptr;
+        if (tempState != ResourceState::RES_UNKNOWN && tempState != ResourceState::RES_UNLOADING) {
+            ptr = this;
+        }
         UniqueLock<Mutex> r_lock(_callbackLock);
-        CallbackList& cbks = _loadingCallbacks[to_U32(currentState)];
+        CallbackList& cbks = _loadingCallbacks[to_U32(tempState)];
         for (auto& cbk : cbks) {
-            cbk(shared_from_this());
+            cbk(ptr);
         }
         cbks.clear();
     }

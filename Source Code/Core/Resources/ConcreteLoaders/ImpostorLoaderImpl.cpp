@@ -11,7 +11,7 @@ namespace Divide {
 
 template <>
 CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
-    eastl::shared_ptr<ImpostorSphere> ptr(MemoryManager_NEW ImpostorSphere(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), 1.0f),
+    std::shared_ptr<ImpostorSphere> ptr(MemoryManager_NEW ImpostorSphere(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), 1.0f),
                                           DeleteResource(_cache));
 
     if (!_descriptor.flag()) {
@@ -35,7 +35,7 @@ CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
 
 template <>
 CachedResource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
-    eastl::shared_ptr<ImpostorBox> ptr(MemoryManager_NEW ImpostorBox(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), 1.0f),
+    std::shared_ptr<ImpostorBox> ptr(MemoryManager_NEW ImpostorBox(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), 1.0f),
                                        DeleteResource(_cache));
 
     if (!_descriptor.flag()) {

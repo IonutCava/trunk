@@ -80,8 +80,12 @@ namespace {
         return false;
     }
 
-    const auto IsEmptyDrawCommand = [](const GenericDrawCommand& cmd) noexcept -> bool {
-        return cmd._drawCount == 0u;
+    const auto RemoveEmptyDrawCommands = [](DrawCommand::CommandContainer& commands) {
+        const size_t startSize = commands.size();
+        eastl::erase_if(commands, [](const GenericDrawCommand& cmd) noexcept -> bool {
+            return cmd._drawCount == 0u;
+        });
+        return startSize != commands.size();
     };
 };
 
@@ -247,7 +251,7 @@ void CommandBuffer::batch() {
             } break;
             case GFX::CommandType::COPY_TEXTURE: {
                 const CopyTextureCommand* crtCmd = get<CopyTextureCommand>(cmd);
-                hasWork = crtCmd->_source.type() != TextureType::COUNT && crtCmd->_destination.type() != TextureType::COUNT;
+                hasWork = crtCmd->_source._textureType != TextureType::COUNT && crtCmd->_destination._textureType != TextureType::COUNT;
             }break;
         };
     }
@@ -286,7 +290,7 @@ void CommandBuffer::clean() {
                 if (cmds.size() == 1) {
                     erase = cmds.begin()->_drawCount == 0u;
                 } else {
-                    eastl::erase_if(cmds, IsEmptyDrawCommand);
+                    RemoveEmptyDrawCommands(cmds);
                     erase = cmds.empty();
                 }
             } break;
@@ -537,16 +541,11 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
 
     // Batchable commands must share the same buffer and other various state
     if (compatible(previousIDC, currentIDC)) {
-        const U32 prev_base_instance = to_U32(previousIDC._cmd.baseInstance);
-        const U32 curr_base_instance = to_U32(currentIDC._cmd.baseInstance);
-        const U32 prev_cmd_offset = to_U32(previousIDC._commandOffset);
-        const U32 curr_cmd_offset = to_U32(currentIDC._commandOffset);
-        const U32 prev_draw_count = to_U32(previousIDC._drawCount);
+        const U32 diff = byBaseInstance 
+                            ? (currentIDC._cmd.baseInstance - previousIDC._cmd.baseInstance) 
+                            : u32Diff(currentIDC._commandOffset, previousIDC._commandOffset);
 
-        const U32 start_offset = byBaseInstance ? prev_base_instance : prev_cmd_offset;
-        const U32 end_offset = byBaseInstance ? curr_base_instance : curr_cmd_offset;
-
-        if (start_offset + prev_draw_count == end_offset) {
+        if (diff == previousIDC._drawCount) {
             // If the rendering commands are batchable, increase the draw count for the previous one
             previousIDC._drawCount += currentIDC._drawCount;
             // And set the current command's draw count to zero so it gets removed from the list later on
@@ -573,12 +572,6 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
         }
     };
 
-    const auto RemoveEmptyDrawCommands = [](DrawCommand::CommandContainer& commands) {
-        const size_t startSize = commands.size();
-        eastl::erase_if(commands, IsEmptyDrawCommand);
-        return startSize != commands.size();
-    };
-
     DrawCommand::CommandContainer& commands = prevCommand->_drawCommands;
     commands.insert(eastl::cend(commands),
                     eastl::make_move_iterator(eastl::begin(crtCommand->_drawCommands)),
@@ -600,10 +593,10 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     {
         OPTICK_EVENT("Merge by offset");
         eastl::sort(eastl::begin(commands),
-            eastl::end(commands),
-            [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
-            return a._commandOffset < b._commandOffset;
-        });
+                    eastl::end(commands),
+                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
+                        return a._commandOffset < b._commandOffset;
+                    });
 
         do {
             BatchCommands(commands, false);

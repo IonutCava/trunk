@@ -71,7 +71,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     clearFlag(Flags::VISIBILITY_LOCKED);
 
     if (_node == nullptr) {
-        _node = eastl::make_shared<SceneNode>(sceneGraph.parentScene().resourceCache(),
+        _node = std::make_shared<SceneNode>(sceneGraph.parentScene().resourceCache(),
                                               GUIDWrapper::generateGUID(),
                                               "EMPTY",
                                               "EMPTY",
@@ -226,8 +226,8 @@ SceneGraphNode* SceneGraphNode::addChildNode(const SceneGraphNodeDescriptor& des
     } else if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADING) {
         setFlag(Flags::LOADING);
         sceneGraphNode->_node->addStateCallback(ResourceState::RES_LOADED,
-            [this, sceneGraphNode](Resource_wptr res) {
-                postLoad(*(eastl::dynamic_pointer_cast<SceneNode>(res.lock())), *(sceneGraphNode));
+            [this, sceneGraphNode](CachedResource* res) {
+                postLoad(*(static_cast<SceneNode*>(res)), *(sceneGraphNode));
                 clearFlag(Flags::LOADING);
             }
         );

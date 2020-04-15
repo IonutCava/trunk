@@ -13,8 +13,8 @@ namespace GenericDrawCommandResults {
 };
 
 bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) noexcept {
-    return lhs._bufferIndex == rhs._bufferIndex &&
-           lhs._primitiveType == rhs._primitiveType &&
+    return lhs._primitiveType == rhs._primitiveType &&
+           lhs._bufferIndex == rhs._bufferIndex &&
            lhs._sourceBuffer == rhs._sourceBuffer;
 }
 

@@ -408,7 +408,7 @@ namespace {
 void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
     assert(parent != nullptr);
 
-    auto waitForReasoureTask = [&parentTask](const Resource_wptr& res) {
+    auto waitForReasoureTask = [&parentTask](const CachedResource_wptr& res) {
         ACKNOWLEDGE_UNUSED(res);
         if (parentTask != nullptr) {
             TaskYield(*parentTask);
@@ -430,8 +430,8 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
         boost::property_tree::ptree nodeTree = {};
         read_xml(nodePath, nodeTree);
 
-        const auto loadModelComplete = [this, &nodeTree, &waitForReasoureTask](Resource_wptr res) {
-            eastl::static_pointer_cast<SceneNode>(res.lock())->loadFromXML(nodeTree);
+        const auto loadModelComplete = [this, &nodeTree, &waitForReasoureTask](CachedResource* res) {
+            static_cast<SceneNode*>(res)->loadFromXML(nodeTree);
             _loadingTasks.fetch_sub(1);
         };
 
@@ -588,7 +588,7 @@ SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
                   "Scene::addParticleEmitter error: invalid name specified!");
 
     ResourceDescriptor particleEmitter(name);
-    eastl::shared_ptr<ParticleEmitter> emitter = CreateResource<ParticleEmitter>(_resCache, particleEmitter);
+    std::shared_ptr<ParticleEmitter> emitter = CreateResource<ParticleEmitter>(_resCache, particleEmitter);
 
     DIVIDE_ASSERT(emitter != nullptr,
                   "Scene::addParticleEmitter error: Could not instantiate emitter!");
@@ -620,10 +620,10 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
         return;
     }
 
-    const auto registerTerrain = [this, name, &parentNode, pt](Resource_wptr res) {
+    const auto registerTerrain = [this, name, &parentNode, pt](CachedResource* res) {
         SceneGraphNodeDescriptor terrainNodeDescriptor;
         terrainNodeDescriptor._name = name;
-        terrainNodeDescriptor._node = eastl::static_pointer_cast<Terrain>(res.lock());
+        terrainNodeDescriptor._node = std::static_pointer_cast<Terrain>(res->shared_from_this());
         terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
         terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
                                                to_base(ComponentType::TRANSFORM) |
@@ -689,7 +689,7 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
     ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
     skyDescriptor.ID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
-    eastl::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
+    std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
     skyItem->loadFromXML(pt);
 
@@ -710,10 +710,10 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
 }
 
 void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
-    auto registerWater = [this, nodeName, &parentNode, pt](Resource_wptr res) {
+    auto registerWater = [this, nodeName, &parentNode, pt](CachedResource* res) {
         SceneGraphNodeDescriptor waterNodeDescriptor;
         waterNodeDescriptor._name = nodeName;
-        waterNodeDescriptor._node = eastl::static_pointer_cast<WaterPlane>(res.lock());
+        waterNodeDescriptor._node = std::static_pointer_cast<WaterPlane>(res->shared_from_this());
         waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
         waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
                                             to_base(ComponentType::TRANSFORM) |
@@ -743,7 +743,7 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
 }
 
 SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
-    auto registerPlane = [this](Resource_wptr res) {
+    auto registerPlane = [this](CachedResource* res) {
         ACKNOWLEDGE_UNUSED(res);
         _loadingTasks.fetch_sub(1);
     };
@@ -1250,7 +1250,7 @@ void Scene::addPlayerInternal(bool queue) {
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
         playerNodeDescriptor._serialize = false;
-        playerNodeDescriptor._node = eastl::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName, playerName, "", SceneNodeType::TYPE_EMPTY, 0u);
+        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName, playerName, "", SceneNodeType::TYPE_EMPTY, 0u);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |

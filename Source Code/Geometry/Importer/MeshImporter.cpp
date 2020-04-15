@@ -322,7 +322,8 @@ namespace Import {
                 texture.assetLocation(tex.texturePath());
                 texture.propertyDescriptor(textureDescriptor);
                 texture.threaded(false);
-                tempMaterial->setTexture(static_cast<TextureUsage>(i), CreateResource<Texture>(cache, texture), tex.operation());
+                Texture_ptr texPtr = CreateResource<Texture>(cache, texture);
+                tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, tex.operation());
             }
         }
 
@@ -341,7 +342,7 @@ namespace Import {
                 tempMaterial->setTexture(TextureUsage::OPACITY, textureRes, TextureOperation::REPLACE);
             }
         }
-        
+
         return tempMaterial;
     }
 }; //namespace Divide

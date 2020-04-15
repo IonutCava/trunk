@@ -141,9 +141,6 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     virtual void validateDescriptor();
 
-    inline void setTextureHandle(U32 handle) noexcept { _data._textureHandle = handle; }
-    inline void setSamplerHandle(U32 handle) noexcept { _data._samplerHandle = handle; }
-
     const char* getResourceTypeName() const noexcept override { return "Texture"; }
 
     void processTextureType() noexcept;

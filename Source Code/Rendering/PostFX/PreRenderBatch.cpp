@@ -169,7 +169,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         toneMap.waitForReady(false);
         toneMap.propertyDescriptor(mapDescriptor1);
         _toneMap = CreateResource<ShaderProgram>(_resCache, toneMap);
-        _toneMap->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+        _toneMap->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
             loadTasks.fetch_sub(1);
         });
 
@@ -190,7 +190,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         toneMapAdaptive.propertyDescriptor(toneMapAdaptiveDescriptor);
 
         _toneMapAdaptive = CreateResource<ShaderProgram>(_resCache, toneMapAdaptive);
-        _toneMapAdaptive->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+        _toneMapAdaptive->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
             loadTasks.fetch_sub(1);
         });
     }
@@ -213,7 +213,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
             histogramCreate.waitForReady(false);
             histogramCreate.propertyDescriptor(calcDescriptor);
             _createHistogram = CreateResource<ShaderProgram>(_resCache, histogramCreate);
-            _createHistogram->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+            _createHistogram->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
                 loadTasks.fetch_sub(1);
             });
 
@@ -229,7 +229,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
             histogramAverage.waitForReady(false);
             histogramAverage.propertyDescriptor(calcDescriptor);
             _averageHistogram = CreateResource<ShaderProgram>(_resCache, histogramAverage);
-            _averageHistogram->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+            _averageHistogram->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
                 loadTasks.fetch_sub(1);
             });
         }
@@ -255,7 +255,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
             edgeDetectionDepth.propertyDescriptor(edgeDetectionDescriptor);
 
             _edgeDetection[to_base(EdgeDetectionMethod::Depth)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionDepth);
-            _edgeDetection[to_base(EdgeDetectionMethod::Depth)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+            _edgeDetection[to_base(EdgeDetectionMethod::Depth)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
                 loadTasks.fetch_sub(1);
             });
 
@@ -270,7 +270,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
             edgeDetectionLuma.waitForReady(false);
             edgeDetectionLuma.propertyDescriptor(edgeDetectionDescriptor);
             _edgeDetection[to_base(EdgeDetectionMethod::Luma)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionLuma);
-            _edgeDetection[to_base(EdgeDetectionMethod::Luma)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+            _edgeDetection[to_base(EdgeDetectionMethod::Luma)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
                 loadTasks.fetch_sub(1);
             });
 
@@ -285,7 +285,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
             edgeDetectionColour.waitForReady(false);
             edgeDetectionColour.propertyDescriptor(edgeDetectionDescriptor);
             _edgeDetection[to_base(EdgeDetectionMethod::Colour)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionColour);
-            _edgeDetection[to_base(EdgeDetectionMethod::Colour)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](Resource_wptr res) {
+            _edgeDetection[to_base(EdgeDetectionMethod::Colour)]->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
                 loadTasks.fetch_sub(1);
             });
 

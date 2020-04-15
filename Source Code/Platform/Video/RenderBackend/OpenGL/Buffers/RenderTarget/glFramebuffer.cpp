@@ -101,7 +101,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     if (type == RTAttachmentType::Depth) {
         attachmentEnum = GL_DEPTH_ATTACHMENT;
 
-        const TextureType texType = tex->data().type();
+        const TextureType texType = tex->data()._textureType;
         _isLayeredDepth = (texType == TextureType::TEXTURE_2D_ARRAY ||
                            texType == TextureType::TEXTURE_2D_ARRAY_MS ||
                            texType == TextureType::TEXTURE_CUBE_MAP ||
@@ -131,7 +131,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentS
                                    layeredRendering };
         // Compare with old state
         if (bState != getAttachmentState(binding)) {
-            const GLuint handle = tex->data().textureHandle();
+            const GLuint handle = tex->data()._textureHandle;
             if (layeredRendering) {
                 glNamedFramebufferTextureLayer(_framebufferHandle, binding, handle, bState._writeLevel, bState._writeLayer);
             } else {
@@ -460,7 +460,7 @@ void glFramebuffer::queueMipMapRecomputation() {
 void glFramebuffer::queueMipMapRecomputation(const RTAttachment& attachment, U16 startLayer, U16 layerCount) {
     const Texture_ptr& texture = attachment.texture(false);
     if (attachment.used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
-        GL_API::queueComputeMipMap(texture->data().textureHandle());
+        GL_API::queueComputeMipMap(texture->data()._textureHandle);
     }
 }
 
@@ -520,7 +520,7 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
 
     const RTAttachment_ptr& att = _attachmentPool->get(params._type, params._index);
 
-    const GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->texture(false)->data().type())];
+    const GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->texture(false)->data()._textureType)];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
     if (textureType != GL_TEXTURE_2D_ARRAY &&
         textureType != GL_TEXTURE_CUBE_MAP_ARRAY &&

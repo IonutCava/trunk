@@ -739,7 +739,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     return terrain->load();
 }
 
-VegetationDetails& TerrainLoader::initializeVegetationDetails(eastl::shared_ptr<Terrain> terrain,
+VegetationDetails& TerrainLoader::initializeVegetationDetails(std::shared_ptr<Terrain> terrain,
                                                               PlatformContext& context,
                                                               const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);

@@ -284,8 +284,8 @@ void glShaderProgram::validatePostBind() {
 void glShaderProgram::threadedLoad(bool reloadExisting) {
     OPTICK_EVENT();
 
-    if (!mWeakPtr.expired()) {
-        registerShaderProgram(eastl::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
+    if (!weak_from_this().expired()) {
+        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
     }
 
     // NULL shader means use shaderProgram(0), so bypass the normal loading routine

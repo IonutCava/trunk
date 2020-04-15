@@ -90,7 +90,7 @@ inline F32 Material::getParallaxFactor() const {
     return _properties._parallaxFactor;
 }
 
-inline eastl::weak_ptr<Texture> Material::getTexture(TextureUsage textureUsage) const {
+inline Texture_wptr Material::getTexture(TextureUsage textureUsage) const {
     SharedLock<SharedMutex> r_lock(_textureLock);
     return _textures[to_U32(textureUsage)];
 }

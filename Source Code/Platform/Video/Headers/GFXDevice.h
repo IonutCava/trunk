@@ -264,7 +264,7 @@ public:  // Accessors and Mutators
     inline void registerDrawCalls(U32 count) noexcept;
     inline const Rect<I32>& getCurrentViewport() const noexcept;
 
-    DebugView* addDebugView(const eastl::shared_ptr<DebugView>& view);
+    DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
     void toggleDebugView(I16 index, const bool state);
     void getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, bool>>& namesOut);
@@ -462,9 +462,7 @@ private:
 
     MemoryPool<GenericDrawCommand> _commandPool;
 
-    Mutex _descriptorSetPoolLock;
-    DescriptorSetPool _descriptorSetPool;
-    
+   
     Mutex _pipelineCacheLock;
     hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager = nullptr;

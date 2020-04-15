@@ -492,13 +492,15 @@ const CEGUI::GUIContext& GUI::getCEGUIContext() const noexcept {
 TextureData GUI::getCEGUIRenderTextureData() const {
     if (_ceguiRenderTextureTarget != nullptr) {
         const GFXDevice& gfx = _context->parent().platformContext().gfx();
-        return TextureData(
+        return
+        {
             gfx.getHandleFromCEGUITexture(_ceguiRenderTextureTarget->getTexture()),
             0u,
-            TextureType::TEXTURE_2D);
+            TextureType::TEXTURE_2D 
+        };
 
     }
 
-    return TextureData(0u, 0u, TextureType::COUNT);
+    return { 0u, 0u, TextureType::COUNT };
 }
 };

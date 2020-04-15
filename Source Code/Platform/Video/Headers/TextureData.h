@@ -48,35 +48,30 @@ struct CopyTexParams {
 };
 
 struct TextureData {
-    TextureData() noexcept : TextureData(0u, 0u, TextureType::COUNT)
-    {}
-
-    TextureData(U32 texHandle, U32 samplerHandle, TextureType type) noexcept
-        : _textureHandle(texHandle), _samplerHandle(samplerHandle), _textureType(type)
-    {}
-
-    inline U32 textureHandle() const noexcept { return _textureHandle; }
-    inline U32 samplerHandle() const noexcept { return _samplerHandle; }
-    inline TextureType  type() const noexcept { return _textureType;   }
-
-    inline bool operator==(const TextureData& other) const noexcept {
-        return _textureHandle == other._textureHandle &&
-               _samplerHandle == other._samplerHandle &&
-               _textureType == other._textureType;
-    }
-
-    inline bool operator!=(const TextureData& other) const noexcept {
-        return _textureHandle != other._textureHandle ||
-               _samplerHandle != other._samplerHandle ||
-               _textureType != other._textureType;
-    }
-
-private:
-    friend class Texture;
     U32 _textureHandle = 0u;
     U32 _samplerHandle = 0u;
     TextureType _textureType = TextureType::COUNT;
 };
+
+FORCE_INLINE bool operator==(const TextureData& lhs, const TextureData& rhs) noexcept {
+    return lhs._textureHandle == rhs._textureHandle &&
+           lhs._samplerHandle == rhs._samplerHandle &&
+           lhs._textureType == rhs._textureType;
+}
+
+FORCE_INLINE bool operator!=(const TextureData& lhs, const TextureData& rhs) noexcept {
+    return lhs._textureHandle != rhs._textureHandle ||
+           lhs._samplerHandle != rhs._samplerHandle ||
+           lhs._textureType != rhs._textureType;
+}
+
+inline size_t GetHash(const TextureData& data) noexcept {
+    size_t ret = 11;
+    Util::Hash_combine(ret, data._textureHandle);
+    Util::Hash_combine(ret, data._samplerHandle);
+    Util::Hash_combine(ret, to_base(data._textureType));
+    return ret;
+}
 
 enum class TextureUpdateState : U8 {
     ADDED = 0,

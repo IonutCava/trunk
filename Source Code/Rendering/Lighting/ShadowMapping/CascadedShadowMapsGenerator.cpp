@@ -64,7 +64,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         blurDepthMapShader.propertyDescriptor(shaderDescriptor);
 
         _blurDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), blurDepthMapShader);
-        _blurDepthMapShader->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+        _blurDepthMapShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             PipelineDescriptor pipelineDescriptor = {};
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
 

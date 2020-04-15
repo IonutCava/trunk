@@ -81,7 +81,7 @@ class Trigger : public SceneNode {
     /// Draw the impostor?
     bool _drawImpostor;
     /// used for debug rendering / editing - Ionut
-    eastl::shared_ptr<ImpostorSphere> _triggerImpostor;
+    std::shared_ptr<ImpostorSphere> _triggerImpostor;
     bool _enabled;
 };
 

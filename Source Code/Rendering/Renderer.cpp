@@ -61,7 +61,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     cullShaderDesc.propertyDescriptor(cullDescritpor);
 
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
-    _lightCullComputeShader->addStateCallback(ResourceState::RES_LOADED, [this](Resource_wptr res) {
+    _lightCullComputeShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
         _lightCullPipeline = _context.gfx().newPipeline(pipelineDescriptor);

@@ -126,7 +126,7 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Texture [ %d - %d ]\n", binding, data.textureHandle()));
+        ret.append(Util::StringFormat("Texture [ %d - %d ]\n", binding, data._textureHandle));
     }
 
     for (auto it : _set._textureViews) {

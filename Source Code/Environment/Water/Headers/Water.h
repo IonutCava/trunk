@@ -50,7 +50,7 @@ class WaterPlane : public SceneNode {
 
     bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);
 
-    inline const eastl::shared_ptr<Quad3D>& getQuad() const { return _plane; }
+    inline const std::shared_ptr<Quad3D>& getQuad() const { return _plane; }
 
     void updatePlaneEquation(const SceneGraphNode& sgn,
                              Plane<F32>& plane,
@@ -84,7 +84,7 @@ class WaterPlane : public SceneNode {
    private:
     vec3<U16> _dimensions;
     /// the water's "geometry"
-    eastl::shared_ptr<Quad3D> _plane = nullptr;
+    std::shared_ptr<Quad3D> _plane = nullptr;
 
     Camera* _reflectionCam = nullptr;
     U16     _blurKernelSize = 3u;

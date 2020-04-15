@@ -47,10 +47,10 @@ public:
     bool setUnit(Unit_ptr unit);
 
     template <typename T = Unit>
-    inline eastl::shared_ptr<T> getUnit() const {
+    inline std::shared_ptr<T> getUnit() const {
         static_assert(std::is_base_of<Unit, T>::value,
             "UnitComponent::getUnit error: Invalid target unit type!");
-        return eastl::static_pointer_cast<T>(_unit);
+        return std::static_pointer_cast<T>(_unit);
     }
 
 private:

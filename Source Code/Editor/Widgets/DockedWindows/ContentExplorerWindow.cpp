@@ -254,7 +254,7 @@ namespace Divide {
                         const U16 h = tex->height();
                         const F32 aspect = w / to_F32(h);
 
-                        if (ImGui::ImageButton((void*)(intptr_t)tex->data().textureHandle(), ImVec2(64, 64 / aspect))) {
+                        if (ImGui::ImageButton((void*)(intptr_t)tex->data()._textureHandle, ImVec2(64, 64 / aspect))) {
                             previewTexture = tex;
                         }
                     } else if (mesh != nullptr) {
@@ -263,7 +263,7 @@ namespace Divide {
                         const U16 h = icon->height();
                         const F32 aspect = w / to_F32(h);
 
-                        if (ImGui::ImageButton((void*)(intptr_t)icon->data().textureHandle(), ImVec2(64, 64 / aspect))) {
+                        if (ImGui::ImageButton((void*)(intptr_t)icon->data()._textureHandle, ImVec2(64, 64 / aspect))) {
                             spawnMesh = mesh;
                         }
                     } else {
@@ -271,7 +271,7 @@ namespace Divide {
                         const U16 h = _fileIcon->height();
                         const F32 aspect = w / to_F32(h);
 
-                        if (ImGui::ImageButton((void*)(intptr_t)_fileIcon->data().textureHandle(), ImVec2(64, 64 / aspect))) {
+                        if (ImGui::ImageButton((void*)(intptr_t)_fileIcon->data()._textureHandle, ImVec2(64, 64 / aspect))) {
                         }
                     }
                     if (ImGui::IsItemHovered()) {

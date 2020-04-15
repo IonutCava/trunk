@@ -257,7 +257,7 @@ bool Material::setTexture(TextureUsage textureUsageSlot,
             const Texture_ptr& otherTex = _textures[isHeight ? to_base(TextureUsage::NORMALMAP)
                                                              : to_base(TextureUsage::HEIGHTMAP)];
 
-            if (otherTex != nullptr && texture != nullptr && otherTex->data().textureHandle() == texture->data().textureHandle()) {
+            if (otherTex != nullptr && texture != nullptr && otherTex->data()._textureHandle == texture->data()._textureHandle) {
                 _textures[to_base(TextureUsage::HEIGHTMAP)] = nullptr;
             }
         }
@@ -267,7 +267,7 @@ bool Material::setTexture(TextureUsage textureUsageSlot,
         {
             bool isOpacity = true;
             if (textureUsageSlot == TextureUsage::UNIT0) {
-                _textureKeyCache = texture == nullptr ? -1 : texture->data().textureHandle();
+                _textureKeyCache = texture == nullptr ? -1 : texture->data()._textureHandle;
                 isOpacity = false;
             }
 
@@ -275,7 +275,7 @@ bool Material::setTexture(TextureUsage textureUsageSlot,
             const Texture_ptr& otherTex = _textures[isOpacity ? to_base(TextureUsage::UNIT0)
                                                               : to_base(TextureUsage::OPACITY)];
 
-            if (otherTex != nullptr && texture != nullptr && otherTex->data().textureHandle() == texture->data().textureHandle()) {
+            if (otherTex != nullptr && texture != nullptr && otherTex->data()._textureHandle == texture->data()._textureHandle) {
                 _textures[to_base(TextureUsage::OPACITY)] = nullptr;
             }
 
@@ -644,7 +644,7 @@ bool Material::getTextureData(TextureUsage slot, TextureDataContainer<>& contain
         }
     }
 
-    if (data.type() != TextureType::COUNT) {
+    if (data._textureType != TextureType::COUNT) {
         return container.setTexture(data, slotValue) != TextureUpdateState::NOTHING;
     }
 
@@ -1112,6 +1112,8 @@ void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property
 void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
     stringImpl hashPath = entryName + ".SamplerDescriptors.";
 
+    std::atomic_uint loadTasks = 0;
+
     for (U8 i = 0; i < g_materialTexturesCount; ++i) {
         const TextureUsage usage = g_materialTextures[i];
 
@@ -1127,31 +1129,45 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 const size_t hash = pt.get<size_t>(textureNode + ".Sampler.hash", 0);
                 sampDesc = XMLParser::loadFromXML(hash, hashPath + to_stringImpl(hash), pt);
 
-                const stringImpl textureName = texPath + "/" + texName;
-                const Str64 img_name(textureName.substr(textureName.find_last_of('/') + 1).c_str());
-                const Str256 pathName(textureName.substr(0, textureName.rfind("/")).c_str());
-
+                TextureOperation op = TextureOperation::NONE;
+                if (usage == TextureUsage::UNIT1) {
+                    _properties._operation = TypeUtil::StringToTextureOperation(pt.get<stringImpl>(textureNode + ".usage", "REPLACE"));
+                }
+                {
+                    UniqueLock<SharedMutex> w_lock(_textureLock);
+                    const Texture_ptr& crtTex = _textures[to_base(usage)];
+                    if (crtTex != nullptr) {
+                        if (crtTex->flipped() == flipped &&
+                            crtTex->getCurrentSampler().getHash() == hash &&
+                            crtTex->assetName() == texName &&
+                            crtTex->assetLocation() == texPath)
+                        {
+                            continue;
+                        }
+                    }
+                }
                 TextureDescriptor texDesc(TextureType::TEXTURE_2D);
                 texDesc.samplerDescriptor(sampDesc);
 
-                ResourceDescriptor texture(img_name);
-                texture.assetName(img_name);
-                texture.assetLocation(pathName);
+                loadTasks.fetch_add(1u);
+                ResourceDescriptor texture(texName);
+                texture.assetName(texName);
+                texture.assetLocation(texPath);
                 texture.propertyDescriptor(texDesc);
+                texture.threaded(true);
                 texture.waitForReady(false);
                 texture.flag(!flipped);
 
                 Texture_ptr tex =  CreateResource<Texture>(_context.parent().resourceCache(), texture);
-                if (tex != nullptr) {
-                    if (usage == TextureUsage::UNIT1) {
-                        const TextureOperation op = TypeUtil::StringToTextureOperation(pt.get<stringImpl>(textureNode + ".usage", "REPLACE"));
-                        setTexture(usage, tex, op);
-                    } else {
-                        setTexture(usage, tex);
-                    }
-                }
+                tex->addStateCallback(ResourceState::RES_LOADED, [this, usage, op, &loadTasks, &tex](CachedResource* res) {
+                    setTexture(usage, tex, op);
+                    loadTasks.fetch_sub(1u);
+                });
+                
             }
         }
+
+        WAIT_FOR_CONDITION(loadTasks.load() == 0u);
     }
 }
 
