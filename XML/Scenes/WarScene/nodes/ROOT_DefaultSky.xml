@@ -11,7 +11,9 @@
     <Show__AABB>false</Show__AABB>
     <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
 </BOUNDS>
-<RENDERING/>
+<RENDERING>
+    <Show__Axis>false</Show__Axis>
+</RENDERING>
 <NETWORKING/>
 <SCRIPT/>
 <SKY/>

@@ -2,7 +2,7 @@
 <static>true</static>
 <TRANSFORM>
     <Transform>
-        <position x="753.466309" y="-50" z="137.462158"/>
+        <position x="747.096252" y="-50" z="145.271362"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
@@ -274,5 +274,6 @@
     <Rendered__LOD__Level>3</Rendered__LOD__Level>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <Show__Axis>false</Show__Axis>
 </RENDERING>
 <INFINITE_PLANE/>

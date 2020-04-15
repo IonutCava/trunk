@@ -81,6 +81,20 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     defaultReflectionTexture(nullptr, 0);
     defaultRefractionTexture(nullptr, 0);
 
+    EditorComponentField vaxisField = {};
+    vaxisField._name = "Show Axis";
+    vaxisField._data = &_showAxis;
+    vaxisField._type = EditorComponentFieldType::PUSH_TYPE;
+    vaxisField._basicType = GFX::PushConstantType::BOOL;
+    vaxisField._readOnly = false;
+    _editorComponent.registerField(std::move(vaxisField));
+
+    _editorComponent.onChangedCbk([this](const char* field) {
+        if (strcmp(field, "Show Axis") == 0) {
+            toggleRenderOption(RenderingComponent::RenderOptions::RENDER_AXIS, _showAxis);
+        }
+    });
+
     RenderStateBlock primitiveStateBlock = {};
     PipelineDescriptor pipelineDescriptor = {};
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
@@ -99,9 +113,9 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
             pipelineDescriptor._stateHash = primitiveStateBlockNoZRead.getHash();
             _primitivePipeline[1] = _context.newPipeline(pipelineDescriptor);
         }
-
-        _primitivePipeline[0] = _context.newPipeline(pipelineDescriptor);
     }
+
+    _primitivePipeline[0] = _context.newPipeline(pipelineDescriptor);
 
     if_constexpr (Config::Build::ENABLE_EDITOR) {
         // Prepare it for line rendering
@@ -411,28 +425,12 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
 
     const SceneNode& node = _parentSGN.getNode();
 
-    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
-        switch(sceneRenderState.gizmoState()){
-            case SceneRenderState::GizmoState::ALL_GIZMO: {
-                if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
-                    if (static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH) {
-                        drawDebugAxis();
-                        bufferInOut.add(_axisGizmo->toCommandBuffer());
-                    }
-                }
-            } break;
-            case SceneRenderState::GizmoState::SELECTED_GIZMO: {
-                if (_parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED)) {
-                    drawDebugAxis();
-                    bufferInOut.add(_axisGizmo->toCommandBuffer());
-                }
-            } break;
-            case SceneRenderState::GizmoState::NO_GIZMO: {
-                if (_axisGizmo) {
-                    _context.destroyIMP(_axisGizmo);
-                }
-            } break;
-        }
+    const bool selectionGizmo = sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO) && _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED);
+    if (renderOptionEnabled(RenderOptions::RENDER_AXIS) || selectionGizmo || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS)) {
+        drawDebugAxis();
+        bufferInOut.add(_axisGizmo->toCommandBuffer());
+    } else if (_axisGizmo) {
+        _context.destroyIMP(_axisGizmo);
     }
 
     SceneGraphNode* grandParent = _parentSGN.parent();
@@ -598,10 +596,10 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             }
 
             if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
-                pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY,
-                                 (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY)  && sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
-                pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME,
-                                 (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
+                pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY,  (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) &&
+                                                                       sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
+                pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
+                                                                       sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
             }
         }
 

@@ -149,8 +149,6 @@ bool Scene::frameEnded() {
 bool Scene::idle() {  // Called when application is idle
     _sceneGraph->idle();
 
-    Attorney::SceneRenderStateScene::playAnimations(renderState(), _context.config().debug.mesh.playAnimations);
-
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
             _sceneGraph->getRoot().get<RigidBodyComponent>()->cookCollisionMesh(resourceName().c_str());
@@ -775,8 +773,8 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
 U16 Scene::registerInputActions() {
     _input->flushCache();
 
-    auto none = [](InputParams param) {};
-    auto deleteSelection = [this](InputParams param) { 
+    const auto none = [](InputParams param) {};
+    const auto deleteSelection = [this](InputParams param) {
         PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
         Selections& playerSelections = _currentSelection[idx];
         for (U8 i = 0u; i < playerSelections._selectionCount; ++i) {
@@ -786,7 +784,7 @@ U16 Scene::registerInputActions() {
         playerSelections._selections.fill(-1);
     };
 
-    auto increaseCameraSpeed = [this](InputParams param){
+    const auto increaseCameraSpeed = [this](InputParams param){
         Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
@@ -795,7 +793,7 @@ U16 Scene::registerInputActions() {
             cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() + 1.0f);
         }
     };
-    auto decreaseCameraSpeed = [this](InputParams param) {
+    const auto decreaseCameraSpeed = [this](InputParams param) {
         Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
@@ -804,73 +802,34 @@ U16 Scene::registerInputActions() {
             cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
         }
     };
-    auto increaseResolution = [this](InputParams param) {_context.gfx().increaseResolution();};
-    auto decreaseResolution = [this](InputParams param) {_context.gfx().decreaseResolution();};
-    auto moveForward = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);};
-    auto moveBackwards = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);};
-    auto stopMoveFWDBCK = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);};
-    auto strafeLeft = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);};
-    auto strafeRight = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);};
-    auto stopStrafeLeftRight = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);};
-    auto rollCCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE);};
-    auto rollCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE);};
-    auto stopRollCCWCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NONE);};
-    auto turnLeft = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);};
-    auto turnRight = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);};
-    auto stopTurnLeftRight = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);};
-    auto turnUp = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);};
-    auto turnDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);};
-    auto stopTurnUpDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
-    auto togglePauseState = [](InputParams param){
+    const auto increaseResolution = [this](InputParams param) {_context.gfx().increaseResolution();};
+    const auto decreaseResolution = [this](InputParams param) {_context.gfx().decreaseResolution();};
+    const auto moveForward = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);};
+    const auto moveBackwards = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);};
+    const auto stopMoveFWDBCK = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);};
+    const auto strafeLeft = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);};
+    const auto strafeRight = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);};
+    const auto stopStrafeLeftRight = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);};
+    const auto rollCCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE);};
+    const auto rollCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE);};
+    const auto stopRollCCWCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NONE);};
+    const auto turnLeft = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);};
+    const auto turnRight = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);};
+    const auto stopTurnLeftRight = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);};
+    const auto turnUp = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);};
+    const auto turnDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);};
+    const auto stopTurnUpDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
+    const auto togglePauseState = [](InputParams param){
         ParamHandler& par = ParamHandler::instance();
         par.setParam(_ID_32("freezeLoopTime"), !par.getParam(_ID_32("freezeLoopTime"), false));
     };
-    auto toggleDepthOfField = [this](InputParams param) {
-        PostFX& postFX = _context.gfx().getRenderer().postFX();
-        if (postFX.getFilterState(FilterType::FILTER_DEPTH_OF_FIELD)) {
-            postFX.popFilter(FilterType::FILTER_DEPTH_OF_FIELD);
-        } else {
-            postFX.pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
-        }
-    };
-    auto toggleBloom = [this](InputParams param) {
-        PostFX& postFX = _context.gfx().getRenderer().postFX();
-        if (postFX.getFilterState(FilterType::FILTER_BLOOM)) {
-            postFX.popFilter(FilterType::FILTER_BLOOM);
-        } else {
-            postFX.pushFilter(FilterType::FILTER_BLOOM);
-        }
-    };
-    auto toggleSkeletonRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);};
-    auto toggleAxisLineRendering = [this](InputParams param) {renderState().toggleAxisLines();};
-    auto toggleWireframeRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);};
-    auto toggleGeometryRendering = [this](InputParams param) { renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);};
-    auto toggleDebugLines = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES);};
-    auto toggleBoundingBoxRendering = [this](InputParams param) {
-        bool showAABB = renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
-        bool showBS = renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
-        if (!showAABB && !showBS) {
-            renderState().enableOption(SceneRenderState::RenderOptions::RENDER_AABB);
-        } else if (showAABB && !showBS) {
-            renderState().enableOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
-        } else if (showAABB && showBS) {
-            renderState().disableOption(SceneRenderState::RenderOptions::RENDER_AABB);
-        } else /*if (!showAABB && showBS) */ {
-            renderState().disableOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
-        }
-    };
-    auto placeholder = [this](InputParams param) {
-        
-    };
-    auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
-    auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
-    auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
-    auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
-    auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
-    auto releaseCameraFromMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false); };
-    auto rendererDebugView = [this](InputParams param) { ACKNOWLEDGE_UNUSED(param); };
-    auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
-    auto povNavigation = [this](InputParams param) {
+    const auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
+    const auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
+    const auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
+    const auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
+    const auto releaseCameraFromMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false); };
+    const auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
+    const auto povNavigation = [this](InputParams param) {
         U32 povMask = param._var[0];
 
         if (povMask & to_base(Input::JoystickPovDirection::UP)) {  // Going up
@@ -891,7 +850,7 @@ U16 Scene::registerInputActions() {
         }
     };
 
-    auto axisNavigation = [this](InputParams param) {
+    const auto axisNavigation = [this](InputParams param) {
         I32 axisABS = param._var[0];
         I32 axis = param._var[1];
         //bool isGamepad = param._var[2] == 1;
@@ -938,27 +897,27 @@ U16 Scene::registerInputActions() {
         }
     };
 
-    auto toggleDebugInterface = [this](InputParams param) {
+    const auto toggleDebugInterface = [this](InputParams param) {
         _context.debug().toggle(!_context.debug().enabled());
     };
 
-    auto toggleEditor = [this](InputParams param) {
+    const auto toggleEditor = [this](InputParams param) {
         if_constexpr(Config::Build::ENABLE_EDITOR) {
             _context.editor().toggle(!_context.editor().running());
         }
     };
 
-    auto toggleConsole = [this](InputParams param) {
+    const auto toggleConsole = [this](InputParams param) {
         if_constexpr(Config::Build::ENABLE_EDITOR) {
             _context.gui().getConsole().setVisible(!_context.gui().getConsole().isVisible());
         }
     };
 
-    auto dragSelectBegin = [this](InputParams param) {
+    const auto dragSelectBegin = [this](InputParams param) {
         beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), _context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
     };
 
-    auto dragSelectEnd = [this](InputParams param) {
+    const auto dragSelectEnd = [this](InputParams param) {
         endDragSelection(getPlayerIndexForDevice(param._deviceIndex), _context.editor().running(), vec2<I32>(param._var[2], param._var[3]));
     };
 
@@ -985,32 +944,21 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(19, turnDown);
     actions.registerInputAction(20, stopTurnUpDown);
     actions.registerInputAction(21, togglePauseState);
-    actions.registerInputAction(22, toggleDepthOfField);
-    actions.registerInputAction(23, toggleBloom);
-    actions.registerInputAction(24, toggleSkeletonRendering);
-    actions.registerInputAction(25, toggleAxisLineRendering);
-    actions.registerInputAction(26, toggleWireframeRendering);
-    actions.registerInputAction(27, toggleGeometryRendering);
-    actions.registerInputAction(28, toggleDebugLines);
-    actions.registerInputAction(29, toggleBoundingBoxRendering);
-    actions.registerInputAction(30, placeholder);
-    actions.registerInputAction(31, takeScreenshot);
-    actions.registerInputAction(32, toggleFullScreen);
-    actions.registerInputAction(33, toggleFlashLight);
-    actions.registerInputAction(34, toggleOctreeRegionRendering);
-    actions.registerInputAction(35, lockCameraToMouse);
-    actions.registerInputAction(36, releaseCameraFromMouse);
-    actions.registerInputAction(37, rendererDebugView);
-    actions.registerInputAction(38, shutdown);
-    actions.registerInputAction(39, povNavigation);
-    actions.registerInputAction(40, axisNavigation);
-    actions.registerInputAction(41, toggleDebugInterface);
-    actions.registerInputAction(42, toggleEditor);
-    actions.registerInputAction(43, toggleConsole);
-    actions.registerInputAction(44, dragSelectBegin);
-    actions.registerInputAction(45, dragSelectEnd);
+    actions.registerInputAction(22, takeScreenshot);
+    actions.registerInputAction(23, toggleFullScreen);
+    actions.registerInputAction(24, toggleFlashLight);
+    actions.registerInputAction(25, lockCameraToMouse);
+    actions.registerInputAction(26, releaseCameraFromMouse);
+    actions.registerInputAction(27, shutdown);
+    actions.registerInputAction(28, povNavigation);
+    actions.registerInputAction(29, axisNavigation);
+    actions.registerInputAction(30, toggleDebugInterface);
+    actions.registerInputAction(31, toggleEditor);
+    actions.registerInputAction(32, toggleConsole);
+    actions.registerInputAction(33, dragSelectBegin);
+    actions.registerInputAction(34, dragSelectEnd);
 
-    return 46;
+    return 35;
 }
 
 void Scene::loadKeyBindings() {
@@ -1450,12 +1398,19 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
             _octreeBoundingBoxes.resize(0);
             sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
 
-            size_t primitiveCount = _octreePrimitives.size();
-            size_t regionCount = _octreeBoundingBoxes.size();
+            const size_t primitiveCount = _octreePrimitives.size();
+            const size_t regionCount = _octreeBoundingBoxes.size();
             if (regionCount > primitiveCount) {
-                size_t diff = regionCount - primitiveCount;
+                RenderStateBlock primitiveDescriptor;
+                PipelineDescriptor pipeDesc;
+                pipeDesc._stateHash = primitiveDescriptor.getHash();
+                pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+                Pipeline* pipeline = _context.gfx().newPipeline(pipeDesc);
+
+                const size_t diff = regionCount - primitiveCount;
                 for (size_t i = 0; i < diff; ++i) {
                     _octreePrimitives.push_back(_context.gfx().newIMP());
+                    _octreePrimitives.back()->pipeline(*pipeline);
                 }
             }
 

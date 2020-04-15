@@ -175,6 +175,7 @@ void MenuBar::draw() {
                 ImGui::Separator();
 
                 if (g_saveSceneParams._closePopup) {
+                    _savePopup = false;
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::EndPopup();
@@ -466,6 +467,75 @@ void MenuBar::drawDebugMenu() {
             config.changed(true);
         }
 
+        LightPool& pool = Attorney::EditorGeneralWidget::getActiveLightPool(_context.editor());
+
+        bool shadowDebug = pool.isDebugLight(LightType::DIRECTIONAL, 0);
+        if (ImGui::MenuItem("Debug Main CSM", "", &shadowDebug))
+        {
+            pool.setDebugLight(shadowDebug ? LightType::DIRECTIONAL : LightType::COUNT, 0u);
+        }
+
+        bool lightImpostors = pool.lightImpostorsEnabled();
+        if (ImGui::MenuItem("Draw Light Impostors", "", &lightImpostors))
+        {
+            pool.lightImpostorsEnabled(lightImpostors);
+        }
+
+        if (ImGui::BeginMenu("Debug Gizmos")) {
+            SceneManager* sceneManager = context().kernel().sceneManager();
+            SceneRenderState& renderState = sceneManager->getActiveScene().state().renderState();
+
+            bool temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
+            if (ImGui::MenuItem("Show AABBs", "", &temp)) {
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")), (temp ? "On" : "Off"));
+                renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_AABB, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
+            if (ImGui::MenuItem("Show bounding spheres", "", &temp)) {
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_SPHERES")), (temp ? "On" : "Off"));
+                renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_BSPHERES, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
+            if (ImGui::MenuItem("Show skeletons", "", &temp)) {
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_SKELETONS")), (temp ? "On" : "Off"));
+                renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_SKELETONS, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+            if (ImGui::MenuItem("Show scene axis", "", &temp)) {
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_AXIS_GIZMO")));
+                renderState.toggleOption(SceneRenderState::RenderOptions::SCENE_GIZMO, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
+            if (ImGui::MenuItem("Show selection axis", "", &temp)) {
+                renderState.toggleOption(SceneRenderState::RenderOptions::SELECTION_GIZMO, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+            if (ImGui::MenuItem("Show all axis", "", &temp)) {
+                renderState.toggleOption(SceneRenderState::RenderOptions::ALL_GIZMOS, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
+            if (ImGui::MenuItem("Render geometry", "", &temp)) {
+                renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
+            if (ImGui::MenuItem("Render wireframe", "", &temp)) {
+                renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);
+            if (ImGui::MenuItem("Render octree regions", "", &temp)) {
+                renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_CUSTOM_PRIMITIVES);
+            if (ImGui::MenuItem("Render custom gismos", "", &temp)) {
+                renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_CUSTOM_PRIMITIVES, temp);
+            }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
+            if (ImGui::MenuItem("Play animations", "", &temp)) {
+                renderState.toggleOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS, temp);
+            }
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("Edge Detection Method")) {
 
             PreRenderBatch* batch = _context.gfx().getRenderer().postFX().getFilterBatch();
@@ -484,20 +554,6 @@ void MenuBar::drawDebugMenu() {
             }
 
             ImGui::EndMenu();
-        }
-
-        LightPool& pool = Attorney::EditorGeneralWidget::getActiveLightPool(_context.editor());
-
-        bool shadowDebug = pool.isDebugLight(LightType::DIRECTIONAL, 0);
-        if (ImGui::MenuItem("Debug Main CSM", "", &shadowDebug))
-        {
-            pool.setDebugLight(shadowDebug ? LightType::DIRECTIONAL : LightType::COUNT, 0u);
-        }
-
-        bool lightImpostors = pool.lightImpostorsEnabled();
-        if (ImGui::MenuItem("Draw Light Impostors", "", &lightImpostors))
-        {
-            pool.lightImpostorsEnabled(lightImpostors);
         }
 
         if (ImGui::BeginMenu("Debug Views"))

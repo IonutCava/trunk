@@ -100,6 +100,8 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
 
     std::pair<vec2<U32>, ShaderBuffer*> getAnimationData() const;
 
+    PROPERTY_R(bool, showSkeleton, false);
+
    protected:
     friend class AnimationSystem;
     void Update(const U64 deltaTimeUS) final;

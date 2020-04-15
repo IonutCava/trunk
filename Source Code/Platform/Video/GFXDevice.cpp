@@ -2168,7 +2168,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
 
         // Debug axis form the axis arrow gizmo in the corner of the screen
         // This is toggleable, so check if it's actually requested
-        if (BitCompare(to_base(sceneRenderState.gizmoState()), SceneRenderState::GizmoState::SCENE_GIZMO)) {
+        if (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SCENE_GIZMO)) {
             if (!_axisGizmo) {
                 _axisGizmo = newIMP();
                 _axisGizmo->name("GFXDeviceAxisGizmo");

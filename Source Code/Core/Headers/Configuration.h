@@ -55,9 +55,6 @@ struct Configuration final : public XML::IXMLSerializable {
         bool showShadowCascadeSplits = true;
         bool enableLighting = true;
         stringImpl memFile = "none";
-        struct Mesh {
-            bool playAnimations = true;
-        } mesh = {};
     } debug = {};
     
     stringImpl language = "enGB";

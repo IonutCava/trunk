@@ -129,9 +129,10 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
            RENDER_BOUNDS_AABB = toBit(3),
            RENDER_BOUNDS_SPHERE = toBit(4),
            RENDER_SKELETON = toBit(5),
-           CAST_SHADOWS = toBit(6),
-           RECEIVE_SHADOWS = toBit(7),
-           IS_VISIBLE = toBit(8)
+           RENDER_AXIS = toBit(6),
+           CAST_SHADOWS = toBit(7),
+           RECEIVE_SHADOWS = toBit(8),
+           IS_VISIBLE = toBit(9)
        };
 
        struct NodeRenderingProperties {
@@ -234,6 +235,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     U32 defaultReflectionTextureIndex() const;
     U32 defaultRefractionTextureIndex() const;
+
+    PROPERTY_R(bool, showAxis, false);
 
    protected:
     void updateReflectionIndex(ReflectorType type, I32 index);

@@ -124,7 +124,9 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
     }
 
     nodeCache.resize(0);
-    if (params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
+    if (params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY) ||
+        params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME))
+    {
         NodeCullParams nodeParams = {};
         nodeParams._currentCamera = params._camera;
         nodeParams._lodThresholds =  params._sceneState->renderState().lodThresholds(params._stage);

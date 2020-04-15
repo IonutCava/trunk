@@ -5,6 +5,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 
+#include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
@@ -18,6 +19,20 @@ AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContex
       _previousFrameIndex(0),
       _previousAnimationIndex(-1)
 {
+    EditorComponentField vskelField = {};
+    vskelField._name = "Show Skeleton";
+    vskelField._data = &_showSkeleton;
+    vskelField._type = EditorComponentFieldType::PUSH_TYPE;
+    vskelField._basicType = GFX::PushConstantType::BOOL;
+    vskelField._readOnly = false;
+    _editorComponent.registerField(std::move(vskelField));
+
+    _editorComponent.onChangedCbk([this](const char* field) {
+        RenderingComponent* const rComp = _parentSGN.get<RenderingComponent>();
+        if (rComp != nullptr) {
+            rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SKELETON, _showSkeleton);
+        }
+    });
 }
 
 AnimationComponent::~AnimationComponent()

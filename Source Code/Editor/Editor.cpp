@@ -486,6 +486,7 @@ void Editor::toggle(const bool state) {
     if (_running == state) {
         return;
     }
+    Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
 
     _running = state;
 
@@ -507,11 +508,14 @@ void Editor::toggle(const bool state) {
         }
 
         _context.config().save();
-
+        activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+        activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
+        activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
     } else {
+        activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+        activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
         updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
-        Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
         Selections selections = activeScene.getCurrentSelection();
         if (selections._selectionCount == 0) {
             //SceneGraphNode& root = activeScene.sceneGraph().getRoot();

@@ -256,6 +256,14 @@
                     <hash>10222214166118427337</hash>
                 </Sampler>
             </UNIT0>
+            <OPACITY>
+                <name>..\textures\elmleaf.png</name>
+                <path>assets/textures/</path>
+                <flipped>true</flipped>
+                <Sampler>
+                    <hash>10222214166118427337</hash>
+                </Sampler>
+            </OPACITY>
         </texture>
         <SamplerDescriptors>
             <10222214166118427337>
@@ -276,5 +284,6 @@
     <Rendered__LOD__Level>2</Rendered__LOD__Level>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <Show__Axis>false</Show__Axis>
 </RENDERING>
 <SUBMESH/>

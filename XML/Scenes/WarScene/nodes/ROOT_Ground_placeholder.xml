@@ -4,7 +4,7 @@
 <TRANSFORM>
     <Transform>
         <position x="100" y="14.5" z="-50"/>
-        <orientation x="-89.8057175" y="4.84906711e-15" z="2.16719128e-18"/>
+        <orientation x="-89.8057175" y="4.84788338e-15" z="2.16681202e-18"/>
         <scale x="102.562851" y="102.06208" z="102.613083"/>
     </Transform>
 </TRANSFORM>
@@ -250,6 +250,7 @@
     <Rendered__LOD__Level>0</Rendered__LOD__Level>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <Show__Axis>false</Show__Axis>
 </RENDERING>
 <NETWORKING/>
 <QUAD_3D/>

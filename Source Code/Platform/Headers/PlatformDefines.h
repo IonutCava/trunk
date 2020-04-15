@@ -351,7 +351,7 @@ inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff)
     return (diff <= largest * maxRelDiff);
 }
 
-FORCE_INLINE void NOP(void) noexcept {}
+constexpr void NOP(void) noexcept {}
 
 #define ACKNOWLEDGE_UNUSED(p) ((void)p)
 

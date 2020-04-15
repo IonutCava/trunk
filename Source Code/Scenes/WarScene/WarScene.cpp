@@ -176,7 +176,7 @@ void WarScene::toggleTerrainMode() {
 }
 
 void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
-    if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES)) {
+    if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_CUSTOM_PRIMITIVES)) {
         if (!_targetLines) {
             _targetLines = _context.gfx().newIMP();
         } else {
@@ -320,7 +320,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             if (g_terrain->get<BoundsComponent>()->getBoundingBox().containsPoint(camPos)) {
                 const Terrain& ter = g_terrain->getNode<Terrain>();
 
-                F32 headHeight = state().playerState(state().playerPass()).headHeight();
+                F32 headHeight = state().playerState(state().playerPass())._headHeight;
                 camPos -= g_terrain->get<TransformComponent>()->getPosition();
                 playerCamera()->setEye(ter.getPositionFromGlobal(camPos.x, camPos.z, true) + vec3<F32>(0.0f, headHeight, 0.0f));
             }

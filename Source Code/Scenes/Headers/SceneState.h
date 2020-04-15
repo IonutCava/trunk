@@ -96,41 +96,29 @@ class Scene;
 class LightPool;
 class RenderPass;
 
-namespace Attorney {
-    class SceneRenderStateScene;
-};
-
 /// Contains all the information needed to render the scene: camera position,
 /// render state, etc
 class SceneRenderState : public SceneComponent {
-    friend class Attorney::SceneRenderStateScene;
-
    public:
-    enum class GizmoState : U8 {
-        NO_GIZMO = toBit(1),
-        SCENE_GIZMO = toBit(2),
-        SELECTED_GIZMO = toBit(3),
-        ALL_GIZMO = SCENE_GIZMO | SELECTED_GIZMO,
-        COUNT = 4
-    };
-
     enum class RenderOptions : U16 {
         /// Show/hide bounding boxes
         RENDER_AABB = toBit(1),
         /// Show/hide bounding spheres
         RENDER_BSPHERES = toBit(2),
-        /// Show/hide debug lines
-        RENDER_DEBUG_LINES = toBit(3),
-        RENDER_DEBUG_TARGET_LINES = toBit(4),
+        /// Show/hide custom IMPrimitive elements
+        RENDER_CUSTOM_PRIMITIVES = toBit(3),
         /// Show/hide geometry
-        RENDER_GEOMETRY = toBit(5),
+        RENDER_GEOMETRY = toBit(4),
         /// Render skeletons for animated geometry
-        RENDER_SKELETONS = toBit(6),
+        RENDER_SKELETONS = toBit(5),
         /// Render wireframe for all scene geometry
-        RENDER_WIREFRAME = toBit(7),
-        RENDER_OCTREE_REGIONS = toBit(8),
-        PLAY_ANIMATIONS = toBit(9),
-        COUNT = 9
+        RENDER_WIREFRAME = toBit(6),
+        RENDER_OCTREE_REGIONS = toBit(7),
+        PLAY_ANIMATIONS = toBit(8),
+        SCENE_GIZMO = toBit(9),
+        SELECTION_GIZMO = toBit(10),
+        ALL_GIZMOS = toBit(11),
+        COUNT = 11
     };
 
     explicit SceneRenderState(Scene& parentScene);
@@ -141,45 +129,22 @@ class SceneRenderState : public SceneComponent {
     void disableOption(RenderOptions option);
     void toggleOption(RenderOptions option);
     void toggleOption(RenderOptions option, const bool state);
-
-    /// Show/hide axis gizmos
-    void toggleAxisLines();
     
-    inline void gizmoState(GizmoState newState) noexcept {
-        _gizmoState = newState;
-    }
-    
-    inline GizmoState gizmoState() const noexcept {
-        return _gizmoState;
-    }
-
-    inline void generalVisibility(F32 distance) noexcept { _generalVisibility = distance; }
-    inline F32  generalVisibility()       const noexcept { return _generalVisibility; }
-
-    inline void grassVisibility(F32 distance) noexcept { _grassVisibility = distance; }
-    inline F32  grassVisibility()       const noexcept { return _grassVisibility; }
-
-    inline void treeVisibility(F32 distance) noexcept { _treeVisibility = distance; }
-    inline F32  treeVisibility()       const noexcept { return _treeVisibility; }
-
-    inline void renderPass(U8 renderPass) noexcept { _renderPass = renderPass; }
-    inline U8   renderPass()        const noexcept { return _renderPass; }
+    PROPERTY_RW(F32, generalVisibility, 1000.0f);
+    PROPERTY_RW(F32, grassVisibility, 1000.0f);
+    PROPERTY_RW(F32, treeVisibility, 1000.0f);
+    PROPERTY_RW(U8, renderPass, 0u);
 
     inline vec4<U16>& lodThresholds() noexcept { return _lodThresholds; }
     inline FogDescriptor& fogDescriptor() noexcept { return _fog; }
     inline const FogDescriptor& fogDescriptor() const noexcept { return _fog; }
 
     vec4<U16> lodThresholds(RenderStage stage = RenderStage::DISPLAY) const noexcept;
-   protected:
-       
-    vec4<U16> _lodThresholds;
+
+  protected:
     FogDescriptor _fog;
-    GizmoState _gizmoState;
-    F32 _grassVisibility;
-    F32 _treeVisibility;
-    F32 _generalVisibility;
+    vec4<U16> _lodThresholds;
     U16 _stateMask;
-    U8 _renderPass;
 };
 
 class Camera;
@@ -192,14 +157,7 @@ enum class MoveDirection : I8 {
 
 constexpr F32 DEFAULT_PLAYER_HEIGHT = 1.82f;
 
-class SceneStatePerPlayer {
-  public:
-    SceneStatePerPlayer() noexcept
-      : _headHeight(DEFAULT_PLAYER_HEIGHT)
-    {
-        resetAll();
-    }
-
+struct SceneStatePerPlayer {
     inline void resetMovement() noexcept {
         _moveFB = _moveLR = _moveUD = _angleUD = _angleLR = _roll = _zoom = MoveDirection::NONE;
     }
@@ -212,55 +170,19 @@ class SceneStatePerPlayer {
         _cameraLockedToMouse = false;
     }
 
-    inline void cameraUnderwater(bool state) noexcept { _cameraUnderwater = state; }
-    inline bool cameraUnderwater()     const noexcept { return _cameraUnderwater; }
-
-    inline void cameraUpdated(bool state) noexcept { _cameraUpdated = state; }
-    inline bool cameraUpdated()     const noexcept { return _cameraUpdated; }
-
-    inline void moveFB(MoveDirection factor) noexcept { _moveFB = factor; }
-    inline MoveDirection  moveFB()     const noexcept { return _moveFB; }
-
-    inline void moveLR(MoveDirection factor) noexcept { _moveLR = factor; }
-    inline MoveDirection  moveLR()     const noexcept { return _moveLR; }
-
-    inline void moveUD(MoveDirection factor) noexcept { _moveUD = factor; }
-    inline MoveDirection  moveUD()     const noexcept { return _moveUD; }
-
-    inline void angleUD(MoveDirection factor) noexcept { _angleUD = factor; }
-    inline MoveDirection  angleUD()     const noexcept { return _angleUD; }
-
-    inline void angleLR(MoveDirection factor) noexcept { _angleLR = factor; }
-    inline MoveDirection  angleLR()     const noexcept { return _angleLR; }
-
-    inline void roll(MoveDirection factor) noexcept { _roll = factor; }
-    inline MoveDirection  roll()     const noexcept { return _roll; }
-
-    inline void zoom(MoveDirection factor) noexcept { _zoom = factor; }
-    inline MoveDirection  zoom()     const noexcept { return _zoom; }
-
-    inline void cameraLockedToMouse(bool state) noexcept { _cameraLockedToMouse = state; }
-    inline bool cameraLockedToMouse()     const noexcept { return _cameraLockedToMouse; }
-
-    inline void    overrideCamera(Camera* camera) noexcept { _overrideCamera = camera; }
-    inline Camera* overrideCamera()         const noexcept { return _overrideCamera; }
-
-    inline F32 headHeight() const noexcept { return _headHeight; }
-
-private:
+    PROPERTY_RW(bool, cameraUnderwater, false);
+    PROPERTY_RW(bool, cameraUpdated, false);
+    PROPERTY_RW(bool, cameraLockedToMouse, false);
+    PROPERTY_RW(MoveDirection, moveFB, MoveDirection::NONE);   ///< forward-back move change detected
+    PROPERTY_RW(MoveDirection, moveLR, MoveDirection::NONE);   ///< left-right move change detected
+    PROPERTY_RW(MoveDirection, moveUD, MoveDirection::NONE);   ///< up-down move change detected
+    PROPERTY_RW(MoveDirection, angleUD, MoveDirection::NONE);  ///< up-down angle change detected
+    PROPERTY_RW(MoveDirection, angleLR, MoveDirection::NONE);  ///< left-right angle change detected
+    PROPERTY_RW(MoveDirection, roll, MoveDirection::NONE);     ///< roll left or right change detected
+    PROPERTY_RW(MoveDirection, zoom, MoveDirection::NONE);     ///< zoom in or out detected
+    POINTER_RW(Camera, overrideCamera, nullptr);
     const F32 _headHeight = DEFAULT_PLAYER_HEIGHT;
-    bool _cameraLockedToMouse;
-    MoveDirection _moveFB;   ///< forward-back move change detected
-    MoveDirection _moveLR;   ///< left-right move change detected
-    MoveDirection _moveUD;   ///< up-down move change detected
-    MoveDirection _angleUD;  ///< up-down angle change detected
-    MoveDirection _angleLR;  ///< left-right angle change detected
-    MoveDirection _roll;     ///< roll left or right change detected
-    MoveDirection _zoom;     ///< zoom in or out detected
-    bool _cameraUnderwater;
-    // was the camera moved or rotated this frame
-    bool _cameraUpdated;
-    Camera* _overrideCamera;
+
 };
 
 struct WaterDetails {
@@ -330,21 +252,6 @@ protected:
     std::array<SceneStatePerPlayer, Config::MAX_LOCAL_PLAYER_COUNT> _playerState;
     vectorSTD<WaterDetails> _globalWaterBodies;
 };
-
-namespace Attorney {
-class SceneRenderStateScene {
-   private:
-    static void playAnimations(SceneRenderState& sceneRenderState, bool playAnimations) noexcept {
-        if (playAnimations) {
-            SetBit(sceneRenderState._stateMask, SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
-        } else {
-            ClearBit(sceneRenderState._stateMask, SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
-        }
-    }
-    friend class Divide::Scene;
-};
-
-};  // namespace Attorney
 
 };  // namespace Divide
 #endif

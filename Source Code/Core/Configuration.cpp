@@ -27,7 +27,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.showShadowCascadeSplits);
         GET_PARAM(debug.enableLighting);
         GET_PARAM(debug.memFile);
-        GET_PARAM(debug.mesh.playAnimations);
         GET_PARAM(language);
         GET_PARAM(runtime.targetDisplay);
         GET_PARAM(runtime.targetRenderingAPI);
@@ -114,7 +113,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(debug.showShadowCascadeSplits);
         PUT_PARAM(debug.enableLighting);
         PUT_PARAM(debug.memFile);
-        PUT_PARAM(debug.mesh.playAnimations);
         PUT_PARAM(language);
         PUT_PARAM(runtime.targetDisplay);
         PUT_PARAM(runtime.targetRenderingAPI);

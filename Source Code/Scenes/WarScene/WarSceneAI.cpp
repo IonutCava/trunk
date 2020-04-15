@@ -260,8 +260,6 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(scoreFlag);
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
-    SceneGraphNode* lightNode(_sceneGraph->findNode("Soldier3"));
-    lightNode->getNode<Object3D>().playAnimations(*lightNode, true);
 #if 0
     SceneGraphNode* lightNode(_sceneGraph->findNode("Soldier1"));
     SceneGraphNode* animalNode(_sceneGraph->findNode("Soldier2"));
@@ -464,8 +462,6 @@ void WarScene::startSimulation(I64 btnGUID) {
             if_constexpr(Config::Build::IS_DEBUG_BUILD) {
                 navMesh->debugDraw(true);
             }
-
-            renderState().enableOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES);
         }
 
         if (previousMesh) {

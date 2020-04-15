@@ -292,5 +292,6 @@
     <Rendered__LOD__Level>3</Rendered__LOD__Level>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <Show__Axis>false</Show__Axis>
 </RENDERING>
 <SUBMESH/>

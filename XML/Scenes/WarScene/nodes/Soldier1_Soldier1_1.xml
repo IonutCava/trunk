@@ -8,7 +8,9 @@
         <scale x="1" y="1" z="1"/>
     </Transform>
 </TRANSFORM>
-<ANIMATION/>
+<ANIMATION>
+    <Show__Skeleton>false</Show__Skeleton>
+</ANIMATION>
 <INVERSE_KINEMATICS/>
 <RAGDOLL/>
 <NAVIGATION/>
@@ -279,5 +281,6 @@
     <Rendered__LOD__Level>0</Rendered__LOD__Level>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <Show__Axis>false</Show__Axis>
 </RENDERING>
 <SUBMESH/>

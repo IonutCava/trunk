@@ -18,9 +18,6 @@
 	<!-- memFile: file name that the application should use to write  memory allocation info -->
 	<!-- leave empty for none! -->
 	<memFile>mem.log</memFile>
-	<mesh>
-		<playAnimations>true</playAnimations>
-	</mesh>
 </debug>
 <language>enGB</language>
 <!-- RUNTIME: Values use by the application after loading is complete -->
