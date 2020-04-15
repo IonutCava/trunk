@@ -41,8 +41,8 @@ class Scene;
 class Pipeline;
 class GFXDevice;
 class IMPrimitive;
-class ShaderProgram;
-class ImpostorSphere;
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
+FWD_DECLARE_MANAGED_CLASS(ImpostorSphere);
 
 namespace GFX {
     class CommandBuffer;
@@ -94,15 +94,15 @@ protected:
     static U16 allocateSlice();
 
 protected:
-    ProbeType _type;
-    U8 _updateRate;
-    U8 _currentUpdateCall;
-    U16 _currentArrayIndex;
     BoundingBox _aabb;
-    Pipeline*    _bbPipeline;
-    IMPrimitive* _boundingBoxPrimitive;
-    std::shared_ptr<ImpostorSphere> _impostor;
-    std::shared_ptr<ShaderProgram> _impostorShader;
+    ImpostorSphere_ptr _impostor = nullptr;
+    ShaderProgram_ptr _impostorShader = nullptr;
+    Pipeline*    _bbPipeline = nullptr;
+    IMPrimitive* _boundingBoxPrimitive = nullptr;
+    U16 _currentArrayIndex = 0u;
+    ProbeType _type = ProbeType::COUNT;
+    U8 _updateRate = 1u;
+    U8 _currentUpdateCall = 0u;
 
 private:
     GFXDevice& _context;

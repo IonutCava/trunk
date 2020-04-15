@@ -54,10 +54,10 @@ class DoFPreRenderOperator final : public PreRenderOperator {
     bool ready() const final;
 
    private:
-     ShaderProgram_ptr _dofShader;
+     ShaderProgram_ptr _dofShader = nullptr;
      PushConstants _constants;
-     F32 _focalDepth;
-     bool _autoFocus;
+     F32 _focalDepth = 1.0f;
+     bool _autoFocus = true;
 };
 
 };  // namespace Divide

@@ -258,29 +258,29 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     EnvironmentProbeList _envProbes;
     vectorEASTL<ShaderBufferBinding> _externalBufferBindings;
 
-    std::pair<Texture_ptr, U32> _defaultReflection;
-    std::pair<Texture_ptr, U32> _defaultRefraction;
-    Material_ptr _materialInstance;
-    Material* _materialInstanceCache;
+    std::pair<Texture_ptr, U32> _defaultReflection = {nullptr, 0u};
+    std::pair<Texture_ptr, U32> _defaultRefraction = {nullptr, 0u};
+    Material_ptr _materialInstance = nullptr;
+    Material* _materialInstanceCache = nullptr;
     GFXDevice& _context;
     const Configuration& _config;
 
     vec2<F32> _renderRange;
 
-    Pipeline*    _primitivePipeline[3];
-    IMPrimitive* _boundingBoxPrimitive[2];
-    IMPrimitive* _boundingSpherePrimitive[2];
-    IMPrimitive* _skeletonPrimitive;
-    IMPrimitive* _axisGizmo;
+    Pipeline*    _primitivePipeline[3] = {nullptr, nullptr, nullptr};
+    IMPrimitive* _boundingBoxPrimitive[2] = {nullptr, nullptr};
+    IMPrimitive* _boundingSpherePrimitive[2] = {nullptr, nullptr};
+    IMPrimitive* _skeletonPrimitive = nullptr;
+    IMPrimitive* _axisGizmo = nullptr;
 
     /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
-    I32 _reflectionIndex;
-    I32 _refractionIndex;
-    F32 _cullFlagValue;
-    U32 _renderMask;
+    I32 _reflectionIndex = -1;
+    I32 _refractionIndex = -1;
+    F32 _cullFlagValue = 1.0f;
+    U32 _renderMask = 0u;
     std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
-    ReflectorType _reflectorType;
-    RefractorType _refractorType;
+    ReflectorType _reflectorType = ReflectorType::COUNT;
+    RefractorType _refractorType = RefractorType::COUNT;
 
     std::array<std::pair<bool, U8>, to_base(RenderStage::COUNT)> _lodLockLevels;
 

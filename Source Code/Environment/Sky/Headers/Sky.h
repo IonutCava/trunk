@@ -81,21 +81,21 @@ class Sky : public SceneNode {
     const char* getResourceTypeName() const noexcept  override { return "Sky"; }
 
   private:
-    bool _enableSun;
+    bool _enableSun = true;
     FColour3 _sunColour;
     vec3<F32>_sunVector;
     RebuildCommandsState _rebuildDrawCommands;
-    U32       _diameter;
+    U32       _diameter = 1u;
     GFXDevice& _context;
-    Texture_ptr  _skybox;
-    Sphere3D_ptr _sky;
-    ShaderProgram_ptr _skyShader;
-    ShaderProgram_ptr _skyShaderPrePass;
-    size_t _skyboxRenderStateHash;
-    size_t _skyboxRenderStateHashPrePass;
+    Texture_ptr  _skybox = nullptr;
+    Sphere3D_ptr _sky = nullptr;
+    ShaderProgram_ptr _skyShader = nullptr;
+    ShaderProgram_ptr _skyShaderPrePass = nullptr;
+    size_t _skyboxRenderStateHash = 0;
+    size_t _skyboxRenderStateHashPrePass = 0;
 
-    size_t _skyboxRenderStateReflectedHash;
-    size_t _skyboxRenderStateReflectedHashPrePass;
+    size_t _skyboxRenderStateReflectedHash = 0;
+    size_t _skyboxRenderStateReflectedHashPrePass = 0;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Sky);

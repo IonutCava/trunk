@@ -60,11 +60,11 @@ class BloomPreRenderOperator : public PreRenderOperator {
     RenderTargetHandle _bloomOutput;
     RenderTargetHandle _bloomBlurBuffer[2];
 
-    ShaderProgram_ptr _bloomCalc;
-    ShaderProgram_ptr _bloomApply;
+    ShaderProgram_ptr _bloomCalc = nullptr;
+    ShaderProgram_ptr _bloomApply = nullptr;
 
-    Pipeline* _bloomCalcPipeline;
-    Pipeline* _bloomApplyPipeline;
+    Pipeline* _bloomCalcPipeline = nullptr;
+    Pipeline* _bloomApplyPipeline = nullptr;
     PushConstants _bloomApplyConstants;
     PushConstants _bloomCalcConstants;
 

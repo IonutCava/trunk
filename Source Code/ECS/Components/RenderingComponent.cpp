@@ -50,26 +50,13 @@ hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
 RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContext& context) 
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
       _context(context.gfx()),
-      _config(context.config()),
-      _cullFlagValue(1.0f),
-      _renderMask(0),
-      _reflectionIndex(-1),
-      _refractionIndex(-1),
-      _reflectorType(ReflectorType::COUNT),
-      _refractorType(RefractorType::COUNT),
-      _primitivePipeline{nullptr, nullptr, nullptr},
-      _materialInstance(nullptr),
-      _materialInstanceCache(nullptr),
-      _boundingBoxPrimitive{ nullptr, nullptr },
-      _boundingSpherePrimitive{ nullptr, nullptr },
-      _skeletonPrimitive(nullptr),
-      _axisGizmo(nullptr)
+      _config(context.config())
 {
     _lodLevels.fill(0u);
     _lodLockLevels.fill({ false, to_U8(0u) });
 
     _renderRange.min = -1.0f * g_renderRangeLimit;
-    _renderRange.max =  1.0f* g_renderRangeLimit;
+    _renderRange.max =  1.0f * g_renderRangeLimit;
 
     setMaterialTpl(parentSGN.getNode().getMaterialTpl());
 

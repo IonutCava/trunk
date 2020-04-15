@@ -428,7 +428,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
         boost::property_tree::ptree nodeTree = {};
         read_xml(nodePath, nodeTree);
 
-        const auto loadModelComplete = [this, &nodeTree, &waitForReasoureTask](CachedResource* res) {
+        const auto loadModelComplete = [this, &nodeTree](CachedResource* res) {
             static_cast<SceneNode*>(res)->loadFromXML(nodeTree);
             _loadingTasks.fetch_sub(1);
         };
@@ -447,6 +447,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
                 _loadingTasks.fetch_add(1);
                 ResourceDescriptor item(sceneNode.name);
                 item.assetName(modelName);
+                item.threaded(true);
                 item.waitForReady(true);
                 item.waitForReadyCbk(waitForReasoureTask);
 

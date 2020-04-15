@@ -57,13 +57,13 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
    private:
     PushConstants _ssaoBlurConstants;
     PushConstants _ssaoGenerateConstants;
-    ShaderProgram_ptr _ssaoGenerateShader;
-    ShaderProgram_ptr _ssaoBlurShader;
-    Texture_ptr _noiseTexture;
+    ShaderProgram_ptr _ssaoGenerateShader = nullptr;
+    ShaderProgram_ptr _ssaoBlurShader = nullptr;
+    Texture_ptr _noiseTexture = nullptr;
     RenderTargetHandle _ssaoOutput;
-    F32 _radius;
-    F32 _power;
-    bool _enabled;
+    F32 _radius = 1.0f;
+    F32 _power = 1.0f;
+    bool _enabled = true;
 };
 
 };  // namespace Divide

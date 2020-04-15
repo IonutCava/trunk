@@ -50,8 +50,8 @@ class GUISplash {
 
    private:
     vec2<U16> _dimensions;
-    Texture_ptr _splashImage;
-    ShaderProgram_ptr _splashShader;
+    Texture_ptr _splashImage = nullptr;
+    ShaderProgram_ptr _splashShader = nullptr;
 };
 
 };  // namespace Divide

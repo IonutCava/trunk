@@ -148,12 +148,12 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
    protected:
 
-    const Pipeline* _pipeline;
-    const Texture* _texture;
+    const Pipeline* _pipeline = nullptr;
+    const Texture* _texture = nullptr;
     // render in wireframe mode
-    bool _forceWireframe;
+    bool _forceWireframe = false;
     DescriptorSet _descriptorSet;
-    Rect<I32> _viewport;
+    Rect<I32> _viewport = {-1, -1, -1, -1};
 
    private:
     /// The transform matrix for this element

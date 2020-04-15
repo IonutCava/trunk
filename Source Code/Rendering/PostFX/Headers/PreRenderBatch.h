@@ -126,10 +126,10 @@ class PreRenderBatch {
     RenderTargetHandle _postFXOutput;
     RenderTargetHandle _sceneEdges;
     RenderTargetHandle _currentLuminance;
-    ShaderProgram_ptr _toneMap;
-    ShaderProgram_ptr _toneMapAdaptive;
-    ShaderProgram_ptr _createHistogram;
-    ShaderProgram_ptr _averageHistogram;
+    ShaderProgram_ptr _toneMap = nullptr;
+    ShaderProgram_ptr _toneMapAdaptive = nullptr;
+    ShaderProgram_ptr _createHistogram = nullptr;
+    ShaderProgram_ptr _averageHistogram = nullptr;
     std::array<ShaderProgram_ptr, to_base(EdgeDetectionMethod::COUNT)> _edgeDetection;
     std::array<Pipeline*, to_base(EdgeDetectionMethod::COUNT)> _edgeDetectionPipelines;
 

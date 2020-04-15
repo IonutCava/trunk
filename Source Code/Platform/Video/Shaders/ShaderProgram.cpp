@@ -16,8 +16,8 @@ namespace Divide {
     bool ShaderProgram::s_useShaderBinaryCache = false;
 
 
-ShaderProgram_ptr ShaderProgram::s_imShader;
-ShaderProgram_ptr ShaderProgram::s_nullShader;
+ShaderProgram_ptr ShaderProgram::s_imShader = nullptr;
+ShaderProgram_ptr ShaderProgram::s_nullShader = nullptr;
 ShaderProgram::ShaderQueue ShaderProgram::s_recompileQueue;
 ShaderProgram::ShaderProgramMap ShaderProgram::s_shaderPrograms;
 

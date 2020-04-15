@@ -760,8 +760,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     ParamHandler::instance().setParam<bool>(_ID_32("rendering.previewDebugViews"), false);
     {
         PipelineDescriptor pipelineDesc;
-        RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
-        pipelineDesc._stateHash = primitiveDescriptor.getHash();
+        pipelineDesc._stateHash = getDefaultStateBlock(true);
         pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
         _AxisGizmoPipeline = newPipeline(pipelineDesc);
     }

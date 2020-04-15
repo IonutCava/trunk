@@ -100,23 +100,23 @@ class ParticleEmitter : public SceneNode {
     vectorSTD<std::shared_ptr<ParticleUpdater>> _updaters;
 
     /// create particles
-    bool _enabled;
+    bool _enabled = false;
     /// draw the impostor?
-    bool _drawImpostor;
+    bool _drawImpostor = false;
 
     using BuffersPerStage = std::array<GenericVertexData*, to_base(RenderStage::COUNT)>;
     using BuffersPerPlayer = std::array<BuffersPerStage, s_MaxPlayerBuffers>;
     BuffersPerPlayer _particleGPUBuffers;
     std::array<bool, to_base(RenderStage::COUNT)> _buffersDirty;
 
-    size_t _particleStateBlockHash;
-    size_t _particleStateBlockHashDepth;
+    size_t _particleStateBlockHash = 0;
+    size_t _particleStateBlockHashDepth = 0;
 
     Task* _bufferUpdate = nullptr;
     Task* _bbUpdate = nullptr;
-    ShaderProgram_ptr _particleShader;
-    ShaderProgram_ptr _particleDepthShader[2];
-    Texture_ptr _particleTexture;
+    ShaderProgram_ptr _particleShader = nullptr;
+    ShaderProgram_ptr _particleDepthShader[2] = {nullptr, nullptr};
+    Texture_ptr _particleTexture = nullptr;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(ParticleEmitter);

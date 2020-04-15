@@ -100,13 +100,13 @@ class RTAttachment {
 
     protected:
         RTAttachmentDescriptor _descriptor;
-        Texture_ptr _texture;
-        RTAttachment_ptr _externalAttachment;
+        Texture_ptr _texture = nullptr;
+        RTAttachment_ptr _externalAttachment = nullptr;
         RTAttachmentPool& _parent;
         PROPERTY_RW(U32, binding, 0u);
-        U16  _mipWriteLevel;
-        U16  _writeLayer;
-        bool _changed;
+        U16  _mipWriteLevel = 0u;
+        U16  _writeLayer = 0u;
+        bool _changed = false;
 };
 
 FWD_DECLARE_MANAGED_CLASS(RTAttachment);

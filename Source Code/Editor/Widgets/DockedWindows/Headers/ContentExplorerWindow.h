@@ -72,7 +72,7 @@ namespace Divide {
         Mesh_ptr getModelForPath(const Str256& modelPath, const Str64& modelName);
         
     private:
-        Texture_ptr _fileIcon;
+        Texture_ptr _fileIcon = nullptr;
         std::array<Texture_ptr, to_base(GeometryFormat::COUNT)> _geometryIcons;
         mutable const Directory* _selectedDir = nullptr;
         vectorSTDFast<Directory> _currentDirectories;

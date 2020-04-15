@@ -12,13 +12,8 @@ namespace Divide {
 
 Quadtree::Quadtree(GFXDevice& context)
     : _context(context),
-      _parentVB(nullptr),
-      _bbPrimitive(nullptr),
-      _bbPipeline(nullptr),
-      _drawBBoxes(false)
+      _root(std::make_unique<QuadtreeNode>(context))
 {
-    _root = std::make_unique<QuadtreeNode>(context);
-    _chunkCount = 0;
 }
 
 Quadtree::~Quadtree()

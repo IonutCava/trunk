@@ -280,7 +280,7 @@ class Material : public CachedResource {
         bool _hardwareSkinning = false;
     } _properties;
 
-    bool _needsNewShader;
+    bool _needsNewShader = true;
 
     using ShaderPerVariant = std::array<ShaderProgramInfo, g_maxVariantsPerPass>;
     using ShaderVariantsPerPass = eastl::array<ShaderPerVariant, to_base(RenderPassType::COUNT)>;

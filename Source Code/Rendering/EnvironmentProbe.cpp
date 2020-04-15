@@ -25,9 +25,6 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
     GUIDWrapper(),
     _context(parentScene.context().gfx()),
     _type(type),
-    _updateRate(1),
-    _currentUpdateCall(0),
-    _bbPipeline(nullptr),
     _aabb(vec3<F32>(-1), vec3<F32>(1))
 {
     assert(!s_availableSlices.empty());

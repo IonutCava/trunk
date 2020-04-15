@@ -84,21 +84,9 @@ Vegetation::Vegetation(GFXDevice& context,
       _grassScales(details.grassScales),
       _treeScales(details.treeScales),
       _treeRotations(details.treeRotations),
-      _shadowMapped(true),
-      _treeParentNode(nullptr),
-      _cullPipelineGrass(nullptr),
-      _cullPipelineTrees(nullptr),
-      _grassExtents(VECTOR4_UNIT),
-      _treeExtents(VECTOR4_UNIT),
-      _instanceCountGrass(0),
-      _instanceCountTrees(0),
-      _grassDistance(100.f),
-      _treeDistance(200.f),
-      _stateRefreshIntervalBufferUS(0ULL),
-      _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
+      _treeMap(details.treeMap),
+      _grassMap(details.grassMap)
 {
-    _treeMap = details.treeMap;
-    _grassMap = details.grassMap;
     
     _treeMeshNames.insert(eastl::cend(_treeMeshNames), eastl::cbegin(details.treeMeshes), eastl::cend(details.treeMeshes));
 
@@ -428,6 +416,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ResourceDescriptor instanceCullShaderGrass("instanceCullVegetation_Grass");
     instanceCullShaderGrass.threaded(true);
+    instanceCullShaderGrass.waitForReady(false);
     instanceCullShaderGrass.propertyDescriptor(shaderCompDescriptor);
     s_cullShaderGrass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderGrass);
 
@@ -437,6 +426,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ResourceDescriptor instanceCullShaderTrees("instanceCullVegetation_Trees");
     instanceCullShaderTrees.threaded(true);
+    instanceCullShaderTrees.waitForReady(false);
     instanceCullShaderTrees.propertyDescriptor(shaderCompDescriptor);
     s_cullShaderTrees = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderTrees);
 }
@@ -507,6 +497,9 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     if (hasVegetation) {
         sgn.get<RenderingComponent>()->setMaterialTpl(s_vegetationMaterial);
         sgn.get<RenderingComponent>()->lockLoD(0u);
+
+        WAIT_FOR_CONDITION(s_cullShaderGrass->getState() == ResourceState::RES_LOADED &&
+                           s_cullShaderTrees->getState() == ResourceState::RES_LOADED);
 
         PipelineDescriptor pipeDesc;
         pipeDesc._shaderProgramHandle = s_cullShaderGrass->getGUID();

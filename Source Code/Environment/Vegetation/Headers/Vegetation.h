@@ -119,31 +119,32 @@ class Vegetation : public SceneNode {
     TerrainChunk& _terrainChunk;
     // variables
     Terrain_wptr _terrain;
-    U16 _billboardCount;  ///< Vegetation cumulated density
+    U16 _billboardCount = 0u;  ///< Vegetation cumulated density
     F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f, _time = 0.0f;
-    U64 _stateRefreshIntervalUS = 0ULL;
+    U64 _stateRefreshIntervalUS = Time::SecondsToMicroseconds(1);
     U64 _stateRefreshIntervalBufferUS = 0ULL;
-    vec4<F32> _grassScales, _treeScales;
+    vec4<F32> _grassScales = VECTOR4_UNIT;
+    vec4<F32> _treeScales = VECTOR4_UNIT;
     std::array<vec3<F32>, 4> _treeRotations;
-    vec4<F32> _grassExtents;
-    vec4<F32> _treeExtents;
+    vec4<F32> _grassExtents = VECTOR4_UNIT;
+    vec4<F32> _treeExtents = VECTOR4_UNIT;
     vectorEASTL<stringImpl> _treeMeshNames;
-    std::shared_ptr<ImageTools::ImageData> _grassMap;  ///< Dispersion map for grass placement
-    std::shared_ptr<ImageTools::ImageData> _treeMap;  ///< Dispersion map for tree placement
+    std::shared_ptr<ImageTools::ImageData> _grassMap = nullptr;  ///< Dispersion map for grass placement
+    std::shared_ptr<ImageTools::ImageData> _treeMap = nullptr;  ///< Dispersion map for tree placement
 
-    SceneGraphNode* _treeParentNode;
+    SceneGraphNode* _treeParentNode = nullptr;
     PushConstants _cullPushConstants;
 
-    bool _shadowMapped;
-    U32 _instanceCountGrass;
-    U32 _instanceCountTrees;
-    F32 _grassDistance;
-    F32 _treeDistance;
+    bool _shadowMapped = true;
+    U32 _instanceCountGrass = 0u;
+    U32 _instanceCountTrees = 0u;
+    F32 _grassDistance = 100.f;
+    F32 _treeDistance = 200.f;
 
     Task* _buildTask = nullptr;
 
-    Pipeline* _cullPipelineGrass;
-    Pipeline* _cullPipelineTrees;
+    Pipeline* _cullPipelineGrass = nullptr;
+    Pipeline* _cullPipelineTrees = nullptr;
     vectorEASTL<VegetationData> _tempGrassData;
     vectorEASTL<VegetationData> _tempTreeData;
 

@@ -67,13 +67,13 @@ class Quadtree {
     QuadtreeNode* findLeaf(const vec2<F32>& pos);
 
    private:
-    std::unique_ptr<QuadtreeNode> _root;
+    std::unique_ptr<QuadtreeNode> _root = nullptr;
     GFXDevice&    _context;
-    VertexBuffer* _parentVB;  //<Pointer to the terrain VB
-    IMPrimitive*  _bbPrimitive;
-    Pipeline*     _bbPipeline;
-    U32 _chunkCount;
-    bool _drawBBoxes;
+    VertexBuffer* _parentVB = nullptr;
+    IMPrimitive*  _bbPrimitive = nullptr;
+    Pipeline*     _bbPipeline = nullptr;
+    U32 _chunkCount = 0u;
+    bool _drawBBoxes = false;
 };
 
 };  // namespace Divide
