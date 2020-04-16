@@ -82,7 +82,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
                      bool asyncLoad,
                      const TextureDescriptor& texDescriptor);
 
-    virtual ~Texture();
+    virtual ~Texture() = default;
 
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
@@ -136,15 +136,14 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Use STB/NV_DDS to load a file into a Texture Object
     bool loadFile(const TextureLoadInfo& info, const stringImpl& name, ImageTools::ImageData& fileData);
     /// Load texture data using the specified file name
-    virtual bool load() override;
+    virtual bool load();
     virtual void threadedLoad();
 
     virtual void validateDescriptor();
 
     const char* getResourceTypeName() const noexcept override { return "Texture"; }
 
-    void processTextureType() noexcept;
-   protected:
+  protected:
     bool _asyncLoad;
 
   protected:

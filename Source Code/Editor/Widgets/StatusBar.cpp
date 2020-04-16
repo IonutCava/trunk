@@ -61,7 +61,7 @@ namespace {
                 const ImGuiNavLayer layer = ImGuiNavLayer_Menu;
                 IM_ASSERT(window->DC.NavLayerActiveMaskNext & (1 << layer)); // Sanity check
                 ImGui::FocusWindow(window);
-                ImGui::SetNavIDWithRectRel(window->NavLastIds[layer], layer, window->NavRectRel[layer]);
+                ImGui::SetNavIDWithRectRel(window->NavLastIds[layer], layer, 0, window->NavRectRel[layer]);
                 g.NavLayer = layer;
                 g.NavDisableHighlight = true; // Hide highlight for the current frame so we don't see the intermediary selection.
                 g.NavMoveRequestForward = ImGuiNavForward_ForwardQueued;

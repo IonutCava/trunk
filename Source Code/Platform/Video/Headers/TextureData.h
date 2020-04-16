@@ -53,6 +53,10 @@ struct TextureData {
     TextureType _textureType = TextureType::COUNT;
 };
 
+FORCE_INLINE bool IsValid(const TextureData& data) noexcept {
+    return data._textureHandle != 0u && data._textureType != TextureType::COUNT;
+}
+
 FORCE_INLINE bool operator==(const TextureData& lhs, const TextureData& rhs) noexcept {
     return lhs._textureHandle == rhs._textureHandle &&
            lhs._samplerHandle == rhs._samplerHandle &&

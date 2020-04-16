@@ -54,26 +54,8 @@
 namespace Divide {
 
 namespace {
-
-vec3<F32> g_PlayerExtents(1.0f, 1.82f, 0.75f);
-
-struct selectionQueueDistanceFrontToBack {
-    selectionQueueDistanceFrontToBack(const vec3<F32>& eyePos)
-        : _eyePos(eyePos) {}
-
-    bool operator()(SceneGraphNode* a, SceneGraphNode* b) const {
-        F32 dist_a =
-            a->get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(_eyePos);
-        F32 dist_b =
-            b->get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(_eyePos);
-        return dist_a > dist_b;
-    }
-
-   private:
-    vec3<F32> _eyePos;
-};
-
-constexpr const char* const g_defaultPlayerName = "Player_%d";
+    vec3<F32> g_PlayerExtents(1.0f, 1.82f, 0.75f);
+    constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
 Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)
@@ -403,7 +385,7 @@ namespace {
 };
 
 
-void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent, bool waitForReady) {
+void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     assert(parent != nullptr);
 
     auto waitForReasoureTask = [&parentTask](const CachedResource_wptr& res) {
@@ -509,10 +491,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
                 model.assetName(modelName);
                 model.flag(true);
                 model.threaded(false);
-                model.waitForReady(waitForReady);
-                if (waitForReady) {
-                    model.waitForReadyCbk(waitForReasoureTask);
-                }
+                model.waitForReady(false);
                 ret = CreateResource<Mesh>(_resCache, model);
                 ret->addStateCallback(ResourceState::RES_LOADED, loadModelComplete);
             }
@@ -562,7 +541,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
 
     const U32 childCount = to_U32(sceneNode.children.size());
     if (childCount == 1u) {
-        loadAsset(parentTask, sceneNode.children.front(), crtNode, waitForReady);
+        loadAsset(parentTask, sceneNode.children.front(), crtNode);
     } else if (childCount > 1u) {
         ParallelForDescriptor descriptor = {};
         descriptor._iterCount = childCount;
@@ -571,9 +550,9 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
         descriptor._useCurrentThread = true;
 
         parallel_for(_context,
-            [this, &sceneNode, &crtNode, &waitForReady](Task* parentTask, U32 start, U32 end) {
+            [this, &sceneNode, &crtNode](Task* parentTask, U32 start, U32 end) {
                 for (U32 i = start; i < end; ++i) {
-                    loadAsset(parentTask, sceneNode.children[i], crtNode, waitForReady);
+                    loadAsset(parentTask, sceneNode.children[i], crtNode);
                 }
             },
             descriptor);
@@ -644,7 +623,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
 
     ResourceDescriptor descriptor(ter->getVariable("terrainName"));
     descriptor.propertyDescriptor(*ter);
-    descriptor.threaded(true);
+    descriptor.threaded(false);
     descriptor.flag(ter->active());
     descriptor.waitForReady(false);
     auto ret = CreateResource<Terrain>(_resCache, descriptor);
@@ -1042,7 +1021,7 @@ bool Scene::load(const Str128& name) {
     parallel_for(_context,
         [this, &rootNode, &rootChildren](Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
-                loadAsset(parentTask, rootChildren[i], &rootNode, false);
+                loadAsset(parentTask, rootChildren[i], &rootNode);
             }
         },
         descriptor);
@@ -1510,7 +1489,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPosIn) {
                 continue;
             }
 
-            SceneGraphNode* crtNode = _sceneGraph->findNode(result.sgnGUI);
+            SceneGraphNode* crtNode = _sceneGraph->findNode(result.sgnGUID);
             if (crtNode && 
                 (editorRunning || 
                 (crtNode->get<SelectionComponent>() && crtNode->get<SelectionComponent>()->enabled())))

@@ -257,25 +257,25 @@ void SeedRandom(U32 seed) {
 
 /// Clamps value n between min and max
 template <typename T>
-void CLAMP(T& n, const T min, const T max) {
+void CLAMP(T& n, const T min, const T max) noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be clamped!");
     n = std::min(std::max(n, min), max);
 }
 
 template <typename T>
-void CLAMP_01(T& n) {
+void CLAMP_01(T& n) noexcept {
     return CLAMP(n, (T)0, (T)1);
 }
 
 template <typename T>
-T CLAMPED(const T& n, const T min, const T max) {
+T CLAMPED(const T& n, const T min, const T max) noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be clamped!");
 
     return std::min(std::max(n, min), max);
 }
 
 template <typename T>
-T CLAMPED_01(const T& n) {
+T CLAMPED_01(const T& n) noexcept {
     return CLAMPED(n, T(0), T(1));
 }
 

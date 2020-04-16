@@ -92,6 +92,7 @@ ImVector<ImU32> DefaultRasterizationFlagVector;
         FT_Library      FreetypeLibrary;
         FT_Face         FreetypeFace;
         FT_Int32        FreetypeLoadFlags;
+        FT_Render_Mode  RenderMode;
     };
 
     // From SDL_ttf: Handy routines for converting from fixed point
@@ -125,6 +126,11 @@ ImVector<ImU32> DefaultRasterizationFlagVector;
             FreetypeLoadFlags |= FT_LOAD_TARGET_MONO;
         else
             FreetypeLoadFlags |= FT_LOAD_TARGET_NORMAL;
+
+        if (UserFlags & ImGuiFreeType::Monochrome)
+            RenderMode = FT_RENDER_MODE_MONO;
+        else
+            RenderMode = FT_RENDER_MODE_NORMAL;
 
         return true;
     }
@@ -187,7 +193,7 @@ ImVector<ImU32> DefaultRasterizationFlagVector;
             return false;
 
         // Rasterize
-        error = FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, NULL, true);
+        error = FT_Glyph_To_Bitmap(&ft_glyph, RenderMode, NULL, true);
         if (error != 0)
             return false;
 
@@ -210,6 +216,22 @@ ImVector<ImU32> DefaultRasterizationFlagVector;
         const uint8_t* src = ft_bitmap->bitmap.buffer;
         const uint32_t src_pitch = ft_bitmap->bitmap.pitch;
 
+        /*if (multiply_table == NULL)
+        {
+            for (uint32_t y = 0; y < h; y++, src += src_pitch, dst += dst_pitch)
+                memcpy(dst, src, w);
+        }
+        else
+        {
+            for (uint32_t y = 0; y < h; y++, src += src_pitch, dst += dst_pitch)
+                for (uint32_t x = 0; x < w; x++)
+                    dst[x] = multiply_table[src[x]];
+        }*/
+
+        switch (ft_bitmap->bitmap.pixel_mode)
+        {
+        case FT_PIXEL_MODE_GRAY: // Grayscale image, 1 byte per pixel.
+        {
         if (multiply_table == NULL)
         {
             for (uint32_t y = 0; y < h; y++, src += src_pitch, dst += dst_pitch)
@@ -220,6 +242,29 @@ ImVector<ImU32> DefaultRasterizationFlagVector;
             for (uint32_t y = 0; y < h; y++, src += src_pitch, dst += dst_pitch)
                 for (uint32_t x = 0; x < w; x++)
                     dst[x] = multiply_table[src[x]];
+        }
+            break;
+        }
+        case FT_PIXEL_MODE_MONO: // Monochrome image, 1 bit per pixel. The bits in each byte are ordered from MSB to LSB.
+        {
+            uint8_t color0 = multiply_table ? multiply_table[0] : 0;
+            uint8_t color1 = multiply_table ? multiply_table[255] : 255;
+            for (uint32_t y = 0; y < h; y++, src += src_pitch, dst += dst_pitch)
+            {
+                uint8_t bits = 0;
+                const uint8_t* bits_ptr = src;
+                for (uint32_t x = 0; x < w; x++, bits <<= 1)
+                {
+                    if ((x & 7) == 0)
+                        bits = *bits_ptr++;
+                    dst[x] = (bits & 0x80) ? color1 : color0;
+                }
+            }
+            break;
+        }
+        default:
+            IM_ASSERT(0 && "FreeTypeFont::BlitGlyph(): Unknown bitmap pixel mode!");
+
         }
     }
 

@@ -230,7 +230,8 @@ struct ImImpl_InitParams	{
     gFpsClampOutsideImGui(-1.0f),
     gFpsDynamicInsideImGui(false),
     forceAddDefaultFontAsFirstFont(_forceAddDefaultFontAsFirstFont),
-    skipBuildingFonts(_skipBuildingFonts)
+    skipBuildingFonts(_skipBuildingFonts),
+    useMonochromeCustomFontGlyphs(false)
 	{
         gWindowSize.x = windowWidth<=0?1270:windowWidth;gWindowSize.y = windowHeight<=0?720:windowHeight;
 
@@ -262,7 +263,8 @@ struct ImImpl_InitParams	{
     gFpsDynamicInsideImGui(false),
     //fonts(_fonts),    // Hehe: this crashes the program on exit (I guess ImVector can't handle operator= correctly)
     forceAddDefaultFontAsFirstFont(_forceAddDefaultFontAsFirstFont),
-    skipBuildingFonts(false)
+    skipBuildingFonts(false),
+    useMonochromeCustomFontGlyphs(false)
     {
         gWindowSize.x = windowWidth<=0?1270:windowWidth;gWindowSize.y = windowHeight<=0?720:windowHeight;
         fonts.reserve(_fonts.size());for (int i=0,isz=_fonts.size();i<isz;i++) fonts.push_back(_fonts[i]);  // Manual workaround that works
@@ -280,6 +282,40 @@ struct ImImpl_InitParams	{
     }
 
     static float DefaultFontSizeOverrideInPixels;   // If we want to override the size of the default font (13.f)
+
+    struct CustomFontGlyph {
+    private:
+        mutable int customRectId;
+    public:
+        struct ImageData {
+        public:
+            ImageData(int _imageWidth,int _imageHeight,const char* _imagePath,int _imageNumXTiles=1,int _imageNumYTiles=1) : imageWidth(_imageWidth),imageHeight(_imageHeight),imagePath(_imagePath),imageMemory(NULL),imageMemorySizeInBytes(0),imageNumXTiles(_imageNumXTiles),imageNumYTiles(_imageNumYTiles) {}
+            ImageData(int _imageWidth,int _imageHeight,const unsigned char* _imageMemory,int _imageMemorySizeInBytes,int _imageNumXTiles=1,int _imageNumYTiles=1) : imageWidth(_imageWidth),imageHeight(_imageHeight),imagePath(NULL),imageMemory(_imageMemory),imageMemorySizeInBytes(_imageMemorySizeInBytes),imageNumXTiles(_imageNumXTiles),imageNumYTiles(_imageNumYTiles) {}
+        private:
+            int imageWidth;
+            int imageHeight;
+            const char* imagePath;
+            const unsigned char* imageMemory;
+            int imageMemorySizeInBytes;
+            int imageNumXTiles,imageNumYTiles;
+            friend void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams);
+        };
+        ImageData image;
+        int imageTileIndex;
+        int fontIndex;
+        ImWchar glyphId;
+        mutable int width, height;
+        float advance_x_delta;
+        ImVec2 offset;
+        // '_advance_x_delta' is in pixels
+        // 'width' and 'height': set them to zero to match font (specified in '_fontIndex') size; use -n to match original_texture_tile_size/n; use a positive value to set it directly.
+        CustomFontGlyph(int _fontIndex,ImWchar _glyphId,const ImageData& _image,int _imageTileIndex=0,float _advance_x_delta=1.0f,int _width=0,int _height=0,const ImVec2& _offset=ImVec2(0.f,0.f))
+            : customRectId(-1),image(_image),imageTileIndex(_imageTileIndex),fontIndex(_fontIndex),glyphId(_glyphId),width(_width),height(_height),advance_x_delta(_advance_x_delta),offset(_offset)
+        {}
+        friend void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams);
+    };
+    ImVector<CustomFontGlyph> customFontGlyphs; // Used to add custom (color) glyphs from user images
+    bool useMonochromeCustomFontGlyphs;
 
     private:
     // Retrieve list of range (2 int per range, values are inclusive)
@@ -329,6 +365,22 @@ extern ImTextureID ImImpl_LoadTexture(const char* filename,int req_comp,bool use
 inline ImTextureID ImImpl_LoadTexture(const char* filename,int req_comp=0,bool useMipmapsIfPossible=false,bool wraps=true,bool wrapt=true)  {return ImImpl_LoadTexture(filename,req_comp,useMipmapsIfPossible,wraps,wrapt,false,false);}
 extern ImTextureID ImImpl_LoadTextureFromMemory(const unsigned char* filenameInMemory, int filenameInMemorySize, int req_comp, bool useMipmapsIfPossible,bool wraps,bool wrapt,bool minFilterNearest,bool magFilterNearest=false);
 inline ImTextureID ImImpl_LoadTextureFromMemory(const unsigned char* filenameInMemory, int filenameInMemorySize, int req_comp=0,bool useMipmapsIfPossible=false,bool wraps=true,bool wrapt=true)  {return ImImpl_LoadTextureFromMemory(filenameInMemory,filenameInMemorySize,req_comp,useMipmapsIfPossible,wraps,wrapt,false,false);}
+
+/* Arguments are the same as stbi_load(...) except *components always refers to the returned pixels, so that:
+   dest.size() == (*width)*(*height)*(*components)
+   The image can still be flipped using ImImpl_FlipTexturesVerticallyOnLoad() above.
+   It supports all format used by stb_image.h.
+*/
+bool ImImpl_DecodeImageFromMemory(ImVector<unsigned char>& dest,const unsigned char* encodedImage,int encodedImageSizeInBytes,int* width,int* height, int *components, int req_comp=0);
+bool ImImpl_DecodeImageFromFile(ImVector<unsigned char>& dest, const char* imagePath, int* width, int* height, int *components, int req_comp=0);
+/* Extracts a rectangle of a decoded image into a new decoded image with the same number of components 'c'
+   src.size() == w*h*c. Values passed by ref can be modified on output, if they need to.
+*/
+bool ImImpl_ExtractImage(ImVector<unsigned char>& dst,int& dstX,int& dstY,int& dstW,int& dstH,const unsigned char* src,int w,int h,int c);
+/* Returns a scaled version of a decoded image with the same number of components 'c'
+   src.size() == w*h*c.
+*/
+bool ImImpl_ScaleImage(ImVector<unsigned char>& dst,int dstW,int dstH,const unsigned char* src,int w,int h,int c);
 
 #ifdef IMGUI_USE_AUTO_BINDING_OPENGL
 

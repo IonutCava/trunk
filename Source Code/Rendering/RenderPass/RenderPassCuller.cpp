@@ -113,30 +113,19 @@ void RenderPassCuller::clear() noexcept {
     }
 }
 
-VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
+VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, const SceneGraph& sceneGraph, const SceneState& sceneState, PlatformContext& context)
 {
     OPTICK_EVENT();
 
     const RenderStage stage = params._stage;
     VisibleNodeList& nodeCache = getNodeCache(stage);
-    if (!params._context || !params._sceneGraph || !params._camera || !params._sceneState) {
-        return nodeCache;
-    }
-
     nodeCache.resize(0);
-    if (params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY) ||
-        params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME))
-    {
-        NodeCullParams nodeParams = {};
-        nodeParams._currentCamera = params._camera;
-        nodeParams._lodThresholds =  params._sceneState->renderState().lodThresholds(params._stage);
-        nodeParams._cullMaxDistanceSq = std::min(params._visibilityDistanceSq, SQUARED(params._camera->getZPlanes().y));
-        nodeParams._minLoD = params._minLoD;
-        nodeParams._minExtents = params._minExtents;
-        nodeParams._stage = stage;
 
+    if (sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY) ||
+        sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME))
+    {
         // Snapshot current child list. We shouldn't be modifying child list mid-frame anyway, but it's worth it to be careful!
-        vectorEASTL<SceneGraphNode*> rootChildren = params._sceneGraph->getRoot().getChildrenLocked();
+        vectorEASTL<SceneGraphNode*> rootChildren = sceneGraph.getRoot().getChildrenLocked();
         nodeCache.reserve(rootChildren.size());
             
         U32 containerIdx = 0;
@@ -148,13 +137,13 @@ VisibleNodeList& RenderPassCuller::frustumCull(const CullParams& params)
         descriptor._partitionSize = g_nodesPerCullingPartition;
         descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
-
-        parallel_for(*params._context,
-                     [this, &rootChildren, &nodeParams, &tempContainer](const Task* parentTask, U32 start, U32 end) {
+        
+        parallel_for(context,
+                     [this, &rootChildren, &params, &tempContainer](const Task* parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
                             auto& temp = tempContainer[i];
                             temp.resize(0);
-                            frustumCullNode(parentTask, *rootChildren[i], nodeParams, 0u, temp);
+                            frustumCullNode(parentTask, *rootChildren[i], params, 0u, temp);
                         }
                      },
                      descriptor);
@@ -176,6 +165,12 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
     if (currentNode.hasFlag(SceneGraphNode::Flags::ACTIVE)) {
 
         Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
+        const I64 nodeGUID = currentNode.getGUID();
+        for (size_t i = 0; i < params._ignoredGUIDS.second; ++i) {
+            if (nodeGUID == params._ignoredGUIDS.first[i]) {
+                return;
+            }
+        }
 
         // If it fails the culling test, stop
         bool isTransformNode = false;

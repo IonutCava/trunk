@@ -231,7 +231,7 @@ void RenderQueue::refresh(RenderStage stage, RenderBinType targetBinType) {
     }
 }
 
-U16 RenderQueue::getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut, I64 sourceGUID) const {
+U16 RenderQueue::getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut) const {
     OPTICK_EVENT();
 
     U16 countOut = 0u;
@@ -248,12 +248,12 @@ U16 RenderQueue::getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::S
         for (const RenderBinType type : rbTypes) {
             const RenderBin* renderBin = _renderBins[type];
             RenderBin::SortedQueue& nodes = queuesOut[type];
-            countOut += renderBin->getSortedNodes(stage, nodes, sourceGUID);
+            countOut += renderBin->getSortedNodes(stage, nodes);
         }
     } else {
         for (const RenderBin* renderBin : _renderBins) {
             RenderBin::SortedQueue& nodes = queuesOut[renderBin->getType()];
-            countOut += renderBin->getSortedNodes(stage, nodes, sourceGUID);
+            countOut += renderBin->getSortedNodes(stage, nodes);
         }
     }
 

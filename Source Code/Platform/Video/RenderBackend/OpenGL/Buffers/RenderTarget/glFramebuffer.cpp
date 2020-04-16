@@ -95,12 +95,11 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
         attachment->clearChanged();
         tex = attachment->texture(false).get();
     }
-
+    assert(IsValid(tex->data()));
     // Find the appropriate binding point
     GLenum attachmentEnum;
     if (type == RTAttachmentType::Depth) {
         attachmentEnum = GL_DEPTH_ATTACHMENT;
-
         const TextureType texType = tex->data()._textureType;
         _isLayeredDepth = (texType == TextureType::TEXTURE_2D_ARRAY ||
                            texType == TextureType::TEXTURE_2D_ARRAY_MS ||

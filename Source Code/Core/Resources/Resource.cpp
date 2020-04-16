@@ -54,6 +54,7 @@ CachedResource::CachedResource(ResourceType type,
 
 bool CachedResource::load() {
     setState(ResourceState::RES_LOADED);
+    flushStateCallbacks();
     return true;
 }
 
@@ -66,11 +67,18 @@ void CachedResource::addStateCallback(ResourceState targetState, const DELEGATE<
         UniqueLock<Mutex> w_lock(_callbackLock);
         _loadingCallbacks[to_U32(targetState)].push_back(cbk);
     }
-    setState(getState());
+    if (getState() == ResourceState::RES_LOADED) {
+        flushStateCallbacks();
+    }
 }
 
 void CachedResource::setState(ResourceState currentState) noexcept {
     Resource::setState(currentState);
+    flushStateCallbacks();
+}
+
+void CachedResource::flushStateCallbacks() {
+    const ResourceState currentState = getState();
     for (U8 i = 0; i < to_base(currentState) + 1; ++i) {
         const ResourceState tempState = static_cast<ResourceState>(i);
         CachedResource* ptr = nullptr;

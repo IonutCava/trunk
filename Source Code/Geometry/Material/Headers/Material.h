@@ -185,7 +185,7 @@ class Material : public CachedResource {
 
     F32 getParallaxFactor() const;
 
-    size_t getRenderStateBlock(RenderStagePass renderStagePass);
+    size_t getRenderStateBlock(RenderStagePass renderStagePass) const;
 
     I64 getProgramGUID(RenderStagePass renderStagePass) const;
 

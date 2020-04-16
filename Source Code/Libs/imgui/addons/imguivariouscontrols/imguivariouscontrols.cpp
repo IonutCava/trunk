@@ -558,7 +558,7 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
                 true, style.FrameRounding);
 
     RenderFrame(ImVec2(frame_bb.Max.x-arrow_size, frame_bb.Min.y), frame_bb.Max, GetColorU32(hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button), true, style.FrameRounding); // FIXME-ROUNDING
-    RenderArrow(ImVec2(frame_bb.Max.x-arrow_size, frame_bb.Min.y) + style.FramePadding, ImGuiDir_Down);
+    RenderArrow(window->DrawList,ImVec2(frame_bb.Max.x-arrow_size, frame_bb.Min.y) + style.FramePadding,GetColorU32(ImGuiCol_Text), ImGuiDir_Down);
 
     RenderTextClipped(ImVec2(frame_bb.Min.x+color_quad_size,frame_bb.Min.y) + style.FramePadding, value_bb.Max, label, NULL, NULL);
 
@@ -1629,6 +1629,8 @@ int PlotHistogram(const char* label, float (*values_getter)(void* data, int idx,
         for (int i = 0; i < values_count; i++)  {
             for (int h=0;h<num_histograms;h++)  {
                 const float v = values_getter(data, (i + values_offset) % values_count, h);
+                if (v != v) // Ignore NaN values
+                    continue;
                 v_min = ImMin(v_min, v);
                 v_max = ImMax(v_max, v);
             }
@@ -3148,7 +3150,7 @@ void TreeViewNode::render(void* ptr,int numIndents)   {
         tvhs.window->DC.CursorPos.x+= tvhs.arrowOffset*(numIndents-(isLeafNode ? 0 : 1))+(tvhs.hasArrowGlyphs?(GImGui->Style.FramePadding.x*2):0.f);
         if (!isLeafNode) {
             if (!tvhs.hasArrowGlyphs)  {
-                ImGui::SetNextTreeNodeOpen(stateopen,ImGuiCond_Always);
+                ImGui::SetNextItemOpen(stateopen,ImGuiCond_Always);
                 mustTreePop = ImGui::TreeNode("","%s","");
             }
             else {
@@ -3920,8 +3922,8 @@ unsigned int CheckboxFlags(const char* label,unsigned int* flags,int numFlags,in
     unsigned int j=0;int groupItemCnt = 0, groupCnt = 0;
     const bool buttonPressed = ImGui::IsMouseClicked(0);
 
-    ImU32 annColor = 0u; int annSegments = 0;
-    float annThickness = 0.f,annCenter=0.f,annRadius = 0.f;
+    ImU32 annColor;int annSegments;
+    float annThickness,annCenter,annRadius;
     if (flagAnnotations)    {
         annColor = GetColorU32(ImGuiCol_Button);
         annSegments = (int) (checkSize.x * 0.4f);if (annSegments<3) annSegments=3;

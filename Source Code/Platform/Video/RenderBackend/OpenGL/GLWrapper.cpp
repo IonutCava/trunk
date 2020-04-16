@@ -1197,6 +1197,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
 
                 const TextureData& data = view._texture->data();
+                assert(IsValid(data));
+
                 const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
 
                 std::pair<GLuint, bool> handle = s_texturePool.allocate(view.getHash(), GL_NONE);
@@ -1466,7 +1468,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
             if (binding == TextureDataContainer<>::INVALID_BINDING) {
                 continue;
             }
-
+            assert(IsValid(data));
             types.push_back(data._textureType);
             handles.push_back(data._textureHandle);
             samplers.push_back(data._samplerHandle);
@@ -1479,7 +1481,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
             if (binding == TextureDataContainer<>::INVALID_BINDING) {
                 continue;
             }
-
+            assert(IsValid(data));
             bound = stateTracker.bindTexture(static_cast<GLushort>(binding),
                                              data._textureType,
                                              data._textureHandle,
@@ -1499,6 +1501,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
         const Texture* tex = it._view._texture;
         assert(tex != nullptr);
         const TextureData& data = tex->data();
+        assert(IsValid(data));
 
         if (!handle.second) {
             const TextureDescriptor& descriptor = tex->descriptor();

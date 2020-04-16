@@ -2714,7 +2714,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
             ImGui::AlignTextToFramePadding();
             ImGui::Text("File:");ImGui::SameLine();
             lastTwoButtonsWidth = ImGui::CalcTextSize("Save Cancel").x+2.0f*(style.FramePadding.x+style.ItemSpacing.x)+style.WindowPadding.x;
-            ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth()-lastTwoButtonsWidth);
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x-lastTwoButtonsWidth);
             ImGui::InputText("##saveFileNameDialog",&I.saveFileName[0],MAX_FILENAME_BYTES);
             if (ImGui::IsItemHovered() && I.mustFilterSaveFilePathWithFileFilterExtensionString && fileFilterExtensionString && strlen(fileFilterExtensionString)>0) ImGui::SetTooltip("%s",fileFilterExtensionString);
             ImGui::PopItemWidth();
@@ -2733,7 +2733,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
 
             ImGui::SameLine();
             lastTwoButtonsWidth = ImGui::CalcTextSize("Select Cancel").x+2.0f*(style.FramePadding.x+style.ItemSpacing.x)+style.WindowPadding.x;
-            ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth()-lastTwoButtonsWidth);
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x-lastTwoButtonsWidth);
             ImGui::InputText("##selectFileNameDialog",&I.saveFileName[0],MAX_FILENAME_BYTES,ImGuiInputTextFlags_ReadOnly);
             ImGui::PopItemWidth();
             ImGui::SameLine();

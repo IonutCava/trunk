@@ -74,13 +74,17 @@ bool ImGui_ImplGlfw_CreateFontsTexture()
 
     // New code -------------------------------------------------
     if (io.Fonts->ConfigData.empty()) io.Fonts->AddFontDefault();
-    io.Fonts->Build(); // (change this line if you use [imgui_freetype](https://github.com/Vuhdo/imgui) appropriately)
+    io.Fonts->Build(); // (change this line if you use [imgui_freetype](https://github.com/Vuhdo/imgui or https://github.com/ocornut/imgui/tree/master/misc/freetype) appropriately)
 #   ifdef IMIMPL_BUILD_SDF
     ImGui::PostBuildForSignedDistanceFontEffect(io.Fonts);
 #   endif //IMIMPL_BUILD_SDF
     // End new code ----------------------------------------------
     ...
 }
+
+
+// UPDATE: Now in ImGui::PostBuildForSignedDistanceFontEffect(...):
+// if atlas->TexPixelsRGBA32 is not NULL, the whole RGBA32 texture gets processed.
 */
 
 // The methods ImGuiEdtaaHelper::make_distance_mapd(...) and ImGuiEdtaaHelper::make_distance_mapb(...)
@@ -779,8 +783,38 @@ inline void ProcessAlpha8ImageForSignedDistanceFontEffect(unsigned char* pixels,
 }
 
 inline void PostBuildForSignedDistanceFontEffect(ImFontAtlas* atlas) {
+    IM_ASSERT(!atlas->TexPixelsRGBA32 || atlas->TexPixelsAlpha8);
+    /* // For some reasons this does not work when atlas->TexPixelsRGBA32 is present:
     if (!atlas->TexPixelsAlpha8) atlas->GetTexDataAsAlpha8(&atlas->TexPixelsAlpha8,NULL,NULL);
     ProcessAlpha8ImageForSignedDistanceFontEffect(atlas->TexPixelsAlpha8,atlas->TexWidth,atlas->TexHeight);
+    if (atlas->TexPixelsRGBA32) {
+        IM_ASSERT(atlas->TexPixelsAlpha8);
+        // We must paste back atlas->TexPixelsAlpha8 into atlas->TexPixelsRGBA32
+        const int w = atlas->TexWidth,h = atlas->TexHeight;
+        unsigned char* dst = (unsigned char*) atlas->TexPixelsRGBA32;dst+=3;
+        const unsigned char* src = atlas->TexPixelsAlpha8;
+        for (int n=w*h;n>0;n--) {*dst = *src++;dst+=4;}
+    }
+    */
+    if (atlas->TexPixelsRGBA32) {
+        const int w = atlas->TexWidth,h = atlas->TexHeight;
+        // We must extract the alpha channel from atlas->TexPixelsRGBA32
+        ImVector<unsigned char> tmpData;tmpData.resize(w*h);
+        unsigned char* dst = &tmpData[0];
+        const unsigned char* src = (unsigned char*) atlas->TexPixelsRGBA32;src+=3;
+        for (int n=w*h;n>0;n--) {*dst++=*src;src+=4;}
+
+        ProcessAlpha8ImageForSignedDistanceFontEffect(&tmpData[0],w,h);
+
+        // We must paste back tmpData into atlas->TexPixelsRGBA32
+        dst = (unsigned char*) atlas->TexPixelsRGBA32;dst+=3;
+        src = &tmpData[0];
+        for (int n=w*h;n>0;n--) {*dst=*src++;dst+=4;}
+    }
+    else {
+        if (!atlas->TexPixelsAlpha8) atlas->GetTexDataAsAlpha8(&atlas->TexPixelsAlpha8,NULL,NULL);
+        ProcessAlpha8ImageForSignedDistanceFontEffect(atlas->TexPixelsAlpha8,atlas->TexWidth,atlas->TexHeight);
+    }
 }
 }
 

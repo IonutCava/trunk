@@ -13,7 +13,7 @@
 	<!-- this is only taken into consideration if binary cache is disabled-->
 	<useShaderTextCache>false</useShaderTextCache>
 	<useShaderBinaryCache>false</useShaderBinaryCache>
-	<showShadowCascadeSplits>false</showShadowCascadeSplits>
+	<showShadowCascadeSplits>true</showShadowCascadeSplits>
 	<enableLighting>true</enableLighting>
 	<!-- memFile: file name that the application should use to write  memory allocation info -->
 	<!-- leave empty for none! -->
@@ -29,7 +29,7 @@
 	<!-- Fixed time step on/off as described here: https://gafferongames.com/post/fix_your_timestep/ -->
 	<useFixedTimestep>true</useFixedTimestep>
 	<!-- The maximum number of worker threads that we want to spawn. -1 = (CPU thread count - 1). We will always spawn a minimum of 5 threads-->
-	<maxWorkerThreads>-1</maxWorkerThreads>
+	<maxWorkerThreads>16</maxWorkerThreads>
 	<!-- 0 = windowed, 1 = borderless window, 2 = fullscreen (has some issues)-->
 	<windowedMode>0</windowedMode>
 	<!-- do we allow window resizing if running in windowed mode? -->
@@ -86,9 +86,9 @@
 	<postFX>
 		<!-- Select the type of post processing AA: FXAA or SMAA -->
 		<!-- Defaults to FXAA -->
-		<PostAAType>SMAA</PostAAType>
+		<PostAAType>FXAA</PostAAType>
 		<!-- Quality level for FXAA or SMAA: 0 - off, 1 - lowest, 5 - highest-->
-		<PostAAQualityLevel>5</PostAAQualityLevel>
+		<PostAAQualityLevel>2</PostAAQualityLevel>
 		<enableDepthOfField>false</enableDepthOfField>
 		<enableBloom>true</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>

@@ -701,7 +701,7 @@ void MetricsGuiPlot::DrawList()
         // Draw description and value
         auto x = window->DC.CursorPos.x;
         auto y = window->DC.CursorPos.y;
-        ImGui::Selectable(metric->mDescription.c_str(), &metric->mSelected, ImGuiSelectableFlags_DrawFillAvailWidth);
+        ImGui::Selectable(metric->mDescription.c_str(), &metric->mSelected, ImGuiSelectableFlags_SpanAvailWidth);
         if (valueX >= barStartX) {
             auto useSiUnitPrefix  = 0 != (metric->mFlags & MetricsGuiMetric::USE_SI_UNIT_PREFIX);
             auto lastValue = metric->GetLastValue();

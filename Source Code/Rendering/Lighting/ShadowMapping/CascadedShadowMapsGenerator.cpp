@@ -459,7 +459,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
     RenderPassManager* rpm = _context.parent().renderPassManager();
 
-    constexpr F32 minExtentsFactors[] = { 0.25f, 1.25f, 2.75f, 5.5f };
+    constexpr F32 minExtentsFactors[] = { 0.025f, 1.25f, 2.75f, 5.5f };
 
     I16 i = to_I16(numSplits) - 1;
     for (i; i >= 0; i--) {

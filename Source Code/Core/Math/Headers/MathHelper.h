@@ -170,13 +170,13 @@ constexpr void ToggleBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept;
 
 /// Clamps value n between min and max
 template <typename T>
-void CLAMP(T& n, const T min, const T max);
+void CLAMP(T& n, const T min, const T max) noexcept;
 
 template <typename T>
-T CLAMPED(const T& n, const T min, const T max);
+T CLAMPED(const T& n, const T min, const T max) noexcept;
 
 template <typename T>
-T CLAMPED_01(const T& n);
+T CLAMPED_01(const T& n) noexcept;
 
 template <typename T>
 T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut);

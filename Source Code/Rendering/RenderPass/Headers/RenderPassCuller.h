@@ -50,12 +50,13 @@ class PlatformContext;
 enum class RenderStage : U8;
 
 struct NodeCullParams {
-    vec4<U16> _lodThresholds;
+    vec4<U16> _lodThresholds = {1000u};
     vec3<F32> _minExtents = { 0.0f };
+    std::pair<I64*, size_t> _ignoredGUIDS;
     const Camera* _currentCamera = nullptr;
     F32 _cullMaxDistanceSq = 0.0f;
     I32 _minLoD = -1;
-    RenderStage _stage = RenderStage::COUNT;;
+    RenderStage _stage = RenderStage::COUNT;
 };
 
 struct VisibleNode {
@@ -68,18 +69,6 @@ using NodeListContainer = vectorEASTL<VisibleNodeList>;
 
 class RenderPassCuller {
     public:
-        struct CullParams {
-            vec3<F32> _minExtents = { 0.0f };
-            PlatformContext* _context = nullptr;
-            const SceneGraph* _sceneGraph = nullptr;
-            const Camera* _camera = nullptr;
-            const SceneState* _sceneState = nullptr;
-            F32 _visibilityDistanceSq = std::numeric_limits<F32>::max();
-            I32 _minLoD = -1;
-            RenderStage _stage = RenderStage::COUNT;
-        };
-
-    public:
         RenderPassCuller() = default;
         ~RenderPassCuller() = default;
 
@@ -88,7 +77,7 @@ class RenderPassCuller {
 
         void clear() noexcept;
 
-        VisibleNodeList& frustumCull(const CullParams& params);
+        VisibleNodeList& frustumCull(const NodeCullParams& params, const SceneGraph& sceneGraph, const SceneState& sceneState, PlatformContext& context);
 
         VisibleNodeList frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const;
         VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;

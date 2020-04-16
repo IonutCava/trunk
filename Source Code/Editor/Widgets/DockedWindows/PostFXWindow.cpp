@@ -12,6 +12,10 @@
 #include "Rendering/PostFX/CustomOperators/Headers/DoFPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/PostAAPreRenderOperator.h"
 
+#undef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui_internal.h>
+
 namespace Divide {
     PostFXWindow::PostFXWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
         : PlatformContextComponent(context),
@@ -35,30 +39,41 @@ namespace Divide {
         };
 
         F32 edgeThreshold = batch->edgeDetectionThreshold();
-        if (ImGui::SliderFloat("Edge Detection Threshold", &edgeThreshold, 0.01f, 1.0f)) {
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text("Edge Threshold: "); ImGui::SameLine();
+        ImGui::PushItemWidth(170);
+        if (ImGui::SliderFloat("##hidelabel", &edgeThreshold, 0.01f, 1.0f)) {
             batch->edgeDetectionThreshold(edgeThreshold);
         }
-
+        ImGui::PopItemWidth();
         if (ImGui::CollapsingHeader("SS Antialiasing")) {
             PreRenderOperator* op = batch->getOperator(FilterType::FILTER_SS_ANTIALIASING);
             PostAAPreRenderOperator& aaOp = static_cast<PostAAPreRenderOperator&>(*op);
             I32 level = to_I32(aaOp.postAAQualityLevel());
 
-            ImGui::Text("Quality level (0 = disabled): ");
-            if (ImGui::SliderInt("", &level, 0, 5)) {
+            ImGui::AlignTextToFramePadding();
+            ImGui::PushItemWidth(175);
+            ImGui::Text("Quality level: "); ImGui::SameLine();
+            ImGui::PushID("quality_level_slider");
+            if (ImGui::SliderInt("##hidelabel", &level, 0, 5)) {
                 aaOp.postAAQualityLevel(to_U8(level));
             }
-
+            ImGui::PopID();
+            ImGui::PopItemWidth();
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("Method: "); ImGui::SameLine();
             static I32 selection = 0;
-            if (ImGui::RadioButton("SMAA", &selection, 0) ||
-                ImGui::RadioButton("FXAA", &selection, 1)) 
-            {
-                aaOp.useSMAA(selection == 0);
+            const bool a = ImGui::RadioButton("SMAA", &selection, 0); ImGui::SameLine();
+            const bool b = ImGui::RadioButton("FXAA", &selection, 1); ImGui::SameLine();
+            const bool c = ImGui::RadioButton("NONE", &selection, 2);
+            if (a || b|| c) {
+                if (selection != 2) {
+                    _postFX.pushFilter(FilterType::FILTER_SS_ANTIALIASING);
+                    aaOp.useSMAA(selection == 0);
+                } else {
+                    _postFX.popFilter(FilterType::FILTER_SS_ANTIALIASING);
+                }
             }
-        }
-
-        if (ImGui::CollapsingHeader("SS Reflections")) {
-            checkBox(FilterType::FILTER_SS_REFLECTIONS);
         }
         if (ImGui::CollapsingHeader("SS Ambient Occlusion")) {
             checkBox(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
@@ -85,9 +100,6 @@ namespace Divide {
             if (ImGui::Checkbox("Auto Focus", &autoFocus)) {
                 dofOp.autoFocus(autoFocus);
             }
-        }
-        if (ImGui::CollapsingHeader("Motion Blur")) {
-            checkBox(FilterType::FILTER_MOTION_BLUR);
         }
         if (ImGui::CollapsingHeader("Bloom")) {
             checkBox(FilterType::FILTER_BLOOM);
@@ -138,5 +150,15 @@ namespace Divide {
             checkBox(FilterType::FILTER_VIGNETTE, true, PostFX::FilterName(FilterType::FILTER_VIGNETTE));
             checkBox(FilterType::FILTER_UNDERWATER, true, PostFX::FilterName(FilterType::FILTER_UNDERWATER));
         }
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+        if (ImGui::CollapsingHeader("SS Reflections")) {
+            checkBox(FilterType::FILTER_SS_REFLECTIONS);
+        }
+        if (ImGui::CollapsingHeader("Motion Blur")) {
+            checkBox(FilterType::FILTER_MOTION_BLUR);
+        }
+        ImGui::PopItemFlag();
+        ImGui::PopStyleVar();
     }
 };

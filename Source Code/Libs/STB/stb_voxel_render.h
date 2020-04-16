@@ -1,4 +1,4 @@
-// stb_voxel_render.h - v0.83 - Sean Barrett, 2015 - public domain
+// stb_voxel_render.h - v0.89 - Sean Barrett, 2015 - public domain
 //
 // This library helps render large-scale "voxel" worlds for games,
 // in this case, one with blocks that can have textures and that
@@ -13,7 +13,7 @@
 // It works by creating triangle meshes. The library includes
 //
 //    - converter from dense 3D arrays of block info to vertex mesh
-//    - shader for the vertex mesh
+//    - vertex & fragment shaders for the vertex mesh
 //    - assistance in setting up shader state
 //
 // For portability, none of the library code actually accesses
@@ -24,8 +24,9 @@
 // yourself. However, you could also try making a game with
 // a small enough world that it's fully loaded rather than
 // streaming. Currently the preferred vertex format is 20 bytes
-// per quad. There are plans to allow much more compact formats
-// with a slight reduction in shader features.
+// per quad. There are designs to allow much more compact formats
+// with a slight reduction in shader features, but no roadmap
+// for actually implementing them.
 //
 //
 // USAGE
@@ -108,7 +109,7 @@
 //        and avoids a potential slow path (gathering non-uniform
 //        data from uniforms) on some hardware.
 //
-//   In the future I hope to add additional modes that have significantly
+//   In the future I might add additional modes that have significantly
 //   smaller meshes but reduce features, down as small as 6 bytes per quad.
 //   See elsewhere in this file for a table of candidate modes. Switching
 //   to a mode will require changing some of your mesh creation code, but
@@ -187,9 +188,16 @@
 //  Sean Barrett                          github:r-leyh   Jesus Fernandez
 //                                        Miguel Lechon   github:Arbeiterunfallversicherungsgesetz
 //                                        Thomas Frase    James Hofmann
+//                                        Stephen Olsen   github:guitarfreak
 //
 // VERSION HISTORY
 //
+//   0.89   (2020-02-02)  bugfix in sample code
+//   0.88   (2019-03-04)  fix warnings
+//   0.87   (2019-02-25)  fix warning
+//   0.86   (2019-02-07)  fix typos in comments
+//   0.85   (2017-03-03)  add block_selector (by guitarfreak)
+//   0.84   (2016-04-02)  fix GLSL syntax error on glModelView path
 //   0.83   (2015-09-13)  remove non-constant struct initializers to support more compilers
 //   0.82   (2015-08-01)  added input.packed_compact to store rot, vheight & texlerp efficiently
 //                        fix broken tex_overlay2
@@ -215,9 +223,7 @@
 //
 // LICENSE
 //
-//   This software is in the public domain. Where that dedication is not
-//   recognized, you are granted a perpetual, irrevocable license to copy,
-//   distribute, and modify this file as you see fit.
+//   See end of file for license information.
 
 #ifndef INCLUDE_STB_VOXEL_RENDER_H
 #define INCLUDE_STB_VOXEL_RENDER_H
@@ -262,7 +268,7 @@ extern "C" {
 //     modes 0,1,20,21, Z in the mesh can extend to 511 instead
 //     of 255. However, half-height blocks cannot be used.
 //
-// All of the following just #ifdef tested so need no values, and are optional.
+// All of the following are just #ifdef tested so need no values, and are optional.
 //
 //    STBVOX_CONFIG_BLOCKTYPE_SHORT
 //        use unsigned 16-bit values for 'blocktype' in the input instead of 8-bit values
@@ -274,7 +280,7 @@ extern "C" {
 //        NOT IMPLEMENTED! Define HLSL shaders instead of GLSL shaders
 //
 //    STBVOX_CONFIG_PREFER_TEXBUFFER
-//        Stores many of the uniform arrays in texture buffers intead,
+//        Stores many of the uniform arrays in texture buffers instead,
 //        so they can be larger and may be more efficient on some hardware.
 //
 //    STBVOX_CONFIG_LIGHTING_SIMPLE
@@ -302,7 +308,7 @@ extern "C" {
 //
 //    STBVOX_CONFIG_DISABLE_TEX2
 //        This disables all processing of texture 2 in the shader in case
-//        you don't use it. Eventually this will be replaced with a mode
+//        you don't use it. Eventually this could be replaced with a mode
 //        that omits the unused data entirely.
 //
 //    STBVOX_CONFIG_TEX1_EDGE_CLAMP
@@ -609,7 +615,7 @@ void setup_uniforms(GLuint shader, float camera_pos[4], GLuint tex1, GLuint tex2
       stbvox_uniform_info sui;
       if (stbvox_get_uniform_info(&sui, i)) {
          GLint loc = glGetUniformLocation(shader, sui.name);
-         if (loc != 0) {
+         if (loc != -1) {
             switch (i) {
                case STBVOX_UNIFORM_camera_pos: // only needed for fog
                   glUniform4fv(loc, sui.array_length, camera_pos);
@@ -811,7 +817,7 @@ struct stbvox_input_description
    // Indexed by 3D coordinate. Contains the color for all faces of the block.
    // The core color value is 0..63.
    // Encode with STBVOX_MAKE_COLOR(color_number, tex1_enable, tex2_enable)
-   
+
    unsigned char *block_color;
    // Array indexed by blocktype containing the color value to apply to the faces.
    // The core color value is 0..63.
@@ -930,7 +936,7 @@ struct stbvox_input_description
    // Indexed by 3D coordinates, specifies which faces should use the
    // color defined in color2. No rotation value is applied.
    // Encode with STBVOX_MAKE_FACE_MASK(e,n,w,s,u,d)
-   
+
    unsigned char *color3;
    // Indexed by 3D coordinates, specifies an alternative color to apply
    // to some of the faces of the block.
@@ -938,9 +944,9 @@ struct stbvox_input_description
 
    unsigned char *color3_facemask;
    // Indexed by 3D coordinates, specifies which faces should use the
-   // color defined in color3. No rotation value is applied. 
+   // color defined in color3. No rotation value is applied.
    // Encode with STBVOX_MAKE_FACE_MASK(e,n,w,s,u,d)
-   
+
    unsigned char *texlerp_simple;
    // Indexed by 3D coordinates, this is the smallest texlerp encoding
    // that can do useful work. It consits of three values: baselerp,
@@ -956,7 +962,7 @@ struct stbvox_input_description
    // Encode with STBVOX_MAKE_TEXLERP_SIMPLE(baselerp, vertlerp, face_vertlerp)
 
    // The following texlerp encodings are experimental and maybe not
-   // that useful. 
+   // that useful.
 
    unsigned char *texlerp;
    // Indexed by 3D coordinates, this defines four values:
@@ -1064,7 +1070,7 @@ enum
 // split into two triangles, each with their own normal/lighting.
 // (Note that since all output from stb_voxel_render is quad meshes,
 // triangles are actually rendered as degenerate quads.) In this case,
-// the distinction betwen STBVOX_GEOM_floor_vheight_03 and
+// the distinction between STBVOX_GEOM_floor_vheight_03 and
 // STBVOX_GEOM_floor_vheight_12 comes into play; the former introduces
 // an edge from the SW to NE corner (i.e. from <0,0,?> to <1,1,?>),
 // while the latter introduces an edge from the NW to SE corner
@@ -1245,7 +1251,7 @@ struct stbvox_mesh_maker
 // shouldn't improve performance, although obviously it allow you
 // to create larger worlds without streaming.
 //
-//        
+//
 //                      -----------  Two textures -----------       -- One texture --     ---- Color only ----
 //            Mode:     0     1     2     3     4     5     6        10    11    12      20    21    22    23    24
 // ============================================================================================================
@@ -1267,15 +1273,15 @@ struct stbvox_mesh_maker
 //            Mode:     0     1     2     3     4     5     6        10    11    12      20    21    22    23    24
 // =============================================================================================================
 //   bytes per quad    32    20    14    12    10     6     6         8     8     4            20    10     6     4
-//                                                                 
+//
 //    vertex x bits     7     7     0     6     0     0     0         0     0     0             7     0     0     0
 //    vertex y bits     7     7     0     0     0     0     0         0     0     0             7     0     0     0
 //    vertex z bits     9     9     7     4     2     0     0         2     2     0             9     2     0     0
 //   vertex ao bits     6     6     6     6     6     0     0         6     6     0             6     6     0     0
 //  vertex txl bits     3     3     3     0     0     0     0         0     0     0            (3)    0     0     0
 //
-//   face tex1 bits    (8)    8     8     8     8     8     8         8     8     8                    
-//   face tex2 bits    (8)    8     8     8     8     8     7         -     -     -         
+//   face tex1 bits    (8)    8     8     8     8     8     8         8     8     8
+//   face tex2 bits    (8)    8     8     8     8     8     7         -     -     -
 //  face color bits    (8)    8     8     8     8     8     8         3     0     0            24    24    24     8
 // face normal bits    (8)    8     8     8     6     4     7         4     4     3             8     3     4     3
 //      face x bits                 7     0     6     7     6         6     7     7             0     7     7     7
@@ -1590,7 +1596,7 @@ static const char *stbvox_vertex_program =
       "uniform vec3 normal_table[32];\n"
 
       #ifndef STBVOX_CONFIG_OPENGL_MODELVIEW
-         "uniform mat44 model_view;\n"
+         "uniform mat4x4 model_view;\n"
       #endif
 
       // fragment output data
@@ -1704,7 +1710,7 @@ static const char *stbvox_fragment_program =
          "   uint color_id  = facedata.z;\n"
 
          #ifndef STBVOX_CONFIG_PREFER_TEXBUFFER
-            // load from uniforms / texture buffers 
+            // load from uniforms / texture buffers
             "   vec3 texgen_s = texgen[texprojid];\n"
             "   vec3 texgen_t = texgen[texprojid+32u];\n"
             "   float tex1_scale = texscale[tex1_id & 63u].x;\n"
@@ -1816,7 +1822,7 @@ static const char *stbvox_fragment_program =
          "   vec3 dist = voxelspace_pos + (transform[1] - camera_pos.xyz);\n"
          "   lit_color = compute_fog(lit_color, dist, fragment_alpha);\n"
       #endif
-      
+
       #ifdef STBVOX_CONFIG_UNPREMULTIPLY
       "   vec4 final_color = vec4(lit_color/fragment_alpha, fragment_alpha);\n"
       #else
@@ -1843,7 +1849,7 @@ static const char *stbvox_fragment_program =
       "{\n"
       "   float f = dot(relative_pos,relative_pos)*ambient[3].w;\n"
       //"   f = rlerp(f, -2,1);\n"
-      "   f = clamp(f, 0.0, 1.0);\n" 
+      "   f = clamp(f, 0.0, 1.0);\n"
       "   f = 3.0*f*f - 2.0*f*f*f;\n" // smoothstep
       //"   f = f*f;\n"  // fade in more smoothly
       #ifdef STBVOX_CONFIG_PREMULTIPLIED_ALPHA
@@ -1897,7 +1903,7 @@ static const char *stbvox_fragment_program_alpha_only =
       "   uint color_id  = facedata.z;\n"
 
       #ifndef STBVOX_CONFIG_PREFER_TEXBUFFER
-         // load from uniforms / texture buffers 
+         // load from uniforms / texture buffers
          "   vec3 texgen_s = texgen[texprojid];\n"
          "   vec3 texgen_t = texgen[texprojid+32u];\n"
          "   float tex1_scale = texscale[tex1_id & 63u].x;\n"
@@ -2028,7 +2034,7 @@ static unsigned char stbvox_rotate_face[6][4] =
    { 2,3,0,1 },
    { 3,0,1,2 },
    { 4,4,4,4 },
-   { 5,5,5,5 },   
+   { 5,5,5,5 },
 };
 
 #define STBVOX_ROTATE(x,r)   stbvox_rotate_face[x][r] // (((x)+(r))&3)
@@ -2184,7 +2190,7 @@ static unsigned char stbvox_vertex_selector[6][4] =
 
 static stbvox_mesh_vertex stbvox_vmesh_delta_normal[6][4] =
 {
-   {  stbvox_vertex_encode(1,0,1,0,0) , 
+   {  stbvox_vertex_encode(1,0,1,0,0) ,
       stbvox_vertex_encode(1,1,1,0,0) ,
       stbvox_vertex_encode(1,1,0,0,0) ,
       stbvox_vertex_encode(1,0,0,0,0)  },
@@ -2212,7 +2218,7 @@ static stbvox_mesh_vertex stbvox_vmesh_delta_normal[6][4] =
 
 static stbvox_mesh_vertex stbvox_vmesh_pre_vheight[6][4] =
 {
-   {  stbvox_vertex_encode(1,0,0,0,0) , 
+   {  stbvox_vertex_encode(1,0,0,0,0) ,
       stbvox_vertex_encode(1,1,0,0,0) ,
       stbvox_vertex_encode(1,1,0,0,0) ,
       stbvox_vertex_encode(1,0,0,0,0)  },
@@ -2240,7 +2246,7 @@ static stbvox_mesh_vertex stbvox_vmesh_pre_vheight[6][4] =
 
 static stbvox_mesh_vertex stbvox_vmesh_delta_half_z[6][4] =
 {
-   { stbvox_vertex_encode(1,0,2,0,0) , 
+   { stbvox_vertex_encode(1,0,2,0,0) ,
      stbvox_vertex_encode(1,1,2,0,0) ,
      stbvox_vertex_encode(1,1,0,0,0) ,
      stbvox_vertex_encode(1,0,0,0,0)  },
@@ -2268,7 +2274,7 @@ static stbvox_mesh_vertex stbvox_vmesh_delta_half_z[6][4] =
 
 static stbvox_mesh_vertex stbvox_vmesh_crossed_pair[6][4] =
 {
-   { stbvox_vertex_encode(1,0,2,0,0) , 
+   { stbvox_vertex_encode(1,0,2,0,0) ,
      stbvox_vertex_encode(0,1,2,0,0) ,
      stbvox_vertex_encode(0,1,0,0,0) ,
      stbvox_vertex_encode(1,0,0,0,0)  },
@@ -2367,16 +2373,16 @@ static unsigned short stbvox_face_visible[STBVOX_FT_count] =
 {
    // we encode the table by listing which cases cause *obscuration*, and bitwise inverting that
    // table is pre-shifted by 5 to save a shift when it's accessed
-   (unsigned short) ((~0x07ff                                          )<<5),  // none is completely obscured by everything
-   (unsigned short) ((~((1<<STBVOX_FT_solid) | (1<<STBVOX_FT_upper)   ))<<5),  // upper
-   (unsigned short) ((~((1<<STBVOX_FT_solid) | (1<<STBVOX_FT_lower)   ))<<5),  // lower
-   (unsigned short) ((~((1<<STBVOX_FT_solid)                          ))<<5),  // solid is only completely obscured only by solid
-   (unsigned short) ((~((1<<STBVOX_FT_solid) | (1<<STBVOX_FT_diag_013)))<<5),  // diag012 matches diag013
-   (unsigned short) ((~((1<<STBVOX_FT_solid) | (1<<STBVOX_FT_diag_123)))<<5),  // diag023 matches diag123
-   (unsigned short) ((~((1<<STBVOX_FT_solid) | (1<<STBVOX_FT_diag_012)))<<5),  // diag013 matches diag012
-   (unsigned short) ((~((1<<STBVOX_FT_solid) | (1<<STBVOX_FT_diag_023)))<<5),  // diag123 matches diag023
-   (unsigned short) ((~0                                               )<<5),  // force is always rendered regardless, always forces neighbor
-   (unsigned short) ((~((1<<STBVOX_FT_solid)                          ))<<5),  // partial is only completely obscured only by solid
+   (unsigned short) ((~0x07ffu                                          )<<5),  // none is completely obscured by everything
+   (unsigned short) ((~((1u<<STBVOX_FT_solid) | (1<<STBVOX_FT_upper)   ))<<5),  // upper
+   (unsigned short) ((~((1u<<STBVOX_FT_solid) | (1<<STBVOX_FT_lower)   ))<<5),  // lower
+   (unsigned short) ((~((1u<<STBVOX_FT_solid)                          ))<<5),  // solid is only completely obscured only by solid
+   (unsigned short) ((~((1u<<STBVOX_FT_solid) | (1<<STBVOX_FT_diag_013)))<<5),  // diag012 matches diag013
+   (unsigned short) ((~((1u<<STBVOX_FT_solid) | (1<<STBVOX_FT_diag_123)))<<5),  // diag023 matches diag123
+   (unsigned short) ((~((1u<<STBVOX_FT_solid) | (1<<STBVOX_FT_diag_012)))<<5),  // diag013 matches diag012
+   (unsigned short) ((~((1u<<STBVOX_FT_solid) | (1<<STBVOX_FT_diag_023)))<<5),  // diag123 matches diag023
+   (unsigned short) ((~0u                                               )<<5),  // force is always rendered regardless, always forces neighbor
+   (unsigned short) ((~((1u<<STBVOX_FT_solid)                          ))<<5),  // partial is only completely obscured only by solid
 };
 
 // the vertex heights of the block types, in binary vertex order (zyx):
@@ -2515,7 +2521,7 @@ static unsigned char stbvox_optimized_face_up_normal[4][4][4][4] =
 // @TODO: this table was constructed by hand and may have bugs
 //                                 nw se sw
 static unsigned char stbvox_planar_face_up_normal[4][4][4] =
-{   
+{
    {                                                      // sw,se,nw,ne;  ne = se+nw-sw
       { STBVF_u   , 0         , 0         , 0          }, //  0,0,0,0; 1,0,0,-1; 2,0,0,-2; 3,0,0,-3;
       { STBVF_u   , STBVF_u   , 0         , 0          }, //  0,1,0,1; 1,1,0, 0; 2,1,0,-1; 3,1,0,-2;
@@ -2900,6 +2906,8 @@ static void stbvox_make_mesh_for_block(stbvox_mesh_maker *mm, stbvox_pos pos, in
 
    if (mm->input.selector)
       mesh = mm->input.selector[v_off];
+   else if (mm->input.block_selector)
+      mesh = mm->input.block_selector[mm->input.blocktype[v_off]];
 
    // check if we're going off the end
    if (mm->output_cur[mesh][0] + mm->output_size[mesh][0]*6 > mm->output_end[mesh][0]) {
@@ -3109,6 +3117,8 @@ static void stbvox_make_mesh_for_block_with_geo(stbvox_mesh_maker *mm, stbvox_po
    mesh = mm->default_mesh;
    if (mm->input.selector)
       mesh = mm->input.selector[v_off];
+   else if (mm->input.block_selector)
+      mesh = mm->input.block_selector[bt];
 
    if (geo <= STBVOX_GEOM_ceil_slope_north_is_bottom) {
       // this is the simple case, we can just use regular block gen with special vmesh calculated with vheight
@@ -3130,7 +3140,9 @@ static void stbvox_make_mesh_for_block_with_geo(stbvox_mesh_maker *mm, stbvox_po
       basevert = stbvox_vertex_encode(pos.x, pos.y, pos.z << STBVOX_CONFIG_PRECISION_Z, 0,0);
       if (mm->input.selector) {
          mesh = mm->input.selector[v_off];
-      }
+      } else if (mm->input.block_selector)
+         mesh = mm->input.block_selector[bt];
+
 
       // check if we're going off the end
       if (mm->output_cur[mesh][0] + mm->output_size[mesh][0]*6 > mm->output_end[mesh][0]) {
@@ -3332,7 +3344,7 @@ static void stbvox_make_mesh_for_block_with_geo(stbvox_mesh_maker *mm, stbvox_po
 
       if ((visible_faces & (1 << STBVOX_FACE_north)) || (extreme && (ht[2] == 3 || ht[3] == 3)))
          stbvox_make_mesh_for_face(mm, rotate, STBVOX_FACE_north, v_off, pos, basevert, vmesh[STBVOX_FACE_north], mesh, STBVOX_FACE_north);
-      if ((visible_faces & (1 << STBVOX_FACE_south)) || (extreme && (ht[0] == 3 || ht[1] == 3))) 
+      if ((visible_faces & (1 << STBVOX_FACE_south)) || (extreme && (ht[0] == 3 || ht[1] == 3)))
          stbvox_make_mesh_for_face(mm, rotate, STBVOX_FACE_south, v_off, pos, basevert, vmesh[STBVOX_FACE_south], mesh, STBVOX_FACE_south);
       if ((visible_faces & (1 << STBVOX_FACE_east)) || (extreme && (ht[1] == 3 || ht[3] == 3)))
          stbvox_make_mesh_for_face(mm, rotate, STBVOX_FACE_east , v_off, pos, basevert, vmesh[STBVOX_FACE_east ], mesh, STBVOX_FACE_east);
@@ -3350,6 +3362,9 @@ static void stbvox_make_mesh_for_block_with_geo(stbvox_mesh_maker *mm, stbvox_po
          mesh = mm->input.selector[v_off];
          simple_rot = mesh >> 4;
          mesh &= 15;
+      }
+      if (mm->input.block_selector) {
+         mesh = mm->input.block_selector[bt];
       }
 
       // check if we're going off the end
@@ -3539,7 +3554,7 @@ void stbvox_set_buffer(stbvox_mesh_maker *mm, int mesh, int slot, void *buffer, 
    stbvox_bring_up_to_date(mm);
    mm->output_buffer[mesh][slot] = (char *) buffer;
    mm->output_cur   [mesh][slot] = (char *) buffer;
-   mm->output_len   [mesh][slot] = len;
+   mm->output_len   [mesh][slot] = (int) len;
    mm->output_end   [mesh][slot] = (char *) buffer + len;
    for (i=0; i < STBVOX_MAX_MESH_SLOTS; ++i) {
       if (mm->output_buffer[mesh][i]) {
@@ -3555,7 +3570,7 @@ void stbvox_set_default_mesh(stbvox_mesh_maker *mm, int mesh)
 
 int stbvox_get_quad_count(stbvox_mesh_maker *mm, int mesh)
 {
-   return (mm->output_cur[mesh][0] - mm->output_buffer[mesh][0]) / mm->output_size[mesh][0];
+   return (int) ((mm->output_cur[mesh][0] - mm->output_buffer[mesh][0]) / mm->output_size[mesh][0]);
 }
 
 stbvox_input_description *stbvox_get_input_description(stbvox_mesh_maker *mm)
@@ -3629,7 +3644,7 @@ void stbvox_set_input_stride(stbvox_mesh_maker *mm, int x_stride_in_bytes, int y
                                          +  stbvox_vertex_vector[f][v][2]                           ;
          mm->vertex_gather_offset[f][v] =  (stbvox_vertex_vector[f][v][0]-1) * mm->x_stride_in_bytes
                                          + (stbvox_vertex_vector[f][v][1]-1) * mm->y_stride_in_bytes
-                                         + (stbvox_vertex_vector[f][v][2]-1)                        ; 
+                                         + (stbvox_vertex_vector[f][v][2]-1)                        ;
       }
    }
 }
@@ -3748,3 +3763,45 @@ int main(int argc, char **argv)
 // (v:  x:2,y:2,z:2,light:2)
 
 #endif // STB_VOXEL_RENDER_IMPLEMENTATION
+
+/*
+------------------------------------------------------------------------------
+This software is available under 2 licenses -- choose whichever you prefer.
+------------------------------------------------------------------------------
+ALTERNATIVE A - MIT License
+Copyright (c) 2017 Sean Barrett
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+------------------------------------------------------------------------------
+ALTERNATIVE B - Public Domain (www.unlicense.org)
+This is free and unencumbered software released into the public domain.
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.
+In jurisdictions that recognize copyright laws, the author or authors of this
+software dedicate any and all copyright interest in the software to the public
+domain. We make this dedication for the benefit of the public at large and to
+the detriment of our heirs and successors. We intend this dedication to be an
+overt act of relinquishment in perpetuity of all present and future rights to
+this software under copyright law.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+------------------------------------------------------------------------------
+*/

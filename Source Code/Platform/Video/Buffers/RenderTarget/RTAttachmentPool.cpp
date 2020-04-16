@@ -91,6 +91,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     ResourceDescriptor textureAttachment(texName);
     textureAttachment.assetName(texName);
     textureAttachment.threaded(false);
+    textureAttachment.waitForReady(true);
     textureAttachment.propertyDescriptor(descriptor._texDescriptor);
 
     GFXDevice& context = _parent.context();
@@ -100,7 +101,6 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
 
     const Texture::TextureLoadInfo info = {};
     tex->loadData(info, NULL, vec2<U16>(_parent.getWidth(), _parent.getHeight()));
-
     ptr->setTexture(tex);
 
     ++_attachmentCount[to_U32(type)];

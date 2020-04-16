@@ -865,7 +865,7 @@ void Material::updateTranslucency() {
     }
 }
 
-size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
+size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) const {
     size_t ret = _context.getDefaultStateBlock(false);
 
     const StatesPerVariant& variantMap = _defaultRenderStates[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)];
@@ -878,10 +878,17 @@ size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) {
         ret = variantMap[0u];
     }
 
-    if (_properties._doubleSided && renderStagePass._stage != RenderStage::SHADOW) {
-        RenderStateBlock tempBlock = RenderStateBlock::get(ret);
-        tempBlock.setCullMode(CullMode::NONE);
-        ret = tempBlock.getHash();
+    if (ret != g_invalidStateHash) {
+        // We don't need to update cull params for shadow mapping unless this is a directional light
+        // since CSM splits cause all sorts of errors
+        if (_properties._doubleSided &&
+            (renderStagePass._stage != RenderStage::SHADOW ||
+                renderStagePass._variant == to_base(LightType::DIRECTIONAL)))
+        {
+            RenderStateBlock tempBlock = RenderStateBlock::get(ret);
+            tempBlock.setCullMode(CullMode::NONE);
+            ret = tempBlock.getHash();
+        }
     }
 
     return ret;
@@ -1018,17 +1025,21 @@ void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::propert
     std::set<size_t> previousHashValues = {};
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
         perStagePath = entryName + "." + TypeUtil::RenderStageToString(static_cast<RenderStage>(s));
-        const StateVariantsPerPass& stageStates = _defaultRenderStates[s];
-
         for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
             perPassPath = TypeUtil::RenderPassTypeToString(static_cast<RenderPassType>(p));
-            const StatesPerVariant& passStates = stageStates[p];
-
             for (U8 v = 0u; v < g_maxVariantsPerPass; ++v) {
                 perVariantPath = to_stringImpl(to_U32(v));
                 fullPath = perStagePath + "." + perPassPath + "." + perVariantPath;
 
-                const size_t stateHash = passStates[v];
+                // we could just use _defaultRenderStates[s][p][v] for a direct lookup, but this handles the odd double-sided / no cull case
+                const size_t stateHash = getRenderStateBlock(
+                    {
+                        static_cast<RenderStage>(s),
+                        static_cast<RenderPassType>(p),
+                        v
+                    }
+                );
+
                 pt.put(fullPath + ".hash", stateHash);
 
                 if (stateHash != g_invalidStateHash && previousHashValues.find(stateHash) == std::cend(previousHashValues)) {

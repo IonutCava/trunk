@@ -73,7 +73,7 @@ class RenderQueue : public KernelComponent {
         return _renderBins;
     }
 
-    U16 getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut, I64 sourceGUID) const;
+    U16 getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut) const;
 
   private:
 

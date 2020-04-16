@@ -543,8 +543,39 @@ void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams) {
     }
     else io.Fonts->AddFontDefault(pDefaultFontConfig);
 
+
+    const bool hasCustomGlyphs = pOptionalInitParams && pOptionalInitParams->customFontGlyphs.size()>0;
+    if (hasCustomGlyphs)    {
+        IM_ASSERT(pOptionalInitParams);
+        const ImVector<ImImpl_InitParams::CustomFontGlyph>& customFontGlyphs = pOptionalInitParams->customFontGlyphs;
+        for (int i=0,isz=customFontGlyphs.size();i<isz;i++) {
+            const ImImpl_InitParams::CustomFontGlyph& cfg = customFontGlyphs[i];
+            if (cfg.fontIndex>=0 && cfg.fontIndex<io.Fonts->Fonts.size())   {
+                // Here we correct cfg.width and cfg.height too
+
+                // 'sizeInPixels' is just the 'positive' size of the font we append custom icons to
+                const ImImpl_InitParams::FontData& fd = pOptionalInitParams->fonts[cfg.fontIndex];
+                const float sizeInPixels = fd.sizeInPixels==0.f ? 13.f : (fd.sizeInPixels>0 ? fd.sizeInPixels : ((float)io.DisplaySize.y/(-fd.sizeInPixels)));
+
+                IM_ASSERT(cfg.image.imageNumXTiles>0 && cfg.image.imageNumYTiles>0);
+                const int tileWidth = cfg.image.imageWidth/cfg.image.imageNumXTiles;
+                const int tileHeight = cfg.image.imageHeight/cfg.image.imageNumYTiles;
+                const float tileRatio = (float) tileWidth/(float) tileHeight;
+                IM_ASSERT(tileWidth>0 && tileHeight>0 && tileRatio>0);
+
+                if (cfg.width<0) cfg.width=tileWidth/(-cfg.width);
+                else if (cfg.width==0) cfg.width=(int)(sizeInPixels/tileRatio);
+                if (cfg.height<0) cfg.height=tileHeight/(-cfg.height);
+                else if (cfg.height==0) cfg.height=(int)sizeInPixels;
+                IM_ASSERT(cfg.width>0 && cfg.height>0);
+
+                cfg.customRectId = io.Fonts->AddCustomRectFontGlyph(io.Fonts->Fonts[cfg.fontIndex], cfg.glyphId, cfg.width, cfg.height, cfg.width+cfg.advance_x_delta);
+            }
+        }
+    }
+
     // Load font texture
-    unsigned char* pixels;
+    unsigned char* pixels = NULL;
     int width, height,numChannels = 4;
     //fprintf(stderr,"Loading font texture\n");
 #	ifdef IMIMPL_BUILD_SDF
@@ -555,7 +586,10 @@ void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams) {
 		ImGuiFreeType::GetTexDataAsAlpha8(io.Fonts,&io.Fonts->TexPixelsAlpha8,NULL,NULL,NULL,ImGuiFreeType::DefaultRasterizationFlags,&ImGuiFreeType::DefaultRasterizationFlagVector);
 #		endif //YES_IMGUIFREETYPE
 	}    	
+    if (!hasCustomGlyphs) {
+        IM_ASSERT(!io.Fonts->TexPixelsRGBA32);
 	ImGui::PostBuildForSignedDistanceFontEffect(io.Fonts);
+    }
 #	endif
 
 #   if (defined(IMGUI_USE_DIRECT3D9_BINDING) || !defined(IMIMPL_USE_ARB_TEXTURE_SWIZZLE_TO_SAVE_FONT_TEXTURE_MEMORY))
@@ -573,6 +607,98 @@ void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams) {
         ImGuiFreeType::GetTexDataAsAlpha8(io.Fonts,&pixels, &width, &height,NULL,ImGuiFreeType::DefaultRasterizationFlags,&ImGuiFreeType::DefaultRasterizationFlagVector);
 #       endif //YES_IMGUIFREETYPE
 #   endif //IMIMPL_USE_ARB_TEXTURE_SWIZZLE_TO_SAVE_FONT_TEXTURE_MEMORY
+
+        if (hasCustomGlyphs)    {
+            const int ncgChannels = (numChannels==4 && !pOptionalInitParams->useMonochromeCustomFontGlyphs) ? 4 : 1;
+            IM_ASSERT(ncgChannels==4 || (numChannels==1 && pOptionalInitParams->useMonochromeCustomFontGlyphs));
+            const ImVector<ImImpl_InitParams::CustomFontGlyph>& customFontGlyphs = pOptionalInitParams->customFontGlyphs;
+            const unsigned char* lastImPtr = NULL;  // used to cache last decoded image
+            ImVector<unsigned char> im,sim,ssim;int imwidth=0,imheight=0,imcomp=0;
+            for (int i=0,isz=customFontGlyphs.size();i<isz;i++) {
+                const ImImpl_InitParams::CustomFontGlyph& cfg = customFontGlyphs[i];
+                // Load image, handle num_compnents and partitioning and copy pixels------
+                const ImImpl_InitParams::CustomFontGlyph::ImageData& id = cfg.image;
+                const bool isEmbedded = id.imageMemory && id.imageMemorySizeInBytes>0;
+                if (!isEmbedded && !id.imagePath) continue;
+                bool ok =true;
+                if (!lastImPtr || (lastImPtr && (lastImPtr!=id.imageMemory && lastImPtr!=(const unsigned char*)id.imagePath)))    {
+                    im.clear();sim.clear();ssim.clear();ok = false;
+                    if (isEmbedded) {
+                        lastImPtr = id.imageMemory;
+                        ok = ImImpl_DecodeImageFromMemory(im,id.imageMemory,id.imageMemorySizeInBytes,&imwidth,&imheight,&imcomp,ncgChannels);
+                    }
+                    else {
+                        lastImPtr = (const unsigned char*)id.imagePath;
+                        ok = ImImpl_DecodeImageFromFile(im,id.imagePath,&imwidth,&imheight,&imcomp,ncgChannels);
+                    }
+                }
+                if (ok) {
+                    IM_ASSERT(imwidth==cfg.image.imageWidth && imheight==cfg.image.imageHeight);    // You've probably specified a wrong image dimension (but it only cares when you set glyphWidth/Height to zero)
+                    IM_ASSERT(im.size()>0 && imwidth>0 && imheight>0 && imcomp>0);
+                    const unsigned char* pim = &im[0];int size = im.size();
+                    int dstX=0,dstY=0,dstW=imwidth,dstH=imheight;
+                    if (id.imageNumXTiles>1 || id.imageNumYTiles>1) {
+                        //calc: dstX,dstY,dstW,dstH here
+                        const int maxTileIndex = id.imageNumXTiles*id.imageNumYTiles-1;
+                        const int tileIndex = cfg.imageTileIndex<0 ? 0 : (cfg.imageTileIndex>maxTileIndex ? maxTileIndex : cfg.imageTileIndex);
+                        const int rowTileIndex = tileIndex/id.imageNumXTiles;
+                        const int colTileIndex = tileIndex%id.imageNumXTiles;
+                        dstW = imwidth/id.imageNumXTiles;
+                        dstH = imheight/id.imageNumXTiles;
+                        dstX = dstW*colTileIndex;
+                        dstY = dstH*rowTileIndex;
+
+                        // Extract image
+                        ok = ImImpl_ExtractImage(sim,dstX,dstY,dstW,dstH,pim,imwidth,imheight,imcomp);
+                        if (ok) {
+                            pim = &sim[0];size = sim.size();
+                            const int dw = cfg.width;
+                            const int dh = cfg.height;
+                            if (dw!=dstW || dh!=dstH)  {
+                                // We must scale image
+                                IM_ASSERT(sim.size()==dstW*dstH*imcomp);
+                                ok = ImImpl_ScaleImage(ssim,dw,dh,pim,dstW,dstH,imcomp);
+                                if (ok) {
+                                    pim = &ssim[0];size=ssim.size();
+                                    dstW = dw;
+                                    dstH = dh;
+                                }
+                                sim.clear();
+                            }
+                        }
+                    }
+                    if (ok) {
+                        // Now we must use pim,dstW,dstH,comp here
+                        IM_ASSERT(pim);
+                        if (ncgChannels==4) {
+                            const ImU32* pc = (const ImU32*) pim;
+                            if (const ImFontAtlasCustomRect* rect = io.Fonts->GetCustomRectByIndex(cfg.customRectId))  {
+                                for (int y = 0; y < rect->Height; y++)  {
+                                    ImU32* p = (ImU32*)pixels + (rect->Y + y) * width + (rect->X);
+                                    for (int x = rect->Width; x > 0; x--)
+                                        *p++ = *pc++;
+                                }
+                            }
+                        }
+                        else if (ncgChannels==1) {
+                            const unsigned char* pc = pim;
+                            if (const ImFontAtlasCustomRect* rect = io.Fonts->GetCustomRectByIndex(cfg.customRectId))  {
+                                for (int y = 0; y < rect->Height; y++)  {
+                                    unsigned char* p = pixels + (rect->Y + y) * width + (rect->X);
+                                    for (int x = rect->Width; x > 0; x--)
+                                        *p++ = *pc++;
+                                }
+                            }
+                        }
+                        else {IM_ASSERT(0);}  // Never happens
+                    }
+                }
+            }                       
+#           ifdef IMIMPL_BUILD_SDF
+            ImGui::PostBuildForSignedDistanceFontEffect(io.Fonts);
+#           endif //IMIMPL_BUILD_SDF
+        }
+
 
     bool minFilterNearest = false,magFilterNearest=false;
 #   if ((!defined(IMIMPL_USE_SDF_SHADER) && !defined(IMIMPL_USE_ALPHA_SHARPENER_SHADER) && !defined(IMIMPL_USE_FONT_TEXTURE_LINEAR_FILTERING)) || defined(IMIMPL_USE_FONT_TEXTURE_NEAREST_FILTERING))
@@ -594,6 +720,19 @@ void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams) {
 #   endif //IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON
 
     //fprintf(stderr,"Loaded font texture\n");
+
+// We overuse this method to load textures from other imgui addons
+#   ifndef NO_IMGUITABWINDOW
+    if (!ImGui::TabWindow::DockPanelIconTextureID)  {
+        ImVector<unsigned char> rgba_buffer;int w=0,h=0;
+        ImGui::TabWindow::GetDockPanelIconImageRGBA(rgba_buffer,&w,&h);
+        ImImpl_GenerateOrUpdateTexture(ImGui::TabWindow::DockPanelIconTextureID,w,h,4,&rgba_buffer[0]);
+    }
+#   endif //NO_IMGUITABWINDOW
+#   ifndef NO_IMGUIDOCK
+    if (!gDockContent) gDockContent = ImGui::CreateDockContext();
+    ImGui::SetCurrentDockContext(gDockContent);
+#   endif //NO_IMGUIDOCK
 }
 
 void DestroyImGuiFontTexture()	{
@@ -612,6 +751,15 @@ void DestroyImGuiFontTexture()	{
 #   ifdef YES_IMGUIIMAGEEDITOR
     ImGui::ImageEditor::Destroy();
 #   endif //YES_IMGUIIMAGEEDITOR
+#   ifndef NO_IMGUITABWINDOW
+    if (ImGui::TabWindow::DockPanelIconTextureID) {
+        ImImpl_FreeTexture(ImGui::TabWindow::DockPanelIconTextureID);
+        ImGui::TabWindow::DockPanelIconTextureID = NULL;
+    }
+#   endif //NO_IMGUITABWINDOW
+#   ifndef NO_IMGUIDOCK
+    if (gDockContent) {ImGui::DestroyDockContext(gDockContent);gDockContent=NULL;}
+#   endif //NO_IMGUIDOCK
 }
 
 #ifndef _WIN32
@@ -637,6 +785,87 @@ void WaitFor(unsigned int ms)    {
 
 void ImImpl_FlipTexturesVerticallyOnLoad(bool flag_true_if_should_flip)   {
     stbi_set_flip_vertically_on_load(flag_true_if_should_flip);
+}
+
+bool ImImpl_DecodeImageFromMemory(ImVector<unsigned char>& dest,const unsigned char* encodedImage,int encodedImageSizeInBytes,int* width,int* height,int* components,int req_comp) {
+    IM_ASSERT(encodedImage && encodedImageSizeInBytes>0);
+    IM_ASSERT(width && height && components);
+    dest.clear();
+    unsigned char* pixels = stbi_load_from_memory(encodedImage,encodedImageSizeInBytes,width,height,components,req_comp);
+    if (!pixels) {
+        fprintf(stderr,"Error: can't load image from memory\n");
+        return false;
+    }
+    if (req_comp>0 && req_comp<=4) *components = req_comp;
+    dest.resize((*width)*(*height)*(*components));
+    memcpy(&dest[0],pixels,(size_t)dest.size());
+    stbi_image_free(pixels);
+    return true;
+}
+bool ImImpl_DecodeImageFromFile(ImVector<unsigned char>& dest,const char* imagePath,int* width,int* height,int* components,int req_comp)   {
+    size_t file_size = 0;
+    unsigned char* file = (unsigned char*) ImFileLoadToMemory(imagePath,"rb",&file_size,0);
+    bool ok = false;
+    if (file)   {
+        ok = ImImpl_DecodeImageFromMemory(dest,file,(int)file_size,width,height,components,req_comp);
+        ImGui::MemFree(file);file=NULL;
+    }
+    if (!ok && dest.size()>0) dest.clear();
+    return ok;
+}
+bool ImImpl_ExtractImage(ImVector<unsigned char>& dst,int& dstX,int& dstY,int& dstW,int& dstH,const unsigned char* src,int w,int h,int c) {
+    IM_ASSERT(w>0 && h>0 && c>0 && (c==1 || c==3 || c==4));
+    dst.clear();
+    if (!(w>0 && h>0 && c>0 && (c==1 || c==3 || c==4))) return false;
+    if (dstW<0) dstW=-dstW;
+    if (dstH<0) dstH=-dstH;
+    if (dstH>h) dstH=h;
+    if (dstW>w) dstW=w;
+    if (dstH>h) dstH=h;
+    if (dstX+dstW>w) dstX = w-dstW;
+    if (dstY+dstH>h) dstY = h-dstH;
+    if (dstX<0) dstX=0;
+    if (dstY<0) dstY=0;
+    if (dstW*dstH<=0) return false;
+    IM_ASSERT(dstX+dstW<=w && dstY+dstH<=h);
+    const int size = dstW*dstH*c;
+    dst.resize(size);
+    unsigned char* nim = &dst[0];
+    if (nim)    {
+        const unsigned char* pim = &src[(dstY*w+dstX)*c];
+        unsigned char* pnim = nim;
+        for (int y=0;y<dstH;y++)    {
+            for (int xc=0,xcSz=dstW*c;xc<xcSz;xc++)    {
+                *pnim++ = *pim++;
+            }
+            pim+=(w-dstW)*c;
+        }
+    }
+    return true;
+}
+
+bool ImImpl_ScaleImage(ImVector<unsigned char>& dst,int dstW,int dstH,const unsigned char* src,int w,int h,int c)  {
+    IM_ASSERT(w>0 && h>0 && c>0 && (c==1 || c==3 || c==4));
+    // http://tech-algorithm.com/articles/nearest-neighbor-image-scaling/
+    const int size = dstW*dstH*c;
+    dst.resize(size);
+    unsigned char* pni = &dst[0];
+    const unsigned char* pim = src;
+
+    int x_ratio = (int)((w<<16)/dstW) +1;
+    int y_ratio = (int)((h<<16)/dstH) +1;
+    int x2=0, y2=0;
+    for (int i=0;i<dstH;i++) {
+        for (int j=0;j<dstW;j++) {
+            x2 = ((j*x_ratio)>>16);
+            y2 = ((i*y_ratio)>>16);
+
+            pni = &dst[(i*dstW+j)*c];
+            pim = &src[(y2*w+x2)*c];
+            for (int ch=0;ch<c;ch++) {*pni++ = *pim++;}
+        }
+    }
+    return true;
 }
 
 ImTextureID ImImpl_LoadTextureFromMemory(const unsigned char* filenameInMemory,int filenameInMemorySize,int req_comp,bool useMipmapsIfPossible,bool wraps,bool wrapt,bool minFilterNearest,bool magFilterNearest)  {
@@ -1687,7 +1916,7 @@ void ImImpl_NewFramePaused()    {
     IM_ASSERT(g.Initialized);
     g.Time += g.IO.DeltaTime;
 
-    g.FrameScopeActive = true;  // Is this necessary ?
+    g.WithinFrameScope = true;  // Is this necessary ?
     //g.FrameCount += 1;  // Not sure this is correct
     g.TooltipOverrideCount = 0;
     g.WindowsActiveCount = 0;

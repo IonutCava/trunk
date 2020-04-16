@@ -391,65 +391,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         editorDesc._attachments = attachments.data();
         _rtPool->allocateRT(RenderTargetUsage::EDITOR, editorDesc);
     }
-
-    SamplerDescriptor accumulationSampler = {};
-    accumulationSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    accumulationSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    accumulationSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
-    accumulationSampler.minFilter(TextureFilter::NEAREST);
-    accumulationSampler.magFilter(TextureFilter::NEAREST);
-
-    TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    accumulationDescriptor.autoMipMaps(false);
-    accumulationDescriptor.samplerDescriptor(accumulationSampler);
-
-    TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
-    revealageDescriptor.autoMipMaps(false);
-    revealageDescriptor.samplerDescriptor(accumulationSampler);
-
-    RenderTargetDescriptor oitDesc = {};
-    oitDesc._name = "OIT_FULL_RES";
-
-    for (U8 i = 0; i < 2; ++i) 
-    {
-        const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAAsamples;
-
-        accumulationDescriptor.msaaSamples(sampleCount);
-        revealageDescriptor.msaaSamples(sampleCount);
-
-        vectorSTD<RTAttachmentDescriptor> attachments = {
-            { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
-            { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
-        };
-
-        const RenderTarget& screenTarget = _rtPool->renderTarget(i == 0 ? RenderTargetUsage::SCREEN : RenderTargetUsage::SCREEN_MS);
-        const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
-        
-        vectorSTD<ExternalRTAttachmentDescriptor> externalAttachments = {
-            { screenDepthAttachment,  RTAttachmentType::Depth }
-        };
-
-        if_constexpr(Config::USE_COLOURED_WOIT) {
-            const RTAttachment_ptr& screenAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
-            externalAttachments.push_back(
-                { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) }
-            );
-        }
-
-        oitDesc._resolution = renderResolution;
-        oitDesc._attachmentCount = to_U8(attachments.size());
-        oitDesc._attachments = attachments.data();
-        oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
-        oitDesc._externalAttachments = externalAttachments.data();
-        oitDesc._msaaSamples = sampleCount;
-        _rtPool->allocateRT(i == 0 ? RenderTargetUsage::OIT : RenderTargetUsage::OIT_MS, oitDesc);
-
-        if (i == 0) {
-            oitDesc._resolution = reflectRes;
-            _rtPool->allocateRT(RenderTargetUsage::OIT_REFLECT, oitDesc);
-        }
-    }
-
     // Reflection Targets
     SamplerDescriptor reflectionSampler = {};
     reflectionSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
@@ -495,6 +436,88 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
             refDesc._attachmentCount = 1; //skip depth
             _rtPool->allocateRT(RenderTargetUsage::REFLECTION_PLANAR_BLUR, refDesc);
 
+        }
+    }
+
+    SamplerDescriptor accumulationSampler = {};
+    accumulationSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    accumulationSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    accumulationSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    accumulationSampler.minFilter(TextureFilter::NEAREST);
+    accumulationSampler.magFilter(TextureFilter::NEAREST);
+
+    TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    accumulationDescriptor.autoMipMaps(false);
+    accumulationDescriptor.samplerDescriptor(accumulationSampler);
+
+    TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
+    revealageDescriptor.autoMipMaps(false);
+    revealageDescriptor.samplerDescriptor(accumulationSampler);
+
+    vectorSTD<RTAttachmentDescriptor> oitAttachments = {
+        { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
+        { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
+    };
+
+    for (U8 i = 0; i < 2; ++i) 
+    {
+        const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAAsamples;
+
+        oitAttachments[0]._texDescriptor.msaaSamples(sampleCount);
+        oitAttachments[1]._texDescriptor.msaaSamples(sampleCount);
+
+        const RenderTarget& screenTarget = _rtPool->renderTarget(i == 0 ? RenderTargetUsage::SCREEN : RenderTargetUsage::SCREEN_MS);
+        const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
+        
+        vectorSTD<ExternalRTAttachmentDescriptor> externalAttachments = {
+            { screenDepthAttachment,  RTAttachmentType::Depth }
+        };
+
+        if_constexpr(Config::USE_COLOURED_WOIT) {
+            const RTAttachment_ptr& screenAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO));
+            externalAttachments.push_back(
+                { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) }
+            );
+        }
+
+        RenderTargetDescriptor oitDesc = {};
+        oitDesc._name = "OIT_FULL_RES";
+        oitDesc._resolution = renderResolution;
+        oitDesc._attachmentCount = to_U8(oitAttachments.size());
+        oitDesc._attachments = oitAttachments.data();
+        oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
+        oitDesc._externalAttachments = externalAttachments.data();
+        oitDesc._msaaSamples = sampleCount;
+        _rtPool->allocateRT(i == 0 ? RenderTargetUsage::OIT : RenderTargetUsage::OIT_MS, oitDesc);
+    }
+    {
+        oitAttachments[0]._texDescriptor.msaaSamples(0);
+        oitAttachments[1]._texDescriptor.msaaSamples(0);
+
+        for (U16 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
+            const RenderTarget& reflectTarget = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR, i));
+            const RTAttachment_ptr& depthAttachment = reflectTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
+
+            vectorSTD<ExternalRTAttachmentDescriptor> externalAttachments = {
+                 { depthAttachment,  RTAttachmentType::Depth }
+            };
+
+            if_constexpr(Config::USE_COLOURED_WOIT) {
+                const RTAttachment_ptr& screenAttachment = reflectTarget.getAttachmentPtr(RTAttachmentType::Colour, 0);
+                externalAttachments.push_back(
+                    { screenAttachment,  RTAttachmentType::Colour, to_U8(ScreenTargets::MODULATE) }
+                );
+            }
+
+            RenderTargetDescriptor oitDesc = {};
+            oitDesc._name = Util::StringFormat("OIT_REFLECT_RES_%d", i);
+            oitDesc._resolution = vec2<U16>(reflectRes);
+            oitDesc._attachmentCount = to_U8(oitAttachments.size());
+            oitDesc._attachments = oitAttachments.data();
+            oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
+            oitDesc._externalAttachments = externalAttachments.data();
+            oitDesc._msaaSamples = 0;
+            _rtPool->allocateRT(RenderTargetUsage::OIT_REFLECT, oitDesc);
         }
     }
     {

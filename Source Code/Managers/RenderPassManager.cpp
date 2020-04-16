@@ -490,10 +490,7 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
     }
 
 
-    const I64 sourceGUID = (params._sourceNode != nullptr) ? params._sourceNode->getGUID() : -1;
-    U16 queueSize = getQueue().getSortedQueues(stagePass._stage, isPrePass, passData.sortedQueues, sourceGUID);
-    ACKNOWLEDGE_UNUSED(queueSize);
-
+    getQueue().getSortedQueues(stagePass._stage, isPrePass, passData.sortedQueues);
     buildBufferData(stagePass, sceneRenderState, *params._camera, passData.sortedQueues, refresh, bufferInOut);
 }
 
@@ -944,7 +941,8 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     }
 
     // Cull the scene and grab the visible nodes
-    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(*parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents);
+    I64 ignoreGUID = params._sourceNode == nullptr ? -1 : params._sourceNode->getGUID();
+    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(*parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents, &ignoreGUID, 1);
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;

@@ -383,7 +383,7 @@ class NodeGraphEditor
     bool allowOnlyOneLinkPerInputSlot;  // multiple links can still be connected to single output slots
     bool avoidCircularLinkLoopsInOut;   // however multiple paths from a node to another are still allowed (only in-out circuits are prevented)
     //bool isAContextMenuOpen;            // to fix a bug
-    float oldFontWindowScale;           // to fix zooming (CTRL+mouseWheel)    
+    float windowFontScale;           // to fix zooming (CTRL+mouseWheel)
     float maxConnectorNameWidth;        //used to enlarge node culling space to include connector names
     int nodeListFilterComboIndex;
 
@@ -531,7 +531,7 @@ class NodeGraphEditor
         inited = init_in_ctr;
         //colorEditMode = ImGuiColorEditMode_RGB;
         //isAContextMenuOpen = false;
-        oldFontWindowScale = 0.f;
+        windowFontScale = 0.f;
         nodesBaseWidth = 120.f;
         maxConnectorNameWidth = 0;
         nodeListFilterComboIndex = 0;
@@ -565,7 +565,7 @@ class NodeGraphEditor
                 sourceCopyNode = NULL;
         }
         activeNode = dragNode.node = NULL;
-        oldFontWindowScale = 0.f;
+        windowFontScale = 0.f;
         for (int i=0,isz=availableNodesInfo.size();i<isz;i++) {availableNodesInfo[i].curNumInstances=0;}
         nodeListFilterComboIndex = 0;
     }

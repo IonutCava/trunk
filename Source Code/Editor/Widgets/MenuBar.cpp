@@ -127,7 +127,7 @@ void MenuBar::draw() {
 
         if (!_errorMsg.empty()) {
             ImGui::OpenPopup("Error!");
-            if (ImGui::BeginPopupModal("Error!", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (ImGui::BeginPopupModal("Error!", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiViewportFlags_TopMost)) {
                 ImGui::Text(_errorMsg.c_str());
                 if (ImGui::Button("Ok")) {
                     ImGui::CloseCurrentPopup();
@@ -139,7 +139,7 @@ void MenuBar::draw() {
 
         if (_quitPopup) {
             ImGui::OpenPopup("Confirm Quit");
-            if (ImGui::BeginPopupModal("Confirm Quit", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (ImGui::BeginPopupModal("Confirm Quit", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiViewportFlags_TopMost)) {
                 ImGui::Text("Are you sure you want to quit?");
                 ImGui::Separator();
 
@@ -159,7 +159,7 @@ void MenuBar::draw() {
         }
         if (_savePopup) {
             ImGui::OpenPopup("Saving Scene");
-            if (ImGui::BeginPopupModal("Saving Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            if (ImGui::BeginPopupModal("Saving Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiViewportFlags_TopMost))
             {
                 constexpr U32 maxSize = 40u;
                 const U32 ident = MAP(g_saveSceneParams._saveProgress, 0u, g_saveSceneParams._saveElementCount, 0u, maxSize - 5u /*overestimate a bit*/);
@@ -432,7 +432,7 @@ void MenuBar::drawPostFXMenu() {
     if (ImGui::BeginMenu("PostFX"))
     {
         PostFX& postFX = _context.gfx().getRenderer().postFX();
-        for (U8 i = 1; i < to_base(FilterType::FILTER_COUNT); ++i) {
+        for (U16 i = 1; i < to_base(FilterType::FILTER_COUNT); ++i) {
             const FilterType f = static_cast<FilterType>(toBit(i));
 
             const bool filterEnabled = postFX.getFilterState(f);

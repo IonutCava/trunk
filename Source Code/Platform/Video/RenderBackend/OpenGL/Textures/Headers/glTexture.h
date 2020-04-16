@@ -75,6 +75,8 @@ class glTexture final : public Texture,
     void threadedLoad() final;
     void reserveStorage();
 
+    void processTextureType() noexcept;
+    void validateDescriptor() final;
     void loadDataCompressed(const TextureLoadInfo& info,
                             const vectorSTD<ImageTools::ImageLayer>& imageLayers);
 
@@ -86,7 +88,7 @@ class glTexture final : public Texture,
    private:
     GLenum _type;
     std::atomic_bool _allocatedStorage;
-
+    TextureData _loadingData;
     glLockManager* _lockManager;
 };
 

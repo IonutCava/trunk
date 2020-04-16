@@ -35,8 +35,8 @@
 namespace Divide {
 
 namespace {
+    constexpr U32 g_backupThreadPoolSize = 2u;
     constexpr U32 g_printTimerBase = 15u;
-    constexpr U8 g_warmupLoopCount = 1u;
 
     U32 g_printTimer = g_printTimerBase;
 
@@ -579,9 +579,7 @@ void Kernel::warmup() {
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
 
     ParamHandler::instance().setParam(_ID_32("freezeLoopTime"), true);
-    for (U8 i = 0; i < g_warmupLoopCount; ++i) {
-        onLoop();
-    }
+    onLoop();
     ParamHandler::instance().setParam(_ID_32("freezeLoopTime"), false);
 
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
@@ -616,12 +614,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         config.runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
     }
 
+    DIVIDE_ASSERT(g_backupThreadPoolSize >= 2u, "Backup thread pool needs at least 2 threads to handle background tasks without issues!");
+
     I32 threadCount = config.runtime.maxWorkerThreads;
     if (config.runtime.maxWorkerThreads < 0) {
-        threadCount = to_I32(HARDWARE_THREAD_COUNT());
+        threadCount = std::max(HARDWARE_THREAD_COUNT(), to_U32(RenderStage::COUNT) + g_backupThreadPoolSize);
     }
-
-    totalThreadCount(std::max(threadCount, to_I32(RenderStage::COUNT) + 2) + 3);
+    totalThreadCount(threadCount);
 
     // Create mem log file
     const Str256& mem = config.debug.memFile.c_str();
@@ -669,9 +668,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
     std::atomic_size_t threadCounter = totalThreadCount();
-    assert(threadCounter.load() > 3);
+    assert(threadCounter.load() > g_backupThreadPoolSize);
 
-    if (!_platformContext.taskPool(TaskPoolType::HIGH_PRIORITY).init(to_U32(totalThreadCount()) - 3u,
+    if (!_platformContext.taskPool(TaskPoolType::HIGH_PRIORITY).init(to_U32(totalThreadCount()) - g_backupThreadPoolSize,
                                                                      TaskPool::TaskPoolType::TYPE_BLOCKING,
                                                                      [this, &threadCounter](const std::thread::id& threadID) {
                                                                          Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);
@@ -682,7 +681,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 
-    if (!_platformContext.taskPool(TaskPoolType::LOW_PRIORITY).init(3,
+    if (!_platformContext.taskPool(TaskPoolType::LOW_PRIORITY).init(g_backupThreadPoolSize,
                                                                     TaskPool::TaskPoolType::TYPE_BLOCKING,
                                                                     [this, &threadCounter](const std::thread::id& threadID) {
                                                                         Attorney::PlatformContextKernel::onThreadCreated(platformContext(), threadID);

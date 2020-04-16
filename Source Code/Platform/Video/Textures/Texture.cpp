@@ -34,32 +34,7 @@ Texture::Texture(GFXDevice& context,
       _flipped(isFlipped),
       _asyncLoad(asyncLoad)
 {
-    processTextureType();
     _width = _height = 0;
-}
-
-Texture::~Texture()
-{
-}
-
-void Texture::processTextureType() noexcept {
-    if (_descriptor.msaaSamples() == 0) {
-        if (_descriptor.type() == TextureType::TEXTURE_2D_MS) {
-            _descriptor.type(TextureType::TEXTURE_2D);
-        }
-        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY_MS) {
-            _descriptor.type(TextureType::TEXTURE_2D_ARRAY);
-        }
-    }
-    else {
-        if (_descriptor.type() == TextureType::TEXTURE_2D) {
-            _descriptor.type(TextureType::TEXTURE_2D_MS);
-        }
-        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY) {
-            _descriptor.type(TextureType::TEXTURE_2D_ARRAY_MS);
-        }
-    }
-    _data._textureType = _descriptor.type();
 }
 
 bool Texture::load() {
@@ -84,7 +59,7 @@ void Texture::threadedLoad() {
     stringstreamImpl textureLocationList(assetLocation());
     stringstreamImpl textureFileList(assetName().c_str());
 
-    bool loadFromFile = false;
+    const bool loadFromFile = false;
 
     _descriptor._sourceFileList.reserve(6);
 
@@ -115,7 +90,7 @@ void Texture::threadedLoad() {
             }
 
             info._layerIndex++;
-            if (_data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+            if (_descriptor.type() == TextureType::TEXTURE_CUBE_ARRAY) {
                 if (info._layerIndex == 6) {
                     info._layerIndex = 0;
                     info._cubeMapCount++;
@@ -128,8 +103,8 @@ void Texture::threadedLoad() {
     _descriptor._sourceFileList.shrink_to_fit();
 
     if (loadFromFile) {
-        if (_data._textureType == TextureType::TEXTURE_CUBE_MAP ||
-            _data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (_descriptor.type() == TextureType::TEXTURE_CUBE_MAP ||
+            _descriptor.type() == TextureType::TEXTURE_CUBE_ARRAY) {
             if (info._layerIndex != 6) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
@@ -138,8 +113,8 @@ void Texture::threadedLoad() {
             }
         }
 
-        if (_data._textureType == TextureType::TEXTURE_2D_ARRAY ||
-            _data._textureType == TextureType::TEXTURE_2D_ARRAY_MS) {
+        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY ||
+            _descriptor.type() == TextureType::TEXTURE_2D_ARRAY_MS) {
             if (info._layerIndex != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
@@ -148,7 +123,7 @@ void Texture::threadedLoad() {
             }
         }
 
-        if (_data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (_descriptor.type() == TextureType::TEXTURE_CUBE_ARRAY) {
             if (info._cubeMapCount != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
@@ -208,7 +183,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
             STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
             if (fileData.alpha()) {
                 const auto findAlpha = [this, &fileData, height](const Task* parent, U32 start, U32 end) {
-                    U8 tempA;
+                    U8 tempA = 0u;
                     for (U32 i = start; i < end; ++i) {
                         for (I32 j = 0; j < height; ++j) {
                             if (_hasTransparency && _hasTranslucency) {
@@ -256,14 +231,11 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 
     // Create a new Rendering API-dependent texture object
     if (info._layerIndex == 0) {
-        _descriptor._type = _data._textureType;
         _descriptor._mipLevels.max = to_U16(fileData.mipCount());
         _descriptor._mipCount = _descriptor.mipLevels().max;
         _descriptor._compressed = fileData.compressed();
         _descriptor.baseFormat(fileData.format());
         _descriptor.dataType(fileData.dataType());
-    } else {
-        DIVIDE_ASSERT(_descriptor._type == _data._textureType, "Texture::loadFile error: Texture Layer with different type detected!");
     }
     // Uploading to the GPU dependents on the rendering API
     loadData(info, fileData.imageLayers());
@@ -320,8 +292,6 @@ void Texture::validateDescriptor() {
             }
         }
     }
-
-    _data._textureType = _descriptor.type();
 }
 
 U16 Texture::computeMipCount(U16 width, U16 height) noexcept {

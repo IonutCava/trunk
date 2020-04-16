@@ -94,6 +94,9 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
     io.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
     io.KeyMap[ImGuiKey_Space] = SDLK_SPACE;
+#   ifndef __EMSCRIPTEN__  // emscripten doesn't like it (and triggers a 'NewFrameSanityCheck' or something like that [Tested only with SDL2 binding])
+    io.KeyMap[ImGuiKey_KeyPadEnter] = SDLK_RETURN2;
+#   endif
     io.KeyMap[ImGuiKey_A] = SDLK_a;
     io.KeyMap[ImGuiKey_C] = SDLK_c;
     io.KeyMap[ImGuiKey_V] = SDLK_v;

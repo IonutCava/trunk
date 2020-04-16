@@ -115,7 +115,7 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
     _menuBar = std::make_unique<MenuBar>(context, true);
     _statusBar = std::make_unique<StatusBar>(context);
     _undoManager = std::make_unique<UndoManager>(25);
-
+    _imguiContexts.fill(nullptr);
     _dockedWindows.fill(nullptr);
     g_windowManager = &context.app().windowManager();
     REGISTER_FRAME_LISTENER(this, 99999);
@@ -152,8 +152,10 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     _mainWindow = &_context.app().windowManager().getWindow(0u);
 
     IMGUI_CHECKVERSION();
-    _imguiContext = ImGui::CreateContext();
-    ImGuiIO& io = _imguiContext->IO;
+    assert(_imguiContexts[to_base(ImGuiContextType::Editor)] == nullptr);
+
+    _imguiContexts[to_base(ImGuiContextType::Editor)] = ImGui::CreateContext();
+    ImGuiIO& io = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO;
 
     U8* pPixels;
     I32 iWidth;
@@ -200,9 +202,6 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     // Store our identifier
     io.Fonts->TexID = (void *)(intptr_t)_fontTexture->data()._textureHandle;
 
-
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-
     ImGui::ResetStyle(_currentTheme);
 
     if (_context.config().gui.imgui.multiViewportEnabled) {
@@ -211,6 +210,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         io.ConfigViewportsNoTaskBarIcon = true;
         io.ConfigViewportsNoAutoMerge = _context.config().gui.imgui.dontMergeFloatingWindows;
         io.ConfigDockingTransparentPayload = true;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 
         io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
         io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
@@ -234,7 +234,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     main_viewport->PlatformHandle = _mainWindow;
 
     if (_context.config().gui.imgui.multiViewportEnabled) {
-        ImGuiPlatformIO& platform_io = _imguiContext->PlatformIO;
+        ImGuiPlatformIO& platform_io = _imguiContexts[to_base(ImGuiContextType::Editor)]->PlatformIO;
         platform_io.Platform_CreateWindow = [](ImGuiViewport* viewport)
         {
             if (g_windowManager != nullptr) {
@@ -384,7 +384,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             if (PlatformContext* context = (PlatformContext*)platformContext) {
                 Editor* editor = &context->editor();
 
-                ImGui::SetCurrentContext(editor->_imguiContext);
+                ImGui::SetCurrentContext(editor->_imguiContexts[to_base(ImGuiContextType::Editor)]);
                 editor->renderDrawList(viewport->DrawData, false, ((DisplayWindow*)viewport->PlatformHandle)->getGUID());
             }
         };
@@ -420,6 +420,12 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         main_viewport->PlatformUserData = data;
     }
 
+    ImGuiContext*& gizmoContext = _imguiContexts[to_base(ImGuiContextType::Gizmo)];
+    gizmoContext = ImGui::CreateContext(io.Fonts);
+    InitBasicImGUIState(gizmoContext->IO);
+    gizmoContext->Viewports[0]->PlatformHandle = _mainWindow;
+    _gizmo = std::make_unique<Gizmo>(*this, gizmoContext);
+
     //SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
     DockedWindow::Descriptor descriptor = {};
@@ -454,9 +460,6 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     descriptor.flags = 0;
     _dockedWindows[to_base(WindowType::SceneView)] = MemoryManager_NEW SceneViewWindow(*this, descriptor);
 
-
-    _gizmo = std::make_unique<Gizmo>(*this, _imguiContext, _mainWindow);
-
     loadFromXML();
 
     return true;
@@ -467,12 +470,16 @@ void Editor::close() {
     _imguiProgram.reset();
     _gizmo.reset();
 
-    if (_imguiContext != nullptr) {
-        ImGui::SetCurrentContext(_imguiContext);
+    for (ImGuiContext* context : _imguiContexts) {
+        if (context == nullptr) {
+            continue;
+        }
+
+        ImGui::SetCurrentContext(context);
         ImGui::DestroyPlatformWindows();
-        ImGui::DestroyContext(_imguiContext);
-        _imguiContext = nullptr;
+        ImGui::DestroyContext(context);
     }
+    _imguiContexts.fill(nullptr);
 }
 
 void Editor::updateCameraSnapshot() {
@@ -529,53 +536,54 @@ void Editor::update(const U64 deltaTimeUS) {
 
     Time::ScopedTimer timer(_editorUpdateTimer);
 
-    Attorney::GizmoEditor::update(*_gizmo, deltaTimeUS);
+    for (ImGuiContext* context : _imguiContexts) {
+        ImGui::SetCurrentContext(context);
 
-    ImGuiIO& io = _imguiContext->IO;
-    io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
+        ImGuiIO& io = context->IO;
+        io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
 
-    if (_statusBar) {
-        _statusBar->update(deltaTimeUS);
-    }
-
-    if (!running()) {
-        return;
-    }
-        
-    ToggleCursor(!io.MouseDrawCursor);
-    if (io.MouseDrawCursor || ImGui::GetMouseCursor() == ImGuiMouseCursor_None) {
-        WindowManager::SetCursorStyle(CursorStyle::NONE);
-    } else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f) {
-        switch (ImGui::GetCurrentContext()->MouseCursor)
-        {
-            case ImGuiMouseCursor_Arrow:
-                WindowManager::SetCursorStyle(CursorStyle::ARROW);
-                break;
-            case ImGuiMouseCursor_TextInput:         // When hovering over InputText, etc.
-                WindowManager::SetCursorStyle(CursorStyle::TEXT_INPUT);
-                break;
-            case ImGuiMouseCursor_ResizeAll:         // Unused
-                WindowManager::SetCursorStyle(CursorStyle::RESIZE_ALL);
-                break;
-            case ImGuiMouseCursor_ResizeNS:          // Unused
-                WindowManager::SetCursorStyle(CursorStyle::RESIZE_NS);
-                break;
-            case ImGuiMouseCursor_ResizeEW:          // When hovering over a column
-                WindowManager::SetCursorStyle(CursorStyle::RESIZE_EW);
-                break;
-            case ImGuiMouseCursor_ResizeNESW:        // Unused
-                WindowManager::SetCursorStyle(CursorStyle::RESIZE_NESW);
-                break;
-            case ImGuiMouseCursor_ResizeNWSE:        // When hovering over the bottom-right corner of a window
-                WindowManager::SetCursorStyle(CursorStyle::RESIZE_NWSE);
-                break;
-            case ImGuiMouseCursor_Hand:
-                WindowManager::SetCursorStyle(CursorStyle::HAND);
-                break;
+        ToggleCursor(!io.MouseDrawCursor);
+        if (io.MouseDrawCursor || ImGui::GetMouseCursor() == ImGuiMouseCursor_None) {
+            WindowManager::SetCursorStyle(CursorStyle::NONE);
+        }else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f) {
+            switch (ImGui::GetCurrentContext()->MouseCursor)
+            {
+                case ImGuiMouseCursor_Arrow:
+                    WindowManager::SetCursorStyle(CursorStyle::ARROW);
+                    break;
+                case ImGuiMouseCursor_TextInput:         // When hovering over InputText, etc.
+                    WindowManager::SetCursorStyle(CursorStyle::TEXT_INPUT);
+                    break;
+                case ImGuiMouseCursor_ResizeAll:         // Unused
+                    WindowManager::SetCursorStyle(CursorStyle::RESIZE_ALL);
+                    break;
+                case ImGuiMouseCursor_ResizeNS:          // Unused
+                    WindowManager::SetCursorStyle(CursorStyle::RESIZE_NS);
+                    break;
+                case ImGuiMouseCursor_ResizeEW:          // When hovering over a column
+                    WindowManager::SetCursorStyle(CursorStyle::RESIZE_EW);
+                    break;
+                case ImGuiMouseCursor_ResizeNESW:        // Unused
+                    WindowManager::SetCursorStyle(CursorStyle::RESIZE_NESW);
+                    break;
+                case ImGuiMouseCursor_ResizeNWSE:        // When hovering over the bottom-right corner of a window
+                    WindowManager::SetCursorStyle(CursorStyle::RESIZE_NWSE);
+                    break;
+                case ImGuiMouseCursor_Hand:
+                    WindowManager::SetCursorStyle(CursorStyle::HAND);
+                    break;
+            }
         }
     }
+    
+    Attorney::GizmoEditor::update(*_gizmo, deltaTimeUS);
+    if (running()) {
+        if (_statusBar) {
+            _statusBar->update(deltaTimeUS);
+        }
 
-    static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->update(deltaTimeUS);
+        static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->update(deltaTimeUS);
+    }
 }
 
 bool Editor::frameStarted(const FrameEvent& evt) noexcept {
@@ -616,7 +624,7 @@ bool Editor::render(const U64 deltaTime) {
     ImGui::SetNextWindowViewport(viewport->ID);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    windowFlags |= ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove;
     windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
     if (opt_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
@@ -634,6 +642,7 @@ bool Editor::render(const U64 deltaTime) {
     ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), opt_flags);
 
     drawMenuBar();
+
     drawStatusBar();
 
     for (DockedWindow* window : _dockedWindows) {
@@ -671,8 +680,6 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) noexcept {
 
     Time::ScopedTimer timer(_editorRenderTimer);
     {
-        ImGui::SetCurrentContext(_imguiContext);
-        IM_ASSERT(_imguiContext->IO.Fonts->IsBuilt());
         updateMousePosAndButtons();
         ImGui::NewFrame();
     }
@@ -682,7 +689,9 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) noexcept {
         ImGui::Render();
         renderDrawList(ImGui::GetDrawData(), false, _mainWindow->getGUID());
 
-        if (_imguiContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
+        if (editorContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            ImGui::SetCurrentContext(editorContext);
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault(&context(), &context());
         }
@@ -771,24 +780,14 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
 
     if (overlayOnScene) {
 
-        const RenderTargetID screenRT = _context.gfx().renderTargetPool().screenTargetID();
-
-        RTClearDescriptor clearTarget = {};
-        clearTarget.clearDepth(false);
-        clearTarget.clearColours(false);
-
-        GFX::ClearRenderTargetCommand clearRenderTargetCmd = {};
-        clearRenderTargetCmd._target = screenRT;
-        clearRenderTargetCmd._descriptor = clearTarget;
-        GFX::EnqueueCommand(buffer, clearRenderTargetCmd);
-
         // Draw the gizmos and overlayed graphics to the main render target but don't clear anything
         RTDrawDescriptor screenTarget = {};
         screenTarget.drawMask().disableAll();
         screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO), true);
 
+        // We already blitted any MS targets so ... no MS for ImGUI :)
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-        beginRenderPassCmd._target = screenRT;
+        beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
         beginRenderPassCmd._descriptor = screenTarget;
         beginRenderPassCmd._name = "DO_IMGUI_PRE_PASS";
         GFX::EnqueueCommand(buffer, beginRenderPassCmd);
@@ -844,12 +843,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     GFX::EnqueueCommand(buffer, drawIMGUI);
 
     if (overlayOnScene) {
-        GFX::EndRenderPassCommand endRenderPassCmd = {};
-        GFX::EnqueueCommand(buffer, endRenderPassCmd);
+        GFX::EnqueueCommand(buffer, GFX::EndRenderPassCommand{});
     }
 
-    GFX::EndDebugScopeCommand endDebugScope = {};
-    GFX::EnqueueCommand(buffer, endDebugScope);
+    GFX::EnqueueCommand(buffer, GFX::EndDebugScopeCommand{});
 
     _context.gfx().flushCommandBuffer(buffer);
 }
@@ -860,38 +857,6 @@ void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGra
     }
 
     Attorney::GizmoEditor::updateSelection(*_gizmo, nodes);
-}
-
-/// Key pressed: return true if input was consumed
-bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!isInit()) {
-        return false;
-    }
-
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->onKeyDown(key);
-    }
-
-    ImGuiIO& io = _imguiContext->IO;
-    io.KeysDown[to_I32(key._key)] = true;
-    if (key._text != nullptr) {
-        io.AddInputCharactersUTF8(key._text);
-    }
-
-    if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
-        io.KeyCtrl = true;
-    }
-    if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
-        io.KeyShift = true;
-    }
-    if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
-        io.KeyAlt = true;
-    }
-    if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
-        io.KeySuper = true;
-    }
-
-    return wantsKeyboard();
 }
 
 bool Editor::Undo() {
@@ -912,42 +877,81 @@ bool Editor::Redo() {
     return false;
 }
 
-// Key released: return true if input was consumed
-bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!isInit()) {
+/// Key pressed: return true if input was consumed
+bool Editor::onKeyDown(const Input::KeyEvent& key) {
+    if (!isInit() || !running()) {
         return false;
     }
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->onKeyUp(key);
+    if (scenePreviewFocused()) {
+        _gizmo->onKey(true, key);
+        return false;
     }
 
-    ImGuiIO& io = _imguiContext->IO;
+    for (ImGuiContext* ctx : _imguiContexts) {
+        ImGuiIO& io = ctx->IO;
 
-    if (io.KeyCtrl) {
-        if (key._key == Input::KeyCode::KC_Z) {
-            Undo();
-        } else if (key._key == Input::KeyCode::KC_R) {
-            Redo();
+        io.KeysDown[to_I32(key._key)] = true;
+        if (key._text != nullptr) {
+            io.AddInputCharactersUTF8(key._text);
+        }
+
+        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+            io.KeyCtrl = true;
+        }
+        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+            io.KeyShift = true;
+        }
+        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+            io.KeyAlt = true;
+        }
+        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+            io.KeySuper = true;
         }
     }
 
-    io.KeysDown[to_I32(key._key)] = false;
+    return wantsKeyboard();
+}
 
-    if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
-        io.KeyCtrl = false;
+// Key released: return true if input was consumed
+bool Editor::onKeyUp(const Input::KeyEvent& key) {
+    if (!isInit() || !running()) {
+        return false;
     }
 
-    if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
-        io.KeyShift = false;
+    if (scenePreviewFocused()) {
+        _gizmo->onKey(false, key);
+        return false;
     }
 
-    if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
-        io.KeyAlt = false;
-    }
+    for (ImGuiContext* ctx : _imguiContexts) {
+        ImGuiIO& io = ctx->IO;
 
-    if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
-        io.KeySuper = false;
+        if (io.KeyCtrl) {
+            if (key._key == Input::KeyCode::KC_Z) {
+                Undo();
+            } else if (key._key == Input::KeyCode::KC_R) {
+                Redo();
+            }
+        }
+
+        io.KeysDown[to_I32(key._key)] = false;
+
+        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+            io.KeyCtrl = false;
+        }
+
+        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+            io.KeyShift = false;
+        }
+
+        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+            io.KeyAlt = false;
+        }
+
+        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+            io.KeySuper = false;
+        }
     }
 
     return wantsKeyboard();
@@ -969,36 +973,28 @@ ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, Displ
 
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if (!isInit()) {
+    if (!isInit() || !running()) {
         return false;
-    }
-
-    if (!running()) {
-        return _gizmo->mouseMoved(arg);
-    } else if (scenePreviewFocused() && _gizmo->mouseMoved(arg)) {
-        return true;
     }
 
     if (!arg.wheelEvent()) {
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-        ImVec2 mousePos = _imguiContext->IO.MousePos;
+        ImVec2 mousePos = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO.MousePos;
         _sceneHovered = sceneView->isHovered() && sceneView->sceneRect(true).contains(mousePos.x, mousePos.y);
-    }
-
-    ImGuiIO& io = _imguiContext->IO;
-
-    if (arg.wheelEvent()) {
-        if (arg.WheelH() > 0) {
-            io.MouseWheelH += 1;
-        }
-        if (arg.WheelH() < 0) {
-            io.MouseWheelH -= 1;
-        }
-        if (arg.WheelV() > 0) {
-            io.MouseWheel += 1;
-        }
-        if (arg.WheelV() < 0) {
-            io.MouseWheel -= 1;
+    } else {
+        for (ImGuiContext* ctx : _imguiContexts) {
+            if (arg.WheelH() > 0) {
+                ctx->IO.MouseWheelH += 1;
+            }
+            if (arg.WheelH() < 0) {
+                ctx->IO.MouseWheelH -= 1;
+            }
+            if (arg.WheelV() > 0) {
+                ctx->IO.MouseWheel += 1;
+            }
+            if (arg.WheelV() < 0) {
+                ctx->IO.MouseWheel -= 1;
+            }
         }
     }
 
@@ -1007,49 +1003,51 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-    if (!isInit()) {
+    if (!isInit() || !running()) {
         return false;
     }
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->mouseButtonPressed(arg);
+    if (scenePreviewFocused()) {
+        _gizmo->onMouseButton(true);
     }
 
-    ImGuiIO& io = _imguiContext->IO;
-    for (U8 i = 0; i < 5; ++i) {
-        if (arg.button == g_oisButtons[i]) {
-            io.MouseDown[i] = true;
-            break;
+    for (ImGuiContext* ctx : _imguiContexts) {
+        for (U8 i = 0; i < 5; ++i) {
+            if (arg.button == g_oisButtons[i]) {
+                ctx->IO.MouseDown[i] = true;
+                break;
+            }
         }
     }
-
 
     return wantsMouse();
 }
 
 /// Mouse button released: return true if input was consumed
 bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
-    if (!isInit()) {
+    if (!isInit() || !running()) {
         return false;
     }
-
-    if (running() && scenePreviewFocused() != _sceneHovered) {
-        ImGui::SetCurrentContext(_imguiContext);
+    if (scenePreviewFocused() != _sceneHovered) {
         scenePreviewFocused(_sceneHovered);
+
+        ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
+        ImGui::SetCurrentContext(editorContext);
         ImGuiStyle& style = ImGui::GetStyle();
         ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme, style);
         return true;
     }
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->mouseButtonReleased(arg);
+    if (_sceneHovered) {
+        _gizmo->onMouseButton(false);
     }
 
-    ImGuiIO& io = _imguiContext->IO;
-    for (U8 i = 0; i < 5; ++i) {
-        if (arg.button == g_oisButtons[i]) {
-            io.MouseDown[i] = false;
-            break;
+    for (ImGuiContext* ctx : _imguiContexts) {
+        for (U8 i = 0; i < 5; ++i) {
+            if (arg.button == g_oisButtons[i]) {
+                ctx->IO.MouseDown[i] = false;
+                break;
+            }
         }
     }
 
@@ -1057,107 +1055,109 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
-    if (!isInit()) {
-        return false;
-    }
+    ACKNOWLEDGE_UNUSED(arg);
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->joystickButtonPressed(arg);
+    if (!isInit() || !running()) {
+        return false;
     }
 
     return wantsGamepad();
 }
 
 bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
-    if (!isInit()) {
-        return false;
-    }
+    ACKNOWLEDGE_UNUSED(arg);
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->joystickButtonReleased(arg);
+    if (!isInit() || !running()) {
+        return false;
     }
 
     return wantsGamepad();
 }
 
 bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
-    if (!isInit()) {
-        return false;
-    }
+    ACKNOWLEDGE_UNUSED(arg);
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->joystickAxisMoved(arg);
+    if (!isInit() || !running()) {
+        return false;
     }
 
     return wantsGamepad();
 }
 
 bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
-    if (!isInit()) {
-        return false;
-    }
+    ACKNOWLEDGE_UNUSED(arg);
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->joystickPovMoved(arg);
+    if (!isInit() || !running()) {
+        return false;
     }
 
     return wantsGamepad();
 }
 
 bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
-    if (!isInit()) {
-        return false;
-    }
+    ACKNOWLEDGE_UNUSED(arg);
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->joystickBallMoved(arg);
+    if (!isInit() || !running()) {
+        return false;
     }
 
     return wantsGamepad();
 }
 
 bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
-    if (!isInit()) {
-        return false;
-    }
+    ACKNOWLEDGE_UNUSED(arg);
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->joystickAddRemove(arg);
+    if (!isInit() || !running()) {
+        return false;
     }
 
     return wantsGamepad();
 }
 
 bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
-    if (!isInit()) {
-        return false;
-    }
+    ACKNOWLEDGE_UNUSED(arg);
 
-    if (!running() || scenePreviewFocused()) {
-        return _gizmo->joystickRemap(arg);
+    if (!isInit() || !running()) {
+        return false;
     }
 
     return wantsGamepad();
 }
 
 bool Editor::wantsMouse() const {
-    if (!isInit()) {
+    if (!isInit() || !running()) {
         return false;
     }
 
-    return !scenePreviewFocused() && _imguiContext->IO.WantCaptureMouse;
+    if (scenePreviewFocused()) {
+        return (_gizmo->needsMouse());
+    }
+
+    for (ImGuiContext* ctx : _imguiContexts) {
+        if (ctx->IO.WantCaptureMouse) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool Editor::wantsKeyboard() const {
-    if (!isInit()) {
+    if (!isInit() || !running() || scenePreviewFocused()) {
         return false;
     }
 
-    return !scenePreviewFocused() && _imguiContext->IO.WantCaptureKeyboard;
+    for (ImGuiContext* ctx : _imguiContexts) {
+        if (ctx->IO.WantCaptureKeyboard) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool Editor::wantsGamepad() const {
-    if (!isInit()) {
+    if (!isInit() || !running()) {
         return false;
     }
 
@@ -1165,69 +1165,91 @@ bool Editor::wantsGamepad() const {
 }
 
 void Editor::updateMousePosAndButtons() {
-    ImGuiIO& io = ImGui::GetIO();
-    io.MouseHoveredViewport = 0;
+    ImGuiViewport* viewport = nullptr;
+    ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
+    DisplayWindow* focusedWindow = g_windowManager->getFocusedWindow();
+    if (focusedWindow == nullptr) {
+        focusedWindow = &g_windowManager->getMainWindow();
+    }
+    if (_context.config().gui.imgui.multiViewportEnabled) {
+        assert(editorContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
+        viewport = findViewportByPlatformHandle(editorContext, focusedWindow);
+    }
 
-    bool mouseSet = false;
-    if (io.WantSetMousePos) {
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            mouseSet = g_windowManager->setGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
-        } else {
-            mouseSet = g_windowManager->setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
-        }
+    vec2<I32> mPosGlobal(-1);
+    vec2<I32> viewportSize(-1);
+    WindowManager::GetMouseState(mPosGlobal, true);
+    if (viewport == nullptr) {
+        mPosGlobal -= focusedWindow->getPosition();
+        viewportSize = { focusedWindow->getDrawableSize().x, focusedWindow->getDrawableSize().y };
     } else {
-        io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
-        mouseSet = true;
-    }
-
-    if (mouseSet) {
-        vec2<I32> mPosGlobal(-1);
-        WindowManager::GetMouseState(mPosGlobal, true);
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            if (ImGuiViewport * viewport = findViewportByPlatformHandle(_imguiContext, g_windowManager->getFocusedWindow())) {
-                io.MousePos = ImVec2((F32)mPosGlobal.x, (F32)mPosGlobal.y);
-            }
-        } else {
-            vec2<I32> windowPos = mPosGlobal - g_windowManager->getFocusedWindow()->getPosition();
-            io.MousePos = ImVec2((F32)(windowPos.x), (F32)(windowPos.y));
-        }
-        
-    }
-
-    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-    for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
-        ImGuiViewport* viewport = platform_io.Viewports[n];
-        DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
-        assert(window != nullptr);
-        if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
-            io.MouseHoveredViewport = viewport->ID;
-        }
+        viewportSize = { viewport->Size.x, viewport->Size.y};
     }
 
     bool anyDown = false;
-    for (size_t i = 0; i < 5; ++i) {
-        if (io.MouseDown[i]) {
-            anyDown = true;
-            break;
+    for (U8 i = 0; i < to_U8(ImGuiContextType::COUNT); ++i) {
+        ImGui::SetCurrentContext(_imguiContexts[i]);
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.MouseHoveredViewport = 0;
+
+        bool mouseSet = false;
+        if (io.WantSetMousePos) {
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                mouseSet = g_windowManager->setGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+            } else {
+                mouseSet = g_windowManager->setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+            }
+        } else if (i == to_base(ImGuiContextType::Editor)) {
+            io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+            mouseSet = true;
+        }
+
+        io.MousePos = ImVec2((F32)mPosGlobal.x, (F32)mPosGlobal.y);
+        if (i == to_base(ImGuiContextType::Gizmo) && scenePreviewFocused()) {
+            const Rect<I32>& sceneRect = scenePreviewRect(true);
+            vec2<I32> mousePos(io.MousePos.x, io.MousePos.y);
+            if (sceneRect.contains(mousePos)) {
+                mousePos = COORD_REMAP(mousePos, sceneRect, Rect<I32>(0, 0, viewportSize.x, viewportSize.y));
+                io.MousePos = ImVec2(to_F32(mousePos.x), to_F32(mousePos.y));
+            }
+        }
+
+        for (size_t j = 0; j < 5; ++j) {
+            if (io.MouseDown[j]) {
+                anyDown = true;
+                break;
+            }
         }
     }
 
+    if (_context.config().gui.imgui.multiViewportEnabled) {
+        ImGuiPlatformIO& platform_io = editorContext->PlatformIO;
+        for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
+            viewport = platform_io.Viewports[n];
+            DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
+            assert(window != nullptr);
+            if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
+                editorContext->IO.MouseHoveredViewport = viewport->ID;
+            }
+        }
+    }
     WindowManager::SetCaptureMouse(anyDown);
 }
 
 bool Editor::onUTF8(const Input::UTF8Event& arg) {
-    if (!isInit()) {
+    if (!isInit() || !running() || scenePreviewFocused()) {
         return false;
     }
 
-    if (!running()) {
-        return false;
+    bool wantsCapture = false;
+    for (U8 i = 0; i < to_U8(ImGuiContextType::COUNT); ++i) {
+        ImGuiIO& io = _imguiContexts[i]->IO;
+        io.AddInputCharactersUTF8(arg._text);
+        wantsCapture = io.WantCaptureKeyboard || wantsCapture;
     }
 
-    ImGuiIO& io = _imguiContext->IO;
-    io.AddInputCharactersUTF8(arg._text);
-
-    return io.WantCaptureKeyboard;
+    return wantsCapture;
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
@@ -1240,12 +1262,13 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
 
         const vec2<U16> displaySize = _mainWindow->getDrawableSize();
 
-        ImGuiIO& io = _imguiContext->IO;
-        io.DisplaySize.x = (F32)params.width;
-        io.DisplaySize.y = (F32)params.height;
-        io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)displaySize.width / params.width) : 0.f,
-                                            params.height > 0 ? ((F32)displaySize.height / params.height) : 0.f);
-        Attorney::GizmoEditor::onSizeChange(*_gizmo, params, vec2<U16>(params.width, params.height));
+        for (U8 i = 0; i < to_U8(ImGuiContextType::COUNT); ++i) {
+            ImGuiIO& io = _imguiContexts[i]->IO;
+            io.DisplaySize.x = (F32)params.width;
+            io.DisplaySize.y = (F32)params.height;
+            io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)displaySize.width / params.width) : 0.f,
+                                                params.height > 0 ? ((F32)displaySize.height / params.height) : 0.f);
+        }
     }
 }
 
@@ -1497,10 +1520,6 @@ void Editor::scenePreviewFocused(bool state) {
     } else {
         io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
     }
-}
-
-ImGuiContext& Editor::imguizmoContext() {
-    return _gizmo->getContext();
 }
 
 bool Editor::addComponent(SceneGraphNode* selection, ComponentType newComponentType) const {

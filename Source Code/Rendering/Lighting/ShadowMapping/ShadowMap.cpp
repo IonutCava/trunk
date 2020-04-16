@@ -396,13 +396,12 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
                 shadowPreviewShader.propertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.threaded(false);
-                ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
                 U8 splitCount = static_cast<DirectionalLightComponent&>(light).csmSplitCount();
                 for (U8 i = 0; i < splitCount; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - splitCount + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::DIRECTIONAL)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
-                    shadow->_shader = previewDepthMapShader;
+                    shadow->_shader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
                     shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, i + light.getShadowOffset());
                     shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, light.shadowCameras()[i]->getZPlanes());
                     shadow->_name = Util::StringFormat("CSM_%d", i + light.getShadowOffset());
@@ -419,11 +418,10 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 ResourceDescriptor shadowPreviewShader("fbPreview.Single.LinearDepth");
                 shadowPreviewShader.propertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.threaded(false);
-                ShaderProgram_ptr previewDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
                 DebugView_ptr shadow = std::make_shared<DebugView>(to_I16(std::numeric_limits<I16>::max() - 1));
                 shadow->_texture = ShadowMap::getDepthMap(LightType::SPOT)._rt->getAttachment(RTAttachmentType::Depth, 0).texture();
-                shadow->_shader = previewDepthMapShader;
+                shadow->_shader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
                 shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, light.getShadowOffset());
                 shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, light.shadowCameras()[0]->getZPlanes());
                 shadow->_name = Util::StringFormat("SM_%d", light.getShadowOffset());
@@ -439,12 +437,11 @@ void ShadowMap::enableShadowDebugViewForLight(GFXDevice& context, Light& light) 
                 ResourceDescriptor shadowPreviewShader("fbPreview.Cube.LinearDepth.ScenePlanes");
                 shadowPreviewShader.propertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.threaded(false);
-                ShaderProgram_ptr previewCubeDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
                 for (U32 i = 0; i < 6; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::POINT)._rt->getAttachment(RTAttachmentType::Depth, 0).texture();
-                    shadow->_shader = previewCubeDepthMapShader;
+                    shadow->_shader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
                     shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, light.getShadowOffset());
                     shadow->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);
                     shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, light.shadowCameras()[0]->getZPlanes());

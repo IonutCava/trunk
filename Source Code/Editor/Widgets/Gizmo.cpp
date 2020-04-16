@@ -8,26 +8,19 @@
 #include <imgui_internal.h>
 
 namespace Divide {
-    Gizmo::Gizmo(Editor& parent, ImGuiContext* mainContext, DisplayWindow* mainWindow)
+    Gizmo::Gizmo(Editor& parent, ImGuiContext* targetContext)
         : _parent(parent),
+          _imguiContext(targetContext),
           _visible(false),
           _enabled(false),
           _wasUsed(false),
           _shouldRegisterUndo(false)
     {
-        _imguiContext = ImGui::CreateContext(mainContext->IO.Fonts);
         _undoEntry._name = "Gizmo Manipulation";
-        InitBasicImGUIState(_imguiContext->IO);
-        ImGui::SetCurrentContext(_imguiContext);
-        ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        main_viewport->PlatformHandle = mainWindow;
     }
 
     Gizmo::~Gizmo()
     {
-        ImGui::SetCurrentContext(_imguiContext);
-        ImGui::DestroyPlatformWindows();
-        ImGui::DestroyContext(_imguiContext);
         _imguiContext= nullptr;
     }
 
@@ -54,18 +47,7 @@ namespace Divide {
     }
 
     void Gizmo::update(const U64 deltaTimeUS) {
-        ImGui::SetCurrentContext(_imguiContext);
-
-        ImGuiIO& io = _imguiContext->IO;
-        io.DeltaTime = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
-        if (io.WantSetMousePos) {
-            WindowManager& winMgr = _parent.context().app().windowManager();
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-                winMgr.setGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
-            } else {
-                winMgr.setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
-            }
-        }
+        ACKNOWLEDGE_UNUSED(deltaTimeUS);
 
         if (_shouldRegisterUndo) {
             _parent.registerUndoEntry(_undoEntry);
@@ -149,240 +131,43 @@ namespace Divide {
         return _transformSettings;
     }
 
-    /// Key pressed: return true if input was consumed
-    bool Gizmo::onKeyDown(const Input::KeyEvent& key) {
-        if (!active()) {
-            return false;
-        }
-
-        ImGuiIO& io = _imguiContext->IO;
-
-        io.KeysDown[to_I32(key._key)] = true;
-        if (key._text != nullptr) {
-            io.AddInputCharactersUTF8(key._text);
-        }
-
-        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
-            io.KeyCtrl = true;
-        }
-        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
-            io.KeyShift = true;
-        }
-        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
-            io.KeyAlt = true;
-        }
-        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
-            io.KeySuper = true;
-        }
-
-        return io.WantCaptureKeyboard;
-    }
-
-    /// Key released: return true if input was consumed
-    bool Gizmo::onKeyUp(const Input::KeyEvent& key) {
-        if (_wasUsed) {
+    void Gizmo::onKey(bool pressed, const Input::KeyEvent& key) {
+        if (!pressed && _wasUsed) {
             _shouldRegisterUndo = true;
             _wasUsed = false;
         }
 
-        if (!active()) {
-            return false;
-        }
-
         ImGuiIO& io = _imguiContext->IO;
 
-
-        if (io.KeyCtrl) {
-            if (key._key == Input::KeyCode::KC_Z) {
-                _parent.Undo();
+        if (active() && !io.KeyCtrl) {
+            TransformSettings settings = _parent.getTransformSettings();
+            if (key._key == Input::KeyCode::KC_T) {
+                settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
+            } else if (key._key == Input::KeyCode::KC_R) {
+                settings.currentGizmoOperation = ImGuizmo::ROTATE;
+            } else if (key._key == Input::KeyCode::KC_S) {
+                settings.currentGizmoOperation = ImGuizmo::SCALE;
             }
-            else if (key._key == Input::KeyCode::KC_R) {
-                _parent.Redo();
-            }
-        } else {
-            if (_parent.scenePreviewFocused()) {
-                TransformSettings settings = _parent.getTransformSettings();
-                if (key._key == Input::KeyCode::KC_T) {
-                    settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
-                } else if (key._key == Input::KeyCode::KC_R) {
-                    settings.currentGizmoOperation = ImGuizmo::ROTATE;
-                } else if (key._key == Input::KeyCode::KC_S) {
-                    settings.currentGizmoOperation = ImGuizmo::SCALE;
-                }
-                _parent.setTransformSettings(settings);
-            }
+            _parent.setTransformSettings(settings);
         }
-
-        io.KeysDown[to_I32(key._key)] = false;
-
-        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
-            io.KeyCtrl = false;
-        }
-
-        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
-            io.KeyShift = false;
-        }
-
-        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
-            io.KeyAlt = false;
-        }
-
-        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
-            io.KeySuper = false;
-        }
-
-        return io.WantCaptureKeyboard;
     }
 
-    /// Mouse moved: return true if input was consumed
-    bool Gizmo::mouseMoved(const Input::MouseMoveEvent& arg) {
-        if (!active()) {
-            return false;
+    void Gizmo::onMouseButton(bool presseed) {
+        if (presseed) {
+            _wasUsed = false;
         }
-
-        ImGuiIO& io = _imguiContext->IO;
-
-        if (!arg.wheelEvent()) {
-            ImGuiContext& parentContext = Attorney::EditorGeneralWidget::imguiContext(_parent);
-            WindowManager& winMgr = _parent.context().app().windowManager();
-            if (ImGuiViewport* viewport = Attorney::EditorGizmo::findViewportByPlatformHandle(_parent, &parentContext, winMgr.getFocusedWindow())) {
-                io.MousePos = ImVec2(viewport->Pos.x + (F32)arg.X().abs, viewport->Pos.y + (F32)arg.Y().abs);
-                if (_parent.scenePreviewFocused()) {
-                    const Rect<I32>& sceneRect = _parent.scenePreviewRect(true);
-                    vec2<I32> mousePos(io.MousePos.x, io.MousePos.y);
-                    if (sceneRect.contains(mousePos)) {
-                        mousePos = COORD_REMAP(mousePos, sceneRect, Rect<I32>(0, 0, to_I32(viewport->Size.x), to_I32(viewport->Size.y)));
-                        io.MousePos = ImVec2(to_F32(mousePos.x), to_F32(mousePos.y));
-                    }
-                }
-            }
-        } else {
-            if (arg.WheelH() > 0) {
-                io.MouseWheelH += 1;
-            }
-            if (arg.WheelH() < 0) {
-                io.MouseWheelH -= 1;
-            }
-            if (arg.WheelV() > 0) {
-                io.MouseWheel += 1;
-            }
-            if (arg.WheelV() < 0) {
-                io.MouseWheel -= 1;
-            }
-        }
-
-        return io.WantCaptureMouse || isUsing();
     }
 
-    /// Mouse button pressed: return true if input was consumed
-    bool Gizmo::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-        ACKNOWLEDGE_UNUSED(arg);
-        _wasUsed = false;
-
-        if (!active()) {
-            return false;
+    bool Gizmo::needsMouse() const {
+        if (active()) {
+            ImGuiContext* crtContext = ImGui::GetCurrentContext();
+            ImGui::SetCurrentContext(_imguiContext);
+            bool imguizmoState = ImGuizmo::IsOver();
+            ImGui::SetCurrentContext(crtContext);
+            return imguizmoState;
         }
-
-        ImGuiIO& io = _imguiContext->IO;
-        if (to_base(arg.button) < 5) {
-            for (U8 i = 0; i < 5; ++i) {
-                if (arg.button == Editor::g_oisButtons[i]) {
-                    io.MouseDown[i] = true;
-                    break;
-                }
-            }
-        }
-
-        return io.WantCaptureMouse || isOver();
-    }
-
-    /// Mouse button released: return true if input was consumed
-    bool Gizmo::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
-        if (!active()) {
-            return false;
-        }
-
-        ACKNOWLEDGE_UNUSED(arg);
-
-        ImGuiIO& io = _imguiContext->IO;
-        for (U8 i = 0; i < 5; ++i) {
-            if (arg.button == Editor::g_oisButtons[i]) {
-                io.MouseDown[i] = false;
-                break;
-            }
-        }
-
-        return io.WantCaptureMouse  || isOver();
-    }
-
-    bool Gizmo::joystickButtonPressed(const Input::JoystickEvent &arg) {
-        ACKNOWLEDGE_UNUSED(arg);
 
         return false;
     }
 
-    bool Gizmo::joystickButtonReleased(const Input::JoystickEvent &arg) {
-        ACKNOWLEDGE_UNUSED(arg);
-
-        return false;
-    }
-
-    bool Gizmo::joystickAxisMoved(const Input::JoystickEvent &arg) {
-        ACKNOWLEDGE_UNUSED(arg);
-
-        return false;
-    }
-
-    bool Gizmo::joystickPovMoved(const Input::JoystickEvent &arg) {
-        ACKNOWLEDGE_UNUSED(arg);
-
-        return false;
-    }
-
-    bool Gizmo::joystickBallMoved(const Input::JoystickEvent &arg) {
-        ACKNOWLEDGE_UNUSED(arg);
-
-        return false;
-    }
-
-    bool Gizmo::joystickAddRemove(const Input::JoystickEvent &arg) {
-        ACKNOWLEDGE_UNUSED(arg);
-
-        return false;
-    }
-
-    bool Gizmo::joystickRemap(const Input::JoystickEvent &arg) {
-        ACKNOWLEDGE_UNUSED(arg);
-
-        return false;
-    }
-
-    bool Gizmo::onUTF8(const Input::UTF8Event& arg) {
-        ACKNOWLEDGE_UNUSED(arg);
-
-        return false;
-    }
-
-    bool Gizmo::isUsing() const {
-        ImGuiContext* crtContext = ImGui::GetCurrentContext();
-        ImGui::SetCurrentContext(_imguiContext);
-        bool imguizmoState = ImGuizmo::IsUsing();
-        ImGui::SetCurrentContext(crtContext);
-        return imguizmoState;
-    }
-
-    bool Gizmo::isOver() const {
-        ImGuiContext* crtContext = ImGui::GetCurrentContext();
-        ImGui::SetCurrentContext(_imguiContext);
-        bool imguizmoState = ImGuizmo::IsOver();
-        ImGui::SetCurrentContext(crtContext);
-        return imguizmoState;
-    }
-
-    void Gizmo::onSizeChange(const SizeChangeParams& params, const vec2<U16>& displaySize) {
-        ImGuiIO& io = _imguiContext->IO;
-        io.DisplaySize = ImVec2((F32)params.width, (F32)params.height);
-        io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)displaySize.width / params.width) : 0.f,
-                                            params.height > 0 ? ((F32)displaySize.height / params.height) : 0.f);
-    }
 }; //namespace Divide

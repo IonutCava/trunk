@@ -55,7 +55,7 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
         return loadDDS_IL(srgb, refWidth, refHeight, filename);
     }
 
-    stbi_set_flip_vertically_on_load(_flip ? TRUE : FALSE);
+    stbi_set_flip_vertically_on_load_thread(_flip ? TRUE : FALSE);
 
     I32 width = 0, height = 0, comp = 0;
     bufferPtr data = nullptr;

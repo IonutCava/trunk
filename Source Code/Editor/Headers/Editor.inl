@@ -75,10 +75,6 @@ inline void Editor::toggleMemoryEditor(bool state) {
     _showMemoryEditor = state;
 }
 
-inline ImGuiContext& Editor::imguiContext() {
-    return *_imguiContext;
-}
-
 inline bool Editor::scenePreviewFocused() const {
     return _scenePreviewFocused;
 }

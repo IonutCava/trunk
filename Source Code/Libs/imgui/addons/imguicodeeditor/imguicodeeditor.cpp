@@ -2653,7 +2653,7 @@ void CodeEditor::render()   {
                 }
                 const bool wasFolded = foldableLine->isFolded();
                 ImGui::PushStyleColor(ImGuiCol_Text,style.color_syntax_highlighting[sht]);
-                ImGui::SetNextTreeNodeOpen(!wasFolded,ImGuiCond_Always);
+                ImGui::SetNextItemOpen(!wasFolded,ImGuiCond_Always);
                 if (!ImGui::TreeNode(line,"%s",""))  {
                     if (!wasFolded)   {
                         // process next lines to make them visible someway
@@ -2715,7 +2715,7 @@ void CodeEditor::TextLineUnformattedWithSH(const char* text, const char* text_en
 
         // Account of baseline offset
         ImVec2 text_pos = window->DC.CursorPos;
-        text_pos.y += window->DC.CurrentLineTextBaseOffset;
+        text_pos.y += window->DC.CurrLineTextBaseOffset;
 
         // I would like to remove the call to CalcText(...) here (in "text_size"), and I could simply retrieve
         // bb.Min after the call to RenderTextLineWrappedWithSH(...) to calculate it for free...
@@ -3442,7 +3442,7 @@ static void MyTextLineUnformattedWithSH(const BadCodeEditorData& ceData,const ch
 
         // Account of baseline offset
         ImVec2 text_pos = window->DC.CursorPos;
-        text_pos.y += window->DC.CurrentLineTextBaseOffset;
+        text_pos.y += window->DC.CurrLineTextBaseOffset;
 
 
         const ImVec2 old_text_pos = text_pos;
@@ -3495,6 +3495,10 @@ static bool InputTextFilterCharacter(unsigned int* p_char, ImGuiInputTextFlags f
         if (!pass)
             return false;
     }
+
+    // We ignore Ascii representation of delete (emitted from Backspace on OSX, see #2578, #2817)
+     if (c == 127)
+         return false;
 
     if (c >= 0xE000 && c <= 0xF8FF) // Filter private Unicode range. I don't imagine anybody would want to input them. GLFW on OSX seems to send private characters for special keys like arrow keys.
         return false;
@@ -3860,7 +3864,7 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
     }
 
     const bool user_clicked = hovered && io.MouseClicked[0];
-    const bool user_scrolled = g.ActiveId == 0 && state != NULL && g.ActiveIdPreviousFrame == GetScrollbarID(draw_window, ImGuiAxis_Y);
+    const bool user_scrolled = g.ActiveId == 0 && state != NULL && g.ActiveIdPreviousFrame == GetWindowScrollbarID(draw_window, ImGuiAxis_Y);
     const bool user_nav_input_start = (g.ActiveId != id) && ((g.NavInputId == id) || (g.NavActivateId == id && g.NavInputSource == ImGuiInputSource_NavKeyboard));
 
     bool clear_active_id = false;
@@ -4018,8 +4022,8 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
 
         if (IsKeyPressedMap(ImGuiKey_LeftArrow))                        { state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_LINESTART : is_wordmove_key_down ? STB_TEXTEDIT_K_WORDLEFT : STB_TEXTEDIT_K_LEFT) | k_mask); }
         else if (IsKeyPressedMap(ImGuiKey_RightArrow))                  { state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_LINEEND : is_wordmove_key_down ? STB_TEXTEDIT_K_WORDRIGHT : STB_TEXTEDIT_K_RIGHT) | k_mask); }
-        else if (IsKeyPressedMap(ImGuiKey_UpArrow))                     { if (io.KeyCtrl) SetWindowScrollY(draw_window, ImMax(draw_window->Scroll.y - g.FontSize, 0.0f)); else state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_TEXTSTART : STB_TEXTEDIT_K_UP) | k_mask); }
-        else if (IsKeyPressedMap(ImGuiKey_DownArrow))                   { if (io.KeyCtrl) SetWindowScrollY(draw_window, ImMin(draw_window->Scroll.y + g.FontSize, GetScrollMaxY())); else state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_TEXTEND : STB_TEXTEDIT_K_DOWN) | k_mask); }
+        else if (IsKeyPressedMap(ImGuiKey_UpArrow))                     { if (io.KeyCtrl) SetScrollY(draw_window, ImMax(draw_window->Scroll.y - g.FontSize, 0.0f)); else state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_TEXTSTART : STB_TEXTEDIT_K_UP) | k_mask); }
+        else if (IsKeyPressedMap(ImGuiKey_DownArrow))                   { if (io.KeyCtrl) SetScrollY(draw_window, ImMin(draw_window->Scroll.y + g.FontSize, GetScrollMaxY())); else state->OnKeyPressed((is_startend_key_down ? STB_TEXTEDIT_K_TEXTEND : STB_TEXTEDIT_K_DOWN) | k_mask); }
         else if (IsKeyPressedMap(ImGuiKey_Home))                        {
             const int cursorStart = state->Stb.cursor;
             state->OnKeyPressed(is_ctrl_down ? STB_TEXTEDIT_K_TEXTSTART | k_mask : STB_TEXTEDIT_K_LINESTART | k_mask);
@@ -4282,7 +4286,7 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
     const ImVec4 clip_rect(frame_bb.Min.x, frame_bb.Min.y, frame_bb.Min.x + size.x, frame_bb.Min.y + size.y); // Not using frame_bb.Max because we have adjusted size
     ImVec2 draw_pos = draw_window->DC.CursorPos;
 
-    const bool canModifyText = g.ActiveId == id || (state != NULL && g.ActiveId == GetScrollbarID(draw_window, ImGuiAxis_Y));
+    const bool canModifyText = g.ActiveId == id || (state != NULL && g.ActiveId == GetWindowScrollbarID(draw_window, ImGuiAxis_Y));
     ImVec2 cursor_offset(0,0),draw_scroll(0,0);
     if (canModifyText)
     {
@@ -4373,9 +4377,10 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
                 scroll_y = ImMax(0.0f, cursor_offset.y - textLineHeight);
             else if (cursor_offset.y - size.y >= scroll_y)
                 scroll_y = cursor_offset.y - size.y;
-            draw_window->DC.CursorPos.y += (draw_window->Scroll.y - scroll_y);   // To avoid a frame of lag
+            //draw_window->DC.CursorPos.y += (draw_window->Scroll.y - scroll_y);   // To avoid a frame of lag
+            draw_pos.y += (draw_window->Scroll.y - scroll_y);   // Manipulate cursor pos immediately avoid a frame of lag
             draw_window->Scroll.y = scroll_y;
-            draw_pos.y = draw_window->DC.CursorPos.y;
+            //draw_pos.y = draw_window->DC.CursorPos.y;
         }
         state->CursorFollow = false;
         draw_scroll = ImVec2(state->ScrollX, 0.0f);

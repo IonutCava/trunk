@@ -200,6 +200,15 @@ namespace Divide {
 
                     vectorSTDFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
+                        if (comp->fields().empty()) {
+                            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                            ImGui::CollapsingHeader(comp->name().c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
+                            ImGui::PopItemFlag();
+                            ImGui::PopStyleVar();
+                            continue;
+                        }
+
                         if (ImGui::CollapsingHeader(comp->name().c_str(), ImGuiTreeNodeFlags_OpenOnArrow)) {
                             //const I32 RV = ImGui::AppendTreeNodeHeaderButtons(comp->name().c_str(), ImGui::GetCursorPosX(), 1, &closed, "Remove", NULL, 0);
                             ImGui::NewLine();
@@ -388,7 +397,7 @@ namespace Divide {
             }
         } else {
             ImGui::Separator();
-            ImGui::Text("Please select a scene node to inspect its properties");
+            ImGui::Text("Please select a scene node \n to inspect its properties");
             ImGui::Separator();
         }
 

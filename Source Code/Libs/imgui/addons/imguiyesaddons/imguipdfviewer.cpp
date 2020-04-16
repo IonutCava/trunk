@@ -1438,7 +1438,7 @@ bool PdfPagePanel::renderTopPanelOnly()    {
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s","Reset Zoom And Pan");
 
     const float maxPageNumberWidth = ImGui::CalcTextSize("9999").x;
-    const float remainingSpace = ImGui::GetContentRegionAvailWidth()-maxPageNumberWidth*14.25f;
+    const float remainingSpace = ImGui::GetContentRegionAvail().x-maxPageNumberWidth*14.25f;
     ImGui::SameLine(0.f,remainingSpace*.5f);
     ImGui::Text("Page:");
     ImGui::SameLine(0.f,0.f);

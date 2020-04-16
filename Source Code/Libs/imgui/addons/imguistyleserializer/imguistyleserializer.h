@@ -30,6 +30,9 @@ enum ImGuiStyleEnum {
     ImGuiStyle_PhotoStore,  // Posted by @Derydoca here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
     ImGuiStyle_CorporateGreyFlat,   // Posted by @malamanteau here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
     ImGuiStyle_CorporateGreyFramed, // Posted by @malamanteau here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
+    ImGuiStyle_VisualDark, // Posted by @mnurzia here: https://github.com/ocornut/imgui/issues/2529 (hope I can use it)
+    ImGuiStyle_SteamingLife, // Posted by @metasprite here: https://github.com/ocornut/imgui/issues/707 (hope I can use it)
+    ImGuiStyle_SoftLife, // Just a quick variation of the ImGuiStyle_SteamingLife style
 
     ImGuiStyle_DarkOpaqueInverse,
     ImGuiStyle_GrayCodz01Inverse,

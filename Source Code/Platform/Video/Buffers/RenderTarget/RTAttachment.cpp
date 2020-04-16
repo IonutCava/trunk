@@ -41,6 +41,7 @@ void RTAttachment::setTexture(const Texture_ptr& tex) {
     _texture = tex;
     if (tex != nullptr) {
         _descriptor._texDescriptor = tex->descriptor();
+        assert(IsValid(tex->data()));
     }
     _changed = true;
 }

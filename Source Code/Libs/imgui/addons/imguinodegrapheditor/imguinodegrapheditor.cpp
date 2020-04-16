@@ -578,7 +578,7 @@ void NodeGraphEditor::render()
                 ImGui::Separator();
 #if             (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
                 const char* saveName = "nodeGraphEditor.nge.style";
-                //const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge.style";
+                const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge.style";
                 const char* pSaveName = saveName;
 #               ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
                 if (ImGui::SmallButton("Save##saveGNEStyle")) {
@@ -617,7 +617,7 @@ void NodeGraphEditor::render()
             if (ImGui::CollapsingHeader("Serialization##serialization",NULL,false))   {
                 ImGui::Separator();
                 const char* saveName = "nodeGraphEditor.nge";
-                //const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge";
+                const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge";
                 const char* pSaveName = saveName;
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
                 if (ImGui::SmallButton("Save##saveGNE")) {
@@ -723,43 +723,30 @@ void NodeGraphEditor::render()
             ImGuiContext& g = *GImGui;
             ImGuiWindow* window = ImGui::GetCurrentWindow();
 
-            // New: to ensure font scaling in subchilds of the nodes too, we MUST track g.Font->Scale,
-            // instead of ImGui::GetCurrentWindow()->FontWindowScale.
-	    // Note that this change could break io.FontAllowUserScaling==true (To test, but it didn't work as expacted anyway)
-            float oldFontScaleToReset = g.Font->Scale;      // We'll clean up at the bottom
-            float fontScaleStored = oldFontWindowScale ? oldFontWindowScale : oldFontScaleToReset;
-            float& fontScaleToTrack = g.Font->Scale;
+            const float windowFontScaleToReset = window->FontWindowScale;
+            if (windowFontScale!=0.f) SetWindowFontScale(windowFontScale);
 
             if (!io.FontAllowUserScaling)   {
-                // Set the correct font scale (3 lines)
-                fontScaleToTrack = fontScaleStored;
-                g.FontBaseSize = io.FontGlobalScale * g.Font->Scale * g.Font->FontSize;
-                g.FontSize = window->CalcFontSize();
-
-                if (io.KeyCtrl && ImGui::GetCurrentWindow()==GImGui->HoveredWindow && (io.MouseWheel || io.MouseClicked[2]))   {
+                if (io.KeyCtrl && ImGui::GetCurrentWindow()==GImGui->HoveredWindow && (io.MouseWheel || io.MouseClicked[2]) && windowFontScale>0.f)   {
                     // Zoom / Scale window
-                    float new_font_scale = ImClamp(fontScaleToTrack + g.IO.MouseWheel * 0.075f, 0.50f, 2.50f);
-                    if (io.MouseClicked[2]) new_font_scale = 1.f;   // MMB = RESET ZOOM
-                    float scale = new_font_scale/fontScaleToTrack;
-                    if (scale!=1)	{
-                        scrolling=scrolling*scale;
-                        // Set the correct font scale (3 lines), and store it
-                        fontScaleStored = fontScaleToTrack = new_font_scale;
-                        g.FontBaseSize = io.FontGlobalScale * g.Font->Scale * g.Font->FontSize;
-                        g.FontSize = window->CalcFontSize();
-                    }
+                    float newWindowFontScale = ImClamp(windowFontScale + g.IO.MouseWheel * 0.075f, 0.50f, 2.50f);
+                    if (io.MouseClicked[2]) newWindowFontScale = 1.f;   // MMB = RESET ZOOM
+                    float scalingDelta = newWindowFontScale/windowFontScale;
+                    scrolling=scrolling*scalingDelta;
+                    windowFontScale=newWindowFontScale;
+                    SetWindowFontScale(windowFontScale);
                 }
             }
 
             // fixes zooming just a bit
             bool nodesHaveZeroSize = false;
-            const float currentFontWindowScale = !io.FontAllowUserScaling ? fontScaleStored : ImGui::GetCurrentWindow()->FontWindowScale;
-            if (oldFontWindowScale==0.f) {
-                oldFontWindowScale = currentFontWindowScale;
+            const float currentFontWindowScale = window->FontWindowScale;
+            if (windowFontScale==0.f) {
+                windowFontScale = currentFontWindowScale;
                 nodesHaveZeroSize = true;   // at start or after clear()
                 scrolling = ImGui::GetWindowSize()*.5f;
             }
-            else if (oldFontWindowScale!=currentFontWindowScale) {
+            else if (windowFontScale!=currentFontWindowScale) {
                 nodesHaveZeroSize = true;
                 for (int i=0,isz=nodes.size();i<isz;i++)    {
                     Node* node = nodes[i];
@@ -767,8 +754,10 @@ void NodeGraphEditor::render()
                 }
                 // These two lines makes the scaling work around the mouse position AFAICS
                 if (io.FontAllowUserScaling)	{
+                    // UNTESTED BRANCH!
                     const ImVec2 delta = (io.MousePos-ImGui::GetCursorScreenPos());//-ImGui::GetWindowSize()*.5f));
-                    scrolling+=(delta*currentFontWindowScale-delta*oldFontWindowScale)/currentFontWindowScale;
+                    scrolling+=(delta*currentFontWindowScale-delta*windowFontScale)/currentFontWindowScale;
+                    // Code removed
                     /*ImGuiWindow* window = ImGui::GetCurrentWindow();
         float scale = currentFontWindowScale / oldFontWindowScale;
         ImVec2 oldWindowSize = window->Size/scale;
@@ -776,7 +765,7 @@ void NodeGraphEditor::render()
         */
                     //------------------------------------------------------------------------
                 }
-                oldFontWindowScale = currentFontWindowScale;
+                windowFontScale = currentFontWindowScale;
                 maxConnectorNameWidth = 0.f;
             }
 
@@ -898,7 +887,7 @@ void NodeGraphEditor::render()
 
                 bool nodeInEditMode = false;
                 ImGui::BeginGroup(); // Lock horizontal position
-                ImGui::SetNextTreeNodeOpen(node->isOpen,ImGuiCond_Always);
+                ImGui::SetNextItemOpen(node->isOpen,ImGuiCond_Always);
 
                 ImU32 titleTextColorU32 = 0, titleBgColorU32 = 0;float titleBgGradient = -1.f;
                 node->getDefaultTitleBarColors(titleTextColorU32,titleBgColorU32,titleBgGradient);
@@ -1609,10 +1598,8 @@ void NodeGraphEditor::render()
             else if (isSomeNodeMoving) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
             if (!io.FontAllowUserScaling)   {
-                // Reset the font scale (3 lines)
-                fontScaleToTrack = oldFontScaleToReset;
-                g.FontBaseSize = io.FontGlobalScale * g.Font->Scale * g.Font->FontSize;
-                g.FontSize = window->CalcFontSize();
+                // Reset the font scale
+                SetWindowFontScale(windowFontScaleToReset);
             }
         }
         ImGui::EndChild();  // scrolling_region
@@ -2232,7 +2219,7 @@ bool FieldInfo::render(int nodeWidth)   {
     ImGui::PushID((const void*) &f);
     static const int precisionStrSize = 16;
     static char precisionStr[precisionStrSize];
-    int precisionLastCharIndex = 1;
+    int precisionLastCharIndex;
     const char* label = (/*f.label &&*/ f.label[0]!='\0') ? &f.label[0] : "##DummyLabel";
     if (f.type!=FT_UNSIGNED && f.type!=FT_INT)  {
         if (f.precision>0) {
@@ -2608,7 +2595,7 @@ bool NodeGraphEditor::load(ImGuiHelper::Deserializer& d, const char ** pOptional
 	nodes[i]->onLoaded();
     }
     maxConnectorNameWidth = 0;
-    oldFontWindowScale = 0;
+    windowFontScale = 0;
     //--------------------------------------------
     if (pOptionalBufferStart) *pOptionalBufferStart = amount;
     setModified(false);
@@ -2661,16 +2648,6 @@ class ColorNode : public Node {
 
     ImVec4 Color;       // field
 
-    // Support static method for enumIndex (the signature is the same used by ImGui::Combo(...))
-    static bool GetTextFromEnumIndex(void* ,int value,const char** pTxt) {
-        if (!pTxt) return false;
-        static const char* values[] = {"APPLE","LEMON","ORANGE"};
-        static int numValues = (int)(sizeof(values)/sizeof(values[0]));
-        if (value>=0 && value<numValues) *pTxt = values[value];
-        else *pTxt = "UNKNOWN";
-        return true;
-    }
-
     virtual const char* getTooltip() const {return "ColorNode tooltip.";}
     virtual const char* getInfo() const {return "ColorNode info.\n\nThis is supposed to display some info about this node.";}
     /*virtual void getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut,ImU32& defaultTitleBgColorOut,float& defaultTitleBgColorGradientOut) const {
@@ -2711,7 +2688,7 @@ class CombineNode : public Node {
     CombineNode() : Base() {}
     static const int TYPE = MNT_COMBINE_NODE;
 
-    float fraction;
+    float fraction; // field
 
     virtual const char* getTooltip() const {return "CombineNode tooltip.";}
     virtual const char* getInfo() const {return "CombineNode info.\n\nThis is supposed to display some info about this node.";}
@@ -2974,7 +2951,7 @@ class TextureNode : public Node {
     void onEditField(FieldInfo& /*f*/,int widgetIndex) {
         //fprintf(stderr,"TextureNode::onEditField(\"%s\",%i);\n",f.label,widgetIndex);
         if (widgetIndex==1)         startBrowseDialogNextFrame = true;  // browsing button pressed
-        else if (widgetIndex==0)    processPath(imagePath);             // text edited (= "return" pressed in out case)
+        else if (widgetIndex==0)    processPath(imagePath);             // text edited (= "return" pressed in our case)
     }
     static void StaticEditFieldCallback(FieldInfo& f,int widgetIndex) {
         reinterpret_cast<ThisClass*>(f.userData)->onEditField(f,widgetIndex);
@@ -3052,7 +3029,7 @@ static Node* MyNodeFactory(int nt,const ImVec2& pos,const NodeGraphEditor& /*nge
 #   endif //IMGUI_USE_AUTO_BINDING
     default:
     IM_ASSERT(true);    // Missing node type creation
-    break;
+    return NULL;
     }
     return NULL;
 }

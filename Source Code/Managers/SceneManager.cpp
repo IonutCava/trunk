@@ -377,16 +377,20 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
     OPTICK_EVENT();
 
     const SceneGraph& sceneGraph = getActiveScene().sceneGraph();
+    const vec3<F32>& eye = camera.getEye();
+    const vec2<F32>& zPlanes = camera.getZPlanes();
 
-    auto CheckPointLoS = [&camera, &sceneGraph](const vec3<F32>& point) -> bool {
-        const vec3<F32>& eye = camera.getEye();
-        const vec2<F32>& zPlanes = camera.getZPlanes();
+    auto CheckPointLoS = [&eye, &zPlanes, &sceneGraph](const vec3<F32>& point, I64 nodeGUID, I64 parentNodeGUID) -> bool {
+        const Ray cameraRay(point, point.direction(eye));
         const F32 distanceToPoint = eye.distance(point);
 
-        const Ray cameraRay(point, point.direction(eye));
         vectorSTD<SGNRayResult> rayResults;
         sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, rayResults);
         for (SGNRayResult& result : rayResults) {
+            if (result.sgnGUID == nodeGUID || result.sgnGUID == parentNodeGUID) {
+                continue;
+            }
+
             if (result.dist < distanceToPoint) {
                 return false;
             }
@@ -394,67 +398,72 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         return true;
     };
 
-    const auto HasLoSToCamera = [&](const BoundingBox& bb) -> bool {
+    const auto HasLoSToCamera = [&](SceneGraphNode* ignoreNode, const BoundingBox* bb) -> SceneGraphNode* {
+        SceneGraphNode* parent = nullptr;
+        I64 parentNodeGUID = -1;
+
+        const I64 nodeGUID = ignoreNode->getGUID();
+        if (ignoreNode->getNode().type() == SceneNodeType::TYPE_OBJECT3D) {
+            parent = ignoreNode->parent();
+            parentNodeGUID = parent->getGUID();
+        }
+
         // Quick raycast to camera
-        if (CheckPointLoS(bb.getCenter())) {
-            return true;
+        if (CheckPointLoS(bb->getCenter(), nodeGUID, parentNodeGUID)) {
+            return parent == nullptr ? ignoreNode : parent;
         }
         // This is gonna hurt. The raycast failed, but the node might still be visible
-        auto points = bb.getPoints();
+        auto points = bb->getPoints();
         for (auto& point : points) {
-            if (CheckPointLoS(point)) {
-                return true;
+            if (CheckPointLoS(point, nodeGUID, parentNodeGUID)) {
+                return parent == nullptr ? ignoreNode : parent;
             }
         }
 
-        return false;
+        return nullptr;
     };
 
-    const auto IsNodeInRect = [editorRunning, &screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node) -> SceneGraphNode* {
+    const auto IsNodeInRect = [editorRunning, &screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node)->std::pair<SceneGraphNode*, const BoundingBox*> {
         assert(node != nullptr);
         const SceneNode& sNode = node->getNode();
-        if (sNode.type() == SceneNodeType::TYPE_OBJECT3D)
-        {
-            U8 objectType = static_cast<const Object3D&>(sNode).getObjectType()._value;
-            while (objectType == ObjectType::SUBMESH) {
-                node = node->parent();
-                if (node) {
-                    objectType = node->getNode<Object3D>().getObjectType()._value;
-                } else {
-                    return nullptr;
+        if (editorRunning || sNode.type() == SceneNodeType::TYPE_OBJECT3D) {
+            bool selectable = editorRunning;
+            if (!selectable) {
+                SelectionComponent* sComp = node->get<SelectionComponent>();
+                if (sComp == nullptr && 
+                    (sNode.type() == SceneNodeType::TYPE_OBJECT3D && node->getNode<Object3D>().getObjectType() == to_base(ObjectType::SUBMESH)))
+                {
+                    sComp = node->parent() != nullptr ? node->parent()->get<SelectionComponent>() : nullptr;
+                }
+                if (sComp != nullptr) {
+                    selectable = sComp->enabled();
                 }
             }
 
-            const bool selectable = (node->get<SelectionComponent>() && node->get<SelectionComponent>()->enabled()) || 
-                                    editorRunning;
-            if (selectable &&
-                (editorRunning || (
-                 objectType != ObjectType::DECAL &&
-                 objectType != ObjectType::SUBMESH &&
-                 objectType != ObjectType::TERRAIN)))
-            {
+            if (selectable) {
                 BoundsComponent* bComp = node->get<BoundsComponent>();
                 if (bComp != nullptr) {
                     const BoundingBox& bb = bComp->getBoundingBox();
                     const vec3<F32>& center = bb.getCenter();
                     if (screenRect.contains(camera.project(center, viewport))) {
-                        return node;
+                        return { node, &bb };
                     }
                 }
             }
         }
-        return nullptr;
+
+        return { nullptr, nullptr };
     };
 
-    vectorEASTL<SceneGraphNode*> ret;
+    vectorEASTL<SceneGraphNode*> ret = {};
     const VisibleNodeList& visNodes = _renderPassCuller->getNodeCache(RenderStage::DISPLAY);
-    for (auto& it : visNodes) {
-        SceneGraphNode* parsedNode = IsNodeInRect(it._node);
+    for (const VisibleNode& it : visNodes) {
+        auto [parsedNode, bb] = IsNodeInRect(it._node);
         if (parsedNode != nullptr) {
-            // submeshes will usually return their parent mesh as a result so we try and avoid having the same mesh multiple times
-            if (eastl::find(eastl::cbegin(ret), eastl::cend(ret), parsedNode) == eastl::cend(ret)) {
-                const BoundingBox& bb = parsedNode->get<BoundsComponent>()->getBoundingBox();
-                if (HasLoSToCamera(bb)) {
+            parsedNode = HasLoSToCamera(parsedNode, bb);
+            if (parsedNode != nullptr) {
+                // submeshes will usually return their parent mesh as a result so we try and avoid having the same mesh multiple times
+                if (eastl::find(eastl::cbegin(ret), eastl::cend(ret), parsedNode) == eastl::cend(ret)) {
                     ret.push_back(parsedNode);
                 }
             }
@@ -677,7 +686,7 @@ VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, Ren
     return _renderPassCuller->toVisibleNodes(camera, allNodes);
 }
 
-const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents) {
+const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
     OPTICK_EVENT();
 
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
@@ -685,21 +694,21 @@ const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Cam
     Scene& activeScene = getActiveScene();
     SceneState& sceneState = activeScene.state();
 
-    RenderPassCuller::CullParams cullParams = {};
-    cullParams._context = &activeScene.context();
-    cullParams._sceneGraph = &activeScene.sceneGraph();
-    cullParams._sceneState = &sceneState;
-    cullParams._stage = stage;
-    cullParams._camera = &camera;
-    cullParams._minLoD = minLoD;
+    NodeCullParams cullParams = {};
+    cullParams._lodThresholds = sceneState.renderState().lodThresholds(stage);
     cullParams._minExtents = minExtents;
-    cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();
-
+    cullParams._ignoredGUIDS = std::make_pair(ignoredGUIDS, ignoredGUIDSCount);
+    cullParams._currentCamera = &camera;
+    cullParams._cullMaxDistanceSq = std::numeric_limits<F32>::max();
+    cullParams._minLoD = minLoD;
+    cullParams._stage = stage;
     if (stage != RenderStage::SHADOW) {
-        cullParams._visibilityDistanceSq = SQUARED(sceneState.renderState().generalVisibility());
+        cullParams._cullMaxDistanceSq = SQUARED(sceneState.renderState().generalVisibility());
+    } else {
+        cullParams._cullMaxDistanceSq = std::min(cullParams._cullMaxDistanceSq, SQUARED(camera.getZPlanes().y));
     }
 
-    return _renderPassCuller->frustumCull(cullParams);
+    return _renderPassCuller->frustumCull(cullParams, activeScene.sceneGraph(), sceneState, _parent.platformContext());
 }
 
 void SceneManager::prepareLightData(RenderStage stage, const vec3<F32>& cameraPos, const mat4<F32>& viewMatrix) {
@@ -749,6 +758,7 @@ bool SceneManager::onKeyUp(const Input::KeyEvent& key) {
 bool SceneManager::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!_processInput) {
         return false;
+
     }
 
     return getActiveScene().input().mouseMoved(arg);

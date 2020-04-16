@@ -119,6 +119,11 @@ class Editor : public PlatformContextComponent,
         COUNT
     };
 
+      enum class ImGuiContextType : U8 {
+          Gizmo = 0,
+          Editor = 1,
+          COUNT
+    };
   public:
     explicit Editor(PlatformContext& context,
                     ImGuiStyleEnum theme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01,
@@ -194,9 +199,6 @@ class Editor : public PlatformContextComponent,
 
     void scenePreviewFocused(bool state);
     ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
-    ImGuiContext& imguizmoContext();
-
-    inline ImGuiContext& imguiContext();
 
     U32 saveItemCount() const;
     PROPERTY_R_IW(bool, unsavedSceneChanges, false);
@@ -238,13 +240,13 @@ class Editor : public PlatformContextComponent,
 
     Camera*           _selectedCamera = nullptr;
     DisplayWindow*    _mainWindow = nullptr;
-    ImGuiContext*     _imguiContext = nullptr;
     Texture_ptr       _fontTexture = nullptr;
     ShaderProgram_ptr _imguiProgram = nullptr;
     std::unique_ptr<UndoManager>  _undoManager = nullptr;
 
     std::pair<bufferPtr, size_t> _memoryEditorData = { nullptr, 0 };
 
+    std::array<ImGuiContext*, to_base(ImGuiContextType::COUNT)> _imguiContexts;
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
 
     hashMap<I64, CameraSnapshot> _cameraSnapshots;
@@ -412,12 +414,12 @@ namespace Attorney {
             return editor.modalModelSpawn(modalName, mesh);
         }
 
-        static ImGuiContext& imguiContext(Editor& editor) {
-            return editor.imguiContext();
+        static ImGuiContext& getImGuiContext(Editor& editor, Editor::ImGuiContextType type) {
+            return *editor._imguiContexts[to_base(type)];
         }
 
-        static ImGuiContext& imguizmoContext(Editor& editor) {
-            return editor.imguizmoContext();
+        static ImGuiContext& imguizmoContext(Editor& editor, Editor::ImGuiContextType type) {
+            return *editor._imguiContexts[to_base(type)];
         }
 
         static bool addComponent(const Editor& editor, const Selections& selections, ComponentType newComponentType) {

@@ -4,7 +4,7 @@
 <TRANSFORM>
     <Transform>
         <position x="100" y="14.5" z="-50"/>
-        <orientation x="-89.8057175" y="4.84788338e-15" z="2.16681202e-18"/>
+        <orientation x="-89.8057175" y="4.84433304e-15" z="2.16700165e-18"/>
         <scale x="102.562851" y="102.06208" z="102.613083"/>
     </Transform>
 </TRANSFORM>
@@ -16,11 +16,11 @@
     <Material>
         <version>1</version>
         <shadingMode>TOON</shadingMode>
-        <colour r="0.666666687" g="0.666666687" b="0.666666687" a="1"/>
-        <emissive r="0" g="0" b="0"/>
-        <specular r="0" g="0" b="0"/>
-        <shininess>0</shininess>
-        <doubleSided>false</doubleSided>
+        <colour r="0" g="0.100000001" b="0" a="1"/>
+        <emissive r="0.100000001" g="0.200000003" b="0.100000001"/>
+        <specular r="0.699999988" g="0.699999988" b="0.699999988"/>
+        <shininess>0.330000013</shininess>
+        <doubleSided>true</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <parallaxFactor>0.00999999978</parallaxFactor>
@@ -38,7 +38,7 @@
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>14193021547872723903</hash>
+                    <hash>8850225743091374524</hash>
                 </0>
                 <1>
                     <hash>9694592583348699482</hash>
@@ -60,13 +60,13 @@
             </OIT_PASS>
         </SHADOW>
         <RenderStates>
-            <14193021547872723903>
+            <8850225743091374524>
                 <colourWrite r="true" g="true" b="false" a="false"/>
                 <zBias>1</zBias>
                 <zUnits>1</zUnits>
                 <zFunc>LESS</zFunc>
                 <tessControlPoints>3</tessControlPoints>
-                <cullMode>CW/BACK</cullMode>
+                <cullMode>None</cullMode>
                 <fillMode>Solid</fillMode>
                 <frontFaceCCW>true</frontFaceCCW>
                 <scissorTestEnabled>false</scissorTestEnabled>
@@ -79,7 +79,7 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </14193021547872723903>
+            </8850225743091374524>
             <9694592583348699482>
                 <colourWrite r="false" g="false" b="false" a="false"/>
                 <zBias>1</zBias>
@@ -100,13 +100,13 @@
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
             </9694592583348699482>
-            <11982279051139428370>
+            <11231556529154741291>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
                 <zFunc>LEQUAL</zFunc>
                 <tessControlPoints>3</tessControlPoints>
-                <cullMode>CW/BACK</cullMode>
+                <cullMode>None</cullMode>
                 <fillMode>Solid</fillMode>
                 <frontFaceCCW>true</frontFaceCCW>
                 <scissorTestEnabled>false</scissorTestEnabled>
@@ -119,14 +119,14 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </11982279051139428370>
-            <7601331381234247373>
+            </11231556529154741291>
+            <808055992269743096>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
                 <zFunc>EQUAL</zFunc>
                 <tessControlPoints>3</tessControlPoints>
-                <cullMode>CW/BACK</cullMode>
+                <cullMode>None</cullMode>
                 <fillMode>Solid</fillMode>
                 <frontFaceCCW>true</frontFaceCCW>
                 <scissorTestEnabled>false</scissorTestEnabled>
@@ -139,115 +139,115 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </7601331381234247373>
+            </808055992269743096>
         </RenderStates>
         <REFLECTION>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <hash>11231556529154741291</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <hash>808055992269743096</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>808055992269743096</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>808055992269743096</hash>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <hash>11231556529154741291</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </2>
             </OIT_PASS>
         </REFLECTION>
         <REFRACTION>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <hash>11231556529154741291</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <hash>808055992269743096</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>808055992269743096</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>808055992269743096</hash>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <hash>11231556529154741291</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </2>
             </OIT_PASS>
         </REFRACTION>
         <DISPLAY>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <hash>11231556529154741291</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <hash>808055992269743096</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>808055992269743096</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>808055992269743096</hash>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <hash>11231556529154741291</hash>
                 </0>
                 <1>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </1>
                 <2>
-                    <hash>18446744073709551615</hash>
+                    <hash>11231556529154741291</hash>
                 </2>
             </OIT_PASS>
         </DISPLAY>
     </Material>
-    <Rendered__LOD__Level>0</Rendered__LOD__Level>
+    <Rendered__LOD__Level>1</Rendered__LOD__Level>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
     <Show__Axis>false</Show__Axis>

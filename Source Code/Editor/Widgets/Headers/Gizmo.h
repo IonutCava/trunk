@@ -60,50 +60,29 @@ namespace Divide {
         F32 snap[3] = { 1.f, 1.f, 1.f };
     };
 
-    class Gizmo : public Input::InputAggregatorInterface {
+    class Gizmo {
         friend class Attorney::GizmoEditor;
 
     public:
-        explicit Gizmo(Editor& parent, ImGuiContext* mainContext, DisplayWindow* mainWindow);
+        explicit Gizmo(Editor& parent, ImGuiContext* targetContext);
         ~Gizmo();
 
         ImGuiContext& getContext();
         const ImGuiContext& getContext() const;
 
-        bool isOver() const;
-        bool isUsing() const;
+        bool needsMouse() const;
         void enable(bool state);
         bool enabled() const;
         bool active() const;
 
-    public: //Input
-        /// Key pressed: return true if input was consumed
-        bool onKeyDown(const Input::KeyEvent& key) override;
-        /// Key released: return true if input was consumed
-        bool onKeyUp(const Input::KeyEvent& key) override;
-        /// Mouse moved: return true if input was consumed
-        bool mouseMoved(const Input::MouseMoveEvent& arg) override;
-        /// Mouse button pressed: return true if input was consumed
-        bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
-        /// Mouse button released: return true if input was consumed
-        bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
-
-        bool joystickButtonPressed(const Input::JoystickEvent &arg) override;
-        bool joystickButtonReleased(const Input::JoystickEvent &arg) override;
-        bool joystickAxisMoved(const Input::JoystickEvent &arg) override;
-        bool joystickPovMoved(const Input::JoystickEvent &arg) override;
-        bool joystickBallMoved(const Input::JoystickEvent &arg) override;
-        bool joystickAddRemove(const Input::JoystickEvent &arg) override;
-        bool joystickRemap(const Input::JoystickEvent &arg) override;
-        bool onUTF8(const Input::UTF8Event& arg) override;
-
+        void onMouseButton(bool presseed);
+        void onKey(bool pressed, const Input::KeyEvent& key);
     protected:
         void update(const U64 deltaTimeUS);
         void render(const Camera& camera);
         void updateSelections(const vectorEASTL<SceneGraphNode*>& node);
         void setTransformSettings(const TransformSettings& settings);
         const TransformSettings& getTransformSettings() const;
-        void onSizeChange(const SizeChangeParams& params, const vec2<U16>& displaySize);
 
     private:
         Editor& _parent;
@@ -136,12 +115,8 @@ namespace Divide {
                 gizmo.setTransformSettings(settings);
             }
 
-            static const TransformSettings& getTransformSettings(Gizmo& gizmo) {
+            static const TransformSettings& getTransformSettings(const Gizmo& gizmo) {
                 return gizmo.getTransformSettings();
-            }
-
-            static void onSizeChange(Gizmo& gizmo, const SizeChangeParams& params, const vec2<U16>& displaySize) {
-                gizmo.onSizeChange(params, displaySize);
             }
             friend class Divide::Editor;
         };

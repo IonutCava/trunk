@@ -120,7 +120,7 @@ public:
 protected:
     void setState(ResourceState currentState) noexcept override;
     virtual const char* getResourceTypeName() const noexcept override { return "Cached Resource"; }
-
+    void flushStateCallbacks();
 protected:
     using CallbackList = vectorEASTL<DELEGATE<void, CachedResource*>>;
     std::array<CallbackList, to_base(ResourceState::COUNT)> _loadingCallbacks;

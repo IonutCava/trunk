@@ -69,7 +69,7 @@ namespace Attorney {
 };
 
 struct SGNRayResult {
-    I64 sgnGUI = -1;
+    I64 sgnGUID = -1;
     F32 dist = std::numeric_limits<F32>::max();
     const char* name = nullptr;
 };

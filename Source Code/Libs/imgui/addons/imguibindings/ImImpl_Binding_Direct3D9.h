@@ -112,7 +112,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     // ---------------------
     case WM_CHAR:
         // You can also use ToAscii()+GetKeyboardState() to retrieve characters.
-        if (wParam>=0 && wParam<0x10000) io.AddInputCharacter((unsigned short)wParam);
+        if (wParam>=0 /*&& wParam<0x10000*/) io.AddInputCharacter((unsigned int)wParam);
         return 0;
     case WM_MOUSEMOVE:
         io.MousePos = ImVec2((float)LOWORD(lParam) * mousePosScale.x, (float)HIWORD(lParam) * mousePosScale.y);      // Mouse position, in pixels (set to -FLT_MAX,-FLT_MAX if no mouse / on another screen, etc.)
@@ -237,6 +237,9 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
     io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
     io.KeyMap[ImGuiKey_Space] = VK_SPACE;
+#   ifndef __EMSCRIPTEN__  // emscripten doesn't like it (and triggers a 'NewFrameSanityCheck' or something like that [But tested only with SDL2 binding, so it might work])
+    io.KeyMap[ImGuiKey_KeyPadEnter] = VK_RETURN;
+#   endif
 
     io.KeyMap[ImGuiKey_A] = 'A';
     io.KeyMap[ImGuiKey_C] = 'C';

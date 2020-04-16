@@ -5643,7 +5643,7 @@ struct StbImage {
                             float lastButtonsWidth = 0;
                             if (fileExtCanBeSaved) lastButtonsWidth = ImGui::CalcTextSize("Save Don't Save Cancel").x+3.0f*(style.FramePadding.x+style.ItemSpacing.x)+style.WindowPadding.x;
                             else lastButtonsWidth = ImGui::CalcTextSize("Don't Save Cancel").x+2.0f*(style.FramePadding.x+style.ItemSpacing.x)+style.WindowPadding.x;
-                            ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth()-lastButtonsWidth);
+                            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x-lastButtonsWidth);
                             if (fileExtCanBeSaved) {if (ImGui::Button("Save##dlg1")) { onDialogClosing = mustSaveSavePath = true;}ImGui::SameLine();}
                             if (ImGui::Button("Don't Save##dlg1")) {onDialogClosing = mustSkipSavingSavePath = true;}
                             ImGui::SameLine();
