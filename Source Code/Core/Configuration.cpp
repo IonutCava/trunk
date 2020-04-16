@@ -25,7 +25,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.useShaderTextCache);
         GET_PARAM(debug.useShaderBinaryCache);
         GET_PARAM(debug.showShadowCascadeSplits);
-        GET_PARAM(debug.enableLighting);
         GET_PARAM(debug.memFile);
         GET_PARAM(language);
         GET_PARAM(runtime.targetDisplay);
@@ -111,7 +110,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(debug.useShaderTextCache);
         PUT_PARAM(debug.useShaderBinaryCache);
         PUT_PARAM(debug.showShadowCascadeSplits);
-        PUT_PARAM(debug.enableLighting);
         PUT_PARAM(debug.memFile);
         PUT_PARAM(language);
         PUT_PARAM(runtime.targetDisplay);

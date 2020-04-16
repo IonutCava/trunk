@@ -7,8 +7,6 @@
 #include "materialData.frag"
 #include "shadowMapping.frag"
 
-//#define DEBUG_FPLUS
-
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
 #include "pbr.frag"
 vec4 getExtraData(in mat4 colourMatrix, in vec2 uv) {
@@ -74,9 +72,28 @@ void getOtherLightContribution(in vec3 albedo, in vec4 data, in vec3 normalWV, i
     }
 }
 
+float getShadowFactor() {
+    float ret = 1.0f;
+    const uint dirLightCount = dvd_LightData.x;
 
-vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv) {
-#if defined(DEBUG_FPLUS)
+    for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
+        ret *= getShadowFactor(dvd_LightSource[lightIdx]._options.y);
+    }
+    if (dvd_lodLevel < 2) {
+        const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
+        for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
+            const int lightIdx = perTileLightIndices[offset + i];
+            if (lightIdx == -1) {
+                break;
+            }
+            ret *= getShadowFactor(dvd_LightSource[lightIdx + dirLightCount]._options.y);
+        }
+    }
+
+    return ret;
+}
+
+vec3 lightTileColour() {
     ivec2 loc = ivec2(gl_FragCoord.xy);
     ivec2 tileID = loc / ivec2(FORWARD_PLUS_TILE_RES, FORWARD_PLUS_TILE_RES);
     uint index = tileID.y * dvd_numTilesX + tileID.x;
@@ -92,14 +109,23 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     }
     float shade = float(count) / float(MAX_LIGHTS_PER_TILE * 2);
     return vec3(shade);
-#else
+}
+
+vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv) {
+    switch (dvd_materialDebugFlag) {
+        case DEBUG_ALBEDO: return albedo;
+        case DEBUG_SPECULAR: return getSpecular(colourMatrix, uv);
+        case DEBUG_EMISSIVE: return getEmissive(colourMatrix);
+        case DEBUG_ROUGHNESS: return vec3(getMetallicRoughness(colourMatrix, uv).g);
+        case DEBUG_METALLIC: return vec3(getMetallicRoughness(colourMatrix, uv).r);
+        case DEBUG_NORMALS: return (inverse(dvd_ViewMatrix) * vec4(normalWV, 0)).xyz;
+        case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor());
+        case DEBUG_LIGHT_TILES: return lightTileColour();
+    }
+
 #if defined(USE_SHADING_FLAT)
     return albedo;
 #else //USE_SHADING_FLAT
-    if (!dvd_lightingEnabled) {
-        return albedo;
-    }
-
     const vec4 data = getExtraData(colourMatrix, uv);
 
     albedo.rgb *= getSSAO();
@@ -127,7 +153,6 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     
     return lightColour.rgb;
 #endif //USE_SHADING_FLAT
-#endif //DEBUG_FPLUS
 }
 
 vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv) {

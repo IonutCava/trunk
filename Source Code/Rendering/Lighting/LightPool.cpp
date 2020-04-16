@@ -245,7 +245,8 @@ void LightPool::setDebugLight(LightType type, U16 lightIndex) {
         }
         lightIndex = std::min(lightIndex, to_U16(count));
     }
-    ParamHandler::instance().setParam(_ID_32("rendering.debug.displayShadowDebugInfo"), debug);
+    const bool showDebugInfo = ParamHandler::instance().getParam<bool>(_ID_32("rendering.debug.displayShadowDebugInfo"));
+    ParamHandler::instance().setParam(_ID_32("rendering.debug.displayShadowDebugInfo"), debug || showDebugInfo);
     
     _debugLightIndex = { type, lightIndex };
     if (debug) {

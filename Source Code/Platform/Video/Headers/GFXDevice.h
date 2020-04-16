@@ -175,6 +175,18 @@ public:
         vec4<F32> _extraProperties = VECTOR4_ZERO;
     };
 
+    enum class MaterialDebugFlag : U8 {
+        DEBUG_ALBEDO = 0,
+        DEBUG_SPECULAR,
+        DEBUG_EMISSIVE,
+        DEBUG_ROUGHNESS,
+        DEBUG_METALLIC,
+        DEBUG_NORMALS,
+        DEBUG_SHADOW_MAPS,
+        DEBUG_LIGHT_TILES,
+        COUNT
+    };
+
     using ObjectArena = MyArena<Config::REQUIRED_RAM_SIZE / 4>;
 
 public:  // GPU interface
@@ -335,6 +347,8 @@ public:
                     U8 index,
                     I32 kernelSize,
                     GFX::CommandBuffer& bufferInOut);
+
+    PROPERTY_RW(MaterialDebugFlag, materialDebugFlag, MaterialDebugFlag::COUNT);
 
 protected:
     /// Create and return a new framebuffer.

@@ -14,7 +14,6 @@
 	<useShaderTextCache>false</useShaderTextCache>
 	<useShaderBinaryCache>false</useShaderBinaryCache>
 	<showShadowCascadeSplits>true</showShadowCascadeSplits>
-	<enableLighting>true</enableLighting>
 	<!-- memFile: file name that the application should use to write  memory allocation info -->
 	<!-- leave empty for none! -->
 	<memFile>mem.log</memFile>

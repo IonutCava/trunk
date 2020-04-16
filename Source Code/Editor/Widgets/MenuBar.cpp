@@ -455,10 +455,37 @@ void MenuBar::drawDebugMenu() {
         GFXDevice& gfx = _context.gfx();
         Configuration& config = _context.config();
 
-        bool& enableLighting = config.debug.enableLighting;
-        if (ImGui::MenuItem("Enable lighting", "", &enableLighting))
-        {
-            config.changed(true);
+        if (ImGui::BeginMenu("BRDF Settings")) {
+            const GFXDevice::MaterialDebugFlag debugFlag = _context.gfx().materialDebugFlag();
+            bool debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_ALBEDO;
+            if (ImGui::MenuItem("Debug albedo", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_ALBEDO : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_EMISSIVE;
+            if (ImGui::MenuItem("Debug emissive", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_EMISSIVE : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_ROUGHNESS;
+            if (ImGui::MenuItem("Debug roughness", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_ROUGHNESS : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_METALLIC;
+            if (ImGui::MenuItem("Debug metallic", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_METALLIC : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_NORMALS;
+            if (ImGui::MenuItem("Debug normals", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_NORMALS : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SHADOW_MAPS;
+            if (ImGui::MenuItem("Debug shadow maps", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SHADOW_MAPS : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_TILES;
+            if (ImGui::MenuItem("Debug Fwd+ Tiles", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_TILES : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            ImGui::EndMenu();
         }
 
         LightPool& pool = Attorney::EditorGeneralWidget::getActiveLightPool(_context.editor());

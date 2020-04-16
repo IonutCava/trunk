@@ -53,7 +53,6 @@ struct Configuration final : public XML::IXMLSerializable {
         bool enableTreeInstances = true;
         bool enableGrassInstances = true;
         bool showShadowCascadeSplits = true;
-        bool enableLighting = true;
         stringImpl memFile = "none";
     } debug = {};
     

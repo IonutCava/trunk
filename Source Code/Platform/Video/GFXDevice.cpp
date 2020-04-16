@@ -1353,7 +1353,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     }
 
     const vec4<F32> otherProperties(
-        _context.config().debug.enableLighting ? 1.0f : 0.0f,
+        to_F32(materialDebugFlag()),
         _context.config().debug.showShadowCascadeSplits ? 1.0f : 0.0f,
         0.0f,
         0.0f);
