@@ -132,6 +132,8 @@ void LightPool::init() {
 
     _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);
 
+    WAIT_FOR_CONDITION(_lightImpostorShader->getState() == ResourceState::RES_LOADED);
+
     _init = true;
 }
 

@@ -36,7 +36,7 @@ const char* PostFX::FilterName(FilterType filter) noexcept {
 PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     : PlatformContextComponent(context)
 {
-    std::atomic_int loadTasks = 0;
+    std::atomic_uint loadTasks = 0u;
 
     ParamHandler::instance().setParam<bool>(_ID_32("postProcessing.enableVignette"), false);
 
@@ -78,41 +78,29 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
     texDescriptor.samplerDescriptor(defaultSampler);
 
-    loadTasks.fetch_add(1);
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.assetName("terrain_water_NM.jpg");
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     textureWaterCaustics.propertyDescriptor(texDescriptor);
     textureWaterCaustics.threaded(true);
     textureWaterCaustics.waitForReady(false);
-    _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
-    _underwaterTexture->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
-        loadTasks.fetch_sub(1);
-    });
+    _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics, loadTasks);
 
-    loadTasks.fetch_add(1);
     ResourceDescriptor noiseTexture("noiseTexture");
     noiseTexture.assetName("bruit_gaussien.jpg");
     noiseTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     noiseTexture.propertyDescriptor(texDescriptor);
     noiseTexture.threaded(true);
     noiseTexture.waitForReady(false);
-    _noise = CreateResource<Texture>(cache, noiseTexture);
-    _noise->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
-        loadTasks.fetch_sub(1);
-    });
+    _noise = CreateResource<Texture>(cache, noiseTexture, loadTasks);
 
-    loadTasks.fetch_add(1);
     ResourceDescriptor borderTexture("borderTexture");
     borderTexture.assetName("vignette.jpeg");
     borderTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     borderTexture.propertyDescriptor(texDescriptor);
     borderTexture.threaded(true);
     borderTexture.waitForReady(false);
-    _screenBorder = CreateResource<Texture>(cache, borderTexture);
-    _screenBorder->addStateCallback(ResourceState::RES_LOADED, [&loadTasks](CachedResource* res) {
-        loadTasks.fetch_sub(1);
-    });
+    _screenBorder = CreateResource<Texture>(cache, borderTexture), loadTasks;
 
     _preRenderBatch = std::make_unique<PreRenderBatch>(context.gfx(), *this, cache, RenderTargetID(RenderTargetUsage::SCREEN));
 
@@ -124,8 +112,8 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.threaded(false);
     postFXShader.propertyDescriptor(postFXShaderDescriptor);
-    _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader);
-    _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context, &loadTasks](CachedResource* res) {
+    _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader, loadTasks);
+    _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context](CachedResource* res) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = context.gfx().get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getGUID();

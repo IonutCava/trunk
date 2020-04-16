@@ -626,7 +626,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
     descriptor.threaded(false);
     descriptor.flag(ter->active());
     descriptor.waitForReady(false);
-    auto ret = CreateResource<Terrain>(_resCache, descriptor);
+    Terrain_ptr ret = CreateResource<Terrain>(_resCache, descriptor);
     ret->addStateCallback(ResourceState::RES_LOADED, registerTerrain);
 }
 
@@ -716,7 +716,7 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
     ResourceDescriptor waterDescriptor("Water_" + nodeName);
     waterDescriptor.threaded(true);
     waterDescriptor.waitForReady(false);
-    auto ret = CreateResource<WaterPlane>(_resCache, waterDescriptor);
+    WaterPlane_ptr ret = CreateResource<WaterPlane>(_resCache, waterDescriptor);
     ret->addStateCallback(ResourceState::RES_LOADED, registerWater);
 }
 

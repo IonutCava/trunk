@@ -75,25 +75,29 @@ bool WaterPlane::load() {
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
     texDescriptor.samplerDescriptor(defaultSampler);
 
+    std::atomic_uint loadTasks = 0u;
+
     ResourceDescriptor waterTexture("waterTexture_" + name);
     waterTexture.assetName("terrain_water_NM.jpg");
     waterTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTexture.propertyDescriptor(texDescriptor);
+    waterTexture.threaded(true);
+    waterTexture.waitForReady(false);
 
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
     waterTextureDUDV.assetName("water_dudv.jpg");
     waterTextureDUDV.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTextureDUDV.propertyDescriptor(texDescriptor);
+    waterTextureDUDV.threaded(true);
+    waterTextureDUDV.waitForReady(false);
 
-    Texture_ptr waterNM = CreateResource<Texture>(_parentCache, waterTexture);
-    Texture_ptr waterDUDV = CreateResource<Texture>(_parentCache, waterTextureDUDV);
+    Texture_ptr waterNM = CreateResource<Texture>(_parentCache, waterTexture, loadTasks);
+    Texture_ptr waterDUDV = CreateResource<Texture>(_parentCache, waterTextureDUDV, loadTasks);
 
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     Material_ptr waterMat = CreateResource<Material>(_parentCache, waterMaterial);
 
     waterMat->setShadingMode(ShadingMode::BLINN_PHONG);
-    waterMat->setTexture(TextureUsage::UNIT0, waterDUDV);
-    waterMat->setTexture(TextureUsage::NORMALMAP, waterNM);
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -119,7 +123,7 @@ bool WaterPlane::load() {
     ResourceDescriptor waterColourShader("water");
     waterColourShader.propertyDescriptor(shaderDescriptor);
     waterColourShader.waitForReady(false);
-    ShaderProgram_ptr waterColour = CreateResource<ShaderProgram>(_parentCache, waterColourShader);
+    ShaderProgram_ptr waterColour = CreateResource<ShaderProgram>(_parentCache, waterColourShader, loadTasks);
 
     vertModule._defines.emplace_back("PRE_PASS", true);
     fragModule._variant = "PrePass";
@@ -132,8 +136,12 @@ bool WaterPlane::load() {
     ResourceDescriptor waterPrePassShader("waterPrePass");
     waterPrePassShader.propertyDescriptor(shaderDescriptor);
     waterPrePassShader.waitForReady(false);
-    ShaderProgram_ptr waterPrePass = CreateResource<ShaderProgram>(_parentCache, waterPrePassShader);
+    ShaderProgram_ptr waterPrePass = CreateResource<ShaderProgram>(_parentCache, waterPrePassShader, loadTasks);
 
+    WAIT_FOR_CONDITION(loadTasks.load() == 0u);
+
+    waterMat->setTexture(TextureUsage::UNIT0, waterDUDV);
+    waterMat->setTexture(TextureUsage::NORMALMAP, waterNM);
     waterMat->setShaderProgram(waterColour, RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
     waterMat->setShaderProgram(waterPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
     waterMat->getColourData().shininess(75.0f);

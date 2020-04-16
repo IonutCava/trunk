@@ -270,6 +270,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     assert(s_maxGrassInstances != 0u && "Vegetation error: call \"precomputeStaticData\" first!");
 
+    std::atomic_uint loadTasks = 0u;
     Material::ShaderData treeShaderData = {};
     treeShaderData._depthShaderVertSource = "tree";
     treeShaderData._depthShaderVertVariant = "";
@@ -300,8 +301,10 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrain->descriptor()->getVariable("vegetationTextureLocation"));
     textureDetailMaps.assetName(vegDetails.billboardTextureArray);
     textureDetailMaps.propertyDescriptor(grassTexDescriptor);
+    textureDetailMaps.threaded(true);
+    textureDetailMaps.waitForReady(false);
+    Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps, loadTasks);
 
-    Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
 
     ResourceDescriptor vegetationMaterial("grassMaterial");
     Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
@@ -344,17 +347,17 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ResourceDescriptor grassColourShader("GrassColour");
     grassColourShader.propertyDescriptor(shaderDescriptor);
     grassColourShader.waitForReady(false);
-    ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader);
+    ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader, loadTasks);
 
     ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
     shaderOitDescriptor._modules.back()._defines.emplace_back("OIT_PASS", true);
     //shaderOitDescriptor._modules.back()._defines.emplace_back("USE_SSAO", true);
     shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
-
+    
     ResourceDescriptor grassColourOITShader("grassColourOIT");
     grassColourOITShader.propertyDescriptor(shaderOitDescriptor);
     grassColourOITShader.waitForReady(false);
-    ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader);
+    ShaderProgram_ptr grassColourOIT = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITShader, loadTasks);
 
     fragModule._variant = "PrePass";
     shaderDescriptor = {};
@@ -364,7 +367,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ResourceDescriptor grassPrePassShader("grassPrePass");
     grassPrePassShader.propertyDescriptor(shaderDescriptor);
     grassPrePassShader.waitForReady(false);
-    ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader);
+    ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader, loadTasks);
 
     fragModule._variant = "Shadow";
     shaderDescriptor = {};
@@ -374,23 +377,13 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ResourceDescriptor grassShadowShader("grassShadow");
     grassShadowShader.propertyDescriptor(shaderDescriptor);
     grassShadowShader.waitForReady(false);
-    ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
+    ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader, loadTasks);
 
     fragModule._variant = "Shadow.VSM";
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
-    ShaderProgram_ptr grassShadowVSM = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader);
-
-    vegMaterial->setShaderProgram(grassColour, RenderStage::COUNT, RenderPassType::COUNT, 0u);
-    vegMaterial->setShaderProgram(grassColourOIT, RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
-    vegMaterial->setShaderProgram(grassPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
-    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
-    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
-    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL));
-
-    vegMaterial->setTexture(TextureUsage::UNIT0, grassBillboardArray);
-    s_vegetationMaterial = vegMaterial;
+    ShaderProgram_ptr grassShadowVSM = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader, loadTasks);
 
     ShaderModuleDescriptor compModule = {};
     compModule._moduleType = ShaderType::COMPUTE;
@@ -418,7 +411,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     instanceCullShaderGrass.threaded(true);
     instanceCullShaderGrass.waitForReady(false);
     instanceCullShaderGrass.propertyDescriptor(shaderCompDescriptor);
-    s_cullShaderGrass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderGrass);
+    s_cullShaderGrass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderGrass, loadTasks);
 
     compModule._defines.emplace_back("CULL_TREES", true);
     shaderCompDescriptor = {};
@@ -428,7 +421,19 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     instanceCullShaderTrees.threaded(true);
     instanceCullShaderTrees.waitForReady(false);
     instanceCullShaderTrees.propertyDescriptor(shaderCompDescriptor);
-    s_cullShaderTrees = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderTrees);
+    s_cullShaderTrees = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderTrees, loadTasks);
+
+    WAIT_FOR_CONDITION(loadTasks.load() == 0u);
+
+    vegMaterial->setShaderProgram(grassColour, RenderStage::COUNT, RenderPassType::COUNT, 0u);
+    vegMaterial->setShaderProgram(grassColourOIT, RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
+    vegMaterial->setShaderProgram(grassPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
+    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL));
+
+    vegMaterial->setTexture(TextureUsage::UNIT0, grassBillboardArray);
+    s_vegetationMaterial = vegMaterial;
 }
 
 void Vegetation::createAndUploadGPUData(GFXDevice& gfxDevice, const Terrain_ptr& terrain, const VegetationDetails& vegDetails) {
@@ -522,6 +527,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
                         model.assetLocation(Paths::g_assetsLocation + "models");
                         model.flag(true);
                         model.threaded(false); //< we need the extents asap!
+                        model.waitForReady(true);
                         model.assetName(meshName);
                         Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
                         meshPtr->setMaterialTpl(s_treeMaterial);

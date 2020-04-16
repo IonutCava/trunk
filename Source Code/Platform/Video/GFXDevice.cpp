@@ -545,7 +545,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 }
 
 ErrorCode GFXDevice::postInitRenderingAPI() {
-    std::atomic_int loadTasks = 0;
+    std::atomic_uint loadTasks = 0;
 
     ResourceCache* cache = parent().resourceCache();
     {
@@ -563,18 +563,16 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
-        loadTasks.fetch_add(1);
         ResourceDescriptor immediateModeShader("ImmediateModeEmulationGUI");
         immediateModeShader.threaded(true);
         immediateModeShader.waitForReady(false);
         immediateModeShader.propertyDescriptor(shaderDescriptor);
-        _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader);
-        _textRenderShader->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](CachedResource* res) {
+        _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader, loadTasks);
+        _textRenderShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             PipelineDescriptor descriptor = {};
             descriptor._shaderProgramHandle = res->getGUID();
             descriptor._stateHash = get2DStateBlock();
             _textRenderPipeline = newPipeline(descriptor);
-            loadTasks.fetch_sub(1);
         });
     }
     {
@@ -603,19 +601,17 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
-        loadTasks.fetch_add(1);
         // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
         ResourceDescriptor descriptor1("HiZConstruct");
         descriptor1.threaded(true);
         descriptor1.waitForReady(false);
         descriptor1.propertyDescriptor(shaderDescriptor);
-        _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1);
-        _HIZConstructProgram->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](CachedResource* res) {
+        _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1, loadTasks);
+        _HIZConstructProgram->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             PipelineDescriptor pipelineDesc;
             pipelineDesc._stateHash = _stateDepthOnlyRenderingHash;
             pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getGUID();
             _HIZPipeline = newPipeline(pipelineDesc);
-            loadTasks.fetch_sub(1);
         });
     }
     {
@@ -638,17 +634,15 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         ShaderProgramDescriptor shaderDescriptor = {};
         shaderDescriptor._modules.push_back(compModule);
 
-        loadTasks.fetch_add(1);
         ResourceDescriptor descriptor2("HiZOcclusionCull");
         descriptor2.threaded(true);
         descriptor2.waitForReady(false);
         descriptor2.propertyDescriptor(shaderDescriptor);
-        _HIZCullProgram = CreateResource<ShaderProgram>(cache, descriptor2);
-        _HIZCullProgram->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](CachedResource* res) {
+        _HIZCullProgram = CreateResource<ShaderProgram>(cache, descriptor2, loadTasks);
+        _HIZCullProgram->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             PipelineDescriptor pipelineDescriptor = {};
             pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getGUID();
             _HIZCullPipeline = newPipeline(pipelineDescriptor);
-            loadTasks.fetch_sub(1);
         });
     }
     {
@@ -665,15 +659,13 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
-        loadTasks.fetch_add(1);
         ResourceDescriptor previewNormalsShader("fbPreview");
         previewNormalsShader.threaded(true);
         previewNormalsShader.waitForReady(false);
         previewNormalsShader.propertyDescriptor(shaderDescriptor);
-        _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader);
-        _renderTargetDraw->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](CachedResource* res) {
+        _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader, loadTasks);
+        _renderTargetDraw->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             _previewRenderTargetColour = _renderTargetDraw;
-            loadTasks.fetch_sub(1);
         });
     }
     {
@@ -691,15 +683,11 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
-        loadTasks.fetch_add(1);
         ResourceDescriptor previewReflectionRefractionDepth("fbPreviewLinearDepthScenePlanes");
         previewReflectionRefractionDepth.threaded(true);
         previewReflectionRefractionDepth.waitForReady(false);
         previewReflectionRefractionDepth.propertyDescriptor(shaderDescriptor);
-        _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth);
-        _previewRenderTargetDepth->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](CachedResource* res) {
-            loadTasks.fetch_sub(1);
-        });
+        _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth, loadTasks);
     }
     {
         ShaderModuleDescriptor vertModule = {};
@@ -716,12 +704,11 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
-        loadTasks.fetch_add(1);
         ResourceDescriptor blur("blurGeneric");
         blur.threaded(false);
         blur.propertyDescriptor(shaderDescriptor);
-        _blurShader = CreateResource<ShaderProgram>(cache, blur);
-        _blurShader->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](CachedResource* res) {
+        _blurShader = CreateResource<ShaderProgram>(cache, blur, loadTasks);
+        _blurShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
             _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
             _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
@@ -735,7 +722,6 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
                 pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
                 _BlurVPipeline = newPipeline(pipelineDescriptor);
             }
-            loadTasks.fetch_sub(1);
         });
     }
     {
@@ -754,28 +740,24 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(fragModule);
         descriptor3.propertyDescriptor(shaderDescriptor);
         {
-            loadTasks.fetch_add(1);
-            _displayShader = CreateResource<ShaderProgram>(cache, descriptor3);
-            _displayShader->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](CachedResource* res) {
+            _displayShader = CreateResource<ShaderProgram>(cache, descriptor3, loadTasks);
+            _displayShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
                 PipelineDescriptor pipelineDescriptor = {};
                 pipelineDescriptor._stateHash = get2DStateBlock();
                 pipelineDescriptor._shaderProgramHandle = _displayShader->getGUID();
                 _DrawFSTexturePipeline = newPipeline(pipelineDescriptor);
-                loadTasks.fetch_sub(1);
             });
         }
         {
-            loadTasks.fetch_add(1);
             shaderDescriptor._modules.back()._defines.emplace_back("DEPTH_ONLY", true);
             descriptor3.propertyDescriptor(shaderDescriptor);
-            _depthShader = CreateResource<ShaderProgram>(cache, descriptor3);
-            _depthShader->addStateCallback(ResourceState::RES_LOADED, [this, &loadTasks](CachedResource* res) {
+            _depthShader = CreateResource<ShaderProgram>(cache, descriptor3, loadTasks);
+            _depthShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
                 PipelineDescriptor pipelineDescriptor = {};
                 pipelineDescriptor._stateHash = get2DStateBlock();
                 pipelineDescriptor._stateHash = _stateDepthOnlyRenderingHash;
                 pipelineDescriptor._shaderProgramHandle = _depthShader->getGUID();
                 _DrawFSDepthPipeline = newPipeline(pipelineDescriptor);
-                loadTasks.fetch_sub(1);
             });
         }
     }

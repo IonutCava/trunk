@@ -107,6 +107,8 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     if (false) {
         _postFX->pushFilter(FilterType::FILTER_LUT_CORECTION);
     }
+
+    WAIT_FOR_CONDITION(_lightCullPipeline != nullptr);
 }
 
 Renderer::~Renderer()

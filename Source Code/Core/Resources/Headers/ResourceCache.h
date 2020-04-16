@@ -66,9 +66,9 @@ public:
     ~ResourceCache();
 
     /// Each resource entity should have a 'resource name'Loader implementation.
-    template <typename T>
+    template <typename T, bool UseAtomicCounter>
     typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
-    loadResource(const ResourceDescriptor& descriptor, bool& wasInCache)
+    loadResource(const ResourceDescriptor& descriptor, bool& wasInCache, std::atomic_uint& taskCounter)
     {
         Time::ProfileTimer loadTimer = {};
         loadTimer.start();
@@ -83,6 +83,9 @@ public:
             // Once done, lock the hash for ourselves
             ResourceLoadLock res_lock(loadingHash, _context, !Runtime::isMainThread());
 
+            if_constexpr(UseAtomicCounter) {
+                taskCounter.fetch_add(1u);
+            }
             /// Check cache first to avoid loading the same resource twice
             ptr = std::static_pointer_cast<T>(find(loadingHash));
             /// If the cache did not contain our resource ...
@@ -95,8 +98,13 @@ public:
                 assert(ptr != nullptr);
                 add(ptr);
             }
-        }
 
+            if_constexpr(UseAtomicCounter) {
+                ptr->addStateCallback(ResourceState::RES_LOADED, [&taskCounter](auto) {
+                    taskCounter.fetch_sub(1u);
+                });
+            }
+        }
         if (descriptor.waitForReady()) {
             if (descriptor.waitForReadyCbk()) {
                 WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, descriptor.waitForReadyCbk(), ptr);
@@ -157,7 +165,14 @@ protected:
 template <typename T>
 typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
 CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor, bool& wasInCache) {
-    return cache->loadResource<T>(descriptor, wasInCache);
+    std::atomic_uint taskCounter = 0u;
+    return cache->loadResource<T, false>(descriptor, wasInCache, taskCounter);
+}
+
+template <typename T>
+typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
+CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor, bool& wasInCache, std::atomic_uint& taskCounter) {
+    return cache->loadResource<T, true>(descriptor, wasInCache, taskCounter);
 }
 
 template <typename T>
@@ -165,6 +180,13 @@ typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_p
 CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor) {
     bool wasInCache = false;
     return CreateResource<T>(cache, descriptor, wasInCache);
+}
+
+template <typename T>
+typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
+CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor, std::atomic_uint& taskCounter) {
+    bool wasInCache = false;
+    return CreateResource<T>(cache, descriptor, wasInCache, taskCounter);
 }
 
 

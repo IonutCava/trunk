@@ -55,6 +55,8 @@ bool Sky::load() {
         return false;
     }
 
+    std::atomic_uint loadTasks = 0u;
+
     SamplerDescriptor skyboxSampler = {};
     skyboxSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
     skyboxSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
@@ -72,7 +74,7 @@ bool Sky::load() {
     skyboxTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     skyboxTextures.propertyDescriptor(skyboxTexture);
     skyboxTextures.waitForReady(false);
-    _skybox = CreateResource<Texture>(_parentCache, skyboxTextures);
+    _skybox = CreateResource<Texture>(_parentCache, skyboxTextures, loadTasks);
 
     F32 radius = _diameter * 0.5f;
 
@@ -100,7 +102,7 @@ bool Sky::load() {
     ResourceDescriptor skyShaderDescriptor("sky_Display");
     skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
     skyShaderDescriptor.waitForReady(false);
-    _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor);
+    _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor, loadTasks);
 
     fragModule._variant = "PrePass";
 
@@ -111,7 +113,9 @@ bool Sky::load() {
     ResourceDescriptor skyShaderPrePassDescriptor("sky_PrePass");
     skyShaderPrePassDescriptor.waitForReady(false);
     skyShaderPrePassDescriptor.propertyDescriptor(shaderDescriptor);
-    _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor);
+    _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor, loadTasks);
+
+    WAIT_FOR_CONDITION(loadTasks.load() == 0u);
 
     assert(_skyShader && _skyShaderPrePass);
     setBounds(BoundingBox(vec3<F32>(-radius), vec3<F32>(radius)));

@@ -77,9 +77,8 @@ namespace Divide {
 
         ResourceDescriptor shaderResDesc("OITComposition");
         shaderResDesc.propertyDescriptor(shaderDescriptor);
-        shaderResDesc.waitForReady(false);
+        shaderResDesc.waitForReady(true);
         _OITCompositionShader = CreateResource<ShaderProgram>(parent().resourceCache(), shaderResDesc);
-        WAIT_FOR_CONDITION(_OITCompositionShader->getState() == ResourceState::RES_LOADED);
 
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
