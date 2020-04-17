@@ -82,7 +82,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     textureWaterCaustics.assetName("terrain_water_NM.jpg");
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     textureWaterCaustics.propertyDescriptor(texDescriptor);
-    textureWaterCaustics.threaded(true);
     textureWaterCaustics.waitForReady(false);
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics, loadTasks);
 
@@ -90,7 +89,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     noiseTexture.assetName("bruit_gaussien.jpg");
     noiseTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     noiseTexture.propertyDescriptor(texDescriptor);
-    noiseTexture.threaded(true);
     noiseTexture.waitForReady(false);
     _noise = CreateResource<Texture>(cache, noiseTexture, loadTasks);
 
@@ -98,7 +96,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     borderTexture.assetName("vignette.jpeg");
     borderTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     borderTexture.propertyDescriptor(texDescriptor);
-    borderTexture.threaded(true);
     borderTexture.waitForReady(false);
     _screenBorder = CreateResource<Texture>(cache, borderTexture), loadTasks;
 
@@ -110,7 +107,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     _randomFlashCoefficient = 0;
 
     ResourceDescriptor postFXShader("postProcessing");
-    postFXShader.threaded(false);
     postFXShader.propertyDescriptor(postFXShaderDescriptor);
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader, loadTasks);
     _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context](CachedResource* res) {
@@ -123,13 +119,14 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
         _drawPipeline = context.gfx().newPipeline(pipelineDescriptor);
     });
 
+    WAIT_FOR_CONDITION(loadTasks.load() == 0);
+
     _shaderFunctionList[to_base(FXDisplayFunction::Vignette)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette");
     _shaderFunctionList[to_base(FXDisplayFunction::Noise)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise");
     _shaderFunctionList[to_base(FXDisplayFunction::Underwater)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Underwater");
     _shaderFunctionList[to_base(FXDisplayFunction::Normal)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Normal");
     _shaderFunctionList[to_base(FXDisplayFunction::PassThrough)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "ColourPassThrough");
 
-    WAIT_FOR_CONDITION(loadTasks.load() == 0);
 }
 
 PostFX::~PostFX()

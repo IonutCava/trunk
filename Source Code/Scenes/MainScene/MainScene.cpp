@@ -197,7 +197,6 @@ bool MainScene::load(const Str128& name) {
         ResourceDescriptor beepSound("beep sound");
         beepSound.assetName("beep.wav");
         beepSound.assetLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
-        beepSound.flag(false);
         _beep = CreateResource<AudioDescriptor>(_resCache, beepSound);
 
         return true;

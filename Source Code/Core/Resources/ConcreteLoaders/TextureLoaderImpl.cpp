@@ -22,10 +22,9 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     assert(_descriptor.enumValue() >= to_base(TextureType::TEXTURE_1D) &&
            _descriptor.enumValue() < to_base(TextureType::COUNT));
 
-    // Samplers are not optional!
-    assert(_descriptor.hasPropertyDescriptor());
-
     const std::shared_ptr<TextureDescriptor>& texDescriptor = _descriptor.propertyDescriptor<TextureDescriptor>();
+    // Samplers are not optional!
+    assert(texDescriptor != nullptr);
 
     if (Texture::s_missingTextureFileName == nullptr) {
         Texture::s_missingTextureFileName = "missing_texture.jpg";

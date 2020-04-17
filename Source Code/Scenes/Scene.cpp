@@ -388,13 +388,6 @@ namespace {
 void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     assert(parent != nullptr);
 
-    auto waitForReasoureTask = [&parentTask](const CachedResource_wptr& res) {
-        ACKNOWLEDGE_UNUSED(res);
-        if (parentTask != nullptr) {
-            TaskYield(*parentTask);
-        }
-    };
-
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
     const stringImpl nodePath = sceneLocation + "/nodes/" + parent->name() + "_" + sceneNode.name + ".xml";
@@ -429,10 +422,6 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
                 _loadingTasks.fetch_add(1);
                 ResourceDescriptor item(sceneNode.name);
                 item.assetName(modelName);
-                item.threaded(true);
-                item.waitForReady(true);
-                item.waitForReadyCbk(waitForReasoureTask);
-
                 if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
                     ret = CreateResource<Box3D>(_resCache, item);
                 } else if (Util::CompareIgnoreCase(modelName, "SPHERE_3D")) {
@@ -501,9 +490,10 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
         // Submesh (change component properties, as the meshes should already be loaded)
         else if (Util::CompareIgnoreCase(sceneNode.type, "SUBMESH")) {
             while (parent->getNode().getState() != ResourceState::RES_LOADED) {
-                waitForReasoureTask(parent->getNodePtr());
+                if (parentTask != nullptr) {
+                    parentTask->_parentPool->threadWaiting();
+                }
             }
-
             normalMask |= to_base(ComponentType::RENDERING);
             SceneGraphNode* subMesh = parent->findChild(sceneNode.name, false, false);
             if (subMesh != nullptr) {
@@ -714,7 +704,6 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
     };
 
     ResourceDescriptor waterDescriptor("Water_" + nodeName);
-    waterDescriptor.threaded(true);
     waterDescriptor.waitForReady(false);
     WaterPlane_ptr ret = CreateResource<WaterPlane>(_resCache, waterDescriptor);
     ret->addStateCallback(ResourceState::RES_LOADED, registerWater);

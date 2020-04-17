@@ -564,8 +564,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(fragModule);
 
         ResourceDescriptor immediateModeShader("ImmediateModeEmulationGUI");
-        immediateModeShader.threaded(true);
-        immediateModeShader.waitForReady(false);
+        immediateModeShader.waitForReady(true);
         immediateModeShader.propertyDescriptor(shaderDescriptor);
         _textRenderShader = CreateResource<ShaderProgram>(cache, immediateModeShader, loadTasks);
         _textRenderShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
@@ -603,7 +602,6 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
 
         // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
         ResourceDescriptor descriptor1("HiZConstruct");
-        descriptor1.threaded(true);
         descriptor1.waitForReady(false);
         descriptor1.propertyDescriptor(shaderDescriptor);
         _HIZConstructProgram = CreateResource<ShaderProgram>(cache, descriptor1, loadTasks);
@@ -635,7 +633,6 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(compModule);
 
         ResourceDescriptor descriptor2("HiZOcclusionCull");
-        descriptor2.threaded(true);
         descriptor2.waitForReady(false);
         descriptor2.propertyDescriptor(shaderDescriptor);
         _HIZCullProgram = CreateResource<ShaderProgram>(cache, descriptor2, loadTasks);
@@ -659,11 +656,10 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
-        ResourceDescriptor previewNormalsShader("fbPreview");
-        previewNormalsShader.threaded(true);
-        previewNormalsShader.waitForReady(false);
-        previewNormalsShader.propertyDescriptor(shaderDescriptor);
-        _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewNormalsShader, loadTasks);
+        ResourceDescriptor previewRTShader("fbPreview");
+        previewRTShader.waitForReady(true);
+        previewRTShader.propertyDescriptor(shaderDescriptor);
+        _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewRTShader, loadTasks);
         _renderTargetDraw->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             _previewRenderTargetColour = _renderTargetDraw;
         });
@@ -684,7 +680,6 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(fragModule);
 
         ResourceDescriptor previewReflectionRefractionDepth("fbPreviewLinearDepthScenePlanes");
-        previewReflectionRefractionDepth.threaded(true);
         previewReflectionRefractionDepth.waitForReady(false);
         previewReflectionRefractionDepth.propertyDescriptor(shaderDescriptor);
         _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth, loadTasks);
@@ -705,7 +700,6 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         shaderDescriptor._modules.push_back(fragModule);
 
         ResourceDescriptor blur("blurGeneric");
-        blur.threaded(false);
         blur.propertyDescriptor(shaderDescriptor);
         _blurShader = CreateResource<ShaderProgram>(cache, blur, loadTasks);
         _blurShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {

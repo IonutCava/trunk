@@ -69,12 +69,12 @@ using Byte = std::byte;
 #endif
 
 typedef union {
-    U32 i;
+    U32 i = 0u;
     U8  b[4];
 } P32;
 
 typedef union {
-    U64 i;
+    U64 i = 0u;
     U8  b[8];
 } P64;
 

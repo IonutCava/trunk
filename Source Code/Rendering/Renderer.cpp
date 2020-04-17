@@ -56,16 +56,11 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     cullDescritpor._modules.push_back(computeDescriptor);
 
     ResourceDescriptor cullShaderDesc("lightCull");
-    cullShaderDesc.threaded(true);
-    cullShaderDesc.waitForReady(false);
     cullShaderDesc.propertyDescriptor(cullDescritpor);
-
     _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
-    _lightCullComputeShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
-        PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
-        _lightCullPipeline = _context.gfx().newPipeline(pipelineDescriptor);
-    });
+    PipelineDescriptor pipelineDescriptor = {};
+    pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
+    _lightCullPipeline = _context.gfx().newPipeline(pipelineDescriptor);
 
     U32 totalLights = static_cast<U32>(context.config().rendering.numLightsPerScreenTile);
     totalLights *= GetMaxNumTiles(config.rendering.lightThreadGroupSize);

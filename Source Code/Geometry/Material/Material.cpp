@@ -366,6 +366,7 @@ I64 Material::getProgramGUID(RenderStagePass renderStagePass) const {
     if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
         return info._shaderRef->getGUID();
     }
+    DIVIDE_UNEXPECTED_CALL();
 
     return ShaderProgram::defaultShader()->getGUID();
 }
@@ -619,7 +620,6 @@ bool Material::computeShader(RenderStagePass renderStagePass) {
 
     ResourceDescriptor shaderResDescriptor(shaderName);
     shaderResDescriptor.propertyDescriptor(shaderDescriptor);
-    shaderResDescriptor.threaded(true);
     shaderResDescriptor.flag(true);
 
     setShaderProgramInternal(shaderResDescriptor, renderStagePass, false);
@@ -1160,7 +1160,6 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 texture.assetName(texName);
                 texture.assetLocation(texPath);
                 texture.propertyDescriptor(texDesc);
-                texture.threaded(true);
                 texture.waitForReady(false);
                 texture.flag(!flipped);
 

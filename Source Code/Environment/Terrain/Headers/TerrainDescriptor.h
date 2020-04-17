@@ -57,7 +57,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
     virtual ~TerrainDescriptor();
 
     bool loadFromXML(const boost::property_tree::ptree& pt, const stringImpl& name);
-    void clone(std::shared_ptr<PropertyDescriptor>& target) const override;
 
     void addVariable(const stringImpl& name, const stringImpl& value);
     void addVariable(const stringImpl& name, F32 value);

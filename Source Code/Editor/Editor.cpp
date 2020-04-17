@@ -193,7 +193,6 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     ResourceDescriptor shaderResDescriptor("IMGUI");
     shaderResDescriptor.propertyDescriptor(shaderDescriptor);
-    shaderResDescriptor.threaded(false);
     _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderResDescriptor);
 
     // Store our identifier

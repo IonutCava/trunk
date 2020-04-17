@@ -121,10 +121,6 @@ class TextureDescriptor final : public PropertyDescriptor {
     {
     }
 
-    void clone(std::shared_ptr<PropertyDescriptor>& target) const final {
-        return target.reset(new TextureDescriptor(*this));
-    }
-
     inline bool isCubeTexture() const noexcept {
         return (_type == TextureType::TEXTURE_CUBE_MAP ||
                 _type == TextureType::TEXTURE_CUBE_ARRAY);

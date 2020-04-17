@@ -321,9 +321,10 @@ namespace Import {
                 texture.assetName(tex.textureName());
                 texture.assetLocation(tex.texturePath());
                 texture.propertyDescriptor(textureDescriptor);
-                texture.threaded(false);
                 Texture_ptr texPtr = CreateResource<Texture>(cache, texture);
-                tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, tex.operation());
+                texPtr->addStateCallback(ResourceState::RES_LOADED, [&tempMaterial, i, &texPtr, &tex](CachedResource* res) {
+                    tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, tex.operation());
+                });
             }
         }
 
@@ -337,9 +338,11 @@ namespace Import {
                 opacityDesc.assetName(diffuse->assetName());
                 opacityDesc.assetLocation(diffuse->assetLocation());
                 opacityDesc.propertyDescriptor(diffuse->descriptor());
-
-                Texture_ptr textureRes = CreateResource<Texture>(cache, opacityDesc);
-                tempMaterial->setTexture(TextureUsage::OPACITY, textureRes, TextureOperation::REPLACE);
+                Texture_ptr texPtr = CreateResource<Texture>(cache, opacityDesc);
+                texPtr->addStateCallback(ResourceState::RES_LOADED, [&tempMaterial, &texPtr](CachedResource* res) {
+                    tempMaterial->setTexture(TextureUsage::OPACITY, texPtr, TextureOperation::REPLACE);
+                });
+                
             }
         }
 

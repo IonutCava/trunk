@@ -145,7 +145,6 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
         ResourceDescriptor sound("consoleFilePlayback");
         sound.assetName(name);
         sound.assetLocation(path);
-        sound.flag(false);
         _sound = CreateResource<AudioDescriptor>(_resCache, sound);
         if (filename.find("music") != stringImpl::npos) {
             // play music

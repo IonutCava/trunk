@@ -301,10 +301,8 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrain->descriptor()->getVariable("vegetationTextureLocation"));
     textureDetailMaps.assetName(vegDetails.billboardTextureArray);
     textureDetailMaps.propertyDescriptor(grassTexDescriptor);
-    textureDetailMaps.threaded(true);
     textureDetailMaps.waitForReady(false);
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps, loadTasks);
-
 
     ResourceDescriptor vegetationMaterial("grassMaterial");
     Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
@@ -346,7 +344,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ResourceDescriptor grassColourShader("GrassColour");
     grassColourShader.propertyDescriptor(shaderDescriptor);
-    grassColourShader.waitForReady(false);
+    grassColourShader.waitForReady(true);
     ShaderProgram_ptr grassColour = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourShader, loadTasks);
 
     ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
@@ -408,7 +406,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     shaderCompDescriptor._modules.push_back(compModule);
 
     ResourceDescriptor instanceCullShaderGrass("instanceCullVegetation_Grass");
-    instanceCullShaderGrass.threaded(true);
     instanceCullShaderGrass.waitForReady(false);
     instanceCullShaderGrass.propertyDescriptor(shaderCompDescriptor);
     s_cullShaderGrass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderGrass, loadTasks);
@@ -418,7 +415,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     shaderCompDescriptor._modules.push_back(compModule);
 
     ResourceDescriptor instanceCullShaderTrees("instanceCullVegetation_Trees");
-    instanceCullShaderTrees.threaded(true);
     instanceCullShaderTrees.waitForReady(false);
     instanceCullShaderTrees.propertyDescriptor(shaderCompDescriptor);
     s_cullShaderTrees = CreateResource<ShaderProgram>(terrain->parentResourceCache(), instanceCullShaderTrees, loadTasks);
@@ -527,7 +523,6 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
                         model.assetLocation(Paths::g_assetsLocation + "models");
                         model.flag(true);
                         model.threaded(false); //< we need the extents asap!
-                        model.waitForReady(true);
                         model.assetName(meshName);
                         Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
                         meshPtr->setMaterialTpl(s_treeMaterial);

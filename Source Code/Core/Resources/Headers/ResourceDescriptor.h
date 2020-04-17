@@ -58,18 +58,14 @@ class PropertyDescriptor : public Hashable {
 
     virtual size_t getHash() const noexcept override;
 
-   protected:
-    friend class ResourceDescriptor;
-    /// Used to clone the property descriptor pointer
-    virtual void clone(std::shared_ptr<PropertyDescriptor>& target) const = 0;
-
-   protected:
+protected:
     /// useful for switch statements
     DescriptorType _type;
 };
 
 class CachedResource;
 FWD_DECLARE_MANAGED_CLASS(CachedResource);
+FWD_DECLARE_MANAGED_CLASS(PropertyDescriptor);
 
 class ResourceDescriptor : public Hashable {
    public:
@@ -80,10 +76,6 @@ class ResourceDescriptor : public Hashable {
 
     ~ResourceDescriptor() = default;
 
-    ResourceDescriptor(const ResourceDescriptor& old);
-    ResourceDescriptor& operator=(ResourceDescriptor const& old);
-    ResourceDescriptor(ResourceDescriptor&& old) noexcept;
-
     template <typename T>
     inline typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, const std::shared_ptr<T>>::type
     propertyDescriptor() const { return std::dynamic_pointer_cast<T>(_propertyDescriptor); }
@@ -91,8 +83,6 @@ class ResourceDescriptor : public Hashable {
     template <typename T>
     inline typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, void>::type
     propertyDescriptor(const T& descriptor) { _propertyDescriptor.reset(new T(descriptor)); }
-
-    inline bool hasPropertyDescriptor() const noexcept { return _propertyDescriptor != nullptr; }
 
     size_t getHash() const noexcept final;
 
@@ -102,15 +92,14 @@ class ResourceDescriptor : public Hashable {
     PROPERTY_RW(bool, flag, false);
     PROPERTY_RW(bool, threaded, true);
     PROPERTY_RW(bool, waitForReady, true);
-    PROPERTY_RW(U32, enumValue, 0);
-    PROPERTY_RW(U32, ID, 0);
+    PROPERTY_RW(U32, enumValue, 0u);
+    PROPERTY_RW(U32, ID, 0u);
     PROPERTY_RW(P32, mask); //< 4 bool values representing  ... anything ...
-    PROPERTY_RW(vec3<U16>, data); //< general data
-    PROPERTY_RW(CBK, waitForReadyCbk);
+    PROPERTY_RW(vec3<U16>, data, VECTOR3_ZERO); //< general data
 
    private:
     /// Use for extra resource properties: textures, samplers, terrain etc.
-    std::shared_ptr<PropertyDescriptor> _propertyDescriptor;
+    PropertyDescriptor_ptr _propertyDescriptor = nullptr;
 };
 
 };  // namespace Divide

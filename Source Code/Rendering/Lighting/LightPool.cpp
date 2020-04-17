@@ -106,11 +106,11 @@ void LightPool::init() {
     shaderDescriptor._modules.push_back(geomModule);
     shaderDescriptor._modules.push_back(fragModule);
 
+    std::atomic_uint loadingTasks = 0u;
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
-    lightImpostorShader.threaded(false);
     lightImpostorShader.propertyDescriptor(shaderDescriptor);
     lightImpostorShader.waitForReady(false);
-    _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader);
+    _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader, loadingTasks);
 
     SamplerDescriptor iconSampler = {};
     iconSampler.wrapU(TextureWrap::REPEAT);
@@ -125,14 +125,14 @@ void LightPool::init() {
     iconDescriptor.srgb(true);
 
     ResourceDescriptor iconImage("LightIconTexture");
-    iconImage.threaded(false);
     iconImage.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     iconImage.assetName("lightIcons.png");
     iconImage.propertyDescriptor(iconDescriptor);
+    iconImage.waitForReady(false);
 
-    _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);
+    _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage, loadingTasks);
 
-    WAIT_FOR_CONDITION(_lightImpostorShader->getState() == ResourceState::RES_LOADED);
+    WAIT_FOR_CONDITION(loadingTasks.load() == 0u);
 
     _init = true;
 }

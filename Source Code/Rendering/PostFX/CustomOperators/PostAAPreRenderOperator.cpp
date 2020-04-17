@@ -72,7 +72,6 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
         ResourceDescriptor fxaa("FXAA");
         fxaa.propertyDescriptor(aaShaderDescriptor);
-        fxaa.threaded(true);
         fxaa.waitForReady(false);
         _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
         _fxaa->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
@@ -99,7 +98,6 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
         ResourceDescriptor smaaWeights("SMAA.Weights");
         smaaWeights.propertyDescriptor(weightsDescriptor);
-        smaaWeights.threaded(true);
         smaaWeights.waitForReady(false);
         _smaaWeightComputation = CreateResource<ShaderProgram>(cache, smaaWeights);
         _smaaWeightComputation->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
@@ -116,7 +114,6 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
 
         ResourceDescriptor smaaBlend("SMAA.Blend");
         smaaBlend.propertyDescriptor(blendDescriptor);
-        smaaWeights.threaded(true);
         smaaBlend.waitForReady(false);
         _smaaBlend = CreateResource<ShaderProgram>(cache, smaaBlend);
         _smaaBlend->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
@@ -136,7 +133,6 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         searchDescriptor.assetName("smaa_search.png");
         searchDescriptor.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
         searchDescriptor.propertyDescriptor(textureDescriptor);
-        searchDescriptor.threaded(true);
         searchDescriptor.waitForReady(false);
         _searchTexture = CreateResource<Texture>(cache, searchDescriptor);
 
@@ -144,7 +140,6 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         areaDescriptor.assetName("smaa_area.png");
         areaDescriptor.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
         areaDescriptor.propertyDescriptor(textureDescriptor);
-        areaDescriptor.threaded(true);
         areaDescriptor.waitForReady(false);
         _areaTexture = CreateResource<Texture>(cache, areaDescriptor);
     }

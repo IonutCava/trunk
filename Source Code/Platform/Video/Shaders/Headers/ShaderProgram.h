@@ -81,14 +81,9 @@ public:
 
     }
 
-    void clone(std::shared_ptr<PropertyDescriptor>& target) const final {
-        target.reset(new ShaderProgramDescriptor(*this));
-    }
-
     size_t getHash() const noexcept final;
 
     vectorEASTL<ShaderModuleDescriptor> _modules;
-
 };
 
 class NOINITVTABLE ShaderProgram : public CachedResource,

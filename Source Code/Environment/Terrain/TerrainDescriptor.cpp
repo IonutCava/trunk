@@ -132,10 +132,6 @@ namespace Divide {
         return true;
     }
 
-    void TerrainDescriptor::clone(std::shared_ptr<PropertyDescriptor>& target) const {
-        target.reset(new TerrainDescriptor(*this));
-    }
-
     void TerrainDescriptor::addVariable(const stringImpl& name, const stringImpl& value) {
         hashAlg::insert(_variables, hashAlg::make_pair(_ID(name.c_str()), value));
     }

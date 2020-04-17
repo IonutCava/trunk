@@ -106,14 +106,10 @@ public:
             }
         }
         if (descriptor.waitForReady()) {
-            if (descriptor.waitForReadyCbk()) {
-                WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, descriptor.waitForReadyCbk(), ptr);
+            if (Runtime::isMainThread()) {
+                WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
             } else {
-                if (!Runtime::isMainThread()) {
-                    WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, ResourceLoadLock::notifyTaskPool, _context);
-                } else {
-                    WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
-                }
+                WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, ResourceLoadLock::notifyTaskPool, _context);
             }
         }
 

@@ -81,14 +81,12 @@ bool WaterPlane::load() {
     waterTexture.assetName("terrain_water_NM.jpg");
     waterTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTexture.propertyDescriptor(texDescriptor);
-    waterTexture.threaded(true);
     waterTexture.waitForReady(false);
 
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
     waterTextureDUDV.assetName("water_dudv.jpg");
     waterTextureDUDV.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTextureDUDV.propertyDescriptor(texDescriptor);
-    waterTextureDUDV.threaded(true);
     waterTextureDUDV.waitForReady(false);
 
     Texture_ptr waterNM = CreateResource<Texture>(_parentCache, waterTexture, loadTasks);
