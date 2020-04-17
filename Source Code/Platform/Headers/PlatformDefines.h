@@ -248,6 +248,39 @@ std::enable_if_t< has_reserve< C >::value > optional_reserve(C& c, std::size_t n
     c.reserve(c.size() + n);
 }
 
+#if !defined(CPP_14_SUPPORT)
+//ref: https://stackoverflow.com/questions/18497122/how-to-initialize-stdarrayt-n-elegantly-if-t-is-not-default-constructible
+template <std::size_t ...> struct index_sequence {};
+
+template <std::size_t I, std::size_t ...Is>
+struct make_index_sequence : make_index_sequence<I - 1, I - 1, Is...> {};
+
+template <std::size_t ... Is>
+struct make_index_sequence<0, Is...> : index_sequence<Is...> {};
+#else
+using std::make_index_sequence;
+using std::index_sequence;
+#endif
+
+namespace detail
+{
+    template <typename T, std::size_t ... Is>
+    constexpr std::array<T, sizeof...(Is)>
+        create_array(T value, index_sequence<Is...>)
+    {
+        // cast Is to void to remove the warning: unused value
+        return { {(static_cast<void>(Is), value)...} };
+    }
+}
+
+
+template <std::size_t N, typename T>
+constexpr std::array<T, N> create_array(const T& value)
+{
+    return detail::create_array(value, make_index_sequence<N>());
+}
+
+
 // -------------------------------------------------------------------
 // --- Reversed iterable
 // ref: https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop

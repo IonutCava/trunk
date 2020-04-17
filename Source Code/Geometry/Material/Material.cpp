@@ -150,13 +150,8 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
-      _parentCache(parentCache),
-      _textureKeyCache(-1),
-      _needsNewShader(false)
+      _parentCache(parentCache)
 {
-    _textures.fill(nullptr);
-    _textureUseForDepth.fill(false);
-
     const ShaderProgramInfo defaultShaderInfo = {};
     // Could just direct copy the arrays, but this looks cool
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
@@ -654,7 +649,7 @@ bool Material::getTextureData(TextureUsage slot, TextureDataContainer<>& contain
 bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer<>& textureData) {
     OPTICK_EVENT();
 
-    if (textureData.empty()) {
+    if (textureData.count() == 0) {
         return getTextureDataFast(renderStagePass, textureData);
     }
 

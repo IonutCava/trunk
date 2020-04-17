@@ -103,7 +103,7 @@ struct TextureDataContainer : public Hashable {
       void clear();
 
       inline  bool empty() const noexcept { return _count == 0; };
-      inline  U8   textureCount() const noexcept { return to_U8(_count); }
+      inline  U8   count() const noexcept { return to_U8(_count); }
 
       inline const DataEntries& textures() const noexcept { return _textures; }
 

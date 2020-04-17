@@ -58,7 +58,7 @@ namespace Divide {
         };
 
         ContentExplorerWindow(Editor& parent, const Descriptor& descriptor);
-        ~ContentExplorerWindow();
+        ~ContentExplorerWindow() = default;
 
         void drawInternal() override;
         void init();
@@ -73,7 +73,7 @@ namespace Divide {
         
     private:
         Texture_ptr _fileIcon = nullptr;
-        std::array<Texture_ptr, to_base(GeometryFormat::COUNT)> _geometryIcons;
+        std::array<Texture_ptr, to_base(GeometryFormat::COUNT)> _geometryIcons = {};
         mutable const Directory* _selectedDir = nullptr;
         vectorSTDFast<Directory> _currentDirectories;
 

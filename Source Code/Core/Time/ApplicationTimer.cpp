@@ -14,14 +14,10 @@ namespace Divide {
 namespace Time {
 
 ApplicationTimer::ApplicationTimer() noexcept
-    : _targetFrameRate(Config::TARGET_FRAME_RATE),
-      _speedfactor(1.0f),
-      _elapsedTimeUs(0UL),
-      _lastBenchmarkTimeStamp(0UL)
 {
+    std::atomic_init(&_elapsedTimeUs, 0ULL);
     _startupTicks = getCurrentTicksInternal();
     _frameDelay = _startupTicks;
-    _frameRateHandler.init();
 }
 
 void ApplicationTimer::update() {

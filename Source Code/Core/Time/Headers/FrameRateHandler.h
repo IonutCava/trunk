@@ -43,12 +43,7 @@ class FrameRateHandler {
     static constexpr U32 FRAME_AVG_RESET_COUNT = 60 * 5;
 
 public:
-    FrameRateHandler();
-    ~FrameRateHandler();
-
     void tick(const U64 deltaTimeUS) noexcept;
-    void init();
-    void reset();
 
     inline F32 minFrameRate() const;
     inline F32 maxFrameRate() const;
@@ -59,16 +54,15 @@ public:
     inline void frameStates(F32& avgFPSOut, F32& minFPSOut, F32& maxFPSOut) const;
 
 private:
-    U32 _frameCount;
-    F32 _minFPS;
-    F32 _maxFPS;
-
-    F32 _averageFPS;
-    F32 _previousElapsedSeconds;
-    std::array<F32, FRAME_ARRAY_SIZE> _framerateSecPerFrame;
-    F32 _framerate;
-    I32 _framerateSecPerFrameIdx;
-    F32 _framerateSecPerFrameAccum;
+    std::array<F32, FRAME_ARRAY_SIZE> _framerateSecPerFrame = {};
+    U32 _frameCount = 0u;
+    F32 _minFPS = std::numeric_limits<F32>::max();
+    F32 _maxFPS = std::numeric_limits<F32>::min();
+    F32 _averageFPS = 0.0f;
+    F32 _previousElapsedSeconds = 0.0f;
+    F32 _framerate = 0.0f;
+    I32 _framerateSecPerFrameIdx = 0;
+    F32 _framerateSecPerFrameAccum = 0.0f;
 };
 
 }; //namespace Time

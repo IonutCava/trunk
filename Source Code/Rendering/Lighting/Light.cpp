@@ -39,8 +39,7 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
 {
     _rangeAndCones.set(1.0f, 45.0f, 0.0f);
 
-    _shadowCameras.fill(nullptr);
-    for (U32 i = 0; i < 6; ++i) {
+    for (U32 i = 0; i < _shadowCameras.size(); ++i) {
         _shadowCameras[i] = Camera::createCamera(sgn.name() + "_shadowCamera_" + to_stringImpl(i), Camera::CameraType::FREE_FLY);
 
         _shadowCameras[i]->setMoveSpeedFactor(0.0f);

@@ -40,20 +40,22 @@ namespace Divide {
 // ref: http://www.gamedev.net/page/resources/_/technical/game-programming/introduction-to-octrees-r3529
 class Octree : public std::enable_shared_from_this<Octree> {
     public:
+        /// Minimum cube size is 1x1x1
+        static constexpr F32 MIN_SIZE = 1.0f;
+        static constexpr I32 MAX_LIFE_SPAN_LIMIT = 64;
+
         Octree(U16 nodeMask);
         Octree(U16 nodeMask, const BoundingBox& rootAABB);
         Octree(U16 nodeMask, const BoundingBox& rootAABB, const vectorEASTL<SceneGraphNode*>& nodes);
 
-        ~Octree();
+        ~Octree() = default;
 
         void update(const U64 deltaTimeUS);
         bool addNode(SceneGraphNode* node);
         bool addNodes(const vectorEASTL<SceneGraphNode*>& nodes);
         void getAllRegions(vectorEASTL<BoundingBox>& regionsOut) const;
 
-        inline const BoundingBox& getRegion() const {
-            return _region;
-        }
+        inline const BoundingBox& getRegion() const noexcept { return _region; }
 
         void updateTree();
 
@@ -88,19 +90,18 @@ class Octree : public std::enable_shared_from_this<Octree> {
         
 
     private:
-        //ToDo: make this work in a multi-threaded environment
-        //mutable I8 _frustPlaneCache;
-        U16 _nodeMask;
-        I32 _curLife;
-        I32 _maxLifespan;
-        BoundingBox _region;
-        std::shared_ptr<Octree> _parent;
-        std::array<bool, 8> _activeNodes;
+        std::array<std::shared_ptr<Octree>, 8> _childNodes = {};
         vectorEASTL<SceneGraphNode*> _objects;
-        std::array<std::shared_ptr<Octree>, 8> _childNodes;
         vectorEASTL<SceneGraphNode*> _movedObjects;
-
         vectorEASTL<IntersectionRecord> _intersectionsCache;
+        BoundingBox _region;
+        std::shared_ptr<Octree> _parent = nullptr;
+        I32 _curLife = -1;
+        I32 _maxLifespan = MAX_LIFE_SPAN_LIMIT / 8;
+        U16 _nodeMask = 0u;
+        std::array<bool, 8> _activeNodes = {};
+        //ToDo: make this work in a multi-threaded environment
+        mutable I8 _frustPlaneCache = -1;
 
         static vectorEASTL<SceneGraphNode*> s_intersectionsObjectCache;
         static std::queue<SceneGraphNode*> s_pendingInsertion;

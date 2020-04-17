@@ -88,15 +88,15 @@ class QuadtreeNode {
    private:
     BoundingBox _boundingBox;                    //< Node BoundingBox
     BoundingSphere _boundingSphere;              //< Node BoundingSphere
-    std::array<QuadtreeNode*, 4> _children;      //< Node children
-    std::unique_ptr<TerrainChunk> _terrainChunk; //< Terrain Chunk contained in node
+    std::array<QuadtreeNode*, 4> _children = {}; //< Node children
+    std::unique_ptr<TerrainChunk> _terrainChunk = nullptr; //< Terrain Chunk contained in node
     GFXDevice&    _context;
-    IMPrimitive*  _bbPrimitive;
-    U32 _targetChunkDimension;
+    IMPrimitive*  _bbPrimitive = nullptr;
+    U32 _targetChunkDimension = 0u;
     //ToDo: make this work in a multi-threaded environment
-    //mutable I8 _frustPlaneCache;
-    U8 _LoD;
-    bool _drawBBoxes;
+    mutable I8 _frustPlaneCache = -1;
+    U8 _LoD = 0u;
+    bool _drawBBoxes = false;
 };
 
 };  // namespace Divide

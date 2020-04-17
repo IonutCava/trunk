@@ -77,16 +77,8 @@ namespace Divide {
     };
 
     ContentExplorerWindow::ContentExplorerWindow(Editor& parent, const Descriptor& descriptor)
-        : DockedWindow(parent, descriptor),
-         _selectedDir(nullptr)
+        : DockedWindow(parent, descriptor)
     {
-    }
-
-    ContentExplorerWindow::~ContentExplorerWindow()
-    {
-        _loadedTextures.clear();
-        _loadedModels.clear();
-        _geometryIcons.fill(nullptr);
     }
 
     void ContentExplorerWindow::init() {

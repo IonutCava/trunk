@@ -246,8 +246,8 @@ class Editor : public PlatformContextComponent,
 
     std::pair<bufferPtr, size_t> _memoryEditorData = { nullptr, 0 };
 
-    std::array<ImGuiContext*, to_base(ImGuiContextType::COUNT)> _imguiContexts;
-    std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows;
+    std::array<ImGuiContext*, to_base(ImGuiContextType::COUNT)> _imguiContexts = {};
+    std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows = {};
 
     hashMap<I64, CameraSnapshot> _cameraSnapshots;
 

@@ -82,7 +82,7 @@ class RenderQueue : public KernelComponent {
     RenderBin* getBinForNode(const SceneGraphNode& nodeType, const Material_ptr& matInstance);
 
   private:
-    RenderBinArray _renderBins;
+    RenderBinArray _renderBins = {};
 };
 
 };  // namespace Divide

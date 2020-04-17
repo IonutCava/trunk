@@ -109,7 +109,7 @@ stringImpl SetCameraCommand::toString(U16 indent) const {
 stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
     stringImpl ret = Base::toString(indent);
 
-    ret.append(Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", _set._shaderBuffers.size(), _set._textureData.textureCount()));
+    ret.append(Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", _set._shaderBuffers.size(), _set._textureData.count()));
     for (auto it : _set._shaderBuffers) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {

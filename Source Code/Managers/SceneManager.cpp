@@ -53,23 +53,8 @@ bool SceneManager::onShutdown() {
 SceneManager::SceneManager(Kernel& parentKernel)
     : FrameListener(),
       Input::InputAggregatorInterface(),
-      KernelComponent(parentKernel),
-      _sceneGraphCullTimers{nullptr},
-      _platformContext(nullptr),
-      _resourceCache(nullptr),
-      _sceneData(nullptr),
-      _renderPassCuller(nullptr),
-      _processInput(false),
-      _scenePool(nullptr),
-      _init(false),
-      _platerQueueDirty(false),
-      _elapsedTime(0ULL),
-      _elapsedTimeMS(0),
-      _activePlayerCount(0),
-      _currentPlayerPass(0),
-      _saveTimer(0ULL)
+      KernelComponent(parentKernel)
 {
-    _players.fill(nullptr);
 }
 
 SceneManager::~SceneManager()
@@ -86,16 +71,16 @@ const Scene& SceneManager::getActiveScene() const {
 }
 
 void SceneManager::idle() {
-    if (_sceneSwitchTarget.isSet()) {
+    if (_sceneSwitchTarget._isSet) {
         _parent.platformContext().gfx().getRenderer().postFX().setFadeOut(UColour3(0), 1000.0, 0.0);
-        switchScene(_sceneSwitchTarget.targetSceneName(),
-                    _sceneSwitchTarget.unloadPreviousScene(),
-                    _sceneSwitchTarget.targetViewRect(),
-                    _sceneSwitchTarget.loadInSeparateThread());
+        switchScene(_sceneSwitchTarget._targetSceneName,
+                    _sceneSwitchTarget._unloadPreviousScene,
+                    _sceneSwitchTarget._targetViewRect,
+                    _sceneSwitchTarget._loadInSeparateThread);
         WaitForAllTasks(getActiveScene().context(), true, true, false);
         _parent.platformContext().gfx().getRenderer().postFX().setFadeIn(2750.0);
     } else {
-        if (_platerQueueDirty) {
+        if (_playerQueueDirty) {
             while (!_playerAddQueue.empty()) {
                 std::pair<Scene*, SceneGraphNode*>& playerToAdd = _playerAddQueue.front();
                 addPlayerInternal(*playerToAdd.first, playerToAdd.second);
@@ -106,7 +91,7 @@ void SceneManager::idle() {
                 removePlayerInternal(*playerToRemove.first, playerToRemove.second);
                 _playerRemoveQueue.pop();
             }
-            _platerQueueDirty = false;
+            _playerQueueDirty = false;
         }
 
         getActiveScene().idle();
@@ -257,7 +242,13 @@ bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Re
                     btn->setEventCallback(GUIButton::Event::MouseClick,
                         [this, &targetRenderViewport](I64 btnGUID)
                         {
-                            _sceneSwitchTarget.set(_scenePool->defaultScene().resourceName(), targetRenderViewport, true, false);
+                            _sceneSwitchTarget = {
+                                _scenePool->defaultScene().resourceName(),
+                                targetRenderViewport, 
+                                true,
+                                false,
+                                true
+                            };
                         });
                 }
             }
@@ -274,7 +265,7 @@ bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Re
             
         });
 
-    _sceneSwitchTarget.reset();
+    _sceneSwitchTarget = {};
 
     return true;
 }
@@ -314,7 +305,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
 void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
     if (queue) {
         _playerAddQueue.push(std::make_pair(&parentScene, playerNode));
-        _platerQueueDirty = true;
+        _playerQueueDirty = true;
     } else {
         addPlayerInternal(parentScene, playerNode);
     }
@@ -351,7 +342,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
 void SceneManager::removePlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
     if (queue) {
         _playerRemoveQueue.push(std::make_pair(&parentScene, playerNode));
-        _platerQueueDirty = true;
+        _playerQueueDirty = true;
     } else {
         removePlayerInternal(parentScene, playerNode);
     }

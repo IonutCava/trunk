@@ -6,11 +6,6 @@
 
 namespace Divide {
 
-namespace {
-    /// Minimum cube size is 1x1x1
-    const F32 MIN_SIZE = 1.0f;
-    const I32 MAX_LIFE_SPAN_LIMIT = 64;
-};
 
 bool Octree::s_treeReady = false;
 bool Octree::s_treeBuilt = false;
@@ -20,14 +15,9 @@ std::queue<SceneGraphNode*> Octree::s_pendingInsertion;
 vectorEASTL<SceneGraphNode*> Octree::s_intersectionsObjectCache;
 
 Octree::Octree(U16 nodeMask)
-    : _nodeMask(nodeMask),
-      _maxLifespan(MAX_LIFE_SPAN_LIMIT / 8),
-      _curLife(-1)
-      //,_frustPlaneCache(-1)
+    : _nodeMask(nodeMask)
 {
     _region.set(VECTOR3_ZERO, VECTOR3_ZERO);
-    _activeNodes.fill(false);
-    _childNodes.fill(nullptr);
 }
 
 Octree::Octree(U16 nodeMask, const BoundingBox& rootAABB)
@@ -45,9 +35,6 @@ Octree::Octree(U16 nodeMask,
     _objects.insert(eastl::cend(_objects), eastl::cbegin(nodes), eastl::cend(nodes));
 }
 
-Octree::~Octree()
-{
-}
 
 void Octree::update(const U64 deltaTimeUS) {
     if (!s_treeBuilt) {
@@ -685,7 +672,7 @@ bool Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum, Inter
     const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
 
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
-    I8 _frustPlaneCache = -1;
+    _frustPlaneCache = -1;
     if (frustum.ContainsBoundingBox(bb, _frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT) {
         irOut.reset();
         irOut._intersectedObject1 = &node;

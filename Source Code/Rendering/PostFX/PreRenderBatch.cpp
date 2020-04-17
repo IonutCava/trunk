@@ -30,8 +30,6 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
 {
     std::atomic_uint loadTasks = 0;
 
-    _edgeDetectionPipelines.fill(nullptr);
-
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
 
     const RenderTarget& rt = *inputRT()._rt;

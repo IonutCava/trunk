@@ -1453,9 +1453,9 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
     constexpr vec_size k_textureThreshold = 3;
-    const U8 texCount = textureData.textureCount();
+    const U8 texCount = textureData.count();
     if (texCount > k_textureThreshold && false) {
-        const GLushort offset = 0;
+        constexpr GLushort offset = 0;
         vectorEASTL<TextureType> types;
         vectorEASTL<GLuint> handles;
         vectorEASTL<GLuint> samplers;

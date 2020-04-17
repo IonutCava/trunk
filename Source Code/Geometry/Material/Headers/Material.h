@@ -294,8 +294,8 @@ class Material : public CachedResource {
 
     /// use this map to add textures to the material
     mutable SharedMutex _textureLock;
-    std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures;
-    std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth;
+    std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures = {};
+    std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth = {};
 
     I32 _textureKeyCache = -1;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines;

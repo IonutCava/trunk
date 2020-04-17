@@ -6,39 +6,6 @@
 namespace Divide {
 namespace Time {
 
-FrameRateHandler::FrameRateHandler() : 
-    _frameCount(0),
-    _averageFPS(0.0f),
-    _minFPS(std::numeric_limits<F32>::max()),
-    _maxFPS(std::numeric_limits<F32>::lowest())
-{
-    _framerateSecPerFrame.fill(0.0f);
-    _previousElapsedSeconds = 0.0f;
-    _framerate = 0.0f;
-    _framerateSecPerFrameIdx = 0;
-    _framerateSecPerFrameAccum = 0.0f;
-}
-
-FrameRateHandler::~FrameRateHandler()
-{
-}
-
-void FrameRateHandler::init()
-{
-    reset();  
-}
-
-void FrameRateHandler::reset() {
-    _framerateSecPerFrame.fill(0.0f);
-    _previousElapsedSeconds = 0.0f;
-    _framerate = 0.0f;
-    _averageFPS = 0.0f;
-    _framerateSecPerFrameIdx = 0;
-    _framerateSecPerFrameAccum = 0.0f;
-    _frameCount = 0;
-    _minFPS = std::numeric_limits<F32>::max();
-    _maxFPS = std::numeric_limits<F32>::lowest();
-}
 
 void FrameRateHandler::tick(const U64 elapsedTime) noexcept {
     constexpr F32 fpsLimitDiff = 30.0f;

@@ -130,8 +130,8 @@ class PreRenderBatch {
     ShaderProgram_ptr _toneMapAdaptive = nullptr;
     ShaderProgram_ptr _createHistogram = nullptr;
     ShaderProgram_ptr _averageHistogram = nullptr;
-    std::array<ShaderProgram_ptr, to_base(EdgeDetectionMethod::COUNT)> _edgeDetection;
-    std::array<Pipeline*, to_base(EdgeDetectionMethod::COUNT)> _edgeDetectionPipelines;
+    std::array<ShaderProgram_ptr, to_base(EdgeDetectionMethod::COUNT)> _edgeDetection = {};
+    std::array<Pipeline*, to_base(EdgeDetectionMethod::COUNT)> _edgeDetectionPipelines = {};
 
     PushConstants     _toneMapConstants;
 

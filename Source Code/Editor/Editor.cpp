@@ -115,8 +115,6 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum di
     _menuBar = std::make_unique<MenuBar>(context, true);
     _statusBar = std::make_unique<StatusBar>(context);
     _undoManager = std::make_unique<UndoManager>(25);
-    _imguiContexts.fill(nullptr);
-    _dockedWindows.fill(nullptr);
     g_windowManager = &context.app().windowManager();
     REGISTER_FRAME_LISTENER(this, 99999);
 
@@ -129,7 +127,6 @@ Editor::~Editor()
     for (DockedWindow* window : _dockedWindows) {
         MemoryManager::SAFE_DELETE(window);
     }
-    _dockedWindows.fill(nullptr);
 
     UNREGISTER_FRAME_LISTENER(this);
 

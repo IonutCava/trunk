@@ -56,12 +56,6 @@ struct PoolHandle {
 template<typename T, size_t N>
 class ObjectPool {
 public:
-    ObjectPool()
-    {
-        _ids.fill({ 0u });
-        _pool.fill(nullptr);
-    }
-
     template<typename... Args>
     PoolHandle allocate(void* mem, Args... args);
     void deallocate(void* mem, PoolHandle handle);
@@ -77,8 +71,8 @@ public:
 
 protected:
     mutable SharedMutex _poolLock;
-    std::array<PoolHandle, N> _ids;
-    std::array<T*, N> _pool;
+    std::array<PoolHandle, N> _ids = {};
+    std::array<T*, N> _pool = {};
 };
 
 }; //namespace Divide

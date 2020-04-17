@@ -74,14 +74,14 @@ class ApplicationTimer : public Singleton<ApplicationTimer> {
 
   private:
     FrameRateHandler _frameRateHandler;
-    F32 _speedfactor;
-    U32 _targetFrameRate;
+    F32 _speedfactor = 1.0f;
+    U32 _targetFrameRate = Config::TARGET_FRAME_RATE;
     // Previous frame's time stamp
     TimeValue _frameDelay;
     // Time stamp at class initialization
     TimeValue _startupTicks;
     // Measure average FPS and output max/min/average fps to console
-    U64  _lastBenchmarkTimeStamp;
+    U64  _lastBenchmarkTimeStamp = 0UL;
     std::atomic<U64> _elapsedTimeUs;
 
     stringImpl _lastBenchmarkReport;

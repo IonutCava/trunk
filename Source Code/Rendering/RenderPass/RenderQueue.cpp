@@ -34,8 +34,6 @@ RenderQueue::~RenderQueue()
     for (RenderBin* bin : _renderBins) {
         MemoryManager::DELETE(bin);
     }
-
-    _renderBins.fill(nullptr);
 }
 
 U16 RenderQueue::getRenderQueueStackSize(RenderStage stage) const {

@@ -212,7 +212,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     LightType _type;
 
    private:
-    ShadowCameraPool _shadowCameras;
+    ShadowCameraPool _shadowCameras = {};
     LightPool& _parentPool;
     I32 _shadowIndex = -1;
 };

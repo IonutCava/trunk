@@ -222,90 +222,40 @@ protected:
     void currentPlayerPass(PlayerIndex idx);
     void moveCameraToNode(SceneGraphNode* targetNode, F32 targetDistanceFromNode) const;
 private:
-    bool _init;
-    bool _processInput;
+    bool _init = false;
+    bool _processInput = false;
     /// Pointer to the hardware objects
-    PlatformContext* _platformContext;
+    PlatformContext* _platformContext = nullptr;
     /// Pointer to the general purpose resource cache
-    ResourceCache*  _resourceCache;
+    ResourceCache*  _resourceCache = nullptr;
     /// Pointer to the scene graph culler that's used to determine what nodes are
     /// visible in the current frame
-    RenderPassCuller* _renderPassCuller;
+    RenderPassCuller* _renderPassCuller = nullptr;
 
     Task* _saveTask = nullptr;
-    PlayerIndex _currentPlayerPass;
-    ScenePool* _scenePool;
-    SceneShaderData* _sceneData;
-    U64 _elapsedTime;
-    U32 _elapsedTimeMS;
-    U64 _saveTimer;
+    PlayerIndex _currentPlayerPass = 0u;
+    ScenePool* _scenePool = nullptr;
+    SceneShaderData* _sceneData = nullptr;
+    U64 _elapsedTime = 0ULL;
+    U32 _elapsedTimeMS = 0u;
+    U64 _saveTimer = 0ULL;
 
-    std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> _sceneGraphCullTimers;
-    PlayerList _players;
-    U8 _activePlayerCount;
+    std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> _sceneGraphCullTimers = {};
+    PlayerList _players = {};
+    U8 _activePlayerCount = 0u;
 
-    bool _platerQueueDirty = false;
+    bool _playerQueueDirty = false;
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerRemoveQueue;
 
     vectorSTD<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
 
     struct SwitchSceneTarget {
-        SwitchSceneTarget() noexcept
-            : _targetSceneName(""),
-            _targetViewRect(0, 0, 1, 1),
-            _unloadPreviousScene(true),
-            _loadInSeparateThread(true),
-            _isSet(false)
-        {
-        }
-
-        inline void reset() {
-            _targetSceneName.clear();
-            _targetViewRect.set(0, 0, 1, 1);
-            _unloadPreviousScene = true;
-            _loadInSeparateThread = true;
-            _isSet = false;
-        }
-
-        inline bool isSet() const {
-            return _isSet;
-        }
-
-        inline void set(const Str128& targetSceneName,
-            const Rect<U16>& targetViewRect,
-            bool unloadPreviousScene,
-            bool loadInSeparateThread)
-        {
-            _targetSceneName = targetSceneName;
-            _targetViewRect.set(targetViewRect);
-            _unloadPreviousScene = unloadPreviousScene;
-            _loadInSeparateThread = loadInSeparateThread;
-            _isSet = true;
-        }
-
-        inline const Str128& targetSceneName() const {
-            return _targetSceneName;
-        }
-
-        inline const Rect<U16>& targetViewRect() const {
-            return _targetViewRect;
-        }
-
-        inline bool unloadPreviousScene() const {
-            return _unloadPreviousScene;
-        }
-
-        inline bool loadInSeparateThread() const {
-            return _loadInSeparateThread;
-        }
-
-    private:
-        Str128 _targetSceneName;
-        Rect<U16> _targetViewRect;
-        bool _unloadPreviousScene;
-        bool _loadInSeparateThread;
-        bool _isSet;
+        Str128 _targetSceneName = "";
+        Rect<U16> _targetViewRect = { 0, 0, 1, 1 };
+        bool _unloadPreviousScene = true;
+        bool _loadInSeparateThread = true;
+        bool _isSet = false;
     } _sceneSwitchTarget;
 
 };

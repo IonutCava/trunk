@@ -14,15 +14,8 @@
 namespace Divide {
 
 QuadtreeNode::QuadtreeNode(GFXDevice& context)
-    : _context(context),
-      _terrainChunk(nullptr),
-      _bbPrimitive(nullptr),
-      _LoD(0u),
-      _drawBBoxes(false)
-      //,_frustPlaneCache(-1)
+    : _context(context)
 {
-    _children.fill(nullptr),
-    _targetChunkDimension = 0;
 }
 
 QuadtreeNode::~QuadtreeNode()
