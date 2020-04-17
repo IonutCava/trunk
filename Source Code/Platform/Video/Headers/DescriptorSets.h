@@ -165,16 +165,16 @@ namespace Divide {
         }
 
         inline bool empty() const noexcept {
-            return  _shaderBuffers.empty() &&
+            return  _textureData.count() == 0 &&
+                    _shaderBuffers.empty() &&
                     _textureViews.empty() &&
-                    _images.empty() &&
-                    _textureData.empty();
+                    _images.empty();
         }
 
         XALLOCATOR
     };
 
-    bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
+    bool Merge(const DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
 
 
 }; //namespace Divide

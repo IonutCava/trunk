@@ -106,52 +106,60 @@ namespace Divide {
         return ret;
     }
 
-    bool Merge(DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
-        const auto& rhsTextures = rhs._textureData.textures();
-        const size_t texCount = rhsTextures.size();
-        for (size_t i = 0; i < texCount; ++i) {
-            const auto& it = rhsTextures[i];
-            if (it.first != TextureDataContainer<>::INVALID_BINDING) {
-                const TextureData* texData = lhs.findTexture(it.first);
-                if (texData != nullptr && *texData == it.second) {
-                    partial = rhs._textureData.removeTexture(it.first) || partial;
+    bool Merge(const DescriptorSet &lhs, DescriptorSet &rhs, bool& partial) {
+        if (rhs._textureData.count() > 0) {
+            const auto& rhsTextures = rhs._textureData.textures();
+            const size_t texCount = rhsTextures.size();
+            for (size_t i = 0; i < texCount; ++i) {
+                const auto& it = rhsTextures[i];
+                if (it.first != TextureDataContainer<>::INVALID_BINDING) {
+                    const TextureData* texData = lhs.findTexture(it.first);
+                    if (texData != nullptr && *texData == it.second) {
+                        partial = rhs._textureData.removeTexture(it.first) || partial;
+                    }
                 }
             }
         }
 
         TextureViews& otherViewList = rhs._textureViews;
-        for (auto it = eastl::begin(otherViewList); it != eastl::end(otherViewList);) {
-            const TextureView* texViewData = lhs.findTextureView(it->_binding);
-            if (texViewData != nullptr && *texViewData == it->_view) {
-                it = otherViewList.erase(it);
-                partial = true;
-            } else {
-                ++it;
+        if (!otherViewList.empty()) {
+            for (auto it = eastl::begin(otherViewList); it != eastl::end(otherViewList);) {
+                const TextureView* texViewData = lhs.findTextureView(it->_binding);
+                if (texViewData != nullptr && *texViewData == it->_view) {
+                    it = otherViewList.erase(it);
+                    partial = true;
+                } else {
+                    ++it;
+                }
             }
         }
 
         Images& otherImageList = rhs._images;
-        for (auto it = eastl::begin(otherImageList); it != eastl::end(otherImageList);) {
-            const Image* image = lhs.findImage(it->_binding);
-            if (image != nullptr && *image == *it) {
-                it = otherImageList.erase(it);
-                partial = true;
-            } else {
-                ++it;
+        if (!otherImageList.empty()) {
+            for (auto it = eastl::begin(otherImageList); it != eastl::end(otherImageList);) {
+                const Image* image = lhs.findImage(it->_binding);
+                if (image != nullptr && *image == *it) {
+                    it = otherImageList.erase(it);
+                    partial = true;
+                } else {
+                    ++it;
+                }
             }
         }
 
-        for (auto it = eastl::begin(rhs._shaderBuffers); it != eastl::end(rhs._shaderBuffers);) {
-            const ShaderBufferBinding* binding = lhs.findBinding(it->_binding);
-            if (binding != nullptr && *binding == *it) {
-                it = rhs._shaderBuffers.erase(it);
-                partial = true;
-            } else {
-                ++it;
+        ShaderBufferList& otherShaderBuffers = rhs._shaderBuffers;
+        if (!otherShaderBuffers.empty()) {
+            for (auto it = eastl::begin(otherShaderBuffers); it != eastl::end(otherShaderBuffers);) {
+                const ShaderBufferBinding* binding = lhs.findBinding(it->_binding);
+                if (binding != nullptr && *binding == *it) {
+                    it = otherShaderBuffers.erase(it);
+                    partial = true;
+                } else {
+                    ++it;
+                }
             }
         }
-
-        return rhs._shaderBuffers.empty() && rhs._textureData.empty() && rhs._textureViews.empty() && rhs._images.empty();
+        return rhs.empty();
     }
 
     size_t TextureView::getHash() const noexcept {

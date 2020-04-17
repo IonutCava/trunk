@@ -36,18 +36,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
     template<size_t Size>
-    TextureDataContainer<Size>::TextureDataContainer() {
-        _textures.fill({ INVALID_BINDING, {} });
-    }
-
-    template<size_t Size>
     bool TextureDataContainer<Size>::set(const TextureDataContainer<Size>& other) {
         // EASTL should be fast enough to handle this
         const DataEntries& otherTextures = other.textures();
         if (_textures != otherTextures) {
             _textures = otherTextures;
             _count = other._count;
-            _hash = other._hash
             return true;
         }
 
@@ -82,11 +76,10 @@ namespace Divide {
     bool TextureDataContainer<Size>::removeTexture(U8 binding) {
         for (auto& it : _textures) {
             auto& crtBinding = it.first;
-            assert(_count > 0);
+            assert(_count > 0u);
             if (crtBinding == binding) {
                 crtBinding = INVALID_BINDING;
                 --_count;
-                _hashDirty = true;
                 return true;
             }
         }
@@ -96,13 +89,12 @@ namespace Divide {
 
     template<size_t Size>
     bool TextureDataContainer<Size>::removeTexture(const TextureData& data) {
-        assert(_count > 0);
+        assert(_count > 0u);
         for (auto& it : _textures) {
             auto& crtBinding = it.first;
             if (it.second == data) {
                 crtBinding = INVALID_BINDING;
                 --_count;
-                _hashDirty = true;
                 return true;
             }
         }
@@ -126,7 +118,6 @@ namespace Divide {
                     auto& crtData = it.second;
                     if (crtData == data) {
                         crtData = data;
-                        _hashDirty = true;
                         return TextureUpdateState::REPLACED;
                     } else {
                         return TextureUpdateState::NOTHING;
@@ -139,7 +130,6 @@ namespace Divide {
                     crtBinding = binding;
                     it.second = data;
                     ++_count;
-                    _hashDirty = true;
                     return TextureUpdateState::ADDED;
                 }
             }
@@ -149,19 +139,61 @@ namespace Divide {
     }
 
     template<size_t Size>
-    size_t TextureDataContainer<Size>::getHash() const noexcept {
-        if (_hashDirty) {
-            _hash = 109;
-            for (const auto& it : _textures) {
-                const U8 binding = it.first;
-                Util::Hash_combine(_hash, binding);
-                if (binding != INVALID_BINDING) {
-                    Util::Hash_combine(_hash, GetHash(it.second));
+    bool operator==(const TextureDataContainer<Size> & lhs, const TextureDataContainer<Size> & rhs) noexcept {
+        const size_t lhsCount = lhs.count();
+        const size_t rhsCount = rhs.count();
+    
+        if (lhsCount != rhsCount) {
+            return false;
+        }
+
+        const auto & lhsTextures = lhs.textures();
+        const auto & rhsTextures = rhs.textures();
+    
+        bool foundEntry = false;
+        for (size_t i = 0; i < lhsCount; ++i) {
+            const auto & lhsEntry = lhsTextures[i];
+        
+            for (const auto& rhsEntry : rhsTextures) {
+                if (rhsEntry.first == lhsEntry.first) {
+                    if (rhsEntry.second != lhsEntry.second) {
+                        return false;
+                    }
+                    foundEntry = true;
                 }
             }
-            _hashDirty = false;
         }
-        return _hash;
+
+        return foundEntry;
+    }
+
+    template<size_t Size>
+    bool operator!=(const TextureDataContainer<Size> & lhs, const TextureDataContainer<Size> & rhs) noexcept {
+        const size_t lhsCount = lhs.count();
+        const size_t rhsCount = rhs.count();
+
+        if (lhsCount != rhsCount) {
+            return true;
+        }
+
+        const auto & lhsTextures = lhs.textures();
+        const auto & rhsTextures = rhs.textures();
+
+        bool foundEntry = false;
+        for (size_t i = 0; i < lhsCount; ++i) {
+            const auto & lhsEntry = lhsTextures[i];
+
+            for (const auto& rhsEntry : rhsTextures) {
+                if (rhsEntry.first == lhsEntry.first) {
+                    if (rhsEntry.second != lhsEntry.second) {
+                        return true;
+                    }
+                    foundEntry = true;
+                }
+            }
+        }
+
+        return !foundEntry;
     }
 }; //namespace Divide
 
