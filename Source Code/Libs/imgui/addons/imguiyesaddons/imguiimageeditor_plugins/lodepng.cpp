@@ -797,7 +797,7 @@ unsigned lodepng_huffman_code_lengths(unsigned* lengths, const unsigned* frequen
   BPMNode* leaves; /*the symbols, only those with > 0 frequency*/
 
   if(numcodes == 0) return 80; /*error: a tree of 0 symbols is not supposed to be made*/
-  if((1u << maxbitlen) < numcodes) return 80; /*error: represent all symbols*/
+  if(size_t(1i64 << maxbitlen) < numcodes) return 80; /*error: represent all symbols*/
 
   leaves = (BPMNode*)lodepng_malloc(numcodes * sizeof(*leaves));
   if(!leaves) return 83; /*alloc fail*/
@@ -3477,7 +3477,7 @@ unsigned lodepng_convert(unsigned char* out, const unsigned char* in,
   {
     size_t palettesize = mode_out->palettesize;
     const unsigned char* palette = mode_out->palette;
-    size_t palsize = 1u << mode_out->bitdepth;
+    size_t palsize = 1i64 << mode_out->bitdepth;
     /*if the user specified output palette but did not give the values, assume
     they want the values of the input color type (assuming that one is palette).
     Note that we never create a new palette ourselves.*/

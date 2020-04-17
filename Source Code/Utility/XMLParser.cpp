@@ -31,10 +31,7 @@ bool saveToXML(const IXMLSerializable& object, const char* file) {
 }
 
 namespace {
-const ptree& empty_ptree() {
-    static ptree t;
-    return t;
-}
+    ptree g_emptyPtree;
 }
 
 namespace detail {
@@ -95,35 +92,35 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
     Console::printfn(Locale::get(_ID("XML_LOAD_DEFAULT_KEY_BINDINGS")), file.c_str());
     read_xml(file.c_str(), pt);
 
-    for(const ptree::value_type & f : pt.get_child("actions", empty_ptree()))
+    for(const ptree::value_type & f : pt.get_child("actions", g_emptyPtree))
     {
-        const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+        const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
         scene->input().actionList()
                       .getInputAction(attributes.get<U16>("id", 0))
                       .displayName(attributes.get<stringImpl>("name", "").c_str());
     }
 
     PressReleaseActions actions;
-    for (const ptree::value_type & f : pt.get_child("keys", empty_ptree()))
+    for (const ptree::value_type & f : pt.get_child("keys", g_emptyPtree))
     {
         if (f.first.compare("<xmlcomment>") == 0) {
             continue;
         }
 
-        const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+        const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
         populatePressRelease(actions, attributes);
 
         Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data()).c_str());
         scene->input().addKeyMapping(key, actions);
     }
 
-    for (const ptree::value_type & f : pt.get_child("mouseButtons", empty_ptree()))
+    for (const ptree::value_type & f : pt.get_child("mouseButtons", g_emptyPtree))
     {
         if (f.first.compare("<xmlcomment>") == 0) {
             continue;
         }
 
-        const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+        const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
         populatePressRelease(actions, attributes);
 
         Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()).c_str());
@@ -135,13 +132,13 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
     for (U32 i = 0 ; i < to_base(Input::Joystick::COUNT); ++i) {
         const Input::Joystick joystick = static_cast<Input::Joystick>(i);
         
-        for (const ptree::value_type & f : pt.get_child(label + std::to_string(i + 1), empty_ptree()))
+        for (const ptree::value_type & f : pt.get_child(label + std::to_string(i + 1), g_emptyPtree))
         {
             if (f.first.compare("<xmlcomment>") == 0) {
                 continue;
             }
 
-            const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+            const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
             populatePressRelease(actions, attributes);
 
             Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()).c_str());
@@ -161,9 +158,9 @@ void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* co
     ptree pt;
     read_xml(file.c_str(), pt);
 
-    for (const ptree::value_type & f : pt.get_child("backgroundThemes", empty_ptree()))
+    for (const ptree::value_type & f : pt.get_child("backgroundThemes", g_emptyPtree))
     {
-        const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+        const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
         scene->addMusic(MusicType::TYPE_BACKGROUND,
                         attributes.get<stringImpl>("name", "").c_str(),
                         Paths::g_assetsLocation + attributes.get<stringImpl>("src", "").c_str());
@@ -181,7 +178,7 @@ void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const
     std::function<void(const ptree& rootNode, SceneNode& graphOut)> readNode;
 
     readNode = [&readNode](const ptree& rootNode, SceneNode& graphOut) {
-        const ptree& attributes = rootNode.get_child("<xmlattr>", empty_ptree());
+        const ptree& attributes = rootNode.get_child("<xmlattr>", g_emptyPtree);
         for (const ptree::value_type& attribute : attributes) {
             if (attribute.first == "name") {
                 graphOut.name = attribute.second.data();
@@ -203,13 +200,11 @@ void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const
     read_xml(file.c_str(), pt);
 
     SceneNode rootNode = {};
-    for (const ptree::value_type& sceneGraphList : pt.get_child("entities", empty_ptree())) {
-        readNode(sceneGraphList.second, rootNode);
-        // This may not be needed;
-        assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
-        break;
-    }
-
+    const auto& graphs = pt.get_child("entities", g_emptyPtree);
+    const auto& [name, node_pt] = graphs.front();
+    readNode(node_pt, rootNode);
+    // This may not be needed;
+    assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
     scene->addSceneGraphToLoad(rootNode);
 }
 
