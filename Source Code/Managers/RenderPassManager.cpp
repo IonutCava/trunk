@@ -45,8 +45,10 @@ namespace Divide {
           _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
           _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
           _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
-          _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer"))
+          _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer")),
+          _blitToDisplayTimer(&Time::ADD_TIMER("Flush Buffers Timer"))
     {
+        _buildCommandBufferTimer->addChildTimer(*_blitToDisplayTimer);
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
     }
 
@@ -57,6 +59,7 @@ namespace Divide {
         }
 
         GFX::deallocateCommandBuffer(_postFXCommandBuffer);
+        GFX::deallocateCommandBuffer(_postRenderBuffer);
 
         MemoryManager::DELETE_CONTAINER(_renderPasses);
     }
@@ -86,6 +89,7 @@ namespace Divide {
 
         _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
         _postFXCommandBuffer = GFX::allocateCommandBuffer(true);
+        _postRenderBuffer = GFX::allocateCommandBuffer(true);
     }
 
     namespace {
@@ -100,20 +104,24 @@ namespace Divide {
         }
     };
 
-    void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
+    void RenderPassManager::render(const RenderParams& params) {
         OPTICK_EVENT();
 
-        if (parentTimer != nullptr && !parentTimer->hasChildTimer(*_renderPassTimer)) {
-            parentTimer->addChildTimer(*_renderPassTimer);
-            parentTimer->addChildTimer(*_postFxRenderTimer);
-            parentTimer->addChildTimer(*_flushCommandBufferTimer);
+        if (params._parentTimer != nullptr && !params._parentTimer->hasChildTimer(*_renderPassTimer)) {
+            params._parentTimer->addChildTimer(*_renderPassTimer);
+            params._parentTimer->addChildTimer(*_postFxRenderTimer);
+            params._parentTimer->addChildTimer(*_flushCommandBufferTimer);
         }
 
+        const SceneRenderState& sceneRenderState = *params._sceneRenderState;
         const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(*parent().sceneManager());
 
         Attorney::SceneManagerRenderPass::preRenderAllPasses(*parent().sceneManager(), cam);
 
-        TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
+        PlatformContext& context = parent().platformContext();
+        GFXDevice& gfx = _context;
+        TaskPool& pool = context.taskPool(TaskPoolType::HIGH_PRIORITY);
+        RenderTarget& resolvedScreenTarget = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
         const U8 renderPassCount = to_U8(_renderPasses.size());
 
@@ -146,20 +154,17 @@ namespace Divide {
                     GFX::CommandBuffer* buf = _postFXCommandBuffer;
 
                     Time::ProfileTimer& timer = *_postFxRenderTimer;
-                    GFXDevice& gfx = parent().platformContext().gfx();
-                    PostFX& postFX = gfx.getRenderer().postFX();
-
                     postFXTask = CreateTask(pool,
                                             nullptr,
-                                            [buf, &gfx, &postFX, &cam, &timer](const Task & parentTask) {
+                                            [buf, &gfx, &cam, &timer, &resolvedScreenTarget](const Task & parentTask) {
                                                 OPTICK_EVENT("PostFX: BuildCommandBuffer");
 
                                                 buf->clear(false);
 
                                                 Time::ScopedTimer time(timer);
-                                                postFX.apply(cam, *buf);
+                                                gfx.getRenderer().postFX().apply(cam, *buf);
 
-                                                const Texture_ptr& srcTex = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+                                                const Texture_ptr& srcTex = resolvedScreenTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
                                                 const Texture_ptr& dstTex = gfx.getPrevDepthBuffer();
                                                 GFX::CopyTextureCommand copyCmd = {};
                                                 copyCmd._source = srcTex->data();
@@ -178,6 +183,34 @@ namespace Divide {
             }
         }
         {
+           GFX::CommandBuffer& buf = *_postRenderBuffer;
+           buf.clear(false);
+
+           if (params._editorRunning) {
+               GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+               beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::EDITOR);
+               beginRenderPassCmd._name = "BLIT_TO_RENDER_TARGET";
+               GFX::EnqueueCommand(buf, beginRenderPassCmd);
+           }
+
+           GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
+           beginDebugScopeCmd._scopeID = 12345;
+           beginDebugScopeCmd._scopeName = "Flush Display";
+           GFX::EnqueueCommand(buf, beginDebugScopeCmd);
+
+           const TextureData texData = resolvedScreenTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
+           const Rect<I32>& targetViewport = params._targetViewport;
+           gfx.drawTextureInViewport(texData, targetViewport, true, false, buf);
+           Attorney::SceneManagerRenderPass::drawCustomUI(*_parent.sceneManager(), targetViewport, buf);
+           context.gui().draw(gfx, targetViewport, buf);
+           gfx.renderDebugUI(targetViewport, buf);
+
+           GFX::EnqueueCommand(buf, GFX::EndDebugScopeCommand{});
+           if (params._editorRunning) {
+               GFX::EnqueueCommand(buf, GFX::EndRenderPassCommand{});
+           }
+        }
+        {
             OPTICK_EVENT("RenderPassManager::FlushCommandBuffers");
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
 
@@ -189,56 +222,58 @@ namespace Divide {
             });
             ACKNOWLEDGE_UNUSED(whileRendering);
 
-            bool slowIdle = false;
-            while (!all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), true)) {
-                OPTICK_EVENT("ON_LOOP");
+            {
+                OPTICK_EVENT("FLUSH_PASSES_WHEN_READY");
+                bool slowIdle = false;
+                while (!all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), true)) {
 
-                // For every render pass
-                bool finished = true;
-                for (U8 i = 0; i < renderPassCount; ++i) {
-                    if (_completedPasses[i] || !Finished(*_renderTasks[i])) {
-                        continue;
-                    }
-
-                    // Grab the list of dependencies
-                    const vectorSTD<U8>& dependencies = _renderPasses[i]->dependencies();
-
-                    bool dependenciesRunning = false;
-                    // For every dependency in the list
-                    for (const U8 dep : dependencies) {
-                        if (dependenciesRunning) {
-                            break;
+                    // For every render pass
+                    bool finished = true;
+                    for (U8 i = 0; i < renderPassCount; ++i) {
+                        if (_completedPasses[i] || !Finished(*_renderTasks[i])) {
+                            continue;
                         }
 
-                        // Try and see if it's running
-                        for (U8 j = 0; j < renderPassCount; ++j) {
-                            // If it is running, we can't render yet
-                            if (j != i && _renderPasses[j]->sortKey() == dep && !_completedPasses[j]) {
-                                dependenciesRunning = true;
+                        // Grab the list of dependencies
+                        const vectorSTD<U8>& dependencies = _renderPasses[i]->dependencies();
+
+                        bool dependenciesRunning = false;
+                        // For every dependency in the list
+                        for (const U8 dep : dependencies) {
+                            if (dependenciesRunning) {
                                 break;
                             }
+
+                            // Try and see if it's running
+                            for (U8 j = 0; j < renderPassCount; ++j) {
+                                // If it is running, we can't render yet
+                                if (j != i && _renderPasses[j]->sortKey() == dep && !_completedPasses[j]) {
+                                    dependenciesRunning = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!dependenciesRunning) {
+                            OPTICK_TAG("Buffer ID: ", i);
+                            //Start(*whileRendering);
+                            // No running dependency so we can flush the command buffer and add the pass to the skip list
+                            _context.flushCommandBuffer(*_renderPassCommandBuffer[i], false);
+                            _completedPasses[i] = true;
+                            //Wait(*whileRendering);
+
+                        } else {
+                            finished = false;
                         }
                     }
 
-                    if (!dependenciesRunning) {
-                        OPTICK_TAG("Buffer ID: ", i);
-                        //Start(*whileRendering);
-                        // No running dependency so we can flush the command buffer and add the pass to the skip list
-                        _context.flushCommandBuffer(*_renderPassCommandBuffer[i], false);
-                        _completedPasses[i] = true;
-                        //Wait(*whileRendering);
+                    if (!finished) {
+                        OPTICK_EVENT("IDLING");
 
-                    } else {
-                        finished = false;
+                        parent().idle(!slowIdle);
+                        std::this_thread::yield();
+                        slowIdle = !slowIdle;
                     }
-                }
-
-                if (!finished) {
-                    OPTICK_EVENT("IDLING");
-
-                    parent().idle(!slowIdle);
-                    std::this_thread::yield();
-                    slowIdle = !slowIdle;
                 }
             }
         }
@@ -252,6 +287,9 @@ namespace Divide {
         }
 
         Attorney::SceneManagerRenderPass::postRenderAllPasses(*parent().sceneManager(), cam);
+
+        Time::ScopedTimer time(*_blitToDisplayTimer);
+        gfx.flushCommandBuffer(*_postRenderBuffer);
     }
 
 RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
@@ -1021,26 +1059,6 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
-void RenderPassManager::createFrameBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    PlatformContext& context = parent().platformContext();
-    GFXDevice& gfx = _context;
-    const GFXRTPool& pool = gfx.renderTargetPool();
-    const RenderTarget& screen = pool.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    const TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
-
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 12345;
-    beginDebugScopeCmd._scopeName = "Flush Display";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
-
-    gfx.drawTextureInViewport(texData, targetViewport, true, false, bufferInOut);
-    Attorney::SceneManagerRenderPass::drawCustomUI(*_parent.sceneManager(), targetViewport, bufferInOut);
-    context.gui().draw(gfx, targetViewport, bufferInOut);
-    gfx.renderDebugUI(targetViewport, bufferInOut);
-
-    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
-}
 
 // TEMP
 U32 RenderPassManager::renderQueueSize(RenderStage stage, RenderPackage::MinQuality qualityRequirement) const {

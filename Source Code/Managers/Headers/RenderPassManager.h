@@ -79,13 +79,18 @@ public:
     };
 
 public:
+    struct RenderParams {
+        SceneRenderState* _sceneRenderState = nullptr;
+        Rect<I32> _targetViewport = {};
+        Time::ProfileTimer* _parentTimer = nullptr;
+        bool _editorRunning = false;
+    };
+
     explicit RenderPassManager(Kernel& parent, GFXDevice& context);
     ~RenderPassManager();
 
     /// Call every renderqueue's render function in order
-    void render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer = nullptr);
-    /// Draw all of the 2D game elements in the target viewport
-    void createFrameBuffer(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+    void render(const RenderParams& params);
     /// Add a new pass that will run once for each of the RenderStages specified
     RenderPass& addRenderPass(const Str64& renderPassName,
                               U8 orderKey,
@@ -155,6 +160,7 @@ private:
     vectorEASTL<RenderPass*> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
     GFX::CommandBuffer* _postFXCommandBuffer = nullptr;
+    GFX::CommandBuffer* _postRenderBuffer = nullptr;
 
     Pipeline* _OITCompositionPipeline = nullptr;
 
@@ -163,6 +169,7 @@ private:
     Time::ProfileTimer* _buildCommandBufferTimer = nullptr;
     Time::ProfileTimer* _flushCommandBufferTimer = nullptr;
     Time::ProfileTimer* _postFxRenderTimer = nullptr;
+    Time::ProfileTimer* _blitToDisplayTimer = nullptr;
     std::array<vectorEASTLFast<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
 };
 

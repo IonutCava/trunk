@@ -58,8 +58,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _cameraMgrTimer(Time::ADD_TIMER("Camera Manager Update Timer")),
       _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer")),
       _preRenderTimer(Time::ADD_TIMER("Pre-render Timer")),
-      _postRenderTimer(Time::ADD_TIMER("Post-render Timer")),
-      _blitToDisplayTimer(Time::ADD_TIMER("Flush Buffers Timer"))
+      _postRenderTimer(Time::ADD_TIMER("Post-render Timer"))
 {
     std::atomic_init(&_splashScreenUpdating, false);
     _appLoopTimer.addChildTimer(_appIdleTimer);
@@ -72,7 +71,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _appScenePass.addChildTimer(_flushToScreenTimer);
     _flushToScreenTimer.addChildTimer(_preRenderTimer);
     _flushToScreenTimer.addChildTimer(_postRenderTimer);
-    _flushToScreenTimer.addChildTimer(_blitToDisplayTimer);
     _sceneUpdateTimer.addChildTimer(_sceneUpdateLoopTimer);
 
     _sceneManager = MemoryManager_NEW SceneManager(*this); // Scene Manager
@@ -512,51 +510,32 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         computeViewports(_platformContext.editor().getTargetViewport(), _editorViewports, playerCount);
     }
 
-    {
-        GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
-        GFX::CommandBuffer& buffer = sBuffer();
+    
+    RenderPassManager::RenderParams renderParams = {};
+    renderParams._editorRunning = editorRunning;
+    renderParams._sceneRenderState = &_sceneManager->getActiveScene().renderState();
 
-        for (U8 i = 0; i < playerCount; ++i) {
-            if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
-                return false;
-            }
-
-            Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
-            {
-                Time::ProfileTimer& timer = getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer");
-                Time::ScopedTimer time2(timer);
-                _renderPassManager->render(_sceneManager->getActiveScene().renderState(), &timer);
-            }
-
-            if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
-                return false;
-            }
-            {
-                Rect<I32> targetViewport = _targetViewports[i];
-                if (editorRunning) {
-                    targetViewport = _editorViewports[i];
-                    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-                    beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::EDITOR);
-                    beginRenderPassCmd._name = "BLIT_TO_RENDER_TARGET";
-                    GFX::EnqueueCommand(buffer, beginRenderPassCmd);
-                }
-
-                renderPassManager()->createFrameBuffer(targetViewport, buffer);
-
-                if (editorRunning){
-                    GFX::EndRenderPassCommand endRenderPassCmd = {};
-                    GFX::EnqueueCommand(buffer, endRenderPassCmd);
-                }
-            }
+    for (U8 i = 0; i < playerCount; ++i) {
+        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
+            return false;
         }
+
+        renderParams._targetViewport = editorRunning ? _editorViewports[i] : _targetViewports[i];
+        Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
         {
-            Time::ScopedTimer time4(_blitToDisplayTimer);
-            _platformContext.gfx().flushCommandBuffer(buffer);
+            Time::ProfileTimer& timer = getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer");
+            renderParams._parentTimer = &timer;
+            Time::ScopedTimer time2(timer);
+            _renderPassManager->render(renderParams);
+        }
+
+        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
+            return false;
         }
     }
 
     {
-        Time::ScopedTimer time5(_postRenderTimer);
+        Time::ScopedTimer time4(_postRenderTimer);
         if(!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_START, evt)) {
             return false;
         }
