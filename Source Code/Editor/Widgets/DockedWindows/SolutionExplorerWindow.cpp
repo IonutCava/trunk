@@ -37,13 +37,15 @@ namespace Divide {
         }
 
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Leaf;
-        if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->resourceName().c_str())) {
-            if (ImGui::IsItemClicked()) {
-                sceneManager.resetSelection(0);
-                Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, camera);
-            }
+        if (_filter.PassFilter(camera->resourceName().c_str())) {
+            if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->resourceName().c_str())) {
+                if (ImGui::IsItemClicked()) {
+                    sceneManager.resetSelection(0);
+                    Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, camera);
+                }
 
-            ImGui::TreePop();
+                ImGui::TreePop();
+            }
         }
     }
 
@@ -57,22 +59,26 @@ namespace Divide {
         if (sgn.getChildCount() == 0u) {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;//| ImGuiTreeNodeFlags_NoTreePushOnOpen; 
         }
-        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
-        if (ImGui::IsItemClicked()) {
-            sceneManager.resetSelection(0);
-            sceneManager.setSelected(0, { &sgn });
-            Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
-        }
-        //ImGui::IsItemDoubleClicked
-        if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered(ImGuiHoveredFlags_None)) {
-            Attorney::EditorSolutionExplorerWindow::teleportToNode(_parent, &sgn);
-        }
-        
-        if (node_open) {
-            sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
-                printSceneGraphNode(sceneManager, *child, childIdx, false);
-            });
 
+        bool nodeOpen = false;
+        if (_filter.PassFilter(sgn.name().c_str())) {
+            nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
+            if (ImGui::IsItemClicked()) {
+                sceneManager.resetSelection(0);
+                sceneManager.setSelected(0, { &sgn });
+                Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
+            }
+            //ImGui::IsItemDoubleClicked
+            if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered(ImGuiHoveredFlags_None)) {
+                Attorney::EditorSolutionExplorerWindow::teleportToNode(_parent, &sgn);
+            }
+        } 
+
+        sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
+            printSceneGraphNode(sceneManager, *child, childIdx, false);
+        });
+
+        if (nodeOpen) {
             ImGui::TreePop();
         }
     }
@@ -83,6 +89,13 @@ namespace Divide {
         SceneGraphNode& root = activeScene.sceneGraph().getRoot();
 
         ImGui::PushItemWidth(200);
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text("Find node: ");
+        ImGui::SameLine();
+        ImGui::PushID("GraphSearchFilter");
+        _filter.Draw("", 200);
+        ImGui::PopID();
+
         ImGui::BeginChild("SceneGraph", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() * .5f), true, 0);
         if (ImGui::TreeNodeEx(activeScene.resourceName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {

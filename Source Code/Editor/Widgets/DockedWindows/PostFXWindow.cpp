@@ -51,8 +51,8 @@ namespace Divide {
             PostAAPreRenderOperator& aaOp = static_cast<PostAAPreRenderOperator&>(*op);
             I32 level = to_I32(aaOp.postAAQualityLevel());
 
-            ImGui::AlignTextToFramePadding();
             ImGui::PushItemWidth(175);
+            ImGui::AlignTextToFramePadding();
             ImGui::Text("Quality level: "); ImGui::SameLine();
             ImGui::PushID("quality_level_slider");
             if (ImGui::SliderInt("##hidelabel", &level, 0, 5)) {

@@ -14,17 +14,13 @@ GUIMessageBox::GUIMessageBox(const stringImpl& name,
 {
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience
     // to reduce typing
-    CEGUI::WindowManager* pWindowManager =
-        CEGUI::WindowManager::getSingletonPtr();
+    CEGUI::WindowManager* pWindowManager = CEGUI::WindowManager::getSingletonPtr();
     // load the messageBox Window from the layout file
     _msgBoxWindow = pWindowManager->loadLayoutFromFile("messageBox.layout");
     _msgBoxWindow->setName((title + "_MesageBox").c_str());
     _parent->addChild(_msgBoxWindow);
-    CEGUI::PushButton* confirmBtn =
-        dynamic_cast<CEGUI::PushButton*>(_msgBoxWindow->getChild("ConfirmBtn"));
-    _confirmEvent = confirmBtn->subscribeEvent(
-        CEGUI::PushButton::EventClicked,
-        CEGUI::Event::Subscriber(&GUIMessageBox::onConfirm, this));
+    CEGUI::PushButton* confirmBtn = dynamic_cast<CEGUI::PushButton*>(_msgBoxWindow->getChild("ConfirmBtn"));
+    _confirmEvent = confirmBtn->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GUIMessageBox::onConfirm, this));
 
     setTitle(title);
     setMessage(message);

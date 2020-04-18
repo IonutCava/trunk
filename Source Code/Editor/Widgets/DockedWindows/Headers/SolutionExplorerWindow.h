@@ -50,6 +50,9 @@ class SolutionExplorerWindow : public DockedWindow, public PlatformContextCompon
       void drawTransformSettings();
       void printCameraNode(SceneManager& sceneManager, Camera* camera);
       void printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open);
+
+  private:
+      ImGuiTextFilter _filter;
 };
 }; //namespace Divide
 

@@ -6,6 +6,7 @@
 
 #include "Editor/Widgets/Headers/MenuBar.h"
 #include "Editor/Widgets/Headers/StatusBar.h"
+#include "Editor/Widgets/Headers/EditorOptionsWindow.h"
 
 #include "Editor/Widgets/DockedWindows/Headers/OutputWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/PostFXWindow.h"
@@ -105,15 +106,16 @@ std::array<Input::MouseButton, 5> Editor::g_oisButtons = {
         Input::MouseButton::MB_Button4,
 };
 
-Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme, ImGuiStyleEnum dimmedTheme)
+Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme)
     : PlatformContextComponent(context),
       _currentTheme(theme),
-      _currentDimmedTheme(dimmedTheme),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
     _menuBar = std::make_unique<MenuBar>(context, true);
     _statusBar = std::make_unique<StatusBar>(context);
+    _optionsWindow = std::make_unique<EditorOptionsWindow>(context);
+
     _undoManager = std::make_unique<UndoManager>(25);
     g_windowManager = &context.app().windowManager();
     REGISTER_FRAME_LISTENER(this, 99999);
@@ -427,10 +429,12 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     DockedWindow::Descriptor descriptor = {};
     descriptor.position = ImVec2(0, 0);
     descriptor.size = ImVec2(300, 550);
+    descriptor.minSize = ImVec2(200, 200);
     descriptor.name = "Solution Explorer";
     _dockedWindows[to_base(WindowType::SolutionExplorer)] = MemoryManager_NEW SolutionExplorerWindow(*this, _context, descriptor);
 
     descriptor.position = ImVec2(0, 0);
+    descriptor.minSize = ImVec2(200, 200);
     descriptor.name = "PostFX Settings";
     _dockedWindows[to_base(WindowType::PostFX)] = MemoryManager_NEW PostFXWindow(*this, _context, descriptor);
 
@@ -498,7 +502,6 @@ void Editor::toggle(const bool state) {
     if (!state) {
         _sceneHovered = false;
         scenePreviewFocused(false);
-        ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme);
 
         if (!_autoSaveCamera) {
             Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
@@ -574,9 +577,8 @@ void Editor::update(const U64 deltaTimeUS) {
     
     Attorney::GizmoEditor::update(*_gizmo, deltaTimeUS);
     if (running()) {
-        if (_statusBar) {
-            _statusBar->update(deltaTimeUS);
-        }
+        _statusBar->update(deltaTimeUS);
+        _optionsWindow->update(deltaTimeUS);
 
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->update(deltaTimeUS);
     }
@@ -605,16 +607,14 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) noexcept {
 bool Editor::render(const U64 deltaTime) {
     ACKNOWLEDGE_UNUSED(deltaTime);
 
-    F32 statusBarHeight = 0.0f;
-    if (_statusBar) {
-        statusBarHeight = _statusBar->height();
-    }
+    const F32 statusBarHeight = _statusBar->height();
+    
     static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_None | ImGuiDockNodeFlags_PassthruCentralNode;
     // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
     // because it would be confusing to have two docking targets within each others.
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
     
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->Pos);
     ImGui::SetNextWindowSize(viewport->Size + ImVec2(0.0f, -statusBarHeight));
     ImGui::SetNextWindowViewport(viewport->ID);
@@ -622,6 +622,7 @@ bool Editor::render(const U64 deltaTime) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     windowFlags |= ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove;
     windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    const bool optionsVisible = _showOptionsWindow;
 
     if (opt_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
         ImGui::SetNextWindowBgAlpha(0.0f);
@@ -637,25 +638,37 @@ bool Editor::render(const U64 deltaTime) {
     ImGuiID dockspaceId = ImGui::GetID("EditorDockspace");
     ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), opt_flags);
 
-    drawMenuBar();
+    if (scenePreviewFocused() || optionsVisible) {
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+    }
 
-    drawStatusBar();
+    _menuBar->draw();
+    _statusBar->draw();
 
     for (DockedWindow* window : _dockedWindows) {
+        ImGuiWindowFlags oldFlags = 0;
         window->draw();
     }
 
-    if (_showMemoryEditor) {
+    if (_showMemoryEditor && !optionsVisible) {
         if (_memoryEditorData.first != nullptr && _memoryEditorData.second > 0) {
             static MemoryEditor memEditor;
             memEditor.DrawWindow("Memory Editor", _memoryEditorData.first, _memoryEditorData.second);
         }
     }
 
-    if (_showSampleWindow) {
+    if (_showSampleWindow && !optionsVisible) {
         ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
         ImGui::ShowDemoWindow(&_showSampleWindow);
     }
+
+    if (scenePreviewFocused() || optionsVisible) {
+        ImGui::PopItemFlag();
+        ImGui::PopStyleVar();
+    }
+
+    _optionsWindow->draw(_showOptionsWindow);
 
     ImGui::End();
 
@@ -710,18 +723,6 @@ bool Editor::frameEnded(const FrameEvent& evt) noexcept {
     }
 
     return true;
-}
-
-void Editor::drawMenuBar() {
-    if (_menuBar) {
-        _menuBar->draw();
-    }
-}
-
-void Editor::drawStatusBar() {
-    if (_statusBar) {
-        _statusBar->draw();
-    }
 }
 
 const Rect<I32>& Editor::scenePreviewRect(bool globalCoords) const {
@@ -1029,8 +1030,6 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
 
         ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
         ImGui::SetCurrentContext(editorContext);
-        ImGuiStyle& style = ImGui::GetStyle();
-        ImGui::ResetStyle(scenePreviewFocused() ? _currentDimmedTheme : _currentTheme, style);
         return true;
     }
 
@@ -1464,9 +1463,7 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
 }
 
 void Editor::showStatusMessage(const stringImpl& message, F32 durationMS) {
-    if (_statusBar != nullptr) {
-        _statusBar->showMessage(message, durationMS);
-    }
+    _statusBar->showMessage(message, durationMS);
 }
 
 bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) {
@@ -1574,6 +1571,7 @@ bool Editor::saveToXML() const {
     pt.put("showMemEditor", _showMemoryEditor);
     pt.put("showSampleWindow", _showSampleWindow);
     pt.put("autoSaveCamera", _autoSaveCamera);
+    pt.put("themeIndex", to_I32(_currentTheme));
 
     if (createDirectory(editorPath.c_str())) {
         if (copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true)) {
@@ -1601,6 +1599,8 @@ bool Editor::loadFromXML() {
         _showMemoryEditor = pt.get("showMemEditor", false);
         _showSampleWindow = pt.get("showSampleWindow", false);
         _autoSaveCamera = pt.get("autoSaveCamera", false);
+        _currentTheme = static_cast<ImGuiStyleEnum>(pt.get("themeIndex", to_I32(_currentTheme)));
+        ImGui::ResetStyle(_currentTheme);
 
         return true;
     }

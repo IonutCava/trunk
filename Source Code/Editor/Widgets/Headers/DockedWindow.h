@@ -56,10 +56,12 @@ class DockedWindow {
 
         virtual const char* name() const { return _descriptor.name.c_str(); }
         
-        virtual bool hasFocus() const { return _focused; }
-        virtual bool isHovered() const { return _isHovered; }
+        virtual bool hasFocus() const noexcept { return _focused; }
+        virtual bool isHovered() const noexcept { return _isHovered; }
 
-        inline const Descriptor& descriptor() const { return _descriptor; }
+        inline const Descriptor& descriptor() const noexcept { return _descriptor; }
+
+        PROPERTY_RW(ImGuiWindowFlags, windowFlags, 0);
 
     protected:
         virtual void drawInternal() = 0;

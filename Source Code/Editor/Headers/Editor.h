@@ -77,6 +77,7 @@ class SceneGraphNode;
 class SceneViewWindow;
 class PlatformContext;
 class ApplicationOutput;
+class EditorOptionsWindow;
 class ContentExplorerWindow;
 class SolutionExplorerWindow;
 
@@ -125,9 +126,7 @@ class Editor : public PlatformContextComponent,
           COUNT
     };
   public:
-    explicit Editor(PlatformContext& context,
-                    ImGuiStyleEnum theme = ImGuiStyleEnum::ImGuiStyle_GrayCodz01,
-                    ImGuiStyleEnum dimmedTheme = ImGuiStyleEnum::ImGuiStyle_EdinBlack);
+    explicit Editor(PlatformContext& context, ImGuiStyleEnum theme = ImGuiStyleEnum::ImGuiStyle_DarkCodz01);
     ~Editor();
 
     bool init(const vec2<U16>& renderResolution);
@@ -207,8 +206,6 @@ class Editor : public PlatformContextComponent,
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
-    void drawMenuBar();
-    void drawStatusBar();
 
     bool saveSceneChanges(DELEGATE<void, const char*> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
     void updateCameraSnapshot();
@@ -236,6 +233,7 @@ class Editor : public PlatformContextComponent,
 
     std::unique_ptr<MenuBar> _menuBar = nullptr;
     std::unique_ptr<StatusBar> _statusBar = nullptr;
+    std::unique_ptr<EditorOptionsWindow> _optionsWindow = nullptr;
     std::unique_ptr<Gizmo> _gizmo = nullptr;
 
     Camera*           _selectedCamera = nullptr;
@@ -255,10 +253,10 @@ class Editor : public PlatformContextComponent,
     U32               _stepQueue = 1u;
 
     ImGuiStyleEnum _currentTheme = ImGuiStyle_Count;
-    ImGuiStyleEnum _currentDimmedTheme = ImGuiStyle_Count;
 
     bool              _autoSaveCamera = false;
     bool              _showSampleWindow = false;
+    bool              _showOptionsWindow = false;
     bool              _showMemoryEditor = false;
     bool              _running = false;
     bool              _sceneHovered = false;
@@ -361,6 +359,10 @@ namespace Attorney {
             return editor._showSampleWindow;
         }
 
+        static bool& optionWindowEnabled(Editor& editor) noexcept {
+            return editor._showOptionsWindow;
+        }
+        
         friend class Divide::MenuBar;
     };
 
@@ -438,9 +440,18 @@ namespace Attorney {
             editor.showStatusMessage(message, durationMS);
         }
 
+        static ImGuiStyleEnum getTheme(const Editor& editor) {
+            return editor._currentTheme;
+        }
+
+        static void setTheme(Editor& editor, const ImGuiStyleEnum newTheme) {
+            editor._currentTheme = newTheme;
+        }
+
         friend class Divide::Gizmo;
         friend class Divide::MenuBar;
         friend class Divide::PropertyWindow;
+        friend class Divide::EditorOptionsWindow;
         friend class Divide::ContentExplorerWindow;
         friend class Divide::SolutionExplorerWindow;
     };

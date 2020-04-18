@@ -264,6 +264,9 @@ void MenuBar::drawFileMenu() {
 
             ImGui::EndMenu();
         }
+        
+        bool& options = Attorney::EditorMenuBar::optionWindowEnabled(_context.editor());
+        ImGui::MenuItem("Editor options", "", &options);
 
         if (ImGui::MenuItem("Close Editor"))
         {
