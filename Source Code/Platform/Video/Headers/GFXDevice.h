@@ -349,6 +349,7 @@ public:
                     GFX::CommandBuffer& bufferInOut);
 
     PROPERTY_RW(MaterialDebugFlag, materialDebugFlag, MaterialDebugFlag::COUNT);
+    PROPERTY_RW(bool, showCSMSplitsForMainLight, false);
 
 protected:
     /// Create and return a new framebuffer.
@@ -402,9 +403,8 @@ private:
 
     ShaderComputeQueue* _shaderComputeQueue = nullptr;
 
-    vectorSTD<Line> _axisLines;
+    std::array<Line, 3> _axisLines;
     IMPrimitive* _axisGizmo = nullptr;
-    vectorSTD<Line> _axisLinesTransformed;
 
     const Frustum*  _debugFrustum = nullptr;
     IMPrimitive*    _debugFrustumPrimitive = nullptr;

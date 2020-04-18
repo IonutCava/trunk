@@ -40,6 +40,10 @@ namespace Divide {
 class DisplayWindow;
 namespace Input {
 
+namespace Attorney {
+    class MouseEventKernel;
+};
+
 struct InputEvent {
     explicit InputEvent(DisplayWindow* sourceWindow, U8 deviceIndex) noexcept;
 
@@ -48,33 +52,61 @@ struct InputEvent {
 };
 
 struct MouseButtonEvent : public InputEvent {
+    friend class Attorney::MouseEventKernel;
+
     explicit MouseButtonEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
 
-    bool pressed = false;
-    MouseButton button = MouseButton::MB_Left;
-    U8 numCliks = 0;
-    vec2<I32> absPosition = vec2<I32>(-1);
+    PROPERTY_RW(bool, pressed, false);
+    PROPERTY_RW(MouseButton, button, MouseButton::MB_Left);
+    PROPERTY_RW(U8, numCliks, 0u);
+    PROPERTY_RW(vec2<I32>, absPosition, vec2<I32>(-1));
+
+protected:
+    bool _remaped = false;
 };
 
 struct MouseMoveEvent : public InputEvent {
+    friend class Attorney::MouseEventKernel;
+
     explicit MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn, bool wheelEvent);
 
-    MouseAxis X() const;
-    MouseAxis Y() const;
+    MouseAxis X() const noexcept;
+    MouseAxis Y() const noexcept;
 
     I32 WheelV() const noexcept;
     I32 WheelH() const noexcept;
 
-    vec2<I32> relativePos() const;
-    vec2<I32> absolutePos() const;
+    vec2<I32> relativePos() const noexcept;
+    vec2<I32> absolutePos() const noexcept;
+    bool remaped() const noexcept;
+
     const MouseState& state() const noexcept;
     
     bool wheelEvent() const noexcept;
+
+protected:
+    void absolutePos(const vec2<I32>& newPos) noexcept;
+
  private:
     MouseState _stateIn;
+    bool _remaped = false;
     const bool _wheelEvent = false;
 };
+namespace Attorney {
+    class MouseEventKernel {
+        private:
+            static void absolutePos(MouseMoveEvent& evt, const vec2<I32>& newPos) noexcept {
+                evt.absolutePos(newPos);
+                evt._remaped = true;
+            }
 
+            static void absolutePos(MouseButtonEvent& evt, const vec2<I32>& pos) noexcept {
+                evt.absPosition(pos);
+                evt._remaped = true;
+            }
+        friend class Kernel;
+    };
+};
 struct JoystickEvent : public InputEvent {
     explicit JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
 

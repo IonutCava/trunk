@@ -88,7 +88,6 @@ struct DragSelectData {
     vec2<I32> _startDragPos;
     vec2<I32> _endDragPos;
     bool _isDragging = false;
-    bool _inEditor = false;
 };
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2 states:
@@ -120,6 +119,7 @@ class Scene : public Resource, public PlatformContextComponent {
     bool idle();  
     /// The application has lost focus
     void onLostFocus();  
+    void onGainFocus();
     /**End scene logic loop*/
 
     /// Update animations, network data, sounds, triggers etc.
@@ -160,9 +160,8 @@ class Scene : public Resource, public PlatformContextComponent {
     }
 
     bool findSelection(PlayerIndex idx, bool clearOld);
-    void beginDragSelection(PlayerIndex idx, bool editorRunning, vec2<I32> mousePos);
-    void endDragSelection(PlayerIndex idx, bool editorRunning, vec2<I32> mousePos);
-    bool isDragSelecting(PlayerIndex idx) const;
+    void beginDragSelection(PlayerIndex idx, vec2<I32> mousePos);
+    void endDragSelection(PlayerIndex idx);
 
     inline void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -272,7 +271,7 @@ class Scene : public Resource, public PlatformContextComponent {
     const char* getResourceTypeName() const noexcept override { return "Scene"; }
 
 
-    void updateSelectionData(PlayerIndex idx, DragSelectData& data);
+    void updateSelectionData(PlayerIndex idx, DragSelectData& data, bool remaped);
 
    protected:
        /// Global info

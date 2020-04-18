@@ -109,6 +109,8 @@ public:
     VisibleNodeList getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
 
     void onLostFocus();
+    void onGainFocus();
+
     /// Check if the scene was loaded properly
     inline bool checkLoadFlag() const {
         return Attorney::SceneManager::checkLoadFlag(getActiveScene());
@@ -203,7 +205,7 @@ protected:
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
     void removePlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue);
-    vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) const;
+    vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const;
 
 protected:
     bool frameStarted(const FrameEvent& evt)  noexcept override;
@@ -271,8 +273,8 @@ private:
         manager.removePlayer(parentScene, playerNode, queue);
     }
 
-    static vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Divide::SceneManager& manager, const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) {
-        return manager.getNodesInScreenRect(screenRect, camera, viewport, editorRunning);
+    static vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Divide::SceneManager& manager, const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport) {
+        return manager.getNodesInScreenRect(screenRect, camera, viewport);
     }
 
     friend class Divide::Scene;

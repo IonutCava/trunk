@@ -113,37 +113,37 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
         case SDL_MOUSEBUTTONUP:
         {
             Input::MouseButtonEvent arg(eventWindow, to_U8(event.button.which));
-            arg.pressed = event.type == SDL_MOUSEBUTTONDOWN;
+            arg.pressed(event.type == SDL_MOUSEBUTTONDOWN);
             switch (event.button.button) {
                 case SDL_BUTTON_LEFT:
-                    arg.button = Input::MouseButton::MB_Left;
+                    arg.button(Input::MouseButton::MB_Left);
                     break;
                 case SDL_BUTTON_RIGHT:
-                    arg.button = Input::MouseButton::MB_Right;
+                    arg.button(Input::MouseButton::MB_Right);
                     break;
                 case SDL_BUTTON_MIDDLE:
-                    arg.button = Input::MouseButton::MB_Middle;
+                    arg.button(Input::MouseButton::MB_Middle);
                     break;
                 case SDL_BUTTON_X1:
-                    arg.button = Input::MouseButton::MB_Button3;
+                    arg.button(Input::MouseButton::MB_Button3);
                     break;
                 case SDL_BUTTON_X2:
-                    arg.button = Input::MouseButton::MB_Button4;
+                    arg.button(Input::MouseButton::MB_Button4);
                     break;
                 case 6:
-                    arg.button = Input::MouseButton::MB_Button5;
+                    arg.button(Input::MouseButton::MB_Button5);
                     break;
                 case 7:
-                    arg.button = Input::MouseButton::MB_Button6;
+                    arg.button(Input::MouseButton::MB_Button6);
                     break;
                 case 8:
-                    arg.button = Input::MouseButton::MB_Button7;
+                    arg.button(Input::MouseButton::MB_Button7);
                     break;
             };
-            arg.numCliks = to_U8(event.button.clicks);
-            arg.absPosition.set(event.button.x, event.button.y);
+            arg.numCliks(to_U8(event.button.clicks));
+            arg.absPosition({ event.button.x, event.button.y });
 
-            if (arg.pressed) {
+            if (arg.pressed()) {
                 _eventListener.mouseButtonPressed(arg);
             } else {
                 _eventListener.mouseButtonReleased(arg);

@@ -125,9 +125,8 @@ class LightPool : public SceneComponent,
     void preRenderAllPasses(const Camera& playerCamera);
     void postRenderAllPasses(const Camera& playerCamera);
 
-    inline bool isDebugLight(LightType type, U16 lightIndex) const noexcept { return _debugLightIndex == std::pair{type, lightIndex}; }
-    /// LightType::COUNT = disabled
-    void setDebugLight(LightType type, U16 lightIndex);
+    /// nullptr = disabled
+    void debugLight(Light* light);
 
     static void idle();
     
@@ -151,6 +150,7 @@ class LightPool : public SceneComponent,
     }
     
     PROPERTY_RW(bool, lightImpostorsEnabled, false);
+    POINTER_R(Light, debugLight, nullptr);
 
   protected:
     using LightShadowProperties = std::array<Light::ShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS>;
@@ -197,7 +197,6 @@ class LightPool : public SceneComponent,
     ShaderBuffer* _lightShaderBuffer = nullptr;
     ShaderBuffer* _shadowBuffer = nullptr;
     Time::ProfileTimer& _shadowPassTimer;
-    std::pair<LightType, U16> _debugLightIndex = { LightType::COUNT, to_U16(0u) };
     bool _init = false;
 
     static std::array<U8, to_base(ShadowType::COUNT)> _shadowLocation;

@@ -157,6 +157,8 @@ class Editor : public PlatformContextComponent,
     inline bool scenePreviewFocused() const;
     inline bool scenePreviewHovered() const;
 
+    void showStatusMessage(const stringImpl& message, F32 durationMS);
+
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt) noexcept override;
     bool framePreRenderStarted(const FrameEvent& evt) noexcept override;
@@ -216,8 +218,6 @@ class Editor : public PlatformContextComponent,
     bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
     // Return true if the model was spawned as a scene node
     bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name);
-
-    void showStatusMessage(const stringImpl& message, F32 durationMS);
 
     LightPool& getActiveLightPool();
 

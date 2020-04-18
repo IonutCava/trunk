@@ -67,7 +67,7 @@ bool CEGUIInput::mouseMoved(const Input::MouseMoveEvent& arg) {
 // Return true if input was consumed
 bool CEGUIInput::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
     bool consumed = false;
-    switch (arg.button) {
+    switch (arg.button()) {
         case Input::MouseButton::MB_Left: {
             consumed = _parent.getCEGUIContext().injectMouseButtonDown(CEGUI::LeftButton);
         } break;
@@ -92,7 +92,7 @@ bool CEGUIInput::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 // Return true if input was consumed
 bool CEGUIInput::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     bool consumed = false;
-    switch (arg.button) {
+    switch (arg.button()) {
         case Input::MouseButton::MB_Left: {
             consumed = _parent.getCEGUIContext().injectMouseButtonUp(CEGUI::LeftButton);
         } break;

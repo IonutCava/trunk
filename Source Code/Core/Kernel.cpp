@@ -347,10 +347,6 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
 
     WindowManager& winManager = _platformContext.app().windowManager();
     winManager.update(appDeltaTimeUS);
-    if (!winManager.anyWindowFocus()) {
-        _sceneManager->onLostFocus();
-    }
-
     {
         Time::ScopedTimer timer3(_physicsUpdateTimer);
         // Update physics
@@ -693,6 +689,14 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
+    winManager.getMainWindow().addEventListener(WindowEvent::LOST_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) {
+        _sceneManager->onLostFocus();
+        return true;
+    });
+    winManager.getMainWindow().addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) {
+        _sceneManager->onGainFocus();
+        return true;
+    });
     const vec2<U16>& drawArea = winManager.getMainWindow().getDrawableSize();
     const Rect<U16> targetViewport(0, 0, drawArea.width, drawArea.height);
 
@@ -832,16 +836,43 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
     return false;
 }
 
+vec2<I32> Kernel::remapMouseCoords(const vec2<I32>& absPositionIn, bool& remapedOut) const noexcept {
+    remapedOut = false;
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
+        const Editor& editor = _platformContext.editor();
+        if (editor.running() && editor.scenePreviewFocused()) {
+            const Rect<I32>& sceneRect = editor.scenePreviewRect(false);
+            if (sceneRect.contains(absPositionIn)) {
+                const Rect<I32>& viewport = _platformContext.gfx().getCurrentViewport();
+                remapedOut = true;
+                return COORD_REMAP(absPositionIn, sceneRect, viewport);
+            }
+        }
+    }
+
+    return absPositionIn;
+}
+
 bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if_constexpr (Config::Build::ENABLE_EDITOR) {
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
         if (editor.mouseMoved(arg)) {
             return true;
         }
     }
 
-    if (!_platformContext.gui().mouseMoved(arg)) {
-        return _sceneManager->mouseMoved(arg);
+    Input::MouseMoveEvent remapArg = arg;
+    //Remap coords in case we are using the Editor's scene view
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
+        bool remaped = false;
+        const vec2<I32> newPos = remapMouseCoords(arg.absolutePos(), remaped);
+        if (remaped) {
+            Input::Attorney::MouseEventKernel::absolutePos(remapArg, newPos);
+        }
+    }
+
+    if (!_platformContext.gui().mouseMoved(remapArg)) {
+        return _sceneManager->mouseMoved(remapArg);
     }
     
     // InputInterface needs to know when this is completed
@@ -857,8 +888,17 @@ bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         }
     }
 
-    if (!_platformContext.gui().mouseButtonPressed(arg)) {
-        return _sceneManager->mouseButtonPressed(arg);
+    Input::MouseButtonEvent remapArg = arg;
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
+        bool remaped = false;
+        const vec2<I32> newPos = remapMouseCoords(arg.absPosition(), remaped);
+        if (remaped) {
+            Input::Attorney::MouseEventKernel::absolutePos(remapArg, newPos);
+        }
+    }
+
+    if (!_platformContext.gui().mouseButtonPressed(remapArg)) {
+        return _sceneManager->mouseButtonPressed(remapArg);
     }
     
     // InputInterface needs to know when this is completed
@@ -874,8 +914,17 @@ bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
         }
     }
 
-    if (!_platformContext.gui().mouseButtonReleased(arg)) {
-        return _sceneManager->mouseButtonReleased(arg);
+    Input::MouseButtonEvent remapArg = arg;
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
+        bool remaped = false;
+        const vec2<I32> newPos = remapMouseCoords(arg.absPosition(), remaped);
+        if (remaped) {
+            Input::Attorney::MouseEventKernel::absolutePos(remapArg, newPos);
+        }
+    }
+
+    if (!_platformContext.gui().mouseButtonReleased(remapArg)) {
+        return _sceneManager->mouseButtonReleased(remapArg);
     }
 
     // InputInterface needs to know when this is completed

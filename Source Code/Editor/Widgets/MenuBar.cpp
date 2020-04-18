@@ -452,9 +452,6 @@ void MenuBar::drawPostFXMenu() {
 void MenuBar::drawDebugMenu() {
     if (ImGui::BeginMenu("Debug"))
     {
-        GFXDevice& gfx = _context.gfx();
-        Configuration& config = _context.config();
-
         if (ImGui::BeginMenu("BRDF Settings")) {
             const GFXDevice::MaterialDebugFlag debugFlag = _context.gfx().materialDebugFlag();
             bool debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_ALBEDO;
@@ -501,16 +498,67 @@ void MenuBar::drawDebugMenu() {
             ImGui::EndMenu();
         }
 
-        bool& showCSMSplits = config.debug.showShadowCascadeSplits;
-        if (ImGui::MenuItem("Enable CSM Split View", "", &showCSMSplits))
+        if (ImGui::BeginMenu("Select Debug light"))
         {
-            config.changed(true);
-        }
+            constexpr U8 MaxLightsPerPage = 32;
+            const auto PrintLightEntry = [&pool](const LightPool::LightList& lights, size_t j) {
+                Light* crtLight = lights[j];
+                bool selected = pool.debugLight() == crtLight;
+                if (ImGui::MenuItem(crtLight->getSGN().name().c_str(), "", &selected)) {
+                    pool.debugLight(crtLight);
+                }
+            };
 
-        bool shadowDebug = pool.isDebugLight(LightType::DIRECTIONAL, 0);
-        if (ImGui::MenuItem("Debug Main CSM", "", &shadowDebug))
-        {
-            pool.setDebugLight(shadowDebug ? LightType::DIRECTIONAL : LightType::COUNT, 0u);
+            for (U8 i = 0; i < to_U8(LightType::COUNT); ++i) {
+                const LightType type = static_cast<LightType>(i);
+                const LightPool::LightList& lights = pool.getLights(type);
+                if (!lights.empty()) {
+                    const size_t lightCount = lights.size();
+
+                    if (ImGui::BeginMenu(TypeUtil::LightTypeToString(type))) {
+                        if (lightCount > MaxLightsPerPage) {
+                            const size_t pageCount = lightCount > MaxLightsPerPage ? lightCount / MaxLightsPerPage : 1;
+                            const size_t remainder = lightCount > MaxLightsPerPage ? lightCount - pageCount * MaxLightsPerPage : 0;
+                            for (U8 p = 0; p < pageCount + 1; ++p) {
+                                const size_t start = p * MaxLightsPerPage;
+                                const size_t end = start + (p < pageCount ? MaxLightsPerPage : remainder);
+                                if (ImGui::BeginMenu(Util::StringFormat("%d - %d", start, end).c_str())) {
+                                    for (size_t j = start; j < end; ++j) {
+                                        PrintLightEntry(lights, j);
+                                    }
+                                    ImGui::EndMenu();
+                                }
+                            }
+                        } else {
+                            for (size_t j = 0; j < lights.size(); ++j) {
+                                PrintLightEntry(lights, j);
+                            }
+                        }
+
+                        ImGui::EndMenu();
+                    }
+                } else {
+                    ImGui::Text(TypeUtil::LightTypeToString(type));
+                }
+            }
+            if (ImGui::BeginMenu("Shadow enabled")) {
+                for (U8 i = 0; i < to_U8(LightType::COUNT); ++i) {
+                    const LightType type = static_cast<LightType>(i);
+                    const LightPool::LightList& lights = pool.getLights(type);
+                    for (U16 j = 0; j < lights.size(); ++j) {
+                        Light* crtLight = lights[j];
+                        if (crtLight->castsShadows()) {
+                            bool selected = pool.debugLight() == crtLight;
+                            if (ImGui::MenuItem(crtLight->getSGN().name().c_str(), "", &selected)) {
+                                pool.debugLight(crtLight);
+                            }
+                        }
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenu();
         }
 
         bool lightImpostors = pool.lightImpostorsEnabled();
@@ -519,6 +567,11 @@ void MenuBar::drawDebugMenu() {
             pool.lightImpostorsEnabled(lightImpostors);
         }
 
+        bool showCSMSplits = _context.gfx().showCSMSplitsForMainLight();
+        if (ImGui::MenuItem("Show Main CSM Splits", "", &showCSMSplits))
+        {
+            _context.gfx().showCSMSplitsForMainLight(showCSMSplits);
+        }
         if (ImGui::BeginMenu("Debug Gizmos")) {
             SceneManager* sceneManager = context().kernel().sceneManager();
             SceneRenderState& renderState = sceneManager->getActiveScene().state().renderState();
@@ -597,16 +650,21 @@ void MenuBar::drawDebugMenu() {
         if (ImGui::BeginMenu("Debug Views"))
         {
             vectorEASTL<std::tuple<stringImpl, I16, bool>> viewNames = {};
-            gfx.getDebugViewNames(viewNames);
+            _context.gfx().getDebugViewNames(viewNames);
 
             for (auto[name, index, enabled] : viewNames) {
-                if (ImGui::MenuItem(name.c_str(), "", &enabled))
-                {
-                    gfx.toggleDebugView(index, enabled);
+                if (ImGui::MenuItem(name.c_str(), "", &enabled)) {
+                    _context.gfx().toggleDebugView(index, enabled);
                 }
             }
             ImGui::EndMenu();
         }
+
+        bool state = context().gui().showDebugCursor();
+        if (ImGui::MenuItem("Show CEGUI Debug Cursor", "", &state)) {
+            context().gui().showDebugCursor(state);
+        }
+
         ImGui::EndMenu();
     }
 }

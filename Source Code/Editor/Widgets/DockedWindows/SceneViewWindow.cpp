@@ -183,7 +183,7 @@ namespace Divide {
             DisplayWindow* displayWindow = static_cast<DisplayWindow*>(window->Viewport->PlatformHandle);
             // We might be dragging the window
             if (displayWindow != nullptr) {
-                vec2<I32> windowPosition = displayWindow->getPosition();
+                const vec2<I32> windowPosition = displayWindow->getPosition();
 
                 _sceneRect.set(startPos.x, startPos.y, endPos.x, endPos.y);
                 _sceneRectLocal.set(_sceneRect - vec4<I32>(windowPosition.x, windowPosition.y, windowPosition.x, windowPosition.y));

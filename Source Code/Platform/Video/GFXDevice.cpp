@@ -101,28 +101,28 @@ GFXDevice::GFXDevice(Kernel & parent)
 {
     _viewport.set(-1);
 
-    Line temp;
+    Line temp = {};
     temp.widthStart(3.0f);
     temp.widthEnd(3.0f);
-    temp.pointStart(VECTOR3_ZERO);
+    temp.positionStart(VECTOR3_ZERO);
 
     // Red X-axis
-    temp.pointEnd(WORLD_X_AXIS * 2);
+    temp.positionEnd(WORLD_X_AXIS * 2);
     temp.colourStart(UColour4(255, 0, 0, 255));
     temp.colourEnd(UColour4(255, 0, 0, 255));
-    _axisLines.push_back(temp);
+    _axisLines[0] = temp;
 
     // Green Y-axis
-    temp.pointEnd(WORLD_Y_AXIS * 2);
+    temp.positionEnd(WORLD_Y_AXIS * 2);
     temp.colourStart(UColour4(0, 255, 0, 255));
     temp.colourEnd(UColour4(0, 255, 0, 255));
-    _axisLines.push_back(temp);
+    _axisLines[1] = temp;
 
     // Blue Z-axis
-    temp.pointEnd(WORLD_Z_AXIS * 2);
+    temp.positionEnd(WORLD_Z_AXIS * 2);
     temp.colourStart(UColour4(0, 0, 255, 255));
     temp.colourEnd(UColour4(0, 0, 255, 255));
-    _axisLines.push_back(temp);
+    _axisLines[2] = temp;
 
     AttribFlags flags;
     flags.fill(true);
@@ -1348,7 +1348,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
     const vec4<F32> otherProperties(
         to_F32(materialDebugFlag()),
-        _context.config().debug.showShadowCascadeSplits ? 1.0f : 0.0f,
+        showCSMSplitsForMainLight() ? 1.0f : 0.0f,
         0.0f,
         0.0f);
 
@@ -2122,26 +2122,27 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
         std::array<vec3<F32>, 8> corners;
         _debugFrustum->getCornersViewSpace(viewMatrix, corners);
 
-        Line temp;
-        vectorSTD<Line> lines;
+        Line temp = {};
+        Line lines[4 * 3];
         for (U8 i = 0; i < 4; ++i) {
             // Draw Near Plane
-            temp.pointStart(corners[i]);
-            temp.pointEnd(corners[(i + 1) % 4]);
+            temp.positionStart(corners[i]);
+            temp.positionEnd(corners[(i + 1) % 4]);
             temp.colourStart(DefaultColours::RED_U8);
             temp.colourEnd(temp.colourStart());
-            lines.emplace_back(temp);
+            lines[i * 4 + 0] = temp;
 
-            temp.pointStart(corners[i + 4]);
-            temp.pointEnd(corners[(i + 4 + 1) % 4]);
+            temp.positionStart(corners[i + 4]);
+            temp.positionEnd(corners[(i + 4 + 1) % 4]);
             // Draw Far Plane
-            lines.emplace_back(temp);
+            lines[i * 4 + 1] = temp;
+
             // Connect Near Plane with Far Plane
-            temp.pointStart(corners[i]);
-            temp.pointEnd(corners[(i + 4) % 8]);
+            temp.positionStart(corners[i]);
+            temp.positionEnd(corners[(i + 4) % 8]);
             temp.colourStart(DefaultColours::GREEN_U8);
             temp.colourEnd(temp.colourStart());
-            lines.emplace_back(temp);
+            lines[i * 4 + 2] = temp;
         }
 
         if (!_debugFrustumPrimitive) {
@@ -2151,7 +2152,7 @@ void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer
             _debugFrustumPrimitive->skipPostFX(true);
         }
 
-        _debugFrustumPrimitive->fromLines(lines);
+        _debugFrustumPrimitive->fromLines(lines, 4 * 3);
         bufferInOut.add(_debugFrustumPrimitive->toCommandBuffer());
     } else if (_debugFrustumPrimitive) {
         destroyIMP(_debugFrustumPrimitive);
@@ -2179,7 +2180,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // right corner
             const U16 windowWidth = renderTargetPool().screenTarget().getWidth();
             _axisGizmo->viewport(Rect<I32>(windowWidth - 120, 8, 128, 128));
-            _axisGizmo->fromLines(_axisLines);
+            _axisGizmo->fromLines(_axisLines.data(), _axisLines.size());
         
             // We need to transform the gizmo so that it always remains axis aligned
             // Create a world matrix using a look at function with the eye position

@@ -234,26 +234,11 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     ShadowMap::bindShadowMaps(bufferInOut);
 }
 
-void LightPool::setDebugLight(LightType type, U16 lightIndex) {
-   
-    bool debug = type != LightType::COUNT;
-    if (debug) {
-        const size_t count = _lights[to_base(type)].size();
-        if (count == 0) {
-            type = LightType::COUNT;
-            debug = false;
-        }
-        lightIndex = std::min(lightIndex, to_U16(count));
-    }
+void LightPool::debugLight(Light* light) {
+    _debugLight = light;
+    ShadowMap::setDebugViewLight(context().gfx(), _debugLight);
     const bool showDebugInfo = ParamHandler::instance().getParam<bool>(_ID_32("rendering.debug.displayShadowDebugInfo"));
-    ParamHandler::instance().setParam(_ID_32("rendering.debug.displayShadowDebugInfo"), debug || showDebugInfo);
-    
-    _debugLightIndex = { type, lightIndex };
-    if (debug) {
-        ShadowMap::enableShadowDebugViewForLight(_context.gfx(), *_lights[to_base(type)][lightIndex]);
-    } else {
-        ShadowMap::disableShadowDebugViews(_context.gfx());
-    }
+    ParamHandler::instance().setParam(_ID_32("rendering.debug.displayShadowDebugInfo"), _debugLight != nullptr || showDebugInfo);
 }
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {

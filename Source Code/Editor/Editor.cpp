@@ -1009,7 +1009,7 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
     for (ImGuiContext* ctx : _imguiContexts) {
         for (U8 i = 0; i < 5; ++i) {
-            if (arg.button == g_oisButtons[i]) {
+            if (arg.button() == g_oisButtons[i]) {
                 ctx->IO.MouseDown[i] = true;
                 break;
             }
@@ -1040,7 +1040,7 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
 
     for (ImGuiContext* ctx : _imguiContexts) {
         for (U8 i = 0; i < 5; ++i) {
-            if (arg.button == g_oisButtons[i]) {
+            if (arg.button() == g_oisButtons[i]) {
                 ctx->IO.MouseDown[i] = false;
                 break;
             }
@@ -1513,8 +1513,10 @@ void Editor::scenePreviewFocused(bool state) {
     ImGuiIO& io = ImGui::GetIO();
     if (state) {
         io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
+        _context.kernel().sceneManager()->onGainFocus();
     } else {
         io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
+        _context.kernel().sceneManager()->onLostFocus();
     }
 }
 

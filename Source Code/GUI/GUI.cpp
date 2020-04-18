@@ -245,9 +245,6 @@ bool GUI::init(PlatformContext& context, ResourceCache* cache) {
     _rootSheet->setUsingAutoRenderingSurface(false);
     _rootSheet->setPixelAligned(false);
 
-    if (parent().platformContext().config().gui.cegui.showDebugCursor) {
-        _rootSheet->setMouseCursor("GWEN/Tree.Plus");
-    }
     _ceguiContext->setRootWindow(_rootSheet);
     _ceguiContext->setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
   
@@ -298,6 +295,20 @@ void GUI::destroy() {
             Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
         }
         _init = false;
+    }
+}
+
+void GUI::showDebugCursor(const bool state) {
+    _showDebugCursor = state;
+
+    if (_rootSheet == nullptr) {
+        return;
+    }
+
+    if (state) {
+        _rootSheet->setMouseCursor("GWEN/Tree.Plus");
+    } else {
+        _rootSheet->setMouseCursor("");
     }
 }
 

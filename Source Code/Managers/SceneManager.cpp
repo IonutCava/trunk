@@ -364,7 +364,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, SceneGraphNode* play
     }
 }
 
-vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport, bool editorRunning) const {
+vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const {
     OPTICK_EVENT();
 
     const SceneGraph& sceneGraph = getActiveScene().sceneGraph();
@@ -414,24 +414,23 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         return nullptr;
     };
 
-    const auto IsNodeInRect = [editorRunning, &screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node)->std::pair<SceneGraphNode*, const BoundingBox*> {
+    const auto IsNodeInRect = [&screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node)->std::pair<SceneGraphNode*, const BoundingBox*> {
         assert(node != nullptr);
         const SceneNode& sNode = node->getNode();
-        if (editorRunning || sNode.type() == SceneNodeType::TYPE_OBJECT3D) {
-            bool selectable = editorRunning;
-            if (!selectable) {
-                SelectionComponent* sComp = node->get<SelectionComponent>();
-                if (sComp == nullptr && 
-                    (sNode.type() == SceneNodeType::TYPE_OBJECT3D && node->getNode<Object3D>().getObjectType() == to_base(ObjectType::SUBMESH)))
-                {
-                    sComp = node->parent() != nullptr ? node->parent()->get<SelectionComponent>() : nullptr;
-                }
-                if (sComp != nullptr) {
-                    selectable = sComp->enabled();
+        if (sNode.type() == SceneNodeType::TYPE_OBJECT3D) {
+            SelectionComponent* sComp = node->get<SelectionComponent>();
+            if (sComp == nullptr && 
+                (sNode.type() == SceneNodeType::TYPE_OBJECT3D && node->getNode<Object3D>().getObjectType() == to_base(ObjectType::SUBMESH)))
+            {
+                if (node->parent() != nullptr) {
+                    // Already selected. Skip.
+                    if (node->parent()->hasFlag(SceneGraphNode::Flags::SELECTED)) {
+                        return { nullptr, nullptr };
+                    }
+                    sComp = node->parent()->get<SelectionComponent>();
                 }
             }
-
-            if (selectable) {
+            if (sComp != nullptr && sComp->enabled()) {
                 BoundsComponent* bComp = node->get<BoundsComponent>();
                 if (bComp != nullptr) {
                     const BoundingBox& bb = bComp->getBoundingBox();
@@ -711,7 +710,19 @@ void SceneManager::prepareLightData(RenderStage stage, const vec3<F32>& cameraPo
 }
 
 void SceneManager::onLostFocus() {
+    if (!_init) {
+        return;
+    }
+
     getActiveScene().onLostFocus();
+}
+
+void SceneManager::onGainFocus() {
+    if (!_init) {
+        return;
+    }
+
+    getActiveScene().onGainFocus();
 }
 
 void SceneManager::resetSelection(PlayerIndex idx) {

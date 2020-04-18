@@ -239,14 +239,14 @@ bool SceneInput::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
     if (g_recordInput) {
         _mouseBtnLog[arg._deviceIndex].emplace_back(
-            std::make_tuple(arg.button, Input::InputState::PRESSED, vec2<I32>(arg.absPosition.x, arg.absPosition.y)));
+            std::make_tuple(arg.button(), Input::InputState::PRESSED, vec2<I32>(arg.absPosition().x, arg.absPosition().y)));
     }
 
-    PressReleaseActionCbks cbks;
-    if (getMouseMapping(arg.button, cbks)) {
-        InputParams params(arg._deviceIndex, to_I32(arg.button));
-        params._var[2] = arg.absPosition.x;
-        params._var[3] = arg.absPosition.y;
+    PressReleaseActionCbks cbks = {};
+    if (getMouseMapping(arg.button(), cbks)) {
+        InputParams params(arg._deviceIndex, to_I32(arg.button()));
+        params._var[2] = arg.absPosition().x;
+        params._var[3] = arg.absPosition().y;
         return handleCallbacks(cbks, params, true);
     }
 
@@ -256,14 +256,14 @@ bool SceneInput::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 bool SceneInput::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     if (g_recordInput) {
         _mouseBtnLog[arg._deviceIndex].emplace_back(
-                                std::make_tuple(arg.button, Input::InputState::RELEASED, vec2<I32>(arg.absPosition.x, arg.absPosition.y)));
+                                std::make_tuple(arg.button(), Input::InputState::RELEASED, vec2<I32>(arg.absPosition().x, arg.absPosition().y)));
     }
 
-    PressReleaseActionCbks cbks;
-    if (getMouseMapping(arg.button, cbks)) {
-        InputParams params(arg._deviceIndex, to_I32(arg.button));
-        params._var[2] = arg.absPosition.x;
-        params._var[3] = arg.absPosition.y;
+    PressReleaseActionCbks cbks = {};
+    if (getMouseMapping(arg.button(), cbks)) {
+        InputParams params(arg._deviceIndex, to_I32(arg.button()));
+        params._var[2] = arg.absPosition().x;
+        params._var[3] = arg.absPosition().y;
         return handleCallbacks(cbks, params, false);
     }
 

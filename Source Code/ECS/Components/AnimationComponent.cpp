@@ -154,7 +154,7 @@ bool AnimationComponent::playPreviousAnimation() {
     return oldIndex != _currentAnimIndex;
 }
 
-const vectorSTD<Line>& AnimationComponent::skeletonLines() const {
+const vectorEASTL<Line>& AnimationComponent::skeletonLines() const {
     assert(_animator != nullptr);
 
     D64 animTimeStamp = Time::MicrosecondsToSeconds<D64>(_currentTimeStamp);

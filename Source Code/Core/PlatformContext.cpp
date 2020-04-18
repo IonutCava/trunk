@@ -127,6 +127,10 @@ DisplayWindow& PlatformContext::activeWindow() {
     return app().windowManager().getMainWindow();
 }
 
+const DisplayWindow& PlatformContext::activeWindow() const {
+    return app().windowManager().getMainWindow();
+}
+
 Kernel& PlatformContext::kernel() {
     return _kernel;
 }

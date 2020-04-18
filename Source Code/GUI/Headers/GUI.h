@@ -156,6 +156,9 @@ public:
 
     void setRenderer(CEGUI::Renderer& renderer);
 
+    PROPERTY_R(bool, showDebugCursor, false);
+    void showDebugCursor(const bool state);
+
 protected:
     GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;
     GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const;

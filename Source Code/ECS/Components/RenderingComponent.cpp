@@ -706,26 +706,26 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
 /// Draw the axis arrow gizmo
 void RenderingComponent::drawDebugAxis(GFX::CommandBuffer& bufferInOut) {
     if (!_axisGizmo) {
-        Line temp;
+        Line temp = {};
         temp.widthStart(10.0f);
         temp.widthEnd(10.0f);
-        temp.pointStart(VECTOR3_ZERO);
+        temp.positionStart(VECTOR3_ZERO);
 
         Line axisLines[3];
         // Red X-axis
-        temp.pointEnd(WORLD_X_AXIS * 4);
+        temp.positionEnd(WORLD_X_AXIS * 4);
         temp.colourStart(UColour4(255, 0, 0, 255));
         temp.colourEnd(UColour4(255, 0, 0, 255));
         axisLines[0] = temp;
 
         // Green Y-axis
-        temp.pointEnd(WORLD_Y_AXIS * 4);
+        temp.positionEnd(WORLD_Y_AXIS * 4);
         temp.colourStart(UColour4(0, 255, 0, 255));
         temp.colourEnd(UColour4(0, 255, 0, 255));
         axisLines[1] = temp;
 
         // Blue Z-axis
-        temp.pointEnd(WORLD_Z_AXIS * 4);
+        temp.positionEnd(WORLD_Z_AXIS * 4);
         temp.colourStart(UColour4(0, 0, 255, 255));
         temp.colourEnd(UColour4(0, 0, 255, 255));
         axisLines[2] = temp;
@@ -742,8 +742,8 @@ void RenderingComponent::drawDebugAxis(GFX::CommandBuffer& bufferInOut) {
         // Add every line in the list to the batch
         for (const Line& line : axisLines) {
             _axisGizmo->attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
-            _axisGizmo->vertex(line.pointStart());
-            _axisGizmo->vertex(line.pointEnd());
+            _axisGizmo->vertex(line.positionStart());
+            _axisGizmo->vertex(line.positionEnd());
         }
         _axisGizmo->end();
         // Finish our object
@@ -778,10 +778,10 @@ void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
             // Get the animation component of any submesh. They should be synced anyway.
             const AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
             // Get the skeleton lines from the submesh's animation component
-            const vectorSTD<Line>& skeletonLines = childAnimComp->skeletonLines();
+            const vectorEASTL<Line>& skeletonLines = childAnimComp->skeletonLines();
             _skeletonPrimitive->worldMatrix(_parentSGN.get<TransformComponent>()->getWorldMatrix());
             // Submit the skeleton lines to the GPU for rendering
-            _skeletonPrimitive->fromLines(skeletonLines);
+            _skeletonPrimitive->fromLines(skeletonLines.data(), skeletonLines.size());
             bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
 
             grandParent->setFlag(SceneGraphNode::Flags::SKELETON_RENDERED);

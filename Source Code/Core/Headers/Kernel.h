@@ -207,6 +207,7 @@ class Kernel : public Input::InputAggregatorInterface,
     bool setCursorPosition(I32 x, I32 y);
     /// Update all engine components that depend on the current screen size
     void onSizeChange(const SizeChangeParams& params);
+    vec2<I32> remapMouseCoords(const vec2<I32>& absPositionIn, bool& remapedOut) const noexcept;
 
    private:
     vectorSTD<Rect<I32>> _editorViewports;

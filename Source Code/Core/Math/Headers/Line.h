@@ -34,14 +34,24 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORE_MATH_LINE_H_
 
 #include "MathUtil.h"
+#include "Utility/Headers/Colours.h"
 
 namespace Divide {
 
 struct Line {
-    PROPERTY_RW(UColour4, colourStart);
-    PROPERTY_RW(UColour4, colourEnd);
-    PROPERTY_RW(vec3<F32>, pointStart);
-    PROPERTY_RW(vec3<F32>, pointEnd);
+    Line() noexcept {}
+    Line(const vec3<F32>& positionStart, const vec3<F32>& positionEnd, const vec3<F32>& colourStart, const vec3<F32>& colourEnd, F32 widthStart, F32 widthEnd) noexcept
+        : _positionStart(positionStart),
+          _positionEnd(positionEnd),
+          _colourStart(colourStart),
+          _colourEnd(colourEnd),
+          _widthStart(widthStart),
+          _widthEnd(widthEnd){}
+
+    PROPERTY_RW(vec3<F32>, positionStart, VECTOR3_ZERO);
+    PROPERTY_RW(vec3<F32>, positionEnd, VECTOR3_UNIT);
+    PROPERTY_RW(UColour4, colourStart, DefaultColours::BLACK_U8);
+    PROPERTY_RW(UColour4, colourEnd, DefaultColours::DIVIDE_BLUE_U8);
     PROPERTY_RW(F32, widthStart, 1.0f);
     PROPERTY_RW(F32, widthEnd, 1.0f);
 };

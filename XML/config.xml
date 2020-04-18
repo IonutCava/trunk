@@ -13,12 +13,12 @@
 	<!-- this is only taken into consideration if binary cache is disabled-->
 	<useShaderTextCache>false</useShaderTextCache>
 	<useShaderBinaryCache>false</useShaderBinaryCache>
-	<showShadowCascadeSplits>true</showShadowCascadeSplits>
-	<!-- memFile: file name that the application should use to write  memory allocation info -->
-	<!-- leave empty for none! -->
+	<!-- memFile: file name that the application should use to write  memory allocation info. Leave empty for none! -->
 	<memFile>mem.log</memFile>
 </debug>
+
 <language>enGB</language>
+
 <!-- RUNTIME: Values use by the application after loading is complete -->
 <runtime>
 	<!-- 0 = primary display, 1 = secondary display, etc. Value is clamped between [1, LAST_DISPLAY] -->
@@ -54,10 +54,8 @@
 <GUI>
 	<CEGUI>
 		<Enabled>true</Enabled>
-		<ExtraStates>false</ExtraStates>
 		<SkipRendering>false</SkipRendering>
 		<defaultGUIScheme>GWEN</defaultGUIScheme>
-		<showDebugCursor>false</showDebugCursor>
 	</CEGUI>
 	<IMGUI>
 		<multiViewportEnabled>true</multiViewportEnabled>

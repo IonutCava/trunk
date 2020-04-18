@@ -105,8 +105,7 @@ class NOINITVTABLE ShadowMap {
 
     static const RenderTargetHandle& getDepthMap(LightType type);
 
-    static void enableShadowDebugViewForLight(GFXDevice& context, Light& light);
-    static void disableShadowDebugViews(GFXDevice& context);
+    static void setDebugViewLight(GFXDevice& context, Light* light);
 
     static void setMSAASampleCount(U8 sampleCount);
 

@@ -24,7 +24,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.enableGrassInstances);
         GET_PARAM(debug.useShaderTextCache);
         GET_PARAM(debug.useShaderBinaryCache);
-        GET_PARAM(debug.showShadowCascadeSplits);
         GET_PARAM(debug.memFile);
         GET_PARAM(language);
         GET_PARAM(runtime.targetDisplay);
@@ -47,9 +46,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(runtime.zFar);
         GET_PARAM(runtime.verticalFOV);
         GET_PARAM(gui.cegui.enabled);
-        GET_PARAM(gui.cegui.extraStates);
         GET_PARAM(gui.cegui.skipRendering);
-        GET_PARAM(gui.cegui.showDebugCursor);
         GET_PARAM(gui.cegui.defaultGUIScheme);
         GET_PARAM(gui.imgui.multiViewportEnabled);
         GET_PARAM(gui.imgui.windowDecorationsEnabled);
@@ -109,7 +106,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(debug.enableGrassInstances);
         PUT_PARAM(debug.useShaderTextCache);
         PUT_PARAM(debug.useShaderBinaryCache);
-        PUT_PARAM(debug.showShadowCascadeSplits);
         PUT_PARAM(debug.memFile);
         PUT_PARAM(language);
         PUT_PARAM(runtime.targetDisplay);
@@ -132,9 +128,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(runtime.zFar);
         PUT_PARAM(runtime.verticalFOV);
         PUT_PARAM(gui.cegui.enabled);
-        PUT_PARAM(gui.cegui.extraStates);
         PUT_PARAM(gui.cegui.skipRendering);
-        PUT_PARAM(gui.cegui.showDebugCursor);
         PUT_PARAM(gui.cegui.defaultGUIScheme);
         PUT_PARAM(gui.imgui.multiViewportEnabled);
         PUT_PARAM(gui.imgui.windowDecorationsEnabled);

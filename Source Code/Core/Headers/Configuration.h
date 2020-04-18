@@ -52,7 +52,6 @@ struct Configuration final : public XML::IXMLSerializable {
         bool useShaderTextCache = true;
         bool enableTreeInstances = true;
         bool enableGrassInstances = true;
-        bool showShadowCascadeSplits = true;
         stringImpl memFile = "none";
     } debug = {};
     
@@ -80,9 +79,7 @@ struct Configuration final : public XML::IXMLSerializable {
     struct GUI {
         struct CEGUI {
             bool enabled = true;
-            bool extraStates = false;
             bool skipRendering = false;
-            bool showDebugCursor = false;
             stringImpl defaultGUIScheme = "GWEN";
         } cegui = {};
         struct IMGUI {

@@ -60,18 +60,16 @@ bool SceneAnimator::init(PlatformContext& context) {
 
     _transforms.resize(_skeletonDepthCache);
 
-    D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
+    const D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
     vectorEASTL<mat4<F32>> vec;
-    vec_size animationCount = _animations.size();
+    const vec_size animationCount = _animations.size();
     _skeletonLines.resize(animationCount);
 
-    mat4<F32> globalBoneTransform;
-    mat4<F32> boneOffsetMatrix;
     // pre-calculate the animations
     for (vec_size i(0); i < animationCount; ++i) {
         const std::shared_ptr<AnimEvaluator>& crtAnimation = _animations[i];
-        D64 duration = crtAnimation->duration();
-        D64 tickStep = crtAnimation->ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
+        const D64 duration = crtAnimation->duration();
+        const D64 tickStep = crtAnimation->ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
         D64 dt = 0;
         for (D64 ticks = 0; ticks < duration; ticks += tickStep) {
             dt += timestep;
@@ -85,8 +83,8 @@ bool SceneAnimator::init(PlatformContext& context) {
             crtAnimation->transforms().push_back(vec);
         }
 
-        _skeletonLines[i].resize(crtAnimation->frameCount(), -1);
         _maximumAnimationFrames = std::max(crtAnimation->frameCount(), _maximumAnimationFrames);
+        _skeletonLines[i].resize(_maximumAnimationFrames, -1);
     }
 
     // pay the cost upfront
@@ -100,7 +98,7 @@ bool SceneAnimator::init(PlatformContext& context) {
 }
 
 /// This will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
-bool SceneAnimator::init(PlatformContext& context, Bone* const skeleton, const vectorSTD<Bone*>& bones) {
+bool SceneAnimator::init(PlatformContext& context, Bone* const skeleton, const vectorEASTL<Bone*>& bones) {
     release(false);
     _skeleton = skeleton;
     _bones = bones;
@@ -148,18 +146,17 @@ I32 SceneAnimator::boneIndex(const stringImpl& bname) const {
 }
 
 /// Renders the current skeleton pose at time index dt
-const vectorSTD<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
-                                                      const D64 dt) {
-    I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt) - 1, 0);
+const vectorEASTL<Line>& SceneAnimator::skeletonLines(I32 animationIndex, const D64 dt) {
+    const I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt) - 1, 0);
     I32& vecIndex = _skeletonLines.at(animationIndex).at(frameIndex);
 
     if (vecIndex == -1) {
         vecIndex = to_I32(_skeletonLinesContainer.size());
-        _skeletonLinesContainer.push_back(vectorSTD<Line>());
+        _skeletonLinesContainer.emplace_back();
     }
 
     // create all the needed points
-    vectorSTD<Line>& lines = _skeletonLinesContainer.at(vecIndex);
+    vectorEASTL<Line>& lines = _skeletonLinesContainer.at(vecIndex);
     if (lines.empty()) {
         lines.reserve(vec_size(boneCount()));
         // Construct skeleton
@@ -174,22 +171,14 @@ const vectorSTD<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
 /// Create animation skeleton
 I32 SceneAnimator::createSkeleton(Bone* piNode,
                                   const mat4<F32>& parent,
-    vectorSTD<Line>& lines) {
-
+                                  vectorEASTL<Line>& lines) {
+    static Line s_line = { VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::RED_U8, DefaultColours::RED_U8, 2.0f, 2.0f };
     const mat4<F32>& me = piNode->_globalTransform;
 
     if (piNode->_parent) {
-        Line line;
-        line.colourStart({ 255, 0, 0, 255 });
-        line.colourEnd({ 255, 0, 0, 255 });
-        line.widthStart(2.0f);
-        line.widthEnd(2.0f);
-
-        vec3<F32> start = parent.getRow(3).xyz();
-        vec3<F32> end = me.getRow(3).xyz();
-        line.pointStart({ start.x, start.y, start.z });
-        line.pointEnd({ end.x, end.y, end.z });
-        lines.emplace_back(line);
+        Line& line = lines.emplace_back(s_line);
+        line.positionStart(parent.getRow(3).xyz());
+        line.positionEnd(me.getRow(3).xyz());
     }
 
     // render all child nodes

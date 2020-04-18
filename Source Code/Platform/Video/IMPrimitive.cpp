@@ -116,7 +116,7 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     endBatch();
 }
 
-void IMPrimitive::fromLines(const vectorSTD<Line>& lines) {
+void IMPrimitive::fromLines(const Line* lines, const size_t count) {
     static const vec3<F32> vertices[] = {
         vec3<F32>(-1.0f, -1.0f,  1.0f),
         vec3<F32>(1.0f, -1.0f,  1.0f),
@@ -137,16 +137,17 @@ void IMPrimitive::fromLines(const vectorSTD<Line>& lines) {
     };
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
-    if (!lines.empty()) {
+    if (count > 0) {
         // Create the object containing all of the lines
-        beginBatch(true, to_U32(lines.size()) * 2 * 14, 1);
+        beginBatch(true, to_U32(count) * 2 * 14, 1);
         attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(lines[0].colourStart()));
         // Set the mode to line rendering
         //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
         begin(PrimitiveType::LINES);
         //vec3<F32> tempVertex;
         // Add every line in the list to the batch
-        for (const Line& line : lines) {
+        for (size_t i = 0; i < count; ++i) {
+            const Line& line = lines[i];
             attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
             /*for (U16 idx : indices) {
             tempVertex.set(line._startPoint * vertices[idx]);
@@ -154,7 +155,7 @@ void IMPrimitive::fromLines(const vectorSTD<Line>& lines) {
 
             vertex(tempVertex);
             }*/
-            vertex(line.pointStart());
+            vertex(line.positionStart());
 
             attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourEnd()));
             /*for (U16 idx : indices) {
@@ -164,7 +165,7 @@ void IMPrimitive::fromLines(const vectorSTD<Line>& lines) {
             vertex(tempVertex);
             }*/
 
-            vertex(line.pointEnd());
+            vertex(line.positionEnd());
 
         }
         end();
