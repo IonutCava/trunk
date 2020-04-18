@@ -34,7 +34,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     dof.propertyDescriptor(shaderDescriptor);
     _dofShader = CreateResource<ShaderProgram>(cache, dof);
 
-    vectorSTD<RTAttachmentDescriptor> att = {
+    vectorEASTL<RTAttachmentDescriptor> att = {
         { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
     };
 

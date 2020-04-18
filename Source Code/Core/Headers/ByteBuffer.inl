@@ -46,13 +46,6 @@ inline ByteBuffer& ByteBuffer::operator<<(const stringImpl &value) {
     return *this;
 }
 
-template <typename U>
-inline ByteBuffer& ByteBuffer::operator<<(const vectorEASTL<U>& value) {
-    append(to_U32(value.size()));
-    append(value.data(), value.size());
-    return *this;
-}
-
 template <typename T>
 inline ByteBuffer& ByteBuffer::operator>>(T& value) {
     value = read<T>();
@@ -79,14 +72,6 @@ inline ByteBuffer& ByteBuffer::operator>>(stringImpl& value) {
     return *this;
 }
 
-template <typename U>
-inline ByteBuffer& ByteBuffer::operator>>(vectorEASTL<U>& value) {
-    U32 count = read<U32>();
-    value = vectorEASTL<U>(count, U{});
-
-    read((Byte*)value.data(), count * sizeof(U));
-    return *this;
-}
 
 template <typename T>
 void ByteBuffer::read_noskip(T& value) {
@@ -462,7 +447,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::array<stringImpl, N>& a) {
 }
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, vectorSTD<T> const &v) {
+inline ByteBuffer &operator<<(ByteBuffer &b, vectorEASTL<T> const &v) {
     b << to_U32(v.size());
     b.append(v.data(), v.size());
 
@@ -470,7 +455,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, vectorSTD<T> const &v) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, vectorSTD<T> &v) {
+inline ByteBuffer &operator>>(ByteBuffer &b, vectorEASTL<T> &v) {
     U32 vsize;
     b >> vsize;
     v.resize(vsize);
@@ -479,7 +464,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vectorSTD<T> &v) {
 }
 
 template <>
-inline ByteBuffer &operator<<(ByteBuffer &b, vectorSTD<stringImpl> const &v) {
+inline ByteBuffer &operator<<(ByteBuffer &b, vectorEASTL<stringImpl> const &v) {
     b << to_U32(v.size());
     for (const stringImpl& str : v) {
         b << str;
@@ -489,7 +474,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, vectorSTD<stringImpl> const &v) {
 }
 
 template <>
-inline ByteBuffer &operator>>(ByteBuffer &b, vectorSTD<stringImpl> &v) {
+inline ByteBuffer &operator>>(ByteBuffer &b, vectorEASTL<stringImpl> &v) {
     U32 vsize;
     b >> vsize;
     v.resize(vsize);

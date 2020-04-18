@@ -38,49 +38,16 @@
 #include <EASTL/sort.h>
 #include <EASTL/vector.h>
 #include <EASTL/fixed_allocator.h>
-#include <vector>
-
-template <class Type, typename Allocator = std::allocator<Type>>
-using vectorSTD = std::vector<Type, Allocator>;
-
-template <typename Type>
-using vectorSTDFast = std::vector<Type, dvd_allocator<Type>>;
 
 template <typename Type, typename Allocator = EASTLAllocatorType>
 using vectorEASTL = eastl::vector<Type, Allocator>;
-
 template <typename Type>
 using vectorEASTLFast = eastl::vector<Type, eastl::dvd_eastl_allocator>;
-
-using vec_size = std::size_t;
-
-template< typename T, typename Pred, typename A>
-typename vectorSTD<T, A>::iterator insert_sorted(vectorSTD<T, A>& vec, T const& item, Pred pred)
-{
-    return vec.insert(std::upper_bound(std::begin(vec), std::end(vec), item, pred), item);
-}
 
 template< typename T, typename Pred, typename A>
 typename vectorEASTL<T, A>::iterator insert_sorted(vectorEASTL<T, A>& vec, T const& item, Pred pred)
 {
     return vec.insert(eastl::upper_bound(eastl::begin(vec), eastl::end(vec), item, pred), item);
-}
-
-template<typename T, typename A>
-void insert_unique(vectorSTD<T, A>& target, const T& item)
-{
-    if (std::find(std::cbegin(target), std::cend(target), item) == std::cend(target)) {
-        target.push_back(item);
-    }
-}
-
-template<typename T, typename A>
-void insert_unique(vectorSTD<T, A>& target, const vectorSTD<T, A>& source)
-{
-    std::for_each(std::cbegin(source), std::cend(source),
-        [&target](T const& item) {
-            insert_unique(target, item);
-        });
 }
 
 template<typename T, typename A>
@@ -102,17 +69,10 @@ void insert_unique(vectorEASTL<T, A>& target, const vectorEASTL<T>& source)
 }
 
 template<typename T, typename A>
-void pop_front(vectorSTD<T, A>& vec)
+void pop_front(vectorEASTL<T, A>& vec)
 {
     assert(!vec.empty());
-    vec.erase(std::begin(vec));
-}
-
-template<typename T, typename A>
-void unchecked_copy(vectorSTD<T, A>& dst, const vectorSTD<T, A>& src)
-{
-    dst.resize(src.size());
-    memcpy(dst.data(), src.data(), src.size() * sizeof(T));
+    vec.erase(eastl::begin(vec));
 }
 
 template<typename T, typename A>
@@ -123,17 +83,17 @@ void unchecked_copy(vectorEASTL<T, A>& dst, const vectorEASTL<T, A>& src)
 }
 
 template<typename T, typename U, typename A>
-vectorSTD<T, A> convert(const vectorSTD<U, A>& data) {
-    return vector<T, A>(std::cbegin(data), std::cend(data));
+vectorEASTL<T, A> convert(const vectorEASTL<U, A>& data) {
+    return vector<T, A>(eastl::cbegin(data), eastl::cend(data));
 }
 
 template<typename Cont, typename It>
-auto ToggleIndices(Cont& cont, It beg, It end) -> decltype(std::end(cont))
+auto ToggleIndices(Cont& cont, It beg, It end) -> decltype(eastl::end(cont))
 {
     int helpIndx(0);
-    return std::stable_partition(std::begin(cont), std::end(cont),
-        [&](decltype(*std::begin(cont)) const & val) -> bool {
-            return std::find(beg, end, helpIndx++) == end;
+    return eastl::stable_partition(eastl::begin(cont), eastl::end(cont),
+        [&](decltype(*eastl::begin(cont)) const & val) -> bool {
+            return eastl::find(beg, end, helpIndx++) == end;
         });
 }
 
@@ -151,85 +111,51 @@ void EraseIndices(Cont& cont, IndCont& indices) {
 }
 
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices
-template<typename T, typename Aa, typename Ab>
-inline typename vectorSTD<T, Aa> erase_indices(const typename vectorSTD<T, Aa>& data, vectorSTD<vec_size, Ab>& indicesToDelete) {
-    std::sort(std::cbegin(indicesToDelete), std::cend(indicesToDelete));
+
+template<typename T, typename A>
+inline vectorEASTL<T, A> erase_indices(const vectorEASTL<T, A>& data, vectorEASTL<size_t>& indicesToDelete/* can't assume copy elision, don't pass-by-value */) {
+    eastl::sort(eastl::begin(indicesToDelete), eastl::end(indicesToDelete));
     return erase_sorted_indices(data, indicesToDelete);
 }
 
-template<typename T, typename Aa, typename Ab>
-inline typename vectorSTD<T, Aa> erase_sorted_indices(const typename vectorSTD<T, Aa>& data, vectorSTD<vec_size, Ab>& indicesToDelete)
+template<typename T, typename A>
+inline vectorEASTL<T, A> erase_sorted_indices(const vectorEASTL<T, A>& data, vectorEASTL<size_t>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     if (indicesToDelete.empty()) {
         return data;
     }
 
-    vectorSTD<T, Aa> ret;
+    vectorEASTL<T, A> ret;
     ret.reserve(data.size() - indicesToDelete.size());
 
     // new we can assume there is at least 1 element to delete. copy blocks at a time.
-    vectorSTD<T, Aa>::const_iterator itBlockBegin = std::cbegin(data);
-    vectorSTD<T, Aa>::const_iterator itBlockEnd;
-    for (vec_size it : indicesToDelete)  {
-        itBlockEnd = std::cbegin(data) + it;
+    vectorEASTL<T, A>::const_iterator itBlockBegin = eastl::cbegin(data);
+    vectorEASTL<T, A>::const_iterator itBlockEnd;
+    for (size_t it : indicesToDelete) {
+        itBlockEnd = eastl::cbegin(data) + it;
         if (itBlockBegin != itBlockEnd) {
-            std::copy(itBlockBegin, itBlockEnd, std::back_inserter(ret));
+            eastl::copy(itBlockBegin, itBlockEnd, eastl::back_inserter(ret));
         }
         itBlockBegin = itBlockEnd + 1;
     }
 
     // copy last block.
     if (itBlockBegin != data.end()) {
-        std::copy(itBlockBegin, std::cend(data), std::back_inserter(ret));
-    }
-
-    return ret;
-}
-
-template<typename T, typename A>
-inline vectorSTD<T, A> erase_indices(const vectorSTD<T, A>& data, vectorSTD<vec_size>& indicesToDelete/* can't assume copy elision, don't pass-by-value */) {
-    std::sort(std::begin(indicesToDelete), std::end(indicesToDelete));
-    return erase_sorted_indices(data, indicesToDelete);
-}
-
-template<typename T, typename A>
-inline vectorSTD<T, A> erase_sorted_indices(const vectorSTD<T, A>& data, vectorSTD<vec_size>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
-{
-    if (indicesToDelete.empty()) {
-        return data;
-    }
-
-    vectorSTD<T, A> ret;
-    ret.reserve(data.size() - indicesToDelete.size());
-
-    // new we can assume there is at least 1 element to delete. copy blocks at a time.
-    vectorSTD<T, A>::const_iterator itBlockBegin = std::cbegin(data);
-    vectorSTD<T, A>::const_iterator itBlockEnd;
-    for (vec_size it : indicesToDelete) {
-        itBlockEnd = std::cbegin(data) + it;
-        if (itBlockBegin != itBlockEnd) {
-            std::copy(itBlockBegin, itBlockEnd, std::back_inserter(ret));
-        }
-        itBlockBegin = itBlockEnd + 1;
-    }
-
-    // copy last block.
-    if (itBlockBegin != data.end()) {
-        std::copy(itBlockBegin, std::cend(data), std::back_inserter(ret));
+        eastl::copy(itBlockBegin, eastl::cend(data), eastl::back_inserter(ret));
     }
 
     return ret;
 }
 
 template<typename T, typename A1, typename A2>
-inline vectorEASTL<T, A1> erase_indices(const vectorEASTL<T, A1>& data, vectorSTD<vec_size, A2>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+inline vectorEASTL<T, A1> erase_indices(const vectorEASTL<T, A1>& data, vectorEASTL<size_t, A2>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     eastl::sort(eastl::begin(indicesToDelete), eastl::end(indicesToDelete));
     return erase_sorted_indices(data, indicesToDelete);
 }
 
 template<typename T, typename A1, typename A2>
-inline vectorEASTL<T, A1> erase_sorted_indices(const vectorEASTL<T, A1>& data, vectorSTD<vec_size, A2>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+inline vectorEASTL<T, A1> erase_sorted_indices(const vectorEASTL<T, A1>& data, vectorEASTL<size_t, A2>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     if (indicesToDelete.empty()) {
         return data;
@@ -242,7 +168,7 @@ inline vectorEASTL<T, A1> erase_sorted_indices(const vectorEASTL<T, A1>& data, v
     // new we can assume there is at least 1 element to delete. copy blocks at a time.
     vectorEASTL<T, A1>::const_iterator itBlockBegin = eastl::cbegin(data);
     vectorEASTL<T, A1>::const_iterator itBlockEnd;
-    for (vec_size it : indicesToDelete) {
+    for (size_t it : indicesToDelete) {
         itBlockEnd = eastl::cbegin(data) + it;
         if (itBlockBegin != itBlockEnd) {
             eastl::copy(itBlockBegin, itBlockEnd, eastl::back_inserter(ret));

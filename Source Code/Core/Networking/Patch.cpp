@@ -39,6 +39,6 @@ bool Patch::compareData(const PatchData& data) {
     return updated;
 }
 
-const vectorSTD<FileData>& Patch::updateClient() { return ModelData; }
+const vectorEASTL<FileData>& Patch::updateClient() { return ModelData; }
 
 };  // namespace Divide

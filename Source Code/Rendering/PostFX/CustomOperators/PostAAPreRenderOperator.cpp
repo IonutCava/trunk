@@ -24,7 +24,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     desc._resolution = parent.inputRT()._rt->getResolution();
 
     {
-        vectorSTD<RTAttachmentDescriptor> att = {
+        vectorEASTL<RTAttachmentDescriptor> att = {
             { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
         };
 
@@ -47,7 +47,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         TextureDescriptor weightsDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
         weightsDescriptor.samplerDescriptor(sampler);
 
-        vectorSTD<RTAttachmentDescriptor> att = {
+        vectorEASTL<RTAttachmentDescriptor> att = {
             { weightsDescriptor, RTAttachmentType::Colour }
         };
 

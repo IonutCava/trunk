@@ -96,8 +96,8 @@ class ParticleEmitter : public SceneNode {
     GFXDevice& _context;
     std::shared_ptr<ParticleData> _particles;
 
-    vectorSTD<std::shared_ptr<ParticleSource>> _sources;
-    vectorSTD<std::shared_ptr<ParticleUpdater>> _updaters;
+    vectorEASTL<std::shared_ptr<ParticleSource>> _sources;
+    vectorEASTL<std::shared_ptr<ParticleUpdater>> _updaters;
 
     /// create particles
     bool _enabled = false;

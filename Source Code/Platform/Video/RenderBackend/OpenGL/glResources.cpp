@@ -45,7 +45,7 @@ const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, G
         _cachedVao = vao;
     }
     
-    const vec_size count = data->size();
+    const size_t count = data->size();
     if (count > 0) {
         assert(index <= count);
         return (*data)[index];
@@ -66,7 +66,7 @@ void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingPar
         _cachedVao = vao;
     }
 
-    const vec_size count = data->size();
+    const size_t count = data->size();
     assert(count > 0 && count > index);
     ACKNOWLEDGE_UNUSED(count);
 

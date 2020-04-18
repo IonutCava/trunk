@@ -62,11 +62,11 @@ bool SceneAnimator::init(PlatformContext& context) {
 
     const D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
     vectorEASTL<mat4<F32>> vec;
-    const vec_size animationCount = _animations.size();
+    const size_t animationCount = _animations.size();
     _skeletonLines.resize(animationCount);
 
     // pre-calculate the animations
-    for (vec_size i(0); i < animationCount; ++i) {
+    for (size_t i = 0; i < animationCount; ++i) {
         const std::shared_ptr<AnimEvaluator>& crtAnimation = _animations[i];
         const D64 duration = crtAnimation->duration();
         const D64 tickStep = crtAnimation->ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
@@ -158,7 +158,7 @@ const vectorEASTL<Line>& SceneAnimator::skeletonLines(I32 animationIndex, const 
     // create all the needed points
     vectorEASTL<Line>& lines = _skeletonLinesContainer.at(vecIndex);
     if (lines.empty()) {
-        lines.reserve(vec_size(boneCount()));
+        lines.reserve(boneCount());
         // Construct skeleton
         calculate(animationIndex, dt);
         // Start with identity transform

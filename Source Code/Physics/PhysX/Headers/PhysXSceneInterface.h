@@ -54,7 +54,7 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     virtual void process(const U64 deltaTimeUS) override;
 
     void addRigidActor(PhysXActor* const actor, bool threaded = true);
-    inline const vectorSTD<physx::PxMaterial*> getMaterials() {
+    inline const vectorEASTL<physx::PxMaterial*> getMaterials() {
         return _materials;
     }
     inline physx::PxScene* getPhysXScene() noexcept { return _gScene; }
@@ -65,8 +65,8 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     void addToScene(PhysXActor& actor);
 
    private:
-    using RigidMap = vectorSTD<PhysXActor*>;
-    using MaterialMap = vectorSTD<physx::PxMaterial*>;
+    using RigidMap = vectorEASTL<PhysXActor*>;
+    using MaterialMap = vectorEASTL<physx::PxMaterial*>;
     physx::PxScene* _gScene;
     physx::PxDefaultCpuDispatcher* _cpuDispatcher;
     MaterialMap _materials;

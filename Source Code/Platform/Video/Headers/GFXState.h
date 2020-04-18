@@ -64,11 +64,11 @@ struct GPUState : private NonCopyable {
     /// register a new display mode (resolution, bitdepth, etc).
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
 
-    inline vec_size getDisplayCount() const noexcept {
+    inline size_t getDisplayCount() const noexcept {
         return _supportedDisplayModes.size();
     }
 
-    inline const vectorSTD<GPUVideoMode>& getDisplayModes(vec_size displayIndex) const noexcept {
+    inline const vectorEASTL<GPUVideoMode>& getDisplayModes(size_t displayIndex) const noexcept {
         assert(displayIndex < _supportedDisplayModes.size());
         return _supportedDisplayModes[displayIndex];
     }
@@ -79,7 +79,7 @@ struct GPUState : private NonCopyable {
 
    protected:
     // Display system
-    std::array<vectorSTD<GPUVideoMode>, g_maxDisplays> _supportedDisplayModes;
+    std::array<vectorEASTL<GPUVideoMode>, g_maxDisplays> _supportedDisplayModes;
 };
 
 };  // namespace Divide

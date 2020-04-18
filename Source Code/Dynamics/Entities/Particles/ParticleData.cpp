@@ -97,11 +97,11 @@ void ParticleData::sort(bool invalidateCache) {
     }
     
 
-    std::sort(std::begin(_indices),
-             std::end(_indices),
-             [](const std::pair<U32, F32>& indexA, const std::pair<U32, F32>& indexB) {
-                 return indexA.second > indexB.second;
-             });
+    eastl::sort(eastl::begin(_indices),
+                eastl::end(_indices),
+                [](const std::pair<U32, F32>& indexA, const std::pair<U32, F32>& indexB) {
+                    return indexA.second > indexB.second;
+                });
 
    auto parsePositions = [count, this](const Task& parentTask) -> void {
         for (U32 i = 0; i < count; ++i) {
@@ -142,8 +142,8 @@ void ParticleData::swapData(U32 indexA, U32 indexB) {
     _misc[indexA].set(_misc[indexB]);
 }
 
-void ParticleData::setParticleGeometry(const vectorSTD<vec3<F32>>& particleGeometryVertices,
-                                       const vectorSTD<U32>& particleGeometryIndices,
+void ParticleData::setParticleGeometry(const vectorEASTL<vec3<F32>>& particleGeometryVertices,
+                                       const vectorEASTL<U32>& particleGeometryIndices,
                                        PrimitiveType particleGeometryType) {
     _particleGeometryVertices = particleGeometryVertices;
     _particleGeometryIndices = particleGeometryIndices;

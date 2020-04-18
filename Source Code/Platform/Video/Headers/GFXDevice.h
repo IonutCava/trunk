@@ -461,7 +461,7 @@ private:
     Pipeline* _textRenderPipeline = nullptr;
         
     Mutex _graphicsResourceMutex;
-    vectorSTD<std::tuple<GraphicsResource::Type, I64, U64>> _graphicResources;
+    vectorEASTL<std::tuple<GraphicsResource::Type, I64, U64>> _graphicResources;
 
     Rect<I32> _viewport;
     vec2<U16> _renderingResolution;
@@ -469,7 +469,7 @@ private:
     GFXShaderData _gpuBlock;
 
     Mutex _debugViewLock;
-    vectorSTD<DebugView_ptr> _debugViews;
+    vectorEASTL<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer = nullptr;
     GenericDrawCommand _defaultDrawCmd;
@@ -527,8 +527,8 @@ namespace Attorney {
 
        static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID, U64 nameHash) {
            UniqueLock<Mutex> w_lock(device._graphicsResourceMutex);
-           auto it = std::find_if(std::begin(device._graphicResources),
-                std::end(device._graphicResources),
+           auto it = eastl::find_if(eastl::begin(device._graphicResources),
+               eastl::end(device._graphicResources),
                 [type, GUID, nameHash](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) noexcept -> bool {
                     if (std::get<1>(crtEntry) == GUID) {
                         assert(std::get<0>(crtEntry) == type && std::get<2>(crtEntry) == nameHash);
@@ -536,7 +536,7 @@ namespace Attorney {
                     }
                     return false;
                 });
-           assert(it != std::cend(device._graphicResources));
+           assert(it != eastl::cend(device._graphicResources));
            device._graphicResources.erase(it);
    
        }

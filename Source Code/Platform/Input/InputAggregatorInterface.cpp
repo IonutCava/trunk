@@ -46,7 +46,7 @@ JoystickElement joystickElementByName(const stringImpl& elementName) {
     // Else, we have a button
     ret._type = JoystickElementType::BUTTON_PRESS;
 
-    vectorSTD<stringImpl> buttonElements = Util::Split<vectorSTD<stringImpl>, stringImpl>(elementName.c_str(), '_');
+    vectorEASTL<stringImpl> buttonElements = Util::Split<vectorEASTL<stringImpl>, stringImpl>(elementName.c_str(), '_');
     assert(buttonElements.size() == 2 && "Invalid joystick element name!");
     assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
     ret._elementIndex = Util::ConvertData<U32, stringImpl>(buttonElements[1].c_str());

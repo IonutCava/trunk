@@ -74,8 +74,8 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     // assert if double init!
     DIVIDE_ASSERT(particleData.get() != nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
     _particles = particleData;
-    const vectorSTD<vec3<F32>>& geometry = particleData->particleGeometryVertices();
-    const vectorSTD<U32>& indices = particleData->particleGeometryIndices();
+    const vectorEASTL<vec3<F32>>& geometry = particleData->particleGeometryVertices();
+    const vectorEASTL<U32>& indices = particleData->particleGeometryIndices();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {

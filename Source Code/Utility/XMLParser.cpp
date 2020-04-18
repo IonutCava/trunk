@@ -71,10 +71,10 @@ void populatePressRelease(PressReleaseActions& actions, const ptree & attributes
     actions.clear();
 
     U16 id = 0;
-    vectorSTD<std::string> actionsOut;
+    vectorEASTL<std::string> actionsOut;
     for (const auto it : actionNames) {
         const std::string actionList = attributes.get<std::string>(it.second, "");
-        Util::Split<vectorSTD<std::string>, std::string>(actionList.c_str(), ',', actionsOut);
+        Util::Split<vectorEASTL<std::string>, std::string>(actionList.c_str(), ',', actionsOut);
         for (const std::string& it2 : actionsOut) {
             if (!it2.empty()) {
                 std::stringstream ss(Util::Trim(it2));

@@ -44,7 +44,7 @@ struct FileData {
 struct PatchData {
     stringImpl sceneName = "";
     U32 size = 0u;
-    vectorSTD<stringImpl> name, modelName;
+    vectorEASTL<stringImpl> name, modelName;
 };
 
 class Patch : public Singleton<Patch> {
@@ -52,11 +52,11 @@ class Patch : public Singleton<Patch> {
 public:
     bool compareData(const PatchData& data);
     void addGeometry(const FileData& data);
-    const vectorSTD<FileData>& updateClient();
+    const vectorEASTL<FileData>& updateClient();
     void reset() { ModelData.clear(); };
 
 private:
-    vectorSTD<FileData> ModelData;
+    vectorEASTL<FileData> ModelData;
 
 };
 

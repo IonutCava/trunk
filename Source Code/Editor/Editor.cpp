@@ -647,7 +647,6 @@ bool Editor::render(const U64 deltaTime) {
     _statusBar->draw();
 
     for (DockedWindow* window : _dockedWindows) {
-        ImGuiWindowFlags oldFlags = 0;
         window->draw();
     }
 

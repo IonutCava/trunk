@@ -60,7 +60,7 @@ class glTexture final : public Texture,
     void resize(const bufferPtr ptr, const vec2<U16>& dimensions) final;
 
     void loadData(const TextureLoadInfo& info,
-                  const vectorSTD<ImageTools::ImageLayer>& imageLayers) final;
+                  const vectorEASTL<ImageTools::ImageLayer>& imageLayers) final;
 
     void loadData(const TextureLoadInfo& info,
                   const bufferPtr data,
@@ -78,7 +78,7 @@ class glTexture final : public Texture,
     void processTextureType() noexcept;
     void validateDescriptor() final;
     void loadDataCompressed(const TextureLoadInfo& info,
-                            const vectorSTD<ImageTools::ImageLayer>& imageLayers);
+                            const vectorEASTL<ImageTools::ImageLayer>& imageLayers);
 
     void loadDataUncompressed(const TextureLoadInfo& info,
                               bufferPtr data);

@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include <unordered_map>
+#include "EASTL/unordered_map.h"
 
 namespace goap {
     struct WorldState;
 
     class Action {
     public: 
-        typedef std::unordered_map<int, bool> operations;
-        typedef std::unordered_map<int, bool>::const_iterator operationsIterator;
+        typedef eastl::unordered_map<int, bool> operations;
+        typedef eastl::unordered_map<int, bool>::const_iterator operationsIterator;
 
     private:
         stringImpl name_; // The human-readable action name

@@ -47,7 +47,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
 
     {
         //Colour0 holds the LDR screen texture
-        vectorSTD<RTAttachmentDescriptor> att = {
+        vectorEASTL<RTAttachmentDescriptor> att = {
             { outputDescriptor, RTAttachmentType::Colour }
         };
 
@@ -70,7 +70,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
         lumaDescriptor.samplerDescriptor(lumaSampler);
         lumaDescriptor.autoMipMaps(true);
-        vectorSTD<RTAttachmentDescriptor> att = {
+        vectorEASTL<RTAttachmentDescriptor> att = {
             { lumaDescriptor, RTAttachmentType::Colour },
         };
 
@@ -94,7 +94,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         TextureDescriptor edgeDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
         edgeDescriptor.samplerDescriptor(sampler);
 
-        vectorSTD<RTAttachmentDescriptor> att = {
+        vectorEASTL<RTAttachmentDescriptor> att = {
             { edgeDescriptor, RTAttachmentType::Colour }
         };
 

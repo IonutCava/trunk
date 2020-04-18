@@ -287,8 +287,8 @@ class Scene : public Resource, public PlatformContextComponent {
 
        vectorEASTL<Player*> _scenePlayers;
        U64 _sceneTimerUS = 0ULL;
-       vectorSTD<D64> _taskTimers;
-       vectorSTD<D64> _guiTimersMS;
+       vectorEASTL<D64> _taskTimers;
+       vectorEASTL<D64> _guiTimersMS;
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
        XML::SceneNode _xmlSceneGraphRootNode;
@@ -313,8 +313,8 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorEASTL<Task*> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState = nullptr;
-       vectorSTD<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
-       vectorSTD<SGNRayResult> _sceneSelectionCandidates;
+       vectorEASTL<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
+       vectorEASTL<SGNRayResult> _sceneSelectionCandidates;
 
    protected:
        LightPool* _lightPool = nullptr;

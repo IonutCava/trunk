@@ -192,9 +192,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     }
 
     stringImpl refreshRates;
-    const vec_size displayCount = gpuState().getDisplayCount();
-    for (vec_size idx = 0; idx < displayCount; ++idx) {
-        const vectorSTD<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
+    const size_t displayCount = gpuState().getDisplayCount();
+    for (size_t idx = 0; idx < displayCount; ++idx) {
+        const vectorEASTL<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
         Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
 
         for (const GPUState::GPUVideoMode& mode : registeredModes) {
@@ -300,7 +300,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         lightingDetails.msaaSamples(sampleCount);
 
         {
-            vectorSTD<RTAttachmentDescriptor> attachments = {
+            vectorEASTL<RTAttachmentDescriptor> attachments = {
                 { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
                 { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
                 { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
@@ -351,7 +351,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     hiZDescriptor.samplerDescriptor(hiZSampler);
     hiZDescriptor.autoMipMaps(false);
 
-    vectorSTD<RTAttachmentDescriptor> hiZAttachments = {
+    vectorEASTL<RTAttachmentDescriptor> hiZAttachments = {
         { hiZDescriptor, RTAttachmentType::Depth, 0, VECTOR4_ZERO },
     };
 
@@ -380,7 +380,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
         editorDescriptor.samplerDescriptor(editorSampler);
 
-        vectorSTD<RTAttachmentDescriptor> attachments = {
+        vectorEASTL<RTAttachmentDescriptor> attachments = {
             { editorDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
         };
 
@@ -413,7 +413,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         hizRTDesc._attachments = hiZAttachments.data();
 
         {
-            vectorSTD<RTAttachmentDescriptor> attachments = {
+            vectorEASTL<RTAttachmentDescriptor> attachments = {
                 { environmentDescriptorPlanar, RTAttachmentType::Colour },
                 { depthDescriptorPlanar, RTAttachmentType::Depth },
             };
@@ -454,7 +454,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     revealageDescriptor.autoMipMaps(false);
     revealageDescriptor.samplerDescriptor(accumulationSampler);
 
-    vectorSTD<RTAttachmentDescriptor> oitAttachments = {
+    vectorEASTL<RTAttachmentDescriptor> oitAttachments = {
         { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
         { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
     };
@@ -469,7 +469,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         const RenderTarget& screenTarget = _rtPool->renderTarget(i == 0 ? RenderTargetUsage::SCREEN : RenderTargetUsage::SCREEN_MS);
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
         
-        vectorSTD<ExternalRTAttachmentDescriptor> externalAttachments = {
+        vectorEASTL<ExternalRTAttachmentDescriptor> externalAttachments = {
             { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
@@ -498,7 +498,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
             const RenderTarget& reflectTarget = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::REFLECTION_PLANAR, i));
             const RTAttachment_ptr& depthAttachment = reflectTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
 
-            vectorSTD<ExternalRTAttachmentDescriptor> externalAttachments = {
+            vectorEASTL<ExternalRTAttachmentDescriptor> externalAttachments = {
                  { depthAttachment,  RTAttachmentType::Depth }
             };
 
@@ -527,7 +527,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
         depthDescriptorCube.samplerDescriptor(reflectionSampler);
 
-        vectorSTD<RTAttachmentDescriptor> attachments = {
+        vectorEASTL<RTAttachmentDescriptor> attachments = {
             { environmentDescriptorCube, RTAttachmentType::Colour },
             { depthDescriptorCube, RTAttachmentType::Depth },
         };
@@ -1155,7 +1155,7 @@ void GFXDevice::stepResolution(bool increment) {
 
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
-    const vectorSTD<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
+    const vectorEASTL<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
 
     bool found = false;
     vec2<U16> foundRes;
@@ -2008,7 +2008,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 
-    vectorSTDFast <std::pair<stringImpl, Rect<I32>>> labelStack;
+    vectorEASTLFast <std::pair<stringImpl, Rect<I32>>> labelStack;
 
     GFX::SetViewportCommand setViewport = {};
     GFX::SendPushConstantsCommand pushConstants = {};
@@ -2072,24 +2072,24 @@ DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
     if (_debugViews.back()->_sortIndex == -1) {
         _debugViews.back()->_sortIndex = to_I16(_debugViews.size());
     }
-    std::sort(std::begin(_debugViews),
-              std::end(_debugViews),
-              [](const std::shared_ptr<DebugView>& a, const std::shared_ptr<DebugView>& b) noexcept -> bool {
-                  return a->_sortIndex < b->_sortIndex;
-               });
+    eastl::sort(eastl::begin(_debugViews),
+                eastl::end(_debugViews),
+                [](const std::shared_ptr<DebugView>& a, const std::shared_ptr<DebugView>& b) noexcept -> bool {
+                    return a->_sortIndex < b->_sortIndex;
+                });
 
     return view.get();
 }
 
 bool GFXDevice::removeDebugView(DebugView* view) {
     if (view != nullptr) {
-        auto it = std::find_if(std::begin(_debugViews),
-                              std::end(_debugViews),
-                               [view](const std::shared_ptr<DebugView>& entry) noexcept {
-                                  return view->getGUID() == entry->getGUID();
-                               });
+        auto it = eastl::find_if(eastl::begin(_debugViews),
+                                 eastl::end(_debugViews),
+                                 [view](const std::shared_ptr<DebugView>& entry) noexcept {
+                                    return view->getGUID() == entry->getGUID();
+                                 });
                    
-        if (it != std::cend(_debugViews)) {
+        if (it != eastl::cend(_debugViews)) {
             _debugViews.erase(it);
             return true;
         }

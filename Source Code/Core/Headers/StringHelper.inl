@@ -40,8 +40,8 @@ namespace Divide {
 namespace Util {
 
 template<typename T_vec, typename T_str>
-typename std::enable_if<std::is_same<T_vec, typename vectorSTD<T_str>>::value ||
-                        std::is_same<T_vec, typename vectorSTDFast<T_str>>::value, T_vec&>::type
+typename std::enable_if<std::is_same<T_vec, typename vectorEASTL<T_str>>::value ||
+                        std::is_same<T_vec, typename vectorEASTLFast<T_str>>::value, T_vec&>::type
 Split(const char* input, char delimiter, T_vec& elems) {
     elems.resize(0);
     if (input != nullptr) {
@@ -79,13 +79,13 @@ vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>&
             input = o;
         }
 
-        T_str::const_iterator start = std::begin(original);
-        T_str::const_iterator end = std::end(original);
-        T_str::const_iterator next = std::find(start, end, delimiter);
+        T_str::const_iterator start = eastl::begin(original);
+        T_str::const_iterator end = eastl::end(original);
+        T_str::const_iterator next = eastl::find(start, end, delimiter);
         while (next != end) {
             elems.emplace_back(start, next);
             start = next + 1;
-            next = std::find(start, end, delimiter);
+            next = eastl::find(start, end, delimiter);
         }
         elems.emplace_back(start, next);
     }
@@ -94,8 +94,7 @@ vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>&
 }
 
 template<typename T_vec, typename T_str>
-typename std::enable_if<std::is_same<T_vec, vectorSTD<T_str>>::value ||
-                        std::is_same<T_vec, vectorSTDFast<T_str>>::value ||
+typename std::enable_if<std::is_same<T_vec, vectorEASTLFast<T_str>>::value ||
                         std::is_same<T_vec, vectorEASTL<T_str>>::value, T_vec>::type
 Split(const char* input, char delimiter) {
     T_vec elems;
@@ -108,7 +107,7 @@ bool IsNumber(const T_str& s) {
 }
 
 template<typename T_str>
-void GetPermutations(const T_str& inputString, vectorSTD<T_str>& permutationContainer) {
+void GetPermutations(const T_str& inputString, vectorEASTL<T_str>& permutationContainer) {
     permutationContainer.clear();
     T_str tempCpy(inputString);
     std::sort(std::begin(tempCpy), std::end(tempCpy));
@@ -245,9 +244,9 @@ inline T_str Ltrim(const T_str& s) {
 
 template<typename T_str>
 inline T_str& Ltrim(T_str& s) {
-    s.erase(std::begin(s),
-            std::find_if(std::begin(s),
-                         std::end(s),
+    s.erase(eastl::begin(s),
+            eastl::find_if(eastl::begin(s),
+                         eastl::end(s),
                          [](char c) { return !std::isspace(c); }));
     return s;
 }
@@ -260,10 +259,10 @@ inline T_str Rtrim(const T_str& s) {
 
 template<typename T_str>
 inline T_str& Rtrim(T_str& s) {
-    s.erase(std::find_if(std::rbegin(s),
-                         std::rend(s),
+    s.erase(eastl::find_if(eastl::rbegin(s),
+                         eastl::rend(s),
                          [](char c) { return !std::isspace(c); }).base(),
-            std::end(s));
+            eastl::end(s));
     return s;
 }
 

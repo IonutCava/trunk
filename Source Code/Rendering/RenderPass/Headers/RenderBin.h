@@ -88,7 +88,7 @@ class RenderPassManager;
 /// depending on designation
 class RenderBin {
    public:
-    using RenderBinStack = vectorSTD<RenderBinItem>;
+    using RenderBinStack = vectorEASTL<RenderBinItem>;
     using SortedQueue = vectorEASTL<RenderingComponent*>;
     using SortedQueues = std::array<SortedQueue, RenderBinType::RBT_COUNT>;
 

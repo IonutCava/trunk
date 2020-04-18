@@ -242,7 +242,7 @@ void glBufferImpl::invalidateData(size_t offsetInBytes, size_t rangeInBytes) {
 }
 
 void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
-    const vectorSTD<Byte> newData(rangeInBytes, Byte{ 0 });
+    const vectorEASTL<Byte> newData(rangeInBytes, Byte{ 0 });
     writeData(offsetInBytes, rangeInBytes, newData.data());
 }
 

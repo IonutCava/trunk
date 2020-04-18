@@ -60,11 +60,6 @@ struct PushConstants {
     }
 
     template<typename T>
-    inline void set(U64 bindingHash, GFX::PushConstantType type, const vectorSTD<T>& values, bool flag = false) {
-        set(bindingHash, type, values.data(), values.size(), flag);
-    }
-
-    template<typename T>
     inline void set(U64 bindingHash, GFX::PushConstantType type, const vectorEASTL<T>& values, bool flag = false) {
         set(bindingHash, type, values.data(), values.size(), flag);
     }

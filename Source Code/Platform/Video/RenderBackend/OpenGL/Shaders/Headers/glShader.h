@@ -49,11 +49,11 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     struct LoadData {
         ShaderType _type = ShaderType::COUNT;
         Str64 _name = "";
-        std::unordered_set<U64> atoms;
+        eastl::unordered_set<U64> atoms;
         vectorEASTL<stringImpl> sourceCode;
     };
 
-    using ShaderLoadData = std::array<LoadData, to_base(ShaderType::COUNT)>;
+    using ShaderLoadData = eastl::array<LoadData, to_base(ShaderType::COUNT)>;
 
     template<typename T>
     struct UniformCache {
@@ -106,7 +106,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     friend class glShaderProgram;
     void dumpBinary();
 
-    inline const std::unordered_set<U64>& usedAtoms() const{
+    inline const eastl::unordered_set<U64>& usedAtoms() const noexcept {
         return _usedAtoms;
     }
 
@@ -140,14 +140,14 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     UseProgramStageMask _stageMask;
 
     Str256 _name;
-    std::unordered_set<U64> _usedAtoms;
+    eastl::unordered_set<U64> _usedAtoms;
     std::array<vectorEASTL<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
 
     ShaderVarMap _shaderVarLocation;
     UniformsByNameHash _uniformsByNameHash;
 
     /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
-    vectorSTD<std::pair<stringImpl, bool>> _definesList;
+    vectorEASTL<std::pair<stringImpl, bool>> _definesList;
 
    private:
     /// Shader cache

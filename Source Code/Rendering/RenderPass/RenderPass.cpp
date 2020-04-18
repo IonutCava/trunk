@@ -66,7 +66,7 @@ U8 RenderPass::DataBufferRingSize() {
     return g_bufferSizeFactor;
 }
 
-RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const vectorSTD<U8>& dependencies, bool performanceCounters)
+RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const vectorEASTL<U8>& dependencies, bool performanceCounters)
     : _parent(parent),
       _context(context),
       _sortKey(sortKey),

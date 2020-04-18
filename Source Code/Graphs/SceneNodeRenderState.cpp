@@ -35,7 +35,7 @@ void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage, RenderPassT
         assert(variant < Material::g_maxVariantsPerPass);
         
         RenderStagePass stagePass{ stage, passType, to_U8(variant), passIndex};
-        if (std::find(std::cbegin(_exclusionStagePasses), std::cend(_exclusionStagePasses), stagePass) == std::cend(_exclusionStagePasses)) {
+        if (eastl::find(eastl::cbegin(_exclusionStagePasses), eastl::cend(_exclusionStagePasses), stagePass) == eastl::cend(_exclusionStagePasses)) {
             _exclusionStagePasses.emplace_back(stagePass);
         }
     }
@@ -52,8 +52,8 @@ void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStage stage, Render
 
         RenderStagePass stagePass{ stage, passType, to_U8(variant), passIndex};
         
-        auto it = std::find(std::cbegin(_exclusionStagePasses), std::cend(_exclusionStagePasses), stagePass);
-        if (it != std::cend(_exclusionStagePasses)) {
+        auto it = eastl::find(eastl::cbegin(_exclusionStagePasses), eastl::cend(_exclusionStagePasses), stagePass);
+        if (it != eastl::cend(_exclusionStagePasses)) {
             _exclusionStagePasses.erase(it);
         } else {
             // Maybe handle this better? If we added a mask using the "g_AllPassIndexes" but want to remove a single specific pass, add all of the others?

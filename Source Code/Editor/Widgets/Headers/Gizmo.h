@@ -90,7 +90,7 @@ namespace Divide {
         bool _visible = false;
         bool _wasUsed = false;
         bool _shouldRegisterUndo = false;
-        vectorSTD<SceneGraphNode*> _selectedNodes;
+        vectorEASTL<SceneGraphNode*> _selectedNodes;
         ImGuiContext* _imguiContext = nullptr;
         TransformSettings _transformSettings;
         UndoEntry<TransformValues> _undoEntry;

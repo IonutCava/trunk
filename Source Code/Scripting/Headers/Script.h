@@ -81,7 +81,7 @@ protected:
     stringImpl _scriptSource;
     FileWithPath _scriptFile;
     FileType     _scriptFileType;
-    vectorSTD<Str64> _usedAtoms;
+    vectorEASTL<Str64> _usedAtoms;
 
     static I64 s_scriptFileWatcher;
 

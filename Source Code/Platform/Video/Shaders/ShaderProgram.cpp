@@ -205,14 +205,14 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
         return true;
     }
 
-    const ShaderProgramMap::const_iterator it = std::find_if(
-        std::cbegin(s_shaderPrograms),
-        std::cend(s_shaderPrograms),
+    const ShaderProgramMap::const_iterator it = eastl::find_if(
+        eastl::cbegin(s_shaderPrograms),
+        eastl::cend(s_shaderPrograms),
         [shaderHash](const ShaderProgramMap::value_type& item) {
             return item.second.second == shaderHash;
         });
 
-    if (it != std::cend(s_shaderPrograms)) {
+    if (it != eastl::cend(s_shaderPrograms)) {
         s_shaderPrograms.erase(it);
         return true;
     }
@@ -224,7 +224,7 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 ShaderProgram* ShaderProgram::findShaderProgram(I64 shaderHandle) {
     SharedLock<SharedMutex> r_lock(s_programLock);
     const auto& it = s_shaderPrograms.find(shaderHandle);
-    if (it != std::cend(s_shaderPrograms)) {
+    if (it != eastl::cend(s_shaderPrograms)) {
         return it->second.first;
     }
 
@@ -257,8 +257,8 @@ void ShaderProgram::rebuildAllShaders() {
     }
 }
 
-vectorSTD<Str256> ShaderProgram::getAllAtomLocations() {
-    static vectorSTD<Str256> atomLocations;
+vectorEASTL<Str256> ShaderProgram::getAllAtomLocations() {
+    static vectorEASTL<Str256> atomLocations;
     if (atomLocations.empty()) {
         // General
         atomLocations.emplace_back(Paths::g_assetsLocation +

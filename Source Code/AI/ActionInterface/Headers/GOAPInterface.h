@@ -44,8 +44,8 @@ using GOAPFact = I32;
 using GOAPValue = bool;
 using GOAPAction = goap::Action;
 using GOAPWorldState = goap::WorldState;
-using GOAPActionSet = vectorSTD<const GOAPAction*>;
-using GOAPPlan = vectorSTD<const GOAPAction*>;
+using GOAPActionSet = vectorEASTL<const GOAPAction*>;
+using GOAPPlan = vectorEASTL<const GOAPAction*>;
 
 inline const char* GOAPValueName(GOAPValue val) {
     return val ? "true" : "false";
@@ -86,7 +86,7 @@ class GOAPGoal : public goap::WorldState {
     GOAPPlan _currentPlan;
 };
 
-using GOAPGoalList = vectorSTD<GOAPGoal>;
+using GOAPGoalList = vectorEASTL<GOAPGoal>;
 
 }; // namespace AI
 };  // namespace Divide

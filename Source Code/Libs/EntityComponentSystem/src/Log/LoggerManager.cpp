@@ -31,7 +31,7 @@ namespace ECS { namespace Log { namespace Internal {
 		auto it = this->m_Cache.find(name);
 		if (it == this->m_Cache.end())
 		{		
-			this->m_Cache.insert(std::make_pair<std::string, Logger*>(name, new Logger()));
+			this->m_Cache[name] = new Logger();
 		}
 
 		return this->m_Cache[name];

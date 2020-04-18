@@ -45,47 +45,47 @@ void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
             // 1: sort by shaders
             // 2: if the shader is identical, sort by state hash
             // 3: if shader is identical and state hash is identical, sort by albedo ID
-            std::sort(stack.begin(),
-                      stack.end(),   
-                      [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
-                          // Sort by shader in all states The sort key is the shader id (for now)
-                          if (a._sortKeyA != b._sortKeyA) {
-                              return a._sortKeyA < b._sortKeyA;
-                          }
-                          // If the shader values are the same, we use the state hash for sorting
-                          // The _stateHash is a CRC value created based on the RenderState.
-                          if (a._stateHash != b._stateHash) {
-                              return a._stateHash < b._stateHash;
-                          }
-                          // If both the shader are the same and the state hashes match,
-                          // we sort by the secondary key (usually the texture id)
-                          if (a._sortKeyB != b._sortKeyB) {
-                              return a._sortKeyB < b._sortKeyB;
-                          }
-                          // Final fallback is front to back
-                          return a._distanceToCameraSq < b._distanceToCameraSq;
-                      });
+            eastl::sort(stack.begin(),
+                        stack.end(),   
+                        [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
+                            // Sort by shader in all states The sort key is the shader id (for now)
+                            if (a._sortKeyA != b._sortKeyA) {
+                                return a._sortKeyA < b._sortKeyA;
+                            }
+                            // If the shader values are the same, we use the state hash for sorting
+                            // The _stateHash is a CRC value created based on the RenderState.
+                            if (a._stateHash != b._stateHash) {
+                                return a._stateHash < b._stateHash;
+                            }
+                            // If both the shader are the same and the state hashes match,
+                            // we sort by the secondary key (usually the texture id)
+                            if (a._sortKeyB != b._sortKeyB) {
+                                return a._sortKeyB < b._sortKeyB;
+                            }
+                            // Final fallback is front to back
+                            return a._distanceToCameraSq < b._distanceToCameraSq;
+                        });
         } break;
         case RenderingOrder::BACK_TO_FRONT: {
-            std::sort(stack.begin(),
-                      stack.end(),
-                      [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
-                          return a._distanceToCameraSq > b._distanceToCameraSq;
-                      });
+            eastl::sort(stack.begin(),
+                        stack.end(),
+                        [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
+                            return a._distanceToCameraSq > b._distanceToCameraSq;
+                        });
         } break;
         case RenderingOrder::FRONT_TO_BACK: {
-            std::sort(stack.begin(),
-                      stack.end(),
-                      [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
-                          return a._distanceToCameraSq < b._distanceToCameraSq;
-                      });
+            eastl::sort(stack.begin(),
+                        stack.end(),
+                        [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
+                            return a._distanceToCameraSq < b._distanceToCameraSq;
+                        });
         } break;
         case RenderingOrder::WATER_FIRST: {
-            std::sort(stack.begin(),
-                      stack.end(),
-                      [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
-                          return a._renderable->getSGN().getNode().type() == SceneNodeType::TYPE_WATER;
-                      });
+            eastl::sort(stack.begin(),
+                        stack.end(),
+                        [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
+                            return a._renderable->getSGN().getNode().type() == SceneNodeType::TYPE_WATER;
+                        });
         } break;
         case RenderingOrder::NONE: {
             // no need to sort

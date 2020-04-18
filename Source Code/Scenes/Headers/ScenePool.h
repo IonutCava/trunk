@@ -60,14 +60,14 @@ protected:
 
     void init();
 
-    vectorSTD<Str128> sceneNameList(bool sorted) const;
+    vectorEASTL<Str128> sceneNameList(bool sorted) const;
 
 private:
     /// Pointer to the currently active scene
     Scene* _activeScene;
     Scene* _loadedScene;
     Scene* _defaultScene;
-    vectorSTD<Scene*> _createdScenes;
+    vectorEASTL<Scene*> _createdScenes;
 
     SceneManager& _parentMgr;
 

@@ -97,13 +97,13 @@ void Script::bootstrap() {
     const SysInfo& systemInfo = const_sysInfo();
     const std::string& path = systemInfo._pathAndFilename._path;
 
-    vectorSTD<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation.c_str(),
+    std::vector<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation.c_str(),
                                          path + Paths::Scripts::g_scriptsAtomsLocation.c_str() };
 
     _script = 
         std::make_unique<chaiscript::ChaiScript>(scriptpath,
                                                  scriptpath,
-                                                 vectorSTD<chaiscript::Options> 
+                                                 std::vector<chaiscript::Options> 
                                                  {
                                                     chaiscript::Options::Load_Modules,
                                                     chaiscript::Options::External_Scripts
@@ -156,7 +156,7 @@ void Script::handleOutput(const std::string &msg) {
 }
 
 void Script::onScriptModify(const char* script, FileUpdateEvent& evt) {
-    vectorSTD<Script*> scriptsToReload;
+    vectorEASTL<Script*> scriptsToReload;
 
     for (ScriptMap::value_type it : s_scripts) {
         for (const Str64& atom : it.second->_usedAtoms) {

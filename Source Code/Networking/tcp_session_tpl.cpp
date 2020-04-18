@@ -112,7 +112,7 @@ void tcp_session_tpl::handle_read_packet(const boost::system::error_code& ec,
         WorldPacket packet;
         try {
             boost::archive::text_iarchive ar(is);
-            ar& packet;
+            ar & packet;
         } catch (std::exception& e) {
             ASIO::LOG_PRINT(e.what(), true);
         }
@@ -138,7 +138,7 @@ void tcp_session_tpl::start_write() {
     ar & p;  // Archive the packet
 
     size_t header = buf.size();
-    vectorSTD<boost::asio::const_buffer> buffers;
+    vectorEASTL<boost::asio::const_buffer> buffers;
     buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
     buffers.push_back(buf.data());
     // Start an asynchronous operation to send a message.
@@ -242,7 +242,7 @@ void udp_broadcaster::sendPacket(const WorldPacket& p) {
     ar& p;  // Archive the packet
 
     size_t header = buf.size();
-    vectorSTD<boost::asio::const_buffer> buffers;
+    vectorEASTL<boost::asio::const_buffer> buffers;
     buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
     buffers.push_back(buf.data());
     boost::system::error_code ignored_ec;

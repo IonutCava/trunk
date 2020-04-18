@@ -103,7 +103,7 @@ struct SceneNode {
     Str64 name;
     Str32 type;
 
-    vectorSTD<SceneNode> children;
+    vectorEASTL<SceneNode> children;
 };
 
 void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene* const scene);

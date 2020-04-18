@@ -24,7 +24,7 @@ namespace ECS { namespace Log {
 
 	class LoggerManager
 	{
-		using LoggerCache = std::unordered_map<std::string, Logger*>;
+		using LoggerCache = eastl::unordered_map<std::string, Logger*>;
 
 		static constexpr const char* LOG_FILE_NAME = "ECS.log";
 		static constexpr const char* DEFAULT_LOGGER = "ECS";

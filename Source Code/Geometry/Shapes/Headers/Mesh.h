@@ -83,7 +83,7 @@ class Mesh : public Object3D {
         return _animator; 
     }
 
-    inline const vectorSTD<SubMesh_ptr>& subMeshList() const {
+    inline const vectorEASTL<SubMesh_ptr>& subMeshList() const {
         return _subMeshList;
     }
 
@@ -103,7 +103,7 @@ class Mesh : public Object3D {
     U64 _lastTimeStamp = 0ull;
     /// Animation player to animate the mesh if necessary
     std::shared_ptr<SceneAnimator> _animator;
-    vectorSTD<SubMesh_ptr> _subMeshList;
+    vectorEASTL<SubMesh_ptr> _subMeshList;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Mesh);

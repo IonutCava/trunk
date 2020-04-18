@@ -397,7 +397,7 @@ class Camera : public Resource {
        static void initPool();
        static void destroyPool();
 
-       static vectorSTD<U64> cameraList();
+       static vectorEASTL<U64> cameraList();
 
        static Camera* utilityCamera(UtilityCamera type);
 

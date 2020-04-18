@@ -153,7 +153,7 @@ class TextureDescriptor final : public PropertyDescriptor {
         return 0;
     }
 
-    const vectorSTD<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
+    const vectorEASTL<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
 
     /// A TextureDescriptor will always have a sampler, even if it is the default one
     PROPERTY_RW(SamplerDescriptor, samplerDescriptor);
@@ -171,7 +171,7 @@ class TextureDescriptor final : public PropertyDescriptor {
     PROPERTY_RW(bool, compressed, false);
 
    private:
-     vectorSTD<stringImpl> _sourceFileList;
+       vectorEASTL<stringImpl> _sourceFileList;
 };
 
 namespace XMLParser {

@@ -166,8 +166,13 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
                                                     : FXDisplayFunction::Normal)];
 
         PipelineDescriptor desc = _drawPipeline->descriptor();
-        desc._shaderFunctions[to_base(ShaderType::FRAGMENT)] = { std::cbegin(_shaderFunctionSelection), std::cend(_shaderFunctionSelection) };
-        _drawPipeline = context().gfx().newPipeline(desc);
+        auto& functions = desc._shaderFunctions[to_base(ShaderType::FRAGMENT)];
+
+        functions.resize(to_base(FXRoutines::COUNT));
+        for (U8 i = 0; i < to_U8(FXRoutines::COUNT); ++i) {
+            functions[i] = _shaderFunctionSelection[i];
+            _drawPipeline = context().gfx().newPipeline(desc);
+        }
         _filtersDirty = false;
     };
     

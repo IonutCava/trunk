@@ -146,7 +146,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         RenderTargetDescriptor desc = {};
         desc._resolution = vec2<U16>(g_shadowSettings.shadowMapResolution);
 
-        vectorSTD<RTAttachmentDescriptor> att;
+        vectorEASTL<RTAttachmentDescriptor> att;
         if_constexpr(Config::Lighting::USE_SEPARATE_VSM_PASS) {
             TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
             depthDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
@@ -202,7 +202,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         blurMapDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         blurMapDescriptor.samplerDescriptor(sampler);
 
-        vectorSTD<RTAttachmentDescriptor> att = {
+        vectorEASTL<RTAttachmentDescriptor> att = {
             { blurMapDescriptor, RTAttachmentType::Colour }
         };
 

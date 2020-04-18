@@ -64,7 +64,7 @@ struct GraphPlot2D : public GraphPlot {
     {
     }
 
-    vectorSTD<vec2<F32>> _coords;
+    vectorEASTL<vec2<F32>> _coords;
      
     bool empty() const noexcept override {
         return _coords.empty();
@@ -79,7 +79,7 @@ struct GraphPlot3D : public GraphPlot {
     {
     }
 
-    vectorSTD<vec3<F32>> _coords;
+    vectorEASTL<vec3<F32>> _coords;
 
     bool empty() const noexcept override {
         return _coords.empty();

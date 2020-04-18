@@ -111,7 +111,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     inline CommandOrderContainer& operator()() noexcept;
     inline const CommandOrderContainer& operator()() const noexcept;
 
-    inline vec_size size() const noexcept { return _commandOrder.size(); }
+    inline size_t size() const noexcept { return _commandOrder.size(); }
     inline void clear(bool clearMemory = true);
     inline bool empty() const noexcept;
 

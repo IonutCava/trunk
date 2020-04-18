@@ -72,14 +72,14 @@ void glVAOPool::allocate(U32 count, GLuint* vaosOUT) {
 void glVAOPool::deallocate(GLuint& vao) {
     assert(Runtime::isMainThread());
 
-    vectorSTD<std::pair<GLuint, bool>>::iterator it;
-    it = std::find_if(std::begin(_pool),
-        std::end(_pool),
+    vectorEASTL<std::pair<GLuint, bool>>::iterator it;
+    it = eastl::find_if(eastl::begin(_pool),
+        eastl::end(_pool),
         [vao](std::pair<GLuint, bool>& entry) noexcept {
             return entry.first == vao;
         });
 
-    assert(it != std::cend(_pool));
+    assert(it != eastl::cend(_pool));
     // We don't know what kind of state we may have in the current VAO so delete it and create a new one.
     Divide::GL_API::deleteVAOs(1, &(it->first));
     glCreateVertexArrays(1, &(it->first));

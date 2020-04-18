@@ -54,7 +54,7 @@ private:
     const size_t _loadingHash;
 
     static Mutex s_hashLock;
-    static std::unordered_set<size_t> s_loadingHashes;
+    static eastl::unordered_set<size_t> s_loadingHashes;
 };
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources

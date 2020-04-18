@@ -38,6 +38,19 @@
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Headers/RenderStagePass.h"
 
+namespace eastl {
+    template <>
+    struct hash<Divide::vec2<Divide::F32>>
+    {
+        size_t operator()(const Divide::vec2<Divide::F32>& a) const {
+            size_t h = 17;
+            Divide::Util::Hash_combine(h, a.x);
+            Divide::Util::Hash_combine(h, a.y);
+            return h;
+        }
+    };
+};
+
 namespace Divide {
 
 class SceneState;
@@ -55,6 +68,8 @@ FWD_DECLARE_MANAGED_CLASS(Mesh);
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(Terrain);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
+
+
 
 struct VegetationDetails {
     U16 billboardCount = 0;
@@ -156,10 +171,10 @@ class Vegetation : public SceneNode {
     static VertexBuffer* s_buffer;
     static ShaderBuffer* s_treeData;
     static ShaderBuffer* s_grassData;
-    static vectorSTD<Mesh_ptr> s_treeMeshes;
+    static vectorEASTL<Mesh_ptr> s_treeMeshes;
 
-    static std::unordered_set<vec2<F32>> s_treePositions;
-    static std::unordered_set<vec2<F32>> s_grassPositions;
+    static eastl::unordered_set<vec2<F32>> s_treePositions;
+    static eastl::unordered_set<vec2<F32>> s_grassPositions;
 
     static U32 s_maxChunks;
     static bool s_buffersBound;

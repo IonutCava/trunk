@@ -22,22 +22,22 @@ void UpdateListener::handleFileAction(FW::WatchID watchid, const FW::String& dir
 {
     // We can ignore files that end in a specific character. Many text editors, for examnple, append a '~' at the end of temp files
     if (!_ignoredEndingCharacters.empty()) {
-        if (std::find_if(std::cbegin(_ignoredEndingCharacters),
-            std::cend(_ignoredEndingCharacters),
+        if (eastl::find_if(eastl::cbegin(_ignoredEndingCharacters),
+            eastl::cend(_ignoredEndingCharacters),
             [filename](char character) {
             return std::tolower(filename.back()) == std::tolower(character);
-        }) != std::cend(_ignoredEndingCharacters)) {
+        }) != eastl::cend(_ignoredEndingCharacters)) {
             return;
         }
     }
 
     // We can specify a list of extensions to ignore for a specific listener to avoid, for example, parsing temporary OS files
     if (!_ignoredExtensions.empty()) {
-        if (std::find_if(std::cbegin(_ignoredExtensions),
-            std::cend(_ignoredExtensions),
+        if (eastl::find_if(eastl::cbegin(_ignoredExtensions),
+            eastl::cend(_ignoredExtensions),
             [filename](const Str8& extension) {
             return hasExtension(filename.c_str(), extension);
-        }) != std::cend(_ignoredExtensions)) {
+        }) != eastl::cend(_ignoredExtensions)) {
             return;
         }
     }

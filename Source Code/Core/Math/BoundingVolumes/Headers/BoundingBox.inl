@@ -54,7 +54,7 @@ inline bool BoundingBox::operator!=(const BoundingBox& B) const noexcept {
     return !compare(B);
 }
 
-inline void BoundingBox::createFromPoints(const vectorSTD<vec3<F32>>& points) noexcept {
+inline void BoundingBox::createFromPoints(const vectorEASTL<vec3<F32>>& points) noexcept {
     for (const vec3<F32>& p : points) {
         add(p);
     }

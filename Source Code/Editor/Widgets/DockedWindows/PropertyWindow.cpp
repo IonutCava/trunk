@@ -198,7 +198,7 @@ namespace Divide {
                     }
                     ImGui::Separator();
 
-                    vectorSTDFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
+                    vectorEASTLFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
                         if (comp->fields().empty()) {
                             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -231,7 +231,7 @@ namespace Divide {
 
                             ImGui::Separator();
 
-                            vectorSTD<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
+                            vectorEASTL<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
                                 ImGui::Text(field._name.c_str());
                                 //ImGui::NewLine();

@@ -10,7 +10,7 @@
 namespace Divide {
 
 Mutex ResourceLoadLock::s_hashLock;
-std::unordered_set<size_t> ResourceLoadLock::s_loadingHashes;
+eastl::unordered_set<size_t> ResourceLoadLock::s_loadingHashes;
 
 ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded)
     : _loadingHash(hash)

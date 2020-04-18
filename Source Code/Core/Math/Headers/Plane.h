@@ -185,7 +185,7 @@ class Plane {
 
 template<size_t N>
 using PlaneList = std::array<Plane<F32>, N>;
-using PlaneDynamicList = vectorSTD<Plane<F32>>;
+using PlaneDynamicList = vectorEASTL<Plane<F32>>;
 
 };  // namespace Divide
 

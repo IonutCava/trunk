@@ -83,7 +83,7 @@ public:
 
     void idle();
 
-    vectorSTD<Str128> sceneNameList(bool sorted = true) const;
+    vectorEASTL<Str128> sceneNameList(bool sorted = true) const;
 
     Scene& getActiveScene();
     const Scene& getActiveScene() const;
@@ -250,7 +250,7 @@ private:
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerRemoveQueue;
 
-    vectorSTD<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
+    vectorEASTL<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
 
     struct SwitchSceneTarget {
         Str128 _targetSceneName = "";

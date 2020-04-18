@@ -330,7 +330,7 @@ bool glShader::loadFromBinary() {
     // Load the program from the binary file, if available and allowed, to avoid linking.
     if (ShaderProgram::useShaderBinaryCache()) {
         // Load the program's binary format from file
-        vectorSTD<Byte> data;
+        vectorEASTL<Byte> data;
         if (readFile((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str(),
                      (glShaderProgram::decorateFileName(_name) + ".fmt").c_str(),
                      data,
@@ -436,15 +436,15 @@ void glShader::cacheActiveUniforms() {
         GLint numActiveUniforms = 0;
         glGetProgramInterfaceiv(_programHandle, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
 
-        vectorSTD<GLchar> nameData(256);
-        vectorSTD<GLenum> properties;
+        vectorEASTL<GLchar> nameData(256);
+        vectorEASTL<GLenum> properties;
         properties.push_back(GL_NAME_LENGTH);
         properties.push_back(GL_TYPE);
         properties.push_back(GL_ARRAY_SIZE);
         properties.push_back(GL_BLOCK_INDEX);
         properties.push_back(GL_LOCATION);
 
-        vectorSTD<GLint> values(properties.size());
+        vectorEASTL<GLint> values(properties.size());
 
         for (GLint attrib = 0; attrib < numActiveUniforms; ++attrib) {
             glGetProgramResourceiv(_programHandle, GL_UNIFORM, attrib, (GLsizei)properties.size(), properties.data(), (GLsizei)values.size(), NULL, &values[0]);
@@ -593,12 +593,12 @@ void glShader::addShaderDefine(const stringImpl& define, bool appendPrefix) {
 /// Remove a define from the shader. The defined must have been added previously
 void glShader::removeShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, true));
-        if (it == std::end(_definesList)) {
-            it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, false));
+    auto it = eastl::find(eastl::begin(_definesList), eastl::end(_definesList), std::make_pair(define, true));
+        if (it == eastl::end(_definesList)) {
+            it = eastl::find(eastl::begin(_definesList), eastl::end(_definesList), std::make_pair(define, false));
         }
     // If we find it, we remove it
-    if (it != std::end(_definesList)) {
+    if (it != eastl::end(_definesList)) {
         _definesList.erase(it);
         _shouldRecompile = true;
     } else {

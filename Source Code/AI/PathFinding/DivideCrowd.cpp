@@ -154,17 +154,17 @@ I32 DivideDtCrowd::addAgent(const vec3<F32>& position, F32 maxSpeed,
     return idx;
 }
 
-vectorSTD<dtCrowdAgent*> DivideDtCrowd::getActiveAgents() {
+vectorEASTL<dtCrowdAgent*> DivideDtCrowd::getActiveAgents() {
     dtCrowdAgent** resultEntries = MemoryManager_NEW dtCrowdAgent * [getMaxNbAgents()];
     I32 size = _crowd->getActiveAgents(resultEntries, getMaxNbAgents());
 
-    vectorSTD<dtCrowdAgent*> result(resultEntries, resultEntries + size);
+    vectorEASTL<dtCrowdAgent*> result(resultEntries, resultEntries + size);
     MemoryManager::DELETE_ARRAY(resultEntries);
     return result;
 }
 
-vectorSTD<I32> DivideDtCrowd::getActiveAgentIDs() {
-    vectorSTD<I32> result;
+vectorEASTL<I32> DivideDtCrowd::getActiveAgentIDs() {
+    vectorEASTL<I32> result;
     result.reserve(getMaxNbAgents());
     const dtCrowdAgent* agent = nullptr;
     for (I32 i = 0; i < getMaxNbAgents(); i++) {

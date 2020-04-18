@@ -58,9 +58,9 @@ class AnimationChannel {
 
     U64 _nameKey;
     stringImpl _name;
-    vectorSTD<aiVectorKey> _positionKeys;
-    vectorSTD<aiQuatKey> _rotationKeys;
-    vectorSTD<aiVectorKey> _scalingKeys;
+    vectorEASTL<aiVectorKey> _positionKeys;
+    vectorEASTL<aiQuatKey> _rotationKeys;
+    vectorEASTL<aiVectorKey> _scalingKeys;
     /** The number of position keys */
     U32 _numPositionKeys;
     U32 _numRotationKeys;
@@ -83,11 +83,11 @@ class AnimEvaluator {
         return to_U32(_transforms.size());
     }
 
-    inline vectorSTD<vectorEASTL<mat4<F32>>>& transforms() noexcept {
+    inline vectorEASTL<vectorEASTL<mat4<F32>>>& transforms() noexcept {
         return _transforms;
     }
     
-    inline const vectorSTD<vectorEASTL<mat4<F32>>>& transforms() const noexcept {
+    inline const vectorEASTL<vectorEASTL<mat4<F32>>>& transforms() const noexcept {
         return _transforms;
     }
 
@@ -159,7 +159,7 @@ class AnimEvaluator {
    protected:
     stringImpl _name;
     /// Array to return transformations results inside.
-    vectorSTD<vectorEASTL<mat4<F32>>> _transforms;
+    vectorEASTL<vectorEASTL<mat4<F32>>> _transforms;
     /// play forward == true, play backward == false
     bool _playAnimationForward;
     D64 _lastTime;
@@ -167,9 +167,9 @@ class AnimEvaluator {
     D64 _ticksPerSecond;
 
    private:
-    vectorSTD<vec3<U32>> _lastPositions;
+    vectorEASTL<vec3<U32>> _lastPositions;
     /// vector that holds all bone channels
-    vectorSTD<AnimationChannel> _channels;
+    vectorEASTL<AnimationChannel> _channels;
     /// GPU buffer to hold bone transforms
     ShaderBuffer* _boneTransformBuffer;
 };

@@ -147,7 +147,7 @@ class Console : private NonCopyable {
     static void printToFile(const OutputEntry& entry);
 
    private:
-    static vectorSTD<ConsolePrintCallback> _guiConsoleCallbacks;
+    static vectorEASTL<ConsolePrintCallback> _guiConsoleCallbacks;
     static bool _timestamps;
     static bool _threadID;
     static bool _enabled;

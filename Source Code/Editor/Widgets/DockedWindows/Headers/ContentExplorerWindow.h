@@ -40,8 +40,8 @@ namespace Divide {
 
     struct Directory {
         stringImpl _path;
-        vectorSTDFast<std::pair<Str256, Str64>> _files;
-        vectorSTDFast<std::shared_ptr<Directory>> _children;
+        vectorEASTLFast<std::pair<Str256, Str64>> _files;
+        vectorEASTLFast<std::shared_ptr<Directory>> _children;
     };
 
     class ContentExplorerWindow : public DockedWindow {
@@ -75,7 +75,7 @@ namespace Divide {
         Texture_ptr _fileIcon = nullptr;
         std::array<Texture_ptr, to_base(GeometryFormat::COUNT)> _geometryIcons = {};
         mutable const Directory* _selectedDir = nullptr;
-        vectorSTDFast<Directory> _currentDirectories;
+        vectorEASTLFast<Directory> _currentDirectories;
 
         hashMap<size_t, Texture_ptr> _loadedTextures;
         hashMap<size_t, Mesh_ptr> _loadedModels;

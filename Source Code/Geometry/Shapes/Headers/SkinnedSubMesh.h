@@ -45,8 +45,8 @@ class SkinnedSubMesh : public SubMesh {
         COUNT
     };
 
-    using BoundingBoxPerAnimation = vectorSTD<BoundingBox>;
-    using BoundingBoxPerAnimationStatus = vectorSTD<BoundingBoxState>;
+    using BoundingBoxPerAnimation = vectorEASTL<BoundingBox>;
+    using BoundingBoxPerAnimationStatus = vectorEASTL<BoundingBoxState>;
 
    public:
     explicit SkinnedSubMesh(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);

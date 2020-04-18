@@ -50,7 +50,7 @@ class ParticleData {
         COUNT
     };
     /// helper array used for sorting
-    vectorSTDFast<std::pair<U32, F32>> _indices;
+    vectorEASTLFast<std::pair<U32, F32>> _indices;
     vectorEASTL<vec4<F32>> _renderingPositions;
     vectorEASTL<UColour4>  _renderingColours;
     /// x,y,z = position; w = size
@@ -71,8 +71,8 @@ class ParticleData {
     stringImpl _textureFileName;
 
 
-    void setParticleGeometry(const vectorSTD<vec3<F32>>& particleGeometryVertices,
-                             const vectorSTD<U32>& particleGeometryIndices,
+    void setParticleGeometry(const vectorEASTL<vec3<F32>>& particleGeometryVertices,
+                             const vectorEASTL<U32>& particleGeometryIndices,
                              PrimitiveType particleGeometryType);
 
     void setBillboarded(const bool state);
@@ -81,11 +81,11 @@ class ParticleData {
         return _particleGeometryType;
     }
 
-    inline const vectorSTD<vec3<F32>>& particleGeometryVertices() const {
+    inline const vectorEASTL<vec3<F32>>& particleGeometryVertices() const {
         return _particleGeometryVertices;
     }
 
-    inline const vectorSTD<U32>& particleGeometryIndices() const {
+    inline const vectorEASTL<U32>& particleGeometryIndices() const {
         return _particleGeometryIndices;
     }
 
@@ -113,8 +113,8 @@ class ParticleData {
     U8  _optionsMask;
 
     bool _isBillboarded;
-    vectorSTD<vec3<F32>> _particleGeometryVertices;
-    vectorSTD<U32> _particleGeometryIndices;
+    vectorEASTL<vec3<F32>> _particleGeometryVertices;
+    vectorEASTL<U32> _particleGeometryIndices;
     PrimitiveType _particleGeometryType;
 
     GFXDevice& _context;

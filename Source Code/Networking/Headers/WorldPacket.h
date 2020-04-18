@@ -48,14 +48,36 @@ class WorldPacket : public ByteBuffer {
     friend class boost::serialization::access;
 
     template <typename Archive>
-    void serialize(Archive& ar, const unsigned int version) {
+    void load(Archive& ar, const unsigned int version) {
         ACKNOWLEDGE_UNUSED(version);
+        size_t storageSize = 0;
+
+        ar& _rpos;
+        ar& _wpos;
+        ar& storageSize;
+
+        _storage.resize(storageSize);
+        for (size_t i = 0; i < storageSize; ++i) {
+            ar & _storage[i];
+        }
+        ar& m_opcode;
+    }
+
+    template <typename Archive>
+    void save(Archive& ar, const unsigned int version) const {
+        ACKNOWLEDGE_UNUSED(version);
+        const size_t storageSize = _storage.size();
 
         ar & _rpos;
         ar & _wpos;
-        ar & _storage;
+        ar & storageSize;
+        for (size_t i = 0; i < storageSize; ++i) {
+            ar & _storage[i];
+        }
         ar & m_opcode;
     }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
    protected:
     OPCodes::ValueType m_opcode;

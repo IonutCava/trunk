@@ -19,15 +19,15 @@ const EnvironmentProbeList& SceneEnvironmentProbePool::getNearestSorted(const ve
     if (!_isSorted) {
         _sortedProbes.resize(0);
 
-        _sortedProbes.insert(std::cend(_sortedProbes), std::cbegin(_envProbes), std::cend(_envProbes));
+        _sortedProbes.insert(eastl::cend(_sortedProbes), eastl::cbegin(_envProbes), eastl::cend(_envProbes));
 
         auto sortFunc = [&position](const EnvironmentProbe_ptr& a, const EnvironmentProbe_ptr& b) -> bool {
             return a->distanceSqTo(position) < b->distanceSqTo(position);
         };
 
-        std::sort(std::begin(_sortedProbes), std::end(_sortedProbes), sortFunc);
+        eastl::sort(eastl::begin(_sortedProbes), eastl::end(_sortedProbes), sortFunc);
         U32 lowerLimit = std::min(Config::MAX_REFLECTIVE_PROBES_PER_PASS, to_U32(_sortedProbes.size()));
-        _sortedProbes.erase(std::begin(_sortedProbes) + lowerLimit, std::end(_sortedProbes));
+        _sortedProbes.erase(eastl::begin(_sortedProbes) + lowerLimit, eastl::end(_sortedProbes));
         _isSorted = true;
     }
 
@@ -56,10 +56,10 @@ void SceneEnvironmentProbePool::removeProbe(EnvironmentProbe_wptr probe) {
     if (!probe.expired()) {
         EnvironmentProbe_ptr probePtr = probe.lock();
         I64 probeGUID = probePtr->getGUID();
-        _envProbes.erase(std::remove_if(std::begin(_envProbes), std::end(_envProbes),
+        _envProbes.erase(eastl::remove_if(eastl::begin(_envProbes), eastl::end(_envProbes),
                                        [&probeGUID](const EnvironmentProbe_ptr& probe)
                                             -> bool { return probe->getGUID() == probeGUID; }),
-                         std::end(_envProbes));
+                         eastl::end(_envProbes));
         probePtr.reset();
         _isSorted = false;
     }

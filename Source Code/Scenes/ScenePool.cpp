@@ -21,12 +21,12 @@ ScenePool::ScenePool(SceneManager& parentMgr)
 
 ScenePool::~ScenePool()
 {
-    vectorSTD<Scene*> tempScenes;
+    vectorEASTL<Scene*> tempScenes;
     {   
         SharedLock<SharedMutex> r_lock(_sceneLock);
-        tempScenes.insert(std::cend(tempScenes),
-                          std::cbegin(_createdScenes),
-                          std::cend(_createdScenes));
+        tempScenes.insert(eastl::cend(tempScenes),
+                          eastl::cbegin(_createdScenes),
+                          eastl::cend(_createdScenes));
     }
 
     for (Scene* scene : tempScenes) {
@@ -118,12 +118,12 @@ bool ScenePool::deleteScene(Scene*& scene) {
         {
             UniqueLock<SharedMutex> w_lock(_sceneLock);
             _createdScenes.erase(
-                std::find_if(std::cbegin(_createdScenes),
-                             std::cend(_createdScenes),
-                                [&targetGUID](Scene* scene) -> bool
-                            {
-                                return scene->getGUID() == targetGUID;
-                            }));
+                eastl::find_if(eastl::cbegin(_createdScenes),
+                               eastl::cend(_createdScenes),
+                               [&targetGUID](Scene* scene) -> bool
+                               {
+                                   return scene->getGUID() == targetGUID;
+                               }));
         }
 
         delete scene;
@@ -135,14 +135,14 @@ bool ScenePool::deleteScene(Scene*& scene) {
     return false;
 }
 
-vectorSTD<Str128> ScenePool::sceneNameList(bool sorted) const {
-    vectorSTD<Str128> scenes;
+vectorEASTL<Str128> ScenePool::sceneNameList(bool sorted) const {
+    vectorEASTL<Str128> scenes;
     for (SceneNameMap::value_type it : g_sceneNameMap) {
         scenes.push_back(it.second);
     }
 
     if (sorted) {
-        std::sort(std::begin(scenes), std::end(scenes), [](const Str128& a, const Str128& b)-> bool {
+        eastl::sort(eastl::begin(scenes), eastl::end(scenes), [](const Str128& a, const Str128& b)-> bool {
             return a < b;
         });
     }

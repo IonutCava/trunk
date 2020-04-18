@@ -94,7 +94,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     using ShaderProgramMapEntry = std::pair<ShaderProgram*, size_t>;
     using ShaderProgramMap = ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry>;
     using AtomMap = ska::bytell_hash_map<U64 /*name hash*/, stringImpl>;
-    using ShaderQueue = std::stack<ShaderProgram*, vectorSTDFast<ShaderProgram*> >;
+    using ShaderQueue = std::stack<ShaderProgram*, vectorEASTLFast<ShaderProgram*> >;
 
 
    public:
@@ -123,11 +123,11 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual void update(const U64 deltaTimeUS) = 0;
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
-    inline vec_size getFunctionCount(ShaderType shader) noexcept {
+    inline size_t getFunctionCount(ShaderType shader) noexcept {
         return _functionIndex[to_U32(shader)].size();
     }
 
-    inline void setFunctionCount(ShaderType shader, vec_size count) {
+    inline void setFunctionCount(ShaderType shader, size_t count) {
         _functionIndex[to_U32(shader)].resize(count, 0);
     }
 
@@ -182,7 +182,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static void rebuildAllShaders();
 
-    static vectorSTD<Str256> getAllAtomLocations();
+    static vectorEASTL<Str256> getAllAtomLocations();
 
     static bool useShaderTexCache() noexcept { return s_useShaderTextCache; }
     static bool useShaderBinaryCache() noexcept { return s_useShaderBinaryCache; }
@@ -215,8 +215,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static SharedMutex s_programLock;
 
     private:
-        std::array<vectorSTD<U32>, to_base(ShaderType::COUNT)> _functionIndex;
-        std::array<vectorSTD<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
+        std::array<vectorEASTL<U32>, to_base(ShaderType::COUNT)> _functionIndex;
+        std::array<vectorEASTL<U32>, to_base(ShaderType::COUNT)> _availableFunctionIndex;
 
     protected:
         template <typename T>

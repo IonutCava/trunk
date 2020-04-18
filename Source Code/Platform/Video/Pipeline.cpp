@@ -12,7 +12,7 @@ size_t PipelineDescriptor::getHash() const noexcept {
     for (U8 i = 0; i < to_base(ShaderType::COUNT); ++i) {
         Util::Hash_combine(_hash, i);
 
-        const vectorSTD<U32>& functions = _shaderFunctions[i];
+        const vectorEASTL<U32>& functions = _shaderFunctions[i];
         for (const U32 function : functions) {
             Util::Hash_combine(_hash, function);
         }

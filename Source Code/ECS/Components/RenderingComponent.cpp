@@ -687,7 +687,7 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
         return;
     }
 
-    _envProbes.insert(std::cend(_envProbes), std::cbegin(probes), std::cend(probes));
+    _envProbes.insert(eastl::cend(_envProbes), eastl::cbegin(probes), eastl::cend(probes));
 
     TransformComponent* const transform = _parentSGN.get<TransformComponent>();
     if (transform) {
@@ -696,7 +696,7 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
             return a->distanceSqTo(nodePos) < b->distanceSqTo(nodePos);
         };
 
-        std::sort(std::begin(_envProbes), std::end(_envProbes), sortFunc);
+        eastl::sort(eastl::begin(_envProbes), eastl::end(_envProbes), sortFunc);
     }
 
     RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;

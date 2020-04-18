@@ -95,7 +95,7 @@ public:
     RenderPass& addRenderPass(const Str64& renderPassName,
                               U8 orderKey,
                               RenderStage renderStage,
-                              vectorSTD<U8> dependencies = {},
+                              vectorEASTL<U8> dependencies = {},
                               bool usePerformanceCounters = false);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const Str64& name);

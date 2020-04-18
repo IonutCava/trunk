@@ -134,7 +134,6 @@ class Object3D : public SceneNode {
     // Create a list of triangles from the vertices + indices lists based on primitive type
     bool computeTriangleList();
 
-    static vectorSTD<SceneGraphNode*> filterByType(const vectorSTD<SceneGraphNode*>& nodes, ObjectType filter);
     static vectorEASTL<SceneGraphNode*> filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter);
 
     virtual const char* getTypeName() const override;

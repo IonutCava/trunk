@@ -998,7 +998,7 @@ bool Scene::load(const Str128& name) {
 
     SceneGraphNode& rootNode = _sceneGraph->getRoot();
 
-    vectorSTD<XML::SceneNode>& rootChildren = _xmlSceneGraphRootNode.children;
+    vectorEASTL<XML::SceneNode>& rootChildren = _xmlSceneGraphRootNode.children;
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(rootChildren.size());
     descriptor._partitionSize = 1u;
@@ -1460,11 +1460,11 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
     _currentHoverTarget[idx] = -1;
     if (!_sceneSelectionCandidates.empty()) {
         // If we don't force selections, remove all of the nodes that lack a SelectionComponent
-        std::sort(std::begin(_sceneSelectionCandidates),
-                  std::end(_sceneSelectionCandidates),
-                  [](const SGNRayResult& A, const SGNRayResult& B) -> bool {
-                      return A.dist < B.dist;
-                  });
+        eastl::sort(eastl::begin(_sceneSelectionCandidates),
+                    eastl::end(_sceneSelectionCandidates),
+                    [](const SGNRayResult& A, const SGNRayResult& B) -> bool {
+                        return A.dist < B.dist;
+                    });
 
         SceneGraphNode* target = nullptr;
         for (const SGNRayResult& result : _sceneSelectionCandidates) {

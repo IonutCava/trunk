@@ -68,13 +68,13 @@ namespace Divide {
     bool DescriptorSet::addShaderBuffer(const ShaderBufferBinding& entry) {
         assert(entry._buffer != nullptr && entry._binding != ShaderBufferLocation::COUNT);
 
-        ShaderBufferList::iterator it = std::find_if(std::begin(_shaderBuffers),
-                                                     std::end(_shaderBuffers),
+        ShaderBufferList::iterator it = eastl::find_if(eastl::begin(_shaderBuffers),
+                                                     eastl::end(_shaderBuffers),
                                                      [&entry](const ShaderBufferBinding& binding) noexcept -> bool {
                                                          return binding._binding == entry._binding;
                                                      });
 
-        if (it == std::end(_shaderBuffers)) {
+        if (it == eastl::end(_shaderBuffers)) {
             _shaderBuffers.push_back(entry);
             return true;
         }

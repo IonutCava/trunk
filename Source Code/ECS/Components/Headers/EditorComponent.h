@@ -193,8 +193,8 @@ namespace Divide {
 
         void registerField(EditorComponentField&& field);
 
-        inline vectorSTD<EditorComponentField>& fields() noexcept { return _fields; }
-        inline const vectorSTD<EditorComponentField>& fields() const noexcept { return _fields; }
+        inline vectorEASTL<EditorComponentField>& fields() noexcept { return _fields; }
+        inline const vectorEASTL<EditorComponentField>& fields() const noexcept { return _fields; }
 
         inline void onChangedCbk(const DELEGATE<void, const char*> cbk) {
             _onChangedCbk = cbk;
@@ -216,17 +216,17 @@ namespace Divide {
 
       protected:
         DELEGATE<void, const char*> _onChangedCbk;
-        vectorSTD<EditorComponentField> _fields;
+        vectorEASTL<EditorComponentField> _fields;
     };
 
     namespace Attorney {
         class EditorComponentEditor {
           private:
-            static vectorSTD<EditorComponentField>& fields(EditorComponent& comp) noexcept {
+            static vectorEASTL<EditorComponentField>& fields(EditorComponent& comp) noexcept {
                 return comp._fields;
             }
 
-            static const vectorSTD<EditorComponentField>& fields(const EditorComponent& comp) noexcept {
+            static const vectorEASTL<EditorComponentField>& fields(const EditorComponent& comp) noexcept {
                 return comp._fields;
             }
 

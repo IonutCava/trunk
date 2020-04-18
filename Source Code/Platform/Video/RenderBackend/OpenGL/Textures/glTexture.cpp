@@ -291,7 +291,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
-                         const vectorSTD<ImageTools::ImageLayer>& imageLayers) {
+                         const vectorEASTL<ImageTools::ImageLayer>& imageLayers) {
     if (info._layerIndex == 0) {
         _width = imageLayers[0]._dimensions.width;
         _height = imageLayers[0]._dimensions.height;
@@ -332,7 +332,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,
-                                   const vectorSTD<ImageTools::ImageLayer>& imageLayers) {
+                                   const vectorEASTL<ImageTools::ImageLayer>& imageLayers) {
 
     _descriptor.autoMipMaps(false);
     const GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());

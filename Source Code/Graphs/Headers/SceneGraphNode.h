@@ -186,7 +186,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void postLoad();
 
         /// Find the graph nodes whom's bounding boxes intersects the given ray
-        bool intersect(const Ray& ray, F32 start, F32 end, vectorSTD<SGNRayResult>& intersections) const;
+        bool intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<SGNRayResult>& intersections) const;
 
         void changeUsageContext(const NodeUsageContext& newContext);
 
@@ -308,7 +308,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Returns a bottom-up list(leafs -> root) of all of the nodes parented under the current one.
         void getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList);
         /// Destructs all of the nodes specified in the list and removes them from the _children container.
-        void processDeleteQueue(vectorSTD<vec_size>& childList);
+        void processDeleteQueue(vectorEASTL<size_t>& childList);
         /// Similar to the saveToXML call but is geared towards temporary state (e.g. save game)
         bool saveCache(ByteBuffer& outputBuffer) const;
         /// Similar to the loadFromXML call but is geared towards temporary state (e.g. save game)
@@ -327,7 +327,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         vectorEASTL<SceneGraphNode*> _children;
         // ToDo: Remove this HORRIBLE hack -Ionut
         struct hacks {
-            vectorSTDFast<EditorComponent*> _editorComponents;
+            vectorEASTLFast<EditorComponent*> _editorComponents;
             TransformComponent* _transformComponentCache = nullptr;
             BoundsComponent* _boundsComponentCache = nullptr;
         } Hacks;
@@ -357,11 +357,11 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 namespace Attorney {
     class SceneGraphNodeEditor {
     private:
-        static vectorSTDFast<EditorComponent*>& editorComponents(SceneGraphNode& node) noexcept {
+        static vectorEASTLFast<EditorComponent*>& editorComponents(SceneGraphNode& node) noexcept {
             return node.Hacks._editorComponents;
         }
 
-        static const vectorSTDFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) noexcept {
+        static const vectorEASTLFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) noexcept {
             return node.Hacks._editorComponents;
         }
 
@@ -382,7 +382,7 @@ namespace Attorney {
             node.getOrderedNodeList(nodeList);
         }
 
-        static void processDeleteQueue(SceneGraphNode& node, vectorSTD<vec_size>& childList) {
+        static void processDeleteQueue(SceneGraphNode& node, vectorEASTL<size_t>& childList) {
             node.processDeleteQueue(childList);
         }
 

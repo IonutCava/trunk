@@ -93,7 +93,7 @@ public:
     void bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams);
 
 private:
-    using VAOBufferData = vectorSTD<BufferBindingParams>;
+    using VAOBufferData = vectorEASTL<BufferBindingParams>;
 
     mutable VAOBufferData* _cachedData = nullptr;
     mutable GLuint _cachedVao = 0;

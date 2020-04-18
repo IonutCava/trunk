@@ -64,7 +64,7 @@ namespace Divide {
         bool _savePopup = false;
 
         stringImpl _errorMsg = "";
-        vectorSTD<Texture_ptr> _previewTextures;
+        vectorEASTL<Texture_ptr> _previewTextures;
     };
 }; //namespace Divide
 

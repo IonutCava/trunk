@@ -233,8 +233,8 @@ class SceneState : public SceneComponent {
     inline const SceneRenderState& renderState() const noexcept { return _renderState; }
     inline const MusicPlaylist& music(MusicType type) const noexcept { return _music[to_U32(type)]; }
 
-    inline vectorSTD<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
-    inline const vectorSTD<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
+    inline vectorEASTL<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
+    inline const vectorEASTL<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
 
     PROPERTY_RW(U8, playerPass, 0u);
     PROPERTY_RW(bool, saveLoadDisabled, false);
@@ -250,7 +250,7 @@ protected:
     SceneRenderState _renderState;
     std::array<MusicPlaylist, to_base(MusicType::COUNT)> _music;
     std::array<SceneStatePerPlayer, Config::MAX_LOCAL_PLAYER_COUNT> _playerState;
-    vectorSTD<WaterDetails> _globalWaterBodies;
+    vectorEASTL<WaterDetails> _globalWaterBodies;
 };
 
 };  // namespace Divide

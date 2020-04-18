@@ -234,19 +234,6 @@ bool Object3D::computeTriangleList() {
     return true;
 }
 
-vectorSTD<SceneGraphNode*> Object3D::filterByType(const vectorSTD<SceneGraphNode*>& nodes, ObjectType filter) {
-    vectorSTD<SceneGraphNode*> result;
-    result.reserve(nodes.size());
-
-    for (SceneGraphNode* ptr : nodes) {
-        if (ptr && ptr->getNode<Object3D>().getObjectType() == filter) {
-            result.push_back(ptr);
-        }
-    };
-
-    return result;
-}
-
 vectorEASTL<SceneGraphNode*> Object3D::filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter) {
     vectorEASTL<SceneGraphNode*> result;
     result.reserve(nodes.size());

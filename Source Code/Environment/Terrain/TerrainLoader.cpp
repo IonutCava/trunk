@@ -29,16 +29,16 @@ namespace {
                                                           : Paths::g_climatesLowResLocation);
     }
 
-    std::pair<U8, bool> findOrInsert(U8 textureQuality, vectorSTD<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
+    std::pair<U8, bool> findOrInsert(U8 textureQuality, vectorEASTL<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
         if (!fileExists((climatesLocation(textureQuality) + "/" + materialName + "/" + texture).c_str())) {
             materialName = "std_default";
         }
         const stringImpl item = materialName + "/" + texture;
-        auto it = std::find(std::cbegin(container),
-                            std::cend(container),
+        auto it = eastl::find(eastl::cbegin(container),
+                            eastl::cend(container),
                             item);
-        if (it != std::cend(container)) {
-            return std::make_pair(to_U8(std::distance(std::cbegin(container), it)), false);
+        if (it != eastl::cend(container)) {
+            return std::make_pair(to_U8(eastl::distance(eastl::cbegin(container), it)), false);
         }
 
         container.push_back(item);
@@ -84,7 +84,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     U8 layerCount = terrainDescriptor->textureLayers();
 
-    const vectorSTD<std::pair<stringImpl, TerrainTextureChannel>> channels = {
+    const vectorEASTL<std::pair<stringImpl, TerrainTextureChannel>> channels = {
         {"red", TerrainTextureChannel::TEXTURE_RED_CHANNEL},
         {"green", TerrainTextureChannel::TEXTURE_GREEN_CHANNEL},
         {"blue", TerrainTextureChannel::TEXTURE_BLUE_CHANNEL},
@@ -93,13 +93,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     const F32 albedoTilingFactor = terrainDescriptor->getVariablef("albedoTilingFactor");
 
-    vectorSTD<stringImpl> textures[to_base(TerrainTextureType::COUNT)] = {};
-    vectorSTD<stringImpl> splatTextures = {};
+    vectorEASTL<stringImpl> textures[to_base(TerrainTextureType::COUNT)] = {};
+    vectorEASTL<stringImpl> splatTextures = {};
 
     size_t idxCount = layerCount * to_size(TerrainTextureChannel::COUNT);
-    std::array<vectorSTD<U16>, to_base(TerrainTextureType::COUNT)> indices;
+    std::array<vectorEASTL<U16>, to_base(TerrainTextureType::COUNT)> indices;
     std::array<U16, to_base(TerrainTextureType::COUNT)> offsets;
-    vectorSTD<U8> channelCountPerLayer(layerCount, 0u);
+    vectorEASTL<U8> channelCountPerLayer(layerCount, 0u);
 
     for (auto& it : indices) {
         it.resize(idxCount, 255u);
@@ -612,7 +612,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
     if (terrain->_physicsVerts.empty()) {
 
-        vectorSTD<Byte> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), Byte{0});
+        vectorEASTL<Byte> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), Byte{0});
         readFile((terrainMapLocation + "/").c_str(), terrainRawFile.c_str(), data, FileType::BINARY);
 
         constexpr F32 ushortMax = std::numeric_limits<U16>::max() + 1.0f;

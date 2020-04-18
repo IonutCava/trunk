@@ -65,13 +65,13 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
 
     virtual GOAPGoal* findGoal(const stringImpl& goalName) {
         GOAPGoalList::iterator it;
-        it = std::find_if(std::begin(_goals), std::end(_goals),
+        it = eastl::find_if(eastl::begin(_goals), eastl::end(_goals),
                           [&goalName](const GOAPGoal& goal) -> bool {
                               return goal.name().compare(goalName.c_str()) ==
                                      0;
                           });
 
-        if (it != std::end(_goals)) {
+        if (it != eastl::end(_goals)) {
             return &(*it);
         }
 
@@ -107,7 +107,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
             return nullptr;
         }
 
-        std::sort(std::begin(_activeGoals), std::end(_activeGoals),
+        eastl::sort(eastl::begin(_activeGoals), eastl::end(_activeGoals),
                   [](GOAPGoal const* a, GOAPGoal const* b) {
                       return a->relevancy() < b->relevancy();
                   });
@@ -127,13 +127,13 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
             return false;
         }
 
-        auto it = std::find_if(
-            std::begin(_activeGoals), std::end(_activeGoals),
+        auto it = eastl::find_if(
+            eastl::begin(_activeGoals), eastl::end(_activeGoals),
             [goal](GOAPGoal const* actGoal) {
                 return actGoal->name().compare(goal->name()) == 0;
             });
 
-        if (it == std::end(_activeGoals)) {
+        if (it == eastl::end(_activeGoals)) {
             return false;
         }
 
@@ -237,7 +237,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     GOAPWorldState _worldState;
 
     GOAPGoalList _goals;
-    vectorSTD<GOAPGoal*> _activeGoals;
+    vectorEASTL<GOAPGoal*> _activeGoals;
     std::atomic_bool _init;
 
     stringImpl _planLog;

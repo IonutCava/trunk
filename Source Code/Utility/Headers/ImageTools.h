@@ -64,7 +64,7 @@ struct ImageLayerData final : LayerData {
     bufferPtr data() const final { return _data.empty() ? nullptr : (bufferPtr)_data.data(); }
 
 protected:
-    vectorSTD<T> _data;
+    vectorEASTL<T> _data;
 };
 
 struct ImageLayer {
@@ -115,7 +115,7 @@ class ImageData : private NonCopyable {
         return nullptr;
     }
 
-    inline const vectorSTD<ImageLayer>& imageLayers() const noexcept {
+    inline const vectorEASTL<ImageLayer>& imageLayers() const noexcept {
         return _data;
     }
     /// image width, height and depth
@@ -158,8 +158,8 @@ class ImageData : private NonCopyable {
 
    private:
     //Each entry is a separate mip map.
-    vectorSTD<ImageLayer> _data;
-    vectorSTD<U8> _decompressedData;
+    vectorEASTL<ImageLayer> _data;
+    vectorEASTL<U8> _decompressedData;
     /// is the image stored as a regular image or in a compressed format? (eg. DXT1 / DXT3 / DXT5)
     bool _compressed;
     /// should we flip the image's origin on load?

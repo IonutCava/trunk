@@ -911,8 +911,8 @@ template<class FwdIt, class Compare>
 void InsertionSort(FwdIt first, FwdIt last, Compare cmp)
 {
     for (auto it = first; it != last; ++it) {
-        auto const insertion = std::upper_bound(first, it, *it, cmp);
-        std::rotate(insertion, it, std::next(it));
+        auto const insertion = eastl::upper_bound(first, it, *it, cmp);
+        eastl::rotate(insertion, it, eastl::next(it));
     }
 }
 

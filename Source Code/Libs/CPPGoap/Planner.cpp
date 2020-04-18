@@ -15,9 +15,9 @@ int goap::Planner::calculateHeuristic(const WorldState& now, const WorldState& g
 
 void goap::Planner::addToOpenList(Node&& n) {
     // insert maintaining sort order
-    auto it = std::lower_bound(std::begin(open_),
-                               std::end(open_),
-                               n);
+    auto it = eastl::lower_bound(eastl::begin(open_),
+                                 eastl::end(open_),
+                                 n);
     open_.emplace(it, std::move(n));
 }
 
@@ -36,7 +36,7 @@ bool goap::Planner::memberOfClosed(const WorldState& ws) const {
     return true;
 }
 
-std::vector<goap::Node>::iterator goap::Planner::memberOfOpen(const WorldState& ws) {
+eastl::vector<goap::Node>::iterator goap::Planner::memberOfOpen(const WorldState& ws) {
     return std::find_if(std::begin(open_), std::end(open_), [&](const Node& n) { return n.ws_ == ws; });
 }
 
@@ -56,10 +56,10 @@ void goap::Planner::printClosedList(stringImpl& output) const {
     output = ss.str();
 }
 
-std::vector<const goap::Action*> goap::Planner::plan(const WorldState& start, const WorldState& goal, const std::vector<const Action*>& actions) {
+eastl::vector<const goap::Action*> goap::Planner::plan(const WorldState& start, const WorldState& goal, const eastl::vector<const Action*>& actions) {
     if (start.meetsGoal(goal)) {
         //throw std::runtime_error("Planner cannot plan when the start state and the goal state are the same!");
-        return std::vector<const goap::Action*>();
+        return eastl::vector<const goap::Action*>();
     }
 
     // Feasible we'd re-use a planner, so clear out the prior results
@@ -91,7 +91,7 @@ std::vector<const goap::Action*> goap::Planner::plan(const WorldState& start, co
 
         // Is our current state the goal state? If so, we've found a path, yay.
         if (current.ws_.meetsGoal(goal)) {
-            std::vector<const Action*> the_plan;
+            eastl::vector<const Action*> the_plan;
             do {
                 the_plan.push_back(current.action_);
                 current = known_nodes_.at(current.parent_id_);
@@ -126,7 +126,7 @@ std::vector<const goap::Action*> goap::Planner::plan(const WorldState& start, co
                         needle->parent_id_ = current.id_;                     // make current its parent
                         needle->g_ = current.g_ + action->cost();              // recalc G & H
                         needle->h_ = calculateHeuristic(possibility, goal);
-                        std::sort(std::begin(open_), std::end(open_));                // resort open list to account for the new F
+                        eastl::sort(eastl::begin(open_), eastl::end(open_));                // resort open list to account for the new F
                         // sorting likely invalidates the iterator, but we don't need it anymore
                     }
                 }
@@ -136,5 +136,5 @@ std::vector<const goap::Action*> goap::Planner::plan(const WorldState& start, co
 
     // If there's nothing left to evaluate, then we have no possible path left
     //throw std::runtime_error("A* planner could not find a path from start to goal");
-    return std::vector<const goap::Action*>();
+    return eastl::vector<const goap::Action*>();
 }

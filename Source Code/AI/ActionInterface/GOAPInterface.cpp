@@ -24,7 +24,7 @@ bool GOAPGoal::plan(const GOAPWorldState& worldState,
                     const GOAPActionSet& actionSet)
 {
     _currentPlan = _planner.plan(worldState, *this, actionSet);
-    std::reverse(std::begin(_currentPlan), std::end(_currentPlan));
+    eastl::reverse(eastl::begin(_currentPlan), eastl::end(_currentPlan));
     
     return !_currentPlan.empty();
 }

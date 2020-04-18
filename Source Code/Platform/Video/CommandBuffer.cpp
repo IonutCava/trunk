@@ -561,8 +561,8 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     OPTICK_EVENT();
 
     const auto BatchCommands = [](DrawCommand::CommandContainer& commands, bool byBaseInstance) {
-        const vec_size commandCount = commands.size();
-        for (vec_size previousCommandIndex = 0, currentCommandIndex = 1;
+        const size_t commandCount = commands.size();
+        for (size_t previousCommandIndex = 0, currentCommandIndex = 1;
              currentCommandIndex < commandCount;
              ++currentCommandIndex)
         {

@@ -77,23 +77,23 @@ void ProfileTimer::removeChildTimer(ProfileTimer& child) {
     const U32 childID = child._globalIndex;
 
     _children.erase(
-        std::remove_if(std::begin(_children),
-                       std::end(_children),
+        eastl::remove_if(eastl::begin(_children),
+                       eastl::end(_children),
                        [childID](U32 entry) {
                            return entry == childID;
                         }),
-        std::end(_children));
+        eastl::end(_children));
     child._parent = Config::Profile::MAX_PROFILE_TIMERS + 1;
 }
 
 bool ProfileTimer::hasChildTimer(ProfileTimer& child) {
     const U32 childID = child._globalIndex;
 
-    return std::find_if(std::cbegin(_children),
-                        std::cend(_children),
+    return eastl::find_if(eastl::cbegin(_children),
+                        eastl::cend(_children),
                         [childID](U32 entry) {
                             return entry == childID;
-            }) != std::cend(_children);
+            }) != eastl::cend(_children);
 }
 
 U64 ProfileTimer::getChildTotal() const {

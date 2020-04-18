@@ -11,12 +11,13 @@
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
 #include <imgui/imgui_internal.h>
+#include <EASTL/deque.h>
 
 namespace Divide {
     namespace {
         constexpr U8 g_maxEntryCount = 32;
-        std::deque<F32> g_framerateBuffer;
-        vectorSTD<F32> g_framerateBufferCont;
+        eastl::deque<F32> g_framerateBuffer;
+        vectorEASTL<F32> g_framerateBufferCont;
     };
 
     SolutionExplorerWindow::SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
@@ -114,7 +115,7 @@ namespace Divide {
         ImGui::Text("All scenes");
         ImGui::Separator();
 
-        const vectorSTD<Str128>& scenes = sceneManager.sceneNameList();
+        const vectorEASTL<Str128>& scenes = sceneManager.sceneNameList();
         for (const Str128& scene : scenes) {
             if (scene != activeScene.resourceName()) {
                 if (ImGui::TreeNodeEx(scene.c_str(), ImGuiTreeNodeFlags_Leaf)) {
@@ -152,9 +153,9 @@ namespace Divide {
             g_framerateBuffer.pop_front();
         }
         g_framerateBufferCont.resize(0);
-        g_framerateBufferCont.insert(std::cbegin(g_framerateBufferCont),
-                                     std::cbegin(g_framerateBuffer),
-                                     std::cend(g_framerateBuffer));
+        g_framerateBufferCont.insert(eastl::cbegin(g_framerateBufferCont),
+                                     eastl::cbegin(g_framerateBuffer),
+                                     eastl::cend(g_framerateBuffer));
         ImGui::PlotHistogram("",
                              g_framerateBufferCont.data(),
                              to_I32(g_framerateBufferCont.size()),

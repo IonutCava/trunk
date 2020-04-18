@@ -240,7 +240,7 @@ void GL_API::appendToShaderHeader(ShaderType type,
     if (entry.find("#include") == stringImpl::npos) {
         inOutOffset[index] += Util::LineCount(entry);
     } else {
-        vectorSTD<Str64> tempAtoms;
+        vectorEASTL<Str64> tempAtoms;
         tempAtoms.reserve(10);
         inOutOffset[index] += Util::LineCount(glShaderProgram::preprocessIncludes("header", entry, 0, tempAtoms, true));
     }
@@ -881,7 +881,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
     const I32 width = _context.renderingResolution().width;
     const I32 height = _context.renderingResolution().height;
         
-    vec_size drawCount = 0;
+    size_t drawCount = 0;
     size_t previousStyle = 0;
 
     fonsClearState(_fonsContext);
@@ -911,8 +911,8 @@ void GL_API::drawText(const TextElementBatch& batch) {
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
         
         const TextElement::TextType& text = entry.text();
-        const vec_size lineCount = text.size();
-        for (vec_size i = 0; i < lineCount; ++i) {
+        const size_t lineCount = text.size();
+        for (size_t i = 0; i < lineCount; ++i) {
             fonsDrawText(_fonsContext,
                          textX,
                          textY - (lh * i),
@@ -1452,7 +1452,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
     bool bound = false;
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
-    constexpr vec_size k_textureThreshold = 3;
+    constexpr size_t k_textureThreshold = 3;
     const U8 texCount = textureData.count();
     if (texCount > k_textureThreshold && false) {
         constexpr GLushort offset = 0;

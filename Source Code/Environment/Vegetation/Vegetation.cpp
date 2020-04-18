@@ -26,18 +26,6 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
-namespace std {
-    template<typename T>
-    struct hash<Divide::vec2<T>> {
-        size_t operator()(const Divide::vec2<T>& a) const {
-            size_t h = 17;
-            Divide::Util::Hash_combine(h, a.x);
-            Divide::Util::Hash_combine(h, a.y);
-            return h;
-        }
-    };
-};
-
 namespace Divide {
 
 namespace {
@@ -51,14 +39,14 @@ bool Vegetation::s_buffersBound = false;
 Material_ptr Vegetation::s_treeMaterial = nullptr;
 Material_ptr Vegetation::s_vegetationMaterial = nullptr;
 
-std::unordered_set<vec2<F32>> Vegetation::s_treePositions;
-std::unordered_set<vec2<F32>> Vegetation::s_grassPositions;
+eastl::unordered_set<vec2<F32>> Vegetation::s_treePositions;
+eastl::unordered_set<vec2<F32>> Vegetation::s_grassPositions;
 ShaderBuffer* Vegetation::s_treeData = nullptr;
 ShaderBuffer* Vegetation::s_grassData = nullptr;
 VertexBuffer* Vegetation::s_buffer = nullptr;
 ShaderProgram_ptr Vegetation::s_cullShaderGrass = nullptr;
 ShaderProgram_ptr Vegetation::s_cullShaderTrees = nullptr;
-vectorSTD<Mesh_ptr> Vegetation::s_treeMeshes;
+vectorEASTL<Mesh_ptr> Vegetation::s_treeMeshes;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
 U32 Vegetation::s_maxChunks = 0u;
 
@@ -514,10 +502,10 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
             UniqueLock<SharedMutex> w_lock(g_treeMeshLock);
             if (s_treeMeshes.empty()) {
                 for (const stringImpl& meshName : _treeMeshNames) {
-                    if (std::find_if(std::cbegin(s_treeMeshes), std::cend(s_treeMeshes),
+                    if (eastl::find_if(eastl::cbegin(s_treeMeshes), eastl::cend(s_treeMeshes),
                         [&meshName](const Mesh_ptr& ptr) {
                         return Util::CompareIgnoreCase(ptr->assetName(), meshName);
-                    }) == std::cend(s_treeMeshes))
+                    }) == eastl::cend(s_treeMeshes))
                     {
                         ResourceDescriptor model("Tree");
                         model.assetLocation(Paths::g_assetsLocation + "models");
@@ -772,7 +760,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         const U16 mapWidth = treeData ? _treeMap->dimensions().width : _grassMap->dimensions().width;
         const U16 mapHeight = treeData ? _treeMap->dimensions().height : _grassMap->dimensions().height;
 
-        const std::unordered_set<vec2<F32>>& positions = treeData ? s_treePositions : s_grassPositions;
+        const auto& positions = treeData ? s_treePositions : s_grassPositions;
 
         const F32 slopeLimit = treeData ? 10.0f : 35.0f;
 
