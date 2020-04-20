@@ -94,7 +94,7 @@ class Terrain : public Object3D {
     explicit Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
     virtual ~Terrain();
 
-    bool unload() noexcept override;
+    bool unload() override;
 
     void toggleBoundingBoxes();
 
@@ -216,7 +216,7 @@ class TerrainLoader {
         terrain._descriptor = descriptor;
     }
 
-    static void setShaderProgram(Terrain& terrain, const ShaderProgram_ptr& shader, bool prePass, TerrainDescriptor::WireframeMode mode) {
+    static void setShaderProgram(Terrain& terrain, const ShaderProgram_ptr& shader, bool prePass, TerrainDescriptor::WireframeMode mode) noexcept {
         if (!prePass) {
             terrain._terrainColourShader[to_base(mode)] = shader;
         } else {
@@ -224,7 +224,7 @@ class TerrainLoader {
         }
     }
 
-    static const ShaderProgram_ptr& getShaderProgram(Terrain& terrain, bool prePass, TerrainDescriptor::WireframeMode mode) {
+    static const ShaderProgram_ptr& getShaderProgram(Terrain& terrain, bool prePass, TerrainDescriptor::WireframeMode mode) noexcept {
         if (!prePass) {
             return terrain._terrainColourShader[to_base(mode)];
         }

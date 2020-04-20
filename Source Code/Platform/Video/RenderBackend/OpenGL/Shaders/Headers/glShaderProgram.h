@@ -73,7 +73,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     }
 
     /// Make sure this program is ready for deletion
-    bool unload() noexcept override;
+    bool unload() override;
     /// Check every possible combination of flags to make sure this program can
     /// be used for rendering
     bool isValid() const override;
@@ -164,13 +164,13 @@ namespace Attorney {
         static void setGlobalLineOffset(U32 offset) {
             glShaderProgram::_lineOffset.fill(offset);
         }
-        static void addLineOffset(ShaderType stage, U32 offset) {
+        static void addLineOffset(ShaderType stage, U32 offset) noexcept {
             glShaderProgram::_lineOffset[to_U32(stage)] += offset;
         }
         static bool bind(glShaderProgram& program, bool& wasBound, bool& wasReady) {
             return program.bind(wasBound, wasReady);
         }
-        static void queueValidation(glShaderProgram& program) {
+        static void queueValidation(glShaderProgram& program) noexcept {
             // After using the shader at least once, validate the shader if needed
             if (!program._validated) {
                 program._validationQueued = true;

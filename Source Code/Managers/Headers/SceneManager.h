@@ -208,8 +208,8 @@ protected:
     vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const;
 
 protected:
-    bool frameStarted(const FrameEvent& evt)  noexcept override;
-    bool frameEnded(const FrameEvent& evt)  noexcept override;
+    bool frameStarted(const FrameEvent& evt) override;
+    bool frameEnded(const FrameEvent& evt) override;
     void preRender(const RenderStagePass& stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut);
     void postRender(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void preRenderAllPasses(const Camera& playerCamera);

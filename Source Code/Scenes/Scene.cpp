@@ -710,7 +710,7 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
 }
 
 SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
-    auto registerPlane = [this](CachedResource* res) {
+    auto registerPlane = [this](CachedResource* res) noexcept {
         ACKNOWLEDGE_UNUSED(res);
         _loadingTasks.fetch_sub(1);
     };
@@ -742,7 +742,7 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
 U16 Scene::registerInputActions() {
     _input->flushCache();
 
-    const auto none = [](InputParams param) {};
+    const auto none = [](InputParams param) noexcept {};
     const auto deleteSelection = [this](InputParams param) {
         PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
         Selections& playerSelections = _currentSelection[idx];
@@ -797,7 +797,7 @@ U16 Scene::registerInputActions() {
     const auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
     const auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
     const auto releaseCameraFromMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false); };
-    const auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
+    const auto shutdown = [this](InputParams param) noexcept { _context.app().RequestShutdown();};
     const auto povNavigation = [this](InputParams param) {
         U32 povMask = param._var[0];
 
@@ -866,7 +866,7 @@ U16 Scene::registerInputActions() {
         }
     };
 
-    const auto toggleDebugInterface = [this](InputParams param) {
+    const auto toggleDebugInterface = [this](InputParams param) noexcept {
         _context.debug().toggle(!_context.debug().enabled());
     };
 
@@ -1350,16 +1350,16 @@ void Scene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 }
 
 void Scene::processGUI(const U64 deltaTimeUS) {
-    D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
+    const D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
 
-    std::transform(std::begin(_guiTimersMS), std::end(_guiTimersMS), std::begin(_guiTimersMS),
+    eastl::transform(eastl::begin(_guiTimersMS), eastl::end(_guiTimersMS), eastl::begin(_guiTimersMS),
                     [delta](D64 timer) { return timer + delta; });
 }
 
 void Scene::processTasks(const U64 deltaTimeUS) {
-    D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
+    const D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
 
-    std::transform(std::begin(_taskTimers), std::end(_taskTimers), std::begin(_taskTimers),
+    eastl::transform(eastl::begin(_taskTimers), eastl::end(_taskTimers), eastl::begin(_taskTimers),
                    [delta](D64 timer) { return timer + delta; });
 }
 

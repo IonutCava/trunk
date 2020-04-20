@@ -102,7 +102,7 @@ namespace ECS { namespace Memory {
 				}
 				
 
-				inline iterator& operator++()
+				inline iterator& operator++() noexcept
 				{
 					// move to next object in current chunk
 					m_CurrentObject++;
@@ -123,15 +123,17 @@ namespace ECS { namespace Memory {
 					return *this;
 				}
 
-				inline OBJECT_TYPE& operator*() const { return *m_CurrentObject; }
-				inline OBJECT_TYPE* operator->() const { return *m_CurrentObject; }
+				inline OBJECT_TYPE& operator*() const noexcept { return *m_CurrentObject; }
+				inline OBJECT_TYPE* operator->() const noexcept { return *m_CurrentObject; }
 
                 // ugh
-                inline OBJECT_TYPE* ptr() { return *m_CurrentObject; }
+                inline OBJECT_TYPE* ptr() noexcept { return *m_CurrentObject; }
 
-				inline bool operator==(iterator& other) { return ((this->m_CurrentChunk == other.m_CurrentChunk) && (this->m_CurrentObject == other.m_CurrentObject));
+				inline bool operator==(iterator& other) noexcept 
+				{
+					return ((this->m_CurrentChunk == other.m_CurrentChunk) && (this->m_CurrentObject == other.m_CurrentObject));
 				}
-				inline bool operator!=(iterator& other) 
+				inline bool operator!=(iterator& other) noexcept 
 				{ 
 					return ((this->m_CurrentChunk != other.m_CurrentChunk) && (this->m_CurrentObject != other.m_CurrentObject));
 				}
@@ -146,7 +148,7 @@ namespace ECS { namespace Memory {
 	public:
 
 
-		MemoryChunkAllocator(const char* allocatorTag = nullptr) :
+		MemoryChunkAllocator(const char* allocatorTag = nullptr) noexcept :
 			m_AllocatorTag(allocatorTag)
 		{
 			
@@ -156,7 +158,7 @@ namespace ECS { namespace Memory {
 			this->m_Chunks.push_back(new MemoryChunk(allocator));
 		}
 
-		virtual ~MemoryChunkAllocator()
+		~MemoryChunkAllocator()
 		{
 			std::unique_lock<std::shared_mutex> lock(m_lock);
 

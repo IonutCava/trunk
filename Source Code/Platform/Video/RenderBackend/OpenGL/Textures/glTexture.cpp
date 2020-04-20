@@ -90,7 +90,7 @@ void glTexture::validateDescriptor() {
     _loadingData._textureType = _descriptor.type();
 }
 
-bool glTexture::unload() noexcept {
+bool glTexture::unload() {
     assert(_data._textureType != TextureType::COUNT);
 
     U32 textureID = _data._textureHandle;
@@ -126,7 +126,7 @@ void glTexture::setMipMapRange(U16 base, U16 max) noexcept {
     Texture::setMipMapRange(base, max);
 }
 
-void glTexture::setMipRangeInternal(U16 base, U16 max) {
+void glTexture::setMipRangeInternal(U16 base, U16 max) noexcept {
     glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, base);
     glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, max);
 }

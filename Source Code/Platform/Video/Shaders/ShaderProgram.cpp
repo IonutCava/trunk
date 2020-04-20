@@ -65,7 +65,7 @@ bool ShaderProgram::load() {
     return CachedResource::load();
 }
 
-bool ShaderProgram::unload() noexcept {
+bool ShaderProgram::unload() {
     // Unregister the program from the manager
     return unregisterShaderProgram(descriptorHash());
 }

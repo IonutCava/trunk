@@ -618,21 +618,21 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     void fromRotation(U x, U y, U z, Angle::RADIANS<U> angle);
     template<typename U>
-    void fromXRotation(Angle::RADIANS<U> angle);
+    void fromXRotation(Angle::RADIANS<U> angle) noexcept;
     template<typename U>
-    void fromYRotation(Angle::RADIANS<U> angle);
+    void fromYRotation(Angle::RADIANS<U> angle) noexcept;
     template<typename U>
-    void fromZRotation(Angle::RADIANS<U> angle);
+    void fromZRotation(Angle::RADIANS<U> angle) noexcept;
 
     template<typename U>
-    void setTranslation(const vec3<U> &v);
+    void setTranslation(const vec3<U> &v) noexcept;
     template<typename U>
     void setTranslation(U x, U y, U z) noexcept;
 
     template<typename U>
     void setScale(U x, U y, U z) noexcept;
     template<typename U>
-    void setScale(const vec3<U> &v);
+    void setScale(const vec3<U> &v) noexcept;
     
     template<typename U>
     vec3<U> transform(const vec3<U> &v, bool homogeneous) const;

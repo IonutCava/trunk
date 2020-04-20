@@ -65,7 +65,7 @@ Terrain::~Terrain()
 {
 }
 
-bool Terrain::unload() noexcept {
+bool Terrain::unload() {
     return Object3D::unload();
 }
 

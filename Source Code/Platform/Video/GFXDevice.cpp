@@ -660,7 +660,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         previewRTShader.waitForReady(true);
         previewRTShader.propertyDescriptor(shaderDescriptor);
         _renderTargetDraw = CreateResource<ShaderProgram>(cache, previewRTShader, loadTasks);
-        _renderTargetDraw->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+        _renderTargetDraw->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) noexcept {
             _previewRenderTargetColour = _renderTargetDraw;
         });
     }
@@ -893,6 +893,7 @@ void GFXDevice::endFrame(DisplayWindow& window, bool global) {
         FRAME_DRAW_CALLS = 0;
     }
     DIVIDE_ASSERT(_cameraSnapshots.empty(), "Not all camera snapshots have been cleared properly! Check command buffers for missmatched push/pop!");
+    DIVIDE_ASSERT(_viewportStack.empty(), "Not all viewportshave been cleared properly! Check command buffers for missmatched push/pop!");
     // Activate the default render states
     _api->endFrame(window, global);
 
@@ -1457,6 +1458,15 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
             case GFX::CommandType::SET_VIEWPORT:
                 setViewport(commandBuffer.get<GFX::SetViewportCommand>(cmd)->_viewport);
                 break;
+            case GFX::CommandType::PUSH_VIEWPORT: {
+                GFX::PushViewportCommand* crtCmd = commandBuffer.get<GFX::PushViewportCommand>(cmd);
+                _viewportStack.push(_viewport);
+                setViewport(crtCmd->_viewport);
+            } break;
+            case GFX::CommandType::POP_VIEWPORT: {
+                setViewport(_viewportStack.top());
+                _viewportStack.pop();
+            } break;
             case GFX::CommandType::SET_CAMERA: {
                 GFX::SetCameraCommand* crtCmd = commandBuffer.get<GFX::SetCameraCommand>(cmd);
                 // Tell the Rendering API to draw from our desired PoV
@@ -1785,7 +1795,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     bindDescriptorSetsCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ viewport });
+    GFX::EnqueueCommand(bufferInOut, GFX::PushViewportCommand{ viewport });
 
     if (!drawToDepthOnly) {
 
@@ -1796,6 +1806,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
 
     // Blit render target to screen
     GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+    GFX::EnqueueCommand(bufferInOut, GFX::PopViewportCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
@@ -2015,6 +2026,8 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
     GFX::BindPipelineCommand bindPipeline = {};
     GFX::DrawCommand drawCommand = { triangleCmd };
 
+    const Rect<I32> previousViewport(_viewport);
+
     I16 idx = 0;
     for (I16 i = 0; i < to_I16(_debugViews.size()); ++i) {
         DebugView& view = *_debugViews[i];
@@ -2063,6 +2076,9 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
         text.text(entry.first.c_str(), false);
         drawText(text, bufferInOut);
     }
+
+    setViewport._viewport.set(previousViewport);
+    GFX::EnqueueCommand(bufferInOut, setViewport);
 }
 
 DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {

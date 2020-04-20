@@ -69,7 +69,7 @@ bool ASIO::connect(const stringImpl& address, U16 port) {
     return init(address, port);
 }
 
-bool ASIO::isConnected() const {
+bool ASIO::isConnected() const noexcept {
     return _connected;
 }
 

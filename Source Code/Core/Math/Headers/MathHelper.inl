@@ -280,84 +280,84 @@ T CLAMPED_01(const T& n) noexcept {
 }
 
 template <typename T>
-T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut) {
+T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut) noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be mapped!");
-
-    slopeOut = 1.0 * (out_max - out_min) / (in_max - in_min);
+    const D64 diff = in_max > in_min ? to_D64(in_max - in_min) : std::numeric_limits<D64>::epsilon();
+    slopeOut = 1.0 * (out_max - out_min) / diff;
     return static_cast<T>(out_min + (slopeOut * (input - in_min)));
 }
 
 template <typename T>
-T SQUARED(T input) {
+T SQUARED(T input) noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be squared!");
     return input * input;
 }
 
 template<typename T>
-T SIGNED_SQUARED(T input) {
+T SIGNED_SQUARED(T input) noexcept {
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be squared!");
     return std::copysign(SQUARED(input), input);
 }
 
 template<typename T>
-void CLAMP_IN_RECT(T& inout_x, T& inout_y, T rect_x, T rect_y, T rect_z, T rect_w) {
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, T rect_x, T rect_y, T rect_z, T rect_w) noexcept {
     CLAMP(inout_x, rect_x, rect_z);
     CLAMP(inout_y, rect_y, rect_w);
 }
 
 template<typename T>
-void CLAMP_IN_RECT(T& inout_x, T& inout_y, const Rect<T>& rect) {
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, const Rect<T>& rect) noexcept {
     CLAMP_IN_RECT(inout_x, inout_y, rect.x, rect.y, rect.z, rect.w);
 }
 
 template<typename T>
-void CLAMP_IN_RECT(T& inout_x, T& inout_y, const vec4<T>& rect) {
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, const vec4<T>& rect) noexcept {
     CLAMP_IN_RECT(inout_x, inout_y, rect.x, rect.y, rect.z, rect.w);
 }
 
 template <typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) {
+bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) noexcept {
     return IS_IN_RANGE_INCLUSIVE(input_x, rect_x, rect_z) &&
            IS_IN_RANGE_INCLUSIVE(input_y, rect_y, rect_w);
 }
 
 template<typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect) {
+bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect) noexcept {
     return COORDS_IN_RECT(input_x, input_y, rect.x, rect.y, rect.z, rect.w);
 }
 
 template <typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) {
+bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) noexcept {
     return COORDS_IN_RECT(input_x, input_y, rect.x, rect.y, rect.z, rect.w);
 }
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(const Mask bitMask, const Type bit) {
+BitCompare(const Mask bitMask, const Type bit) noexcept {
     return BitCompare(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-SetBit(Mask& bitMask, const Type bit) {
+SetBit(Mask& bitMask, const Type bit) noexcept {
     SetBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-ClearBit(Mask& bitMask, const Type bit) {
+ClearBit(Mask& bitMask, const Type bit) noexcept {
     ClearBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-ToggleBit(Mask& bitMask, const Type bit) {
+ToggleBit(Mask& bitMask, const Type bit) noexcept {
     ToggleBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-ToggleBit(Mask& bitMask, const Type bit, bool state) {
+ToggleBit(Mask& bitMask, const Type bit, bool state) noexcept {
     ToggleBit(bitMask, static_cast<Mask>(bit), state);
 }
 
@@ -409,19 +409,19 @@ constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept {
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(const std::atomic<Mask> bitMask, const Type bit) {
+BitCompare(const std::atomic<Mask> bitMask, const Type bit) noexcept {
     return BitCompare(bitmask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-SetBit(std::atomic<Mask>& bitMask, const Type bit) {
+SetBit(std::atomic<Mask>& bitMask, const Type bit) noexcept {
     SetBit(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-ClearBit(std::atomic<Mask>& bitMask, const Type bit) {
+ClearBit(std::atomic<Mask>& bitMask, const Type bit) noexcept {
     ClearBit(bitMask, static_cast<Mask>(bit));
 }
 
@@ -557,7 +557,7 @@ inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) noexcept {
 }
 
 // UnPack 3 values from 1 float
-inline void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) {
+inline void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) noexcept {
     r = FRACT(src);
     g = FRACT(src * 256.0f);
     b = FRACT(src * 65536.0f);
@@ -568,14 +568,14 @@ inline void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) {
     b = (b * 2.0f) - 1.0f;
 }
 
-inline U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z) {
+inline U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z) noexcept {
     return
         ((detail::floatTo11bit(x) & ((1 << 11) - 1)) << 0) |
         ((detail::floatTo11bit(y) & ((1 << 11) - 1)) << 11) |
         ((detail::floatTo10bit(z) & ((1 << 10) - 1)) << 22);
 }
 
-inline void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) {
+inline void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) noexcept {
     x = detail::packed11bitToFloat(src >> 0);
     y = detail::packed11bitToFloat(src >> 11);
     z = detail::packed10bitToFloat(src >> 22);
@@ -590,42 +590,42 @@ template<typename T>
 using DEGREES = T;
 
 template <typename T>
-constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) {
+constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) noexcept {
     return static_cast<RADIANS<T>>(angle * M_PIDIV180);
 }
 
 template <typename T>
-constexpr DEGREES<T> to_DEGREES(const RADIANS<T> angle) {
+constexpr DEGREES<T> to_DEGREES(const RADIANS<T> angle) noexcept {
     return static_cast<DEGREES<T>>(angle * M_180DIVPI);
 }
 
 template <typename T>
-constexpr vec2<RADIANS<T>> to_RADIANS(const vec2<DEGREES<T>>& angle) {
+constexpr vec2<RADIANS<T>> to_RADIANS(const vec2<DEGREES<T>>& angle) noexcept {
     return vec2<RADIANS<T>>(angle * M_PIDIV180);
 }
 
 template <typename T>
-constexpr vec2<DEGREES<T>> to_DEGREES(const vec2<RADIANS<T>>& angle) {
+constexpr vec2<DEGREES<T>> to_DEGREES(const vec2<RADIANS<T>>& angle) noexcept {
     return vec2<RADIANS<T>>(angle * M_180DIVPI);
 }
 
 template <typename T>
-constexpr vec3<RADIANS<T>> to_RADIANS(const vec3<DEGREES<T>>& angle) {
+constexpr vec3<RADIANS<T>> to_RADIANS(const vec3<DEGREES<T>>& angle) noexcept {
     return vec3<RADIANS<T>>(angle * M_PIDIV180);
 }
 
 template <typename T>
-constexpr vec3<DEGREES<T>> to_DEGREES(const vec3<RADIANS<T>>& angle) {
+constexpr vec3<DEGREES<T>> to_DEGREES(const vec3<RADIANS<T>>& angle) noexcept {
     return vec3<DEGREES<T>>(angle * M_180DIVPI);
 }
 
 template <typename T>
-constexpr vec4<RADIANS<T>> to_RADIANS(const vec4<DEGREES<T>>& angle) {
+constexpr vec4<RADIANS<T>> to_RADIANS(const vec4<DEGREES<T>>& angle) noexcept {
     return vec4<RADIANS<T>>(angle * M_PIDIV180);
 }
 
 template <typename T>
-constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) {
+constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) noexcept {
     return vec4<DEGREES<T>>(angle * M_180DIVPI);
 }
 

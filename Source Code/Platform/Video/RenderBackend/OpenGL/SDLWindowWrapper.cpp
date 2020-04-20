@@ -46,7 +46,7 @@ namespace {
             return true;
         }
 
-        bool destroy() {
+        bool destroy() noexcept {
             for (auto& [context, used] : _contexts) {
                 SDL_GL_DeleteContext(context);
             }
@@ -54,7 +54,7 @@ namespace {
             return true;
         }
 
-        bool getAvailableContext(SDL_GLContext& ctx) {
+        bool getAvailableContext(SDL_GLContext& ctx) noexcept {
             assert(!_contexts.empty());
             for (auto& [context, used] : _contexts) {
                 if (!used) {
@@ -89,7 +89,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GLUtil::s_glMainRenderWindow = &window;
     _currentContext = std::make_pair(window.getGUID(), window.userData());
 
-    glbinding::Binding::initialize([](const char *proc) { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
+    glbinding::Binding::initialize([](const char *proc) noexcept  { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
 
     if (SDL_GL_GetCurrentContext() == NULL) {
         return ErrorCode::GLBINGING_INIT_ERROR;
@@ -445,7 +445,7 @@ void GL_API::onThreadCreated(const std::thread::id& threadID) {
     ACKNOWLEDGE_UNUSED(ctxFound);
 
     SDL_GL_MakeCurrent(GLUtil::s_glMainRenderWindow->getRawWindow(), GLUtil::s_glSecondaryContext);
-    glbinding::Binding::initialize([](const char* proc) {
+    glbinding::Binding::initialize([](const char* proc) noexcept {
         return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc);
     });
     

@@ -104,7 +104,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     return ErrorCode::NO_ERR;
 }
 
-WindowHandle DisplayWindow::handle() const {
+WindowHandle DisplayWindow::handle() const noexcept {
     // Varies from OS to OS
     WindowHandle handle = {};
     getWindowHandle(_sdlWindow, handle);
@@ -262,7 +262,7 @@ Rect<I32> DisplayWindow::getBorderSizes() const noexcept {
     return {};
 }
 
-vec2<U16> DisplayWindow::getDrawableSize() const {
+vec2<U16> DisplayWindow::getDrawableSize() const noexcept {
     return _drawableSize;
     //return getDrawableSizeInternal();
 }

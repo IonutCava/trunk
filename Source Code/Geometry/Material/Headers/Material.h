@@ -93,28 +93,28 @@ class Material : public CachedResource {
             shininess(0.0f);
         }
 
-        inline void     baseColour(const FColour4& colour) { _data[0].set(colour); }
-        inline FColour4 baseColour() const                 { return _data[0]; }
+        inline void     baseColour(const FColour4& colour) noexcept { _data[0].set(colour); }
+        inline FColour4 baseColour() const                 noexcept { return _data[0]; }
 
-        inline void     emissive(const FColour3& colour)   { _data[2].rgb(colour); }
-        inline FColour3 emissive() const                   { return _data[2].rgb(); }
+        inline void     emissive(const FColour3& colour)   noexcept { _data[2].rgb(colour); }
+        inline FColour3 emissive() const                   noexcept { return _data[2].rgb(); }
 
         //Phong:
-        inline void     specular(const FColour3& emissive) { _data[1].rgb(emissive); }
-        inline FColour3 specular() const                   { return _data[1].rgb(); }
+        inline void     specular(const FColour3& emissive) noexcept { _data[1].rgb(emissive); }
+        inline FColour3 specular() const                   noexcept { return _data[1].rgb(); }
 
-        inline void shininess(F32 value)                { _data[1].a = value; }
-        inline F32  shininess() const                   { return _data[1].a; }
+        inline void shininess(F32 value)                noexcept { _data[1].a = value; }
+        inline F32  shininess() const                   noexcept { return _data[1].a; }
 
         //Pbr:
-        inline void metallic(F32 value) { _data[1].r = CLAMPED_01(value); }
-        inline F32  metallic()    const { return _data[1].r; }
+        inline void metallic(F32 value) noexcept { _data[1].r = CLAMPED_01(value); }
+        inline F32  metallic()    const noexcept { return _data[1].r; }
 
-        inline void reflectivity(F32 value) { _data[1].g = CLAMPED_01(value); } //specular
-        inline F32  reflectivity() const    { return _data[1].g; }  //specular
+        inline void reflectivity(F32 value) noexcept { _data[1].g = CLAMPED_01(value); } //specular
+        inline F32  reflectivity() const    noexcept { return _data[1].g; }  //specular
 
-        inline void roughness(F32 value) { _data[1].b = CLAMPED_01(value); }
-        inline F32  roughness() const    { return _data[1].b; }
+        inline void roughness(F32 value) noexcept { _data[1].b = CLAMPED_01(value); }
+        inline F32  roughness() const    noexcept { return _data[1].b; }
 
         vec4<F32> _data[3];
     };
@@ -144,7 +144,7 @@ class Material : public CachedResource {
     /// base material's name and the give name suffix.
     /// clone calls CreateResource internally!)
     Material_ptr clone(const Str128& nameSuffix);
-    bool unload() noexcept override;
+    bool unload() override;
     /// Returns true if the material changed between update calls
     bool update(const U64 deltaTimeUS);
 

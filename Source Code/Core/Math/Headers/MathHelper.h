@@ -114,23 +114,23 @@ void SeedRandom(U32 seed);
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(const Mask bitMask, const Type bit);
+BitCompare(const Mask bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-SetBit(Mask& bitMask, const Type bit);
+SetBit(Mask& bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-ClearBit(Mask& bitMask, const Type bit);
+ClearBit(Mask& bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-ToggleBit(Mask& bitMask, const Type bit);
+ToggleBit(Mask& bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-ToggleBit(Mask& bitMask, const Type bit, bool state);
+ToggleBit(Mask& bitMask, const Type bit, bool state) noexcept;
 
 template<typename Mask>
 constexpr bool AnyCompare(const Mask bitMask, const Mask checkMask) noexcept;
@@ -149,15 +149,15 @@ constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(const std::atomic<Mask> bitMask, const Type bit);
+BitCompare(const std::atomic<Mask> bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-SetBit(std::atomic<Mask>& bitMask, const Type bit);
+SetBit(std::atomic<Mask>& bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-ClearBit(std::atomic<Mask>& bitMask, const Type bit);
+ClearBit(std::atomic<Mask>& bitMask, const Type bit) noexcept;
 
 template<typename Mask>
 constexpr bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept;
@@ -179,22 +179,22 @@ template <typename T>
 T CLAMPED_01(const T& n) noexcept;
 
 template <typename T>
-T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut);
+T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut) noexcept;
 
 template <typename T>
-T SQUARED(T input);
+T SQUARED(T input) noexcept;
 
 template <typename T>
-T SIGNED_SQUARED(T input);
+T SIGNED_SQUARED(T input) noexcept;
 
 template <typename T>
-T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) {
+T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) noexcept {
     D64 slope = 0.0;
     return MAP(input, in_min, in_max, out_min, out_max, slope);
 }
 
 template <typename T>
-vec2<T> COORD_REMAP(vec2<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) {
+vec2<T> COORD_REMAP(vec2<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) noexcept {
     return vec2<T> {
         MAP(input.x, in_rect.x, in_rect.z, out_rect.x, out_rect.z),
         MAP(input.y, in_rect.y, in_rect.w, out_rect.y, out_rect.w)
@@ -202,32 +202,32 @@ vec2<T> COORD_REMAP(vec2<T> input, const Rect<T>& in_rect, const Rect<T>& out_re
 }
 
 template <typename T>
-vec3<T> COORD_REMAP(vec3<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) {
+vec3<T> COORD_REMAP(vec3<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) noexcept {
     return vec3<T>(COORD_REMAP(input.xy(), in_rect, out_rect), input.z);
 }
 
 template <typename T>
-T NORMALIZE(T input, const T range_min, const T range_max) {
+T NORMALIZE(T input, const T range_min, const T range_max) noexcept {
     return MAP<T>(input, range_min, range_max, T(0), T(1));
 }
 
 template<typename T>
-void CLAMP_IN_RECT(T& inout_x, T& inout_y, T rect_x, T rect_y, T rect_z, T rect_w);
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, T rect_x, T rect_y, T rect_z, T rect_w) noexcept;
 
 template<typename T>
-void CLAMP_IN_RECT(T& inout_x, T& inout_y, const Rect<T>& rect);
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, const Rect<T>& rect) noexcept;
 
 template<typename T>
-void CLAMP_IN_RECT(T& inout_x, T& inout_y, const vec4<T>& rect);
+void CLAMP_IN_RECT(T& inout_x, T& inout_y, const vec4<T>& rect) noexcept;
 
 template<typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w);
+bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) noexcept;
 
 template<typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect);
+bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect) noexcept;
 
 template<typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect);
+bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) noexcept;
 
 constexpr U32 nextPOW2(U32 n) noexcept;
 constexpr U32 prevPOW2(U32 n) noexcept;
@@ -258,10 +258,10 @@ F32 FRACT(const F32 floatValue) noexcept;
 F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) noexcept;
 
 // UnPack 3 values from 1 float
-void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b);
+void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) noexcept;
 
-U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z);
-void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z);
+U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z) noexcept;
+void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) noexcept;
 
 // bit manipulation
 #define BitSet(arg, posn) (arg |= 1 << posn)
@@ -280,16 +280,16 @@ void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z);
 namespace Angle {
 /// Return the radian equivalent of the given degree value
 template <typename T>
-constexpr T DegreesToRadians(const T angleDegrees);
+constexpr T DegreesToRadians(const T angleDegrees) noexcept;
 /// Return the degree equivalent of the given radian value
 template <typename T>
-constexpr T RadiansToDegrees(const T angleRadians);
+constexpr T RadiansToDegrees(const T angleRadians) noexcept;
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-constexpr T Degrees(const T degrees);
+constexpr T Degrees(const T degrees) noexcept;
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-constexpr T Radians(const T radians);
+constexpr T Radians(const T radians) noexcept;
 };
 
 namespace Metric {
@@ -458,20 +458,20 @@ void Normalize(vec3<F32>& inputRotation, bool degrees = false,
 
 UColour4  ToByteColour(const FColour4& floatColour) noexcept;
 UColour3  ToByteColour(const FColour3& floatColour) noexcept;
-vec4<I32> ToIntColour(const FColour4& floatColour);
+vec4<I32> ToIntColour(const FColour4& floatColour) noexcept;
 vec3<I32> ToIntColour(const FColour3& floatColour) noexcept;
-vec4<U32> ToUIntColour(const FColour4& floatColour);
+vec4<U32> ToUIntColour(const FColour4& floatColour) noexcept;
 vec3<U32> ToUIntColour(const FColour3& floatColour) noexcept;
-FColour4 ToFloatColour(const UColour4& byteColour);
+FColour4 ToFloatColour(const UColour4& byteColour) noexcept;
 FColour3 ToFloatColour(const UColour3& byteColour) noexcept;
-FColour4 ToFloatColour(const vec4<U32>& uintColour);
+FColour4 ToFloatColour(const vec4<U32>& uintColour) noexcept;
 FColour3 ToFloatColour(const vec3<U32>& uintColour) noexcept;
 
 void ToByteColour(const FColour4& floatColour, UColour4& colourOut) noexcept;
 void ToByteColour(const FColour3& floatColour, UColour3& colourOut) noexcept;
-void ToIntColour(const FColour4& floatColour, vec4<I32>& colourOut);
+void ToIntColour(const FColour4& floatColour, vec4<I32>& colourOut) noexcept;
 void ToIntColour(const FColour3& floatColour, vec3<I32>& colourOut) noexcept;
-void ToUIntColour(const FColour4& floatColour, vec4<U32>& colourOut);
+void ToUIntColour(const FColour4& floatColour, vec4<U32>& colourOut) noexcept;
 void ToUIntColour(const FColour3& floatColour, vec3<U32>& colourOut) noexcept;
 void ToFloatColour(const UColour4& byteColour, FColour4& colourOut) noexcept;
 void ToFloatColour(const UColour3& byteColour, FColour3& colourOut) noexcept;
@@ -497,9 +497,9 @@ inline U32 PACK_VEC2(F32 x, F32 y) noexcept {
     return (xScaled << 16) | (yScaled & 0xFFFF);
 }
 
-F32 PACK_VEC3(const vec3<F32>& value);
+F32 PACK_VEC3(const vec3<F32>& value) noexcept;
 
-U32 PACK_VEC2(const vec2<F32>& value);
+U32 PACK_VEC2(const vec2<F32>& value) noexcept;
 
 U32 PACK_HALF2x16(const vec2<F32>& value);
 void UNPACK_HALF2x16(const U32 src, vec2<F32>& value);
@@ -507,20 +507,20 @@ void UNPACK_HALF2x16(const U32 src, vec2<F32>& value);
 U32 PACK_UNORM4x8(const vec4<U8>& value);
 void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value);
 
-inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) {
+inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) noexcept {
     UNPACK_FLOAT(src, x, y, z);
 }
 
-void UNPACK_VEC3(const F32 src, vec3<F32>& res);
+void UNPACK_VEC3(const F32 src, vec3<F32>& res) noexcept;
 
-vec3<F32> UNPACK_VEC3(const F32 src);
+vec3<F32> UNPACK_VEC3(const F32 src) noexcept;
 
 void UNPACK_VEC2(const U32 src, F32& x, F32& y) noexcept;
-void UNPACK_VEC2(const U32 src, vec2<F32>& res);
+void UNPACK_VEC2(const U32 src, vec2<F32>& res) noexcept;
 
-U32 PACK_11_11_10(const vec3<F32>& value);
+U32 PACK_11_11_10(const vec3<F32>& value) noexcept;
 
-void UNPACK_11_11_10(const U32 src, vec3<F32>& res);
+void UNPACK_11_11_10(const U32 src, vec3<F32>& res) noexcept;
 
 };  // namespace Util
 };  // namespace Divide

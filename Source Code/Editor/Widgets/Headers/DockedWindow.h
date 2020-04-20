@@ -54,7 +54,7 @@ class DockedWindow {
 
         void draw();
 
-        virtual const char* name() const { return _descriptor.name.c_str(); }
+        virtual const char* name() const noexcept { return _descriptor.name.c_str(); }
         
         virtual bool hasFocus() const noexcept { return _focused; }
         virtual bool isHovered() const noexcept { return _isHovered; }

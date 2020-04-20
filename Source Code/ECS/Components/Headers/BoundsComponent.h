@@ -44,8 +44,8 @@ namespace Divide {
         BoundsComponent(SceneGraphNode& sgn, PlatformContext& context);
         ~BoundsComponent();
 
-        inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
-        inline const BoundingSphere& getBoundingSphere() const { return _boundingSphere; }
+        inline const BoundingBox& getBoundingBox() const noexcept { return _boundingBox; }
+        inline const BoundingSphere& getBoundingSphere() const noexcept { return _boundingSphere; }
 
         const BoundingBox& updateAndGetBoundingBox();
 

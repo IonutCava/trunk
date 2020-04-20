@@ -133,7 +133,7 @@ class SceneNode : public CachedResource {
                                    RenderPackage& pkgInOut);
     /*//Rendering/Processing*/
 
-    bool unload() noexcept override;
+    bool unload() override;
     virtual void setMaterialTpl(const Material_ptr& material);
     const Material_ptr& getMaterialTpl() const;
 
@@ -220,27 +220,27 @@ class SceneNodeSceneGraph {
         node.sceneUpdate(deltaTimeUS, sgn, sceneState);
     }
 
-    static void registerSGNParent(SceneNode& node, SceneGraphNode* sgn) {
+    static void registerSGNParent(SceneNode& node, SceneGraphNode* sgn) noexcept {
         ACKNOWLEDGE_UNUSED(sgn);
 
         node._sgnParentCount.fetch_add(1);
     }
 
-    static void unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn) {
+    static void unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn) noexcept {
         ACKNOWLEDGE_UNUSED(sgn);
 
         node._sgnParentCount.fetch_sub(1);
     }
 
-    static size_t parentCount(const SceneNode& node) {
+    static size_t parentCount(const SceneNode& node) noexcept {
         return node._sgnParentCount.load();
     }
 
-    static size_t maxReferenceCount(const SceneNode& node) {
+    static size_t maxReferenceCount(const SceneNode& node) noexcept {
         return node.maxReferenceCount();
     }
 
-    static EditorComponent& getEditorComponent(SceneNode& node) {
+    static EditorComponent& getEditorComponent(SceneNode& node) noexcept {
         return node._editorComponent;
     }
 
@@ -267,15 +267,15 @@ class SceneNodeBoundsComponent {
         node.setBounds(aabb);
     }
 
-    static bool boundsChanged(const SceneNode& node) {
+    static bool boundsChanged(const SceneNode& node) noexcept {
         return node._boundsChanged;
     }
 
-    static void setBoundsChanged(SceneNode& node) {
+    static void setBoundsChanged(SceneNode& node) noexcept {
         node._boundsChanged = true;
     }
 
-    static void clearBoundsChanged(SceneNode& node) {
+    static void clearBoundsChanged(SceneNode& node) noexcept {
         node._boundsChanged = false;
     }
 

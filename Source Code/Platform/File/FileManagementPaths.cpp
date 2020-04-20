@@ -67,9 +67,9 @@ Str64 Paths::Shaders::GLSL::g_comnAtomLoc;
 
 Str64 Paths::Shaders::HLSL::g_parentShaderLoc;
 
-std::regex Paths::g_includePattern;
-std::regex Paths::g_definePattern;
-std::regex Paths::g_usePattern;
+boost::regex Paths::g_includePattern;
+boost::regex Paths::g_definePattern;
+boost::regex Paths::g_usePattern;
 
 void Paths::initPaths(const SysInfo& info) {
     g_exePath.assign(info._pathAndFilename._path + "/");
@@ -132,9 +132,9 @@ void Paths::initPaths(const SysInfo& info) {
 
     Shaders::HLSL::g_parentShaderLoc = "HLSL/";
 
-    g_includePattern = std::regex(R"(^\s*#\s*include\s+["<]([^">]+)*[">])");
-    g_definePattern = std::regex(R"(([#!][A-z]{2,}[\s]{1,}?([A-z]{2,}[\s]{1,}?)?)([\\(]?[^\s\\)]{1,}[\\)]?)?)");
-    g_usePattern = std::regex(R"(^\s*use\s*\(\s*\"(.*)\"\s*\))");
+    g_includePattern = boost::regex(R"(^\s*#\s*include\s+["<]([^">]+)*[">])");
+    g_definePattern = boost::regex(R"(([#!][A-z]{2,}[\s]{1,}?([A-z]{2,}[\s]{1,}?)?)([\\(]?[^\s\\)]{1,}[\\)]?)?)");
+    g_usePattern = boost::regex(R"(^\s*use\s*\(\s*\"(.*)\"\s*\))");
 }
 
 void Paths::updatePaths(const PlatformContext& context) {

@@ -112,7 +112,7 @@ public:
 
     /// Loading and unloading interface
     virtual bool load();
-    virtual bool unload() noexcept;
+    virtual bool unload();
 
     inline stringImpl assetPath() const { return stringImpl(assetLocation().c_str()) + "/" + assetName().c_str(); }
     void addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk);

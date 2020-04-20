@@ -17,7 +17,7 @@ void  malloc_free(void*& ptr) {
 
 namespace Divide {
 
-    void DebugBreak() {
+    void DebugBreak() noexcept {
 #if defined(SIGTRAP)
         raise(SIGTRAP)
 #else

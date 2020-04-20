@@ -65,7 +65,7 @@ WindowManager::~WindowManager()
     close();
 }
 
-vec2<U16> WindowManager::getFullscreenResolution() const {
+vec2<U16> WindowManager::getFullscreenResolution() const noexcept {
     const SysInfo& systemInfo = sysInfo();
     return vec2<U16>(systemInfo._systemResolutionWidth,
                      systemInfo._systemResolutionHeight);
@@ -153,17 +153,17 @@ ErrorCode WindowManager::init(PlatformContext& context,
     if (err == ErrorCode::NO_ERR) {
         _mainWindowGUID = window.getGUID();
 
-        window.addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window.addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(true);
             return true;
         });
-        window.addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window.addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(false);
             return true;
         });
-        window.addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) {
+        window.addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(false);
             return true;
@@ -326,7 +326,7 @@ bool WindowManager::destroyWindow(DisplayWindow*& window) {
     if (window->destroyWindow() == ErrorCode::NO_ERR) {
         _windows.erase(
             std::remove_if(std::begin(_windows), std::end(_windows),
-                           [&targetGUID](DisplayWindow* window)
+                           [&targetGUID](DisplayWindow* window) noexcept
                                -> bool { return window->getGUID() == targetGUID;}),
             std::end(_windows));
         MemoryManager::SAFE_DELETE(window);
@@ -373,7 +373,7 @@ U32 WindowManager::createAPIFlags(RenderAPI api) noexcept {
     return windowFlags;
 }
 
-void WindowManager::destroyAPISettings(DisplayWindow* window) {
+void WindowManager::destroyAPISettings(DisplayWindow* window) noexcept {
     if (!window || !BitCompare(SDL_GetWindowFlags(window->getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
         return;
     }
@@ -517,7 +517,7 @@ void WindowManager::ToggleRelativeMouseMode(bool state) noexcept {
     ACKNOWLEDGE_UNUSED(result);
 }
 
-vec2<I32> WindowManager::GetCursorPosition(bool global) {
+vec2<I32> WindowManager::GetCursorPosition(bool global) noexcept {
     vec2<I32> ret(-1);
     GetMouseState(ret, global);
     return ret;
@@ -545,7 +545,7 @@ void WindowManager::snapCursorToCenter() {
     setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
 }
 
-void WindowManager::hideAll() {
+void WindowManager::hideAll() noexcept {
     for (DisplayWindow* win : _windows) {
         win->hidden(true);
     }

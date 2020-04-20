@@ -76,6 +76,10 @@ stringImpl SetViewportCommand::toString(U16 indent) const {
     return Base::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
 }
 
+stringImpl PushViewportCommand::toString(U16 indent) const {
+    return Base::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
+}
+
 stringImpl BeginRenderPassCommand::toString(U16 indent) const {
     return Base::toString(indent) + " [ " + stringImpl(_name.c_str()) + " ]";
 }

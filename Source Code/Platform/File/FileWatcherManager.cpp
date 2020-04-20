@@ -17,7 +17,7 @@ namespace Divide {
     void FileWatcherManager::deallocateWatcher(I64 fileWatcherGUID) {
         s_fileWatchers.erase(
             std::remove_if(std::begin(s_fileWatchers), std::end(s_fileWatchers),
-                           [&fileWatcherGUID](const std::unique_ptr<FileWatcher>& it)
+                           [&fileWatcherGUID](const std::unique_ptr<FileWatcher>& it) noexcept
                            -> bool { return it->getGUID() == fileWatcherGUID; }),
             std::end(s_fileWatchers));
     }

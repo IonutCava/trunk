@@ -34,7 +34,7 @@ namespace {
         bool _closePopup = false;
     } g_saveSceneParams;
 
-    const char* UsageToString(RenderTargetUsage usage) {
+    const char* UsageToString(RenderTargetUsage usage) noexcept {
         switch (usage) {
             case RenderTargetUsage::EDITOR: return "Editor";
             case RenderTargetUsage::ENVIRONMENT: return "Environment";
@@ -56,7 +56,7 @@ namespace {
         return "Unknown";
     }
 
-    const char* EdgeMethodName(PreRenderBatch::EdgeDetectionMethod method) {
+    const char* EdgeMethodName(PreRenderBatch::EdgeDetectionMethod method) noexcept {
         switch (method) {
             case PreRenderBatch::EdgeDetectionMethod::Depth: return "Depth";
             case PreRenderBatch::EdgeDetectionMethod::Luma: return "Luma";

@@ -584,22 +584,22 @@ void Editor::update(const U64 deltaTimeUS) {
     }
 }
 
-bool Editor::frameStarted(const FrameEvent& evt) noexcept {
+bool Editor::frameStarted(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
 
-bool Editor::framePreRenderStarted(const FrameEvent& evt) noexcept {
+bool Editor::framePreRenderStarted(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
 
-bool Editor::framePreRenderEnded(const FrameEvent& evt) noexcept {
+bool Editor::framePreRenderEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
 
-bool Editor::frameRenderingQueued(const FrameEvent& evt) noexcept {
+bool Editor::frameRenderingQueued(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
@@ -674,14 +674,14 @@ bool Editor::render(const U64 deltaTime) {
     return true;
 }
 
-bool Editor::frameSceneRenderEnded(const FrameEvent& evt) noexcept {
+bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     Attorney::GizmoEditor::render(*_gizmo, 
                                   *Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager()));
     return true;
 }
 
-bool Editor::framePostRenderStarted(const FrameEvent& evt) noexcept {
+bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     if (!_running) {
         return true;
     }
@@ -710,12 +710,12 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) noexcept {
     return false;
 }
 
-bool Editor::framePostRenderEnded(const FrameEvent& evt) noexcept {
+bool Editor::framePostRenderEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     return true;
 }
 
-bool Editor::frameEnded(const FrameEvent& evt) noexcept {
+bool Editor::frameEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     if (running() && _stepQueue > 0) {
         --_stepQueue;
@@ -815,10 +815,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     viewportCmd._viewport.set(0, 0, fb_width, fb_height);
     GFX::EnqueueCommand(buffer, viewportCmd);
 
-    F32 L = pDrawData->DisplayPos.x;
-    F32 R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
-    F32 T = pDrawData->DisplayPos.y;
-    F32 B = pDrawData->DisplayPos.y + pDrawData->DisplaySize.y;
+    const F32 L = pDrawData->DisplayPos.x;
+    const F32 R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
+    const F32 T = pDrawData->DisplayPos.y;
+    const F32 B = pDrawData->DisplayPos.y + pDrawData->DisplaySize.y;
     const F32 ortho_projection[4][4] =
     {
         { 2.0f / (R - L),    0.0f,               0.0f,   0.0f },

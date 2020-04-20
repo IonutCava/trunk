@@ -741,7 +741,7 @@ bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataCo
     return ret;
 }
 
-bool Material::unload() noexcept {
+bool Material::unload() {
     _textures.fill(nullptr);
 
     static ShaderProgramInfo defaultShaderInfo = {};

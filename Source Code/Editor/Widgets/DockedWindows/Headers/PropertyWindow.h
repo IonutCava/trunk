@@ -52,7 +52,7 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
 
         void drawInternal() override;
 
-        const char* name() const override;
+        const char* name() const noexcept override;
     protected:
 
      bool drawCamera(Camera* cam);

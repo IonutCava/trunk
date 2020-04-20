@@ -112,7 +112,7 @@ namespace {
 
     // using AVX instructions, 4-wide
     // this can be better if A is in memory.
-    static FORCE_INLINE void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C)
+    static FORCE_INLINE void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C) noexcept
     {
         _mm256_zeroupper();
         for (U8 i = 0; i < 4; ++i) {
@@ -143,31 +143,31 @@ namespace {
     // we use __m128 to represent 2x2 matrix as A = | A0  A2 |
     //                                              | A1  A3 |
     // 2x2 column major Matrix multiply A*B
-    FORCE_INLINE __m128 Mat2Mul(__m128 vec1, __m128 vec2)
+    FORCE_INLINE __m128 Mat2Mul(__m128 vec1, __m128 vec2) noexcept
     {
         return  _mm_add_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 0, 0, 3, 3)),
                            _mm_mul_ps(VecSwizzle(vec1, 2, 3, 0, 1), VecSwizzle(vec2, 1, 1, 2, 2)));
     }
     // 2x2 column major Matrix adjugate multiply (A#)*B
-    FORCE_INLINE __m128 Mat2AdjMul(__m128 vec1, __m128 vec2)
+    FORCE_INLINE __m128 Mat2AdjMul(__m128 vec1, __m128 vec2) noexcept
     {
         return  _mm_sub_ps(_mm_mul_ps(VecSwizzle(vec1, 3, 0, 3, 0), vec2),
                             _mm_mul_ps(VecSwizzle(vec1, 2, 1, 2, 1), VecSwizzle(vec2, 1, 0, 3, 2)));
 
     }
     // 2x2 column major Matrix multiply adjugate A*(B#)
-    FORCE_INLINE __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
+    FORCE_INLINE __m128 Mat2MulAdj(__m128 vec1, __m128 vec2) noexcept
     {
         return  _mm_sub_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 3, 3, 0, 0)),
                            _mm_mul_ps(VecSwizzle(vec1, 2, 3, 0, 1), VecSwizzle(vec2, 1, 1, 2, 2)));
     }
 
     // Requires this matrix to be transform matrix
-    FORCE_INLINE void GetTransformInverse(const mat4<F32>& inM, mat4<F32>& r)
+    FORCE_INLINE void GetTransformInverse(const mat4<F32>& inM, mat4<F32>& r) noexcept
     {
         // transpose 3x3, we know m03 = m13 = m23 = 0
-        __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
-        __m128 t1 = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg); // 02, 03, 12, 13
+        const __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
+        const __m128 t1 = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg); // 02, 03, 12, 13
         r._reg[0]._reg = VecShuffle(t0, inM._reg[2]._reg, 0, 2, 0, 3);   // 00, 10, 20, 23(=0)
         r._reg[1]._reg = VecShuffle(t0, inM._reg[2]._reg, 1, 3, 1, 3);   // 01, 11, 21, 23(=0)
         r._reg[2]._reg = VecShuffle(t1, inM._reg[2]._reg, 0, 2, 2, 3);   // 02, 12, 22, 23(=0)
@@ -179,9 +179,9 @@ namespace {
         sizeSqr = _mm_add_ps(sizeSqr, _mm_mul_ps(r._reg[2]._reg, r._reg[2]._reg));
 
         // optional test to avoid divide by 0
-        __m128 one = _mm_set1_ps(1.f);
+        const __m128 one = _mm_set1_ps(1.f);
         // for each component, if(sizeSqr < SMALL_NUMBER) sizeSqr = 1;
-        __m128 rSizeSqr = _mm_blendv_ps(
+        const __m128 rSizeSqr = _mm_blendv_ps(
             _mm_div_ps(one, sizeSqr),
             one,
             _mm_cmplt_ps(sizeSqr, _mm_set1_ps(SMALL_NUMBER))
@@ -200,21 +200,21 @@ namespace {
 
     // Inverse function is the same no matter column major or row major
     // this version treats it as column major
-    FORCE_INLINE void GetInverse(const mat4<F32>& inM, mat4<F32>& r)
+    FORCE_INLINE void GetInverse(const mat4<F32>& inM, mat4<F32>& r) noexcept
     {
         // use block matrix method
         // A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
 
         // sub matrices
-        __m128 A = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg);
-        __m128 C = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg);
-        __m128 B = VecShuffle_0101(inM._reg[2]._reg, inM._reg[3]._reg);
-        __m128 D = VecShuffle_2323(inM._reg[2]._reg, inM._reg[3]._reg);
+        const __m128 A = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg);
+        const __m128 C = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg);
+        const __m128 B = VecShuffle_0101(inM._reg[2]._reg, inM._reg[3]._reg);
+        const __m128 D = VecShuffle_2323(inM._reg[2]._reg, inM._reg[3]._reg);
 
-        __m128 detA = _mm_set1_ps(inM.m[0][0] * inM.m[1][1] - inM.m[0][1] * inM.m[1][0]);
-        __m128 detC = _mm_set1_ps(inM.m[0][2] * inM.m[1][3] - inM.m[0][3] * inM.m[1][2]);
-        __m128 detB = _mm_set1_ps(inM.m[2][0] * inM.m[3][1] - inM.m[2][1] * inM.m[3][0]);
-        __m128 detD = _mm_set1_ps(inM.m[2][2] * inM.m[3][3] - inM.m[2][3] * inM.m[3][2]);
+        const __m128 detA = _mm_set1_ps(inM.m[0][0] * inM.m[1][1] - inM.m[0][1] * inM.m[1][0]);
+        const __m128 detC = _mm_set1_ps(inM.m[0][2] * inM.m[1][3] - inM.m[0][3] * inM.m[1][2]);
+        const __m128 detB = _mm_set1_ps(inM.m[2][0] * inM.m[3][1] - inM.m[2][1] * inM.m[3][0]);
+        const __m128 detD = _mm_set1_ps(inM.m[2][2] * inM.m[3][3] - inM.m[2][3] * inM.m[3][2]);
 
 #if 0 // for determinant, float version is faster
         // determinant as (|A| |C| |B| |D|)
@@ -232,9 +232,9 @@ namespace {
         //                  | Z  W |
 
         // D#C
-        __m128 D_C = Mat2AdjMul(D, C);
+        const __m128 D_C = Mat2AdjMul(D, C);
         // A#B
-        __m128 A_B = Mat2AdjMul(A, B);
+        const __m128 A_B = Mat2AdjMul(A, B);
         // X# = |D|A - B(D#C)
         __m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), Mat2Mul(B, D_C));
         // W# = |A|D - C(A#B)
@@ -260,7 +260,7 @@ namespace {
 
         const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
         // (1/|M|, -1/|M|, -1/|M|, 1/|M|)
-        __m128 rDetM = _mm_div_ps(adjSignMask, detM);
+        const __m128 rDetM = _mm_div_ps(adjSignMask, detM);
 
         X_ = _mm_mul_ps(X_, rDetM);
         Y_ = _mm_mul_ps(Y_, rDetM);
@@ -2153,18 +2153,18 @@ void mat4<T>::fromRotation(U x, U y, U z, Angle::RADIANS<U> angle) {
     vec3<U> v(x, y, z);
     v.normalize();
 
-    U c = std::cos(angle);
-    U s = std::sin(angle);
+    const U c = std::cos(angle);
+    const U s = std::sin(angle);
 
-    U xx = v.x * v.x;
-    U yy = v.y * v.y;
-    U zz = v.z * v.z;
-    U xy = v.x * v.y;
-    U yz = v.y * v.z;
-    U zx = v.z * v.x;
-    U xs = v.x * s;
-    U ys = v.y * s;
-    U zs = v.z * s;
+    const U xx = v.x * v.x;
+    const U yy = v.y * v.y;
+    const U zz = v.z * v.z;
+    const U xy = v.x * v.y;
+    const U yz = v.y * v.z;
+    const U zx = v.z * v.x;
+    const U xs = v.x * s;
+    const U ys = v.y * s;
+    const U zs = v.z * s;
 
     set((1 - c) * xx + c,        (1 - c) * xy + zs,       (1 - c) * zx - ys,       static_cast<U>(mat[3]),
         (1 - c) * xy - zs,       (1 - c) * yy + c,        (1 - c) * yz + xs,       static_cast<U>(mat[7]),
@@ -2174,9 +2174,9 @@ void mat4<T>::fromRotation(U x, U y, U z, Angle::RADIANS<U> angle) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::fromXRotation(Angle::RADIANS<U> angle) {
-    U c = std::cos(angle);
-    U s = std::sin(angle);
+void mat4<T>::fromXRotation(Angle::RADIANS<U> angle) noexcept {
+    const U c = std::cos(angle);
+    const U s = std::sin(angle);
 
     mat[5] = static_cast<T>(c);
     mat[9] = static_cast<T>(-s);
@@ -2186,9 +2186,9 @@ void mat4<T>::fromXRotation(Angle::RADIANS<U> angle) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::fromYRotation(Angle::RADIANS<U> angle) {
-    U c = std::cos(angle);
-    U s = std::sin(angle);
+void mat4<T>::fromYRotation(Angle::RADIANS<U> angle) noexcept {
+    const U c = std::cos(angle);
+    const U s = std::sin(angle);
 
     mat[0] = static_cast<T>(c);
     mat[8] = static_cast<T>(s);
@@ -2198,9 +2198,9 @@ void mat4<T>::fromYRotation(Angle::RADIANS<U> angle) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::fromZRotation(Angle::RADIANS<U> angle) {
-    U c = std::cos(angle);
-    U s = std::sin(angle);
+void mat4<T>::fromZRotation(Angle::RADIANS<U> angle) noexcept {
+    const U c = std::cos(angle);
+    const U s = std::sin(angle);
 
     mat[0] = static_cast<T>(c);
     mat[4] = static_cast<T>(-s);
@@ -2210,7 +2210,7 @@ void mat4<T>::fromZRotation(Angle::RADIANS<U> angle) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::setTranslation(const vec3<U> &v) {
+void mat4<T>::setTranslation(const vec3<U> &v) noexcept {
     setTranslation(v.x, v.y, v.z);
 }
 
@@ -2232,7 +2232,7 @@ void mat4<T>::setScale(U x, U y, U z) noexcept {
 
 template<typename T>
 template<typename U>
-void mat4<T>::setScale(const vec3<U> &v) {
+void mat4<T>::setScale(const vec3<U> &v) noexcept {
     setScale(v.x, v.y, v.z);
 }
 

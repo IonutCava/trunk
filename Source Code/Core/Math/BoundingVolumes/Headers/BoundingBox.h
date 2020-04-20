@@ -122,10 +122,10 @@ class BoundingBox {
     std::array<vec3<F32>, 8> getPoints() const noexcept;
 
     F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const noexcept;
-    F32 nearestDistanceFromPoint(const vec3<F32>& pos) const;
+    F32 nearestDistanceFromPoint(const vec3<F32>& pos) const noexcept;
 
-    inline vec3<F32> getPVertex(const vec3<F32>& normal) const;
-    inline vec3<F32> getNVertex(const vec3<F32>& normal) const;
+    inline vec3<F32> getPVertex(const vec3<F32>& normal) const noexcept;
+    inline vec3<F32> getNVertex(const vec3<F32>& normal) const noexcept;
 
    private:
     vec3<F32> _min, _max;

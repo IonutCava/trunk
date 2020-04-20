@@ -6,23 +6,10 @@ namespace Divide {
 
 Camera::Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye)
     : Resource(ResourceType::DEFAULT, name),
-      _isOrthoCamera(false),
-      _projectionDirty(true),
-      _viewMatrixDirty(false),
-      _rotationLocked(false),
-      _movementLocked(false),
-      _frustumLocked(false),
-      _frustumDirty(true),
-      _reflectionActive(false),
-      _mouseSensitivity(1.0f),
-      _type(type),
-      _updateCameraId(0)
+      _type(type)
 {
     _speedFactor.set(35.0f);
     _speed.set(35.0f);
-    _yawFixed = false;
-    _fixedYawAxis.set(WORLD_Y_AXIS);
-    _accumPitchDegrees = 0.0f;
     _data._eye.set(eye);
     _data._FoV = 60.0f;
     _data._aspectRatio = 1.77f;
@@ -32,19 +19,13 @@ Camera::Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye)
     _data._orientation.identity();
 }
 
-Camera::~Camera()
-{
-}
-
 const CameraSnapshot& Camera::snapshot() {
     updateLookAt();
-
     return _data;
 }
 
-const CameraSnapshot& Camera::snapshot() const {
+const CameraSnapshot& Camera::snapshot() const noexcept {
     assert(!_frustumDirty);
-
     return _data;
 }
 
@@ -100,7 +81,7 @@ void Camera::fromSnapshot(const CameraSnapshot& snapshot) {
     updateLookAt();
 }
 
-void Camera::updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) {
+void Camera::updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) noexcept {
     _speed = _speedFactor * deltaTimeS;
 }
 
@@ -240,7 +221,7 @@ bool Camera::rotateRelative(const vec3<I32>& relRotation) {
     return false;
 }
 
-bool Camera::zoom(I32 zoomFactor) {
+bool Camera::zoom(I32 zoomFactor) noexcept {
     return zoomFactor != 0;
 }
 
@@ -338,7 +319,7 @@ void Camera::setReflection(const Plane<F32>& reflectionPlane) {
     _viewMatrixDirty = true;
 }
 
-void Camera::clearReflection() {
+void Camera::clearReflection() noexcept {
     _reflectionActive = false;
     _viewMatrixDirty = true;
 }
@@ -399,17 +380,17 @@ const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F
     return _data._projectionMatrix;
 }
 
-void Camera::setAspectRatio(F32 ratio) {
+void Camera::setAspectRatio(F32 ratio) noexcept {
     _data._aspectRatio = ratio;
     _projectionDirty = true;
 }
 
-void Camera::setVerticalFoV(Angle::DEGREES<F32> verticalFoV) {
+void Camera::setVerticalFoV(Angle::DEGREES<F32> verticalFoV) noexcept {
     _data._FoV = verticalFoV;
     _projectionDirty = true;
 }
 
-void Camera::setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) {
+void Camera::setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) noexcept {
     _data._FoV = Angle::to_DEGREES(2.0f * std::atan(tan(Angle::to_RADIANS(horizontalFoV) * 0.5f) / _data._aspectRatio));
     _projectionDirty = true;
 }
@@ -425,10 +406,10 @@ bool Camera::updateViewMatrix() {
 
     // Reconstruct the view matrix.
     _data._viewMatrix.set(GetMatrix(_data._orientation));
-    _data._viewMatrix.setRow(3,
-        -_data._orientation.xAxis().dot(_data._eye),
-        -_data._orientation.yAxis().dot(_data._eye),
-        -_data._orientation.zAxis().dot(_data._eye), 1.0f);
+    _data._viewMatrix.setRow(3, -_data._orientation.xAxis().dot(_data._eye),
+                                -_data._orientation.yAxis().dot(_data._eye),
+                                -_data._orientation.zAxis().dot(_data._eye), 
+                                1.0f);
     _data._orientation.getEuler(_euler);
     _euler = Angle::to_DEGREES(_euler);
     // Extract the pitch angle from the view matrix.
@@ -449,13 +430,11 @@ bool Camera::updateFrustum() {
     if (_frustumLocked) {
         return true;
     }
-
     if (!_frustumDirty) {
         return false;
     }
 
     _frustum.Extract(getViewMatrix(), getProjectionMatrix());
-
     _frustumDirty = false;
 
     return true;
@@ -473,9 +452,9 @@ vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, cons
 }
 
 vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const {
-    vec4<F32> clipSpace = getProjectionMatrix() * (getViewMatrix() * vec4<F32>(worldCoords, 1.0f));
-    vec3<F32> ndcSpace = clipSpace.xyz() / std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
-    vec2<F32> winSpace = ((ndcSpace.xy() + 1.0f) * 0.5f) * viewport.zw() + viewport.xy();
+    const vec4<F32> clipSpace = getProjectionMatrix() * (getViewMatrix() * vec4<F32>(worldCoords, 1.0f));
+    const vec3<F32> ndcSpace = clipSpace.xyz() / std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
+    const vec2<F32> winSpace = ((ndcSpace.xy() + 1.0f) * 0.5f) * viewport.zw() + viewport.xy();
     return winSpace;
 }
 

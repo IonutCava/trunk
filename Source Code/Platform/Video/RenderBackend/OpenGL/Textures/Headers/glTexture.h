@@ -51,7 +51,7 @@ class glTexture final : public Texture,
                        const TextureDescriptor& texDescriptor);
     ~glTexture();
 
-    bool unload() noexcept final;
+    bool unload() final;
 
     void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) final;
 
@@ -83,7 +83,7 @@ class glTexture final : public Texture,
     void loadDataUncompressed(const TextureLoadInfo& info,
                               bufferPtr data);
 
-    void setMipRangeInternal(U16 base, U16 max);
+    void setMipRangeInternal(U16 base, U16 max) noexcept;
 
    private:
     GLenum _type;

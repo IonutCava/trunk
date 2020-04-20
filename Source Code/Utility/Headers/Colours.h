@@ -61,7 +61,7 @@ inline vec4<U8> RANDOM() noexcept {
                     to_U8(255));
 }
 
-inline vec4<F32> RANDOM_NORMALIZED() {
+inline vec4<F32> RANDOM_NORMALIZED() noexcept {
     return Util::ToFloatColour(RANDOM());
 }
 

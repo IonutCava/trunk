@@ -161,7 +161,7 @@ void SceneNode::setMaterialTpl(const Material_ptr& material) {
     }
 }
 
-bool SceneNode::unload() noexcept {
+bool SceneNode::unload() {
     setMaterialTpl(nullptr);
     return true;
 }

@@ -88,7 +88,7 @@ void ToByteColour(const FColour3& floatColour, UColour3& colourOut) noexcept {
                   FLOAT_TO_CHAR_SNORM(floatColour.b));
 }
 
-void ToIntColour(const FColour4& floatColour, vec4<I32>& colourOut) {
+void ToIntColour(const FColour4& floatColour, vec4<I32>& colourOut) noexcept {
     colourOut.set(FLOAT_TO_SCHAR_SNORM(floatColour.r),
                   FLOAT_TO_SCHAR_SNORM(floatColour.g),
                   FLOAT_TO_SCHAR_SNORM(floatColour.b),
@@ -101,7 +101,7 @@ void ToIntColour(const FColour3& floatColour, vec3<I32>& colourOut) noexcept {
                   to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.b)));
 }
 
-void ToUIntColour(const FColour4& floatColour, vec4<U32>& colourOut) {
+void ToUIntColour(const FColour4& floatColour, vec4<U32>& colourOut) noexcept {
     colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
                   FLOAT_TO_CHAR_SNORM(floatColour.g),
                   FLOAT_TO_CHAR_SNORM(floatColour.b),
@@ -152,7 +152,7 @@ UColour3 ToByteColour(const FColour3& floatColour) noexcept {
     return tempColour;
 }
 
-vec4<I32> ToIntColour(const FColour4& floatColour) {
+vec4<I32> ToIntColour(const FColour4& floatColour) noexcept {
     vec4<I32> tempColour;
     ToIntColour(floatColour, tempColour);
     return tempColour;
@@ -164,7 +164,7 @@ vec3<I32> ToIntColour(const FColour3& floatColour) noexcept {
     return tempColour;
 }
 
-vec4<U32> ToUIntColour(const FColour4& floatColour) {
+vec4<U32> ToUIntColour(const FColour4& floatColour) noexcept {
     vec4<U32> tempColour;
     ToUIntColour(floatColour, tempColour);
     return tempColour;
@@ -176,7 +176,7 @@ vec3<U32> ToUIntColour(const FColour3& floatColour) noexcept {
     return tempColour;
 }
 
-FColour4 ToFloatColour(const UColour4& byteColour) {
+FColour4 ToFloatColour(const UColour4& byteColour) noexcept {
     FColour4 tempColour;
     ToFloatColour(byteColour, tempColour);
     return tempColour;
@@ -188,7 +188,7 @@ FColour3 ToFloatColour(const UColour3& byteColour) noexcept {
     return tempColour;
 }
 
-FColour4 ToFloatColour(const vec4<U32>& uintColour) {
+FColour4 ToFloatColour(const vec4<U32>& uintColour) noexcept {
     FColour4 tempColour;
     ToFloatColour(uintColour, tempColour);
     return tempColour;
@@ -200,25 +200,25 @@ FColour3 ToFloatColour(const vec3<U32>& uintColour) noexcept {
     return tempColour;
 }
 
-F32 PACK_VEC3(const vec3<F32>& value) {
+F32 PACK_VEC3(const vec3<F32>& value) noexcept {
     return PACK_VEC3(value.x, value.y, value.z);
 }
 
-U32 PACK_VEC2(const vec2<F32>& value) {
+U32 PACK_VEC2(const vec2<F32>& value) noexcept {
     return PACK_VEC2(value.x, value.y);
 }
 
-void UNPACK_VEC3(const F32 src, vec3<F32>& res) {
+void UNPACK_VEC3(const F32 src, vec3<F32>& res)noexcept {
     UNPACK_FLOAT(src, res.x, res.y, res.z);
 }
 
-vec3<F32> UNPACK_VEC3(const F32 src) {
+vec3<F32> UNPACK_VEC3(const F32 src) noexcept {
     vec3<F32> res;
     UNPACK_VEC3(src, res);
     return res;
 }
 
-void UNPACK_VEC2(const U32 src, vec2<F32>& res) {
+void UNPACK_VEC2(const U32 src, vec2<F32>& res) noexcept {
     UNPACK_VEC2(src, res.x, res.y);
 }
 
@@ -245,11 +245,11 @@ void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value) {
     value.set(ret.x, ret.y, ret.z, ret.w);
 }
 
-U32 PACK_11_11_10(const vec3<F32>& value) {
+U32 PACK_11_11_10(const vec3<F32>& value) noexcept {
     return Divide::PACK_11_11_10(value.x, value.y, value.z);
 }
 
-void UNPACK_11_11_10(const U32 src, vec3<F32>& res) {
+void UNPACK_11_11_10(const U32 src, vec3<F32>& res) noexcept {
     Divide::UNPACK_11_11_10(src, res.x, res.y, res.z);
 }
 

@@ -506,7 +506,6 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         computeViewports(_platformContext.editor().getTargetViewport(), _editorViewports, playerCount);
     }
 
-    
     RenderPassManager::RenderParams renderParams = {};
     renderParams._editorRunning = editorRunning;
     renderParams._sceneRenderState = &_sceneManager->getActiveScene().renderState();
@@ -517,6 +516,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         }
 
         renderParams._targetViewport = editorRunning ? _editorViewports[i] : _targetViewports[i];
+
         Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
         {
             Time::ProfileTimer& timer = getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer");

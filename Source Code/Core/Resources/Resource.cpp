@@ -58,7 +58,7 @@ bool CachedResource::load() {
     return true;
 }
 
-bool CachedResource::unload() noexcept {
+bool CachedResource::unload() {
     return true;
 }
 

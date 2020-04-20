@@ -66,7 +66,7 @@ void TrackedObject::UNREGISTER_TRACKED_DEPENDENCY(TrackedObject* const obj) {
     I64 targetGUID = obj->getGUID();
     _dependencyList.erase(
         std::remove_if(std::begin(_dependencyList), std::end(_dependencyList),
-                       [&targetGUID](TrackedObject* tObj)
+                       [&targetGUID](TrackedObject* tObj) noexcept
                            -> bool { return tObj->getGUID() == targetGUID; }),
         std::end(_dependencyList));
 }

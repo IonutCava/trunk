@@ -154,7 +154,7 @@ namespace Divide {
         handleOut._handle = wmInfo.info.win.window;
     }
 
-    void DebugBreak() {
+    void DebugBreak() noexcept {
         __debugbreak();
     }
 

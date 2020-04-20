@@ -13,6 +13,8 @@ DEFINE_POOL(BindPipelineCommand);
 DEFINE_POOL(SendPushConstantsCommand);
 DEFINE_POOL(DrawCommand);
 DEFINE_POOL(SetViewportCommand);
+DEFINE_POOL(PushViewportCommand);
+DEFINE_POOL(PopViewportCommand);
 DEFINE_POOL(BeginRenderPassCommand);
 DEFINE_POOL(EndRenderPassCommand);
 DEFINE_POOL(BeginPixelBufferCommand);
@@ -70,6 +72,8 @@ namespace {
         }
         switch (static_cast<CommandType>(typeIndex)) {
             case GFX::CommandType::SET_VIEWPORT:
+            case GFX::CommandType::PUSH_VIEWPORT:
+            case GFX::CommandType::POP_VIEWPORT:
             case GFX::CommandType::SET_SCISSOR:
             case GFX::CommandType::SET_CAMERA:
             case GFX::CommandType::SET_CLIP_PLANES:
@@ -239,6 +243,8 @@ void CommandBuffer::batch() {
             case GFX::CommandType::SET_SCISSOR:
             case GFX::CommandType::SET_BLEND:
             case GFX::CommandType::SET_VIEWPORT:
+            case GFX::CommandType::PUSH_VIEWPORT:
+            case GFX::CommandType::POP_VIEWPORT:
             case GFX::CommandType::SET_CLIPING_STATE:
             case GFX::CommandType::SWITCH_WINDOW: {
                 hasWork = true;
@@ -405,7 +411,7 @@ bool CommandBuffer::validate() const {
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         bool pushedPass = false, pushedSubPass = false, pushedPixelBuffer = false;
         bool hasPipeline = false, hasDescriptorSets = false;
-        I32 pushedDebugScope = 0, pushedCamera = 0;
+        I32 pushedDebugScope = 0, pushedCamera = 0, pushedViewport = 0;
 
         for (const CommandEntry& cmd : _commandOrder) {
             switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
@@ -460,6 +466,12 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::POP_CAMERA: {
                     --pushedCamera;
                 }break;
+                case GFX::CommandType::PUSH_VIEWPORT: {
+                    ++pushedViewport;
+                }break;
+                case GFX::CommandType::POP_VIEWPORT: {
+                    --pushedViewport;
+                }break;
                 case GFX::CommandType::BIND_PIPELINE: {
                     hasPipeline = true;
                 } break;
@@ -485,7 +497,7 @@ bool CommandBuffer::validate() const {
             };
         }
 
-        return !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0 && pushedCamera == 0;
+        return !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0 && pushedCamera == 0 && pushedViewport == 0;
     }
 
     return true;

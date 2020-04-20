@@ -51,7 +51,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     void setDirection(const vec3<F32>& direction);
 
     // Quick hack to store previous frame's culling results
-    vectorEASTL<RenderPassManager::FeedBackContainer>& feedBackContainers() { return _feedbackContainers; }
+    vectorEASTL<RenderPassManager::FeedBackContainer>& feedBackContainers() noexcept { return _feedbackContainers; }
 
     PROPERTY_RW(U8, csmSplitCount, 3u);
     /// CSM extra back up distance for light position

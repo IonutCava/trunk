@@ -158,7 +158,7 @@ public:
     inline bool decorated() const noexcept;
            void decorated(const bool state) noexcept;
 
-    inline bool fullscreen() const;
+    inline bool fullscreen() const noexcept;
 
     inline WindowType type() const noexcept;
     inline void changeType(WindowType newType);
@@ -187,7 +187,7 @@ public:
     vec2<U16> getPreviousDimensions() const noexcept;
 
     Rect<I32> getBorderSizes() const noexcept;
-    vec2<U16> getDrawableSize() const;
+    vec2<U16> getDrawableSize() const noexcept;
     vec2<I32> getPosition(bool global = false, bool offset = false) const;
 
            void setPosition(I32 x, I32 y, bool global = false, bool offset = false);
@@ -197,7 +197,7 @@ public:
     template<typename... Args>
     void title(const char* format, Args&& ...args);
 
-    WindowHandle handle() const;
+    WindowHandle handle() const noexcept;
 
     /// Mouse positioning is handled by SDL. Returns true on success
     bool setCursorPosition(I32 x, I32 y) noexcept;
@@ -211,7 +211,7 @@ public:
 
     inline void destroyCbk(const DELEGATE<void>& destroyCbk);
 
-    inline Rect<I32> windowViewport() const;
+    inline Rect<I32> windowViewport() const noexcept;
 
     inline const Rect<I32>& renderingViewport() const noexcept;
     void renderingViewport(const Rect<I32>& viewport);

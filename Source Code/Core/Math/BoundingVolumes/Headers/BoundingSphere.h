@@ -93,10 +93,10 @@ class BoundingSphere {
 namespace Attorney {
     class BoundingSphereEditor {
         private:
-        static F32* center(BoundingSphere& bs) {
+        static F32* center(BoundingSphere& bs) noexcept {
             return bs._center._v;
         }
-        static F32& radius(BoundingSphere& bs) {
+        static F32& radius(BoundingSphere& bs) noexcept {
             return bs._radius;
         }
         friend class Divide::PropertyWindow;

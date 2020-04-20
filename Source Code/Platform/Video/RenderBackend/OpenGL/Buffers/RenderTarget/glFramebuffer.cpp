@@ -19,7 +19,7 @@
 namespace Divide {
 
 namespace {
-    FORCE_INLINE bool IsValid(const DepthBlitEntry& entry) {
+    FORCE_INLINE bool IsValid(const DepthBlitEntry& entry) noexcept {
         return entry._inputLayer != INVALID_DEPTH_LAYER &&
                entry._outputLayer != INVALID_DEPTH_LAYER;
     }

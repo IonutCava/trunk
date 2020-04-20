@@ -149,7 +149,7 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
     return false;
 }
 
-bool SceneGraph::frameStarted(const FrameEvent& evt) noexcept {
+bool SceneGraph::frameStarted(const FrameEvent& evt) {
     UniqueLock<SharedMutex> lock(_pendingDeletionLock);
     if (!_pendingDeletion.empty()) {
         for (auto entry : _pendingDeletion) {
@@ -175,7 +175,7 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) noexcept {
     return true;
 }
 
-bool SceneGraph::frameEnded(const FrameEvent& evt) noexcept {
+bool SceneGraph::frameEnded(const FrameEvent& evt) {
     for (SceneGraphNode* node : _orderedNodeList) {
         node->frameEnded();
     }

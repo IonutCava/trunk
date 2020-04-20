@@ -50,7 +50,7 @@ class WaterPlane : public SceneNode {
 
     bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);
 
-    inline const std::shared_ptr<Quad3D>& getQuad() const { return _plane; }
+    inline const std::shared_ptr<Quad3D>& getQuad() const noexcept { return _plane; }
 
     void updatePlaneEquation(const SceneGraphNode& sgn,
                              Plane<F32>& plane,

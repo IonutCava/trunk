@@ -132,7 +132,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/strand.hpp>
-
+#include <boost/regex.hpp>
 #include <simplefilewatcher/includes/FileWatcher.h>
 
 #include <BetterEnums/include/enum.h>

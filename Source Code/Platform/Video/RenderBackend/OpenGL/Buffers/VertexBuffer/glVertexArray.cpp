@@ -15,7 +15,7 @@ namespace {
 // Once vertex buffers reach a certain size, the for loop grows really really fast up to millions of iterations.
 // Multiple if-checks per loop are not an option, so do some template hacks to speed this function up
 template<bool texCoords, bool normals, bool tangents, bool colour, bool bones>
-void fillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut)
+void fillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut) noexcept
 {
     for (const VertexBuffer::Vertex& data : dataIn) {
         std::memcpy(dataOut, data._position._v, sizeof(data._position));
@@ -52,7 +52,7 @@ void fillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
 }
 
 template <bool texCoords, bool normals, bool tangents, bool colour>
-void fillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool bones)
+void fillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool bones) noexcept
 {
     if (bones) {
         fillSmallData5<texCoords, normals, tangents, colour, true>(dataIn, dataOut);
@@ -62,7 +62,7 @@ void fillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
 }
 
 template <bool texCoords, bool normals, bool tangents>
-void fillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool colour, bool bones)
+void fillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool colour, bool bones) noexcept
 {
     if (colour) {
         fillSmallData4<texCoords, normals, tangents, true>(dataIn, dataOut, bones);
@@ -72,7 +72,7 @@ void fillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
 }
 
 template <bool texCoords, bool normals>
-void fillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool tangents, bool colour, bool bones)
+void fillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool tangents, bool colour, bool bones) noexcept
 {
     if (tangents) {
         fillSmallData3<texCoords, normals, true>(dataIn, dataOut, colour, bones);
@@ -82,7 +82,7 @@ void fillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
 }
 
 template <bool texCoords>
-void fillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool normals, bool tangents, bool colour, bool bones)
+void fillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool normals, bool tangents, bool colour, bool bones) noexcept
 {
     if (normals) {
         fillSmallData2<texCoords, true>(dataIn, dataOut, tangents, colour, bones);
@@ -91,7 +91,7 @@ void fillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
     }
 }
 
-void fillSmallData(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool texCoords, bool normals, bool tangents, bool colour, bool bones)
+void fillSmallData(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool texCoords, bool normals, bool tangents, bool colour, bool bones) noexcept
 {
     if (texCoords) {
         fillSmallData1<true>(dataIn, dataOut, normals, tangents, colour, bones);

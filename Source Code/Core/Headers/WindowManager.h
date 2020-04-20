@@ -97,7 +97,7 @@ public:
     void postInit();
 
     void close();
-    void hideAll();
+    void hideAll() noexcept;
 
     void update(const U64 deltaTimeUS);
 
@@ -113,7 +113,7 @@ public:
     bool setCursorPosition(I32 x, I32 y);
     void snapCursorToCenter();
 
-    static vec2<I32> GetCursorPosition(bool global);
+    static vec2<I32> GetCursorPosition(bool global) noexcept;
     static U32 GetMouseState(vec2<I32>& pos, bool global) noexcept;
     static void SetCaptureMouse(bool state) noexcept;
 
@@ -121,12 +121,12 @@ public:
     inline const DisplayWindow& getMainWindow() const;
 
     //Returns null if no window is currently focused
-    inline DisplayWindow* getFocusedWindow();
-    inline const DisplayWindow* getFocusedWindow() const;
+    inline DisplayWindow* getFocusedWindow() noexcept;
+    inline const DisplayWindow* getFocusedWindow() const noexcept;
 
     //Returns null if no window is currently hovered
-    inline DisplayWindow* getHoveredWindow();
-    inline const DisplayWindow* getHoveredWindow() const;
+    inline DisplayWindow* getHoveredWindow() noexcept;
+    inline const DisplayWindow* getHoveredWindow() const noexcept;
 
     inline DisplayWindow& getWindow(I64 guid);
     inline const DisplayWindow& getWindow(I64 guid) const;
@@ -141,7 +141,7 @@ public:
 
     inline const vectorEASTL<MonitorData>& monitorData() const noexcept;
 
-    vec2<U16> getFullscreenResolution() const;
+    vec2<U16> getFullscreenResolution() const noexcept;
 
     void captureMouse(bool state) noexcept;
 
@@ -156,7 +156,7 @@ protected:
     U32 createAPIFlags(RenderAPI api) noexcept;
     ErrorCode configureAPISettings(RenderAPI api, U16 descriptorFlags);
     ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags);
-    void destroyAPISettings(DisplayWindow* window);
+    void destroyAPISettings(DisplayWindow* window) noexcept;
 
 protected:
     U32 _apiFlags = 0;

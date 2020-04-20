@@ -61,7 +61,7 @@ class ParticleEmitter : public SceneNode {
     bool initData(const std::shared_ptr<ParticleData>& particleData);
 
     /// SceneNode concrete implementations
-    bool unload() noexcept override;
+    bool unload() override;
     
     inline void addUpdater(std::shared_ptr<ParticleUpdater> updater) {
         _updaters.push_back(updater);

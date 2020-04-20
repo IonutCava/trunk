@@ -337,7 +337,7 @@ class SceneManager {
         return scene.updateCameraControls(idx);
     }
 
-    static bool checkLoadFlag(const Scene& scene) {
+    static bool checkLoadFlag(const Scene& scene) noexcept {
         return scene.checkLoadFlag();
     }
 

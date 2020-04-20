@@ -61,7 +61,7 @@ class PreRenderBatch {
         }
 
         const OperatorBatch& batch = _operators[to_U32(fSpace)];
-        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const std::unique_ptr<PreRenderOperator>& op) {
+        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const std::unique_ptr<PreRenderOperator>& op) noexcept {
                                     return op->operatorType() == type;
                               });
 
@@ -76,7 +76,7 @@ class PreRenderBatch {
         }
 
         const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
-        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const std::unique_ptr<PreRenderOperator>& op) {
+        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const std::unique_ptr<PreRenderOperator>& op) noexcept {
                                     return op->operatorType() == type;
                               });
         assert(it != std::cend(batch));

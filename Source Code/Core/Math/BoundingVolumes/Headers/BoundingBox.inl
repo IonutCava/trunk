@@ -247,17 +247,17 @@ inline std::array<vec3<F32>, 8> BoundingBox::getPoints() const noexcept {
     };
 }
 
-inline F32 BoundingBox::nearestDistanceFromPoint(const vec3<F32>& pos) const {
+inline F32 BoundingBox::nearestDistanceFromPoint(const vec3<F32>& pos) const noexcept {
     return Divide::Sqrt(nearestDistanceFromPointSquared(pos));
 }
 
-inline vec3<F32> BoundingBox::getPVertex(const vec3<F32>& normal) const {
+inline vec3<F32> BoundingBox::getPVertex(const vec3<F32>& normal) const noexcept {
     return vec3<F32>(normal.x >= 0.0f ? _max.x : _min.x,
                      normal.y >= 0.0f ? _max.y : _min.y,
                      normal.z >= 0.0f ? _max.z : _min.z);
 }
 
-inline vec3<F32> BoundingBox::getNVertex(const vec3<F32>& normal) const {
+inline vec3<F32> BoundingBox::getNVertex(const vec3<F32>& normal) const noexcept {
     return vec3<F32>(normal.x >= 0.0f ? _min.x : _max.x,
                      normal.y >= 0.0f ? _min.y : _max.y,
                      normal.z >= 0.0f ? _min.z : _max.z);

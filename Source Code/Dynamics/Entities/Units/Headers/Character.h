@@ -91,9 +91,9 @@ class Character : public Unit {
     virtual ~Character();
 
     /// Set unit type
-    inline void setCharacterType(CharacterType type) { _type = type; }
+    inline void setCharacterType(CharacterType type) noexcept { _type = type; }
     /// Get unit type
-    inline CharacterType getCharacterType() const { return _type; }
+    inline CharacterType getCharacterType() const noexcept { return _type; }
     /**
       * Update this character for drawing a new frame.
       * Updates one tick in the render loop.
@@ -120,12 +120,12 @@ class Character : public Unit {
     /// Rotate the character to look at another character
     virtual void lookAt(const vec3<F32>& targetPos);
     /// Just before we render the frame
-    virtual bool frameRenderingQueued(const FrameEvent& evt) noexcept override;
+    virtual bool frameRenderingQueued(const FrameEvent& evt) override;
 
     inline const vec3<F32>& getRelativeLookingDirection() const noexcept {
         return _lookingDirection;
     }
-    inline const void setRelativeLookingDirection(const vec3<F32>& direction) {
+    inline const void setRelativeLookingDirection(const vec3<F32>& direction) noexcept {
         _lookingDirection = direction;
     }
 

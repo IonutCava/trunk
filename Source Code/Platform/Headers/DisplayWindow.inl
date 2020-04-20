@@ -39,7 +39,7 @@ namespace Divide {
         return _sdlWindow;
     }
 
-    inline bool DisplayWindow::fullscreen() const {
+    inline bool DisplayWindow::fullscreen() const noexcept {
         return type() == WindowType::FULLSCREEN ||
                type() == WindowType::FULLSCREEN_WINDOWED;
     }
@@ -142,7 +142,7 @@ namespace Divide {
         _destroyCbk = destroyCbk;
     }
 
-    inline Rect<I32> DisplayWindow::windowViewport() const {
+    inline Rect<I32> DisplayWindow::windowViewport() const noexcept {
         const vec2<U16>& dim = getDimensions();
         return Rect<I32>(0, 0, to_I32(dim.width), to_I32(dim.height));
     }

@@ -28,7 +28,7 @@ int _vscprintf (const char * format, va_list pargs) {
 
 namespace Divide {
 
-    void DebugBreak() {
+    void DebugBreak() noexcept {
 #if defined(SIGTRAP)
         raise(SIGTRAP)
 #else

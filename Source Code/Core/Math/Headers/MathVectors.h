@@ -833,7 +833,7 @@ template <typename T>
 inline vec3<T> Normalized(const vec3<T> &vector);
 /// general vec3 dot product
 template <typename T>
-inline T Dot(const vec3<T> &a, const vec3<T> &b);
+inline T Dot(const vec3<T> &a, const vec3<T> &b) noexcept;
 /// general vec3 cross function
 template <typename T>
 inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2);

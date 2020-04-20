@@ -44,38 +44,38 @@ namespace Divide {
 
         void set(U32 bufferIndex,
                  U32 componentsPerElement,
-                 GFXDataFormat dataType);
+                 GFXDataFormat dataType) noexcept;
 
         void set(U32 bufferIndex,
                  U32 componentsPerElement,
                  GFXDataFormat dataType,
-                 bool normalized);
+                 bool normalized) noexcept;
 
         void set(U32 bufferIndex,
                  U32 componentsPerElement,
                  GFXDataFormat dataType,
                  bool normalized,
-                 size_t strideInBytes);
+                 size_t strideInBytes) noexcept;
 
-        void attribIndex(U32 index);
-        void strideInBytes(size_t strideInBytes);
-        void bufferIndex(U32 bufferIndex);
-        void componentsPerElement(U32 componentsPerElement);
-        void interleavedOffsetInBytes(U32 interleavedOffsetInBytes);
-        void normalized(bool normalized);
-        void dataType(GFXDataFormat type);
-        void wasSet(bool wasSet);
-        void clean();
+        void attribIndex(U32 index) noexcept;
+        void strideInBytes(size_t strideInBytes) noexcept;
+        void bufferIndex(U32 bufferIndex) noexcept;
+        void componentsPerElement(U32 componentsPerElement) noexcept;
+        void interleavedOffsetInBytes(U32 interleavedOffsetInBytes) noexcept;
+        void normalized(bool normalized) noexcept;
+        void dataType(GFXDataFormat type) noexcept;
+        void wasSet(bool wasSet) noexcept;
+        void clean() noexcept;
 
-        inline U32 attribIndex() const { return _index; }
-        inline size_t strideInBytes() const { return _strideInBytes; }
-        inline U32 bufferIndex() const { return _parentBuffer; }
-        inline U32 componentsPerElement() const { return _componentsPerElement; }
-        inline bool normalized() const { return _normalized; }
-        inline U32 interleavedOffsetInBytes() const { return _interleavedOffset; }
-        inline GFXDataFormat dataType() const { return _type; }
-        inline bool wasSet() const { return _wasSet; }
-        inline bool dirty() const { return _dirty; }
+        inline U32 attribIndex() const noexcept { return _index; }
+        inline size_t strideInBytes() const noexcept { return _strideInBytes; }
+        inline U32 bufferIndex() const noexcept { return _parentBuffer; }
+        inline U32 componentsPerElement() const noexcept { return _componentsPerElement; }
+        inline bool normalized() const noexcept { return _normalized; }
+        inline U32 interleavedOffsetInBytes() const noexcept { return _interleavedOffset; }
+        inline GFXDataFormat dataType() const noexcept { return _type; }
+        inline bool wasSet() const noexcept { return _wasSet; }
+        inline bool dirty() const noexcept { return _dirty; }
  
     protected:
         U32 _index;

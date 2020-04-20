@@ -176,7 +176,7 @@ glShaderProgram::~glShaderProgram()
     GL_API::deleteShaderPipelines(1, &_handle);
 }
 
-bool glShaderProgram::unload() noexcept {
+bool glShaderProgram::unload() {
     // Remove every shader attached to this program
     for (glShader* shader : _shaderStage) {
         assert(shader != nullptr);
@@ -634,7 +634,7 @@ stringImpl glShaderProgram::preprocessIncludes(const Str128& name,
     }
 
     size_t line_number = 1;
-    std::smatch matches;
+    boost::smatch matches;
 
     stringImpl output, line, include_string;
     Str64 include_file;
@@ -642,7 +642,7 @@ stringImpl glShaderProgram::preprocessIncludes(const Str128& name,
     istringstreamImpl input(source);
 
     while (std::getline(input, line)) {
-        if (!std::regex_search(line, matches, Paths::g_includePattern)) {
+        if (!boost::regex_search(line, matches, Paths::g_includePattern)) {
             output.append(line);
         } else {
             include_file = Util::Trim(matches[1].str()).c_str();

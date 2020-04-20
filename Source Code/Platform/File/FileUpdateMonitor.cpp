@@ -24,7 +24,7 @@ void UpdateListener::handleFileAction(FW::WatchID watchid, const FW::String& dir
     if (!_ignoredEndingCharacters.empty()) {
         if (eastl::find_if(eastl::cbegin(_ignoredEndingCharacters),
             eastl::cend(_ignoredEndingCharacters),
-            [filename](char character) {
+            [filename](char character) noexcept {
             return std::tolower(filename.back()) == std::tolower(character);
         }) != eastl::cend(_ignoredEndingCharacters)) {
             return;

@@ -263,7 +263,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 
                 Hacks._editorComponents.erase(std::remove_if(std::begin(Hacks._editorComponents),
                                                              std::end(Hacks._editorComponents),
-                                                             [targetGUID](EditorComponent* editorComp) -> bool {
+                                                             [targetGUID](EditorComponent* editorComp) noexcept -> bool {
                                                                  return editorComp->getGUID() == targetGUID;
                                                              }),
                                               std::end(Hacks._editorComponents));

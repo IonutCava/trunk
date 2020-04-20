@@ -320,12 +320,12 @@ namespace NS_GLIM
         }
     }
 
-    void GLIM_BATCH::SetVertexAttribLocation(unsigned int vertexLocation)
+    void GLIM_BATCH::SetVertexAttribLocation(unsigned int vertexLocation) noexcept
     {
         m_Data.m_VertAttribLocation = vertexLocation;
     }
     
-    void GLIM_BATCH::SetShaderProgramHandle(Divide::I64 shaderProgramHandle)
+    void GLIM_BATCH::SetShaderProgramHandle(Divide::I64 shaderProgramHandle) noexcept
     {
         m_Data.m_ShaderProgramHandle = shaderProgramHandle;
     }

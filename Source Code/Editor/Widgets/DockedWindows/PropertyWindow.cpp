@@ -1325,7 +1325,7 @@ namespace Divide {
          return ret;
      }
 
-     const char* PropertyWindow::name() const {
+     const char* PropertyWindow::name() const noexcept {
          const Selections& nodes = selections();
          if (nodes._selectionCount == 0) {
              return DockedWindow::name();

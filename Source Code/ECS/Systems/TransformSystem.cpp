@@ -18,7 +18,6 @@ namespace Divide {
 
     TransformSystem::~TransformSystem()
     {
-
     }
 
     void TransformSystem::PreUpdate(F32 dt) {

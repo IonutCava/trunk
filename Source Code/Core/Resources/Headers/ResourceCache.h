@@ -100,7 +100,7 @@ public:
             }
 
             if_constexpr(UseAtomicCounter) {
-                ptr->addStateCallback(ResourceState::RES_LOADED, [&taskCounter](auto) {
+                ptr->addStateCallback(ResourceState::RES_LOADED, [&taskCounter](auto) noexcept {
                     taskCounter.fetch_sub(1u);
                 });
             }

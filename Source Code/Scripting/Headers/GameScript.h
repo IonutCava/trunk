@@ -55,13 +55,13 @@ public:
         ~GameScript();
 
     protected:
-        bool frameStarted(const FrameEvent& evt) noexcept override;
-        bool framePreRenderStarted(const FrameEvent& evt) noexcept override;
-        bool framePreRenderEnded(const FrameEvent& evt) noexcept override;
-        bool frameRenderingQueued(const FrameEvent& evt) noexcept override;
-        bool framePostRenderStarted(const FrameEvent& evt) noexcept override;
-        bool framePostRenderEnded(const FrameEvent& evt) noexcept override;
-        bool frameEnded(const FrameEvent& evt) noexcept override;
+        bool frameStarted(const FrameEvent& evt) override;
+        bool framePreRenderStarted(const FrameEvent& evt) override;
+        bool framePreRenderEnded(const FrameEvent& evt) override;
+        bool frameRenderingQueued(const FrameEvent& evt) override;
+        bool framePostRenderStarted(const FrameEvent& evt) override;
+        bool framePostRenderEnded(const FrameEvent& evt) override;
+        bool frameEnded(const FrameEvent& evt) override;
 
     private:
         void addGameInstance();

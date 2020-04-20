@@ -62,13 +62,13 @@ class Client {
     void start(boost::asio::ip::tcp::resolver::iterator endpoint_iter);
     void stop();
 
-    inline boost::asio::ip::tcp::socket& getSocket() { return _socket; }
+    inline boost::asio::ip::tcp::socket& getSocket() noexcept { return _socket; }
 
     // Packet I/O
     bool sendPacket(WorldPacket& p);
     void receivePacket(WorldPacket& p);
 
-    void toggleDebugOutput(bool debugOutput) { _debugOutput = debugOutput; }
+    void toggleDebugOutput(bool debugOutput) noexcept { _debugOutput = debugOutput; }
 
    private:
     // Connection

@@ -49,7 +49,8 @@ class Camera : public Resource {
         FIRST_PERSON,
         THIRD_PERSON,
         ORBIT,
-        SCRIPTED
+        SCRIPTED,
+        COUNT
     };
 
     enum class UtilityCamera : U8 {
@@ -67,14 +68,14 @@ class Camera : public Resource {
     virtual void fromCamera(const Camera& camera);
     virtual void fromSnapshot(const CameraSnapshot& snapshot);
 
-    const CameraSnapshot& snapshot();
-    const CameraSnapshot& snapshot() const;
+    const CameraSnapshot& snapshot() ;
+    const CameraSnapshot& snapshot() const noexcept;
 
     // Return true if the cached camera state wasn't up-to-date
     bool updateLookAt();
 
     void setReflection(const Plane<F32>& reflectionPlane);
-    void clearReflection();
+    void clearReflection() noexcept;
 
     /// Moves the camera by the specified offsets in each direction
     virtual void move(F32 dx, F32 dy, F32 dz);
@@ -184,9 +185,9 @@ class Camera : public Resource {
         setRotation(Quaternion<F32>(-pitch, -yaw, -roll));
     }
 
-    void setAspectRatio(F32 ratio);
-    void setVerticalFoV(Angle::DEGREES<F32> verticalFoV);
-    void setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV);
+    void setAspectRatio(F32 ratio) noexcept;
+    void setVerticalFoV(Angle::DEGREES<F32> verticalFoV) noexcept;
+    void setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) noexcept;
 
     /// Mouse sensitivity: amount of pixels per radian (this should be moved out
     /// of the camera class)
@@ -228,18 +229,17 @@ class Camera : public Resource {
         return _data._orientation;
     }
 
-    inline vec3<F32> getUpDir() const {
+    inline vec3<F32> getUpDir() const noexcept {
         const mat4<F32>& viewMat = getViewMatrix();
         return vec3<F32>(viewMat.m[0][1], viewMat.m[1][1], viewMat.m[2][1]);
     }
 
-    inline vec3<F32> getRightDir() const {
+    inline vec3<F32> getRightDir() const noexcept {
         const mat4<F32>& viewMat = getViewMatrix();
         return vec3<F32>(viewMat.m[0][0], viewMat.m[1][0], viewMat.m[2][0]);
-
     }
 
-    inline vec3<F32> getForwardDir() const {
+    inline vec3<F32> getForwardDir() const noexcept {
         const mat4<F32>& viewMat = getViewMatrix();
         return vec3<F32>(-viewMat.m[0][2], -viewMat.m[1][2], -viewMat.m[2][2]);
     }
@@ -306,7 +306,7 @@ class Camera : public Resource {
     }
 
     /// Nothing really to unload
-    virtual bool unload() { return true; }
+    virtual bool unload() noexcept { return true; }
 
     const mat4<F32>& setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes);
 
@@ -339,18 +339,18 @@ class Camera : public Resource {
 
     virtual bool moveRelative(const vec3<I32>& relMovement);
     virtual bool rotateRelative(const vec3<I32>& relRotation);
-    virtual bool zoom(I32 zoomFactor);
+    virtual bool zoom(I32 zoomFactor) noexcept;
 
     bool removeUpdateListener(U32 id);
     U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
 
-    virtual ~Camera();
+    virtual ~Camera() = default;
 
    protected:
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
     /// Inject mouse events
-    virtual void updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS);
+    virtual void updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) noexcept;
 
     const char* getResourceTypeName() const noexcept override { return "Camera"; }
 
@@ -361,35 +361,35 @@ class Camera : public Resource {
 
    protected:
     CameraSnapshot _data;
-    vec3<F32> _fixedYawAxis;
+    vec3<F32> _fixedYawAxis = WORLD_Y_AXIS;
     vec4<F32> _orthoRect;
 
     vec3<Angle::DEGREES<F32>> _euler;
-    Angle::DEGREES<F32> _accumPitchDegrees;
+    Angle::DEGREES<F32> _accumPitchDegrees = 0.0f;
 
     vec4<F32> _speedFactor;
     vec4<F32> _speed;
 
-    F32 _mouseSensitivity;
-    CameraType _type;
+    F32 _mouseSensitivity = 1.0f;
+    CameraType _type = CameraType::COUNT;
 
-    bool _projectionDirty;
-    bool _viewMatrixDirty;
-    bool _frustumLocked;
-    bool _rotationLocked;
-    bool _movementLocked;
-    bool _yawFixed;
-    bool _isOrthoCamera;
-    bool _frustumDirty;
     Frustum _frustum;
+    Plane<F32> _reflectionPlane;
+    U32 _updateCameraId = 0u;
+    using ListenerMap = hashMap<U32, DELEGATE<void, const Camera&>>;
+    ListenerMap _updateCameraListeners;
 
     // Since quaternion reflection is complicated and not really needed now, 
     // handle reflections a-la Ogre -Ionut
-    bool _reflectionActive;
-    Plane<F32> _reflectionPlane;
-    U32 _updateCameraId;
-    using ListenerMap = hashMap<U32, DELEGATE<void, const Camera&>>;
-    ListenerMap _updateCameraListeners;
+    bool _reflectionActive = false;
+    bool _projectionDirty = true;
+    bool _viewMatrixDirty = false;
+    bool _frustumLocked = false;
+    bool _rotationLocked = false;
+    bool _movementLocked = false;
+    bool _yawFixed = false;
+    bool _isOrthoCamera = false;
+    bool _frustumDirty = true;
 
     // Camera pool
     public:

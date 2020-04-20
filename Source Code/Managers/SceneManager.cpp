@@ -463,7 +463,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
     return ret;
 }
 
-bool SceneManager::frameStarted(const FrameEvent& evt) noexcept {
+bool SceneManager::frameStarted(const FrameEvent& evt) {
     OPTICK_EVENT();
 
     _sceneData->uploadToGPU();
@@ -471,7 +471,7 @@ bool SceneManager::frameStarted(const FrameEvent& evt) noexcept {
     return Attorney::SceneManager::frameStarted(getActiveScene());
 }
 
-bool SceneManager::frameEnded(const FrameEvent& evt) noexcept {
+bool SceneManager::frameEnded(const FrameEvent& evt) {
     OPTICK_EVENT();
 
     return Attorney::SceneManager::frameEnded(getActiveScene());

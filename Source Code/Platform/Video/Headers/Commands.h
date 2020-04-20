@@ -82,6 +82,8 @@ enum class CommandType : U8 {
     BEGIN_RENDER_SUB_PASS,
     END_RENDER_SUB_PASS,
     SET_VIEWPORT,
+    PUSH_VIEWPORT,
+    POP_VIEWPORT,
     SET_SCISSOR,
     SET_BLEND,
     CLEAR_RT,
@@ -216,6 +218,18 @@ BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT);
     stringImpl toString(U16 indent) const final;
 END_COMMAND(SetViewportCommand);
 
+BEGIN_COMMAND(PushViewportCommand, CommandType::PUSH_VIEWPORT);
+    PushViewportCommand() = default;
+    PushViewportCommand(const Rect<I32> & viewport) noexcept : _viewport(viewport) {}
+
+    Rect<I32> _viewport;
+
+    stringImpl toString(U16 indent) const final;
+END_COMMAND(PushViewportCommand);
+
+BEGIN_COMMAND(PopViewportCommand, CommandType::POP_VIEWPORT);
+END_COMMAND(PopViewportCommand);
+
 BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
@@ -298,7 +312,7 @@ BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA);
     CameraSnapshot _cameraSnapshot;
 
     stringImpl toString(U16 indent) const final;
-END_COMMAND(PushCameraCommand);
+END_COMMAND(SetCameraCommand);
 
 BEGIN_COMMAND(PushCameraCommand, CommandType::PUSH_CAMERA);
     PushCameraCommand() = default;

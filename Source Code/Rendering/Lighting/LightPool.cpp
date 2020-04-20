@@ -273,7 +273,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
 
         eastl::sort(eastl::begin(sortedLights),
                     eastl::end(sortedLights),
-                    [&eyePos](Light* a, Light* b) {
+                    [&eyePos](Light* a, Light* b) noexcept {
                         // directional lights first
                         if (a->getLightType() != b->getLightType()) {
                             return to_base(a->getLightType()) < to_base(b->getLightType());
@@ -375,7 +375,7 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
 
     eastl::sort(eastl::begin(g_sortedLightsContainer),
                 eastl::end(g_sortedLightsContainer),
-                [&eyePos](Light* a, Light* b) {
+                [&eyePos](Light* a, Light* b) noexcept {
                     // directional lights first
                     if (a->getLightType() != b->getLightType()) {
                         return to_base(a->getLightType()) < to_base(b->getLightType());

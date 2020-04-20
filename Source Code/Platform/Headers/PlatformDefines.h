@@ -136,7 +136,7 @@ extern bool ShowOpenWithDialog(const char* targetFile);
 
 bool createDirectories(const char* path);
 
-void DebugBreak();
+void DebugBreak() noexcept;
 
 ErrorCode PlatformInit(int argc, char** argv);
 bool PlatformClose();
@@ -413,7 +413,7 @@ namespace detail {
     class ScopeGuardImplBase
     {
     public:
-        void Dismiss() const {
+        void Dismiss() const noexcept {
             dismissed_ = true;
         }
 
@@ -494,21 +494,21 @@ inline bool IS_ZERO(T X) noexcept {
 
 template <>
 inline bool IS_ZERO(F32 X) noexcept {
-    return (std::abs(X) < EPSILON_F32);
+    return (abs(X) < EPSILON_F32);
 }
 template <>
 inline bool IS_ZERO(D64 X) noexcept {
-    return (std::abs(X) < EPSILON_D64);
+    return (abs(X) < EPSILON_D64);
 }
 
 template <typename T>
 inline bool IS_TOLERANCE(T X, T TOLERANCE) noexcept {
-    return (std::abs(X) <= TOLERANCE);
+    return (abs(X) <= TOLERANCE);
 }
 
 template<typename T, typename U = T>
 inline bool COMPARE_TOLERANCE(T X, U Y, T TOLERANCE) noexcept {
-    return std::abs(X - static_cast<T>(Y)) <= TOLERANCE;
+    return abs(X - static_cast<T>(Y)) <= TOLERANCE;
 }
 
 template<typename T, typename U = T>

@@ -67,7 +67,7 @@ class Trigger : public SceneNode {
     }
 
     /// SceneNode concrete implementations
-    bool unload() noexcept override;
+    bool unload() override;
 
     const char* getResourceTypeName() const noexcept override { return "Trigger"; }
 

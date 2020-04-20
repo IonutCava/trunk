@@ -41,8 +41,8 @@ class WorldPacket : public ByteBuffer {
         m_opcode = opcode;
     }
 
-    OPCodes::ValueType opcode() const { return m_opcode; }
-    void opcode(OPCodes::ValueType opcode) { m_opcode = opcode; }
+    OPCodes::ValueType opcode() const noexcept { return m_opcode; }
+    void opcode(OPCodes::ValueType opcode) noexcept { m_opcode = opcode; }
 
    private:
     friend class boost::serialization::access;

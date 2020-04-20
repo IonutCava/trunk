@@ -482,7 +482,7 @@ private:
     std::shared_ptr<RenderDocManager> _renderDocManager = nullptr;
 
     std::stack<CameraSnapshot> _cameraSnapshots;
-
+    std::stack<Rect<I32>> _viewportStack;
     Mutex _gpuObjectArenaMutex;
     Mutex _imprimitiveMutex;
 

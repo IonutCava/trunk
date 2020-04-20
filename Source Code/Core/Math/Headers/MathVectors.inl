@@ -140,7 +140,7 @@ inline vec3<T> operator*(T fl, const vec3<T> &v) {
 
 /// general vec3 dot product
 template <typename T>
-inline T Dot(const vec3<T> &a, const vec3<T> &b) {
+inline T Dot(const vec3<T> &a, const vec3<T> &b) noexcept {
     return (a.x * b.x + a.y * b.y + a.z * b.z);
 }
 
@@ -725,12 +725,12 @@ inline void vec4<T>::swap(vec4 &iv) noexcept {
 
 /// general vec4 dot product
 template <typename T>
-inline T Dot(const vec4<T> &a, const vec4<T> &b) {
+inline T Dot(const vec4<T> &a, const vec4<T> &b) noexcept {
     return (a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
 }
 
 template <>
-inline F32 Dot(const vec4<F32> &a, const vec4<F32> &b) {
+inline F32 Dot(const vec4<F32> &a, const vec4<F32> &b) noexcept {
     F32 ret = 0.0f;
     DOT_SIMD(a._reg._reg, b._reg._reg, ret);
     return ret;

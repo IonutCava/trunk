@@ -110,7 +110,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
     virtual bool load() override;
-    virtual bool unload() noexcept override;
+    virtual bool unload() override;
 
     /// Subroutine
     virtual U32 GetSubroutineIndex(ShaderType type, const char* name) = 0;
@@ -237,7 +237,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 namespace Attorney {
     class ShaderProgramKernel {
       protected:
-        static void useShaderTextCache(bool state) { 
+        static void useShaderTextCache(bool state) noexcept {
             ShaderProgram::useShaderTextCache(state);
         }
 

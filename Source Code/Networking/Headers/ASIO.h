@@ -57,7 +57,7 @@ class ASIO {
     /// Disconnect from the server
     virtual void disconnect();
     /// Check connection state;
-    virtual bool isConnected() const;
+    virtual bool isConnected() const noexcept;
     /// Toggle the printing of debug information
     virtual void toggleDebugOutput(const bool debugOutput);
 

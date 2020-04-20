@@ -248,7 +248,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
     return true;
 }
 
-bool ParticleEmitter::unload() noexcept {
+bool ParticleEmitter::unload() {
     WAIT_FOR_CONDITION(getState() == ResourceState::RES_LOADED);
     
     _particles.reset();

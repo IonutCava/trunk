@@ -67,7 +67,7 @@ inline const DisplayWindow& WindowManager::getWindow(I64 guid) const {
     return *_windows.front();
 }
 
-inline DisplayWindow* WindowManager::getFocusedWindow() {
+inline DisplayWindow* WindowManager::getFocusedWindow() noexcept {
     for (DisplayWindow* win : _windows) {
         if (win->hasFocus()) {
             return win;
@@ -77,7 +77,7 @@ inline DisplayWindow* WindowManager::getFocusedWindow() {
     return nullptr;
 }
 
-inline const DisplayWindow* WindowManager::getFocusedWindow() const {
+inline const DisplayWindow* WindowManager::getFocusedWindow() const noexcept {
     for (const DisplayWindow* win : _windows) {
         if (win->hasFocus()) {
             return win;
@@ -87,7 +87,7 @@ inline const DisplayWindow* WindowManager::getFocusedWindow() const {
     return nullptr;
 }
 
-inline DisplayWindow* WindowManager::getHoveredWindow() {
+inline DisplayWindow* WindowManager::getHoveredWindow() noexcept {
     for (DisplayWindow* win : _windows) {
         if (win->isHovered()) {
             return win;
@@ -97,7 +97,7 @@ inline DisplayWindow* WindowManager::getHoveredWindow() {
     return nullptr;
 }
 
-inline const DisplayWindow* WindowManager::getHoveredWindow() const {
+inline const DisplayWindow* WindowManager::getHoveredWindow() const noexcept {
     for (const DisplayWindow* win : _windows) {
         if (win->isHovered()) {
             return win;

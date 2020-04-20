@@ -119,11 +119,11 @@ struct Paths {
     }; //class Shaders
 
     // include command regex pattern
-    static std::regex g_includePattern;
+    static boost::regex g_includePattern;
     // define regex pattern
-    static std::regex g_definePattern;
+    static boost::regex g_definePattern;
     // use command regex pattern
-    static std::regex g_usePattern;
+    static boost::regex g_usePattern;
 
     
     static void initPaths(const SysInfo& info);

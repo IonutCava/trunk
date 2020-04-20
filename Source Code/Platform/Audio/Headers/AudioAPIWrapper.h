@@ -41,7 +41,7 @@ class PlatformContext;
 
 class AudioState {
    public:
-    AudioState(bool enableA, bool enableB, bool enableC, bool enableD)
+    AudioState(bool enableA, bool enableB, bool enableC, bool enableD) noexcept
     {
         ACKNOWLEDGE_UNUSED(enableA);
         ACKNOWLEDGE_UNUSED(enableB);

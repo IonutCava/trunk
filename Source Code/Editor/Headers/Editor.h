@@ -159,14 +159,14 @@ class Editor : public PlatformContextComponent,
     void showStatusMessage(const stringImpl& message, F32 durationMS);
 
   protected: //frame listener
-    bool frameStarted(const FrameEvent& evt) noexcept override;
-    bool framePreRenderStarted(const FrameEvent& evt) noexcept override;
-    bool framePreRenderEnded(const FrameEvent& evt) noexcept override;
-    bool frameSceneRenderEnded(const FrameEvent& evt) noexcept override;
-    bool frameRenderingQueued(const FrameEvent& evt) noexcept override;
-    bool framePostRenderStarted(const FrameEvent& evt) noexcept override;
-    bool framePostRenderEnded(const FrameEvent& evt) noexcept override;
-    bool frameEnded(const FrameEvent& evt) noexcept override;
+    bool frameStarted(const FrameEvent& evt) override;
+    bool framePreRenderStarted(const FrameEvent& evt) override;
+    bool framePreRenderEnded(const FrameEvent& evt) override;
+    bool frameSceneRenderEnded(const FrameEvent& evt) override;
+    bool frameRenderingQueued(const FrameEvent& evt) override;
+    bool framePostRenderStarted(const FrameEvent& evt) override;
+    bool framePostRenderEnded(const FrameEvent& evt) override;
+    bool frameEnded(const FrameEvent& evt) override;
 
   public: // input
     /// Key pressed: return true if input was consumed
@@ -292,15 +292,15 @@ namespace Attorney {
             editor.updateCameraSnapshot();
         }
 
-        static void editorStepQueue(Editor& editor, const U32 steps) {
+        static void editorStepQueue(Editor& editor, const U32 steps) noexcept {
             editor._stepQueue = steps;
         }
 
-        static bool autoSaveCamera(const Editor& editor) {
+        static bool autoSaveCamera(const Editor& editor) noexcept {
             return editor._autoSaveCamera;
         }
 
-        static void autoSaveCamera(Editor& editor, const bool state) {
+        static void autoSaveCamera(Editor& editor, const bool state) noexcept {
             editor._autoSaveCamera = state;
         }
 
@@ -416,11 +416,11 @@ namespace Attorney {
             return editor.modalModelSpawn(modalName, mesh);
         }
 
-        static ImGuiContext& getImGuiContext(Editor& editor, Editor::ImGuiContextType type) {
+        static ImGuiContext& getImGuiContext(Editor& editor, Editor::ImGuiContextType type) noexcept {
             return *editor._imguiContexts[to_base(type)];
         }
 
-        static ImGuiContext& imguizmoContext(Editor& editor, Editor::ImGuiContextType type) {
+        static ImGuiContext& imguizmoContext(Editor& editor, Editor::ImGuiContextType type) noexcept {
             return *editor._imguiContexts[to_base(type)];
         }
 
@@ -440,11 +440,11 @@ namespace Attorney {
             editor.showStatusMessage(message, durationMS);
         }
 
-        static ImGuiStyleEnum getTheme(const Editor& editor) {
+        static ImGuiStyleEnum getTheme(const Editor& editor) noexcept {
             return editor._currentTheme;
         }
 
-        static void setTheme(Editor& editor, const ImGuiStyleEnum newTheme) {
+        static void setTheme(Editor& editor, const ImGuiStyleEnum newTheme) noexcept {
             editor._currentTheme = newTheme;
         }
 
