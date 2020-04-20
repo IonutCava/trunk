@@ -569,12 +569,20 @@ void MenuBar::drawDebugMenu() {
         {
             pool.lightImpostorsEnabled(lightImpostors);
         }
+        
+        const bool validLight = (pool.debugLight() != nullptr && pool.debugLight()->getLightType() == LightType::DIRECTIONAL);
+        if (!validLight) {
+            _context.gfx().csmPreviewIndex(-1);
+        }
 
-        bool showCSMSplits = _context.gfx().showCSMSplitsForMainLight();
+        bool showCSMSplits = _context.gfx().csmPreviewIndex() != -1;
         if (ImGui::MenuItem("Show Main CSM Splits", "", &showCSMSplits))
         {
-            _context.gfx().showCSMSplitsForMainLight(showCSMSplits);
+            if (validLight) {
+                _context.gfx().csmPreviewIndex(showCSMSplits ? pool.debugLight()->shadowIndex() : -1);
+            }
         }
+
         if (ImGui::BeginMenu("Debug Gizmos")) {
             SceneManager* sceneManager = context().kernel().sceneManager();
             SceneRenderState& renderState = sceneManager->getActiveScene().state().renderState();

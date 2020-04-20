@@ -15,7 +15,7 @@
 <RENDERING>
     <Material>
         <version>1</version>
-        <shadingMode>TOON</shadingMode>
+        <shadingMode>BLINN_PHONG</shadingMode>
         <colour r="0" g="0.100000001" b="0" a="1"/>
         <emissive r="0.100000001" g="0.200000003" b="0.100000001"/>
         <specular r="0.699999988" g="0.699999988" b="0.699999988"/>

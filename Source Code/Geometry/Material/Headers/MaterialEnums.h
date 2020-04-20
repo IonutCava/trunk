@@ -79,13 +79,13 @@ namespace Divide {
     /// Not used yet but implemented for shading model selection in shaders
     /// This enum matches the ASSIMP one on a 1-to-1 basis
     enum class ShadingMode : U8 {
-        FLAT = 0x1,
-        PHONG = 0x2,
-        BLINN_PHONG = 0x3,
-        TOON = 0x4,
+        FLAT = 0,
+        PHONG,
+        BLINN_PHONG,
+        TOON,
         // Use PBR for the following
-        OREN_NAYAR = 0x5,
-        COOK_TORRANCE = 0x6,
+        OREN_NAYAR,
+        COOK_TORRANCE,
         COUNT
     };
     namespace Names {

@@ -50,6 +50,7 @@ namespace GFX {
     class CommandBuffer;
 };
 
+class Pipeline;
 class GUIConsole;
 class GUIElement;
 class ResourceCache;
@@ -79,6 +80,7 @@ public:
     void destroy();
 
     void draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut);
+    void postDraw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut);
 
     void onSizeChange(const SizeChangeParams& params);
     void onChangeScene(Scene* newScene);
@@ -184,7 +186,7 @@ private:
 
     /// Each scene has its own gui elements! (0 = global)
     Scene* _activeScene;
-
+    Pipeline* _postCEGUIPipeline = nullptr;
     U32 _debugVarCacheCount;
     // GROUP, VAR
     vectorEASTL<std::pair<I64, I64>> _debugDisplayEntries;

@@ -569,7 +569,6 @@ void main(void)
 
 --Fragment.LQPass
 
-#define NO_SPECULAR
 #if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
 #endif
@@ -628,7 +627,6 @@ void main(void)
 
 --Fragment.MainPass
 
-#define NO_SPECULAR
 #if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
 #else

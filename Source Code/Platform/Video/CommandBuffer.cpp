@@ -228,7 +228,6 @@ void CommandBuffer::batch() {
             case GFX::CommandType::DRAW_COMMANDS:
             case GFX::CommandType::DRAW_IMGUI:
             //case GFX::CommandType::BIND_DESCRIPTOR_SETS:
-            //case GFX::CommandType::BIND_PIPELINE:
             case GFX::CommandType::BLIT_RT:
             case GFX::CommandType::RESET_RT:
             case GFX::CommandType::SEND_PUSH_CONSTANTS:
@@ -252,6 +251,10 @@ void CommandBuffer::batch() {
             case GFX::CommandType::COPY_TEXTURE: {
                 const CopyTextureCommand* crtCmd = get<CopyTextureCommand>(cmd);
                 hasWork = crtCmd->_source._textureType != TextureType::COUNT && crtCmd->_destination._textureType != TextureType::COUNT;
+            }break;
+            case GFX::CommandType::BIND_PIPELINE: {
+                const BindPipelineCommand* crtCmd = get<BindPipelineCommand>(cmd);
+                hasWork = crtCmd->_pipeline != nullptr && crtCmd->_pipeline->getHash() != 0;
             }break;
         };
     }

@@ -10,7 +10,7 @@ layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 };
 
 // find the appropriate depth map to look up in based on the depth of this fragment
-int getCSMSlice(in uint idx) {
+int getCSMSlice(in int idx) {
 
     int Split = 0;
     const float fragDepth = (VAR._vertexWV.z / VAR._vertexWV.w);

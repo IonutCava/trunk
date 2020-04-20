@@ -59,7 +59,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     //x - nearPlane, y - farPlane, z - FoV, w - lightTilesX
     vec4  dvd_ViewPort;
     vec4  dvd_renderProperties;
-    //x - material debug flag, y - show CSM splits
+    //x - material debug flag, y - CSM splits view index
     vec4  dvd_otherProperties;
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
@@ -86,7 +86,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 
 #define dvd_materialDebugFlag int(dvd_otherProperties.x)
 
-#define dvd_showCSMSplits (int(dvd_otherProperties.y) == 1)
+#define dvd_CSMSplitsViewIndex int(dvd_otherProperties.y)
 
 struct WaterBodyData {
     vec4 positionW;

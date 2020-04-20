@@ -61,26 +61,37 @@ namespace Divide {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;//| ImGuiTreeNodeFlags_NoTreePushOnOpen; 
         }
 
-        bool nodeOpen = false;
-        if (_filter.PassFilter(sgn.name().c_str())) {
-            nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
+        const auto printNode = [this, &sceneManager, &sgn, node_flags, nodeIDX, open]() {
+            bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
             if (ImGui::IsItemClicked()) {
                 sceneManager.resetSelection(0);
                 sceneManager.setSelected(0, { &sgn });
                 Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
             }
-            //ImGui::IsItemDoubleClicked
             if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered(ImGuiHoveredFlags_None)) {
                 Attorney::EditorSolutionExplorerWindow::teleportToNode(_parent, &sgn);
             }
-        } 
+            return nodeOpen;
+        };
 
-        sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
-            printSceneGraphNode(sceneManager, *child, childIdx, false);
-        });
-
-        if (nodeOpen) {
-            ImGui::TreePop();
+        if (_filter.Filters.empty()) {
+            if (printNode()) {
+                sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
+                    printSceneGraphNode(sceneManager, *child, childIdx, false);
+                });
+                ImGui::TreePop();
+            }
+        } else {
+            bool nodeOpen = false;
+            if (_filter.PassFilter(sgn.name().c_str())) {
+                nodeOpen = printNode();
+            }
+            sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
+                printSceneGraphNode(sceneManager, *child, childIdx, false);
+            });
+            if (nodeOpen) {
+                ImGui::TreePop();
+            }
         }
     }
 

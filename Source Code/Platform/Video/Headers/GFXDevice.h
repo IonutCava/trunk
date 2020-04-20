@@ -349,7 +349,7 @@ public:
                     GFX::CommandBuffer& bufferInOut);
 
     PROPERTY_RW(MaterialDebugFlag, materialDebugFlag, MaterialDebugFlag::COUNT);
-    PROPERTY_RW(bool, showCSMSplitsForMainLight, false);
+    PROPERTY_RW(I32, csmPreviewIndex, -1);
 
 protected:
     /// Create and return a new framebuffer.

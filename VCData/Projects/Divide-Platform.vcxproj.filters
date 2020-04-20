@@ -871,15 +871,6 @@
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\prePass.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadow_directional.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadow_point.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadow_spot.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadowMapping.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>

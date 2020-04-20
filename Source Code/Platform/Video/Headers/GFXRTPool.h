@@ -53,7 +53,8 @@ protected:
 
     void clear();
     void set(RenderTargetID target, const std::shared_ptr<RenderTarget>& newTarget);
-    RenderTargetHandle add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget);
+    RenderTargetHandle add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget, U8 index);
+
     bool remove(RenderTargetHandle& handle);
 
     inline void set(const RenderTargetHandle& handle, const std::shared_ptr<RenderTarget>& newTarget) {
@@ -62,6 +63,7 @@ protected:
 
 public:
     RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor);
+    RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor, U8 index);
 
     inline RenderTarget& renderTarget(const RenderTargetHandle& handle) noexcept {
         return renderTarget(handle._targetID);

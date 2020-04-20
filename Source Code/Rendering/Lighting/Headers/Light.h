@@ -187,17 +187,9 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     PROPERTY_RW(bool, castsShadows);
     /// Turn the light on/off
     PROPERTY_RW(bool, enabled);
-
+    PROPERTY_R_IW(I32, shadowIndex, -1);
    protected:
      friend class LightPool;
-     inline void shadowIndex(I32 index) noexcept {
-         _shadowIndex = index;
-     }
-
-     inline I32 shadowIndex() const noexcept {
-         return _shadowIndex;
-     }
-
      void updateCache();
 
    protected:
@@ -214,7 +206,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
    private:
     ShadowCameraPool _shadowCameras = {};
     LightPool& _parentPool;
-    I32 _shadowIndex = -1;
 };
 
 };  // namespace Divide

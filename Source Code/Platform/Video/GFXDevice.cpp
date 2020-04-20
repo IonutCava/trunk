@@ -1348,7 +1348,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
     const vec4<F32> otherProperties(
         to_F32(materialDebugFlag()),
-        showCSMSplitsForMainLight() ? 1.0f : 0.0f,
+        to_F32(csmPreviewIndex()),
         0.0f,
         0.0f);
 

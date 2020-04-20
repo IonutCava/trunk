@@ -10,6 +10,8 @@
 namespace Divide {
 
 namespace {
+    constexpr U8 g_defaultTargetIndex = std::numeric_limits<U8>::max();
+
     // Used to delete resources
     struct DeleteRT {
         void operator()(RenderTarget* res) {
@@ -87,18 +89,22 @@ void GFXRTPool::set(RenderTargetID target, const std::shared_ptr<RenderTarget>& 
     _renderTargets[to_U32(target._usage)][target._index] = newTarget;
 }
 
-RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget) {
+RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget, U8 index) {
     vectorEASTL<std::shared_ptr<RenderTarget>>& rts = _renderTargets[to_U32(targetUsage)];
-
-    for (U16 i = 0; i < to_U16(rts.size()); ++i) {
-        if (rts[i] == nullptr) {
-            rts[i] = newTarget;
-            return RenderTargetHandle(RenderTargetID(targetUsage, i), newTarget.get());
+    if (index == g_defaultTargetIndex) {
+        for (U16 i = 0; i < to_U16(rts.size()); ++i) {
+            if (rts[i] == nullptr) {
+                rts[i] = newTarget;
+                return RenderTargetHandle(RenderTargetID(targetUsage, i), newTarget.get());
+            }
         }
+        DIVIDE_UNEXPECTED_CALL("No more render targets available!");
+        return RenderTargetHandle();
     }
 
-    DIVIDE_UNEXPECTED_CALL("No more render targets available!");
-    return RenderTargetHandle();
+    assert(rts.size() < index && rts[index] == nullptr);
+    rts[index] = newTarget;
+    return RenderTargetHandle(RenderTargetID(targetUsage, index), newTarget.get());
 }
 
 bool GFXRTPool::remove(RenderTargetHandle& handle) {
@@ -114,8 +120,12 @@ bool GFXRTPool::remove(RenderTargetHandle& handle) {
 }
 
 RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor) {
+    return allocateRT(targetUsage, descriptor, g_defaultTargetIndex);
+}
+
+RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor, U8 index) {
     std::shared_ptr<RenderTarget> rt(Attorney::GFXDeviceGFXRTPool::newRT(_parent, descriptor), DeleteRT());
-    return add(targetUsage, rt);
+    return add(targetUsage, rt, index);
 }
 
 const RenderTargetID GFXRTPool::screenTargetID() const noexcept {

@@ -143,12 +143,14 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
     const Configuration::GUI& guiConfig = parent().platformContext().config().gui;
 
     if (guiConfig.cegui.enabled && !guiConfig.cegui.skipRendering) {
-        _ceguiRenderer->beginRendering();
-
-        _ceguiRenderTextureTarget->clear();
-        getCEGUIContext().draw();
-
-        _ceguiRenderer->endRendering();
+        GFX::ExternalCommand ceguiDraw = {};
+        ceguiDraw._cbk = [this]() {
+            _ceguiRenderer->beginRendering();
+            _ceguiRenderTextureTarget->clear();
+            getCEGUIContext().draw();
+            _ceguiRenderer->endRendering();
+        };
+        GFX::EnqueueCommand(bufferInOut, ceguiDraw);
 
         GFX::SetBlendCommand blendCmd = {};
         blendCmd._blendProperties = BlendingProperties{
@@ -162,9 +164,10 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
         context.drawTextureInViewport(getCEGUIRenderTextureData(), viewport, false, false, bufferInOut);
     }
 
-
-    GFX::EndDebugScopeCommand endDebugScopeCommand = {};
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
+    // Restore full state
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _postCEGUIPipeline });
+    GFX::EnqueueCommand(bufferInOut, GFX::SetBlendCommand{});
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void GUI::update(const U64 deltaTimeUS) {
@@ -264,6 +267,11 @@ bool GUI::init(PlatformContext& context, ResourceCache* cache) {
     if (parent().platformContext().config().gui.cegui.enabled) {
         CEGUI::System::getSingleton().notifyDisplaySizeChanged(size);
     }
+
+    PipelineDescriptor pipelineDesc = {};
+    pipelineDesc._stateHash = context.gfx().getDefaultStateBlock(false);
+    pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+    _postCEGUIPipeline = context.gfx().newPipeline(pipelineDesc);
 
     _init = true;
     return true;

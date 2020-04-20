@@ -1245,13 +1245,16 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
             data._endDragPos = arg.absolutePos();
             updateSelectionData(idx, data, arg.remaped());
         } else {
-            if (!state().playerState(idx).cameraLockedToMouse()) {
-                findHoverTarget(idx, arg.absolutePos());
-            } else if (Config::Build::ENABLE_EDITOR) {
+            bool sceneFocused = true;
+            if (Config::Build::ENABLE_EDITOR) {
                 const Editor& editor = _context.editor();
-                if (editor.running() && !editor.scenePreviewHovered()) {
-                    lockCameraToPlayerMouse(idx, false);
-                }
+                sceneFocused = editor.running() && editor.scenePreviewFocused();
+            }
+
+            if (sceneFocused && !state().playerState(idx).cameraLockedToMouse()) {
+                findHoverTarget(idx, arg.absolutePos());
+            } else if (state().playerState(idx).cameraLockedToMouse()) {
+                lockCameraToPlayerMouse(idx, false);
             }
         }
     }

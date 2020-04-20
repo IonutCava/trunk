@@ -99,7 +99,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
-                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc);
+                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc, to_base(ShadowType::SINGLE));
 
                 s_shadowMapGenerators[i] = MemoryManager_NEW SingleShadowMapGenerator(context);
             } break;
@@ -129,7 +129,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
-                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc);
+                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc, to_base(ShadowType::LAYERED));
 
                 s_shadowMapGenerators[i] = MemoryManager_NEW CascadedShadowMapsGenerator(context);
             } break;
@@ -160,7 +160,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
-                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc);
+                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc, to_base(ShadowType::CUBEMAP));
 
                 s_shadowMapGenerators[i] = MemoryManager_NEW CubeShadowMapGenerator(context);
             } break;

@@ -21,9 +21,9 @@ vec4 getExtraData(in mat4 colourMatrix, in vec2 uv) {
 #define getBRDFFactors(LDir, LCol, SpecularShininess, Albedo, N) Phong(normalize(LDir), LCol, SpecularShininess, Albedo, N)
 #else
 #if defined(USE_SHADING_TOON) // ToDo
-#   define getBRDFFactors(LDir, LCol, Spec, Albedo, N) vec4(0.6f, 0.2f, 0.9f, 0.0f); //obvious pink
+#   define getBRDFFactors(LDir, LCol, Data, Albedo, N) vec4(0.6f, 0.2f, 0.9f, 0.0f); //obvious pink
 #else
-#   define getBRDFFactors(LDir, LCol, Spec, Albedo, N) vec4(0.6f, 1.0f, 0.7f, 0.0f); //obvious lime-green
+#   define getBRDFFactors(LDir, LCol, Data, Albedo, N) vec4(0.6f, 1.0f, 0.7f, 0.0f); //obvious lime-green
 #endif
 #endif
 
@@ -41,7 +41,7 @@ void getDirectionalLightContribution(in vec3 albedo, in vec4 data, in vec3 norma
 
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
-        vec4 ret = getBRDFFactors(-light._directionWV.xyz, vec4(light._colour.rgb, 1.0f), data, vec4(albedo, getShadowFactor(light._options.y)), normalWV);
+        vec4 ret = getBRDFFactors(-light._directionWV.xyz, vec4(light._colour.rgb, 1.0f), data, vec4(albedo, getShadowFactorDirectional(light._options.y)), normalWV);
 
         lightColour.rgb += ret.rgb;
         lightColour.a = max(ret.a, lightColour.a);
@@ -62,11 +62,18 @@ void getOtherLightContribution(in vec3 albedo, in vec4 data, in vec3 normalWV, i
         
         const vec3 lightDirection = VAR._vertexWV.xyz - light._positionWV.xyz;
         float att = getLightAttenuationPoint(light._positionWV.w, lightDirection);
+
+        float shadowFactor = 1.0f;
+
         if (light._options.x == 2) {
             att = getLightAttenuationSpot(light, lightDirection, att);
+            shadowFactor = getShadowFactorSpot(light._options.y);
+        } else {
+            shadowFactor = getShadowFactorPoint(light._options.y);
         }
+
         const vec4 colourAndAtt = vec4(light._colour.rgb, att);
-        vec4 ret = getBRDFFactors(lightDirection, colourAndAtt, data, vec4(albedo, getShadowFactor(light._options.y)), normalWV);
+        vec4 ret = getBRDFFactors(lightDirection, colourAndAtt, data, vec4(albedo, shadowFactor), normalWV);
         lightColour.rgb += ret.rgb;
         lightColour.a = max(ret.a, lightColour.a);
     }
@@ -77,16 +84,22 @@ float getShadowFactor() {
     const uint dirLightCount = dvd_LightData.x;
 
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
-        ret *= getShadowFactor(dvd_LightSource[lightIdx]._options.y);
+        ret *= getShadowFactorDirectional(dvd_LightSource[lightIdx]._options.y);
     }
-    if (dvd_lodLevel < 2) {
+    //if (dvd_lodLevel < 2)
+    {
         const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
         for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
             const int lightIdx = perTileLightIndices[offset + i];
             if (lightIdx == -1) {
                 break;
             }
-            ret *= getShadowFactor(dvd_LightSource[lightIdx + dirLightCount]._options.y);
+            const Light light = dvd_LightSource[lightIdx + dirLightCount];
+            if (light._options.x == 2) {
+                ret *= getShadowFactorSpot(light._options.y);
+            } else {
+                ret *= getShadowFactorPoint(light._options.y);
+            }
         }
     }
 
@@ -159,18 +172,19 @@ vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normalWV, in v
     vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv), albedo.a);
 
     if (dvd_showDebugInfo) {
-#if !defined(DISABLE_SHADOW_MAPPING) && defined(DEBUG_SHADOWMAPPING)
+#if !defined(DISABLE_SHADOW_MAPPING)
         // CSM Info
-        if (dvd_showCSMSplits) {
-            switch (getShadowData()) {
-                case -1: colour.rgb = vec3(1.0f); break;
+        if (dvd_CSMSplitsViewIndex > -1) {
+            switch (getCSMSlice(dvd_CSMSplitsViewIndex)) {
                 case  0: colour.r += 0.15f; break;
                 case  1: colour.g += 0.25f; break;
                 case  2: colour.b += 0.40f; break;
-                case  3: colour.rgb += vec3(0.15f, 0.25f, 0.40f); break;
+                case  3: colour.rgb += 1 * vec3(0.15f, 0.25f, 0.40f); break;
+                case  4: colour.rgb += 2 * vec3(0.15f, 0.25f, 0.40f); break;
+                case  5: colour.rgb += 3 * vec3(0.15f, 0.25f, 0.40f); break;
             };
         }
-#endif //DEBUG_SHADOWMAPPING
+#endif //DISABLE_SHADOW_MAPPING
         // Other stuff
     }
 

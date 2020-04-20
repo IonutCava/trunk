@@ -259,9 +259,6 @@
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\prePass.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadowMapping.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadowUtils.frag" />
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadow_directional.frag" />
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadow_point.frag" />
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadow_spot.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\terrainSplatting.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\texturing.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\utility.frag" />

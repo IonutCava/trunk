@@ -60,7 +60,6 @@ void main()
 layout(early_fragment_tests) in;
 
 #define USE_SHADING_BLINN_PHONG
-#define NO_SPECULAR
 
 #include "BRDF.frag"
 

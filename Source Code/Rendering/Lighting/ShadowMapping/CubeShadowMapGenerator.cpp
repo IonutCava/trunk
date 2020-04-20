@@ -22,7 +22,7 @@ CubeShadowMapGenerator::CubeShadowMapGenerator(GFXDevice& context)
 void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(playerCamera);
 
-    _context.generateCubeMap(RenderTargetID(RenderTargetUsage::SHADOW, to_base(_type)),
+    _context.generateCubeMap(RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP)),
                              light.getShadowOffset(),
                              light.getSGN().get<TransformComponent>()->getPosition(),
                              vec2<F32>(0.1f, light.getRange()),
