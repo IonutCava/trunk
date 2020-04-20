@@ -190,14 +190,14 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
 
     //ref: http://mollyrocket.com/casey/stream_0016.html
     F32 PointRadius = 0.95f;
-    F32 ArBase = 1.0f; // Starting radius of circle A
-    F32 BrBase = 1.0f; // Starting radius of circle B
+    const F32 ArBase = 1.0f; // Starting radius of circle A
+    const F32 BrBase = 1.0f; // Starting radius of circle B
     F32 dR = 2.5f * PointRadius; // Distance between concentric rings
 
     s_grassPositions.reserve(to_size(chunkSize) * chunkSize);
     s_treePositions.reserve(to_size(chunkSize) * chunkSize);
 
-    F32 posOffset = to_F32(chunkSize * 2);
+    const F32 posOffset = to_F32(chunkSize * 2);
 
     vec2<F32> intersections[2];
     Util::Circle circleA, circleB;
@@ -206,9 +206,9 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     circleB.center[1] = posOffset;
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
-        F32 Ar = ArBase + dR * (F32)RadiusStepA;
+        const F32 Ar = ArBase + dR * (F32)RadiusStepA;
         for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
-            F32 Br = BrBase + dR * (F32)RadiusStepB;
+            const F32 Br = BrBase + dR * (F32)RadiusStepB;
             circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f * dR);
             circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f * dR);
             // Intersect circle Ac,UseAr and Bc,UseBr
@@ -229,9 +229,9 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     dR = 2.5f * PointRadius; // Distance between concentric rings
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
-        F32 Ar = ArBase + dR * (F32)RadiusStepA;
+        const F32 Ar = ArBase + dR * (F32)RadiusStepA;
         for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
-            F32 Br = BrBase + dR * (F32)RadiusStepB;
+            const F32 Br = BrBase + dR * (F32)RadiusStepB;
             circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f * dR);
             circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f * dR);
             // Intersect circle Ac,UseAr and Bc,UseBr
@@ -486,7 +486,6 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     if (hasVegetation) {
         sgn.get<RenderingComponent>()->setMaterialTpl(s_vegetationMaterial);
         sgn.get<RenderingComponent>()->lockLoD(0u);
-
         WAIT_FOR_CONDITION(s_cullShaderGrass->getState() == ResourceState::RES_LOADED &&
                            s_cullShaderTrees->getState() == ResourceState::RES_LOADED);
 
@@ -618,15 +617,24 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 
         const SceneRenderState& renderState = sceneState.renderState();
 
-        const F32 sceneGrassDistance = renderState.grassVisibility();
-        const F32 sceneTreeDistance = renderState.treeVisibility();
+        const F32 sceneRenderRange = renderState.generalVisibility();
+        const F32 sceneGrassDistance = std::min(renderState.grassVisibility(), sceneRenderRange);
+        const F32 sceneTreeDistance = std::min(renderState.treeVisibility(), sceneRenderRange);
         if (sceneGrassDistance != _grassDistance) {
             _grassDistance = sceneGrassDistance;
             _cullPushConstants.set(_ID("dvd_grassVisibilityDistance"), GFX::PushConstantType::FLOAT, _grassDistance);
+            sgn.get<RenderingComponent>()->setRenderRange(-_grassDistance, _grassDistance);
         }
         if (sceneTreeDistance != _treeDistance) {
             _treeDistance = sceneTreeDistance;
             _cullPushConstants.set(_ID("dvd_treeVisibilityDistance"), GFX::PushConstantType::FLOAT, _treeDistance);
+            if (_treeParentNode != nullptr) {
+                _treeParentNode->forEachChild([sceneTreeDistance](SceneGraphNode* child, I32 /*childIdx*/) {
+                    RenderingComponent* rComp = child->get<RenderingComponent>();
+                    // negative value to disable occlusion culling
+                    rComp->setRenderRange(-sceneTreeDistance, sceneTreeDistance);
+                });
+            }
         }
     }
 
