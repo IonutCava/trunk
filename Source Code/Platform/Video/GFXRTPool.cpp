@@ -102,7 +102,7 @@ RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, const std::shar
         return RenderTargetHandle();
     }
 
-    assert(rts.size() < index && rts[index] == nullptr);
+    assert(rts.size() > index && rts[index] == nullptr);
     rts[index] = newTarget;
     return RenderTargetHandle(RenderTargetID(targetUsage, index), newTarget.get());
 }
