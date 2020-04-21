@@ -2,8 +2,8 @@
 <assets>assets.xml</assets>
 <musicPlaylist>musicPlaylist.xml</musicPlaylist>
 <vegetation>
-    <grassVisibility>60</grassVisibility>
-    <treeVisibility>600</treeVisibility>
+    <grassVisibility>70</grassVisibility>
+    <treeVisibility>500</treeVisibility>
 </vegetation>
 <wind>
     <windDirX>1</windDirX>

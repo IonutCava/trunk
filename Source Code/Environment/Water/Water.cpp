@@ -198,13 +198,14 @@ bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& poi
 }
 
 void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
-                                   RenderStagePass renderStagePass,
+                                   const RenderStagePass& renderStagePass,
+                                   const Camera& crtCamera,
                                    RenderPackage& pkgInOut) {
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, vec2<F32>(0.10f, 0.10f));
     pushConstantsCommand._constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, vec2<F32>(15.0f, 15.0f));
-    pkgInOut.addPushConstantsCommand(pushConstantsCommand);
+    pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
@@ -213,10 +214,9 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
     cmd._bufferIndex = renderStagePass.baseIndex();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     {
-        GFX::DrawCommand drawCommand = {cmd};
-        pkgInOut.addDrawCommand(drawCommand);
+        pkgInOut.add(GFX::DrawCommand{ cmd });
     }
-    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+    SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
 /// update water refraction

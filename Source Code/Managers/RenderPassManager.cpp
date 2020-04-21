@@ -428,7 +428,7 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
 
 void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                                         const SceneRenderState& renderState,
-                                        const Camera& camera,
+                                        const PassParams& passParams,
                                         const RenderBin::SortedQueues& sortedQueues,
                                         bool fullRefresh,
                                         GFX::CommandBuffer& bufferInOut)
@@ -440,28 +440,49 @@ void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
     RefreshNodeDataParams params = {};
     params._drawCommandsInOut = &passData.drawCommands;
     params._bufferInOut = &bufferInOut;
-    params._camera = &camera;
+    params._camera = passParams._camera;
     params._stagePass = &stagePass;
 
+    TargetDataBufferParams bufferParams = {};
+    bufferParams._targetBuffer = &bufferInOut;
+    bufferParams._camera = passParams._camera;
+
     if (fullRefresh) {
+        const auto IsOcluderBin = [](RenderBinType binType) {
+            const auto type = binType._value;
+            return type == RenderBinType::RBT_OPAQUE ||
+                   type == RenderBinType::RBT_TERRAIN ||
+                   type == RenderBinType::RBT_TERRAIN_AUX;
+        };
+
         params._drawCommandsInOut->clear();
 
         RenderPass::BufferData bufferData = getPassForStage(stagePass._stage).getBufferData(stagePass);
-        const mat4<F32>& viewMatrix = camera.getViewMatrix();
+        const mat4<F32>& viewMatrix = passParams._camera->getViewMatrix();
         const D64 interpFactor = _context.getFrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.985;
 
-        TargetDataBufferParams bufferParams = {};
         bufferParams._writeIndex = bufferData._cmdBuffer->queueWriteIndex();
         bufferParams._dataIndex = 0u;
 
         U32 nodeCount = 0u;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
 
-        for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
+        bool isOccluder = true;
+        bool hasHiZTarget = passParams._targetHIZ._usage != RenderTargetUsage::COUNT;
+        for (U8 i = 0; i < to_U8(RenderBinType::RBT_COUNT); ++i) {
+            if (hasHiZTarget && isOccluder != IsOcluderBin(RenderBinType::_from_integral(i))) {
+                isOccluder = !isOccluder;
+                { 
+                    //switch between occluders and ocludees here. Unbind RT and copy depth then rebind, maybe?
+                }
+                hasHiZTarget = false;
+            }
+
+            RenderBin::SortedQueue& queue = passData.sortedQueues[i];
             for (RenderingComponent* rComp : queue) {
                 
-                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams)) {
+                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, false)) {
                     GFXDevice::NodeData& data = passData.nodeData[bufferParams._dataIndex];
                     processVisibleNode(*rComp, stagePass, playAnimations, viewMatrix, interpFactor, needsInterp, data);
                     ++bufferParams._dataIndex;
@@ -503,7 +524,7 @@ void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
     } else {
         for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
             for (RenderingComponent* rComp : queue) {
-                Attorney::RenderingCompRenderPass::onQuickRefreshNodeData(*rComp, params);
+                Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, true);
             }
         }
     }
@@ -525,9 +546,8 @@ void RenderPassManager::buildDrawCommands(const PassParams& params, bool refresh
         queue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-
     getQueue().getSortedQueues(stagePass._stage, isPrePass, passData.sortedQueues);
-    buildBufferData(stagePass, sceneRenderState, *params._camera, passData.sortedQueues, refresh, bufferInOut);
+    buildBufferData(stagePass, sceneRenderState, params, passData.sortedQueues, refresh, bufferInOut);
 }
 
 void RenderPassManager::prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, RenderingOrder renderOrder) {
@@ -564,10 +584,11 @@ void RenderPassManager::prepareRenderQueues(const PassParams& params, const Visi
     // Sort all bins
     queue.sort(stagePass, targetBin, renderOrder);
     
-    vectorEASTLFast<RenderPackage*>& packageQueue = _renderQueues[to_base(stagePass._stage)];
+    auto& packageQueue = _renderQueues[to_base(stagePass._stage)];
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
-    
+
+
     // Draw everything in the depth pass but only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
     queue.populateRenderQueues(stagePass,
                                stagePass.isDepthPass() 
@@ -648,8 +669,8 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
     // See if we can remove this -Ionut
     GFX::MemoryBarrierCommand memCmd = {};
     memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET) | 
-                            to_base(MemoryBarrierType::TEXTURE_FETCH) | 
-                            to_base(MemoryBarrierType::TEXTURE_BARRIER);
+                          to_base(MemoryBarrierType::TEXTURE_FETCH) | 
+                          to_base(MemoryBarrierType::TEXTURE_BARRIER);
     GFX::EnqueueCommand(bufferInOut, memCmd);
 
     // Run occlusion culling CS
@@ -658,7 +679,7 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
 
     // Occlusion culling barrier
     memCmd._barrierMask = to_base(MemoryBarrierType::COMMAND_BUFFER) | //For rendering
-                            to_base(MemoryBarrierType::SHADER_STORAGE);  //For updating later on
+                          to_base(MemoryBarrierType::SHADER_STORAGE);  //For updating later on
 
     if (bufferData._cullCounter != nullptr) {
         memCmd._barrierMask |= to_base(MemoryBarrierType::ATOMIC_COUNTER);
@@ -1062,7 +1083,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
 // TEMP
 U32 RenderPassManager::renderQueueSize(RenderStage stage, RenderPackage::MinQuality qualityRequirement) const {
-    const vectorEASTLFast<RenderPackage*>& queue = _renderQueues[to_base(stage)];
+    const auto& queue = _renderQueues[to_base(stage)];
     if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
         return to_U32(queue.size());
     }

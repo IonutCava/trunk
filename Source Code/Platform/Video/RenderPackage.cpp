@@ -76,18 +76,22 @@ void RenderPackage::drawCommand(I32 index, I32 cmdIndex, const GenericDrawComman
 void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
     const bool wasInstanced = _isInstanced;
 
-    GFX::DrawCommand* newCmd = commands()->add(cmd);
-    for (GenericDrawCommand& drawCmd : newCmd->_drawCommands) {
+    GFX::DrawCommand newCmd = cmd;
+    for (GenericDrawCommand& drawCmd : newCmd._drawCommands) {
         Divide::enableOptions(drawCmd, _drawCommandOptions);
         _isInstanced = drawCmd._cmd.primCount > 1 || _isInstanced;
     }
     ++_drawCommandCount;
 
     if (_isInstanced && !wasInstanced) {
-        PushConstants constants = {};
-        constants.set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, 0u);
-        addPushConstantsCommand(GFX::SendPushConstantsCommand{ constants });
+        if (!_commands->exists<GFX::SendPushConstantsCommand>(0)) {
+            PushConstants constants = {};
+            constants.set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, 0u);
+            add(GFX::SendPushConstantsCommand{ constants });
+        }
     }
+
+    commands()->add(newCmd);
 }
 
 void RenderPackage::setDrawOption(CmdRenderOptions option, bool state) {
@@ -149,10 +153,6 @@ void RenderPackage::pipeline(I32 index, const Pipeline& pipeline) {
     _commands->get<GFX::BindPipelineCommand>(index)->_pipeline = &pipeline;
 }
 
-void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline) {
-    commands()->add(pipeline);
-}
-
 const FrustumClipPlanes& RenderPackage::clipPlanes(I32 index) const {
     DIVIDE_ASSERT(_commands != nullptr && index < to_I32(_commands->count<GFX::SetClipPlanesCommand>()), "RenderPackage::clipPlanes error: Invalid clip plane list index!");
     return _commands->get<GFX::SetClipPlanesCommand>(index)->_clippingPlanes;
@@ -161,10 +161,6 @@ const FrustumClipPlanes& RenderPackage::clipPlanes(I32 index) const {
 void RenderPackage::clipPlanes(I32 index, const FrustumClipPlanes& clipPlanes) {
     DIVIDE_ASSERT(_commands != nullptr && index < to_I32(_commands->count<GFX::SetClipPlanesCommand>()), "RenderPackage::clipPlanes error: Invalid clip plane list index!");
     _commands->get<GFX::SetClipPlanesCommand>(index)->_clippingPlanes = clipPlanes;
-}
-
-void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPlanes) {
-    commands()->add(clipPlanes);
 }
 
 PushConstants& RenderPackage::pushConstants(I32 index) {
@@ -180,10 +176,6 @@ const PushConstants& RenderPackage::pushConstants(I32 index) const {
 void RenderPackage::pushConstants(I32 index, const PushConstants& constants) {
     DIVIDE_ASSERT(_commands != nullptr && index < to_I32(_commands->count<GFX::SendPushConstantsCommand>()), "RenderPackage::pushConstants error: Invalid push constants index!");
     _commands->get<GFX::SendPushConstantsCommand>(index)->_constants = constants;
-}
-
-void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants) {
-    commands()->add(pushConstants);
 }
 
 DescriptorSet& RenderPackage::descriptorSet(I32 index) {
@@ -203,10 +195,6 @@ void RenderPackage::descriptorSet(I32 index, const DescriptorSet& descriptorSets
     if (set != descriptorSets) {
         set = descriptorSets;
     }
-}
-
-void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets) {
-    commands()->add(descriptorSets);
 }
 
 void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {

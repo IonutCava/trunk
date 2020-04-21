@@ -168,21 +168,23 @@ void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sc
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-bool Sky::preRender(SceneGraphNode& sgn,
-                   const Camera& camera,
-                   RenderStagePass renderStagePass,
-                   bool refreshData,
-                   bool& rebuildCommandsOut) {
+
+void Sky::onRefreshNodeData(const SceneGraphNode& sgn,
+                            const RenderStagePass& renderStagePass,
+                            const Camera& crtCamera,
+                            bool refreshData,
+                            GFX::CommandBuffer& bufferInOut) {
     if (_rebuildDrawCommands == RebuildCommandsState::REQUESTED) {
-        rebuildCommandsOut = true;
+        rebuildDrawCommands(true);
         _rebuildDrawCommands = RebuildCommandsState::DONE;
     }
 
-    return SceneNode::preRender(sgn, camera, renderStagePass, refreshData, rebuildCommandsOut);
+    SceneNode::onRefreshNodeData(sgn, renderStagePass, crtCamera, refreshData, bufferInOut);
 }
 
 void Sky::buildDrawCommands(SceneGraphNode& sgn,
-                            RenderStagePass renderStagePass,
+                            const RenderStagePass& renderStagePass,
+                            const Camera& crtCamera,
                             RenderPackage& pkgInOut) {
     assert(renderStagePass._stage != RenderStage::SHADOW);
 
@@ -203,17 +205,17 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
 
     GFX::BindPipelineCommand pipelineCommand = {};
     pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-    pkgInOut.addPipelineCommand(pipelineCommand);
+    pkgInOut.add(pipelineCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
     bindDescriptorSetsCommand._set._textureData.setTexture(_skybox->data(), to_U8(TextureUsage::UNIT0));
-    pkgInOut.addDescriptorSetsCommand(bindDescriptorSetsCommand);
+    pkgInOut.add(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set(_ID("enable_sun"), GFX::PushConstantType::BOOL, _enableSun);
     pushConstantsCommand._constants.set(_ID("sun_vector"), GFX::PushConstantType::VEC3, _sunVector);
     pushConstantsCommand._constants.set(_ID("sun_colour"), GFX::PushConstantType::VEC3, _sunColour);
-    pkgInOut.addPushConstantsCommand(pushConstantsCommand);
+    pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
     cmd._sourceBuffer = _sky->getGeometryVB()->handle();
@@ -221,10 +223,9 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     cmd._cmd.indexCount = to_U32(_sky->getGeometryVB()->getIndexCount());
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
-    GFX::DrawCommand drawCommand = {cmd};
-    pkgInOut.addDrawCommand(drawCommand);
+    pkgInOut.add(GFX::DrawCommand{ cmd });
 
-    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+    SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
 };

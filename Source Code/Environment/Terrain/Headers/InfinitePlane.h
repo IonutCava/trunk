@@ -46,7 +46,8 @@ protected:
     void postLoad(SceneGraphNode& sgn) override;
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                           RenderStagePass renderStagePass,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 protected:

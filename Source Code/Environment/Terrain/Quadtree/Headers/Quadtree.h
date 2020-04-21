@@ -66,12 +66,13 @@ class Quadtree {
 
     QuadtreeNode* findLeaf(const vec2<F32>& pos);
 
+    POINTER_R(Pipeline, bbPipeline, nullptr);
+
    private:
     std::unique_ptr<QuadtreeNode> _root = nullptr;
     GFXDevice&    _context;
     VertexBuffer* _parentVB = nullptr;
     IMPrimitive*  _bbPrimitive = nullptr;
-    Pipeline*     _bbPipeline = nullptr;
     U32 _chunkCount = 0u;
     bool _drawBBoxes = false;
 };

@@ -166,14 +166,14 @@ inline void Material::setShadingMode(const ShadingMode& mode) {
     _needsNewShader = true;
 }
 
-inline ShaderProgramInfo& Material::shaderInfo(RenderStagePass renderStagePass) {
+inline ShaderProgramInfo& Material::shaderInfo(const RenderStagePass& renderStagePass) {
     ShaderPerVariant& variantMap = _shaderInfo[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)];
     assert(renderStagePass._variant < g_maxVariantsPerPass);
 
     return variantMap[renderStagePass._variant];
 }
 
-inline const ShaderProgramInfo& Material::shaderInfo(RenderStagePass renderStagePass) const {
+inline const ShaderProgramInfo& Material::shaderInfo(const RenderStagePass& renderStagePass) const {
     const ShaderPerVariant& variantMap = _shaderInfo[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)];
     assert(renderStagePass._variant < g_maxVariantsPerPass);
 

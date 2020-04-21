@@ -43,6 +43,7 @@ class Terrain;
 class BoundingBox;
 class QuadtreeNode;
 class ShaderProgram;
+class RenderPackage;
 class SceneGraphNode;
 class SceneRenderState;
 struct FileData;
@@ -59,33 +60,33 @@ class TerrainChunk {
     friend class Attorney::TerrainChunkTerrain;
 
    public:
-    TerrainChunk(GFXDevice& context, Terrain* const parentTerrain, const QuadtreeNode& parentNode);
+    TerrainChunk(GFXDevice& context, Terrain* const parentTerrain, QuadtreeNode& parentNode);
     ~TerrainChunk();
 
     void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize, BoundingBox& bbInOut);
 
-    inline U32 ID() const { return _ID; }
+    inline U32 ID() const noexcept { return _ID; }
 
-    inline vec4<F32> getOffsetAndSize() const {
+    inline vec4<F32> getOffsetAndSize() const noexcept {
         return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);
     }
 
-    inline const Terrain& parent() const { return *_parentTerrain; }
-    inline const QuadtreeNode& quadtreeNode() const { return _quadtreeNode; };
+    inline const Terrain& parent() const noexcept { return *_parentTerrain; }
+    inline const QuadtreeNode& quadtreeNode() const noexcept { return _quadtreeNode; };
 
     const BoundingBox& bounds() const;
+    void drawBBox(RenderPackage& packageOut);
 
     U8 LoD() const;
 
-
    protected:
-    const Vegetation_ptr& getVegetation() const { return _vegetation; }
+    const Vegetation_ptr& getVegetation() const noexcept { return _vegetation; }
 
     friend class Vegetation;
     void initializeVegetation(const VegetationDetails& vegDetails);
    private:
     GFXDevice& _context;
-    const QuadtreeNode& _quadtreeNode;
+    QuadtreeNode& _quadtreeNode;
 
     U32 _ID;
     F32 _xOffset;

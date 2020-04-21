@@ -68,6 +68,8 @@ struct RenderParams {
 };
 
 struct TargetDataBufferParams {
+    GFX::CommandBuffer* _targetBuffer = nullptr;
+    const Camera* _camera = nullptr;
     I32 _writeIndex = 0;
     U32 _dataIndex = 0u;
 };
@@ -196,7 +198,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void drawSkeleton(GFX::CommandBuffer& bufferInOut);
     void drawBounds(const bool AABB, const bool Sphere, GFX::CommandBuffer& bufferInOut);
     
-    void onRender(const RenderStagePass& renderStagePass);
+    void prepareRender(const RenderStagePass& renderStagePass);
 
     U8 getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
@@ -204,8 +206,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline const ShaderBufferList& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
   protected:
-    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams);
-    bool onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams);
+    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick);
 
     bool canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData);
 
@@ -214,7 +215,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
                     const RenderStagePass& renderStagePass,
                     GFX::CommandBuffer& bufferInOut);
 
-    void rebuildDrawCommands(const RenderStagePass& stagePass, RenderPackage& pkg);
+    void rebuildDrawCommands(const RenderStagePass& stagePass, const Camera& crtCamera, RenderPackage& pkg);
 
     bool prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData);
 
@@ -330,19 +331,14 @@ class RenderingCompRenderPass {
         static bool prepareDrawPackage(RenderingComponent& renderable,
                                        const Camera& camera,
                                        const SceneRenderState& sceneRenderState,
-                                       RenderStagePass renderStagePass,
+                                       const RenderStagePass& renderStagePass,
                                        bool refreshData) {
             return renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
-        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams) {
-            return renderable.onRefreshNodeData(refreshParams, bufferParams);
+        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick) {
+            return renderable.onRefreshNodeData(refreshParams, bufferParams, quick);
         }
-
-        static bool onQuickRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams) {
-            return renderable.onQuickRefreshNodeData(refreshParams);
-        }
-
 
         friend class Divide::RenderPass;
         friend class Divide::RenderPassManager;
@@ -352,7 +348,7 @@ class RenderingCompRenderBin {
    private:
     static void postRender(RenderingComponent& renderable,
                            const SceneRenderState& sceneRenderState,
-                           RenderStagePass renderStagePass,
+                           const RenderStagePass& renderStagePass,
                            GFX::CommandBuffer& bufferInOut) {
         renderable.postRender(sceneRenderState, renderStagePass, bufferInOut);
     }

@@ -13,8 +13,9 @@
 
 namespace Divide {
 
-QuadtreeNode::QuadtreeNode(GFXDevice& context)
-    : _context(context)
+QuadtreeNode::QuadtreeNode(GFXDevice& context, Quadtree* parent)
+    : _context(context),
+      _parent(parent)
 {
 }
 
@@ -55,16 +56,16 @@ void QuadtreeNode::build(U8 depth,
 
         // Compute children bounding boxes
         const vec3<F32>& center = _boundingBox.getCenter();
-        _children[to_base(ChildPosition::CHILD_NW)] = MemoryManager_NEW QuadtreeNode(_context);
+        _children[to_base(ChildPosition::CHILD_NW)] = MemoryManager_NEW QuadtreeNode(_context, _parent);
         _children[to_base(ChildPosition::CHILD_NW)]->setBoundingBox(BoundingBox(_boundingBox.getMin(), center));
 
-        _children[to_base(ChildPosition::CHILD_NE)] = MemoryManager_NEW QuadtreeNode(_context);
+        _children[to_base(ChildPosition::CHILD_NE)] = MemoryManager_NEW QuadtreeNode(_context, _parent);
         _children[to_base(ChildPosition::CHILD_NE)]->setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
 
-        _children[to_base(ChildPosition::CHILD_SW)] = MemoryManager_NEW QuadtreeNode(_context);
+        _children[to_base(ChildPosition::CHILD_SW)] = MemoryManager_NEW QuadtreeNode(_context, _parent);
         _children[to_base(ChildPosition::CHILD_SW)]->setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
 
-        _children[to_base(ChildPosition::CHILD_SE)] = MemoryManager_NEW QuadtreeNode(_context);
+        _children[to_base(ChildPosition::CHILD_SE)] = MemoryManager_NEW QuadtreeNode(_context, _parent);
         _children[to_base(ChildPosition::CHILD_SE)]->setBoundingBox(BoundingBox(center, _boundingBox.getMax()));
 
         // Compute children positions
@@ -94,18 +95,20 @@ bool QuadtreeNode::computeBoundingBox(BoundingBox& parentBB) {
     return true;
 }
 
-void QuadtreeNode::toggleBoundingBoxes(Pipeline* pipeline) {
+void QuadtreeNode::toggleBoundingBoxes() {
     _drawBBoxes = !_drawBBoxes;
-    if (_drawBBoxes) {
-        _bbPrimitive = _context.newIMP();
-        _bbPrimitive->name("QuadtreeBoundingBox");
-        _bbPrimitive->pipeline(*pipeline);
-    } else {
+    if (!_drawBBoxes) {
         _context.destroyIMP(_bbPrimitive);
+        _bbPrimitive = nullptr;
     }
 }
 
 void QuadtreeNode::drawBBox(RenderPackage& packageOut) {
+    if (_bbPrimitive == nullptr) {
+        _bbPrimitive = _context.newIMP();
+        _bbPrimitive->name("QuadtreeBoundingBox");
+        _bbPrimitive->pipeline(*_parent->bbPipeline());
+    }
 
     _bbPrimitive->fromBox(_boundingBox.getMin(),
                           _boundingBox.getMax(),

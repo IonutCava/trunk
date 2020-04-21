@@ -84,7 +84,8 @@ class SubMesh : public Object3D {
     void setParentMesh(Mesh* const parentMesh);
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                           RenderStagePass renderStagePass,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
 
     virtual const char* getResourceTypeName() const noexcept override { return "SubMesh"; }

@@ -506,7 +506,7 @@ inline T Sqrt(T input) noexcept {
 }
 
 template <typename T, typename U>
-inline T Sqrt(U input) {
+inline T Sqrt(U input) noexcept {
     return (T)std::sqrt(input);
 }
 

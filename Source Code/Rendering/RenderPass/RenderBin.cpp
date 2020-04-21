@@ -116,7 +116,7 @@ void RenderBin::refresh(RenderStage stage) {
     _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }
 
-void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq) {
+void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& stagePass, const F32 minDistToCameraSq) {
     RenderingComponent* const rComp = sgn.get<RenderingComponent>();
 
     const U8 stageIndex = to_U8(stagePass._stage);
@@ -139,7 +139,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass st
     _renderBinStack[stageIndex].push_back(item);
 }
 
-void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const {
+void RenderBin::populateRenderQueue(RenderStagePass stagePass, RenderQueuePackages& queueInOut) const {
     OPTICK_EVENT();
 
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {

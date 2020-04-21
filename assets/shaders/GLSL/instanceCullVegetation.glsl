@@ -9,6 +9,7 @@
 uniform float dvd_treeVisibilityDistance;
 uniform float dvd_grassVisibilityDistance;
 uniform uint dvd_terrainChunkOffset;
+uniform vec3 cameraPosition;
 
 layout(local_size_x = WORK_GROUP_SIZE) in;
 
@@ -46,7 +47,7 @@ void main(void) {
 
     vec4 positionW = vec4(instance.positionAndScale.xyz, 1.0f);
 
-    float dist = distance(positionW.xyz, dvd_cameraPosition.xyz);
+    float dist = distance(positionW.xyz, cameraPosition);
 
     // Too far away // ToDo: underwater check:
     if (dist > dvd_visibilityDistance || IsUnderWater(positionW.xyz)) {
@@ -67,7 +68,7 @@ void main(void) {
 #       if defined(CULL_TREES)
             Data[idx].data.z = dist > (dvd_visibilityDistance * 0.33f) ? 2.0f : 1.0f;
 #       else //CULL_TREES
-            const float minDist = 0.01f;
+            const float minDist = 0.5f;
             Data[idx].data.z = saturate((dist - minDist) / (dvd_visibilityDistance - minDist));
 #       endif //CULL_TREES
     }

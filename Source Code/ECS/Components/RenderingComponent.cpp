@@ -55,8 +55,8 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     _lodLevels.fill(0u);
     _lodLockLevels.fill({ false, to_U8(0u) });
 
-    _renderRange.min = -1.0f * g_renderRangeLimit;
-    _renderRange.max =  1.0f * g_renderRangeLimit;
+    _renderRange.min = -g_renderRangeLimit;
+    _renderRange.max =  g_renderRangeLimit;
 
     setMaterialTpl(parentSGN.getNode().getMaterialTpl());
 
@@ -211,7 +211,7 @@ void RenderingComponent::setMaxRenderRange(F32 maxRange) noexcept {
     _renderRange.max = std::min(maxRange,  1.0f * g_renderRangeLimit);
 }
 
-void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, RenderPackage& pkg) {
+void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, const Camera& crtCamera, RenderPackage& pkg) {
     OPTICK_EVENT();
     pkg.clear();
 
@@ -222,14 +222,14 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, R
         pipelineDescriptor._stateHash = _materialInstanceCache->getRenderStateBlock(stagePass);
         pipelineDescriptor._shaderProgramHandle = _materialInstanceCache->getProgramGUID(stagePass);
 
-        pkg.addPipelineCommand(GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+        pkg.add(GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
         GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
         bindDescriptorSetsCommand._set.addShaderBuffers(getShaderBuffers());
-        pkg.addDescriptorSetsCommand(bindDescriptorSetsCommand);
+        pkg.add(bindDescriptorSetsCommand);
     }
 
-    _parentSGN.getNode().buildDrawCommands(_parentSGN, stagePass, pkg);
+    _parentSGN.getNode().buildDrawCommands(_parentSGN, stagePass, crtCamera, pkg);
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
@@ -306,7 +306,7 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
-void RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
+void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
@@ -330,13 +330,15 @@ void RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     }
 }
 
-bool RenderingComponent::onQuickRefreshNodeData(RefreshNodeDataParams& refreshParams) {
+bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick) {
     OPTICK_EVENT();
-    return Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *refreshParams._camera, true, *refreshParams._bufferInOut);
-}
 
-bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams) {
-    OPTICK_EVENT();
+    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *bufferParams._camera, !quick, *bufferParams._targetBuffer);
+
+    if (quick) {
+        // Nothing yet
+        return true;
+    }
 
     RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
     if (pkg.empty()) {
@@ -350,16 +352,15 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
 
     RenderStagePass tempStagePass = *refreshParams._stagePass;
     const RenderStage stage = tempStagePass._stage;
-    const RenderPassType passType = tempStagePass._passType;
 
-    const U8 stageIdx = to_base(stage);
-    const U8 lodLevel = _lodLevels[stageIdx];
+    const U8 lodLevel = _lodLevels[to_base(stage)];
 
     const U32 startOffset = to_U32(refreshParams._drawCommandsInOut->size());
     const U32 dataIndex = bufferParams._dataIndex;
 
     Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
     if (stage != RenderStage::SHADOW) {
+        const RenderPassType passType = tempStagePass._passType;
         for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
             if (i == to_U8(passType)) {
                 continue;
@@ -374,7 +375,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
         refreshParams._drawCommandsInOut->push_back(pkg.drawCommand(i, 0)._cmd);
     }
 
-    return Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *refreshParams._camera, false, *refreshParams._bufferInOut);
+    return true;
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
@@ -471,18 +472,18 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     if (canDraw(renderStagePass, lod, refreshData)) {
         RenderPackage& pkg = getDrawPackage(renderStagePass);
 
-        bool rebuildCommandsOut = false;
-        if (Attorney::SceneGraphNodeComponent::preRender(_parentSGN, camera, renderStagePass, refreshData, rebuildCommandsOut)) {
-            if (pkg.empty() || rebuildCommandsOut) {
-                rebuildDrawCommands(renderStagePass, pkg);
-            }
+        if (pkg.empty() || _parentSGN.getNode().rebuildDrawCommands()) {
+            rebuildDrawCommands(renderStagePass, camera, pkg);
+            _parentSGN.getNode().rebuildDrawCommands(false);
+        }
 
-            if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
-                pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY,  (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) &&
-                                                                       sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
-                pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
-                                                                       sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
-            }
+        if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
+            prepareRender(renderStagePass);
+
+            pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY,  (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) &&
+                                                                    sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
+            pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
+                                                                    sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
         }
 
         return true;

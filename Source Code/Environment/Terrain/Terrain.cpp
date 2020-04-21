@@ -100,6 +100,13 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
         _editorComponent.registerField(std::move(parallaxHeightField));
 
+        EditorComponentField toggleBoundsField = {};
+        toggleBoundsField._name = "Toggle Quadtree Bounds";
+        toggleBoundsField._range = { toggleBoundsField._name.length() * 10.0f, 20.0f };//dimensions
+        toggleBoundsField._type = EditorComponentFieldType::BUTTON;
+        toggleBoundsField._readOnly = false; //disabled/enabled
+        _editorComponent.registerField(std::move(toggleBoundsField));
+
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + ShadowMap::MAX_SHADOW_PASSES);
         bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
@@ -147,7 +154,11 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 void Terrain::onEditorChange(const char* field) {
     ACKNOWLEDGE_UNUSED(field);
 
-    _editorDataDirtyState = EditorDataState::QUEUED;
+    if (strcmp(field, "Toggle Quadtree Bounds") == 0) {
+        toggleBoundingBoxes();
+    } else {
+        _editorDataDirtyState = EditorDataState::QUEUED;
+    }
 }
 
 void Terrain::postBuild() {
@@ -238,25 +249,22 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-bool Terrain::preRender(SceneGraphNode& sgn,
-                        const Camera& camera,
-                        RenderStagePass renderStagePass,
-                        bool refreshData,
-                        bool& rebuildCommandsOut) {
+void Terrain::onRefreshNodeData(const SceneGraphNode& sgn,
+                                const RenderStagePass& renderStagePass,
+                                const Camera& crtCamera,
+                                bool refreshData,
+                                GFX::CommandBuffer& bufferInOut) {
     if (_drawCommandsDirty) {
-        rebuildCommandsOut = true;
+        rebuildDrawCommands(true);
         _drawCommandsDirty = false;
     }
-    //ToDo: If we swap shaders (e.g. for wireframe debug), mark rebuild as true to rebuild the pipeline
-    return SceneNode::preRender(sgn, camera, renderStagePass, refreshData, rebuildCommandsOut);
 }
 
-bool Terrain::onRender(SceneGraphNode& sgn,
-                       RenderingComponent& rComp,
-                       const Camera& camera,
-                       RenderStagePass renderStagePass,
-                       bool refreshData) {
-
+bool Terrain::prepareRender(SceneGraphNode& sgn,
+                            RenderingComponent& rComp,
+                            const RenderStagePass& renderStagePass,
+                            const Camera& camera,
+                            bool refreshData) {
     const U8 stageIndex = to_U8(renderStagePass._stage);
 
     U32 offset = 0u;
@@ -271,7 +279,6 @@ bool Terrain::onRender(SceneGraphNode& sgn,
         offset += (to_U32((stageIndex - 1) * Terrain::MAX_RENDER_NODES));
         tessellator = &_terrainTessellator[stageIndex - 1];
     }
-
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         rComp.getMaterialInstance()->setParallaxFactor(_descriptor->parallaxHeightScale());
@@ -282,9 +289,11 @@ bool Terrain::onRender(SceneGraphNode& sgn,
             triangleWidth *= 1.25f;
         }
 
-        PushConstants constants = pkg.pushConstants(0);
-        constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, triangleWidth);
-        pkg.pushConstants(0, constants);
+        if (pkg.empty()) {
+            PushConstants constants = pkg.pushConstants(0);
+            constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, triangleWidth);
+            pkg.pushConstants(0, constants);
+        }
     }
 
     U16 depth = tessellator->getRenderDepth();
@@ -304,29 +313,33 @@ bool Terrain::onRender(SceneGraphNode& sgn,
             _shaderDataDirty = true;
         }
     }
-     
+
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
     if (cmd._cmd.primCount != depth) {
         cmd._cmd.primCount = depth;
         pkg.drawCommand(0, 0, cmd);
     }
 
-    return Object3D::onRender(sgn, rComp, camera, renderStagePass, refreshData);
+    return Object3D::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
 void Terrain::buildDrawCommands(SceneGraphNode& sgn,
-                                RenderStagePass renderStagePass,
+                                const RenderStagePass& renderStagePass,
+                                const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {
 
     U32 offset = 0;
+
     if (renderStagePass._stage == RenderStage::SHADOW) {
         const U32 shadowOffset = renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB;
         offset = Terrain::MAX_RENDER_NODES * shadowOffset;
+
     } else {
+
         offset = ShadowMap::MAX_SHADOW_PASSES * Terrain::MAX_RENDER_NODES;
         offset += (to_U32((to_U8(renderStagePass._stage) - 1) * Terrain::MAX_RENDER_NODES));
-    }
 
+    }
     ShaderBufferBinding buffer = {};
     buffer._binding = ShaderBufferLocation::TERRAIN_DATA;
     buffer._buffer = _shaderData;
@@ -352,13 +365,12 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     cmd._sourceBuffer = getGeometryVB()->handle();
     cmd._cmd.primCount = Terrain::MAX_RENDER_NODES;
 
-    pkgInOut.addPushConstantsCommand(pushConstantsCommand);    
-    GFX::DrawCommand drawCommand = {cmd};
-    pkgInOut.addDrawCommand(drawCommand);
+    pkgInOut.add(pushConstantsCommand);    
+    pkgInOut.add(GFX::DrawCommand{ cmd });
 
     _terrainQuadtree.drawBBox(pkgInOut);
 
-    Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+    Object3D::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z, bool smooth) const {

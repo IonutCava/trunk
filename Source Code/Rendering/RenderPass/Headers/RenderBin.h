@@ -84,6 +84,15 @@ class RenderPackage;
 class SceneRenderState;
 class RenderPassManager;
 
+enum class RenderQueueListType : U8 {
+    OCCLUDERS = 0,
+    OCCLUDEES,
+    COUNT
+};
+
+class RenderBin;
+using RenderQueuePackages = vectorEASTLFast<RenderPackage*>;
+
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
@@ -98,12 +107,12 @@ class RenderBin {
     ~RenderBin();
 
     void sort(RenderStage stage, RenderingOrder renderOrder);
-    void populateRenderQueue(RenderStagePass stagePass, vectorEASTLFast<RenderPackage*>& queueInOut) const;
+    void populateRenderQueue(RenderStagePass stagePass, RenderQueuePackages& queueInOut) const;
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void refresh(RenderStage stage);
 
     void addNodeToBin(const SceneGraphNode& sgn,
-                      const RenderStagePass renderStagePass,
+                      const RenderStagePass& renderStagePass,
                       const F32 minDistToCameraSq);
 
     const RenderBinItem& getItem(RenderStage stage, U16 index) const;

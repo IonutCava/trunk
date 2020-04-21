@@ -147,7 +147,7 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePas
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTLFast<RenderPackage*>& queueInOut) {
+void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, RenderQueuePackages& queueInOut) {
     OPTICK_EVENT();
     auto [binType, includeBin] = binAndFlag;
 

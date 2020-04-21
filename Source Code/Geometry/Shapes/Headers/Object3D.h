@@ -87,11 +87,11 @@ class Object3D : public SceneNode {
 
     void postLoad(SceneGraphNode& sgn) override;
 
-    virtual bool onRender(SceneGraphNode& sgn,
-                          RenderingComponent& rComp,
-                          const Camera& camera,
-                          RenderStagePass renderStagePass,
-                          bool refreshData) override;
+    void onRefreshNodeData(const SceneGraphNode& sgn,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
+                           bool refreshData,
+                           GFX::CommandBuffer& bufferInOut) override;
                         
     virtual void onAnimationChange(SceneGraphNode& sgn, I32 newIndex) { 
         ACKNOWLEDGE_UNUSED(sgn);
@@ -152,7 +152,8 @@ class Object3D : public SceneNode {
     virtual void setGeometryVB(VertexBuffer* const vb);
 
     virtual void buildDrawCommands(SceneGraphNode& sgn,
-                                   RenderStagePass renderStagePass,
+                                   const RenderStagePass& renderStagePass,
+                                   const Camera& crtCamera,
                                    RenderPackage& pkgInOut) override;
 
     virtual const char* getResourceTypeName() const noexcept override { return "Object3D"; }

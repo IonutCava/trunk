@@ -428,6 +428,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
 
             GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
         }
+
         GFX::MemoryBarrierCommand memCmd = {};
         memCmd._barrierMask = to_base(MemoryBarrierType::BUFFER_UPDATE);
         GFX::EnqueueCommand(bufferInOut, memCmd);

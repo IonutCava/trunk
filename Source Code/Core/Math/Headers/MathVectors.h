@@ -467,7 +467,7 @@ inline vec2<T> Normalize(vec2<T> &vector);
 template <typename T>
 inline vec2<T> Normalized(const vec2<T> &vector);
 template <typename T>
-inline T Dot(const vec2<T> &a, const vec2<T> &b);
+inline T Dot(const vec2<T> &a, const vec2<T> &b) noexcept;
 template <typename T>
 inline void OrthoNormalize(vec2<T> &v1, vec2<T> &v2);
 
@@ -745,11 +745,11 @@ class vec3 {
     /// return the squared distance of the vector
     inline T lengthSquared() const noexcept;
     /// calculate the dot product between this vector and the specified one
-    inline T dot(const vec3 &v) const;
+    inline T dot(const vec3 &v) const noexcept;
     /// returns the angle in radians between '*this' and 'v'
     inline T angle(vec3 &v) const;
     /// compute the vector's distance to another specified vector
-    inline T distance(const vec3 &v) const;
+    inline T distance(const vec3 &v) const noexcept;
     /// compute the vector's squared distance to another specified vector
     inline T distanceSquared(const vec3 &v) const noexcept;
     /// transform the vector to unit length

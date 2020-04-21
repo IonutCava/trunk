@@ -97,12 +97,14 @@ public:
     const DescriptorSet& descriptorSet(I32 index) const;
     void descriptorSet(I32 index, const DescriptorSet& descriptorSets);
 
-    void addDrawCommand(const GFX::DrawCommand& cmd);
-    void addPipelineCommand(const GFX::BindPipelineCommand& clipPlanes);
-    void addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPlanes);
-    void addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants);
-    void addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets);
     void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
+
+    template<typename T>
+    inline typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, void>::type
+    add(const T& command) { commands()->add(command); }
+
+    template<>
+    inline void add(const GFX::DrawCommand& command) { addDrawCommand(command); }
 
     void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer);
     void setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding);
@@ -122,6 +124,7 @@ public:
 protected:
     void updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel);
     GFX::CommandBuffer* commands();
+    void addDrawCommand(const GFX::DrawCommand& cmd);
 
 protected:
     GFX::CommandBuffer* _commands = nullptr;

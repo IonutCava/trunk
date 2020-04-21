@@ -295,12 +295,10 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         bool cullNode(const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) const;
         /// Fast distance-to-camera and min-LoD checks. Part of the cullNode call but usefull for quick visibility checks elsewhere
         bool preCullNode(const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) const;
-        /// Called for every single stage of every render pass. Useful for checking materials, doing compute events, etc
-        bool preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut);
         /// Called after preRender and after we rebuild our command buffers. Useful for modifying the command buffer that's going to be used for this RenderStagePass
-        bool prepareRender(RenderingComponent& rComp, const Camera& camera, RenderStagePass renderStagePass, bool refreshData);
-        /// Called every time we are about to upload or validate our render data to the GPU. Perfect time for some more compute or verifying push constants.
-        bool onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut);
+        bool prepareRender(RenderingComponent& rComp, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData);
+        /// Called before we start preparing draw packages. Perfect for adding non-node specific commands to the command buffer (e.g. culling tasks)
+        void onRefreshNodeData(const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData, GFX::CommandBuffer& bufferInOut);
         /// Returns true if this node should be drawn based on the specified parameters. Does not do any culling. Just a "if it were to be in view, it would draw".
         bool getDrawState(RenderStagePass stagePass, U8 LoD) const;
         /// Called whenever we send a networking packet from our NetworkingComponent (if any). FrameCount is the frame ID sent with the packet.
@@ -403,18 +401,13 @@ namespace Attorney {
             node.setTransformDirty(transformMask);
         }
 
-        static bool preRender(SceneGraphNode& node, const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut) {
-            return node.preRender(camera, renderStagePass, refreshData, rebuildCommandsOut);
+        static bool prepareRender(SceneGraphNode& node, RenderingComponent& rComp, const Camera& camera, const RenderStagePass& renderStagePass, bool refreshData) {
+            return node.prepareRender(rComp, renderStagePass, camera, refreshData);
         }
 
-        static bool prepareRender(SceneGraphNode& node, RenderingComponent& rComp, const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
-            return node.prepareRender(rComp, camera, renderStagePass, refreshData);
+        static void onRefreshNodeData(SceneGraphNode& node, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData, GFX::CommandBuffer& bufferInOut) {
+            node.onRefreshNodeData(renderStagePass, camera, refreshData, bufferInOut);
         }
-
-        static bool onRefreshNodeData(SceneGraphNode& node, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {
-            return node.onRefreshNodeData(renderStagePass, camera, quick, bufferInOut);
-        }
-
         static bool getDrawState(const SceneGraphNode& node, RenderStagePass stagePass, U8 LoD) {
             return node.getDrawState(stagePass, LoD);
         }

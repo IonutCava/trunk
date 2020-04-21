@@ -115,20 +115,21 @@ VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-bool Object3D::onRender(SceneGraphNode& sgn,
-                        RenderingComponent& rComp,
-                        const Camera& camera,
-                        RenderStagePass renderStagePass,
-                        bool refreshData) {
+void Object3D::onRefreshNodeData(const SceneGraphNode& sgn,
+                                 const RenderStagePass& renderStagePass,
+                                 const Camera& crtCamera,
+                                 bool refreshData,
+                                 GFX::CommandBuffer& bufferInOut) {
     if (refreshData) {
         rebuild();
     }
 
-    return SceneNode::onRender(sgn, rComp, camera, renderStagePass, refreshData);
+    SceneNode::onRefreshNodeData(sgn, renderStagePass, crtCamera, refreshData, bufferInOut);
 }
 
 void Object3D::buildDrawCommands(SceneGraphNode& sgn,
-                                 RenderStagePass renderStagePass,
+                                 const RenderStagePass& renderStagePass,
+                                 const Camera& crtCamera,
                                  RenderPackage& pkgInOut) {
     VertexBuffer* const vb = getGeometryVB();
     if (pkgInOut.drawCommandCount() == 0) {
@@ -141,8 +142,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         cmd._cmd.primCount = sgn.instanceCount();
         enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
-        GFX::DrawCommand drawCommand = { cmd };
-        pkgInOut.addDrawCommand(drawCommand);
+        pkgInOut.add(GFX::DrawCommand{ cmd });
     }
 
     if (pkgInOut.autoIndexBuffer()) {
@@ -158,7 +158,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         }
     }
 
-    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+    SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
 // Create a list of triangles from the vertices + indices lists based on primitive type

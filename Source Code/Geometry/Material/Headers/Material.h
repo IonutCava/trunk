@@ -179,15 +179,15 @@ class Material : public CachedResource {
 
     void disableTranslucency();
 
-    void getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32& textureKey) const;
+    void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
 
     void getMaterialMatrix(mat4<F32>& retMatrix) const;
 
     F32 getParallaxFactor() const;
 
-    size_t getRenderStateBlock(RenderStagePass renderStagePass) const;
+    size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
 
-    I64 getProgramGUID(RenderStagePass renderStagePass) const;
+    I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
 
     Texture_wptr getTexture(TextureUsage textureUsage) const;
 
@@ -198,7 +198,7 @@ class Material : public CachedResource {
     const ShadingMode& getShadingMode() const;
     const BumpMethod&  getBumpMethod()  const;
 
-    bool getTextureData(RenderStagePass renderStagePass, TextureDataContainer<>& textureData);
+    bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
 
     void rebuild();
     bool hasTransparency() const;
@@ -210,7 +210,7 @@ class Material : public CachedResource {
     bool isReflective() const;
     bool isRefractive() const;
 
-    bool canDraw(RenderStagePass renderStagePass);
+    bool canDraw(const RenderStagePass& renderStagePass);
 
     void saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
     void loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
@@ -222,13 +222,13 @@ class Material : public CachedResource {
    private:
     /// Checks if the shader needed for the current stage is already constructed.
     /// Returns false if the shader was already ready.
-    bool computeShader(RenderStagePass renderStagePass);
+    bool computeShader(const RenderStagePass& renderStagePass);
 
     void addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix);
 
     void updateTranslucency();
 
-    bool getTextureDataFast(RenderStagePass renderStagePass, TextureDataContainer<>& textureData);
+    bool getTextureDataFast(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
     bool getTextureData(TextureUsage slot, TextureDataContainer<>& container);
 
     void recomputeShaders();
@@ -241,9 +241,9 @@ class Material : public CachedResource {
                                   RenderStage stage,
                                   RenderPassType pass);
 
-    ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass);
+    ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass);
 
-    const ShaderProgramInfo& shaderInfo(RenderStagePass renderStagePass) const;
+    const ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass) const;
 
     const char* getResourceTypeName() const noexcept override { return "Material"; }
 

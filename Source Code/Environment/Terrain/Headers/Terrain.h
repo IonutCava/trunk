@@ -94,7 +94,7 @@ class Terrain : public Object3D {
     explicit Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
     virtual ~Terrain();
 
-    bool unload() override;
+    bool unload() final;
 
     void toggleBoundingBoxes();
 
@@ -113,34 +113,35 @@ class Terrain : public Object3D {
     inline const vectorEASTL<TerrainChunk*>& terrainChunks() const { return _terrainChunks; }
     const std::shared_ptr<TerrainDescriptor>& descriptor() const { return _descriptor; }
 
-    void saveToXML(boost::property_tree::ptree& pt) const override;
-    void loadFromXML(const boost::property_tree::ptree& pt)  override;
+    void saveToXML(boost::property_tree::ptree& pt) const final;
+    void loadFromXML(const boost::property_tree::ptree& pt)  final;
 
    protected:
     Vert getVert(F32 x_clampf, F32 z_clampf) const;
     Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
 
-    void frameStarted(SceneGraphNode& sgn) override;
+    void frameStarted(SceneGraphNode& sgn) final;
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) final;
 
-    bool preRender(SceneGraphNode& sgn,
-                   const Camera& camera,
-                   RenderStagePass renderStagePass,
-                   bool refreshData,
-                   bool& rebuildCommandsOut) override;
+    void onRefreshNodeData(const SceneGraphNode& sgn,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
+                           bool refreshData,
+                           GFX::CommandBuffer& bufferInOut) final;
 
     void postBuild();
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                           RenderStagePass renderStagePass,
-                           RenderPackage& pkgInOut) override;
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
+                           RenderPackage& pkgInOut) final;
 
-    bool onRender(SceneGraphNode& sgn,
-                  RenderingComponent& rComp,
-                  const Camera& camera,
-                  RenderStagePass renderStagePass,
-                  bool refreshData) override;
+     bool prepareRender(SceneGraphNode& sgn,
+                        RenderingComponent& rComp,
+                        const RenderStagePass& renderStagePass,
+                        const Camera& camera,
+                        bool refreshData) final;
 
     void postLoad(SceneGraphNode& sgn);
 

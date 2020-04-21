@@ -476,13 +476,7 @@ void SceneGraphNode::processEvents() {
     }
 }
 
-bool SceneGraphNode::preRender(const Camera& camera, RenderStagePass renderStagePass, bool refreshData, bool& rebuildCommandsOut) {
-    OPTICK_EVENT();
-
-    return _node->preRender(*this, camera, renderStagePass, refreshData, rebuildCommandsOut);
-}
-
-bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const Camera& camera, RenderStagePass renderStagePass, bool refreshData) {
+bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData) {
     OPTICK_EVENT();
 
     AnimationComponent* aComp = get<AnimationComponent>();
@@ -499,15 +493,12 @@ bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const Camera& came
             pkg.addShaderBuffer(0, buffer);
         }
     }
-    rComp.onRender(renderStagePass);
     
-    return _node->onRender(*this, rComp, camera, renderStagePass, refreshData);
+    return _node->prepareRender(*this, rComp, renderStagePass, camera, refreshData);
 }
 
-bool SceneGraphNode::onRefreshNodeData(RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut) {
-    OPTICK_EVENT();
-
-    return _node->onRefreshNodeData(*this, renderStagePass, camera, quick, bufferInOut);
+void SceneGraphNode::onRefreshNodeData(const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData, GFX::CommandBuffer& bufferInOut) {
+    _node->onRefreshNodeData(*this, renderStagePass, camera, refreshData, bufferInOut);
 }
 
 bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {
@@ -535,7 +526,7 @@ bool SceneGraphNode::preCullNode(const BoundsComponent& bounds, const NodeCullPa
         const vec3<F32>& eye = params._currentCamera->getEye();
 
         // Check distance to sphere edge (center - radius)
-        distanceToClosestPointSQ = bounds.distanceToBSpehereSQ(eye);
+        distanceToClosestPointSQ = bounds.getBoundingBox().nearestDistanceFromPointSquared(eye);
         if (distanceToClosestPointSQ < params._cullMaxDistanceSq) {
             const F32 upperBound = params._minExtents.maxComponent();
             if (upperBound > 0.0f &&
@@ -548,8 +539,7 @@ bool SceneGraphNode::preCullNode(const BoundsComponent& bounds, const NodeCullPa
             const vec2<F32>& renderRange = rComp->renderRange();
             if (IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
                 if (params._minLoD > -1) {
-                    U8 lodLevel = rComp->getLoDLevel(bounds, eye, params._stage, params._lodThresholds);
-                    if (lodLevel > params._minLoD) {
+                    if (rComp->getLoDLevel(bounds, eye, params._stage, params._lodThresholds) > params._minLoD) {
                         return true;
                     }
                 }

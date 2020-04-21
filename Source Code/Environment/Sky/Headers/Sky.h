@@ -61,14 +61,15 @@ class Sky : public SceneNode {
     void postLoad(SceneGraphNode& sgn) override;
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                                RenderStagePass renderStagePass,
-                                RenderPackage& pkgInOut) override;
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
+                           RenderPackage& pkgInOut) override;
 
-    bool preRender(SceneGraphNode& sgn,
-                   const Camera& camera,
-                   RenderStagePass renderStagePass,
-                   bool refreshData,
-                   bool& rebuildCommandsOut) override;
+    void onRefreshNodeData(const SceneGraphNode& sgn,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
+                           bool refreshData,
+                           GFX::CommandBuffer& bufferInOut) final;
 
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 

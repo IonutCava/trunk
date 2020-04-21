@@ -17,7 +17,7 @@ U32 TerrainChunk::_chunkID = 0;
 
 TerrainChunk::TerrainChunk(GFXDevice& context,
                            Terrain* const parentTerrain,
-                           const QuadtreeNode& parentNode)
+                           QuadtreeNode& parentNode)
     : _context(context),
       _quadtreeNode(parentNode),
       _parentTerrain(parentTerrain),
@@ -96,4 +96,7 @@ U8 TerrainChunk::LoD() const {
     return _quadtreeNode.LoD();
 }
 
+void TerrainChunk::drawBBox(RenderPackage& packageOut) {
+    _quadtreeNode.drawBBox(packageOut);
+}
 };

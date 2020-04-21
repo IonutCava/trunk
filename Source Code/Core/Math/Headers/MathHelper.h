@@ -243,7 +243,7 @@ template <typename T>
 T Sqrt(T input) noexcept;
 
 template <typename T, typename U>
-T Sqrt(U input);
+T Sqrt(U input) noexcept;
 
 ///Helper methods to go from a float to packed char and back
 constexpr U8 FLOAT_TO_CHAR(const F32 value) noexcept;

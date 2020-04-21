@@ -18,6 +18,7 @@
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
+#include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
@@ -75,7 +76,6 @@ Vegetation::Vegetation(GFXDevice& context,
       _treeMap(details.treeMap),
       _grassMap(details.grassMap)
 {
-    
     _treeMeshNames.insert(eastl::cend(_treeMeshNames), eastl::cbegin(details.treeMeshes), eastl::cend(details.treeMeshes));
 
     assert(_grassMap->data() != nullptr && _treeMap->data() != nullptr);
@@ -496,6 +496,9 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
         _cullPipelineTrees = _context.newPipeline(pipeDesc);
     }
 
+    const U32 ID = _terrainChunk.ID();
+    const U32 meshID = to_U32(ID % _treeMeshNames.size());
+
     if (_instanceCountTrees > 0 && !_treeMeshNames.empty()) {
         {
             UniqueLock<SharedMutex> w_lock(g_treeMeshLock);
@@ -523,8 +526,6 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
                 }
             }
         }
-        U32 ID = _terrainChunk.ID();
-        U32 meshID = to_U32(ID % _treeMeshNames.size());
 
         Mesh_ptr crtMesh = nullptr;
         {
@@ -562,7 +563,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
         _treeParentNode->forEachChild([ID](SceneGraphNode* child, I32 /*childIdx*/) {
             RenderingComponent* rComp = child->get<RenderingComponent>();
             // negative value to disable occlusion culling
-            rComp->cullFlagValue(ID * -1.0f);
+            rComp->cullFlagValue(-1.0f * ID);
         });
 
         const vec3<F32>& extents = _treeParentNode->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
@@ -570,7 +571,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
         _cullPushConstants.set(_ID("treeExtents"), GFX::PushConstantType::VEC4, _treeExtents);
     }
 
-    _cullPushConstants.set(_ID("dvd_terrainChunkOffset"), GFX::PushConstantType::UINT, _terrainChunk.ID());
+    _cullPushConstants.set(_ID("dvd_terrainChunkOffset"), GFX::PushConstantType::UINT, ID);
     _cullPushConstants.set(_ID("grassExtents"), GFX::PushConstantType::VEC4, _grassExtents);
 
     setState(ResourceState::RES_LOADED);
@@ -590,6 +591,8 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 
     if (!renderState().drawState()) {
         uploadVegetationData(sgn);
+        // positive value to keep occlusion culling happening
+        sgn.get<RenderingComponent>()->cullFlagValue(1.0f * _terrainChunk.ID());
     }
 
     if (!s_buffersBound) {
@@ -641,18 +644,27 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-void Vegetation::postLoad(SceneGraphNode& sgn) {
-    const U32 ID = _terrainChunk.ID();
-    // positive value to keep occlusion culling happening
-    sgn.get<RenderingComponent>()->cullFlagValue(ID * 1.0f);
 
-    SceneNode::postLoad(sgn);
+void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
+                                   const RenderStagePass& renderStagePass,
+                                   const Camera& crtCamera,
+                                   RenderPackage& pkgInOut) {
+
+    GenericDrawCommand cmd = {};
+    cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
+    cmd._cmd.indexCount = to_U32(s_buffer->getIndexCount());
+    cmd._sourceBuffer = s_buffer->handle();
+    cmd._cmd.primCount = _instanceCountGrass;
+
+    pkgInOut.add(GFX::DrawCommand{ cmd });
+
+    SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
-bool Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderStagePass, const Camera& camera, bool quick, GFX::CommandBuffer& bufferInOut){
-    OPTICK_EVENT();
-
-    if (!quick && (_instanceCountGrass > 0 || _instanceCountTrees > 0 ) && renderStagePass._passIndex == 0) {
+void Vegetation::onRefreshNodeData(const SceneGraphNode& sgn, const RenderStagePass& renderStagePass, const Camera& crtCamera, bool refreshData, GFX::CommandBuffer& bufferInOut) {
+    // Culling lags one full frame
+    if (renderStagePass._stage == RenderStage::DISPLAY && refreshData && _instanceCountGrass > 0 || _instanceCountTrees > 0)
+    {
         // This will always lag one frame
         const Texture_ptr& depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
@@ -661,52 +673,39 @@ bool Vegetation::onRefreshNodeData(SceneGraphNode& sgn, RenderStagePass renderSt
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
-        cullConstants._constants.countHint(4 + _cullPushConstants.data().size());
+        cullConstants._constants.countHint(5 + _cullPushConstants.data().size());
         cullConstants._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
-        cullConstants._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-        cullConstants._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getViewMatrix()));
-        cullConstants._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
-
+        cullConstants._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, crtCamera.getProjectionMatrix());
+        cullConstants._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(crtCamera.getViewMatrix(), crtCamera.getViewMatrix()));
+        cullConstants._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(crtCamera.getViewMatrix(), crtCamera.getProjectionMatrix()));
+        cullConstants._constants.set(_ID("cameraPosition"), GFX::PushConstantType::VEC3, crtCamera.getEye());
+        
         GFX::DispatchComputeCommand computeCmd = {};
 
         if (_instanceCountGrass > 0) {
+            computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
+
             //Cull grass
             GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _cullPipelineGrass });
             GFX::EnqueueCommand(bufferInOut, cullConstants);
-
-            computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
 
         if (_instanceCountTrees > 0) {
+            computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
+
             // Cull trees
             GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _cullPipelineTrees });
             GFX::EnqueueCommand(bufferInOut, cullConstants);
-
-            computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
+
+        GFX::MemoryBarrierCommand memCmd = {};
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_STORAGE) | to_base(MemoryBarrierType::BUFFER_UPDATE);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
     }
 
-    return SceneNode::onRefreshNodeData(sgn, renderStagePass, camera, quick, bufferInOut);
-}
-
-void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
-                                   RenderStagePass renderStagePass,
-                                   RenderPackage& pkgInOut) {
-    if (renderStagePass._passIndex == 0) {
-
-        GenericDrawCommand cmd = {};
-        cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
-        cmd._cmd.indexCount = to_U32(s_buffer->getIndexCount());
-        cmd._sourceBuffer = s_buffer->handle();
-        cmd._cmd.primCount = _instanceCountGrass;
-
-        GFX::DrawCommand drawCommand = { cmd };
-        pkgInOut.addDrawCommand(drawCommand);
-    }
-
-    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+    return SceneNode::onRefreshNodeData(sgn, renderStagePass, crtCamera, refreshData, bufferInOut);
 }
 
 namespace {
@@ -748,9 +747,10 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
     }
 
     const Terrain& terrain = _terrainChunk.parent();
+    const U32 ID = _terrainChunk.ID();
 
-    const Str128 cacheFileName = terrain.resourceName() + "_" + resourceName() + (treeData ? "_trees_" : "_grass_") + ".cache";
-    Console::printfn(Locale::get(treeData ? _ID("CREATE_TREE_START") : _ID("CREATE_GRASS_BEGIN")), _terrainChunk.ID());
+    const stringImpl cacheFileName = Util::StringFormat("%s_%s_%s_%d.cache", terrain.resourceName().c_str(), resourceName().c_str(), (treeData ? "trees" : "grass"), ID);
+    Console::printfn(Locale::get(treeData ? _ID("CREATE_TREE_START") : _ID("CREATE_GRASS_BEGIN")), ID);
 
     vectorEASTL<VegetationData>& container = treeData ? _tempTreeData : _tempGrassData;
 
@@ -759,17 +759,16 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         container.resize(chunkCache.read<size_t>());
         chunkCache.read(reinterpret_cast<Byte*>(container.data()), sizeof(VegetationData) * container.size());
     } else {
-        const U32 ID = _terrainChunk.ID();
         const U32 meshID = to_U32(ID % _treeMeshNames.size());
 
         const vec2<F32>& chunkSize = _terrainChunk.getOffsetAndSize().zw();
         const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy();
         const F32 waterLevel = 0.0f;// ToDo: make this dynamic! (cull underwater points later on?)
-        const U16 mapWidth = treeData ? _treeMap->dimensions().width : _grassMap->dimensions().width;
-        const U16 mapHeight = treeData ? _treeMap->dimensions().height : _grassMap->dimensions().height;
-
+        auto map = treeData ? _treeMap : _grassMap;
+        const U16 mapWidth = map->dimensions().width;
+        const U16 mapHeight = map->dimensions().height;
         const auto& positions = treeData ? s_treePositions : s_grassPositions;
-
+        const auto& scales = treeData ? _treeScales : _grassScales;
         const F32 slopeLimit = treeData ? 10.0f : 35.0f;
 
         for (vec2<F32> pos : positions) {
@@ -795,7 +794,6 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
             assert(vert._position != VECTOR3_ZERO);
 
-            auto map = treeData ? _treeMap : _grassMap;
             const UColour4 colour = map->getColour(to_I32(mapCoord.x), to_I32(mapCoord.y));
             const U8 index = bestIndex(colour);
             const F32 colourVal = colour[index];
@@ -803,7 +801,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
                 continue;
             }
 
-            const F32 xmlScale = treeData ? _treeScales[meshID] : _grassScales[index];
+            const F32 xmlScale = scales[treeData ? meshID : index];
             // Don't go under 75% of the scale specified in the data files
             const F32 minXmlScale = (xmlScale * 7.5f) / 10.0f;
             // Don't go over 75% of the cale specified in the data files
@@ -826,7 +824,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
             entry._orientationQuat = (Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * modelRotation).asVec4();
             entry._data = {
                 to_F32(index),
-                to_F32(_terrainChunk.ID()),
+                to_F32(ID),
                 1.0f,
                 1.0f
             };

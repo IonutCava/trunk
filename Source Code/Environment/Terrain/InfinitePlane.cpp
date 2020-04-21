@@ -140,7 +140,8 @@ void InfinitePlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, Scen
 }
 
 void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
-                                      RenderStagePass renderStagePass,
+                                      const RenderStagePass& renderStagePass,
+                                      const Camera& crtCamera,
                                       RenderPackage& pkgInOut) {
 
     //infinite plane
@@ -152,11 +153,10 @@ void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
     planeCmd._bufferIndex = renderStagePass.baseIndex();
     enableOption(planeCmd, CmdRenderOptions::RENDER_INDIRECT);
     {
-        GFX::DrawCommand drawCommand = { planeCmd };
-        pkgInOut.addDrawCommand(drawCommand);
+        pkgInOut.add(GFX::DrawCommand{ planeCmd });
     }
 
-    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+    SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
 }; //namespace Divide

@@ -84,46 +84,18 @@ void SceneNode::sceneUpdate(const U64 deltaTimeUS,
     ACKNOWLEDGE_UNUSED(sceneState);
 }
 
-bool SceneNode::preRender(SceneGraphNode& sgn,
-                          const Camera& camera,
-                          RenderStagePass renderStagePass,
-                          bool refreshData,
-                          bool& rebuildCommandsOut) {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(camera);
-    ACKNOWLEDGE_UNUSED(renderStagePass);
-    ACKNOWLEDGE_UNUSED(refreshData);
-    ACKNOWLEDGE_UNUSED(rebuildCommandsOut);
-
-    return getState() == ResourceState::RES_LOADED;
-}
-
-bool SceneNode::onRender(SceneGraphNode& sgn,
-                         RenderingComponent& rComp,
-                         const Camera& camera,
-                         RenderStagePass renderStagePass,
-                         bool refreshData) {
+bool SceneNode::prepareRender(SceneGraphNode& sgn,
+                              RenderingComponent& rComp,
+                              const RenderStagePass& renderStagePass,
+                              const Camera& camera,
+                              bool refreshData) {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(rComp);
-    ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(renderStagePass);
+    ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(refreshData);
 
     return getState() == ResourceState::RES_LOADED;
-}
-
-bool SceneNode::onRefreshNodeData(SceneGraphNode& sgn,
-                                  RenderStagePass renderStagePass,
-                                  const Camera& camera,
-                                  bool quick,
-                                  GFX::CommandBuffer& bufferInOut) {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(renderStagePass);
-    ACKNOWLEDGE_UNUSED(camera);
-    ACKNOWLEDGE_UNUSED(quick);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-
-    return true;
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
@@ -171,11 +143,25 @@ void SceneNode::editorFieldChanged(const char* field) {
 }
 
 void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
-                                  RenderStagePass renderStagePass,
+                                  const RenderStagePass& renderStagePass,
+                                  const Camera& crtCamera,
                                   RenderPackage& pkgInOut) {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(renderStagePass);
+    ACKNOWLEDGE_UNUSED(crtCamera);
     ACKNOWLEDGE_UNUSED(pkgInOut);
+}
+
+void SceneNode::onRefreshNodeData(const SceneGraphNode& sgn,
+                                  const RenderStagePass& renderStagePass,
+                                  const Camera& crtCamera,
+                                  bool refreshData,
+                                  GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(renderStagePass);
+    ACKNOWLEDGE_UNUSED(crtCamera);
+    ACKNOWLEDGE_UNUSED(refreshData);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
 }
 
 void SceneNode::onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const {

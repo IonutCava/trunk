@@ -64,7 +64,8 @@ class WaterPlane : public SceneNode {
 
    protected:
     void buildDrawCommands(SceneGraphNode& sgn,
-                           RenderStagePass renderStagePass,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
 
     void postLoad(SceneGraphNode& sgn) override;

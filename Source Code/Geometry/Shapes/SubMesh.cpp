@@ -32,7 +32,8 @@ SubMesh::~SubMesh()
 }
 
 void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
-                                RenderStagePass renderStagePass,
+                                const RenderStagePass& renderStagePass,
+                                const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {
 
     pkgInOut.autoIndexBuffer(true);
@@ -47,10 +48,9 @@ void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
     cmd._bufferIndex = renderStagePass.baseIndex();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
-    GFX::DrawCommand drawCommand = { cmd };
-    pkgInOut.addDrawCommand(drawCommand);
+    pkgInOut.add(GFX::DrawCommand{ cmd });
 
-    Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+    Object3D::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
 void SubMesh::setParentMesh(Mesh* const parentMesh) {

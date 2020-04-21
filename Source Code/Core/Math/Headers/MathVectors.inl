@@ -111,7 +111,7 @@ inline vec2<T> operator*(T fl, const vec2<T> &v) {
 
 /// general vec2 dot product
 template <typename T>
-inline T Dot(const vec2<T> &a, const vec2<T> &b) {
+inline T Dot(const vec2<T> &a, const vec2<T> &b) noexcept {
     return (a.x * b.x + a.y * b.y);
 }
 
@@ -405,13 +405,13 @@ inline void vec3<T>::cross(const vec3 &v2) {
 
 /// calculate the dot product between this vector and the specified one
 template <typename T>
-inline T vec3<T>::dot(const vec3 &v) const {
+inline T vec3<T>::dot(const vec3 &v) const noexcept {
     return Divide::Dot(*this, v);
 }
 
 /// compute the vector's distance to another specified vector
 template <typename T>
-inline T vec3<T>::distance(const vec3 &v) const {
+inline T vec3<T>::distance(const vec3 &v) const noexcept {
     return Divide::Sqrt(distanceSquared(v));
 }
 

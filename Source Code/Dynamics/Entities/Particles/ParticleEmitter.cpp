@@ -257,7 +257,8 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
-                                        RenderStagePass renderStagePass,
+                                        const RenderStagePass& renderStagePass,
+                                        const Camera& crtCamera,
                                         RenderPackage& pkgInOut) {
     U32 indexCount = to_U32(_particles->particleGeometryIndices().size());
     if (indexCount == 0) {
@@ -269,10 +270,8 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     cmd._cmd.indexCount = indexCount;
 
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
-    GFX::DrawCommand drawCommand = {
-        cmd 
-    };
-    pkgInOut.addDrawCommand(drawCommand);
+
+    pkgInOut.add(GFX::DrawCommand{ cmd });
 
     if (_particleTexture) {
         pkgInOut.setTexture(0, _particleTexture->data(), to_U8(TextureUsage::UNIT0));
@@ -286,10 +285,10 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
     
 
-    SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+    SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
-void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Camera& crtCamera) {
+void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera) {
     if (renderStagePass._passType != RenderPassType::PRE_PASS) {
         return;
     }
@@ -323,11 +322,11 @@ void ParticleEmitter::prepareForRender(RenderStagePass renderStagePass, const Ca
 }
 
 /// The onRender call will emit particles
-bool ParticleEmitter::onRender(SceneGraphNode& sgn,
-                               RenderingComponent& rComp,
-                               const Camera& camera, 
-                               RenderStagePass renderStagePass,
-                               bool refreshData) {
+void ParticleEmitter::onRefreshNodeData(const SceneGraphNode& sgn,
+                                        const RenderStagePass& renderStagePass,
+                                        const Camera& crtCamera,
+                                        bool refreshData,
+                                        GFX::CommandBuffer& bufferInOut) {
 
     if ( _enabled &&  getAliveParticleCount() > 0) {
         Wait(*_bufferUpdate);
@@ -340,7 +339,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
             _buffersDirty[to_U32(renderStagePass._stage)] = false;
         }
 
-        RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
+        RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
         cmd._cmd.primCount = to_U32(_particles->_renderingPositions.size());
@@ -348,12 +347,11 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
         cmd._bufferIndex = renderStagePass.baseIndex();
         pkg.drawCommand(0, 0, cmd);
 
-        prepareForRender(renderStagePass, camera);
+        prepareForRender(renderStagePass, crtCamera);
 
-        return SceneNode::onRender(sgn, rComp, camera, renderStagePass, refreshData);
     }
 
-    return false;
+    SceneNode::onRefreshNodeData(sgn, renderStagePass, crtCamera, refreshData, bufferInOut);
 }
 
 
@@ -383,7 +381,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
 
         aliveCount = getAliveParticleCount();
 
-        auto updateSize = [this](const Task* parentTask, U32 start, U32 end) {
+        const auto updateSize = [this](const Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 _particles->_position[i].w = _particles->_misc[i].z;
                 _particles->_acceleration[i].set(0.0f);

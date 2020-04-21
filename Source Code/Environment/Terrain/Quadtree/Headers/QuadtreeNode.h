@@ -55,11 +55,12 @@ class ShaderProgram;
 class SceneGraphNode;
 class SceneRenderState;
 
+class Quadtree;
 class QuadtreeChildren;
 
 class QuadtreeNode {
    public:
-     QuadtreeNode(GFXDevice& context);
+     QuadtreeNode(GFXDevice& context, Quadtree* parent);
      ~QuadtreeNode();
 
     /// recursive node building function
@@ -73,7 +74,7 @@ class QuadtreeNode {
     bool computeBoundingBox(BoundingBox& parentBB);
     
     void drawBBox(RenderPackage& packageOut);
-    void toggleBoundingBoxes(Pipeline* pipeline);
+    void toggleBoundingBoxes();
 
     inline bool isALeaf() const { return _children[0] == nullptr; }
     inline U8 LoD() const { return _LoD; }
@@ -82,12 +83,13 @@ class QuadtreeNode {
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
     inline TerrainChunk* getChunk() { return _terrainChunk.get(); }
 
-    inline QuadtreeNode& getChild(ChildPosition pos) const { return *_children[to_base(pos)]; }
-    inline QuadtreeNode& getChild(U32 index) const { return *_children[index]; }
+    inline QuadtreeNode& getChild(ChildPosition pos) const noexcept { return *_children[to_base(pos)]; }
+    inline QuadtreeNode& getChild(U32 index) const noexcept { return *_children[index]; }
 
    private:
     BoundingBox _boundingBox;                    //< Node BoundingBox
     BoundingSphere _boundingSphere;              //< Node BoundingSphere
+    Quadtree* _parent = nullptr;
     std::array<QuadtreeNode*, 4> _children = {}; //< Node children
     std::unique_ptr<TerrainChunk> _terrainChunk = nullptr; //< Terrain Chunk contained in node
     GFXDevice&    _context;

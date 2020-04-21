@@ -360,7 +360,7 @@ void Material::recomputeShaders() {
     }
 }
 
-I64 Material::getProgramGUID(RenderStagePass renderStagePass) const {
+I64 Material::getProgramGUID(const RenderStagePass& renderStagePass) const {
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
     if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
@@ -371,7 +371,7 @@ I64 Material::getProgramGUID(RenderStagePass renderStagePass) const {
     return ShaderProgram::defaultShader()->getGUID();
 }
 
-bool Material::canDraw(RenderStagePass renderStagePass) {
+bool Material::canDraw(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
 
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
@@ -396,7 +396,7 @@ bool Material::canDraw(RenderStagePass renderStagePass) {
 }
 
 /// If the current material doesn't have a shader associated with it, then add the default ones.
-bool Material::computeShader(RenderStagePass renderStagePass) {
+bool Material::computeShader(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
 
     const bool isDepthPass = renderStagePass.isDepthPass();
@@ -646,7 +646,7 @@ bool Material::getTextureData(TextureUsage slot, TextureDataContainer<>& contain
     return false;
 }
 
-bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer<>& textureData) {
+bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData) {
     OPTICK_EVENT();
 
     if (textureData.count() == 0) {
@@ -688,7 +688,7 @@ bool Material::getTextureData(RenderStagePass renderStagePass, TextureDataContai
     return ret;
 }
 
-bool Material::getTextureDataFast(RenderStagePass renderStagePass, TextureDataContainer<>& textureData) {
+bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData) {
     OPTICK_EVENT();
 
     constexpr U8 transparentSlots[] = {
@@ -860,7 +860,7 @@ void Material::updateTranslucency() {
     }
 }
 
-size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) const {
+size_t Material::getRenderStateBlock(const RenderStagePass& renderStagePass) const {
     size_t ret = _context.getDefaultStateBlock(false);
 
     const StatesPerVariant& variantMap = _defaultRenderStates[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)];
@@ -889,7 +889,7 @@ size_t Material::getRenderStateBlock(RenderStagePass renderStagePass) const {
     return ret;
 }
 
-void Material::getSortKeys(RenderStagePass renderStagePass, I64& shaderKey, I32& textureKey) const {
+void Material::getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const {
     textureKey = _textureKeyCache == -1 ? std::numeric_limits<I32>::lowest() : _textureKeyCache;
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);

@@ -45,7 +45,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneNode);
 
 /// This class manages all of the RenderBins and renders them in the correct order
 class RenderQueue : public KernelComponent {
-   public:
+  public: 
     using RenderBinArray = std::array<RenderBin*, RenderBinType::RBT_COUNT>;
 
   public:
@@ -53,7 +53,7 @@ class RenderQueue : public KernelComponent {
     ~RenderQueue();
 
     //binAndFlag: if true, populate from bin, if false, populate from everything except bin
-    void populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, vectorEASTLFast<RenderPackage*>& queueInOut);
+    void populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, RenderQueuePackages& queueInOut);
 
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass, RenderBinType targetBinType = RenderBinType::RBT_COUNT, RenderingOrder renderOrder = RenderingOrder::COUNT);

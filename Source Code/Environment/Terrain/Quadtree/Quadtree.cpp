@@ -12,8 +12,13 @@ namespace Divide {
 
 Quadtree::Quadtree(GFXDevice& context)
     : _context(context),
-      _root(std::make_unique<QuadtreeNode>(context))
+      _root(std::make_unique<QuadtreeNode>(context, this))
 {
+    RenderStateBlock primitiveRenderState;
+    PipelineDescriptor pipeDesc;
+    pipeDesc._stateHash = primitiveRenderState.getHash();
+    pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+    _bbPipeline = _context.newPipeline(pipeDesc);
 }
 
 Quadtree::~Quadtree()
@@ -26,13 +31,6 @@ Quadtree::~Quadtree()
 void Quadtree::toggleBoundingBoxes() {
     _drawBBoxes = !_drawBBoxes;
     if (_drawBBoxes) {
-        if (!_bbPipeline) {
-            RenderStateBlock primitiveRenderState;
-            PipelineDescriptor pipeDesc;
-            pipeDesc._stateHash = primitiveRenderState.getHash();
-            pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-            _bbPipeline = _context.newPipeline(pipeDesc);
-        }
         _bbPrimitive = _context.newIMP();
         _bbPrimitive->name("QuadtreeBoundingBox");
         _bbPrimitive->pipeline(*_bbPipeline);
@@ -40,7 +38,7 @@ void Quadtree::toggleBoundingBoxes() {
         _context.destroyIMP(_bbPrimitive);
     }
 
-    _root->toggleBoundingBoxes(_bbPipeline);
+    _root->toggleBoundingBoxes();
 }
 
 void Quadtree::drawBBox(RenderPackage& packageOut) {

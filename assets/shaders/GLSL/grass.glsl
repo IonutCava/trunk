@@ -46,7 +46,7 @@ void main()
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * /*rotate_vertex_position(dvd_Normal, data.orientationQuad)*/ -dvd_Normal);
+    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * -dvd_Normal);//rotate_vertex_position(-dvd_Normal, data.orientationQuad));
 
 #if !defined(SHADOW_PASS)
     setClipPlanes(VAR._vertexW);

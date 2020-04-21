@@ -99,7 +99,8 @@ class Vegetation : public SceneNode {
     ~Vegetation();
 
     void buildDrawCommands(SceneGraphNode& sgn,
-                           RenderStagePass renderStagePass,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
                            RenderPackage& pkgInOut) final;
 
     void getStats(U32& maxGrassInstances, U32& maxTreeInstances) const;
@@ -112,16 +113,14 @@ class Vegetation : public SceneNode {
   protected:
     static void createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_ptr& terrain, const VegetationDetails& vegDetails);
 
-    void postLoad(SceneGraphNode& sgn)  final;
-
     void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,
                      SceneState& sceneState) final;
 
-    bool onRefreshNodeData(SceneGraphNode& sgn,
-                           RenderStagePass renderStagePass,
-                           const Camera& camera,
-                           bool quick,
+    void onRefreshNodeData(const SceneGraphNode& sgn,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
+                           bool refreshData,
                            GFX::CommandBuffer& bufferInOut) final;
    private:
     void uploadVegetationData(SceneGraphNode& sgn);
@@ -153,8 +152,8 @@ class Vegetation : public SceneNode {
     bool _shadowMapped = true;
     U32 _instanceCountGrass = 0u;
     U32 _instanceCountTrees = 0u;
-    F32 _grassDistance = 100.f;
-    F32 _treeDistance = 200.f;
+    F32 _grassDistance = -1.0f;
+    F32 _treeDistance = -1.0f;
 
     Task* _buildTask = nullptr;
 

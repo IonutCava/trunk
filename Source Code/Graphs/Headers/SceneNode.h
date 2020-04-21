@@ -106,31 +106,24 @@ class SceneNode : public CachedResource {
     explicit SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, SceneNodeType type, U32 requiredComponentMask);
     virtual ~SceneNode();
 
-    /// Perform any pre-draw operations PRE-command build
-    /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
-    virtual bool preRender(SceneGraphNode& sgn,
-                            const Camera& camera,
-                            RenderStagePass renderStagePass,
-                            bool refreshData,
-                            bool& rebuildCommandsOut);
-
     /// Perform any pre-draw operations POST-command build
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
-    virtual bool onRender(SceneGraphNode& sgn,
-                          RenderingComponent& rComp,
-                          const Camera& camera,
-                          RenderStagePass renderStagePass,
-                          bool refreshData);
-
-    virtual bool onRefreshNodeData(SceneGraphNode& sgn,
-                                   RenderStagePass renderStagePass,
-                                   const Camera& camera,
-                                   bool quick,
-                                   GFX::CommandBuffer& bufferInOut);
+    virtual bool prepareRender(SceneGraphNode& sgn,
+                               RenderingComponent& rComp,
+                               const RenderStagePass& renderStagePass,
+                               const Camera& camera,
+                               bool refreshData);
 
     virtual void buildDrawCommands(SceneGraphNode& sgn,
-                                   RenderStagePass renderStage,
+                                   const RenderStagePass& renderStage,
+                                   const Camera& crtCamera,
                                    RenderPackage& pkgInOut);
+
+    virtual void onRefreshNodeData(const SceneGraphNode& sgn,
+                                   const RenderStagePass& renderStagePass,
+                                   const Camera& crtCamera,
+                                   bool refreshData,
+                                   GFX::CommandBuffer& bufferInOut);
     /*//Rendering/Processing*/
 
     bool unload() override;
@@ -173,6 +166,7 @@ class SceneNode : public CachedResource {
     virtual const char* getResourceTypeName() const noexcept override { return "SceneNode"; }
 
     PROPERTY_RW(SceneNodeType, type, SceneNodeType::COUNT);
+    PROPERTY_RW(bool, rebuildDrawCommands, false);
 
    protected:
      virtual void editorFieldChanged(const char* field);
