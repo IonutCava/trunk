@@ -679,7 +679,7 @@ void Vegetation::onRefreshNodeData(const SceneGraphNode& sgn, const RenderStageP
         cullConstants._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(crtCamera.getViewMatrix(), crtCamera.getViewMatrix()));
         cullConstants._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(crtCamera.getViewMatrix(), crtCamera.getProjectionMatrix()));
         cullConstants._constants.set(_ID("cameraPosition"), GFX::PushConstantType::VEC3, crtCamera.getEye());
-        
+        cullConstants._constants.set(_ID("dvd_nearPlaneDistance"), GFX::PushConstantType::FLOAT, crtCamera.getZPlanes().x);
         GFX::DispatchComputeCommand computeCmd = {};
 
         if (_instanceCountGrass > 0) {
