@@ -4,8 +4,8 @@
 
 namespace Divide {
 
-Vehicle::Vehicle(SceneGraphNode* node)
-    : Unit(Unit::UnitType::UNIT_TYPE_VEHICLE),
+Vehicle::Vehicle(SceneGraphNode* node, FrameListenerManager& parent, U32 callOrder)
+    : Unit(UnitType::UNIT_TYPE_VEHICLE, parent, callOrder),
       _vehicleTypeMask(0)
 {
     _playerControlled = false;

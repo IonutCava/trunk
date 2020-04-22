@@ -36,18 +36,19 @@
 /// Add this include here so that any FrameListner derived class only needs to
 /// include the manager
 
-#include "Core/Headers/Singleton.h"
 #include "Rendering/Headers/FrameListener.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
-class FrameListenerManager : public Singleton<FrameListenerManager> {
-    friend class Singleton<FrameListenerManager>;
+class FrameListenerManager {
 
     using EventTimeMap = eastl::fixed_vector<U64, 16, false>;
 
   public:
+    FrameListenerManager()  = default;
+    ~FrameListenerManager() = default;
+
     void registerFrameListener(FrameListener* listener, U32 callOrder);
     void removeFrameListener(FrameListener* const listener);
     void idle();
@@ -59,9 +60,8 @@ class FrameListenerManager : public Singleton<FrameListenerManager> {
 
     /// Calls createEvent and frameEvent
     bool createAndProcessEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
+
   private:
-    FrameListenerManager() : Singleton() {}
-    ~FrameListenerManager() = default;
 
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
@@ -83,15 +83,6 @@ class FrameListenerManager : public Singleton<FrameListenerManager> {
     std::array<EventTimeMap, to_base(FrameEventType::FRAME_EVENT_ENDED) + 1> _eventTimers;
 
 };
-
-inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder) {
-    FrameListenerManager::instance().registerFrameListener(listener,
-                                                              callOrder);
-}
-
-inline void UNREGISTER_FRAME_LISTENER(FrameListener* const listener) {
-    FrameListenerManager::instance().removeFrameListener(listener);
-}
 
 };  // namespace Divide
 

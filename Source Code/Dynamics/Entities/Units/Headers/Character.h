@@ -88,7 +88,7 @@ class Character : public Unit {
         COUNT
     };
 
-    Character(CharacterType type);
+    explicit Character(CharacterType type, FrameListenerManager& parent, U32 callOrder);
     virtual ~Character();
 
     /// Set unit type

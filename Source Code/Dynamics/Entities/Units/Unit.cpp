@@ -7,9 +7,24 @@
 #include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
+namespace TypeUtil {
+    const char* UnitTypeToString(UnitType unitType) noexcept {
+        return Names::unitType[to_base(unitType)];
+    }
 
-Unit::Unit(UnitType type)
-    : FrameListener(),
+    UnitType StringToUnitType(const stringImpl& name) {
+        for (U8 i = 0; i < to_U8(UnitType::COUNT); ++i) {
+            if (strcmp(name.c_str(), Names::unitType[i]) == 0) {
+                return static_cast<UnitType>(i);
+            }
+        }
+
+        return UnitType::COUNT;
+    }
+};
+
+Unit::Unit(UnitType type, FrameListenerManager& parent, U32 callOrder)
+    : FrameListener(TypeUtil::UnitTypeToString(type), parent, callOrder),
       _node(nullptr),
       _type(type),
       _moveSpeed(Metric::Base(1.0f)),
@@ -17,12 +32,10 @@ Unit::Unit(UnitType type)
       _moveTolerance(0.1f),
       _prevTime(0)
 {
-    REGISTER_FRAME_LISTENER(this, 5);
 }
 
 Unit::~Unit()
 { 
-    UNREGISTER_FRAME_LISTENER(this);
 }
 
 void Unit::setParentNode(SceneGraphNode* node) {

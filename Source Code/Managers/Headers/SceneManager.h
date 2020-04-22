@@ -52,6 +52,11 @@ namespace Attorney {
     class SceneManagerRenderPass;
     class SceneManagerCameraAccessor;
 };
+namespace AI {
+    namespace Navigation {
+        class DivideRecats;
+    };
+};
 
 class Editor;
 class ScenePool;
@@ -154,6 +159,8 @@ public:
 
     bool saveActiveScene(bool toCache, bool deferred, DELEGATE<void, const char*> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
 
+    AI::Navigation::DivideRecast* recast() const noexcept { return _recast.get(); }
+
 public:  /// Input
   /// Key pressed: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent& key) override;
@@ -250,6 +257,7 @@ private:
     bool _playerQueueDirty = false;
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerRemoveQueue;
+    std::unique_ptr<AI::Navigation::DivideRecast> _recast = nullptr;
 
     vectorEASTL<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
 

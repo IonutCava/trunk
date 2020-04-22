@@ -62,6 +62,7 @@ struct FrameEvent {
     FrameEventType _type;
 };
 
+class FrameListenerManager;
 /// FrameListener class.
 /// Has 3 events, associated with the start of rendering a frame,
 /// the end of rendering and the end of buffer swapping after frames
@@ -69,18 +70,8 @@ struct FrameEvent {
 class FrameListener : public GUIDWrapper {
    public:
     /// Either give it a name
-    FrameListener(const Str64& name)
-        : GUIDWrapper(),
-          _callOrder(0)
-    {
-        _listenerName = name;
-    }
-
-    /// Or the frame listenr manager will assing it an ID
-    FrameListener()
-        : FrameListener("")
-    {
-    }
+    explicit FrameListener(const Str64& name, FrameListenerManager& parent, U32 callOrder);
+    virtual ~FrameListener();
 
     inline const Str64& getListenerName() const noexcept {
         return _listenerName;
@@ -122,6 +113,7 @@ class FrameListener : public GUIDWrapper {
     virtual bool frameEnded(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
 
    private:
+    FrameListenerManager& _mgr;
     /// not _name so that it doesn't conflict with Resource base class
     Str64 _listenerName;
     /// if multiple frame listeners are handling the same event, this call order

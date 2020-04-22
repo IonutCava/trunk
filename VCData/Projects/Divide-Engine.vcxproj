@@ -426,6 +426,7 @@
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\SystemManager.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\Timer.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\FrameListener.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Core\Headers\Application.h" />

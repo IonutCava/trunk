@@ -44,6 +44,26 @@ namespace Attorney {
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
+/// Currently supported unit types
+enum class UnitType : U8 {
+    /// "Living beings"
+    UNIT_TYPE_CHARACTER,
+    /// e.g. Cars, planes, ships etc
+    UNIT_TYPE_VEHICLE,
+    /// add more types above this
+    COUNT
+};
+namespace Names {
+    static const char* unitType[] = {
+          "CHARACTER", "VEHICLE", "UNKOWN"
+    };
+};
+
+namespace TypeUtil {
+    const char* UnitTypeToString(UnitType unitType) noexcept;
+    UnitType StringToUnitType(const stringImpl& name);
+};
+
 /// Unit interface
 class Unit : public FrameListener {
    public:
@@ -51,17 +71,8 @@ class Unit : public FrameListener {
     friend class Attorney::UnitComponent;
 
    public:
-    /// Currently supported unit types
-    enum class UnitType : U8 {
-        /// "Living beings"
-        UNIT_TYPE_CHARACTER,
-        /// e.g. Cars, planes, ships etc
-        UNIT_TYPE_VEHICLE,
-        /// add more types above this
-        COUNT
-    };
 
-    Unit(UnitType type);
+    explicit Unit(UnitType type, FrameListenerManager& parent, U32 callOrder);
     virtual ~Unit();
 
     /// moveTo makes the unit follow a path from it's current position to the
@@ -103,10 +114,6 @@ class Unit : public FrameListener {
     }
     /// Get the units current movement tolerance
     inline F32 getMovementTolerance() const { return _moveTolerance; }
-    /// Set unit type
-    inline void setUnitType(UnitType type) { _type = type; }
-    /// Get unit type
-    inline UnitType getUnitType() const { return _type; }
     /// Get bound node
     inline SceneGraphNode* getBoundNode() const {
         return _node;
@@ -117,12 +124,12 @@ class Unit : public FrameListener {
     virtual void setAttribute(U32 attributeID, I32 initialValue);
     virtual I32 getAttribute(U32 attributeID) const;
 
+    PROPERTY_RW(UnitType, type, UnitType::COUNT);
+
    protected:
     virtual void setParentNode(SceneGraphNode* node);
 
    protected:
-    /// Unit type
-    UnitType _type;
     /// Movement speed (meters per second)
     F32 _moveSpeed;
     /// Acceleration (meters per second squared

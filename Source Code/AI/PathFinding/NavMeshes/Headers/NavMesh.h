@@ -99,6 +99,7 @@ struct NavMeshTileHeader {
 /// generated.
 class NavMeshDebugDraw;
 class DivideDtCrowd;
+class DivideRecast;
 
 namespace Attorney {
     class NavigationMeshCrowd;
@@ -154,7 +155,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
                                    const vec3<F32>& extents, vec3<F32>& result,
                                    U8 maxIters = 15) const;
 
-    NavigationMesh(PlatformContext& context);
+    NavigationMesh(PlatformContext& context, DivideRecast& recastInterface);
     ~NavigationMesh();
 
    private:
@@ -228,6 +229,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     NavMeshDebugDraw* _debugDrawInterface;
 
     Task* _buildTask = nullptr;
+    DivideRecast& _recastInterface;
 };
 
 namespace Attorney {

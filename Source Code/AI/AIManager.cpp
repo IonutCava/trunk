@@ -136,8 +136,7 @@ void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
     it->second->removeTeamMember(entity);
 }
 
-bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius,
-                           Navigation::NavigationMesh* const navMesh) {
+bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh) {
     {
         UniqueLock<SharedMutex> w_lock(_navMeshMutex);
         NavMeshMap::iterator it = _navMeshes.find(radius);

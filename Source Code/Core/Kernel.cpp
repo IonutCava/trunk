@@ -46,6 +46,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
       _renderPassManager(nullptr),
+      _frameListenerMgr(),
       _platformContext(PlatformContext(parentApp, *this)),
       _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
       _frameTimer(Time::ADD_TIMER("Total Frame Timer")),
@@ -152,7 +153,7 @@ void Kernel::idle(bool fast) {
         Console::printAll();
         g_printTimer = g_printTimerBase;
     }
-    FrameListenerManager::instance().idle();
+    frameListenerMgr().idle();
 
     constexpr ParamHandler::HashType paramName = _ID_32("freezeLoopTime");
     bool freezeLoopTime = ParamHandler::instance().getParam(paramName, false);
@@ -182,14 +183,13 @@ void Kernel::onLoop() {
         // Update time at every render loop
         _timingData.update(Time::ElapsedMicroseconds());
         FrameEvent evt = {};
-        FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
         // Restore GPU to default state: clear buffers and set default render state
         _platformContext.beginFrame();
         {
             Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
-            _timingData.keepAlive(frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt));
+            _timingData.keepAlive(frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt));
 
             U64 deltaTimeUSApp = _timingData.currentTimeDeltaUS();
             U64 deltaTimeUSReal = _timingData.timeDeltaUS();
@@ -203,13 +203,13 @@ void Kernel::onLoop() {
             _timingData.keepAlive(_timingData.keepAlive() && mainLoopScene(evt, deltaTimeUS, deltaTimeUSReal, deltaTimeUSApp));
 
             // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-            _timingData.keepAlive(_timingData.keepAlive() && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt));
+            _timingData.keepAlive(_timingData.keepAlive() && frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt));
         }
         _platformContext.endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
 
-        _timingData.keepAlive(_timingData.keepAlive() && frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_ENDED, evt));
+        _timingData.keepAlive(_timingData.keepAlive() && frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_ENDED, evt));
 
         _timingData.keepAlive(_timingData.keepAlive() && !_platformContext.app().ShutdownRequested());
     
@@ -474,10 +474,9 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     Time::ScopedTimer time(_flushToScreenTimer);
 
-    FrameListenerManager& frameMgr = FrameListenerManager::instance();
     {
         Time::ScopedTimer time1(_preRenderTimer);
-        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_START, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_START, evt)) {
             return false;
         }
 
@@ -486,7 +485,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             return false;
         }
 
-        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_END, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_END, evt)) {
             return false;
         }
     }
@@ -511,7 +510,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     renderParams._sceneRenderState = &_sceneManager->getActiveScene().renderState();
 
     for (U8 i = 0; i < playerCount; ++i) {
-        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
             return false;
         }
 
@@ -525,18 +524,18 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             _renderPassManager->render(renderParams);
         }
 
-        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
             return false;
         }
     }
 
     {
         Time::ScopedTimer time4(_postRenderTimer);
-        if(!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_START, evt)) {
+        if(!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_START, evt)) {
             return false;
         }
 
-        if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_END, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_END, evt)) {
             return false;
         }
     }

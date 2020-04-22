@@ -54,8 +54,8 @@ class Vehicle : public Unit {
         COUNT
     };
 
-    Vehicle(SceneGraphNode* node);
-    ~Vehicle();
+    explicit Vehicle(SceneGraphNode* node, FrameListenerManager& parent, U32 callOrder);
+    virtual ~Vehicle();
 
     /// A vehicle can be of multiple types at once
     void setVehicleTypeMask(U32 mask);

@@ -107,6 +107,7 @@ std::array<Input::MouseButton, 5> Editor::g_oisButtons = {
 
 Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme)
     : PlatformContextComponent(context),
+      FrameListener("Editor", context.kernel().frameListenerMgr(), 9999),
       _currentTheme(theme),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
@@ -117,8 +118,6 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme)
 
     _undoManager = std::make_unique<UndoManager>(25);
     g_windowManager = &context.app().windowManager();
-    REGISTER_FRAME_LISTENER(this, 99999);
-
     _memoryEditorData = std::make_pair(nullptr, 0);
 }
 
@@ -128,8 +127,6 @@ Editor::~Editor()
     for (DockedWindow* window : _dockedWindows) {
         MemoryManager::SAFE_DELETE(window);
     }
-
-    UNREGISTER_FRAME_LISTENER(this);
 
     g_windowManager = nullptr;
 }

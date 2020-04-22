@@ -8,8 +8,9 @@
 
 namespace Divide {
 
-Character::Character(CharacterType type)
-    : Unit(Unit::UnitType::UNIT_TYPE_CHARACTER), _type(type)
+Character::Character(CharacterType type, FrameListenerManager& parent, U32 callOrder)
+    : Unit(UnitType::UNIT_TYPE_CHARACTER, parent, callOrder),
+      _type(type)
 {
     _positionDirty = false;
     _velocityDirty = false;

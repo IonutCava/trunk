@@ -161,7 +161,8 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
-    SceneGraph& sceneGraph = _context.gui().activeScene()->sceneGraph();
+    SceneManager* sMgr = _context.kernel().sceneManager();
+    SceneGraph& sceneGraph = sMgr->getActiveScene().sceneGraph();
     if (!args.empty()) {
         SceneGraphNode* sgn = sceneGraph.findNode(args.c_str());
         if (!sgn) {
@@ -174,7 +175,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     AI::Navigation::NavigationMesh* temp = aiManager.getNavMesh(AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
     // Create a new NavMesh if we don't currently have one
     if (!temp) {
-        temp = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
+        temp = MemoryManager_NEW AI::Navigation::NavigationMesh(_context, *sMgr->recast());
     }
     // Set it's file name
     temp->setFileName(_context.gui().activeScene()->resourceName());

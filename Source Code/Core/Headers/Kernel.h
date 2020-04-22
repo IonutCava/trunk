@@ -36,6 +36,7 @@
 #include "EngineTaskPool.h"
 #include "PlatformContext.h"
 #include "Core/Headers/Application.h"
+#include "Managers/Headers/FrameListenerManager.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 namespace Divide {
@@ -52,7 +53,6 @@ class DebugInterface;
 class PlatformContext;
 class SceneRenderState;
 class RenderPassManager;
-class FrameListenerManager;
 
 namespace Input {
     class InputInterface;
@@ -183,16 +183,17 @@ class Kernel : public Input::InputAggregatorInterface,
 
     bool onUTF8(const Input::UTF8Event& arg) override;
 
-    PROPERTY_R(PlatformContext, platformContext);
-    inline PlatformContext& platformContext() noexcept { return _platformContext; }
-
     PROPERTY_R(LoopTimingData, timingData);
     POINTER_R(ResourceCache, resourceCache, nullptr);
     POINTER_R(SceneManager, sceneManager, nullptr)
     POINTER_R(RenderPassManager, renderPassManager, nullptr);
 
     PROPERTY_R_IW(size_t, totalThreadCount, 0);
+    PROPERTY_R(FrameListenerManager, frameListenerMgr);
+    inline FrameListenerManager& frameListenerMgr() noexcept { return _frameListenerMgr; }
 
+    PROPERTY_R(PlatformContext, platformContext);
+    inline PlatformContext& platformContext() noexcept { return _platformContext; }
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();

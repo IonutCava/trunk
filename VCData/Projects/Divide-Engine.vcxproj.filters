@@ -582,6 +582,9 @@
     <ClCompile Include="..\..\Source Code\ECS\Components\ScriptComponent.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\FrameListener.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\Camera.h">

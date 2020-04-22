@@ -7,29 +7,24 @@
 
 namespace Divide {
 
-GameScript::GameScript(const stringImpl& sourceCode)
+GameScript::GameScript(const stringImpl& sourceCode, FrameListenerManager& parent, U32 callOrder)
     : Script(sourceCode),
-      FrameListener()
+      FrameListener("Script", parent, callOrder)
 {
-    REGISTER_FRAME_LISTENER(this, 1);
-
     _script->add(create_chaiscript_bindings());
     addGameInstance();
 }
 
-GameScript::GameScript(const stringImpl& scriptPath, FileType fileType)
+GameScript::GameScript(const stringImpl& scriptPath, FileType fileType, FrameListenerManager& parent, U32 callOrder)
     : Script(scriptPath, fileType),
-      FrameListener()
+      FrameListener("Script", parent, callOrder)
 {
-    REGISTER_FRAME_LISTENER(this, 1);
-
     _script->add(create_chaiscript_bindings());
     addGameInstance();
 }
 
 GameScript::~GameScript()
 {
-    UNREGISTER_FRAME_LISTENER(this);
 }
 
 void GameScript::addGameInstance() {

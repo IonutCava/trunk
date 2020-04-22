@@ -52,7 +52,7 @@ bool SceneManager::onShutdown() {
 }
 
 SceneManager::SceneManager(Kernel& parentKernel)
-    : FrameListener(),
+    : FrameListener("SceneManager", parentKernel.frameListenerMgr(), 2),
       Input::InputAggregatorInterface(),
       KernelComponent(parentKernel)
 {
@@ -73,13 +73,13 @@ const Scene& SceneManager::getActiveScene() const {
 
 void SceneManager::idle() {
     if (_sceneSwitchTarget._isSet) {
-        _parent.platformContext().gfx().getRenderer().postFX().setFadeOut(UColour3(0), 1000.0, 0.0);
+        parent().platformContext().gfx().getRenderer().postFX().setFadeOut(UColour3(0), 1000.0, 0.0);
         switchScene(_sceneSwitchTarget._targetSceneName,
                     _sceneSwitchTarget._unloadPreviousScene,
                     _sceneSwitchTarget._targetViewRect,
                     _sceneSwitchTarget._loadInSeparateThread);
         WaitForAllTasks(getActiveScene().context(), true, true, false);
-        _parent.platformContext().gfx().getRenderer().postFX().setFadeIn(2750.0);
+        parent().platformContext().gfx().getRenderer().postFX().setFadeIn(2750.0);
     } else {
         if (_playerQueueDirty) {
             while (!_playerAddQueue.empty()) {
@@ -103,9 +103,9 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache* cache) 
     if (_platformContext == nullptr) {
         _platformContext = &platformContext;
         _resourceCache = cache;
-        REGISTER_FRAME_LISTENER(this, 1);
+        platformContext.kernel().frameListenerMgr().registerFrameListener(this, 1);
 
-        AI::Navigation::DivideRecast::instance();
+        _recast = std::make_unique<AI::Navigation::DivideRecast>();
 
         _scenePool = MemoryManager_NEW ScenePool(*this);
 
@@ -129,13 +129,13 @@ void SceneManager::destroy() {
     if (_init) {
         Vegetation::destroyStaticData();
         MemoryManager::SAFE_DELETE(_sceneData);
-        UNREGISTER_FRAME_LISTENER(this);
+        _platformContext->kernel().frameListenerMgr().removeFrameListener(this);
         Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
         // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
         Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
         MemoryManager::DELETE(_scenePool);
         MemoryManager::DELETE(_renderPassCuller);
-        AI::Navigation::DivideRecast::instance().destroy();
+        _recast.reset();
         _platformContext = nullptr;
         _init = false;
     }
@@ -328,7 +328,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
     }
 
     if (i < Config::MAX_LOCAL_PLAYER_COUNT) {
-        Player_ptr player = std::make_shared<Player>(to_U8(i));
+        Player_ptr player = std::make_shared<Player>(to_U8(i), parent().frameListenerMgr(), 666 + i);
         player->getCamera().fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
         player->getCamera().setFixedYawAxis(true);
         _players[i] = playerNode->get<UnitComponent>();

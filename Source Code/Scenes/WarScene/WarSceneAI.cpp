@@ -365,7 +365,7 @@ bool WarScene::addUnits() {
             // GOAP
             brain->registerGOAPPackage(goapPackages[to_U32(type)]);
             aiSoldier->setAIProcessor(brain);
-            std::shared_ptr<NPC> soldier = std::make_shared<NPC>(aiSoldier);
+            std::shared_ptr<NPC> soldier = std::make_shared<NPC>(aiSoldier, context().kernel().frameListenerMgr(), 1988);
             soldier->setAttribute(to_base(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_base(AI::UnitAttributes::DAMAGE), damage);
             soldier->setAttribute(to_base(AI::UnitAttributes::ALIVE_FLAG), 1);
@@ -444,7 +444,7 @@ void WarScene::startSimulation(I64 btnGUID) {
             previousMesh = true;
             _aiManager->destroyNavMesh(aiEntity->getAgentRadiusCategory());
         }
-        navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
+        navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh(_context, *_parent.recast());
         navMesh->setFileName(resourceName());
 
         if (!navMesh->load(_sceneGraph->getRoot())) {

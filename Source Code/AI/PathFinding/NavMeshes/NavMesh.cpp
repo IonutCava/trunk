@@ -23,10 +23,11 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 
-NavigationMesh::NavigationMesh(PlatformContext& context)
+NavigationMesh::NavigationMesh(PlatformContext& context, DivideRecast& recastInterface)
     : GUIDWrapper(),
       PlatformContextComponent(context),
-      _buildJobGUID(-1)
+      _buildJobGUID(-1),
+      _recastInterface(recastInterface)
 {
     ParamHandler& par = ParamHandler::instance();
     Str256 path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
@@ -781,13 +782,11 @@ bool NavigationMesh::getClosestPosition(const vec3<F32>& destination,
                                         F32 delta,
                                         vec3<F32>& result) const {
     dtPolyRef resultPoly;
-    return Navigation::DivideRecast::instance().findNearestPointOnNavmesh(
-        *this, destination, extents, delta, result, resultPoly);
+    return _recastInterface.findNearestPointOnNavmesh(*this, destination, extents, delta, result, resultPoly);
 }
 
 bool NavigationMesh::getRandomPosition(vec3<F32>& result) const {
-    return Navigation::DivideRecast::instance().getRandomNavMeshPoint(
-        *this, result);
+    return _recastInterface.getRandomNavMeshPoint(*this, result);
 }
 
 bool NavigationMesh::getRandomPositionInCircle(const vec3<F32>& center,
@@ -795,8 +794,7 @@ bool NavigationMesh::getRandomPositionInCircle(const vec3<F32>& center,
                                                const vec3<F32>& extents,
                                                vec3<F32>& result,
                                                U8 maxIters) const {
-    return Navigation::DivideRecast::instance().getRandomPointAroundCircle(
-        *this, center, radius, extents, result, maxIters);
+    return _recastInterface.getRandomPointAroundCircle(*this, center, radius, extents, result, maxIters);
 }
 };  // namespace Navigation
 };  // namespace AI

@@ -29,7 +29,7 @@ DivideRecast::DivideRecast()
     }
 }
 
-void DivideRecast::destroy()
+DivideRecast::~DivideRecast()
 {
     MemoryManager::DELETE(_filter);
 }

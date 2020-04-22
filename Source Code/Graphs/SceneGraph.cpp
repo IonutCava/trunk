@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/SceneGraph.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -20,15 +21,13 @@ namespace {
 };
 
 SceneGraph::SceneGraph(Scene& parentScene)
-    : FrameListener(),
+    : FrameListener("SceneGraph", parentScene.context().kernel().frameListenerMgr(), 1),
       SceneComponent(parentScene),
      _loadComplete(false),
      _octreeChanged(false),
      _nodeListChanged(false)
 {
     _ecsManager = std::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
-
-    REGISTER_FRAME_LISTENER(this, 1);
 
     SceneGraphNodeDescriptor rootDescriptor = {};
     rootDescriptor._name = "ROOT";
@@ -55,7 +54,6 @@ SceneGraph::~SceneGraph()
 { 
     _octree.reset();
     _allNodes.clear();
-    UNREGISTER_FRAME_LISTENER(this);
     Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
     unload();

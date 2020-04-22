@@ -76,9 +76,11 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 
-class DivideRecast : public Singleton<DivideRecast> {
-    friend class Singleton<DivideRecast>;
+class DivideRecast {
   public:
+      DivideRecast();
+      ~DivideRecast();
+
     /**
      * Find a path beween start point and end point and, if possible, generates a
     *list of lines in a path.
@@ -148,12 +150,6 @@ class DivideRecast : public Singleton<DivideRecast> {
                                   const vec3<F32>& position,
                                   const vec3<F32>& extents, vec3<F32>& resultPt,
                                   dtPolyRef& resultPoly);
-
-    void destroy();
-
-  protected:
-    DivideRecast();
-    ~DivideRecast() = default;
 
   protected:
     /// Stores all created paths

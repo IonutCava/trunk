@@ -8,8 +8,8 @@
 
 namespace Divide {
 
-Player::Player(U8 index)
-    : Character(Character::CharacterType::CHARACTER_TYPE_PLAYER),
+Player::Player(U8 index, FrameListenerManager& parent, U32 callOrder)
+    : Character(Character::CharacterType::CHARACTER_TYPE_PLAYER, parent, callOrder),
       _index(index)
 {
      _lockedControls = false;

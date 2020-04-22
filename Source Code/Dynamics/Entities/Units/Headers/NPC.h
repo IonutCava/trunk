@@ -43,12 +43,12 @@ class AIEntity;
 
 /// NPC base class. Every character in the game is an NPC by default except the
 /// Player
-class NPC : public Character {
+class NPC final : public Character {
    public:
     /// NPCs don't need AI by default
-    NPC(AI::AIEntity* const aiEntity = nullptr);
+    explicit NPC(AI::AIEntity* const aiEntity, FrameListenerManager& parent, U32 callOrder);
     ~NPC();
-    void update(const U64 deltaTimeUS);
+    void update(const U64 deltaTimeUS) final;
     
     AI::AIEntity* getAIEntity() const;
 
