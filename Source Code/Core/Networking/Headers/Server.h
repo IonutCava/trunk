@@ -33,23 +33,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
-#include "Core/Headers/Singleton.h"
 #include "Networking/Headers/tcp_session_tpl.h"
 
 //----------------------------------------------------------------------
 namespace Divide {
 
-class Server : public Singleton<Server> {
-    friend class Singleton<Server>;
+class Server {
   public:
+    Server();
+    ~Server();
+
     void init(U16 port,
               const stringImpl& broadcast_endpoint_address,
               bool debugOutput);
+
     void close();
 
   private:
-    Server();
-    ~Server();
     void handle_accept(tcp_session_ptr session,
                        const boost::system::error_code& ec);
 
@@ -58,7 +58,7 @@ class Server : public Singleton<Server> {
     boost::scoped_ptr<std::thread> thread_;
     boost::asio::ip::tcp::acceptor* acceptor_;
     channel _channel;
-    bool _debugOutput;
+    bool _debugOutput = false;
 
 };
 

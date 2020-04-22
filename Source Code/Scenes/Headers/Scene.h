@@ -277,7 +277,6 @@ class Scene : public Resource, public PlatformContextComponent {
    protected:
        /// Global info
        SceneManager& _parent;
-       ParamHandler& _paramHandler;
 
        ResourceCache* _resCache = nullptr;
        SceneGraph*    _sceneGraph = nullptr;

@@ -150,7 +150,7 @@ Scene* SceneManager::load(const Str128& sceneName) {
         return nullptr;
     }
 
-    ParamHandler::instance().setParam(_ID_32("currentScene"), stringImpl(sceneName.c_str()));
+    _platformContext->paramHandler().setParam(_ID_32("currentScene"), stringImpl(sceneName.c_str()));
 
     const bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
 
@@ -200,7 +200,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     ShadowMap::resetShadowMaps();
 
     _platformContext->gui().onChangeScene(scene);
-    ParamHandler::instance().setParam(_ID_32("activeScene"), scene->resourceName());
+    _platformContext->paramHandler().setParam(_ID_32("activeScene"), scene->resourceName());
 }
 
 bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, bool threaded) {
@@ -488,7 +488,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
     // Shadow splits are only visible in debug builds
-    _sceneData->enableDebugRender(ParamHandler::instance().getParam<bool>(_ID_32("rendering.debug.displayShadowDebugInfo")));
+    _sceneData->enableDebugRender(_platformContext->paramHandler().getParam<bool>(_ID_32("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));

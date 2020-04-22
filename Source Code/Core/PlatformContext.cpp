@@ -7,12 +7,14 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
 #include "Core/Headers/Console.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/Localization.h"
 
 #include "GUI/Headers/GUI.h"
 #include "Editor/Headers/Editor.h"
 #include "Physics/Headers/PXDevice.h"
 #include "Core/Networking/Headers/LocalClient.h"
+#include "Core/Networking/Headers/Server.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -31,8 +33,10 @@ PlatformContext::PlatformContext(Application& app, Kernel& kernel)
   ,  _entryData(MemoryManager_NEW XMLEntryData())      // Initial XML data
   ,  _config(MemoryManager_NEW Configuration())        // XML based configuration
   ,  _client(MemoryManager_NEW LocalClient(_kernel))   // Network client
+  ,  _server(MemoryManager_NEW Server())               // Network server
   ,  _debug(MemoryManager_NEW DebugInterface(_kernel)) // Debug Interface
   ,  _inputHandler(MemoryManager_NEW Input::InputHandler(_kernel, _app))
+  ,  _paramHandler(MemoryManager_NEW ParamHandler())
   ,  _editor(Config::Build::ENABLE_EDITOR ? MemoryManager_NEW Editor(*this) : nullptr)
 {
     for (U8 i = 0; i < to_U8(TaskPoolType::COUNT); ++i) {
@@ -55,9 +59,11 @@ void PlatformContext::terminate() {
     MemoryManager::DELETE(_entryData);
     MemoryManager::DELETE(_config);
     MemoryManager::DELETE(_client);
+    MemoryManager::DELETE(_server);
     MemoryManager::DELETE(_debug);
     MemoryManager::DELETE(_gui);
     MemoryManager::DELETE(_pfx);
+    MemoryManager::DELETE(_paramHandler);
 
     Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
 

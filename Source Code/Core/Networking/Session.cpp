@@ -32,41 +32,39 @@ void Session::handlePacket(WorldPacket& p) {
 }
 
 void Session::HandleGeometryListOpCode(WorldPacket& p) {
-    PatchData data;
-    p >> data.sceneName;
-    p >> data.size;
-    ASIO::LOG_PRINT(("Received [ CMSG_GEOMERTY_LIST ] with : " + to_stringImpl(data.size) + " models").c_str());
-    for (U32 i = 0; i < data.size; i++) {
+    PatchData dataIn;
+    p >> dataIn.sceneName;
+    p >> dataIn.size;
+    ASIO::LOG_PRINT(("Received [ CMSG_GEOMERTY_LIST ] with : " + to_stringImpl(dataIn.size) + " models").c_str());
+    for (U32 i = 0; i < dataIn.size; i++) {
         stringImpl name, modelname;
         p >> name;
         p >> modelname;
-        data.name.push_back(name);
-        data.modelName.push_back(modelname);
+        dataIn.name.push_back(name);
+        dataIn.modelName.push_back(modelname);
     }
-    bool updated = Patch::instance().compareData(data);
 
-    if (!updated) {
+    if (!Patch::compareData(dataIn)) {
         WorldPacket r(OPCodesEx::SMSG_GEOMETRY_APPEND);
 
-/*        vector<FileData> PatchData = Patch::instance().updateClient();
-        r << PatchData.size();
-        for (vector<FileData>::iterator _iter = std::begin(PatchData);
-             _iter != std::end(PatchData); _iter++) {
-            r << (*_iter).ItemName;
-            r << (*_iter).ModelName;
-            r << (*_iter).orientation.x;
-            r << (*_iter).orientation.y;
-            r << (*_iter).orientation.z;
-            r << (*_iter).position.x;
-            r << (*_iter).position.y;
-            r << (*_iter).position.z;
-            r << (*_iter).scale.x;
-            r << (*_iter).scale.y;
-            r << (*_iter).scale.z;
+        const auto& patchData = Patch::modelData();
+        r << patchData.size();
+        for (const FileData& dataOut : patchData) {
+            r << dataOut.ItemName;
+            r << dataOut.ModelName;
+            r << dataOut.Orientation.x;
+            r << dataOut.Orientation.y;
+            r << dataOut.Orientation.z;
+            r << dataOut.Position.x;
+            r << dataOut.Position.y;
+            r << dataOut.Position.z;
+            r << dataOut.Scale.x;
+            r << dataOut.Scale.y;
+            r << dataOut.Scale.z;
         }
-        ASIO::LOG_PRINT(("Sending [SMSG_GEOMETRY_APPEND] with : " + to_stringImpl(PatchData.size()) + " models to update").c_str());*/
+        ASIO::LOG_PRINT(("Sending [SMSG_GEOMETRY_APPEND] with : " + to_stringImpl(patchData.size()) + " models to update").c_str());
         sendPacket(r);
-        Patch::instance().reset();
+        Patch::clearModelData();
     }
 }
 

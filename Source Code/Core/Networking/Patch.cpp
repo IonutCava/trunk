@@ -6,39 +6,50 @@
 
 namespace Divide {
 
-void Patch::addGeometry(const FileData& data) { 
-    ModelData.push_back(data);
-}
+namespace {
+    vectorEASTL<FileData> s_ModelData;
+};
 
-bool Patch::compareData(const PatchData& data) {
-    bool updated = true;
-    /*XML::loadScene(data.sceneName);
-    for (vector<FileData>::iterator _iter = std::begin(ModelData);
-         _iter != std::end(ModelData); _iter++) {
-        for (U32 i = 0; i < data.size; i++) {
-            // for each item in the scene
-            if (data.name[i] ==  (*_iter).ItemName) {
-                // if the version differs
-                if ((*_iter).version != data.version[i])
-                {
-                    if ((*_iter).ModelName == data.name[i]) {
-                        // Don't update modelNames
-                        (*_iter).ModelName == "nullptr";
+namespace Patch {
+    void addGeometry(const FileData& data) {
+        s_ModelData.push_back(data);
+    }
+
+    bool compareData(const PatchData& data) {
+        bool updated = true;
+        /*XML::loadScene(data.sceneName);
+        for (vector<FileData>::iterator _iter = std::begin(ModelData);
+             _iter != std::end(ModelData); _iter++) {
+            for (U32 i = 0; i < data.size; i++) {
+                // for each item in the scene
+                if (data.name[i] ==  (*_iter).ItemName) {
+                    // if the version differs
+                    if ((*_iter).version != data.version[i])
+                    {
+                        if ((*_iter).ModelName == data.name[i]) {
+                            // Don't update modelNames
+                            (*_iter).ModelName == "nullptr";
+                        }
+
+                        updated = false;
+                        continue;
+                    } else {
+                        ModelData.erase(_iter);
                     }
-
-                    updated = false;
-                    continue;
-                } else {
-                    ModelData.erase(_iter);
                 }
             }
-        }
-    }*/
-    // After the 2 for's ModelData and VegetationData contain all the geometry
-    // that needs patching;
-    return updated;
-}
+        }*/
+        // After the 2 for's ModelData and VegetationData contain all the geometry
+        // that needs patching;
+        return updated;
+    }
+    const vectorEASTL<FileData>& modelData() noexcept {
+        return s_ModelData;
+    }
 
-const vectorEASTL<FileData>& Patch::updateClient() { return ModelData; }
+    void clearModelData() noexcept {
+        s_ModelData.reset_lose_memory();
+    }
+};
 
 };  // namespace Divide

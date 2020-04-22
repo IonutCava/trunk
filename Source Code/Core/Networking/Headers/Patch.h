@@ -38,26 +38,25 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct FileData {
-
+    Str32 ItemName = "";
+    Str32 ModelName = "";
+    vec3<F32> Orientation;
+    vec3<F32> Position;
+    vec3<F32> Scale;
 };
 
 struct PatchData {
+    vectorEASTL<stringImpl> name;
+    vectorEASTL<stringImpl> modelName;
     stringImpl sceneName = "";
     U32 size = 0u;
-    vectorEASTL<stringImpl> name, modelName;
 };
 
-class Patch : public Singleton<Patch> {
-    friend class Singleton<Patch>;
-public:
+namespace Patch {
     bool compareData(const PatchData& data);
     void addGeometry(const FileData& data);
-    const vectorEASTL<FileData>& updateClient();
-    void reset() { ModelData.clear(); };
-
-private:
-    vectorEASTL<FileData> ModelData;
-
+    const vectorEASTL<FileData>& modelData() noexcept;
+    void clearModelData() noexcept;
 };
 
 };  // namespace Divide

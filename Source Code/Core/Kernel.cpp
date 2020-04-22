@@ -156,7 +156,7 @@ void Kernel::idle(bool fast) {
     frameListenerMgr().idle();
 
     constexpr ParamHandler::HashType paramName = _ID_32("freezeLoopTime");
-    bool freezeLoopTime = ParamHandler::instance().getParam(paramName, false);
+    bool freezeLoopTime = _platformContext.paramHandler().getParam(paramName, false);
 
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         freezeLoopTime |= _platformContext.editor().simulationPauseRequested();
@@ -552,9 +552,9 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 void Kernel::warmup() {
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
 
-    ParamHandler::instance().setParam(_ID_32("freezeLoopTime"), true);
+    _platformContext.paramHandler().setParam(_ID_32("freezeLoopTime"), true);
     onLoop();
-    ParamHandler::instance().setParam(_ID_32("freezeLoopTime"), false);
+    _platformContext.paramHandler().setParam(_ID_32("freezeLoopTime"), false);
 
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
@@ -569,6 +569,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
+    // Don't log parameter requests
+    _platformContext.paramHandler().setDebugOutput(false);
     // Load info from XML files
     XMLEntryData& entryData = _platformContext.entryData();
     Configuration& config = _platformContext.config();
@@ -606,7 +608,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         is_error ? Console::errorfn(msg) : Console::printfn(msg);
     });
 
-    Server::instance().init(((Divide::U16)443), "127.0.0.1", true);
+    _platformContext.server().init(((Divide::U16)443), "127.0.0.1", true);
 
     if (!_platformContext.client().connect(entryData.serverAddress, 443)) {
         _platformContext.client().connect("127.0.0.1", 443);

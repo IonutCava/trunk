@@ -756,7 +756,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         }
     }
 
-    ParamHandler::instance().setParam<bool>(_ID_32("rendering.previewDebugViews"), false);
+    context().paramHandler().setParam<bool>(_ID_32("rendering.previewDebugViews"), false);
     {
         PipelineDescriptor pipelineDesc;
         pipelineDesc._stateHash = getDefaultStateBlock(true);

@@ -40,8 +40,8 @@
 namespace Divide {
 
 
-class ParamHandler : public Singleton<ParamHandler> {
-    friend class Singleton<ParamHandler>;
+class ParamHandler  {
+
 public:
     using HashType = U32;
 
@@ -56,6 +56,9 @@ public:
     using ParamFloatMap = hashMap<HashType, F32>;
 
   public:
+    ParamHandler() = default;
+    ~ParamHandler() = default;
+
     void setDebugOutput(bool logState) noexcept;
 
     template <typename T>

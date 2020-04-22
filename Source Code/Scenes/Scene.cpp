@@ -68,8 +68,7 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
       _pxScene(nullptr),
-      _sun(nullptr),
-      _paramHandler(ParamHandler::instance())
+      _sun(nullptr)
 {
     _sceneTimerUS = 0UL;
     _sceneState = MemoryManager_NEW SceneState(*this);
@@ -200,7 +199,7 @@ bool Scene::saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool
             msgCallback("Saving scene settings ...");
         }
 
-        ParamHandler& par = ParamHandler::instance();
+        ParamHandler& par = _context.paramHandler();
 
         ptree pt;
         pt.put("assets", "assets.xml");
@@ -269,7 +268,7 @@ bool Scene::loadXML(const Str128& name) {
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     Configuration& config = _context.config();
 
-    ParamHandler& par = ParamHandler::instance();
+    ParamHandler& par = _context.paramHandler();
 
     boost::property_tree::ptree pt;
 
@@ -788,9 +787,8 @@ U16 Scene::registerInputActions() {
     const auto turnUp = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);};
     const auto turnDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);};
     const auto stopTurnUpDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
-    const auto togglePauseState = [](InputParams param){
-        ParamHandler& par = ParamHandler::instance();
-        par.setParam(_ID_32("freezeLoopTime"), !par.getParam(_ID_32("freezeLoopTime"), false));
+    const auto togglePauseState = [this](InputParams param){
+        _context.paramHandler().setParam(_ID_32("freezeLoopTime"), !_context.paramHandler().getParam(_ID_32("freezeLoopTime"), false));
     };
     const auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
     const auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
@@ -964,24 +962,24 @@ void Scene::loadDefaultCamera() {
     
     
     // Camera position is overridden in the scene's XML configuration file
-    if (!_paramHandler.isParam<bool>(_ID_32((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (!_context.paramHandler().isParam<bool>(_ID_32((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         return;
     }
 
-    if (_paramHandler.getParam<bool>(_ID_32((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (_context.paramHandler().getParam<bool>(_ID_32((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         baseCamera->setEye(vec3<F32>(
-            _paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.x").c_str())),
-            _paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.y").c_str())),
-            _paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.z").c_str()))));
-        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
-            _paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
+            _context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.x").c_str())),
+            _context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.y").c_str())),
+            _context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.z").c_str()))));
+        vec2<F32> camOrientation(_context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
+            _context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
         baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
         baseCamera->setEye(vec3<F32>(0, 50, 0));
     }
 
-    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    baseCamera->setMoveSpeedFactor(_context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    baseCamera->setTurnSpeedFactor(_context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
     baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
                               _context.config().runtime.verticalFOV,
                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
@@ -1074,7 +1072,7 @@ void Scene::postLoad() {
     }
 
     // Cook geometry
-    if (_paramHandler.getParam<bool>(_ID_32((resourceName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
+    if (_context.paramHandler().getParam<bool>(_ID_32((resourceName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
         _cookCollisionMeshesScheduled = true;
     }
 }

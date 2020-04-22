@@ -42,10 +42,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
 
     _isInitialized = true;
     ErrorCode err = ErrorCode::NO_ERR;
-    ParamHandler::instance();
     Time::ApplicationTimer::instance();
-    // Don't log parameter requests
-    ParamHandler::instance().setDebugOutput(false);
 
     Console::toggleImmediateMode(true);
     Console::printfn(Locale::get(_ID("START_APPLICATION")));

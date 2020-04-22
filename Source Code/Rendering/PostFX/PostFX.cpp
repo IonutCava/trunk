@@ -38,7 +38,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
 {
     std::atomic_uint loadTasks = 0u;
 
-    ParamHandler::instance().setParam<bool>(_ID_32("postProcessing.enableVignette"), false);
+    context.paramHandler().setParam<bool>(_ID_32("postProcessing.enableVignette"), false);
 
     _postFXTarget.drawMask().disableAll();
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);

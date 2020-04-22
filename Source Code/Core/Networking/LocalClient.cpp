@@ -3,6 +3,7 @@
 #include "Headers/LocalClient.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 
@@ -31,8 +32,7 @@ void LocalClient::handlePacket(WorldPacket& p) {
         HandleGeometryAppendOpCode(p);
         break;
     default:
-        ParamHandler::instance().setParam(_ID_32("serverResponse"),
-                                          "Unknown OpCode: [ 0x" + to_stringImpl(p.opcode()) + " ]");
+        _parent.platformContext().paramHandler().setParam(_ID_32("serverResponse"), "Unknown OpCode: [ 0x" + to_stringImpl(p.opcode()) + " ]");
         break;
     };
 }
@@ -41,7 +41,7 @@ void LocalClient::HandlePongOpCode(WorldPacket& p) {
     F32 time = 0;
     p >> time;
     D64 result = Time::ElapsedMilliseconds() - time;
-    ParamHandler::instance().setParam(
+    _parent.platformContext().paramHandler().setParam(
         _ID_32("serverResponse"),
         "Server says: Pinged with : " +
         to_stringImpl(floor(result + 0.5f)) +

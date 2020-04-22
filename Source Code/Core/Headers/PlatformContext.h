@@ -37,6 +37,7 @@ namespace Divide {
 
 class GUI;
 class Kernel;
+class Server;
 class Editor;
 class TaskPool;
 class GFXDevice;
@@ -45,6 +46,7 @@ class PXDevice;
 class Application;
 class LocalClient;
 class XMLEntryData;
+class ParamHandler;
 class DisplayWindow;
 class DebugInterface;
 
@@ -121,6 +123,9 @@ public:
     inline LocalClient& client() noexcept { return *_client; }
     inline const LocalClient& client() const noexcept { return *_client; }
 
+    inline Server& server() noexcept { return *_server; }
+    inline const Server& server() const noexcept { return *_server; }
+
     inline DebugInterface& debug() noexcept { return *_debug; }
     inline const DebugInterface& debug() const noexcept { return *_debug; }
 
@@ -132,6 +137,9 @@ public:
 
     inline Input::InputHandler& input() noexcept { return *_inputHandler; }
     inline const Input::InputHandler& input() const noexcept { return *_inputHandler; }
+
+    inline ParamHandler& paramHandler() noexcept { return *_paramHandler; }
+    inline const ParamHandler& paramHandler() const noexcept { return *_paramHandler; }
 
     Kernel& kernel();
     const Kernel& kernel() const;
@@ -151,24 +159,28 @@ public:
     /// Task pools
     std::array<TaskPool*, to_base(TaskPoolType::COUNT)> _taskPool;
     /// Access to the GPU
-    GFXDevice* _gfx;
+    GFXDevice* _gfx = nullptr;
     /// The graphical user interface
-    GUI* _gui;
+    GUI* _gui = nullptr;
     /// Access to the audio device
-    SFXDevice* _sfx;
+    SFXDevice* _sfx = nullptr;
     /// Access to the physics system
-    PXDevice* _pfx;
+    PXDevice* _pfx = nullptr;
     /// XML configuration data
-    XMLEntryData* _entryData;
-    Configuration* _config;
+    XMLEntryData* _entryData = nullptr;
+    Configuration* _config = nullptr;
     /// Networking client
-    LocalClient* _client;
+    LocalClient* _client = nullptr;
+    /// Networking server
+    Server* _server = nullptr;
     /// Debugging interface: read only / editable variables
-    DebugInterface* _debug;
+    DebugInterface* _debug = nullptr;
     /// Game editor
-    Editor* _editor;
+    Editor* _editor = nullptr;
     /// Input handler
-    Input::InputHandler* _inputHandler;
+    Input::InputHandler* _inputHandler = nullptr;
+    /// Param handler
+    ParamHandler* _paramHandler = nullptr;
 };
 
 namespace Attorney {

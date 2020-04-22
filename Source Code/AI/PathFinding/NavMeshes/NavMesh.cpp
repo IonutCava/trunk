@@ -29,7 +29,7 @@ NavigationMesh::NavigationMesh(PlatformContext& context, DivideRecast& recastInt
       _buildJobGUID(-1),
       _recastInterface(recastInterface)
 {
-    ParamHandler& par = ParamHandler::instance();
+    ParamHandler& par = context.paramHandler();
     Str256 path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
     path.append(par.getParam<stringImpl>(_ID_32("currentScene")));
 
