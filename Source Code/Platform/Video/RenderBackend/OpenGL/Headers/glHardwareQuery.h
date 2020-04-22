@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _GL_HARDWARE_QUERY_H_
 #define _GL_HARDWARE_QUERY_H_
 

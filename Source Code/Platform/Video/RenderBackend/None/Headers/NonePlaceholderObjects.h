@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _NONE_PLACEHOLDER_OBJECTS_H_
 #define _NONE_PLACEHOLDER_OBJECTS_H_
 

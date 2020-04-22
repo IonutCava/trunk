@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _CORE_CONSOLE_H_
 #define _CORE_CONSOLE_H_
 

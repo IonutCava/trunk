@@ -61,7 +61,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #pragma once
-#pragma once
 #ifndef _DIVIDE_FORMAT_CONVERTER_H_
 #define _DIVIDE_FORMAT_CONVERTER_H_
 

@@ -21,7 +21,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _DIVIDE_TILE_CACHE_COMPRESSOR_H_
 #define _DIVIDE_TILE_CACHE_COMPRESSOR_H_
 

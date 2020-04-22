@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _SKINNED_SUBMESH_H_
 #define _SKINNED_SUBMESH_H_
 

@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GL_VERTEX_ARRAY_H_
 #define _GL_VERTEX_ARRAY_H_
 

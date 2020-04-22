@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #ifndef _DATA_TYPES_H
 #define _DATA_TYPES_H
 

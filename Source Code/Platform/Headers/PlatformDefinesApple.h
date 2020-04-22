@@ -30,11 +30,9 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _PLATFORM_DEFINES_APPLE_H_
 #define _PLATFORM_DEFINES_APPLE_H_
 
-#pragma once
 #ifndef _RESTRICT_
 #define _RESTRICT_ __restrict__
 #endif

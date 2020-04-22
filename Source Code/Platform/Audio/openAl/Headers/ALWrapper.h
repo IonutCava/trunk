@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _WRAPPER_AL_H_
 #define _WRAPPER_AL_H_
 

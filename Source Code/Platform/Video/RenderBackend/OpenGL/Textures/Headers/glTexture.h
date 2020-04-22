@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GL_TEXTURE_H_
 #define _GL_TEXTURE_H_
 

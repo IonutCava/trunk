@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _GENERIC_DRAW_COMMAND_H_
 #define _GENERIC_DRAW_COMMAND_H_
 

@@ -102,7 +102,6 @@ void EditTransform(const Camera & camera, matrix_t & matrix)
     ImGuizmo::Manipulate(camera.mView.m16, camera.mProjection.m16, mCurrentGizmoOperation, mCurrentGizmoMode, matrix.m16, NULL, useSnap ? &snap.x : NULL);
 }
 #endif
-#pragma once
 
 #ifdef USE_IMGUI_API
 #include "imconfig.h"

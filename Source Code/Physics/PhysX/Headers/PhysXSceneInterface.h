@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _PHYSX_SCENE_INTERFACE_H_
 #define _PHYSX_SCENE_INTERFACE_H_
 

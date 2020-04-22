@@ -3,8 +3,6 @@
 ///
 /// Summary:	Declares the logger manager class.
 
-#pragma once
-
 #if !defined(ECS_DISABLE_LOGGING)
 
 #pragma once

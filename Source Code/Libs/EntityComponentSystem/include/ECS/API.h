@@ -16,7 +16,6 @@ Preprocessor defines:
 #pragma once
 #ifndef __ECS_API_H__
 #define __ECS_API_H__
-#pragma once
 
 #define ENITY_LUT_GROW						1024
 

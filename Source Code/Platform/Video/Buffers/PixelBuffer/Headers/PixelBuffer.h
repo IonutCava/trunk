@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _PIXEL_BUFFER_OBJECT_H
 #define _PIXEL_BUFFER_OBJECT_H
 

@@ -8,8 +8,6 @@
 #ifndef __I_ENTITY_H__
 #define __I_ENTITY_H__
 
-#pragma once
-
 #include "API.h"
 #include "util/Handle.h"
 

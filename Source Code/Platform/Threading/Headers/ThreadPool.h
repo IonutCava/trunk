@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _PLATFORM_TASK_POOL_H_
 #define _PLATFORM_TASK_POOL_H_
 

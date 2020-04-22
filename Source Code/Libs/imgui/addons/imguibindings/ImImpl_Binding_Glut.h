@@ -358,7 +358,6 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)    {
     io.KeyMap[ImGuiKey_Z] = 26;
 
     //io.RenderDrawListsFn = ImImpl_RenderDrawLists;
-#pragma once
 #ifndef _WIN32
     //io.SetClipboardTextFn = ImImpl_SetClipboardTextFn;
     //io.GetClipboardTextFn = ImImpl_GetClipboardTextFn;
@@ -471,7 +470,6 @@ static bool InitBinding(const ImImpl_InitParams* pOptionalInitParams=NULL,int ar
     glutMotionFunc(GlutMotion);
     glutPassiveMotionFunc(GlutPassiveMotion);
 
-#pragma once
 #ifndef __EMSCRIPTEN__
     glutEntryFunc(GlutEntryFunc);
 #endif //__EMSCRIPTEN__

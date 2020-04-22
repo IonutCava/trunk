@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _POLY_CONTAINER_H_
 #define _POLY_CONTAINER_H_
 

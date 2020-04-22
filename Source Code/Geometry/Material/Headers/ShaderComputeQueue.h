@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _SHADER_COMPUTE_QUEUE_H_
 #define _SHADER_COMPUTE_QUEUE_H_
 

@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _CORE_PARAM_HANDLER_H_
 #define _CORE_PARAM_HANDLER_H_
 

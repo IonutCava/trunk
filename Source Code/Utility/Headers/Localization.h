@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _LOCALE_H_
 #define _LOCALE_H_
 

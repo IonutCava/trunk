@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _MANAGERS_RENDER_PASS_MANAGER_H_
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 

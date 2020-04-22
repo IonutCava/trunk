@@ -48,7 +48,6 @@
 extern "C" {
 #endif
 
-#pragma once
 #ifndef _ZLIB_H
 #include <zlib.h>
 #endif

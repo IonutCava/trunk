@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _OBJECT_3D_H_
 #define _OBJECT_3D_H_
 

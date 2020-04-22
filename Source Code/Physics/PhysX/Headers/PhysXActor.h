@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _PHYSX_ACTOR_H_
 #define _PHYSX_ACTOR_H_
 

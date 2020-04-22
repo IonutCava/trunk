@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GENERIC_VERTEX_DATA_H
 #define _GENERIC_VERTEX_DATA_H
 

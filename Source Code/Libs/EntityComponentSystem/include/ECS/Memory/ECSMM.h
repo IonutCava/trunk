@@ -12,8 +12,6 @@
 #ifndef __ECSSMM_H__
 #define __ECSSMM_H__
 
-#pragma once 
-
 #define ECS_GLOBAL_MEMORY_CAPACITY 134217728 // 128 MB
 
 #include "API.h"

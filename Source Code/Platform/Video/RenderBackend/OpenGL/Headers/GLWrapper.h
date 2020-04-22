@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GL_WRAPPER_H_
 #define _GL_WRAPPER_H_
 

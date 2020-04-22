@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GUI_MESSAGE_BOX_H_
 #define _GUI_MESSAGE_BOX_H_
 

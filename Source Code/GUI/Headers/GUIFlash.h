@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GUI_FLASH_H
 #define _GUI_FLASH_H
 

@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GUI_CONSOLE_COMMAND_PARSER_H_
 #define _GUI_CONSOLE_COMMAND_PARSER_H_
 

@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GUI_ELEMENT_H_
 #define _GUI_ELEMENT_H_
 

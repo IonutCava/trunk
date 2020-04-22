@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _SHADER_PROGRAM_H_
 #define _SHADER_PROGRAM_H_
 

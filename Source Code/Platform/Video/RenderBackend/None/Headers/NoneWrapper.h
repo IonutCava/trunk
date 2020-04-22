@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _NONE_WRAPPER_H_
 #define _NONE_WRAPPER_H_
 

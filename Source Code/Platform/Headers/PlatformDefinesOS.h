@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _PLATFORM_DEFINES_OS_H_
 #define _PLATFORM_DEFINES_OS_H_
 

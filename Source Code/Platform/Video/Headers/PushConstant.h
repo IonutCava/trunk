@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _PUSH_CONSTANT_H_
 #define _PUSH_CONSTANT_H_
 

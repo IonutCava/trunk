@@ -35,7 +35,6 @@
 
 
 #pragma once
-#pragma once
 #ifndef _GUID_WRAPPER_H_
 #define _GUID_WRAPPER_H_
 

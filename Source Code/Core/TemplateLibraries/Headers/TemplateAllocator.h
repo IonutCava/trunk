@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _TEMPLATE_ALLOCATOR_H_
 #define _TEMPLATE_ALLOCATOR_H_
 

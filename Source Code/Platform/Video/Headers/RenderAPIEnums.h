@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _GFX_ENUMS_H
 #define _GFX_ENUMS_H
 

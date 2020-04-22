@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _DIVIDE_PCH_
 #define _DIVIDE_PCH_
 
@@ -71,7 +70,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #endif 
 
-#pragma once
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES

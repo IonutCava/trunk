@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _THIRD_PERSON_CAMERA_H_
 #define _THIRD_PERSON_CAMERA_H_
 

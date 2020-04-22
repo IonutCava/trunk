@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 

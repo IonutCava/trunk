@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _TRANSFORM_INTERFACE_H_
 #define _TRANSFORM_INTERFACE_H_
 

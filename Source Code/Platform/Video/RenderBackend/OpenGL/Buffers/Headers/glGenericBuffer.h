@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _GL_GENERIC_BUFFER_H_
 #define _GL_GENERIC_BUFFER_H_
 

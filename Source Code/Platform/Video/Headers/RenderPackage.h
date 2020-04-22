@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _RENDER_PACKAGE_H_
 #define _RENDER_PACKAGE_H_
 

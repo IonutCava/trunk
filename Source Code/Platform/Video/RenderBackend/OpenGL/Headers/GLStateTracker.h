@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _GL_STATE_TRACKER_H_
 #define _GL_STATE_TRACKER_H_
 

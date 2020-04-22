@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _ECS_SYSTEM_H_
 #define _ECS_SYSTEM_H_
 

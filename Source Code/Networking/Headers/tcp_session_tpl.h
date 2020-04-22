@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #ifndef _SESSION_TPL_H_
 #define _SESSION_TPL_H_
 

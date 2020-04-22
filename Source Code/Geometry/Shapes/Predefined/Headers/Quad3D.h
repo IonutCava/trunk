@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _QUAD_3D_H_
 #define _QUAD_3D_H_
 

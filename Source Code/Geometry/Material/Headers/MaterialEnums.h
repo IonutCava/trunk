@@ -1,4 +1,3 @@
-#pragma once
 /*
    Copyright (c) 2020 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
@@ -30,7 +29,6 @@
 
  */
 
-#pragma once
 #pragma once
 #ifndef _MATERIAL_ENUMS_H_
 #define _MATERIAL_ENUMS_H_

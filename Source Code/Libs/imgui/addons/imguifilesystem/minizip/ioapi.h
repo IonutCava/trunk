@@ -27,19 +27,18 @@
   // Linux needs this to support file operation on files larger then 4+GB
   // But might need better if/def to select just the platforms that needs them.
 
-        #pragma once
 #ifndef __USE_FILE_OFFSET64
                 #define __USE_FILE_OFFSET64
         #endif
-        #pragma once
+
 #ifndef __USE_LARGEFILE64
                 #define __USE_LARGEFILE64
         #endif
-        #pragma once
+
 #ifndef _LARGEFILE64_SOURCE
                 #define _LARGEFILE64_SOURCE
         #endif
-        #pragma once
+
 #ifndef _FILE_OFFSET_BIT
                 #define _FILE_OFFSET_BIT 64
         #endif

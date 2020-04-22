@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #ifndef _OPCODES_H_INFO_
 #define _OPCODES_H_INFO_
 

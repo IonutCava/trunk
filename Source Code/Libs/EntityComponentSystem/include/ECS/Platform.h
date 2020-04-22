@@ -4,8 +4,6 @@
 /// Summary:	Declares the platform specifics.
 
 #pragma once
-
-#pragma once
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
 

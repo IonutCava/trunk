@@ -30,7 +30,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
-#pragma once
 #ifndef _CORE_NON_MOVABLE_H_
 #define _CORE_NON_MOVABLE_H_
 

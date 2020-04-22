@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _INPUT_AGGREGATOR_INIT_H_
 #define _INPUT_AGGREGATOR_INIT_H_
 

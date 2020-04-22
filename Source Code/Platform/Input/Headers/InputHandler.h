@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _INPUT_EVENT_HANDLER_H_
 #define _INPUT_EVENT_HANDLER_H_
 

@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _PHYSICS_API_WRAPPER_H_
 #define _PHYSICS_API_WRAPPER_H_
 

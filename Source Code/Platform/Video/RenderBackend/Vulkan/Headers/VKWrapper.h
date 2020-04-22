@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _VK_WRAPPER_H_
 #define _VK_WRAPPER_H_
 

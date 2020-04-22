@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _TRANSFORM_H_
 #define _TRANSFORM_H_
 

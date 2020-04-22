@@ -37,7 +37,6 @@
 */
 
 #pragma once
-#pragma once
 #ifndef _CORE_MATH_MATH_UTIL_H_
 #define _CORE_MATH_MATH_UTIL_H_
 

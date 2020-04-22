@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _HARDWARE_VIDEO_GFX_DEVICE_H_
 #define _HARDWARE_VIDEO_GFX_DEVICE_H_
 

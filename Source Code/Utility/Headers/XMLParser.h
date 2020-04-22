@@ -30,7 +30,6 @@
  */
 
 #pragma once
-#pragma once
 #ifndef _XML_PARSER_H_
 #define _XML_PARSER_H_
 
