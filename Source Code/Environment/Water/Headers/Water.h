@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _WATER_PLANE_H_
 #define _WATER_PLANE_H_
 
@@ -41,6 +42,7 @@
 namespace Divide {
 
 class Texture;
+class StaticCamera;
 class ShaderProgram;
 
 class WaterPlane : public SceneNode {
@@ -87,7 +89,7 @@ class WaterPlane : public SceneNode {
     /// the water's "geometry"
     std::shared_ptr<Quad3D> _plane = nullptr;
 
-    Camera* _reflectionCam = nullptr;
+    StaticCamera* _reflectionCam = nullptr;
     U16     _blurKernelSize = 3u;
     bool    _blurReflections = true;
 };

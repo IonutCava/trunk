@@ -30,12 +30,12 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _IM_EMULATION_H_
 #define _IM_EMULATION_H_
 
 #include "Utility/Headers/Colours.h"
 #include "Core/Math/Headers/Line.h"
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/Pipeline.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"

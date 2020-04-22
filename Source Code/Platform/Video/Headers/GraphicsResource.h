@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _GRAPHICS_RESOURCE_H_
 #define _GRAPHICS_RESOURCE_H_
 

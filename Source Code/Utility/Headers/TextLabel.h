@@ -30,10 +30,10 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _UTILITY_TEXT_LABEL_H_
 #define _UTILITY_TEXT_LABEL_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Math/Headers/Dimension.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Hashable.h"

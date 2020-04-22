@@ -107,6 +107,7 @@ void CommandBuffer::add(const CommandBuffer& other) {
 
 void CommandBuffer::add(CommandBuffer** buffers, size_t count) {
     OPTICK_EVENT();
+    assert(buffers != nullptr);
 
     static_assert(sizeof(PolyContainerEntry) == 4, "PolyContainerEntry has the wrong size!");
     for (size_t i = 0; i < count; ++i) {

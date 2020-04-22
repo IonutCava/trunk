@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _AI_TEAM_H_
 #define _AI_TEAM_H_
 

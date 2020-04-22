@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _MESH_H_
 #define _MESH_H_
 
@@ -88,11 +89,6 @@ class Mesh : public Object3D {
     }
 
    protected:
-    /// Called from SceneGraph "sceneUpdate"
-    void sceneUpdate(const U64 deltaTimeUS,
-                     SceneGraphNode& sgn,
-                     SceneState& sceneState) final;
-
     const char* getResourceTypeName() const noexcept override { return "Mesh"; }
 
     friend class MeshImporter;

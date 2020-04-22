@@ -37,7 +37,7 @@ void CommandBufferPool::init() {
     _pool = std::make_unique<MemoryPool<CommandBuffer, 8192 * 2>>();
 }
 
-void CommandBufferPool::clear() {
+void CommandBufferPool::clear() noexcept {
     _pool.reset();
 }
 

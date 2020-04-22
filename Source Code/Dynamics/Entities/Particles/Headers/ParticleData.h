@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PARTICLE_DATA_H_
 #define _PARTICLE_DATA_H_
 

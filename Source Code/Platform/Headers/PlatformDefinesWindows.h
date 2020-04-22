@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _PLATFORM_DEFINES_WINDOWS_H_
 #define _PLATFORM_DEFINES_WINDOWS_H_
 
@@ -39,6 +40,7 @@
 #pragma warning(disable : 4324)  //< structure was padded due to alignment specifier
 
 
+#pragma once
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif //_CRT_SECURE_NO_WARNINGS
@@ -56,6 +58,7 @@
 #define NOMINMAX
 #endif  //NOMINMAX
 
+#pragma once
 #ifndef _RESTRICT_
 #define _RESTRICT_ __restrict
 #endif

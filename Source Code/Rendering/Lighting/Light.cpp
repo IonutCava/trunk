@@ -9,7 +9,6 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "ECS/Components/Headers/TransformComponent.h"
-#include "ECS/Events/Headers/TransformEvents.h"
 
 namespace Divide {
 
@@ -40,11 +39,8 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
     _rangeAndCones.set(1.0f, 45.0f, 0.0f);
 
     for (U32 i = 0; i < _shadowCameras.size(); ++i) {
-        _shadowCameras[i] = Camera::createCamera(sgn.name() + "_shadowCamera_" + to_stringImpl(i), Camera::CameraType::FREE_FLY);
-
-        _shadowCameras[i]->setMoveSpeedFactor(0.0f);
-        _shadowCameras[i]->setTurnSpeedFactor(0.0f);
-        _shadowCameras[i]->setFixedYawAxis(true);
+        _shadowCameras[i] = Camera::createCamera<FreeFlyCamera>(sgn.name() + "_shadowCamera_" + to_stringImpl(i));
+        _shadowCameras[i]->updateFrustum();
     }
     if (!_parentPool.addLight(*this)) {
         //assert?
@@ -58,7 +54,14 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
     _shadowProperties._lightDetails.x = to_F32(type);
     setDiffuseColour(FColour3(DefaultColours::WHITE));
     setRange(1.0f);
-    updateCache();
+
+    const ECS::CustomEvent evt = {
+        ECS::CustomEvent::Type::TransformUpdated,
+        sgn.get<TransformComponent>(),
+        to_U32(TransformType::ALL)
+    };
+
+    updateCache(evt);
 
     _enabled = true;
 }
@@ -72,18 +75,18 @@ Light::~Light()
     _parentPool.removeLight(*this);
 }
 
-void Light::updateCache() {
+void Light::updateCache(const ECS::CustomEvent& data) {
     OPTICK_EVENT();
 
-    TransformComponent* lightTransform = getSGN().get<TransformComponent>();
-    assert(lightTransform != nullptr);
+    TransformComponent* tComp = std::any_cast<TransformComponent*>(data._userData);
+    assert(tComp != nullptr);
 
-    if (_type != LightType::DIRECTIONAL) {
-        _positionCache = lightTransform->getPosition();
+    if (_type != LightType::DIRECTIONAL && BitCompare(data._flag, to_U32(TransformType::TRANSLATION))) {
+        _positionCache = tComp->getPosition();
     }
 
-    if (_type != LightType::POINT) {
-        _directionCache = Normalized(Rotate(WORLD_Z_NEG_AXIS, lightTransform->getOrientation()));
+    if (_type != LightType::POINT && BitCompare(data._flag, to_U32(TransformType::ROTATION))) {
+        _directionCache = Normalized(Rotate(WORLD_Z_NEG_AXIS, tComp->getOrientation()));
     }
 }
 

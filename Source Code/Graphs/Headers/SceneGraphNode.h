@@ -30,6 +30,7 @@
    */
 
 #pragma once
+#pragma once
 #ifndef _SCENE_GRAPH_NODE_H_
 #define _SCENE_GRAPH_NODE_H_
 
@@ -75,7 +76,6 @@ struct SGNRayResult {
 };
 
 class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
-                             private ECS::Event::IEventListener,
                              public GUIDWrapper,
                              public PlatformContextComponent
 {
@@ -221,7 +221,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         template <>
         inline BoundsComponent* get() const noexcept { return Hacks._boundsComponentCache; }
 
-        void SendEvent(ECSCustomEventType eventType);
+        void SendEvent(const ECS::CustomEvent& event);
 
         /// Sends a global event but dispatched is handled between update steps
         template<class E, class... ARGS>
@@ -330,8 +330,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
             BoundsComponent* _boundsComponentCache = nullptr;
         } Hacks;
 
-        moodycamel::ConcurrentQueue<ECSCustomEventType> _events;
-        eastl::set<ECSCustomEventType> _uniqueEventsCache;
+        moodycamel::ConcurrentQueue<ECS::CustomEvent> _events;
 
         mutable SharedMutex _childLock;
 

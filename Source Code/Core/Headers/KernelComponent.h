@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _KERNEL_COMPONENT_H_
 #define _KERNEL_COMPONENT_H_
 

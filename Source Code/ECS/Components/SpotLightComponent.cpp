@@ -32,9 +32,9 @@ SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, PlatformContext& con
     Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
 }
 
-void SpotLightComponent::OnData(const ECS::Data& data) {
-    if (data.eventType == ECSCustomEventType::TransformUpdated) {
-        Light::updateCache();
+void SpotLightComponent::OnData(const ECS::CustomEvent& data) {
+    if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
+        Light::updateCache(data);
     }
 }
 };

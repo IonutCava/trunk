@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _WAR_SCENE_AI_ACTION_LIST_H_
 #define _WAR_SCENE_AI_ACTION_LIST_H_
 

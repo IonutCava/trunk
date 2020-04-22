@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _NAV_MESH_CONFIG_H_
 #define _NAV_MESH_CONFIG_H_
 

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PARTICLE_EMITTER_H_
 #define _PARTICLE_EMITTER_H_
 

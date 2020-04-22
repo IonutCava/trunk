@@ -30,11 +30,9 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _FRUSTUM_H_
 #define _FRUSTUM_H_
-
-#include "Core/Math/Headers/MathMatrices.h"
-#include "Core/Math/Headers/Plane.h"
 
 namespace Divide {
 

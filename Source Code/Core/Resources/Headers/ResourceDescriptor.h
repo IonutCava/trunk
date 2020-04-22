@@ -34,7 +34,6 @@
 #define RESOURCE_DESCRIPTOR_H_
 
 #include "Core/Headers/Hashable.h"
-#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
 

@@ -8,8 +8,6 @@ Camera::Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye)
     : Resource(ResourceType::DEFAULT, name),
       _type(type)
 {
-    _speedFactor.set(35.0f);
-    _speed.set(35.0f);
     _data._eye.set(eye);
     _data._FoV = 60.0f;
     _data._aspectRatio = 1.77f;
@@ -19,37 +17,17 @@ Camera::Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye)
     _data._orientation.identity();
 }
 
-const CameraSnapshot& Camera::snapshot() {
-    updateLookAt();
-    return _data;
-}
-
 const CameraSnapshot& Camera::snapshot() const noexcept {
     assert(!_frustumDirty);
     return _data;
 }
 
-void Camera::fromCamera(Camera& camera) {
-    camera.updateLookAt();
-    fromCamera(static_cast<const Camera&>(camera));
-}
-
 void Camera::fromCamera(const Camera& camera) {
-    setMoveSpeedFactor(camera.getMoveSpeedFactor());
-    setTurnSpeedFactor(camera.getTurnSpeedFactor());
-    setZoomSpeedFactor(camera.getZoomSpeedFactor());
-    setFixedYawAxis(camera._yawFixed, camera._fixedYawAxis);
-    lockMovement(camera._movementLocked);
-    lockRotation(camera._rotationLocked);
-    _mouseSensitivity = camera._mouseSensitivity;
-    _speedFactor = camera._speedFactor;
-    _speed = camera._speed;
     _reflectionPlane = camera._reflectionPlane;
     _reflectionActive = camera._reflectionActive;
-
-    lockFrustum(camera._frustumLocked);
     _accumPitchDegrees = camera._accumPitchDegrees;
 
+    lockFrustum(camera._frustumLocked);
     if (camera._isOrthoCamera) {
         setAspectRatio(camera.getAspectRatio());
         setVerticalFoV(camera.getVerticalFoV());
@@ -82,147 +60,7 @@ void Camera::fromSnapshot(const CameraSnapshot& snapshot) {
 }
 
 void Camera::updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) noexcept {
-    _speed = _speedFactor * deltaTimeS;
-}
-
-void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
-    if (_rotationLocked) {
-        return;
-    }
-
-    Quaternion<F32> pitchRot(WORLD_X_AXIS, -pitch);
-    Quaternion<F32> yawRot(WORLD_Y_AXIS, -yaw);
-
-    if (!IS_ZERO(roll)) {
-        setRotation(yawRot * pitchRot * Quaternion<F32>(WORLD_Z_AXIS, -roll));
-    } else {
-        setRotation(yawRot * pitchRot);
-    }
-}
-
-void Camera::rotate(const Quaternion<F32>& q) {
-    if (_rotationLocked) {
-        return;
-    }
-
-    if (_type == CameraType::FIRST_PERSON) {
-        vec3<Angle::DEGREES<F32>> euler;
-        q.getEuler(euler);
-        euler = Angle::to_DEGREES(euler);
-        rotate(euler.yaw, euler.pitch, euler.roll);
-    } else {
-        _data._orientation = q * _data._orientation;
-        _data._orientation.normalize();
-    }
-
-    _viewMatrixDirty = true;
-}
-
-void Camera::rotate(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> roll) {
-    if (_rotationLocked) {
-        return;
-    }
-
-    const F32 turnSpeed = _speed.turn;
-    yaw = -yaw * turnSpeed;
-    pitch = -pitch * turnSpeed;
-    roll = -roll * turnSpeed;
-
-    Quaternion<F32> tempOrientation;
-    if (_type == CameraType::FIRST_PERSON) {
-        _accumPitchDegrees += pitch;
-
-        if (_accumPitchDegrees > 90.0f) {
-            pitch = 90.0f - (_accumPitchDegrees - pitch);
-            _accumPitchDegrees = 90.0f;
-        }
-
-        if (_accumPitchDegrees < -90.0f) {
-            pitch = -90.0f - (_accumPitchDegrees - pitch);
-            _accumPitchDegrees = -90.0f;
-        }
-
-        // Rotate camera about the world y axis.
-        // Note the order the quaternions are multiplied. That is important!
-        if (!IS_ZERO(yaw)) {
-            tempOrientation.fromAxisAngle(WORLD_Y_AXIS, yaw);
-            _data._orientation = tempOrientation * _data._orientation;
-        }
-
-        // Rotate camera about its local x axis.
-        // Note the order the quaternions are multiplied. That is important!
-        if (!IS_ZERO(pitch)) {
-            tempOrientation.fromAxisAngle(WORLD_X_AXIS, pitch);
-            _data._orientation = _data._orientation * tempOrientation;
-        }
-    } else {
-        tempOrientation.fromEuler(pitch, yaw, roll);
-        _data._orientation *= tempOrientation;
-    }
-
-    _viewMatrixDirty = true;
-}
-
-void Camera::rotateYaw(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _data._orientation * WORLD_Y_AXIS, -angle * _speed.turn));
-}
-
-void Camera::rotateRoll(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_data._orientation * WORLD_Z_AXIS, -angle * _speed.turn));
-}
-
-void Camera::rotatePitch(Angle::DEGREES<F32> angle) {
-    rotate(Quaternion<F32>(_data._orientation * WORLD_X_AXIS, -angle * _speed.turn));
-}
-
-void Camera::move(F32 dx, F32 dy, F32 dz) {
-    if (_movementLocked) {
-        return;
-    }
-
-    const F32 moveSpeed = _speed.move;
-    dx *= moveSpeed;
-    dy *= moveSpeed;
-    dz *= moveSpeed;
-
-    _data._eye += getRightDir() * dx;
-    _data._eye += WORLD_Y_AXIS * dy;
-
-    if (_type == CameraType::FIRST_PERSON) {
-        // Calculate the forward direction. Can't just use the camera's local
-        // z axis as doing so will cause the camera to move more slowly as the
-        // camera's view approaches 90 degrees straight up and down.
-        const vec3<F32> forward = Normalized(Cross(WORLD_Y_AXIS, getRightDir()));
-        _data._eye += forward * dz;
-    } else {
-        _data._eye += getForwardDir() * dz;
-    }
-
-    _viewMatrixDirty = true;
-}
-
-bool Camera::moveRelative(const vec3<I32>& relMovement) {
-    if (relMovement.lengthSquared() > 0) {
-        move(to_F32(relMovement.y), to_F32(relMovement.z), to_F32(relMovement.x));
-        return true;
-    }
-
-    return false;
-}
-
-bool Camera::rotateRelative(const vec3<I32>& relRotation) {
-    if (relRotation.lengthSquared() > 0) {
-        const F32 turnSpeed = _speed.turn;
-        rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _data._orientation * WORLD_Y_AXIS, -relRotation.yaw * turnSpeed) *
-               Quaternion<F32>(_data._orientation * WORLD_X_AXIS, -relRotation.pitch * turnSpeed) *
-               Quaternion<F32>(_data._orientation * WORLD_Z_AXIS, -relRotation.roll * turnSpeed));
-        return true;
-    }
-    return false;
-}
-
-bool Camera::zoom(I32 zoomFactor) noexcept {
-    return zoomFactor != 0;
+    NOP();
 }
 
 vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
@@ -238,24 +76,23 @@ vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
     //
     // As each plane is simply (1,0,0,0), (0,1,0,0), (0,0,1,0) we can pull the data directly from the transpose matrix.
     //  
-    mat4<F32> modelViewT(a_modelView.getTranspose());
+    const mat4<F32> modelViewT(a_modelView.getTranspose());
 
     // Get plane normals 
-    vec4<F32> n1(modelViewT.getRow(0));
-    vec4<F32> n2(modelViewT.getRow(1));
-    vec4<F32> n3(modelViewT.getRow(2));
+    const vec4<F32> n1(modelViewT.getRow(0));
+    const vec4<F32> n2(modelViewT.getRow(1));
+    const vec4<F32> n3(modelViewT.getRow(2));
 
     // Get plane distances
-    F32 d1(n1.w);
-    F32 d2(n2.w);
-    F32 d3(n3.w);
+    const F32 d1(n1.w);
+    const F32 d2(n2.w);
+    const F32 d3(n3.w);
 
     // Get the intersection of these 3 planes 
     // (uisng math from RealTime Collision Detection by Christer Ericson)
-    vec3<F32> n2n3 = Cross(n2.xyz(), n3.xyz());
-    float denom = Dot(n1.xyz(), n2n3);
-
-    vec3<F32> top = (n2n3 * d1) + Cross(n1.xyz(), (d3*n2.xyz()) - (d2*n3.xyz()));
+    const vec3<F32> n2n3 = Cross(n2.xyz(), n3.xyz());
+    const float denom = Dot(n1.xyz(), n2n3);
+    const vec3<F32> top = (n2n3 * d1) + Cross(n1.xyz(), (d3*n2.xyz()) - (d2*n3.xyz()));
     return top / -denom;
 }
 const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
@@ -298,8 +135,19 @@ bool Camera::updateLookAt() {
     return cameraUpdated;
 }
 
+void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
+    const Quaternion<F32> pitchRot(WORLD_X_AXIS, -pitch);
+    const Quaternion<F32> yawRot(WORLD_Y_AXIS, -yaw);
+
+    if (!IS_ZERO(roll)) {
+        setRotation(yawRot * pitchRot * Quaternion<F32>(WORLD_Z_AXIS, -roll));
+    } else {
+        setRotation(yawRot * pitchRot);
+    }
+}
+
 bool Camera::removeUpdateListener(U32 id) {
-    ListenerMap::const_iterator it = _updateCameraListeners.find(id);
+    const auto& it = _updateCameraListeners.find(id);
     if (it != std::cend(_updateCameraListeners)) {
         _updateCameraListeners.erase(it);
         return true;
@@ -441,14 +289,15 @@ bool Camera::updateFrustum() {
 }
 
 vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const Rect<I32>& viewport) const {
-    Rect<F32> temp(winCoordsX, winCoordsY, winCoordsZ, 1.0f);
-    temp.x = (temp.x - F32(viewport[0])) / F32(viewport[2]);
-    temp.y = (temp.y - F32(viewport[1])) / F32(viewport[3]);
+    Rect<F32> temp = {
+        (winCoordsX - F32(viewport[0])) / F32(viewport[2]),
+        (winCoordsY - F32(viewport[1])) / F32(viewport[3]),
+        winCoordsZ,
+        1.0f
+    };
 
     temp = (getViewMatrix() * getProjectionMatrix()).getInverse() * (2.0f * temp - 1.0f);
-    temp /= temp.w;
-
-    return temp.xyz();
+    return (temp.xyz() / temp.w);
 }
 
 vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const {

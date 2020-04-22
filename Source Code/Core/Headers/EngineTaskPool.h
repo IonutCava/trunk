@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _ENGINE_TASK_POOL_H_
 #define _ENGINE_TASK_POOL_H_
 

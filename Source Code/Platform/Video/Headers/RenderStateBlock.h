@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _RENDER_STATE_BLOCK_H
 #define _RENDER_STATE_BLOCK_H
 

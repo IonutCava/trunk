@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _LIGHT_POOL_H_
 #define _LIGHT_POOL_H_
 

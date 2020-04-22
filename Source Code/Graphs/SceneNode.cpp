@@ -77,8 +77,6 @@ void SceneNode::frameEnded(SceneGraphNode& sgn) {
 void SceneNode::sceneUpdate(const U64 deltaTimeUS,
                             SceneGraphNode& sgn,
                             SceneState& sceneState) {
-    OPTICK_EVENT();
-
     ACKNOWLEDGE_UNUSED(deltaTimeUS);
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(sceneState);

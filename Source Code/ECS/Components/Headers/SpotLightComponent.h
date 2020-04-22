@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SPOT_LIGHT_COMPONENT_H_
 #define _SPOT_LIGHT_COMPONENT_H_
 
@@ -43,7 +44,7 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
     explicit SpotLightComponent(SceneGraphNode& sgn, PlatformContext& context);
 
    protected:
-    void OnData(const ECS::Data& data) final;
+    void OnData(const ECS::CustomEvent& data) final;
 };
 
 INIT_COMPONENT(SpotLightComponent);

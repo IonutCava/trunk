@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _DIVIDE_TO_DO_H_
 #define _DIVIDE_TO_DO_H_
 

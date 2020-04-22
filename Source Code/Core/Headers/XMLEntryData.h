@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _CORE_XML_ENTRY_DATA_H_
 #define _CORE_XML_ENTRY_DATA_H_
 

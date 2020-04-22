@@ -29,11 +29,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _SCENE_VIEW_WINDOW_H_
 #define _SCENE_VIEW_WINDOW_H_
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
-#include "Core/Math/Headers/MathVectors.h"
 
 struct ImGuiWindow;
 

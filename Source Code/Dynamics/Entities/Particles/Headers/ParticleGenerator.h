@@ -29,11 +29,11 @@
 
  */
 
+#pragma once
 #ifndef _PARTICLE_GENERATOR_H_
 #define _PARTICLE_GENERATOR_H_
 
 #include "ParticleData.h"
-#include "Core/Math/Headers/Quaternion.h"
 #include "Core/Headers/EngineTaskPool.h"
 
 namespace Divide {

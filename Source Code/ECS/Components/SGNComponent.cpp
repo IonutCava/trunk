@@ -22,8 +22,7 @@
 
 namespace Divide {
     SGNComponent::SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context)
-        : ECS::Event::IEventListener(parentSGN.sceneGraph().GetECSEngine()),
-          PlatformContextComponent(context),
+        : PlatformContextComponent(context),
           _type(type),
           _parentSGN(parentSGN),
           _editorComponent(type, type._to_string())
@@ -31,15 +30,10 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(key);
         std::atomic_init(&_enabled, true);
         std::atomic_init(&_hasChanged, false);
-
-        RegisterEventCallbacks();
     }
 
-    SGNComponent::~SGNComponent() {
-        UnregisterAllEventCallbacks();
-    }
-
-    void SGNComponent::RegisterEventCallbacks() {
+    SGNComponent::~SGNComponent()
+    {
     }
 
     bool SGNComponent::saveCache(ByteBuffer& outputBuffer) const {
@@ -57,7 +51,6 @@ namespace Divide {
     }
 
     void SGNComponent::PreUpdate(const U64 deltaTime) {
-        OPTICK_EVENT();
         ACKNOWLEDGE_UNUSED(deltaTime);
     }
 
@@ -70,20 +63,14 @@ namespace Divide {
     }
 
     void SGNComponent::Update(const U64 deltaTime) {
-        OPTICK_EVENT();
         ACKNOWLEDGE_UNUSED(deltaTime);
     }
 
     void SGNComponent::PostUpdate(const U64 deltaTime) {
-        OPTICK_EVENT();
         ACKNOWLEDGE_UNUSED(deltaTime);
     }
 
-    void SGNComponent::OnUpdateLoop() {
-
-    }
-
-    void SGNComponent::OnData(const ECS::Data& data) {
+    void SGNComponent::OnData(const ECS::CustomEvent& data) {
         ACKNOWLEDGE_UNUSED(data);
     }
 

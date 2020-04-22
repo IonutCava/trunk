@@ -62,6 +62,7 @@
 
 // Retries the expression while it evaluates to error_result and errno
 // equals to EINTR.
+#pragma once
 #ifndef _WIN32
 #  define FMT_RETRY_VAL(result, expression, error_result) \
     do {                                                  \

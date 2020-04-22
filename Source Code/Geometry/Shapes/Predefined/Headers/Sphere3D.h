@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _SPHERE_3D_H_
 #define _SPHERE_3D_H_
 

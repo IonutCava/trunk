@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _NAV_MESH_DEBUG_DRAW_H_
 #define _NAV_MESH_DEBUG_DRAW_H_
 

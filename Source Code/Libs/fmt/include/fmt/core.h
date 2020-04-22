@@ -364,6 +364,7 @@ template <typename Char> class basic_string_view {
 using string_view = basic_string_view<char>;
 using wstring_view = basic_string_view<wchar_t>;
 
+#pragma once
 #ifndef __cpp_char8_t
 // A UTF-8 code unit type.
 enum char8_t : unsigned char {};

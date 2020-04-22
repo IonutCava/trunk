@@ -50,10 +50,9 @@
 // nor any
 // responsibility to update it.
 
+#pragma once
 #ifndef _ClipRegion_h_
 #define _ClipRegion_h_
-
-#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 

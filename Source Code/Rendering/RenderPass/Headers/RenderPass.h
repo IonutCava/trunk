@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _RENDERING_RENDER_PASS_RENDERPASS_H_
 #define _RENDERING_RENDER_PASS_RENDERPASS_H_
 

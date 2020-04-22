@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __EVENT_DELEGATE_H__
 #define __EVENT_DELEGATE_H__
 

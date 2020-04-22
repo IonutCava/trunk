@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _CSM_GENERATOR_H_
 #define _CSM_GENERATOR_H_
 

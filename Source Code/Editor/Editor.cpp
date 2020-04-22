@@ -22,7 +22,6 @@
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Managers/Headers/SceneManager.h"

@@ -31,6 +31,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #pragma once
 
+#pragma once
 #ifndef _SDL_EVENT_MANAGER_H_
 #define _SDL_EVENT_MANAGER_H_
 

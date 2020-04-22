@@ -194,12 +194,6 @@
     <Filter Include="ECS\Systems\Headers">
       <UniqueIdentifier>{59e4f72a-d91a-4fe8-860f-ae446cfd4f7e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ECS\Events">
-      <UniqueIdentifier>{4f3da813-fa46-47a8-8a92-621e3a837b80}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ECS\Events\Headers">
-      <UniqueIdentifier>{5f582c27-57fb-4ec1-81c5-386b91a5bfb0}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Rendering\Camera\Camera.cpp">
@@ -1029,12 +1023,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\TransformSystem.h">
       <Filter>ECS\Systems\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\BoundsEvents.h">
-      <Filter>ECS\Events\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\TransformEvents.h">
-      <Filter>ECS\Events\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\MaterialEnums.h">
       <Filter>Geometry\Material\Headers</Filter>

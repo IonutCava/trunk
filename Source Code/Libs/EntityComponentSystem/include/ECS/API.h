@@ -13,6 +13,7 @@ Preprocessor defines:
 
 */
 
+#pragma once
 #ifndef __ECS_API_H__
 #define __ECS_API_H__
 #pragma once

@@ -30,10 +30,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _DIVIDE_EDITOR_H_
 #define _DIVIDE_EDITOR_H_
 
-#include "Core/Math/Headers/MathVectors.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Headers/PlatformContextComponent.h"
 

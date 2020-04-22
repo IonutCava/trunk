@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _DIRECTIONAL_LIGHT_COMPONENT_H_
 #define _DIRECTIONAL_LIGHT_COMPONENT_H_
 
@@ -60,7 +61,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     PROPERTY_RW(bool, csmUseSceneAABBFit, true);
 
 protected:
-     void OnData(const ECS::Data& data) final;
+     void OnData(const ECS::CustomEvent& data) final;
 
 protected:
     //Used to adjust ortho-matrice's near/far planes per pass

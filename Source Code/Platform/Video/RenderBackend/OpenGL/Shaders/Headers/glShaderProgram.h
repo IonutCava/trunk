@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _PLATFORM_VIDEO_OPENGLS_PROGRAM_H_
 #define _PLATFORM_VIDEO_OPENGLS_PROGRAM_H_
 

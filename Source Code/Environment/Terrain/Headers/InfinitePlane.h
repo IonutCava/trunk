@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _INFINITE_PLANE_H_
 #define _INFINITE_PLANE_H_
 

@@ -30,10 +30,11 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _ORBIT_CAMERA_H_
 #define _ORBIT_CAMERA_H_
 
-#include "Camera.h"
+#include "FreeFlyCamera.h"
 
 namespace Divide {
 
@@ -41,51 +42,54 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// A camera that always looks at a given target and orbits around it.
 /// It's position / direction can't be changed by user input
-class OrbitCamera : public Camera {
+class OrbitCamera : public FreeFlyCamera {
   protected:
     friend class Camera;
     explicit OrbitCamera(const Str128& name,
-                         const CameraType& type = CameraType::ORBIT,
+                         const CameraType& type = Type(),
                          const vec3<F32>& eye = VECTOR3_ZERO);
   public:
     void setTarget(SceneGraphNode* sgn,
                    const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));
 
-    void fromCamera(Camera& camera) override;
+    void fromCamera(const Camera& camera) override;
 
-    inline void maxRadius(F32 radius) { _maxRadius = radius; }
+    inline void maxRadius(F32 radius) noexcept { _maxRadius = radius; }
 
-    inline void minRadius(F32 radius) { _minRadius = radius; }
+    inline void minRadius(F32 radius) noexcept { _minRadius = radius; }
 
-    inline void curRadius(F32 radius) {
+    inline void curRadius(F32 radius) noexcept {
         _curRadius = radius;
         CLAMP<F32>(_curRadius, _minRadius, _maxRadius);
     }
 
-    inline F32 maxRadius() const { return _maxRadius; }
-    inline F32 minRadius() const { return _minRadius; }
-    inline F32 curRadius() const { return _curRadius; }
+    inline F32 maxRadius() const noexcept { return _maxRadius; }
+    inline F32 minRadius() const noexcept { return _minRadius; }
+    inline F32 curRadius() const noexcept { return _curRadius; }
 
     virtual void update(const U64 deltaTimeUS);
-    virtual void move(F32 dx, F32 dy, F32 dz) override;
-    virtual void rotate(F32 yaw, F32 pitch, F32 roll) override;
-    virtual bool zoom(I32 zoomFactor) noexcept override;
+    bool zoom(I32 zoomFactor) noexcept override;
+
+    static constexpr CameraType Type() noexcept { return CameraType::ORBIT; }
+
+    virtual ~OrbitCamera() {}
 
    protected:
     virtual bool updateViewMatrix() override;
 
    protected:
-    F32 _maxRadius;
-    F32 _minRadius;
-    F32 _curRadius;
-    F32 _currentRotationX;
-    F32 _currentRotationY;
-    bool _rotationDirty;
-    vec3<F32> _offsetDir;
-    vec3<F32> _cameraRotation;
-    vec3<F32> _newEye;
-    SceneGraphNode* _targetNode;
+    F32 _maxRadius = 10.0f;
+    F32 _minRadius = 0.1f;
+    F32 _curRadius = 8.0f;
+    F32 _currentRotationX = 0.0f;
+    F32 _currentRotationY = 0.0f;
+    bool _rotationDirty = true;
+    vec3<F32> _offsetDir = VECTOR3_ZERO;
+    vec3<F32> _cameraRotation = VECTOR3_ZERO;
+    vec3<F32> _newEye = VECTOR3_ZERO;
+    SceneGraphNode* _targetNode = nullptr;
 };
+
 
 };  // namespace Divide
 

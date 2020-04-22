@@ -30,10 +30,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _CORE_CONFIGURATION_H_
 #define _CORE_CONFIGURATION_H_
 
-#include "Core/Math/Headers/MathVectors.h"
 #include "Utility/Headers/XMLParser.h"
 
 namespace Divide {

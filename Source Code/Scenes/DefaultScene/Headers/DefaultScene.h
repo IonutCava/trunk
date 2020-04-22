@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _DEFAULT_SCENE_H_
 #define _DEFAULT_SCENE_H_
 

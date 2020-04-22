@@ -4,6 +4,7 @@
 /// Summary:	Base entity class containing no morte than entity id and state falgs.
 ///-------------------------------------------------------------------------------------------------
 
+#pragma once
 #ifndef __I_ENTITY_H__
 #define __I_ENTITY_H__
 

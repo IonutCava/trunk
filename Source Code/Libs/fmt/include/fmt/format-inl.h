@@ -60,6 +60,7 @@ FMT_FUNC void assert_fail(const char* file, int line, const char* message) {
   std::abort();
 }
 
+#pragma once
 #ifndef _MSC_VER
 #  define FMT_SNPRINTF snprintf
 #else  // _MSC_VER

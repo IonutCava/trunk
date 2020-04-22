@@ -13,6 +13,7 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Platform/File/Headers/FileManagement.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
@@ -150,7 +151,7 @@ void MainScene::processTasks(const U64 deltaTimeUS) {
 bool MainScene::load(const Str128& name) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name);
-    Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
+    FreeFlyCamera* baseCamera = Camera::utilityCamera<FreeFlyCamera>(Camera::UtilityCamera::DEFAULT);
     baseCamera->setMoveSpeedFactor(10.0f);
 
     constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
@@ -235,7 +236,7 @@ U16 MainScene::registerInputActions() {
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _freeflyCamera = !_freeflyCamera;
-        Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
+        FreeFlyCamera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
         cam.setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
     });
     actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);

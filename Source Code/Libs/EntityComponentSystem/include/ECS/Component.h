@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __COMPONENT_H__
 #define __COMPONENT_H__
 
@@ -37,7 +38,7 @@ namespace ECS
 			return STATIC_COMPONENT_TYPE_ID;
 		}	
 
-		virtual void OnData(const Data& data) 
+		virtual void OnData(const CustomEvent& data)
 		{
 			(void)data;
 		}

@@ -402,6 +402,7 @@ STBIRDEF int stbir_resize_region(  const void *input_pixels , int input_w , int 
 #define STBIR_FREE(ptr,c)    ((void)(c), free(ptr))
 #endif
 
+#pragma once
 #ifndef _MSC_VER
 #ifdef __cplusplus
 #define stbir__inline inline

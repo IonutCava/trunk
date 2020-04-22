@@ -30,11 +30,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _NAVIGATION_COMPONENT_H_
 #define _NAVIGATION_COMPONENT_H_
 
 #include "SGNComponent.h"
-#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 

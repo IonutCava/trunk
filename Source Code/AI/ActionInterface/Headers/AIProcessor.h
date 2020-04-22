@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _AI_PROCESSOR_H_
 #define _AI_PROCESSOR_H_
 

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _NON_PLAYER_CHARACTER_H_
 #define _NON_PLAYER_CHARACTER_H_
 

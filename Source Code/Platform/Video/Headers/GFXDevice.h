@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _HARDWARE_VIDEO_GFX_DEVICE_H_
 #define _HARDWARE_VIDEO_GFX_DEVICE_H_
 
@@ -40,7 +41,6 @@
 #include "GFXShaderData.h"
 #include "CommandBufferPool.h"
 #include "Core/Math/Headers/Line.h"
-#include "Core/Math/Headers/MathMatrices.h"
 
 #include "Core/Headers/KernelComponent.h"
 #include "Core/Headers/PlatformContextComponent.h"

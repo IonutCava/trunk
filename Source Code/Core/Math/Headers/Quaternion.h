@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _QUATERNION_H_
 #define _QUATERNION_H_
 
@@ -38,7 +39,6 @@ http://gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rota
 Quaternion class based on code from " OpenGL:Tutorials:Using Quaternions to
 represent rotation "
 */
-#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 
@@ -53,7 +53,7 @@ class Quaternion {
     Quaternion(const vec4<T>& values) noexcept;
 
 	template<typename U = T, class = std::enable_if<std::is_same<U, F32>::value>::type>
-	Quaternion(__m128 reg) : _elements(reg) {}
+	Quaternion(__m128 reg) noexcept : _elements(reg) {}
 
     Quaternion(const mat3<T>& rotationMatrix) noexcept;
     Quaternion(const vec3<T>& axis, Angle::DEGREES<T> angle) noexcept;

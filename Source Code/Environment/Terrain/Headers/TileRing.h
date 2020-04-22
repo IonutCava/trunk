@@ -50,6 +50,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _TERRAIN_TILE_RING_H_
 #define _TERRAIN_TILE_RING_H_
 

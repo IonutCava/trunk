@@ -31,7 +31,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SGN_COMPONENT_INL_
 #define _SGN_COMPONENT_INL_
 
-#include "ECS/Events/Headers/EntityEvents.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {

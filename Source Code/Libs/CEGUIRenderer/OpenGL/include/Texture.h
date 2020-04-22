@@ -24,6 +24,7 @@
  *   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *   OTHER DEALINGS IN THE SOFTWARE.
  ***************************************************************************/
+#pragma once
 #ifndef _CEGUIOpenGLTexture_h_
 #define _CEGUIOpenGLTexture_h_
 

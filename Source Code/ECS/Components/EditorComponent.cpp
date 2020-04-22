@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/EditorComponent.h"
-#include "Core/Math/Headers/MathMatrices.h"
-#include "Core/Math/Headers/Quaternion.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "ECS/Components/Headers/TransformComponent.h"

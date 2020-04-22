@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _ENGINE_MAIN_HEADER_
 #define _ENGINE_MAIN_HEADER_
 

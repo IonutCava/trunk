@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _COMMAND_BUFFER_POOL_H_
 #define _COMMAND_BUFFER_POOL_H_
 
@@ -45,7 +46,7 @@ class CommandBufferPool {
     void deallocateBuffer(CommandBuffer*& buffer);
 
     void init();
-    void clear();
+    void clear() noexcept;
 
  private:
     Mutex _mutex;

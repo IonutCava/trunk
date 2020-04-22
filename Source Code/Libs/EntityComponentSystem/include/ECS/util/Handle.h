@@ -4,6 +4,7 @@
 /// Summary:	Declares the handle class.
 ///-------------------------------------------------------------------------------------------------
 
+#pragma once
 #ifndef __HANDLE_H__
 #define __HANDLE_H__
 

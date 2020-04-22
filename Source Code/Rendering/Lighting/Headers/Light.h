@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _DIVIDE_LIGHT_COMPONENT_H_
 #define _DIVIDE_LIGHT_COMPONENT_H_
 
@@ -190,7 +191,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     PROPERTY_R_IW(I32, shadowIndex, -1);
    protected:
      friend class LightPool;
-     void updateCache();
+     void updateCache(const ECS::CustomEvent& event);
 
    protected:
     SceneGraphNode& _sgn;

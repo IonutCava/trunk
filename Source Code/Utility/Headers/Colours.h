@@ -30,10 +30,9 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _COLOURS_H_
 #define _COLOURS_H_
-
-#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
 namespace DefaultColours {

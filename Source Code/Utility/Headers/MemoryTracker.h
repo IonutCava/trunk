@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _MEMORY_TRACKER_H_
 #define _MEMORY_TRACKER_H_
 

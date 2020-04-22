@@ -29,11 +29,11 @@
 
  */
 
+#pragma once
 #ifndef _POST_EFFECTS_H
 #define _POST_EFFECTS_H
 
 #include "PreRenderBatch.h"
-#include "Core/Math/Headers/MathVectors.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {

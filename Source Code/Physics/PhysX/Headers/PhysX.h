@@ -33,6 +33,7 @@
 #ifndef PHYSX_H_
 #define PHYSX_H_
 
+#pragma once
 #ifndef _PHYSICS_API_FOUND_
 #define _PHYSICS_API_FOUND_
 #endif

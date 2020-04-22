@@ -7,7 +7,6 @@ namespace Divide {
         : ECSSystem(parentEngine),
           PlatformContextComponent(context)
     {
-        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
     }
 
     RenderingSystem::~RenderingSystem()
@@ -18,10 +17,10 @@ namespace Divide {
     void RenderingSystem::PreUpdate(F32 dt) {
         OPTICK_EVENT();
 
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         _componentCache.resize(0);
-        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
+        _componentCache.reserve(_container->size());
 
         auto rComp = _container->begin();
         auto rCompEnd = _container->end();
@@ -35,7 +34,7 @@ namespace Divide {
     void RenderingSystem::Update(F32 dt) {
         OPTICK_EVENT();
 
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         for (RenderingComponent* rComp : _componentCache) 
         {
@@ -46,7 +45,7 @@ namespace Divide {
     void RenderingSystem::PostUpdate(F32 dt) {
         OPTICK_EVENT();
 
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         for (RenderingComponent* rComp : _componentCache)
         {

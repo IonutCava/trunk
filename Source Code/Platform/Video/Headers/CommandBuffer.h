@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _COMMAND_BUFFER_H_
 #define _COMMAND_BUFFER_H_
 
@@ -41,7 +42,7 @@ namespace Divide {
 namespace GFX {
 
 void DELETE_CMD(GFX::CommandBase*& cmd);
-size_t RESERVE_CMD(U8 typeIndex);
+size_t RESERVE_CMD(U8 typeIndex) noexcept;
 
 class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend class CommandBufferPool;

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PARTICLE_UPDATER_H_
 #define _PARTICLE_UPDATER_H_
 

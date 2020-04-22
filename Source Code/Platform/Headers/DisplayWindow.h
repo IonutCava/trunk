@@ -30,11 +30,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _DISPLAY_WINDOW_H_
 #define _DISPLAY_WINDOW_H_
 
 #include "Core/Headers/PlatformContextComponent.h"
-#include "Core/Math/Headers/MathMatrices.h"
 
 #include "Platform/Headers/SDLEventListener.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"

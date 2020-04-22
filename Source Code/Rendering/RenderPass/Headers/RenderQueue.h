@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _RENDER_QUEUE_H_
 #define _RENDER_QUEUE_H_
 

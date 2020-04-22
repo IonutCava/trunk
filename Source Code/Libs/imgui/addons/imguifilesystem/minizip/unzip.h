@@ -40,6 +40,7 @@
 
 */
 
+#pragma once
 #ifndef _unz64_H
 #define _unz64_H
 
@@ -47,6 +48,7 @@
 extern "C" {
 #endif
 
+#pragma once
 #ifndef _ZLIB_H
 #include <zlib.h>
 #endif

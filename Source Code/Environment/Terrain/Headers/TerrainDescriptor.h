@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _TERRAIN_DESCRIPTOR_H_
 #define _TERRAIN_DESCRIPTOR_H_
 

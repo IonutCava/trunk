@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include "ECS/Events/Headers/TransformEvents.h"
-
 #include "Headers/TransformSystem.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Headers/EngineTaskPool.h"
@@ -12,8 +10,6 @@ namespace Divide {
         : ECSSystem(parentEngine),
           PlatformContextComponent(context)
     {
-        // Just a random value to start with some mem in place
-        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
     }
 
     TransformSystem::~TransformSystem()
@@ -27,7 +23,7 @@ namespace Divide {
 
         // Keep memory in order to avoid mid-frame allocs
         _componentCache.resize(0);
-        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
+        _componentCache.reserve(_container->size());
 
         auto transform = _container->begin();
         auto transformEnd = _container->end();
@@ -55,16 +51,6 @@ namespace Divide {
 
         for (TransformComponent* tComp : _componentCache) {
             tComp->PostUpdate(microSec);
-        }
-    }
-
-    void TransformSystem::OnUpdateLoop() {
-        
-        auto transform = _container->begin();
-        auto transformEnd = _container->end();
-        for (; transform != transformEnd; ++transform)
-        {
-            transform->OnUpdateLoop();
         }
     }
 

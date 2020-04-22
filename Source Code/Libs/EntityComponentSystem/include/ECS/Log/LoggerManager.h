@@ -7,6 +7,7 @@
 
 #if !defined(ECS_DISABLE_LOGGING)
 
+#pragma once
 #ifndef __LOGGER_MANAGER_H__
 #define __LOGGER_MANAGER_H__
 

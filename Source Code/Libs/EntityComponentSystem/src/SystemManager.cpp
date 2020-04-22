@@ -93,18 +93,6 @@ namespace ECS
 		}
 	}
 
-    void SystemManager::OnUpdateLoop()
-    {
-		OPTICK_EVENT();
-        for (ISystem* system : this->m_SystemWorkOrder)
-        {
-            if (system->m_Enabled == true)
-            {
-                system->OnUpdateLoop();
-            }
-        }
-    }
-
 	void SystemManager::UpdateSystemWorkOrder()
 	{
 		// depth-first-search function

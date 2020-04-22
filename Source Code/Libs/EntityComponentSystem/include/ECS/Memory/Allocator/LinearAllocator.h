@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __LINEAR_ALLOC_H__
 #define __LINEAR_ALLOC_H__
 

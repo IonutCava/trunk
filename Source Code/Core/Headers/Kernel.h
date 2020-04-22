@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _CORE_KERNEL_H_
 #define _CORE_KERNEL_H_
 

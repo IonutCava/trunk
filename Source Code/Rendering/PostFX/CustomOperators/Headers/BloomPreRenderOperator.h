@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _BLOOM_PRE_RENDER_OPERATOR_H_
 #define _BLOOM_PRE_RENDER_OPERATOR_H_
 

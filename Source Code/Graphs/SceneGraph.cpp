@@ -255,8 +255,6 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 
 void SceneGraph::onStartUpdateLoop(const U8 loopNumber) {
     ACKNOWLEDGE_UNUSED(loopNumber);
-
-    GetECSEngine().OnUpdateLoop();
 }
 
 void SceneGraph::onNetworkSend(U32 frameCount) {

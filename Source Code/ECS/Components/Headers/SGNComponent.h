@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _SGN_COMPONENT_H_
 #define _SGN_COMPONENT_H_
 
@@ -45,17 +46,22 @@ class SceneGraphNode;
 class SceneRenderState;
 struct RenderStagePass;
 
-enum class ECSCustomEventType : U8 {
-    TransformUpdated = 0,
-    RelationshipCacheInvalidated,
-    COUNT
-};
-
 }; //namespace Divide 
 
 namespace ECS {
-    struct Data {
-        Divide::ECSCustomEventType eventType = Divide::ECSCustomEventType::COUNT;
+    struct CustomEvent {
+        enum class Type : Divide::U8 {
+            TransformUpdated = 0,
+            RelationshipCacheInvalidated,
+            BoundsUpdated,
+            EntityPostLoad,
+            EntityActiveStateChange,
+            COUNT
+        };
+
+        Type _type = Type::COUNT;
+        std::any _userData;
+        Divide::U32 _flag = 0u;
     };
 };
 
@@ -89,7 +95,7 @@ struct Factory {
             ACKNOWLEDGE_UNUSED(s_registered);
         }
 
-        void OnData(const ECS::Data& data) override {
+        void OnData(const ECS::CustomEvent& data) override {
             ACKNOWLEDGE_UNUSED(data);
         }
 
@@ -140,11 +146,9 @@ template <typename T, ComponentType::_enumerated C>
 bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args...>::template Registrar<T, C>::RegisterComponentType();
 
 struct EntityOnUpdate;
-struct EntityActiveStateChange;
 
 class SGNComponent : private PlatformContextComponent,
-                     public Factory<SGNComponent>,
-                     public ECS::Event::IEventListener
+                     public Factory<SGNComponent>
 {
     public:
         explicit SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context);
@@ -154,9 +158,7 @@ class SGNComponent : private PlatformContextComponent,
         virtual void Update(const U64 deltaTime);
         virtual void PostUpdate(const U64 deltaTime);
 
-        virtual void OnUpdateLoop();
-
-        virtual void OnData(const ECS::Data& data);
+        virtual void OnData(const ECS::CustomEvent& data);
 
         inline SceneGraphNode& getSGN() const noexcept { return _parentSGN; }
         inline ComponentType type() const noexcept { return _type; }
@@ -171,9 +173,6 @@ class SGNComponent : private PlatformContextComponent,
 
         virtual bool enabled() const;
         virtual void enabled(const bool state);
-
-    protected:
-        void RegisterEventCallbacks();
 
     protected:
         EditorComponent _editorComponent;

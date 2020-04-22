@@ -754,7 +754,7 @@ U16 Scene::registerInputActions() {
     };
 
     const auto increaseCameraSpeed = [this](InputParams param){
-        Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
+        FreeFlyCamera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor < 50) {
@@ -763,7 +763,7 @@ U16 Scene::registerInputActions() {
         }
     };
     const auto decreaseCameraSpeed = [this](InputParams param) {
-        Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
+        FreeFlyCamera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor > 1.0f) {
@@ -960,7 +960,7 @@ bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
 }
 
 void Scene::loadDefaultCamera() {
-    Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
+    FreeFlyCamera* baseCamera = Camera::utilityCamera<FreeFlyCamera>(Camera::UtilityCamera::DEFAULT);
     
     
     // Camera position is overridden in the scene's XML configuration file
@@ -1248,7 +1248,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
             bool sceneFocused = true;
             if (Config::Build::ENABLE_EDITOR) {
                 const Editor& editor = _context.editor();
-                sceneFocused = editor.running() && editor.scenePreviewFocused();
+                sceneFocused = !editor.running() || editor.scenePreviewFocused();
             }
 
             if (sceneFocused && !state().playerState(idx).cameraLockedToMouse()) {
@@ -1262,7 +1262,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
 }
 
 bool Scene::updateCameraControls(PlayerIndex idx) {
-    Camera& cam = getPlayerForIndex(idx)->getCamera();
+    FreeFlyCamera& cam = getPlayerForIndex(idx)->getCamera();
     
     SceneStatePerPlayer& playerState = state().playerState(idx);
 

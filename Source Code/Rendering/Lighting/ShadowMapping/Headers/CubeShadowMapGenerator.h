@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _CUBE_SHADOW_MAP_GENERATOR_H_
 #define _CUBE_SHADOW_MAP_GENERATOR_H_
 

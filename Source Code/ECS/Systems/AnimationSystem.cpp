@@ -7,12 +7,10 @@ namespace Divide {
         : ECSSystem(parentEngine),
           PlatformContextComponent(context)
     {
-
     }
 
     AnimationSystem::~AnimationSystem()
     {
-
     }
 
     void AnimationSystem::PreUpdate(F32 dt) {
@@ -20,10 +18,15 @@ namespace Divide {
 
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
+        // Keep memory in order to avoid mid-frame allocs
+        _componentCache.resize(0);
+        _componentCache.reserve(_container->size());
+
         auto anim = _container->begin();
         auto animEnd = _container->end();
         for (;anim != animEnd; ++anim)
         {
+            _componentCache.push_back(anim.ptr());
             anim->PreUpdate(microSec);
         }
     }
@@ -31,26 +34,20 @@ namespace Divide {
     void AnimationSystem::Update(F32 dt) {
         OPTICK_EVENT();
 
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto anim = _container->begin();
-        auto animEnd = _container->end();
-        for (; anim != animEnd; ++anim)
-        {
-            anim->Update(microSec);
+        for (AnimationComponent* aComp : _componentCache) {
+            aComp->Update(microSec);
         }
     }
 
     void AnimationSystem::PostUpdate(F32 dt) {
         OPTICK_EVENT();
 
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        auto anim = _container->begin();
-        auto animEnd = _container->end();
-        for (; anim != animEnd; ++anim)
-        {
-            anim->PostUpdate(microSec);
+        for (AnimationComponent* aComp : _componentCache) {
+            aComp->PostUpdate(microSec);
         }
     }
 

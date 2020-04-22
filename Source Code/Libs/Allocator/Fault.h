@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #ifndef _FAULT_H
 #define _FAULT_H
 

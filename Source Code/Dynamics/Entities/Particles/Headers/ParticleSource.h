@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PARTICLE_SOURCE_H_
 #define _PARTICLE_SOURCE_H_
 

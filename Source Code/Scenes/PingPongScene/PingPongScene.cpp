@@ -320,7 +320,7 @@ bool PingPongScene::load(const Str128& name) {
     _guiTimersMS.push_back(0.0);  // Fps
     _taskTimers.push_back(0.0);  // Light
 
-    _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);
+    _paddleCam = Camera::createCamera<FreeFlyCamera>("paddleCam");
     _paddleCam->fromCamera(*playerCamera());
     // Position the camera
     // renderState().getCamera().setPitch(-90);

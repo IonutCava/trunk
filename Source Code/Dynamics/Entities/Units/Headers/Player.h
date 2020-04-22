@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
@@ -37,7 +38,7 @@
 namespace Divide {
 
 /// User controlled Unit
-class Camera;
+class FreeFlyCamera;
 class Player final : public Character {
    public:
     explicit Player(U8 index);
@@ -46,8 +47,8 @@ class Player final : public Character {
     /// Do not allow or allow the user again to control this player
     inline bool lockControlls(bool state) { _lockedControls = state; }
 
-    Camera& getCamera();
-    const Camera& getCamera() const;
+    FreeFlyCamera& getCamera();
+    const FreeFlyCamera& getCamera() const;
 
     inline const U8 index() const { return _index; }
 
@@ -58,7 +59,7 @@ class Player final : public Character {
     U8 _index;
     vec3<F32> _extents;
     bool _lockedControls;
-    Camera* _playerCam;
+    FreeFlyCamera* _playerCam;
 };
 
 };  // namespace Divide

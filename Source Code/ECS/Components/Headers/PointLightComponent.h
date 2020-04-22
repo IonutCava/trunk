@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _POINT_LIGHT_COMPONENT_H_
 #define _POINT_LIGHT_COMPONENT_H_
 
@@ -43,7 +44,7 @@ class PointLightComponent final : public BaseComponentType<PointLightComponent, 
     explicit PointLightComponent(SceneGraphNode& sgn, PlatformContext& context);
 
    protected:
-    void OnData(const ECS::Data& data) final;
+    void OnData(const ECS::CustomEvent& data) final;
 
    private:
     vec3<F32> _direction[6];

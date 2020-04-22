@@ -16,6 +16,7 @@
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
+#pragma once
 #ifndef _CORE_BYTE_BUFFER_H_
 #define _CORE_BYTE_BUFFER_H_
 

@@ -30,13 +30,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _DESCRIPTOR_SETS_H_
 #define _DESCRIPTOR_SETS_H_
 
 #include "ClipPlanes.h"
 #include "TextureData.h"
-#include "Core/Math/Headers/MathVectors.h"
-
 namespace Divide {
     class ShaderBuffer;
     bool BufferCompare(const ShaderBuffer* const a, const ShaderBuffer* const b) noexcept;

@@ -220,18 +220,6 @@ void Terrain::postBuild() {
     vb->create(true);
 }
 
-
-void Terrain::frameStarted(SceneGraphNode& sgn) {
-    switch (_editorDataDirtyState) {
-        case EditorDataState::QUEUED:
-            _editorDataDirtyState = EditorDataState::CHANGED;
-            break;
-        case EditorDataState::CHANGED:
-            _editorDataDirtyState = EditorDataState::IDLE;
-            break;
-    };
-}
-
 void Terrain::toggleBoundingBoxes() {
     _terrainQuadtree.toggleBoundingBoxes();
     _drawCommandsDirty = true;
@@ -245,7 +233,14 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState
         _shaderData->incQueue();
         _shaderDataDirty = false;
     }
-
+    switch (_editorDataDirtyState) {
+        case EditorDataState::QUEUED:
+            _editorDataDirtyState = EditorDataState::CHANGED;
+            break;
+        case EditorDataState::CHANGED:
+            _editorDataDirtyState = EditorDataState::IDLE;
+            break;
+    };
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 

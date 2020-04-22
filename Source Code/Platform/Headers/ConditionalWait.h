@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _CONDITIONAL_WAIT_H_
 #define _CONDITIONAL_WAIT_H_
 

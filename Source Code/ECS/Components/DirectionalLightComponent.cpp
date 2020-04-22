@@ -73,9 +73,9 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     _feedbackContainers.resize(csmSplitCount());
 }
 
-void DirectionalLightComponent::OnData(const ECS::Data& data) {
-    if (data.eventType == ECSCustomEventType::TransformUpdated) {
-        Light::updateCache();
+void DirectionalLightComponent::OnData(const ECS::CustomEvent& data) {
+    if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
+        Light::updateCache(data);
     }
 }
 

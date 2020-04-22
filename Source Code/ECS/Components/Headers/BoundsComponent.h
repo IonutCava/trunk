@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _BOUNDS_COMPONENT_H_
 #define _BOUNDS_COMPONENT_H_
 
@@ -61,7 +62,7 @@ namespace Divide {
         void Update(const U64 deltaTimeUS) final;
         void PostUpdate(const U64 deltaTimeUS) final;
 
-        void OnData(const ECS::Data& data) final;
+        void OnData(const ECS::CustomEvent& data) final;
 
         void setRefBoundingBox(const BoundingBox& nodeBounds);
 

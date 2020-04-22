@@ -50,6 +50,7 @@
 // Changes, Additions and Refactoring Author: Simon Wittenberg (MD)
 // The above license is fully inherited.
 
+#pragma once
 #ifndef _NAVIGATION_MESH_LOADER_H_
 #define _NAVIGATION_MESH_LOADER_H_
 

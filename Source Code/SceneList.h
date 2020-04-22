@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _DIVIDE_SCENE_LIST_H_
 #define _DIVIDE_SCENE_LIST_H_
 

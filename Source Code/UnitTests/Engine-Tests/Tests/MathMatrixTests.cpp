@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/Defines.h"
-#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 // make sure mat4 test include separe floating point and integer calls

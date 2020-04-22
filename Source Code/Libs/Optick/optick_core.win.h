@@ -103,6 +103,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/aa363795(v=vs.85).aspx
 #define EVENT_RECORD_DEF
 #endif
 
+#pragma once
 #ifndef _TRACEHANDLE_DEFINED
 #define _TRACEHANDLE_DEFINED
 typedef ULONG64 TRACEHANDLE, *PTRACEHANDLE;

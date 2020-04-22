@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _GL_IM_EMULATION_H_
 #define _GL_IM_EMULATION_H_
 

@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _SCENE_MANAGER_H
 #define _SCENE_MANAGER_H
 
@@ -55,6 +56,7 @@ namespace Attorney {
 
 class Editor;
 class ScenePool;
+class UnitComponent;
 class SceneShaderData;
 class ShaderComputeQueue;
 class SolutionExplorerWindow;
@@ -72,7 +74,7 @@ class SceneManager : public FrameListener,
     friend class Attorney::SceneManagerCameraAccessor;
 
 public:
-    using PlayerList = std::array<SceneGraphNode*, Config::MAX_LOCAL_PLAYER_COUNT>;
+    using PlayerList = std::array<UnitComponent*, Config::MAX_LOCAL_PLAYER_COUNT>;
 
 public:
     static bool onStartup();

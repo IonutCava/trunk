@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _SHADER_PROGRAM_INFO_H_
 #define _SHADER_PROGRAM_INFO_H_
 

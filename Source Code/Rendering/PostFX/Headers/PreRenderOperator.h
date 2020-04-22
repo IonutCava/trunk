@@ -1,7 +1,7 @@
+#pragma once
 #ifndef _PRE_RENDER_OPERATOR_H_
 #define _PRE_RENDER_OPERATOR_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"

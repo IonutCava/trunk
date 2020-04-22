@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SKY_H
 #define _SKY_H
 

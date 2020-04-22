@@ -58,6 +58,7 @@
 //    Mikko Mononen http://code.google.com/p/recastnavigation/
 //
 
+#pragma once
 #ifndef _NAVIGATION_MESH_H_
 #define _NAVIGATION_MESH_H_
 

@@ -1,8 +1,5 @@
 #include "stdafx.h"
 
-#include "Headers/MathMatrices.h"
-#include "Headers/Quaternion.h"
-
 #include <glm/glm.hpp>
 
 namespace Divide {

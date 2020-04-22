@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _TRANSFORM_SYSTEM_H_
 #define _TRANSFORM_SYSTEM_H_
 
@@ -49,7 +50,6 @@ namespace Divide {
         void PreUpdate(F32 dt) final;
         void Update(F32 dt) final;
         void PostUpdate(F32 dt) final;
-        void OnUpdateLoop() final;
 
         bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) final;
         bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) final;

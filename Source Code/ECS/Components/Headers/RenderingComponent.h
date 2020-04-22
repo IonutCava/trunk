@@ -30,11 +30,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _RENDERING_COMPONENT_H_
 #define _RENDERING_COMPONENT_H_
 
 #include "SGNComponent.h"
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Geometry/Material/Headers/MaterialEnums.h"

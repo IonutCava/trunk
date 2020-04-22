@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SCENE_STATE_H_
 #define _SCENE_STATE_H_
 

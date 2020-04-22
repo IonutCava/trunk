@@ -5,6 +5,7 @@
 /// creates memory chunks when out of capacity. Each memory chunk is managed by a single PoolAllocator.
 ///-------------------------------------------------------------------------------------------------
 
+#pragma once
 #ifndef __MEMORY_CHUNK_ALLOCATOR_H__
 #define __MEMORY_CHUNK_ALLOCATOR_H__
 
@@ -127,7 +128,7 @@ namespace ECS { namespace Memory {
 				inline OBJECT_TYPE* operator->() const noexcept { return *m_CurrentObject; }
 
                 // ugh
-                inline OBJECT_TYPE* ptr() noexcept { return *m_CurrentObject; }
+                inline OBJECT_TYPE* ptr() const noexcept { return *m_CurrentObject; }
 
 				inline bool operator==(iterator& other) noexcept 
 				{
@@ -272,6 +273,7 @@ namespace ECS { namespace Memory {
 		}
 
 
+		inline size_t   size() const noexcept { return this->m_Chunks.size(); }
 		inline iterator begin() { return iterator(this->m_Chunks.begin(), this->m_Chunks.end()); }
 		inline iterator end() { return iterator(this->m_Chunks.end(), this->m_Chunks.end()); }
 

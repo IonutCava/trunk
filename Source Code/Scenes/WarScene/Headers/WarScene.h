@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _WAR_SCENE_H
 #define _WAR_SCENE_H
 

@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _GL_WRAPPER_H_
 #define _GL_WRAPPER_H_
 
@@ -131,7 +132,6 @@ protected:
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
 
-    void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
     void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only

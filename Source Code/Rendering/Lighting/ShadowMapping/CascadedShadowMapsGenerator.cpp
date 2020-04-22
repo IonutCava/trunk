@@ -404,6 +404,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
             // Use our adjusted matrix for actual rendering
             lightCam->setProjection(lightOrthoMatrix, clip, true);
         }
+        lightCam->updateLookAt();
 
         mat4<F32>& lightVP = light.getShadowVPMatrix(cascadeIterator);
         mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix, lightVP);

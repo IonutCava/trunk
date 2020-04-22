@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _CORE_MATH_BOUNDINGVOLUMES_BOUNDINGSPHERE_H_
 #define _CORE_MATH_BOUNDINGVOLUMES_BOUNDINGSPHERE_H_
 
@@ -47,7 +48,7 @@ class BoundingSphere {
     friend class Attorney::BoundingSphereEditor;
 
    public:
-    BoundingSphere();
+    BoundingSphere() noexcept;
     BoundingSphere(const vec3<F32>& center, F32 radius) noexcept;
     BoundingSphere(const vectorEASTL<vec3<F32>>& points) noexcept;
     BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept;

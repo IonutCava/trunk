@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _DOF_PRE_RENDER_OPERATOR_H_
 #define _DOF_PRE_RENDER_OPERATOR_H_
 

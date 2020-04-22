@@ -66,6 +66,7 @@
 
 */
 
+#pragma once
 #ifndef _NAVIGATION_PATH_H_
 #define _NAVIGATION_PATH_H_
 

@@ -10,6 +10,7 @@ All Rights Reserved. (c) Copyright 2016.
 
 #if !defined(ECS_DISABLE_LOGGING)
 
+#pragma once
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 

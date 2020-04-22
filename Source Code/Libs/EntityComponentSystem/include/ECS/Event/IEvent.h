@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __I_EVENT_H__
 #define __I_EVENT_H__
 

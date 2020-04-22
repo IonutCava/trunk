@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #ifndef _STL_ALLOCATOR_H
 #define _STL_ALLOCATOR_H
 

@@ -35,7 +35,6 @@
 
 #include "GUIInterface.h"
 #include "Core/Headers/KernelComponent.h"
-#include "Core/Math/Headers/MathMatrices.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
 #include "Platform/Video/Headers/TextureData.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"

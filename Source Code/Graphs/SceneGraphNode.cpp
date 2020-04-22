@@ -18,9 +18,6 @@
 
 #include "Editor/Headers/Editor.h"
 
-#include "ECS/Events/Headers/EntityEvents.h"
-#include "ECS/Events/Headers/BoundsEvents.h"
-#include "ECS/Events/Headers/TransformEvents.h"
 #include "ECS/Systems/Headers/ECSManager.h"
 
 #include "ECS/Components/Headers/IKComponent.h"
@@ -49,7 +46,6 @@ namespace {
 
 SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor)
     : GUIDWrapper(),
-      ECS::Event::IEventListener(sceneGraph.GetECSEngine()),
       PlatformContextComponent(sceneGraph.parentScene().context()),
       _sceneGraph(sceneGraph),
       _compManager(sceneGraph.GetECSEngine().GetComponentManager()),
@@ -111,8 +107,6 @@ SceneGraphNode::~SceneGraphNode()
         _sceneGraph.destroySceneGraphNode(_children[i]);
     }
     _children.clear();
-
-    UnregisterAllEventCallbacks();
 
     _compManager->RemoveAllComponents(GetEntityID());
 }
@@ -297,7 +291,11 @@ bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive)
 }
 
 void SceneGraphNode::postLoad() {
-    SendEvent<EntityPostLoad>(GetEntityID());
+    const ECS::CustomEvent event = {
+        ECS::CustomEvent::Type::EntityPostLoad
+    };
+
+    SendEvent(event);
 }
 
 bool SceneGraphNode::isChildOfType(U16 typeMask, bool ignoreRoot) const {
@@ -453,24 +451,18 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
 void SceneGraphNode::processEvents() {
     OPTICK_EVENT();
 
-    _uniqueEventsCache.clear();
-    ECSCustomEventType type = ECSCustomEventType::COUNT;
-    while (_events.try_dequeue(type)) {
-        _uniqueEventsCache.insert(type);
-    }
-
     const ECS::EntityId id = GetEntityID();
-    ECS::Data data = {};
-    for (const ECSCustomEventType type2 : _uniqueEventsCache) {
-        switch (type2) {
-            case ECSCustomEventType::RelationshipCacheInvalidated: {
+    
+    ECS::CustomEvent evt = {};
+    while (_events.try_dequeue(evt)) {
+        switch (evt._type) {
+            case ECS::CustomEvent::Type::RelationshipCacheInvalidated: {
                 if (!_relationshipCache.isValid()) {
                     _relationshipCache.rebuild();
                 }
             }break;
             default: {
-                data.eventType = type2;
-                _compManager->PassDataToAllComponents(id, data);
+                _compManager->PassDataToAllComponents(id, evt);
             } break;
         };
     }
@@ -603,7 +595,11 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
         return;
     }
 
-    SendEvent(ECSCustomEventType::RelationshipCacheInvalidated);
+    const ECS::CustomEvent event = {
+        ECS::CustomEvent::Type::RelationshipCacheInvalidated
+    };
+
+    SendEvent(event);
 
     _relationshipCache.invalidate();
 
@@ -778,7 +774,12 @@ void SceneGraphNode::setFlag(Flags flag) noexcept {
         });
     }
     if (flag == Flags::ACTIVE) {
-        SendAndDispatchEvent<EntityActiveStateChange>(GetEntityID(), true);
+        const ECS::CustomEvent evt = {
+            ECS::CustomEvent::Type::EntityActiveStateChange,
+            true,
+            0u
+        };
+        SendEvent(evt);
     }
 }
 
@@ -790,7 +791,12 @@ void SceneGraphNode::clearFlag(Flags flag) noexcept {
         });
     }
     if (flag == Flags::ACTIVE) {
-        SendAndDispatchEvent<EntityActiveStateChange>(GetEntityID(), false);
+        const ECS::CustomEvent evt = {
+            ECS::CustomEvent::Type::EntityActiveStateChange,
+            false,
+            0u
+        };
+        SendEvent(evt);
     }
 }
 
@@ -798,8 +804,8 @@ bool SceneGraphNode::hasFlag(Flags flag) const noexcept {
     return BitCompare(_nodeFlags, to_U32(flag));
 }
 
-void SceneGraphNode::SendEvent(ECSCustomEventType eventType) {
-    if (_events.enqueue(eventType)) {
+void SceneGraphNode::SendEvent(const ECS::CustomEvent& event) {
+    if (_events.enqueue(event)) {
         //Yay
     }
     //Nay

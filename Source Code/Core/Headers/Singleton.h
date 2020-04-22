@@ -30,9 +30,11 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _CORE_SINGLETON_H_
 #define _CORE_SINGLETON_H_
 
+#pragma once
 #ifndef __NARG__
  // http://stackoverflow.com/questions/11761703/overloading-macro-on-number-of-arguments
 #define __NARG__(...)  __NARG_I_(__VA_ARGS__,__RSEQ_N())

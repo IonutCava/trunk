@@ -46,11 +46,11 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
         stateTracker.bindTextures(0, s_maxTextureUnits, nullptr, nullptr, nullptr);
         stateTracker.setPixelPackUnpackAlignment();
         stateTracker.setActiveBuffer(GL_TEXTURE_BUFFER, 0);
-        stateTracker.setActiveBuffer(GL_UNIFORM_BUFFER, 0);
-        stateTracker.setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        //stateTracker.setActiveBuffer(GL_UNIFORM_BUFFER, 0);
+        //stateTracker.setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         stateTracker.setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-        stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-        stateTracker._commandBufferOffset = 0u;
+        //stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+        //stateTracker._commandBufferOffset = 0u;
         stateTracker._activePixelBuffer = nullptr;
     }
     stateTracker._previousStateBlockHash = 0;
@@ -67,9 +67,9 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     const vec2<U16>& drawableSize = _context.getDrawableSize(window);
     stateTracker.setScissor(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
 
-    stateTracker._activePipeline = nullptr;
+    //stateTracker._activePipeline = nullptr;
     stateTracker._activeRenderTarget = nullptr;
-    stateTracker.setActivePipeline(0u);
+    //stateTracker.setActivePipeline(0u);
 }
 
 bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {

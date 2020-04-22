@@ -40,10 +40,9 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _RAY_H_
 #define _RAY_H_
-
-#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
 

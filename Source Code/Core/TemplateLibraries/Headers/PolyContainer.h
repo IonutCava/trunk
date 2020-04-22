@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _POLY_CONTAINER_H_
 #define _POLY_CONTAINER_H_
 
@@ -40,9 +41,9 @@ struct PolyContainerEntry
 {
     static constexpr U32 INVALID_ENTRY_ID = std::numeric_limits<U32>::max();
 
-    PolyContainerEntry() : PolyContainerEntry(0u, 0u) {}
-    PolyContainerEntry(U8 typeIndex, U24 elementIndex) : _typeIndex(typeIndex), _elementIndex(elementIndex) {}
-    PolyContainerEntry(const PolyContainerEntry& other) : _data(other._data) {}
+    PolyContainerEntry() noexcept : PolyContainerEntry(0u, 0u) {}
+    PolyContainerEntry(U8 typeIndex, U24 elementIndex) noexcept : _typeIndex(typeIndex), _elementIndex(elementIndex) {}
+    PolyContainerEntry(const PolyContainerEntry& other) noexcept : _data(other._data) {}
     PolyContainerEntry(PolyContainerEntry&& other) noexcept : _data(std::move(other._data)) {}
     inline PolyContainerEntry& operator= (PolyContainerEntry&& other) noexcept {
         _data = std::move(other._data);

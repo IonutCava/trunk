@@ -30,19 +30,22 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _SCRIPTED_CAMERA_H_
 #define _SCRIPTED_CAMERA_H_
 
-#include "Camera.h"
+#include "FreeFlyCamera.h"
 
 namespace Divide {
 
 /// Scripted camera receives 3 lists, one with position information,
 /// one with target information and one with timing info
-class ScriptedCamera : public Camera {
+class ScriptedCamera final : public FreeFlyCamera {
   protected:
     friend class Camera;
     explicit ScriptedCamera(const Str128& name, const vec3<F32>& eye = VECTOR3_ZERO);
+
+    static constexpr CameraType Type() noexcept { return CameraType::SCRIPTED; }
 };
 
 };  // namespace Divide

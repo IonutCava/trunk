@@ -8,6 +8,7 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
+
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
@@ -61,7 +62,7 @@ bool WaterPlane::load() {
 
     setState(ResourceState::RES_LOADING);
 
-    _reflectionCam = Camera::createCamera(resourceName() + "_reflectionCam", Camera::CameraType::FREE_FLY);
+    _reflectionCam = Camera::createCamera<StaticCamera>(resourceName() + "_reflectionCam");
 
     const Str128& name = resourceName();
 

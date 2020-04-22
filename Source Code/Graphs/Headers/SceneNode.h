@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _SCENE_NODE_H_
 #define _SCENE_NODE_H_
 

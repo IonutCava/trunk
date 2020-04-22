@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _EDITOR_MENU_BAR_H_
 #define _EDITOR_MENU_BAR_H_
 

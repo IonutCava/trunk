@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016 - 2017.
 */
 
+#pragma once
 #ifndef __ECSSMM_H__
 #define __ECSSMM_H__
 

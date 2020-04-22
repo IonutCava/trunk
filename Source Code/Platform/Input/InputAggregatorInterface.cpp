@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/InputAggregatorInterface.h"
-#include "Core/Math/Headers/MathVectors.h"
 #include "Platform/Headers/DisplayWindow.h"
 #include "Core/Headers/StringHelper.h"
 

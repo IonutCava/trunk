@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _TERRAIN_CHUNK_H
 #define _TERRAIN_CHUNK_H
 

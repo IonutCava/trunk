@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _GL_GENERIC_VERTEX_DATA_H
 #define _GL_GENERIC_VERTEX_DATA_H
 

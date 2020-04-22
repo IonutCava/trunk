@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __ENTITY_MANAGER_H__
 #define __ENTITY_MANAGER_H__
 

@@ -4,7 +4,7 @@
 
 #include "Core/Headers/StringHelper.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Rendering/Camera/Headers/Camera.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 namespace Divide {
 
@@ -14,7 +14,7 @@ Player::Player(U8 index)
 {
      _lockedControls = false;
 
-     _playerCam = Camera::createCamera(Util::StringFormat("Player_Cam_%d", getGUID()), Camera::CameraType::FREE_FLY);
+     _playerCam = Camera::createCamera<FreeFlyCamera>(Util::StringFormat("Player_Cam_%d", getGUID()));
 }
 
 Player::~Player()
@@ -22,11 +22,11 @@ Player::~Player()
     Camera::destroyCamera(_playerCam);
 }
 
-Camera& Player::getCamera() {
+FreeFlyCamera& Player::getCamera() {
     return *_playerCam;
 }
 
-const Camera& Player::getCamera() const {
+const FreeFlyCamera& Player::getCamera() const {
     return *_playerCam;
 }
 

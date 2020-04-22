@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _GFX_COMMAND_H_
 #define _GFX_COMMAND_H_
 
@@ -119,14 +120,16 @@ class CommandBuffer;
 struct CommandBase;
 
 struct Deleter {
-    virtual void operate(CommandBase*& cmd) const {
+    virtual ~Deleter() = default;
+
+    virtual void operate(CommandBase*& cmd) const noexcept {
         ACKNOWLEDGE_UNUSED(cmd);
     }
 };
 
 template<typename T>
 struct DeleterImpl final : Deleter {
-    virtual void operate(CommandBase*& cmd) const final {
+    void operate(CommandBase*& cmd) const noexcept final {
         CmdAllocator<T>::deallocate((T*&)(cmd));
         cmd = nullptr;
     }

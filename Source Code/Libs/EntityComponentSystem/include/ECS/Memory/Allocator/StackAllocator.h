@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __STACK_ALLOC_H__
 #define __STACK_ALLOC_H__
 

@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _NETWORKING_OPCODES_IMPL_H_
 #define _NETWORKING_OPCODES_IMPL_H_
 

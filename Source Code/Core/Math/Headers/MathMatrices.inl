@@ -274,7 +274,7 @@ namespace {
         r._reg[3]._reg = VecShuffle(Y_, W_, 2, 0, 2, 0);
     }
 
-    inline mat4<F32> GetInverse(const mat4<F32>& inM) {
+    inline mat4<F32> GetInverse(const mat4<F32>& inM) noexcept {
         mat4<F32> r;
         GetInverse(inM, r);
         return r;
@@ -360,14 +360,14 @@ mat2<T>& mat2<T>::operator=(const mat2<U>& other) noexcept {
 
 template<typename T>
 template<typename U>
-vec2<T> mat2<T>::operator*(const vec2<U> &v) const {
+vec2<T> mat2<T>::operator*(const vec2<U> &v) const noexcept {
     return vec2<T>(mat[0] * v[0] + mat[1] * v[1],
                    mat[2] * v[0] + mat[3] * v[1]);
 }
 
 template<typename T>
 template<typename U>
-vec3<T> mat2<T>::operator*(const vec3<U> &v) const {
+vec3<T> mat2<T>::operator*(const vec3<U> &v) const noexcept {
     return vec3<T>(mat[0] * v[0] + mat[1] * v[1],
                    mat[2] * v[0] + mat[3] * v[1],
                    v[2]);
@@ -375,7 +375,7 @@ vec3<T> mat2<T>::operator*(const vec3<U> &v) const {
 
 template<typename T>
 template<typename U>
-vec4<T> mat2<T>::operator*(const vec4<U> &v) const {
+vec4<T> mat2<T>::operator*(const vec4<U> &v) const noexcept {
     return vec4<T>(mat[0] * v[0] + mat[1] * v[1],
                    mat[2] * v[0] + mat[3] * v[1],
                    v[2],
@@ -384,7 +384,7 @@ vec4<T> mat2<T>::operator*(const vec4<U> &v) const {
 
 template<typename T>
 template<typename U>
-mat2<T> mat2<T>::operator*(const mat2<U> &B) const {
+mat2<T> mat2<T>::operator*(const mat2<U> &B) const noexcept {
     return mat2(mat[0] * B.mat[0] + mat[1] * B.mat[2], mat[0] * B.mat[1] + mat[1] * B.mat[3],
                 mat[2] * B.mat[0] + mat[3] * B.mat[2], mat[2] * B.mat[1] + mat[3] * B.mat[3]);
 }
@@ -397,21 +397,21 @@ mat2<T> mat2<T>::operator/(const mat2<U> &B) const {
 
 template<typename T>
 template<typename U>
-mat2<T> mat2<T>::operator+(const mat2<U> &B) const {
+mat2<T> mat2<T>::operator+(const mat2<U> &B) const noexcept {
     return mat2(mat[0] + B[0], mat[1] + B[1],
                 mat[2] + B[2], mat[3] + B[3]);
 }
 
 template<typename T>
 template<typename U>
-mat2<T> mat2<T>::operator-(const mat2<U> &B) const {
+mat2<T> mat2<T>::operator-(const mat2<U> &B) const noexcept {
     return mat2(mat[0] - B[0], mat[1] - B[1],
                 mat[2] - B[2], mat[3] - B[3]);
 }
 
 template<typename T>
 template<typename U>
-mat2<T>& mat2<T>::operator*=(const mat2<U> &B) {
+mat2<T>& mat2<T>::operator*=(const mat2<U> &B) noexcept {
     return *this = *this * B;
 }
 
@@ -423,13 +423,13 @@ mat2<T>& mat2<T>::operator/=(const mat2<U> &B) {
 
 template<typename T>
 template<typename U>
-mat2<T>& mat2<T>::operator+=(const mat2<U> &B) {
+mat2<T>& mat2<T>::operator+=(const mat2<U> &B) noexcept {
     return *this = *this + B;
 }
 
 template<typename T>
 template<typename U>
-mat2<T>& mat2<T>::operator-=(const mat2<U> &B) {
+mat2<T>& mat2<T>::operator-=(const mat2<U> &B) noexcept {
     for (auto& val : _vec) {
         val -= f;
     }
@@ -438,7 +438,7 @@ mat2<T>& mat2<T>::operator-=(const mat2<U> &B) {
 
 template<typename T>
 template<typename U>
-mat2<T> mat2<T>::operator*(U f) const {
+mat2<T> mat2<T>::operator*(U f) const noexcept {
     return (mat2(*this) *= f);
 }
 
@@ -450,19 +450,19 @@ mat2<T> mat2<T>::operator/(U f) const {
 
 template<typename T>
 template<typename U>
-mat2<T> mat2<T>::operator+(U f) const {
+mat2<T> mat2<T>::operator+(U f) const noexcept {
     return (mat2(*this) += f);
 }
 
 template<typename T>
 template<typename U>
-mat2<T> mat2<T>::operator-(U f) const {
+mat2<T> mat2<T>::operator-(U f) const noexcept {
     return (mat2(*this) -= f);
 }
 
 template<typename T>
 template<typename U>
-mat2<T>& mat2<T>::operator*=(U f) {
+mat2<T>& mat2<T>::operator*=(U f) noexcept {
     for (auto& val : _vec) {
         val *= f;
     }
@@ -480,7 +480,7 @@ mat2<T>& mat2<T>::operator/=(U f) {
 
 template<typename T>
 template<typename U>
-mat2<T>& mat2<T>::operator+=(U f) {
+mat2<T>& mat2<T>::operator+=(U f) noexcept {
     for (auto& val : _vec) {
         val += f;
     }
@@ -489,7 +489,7 @@ mat2<T>& mat2<T>::operator+=(U f) {
 
 template<typename T>
 template<typename U>
-mat2<T>& mat2<T>::operator-=(U f) {
+mat2<T>& mat2<T>::operator-=(U f) noexcept {
     for (auto& val : _vec) {
         val -= f;
     }
@@ -497,7 +497,7 @@ mat2<T>& mat2<T>::operator-=(U f) {
 }
 
 template<typename T>
-bool mat2<T>::operator==(const mat2 &B) const {
+bool mat2<T>::operator==(const mat2 &B) const noexcept {
     for (U8 i = 0; i < 4; ++i) {
         if (!COMPARE(mat[i], B.mat[i])) {
             return false;
@@ -507,7 +507,7 @@ bool mat2<T>::operator==(const mat2 &B) const {
 }
 
 template<typename T>
-bool mat2<T>::operator!=(const mat2 &B) const {
+bool mat2<T>::operator!=(const mat2 &B) const noexcept {
     for (U8 i = 0; i < 4; ++i) {
         if (!COMPARE(mat[i], B.mat[i])) {
             return true;
@@ -518,7 +518,7 @@ bool mat2<T>::operator!=(const mat2 &B) const {
 
 template<typename T>
 template<typename U>
-bool mat2<T>::operator==(const mat2<U> &B) const {
+bool mat2<T>::operator==(const mat2<U> &B) const noexcept {
     for (U8 i = 0; i < 4; ++i) {
         if (!COMPARE(mat[i], B.mat[i])) {
             return false;
@@ -529,7 +529,7 @@ bool mat2<T>::operator==(const mat2<U> &B) const {
 
 template<typename T>
 template<typename U>
-bool mat2<T>::operator!=(const mat2<U> &B) const {
+bool mat2<T>::operator!=(const mat2<U> &B) const noexcept {
     for (U8 i = 0; i < 4; ++i) {
         if (!COMPARE(mat[i], B.mat[i])) {
             return true;
@@ -539,7 +539,7 @@ bool mat2<T>::operator!=(const mat2<U> &B) const {
 }
 
 template<typename T>
-bool mat2<T>::compare(const mat2 &B, F32 epsilon) const {
+bool mat2<T>::compare(const mat2 &B, F32 epsilon) const noexcept {
     for (U8 i = 0; i < 4; ++i) {
         if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
             return false;
@@ -550,7 +550,7 @@ bool mat2<T>::compare(const mat2 &B, F32 epsilon) const {
 
 template<typename T>
 template<typename U>
-bool mat2<T>::compare(const mat2<U> &B, F32 epsilon) const {
+bool mat2<T>::compare(const mat2<U> &B, F32 epsilon) const noexcept {
     for (U8 i = 0; i < 4; ++i) {
         if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
             return false;
@@ -591,7 +591,7 @@ const T& mat2<T>::element(I8 row, I8 column) const {
 
 template<typename T>
 template<typename U>
-void mat2<T>::set(U m0, U m1, U m2, U m3) {
+void mat2<T>::set(U m0, U m1, U m2, U m3) noexcept {
     mat[0] = static_cast<T>(m0);
     mat[3] = static_cast<T>(m3);
     mat[1] = static_cast<T>(m1);
@@ -600,7 +600,7 @@ void mat2<T>::set(U m0, U m1, U m2, U m3) {
 
 template<typename T>
 template<typename U>
-void mat2<T>::set(const U *matrix) {
+void mat2<T>::set(const U *matrix) noexcept {
     if(sizeof(T) == sizeof(U)) {
         memcpy(mat, matrix, sizeof(U) * 4);
     } else {
@@ -611,78 +611,78 @@ void mat2<T>::set(const U *matrix) {
 
 template<typename T>
 template<typename U>
-void mat2<T>::set(const mat2<U> &matrix) {
+void mat2<T>::set(const mat2<U> &matrix) noexcept {
     set(matrix.mat);
 }
 
 template<typename T>
 template<typename U>
-void mat2<T>::set(const mat3<U> &matrix) {
+void mat2<T>::set(const mat3<U> &matrix) noexcept {
     set(matrix[0], matrix[1], matrix[3], matrix[4]);
 }
 
 template<typename T>
 template<typename U>
-void mat2<T>::set(const mat4<U> &matrix) {
+void mat2<T>::set(const mat4<U> &matrix) noexcept {
     set(matrix[0], matrix[1], matrix[4], matrix[5]);
 }
 
 template<typename T>
 template<typename U>
-void mat2<T>::setRow(I32 index, const U value) {
+void mat2<T>::setRow(I32 index, const U value) noexcept {
     _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
-void mat2<T>::setRow(I32 index, const vec2<U> &value) {
+void mat2<T>::setRow(I32 index, const vec2<U> &value) noexcept {
     _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
-void mat2<T>::setRow(I32 index, const U x, const U y) {
+void mat2<T>::setRow(I32 index, const U x, const U y) noexcept {
     _vec[index].set(x, y);
 }
 
 template<typename T>
-const vec2<T>& mat2<T>::getRow(I32 index) const {
+const vec2<T>& mat2<T>::getRow(I32 index) const noexcept {
     return _vec[index];
 }
 
 template<typename T>
 template<typename U>
-void mat2<T>::setCol(I32 index, const vec2<U> &value) {
+void mat2<T>::setCol(I32 index, const vec2<U> &value) noexcept {
     m[0][index] = static_cast<T>(value.x);
     m[1][index] = static_cast<T>(value.y);
 }
 
 template<typename T>
 template<typename U>
-void mat2<T>::setCol(I32 index, const U value) {
+void mat2<T>::setCol(I32 index, const U value) noexcept {
     m[0][index] = static_cast<T>(value);
     m[1][index] = static_cast<T>(value);
 }
 
 template<typename T>
 template<typename U>
-void mat2<T>::setCol(I32 index, const U x, const U y) {
+void mat2<T>::setCol(I32 index, const U x, const U y) noexcept {
     m[0][index] = static_cast<T>(x);
     m[1][index] = static_cast<T>(y);
 }
 
 template<typename T>
-vec2<T> mat2<T>::getCol(I32 index) const {
+vec2<T> mat2<T>::getCol(I32 index) const noexcept {
     return vec2<T>(m[0][index], m[1][index]);
 }
 
 template<typename T>
-void mat2<T>::zero() {
+void mat2<T>::zero() noexcept {
     memset(mat, 0, 4 * sizeof(T));
 }
 
 template<typename T>
-void mat2<T>::identity() {
+void mat2<T>::identity() noexcept {
     mat[0] = static_cast<T>(1);
     mat[1] = static_cast<T>(0);
     mat[2] = static_cast<T>(0);
@@ -690,13 +690,13 @@ void mat2<T>::identity() {
 }
 
 template<typename T>
-bool mat2<T>::isIdentity() const {
+bool mat2<T>::isIdentity() const noexcept {
     return (COMPARE(mat[0], 1) && IS_ZERO(mat[1]) &&
             IS_ZERO(mat[2])    && COMPARE(mat[3], 1));
 }
 
 template<typename T>
-void mat2<T>::swap(mat2 &B) {
+void mat2<T>::swap(mat2 &B) noexcept {
     std::swap(m[0][0], B.m[0][0]);
     std::swap(m[0][1], B.m[0][1]);
 
@@ -705,12 +705,12 @@ void mat2<T>::swap(mat2 &B) {
 }
 
 template<typename T>
-T mat2<T>::det() const {
+T mat2<T>::det() const noexcept {
     return (mat[0] * mat[3] - mat[1] * mat[2]);
 }
 
 template<typename T>
-T mat2<T>::elementSum() const {
+T mat2<T>::elementSum() const noexcept {
     return mat[0] + mat[1] + mat[2] + mat[3];
 }
 
@@ -725,7 +725,7 @@ void mat2<T>::inverse() {
 }
 
 template<typename T>
-void mat2<T>::transpose() {
+void mat2<T>::transpose() noexcept {
     set(mat[0], mat[2],
         mat[1], mat[3]);
 }
@@ -750,14 +750,14 @@ void mat2<T>::getInverse(mat2<T> &ret) const {
 }
 
 template<typename T>
-mat2<T> mat2<T>::getTranspose() const {
+mat2<T> mat2<T>::getTranspose() const noexcept {
     mat2 ret(mat);
     ret.transpose();
     return ret;
 }
 
 template<typename T>
-void mat2<T>::getTranspose(mat2 &ret) const {
+void mat2<T>::getTranspose(mat2 &ret) const noexcept {
     ret.set(mat);
     ret.transpose();
 }
@@ -881,13 +881,13 @@ mat3<T>& mat3<T>::operator=(const mat3<U>& other) noexcept {
 
 template<typename T>
 template<typename U>
-vec2<U> mat3<T>::operator*(const vec2<U> &v) const {
+vec2<U> mat3<T>::operator*(const vec2<U> &v) const noexcept {
     return *this * vec3<U>(v);
 }
 
 template<typename T>
 template<typename U>
-vec3<U> mat3<T>::operator*(const vec3<U> &v) const {
+vec3<U> mat3<T>::operator*(const vec3<U> &v) const noexcept {
     return vec3<U>(mat[0] * v[0] + mat[3] * v[1] + mat[6] * v[2],
                    mat[1] * v[0] + mat[4] * v[1] + mat[7] * v[2],
                    mat[2] * v[0] + mat[5] * v[1] + mat[8] * v[2]);
@@ -895,7 +895,7 @@ vec3<U> mat3<T>::operator*(const vec3<U> &v) const {
 
 template<typename T>
 template<typename U>
-vec4<U> mat3<T>::operator*(const vec4<U> &v) const {
+vec4<U> mat3<T>::operator*(const vec4<U> &v) const noexcept {
     return vec4<U>(mat[0] * v[0] + mat[3] * v[1] + mat[6] * v[2],
                    mat[1] * v[0] + mat[4] * v[1] + mat[7] * v[2],
                    mat[2] * v[0] + mat[5] * v[1] + mat[8] * v[2],
@@ -904,7 +904,7 @@ vec4<U> mat3<T>::operator*(const vec4<U> &v) const {
 
 template<typename T>
 template<typename U>
-mat3<T> mat3<T>::operator*(const mat3<U> &B) const {
+mat3<T> mat3<T>::operator*(const mat3<U> &B) const noexcept {
     return mat3(B.m[0][0] * m[0][0] + B.m[1][0] * m[0][1] + B.m[2][0] * m[0][2], B.m[0][1] * m[0][0] + B.m[1][1] * m[0][1] + B.m[2][1] * m[0][2], B.m[0][2] * m[0][0] + B.m[1][2] * m[0][1] + B.m[2][2] * m[0][2],
                 B.m[0][0] * m[1][0] + B.m[1][0] * m[1][1] + B.m[2][0] * m[1][2], B.m[0][1] * m[1][0] + B.m[1][1] * m[1][1] + B.m[2][1] * m[1][2], B.m[0][2] * m[1][0] + B.m[1][2] * m[1][1] + B.m[2][2] * m[1][2],
                 B.m[0][0] * m[2][0] + B.m[1][0] * m[2][1] + B.m[2][0] * m[2][2], B.m[0][1] * m[2][0] + B.m[1][1] * m[2][1] + B.m[2][1] * m[2][2], B.m[0][2] * m[2][0] + B.m[1][2] * m[2][1] + B.m[2][2] * m[2][2]);
@@ -918,7 +918,7 @@ mat3<T> mat3<T>::operator/(const mat3<U> &B) const {
 
 template<typename T>
 template<typename U>
-mat3<T> mat3<T>::operator+(const mat3<U> &B) const {
+mat3<T> mat3<T>::operator+(const mat3<U> &B) const noexcept {
     return mat3(mat[0] + B[0], mat[1] + B[1], mat[2] + B[2],
                 mat[3] + B[3], mat[4] + B[4], mat[5] + B[5],
                 mat[6] + B[6], mat[7] + B[7], mat[8] + B[8]);
@@ -926,7 +926,7 @@ mat3<T> mat3<T>::operator+(const mat3<U> &B) const {
 
 template<typename T>
 template<typename U>
-mat3<T> mat3<T>::operator-(const mat3<U> &B) const {
+mat3<T> mat3<T>::operator-(const mat3<U> &B) const noexcept {
     return mat3(mat[0] - B[0], mat[1] - B[1], mat[2] - B[2],
                 mat[3] - B[3], mat[4] - B[4], mat[5] - B[5],
                 mat[6] - B[6], mat[7] - B[7], mat[8] - B[8]);
@@ -934,7 +934,7 @@ mat3<T> mat3<T>::operator-(const mat3<U> &B) const {
 
 template<typename T>
 template<typename U>
-mat3<T>& mat3<T>::operator*=(const mat3<U> &B) {
+mat3<T>& mat3<T>::operator*=(const mat3<U> &B) noexcept {
     return *this = *this * B;
 }
 
@@ -946,19 +946,19 @@ mat3<T>& mat3<T>::operator/=(const mat3<U> &B) {
 
 template<typename T>
 template<typename U>
-mat3<T>& mat3<T>::operator+=(const mat3<U> &B) {
+mat3<T>& mat3<T>::operator+=(const mat3<U> &B) noexcept {
     return *this = *this + B;
 }
 
 template<typename T>
 template<typename U>
-mat3<T>& mat3<T>::operator-=(const mat3<U> &B) {
+mat3<T>& mat3<T>::operator-=(const mat3<U> &B) noexcept {
     return *this = *this - B;
 }
 
 template<typename T>
 template<typename U>
-mat3<T> mat3<T>::operator*(U f) const {
+mat3<T> mat3<T>::operator*(U f) const noexcept {
     return (mat3(*this) *= f);
 }
 
@@ -970,19 +970,19 @@ mat3<T> mat3<T>::operator/(U f) const {
 
 template<typename T>
 template<typename U>
-mat3<T> mat3<T>::operator+(U f) const {
+mat3<T> mat3<T>::operator+(U f) const noexcept {
     return (mat3(*this) += f);
 }
 
 template<typename T>
 template<typename U>
-mat3<T> mat3<T>::operator-(U f) const {
+mat3<T> mat3<T>::operator-(U f) const noexcept {
     return (mat3(*this) -= f);
 }
 
 template<typename T>
 template<typename U>
-mat3<T>& mat3<T>::operator*=(U f) {
+mat3<T>& mat3<T>::operator*=(U f) noexcept {
     for (auto& val : _vec) {
         val *= f;
     }
@@ -1000,7 +1000,7 @@ mat3<T>& mat3<T>::operator/=(U f) {
 
 template<typename T>
 template<typename U>
-mat3<T>& mat3<T>::operator+=(U f) {
+mat3<T>& mat3<T>::operator+=(U f) noexcept {
     for (auto& val : _vec) {
         val += f;
     }
@@ -1009,7 +1009,7 @@ mat3<T>& mat3<T>::operator+=(U f) {
 
 template<typename T>
 template<typename U>
-mat3<T>& mat3<T>::operator-=(U f) {
+mat3<T>& mat3<T>::operator-=(U f) noexcept {
     for (auto& val : _vec) {
         val -= f;
     }
@@ -1017,7 +1017,7 @@ mat3<T>& mat3<T>::operator-=(U f) {
 }
 
 template<typename T>
-bool mat3<T>::operator==(const mat3 &B) const {
+bool mat3<T>::operator==(const mat3 &B) const noexcept {
     for (U8 i = 0; i < 9; ++i) {
         if (!COMPARE(mat[i], B.mat[i])) {
             return false;
@@ -1029,7 +1029,7 @@ bool mat3<T>::operator==(const mat3 &B) const {
 
 template<typename T>
 template<typename U>
-bool mat3<T>::operator==(const mat3<U> &B) const {
+bool mat3<T>::operator==(const mat3<U> &B) const noexcept {
     for (U8 i = 0; i < 9; ++i) {
         if (!COMPARE(mat[i], B.mat[i])) {
             return false;
@@ -1041,7 +1041,7 @@ bool mat3<T>::operator==(const mat3<U> &B) const {
 
 template<typename T>
 template<typename U>
-bool mat3<T>::operator!=(const mat3<U> &B) const {
+bool mat3<T>::operator!=(const mat3<U> &B) const noexcept {
     for (U8 i = 0; i < 9; ++i) {
         if (!COMPARE(mat[i], B.mat[i])) {
             return true;
@@ -1052,7 +1052,7 @@ bool mat3<T>::operator!=(const mat3<U> &B) const {
 }
 
 template<typename T>
-bool mat3<T>::operator!=(const mat3 &B) const {
+bool mat3<T>::operator!=(const mat3 &B) const noexcept {
     for (U8 i = 0; i < 9; ++i) {
         if (!COMPARE(mat[i], B.mat[i])) {
             return true;
@@ -1063,7 +1063,7 @@ bool mat3<T>::operator!=(const mat3 &B) const {
 }
 
 template<typename T>
-bool mat3<T>::compare(const mat3 &B, F32 epsilon) const {
+bool mat3<T>::compare(const mat3 &B, F32 epsilon) const noexcept {
     for (U8 i = 0; i < 9; ++i) {
         if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
             return false;
@@ -1075,7 +1075,7 @@ bool mat3<T>::compare(const mat3 &B, F32 epsilon) const {
 
 template<typename T>
 template<typename U>
-bool mat3<T>::compare(const mat3<U> &B, F32 epsilon) const {
+bool mat3<T>::compare(const mat3<U> &B, F32 epsilon) const noexcept {
     for (U8 i = 0; i < 9; ++i) {
         if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
             return false;
@@ -1086,17 +1086,17 @@ bool mat3<T>::compare(const mat3<U> &B, F32 epsilon) const {
 }
 
 template<typename T>
-mat3<T>::operator T *() {
+mat3<T>::operator T *() noexcept {
     return mat;
 }
 
 template<typename T>
-mat3<T>::operator const T *() const {
+mat3<T>::operator const T *() const noexcept {
     return mat;
 }
 
 template<typename T>
-T& mat3<T>::operator[](I32 i) {
+T& mat3<T>::operator[](I32 i) noexcept {
     return mat[i];
 }
 
@@ -1106,7 +1106,7 @@ const T mat3<T>::operator[](I32 i) const noexcept {
 }
 
 template<typename T>
-T& mat3<T>::element(I8 row, I8 column) {
+T& mat3<T>::element(I8 row, I8 column) noexcept {
     return m[row][column];
 }
 
@@ -1117,7 +1117,7 @@ const T& mat3<T>::element(I8 row, I8 column) const {
 
 template<typename T>
 template<typename U>
-void mat3<T>::set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8) {
+void mat3<T>::set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8) noexcept {
     mat[0] = static_cast<T>(m0);  mat[1] = static_cast<T>(m1); mat[3] = static_cast<T>(m3);
     mat[2] = static_cast<T>(m2);  mat[4] = static_cast<T>(m4); mat[5] = static_cast<T>(m5);
     mat[6] = static_cast<T>(m6);  mat[7] = static_cast<T>(m7); mat[8] = static_cast<T>(m8);
@@ -1125,7 +1125,7 @@ void mat3<T>::set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::set(const U *matrix) {
+void mat3<T>::set(const U *matrix) noexcept {
     if (sizeof(T) == sizeof(U)) {
         memcpy(mat, matrix, sizeof(U) * 9);
     } else {
@@ -1137,7 +1137,7 @@ void mat3<T>::set(const U *matrix) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::set(const mat2<U> &matrix) {
+void mat3<T>::set(const mat2<U> &matrix) noexcept {
     const U zero = static_cast<U>(0);
     set(matrix[0], matrix[1], zero,
         matrix[2], matrix[3], zero,
@@ -1146,13 +1146,13 @@ void mat3<T>::set(const mat2<U> &matrix) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::set(const mat3<U> &matrix) {
+void mat3<T>::set(const mat3<U> &matrix) noexcept {
     set(matrix.mat);
 }
 
 template<typename T>
 template<typename U>
-void mat3<T>::set(const mat4<U> &matrix) {
+void mat3<T>::set(const mat4<U> &matrix) noexcept {
     set(matrix[0], matrix[1], matrix[2],
         matrix[4], matrix[5], matrix[6],
         matrix[8], matrix[9], matrix[10]);
@@ -1160,30 +1160,30 @@ void mat3<T>::set(const mat4<U> &matrix) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::setRow(I32 index, const U value) {
+void mat3<T>::setRow(I32 index, const U value) noexcept {
     _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
-void mat3<T>::setRow(I32 index, const vec3<U> &value) {
+void mat3<T>::setRow(I32 index, const vec3<U> &value) noexcept {
     _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
-void mat3<T>::setRow(I32 index, const U x, const U y, const U z) {
+void mat3<T>::setRow(I32 index, const U x, const U y, const U z) noexcept {
     _vec[index].set(x, y, z);
 }
 
 template<typename T>
-const vec3<T>& mat3<T>::getRow(I32 index) const {
+const vec3<T>& mat3<T>::getRow(I32 index) const noexcept {
     return _vec[index];
 }
 
 template<typename T>
 template<typename U>
-void mat3<T>::setCol(I32 index, const vec3<U> &value) {
+void mat3<T>::setCol(I32 index, const vec3<U> &value) noexcept {
     m[0][index] = static_cast<T>(value.x);
     m[1][index] = static_cast<T>(value.y);
     m[2][index] = static_cast<T>(value.z);
@@ -1191,7 +1191,7 @@ void mat3<T>::setCol(I32 index, const vec3<U> &value) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::setCol(I32 index, const U value) {
+void mat3<T>::setCol(I32 index, const U value) noexcept {
     m[0][index] = static_cast<T>(value);
     m[1][index] = static_cast<T>(value);
     m[2][index] = static_cast<T>(value);
@@ -1199,24 +1199,24 @@ void mat3<T>::setCol(I32 index, const U value) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::setCol(I32 index, const U x, const U y, const U z) {
+void mat3<T>::setCol(I32 index, const U x, const U y, const U z) noexcept {
     m[0][index] = static_cast<T>(x);
     m[1][index] = static_cast<T>(y);
     m[2][index] = static_cast<T>(z);
 }
 
 template<typename T>
-vec3<T> mat3<T>::getCol(I32 index) const {
+vec3<T> mat3<T>::getCol(I32 index) const noexcept {
     return vec3<T>(m[0][index], m[1][index], m[2][index]);
 }
 
 template<typename T>
-void mat3<T>::zero() {
+void mat3<T>::zero() noexcept {
     memset(mat, 0, 9 * sizeof(T));
 }
 
 template<typename T>
-void mat3<T>::identity() {
+void mat3<T>::identity() noexcept {
     const T zero = static_cast<T>(0);
     const T one = static_cast<T>(1);
     mat[0] = one;  mat[1] = zero; mat[2] = zero;
@@ -1225,14 +1225,14 @@ void mat3<T>::identity() {
 }
 
 template<typename T>
-bool mat3<T>::isIdentity() const {
+bool mat3<T>::isIdentity() const noexcept {
     return (COMPARE(mat[0], 1) && IS_ZERO(mat[1])    && IS_ZERO(mat[2]) &&
             IS_ZERO(mat[3])    && COMPARE(mat[4], 1) && IS_ZERO(mat[5]) &&
             IS_ZERO(mat[6])    && IS_ZERO(mat[7])    && COMPARE(mat[8], 1));
 }
 
 template<typename T>
-void mat3<T>::swap(mat3 &B) {
+void mat3<T>::swap(mat3 &B) noexcept {
     std::swap(m[0][0], B.m[0][0]);
     std::swap(m[0][1], B.m[0][1]);
     std::swap(m[0][2], B.m[0][2]);
@@ -1247,7 +1247,7 @@ void mat3<T>::swap(mat3 &B) {
 }
 
 template<typename T>
-T mat3<T>::det() const {
+T mat3<T>::det() const noexcept {
     return ((mat[0] * mat[4] * mat[8]) +
             (mat[3] * mat[7] * mat[2]) +
             (mat[6] * mat[1] * mat[5]) -
@@ -1257,7 +1257,7 @@ T mat3<T>::det() const {
 }
 
 template<typename T>
-T mat3<T>::elementSum() const {
+T mat3<T>::elementSum() const noexcept {
     return mat[0] + mat[1] + mat[2] +
            mat[3] + mat[4] + mat[5] +
            mat[6] + mat[7] + mat[8];
@@ -1281,7 +1281,7 @@ void mat3<T>::inverse() {
 }
 
 template<typename T>
-void mat3<T>::transpose() {
+void mat3<T>::transpose() noexcept {
     set(mat[0], mat[3], mat[6],
         mat[1], mat[4], mat[7],
         mat[2], mat[5], mat[8]);
@@ -1307,14 +1307,14 @@ void mat3<T>::getInverse(mat3<T> &ret) const {
 }
 
 template<typename T>
-mat3<T> mat3<T>::getTranspose() const {
+mat3<T> mat3<T>::getTranspose() const noexcept {
     mat3<T> ret(mat);
     ret.transpose();
     return ret;
 }
 
 template<typename T>
-void mat3<T>::getTranspose(mat3<T> &ret) const {
+void mat3<T>::getTranspose(mat3<T> &ret) const noexcept {
     ret.set(mat);
     ret.transpose();
 }
@@ -1407,7 +1407,7 @@ void mat3<T>::fromZRotation(Angle::RADIANS<U> angle) {
 // setScale replaces the main diagonal!
 template<typename T>
 template<typename U>
-void mat3<T>::setScale(U x, U y, U z) {
+void mat3<T>::setScale(U x, U y, U z) noexcept {
     mat[0] = static_cast<T>(x);
     mat[4] = static_cast<T>(y);
     mat[8] = static_cast<T>(z);
@@ -1415,7 +1415,7 @@ void mat3<T>::setScale(U x, U y, U z) {
 
 template<typename T>
 template<typename U>
-void mat3<T>::setScale(const vec3<U> &v) {
+void mat3<T>::setScale(const vec3<U> &v) noexcept {
     setScale(v.x, v.y, v.z);
 }
 
@@ -1600,19 +1600,19 @@ mat4<T>& mat4<T>::operator=(const mat4<U>& other) noexcept {
 
 template<typename T>
 template<typename U>
-vec2<U> mat4<T>::operator*(const vec2<U> &v) const {
+vec2<U> mat4<T>::operator*(const vec2<U> &v) const noexcept {
     return *this * vec4<U>(v);
 }
 
 template<typename T>
 template<typename U>
-vec3<U> mat4<T>::operator*(const vec3<U> &v) const {
+vec3<U> mat4<T>::operator*(const vec3<U> &v) const noexcept {
     return *this * vec4<U>(v);
 }
 
 template<typename T>
 template<typename U>
-vec4<U> mat4<T>::operator*(const vec4<U> &v) const {
+vec4<U> mat4<T>::operator*(const vec4<U> &v) const noexcept {
     return vec4<U>(mat[0] * v.x + mat[4] * v.y + mat[8]  * v.z + mat[12] * v.w,
                    mat[1] * v.x + mat[5] * v.y + mat[9]  * v.z + mat[13] * v.w,
                    mat[2] * v.x + mat[6] * v.y + mat[10] * v.z + mat[14] * v.w,
@@ -1621,7 +1621,7 @@ vec4<U> mat4<T>::operator*(const vec4<U> &v) const {
 
 template<typename T>
 template<typename U>
-mat4<T> mat4<T>::operator*(const mat4<U>& matrix) const {
+mat4<T> mat4<T>::operator*(const mat4<U>& matrix) const noexcept {
     mat4<T> retValue;
     Multiply(*this, matrix, retValue);
     return retValue;
@@ -1637,19 +1637,19 @@ mat4<T> mat4<T>::operator/(const mat4<U>& matrix) const {
 
 template<typename T>
 template<typename U>
-mat4<T> mat4<T>::operator+(const mat4<U> &matrix) const {
+mat4<T> mat4<T>::operator+(const mat4<U> &matrix) const noexcept {
     return (mat4(*this) += matrix);
 }
 
 template<typename T>
 template<typename U>
-mat4<T> mat4<T>::operator-(const mat4<U> &matrix) const {
+mat4<T> mat4<T>::operator-(const mat4<U> &matrix) const noexcept {
     return (mat4(*this) -= matrix);
 }
 
 template<typename T>
 template<typename U>
-mat4<T>& mat4<T>::operator*=(const mat4<U> &matrix) {
+mat4<T>& mat4<T>::operator*=(const mat4<U> &matrix) noexcept {
     Multiply(*this, matrix, *this);
     return *this;
 }
@@ -1663,7 +1663,7 @@ mat4<T>& mat4<T>::operator/=(const mat4<U> &matrix) {
 
 template<typename T>
 template<typename U>
-mat4<T>& mat4<T>::operator+=(const mat4<U> &matrix) {
+mat4<T>& mat4<T>::operator+=(const mat4<U> &matrix) noexcept {
     for (U8 i = 0; i < 4; ++i) {
         _vec[i] += matrix._vec[i];
     }
@@ -1672,7 +1672,7 @@ mat4<T>& mat4<T>::operator+=(const mat4<U> &matrix) {
 
 template<typename T>
 template<typename U>
-mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) {
+mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) noexcept {
     for (U8 i = 0; i < 4; ++i) {
         _vec[i] -= matrix._vec[i];
     }
@@ -1682,7 +1682,7 @@ mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) {
 
 template<typename T>
 template<typename U>
-mat4<T> mat4<T>::operator*(U f) const {
+mat4<T> mat4<T>::operator*(U f) const noexcept {
     return (mat4(*this) *= f);
 }
 
@@ -1694,19 +1694,19 @@ mat4<T> mat4<T>::operator/(U f) const {
 
 template<typename T>
 template<typename U>
-mat4<T> mat4<T>::operator+(U f) const {
+mat4<T> mat4<T>::operator+(U f) const noexcept {
     return (mat4(*this) += f);
 }
 
 template<typename T>
 template<typename U>
-mat4<T> mat4<T>::operator-(U f) const {
+mat4<T> mat4<T>::operator-(U f) const noexcept {
     return (mat4(*this) -= f);
 }
 
 template<typename T>
 template<typename U>
-mat4<T>& mat4<T>::operator*=(U f) {
+mat4<T>& mat4<T>::operator*=(U f) noexcept {
     for (U8 i = 0; i < 4; ++i) {
         _vec[i] *= f;
     }
@@ -1726,7 +1726,7 @@ mat4<T>& mat4<T>::operator/=(U f) {
 
 template<typename T>
 template<typename U>
-mat4<T>& mat4<T>::operator+=(U f) {
+mat4<T>& mat4<T>::operator+=(U f) noexcept {
     for (U8 i = 0; i < 4; ++i) {
         _vec[i] += f;
     }
@@ -1736,7 +1736,7 @@ mat4<T>& mat4<T>::operator+=(U f) {
 
 template<typename T>
 template<typename U>
-mat4<T>& mat4<T>::operator-=(U f) {
+mat4<T>& mat4<T>::operator-=(U f) noexcept {
     for (U8 i = 0; i < 4; ++i) {
         _vec[i] -= f;
     }
@@ -1745,7 +1745,7 @@ mat4<T>& mat4<T>::operator-=(U f) {
 }
 
 template<typename T>
-bool mat4<T>::operator==(const mat4& B) const {
+bool mat4<T>::operator==(const mat4& B) const noexcept {
     for (U8 i = 0; i < 4; ++i) {
         if (_reg[i] != B._reg[i]) {
             return false;
@@ -1756,7 +1756,7 @@ bool mat4<T>::operator==(const mat4& B) const {
 }
 
 template<typename T>
-bool mat4<T>::operator!=(const mat4 &B) const {
+bool mat4<T>::operator!=(const mat4 &B) const noexcept {
     for (U8 i = 0; i < 4; ++i) {
         if (_reg[i] != B._reg[i]) {
             return true;
@@ -1768,7 +1768,7 @@ bool mat4<T>::operator!=(const mat4 &B) const {
 
 template<typename T>
 template<typename U>
-bool mat4<T>::operator==(const mat4<U>& B) const {
+bool mat4<T>::operator==(const mat4<U>& B) const noexcept {
     /*
     // Add a small epsilon value to avoid 0.0 != 0.0
     if (!COMPARE(elementSum() + EPSILON_F32,
@@ -1788,7 +1788,7 @@ bool mat4<T>::operator==(const mat4<U>& B) const {
 
 template<typename T>
 template<typename U>
-bool mat4<T>::operator!=(const mat4<U> &B) const {
+bool mat4<T>::operator!=(const mat4<U> &B) const noexcept {
     /*
     // Add a small epsilon value to avoid 0.0 != 0.0
     if (!COMPARE(elementSum() + EPSILON_F32,
@@ -1808,7 +1808,7 @@ bool mat4<T>::operator!=(const mat4<U> &B) const {
 }
 
 template<typename T>
-bool mat4<T>::compare(const mat4 &B, F32 epsilon) const {
+bool mat4<T>::compare(const mat4 &B, F32 epsilon) const noexcept {
     for (U8 i = 0; i < 16; ++i) {
         if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
             return false;
@@ -1820,7 +1820,7 @@ bool mat4<T>::compare(const mat4 &B, F32 epsilon) const {
 
 template<typename T>
 template<typename U>
-bool mat4<T>::compare(const mat4<U> &B, F32 epsilon) const {
+bool mat4<T>::compare(const mat4<U> &B, F32 epsilon) const noexcept {
     for (U8 i = 0; i < 16; ++i) {
         if (!COMPARE_TOLERANCE(mat[i], B.mat[i], epsilon)) {
             return false;
@@ -1831,12 +1831,12 @@ bool mat4<T>::compare(const mat4<U> &B, F32 epsilon) const {
 }
 
 template<typename T>
-mat4<T>::operator T *() {
+mat4<T>::operator T *() noexcept {
     return mat;
 }
 
 template<typename T>
-mat4<T>::operator const T *() const {
+mat4<T>::operator const T *() const noexcept {
     return mat;
 }
 
@@ -1851,24 +1851,24 @@ const T& mat4<T>::operator[](I32 i) const noexcept {
 }
 
 template<typename T>
-T& mat4<T>::element(I8 row, I8 column) {
+T& mat4<T>::element(I8 row, I8 column) noexcept {
     return m[row][column];
 }
 
 template<typename T>
-const T& mat4<T>::element(I8 row, I8 column) const {
+const T& mat4<T>::element(I8 row, I8 column) const noexcept {
     return m[row][column];
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::set(std::initializer_list<U> matrix) {
+void mat4<T>::set(std::initializer_list<U> matrix) noexcept {
     set(matrix.begin());
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::set(U const *matrix) {
+void mat4<T>::set(U const *matrix) noexcept {
     if (sizeof(T) == sizeof(U)) {
         memcpy(mat, matrix, sizeof(U) * 16);
     } else {
@@ -1880,7 +1880,7 @@ void mat4<T>::set(U const *matrix) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::set(const mat2<U> &matrix) {
+void mat4<T>::set(const mat2<U> &matrix) noexcept {
     memset(mat, 0, 16 * sizeof(T));
 
     mat[0] = matrix[0];  mat[1] = matrix[1];
@@ -1889,7 +1889,7 @@ void mat4<T>::set(const mat2<U> &matrix) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::set(const mat3<U> &matrix) {
+void mat4<T>::set(const mat3<U> &matrix) noexcept {
     memset(mat, 0, 16 * sizeof(T));
 
     mat[0] = matrix[0]; mat[1] = matrix[1]; mat[2]  = matrix[2];
@@ -1899,13 +1899,13 @@ void mat4<T>::set(const mat3<U> &matrix) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::set(const mat4<U> &matrix) {
+void mat4<T>::set(const mat4<U> &matrix) noexcept {
     set(matrix.mat);
 }
 
 template<typename T>
 template<typename U>
-inline void mat4<T>::set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) {
+inline void mat4<T>::set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept {
     set(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
         static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
         static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
@@ -1916,36 +1916,36 @@ inline void mat4<T>::set(const vec3<U> &translation, const vec3<U> &scale, const
 
 template<typename T>
 template<typename U>
-void mat4<T>::setRow(I32 index, const U value) {
+void mat4<T>::setRow(I32 index, const U value) noexcept {
     _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::setRow(I32 index, const vec4<U> &value) {
+void mat4<T>::setRow(I32 index, const vec4<U> &value) noexcept {
     _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::setRow(I32 index, const U x, const U y, const U z, const U w) {
+void mat4<T>::setRow(I32 index, const U x, const U y, const U z, const U w) noexcept {
     _vec[index].set(x, y, z, w);
 }
 
 template<typename T>
-const vec4<T>& mat4<T>::getRow(I32 index) const {
+const vec4<T>& mat4<T>::getRow(I32 index) const noexcept {
     return _vec[index];
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::setCol(I32 index, const vec4<U> &value) {
+void mat4<T>::setCol(I32 index, const vec4<U> &value) noexcept {
     setCol(index, value.x, value.y, value.z, value.w);
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::setCol(I32 index, const U value) {
+void mat4<T>::setCol(I32 index, const U value) noexcept {
     m[0][index] = static_cast<T>(value);
     m[1][index] = static_cast<T>(value);
     m[2][index] = static_cast<T>(value);
@@ -1954,7 +1954,7 @@ void mat4<T>::setCol(I32 index, const U value) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::setCol(I32 index, const U x, const U y, const U z, const U w) {
+void mat4<T>::setCol(I32 index, const U x, const U y, const U z, const U w) noexcept {
     m[0][index] = static_cast<T>(x);
     m[1][index] = static_cast<T>(y);
     m[2][index] = static_cast<T>(z);
@@ -1962,7 +1962,7 @@ void mat4<T>::setCol(I32 index, const U x, const U y, const U z, const U w) {
 }
 
 template<typename T>
-vec4<T> mat4<T>::getCol(I32 index) const {
+vec4<T> mat4<T>::getCol(I32 index) const noexcept {
     return vec4<T>(m[0][index], m[1][index], m[2][index], m[3][index]);
 }
 
@@ -1978,7 +1978,7 @@ void mat4<T>::identity() noexcept {
 }
 
 template<typename T>
-bool mat4<T>::isIdentity() const {
+bool mat4<T>::isIdentity() const noexcept {
     return (COMPARE(mat[0], 1) && IS_ZERO(mat[1])    && IS_ZERO(mat[2])     && IS_ZERO(mat[3])
             IS_ZERO(mat[4])    && COMPARE(mat[5], 1) && IS_ZERO(mat[6])     && IS_ZERO(mat[7])
             IS_ZERO(mat[8])    && IS_ZERO(mat[9])    && COMPARE(mat[10], 1) && IS_ZERO(mat[11]),
@@ -1986,7 +1986,7 @@ bool mat4<T>::isIdentity() const {
 }
 
 template<typename T>
-void mat4<T>::swap(mat4 &B) {
+void mat4<T>::swap(mat4 &B) noexcept {
     std::swap(m[0][0], B.m[0][0]);
     std::swap(m[0][1], B.m[0][1]);
     std::swap(m[0][2], B.m[0][2]);
@@ -2016,7 +2016,7 @@ T mat4<T>::det() const noexcept {
 }
 
 template<typename T>
-T mat4<T>::elementSum() const {
+T mat4<T>::elementSum() const noexcept {
     return mat[0]  + mat[1]  + mat[2]  + mat[3]  +
            mat[4]  + mat[5]  + mat[6]  + mat[7]  +
            mat[8]  + mat[9]  + mat[10] + mat[11] +
@@ -2041,7 +2041,7 @@ inline void mat4<F32>::inverse() {
 }
 
 template<typename T>
-void mat4<T>::transpose() {
+void mat4<T>::transpose() noexcept {
     set({ mat[0], mat[4], mat[8],  mat[12],
           mat[1], mat[5], mat[9],  mat[13],
           mat[2], mat[6], mat[10], mat[14],
@@ -2056,7 +2056,7 @@ void mat4<T>::inverseTranspose() {
 }
 
 template<typename T>
-mat4<T> mat4<T>::transposeRotation() const {
+mat4<T> mat4<T>::transposeRotation() const noexcept {
     set({ mat[0],   mat[4],  mat[8], mat[3],
           mat[1],   mat[5],  mat[9], mat[7],
           mat[2],   mat[6], mat[10], mat[11],
@@ -2088,7 +2088,7 @@ inline void mat4<F32>::getInverse(mat4<F32> &ret) const {
 }
 
 template<typename T>
-mat4<T> mat4<T>::getTranspose() const {
+mat4<T> mat4<T>::getTranspose() const noexcept {
     return mat4({mat[0], mat[4], mat[8],  mat[12],
                  mat[1], mat[5], mat[9],  mat[13],
                  mat[2], mat[6], mat[10], mat[14],
@@ -2096,7 +2096,7 @@ mat4<T> mat4<T>::getTranspose() const {
 }
 
 template<typename T>
-void mat4<T>::getTranspose(mat4 &out) const {
+void mat4<T>::getTranspose(mat4 &out) const noexcept {
     out.set({mat[0], mat[4], mat[8],  mat[12],
              mat[1], mat[5], mat[9],  mat[13],
              mat[2], mat[6], mat[10], mat[14],
@@ -2132,7 +2132,7 @@ inline void mat4<F32>::getInverseTranspose(mat4<F32> &ret) const {
 }
 
 template<typename T>
-mat4<T> mat4<T>::getTransposeRotation() const {
+mat4<T> mat4<T>::getTransposeRotation() const noexcept {
     return mat4(mat[0],  mat[4],  mat[8],  mat[3],
                 mat[1],  mat[5],  mat[9],  mat[7],
                 mat[2],  mat[6],  mat[10], mat[11],
@@ -2140,7 +2140,7 @@ mat4<T> mat4<T>::getTransposeRotation() const {
 }
 
 template<typename T>
-void mat4<T>::getTransposeRotation(mat4 &ret) const {
+void mat4<T>::getTransposeRotation(mat4 &ret) const noexcept {
     ret.set(mat[0],  mat[4],  mat[8],  mat[3],
             mat[1],  mat[5],  mat[9],  mat[7],
             mat[2],  mat[6],  mat[10], mat[11],
@@ -2257,19 +2257,19 @@ vec3<U> mat4<T>::transformHomogeneous(const vec3<U> &v) const {
 
 template<typename T>
 template<typename U>
-vec3<U> mat4<T>::transformNonHomogeneous(const vec3<U> &v) const {
+vec3<U> mat4<T>::transformNonHomogeneous(const vec3<U> &v) const noexcept {
     return *this * vec4<U>(v, static_cast<U>(0));
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::translate(const vec3<U> &v) {
+void mat4<T>::translate(const vec3<U> &v) noexcept {
     translate(v.x, v.y, v.z);
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::translate(U x, U y, U z) {
+void mat4<T>::translate(U x, U y, U z) noexcept {
     mat[12] += static_cast<T>(x);
     mat[13] += static_cast<T>(y);
     mat[14] += static_cast<T>(z);
@@ -2277,13 +2277,13 @@ void mat4<T>::translate(U x, U y, U z) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::scale(const vec3<U> &v) {
+void mat4<T>::scale(const vec3<U> &v) noexcept {
     scale(v.x, v.y, v.z);
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::scale(U x, U y, U z) {
+void mat4<T>::scale(U x, U y, U z) noexcept {
     mat[0]  *= static_cast<T>(x);
     mat[4]  *= static_cast<T>(y);
     mat[8]  *= static_cast<T>(z);
@@ -2300,7 +2300,7 @@ void mat4<T>::scale(U x, U y, U z) {
 
 template<typename T>
 template<typename U>
-vec3<U> mat4<T>::getTranslation() const {
+vec3<U> mat4<T>::getTranslation() const noexcept {
     return vec3<U>(mat[12], mat[13], mat[14]);
 }
 
@@ -2424,7 +2424,7 @@ void mat4<T>::frustum(U left, U right, U bottom, U top, U nearVal, U farVal) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::extractMat3(mat3<U> &matrix3) const {
+void mat4<T>::extractMat3(mat3<U> &matrix3) const noexcept {
     matrix3.m[0][0] = static_cast<U>(m[0][0]);
     matrix3.m[0][1] = static_cast<U>(m[0][1]);
     matrix3.m[0][2] = static_cast<U>(m[0][2]);
@@ -2437,7 +2437,7 @@ void mat4<T>::extractMat3(mat3<U> &matrix3) const {
 }
 
 template<typename T>
-void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret) {
+void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret) noexcept {
     for (U8 i = 0; i < 4; ++i) {
         const vec4<T>& rowA = matrixA.getRow(i);
         ret.setRow(i, matrixB.getRow(0) * rowA[0] + matrixB.getRow(1) * rowA[1] + matrixB.getRow(2) * rowA[2] + matrixB.getRow(3) * rowA[3]);
@@ -2445,14 +2445,14 @@ void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& 
 }
 
 template<typename T>
-mat4<T> mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB) {
+mat4<T> mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB) noexcept {
     mat4<T> ret;
     Multiply(matrixA, matrixB, ret);
     return ret;
 }
 
 template<>
-inline void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) {
+inline void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) noexcept {
     M4x4_SSE(matrixA, matrixB, ret);
 }
 

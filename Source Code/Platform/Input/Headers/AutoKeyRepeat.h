@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _AUTO_KEY_REPEAT_H_
 #define _AUTO_KEY_REPEAT_H_
 

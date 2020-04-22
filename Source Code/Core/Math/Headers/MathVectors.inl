@@ -83,12 +83,12 @@ namespace {
 */
 /// general vec2 cross function
 template <typename T>
-inline vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2) {
+inline vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2) noexcept {
     return v1.x * v2.y - v1.y * v2.x;
 }
 
 template <typename T>
-inline vec2<T> Inverse(const vec2<T> &v) {
+inline vec2<T> Inverse(const vec2<T> &v) noexcept {
     return vec2<T>(v.y, v.x);
 }
 
@@ -105,7 +105,7 @@ inline vec2<T> Normalized(const vec2<T> &vector) {
 
 /// multiply a vector by a value
 template <typename T>
-inline vec2<T> operator*(T fl, const vec2<T> &v) {
+inline vec2<T> operator*(T fl, const vec2<T> &v) noexcept {
     return vec2<T>(v.x * fl, v.y * fl);
 }
 
@@ -134,7 +134,7 @@ inline vec3<T> Normalized(const vec3<T> &vector) {
 
 /// multiply a vector by a value
 template <typename T>
-inline vec3<T> operator*(T fl, const vec3<T> &v) {
+inline vec3<T> operator*(T fl, const vec3<T> &v) noexcept {
     return vec3<T>(v.x * fl, v.y * fl, v.z * fl);
 }
 
@@ -146,14 +146,14 @@ inline T Dot(const vec3<T> &a, const vec3<T> &b) noexcept {
 
 /// general vec3 cross function
 template <typename T>
-inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) {
+inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) noexcept {
     return vec3<T>(v1.y * v2.z - v1.z * v2.y, 
                    v1.z * v2.x - v1.x * v2.z,
                    v1.x * v2.y - v1.y * v2.x);
 }
 
 template <typename T>
-inline vec3<T> Inverse(const vec3<T> &v) {
+inline vec3<T> Inverse(const vec3<T> &v) noexcept {
     return vec3<T>(v.z, v.y, v.x);
 }
 
@@ -165,13 +165,13 @@ inline void OrthoNormalize(vec3<T> &n, vec3<T> &u) {
 
 /// min/max functions
 template <typename T>
-inline vec4<T> Min(const vec4<T> &v1, const vec4<T> &v2) {
+inline vec4<T> Min(const vec4<T> &v1, const vec4<T> &v2) noexcept {
     return vec4<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y),
                    std::min(v1.z, v2.z), std::min(v1.w, v2.w));
 }
 
 template <typename T>
-inline vec4<T> Max(const vec4<T> &v1, const vec4<T> &v2) {
+inline vec4<T> Max(const vec4<T> &v1, const vec4<T> &v2) noexcept {
     return vec4<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y),
                    std::max(v1.z, v2.z), std::max(v1.w, v2.w));
 }
@@ -189,7 +189,7 @@ inline vec4<T> Normalized(const vec4<T> &vector) {
 
 /// multiply a vector by a value
 template <typename T>
-inline vec4<T> operator*(T fl, const vec4<T> &v) {
+inline vec4<T> operator*(T fl, const vec4<T> &v) noexcept {
     return v * fl;
 }
 
@@ -199,7 +199,7 @@ inline vec4<T> operator*(T fl, const vec4<T> &v) {
 
 /// return the squared distance of the vector
 template <typename T>
-inline T vec2<T>::lengthSquared() const {
+inline T vec2<T>::lengthSquared() const noexcept {
     return Divide::Dot(*this, *this);
 }
 
@@ -211,7 +211,7 @@ inline T vec2<T>::distance(const vec2 &v) const {
 
 /// compute the vector's squared distance to another specified vector
 template <typename T>
-inline T vec2<T>::distanceSquared(const vec2 &v) const {
+inline T vec2<T>::distanceSquared(const vec2 &v) const noexcept {
     const vec2 d = v - *this;
     return Divide::Dot(d, d);
 }
@@ -230,12 +230,12 @@ inline vec2<T>& vec2<T>::normalize() {
 
 /// get the smallest value of X or Y
 template <typename T>
-inline T vec2<T>::minComponent() const {
+inline T vec2<T>::minComponent() const noexcept {
     return std::min(x, y);
 }
 /// get the largest value of X or Y
 template <typename T>
-inline T vec2<T>::maxComponent() const {
+inline T vec2<T>::maxComponent() const noexcept {
     return std::max(x, y);
 }
 
@@ -265,7 +265,7 @@ inline T vec2<T>::projectionOnLine(const vec2 &vA, const vec2 &vB) const {
 
 /// get the dot product between this vector and the specified one
 template <typename T>
-inline T vec2<T>::dot(const vec2 &v) const {
+inline T vec2<T>::dot(const vec2 &v) const noexcept {
     return ((this->x * v.x) + (this->y * v.y));
 }
 
@@ -305,26 +305,26 @@ inline vec2<T> vec2<T>::closestPointOnSegment(const vec2 &vA, const vec2 &vB) {
 
 /// lerp between this and the specified vector by the specified amount
 template <typename T>
-inline void vec2<T>::lerp(const vec2 &v, T factor) {
+inline void vec2<T>::lerp(const vec2 &v, T factor) noexcept {
     set((*this * (1 - factor)) + (v * factor));
 }
 
 /// lerp between this and the specified vector by the specified amount for each
 /// component
 template <typename T>
-inline void vec2<T>::lerp(const vec2 &v, const vec2 &factor) {
+inline void vec2<T>::lerp(const vec2 &v, const vec2 &factor) noexcept {
     set((*this * (1 - factor)) + (v * factor));
 }
 
 /// linear interpolation between 2 vectors
 template <typename T, typename U>
-inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor) {
+inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor) noexcept {
     return ((u * (1 - factor)) + (v * factor));
 }
 
 /// linear interpolation between 2 vectors based on separate x and y factors
 template <typename T>
-inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) {
+inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) noexcept {
     return (vec2<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
                     (u.y * (1 - factor.y)) + (v.y * factor.y)));
 }
@@ -378,19 +378,19 @@ inline vec3<T>& vec3<T>::normalize() {
 
 /// get the smallest value of X, Y or Z
 template <typename T>
-inline T vec3<T>::minComponent() const {
+inline T vec3<T>::minComponent() const noexcept {
     return std::min(x, std::min(y, z));
 }
 
 /// get the largest value of X, Y or Z
 template <typename T>
-inline T vec3<T>::maxComponent() const {
+inline T vec3<T>::maxComponent() const noexcept {
     return std::max(x, std::max(y, z));
 }
 
 /// set this vector to be equal to the cross of the 2 specified vectors
 template <typename T>
-inline void vec3<T>::cross(const vec3 &v1, const vec3 &v2) {
+inline void vec3<T>::cross(const vec3 &v1, const vec3 &v2) noexcept {
     this->x = v1.y * v2.z - v1.z * v2.y;
     this->y = v1.z * v2.x - v1.x * v2.z;
     this->z = v1.x * v2.y - v1.y * v2.x;
@@ -399,7 +399,7 @@ inline void vec3<T>::cross(const vec3 &v1, const vec3 &v2) {
 /// set this vector to be equal to the cross between itself and the specified
 /// vector
 template <typename T>
-inline void vec3<T>::cross(const vec3 &v2) {
+inline void vec3<T>::cross(const vec3 &v2) noexcept {
     this->cross(*this, v2);
 }
 
@@ -444,14 +444,14 @@ inline T vec3<T>::projectionOnLine(const vec3 &vA, const vec3 &vB) const {
 
 /// lerp between this and the specified vector by the specified amount
 template <typename T>
-inline void vec3<T>::lerp(const vec3 &v, T factor) {
+inline void vec3<T>::lerp(const vec3 &v, T factor) noexcept {
     set((*this * (1 - factor)) + (v * factor));
 }
 
 /// lerp between this and the specified vector by the specified amount for each
 /// component
 template <typename T>
-inline void vec3<T>::lerp(const vec3 &v, const vec3 &factor) {
+inline void vec3<T>::lerp(const vec3 &v, const vec3 &factor) noexcept {
     set((*this * (1 - factor)) + (v * factor));
 }
 
@@ -492,7 +492,7 @@ inline void vec3<T>::round() {
 
 /// swap the components  of this vector with that of the specified one
 template <typename T>
-inline void vec3<T>::swap(vec3 &iv) {
+inline void vec3<T>::swap(vec3 &iv) noexcept {
     std::swap(this->x, iv.x);
     std::swap(this->y, iv.y);
     std::swap(this->z, iv.z);
@@ -500,7 +500,7 @@ inline void vec3<T>::swap(vec3 &iv) {
 
 /// swap the components  of this vector with that of the specified one
 template <typename T>
-inline void vec3<T>::swap(vec3 *iv) {
+inline void vec3<T>::swap(vec3 *iv) noexcept {
     std::swap(this->x, iv->x);
     std::swap(this->y, iv->y);
     std::swap(this->z, iv->z);
@@ -509,7 +509,7 @@ inline void vec3<T>::swap(vec3 *iv) {
 /// export the vector's components in the first 3 positions of the specified
 /// array
 template <typename T>
-inline void vec3<T>::get(T *v) const {
+inline void vec3<T>::get(T *v) const noexcept {
     v[0] = static_cast<T>(this->_v[0]);
     v[1] = static_cast<T>(this->_v[1]);
     v[2] = static_cast<T>(this->_v[2]);
@@ -518,7 +518,7 @@ inline void vec3<T>::get(T *v) const {
 /// this calculates a vector between the two specified points and returns the
 /// result
 template <typename T>
-inline vec3<T> vec3<T>::vector(const vec3 &vp1, const vec3 &vp2) const {
+inline vec3<T> vec3<T>::vector(const vec3 &vp1, const vec3 &vp2) const noexcept {
     return vec3(vp1.x - vp2.x, vp1.y - vp2.y, vp1.z - vp2.z);
 }
 
@@ -544,14 +544,14 @@ inline vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
 
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T, typename U>
-inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor) {
+inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor) noexcept {
     return ((u * (1 - factor)) + (v * factor));
 }
 
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
-inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
+inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) noexcept {
     return (vec3<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
                     (u.y * (1 - factor.y)) + (v.y * factor.y),
                     (u.z * (1 - factor.z)) + (v.z * factor.z)));
@@ -738,18 +738,18 @@ inline F32 Dot(const vec4<F32> &a, const vec4<F32> &b) noexcept {
 
 /// calculate the dot product between this vector and the specified one
 template <typename T>
-inline T vec4<T>::dot(const vec4 &v) const {
+inline T vec4<T>::dot(const vec4 &v) const noexcept {
     return Divide::Dot(*this, v);
 }
 
 template<>
-inline F32 vec4<F32>::length() const {
+inline F32 vec4<F32>::length() const noexcept {
     return Divide::Sqrt<F32>(DOT_SIMD(_reg._reg, _reg._reg));
 }
 
 /// return the squared distance of the vector
 template <typename T>
-inline T vec4<T>::lengthSquared() const {
+inline T vec4<T>::lengthSquared() const noexcept {
     return Dot(*this, *this);
 }
 /// transform the vector to unit length
@@ -773,37 +773,37 @@ inline vec4<F32>& vec4<F32>::normalize() {
 
 /// get the smallest value of X, Y, Z or W
 template <typename T>
-inline T vec4<T>::minComponent() const {
+inline T vec4<T>::minComponent() const noexcept {
     return std::min(x, std::min(y, std::min(z, w)));
 }
 /// get the largest value of X, Y, Z or W
 template <typename T>
-inline T vec4<T>::maxComponent() const {
+inline T vec4<T>::maxComponent() const noexcept {
     return std::max(x, std::max(y, std::min(z, w)));
 }
 
 /// lerp between this and the specified vector by the specified amount
 template <typename T>
-inline void vec4<T>::lerp(const vec4 &v, T factor) {
+inline void vec4<T>::lerp(const vec4 &v, T factor) noexcept {
     set((*this * (1 - factor)) + (v * factor));
 }
 
 /// lerp between this and the specified vector by the specified amount for each
 /// component
 template <typename T>
-inline void vec4<T>::lerp(const vec4 &v, const vec4 &factor) {
+inline void vec4<T>::lerp(const vec4 &v, const vec4 &factor) noexcept {
     set((*this * (1 - factor)) + (v * factor));
 }
 /// lerp between the 2 vectors by the specified amount
 template <typename T>
-inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, T factor) {
+inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, T factor) noexcept {
     return ((u * (1 - factor)) + (v * factor));
 }
 
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
-inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) {
+inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) noexcept {
     return (vec4<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
                     (u.y * (1 - factor.y)) + (v.y * factor.y),
                     (u.z * (1 - factor.z)) + (v.z * factor.z),

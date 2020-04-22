@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
 
@@ -91,9 +92,6 @@ namespace ECS
 
 		virtual void PostUpdate(f32 dt) override
 		{}
-
-        virtual void OnUpdateLoop() override
-        {}
 	}; // class System<T>
 
 	template<class T>

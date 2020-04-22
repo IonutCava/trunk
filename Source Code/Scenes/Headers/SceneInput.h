@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SCENE_INPUT_H_
 #define _SCENE_INPUT_H_
 

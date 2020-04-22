@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __I_COMPONENT_H__
 #define __I_COMPONENT_H__
 
@@ -15,7 +16,7 @@
 
 namespace ECS
 {
-	struct Data;
+	struct CustomEvent;
 
 	using ComponentId		= ObjectID;
 	using ComponentTypeId	= TypeID;
@@ -60,7 +61,7 @@ namespace ECS
 		inline void SetActive(bool state) { this->m_Enabled = state; }
 		inline bool IsActive() const { return this->m_Enabled; }
 
-		virtual void OnData(const Data& data) = 0;
+		virtual void OnData(const CustomEvent& data) = 0;
 	};
 }
 

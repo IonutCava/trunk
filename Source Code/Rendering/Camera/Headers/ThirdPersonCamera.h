@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _THIRD_PERSON_CAMERA_H_
 #define _THIRD_PERSON_CAMERA_H_
 
@@ -39,13 +40,14 @@ namespace Divide {
 
 /// A camera that always looks at a given target and orbits around it.
 /// It's position / direction can be changed by user input
-class ThirdPersonCamera : public OrbitCamera {
+class ThirdPersonCamera final : public OrbitCamera {
   protected:
     friend class Camera;
     explicit ThirdPersonCamera(const Str128& name, const vec3<F32>& eye = VECTOR3_ZERO);
 
+    static constexpr CameraType Type() noexcept { return CameraType::THIRD_PERSON; }
   public:
-    bool rotateRelative(const vec3<I32>& relRotation) override;
+    bool rotateRelative(const vec3<I32>& relRotation) final;
 };
 
 };  // namespace Divide

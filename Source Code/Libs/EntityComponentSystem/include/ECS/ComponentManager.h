@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __COMPONENT_MANAGER_H__
 #define __COMPONENT_MANAGER_H__
 
@@ -215,7 +216,7 @@ namespace ECS
 			}
 		}
 
-		void PassDataToAllComponents(const EntityId entityId, const Data& data) {
+		void PassDataToAllComponents(const EntityId entityId, const CustomEvent& data) {
 			static const size_t NUM_COMPONENTS = this->m_EntityComponentMap[0].size();
 
 			for (ComponentTypeId componentTypeId = 0; componentTypeId < NUM_COMPONENTS; ++componentTypeId)

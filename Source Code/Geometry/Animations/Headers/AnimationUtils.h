@@ -37,7 +37,6 @@
 #ifndef ANIMATION_UTILITIES_H_
 #define ANIMATION_UTILITIES_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
 #include <assimp/types.h>
 
 namespace Divide {

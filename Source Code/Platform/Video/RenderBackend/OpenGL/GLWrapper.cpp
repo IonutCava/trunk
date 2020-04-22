@@ -1348,9 +1348,6 @@ void GL_API::registerBufferBind(BufferLockEntry&& data) {
     s_bufferLockQueue.push_back(data);
 }
 
-void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    ACKNOWLEDGE_UNUSED(commandBuffer);
-}
 
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     ACKNOWLEDGE_UNUSED(commandBuffer);

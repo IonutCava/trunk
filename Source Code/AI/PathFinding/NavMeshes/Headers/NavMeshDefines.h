@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _NAVIGATION_MESH_DEFINES_H_
 #define _NAVIGATION_MESH_DEFINES_H_
 

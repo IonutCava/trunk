@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _DIVIDE_PCH_
 #define _DIVIDE_PCH_
 
@@ -70,6 +71,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #endif 
 
+#pragma once
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES
@@ -166,6 +168,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <ConcurrentQueue/concurrentqueue.h>
 #include <ConcurrentQueue/blockingconcurrentqueue.h>
 
+#include <Libs/fmt/include/fmt/format.h>
+#include <Libs/fmt/include/fmt/printf.h>
+
 #include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/File/Headers/FileWithPath.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
@@ -177,7 +182,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 #include "Core/TemplateLibraries/Headers/String.h"
-
+#include "Core/Math/Headers/MathMatrices.h"
+#include "Core/Math/Headers/Quaternion.h"
 
 #ifndef YES_IMGUIMINIGAMES
 #define YES_IMGUIMINIGAMES

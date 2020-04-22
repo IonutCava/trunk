@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _MATERIAL_H_
 #define _MATERIAL_H_
 

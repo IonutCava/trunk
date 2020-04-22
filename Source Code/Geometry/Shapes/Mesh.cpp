@@ -107,9 +107,4 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
     Object3D::postLoad(sgn);
 }
 
-// Called from SceneGraph "sceneUpdate"
-void Mesh::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
-    Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
-}
-
 };

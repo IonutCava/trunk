@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __POOL_ALLOC_H__
 #define __POOL_ALLOC_H__
 

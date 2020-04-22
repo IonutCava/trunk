@@ -29,10 +29,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _SCENE_SHADER_DATA_H_
 #define _SCENE_SHADER_DATA_H_
 
-#include "Core/Math/Headers/MathVectors.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {

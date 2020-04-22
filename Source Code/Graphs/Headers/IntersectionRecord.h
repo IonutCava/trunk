@@ -30,11 +30,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _OCTREE_INTERSECTION_RECORD_H_
 #define _OCTREE_INTERSECTION_RECORD_H_
 
 #include "Core/Math/Headers/Ray.h"
-#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
 

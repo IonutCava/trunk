@@ -9,7 +9,6 @@ namespace Divide {
         : ECSSystem(parentEngine),
           PlatformContextComponent(context)
     {
-        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
     }
 
     BoundsSystem::~BoundsSystem()
@@ -32,6 +31,7 @@ namespace Divide {
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         _componentCache.resize(0);
+        _componentCache.reserve(_container->size());
 
         auto bComp = _container->begin();
         auto bCompEnd = _container->end();

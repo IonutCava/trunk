@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _TERRAIN_LOADER_H_
 #define _TERRAIN_LOADER_H_
 

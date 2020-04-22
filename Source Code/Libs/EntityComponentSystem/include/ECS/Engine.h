@@ -4,6 +4,7 @@
 /// Summary:	Declares the engine class.
 ///-------------------------------------------------------------------------------------------------
 
+#pragma once
 #ifndef __ECS_ENGINE_H__
 #define __ECS_ENGINE_H__
 
@@ -128,10 +129,6 @@ namespace ECS
         void PreUpdate(f32 tick_ms);
 		void Update(f32 tick_ms);
         void PostUpdate(f32 tick_ms);
-
-        // Called at the start of a new update loop, 
-        // before the update calls and before processing input.
-        void OnUpdateLoop();
 	};
 
 } // namespace ECS

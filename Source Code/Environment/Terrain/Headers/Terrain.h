@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _TERRAIN_H_
 #define _TERRAIN_H_
 
@@ -119,8 +120,6 @@ class Terrain : public Object3D {
    protected:
     Vert getVert(F32 x_clampf, F32 z_clampf) const;
     Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
-
-    void frameStarted(SceneGraphNode& sgn) final;
 
     void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) final;
 

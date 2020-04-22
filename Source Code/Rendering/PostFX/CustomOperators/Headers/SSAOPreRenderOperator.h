@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _SSAO_PRE_RENDER_OPERATOR_H_
 #define _SSAO_PRE_RENDER_OPERATOR_H_
 

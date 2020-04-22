@@ -8,25 +8,18 @@
 namespace Divide {
 
 OrbitCamera::OrbitCamera(const Str128& name, const CameraType& type, const vec3<F32>& eye)
-    : Camera(name, type, eye),
-      _currentRotationX(0.0),
-      _currentRotationY(0.0),
-      _maxRadius(10.0f),
-      _minRadius(0.1f),
-      _curRadius(8.0f),
-      _rotationDirty(true),
-      _targetNode(nullptr)
+    : FreeFlyCamera(name, type, eye)
 {
     setMouseSensitivity(0.5f);
 }
 
-void OrbitCamera::fromCamera(Camera& camera) {
-    Camera::fromCamera(camera);
+void OrbitCamera::fromCamera(const Camera& camera) {
+    FreeFlyCamera::fromCamera(camera);
     if (camera.type() != CameraType::THIRD_PERSON && camera.type() != CameraType::ORBIT) {
         return;
     }
 
-    OrbitCamera& orbitCam = static_cast<OrbitCamera&>(camera);
+    const OrbitCamera& orbitCam = static_cast<const OrbitCamera&>(camera);
 
     _targetNode = orbitCam._targetNode;
     _maxRadius = orbitCam._maxRadius;
@@ -51,11 +44,11 @@ void OrbitCamera::setTarget(SceneGraphNode* sgn, const vec3<F32>& offsetDirectio
 bool OrbitCamera::updateViewMatrix() {
     setEye(_newEye);
 
-    return Camera::updateViewMatrix();
+    return FreeFlyCamera::updateViewMatrix();
 }
 
 void OrbitCamera::update(const U64 deltaTimeUS) {
-    Camera::update(deltaTimeUS);
+    FreeFlyCamera::update(deltaTimeUS);
 
     if (!_targetNode) {
         return;
@@ -83,11 +76,7 @@ bool OrbitCamera::zoom(I32 zoomFactor) noexcept {
         curRadius(_curRadius += (zoomFactor * _speed.zoom * -0.01f));
     }
 
-    return Camera::zoom(zoomFactor);
+    return FreeFlyCamera::zoom(zoomFactor);
 }
-
-void OrbitCamera::move(F32 dx, F32 dy, F32 dz) {}
-
-void OrbitCamera::rotate(F32 yaw, F32 pitch, F32 roll) {}
 
 };  // namespace Divide

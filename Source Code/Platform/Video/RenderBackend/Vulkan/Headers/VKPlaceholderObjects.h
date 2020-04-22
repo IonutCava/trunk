@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _VK_PLACEHOLDER_OBJECTS_H_
 #define _VK_PLACEHOLDER_OBJECTS_H_
 

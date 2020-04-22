@@ -15,6 +15,7 @@ static ImVec2 mousePosScale(1.0f, 1.0f);
 static const int specialCharMapAddend = 128;    // to prevent some special chars from clashing into ImGui normal chars
 
 // NB: ImGui already provide OS clipboard support for Windows so this isn't needed if you are using Windows only.
+#pragma once
 #ifndef _WIN32
 // If somebody implements these, in InitImGui(...) these callbacks MUST be set (they're currently detached).
 // The default fallback on non-Windows OS is a "private" clipboard.
@@ -357,6 +358,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)    {
     io.KeyMap[ImGuiKey_Z] = 26;
 
     //io.RenderDrawListsFn = ImImpl_RenderDrawLists;
+#pragma once
 #ifndef _WIN32
     //io.SetClipboardTextFn = ImImpl_SetClipboardTextFn;
     //io.GetClipboardTextFn = ImImpl_GetClipboardTextFn;
@@ -469,6 +471,7 @@ static bool InitBinding(const ImImpl_InitParams* pOptionalInitParams=NULL,int ar
     glutMotionFunc(GlutMotion);
     glutPassiveMotionFunc(GlutPassiveMotion);
 
+#pragma once
 #ifndef __EMSCRIPTEN__
     glutEntryFunc(GlutEntryFunc);
 #endif //__EMSCRIPTEN__

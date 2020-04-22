@@ -3,7 +3,7 @@
 #include "Headers/BoundingSphere.h"
 
 namespace Divide {
-BoundingSphere::BoundingSphere()
+BoundingSphere::BoundingSphere() noexcept
     : _visibility(false), _dirty(true), _radius(0.0f)
 {
     _center.reset();

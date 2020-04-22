@@ -29,11 +29,11 @@
 
  */
 
+#pragma once
 #ifndef _RENDER_PASS_CULLER_H_
 #define _RENDER_PASS_CULLER_H_
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
-#include "Core/Math/Headers/MathVectors.h"
 
 /// This class performs all the necessary visibility checks on the scene's
 /// scenegraph to decide what get's rendered and what not

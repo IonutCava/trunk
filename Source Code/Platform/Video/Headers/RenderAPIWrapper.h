@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _RENDER_API_H_
 #define _RENDER_API_H_
 
@@ -99,7 +100,6 @@ protected:
 
     virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
 
-    virtual void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
     virtual void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
 
     virtual vec2<U16> getDrawableSize(const DisplayWindow& window) const = 0;

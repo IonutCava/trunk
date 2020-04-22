@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _WRAPPER_FMOD_H_
 #define _WRAPPER_FMOD_H_
 

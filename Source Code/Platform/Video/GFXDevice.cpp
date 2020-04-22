@@ -1253,8 +1253,12 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         _renderer->updateResolution(w, h);
 
         // Update the 2D camera so it matches our new rendering viewport
-        Camera::utilityCamera(Camera::UtilityCamera::_2D)->setProjection(vec4<F32>(0, to_F32(w), 0, to_F32(h)), vec2<F32>(-1, 1));
-        Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->setProjection(vec4<F32>(0, to_F32(w), to_F32(h), 0), vec2<F32>(-1, 1));
+        if (Camera::utilityCamera(Camera::UtilityCamera::_2D)->setProjection(vec4<F32>(0, to_F32(w), 0, to_F32(h)), vec2<F32>(-1, 1))) {
+            Camera::utilityCamera(Camera::UtilityCamera::_2D)->updateFrustum();
+        }
+        if (Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->setProjection(vec4<F32>(0, to_F32(w), to_F32(h), 0), vec2<F32>(-1, 1))) {
+            Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->updateFrustum();
+        }
     }
 
     fitViewportInWindow(w, h);
@@ -1408,8 +1412,6 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
         DIVIDE_ASSERT(false, "GFXDevice::flushCommandBuffer error: Invalid command buffer. Check error log!");
         return;
     }
-
-    _api->preFlushCommandBuffer(commandBuffer);
 
     const GFX::CommandBuffer::CommandOrderContainer& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {

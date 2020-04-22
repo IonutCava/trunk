@@ -30,10 +30,9 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _GUI_SPLASH_H
 #define _GUI_SPLASH_H
-
-#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
 

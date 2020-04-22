@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _GUI_CONSOLE_H_
 #define _GUI_CONSOLE_H_
 

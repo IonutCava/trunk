@@ -30,10 +30,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _CLIP_PLANES_H_
 #define _CLIP_PLANES_H_
-
-#include "Core/Math/Headers/Plane.h"
 
 namespace Divide {
     enum class ClipPlaneIndex : U8 {

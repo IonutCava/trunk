@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _WAYPOINT_GRAPH_H_
 #define _WAYPOINT_GRAPH_H_
 #include "Waypoint.h"

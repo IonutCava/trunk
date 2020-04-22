@@ -29,11 +29,11 @@
 
  */
 
+#pragma once
 #ifndef _WAYPOINT_H_
 #define _WAYPOINT_H_
 
 #include "Core/Math/Headers/Ray.h"
-#include "Core/Math/Headers/Quaternion.h"
 
 namespace Divide {
 namespace Navigation {

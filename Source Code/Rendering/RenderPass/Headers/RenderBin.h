@@ -35,10 +35,10 @@
   - https://github.com/GarageGames/Torque3D
   */
 
+#pragma once
 #ifndef _RENDER_BIN_H_
 #define _RENDER_BIN_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {

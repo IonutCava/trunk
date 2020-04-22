@@ -56,10 +56,6 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(commandBuffer);
     }
 
-    void NONE_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-        ACKNOWLEDGE_UNUSED(commandBuffer);
-    }
-
     void NONE_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
         ACKNOWLEDGE_UNUSED(commandBuffer);
     }

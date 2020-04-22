@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PARTICLE_BOX_GENERATOR_H_
 #define _PARTICLE_BOX_GENERATOR_H_
 

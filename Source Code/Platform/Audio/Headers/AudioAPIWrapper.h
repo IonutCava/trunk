@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _AUDIO_API_H
 #define _AUDIO_API_H
 

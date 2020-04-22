@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __SYSTEM_MANAGER_H__
 #define __SYSTEM_MANAGER_H__
 
@@ -69,8 +70,6 @@ namespace ECS
         void PreUpdate(f32 dt_ms);
         void Update(f32 dt_ms);
         void PostUpdate(f32 dt_ms);
-
-        void OnUpdateLoop();
 	public:
 
 		SystemManager();

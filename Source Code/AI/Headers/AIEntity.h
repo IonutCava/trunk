@@ -28,6 +28,7 @@
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
+#pragma once
 #ifndef _AI_ENTITY_H_
 #define _AI_ENTITY_H_
 

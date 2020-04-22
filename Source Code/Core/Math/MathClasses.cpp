@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include "Headers/MathMatrices.h"
-
 namespace Divide {
 
 vec2<F32> VECTOR2_ZERO = {0.0f};

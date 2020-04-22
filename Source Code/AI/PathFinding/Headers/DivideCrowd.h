@@ -66,10 +66,10 @@
 
 */
 
+#pragma once
 #ifndef _DIVIDE_CROWD_H_
 #define _DIVIDE_CROWD_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
 #include "DetourCrowd/Include/DetourCrowd.h"
 #include "../NavMeshes/Headers/NavMesh.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _AI_VISUAL_SENSOR_H_
 #define _AI_VISUAL_SENSOR_H_
 

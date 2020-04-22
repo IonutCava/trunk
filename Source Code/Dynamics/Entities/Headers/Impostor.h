@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _IMPOSTOR_H_
 #define _IMPOSTOR_H_
 

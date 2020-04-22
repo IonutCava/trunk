@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PINGPONG_SCENE_H
 #define _PINGPONG_SCENE_H
 
@@ -38,6 +39,7 @@ namespace Divide {
 
 class Sphere3D;
 
+class FreeFlyCamera;
 class PingPongScene : public Scene {
    public:
     explicit PingPongScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name);
@@ -62,7 +64,7 @@ class PingPongScene : public Scene {
     vec3<F32> _sunvector;
     std::shared_ptr<Sphere3D> _ball;
     SceneGraphNode* _ballSGN;
-    Camera* _paddleCam;
+    FreeFlyCamera* _paddleCam;
 
    private:  // Game stuff:
     bool _directionTowardsAdversary;

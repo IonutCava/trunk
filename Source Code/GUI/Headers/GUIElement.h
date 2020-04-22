@@ -30,10 +30,10 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _GUI_ELEMENT_H_
 #define _GUI_ELEMENT_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Math/Headers/Dimension.h"
 
 #include <CEGUI/Event.h>

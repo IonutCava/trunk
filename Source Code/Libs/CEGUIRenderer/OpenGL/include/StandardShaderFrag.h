@@ -25,6 +25,7 @@
  *   OTHER DEALINGS IN THE SOFTWARE.
  ***************************************************************************/
 
+#pragma once
 #ifndef _CEGUIOpenGL3StandardShaderFrag_h_
 #define _CEGUIOpenGL3StandardShaderFrag_h_
 

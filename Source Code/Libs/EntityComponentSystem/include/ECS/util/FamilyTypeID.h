@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __FAMILY_TYPE_ID_H__
 #define __FAMILY_TYPE_ID_H__
 

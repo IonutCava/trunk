@@ -8,6 +8,7 @@
 	All Rights Reserved. (c) Copyright 2016.
 */
 
+#pragma once
 #ifndef __I_SYSTEM_H__
 #define __I_SYSTEM_H__
 
@@ -76,7 +77,6 @@ namespace ECS
 		virtual void PreUpdate(f32 dt)	= 0;
 		virtual void Update(f32 dt)		= 0;
 		virtual void PostUpdate(f32 dt) = 0;
-		virtual void OnUpdateLoop() = 0;
 	};
 }
 

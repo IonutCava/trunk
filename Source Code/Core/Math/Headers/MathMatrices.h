@@ -106,6 +106,7 @@ smasherprog@gmail.com or visit www.nolimitsdesigns.com
  */
 
 #pragma once
+#pragma once
 #ifndef _MATH_MATRICES_H_
 #define _MATH_MATRICES_H_
 
@@ -145,58 +146,58 @@ public:
     mat2 &operator=(const mat2<U>& other) noexcept;
 
     template<typename U>
-    vec2<T> operator*(const vec2<U> &v) const;
+    vec2<T> operator*(const vec2<U> &v) const noexcept;
     template<typename U>
-    vec3<T> operator*(const vec3<U> &v) const;
+    vec3<T> operator*(const vec3<U> &v) const noexcept;
     template<typename U>
-    vec4<T> operator*(const vec4<U> &v) const;
+    vec4<T> operator*(const vec4<U> &v) const noexcept;
 
     template<typename U>
-    mat2 operator*(const mat2<U> &B) const;
+    mat2 operator*(const mat2<U> &B) const noexcept;
     template<typename U>
     mat2 operator/(const mat2<U> &B) const;
     template<typename U>
-    mat2 operator+(const mat2<U> &B) const;
+    mat2 operator+(const mat2<U> &B) const noexcept;
     template<typename U>
-    mat2 operator-(const mat2<U> &B) const;
+    mat2 operator-(const mat2<U> &B) const noexcept;
 
     template<typename U>
-    mat2 &operator*=(const mat2<U> &B);
+    mat2 &operator*=(const mat2<U> &B) noexcept;
     template<typename U>
     mat2 &operator/=(const mat2<U> &B);
     template<typename U>
-    mat2 &operator+=(const mat2<U> &B);
+    mat2 &operator+=(const mat2<U> &B) noexcept;
     template<typename U>
-    mat2 &operator-=(const mat2<U> &B);
+    mat2 &operator-=(const mat2<U> &B) noexcept;
 
     template<typename U>
-    mat2 operator*(U f) const;
+    mat2 operator*(U f) const noexcept;
     template<typename U>
     mat2 operator/(U f) const;
     template<typename U>
-    mat2 operator+(U f) const;
+    mat2 operator+(U f) const noexcept;
     template<typename U>
-    mat2 operator-(U f) const;
+    mat2 operator-(U f) const noexcept;
 
     template<typename U>
-    mat2 &operator*=(U f);
+    mat2 &operator*=(U f) noexcept;
     template<typename U>
     mat2 &operator/=(U f);
     template<typename U>
-    mat2 &operator+=(U f);
+    mat2 &operator+=(U f) noexcept;
     template<typename U>
-    mat2 &operator-=(U f);
+    mat2 &operator-=(U f) noexcept;
 
-    bool operator==(const mat2 &B) const;
-    bool operator!=(const mat2 &B) const;
+    bool operator==(const mat2 &B) const noexcept;
+    bool operator!=(const mat2 &B) const noexcept;
     template<typename U>
-    bool operator==(const mat2<U> &B) const;
+    bool operator==(const mat2<U> &B) const noexcept;
     template<typename U>
-    bool operator!=(const mat2<U> &B) const;
+    bool operator!=(const mat2<U> &B) const noexcept;
 
-    bool compare(const mat2 &B, F32 epsilon) const;
+    bool compare(const mat2 &B, F32 epsilon) const noexcept;
     template<typename U>
-    bool compare(const mat2<U> &B, F32 epsilon) const;
+    bool compare(const mat2<U> &B, F32 epsilon) const noexcept;
 
     operator T *();
     operator const T *() const;
@@ -208,49 +209,49 @@ public:
     const T &element(I8 row, I8 column) const;
 
     template<typename U>
-    void set(U m0, U m1, U m2, U m3);
+    void set(U m0, U m1, U m2, U m3) noexcept;
     template<typename U>
-    void set(const U *matrix);
+    void set(const U *matrix) noexcept;
     template<typename U>
-    void set(const mat2<U> &matrix);
+    void set(const mat2<U> &matrix) noexcept;
     template<typename U>
-    void set(const mat3<U> &matrix);
+    void set(const mat3<U> &matrix) noexcept;
     template<typename U>
-    void set(const mat4<U> &matrix);
+    void set(const mat4<U> &matrix) noexcept;
 
     template<typename U>
-    void setRow(I32 index, const U value);
+    void setRow(I32 index, const U value) noexcept;
     template<typename U>
-    void setRow(I32 index, const vec2<U> &value);
+    void setRow(I32 index, const vec2<U> &value) noexcept;
     template<typename U>
-    void setRow(I32 index, const U x, const U y);
-    const vec2<T>& getRow(I32 index) const;
+    void setRow(I32 index, const U x, const U y) noexcept;
+    const vec2<T>& getRow(I32 index) const noexcept;
 
     template<typename U>
-    void setCol(I32 index, const vec2<U> &value);
+    void setCol(I32 index, const vec2<U> &value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U value);
+    void setCol(I32 index, const U value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U x, const U y);
+    void setCol(I32 index, const U x, const U y) noexcept;
 
-    vec2<T> getCol(I32 index) const;
+    vec2<T> getCol(I32 index) const noexcept;
 
-    void zero();
-    void identity();
-    bool isIdentity() const;
-    void swap(mat2 &B);
+    void zero() noexcept;
+    void identity() noexcept;
+    bool isIdentity() const noexcept;
+    void swap(mat2 &B) noexcept;
 
-    T det() const;
-    T elementSum() const;
+    T det() const noexcept;
+    T elementSum() const noexcept;
     void inverse();
-    void transpose();
+    void transpose() noexcept;
     void inverseTranspose();
 
     mat2 getInverse() const;
     void getInverse(mat2 &ret) const;
 
-    mat2 getTranspose() const;
-    void getTranspose(mat2 &ret) const;
+    mat2 getTranspose() const noexcept;
+    void getTranspose(mat2 &ret) const noexcept;
 
     mat2 getInverseTranspose() const;
     void getInverseTranspose(mat2 &ret) const;
@@ -302,114 +303,114 @@ class mat3 {
     mat3 &operator=(const mat3<U>& other) noexcept;
 
     template<typename U>
-    vec2<U> operator*(const vec2<U> &v) const;
+    vec2<U> operator*(const vec2<U> &v) const noexcept;
     template<typename U>
-    vec3<U> operator*(const vec3<U> &v) const;
+    vec3<U> operator*(const vec3<U> &v) const noexcept;
     template<typename U>
-    vec4<U> operator*(const vec4<U> &v) const; 
+    vec4<U> operator*(const vec4<U> &v) const noexcept;
 
     template<typename U>
-    mat3 operator*(const mat3<U> &B) const;
+    mat3 operator*(const mat3<U> &B) const noexcept;
     template<typename U>
     mat3 operator/(const mat3<U> &B) const;
     template<typename U>
-    mat3 operator+(const mat3<U> &B) const;
+    mat3 operator+(const mat3<U> &B) const noexcept;
     template<typename U>
-    mat3 operator-(const mat3<U> &B) const;
+    mat3 operator-(const mat3<U> &B) const noexcept;
 
     template<typename U>
-    mat3 &operator*=(const mat3<U> &B);
+    mat3 &operator*=(const mat3<U> &B) noexcept;
     template<typename U>
     mat3 &operator/=(const mat3<U> &B);
     template<typename U>
-    mat3 &operator+=(const mat3<U> &B);
+    mat3 &operator+=(const mat3<U> &B) noexcept;
     template<typename U>
-    mat3 &operator-=(const mat3<U> &B);
+    mat3 &operator-=(const mat3<U> &B) noexcept;
 
     template<typename U>
-    mat3 operator*(U f) const;
+    mat3 operator*(U f) const noexcept;
     template<typename U>
     mat3 operator/(U f) const;
     template<typename U>
-    mat3 operator+(U f) const;
+    mat3 operator+(U f) const noexcept;
     template<typename U>
-    mat3 operator-(U f) const;
+    mat3 operator-(U f) const noexcept;
 
     template<typename U>
-    mat3 &operator*=(U f);
+    mat3 &operator*=(U f) noexcept;
     template<typename U>
     mat3 &operator/=(U f);
     template<typename U>
-    mat3 &operator+=(U f);
+    mat3 &operator+=(U f) noexcept;
     template<typename U>
-    mat3 &operator-=(U f);
+    mat3 &operator-=(U f) noexcept;
 
-    bool operator==(const mat3 &B) const;
-    bool operator!=(const mat3 &B) const;
+    bool operator==(const mat3 &B) const noexcept;
+    bool operator!=(const mat3 &B) const noexcept;
 
     template<typename U>
-    bool operator==(const mat3<U> &B) const;
+    bool operator==(const mat3<U> &B) const noexcept;
     template<typename U>
-    bool operator!=(const mat3<U> &B) const;
+    bool operator!=(const mat3<U> &B) const noexcept;
 
-    bool compare(const mat3 &B, F32 epsilon) const;
+    bool compare(const mat3 &B, F32 epsilon) const noexcept;
     template<typename U>
-    bool compare(const mat3<U> &B, F32 epsilon) const;
+    bool compare(const mat3<U> &B, F32 epsilon) const noexcept;
 
-    operator T *();
-    operator const T *() const;
+    operator T *() noexcept;
+    operator const T *() const noexcept;
 
-    T &operator[](I32 i);
+    T &operator[](I32 i) noexcept;
     const T operator[](I32 i) const noexcept;
 
-    T &element(I8 row, I8 column);
+    T &element(I8 row, I8 column) noexcept;
     const T &element(I8 row, I8 column) const;
 
     template<typename U>
-    void set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8);
+    void set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8) noexcept;
     template<typename U>
-    void set(const U *matrix);
+    void set(const U *matrix) noexcept;
     template<typename U>
-    void set(const mat2<U> &matrix);
+    void set(const mat2<U> &matrix) noexcept;
     template<typename U>
-    void set(const mat3<U> &matrix);
+    void set(const mat3<U> &matrix) noexcept;
     template<typename U>
-    void set(const mat4<U> &matrix);
+    void set(const mat4<U> &matrix) noexcept;
 
     template<typename U>
-    void setRow(I32 index, const U value);
+    void setRow(I32 index, const U value) noexcept;
     template<typename U>
-    void setRow(I32 index, const vec3<U> &value);
+    void setRow(I32 index, const vec3<U> &value) noexcept;
     template<typename U>
-    void setRow(I32 index, const U x, const U y, const U z);
+    void setRow(I32 index, const U x, const U y, const U z) noexcept;
 
-    const vec3<T>& getRow(I32 index) const;
+    const vec3<T>& getRow(I32 index) const noexcept;
 
     template<typename U>
-    void setCol(I32 index, const vec3<U> &value);
+    void setCol(I32 index, const vec3<U> &value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U value);
+    void setCol(I32 index, const U value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U x, const U y, const U z);
+    void setCol(I32 index, const U x, const U y, const U z) noexcept;
 
-    vec3<T> getCol(I32 index) const;
+    vec3<T> getCol(I32 index) const noexcept;
 
-    void zero();
-    void identity();
-    bool isIdentity() const;
-    void swap(mat3 &B);
+    void zero() noexcept;
+    void identity() noexcept;
+    bool isIdentity() const noexcept;
+    void swap(mat3 &B) noexcept;
 
-    T det() const;
-    T elementSum() const;
+    T det() const noexcept;
+    T elementSum() const noexcept;
     void inverse();
-    void transpose();
+    void transpose() noexcept;
     void inverseTranspose();
 
     mat3 getInverse() const;
     void getInverse(mat3 &ret) const;
 
-    mat3 getTranspose() const;
-    void getTranspose(mat3 &ret) const;
+    mat3 getTranspose() const noexcept;
+    void getTranspose(mat3 &ret) const noexcept;
 
     mat3 getInverseTranspose() const;
     void getInverseTranspose(mat3 &ret) const;
@@ -427,9 +428,9 @@ class mat3 {
 
     // setScale replaces the main diagonal!
     template<typename U>
-    inline void setScale(U x, U y, U z);
+    inline void setScale(U x, U y, U z) noexcept;
     template<typename U>
-    void setScale(const vec3<U> &v);
+    void setScale(const vec3<U> &v) noexcept;
 
     void orthoNormalize();
 
@@ -497,123 +498,123 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     mat4 &operator=(const mat4<U>& other) noexcept;
 
     template<typename U>
-    vec2<U> operator*(const vec2<U> &v) const;
+    vec2<U> operator*(const vec2<U> &v) const noexcept;
     template<typename U>
-    vec3<U> operator*(const vec3<U> &v) const;
+    vec3<U> operator*(const vec3<U> &v) const noexcept;
     template<typename U>
-    vec4<U> operator*(const vec4<U> &v) const;
+    vec4<U> operator*(const vec4<U> &v) const noexcept;
 
     template<typename U>
-    mat4 operator*(const mat4<U>& matrix) const;
+    mat4 operator*(const mat4<U>& matrix) const noexcept;
     template<typename U>
     mat4 operator/(const mat4<U>& matrix) const;
     template<typename U>
-    mat4 operator+(const mat4<U> &matrix) const;
+    mat4 operator+(const mat4<U> &matrix) const noexcept;
     template<typename U>
-    mat4 operator-(const mat4<U> &matrix) const;
+    mat4 operator-(const mat4<U> &matrix) const noexcept;
 
     template<typename U>
-    mat4 &operator*=(const mat4<U> &matrix);
+    mat4 &operator*=(const mat4<U> &matrix) noexcept;
     template<typename U>
     mat4 &operator/=(const mat4<U> &matrix);
     template<typename U>
-    mat4 &operator+=(const mat4<U> &matrix);
+    mat4 &operator+=(const mat4<U> &matrix) noexcept;
     template<typename U>
-    mat4 &operator-=(const mat4<U> &matrix);
+    mat4 &operator-=(const mat4<U> &matrix) noexcept;
 
     template<typename U>
-    mat4 operator*(U f) const;
+    mat4 operator*(U f) const noexcept;
     template<typename U>
     mat4 operator/(U f) const;
     template<typename U>
-    mat4 operator+(U f) const;
+    mat4 operator+(U f) const noexcept;
     template<typename U>
-    mat4 operator-(U f) const;
+    mat4 operator-(U f) const noexcept;
 
     template<typename U>
-    mat4 &operator*=(U f);
+    mat4 &operator*=(U f) noexcept;
     template<typename U>
     mat4 &operator/=(U f);
     template<typename U>
-    mat4 &operator+=(U f);
+    mat4 &operator+=(U f) noexcept;
     template<typename U>
-    mat4 &operator-=(U f);
+    mat4 &operator-=(U f) noexcept;
 
-    bool operator==(const mat4& B) const;
-    bool operator!=(const mat4 &B) const;
+    bool operator==(const mat4& B) const noexcept;
+    bool operator!=(const mat4 &B) const noexcept;
     template<typename U>
-    bool operator==(const mat4<U>& B) const;
+    bool operator==(const mat4<U>& B) const noexcept;
     template<typename U>
-    bool operator!=(const mat4<U> &B) const;
+    bool operator!=(const mat4<U> &B) const noexcept;
 
-    bool compare(const mat4 &B, F32 epsilon) const;
+    bool compare(const mat4 &B, F32 epsilon) const noexcept;
     template<typename U>
-    bool compare(const mat4<U> &B, F32 epsilon) const;
+    bool compare(const mat4<U> &B, F32 epsilon) const noexcept;
 
-    operator T *();
-    operator const T *() const;
+    operator T *() noexcept;
+    operator const T *() const noexcept;
 
     T &operator[](I32 i) noexcept;
     const T &operator[](I32 i) const noexcept;
 
-    T &element(I8 row, I8 column);
-    const T &element(I8 row, I8 column) const;
+    T &element(I8 row, I8 column) noexcept;
+    const T &element(I8 row, I8 column) const noexcept;
 
     template<typename U>
-    void set(U const *matrix);
+    void set(U const *matrix) noexcept;
     template<typename U>
-    void set(std::initializer_list<U> matrix);
+    void set(std::initializer_list<U> matrix) noexcept;
     template<typename U>
-    void set(const mat2<U> &matrix);
+    void set(const mat2<U> &matrix) noexcept;
     template<typename U>
-    void set(const mat3<U> &matrix);
+    void set(const mat3<U> &matrix) noexcept;
     template<typename U>
-    void set(const mat4<U> &matrix);
+    void set(const mat4<U> &matrix) noexcept;
     template<typename U>
-    void set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation);
+    void set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept;
 
     template<typename U>
-    void setRow(I32 index, const U value);
+    void setRow(I32 index, const U value) noexcept;
     template<typename U>
-    void setRow(I32 index, const vec4<U> &value);
+    void setRow(I32 index, const vec4<U> &value) noexcept;
     template<typename U>
-    void setRow(I32 index, const U x, const U y, const U z, const U w);
+    void setRow(I32 index, const U x, const U y, const U z, const U w) noexcept;
 
-    const vec4<T>& getRow(I32 index) const;
+    const vec4<T>& getRow(I32 index) const noexcept;
 
     template<typename U>
-    void setCol(I32 index, const vec4<U> &value);
+    void setCol(I32 index, const vec4<U> &value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U value);
+    void setCol(I32 index, const U value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U x, const U y, const U z, const U w);
+    void setCol(I32 index, const U x, const U y, const U z, const U w) noexcept;
 
-    vec4<T> getCol(I32 index) const;
+    vec4<T> getCol(I32 index) const noexcept;
 
     void zero() noexcept;
     void identity() noexcept;
-    bool isIdentity() const;
-    void swap(mat4 &B);
+    bool isIdentity() const noexcept;
+    void swap(mat4 &B) noexcept;
 
     T det() const noexcept;
-    T elementSum() const;
+    T elementSum() const noexcept;
     void orthoNormalize();
     void inverse();
-    void transpose();
+    void transpose() noexcept;
     void inverseTranspose();
-    mat4 transposeRotation() const;
+    mat4 transposeRotation() const noexcept;
 
     mat4 getInverse() const;
     void getInverse(mat4 &ret) const;
 
-    mat4 getTranspose() const;
-    void getTranspose(mat4 &out) const;
+    mat4 getTranspose() const noexcept;
+    void getTranspose(mat4 &out) const noexcept;
 
     mat4 getInverseTranspose() const;
     void getInverseTranspose(mat4 &ret) const;
 
-    mat4 getTransposeRotation() const;
-    void getTransposeRotation(mat4 &ret) const;
+    mat4 getTransposeRotation() const noexcept;
+    void getTransposeRotation(mat4 &ret) const noexcept;
 
     template<typename U>
     void fromRotation(U x, U y, U z, Angle::RADIANS<U> angle);
@@ -639,20 +640,20 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     vec3<U> transformHomogeneous(const vec3<U> &v) const;
     template<typename U>
-    vec3<U> transformNonHomogeneous(const vec3<U> &v) const;
+    vec3<U> transformNonHomogeneous(const vec3<U> &v) const noexcept;
        
     template<typename U>
-    void translate(const vec3<U> &v);
+    void translate(const vec3<U> &v) noexcept;
     template<typename U>
-    void translate(U x, U y, U z);
+    void translate(U x, U y, U z) noexcept;
 
     template<typename U>
-    void scale(const vec3<U> &v);
+    void scale(const vec3<U> &v) noexcept;
     template<typename U>
-    void scale(U x, U y, U z);
+    void scale(U x, U y, U z) noexcept;
 
     template<typename U>
-    vec3<U> getTranslation() const;
+    vec3<U> getTranslation() const noexcept;
     mat4 getRotation(void) const;
 
     template<typename U>
@@ -670,11 +671,11 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     void frustum(U left, U right, U bottom, U top, U nearVal, U farVal);
 
     template<typename U>
-    void extractMat3(mat3<U> &matrix3) const;
+    void extractMat3(mat3<U> &matrix3) const noexcept;
 
-    static mat4<T> Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB);
+    static mat4<T> Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB) noexcept;
 
-    static void Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret);
+    static void Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret) noexcept;
 
     // Copyright 2011 The Closure Library Authors. All Rights Reserved.
     static void Inverse(const T* in, T* out);

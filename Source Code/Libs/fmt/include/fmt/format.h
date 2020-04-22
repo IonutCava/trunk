@@ -931,6 +931,7 @@ inline It format_uint(It out, UInt value, int num_digits, bool upper = false) {
   return internal::copy_str<Char>(buffer, buffer + num_digits, out);
 }
 
+#pragma once
 #ifndef _WIN32
 #  define FMT_USE_WINDOWS_H 0
 #elif !defined(FMT_USE_WINDOWS_H)

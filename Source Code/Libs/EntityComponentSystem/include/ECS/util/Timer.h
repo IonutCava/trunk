@@ -4,6 +4,7 @@
 /// Summary:	Declares the Timer class.
 ///-------------------------------------------------------------------------------------------------
 
+#pragma once
 #ifndef __TIMER_H___
 #define __TIMER_H___
 

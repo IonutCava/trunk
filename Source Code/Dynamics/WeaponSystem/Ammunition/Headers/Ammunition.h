@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _AMMUNITION_H_
 #define _AMMUNITION_H_
 

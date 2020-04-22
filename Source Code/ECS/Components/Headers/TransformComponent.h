@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _TRANSFORM_COMPONENT_H_
 #define _TRANSFORM_COMPONENT_H_
 
@@ -158,7 +159,6 @@ namespace Divide {
 
          void PreUpdate(const U64 deltaTimeUS) final;
          void Update(const U64 deltaTimeUS) final;
-         void OnUpdateLoop() final;
 
          void onParentTransformDirty(U32 transformMask);
          void onParentUsageChanged(NodeUsageContext context);

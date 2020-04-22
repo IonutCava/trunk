@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PARTICLE_TIME_GENERATOR_H_
 #define _PARTICLE_TIME_GENERATOR_H_
 

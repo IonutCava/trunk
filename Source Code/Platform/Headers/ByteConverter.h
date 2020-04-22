@@ -23,8 +23,6 @@
 for cross platform where they have different endians.
 */
 
-#include "Core/Math/Headers/MathVectors.h"
-
 namespace Divide {
 
 namespace ByteConverter {

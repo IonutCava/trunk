@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _PHYSICS_ASSET_H_
 #define _PHYSICS_ASSET_H_
 

@@ -22,6 +22,8 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
+#include "Rendering/Camera/Headers/ThirdPersonCamera.h"
 
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/UnitComponent.h"
@@ -864,16 +866,19 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     _infoBox = _GUI->addMsgBox("infoBox", "Info", "Blabla");
 
     // Add a first person camera
-    Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
-    cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
-    cam->setMoveSpeedFactor(10.0f);
-    cam->setTurnSpeedFactor(10.0f);
+    {
+        FreeFlyCamera* cam = Camera::createCamera<FreeFlyCamera>("fpsCamera");
+        cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
+        cam->setMoveSpeedFactor(10.0f);
+        cam->setTurnSpeedFactor(10.0f);
+    }
     // Add a third person camera
-    cam = Camera::createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
-    cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
-    cam->setMoveSpeedFactor(0.02f);
-    cam->setTurnSpeedFactor(0.01f);
-
+    {
+        ThirdPersonCamera* cam = Camera::createCamera<ThirdPersonCamera>("tpsCamera");
+        cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
+        cam->setMoveSpeedFactor(0.02f);
+        cam->setTurnSpeedFactor(0.01f);
+    }
     _guiTimersMS.push_back(0.0);  // Fps
     _guiTimersMS.push_back(0.0);  // AI info
     _guiTimersMS.push_back(0.0);  // Game info

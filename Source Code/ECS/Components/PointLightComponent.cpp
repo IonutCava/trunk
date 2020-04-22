@@ -45,9 +45,9 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
     _directionCache.set(VECTOR3_ZERO);
 }
 
-void PointLightComponent::OnData(const ECS::Data& data) {
-    if (data.eventType == ECSCustomEventType::TransformUpdated) {
-        Light::updateCache();
+void PointLightComponent::OnData(const ECS::CustomEvent& data) {
+    if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
+        Light::updateCache(data);
     }
 }
 

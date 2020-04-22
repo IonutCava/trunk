@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _NONE_WRAPPER_H_
 #define _NONE_WRAPPER_H_
 
@@ -55,7 +56,6 @@ class NONE_API final : public RenderAPIWrapper {
       F32 getFrameDurationGPU() const final;
       size_t setStateBlock(size_t stateBlockHash) final;
       void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
-      void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
       void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
       vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
       U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const final;

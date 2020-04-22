@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _VEHICLE_H_
 #define _VEHICLE_H_
 

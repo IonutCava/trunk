@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _GL_SAMPLER_H_
 #define _GL_SAMPLER_H_
 

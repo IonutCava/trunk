@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _QUAD_TREE_NODE
 #define _QUAD_TREE_NODE
 

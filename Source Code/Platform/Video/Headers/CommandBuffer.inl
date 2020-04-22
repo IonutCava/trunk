@@ -43,7 +43,7 @@ inline void DELETE_CMD(GFX::CommandBase*& cmd) {
     assert(cmd == nullptr);
 }
 
-inline size_t RESERVE_CMD(U8 typeIndex) {
+inline size_t RESERVE_CMD(U8 typeIndex) noexcept {
     const CommandType cmdType = static_cast<CommandType>(typeIndex);
     switch (cmdType) {
         case CommandType::DRAW_COMMANDS: return 10;

@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _PARTICLE_ROUND_GENERATOR_H_
 #define _PARTICLE_ROUND_GENERATOR_H_
 

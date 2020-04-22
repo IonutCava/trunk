@@ -30,19 +30,22 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _FIRST_PERSON_CAMERA_H_
 #define _FIRST_PERSON_CAMERA_H_
 
-#include "Camera.h"
+#include "FreeFlyCamera.h"
 
 namespace Divide {
 
 /// The classic first person camera.
 /// Similar to the "Free fly" camera, but more restrained in it's movement.
-class FirstPersonCamera : public Camera {
+class FirstPersonCamera final : public FreeFlyCamera {
   protected:
     friend class Camera;
     explicit FirstPersonCamera(const Str128& name, const vec3<F32>& eye = VECTOR3_ZERO);
+
+    static constexpr CameraType Type() noexcept { return CameraType::FIRST_PERSON; }
 };
 
 };  // namespace Divide

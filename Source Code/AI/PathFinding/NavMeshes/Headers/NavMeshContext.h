@@ -28,6 +28,7 @@
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
+#pragma once
 #ifndef _NAV_MESH_CTX_H_
 #define _NAV_MESH_CTX_H_
 

@@ -4,7 +4,6 @@
 
 #include "Core/Headers/ByteBuffer.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "ECS/Events/Headers/TransformEvents.h"
 
 namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN, PlatformContext& context)
@@ -100,6 +99,8 @@ namespace Divide {
         if (_transformUpdatedMask.load() != to_base(TransformType::NONE))
         {
             Attorney::SceneGraphNodeComponent::setTransformDirty(_parentSGN, _transformUpdatedMask);
+            SharedLock<SharedMutex> r_lock(_lock);
+            _prevTransformValues = _transformInterface.getValues();
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::PreUpdate(deltaTimeUS);
@@ -109,18 +110,19 @@ namespace Divide {
         OPTICK_EVENT();
 
         // Cleanup our dirty transforms
-        if (_transformUpdatedMask.exchange(to_U32(TransformType::NONE) != to_U32(TransformType::NONE))) {
+        const U32 previousMask = _transformUpdatedMask.exchange(to_U32(TransformType::NONE));
+        if (previousMask != to_U32(TransformType::NONE)) {
             updateWorldMatrix();
-            //_parentSGN.SendEvent<TransformUpdated>(GetOwner());
-            _parentSGN.SendEvent(ECSCustomEventType::TransformUpdated);
+
+            ECS::CustomEvent event = {
+                ECS::CustomEvent::Type::TransformUpdated,
+                this,
+                previousMask
+            };
+            _parentSGN.SendEvent(event);
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
-    }
-
-    void TransformComponent::OnUpdateLoop() {
-        SharedLock<SharedMutex> r_lock(_lock);
-        _prevTransformValues = _transformInterface.getValues();
     }
 
     void TransformComponent::setOffset(bool state, const mat4<F32>& offset) {

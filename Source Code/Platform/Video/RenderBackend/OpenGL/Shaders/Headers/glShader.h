@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _GL_SHADER_H_
 #define _GL_SHADER_H_
 

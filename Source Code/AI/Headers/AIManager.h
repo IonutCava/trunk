@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _AI_MANAGER_H_
 #define _AI_MANAGER_G_
 

@@ -25,6 +25,7 @@ author:     Lukas E Meindl
 *   OTHER DEALINGS IN THE SOFTWARE.
 ***************************************************************************/
 
+#pragma once
 #ifndef _CEGUIGlmPimpl_h_
 #define _CEGUIGlmPimpl_h_
 

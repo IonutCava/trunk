@@ -35,7 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "SGNComponent.h"
 #include "Core/Math/Headers/Line.h"
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 namespace Divide {
@@ -51,7 +50,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     ~AnimationComponent();
 
-    inline void updateAnimator(const std::shared_ptr<SceneAnimator>& animator) {
+    inline void updateAnimator(const std::shared_ptr<SceneAnimator>& animator) noexcept {
         _animator = animator;
     }
 

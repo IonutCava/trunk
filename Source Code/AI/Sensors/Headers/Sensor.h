@@ -29,10 +29,9 @@
 
  */
 
+#pragma once
 #ifndef _AI_SENSOR_H_
 #define _AI_SENSOR_H_
-
-#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
 namespace AI {

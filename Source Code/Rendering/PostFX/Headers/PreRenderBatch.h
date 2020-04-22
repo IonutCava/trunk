@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _PRE_RenderStage_H_
 #define _PRE_RenderStage_H_
 

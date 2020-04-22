@@ -68,6 +68,7 @@
 
 #if 0
 
+#pragma once
 #ifndef _DIVIDE_TILE_CACHE_H_
 #define _DIVIDE_TILE_CACHE_H_
 #include "Platform/Headers/PlatformDefines.h"

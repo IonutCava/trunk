@@ -30,6 +30,7 @@
  */
 
 #pragma once
+#pragma once
 #ifndef _HASH_MAP_H_
 #define _HASH_MAP_H_
 

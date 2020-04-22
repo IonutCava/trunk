@@ -5,8 +5,6 @@
 #include "Headers/TransformComponent.h"
 
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "ECS/Events/Headers/BoundsEvents.h"
-#include "ECS/Events/Headers/TransformEvents.h"
 
 namespace Divide {
 
@@ -82,15 +80,12 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
 
 BoundsComponent::~BoundsComponent()
 {
-    UnregisterAllEventCallbacks();
 }
 
 void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
     OPTICK_EVENT();
 
-    bool expected = false;
-    if (_boundingBoxDirty.compare_exchange_strong(expected, true)) {
-
+    if (!_boundingBoxDirty.exchange(true)) {
         if (recursive) {
             SceneGraphNode* parent = _parentSGN.parent();
             if (parent != nullptr) {
@@ -104,11 +99,9 @@ void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
     }
 }
 
-void BoundsComponent::OnData(const ECS::Data& data) {
-    if (data.eventType == ECSCustomEventType::TransformUpdated) {
-        if (_tCompCache == nullptr) {
-            _tCompCache = _parentSGN.get<TransformComponent>();
-        }
+void BoundsComponent::OnData(const ECS::CustomEvent& data) {
+    if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
+        _tCompCache = std::any_cast<TransformComponent*>(data._userData);
 
         flagBoundingBoxDirty(true);
     }
@@ -123,16 +116,21 @@ void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) {
 const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     OPTICK_EVENT();
 
-    bool expected = true;
-    if (_boundingBoxDirty.compare_exchange_strong(expected, false)) {
+    if (_boundingBoxDirty.exchange(false)) {
         _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
             child->get<BoundsComponent>()->updateAndGetBoundingBox();
         });
 
-        assert(_tCompCache != nullptr);
         _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), _tCompCache->getWorldMatrix());
         _boundingSphere.fromBoundingBox(_boundingBox);
-        _parentSGN.SendEvent<BoundsUpdated>(GetOwner());
+
+        ECS::CustomEvent event =
+        {
+            ECS::CustomEvent::Type::BoundsUpdated,
+            this,
+            0u
+        };
+        _parentSGN.SendEvent(event);
     }
 
     return _boundingBox;
@@ -152,6 +150,7 @@ void BoundsComponent::Update(const U64 deltaTimeUS) {
 void BoundsComponent::PostUpdate(const U64 deltaTimeUS) {
     OPTICK_EVENT();
 
+    assert(_tCompCache != nullptr);
     updateAndGetBoundingBox();
 
     BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::PostUpdate(deltaTimeUS);

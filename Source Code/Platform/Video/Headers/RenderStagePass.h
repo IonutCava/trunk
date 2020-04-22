@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _RENDER_STAGE_PASS_H_
 #define _RENDER_STAGE_PASS_H_
 

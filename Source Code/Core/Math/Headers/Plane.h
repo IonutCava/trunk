@@ -39,6 +39,7 @@
 
 
 #pragma once
+#pragma once
 #ifndef _CORE_MATH_PLANE_H_
 #define _CORE_MATH_PLANE_H_
 

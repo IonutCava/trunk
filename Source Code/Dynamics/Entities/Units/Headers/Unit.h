@@ -29,10 +29,10 @@
 
  */
 
+#pragma once
 #ifndef _UNIT_H_
 #define _UNIT_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
 #include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {

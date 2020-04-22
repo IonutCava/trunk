@@ -29,6 +29,7 @@
 
  */
 
+#pragma once
 #ifndef _AI_AUDIO_SENSOR_H_
 #define _AI_AUDIO_SENSOR_H_
 

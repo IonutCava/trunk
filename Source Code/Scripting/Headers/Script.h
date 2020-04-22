@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+#pragma once
 #ifndef _SCRIPTING_SCRIPT_H_
 #define _SCRIPTING_SCRIPT_H_
 

@@ -30,12 +30,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #pragma once
+#pragma once
 #ifndef _CORE_STRING_HELPER_H_
 #define _CORE_STRING_HELPER_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-#include "fmt/format.h"
-#include "fmt/printf.h"
 
 namespace Divide {
     namespace Util {
