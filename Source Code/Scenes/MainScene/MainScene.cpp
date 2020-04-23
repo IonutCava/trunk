@@ -117,7 +117,7 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
 
     if (_guiTimersMS[1] >= TimeDisplay) {
         _GUI->modifyText("timeDisplay",
-                         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()), false);
+                         Util::StringFormat("Elapsed time: %5.0f", Time::Game::ElapsedSeconds()), false);
         _guiTimersMS[1] = 0.0;
     }
 
@@ -313,7 +313,7 @@ void MainScene::test(const Task& parentTask, std::any a, GFX::PushConstantType t
 void MainScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     _GUI->addText("timeDisplay", pixelPosition(60, 80), Font::DIVIDE_DEFAULT,
         UColour4(164, 64, 64, 255),
-        Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
+        Util::StringFormat("Elapsed time: %5.0f", Time::Game::ElapsedSeconds()));
     _GUI->addText("underwater", pixelPosition(60, 115), Font::DIVIDE_DEFAULT,
                   UColour4(64, 200, 64, 255),
         Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]", "false", 0));

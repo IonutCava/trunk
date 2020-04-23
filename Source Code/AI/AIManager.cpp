@@ -8,8 +8,6 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
-#include "Core/Time/Headers/ApplicationTimer.h"
-
 namespace Divide {
 
 using namespace AI;

@@ -41,59 +41,51 @@ namespace Divide {
 namespace Time {
   
 using TimeValue = std::chrono::time_point<std::chrono::high_resolution_clock>;
+using NSec = std::chrono::nanoseconds;
+using USec = std::chrono::microseconds;
+using MSec = std::chrono::milliseconds;
+using Sec = std::chrono::seconds;
 
-class ApplicationTimer : public Singleton<ApplicationTimer> {
-    friend class Singleton<ApplicationTimer>;
+class ApplicationTimer {
 
-    using NSec = std::chrono::nanoseconds;
-    using USec = std::chrono::microseconds;
-    using MSec = std::chrono::milliseconds;
-    using Sec  = std::chrono::seconds;
 
   public:
-    void update();
-
-    void resetFPSCounter();
-    F32 getFps() const;
-    F32 getFrameTime() const;
-    F32 getSpeedfactor() const;
-    void getFrameRateAndTime(F32& fpsOut, F32& frameTimeOut) const;
-
-    const stringImpl& benchmarkReport() const;
-
-    // Returns the elapsed time since app startup in microseconds
-    U64 getElapsedTime(bool forceUpdate = false) const;
-
-  protected:
     ApplicationTimer() noexcept;
     ~ApplicationTimer() = default;
-    
-    TimeValue getCurrentTicksInternal() const;
-    
-    U64 getElapsedTimeInternal(const TimeValue& currentTicks) const;
+
+    void update();
+    void reset();
+
+    void resetFPSCounter() noexcept;
+    F32 getFps() const noexcept;
+    F32 getFrameTime() const noexcept;
+    void getFrameRateAndTime(F32& fpsOut, F32& frameTimeOut) const noexcept;
+
+    PROPERTY_R(F32, speedfactor, 1.0f);
+    PROPERTY_R(U32, targetFrameRate, Config::TARGET_FRAME_RATE);
+    PROPERTY_R(stringImpl, benchmarkReport, "");
 
   private:
     FrameRateHandler _frameRateHandler;
-    F32 _speedfactor = 1.0f;
-    U32 _targetFrameRate = Config::TARGET_FRAME_RATE;
-    // Previous frame's time stamp
-    TimeValue _frameDelay;
-    // Time stamp at class initialization
-    TimeValue _startupTicks;
     // Measure average FPS and output max/min/average fps to console
-    U64  _lastBenchmarkTimeStamp = 0UL;
-    std::atomic<U64> _elapsedTimeUs;
-
-    stringImpl _lastBenchmarkReport;
+    U64 _lastBenchmarkTimeStamp = 0UL;
 };
 
-/// The following functions force a timer update 
-/// (a call to query performance timer).
-inline U64 ElapsedNanoseconds(bool forceUpdate = false);
-inline U64 ElapsedMicroseconds(bool forceUpdate = false);
+namespace Game {
+    /// The following functions return the time updated in the main app loop only!
+    U64 ElapsedNanoseconds();
+    U64 ElapsedMicroseconds();
+    D64 ElapsedMilliseconds();
+    D64 ElapsedSeconds();
+};
 
-inline D64 ElapsedMilliseconds(bool forceUpdate = false);
-inline D64 ElapsedSeconds(bool forceUpdate = false);
+namespace App {
+    /// The following functions force a timer update (a call to query performance timer).
+    U64 ElapsedNanoseconds();
+    U64 ElapsedMicroseconds();
+    D64 ElapsedMilliseconds();
+    D64 ElapsedSeconds();
+};
 
 };  // namespace Time
 };  // namespace Divide

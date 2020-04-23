@@ -167,7 +167,8 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
         // If we have an alpha channel, we must check for translucency/transparency
 
         FileWithPath fwp = splitPathToNameAndLocation(name.c_str());
-        Util::ReplaceStringInPlace(fwp._path, { "//","\\" }, "/");
+        const std::array<stringImpl, 2> searchPattern = { "//", "\\" };
+        Util::ReplaceStringInPlace(fwp._path, searchPattern, "/");
         Util::ReplaceStringInPlace(fwp._path, "/", "_");
         if (fwp._path.back() == '_') {
             fwp._path.pop_back();

@@ -40,7 +40,7 @@ void LocalClient::handlePacket(WorldPacket& p) {
 void LocalClient::HandlePongOpCode(WorldPacket& p) {
     F32 time = 0;
     p >> time;
-    D64 result = Time::ElapsedMilliseconds() - time;
+    D64 result = Time::App::ElapsedMilliseconds() - time;
     _parent.platformContext().paramHandler().setParam(
         _ID_32("serverResponse"),
         "Server says: Pinged with : " +

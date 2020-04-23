@@ -81,7 +81,6 @@ class ProfileTimer {
    protected:
      vectorEASTL<U32> _children;
      U32 _parent;
-     ApplicationTimer& _appTimer;
 
      static bool s_enabled;
 };

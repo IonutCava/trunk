@@ -173,7 +173,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/File/Headers/FileWithPath.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/ConditionalWait.h"
-#include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
 #include "Core/Headers/GUIDWrapper.h"
 
@@ -187,6 +186,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define YES_IMGUIMINIGAMES
 #endif
 #define NO_IMGUICODEEDITOR 
+#ifndef IMGUI_INCLUDE_IMGUI_USER_H
+#define IMGUI_INCLUDE_IMGUI_USER_H
+#endif
+#ifndef IMGUI_INCLUDE_IMGUI_USER_INL
+#define IMGUI_INCLUDE_IMGUI_USER_INL
+#endif
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
 #include <imgui.h>
 
 //#include <ECS.h>

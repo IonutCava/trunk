@@ -261,8 +261,7 @@ bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Re
             }
 
             _renderPassCuller->clear();
-
-            Time::ApplicationTimer::instance().resetFPSCounter();
+            _parent.platformContext().app().timer().resetFPSCounter();
             
         });
 

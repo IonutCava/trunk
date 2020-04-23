@@ -106,7 +106,7 @@ void Kernel::startSplashScreen() {
     _splashTask = CreateTask(_platformContext,
         [this, &splash](const Task& /*task*/) {
         U64 previousTimeUS = 0;
-        const U64 currentTimeUS = Time::ElapsedMicroseconds(true);
+        const U64 currentTimeUS = Time::App::ElapsedMicroseconds();
         while (_splashScreenUpdating) {
             const U64 deltaTimeUS = currentTimeUS - previousTimeUS;
             previousTimeUS = currentTimeUS;
@@ -176,12 +176,12 @@ void Kernel::onLoop() {
     }
 
     // Update internal timer
-    Time::ApplicationTimer::instance().update();
+    _platformContext.app().timer().update();
     {
         Time::ScopedTimer timer(_appLoopTimer);
    
         // Update time at every render loop
-        _timingData.update(Time::ElapsedMicroseconds());
+        _timingData.update(Time::Game::ElapsedMicroseconds());
         FrameEvent evt = {};
 
         // Restore GPU to default state: clear buffers and set default render state
@@ -189,7 +189,7 @@ void Kernel::onLoop() {
         {
             Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
-            _timingData.keepAlive(frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt));
+            _timingData.keepAlive(frameListenerMgr().createAndProcessEvent(Time::Game::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt));
 
             U64 deltaTimeUSApp = _timingData.currentTimeDeltaUS();
             U64 deltaTimeUSReal = _timingData.timeDeltaUS();
@@ -203,13 +203,13 @@ void Kernel::onLoop() {
             _timingData.keepAlive(_timingData.keepAlive() && mainLoopScene(evt, deltaTimeUS, deltaTimeUSReal, deltaTimeUSApp));
 
             // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-            _timingData.keepAlive(_timingData.keepAlive() && frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_PROCESS, evt));
+            _timingData.keepAlive(_timingData.keepAlive() && frameListenerMgr().createAndProcessEvent(Time::App::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_PROCESS, evt));
         }
         _platformContext.endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
 
-        _timingData.keepAlive(_timingData.keepAlive() && frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_EVENT_ENDED, evt));
+        _timingData.keepAlive(_timingData.keepAlive() && frameListenerMgr().createAndProcessEvent(Time::App::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_ENDED, evt));
 
         _timingData.keepAlive(_timingData.keepAlive() && !_platformContext.app().ShutdownRequested());
     
@@ -235,7 +235,7 @@ void Kernel::onLoop() {
         F32 fps = 0.f, frameTime = 0.f;
         DisplayWindow& window = _platformContext.activeWindow();
         static stringImpl originalTitle = window.title();
-        Time::ApplicationTimer::instance().getFrameRateAndTime(fps, frameTime);
+        _platformContext.app().timer().getFrameRateAndTime(fps, frameTime);
         window.title("%s - %5.2f FPS - %3.2f ms - FrameIndex: %d", originalTitle, fps, frameTime, platformContext().gfx().getFrameCount());
     }
 
@@ -476,7 +476,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
     {
         Time::ScopedTimer time1(_preRenderTimer);
-        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_START, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::App::ElapsedMicroseconds(), FrameEventType::FRAME_PRERENDER_START, evt)) {
             return false;
         }
 
@@ -485,7 +485,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             return false;
         }
 
-        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_PRERENDER_END, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::App::ElapsedMicroseconds(), FrameEventType::FRAME_PRERENDER_END, evt)) {
             return false;
         }
     }
@@ -510,7 +510,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     renderParams._sceneRenderState = &_sceneManager->getActiveScene().renderState();
 
     for (U8 i = 0; i < playerCount; ++i) {
-        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::App::ElapsedMicroseconds(), FrameEventType::FRAME_SCENERENDER_START, evt)) {
             return false;
         }
 
@@ -524,18 +524,18 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             _renderPassManager->render(renderParams);
         }
 
-        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::App::ElapsedMicroseconds(), FrameEventType::FRAME_SCENERENDER_END, evt)) {
             return false;
         }
     }
 
     {
         Time::ScopedTimer time4(_postRenderTimer);
-        if(!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_START, evt)) {
+        if(!frameListenerMgr().createAndProcessEvent(Time::App::ElapsedMicroseconds(), FrameEventType::FRAME_POSTRENDER_START, evt)) {
             return false;
         }
 
-        if (!frameListenerMgr().createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_POSTRENDER_END, evt)) {
+        if (!frameListenerMgr().createAndProcessEvent(Time::App::ElapsedMicroseconds(), FrameEventType::FRAME_POSTRENDER_END, evt)) {
             return false;
         }
     }
@@ -558,7 +558,7 @@ void Kernel::warmup() {
 
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
-    _timingData.update(Time::ElapsedMicroseconds(true));
+    _timingData.update(Time::App::ElapsedMicroseconds());
 
     stopSplashScreen();
 }

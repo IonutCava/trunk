@@ -98,7 +98,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../Source Code/stdafx-core.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -235,9 +234,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Core\Headers\ParamHandler.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Core\Headers\Singleton.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Core\Math\Headers\Line.h">

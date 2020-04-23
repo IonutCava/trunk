@@ -66,7 +66,7 @@ void Console::decorate(std::ostream& outStream, const char* text, const bool new
                           << std::setprecision(3)
                           << std::setfill('0')
                           << std::fixed
-                          << Time::ElapsedSeconds(true)
+                          << Time::App::ElapsedSeconds()
                   << " ] ";
     }
     if (_threadID) {

@@ -35,6 +35,7 @@ void DebugInterface::idle() {
 
     const LoopTimingData& timingData = Attorney::KernelDebugInterface::timingData(_parent);
     const GFXDevice& gfx = _parent.platformContext().gfx();
+    const Application& app = _parent.platformContext().app();
 
     if (gfx.getFrameCount() % (Config::TARGET_FRAME_RATE / (Config::Build::IS_DEBUG_BUILD ? 4 : 2)) == 0)
     {
@@ -42,7 +43,7 @@ void DebugInterface::idle() {
 
         if_constexpr (Config::Profile::BENCHMARK_PERFORMANCE) {
             _output.append("\n");
-            _output.append(Time::ApplicationTimer::instance().benchmarkReport());
+            _output.append(app.timer().benchmarkReport());
             _output.append("\n");
             _output.append(Util::StringFormat("GPU: [ %5.5f ms] [DrawCalls: %d]", gfx.getFrameDurationGPU(), gfx.getDrawCallCount()));
         }

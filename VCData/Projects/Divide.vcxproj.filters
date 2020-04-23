@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="../../Source Code/main.cpp" />
-    <ClCompile Include="../../Source Code/stdafx-executable.cpp" />
     <ClCompile Include="../../Source Code/HotReloading\HotReloadingApple.cpp">
       <Filter>HotReloading</Filter>
     </ClCompile>

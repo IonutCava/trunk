@@ -414,7 +414,6 @@
     <ClCompile Include="../../Source Code/Environment\Terrain\TerrainTessellator.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/stdafx-game.cpp" />
     <ClCompile Include="../../Source Code\Environment\Terrain\InfinitePlane.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>

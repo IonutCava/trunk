@@ -77,11 +77,6 @@
     <ClCompile Include="../../Source Code/Libs/ReCast\ReCast/Source\RecastMeshDetail.cpp" />
     <ClCompile Include="../../Source Code/Libs/ReCast\ReCast/Source\RecastRasterization.cpp" />
     <ClCompile Include="../../Source Code/Libs/ReCast\ReCast/Source\RecastRegion.cpp" />
-    <ClCompile Include="../../Source Code/stdafx-recast.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1ED21303-434E-46DA-8050-2DF2684BE74E}</ProjectGuid>
@@ -160,7 +155,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>RECAST;_CRT_SECURE_NO_WARNINGS;_DEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RECAST;_CRT_SECURE_NO_WARNINGS;_DEBUG;_ENABLE_EXTENDED_ALIGNED_STORAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0</PreprocessorDefinitions>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/sdl\;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher\;$(SolutionDir)/../Source Code/Libs/ReCast\ReCast\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourTileCache\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourCrowd\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DebugUtils\Include;$(SolutionDir)/../Source Code/Libs/ReCast\Detour\Include;$(SolutionDir)/../Source Code/Libs/ReCast\RecastContrib\fastlz;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -192,6 +187,9 @@
       <AdditionalOptions>/Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <PrecompiledHeaderOutputFile>$(IntDir)..\pch_d.pch</PrecompiledHeaderOutputFile>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -214,7 +212,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>RECAST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RECAST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG;_ENABLE_EXTENDED_ALIGNED_STORAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/sdl\;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher\;$(SolutionDir)/../Source Code/Libs/ReCast\ReCast\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourTileCache\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourCrowd\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DebugUtils\Include;$(SolutionDir)/../Source Code/Libs/ReCast\Detour\Include;$(SolutionDir)/../Source Code/Libs/ReCast\RecastContrib\fastlz;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -244,6 +242,9 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <SupportJustMyCode>true</SupportJustMyCode>
       <BufferSecurityCheck>true</BufferSecurityCheck>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <PrecompiledHeaderOutputFile>$(IntDir)..\pch.pch</PrecompiledHeaderOutputFile>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -265,7 +266,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>RECAST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; ; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RECAST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG;_ENABLE_EXTENDED_ALIGNED_STORAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/sdl\;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher\;$(SolutionDir)/../Source Code/Libs/ReCast\ReCast\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourTileCache\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourCrowd\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DebugUtils\Include;$(SolutionDir)/../Source Code/Libs/ReCast\Detour\Include;$(SolutionDir)/../Source Code/Libs/ReCast\RecastContrib\fastlz;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -294,6 +295,9 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
       <SupportJustMyCode>true</SupportJustMyCode>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <PrecompiledHeaderOutputFile>$(IntDir)..\pch_p.pch</PrecompiledHeaderOutputFile>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

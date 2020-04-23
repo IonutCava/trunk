@@ -233,7 +233,7 @@ void PostFX::idle(const Configuration& config) {
 
     // Update states
     if (getFilterState(FilterType::FILTER_NOISE)) {
-        _noiseTimer += Time::ElapsedMilliseconds();
+        _noiseTimer += Time::Game::ElapsedMilliseconds();
         if (_noiseTimer > _tickInterval) {
             _noiseTimer = 0.0;
             _randomNoiseCoefficient = Random(1000) * 0.001f;

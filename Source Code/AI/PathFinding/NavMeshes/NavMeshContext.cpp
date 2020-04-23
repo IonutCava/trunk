@@ -30,11 +30,11 @@ void rcContextDivide::doResetTimers() {
 }
 
 void rcContextDivide::doStartTimer(const rcTimerLabel label) {
-    _startTime[label] = Time::ElapsedMilliseconds(true);
+    _startTime[label] = Time::App::ElapsedMilliseconds();
 }
 
 void rcContextDivide::doStopTimer(const rcTimerLabel label) {
-    const D64 deltaTime = Time::ElapsedMilliseconds(true) - _startTime[label];
+    const D64 deltaTime = Time::App::ElapsedMilliseconds() - _startTime[label];
     if (_accTime[label] == -1) {
         _accTime[label] = to_I32(deltaTime);
     } else {

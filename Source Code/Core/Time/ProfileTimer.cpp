@@ -36,8 +36,7 @@ ProfileTimer::ProfileTimer() noexcept
       _timerAverage(0UL),
       _timerCounter(0),
       _globalIndex(0),
-      _parent(Config::Profile::MAX_PROFILE_TIMERS + 1),
-      _appTimer(ApplicationTimer::instance())
+      _parent(Config::Profile::MAX_PROFILE_TIMERS + 1)
 {
 }
 
@@ -47,13 +46,13 @@ ProfileTimer::~ProfileTimer()
 
 void ProfileTimer::start() {
     if (timersEnabled()) {
-        _timer = _appTimer.getElapsedTime(true);
+        _timer = Time::App::ElapsedMicroseconds();
     }
 }
 
 void ProfileTimer::stop() {
     if (timersEnabled()) {
-        _timerAverage += _appTimer.getElapsedTime(true) - _timer;
+        _timerAverage += Time::App::ElapsedMicroseconds() - _timer;
         _timerCounter++;
     }
 }

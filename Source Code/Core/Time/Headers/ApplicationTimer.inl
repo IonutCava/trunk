@@ -37,60 +37,20 @@
 namespace Divide {
 namespace Time {
 
-inline void  ApplicationTimer::resetFPSCounter() {
+inline void  ApplicationTimer::resetFPSCounter() noexcept {
     _frameRateHandler = {};
 }
 
-inline F32 ApplicationTimer::getFps() const {
+inline F32 ApplicationTimer::getFps() const noexcept {
     return _frameRateHandler.frameRate();
 }
 
-inline F32 ApplicationTimer::getFrameTime() const {
+inline F32 ApplicationTimer::getFrameTime() const noexcept {
     return _frameRateHandler.frameTime();
 }
 
-inline void ApplicationTimer::getFrameRateAndTime(F32& fpsOut, F32& frameTimeOut) const {
+inline void ApplicationTimer::getFrameRateAndTime(F32& fpsOut, F32& frameTimeOut) const noexcept {
     _frameRateHandler.frameRateAndTime(fpsOut, frameTimeOut);
-}
-
-inline F32 ApplicationTimer::getSpeedfactor() const { 
-    return _speedfactor;
-}
-
-inline const stringImpl& ApplicationTimer::benchmarkReport() const {
-    return _lastBenchmarkReport;
-}
-
-inline TimeValue ApplicationTimer::getCurrentTicksInternal() const {
-    return std::chrono::high_resolution_clock::now();
-}
-
-inline U64 ApplicationTimer::getElapsedTimeInternal(const TimeValue& currentTicks) const {
-    return static_cast<U64>(std::chrono::duration_cast<USec>(currentTicks - _startupTicks).count());
-}
-
-inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) const {
-    if (forceUpdate) {
-        return getElapsedTimeInternal(getCurrentTicksInternal());
-    }
-     
-    return _elapsedTimeUs;
-}
-
-inline U64 ElapsedNanoseconds(bool forceUpdate) {
-    return MicrosecondsToNanoseconds(ElapsedMicroseconds(forceUpdate));
-}
-
-inline U64 ElapsedMicroseconds(bool forceUpdate) {
-    return ApplicationTimer::instance().getElapsedTime(forceUpdate);
-}
-
-inline D64 ElapsedMilliseconds(bool forceUpdate) {
-    return MicrosecondsToMilliseconds<D64, U64>(ElapsedMicroseconds(forceUpdate));
-}
-
-inline D64 ElapsedSeconds(bool forceUpdate) {
-    return MicrosecondsToSeconds(ElapsedMicroseconds(forceUpdate));
 }
 
 };  // namespace Time

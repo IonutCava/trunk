@@ -1,8 +1,11 @@
 #include "stdafx.h"
 
 #include "Headers/Unit.h"
+#include "Scenes/Headers/Scene.h"
+#include "Graphs/Headers/SceneGraph.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Core/Time/Headers/ApplicationTimer.h"
+#include "Core/Headers/Application.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/FrameListenerManager.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
@@ -57,10 +60,10 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     _currentTargetPosition = targetPosition;
 
     if (_prevTime <= 0) {
-        _prevTime = Time::ElapsedMilliseconds();
+        _prevTime = Time::Game::ElapsedMilliseconds();
     }
     // get current time in ms
-    D64 currentTime = Time::ElapsedMilliseconds();
+    D64 currentTime = Time::Game::ElapsedMilliseconds();
     // figure out how many milliseconds have elapsed since last move time
     D64 timeDif = currentTime - _prevTime;
     CLAMP<D64>(timeDif, 0, timeDif);

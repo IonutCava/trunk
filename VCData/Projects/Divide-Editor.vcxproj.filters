@@ -19,7 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../Source Code/stdafx-editor.cpp" />
     <ClCompile Include="../../Source Code\Editor\Widgets\DockedWindows\SceneViewWindow.cpp">
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>

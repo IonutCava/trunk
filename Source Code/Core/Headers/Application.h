@@ -34,6 +34,7 @@
 #define _CORE_APPLICATION_H_
 
 #include "WindowManager.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 
 namespace Divide {
 
@@ -104,6 +105,9 @@ class Application : public SDLEventListener {
     /// instance is destroyed
     /// (release hardware, file handlers, etc)
     inline void registerShutdownCallback(const DELEGATE<void>& cbk);
+
+    PROPERTY_R(Time::ApplicationTimer, timer);
+    inline Time::ApplicationTimer& timer() noexcept { return _timer; }
 
   private:
     bool onSDLEvent(SDL_Event event) override;

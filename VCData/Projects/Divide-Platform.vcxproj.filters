@@ -431,7 +431,6 @@
     <ClCompile Include="../../Source Code/Platform\File\FileManagementFunctions.cpp">
       <Filter>File</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/stdafx-platform.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\Pipeline.cpp">
       <Filter>Video</Filter>
     </ClCompile>
