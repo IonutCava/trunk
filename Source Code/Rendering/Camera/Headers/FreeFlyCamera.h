@@ -132,13 +132,14 @@ class FreeFlyCamera : public Camera {
 
     static constexpr CameraType Type() noexcept { return CameraType::FREE_FLY; }
 
-    virtual ~FreeFlyCamera() {}
+    virtual ~FreeFlyCamera() = default;
 
    protected:
      vec4<F32> _speedFactor = VECTOR4_UNIT;
      vec4<F32> _speed = VECTOR4_ZERO;
      vec3<F32> _targetPosition = VECTOR3_ZERO;
      vec3<F32> _currentVelocity = VECTOR3_ZERO;
+     vec3<F32> _fixedYawAxis = WORLD_Y_AXIS;
      F32 _mouseSensitivity = 1.0f;
      bool _rotationLocked = false;
      bool _movementLocked = false;

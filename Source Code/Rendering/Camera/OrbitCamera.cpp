@@ -14,25 +14,19 @@ OrbitCamera::OrbitCamera(const Str128& name, const CameraType& type, const vec3<
 }
 
 void OrbitCamera::fromCamera(const Camera& camera) {
-    FreeFlyCamera::fromCamera(camera);
-    if (camera.type() != CameraType::THIRD_PERSON && camera.type() != CameraType::ORBIT) {
-        return;
-    }
-
     const OrbitCamera& orbitCam = static_cast<const OrbitCamera&>(camera);
-
-    _targetNode = orbitCam._targetNode;
     _maxRadius = orbitCam._maxRadius;
     _minRadius = orbitCam._minRadius;
     _curRadius = orbitCam._curRadius;
     _currentRotationX = orbitCam._currentRotationX;
     _currentRotationY = orbitCam._currentRotationY;
+    _rotationDirty = true;
     _offsetDir.set(orbitCam._offsetDir);
     _cameraRotation.set(orbitCam._cameraRotation);
     _newEye.set(orbitCam._newEye);
+    _targetNode = orbitCam._targetNode;
 
-    _rotationDirty = true;
-
+    FreeFlyCamera::fromCamera(camera);
 }
 
 void OrbitCamera::setTarget(SceneGraphNode* sgn, const vec3<F32>& offsetDirection) {

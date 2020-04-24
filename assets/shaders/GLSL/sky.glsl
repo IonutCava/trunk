@@ -6,7 +6,6 @@ void main(void){
     computeDataMinimal();
 
     VAR._vertexW = dvd_Vertex + vec4(dvd_cameraPosition.xyz, 0.0f);
-    VAR._normalWV = (dvd_ViewMatrix * vec4(dvd_Normal, 0.0f)).xyz;
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
     gl_Position.z = gl_Position.w - 0.000001f;

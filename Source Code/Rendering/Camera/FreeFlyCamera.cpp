@@ -12,20 +12,17 @@ FreeFlyCamera::FreeFlyCamera(const Str128& name, CameraType type, const vec3<F32
 }
 
 void FreeFlyCamera::fromCamera(const Camera& camera) {
-    Camera::fromCamera(camera);
-
     const FreeFlyCamera& cam = static_cast<const FreeFlyCamera&>(camera);
-    _targetPosition.set(cam._targetPosition);
-    _currentVelocity.set(cam._currentVelocity);
-    setMoveSpeedFactor(cam.getMoveSpeedFactor());
-    setTurnSpeedFactor(cam.getTurnSpeedFactor());
-    setZoomSpeedFactor(cam.getZoomSpeedFactor());
-    setFixedYawAxis(cam._yawFixed, cam._fixedYawAxis);
-    lockMovement(cam._movementLocked);
-    lockRotation(cam._rotationLocked);
-    _mouseSensitivity = cam._mouseSensitivity;
     _speedFactor = cam._speedFactor;
     _speed = cam._speed;
+    _targetPosition.set(cam._targetPosition);
+    _currentVelocity.set(cam._currentVelocity);
+    setFixedYawAxis(cam._yawFixed, cam._fixedYawAxis);
+    _mouseSensitivity = cam._mouseSensitivity;
+    lockRotation(cam._rotationLocked);
+    lockMovement(cam._movementLocked);
+
+    Camera::fromCamera(camera);
 }
 
 void FreeFlyCamera::updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) noexcept {

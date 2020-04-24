@@ -63,6 +63,7 @@ class Camera : public Resource {
     };
 
    public:
+     virtual ~Camera() = default;
 
     virtual void fromCamera(const Camera& camera);
     virtual void fromSnapshot(const CameraSnapshot& snapshot);
@@ -158,7 +159,7 @@ class Camera : public Resource {
 
     const mat4<F32>& setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes);
     const mat4<F32>& setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes);
-    const mat4<F32>& setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho);
+    const mat4<F32>& setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho) noexcept;
 
     /// Extract the frustum associated with our current PoV
     virtual bool updateFrustum();
@@ -176,8 +177,6 @@ class Camera : public Resource {
     bool removeUpdateListener(U32 id);
     U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
 
-    virtual ~Camera() = default;
-
    protected:
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
@@ -186,6 +185,7 @@ class Camera : public Resource {
 
     const char* getResourceTypeName() const noexcept override { return "Camera"; }
 
+    inline bool dirty() const noexcept { return _projectionDirty || _viewMatrixDirty || _frustumDirty; }
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND
@@ -199,9 +199,9 @@ class Camera : public Resource {
     Frustum _frustum;
     Plane<F32> _reflectionPlane;
     vec4<F32> _orthoRect = VECTOR4_UNIT;
-    vec3<F32> _fixedYawAxis = WORLD_Y_AXIS;
     vec3<Angle::DEGREES<F32>> _euler = VECTOR3_ZERO;
     Angle::DEGREES<F32> _accumPitchDegrees = 0.0f;
+
     U32 _updateCameraId = 0u;
     CameraType _type = CameraType::COUNT;
 

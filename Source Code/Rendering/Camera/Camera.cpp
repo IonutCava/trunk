@@ -18,7 +18,7 @@ Camera::Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye)
 }
 
 const CameraSnapshot& Camera::snapshot() const noexcept {
-    assert(!_frustumDirty);
+    assert(!dirty());
     return _data;
 }
 
@@ -32,14 +32,11 @@ void Camera::fromCamera(const Camera& camera) {
         setAspectRatio(camera.getAspectRatio());
         setVerticalFoV(camera.getVerticalFoV());
 
-        setProjection(camera._orthoRect,
-                      camera.getZPlanes());
+        setProjection(camera._orthoRect, camera.getZPlanes());
     } else {
         _orthoRect.set(camera._orthoRect);
 
-        setProjection(camera.getAspectRatio(),
-                      camera.getVerticalFoV(),
-                      camera.getZPlanes());
+        setProjection(camera.getAspectRatio(), camera.getVerticalFoV(), camera.getZPlanes());
     }
 
     setEye(camera.getEye());
@@ -218,7 +215,7 @@ const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& z
     return getProjectionMatrix();
 }
 
-const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho) {
+const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho) noexcept {
     _data._projectionMatrix.set(projection);
     _data._zPlanes = zPlanes;
     _projectionDirty = false;

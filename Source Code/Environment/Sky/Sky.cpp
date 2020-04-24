@@ -30,20 +30,23 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     _renderState.addToDrawExclusionMask(RenderStage::REFRACTION, RenderPassType::COUNT, -1);
 
     // Generate a render state
-    RenderStateBlock skyboxRenderState;
-    skyboxRenderState.setCullMode(CullMode::BACK);
-    skyboxRenderState.setZFunc(ComparisonFunction::EQUAL);
-    _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
-
+    RenderStateBlock skyboxRenderState = {};
     skyboxRenderState.setCullMode(CullMode::FRONT);
+    skyboxRenderState.setZFunc(ComparisonFunction::EQUAL);
     _skyboxRenderStateHash = skyboxRenderState.getHash();
 
     skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
     skyboxRenderState.setColourWrites(false, false, false, false);
     _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
 
-    skyboxRenderState.setCullMode(CullMode::BACK);
-    _skyboxRenderStateReflectedHashPrePass = skyboxRenderState.getHash();
+    RenderStateBlock skyboxRenderStateReflection = {};
+    skyboxRenderStateReflection.setCullMode(CullMode::BACK);
+    skyboxRenderStateReflection.setZFunc(ComparisonFunction::EQUAL);
+    _skyboxRenderStateReflectedHash = skyboxRenderStateReflection.getHash();
+
+    skyboxRenderStateReflection.setZFunc(ComparisonFunction::LEQUAL);
+    skyboxRenderStateReflection.setColourWrites(false, false, false, false);
+    _skyboxRenderStateReflectedHashPrePass = skyboxRenderStateReflection.getHash();
 }
 
 Sky::~Sky()

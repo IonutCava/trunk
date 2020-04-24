@@ -959,6 +959,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
     const RenderStage stage = params._stagePass._stage;
 
+    params._camera->updateLookAt();
     const CameraSnapshot& camSnapshot = params._camera->snapshot();
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};

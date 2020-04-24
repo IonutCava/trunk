@@ -71,7 +71,7 @@ class OrbitCamera : public FreeFlyCamera {
 
     static constexpr CameraType Type() noexcept { return CameraType::ORBIT; }
 
-    virtual ~OrbitCamera() {}
+    virtual ~OrbitCamera() = default;
 
    protected:
     virtual bool updateViewMatrix() override;

@@ -5,6 +5,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/Configuration.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
@@ -153,8 +154,8 @@ bool WaterPlane::load() {
 
     _plane = CreateResource<Quad3D>(_parentCache, waterPlane);
     
-    F32 halfWidth = _dimensions.width * 0.5f;
-    F32 halfLength = _dimensions.height * 0.5f;
+    const F32 halfWidth = _dimensions.width * 0.5f;
+    const F32 halfLength = _dimensions.height * 0.5f;
 
     setBounds(BoundingBox(vec3<F32>(-halfWidth, -_dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength)));
 
@@ -163,8 +164,8 @@ bool WaterPlane::load() {
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
 
-    F32 halfWidth = _dimensions.width * 0.5f;
-    F32 halfLength = _dimensions.height * 0.5f;
+    const F32 halfWidth = _dimensions.width * 0.5f;
+    const F32 halfLength = _dimensions.height * 0.5f;
 
     _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(-halfWidth, 0, -halfLength));
     _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(halfWidth, 0, -halfLength));
@@ -260,6 +261,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     updatePlaneEquation(renderParams._sgn, reflectionPlane, !underwater);
 
     // Reset reflection cam
+    renderParams._camera->updateLookAt();
     _reflectionCam->fromCamera(*renderParams._camera);
     if (!underwater) {
         reflectionPlane._distance += g_reflectionPlaneCorrectionHeight;
