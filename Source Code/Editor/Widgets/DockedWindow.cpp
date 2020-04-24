@@ -16,6 +16,10 @@ namespace Divide {
     {
     }
 
+    void DockedWindow::backgroundUpdate() {
+        backgroundUpdateInternal();
+    }
+
     void DockedWindow::draw() {
         //window_flags |= ImGuiWindowFlags_NoTitleBar;
         //window_flags |= ImGuiWindowFlags_NoScrollbar;

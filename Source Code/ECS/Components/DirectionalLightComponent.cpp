@@ -43,8 +43,6 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
 
     getEditorComponent().registerField(std::move(directionField));
 
-
-
     EditorComponentField sceneFitField = {};
     sceneFitField._name = "Fit CSM To AABB";
     sceneFitField._data = &_csmUseSceneAABBFit;
@@ -64,7 +62,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
 
     getEditorComponent().registerField(std::move(csmNearClip));
 
-    BoundingBox bb;
+    BoundingBox bb = {};
     bb.setMin(-g_defaultLightDistance * 0.5f);
     bb.setMax(-g_defaultLightDistance * 0.5f);
     Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);

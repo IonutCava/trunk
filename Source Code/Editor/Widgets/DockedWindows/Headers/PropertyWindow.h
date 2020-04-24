@@ -46,14 +46,15 @@ class TransformComponent;
 struct Selections;
 
 struct EditorComponentField;
-class PropertyWindow : public DockedWindow, public PlatformContextComponent {
+class PropertyWindow final : public DockedWindow, public PlatformContextComponent {
     public:
         PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
         ~PropertyWindow();
 
-        void drawInternal() override;
+        void drawInternal() final;
+        void backgroundUpdateInternal() final;
 
-        const char* name() const noexcept override;
+        const char* name() const noexcept final;
     protected:
 
      bool drawCamera(Camera* cam);

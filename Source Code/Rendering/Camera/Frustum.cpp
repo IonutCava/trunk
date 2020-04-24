@@ -8,12 +8,6 @@
 
 namespace Divide {
 
-Frustum::Frustum()
-{
-    _frustumPlanes.fill(Plane<F32>(0.0f));
-    _frustumPoints.fill(vec3<F32>(0.0f));
-}
-
 Frustum::FrustCollision Frustum::PlanePointIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& point) const noexcept {
     switch (frustumPlane.classifyPoint(point)) {
         case Plane<F32>::Side::NO_SIDE: 
@@ -55,7 +49,7 @@ Frustum::FrustCollision Frustum::ContainsPoint(const vec3<F32>& point, I8& lastP
 }
 
 Frustum::FrustCollision Frustum::PlaneSphereIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& center, F32 radius) const noexcept {
-    F32 distance = frustumPlane.signedDistanceToPoint(center);
+    const F32 distance = frustumPlane.signedDistanceToPoint(center);
     if (distance < -radius) {
         return FrustCollision::FRUSTUM_OUT;
     }
@@ -149,14 +143,8 @@ void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMa
     computePlanes(viewMatrix * projectionMatrix);
 }
 
-void Frustum::intersectionPoint(const Plane<F32>& a, const Plane<F32>& b, const Plane<F32>& c, vec3<F32>& outResult) noexcept {
-    outResult.set((a._distance * (Cross(b._normal, c._normal))) +
-                  (b._distance * (Cross(c._normal, a._normal))) +
-                  (c._distance * (Cross(a._normal, b._normal))) /
-                  -Dot(a._normal, Cross(b._normal, c._normal)));
-}
 
-void Frustum::updatePoints() {
+void Frustum::updatePoints() noexcept {
     const Plane<F32>& leftPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_LEFT)];
     const Plane<F32>& rightPlane  = _frustumPlanes[to_base(FrustPlane::PLANE_RIGHT)];
     const Plane<F32>& nearPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_NEAR)];
@@ -164,18 +152,26 @@ void Frustum::updatePoints() {
     const Plane<F32>& topPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_TOP)];
     const Plane<F32>& bottomPlane = _frustumPlanes[to_base(FrustPlane::PLANE_BOTTOM)];
 
-    intersectionPoint(nearPlane, leftPlane,  topPlane,    _frustumPoints[to_base(FrustPoints::NEAR_LEFT_TOP)]);
-    intersectionPoint(nearPlane, rightPlane, topPlane,    _frustumPoints[to_base(FrustPoints::NEAR_RIGHT_TOP)]);
-    intersectionPoint(nearPlane, rightPlane, bottomPlane, _frustumPoints[to_base(FrustPoints::NEAR_RIGHT_BOTTOM)]);
-    intersectionPoint(nearPlane, leftPlane,  bottomPlane, _frustumPoints[to_base(FrustPoints::NEAR_LEFT_BOTTOM)]);
-    intersectionPoint(farPlane,  leftPlane,  topPlane,    _frustumPoints[to_base(FrustPoints::FAR_LEFT_TOP)]);
-    intersectionPoint(farPlane,  rightPlane, topPlane,    _frustumPoints[to_base(FrustPoints::FAR_RIGHT_TOP)]);
-    intersectionPoint(farPlane,  rightPlane, bottomPlane, _frustumPoints[to_base(FrustPoints::FAR_RIGHT_BOTTOM)]);
-    intersectionPoint(farPlane,  leftPlane,  bottomPlane, _frustumPoints[to_base(FrustPoints::FAR_LEFT_BOTTOM)]);
+    const auto intersectionPoint = [](const Plane<F32> & a, const Plane<F32> & b, const Plane<F32> & c) noexcept {
+        const F32 denom = Dot(Cross(a._normal, b._normal), c._normal);
+        assert(!IS_ZERO(denom));
+        return (-(a._distance * Cross(b._normal, c._normal)) -
+                 (b._distance * Cross(c._normal, a._normal)) -
+                 (c._distance * Cross(a._normal, b._normal))) / denom;
+    };
+
+    _frustumPoints[to_base(FrustPoints::NEAR_LEFT_TOP)]     = intersectionPoint(nearPlane, leftPlane,  topPlane);
+    _frustumPoints[to_base(FrustPoints::NEAR_RIGHT_TOP)]    = intersectionPoint(nearPlane, rightPlane, topPlane);
+    _frustumPoints[to_base(FrustPoints::NEAR_LEFT_BOTTOM)]  = intersectionPoint(nearPlane, leftPlane,  bottomPlane);
+    _frustumPoints[to_base(FrustPoints::NEAR_RIGHT_BOTTOM)] = intersectionPoint(nearPlane, rightPlane, bottomPlane);
+    _frustumPoints[to_base(FrustPoints::FAR_LEFT_TOP)]      = intersectionPoint(farPlane,  leftPlane,  topPlane);
+    _frustumPoints[to_base(FrustPoints::FAR_RIGHT_TOP)]     = intersectionPoint(farPlane,  rightPlane, topPlane);
+    _frustumPoints[to_base(FrustPoints::FAR_LEFT_BOTTOM)]   = intersectionPoint(farPlane,  leftPlane,  bottomPlane);
+    _frustumPoints[to_base(FrustPoints::FAR_RIGHT_BOTTOM)]  = intersectionPoint(farPlane,  rightPlane, bottomPlane);
 }
 
 // Get the frustum corners in WorldSpace.
-void Frustum::getCornersWorldSpace(std::array<vec3<F32>, 8 >& cornersWS) const {
+void Frustum::getCornersWorldSpace(std::array<vec3<F32>, 8 >& cornersWS) const noexcept {
     cornersWS = _frustumPoints;
 }
 
@@ -190,82 +186,27 @@ void Frustum::getCornersViewSpace(const mat4<F32>& viewMatrix, std::array<vec3<F
 }
 
 void Frustum::computePlanes(const mat4<F32>& viewProjMatrix) {
-#if 0
-    computeFrustumPlanes(viewProjMatrix, _frustumPlanes);
-#else
-    Plane<F32>& leftPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_LEFT)];
-    Plane<F32>& rightPlane  = _frustumPlanes[to_base(FrustPlane::PLANE_RIGHT)];
-    Plane<F32>& nearPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_NEAR)];
-    Plane<F32>& farPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_FAR)];
-    Plane<F32>& topPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_TOP)];
-    Plane<F32>& bottomPlane = _frustumPlanes[to_base(FrustPlane::PLANE_BOTTOM)];
+    F32* leftPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_LEFT)]._equation._v;
+    F32* rightPlane  = _frustumPlanes[to_base(FrustPlane::PLANE_RIGHT)]._equation._v;
+    F32* nearPlane   = _frustumPlanes[to_base(FrustPlane::PLANE_NEAR)]._equation._v;
+    F32* farPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_FAR)]._equation._v;
+    F32* topPlane    = _frustumPlanes[to_base(FrustPlane::PLANE_TOP)]._equation._v;
+    F32* bottomPlane = _frustumPlanes[to_base(FrustPlane::PLANE_BOTTOM)]._equation._v;
 
-    F32 const* mat = &viewProjMatrix.mat[0];
+    const auto& mat = viewProjMatrix.m;
 
-    leftPlane.set(   mat[3] + mat[0], mat[7] + mat[4], mat[11] + mat[8],  mat[15] + mat[12]);
-    rightPlane.set(  mat[3] - mat[0], mat[7] - mat[4], mat[11] - mat[8],  mat[15] - mat[12]);
-    topPlane.set(    mat[3] - mat[1], mat[7] - mat[5], mat[11] - mat[9],  mat[15] - mat[13]);
-    bottomPlane.set( mat[3] + mat[1], mat[7] + mat[5], mat[11] + mat[9],  mat[15] + mat[13]);
-    nearPlane.set(   mat[3] + mat[2], mat[7] + mat[6], mat[11] + mat[10], mat[15] + mat[14]);
-    farPlane.set(    mat[3] - mat[2], mat[7] - mat[6], mat[11] - mat[10], mat[15] - mat[14]);
+    for (I8 i = 4; i--; ) { leftPlane[i] = mat[i][3] + mat[i][0]; }
+    for (I8 i = 4; i--; ) { rightPlane[i] = mat[i][3] - mat[i][0]; }
+    for (I8 i = 4; i--; ) { bottomPlane[i] = mat[i][3] + mat[i][1]; }
+    for (I8 i = 4; i--; ) { topPlane[i] = mat[i][3] - mat[i][1]; }
+    for (I8 i = 4; i--; ) { nearPlane[i] = mat[i][3] + mat[i][2]; }
+    for (I8 i = 4; i--; ) { farPlane[i] = mat[i][3] - mat[i][2]; }
 
     for (Plane<F32>& plane : _frustumPlanes) {
         plane.normalize();
     }
-#endif
 
     updatePoints();
 }
 
-void Frustum::computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut) {
-    std::array<vec4<F32>, to_base(Frustum::FrustPlane::COUNT)> planesTemp;
-
-    computePlanes(invViewProj, planesTemp.data());
-    for (U8 i = 0; i < to_U8(Frustum::FrustPoints::COUNT); ++i) {
-        planesOut[i].set(planesTemp[i]);
-    }
-}
-
-void Frustum::computePlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
-    // no constexpr due to alignment declspec
-    static const vec4<I32> unitVecs[] = { vec4<I32>(-1, -1, -1, 1),
-                                          vec4<I32>(-1 , 1, -1, 1),
-                                          vec4<I32>(-1, -1,  1, 1),
-                                          vec4<I32>( 1, -1, -1, 1),
-                                          vec4<I32>( 1,  1, -1, 1),
-                                          vec4<I32>( 1, -1,  1, 1),
-                                          vec4<I32>( 1,  1,  1, 1) };
-
-    // Get world-space coordinates for clip-space bounds.
-    const vec4<F32> lbn(invViewProj * unitVecs[0]);
-    const vec4<F32> ltn(invViewProj * unitVecs[1]);
-    const vec4<F32> lbf(invViewProj * unitVecs[2]);
-    const vec4<F32> rbn(invViewProj * unitVecs[3]);
-    const vec4<F32> rtn(invViewProj * unitVecs[4]);
-    const vec4<F32> rbf(invViewProj * unitVecs[5]);
-    const vec4<F32> rtf(invViewProj * unitVecs[6]);
-
-    const vec3<F32> lbn_pos(lbn / lbn.w);
-    const vec3<F32> ltn_pos(ltn / ltn.w);
-    const vec3<F32> lbf_pos(lbf / lbf.w);
-    const vec3<F32> rbn_pos(rbn / rbn.w);
-    const vec3<F32> rtn_pos(rtn / rtn.w);
-    const vec3<F32> rbf_pos(rbf / rbf.w);
-    const vec3<F32> rtf_pos(rtf / rtf.w);
-
-    // Get plane equations for all sides of frustum.
-    const vec3<F32> left_normal(  Normalized(Cross(lbf_pos - lbn_pos, ltn_pos - lbn_pos)));
-    const vec3<F32> right_normal( Normalized(Cross(rtn_pos - rbn_pos, rbf_pos - rbn_pos)));
-    const vec3<F32> top_normal(   Normalized(Cross(ltn_pos - rtn_pos, rtf_pos - rtn_pos)));
-    const vec3<F32> bottom_normal(Normalized(Cross(rbf_pos - rbn_pos, lbn_pos - rbn_pos)));
-    const vec3<F32> near_normal(  Normalized(Cross(ltn_pos - lbn_pos, rbn_pos - lbn_pos)));
-    const vec3<F32> far_normal(   Normalized(Cross(rtf_pos - rbf_pos, lbf_pos - rbf_pos)));
-
-    planesOut[to_base(Frustum::FrustPlane::PLANE_LEFT)].set(  left_normal,   -Dot(left_normal, lbn_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_RIGHT)].set( right_normal,  -Dot(right_normal, rbn_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_NEAR)].set(  near_normal,   -Dot(near_normal, lbn_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_FAR)].set(   far_normal,    -Dot(far_normal, lbf_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_TOP)].set(   top_normal,    -Dot(top_normal, ltn_pos));
-    planesOut[to_base(Frustum::FrustPlane::PLANE_BOTTOM)].set(bottom_normal, -Dot(bottom_normal, lbn_pos));
-}
 };

@@ -147,6 +147,7 @@ namespace Divide {
                         mat->loadFromXML(entryName, pt);
                     }break;
                     default:
+                    case EditorComponentFieldType::DROPDOWN_TYPE:
                     case EditorComponentFieldType::BUTTON:
                     case EditorComponentFieldType::BOUNDING_BOX:
                     case EditorComponentFieldType::BOUNDING_SPHERE: {

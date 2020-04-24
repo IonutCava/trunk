@@ -101,6 +101,9 @@ GFXDevice::GFXDevice(Kernel & parent)
 {
     _viewport.set(-1);
 
+    std::atomic_init(&_debugFrustumId, 0u);
+    _debugFrustumPrimitives.fill(nullptr);
+
     Line temp = {};
     temp.widthStart(3.0f);
     temp.widthEnd(3.0f);
@@ -785,8 +788,10 @@ void GFXDevice::closeRenderingAPI() {
     if (_axisGizmo) {
         destroyIMP(_axisGizmo);
     }
-    if (_debugFrustumPrimitive) {
-        destroyIMP(_debugFrustumPrimitive);
+    for (IMPrimitive*& primitive : _debugFrustumPrimitives) {
+        if (primitive != nullptr) {
+            destroyIMP(primitive);
+        }
     }
 
     _debugViews.clear();
@@ -2135,54 +2140,125 @@ void GFXDevice::getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, bool>>
     }
 }
 
-void GFXDevice::drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut) {
-    if (_debugFrustum != nullptr) {
-        std::array<vec3<F32>, 8> corners;
-        _debugFrustum->getCornersViewSpace(viewMatrix, corners);
-
-        Line temp = {};
-        Line lines[4 * 3];
-        for (U8 i = 0; i < 4; ++i) {
-            // Draw Near Plane
-            temp.positionStart(corners[i]);
-            temp.positionEnd(corners[(i + 1) % 4]);
-            temp.colourStart(DefaultColours::RED_U8);
-            temp.colourEnd(temp.colourStart());
-            lines[i * 4 + 0] = temp;
-
-            temp.positionStart(corners[i + 4]);
-            temp.positionEnd(corners[(i + 4 + 1) % 4]);
-            // Draw Far Plane
-            lines[i * 4 + 1] = temp;
-
-            // Connect Near Plane with Far Plane
-            temp.positionStart(corners[i]);
-            temp.positionEnd(corners[(i + 4) % 8]);
-            temp.colourStart(DefaultColours::GREEN_U8);
-            temp.colourEnd(temp.colourStart());
-            lines[i * 4 + 2] = temp;
-        }
-
-        if (!_debugFrustumPrimitive) {
-            _debugFrustumPrimitive = newIMP();
-            _debugFrustumPrimitive->name("DebugFrustum");
-            _debugFrustumPrimitive->pipeline(*_AxisGizmoPipeline);
-            _debugFrustumPrimitive->skipPostFX(true);
-        }
-
-        _debugFrustumPrimitive->fromLines(lines, 4 * 3);
-        bufferInOut.add(_debugFrustumPrimitive->toCommandBuffer());
-    } else if (_debugFrustumPrimitive) {
-        destroyIMP(_debugFrustumPrimitive);
+void GFXDevice::debugDrawFrustum(const Frustum& frustum, const FColour3& colour) {
+    const U32 frustumID = _debugFrustumId.fetch_add(1);
+    if (frustumID == g_maxDebugFrustums) {
+        return;
     }
+    _debugFrustums[frustumID] = { frustum, colour };
+}
+
+void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
+    const U32 frustumCount = _debugFrustumId.load();
+
+    Line temp = {};
+    std::array<Line, to_base(Frustum::FrustPlane::COUNT) * 2> lines = {};
+    std::array<vec3<F32>, to_base(Frustum::FrustPoints::COUNT)> corners = {};
+    for (U32 f = 0; f < frustumCount; ++f) {
+        IMPrimitive*& frustumPrimitive = _debugFrustumPrimitives[f];
+        if (frustumPrimitive == nullptr) {
+            frustumPrimitive = newIMP();
+            frustumPrimitive->name(Util::StringFormat("DebugFrustum_%d", f));
+            frustumPrimitive->pipeline(*_AxisGizmoPipeline);
+            frustumPrimitive->skipPostFX(true);
+        }
+
+        //_debugFrustums[f].first.getCornersViewSpace(_debugFrustums[f].second, corners);
+        _debugFrustums[f].first.getCornersWorldSpace(corners);
+        const FColour3& endColour = _debugFrustums[f].second;
+        const FColour3 startColour = endColour * 0.25f;
+
+        UColour4 startColourU = Util::ToUIntColour(startColour);
+        UColour4 endColourU = Util::ToUIntColour(endColour);
+
+        U8 lineCount = 0;
+        // Draw Near Plane
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_BOTTOM)]);
+        temp.colourStart(startColourU);
+        temp.colourEnd(startColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_TOP)]);
+        temp.colourStart(startColourU);
+        temp.colourEnd(startColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_TOP)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_TOP)]);
+        temp.colourStart(startColourU);
+        temp.colourEnd(startColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_TOP)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_BOTTOM)]);
+        temp.colourStart(startColourU);
+        temp.colourEnd(startColourU);
+        lines[lineCount++] = temp;
+
+        // Draw Far Plane
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_LEFT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_BOTTOM)]);
+        temp.colourStart(endColourU);
+        temp.colourEnd(endColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_TOP)]);
+        temp.colourStart(endColourU);
+        temp.colourEnd(endColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_TOP)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::FAR_LEFT_TOP)]);
+        temp.colourStart(endColourU);
+        temp.colourEnd(endColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_LEFT_TOP)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::FAR_LEFT_BOTTOM)]);
+        temp.colourStart(endColourU);
+        temp.colourEnd(endColourU);
+        lines[lineCount++] = temp;
+        
+        // Connect Planes
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_BOTTOM)]);
+        temp.colourStart(endColourU);
+        temp.colourEnd(startColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_TOP)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_TOP)]);
+        temp.colourStart(endColourU);
+        temp.colourEnd(startColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_LEFT_TOP)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_TOP)]);
+        temp.colourStart(endColourU);
+        temp.colourEnd(startColourU);
+        lines[lineCount++] = temp;
+
+        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_LEFT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_BOTTOM)]);
+        temp.colourStart(endColourU);
+        temp.colourEnd(startColourU);
+        lines[lineCount++] = temp;
+
+        frustumPrimitive->fromLines(lines.data(), lineCount);
+        bufferInOut.add(frustumPrimitive->toCommandBuffer());
+    }
+    std::atomic_init(&_debugFrustumId, 0u);
 }
 
 /// Render all of our immediate mode primitives. This isn't very optimised and most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut) {
+    debugDrawFrustums(bufferInOut);
+
     if_constexpr(Config::Build::ENABLE_EDITOR)
     {
-        drawDebugFrustum(activeCamera.getViewMatrix(), bufferInOut);
-
         // Debug axis form the axis arrow gizmo in the corner of the screen
         // This is toggleable, so check if it's actually requested
         if (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SCENE_GIZMO)) {

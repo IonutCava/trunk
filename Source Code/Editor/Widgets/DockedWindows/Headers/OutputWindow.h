@@ -40,12 +40,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class ApplicationOutput;
-class OutputWindow : public DockedWindow {
+class OutputWindow final : public DockedWindow {
     public:
         OutputWindow(Editor& parent, const Descriptor& descriptor);
         ~OutputWindow();
 
-        void drawInternal() override;
+        void drawInternal() final;
         void printText(const Console::OutputEntry& entry);
         I32 textEditCallback(ImGuiTextEditCallbackData* data);
 

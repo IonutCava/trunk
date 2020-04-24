@@ -37,7 +37,7 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
 
     getEditorComponent().registerField(std::move(rangeAndConeField));
 
-    BoundingBox bb;
+    BoundingBox bb = {};
     bb.setMin(-10.0f);
     bb.setMax(10.0f);
     Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);

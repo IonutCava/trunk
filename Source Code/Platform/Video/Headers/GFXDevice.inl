@@ -56,11 +56,6 @@ GFXDevice::gpuState() noexcept {
     return _state;
 }
 
-inline void
-GFXDevice::debugDrawFrustum(const Frustum* frustum) noexcept {
-    _debugFrustum = frustum;
-}
-
 /// returns the standard state block
 inline size_t
 GFXDevice::getDefaultStateBlock(bool noDepth) const noexcept {

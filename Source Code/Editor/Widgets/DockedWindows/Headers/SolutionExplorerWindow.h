@@ -41,12 +41,12 @@ namespace Divide {
 class Camera;
 class SceneManager;
 class SceneGraphNode;
-class SolutionExplorerWindow : public DockedWindow, public PlatformContextComponent {
+class SolutionExplorerWindow final : public DockedWindow, public PlatformContextComponent {
     public:
         SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
         ~SolutionExplorerWindow();
 
-        void drawInternal() override;
+        void drawInternal() final;
   protected:
       void drawTransformSettings();
       void printCameraNode(SceneManager& sceneManager, Camera* camera);

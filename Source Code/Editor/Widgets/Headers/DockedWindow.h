@@ -53,7 +53,10 @@ class DockedWindow {
         explicit DockedWindow(Editor& parent, const Descriptor& descriptor);
         virtual ~DockedWindow();
 
+        // Called when the editor is visible
         void draw();
+        // Always called, even if the editor is not visible
+        void backgroundUpdate();
 
         virtual const char* name() const noexcept { return _descriptor.name.c_str(); }
         
@@ -66,6 +69,7 @@ class DockedWindow {
 
     protected:
         virtual void drawInternal() = 0;
+        virtual void backgroundUpdateInternal() {};
 
     protected:
         Editor & _parent;

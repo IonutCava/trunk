@@ -45,7 +45,7 @@ namespace Divide {
         vectorEASTLFast<std::shared_ptr<Directory>> _children;
     };
 
-    class ContentExplorerWindow : public DockedWindow {
+    class ContentExplorerWindow final : public DockedWindow {
     public:
         enum class GeometryFormat : U8 {
             _3DS = 0, //Studio max format
@@ -61,7 +61,7 @@ namespace Divide {
         ContentExplorerWindow(Editor& parent, const Descriptor& descriptor);
         ~ContentExplorerWindow() = default;
 
-        void drawInternal() override;
+        void drawInternal() final;
         void init();
         void update(const U64 deltaTimeUS);
 

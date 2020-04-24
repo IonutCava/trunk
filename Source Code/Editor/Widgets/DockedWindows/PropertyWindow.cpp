@@ -66,6 +66,10 @@ namespace ImGui {
 };
 
 namespace Divide {
+    namespace {
+        hashMap<U64, std::tuple<Frustum, FColour3, bool>> g_debugFrustums;
+    };
+
     PropertyWindow::PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
           PlatformContextComponent(context)
@@ -84,41 +88,50 @@ namespace Divide {
             return false;
         }
 
-        if (ImGui::CollapsingHeader(cam->resourceName().c_str())) {
-            vec3<F32> eye = cam->getEye();
-            if (ImGui::InputFloat3("Eye", eye._v)) {
-                cam->setEye(eye);
-                sceneChanged = true;
-            }
-            vec3<F32> euler = cam->getEuler();
-            if (ImGui::InputFloat3("Euler", euler._v)) {
-                cam->setEuler(euler);
-                sceneChanged = true;
-            }
+        const char* camName = cam->resourceName().c_str();
+        const U64 camID = _ID(camName);
 
-            F32 aspect = cam->getAspectRatio();
-            if (ImGui::InputFloat("Aspect", &aspect)) {
-                cam->setAspectRatio(aspect);
-                sceneChanged = true;
-            }
-
-            F32 horizontalFoV = cam->getHorizontalFoV();
-            if (ImGui::InputFloat("FoV (horizontal)", &horizontalFoV)) {
-                cam->setHorizontalFoV(horizontalFoV);
-                sceneChanged = true;
-            }
-
-            vec2<F32> zPlanes = cam->getZPlanes();
-            if (ImGui::InputFloat2("zPlanes", zPlanes._v)) {
-                if (cam->isOrthoProjected()) {
-                    cam->setProjection(cam->orthoRect(), zPlanes);
+        if (ImGui::CollapsingHeader(camName)) {
+            {
+                vec3<F32> eye = cam->getEye();
+                if (ImGui::InputFloat3("Eye", eye._v)) {
+                    cam->setEye(eye);
+                    sceneChanged = true;
                 }
-                else {
-                    cam->setProjection(cam->getAspectRatio(), cam->getVerticalFoV(), zPlanes);
-                }
-                sceneChanged = true;
             }
-
+            {
+                vec3<F32> euler = cam->getEuler();
+                if (ImGui::InputFloat3("Euler", euler._v)) {
+                    cam->setEuler(euler);
+                    sceneChanged = true;
+                }
+            }
+            {
+                F32 aspect = cam->getAspectRatio();
+                if (ImGui::InputFloat("Aspect", &aspect)) {
+                    cam->setAspectRatio(aspect);
+                    sceneChanged = true;
+                }
+            }
+            {
+                F32 horizontalFoV = cam->getHorizontalFoV();
+                if (ImGui::InputFloat("FoV (horizontal)", &horizontalFoV)) {
+                    cam->setHorizontalFoV(horizontalFoV);
+                    sceneChanged = true;
+                }
+            }
+            {
+                vec2<F32> zPlanes = cam->getZPlanes();
+                if (ImGui::InputFloat2("zPlanes", zPlanes._v)) {
+                    if (cam->isOrthoProjected()) {
+                        cam->setProjection(cam->orthoRect(), zPlanes);
+                    }
+                    else {
+                        cam->setProjection(cam->getAspectRatio(), cam->getVerticalFoV(), zPlanes);
+                    }
+                    sceneChanged = true;
+                }
+            }
             if (cam->isOrthoProjected()) {
                 vec4<F32> orthoRect = cam->orthoRect();
                 if (ImGui::InputFloat4("Ortho", orthoRect._v)) {
@@ -126,33 +139,58 @@ namespace Divide {
                     sceneChanged = true;
                 }
             }
+            {
+                ImGui::Text("View Matrix");
+                ImGui::Spacing();
+                mat4<F32> viewMatrix = cam->getViewMatrix();
+                EditorComponentField worldMatrixField;
+                worldMatrixField._name = "View Matrix";
+                worldMatrixField._basicType = GFX::PushConstantType::MAT4;
+                worldMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
+                worldMatrixField._readOnly = true;
+                worldMatrixField._data = &viewMatrix;
 
-            ImGui::Text("View Matrix");
-            ImGui::Spacing();
-            mat4<F32> viewMatrix = cam->getViewMatrix();
-            EditorComponentField worldMatrixField;
-            worldMatrixField._name = "View Matrix";
-            worldMatrixField._basicType = GFX::PushConstantType::MAT4;
-            worldMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
-            worldMatrixField._readOnly = true;
-            worldMatrixField._data = &viewMatrix;
-
-            if (processBasicField(worldMatrixField)) {
-                sceneChanged = true;
+                if (processBasicField(worldMatrixField)) {
+                    sceneChanged = true;
+                }
             }
+            {
+                ImGui::Text("Projection Matrix");
+                ImGui::Spacing();
+                mat4<F32> projMatrix = cam->getProjectionMatrix();
+                EditorComponentField projMatrixField;
+                projMatrixField._basicType = GFX::PushConstantType::MAT4;
+                projMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
+                projMatrixField._readOnly = true;
+                projMatrixField._name = "Projection Matrix";
+                projMatrixField._data = &projMatrix;
 
-            ImGui::Text("Projection Matrix");
-            ImGui::Spacing();
-            mat4<F32> projMatrix = cam->getProjectionMatrix();
-            EditorComponentField projMatrixField;
-            projMatrixField._basicType = GFX::PushConstantType::MAT4;
-            projMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
-            projMatrixField._readOnly = true;
-            projMatrixField._name = "Projection Matrix";
-            projMatrixField._data = &projMatrix;
+                if (processBasicField(projMatrixField)) {
+                    sceneChanged = true;
+                }
+            }
+            {
+                ImGui::Separator();
+                bool drawFustrum = g_debugFrustums.find(camID) != eastl::cend(g_debugFrustums);
+                if (ImGui::Checkbox("Draw debug frustum", &drawFustrum)) {
+                    if (drawFustrum) {
+                        g_debugFrustums[camID] = { cam->getFrustum(), DefaultColours::GREEN, true };
+                    } else {
+                        g_debugFrustums.erase(camID);
+                    }
+                }
 
-            if (processBasicField(projMatrixField)) {
-                sceneChanged = true;
+                if (drawFustrum) {
+                    auto& [frust, colour, realtime] = g_debugFrustums[camID];
+                    ImGui::Checkbox("Update realtime", &realtime);
+                    const bool update = realtime || ImGui::Button("Update frustum");
+                    if (update) {
+                        frust = cam->getFrustum();
+                    }
+                    ImGui::PushID(cam->resourceName().c_str());
+                    ImGui::ColorEdit3("Frust Colour", colour._v, ImGuiColorEditFlags__OptionsDefault);
+                    ImGui::PopID();
+                }
             }
         }
 
@@ -168,6 +206,13 @@ namespace Divide {
             return false;
         }
     };
+
+    void PropertyWindow::backgroundUpdateInternal() {
+        for (const auto& it : g_debugFrustums) {
+            const auto& [frust, colour, realtime] = it.second;
+            _context.gfx().debugDrawFrustum(frust, colour);
+        }
+    }
 
     void PropertyWindow::drawInternal() {
         bool sceneChanged = false;

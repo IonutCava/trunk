@@ -39,12 +39,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class PostFX;
-class PostFXWindow : public DockedWindow, public PlatformContextComponent {
+class PostFXWindow final : public DockedWindow, public PlatformContextComponent {
 public:
     PostFXWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
     ~PostFXWindow() = default;
 
-    void drawInternal() override;
+    void drawInternal() final;
 private:
     PostFX& _postFX;
 };

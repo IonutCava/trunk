@@ -678,6 +678,10 @@ bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
 }
 
 bool Editor::framePostRenderStarted(const FrameEvent& evt) {
+    for (DockedWindow* window : _dockedWindows) {
+        window->backgroundUpdate();
+    }
+
     if (!_running) {
         return true;
     }

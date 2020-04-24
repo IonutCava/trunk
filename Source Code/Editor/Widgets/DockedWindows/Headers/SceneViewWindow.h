@@ -39,12 +39,12 @@ struct ImGuiWindow;
 
 namespace Divide {
 
-    class SceneViewWindow : public DockedWindow {
+    class SceneViewWindow final : public DockedWindow {
     public:
         SceneViewWindow(Editor& parent, const Descriptor& descriptor);
         ~SceneViewWindow();
 
-        void drawInternal() override;
+        void drawInternal() final;
 
         const Rect<I32>& sceneRect(bool globalCoords) const;
 

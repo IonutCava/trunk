@@ -68,7 +68,7 @@ class Frustum {
     };
 
    public:
-    Frustum();
+    Frustum() = default;
     void Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix);
 
     void set(const Frustum& other);
@@ -91,15 +91,11 @@ class Frustum {
     }
 
     // Get the frustum corners in WorldSpace. cornerWS must be a vector with at least 8 allocated slots
-    void getCornersWorldSpace(std::array<vec3<F32>, 8>& cornersWS) const;
+    void getCornersWorldSpace(std::array<vec3<F32>, 8>& cornersWS) const noexcept;
     // Get the frustum corners in ViewSpace. cornerVS must be a vector with at least 8 allocated slots
     void getCornersViewSpace(const mat4<F32>& viewMatrix, std::array<vec3<F32>, 8>& cornersVS) const;
 
     void computePlanes(const mat4<F32>& viewProjMatrix);
-
-    static void computePlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
-    static void computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut);
-
 
     inline bool operator==(const Frustum& other) const noexcept {
         for (U8 i = 0; i < to_U8(FrustPlane::COUNT); ++i) {
@@ -130,14 +126,11 @@ class Frustum {
                                          const vec3<F32>& center,
                                          F32 radius) const noexcept;
 
-    /// Get the point where the 3 specified planes intersect
-    void intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
-                           const Plane<F32>& c, vec3<F32>& outResult) noexcept;
-    void updatePoints();
+    void updatePoints() noexcept;
 
    private:
-    std::array<Plane<F32>, to_base(FrustPlane::COUNT)>  _frustumPlanes;
-    std::array<vec3<F32>,  to_base(FrustPoints::COUNT)> _frustumPoints;
+    std::array<Plane<F32>, to_base(FrustPlane::COUNT)>  _frustumPlanes = create_array<to_base(FrustPlane::COUNT)>(DEFAULT_PLANE);
+    std::array<vec3<F32>,  to_base(FrustPoints::COUNT)> _frustumPoints = create_array<to_base(FrustPoints::COUNT)>(VECTOR3_ZERO);
 };
 
 };  // namespace Divide

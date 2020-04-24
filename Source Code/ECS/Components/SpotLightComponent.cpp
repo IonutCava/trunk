@@ -26,7 +26,7 @@ SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, PlatformContext& con
 
     getEditorComponent().registerField(std::move(rangeAndConeField));
 
-    BoundingBox bb;
+    BoundingBox bb = {};
     bb.setMin(-1.0f);
     bb.setMax(1.0f);
     Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);

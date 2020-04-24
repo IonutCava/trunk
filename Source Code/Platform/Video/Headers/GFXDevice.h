@@ -204,7 +204,7 @@ public:  // GPU interface
     void endFrame(DisplayWindow& window, bool global);
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
-
+    void debugDrawFrustum(const Frustum& frustum, const FColour3& colour);
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch = true);
     
     /// Generate a cubemap from the given position
@@ -258,7 +258,6 @@ public:  // Accessors and Mutators
     inline Renderer& getRenderer() const;
     inline const GPUState& gpuState() const noexcept;
     inline GPUState& gpuState() noexcept;
-    inline void debugDrawFrustum(const Frustum* frustum) noexcept;
     /// returns the standard state block
     inline size_t getDefaultStateBlock(bool noDepth) const noexcept;
     inline size_t get2DStateBlock() const noexcept;
@@ -354,8 +353,6 @@ protected:
     /// Create and return a new framebuffer.
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor);
 
-    void drawDebugFrustum(const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut);
-
     void drawText(const TextElementBatch& batch);
 
     void fitViewportInWindow(U16 w, U16 h);
@@ -366,6 +363,7 @@ protected:
     void renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut);
     
     void stepResolution(bool increment);
+    void debugDrawFrustums(GFX::CommandBuffer& bufferInOut);
 
 protected:
     void renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
@@ -405,8 +403,10 @@ private:
     std::array<Line, 3> _axisLines;
     IMPrimitive* _axisGizmo = nullptr;
 
-    const Frustum*  _debugFrustum = nullptr;
-    IMPrimitive*    _debugFrustumPrimitive = nullptr;
+    static constexpr U32 g_maxDebugFrustums = 8u;
+    std::array<IMPrimitive*, g_maxDebugFrustums>  _debugFrustumPrimitives;
+    std::array<std::pair<Frustum, FColour3>, g_maxDebugFrustums> _debugFrustums;
+    std::atomic_uint _debugFrustumId;
 
     CameraSnapshot  _activeCameraSnapshot;
 
