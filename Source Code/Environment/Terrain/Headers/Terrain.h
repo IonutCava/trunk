@@ -72,7 +72,7 @@ namespace Attorney {
     class TerrainLoader;
 };
 
-class Terrain : public Object3D {
+class Terrain final : public Object3D {
     friend class Attorney::TerrainChunk;
     friend class Attorney::TerrainLoader;
 
@@ -93,9 +93,7 @@ class Terrain : public Object3D {
 
    public:
     explicit Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
-    virtual ~Terrain();
-
-    bool unload() final;
+    ~Terrain() = default;
 
     void toggleBoundingBoxes();
 
@@ -111,13 +109,20 @@ class Terrain : public Object3D {
     inline const Quadtree& getQuadtree() const noexcept { return _terrainQuadtree; }
     void getVegetationStats(U32& maxGrassInstances, U32& maxTreeInstances) const;
 
-    inline const vectorEASTL<TerrainChunk*>& terrainChunks() const { return _terrainChunks; }
-    const std::shared_ptr<TerrainDescriptor>& descriptor() const { return _descriptor; }
+    inline const vectorEASTL<TerrainChunk*>& terrainChunks() const noexcept { return _terrainChunks; }
+    const std::shared_ptr<TerrainDescriptor>& descriptor() const noexcept { return _descriptor; }
 
     void saveToXML(boost::property_tree::ptree& pt) const final;
     void loadFromXML(const boost::property_tree::ptree& pt)  final;
 
    protected:
+    TerrainTessellator& getTessellator(const RenderStagePass& renderStagePass);
+    U32& getUpdateCounter(const RenderStagePass& renderStagePass);
+    F32 getDrawDistance(const RenderStagePass& renderStagePass) const noexcept;
+    F32 getTriangleWidth(const RenderStagePass& renderStagePass) const noexcept;
+
+    U32 getBufferOffset(const RenderStagePass& renderStagePass) const noexcept;
+
     Vert getVert(F32 x_clampf, F32 z_clampf) const;
     Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
 
@@ -158,9 +163,8 @@ class Terrain : public Object3D {
         IDLE
     };
 
-    F32 _drawDistance = 1.0f;
-    I32 _initBufferWriteCounter = 0;
-    ShaderBuffer* _shaderData;
+    F32 _drawDistance = 0.0f;
+    ShaderBuffer* _shaderData = nullptr;
     VegetationDetails _vegDetails;
 
     using TessellatorArray = std::array<TerrainTessellator, to_base(RenderStage::COUNT)-1>;
@@ -169,14 +173,23 @@ class Terrain : public Object3D {
     Quadtree _terrainQuadtree;
     vectorEASTL<TerrainChunk*> _terrainChunks;
 
-    TessellatorArray _terrainTessellator;
-    std::array<TerrainTessellator, ShadowMap::MAX_SHADOW_PASSES> _shadowTessellators;
-    EditorDataState _editorDataDirtyState;
-    bool _shaderDataDirty;
-    bool _drawCommandsDirty;
-    bool _initialSetupDone = false;
+    using TessellatorsPerIndex = vectorEASTL<TerrainTessellator>;
+    using TessellatorsPerPassType = std::array<TessellatorsPerIndex, to_base(RenderPassType::COUNT)>;
+    using TessellatorsPerStage = std::array<TessellatorsPerPassType, to_base(RenderStage::COUNT)>;
+    TessellatorsPerStage _terrainTessellators;
 
-    SceneGraphNode* _vegetationGrassNode;
+    using UpdateCounterPerIndex = vectorEASTLFast<U32>;
+    using UpdateCounterPerPassType = std::array<UpdateCounterPerIndex, to_base(RenderPassType::COUNT)>;
+    using UpdateCounterPerStage = std::array<UpdateCounterPerPassType, to_base(RenderStage::COUNT)>;
+    UpdateCounterPerStage _bufferUpdateCounter;
+
+    EditorDataState _editorDataDirtyState = EditorDataState::IDLE;
+    bool _shaderDataDirty = true;
+    bool _drawCommandsDirty = true;
+    bool _initialSetupDone = false;
+    bool _drawDistanceChanged = false;
+
+    SceneGraphNode* _vegetationGrassNode = nullptr;
     std::shared_ptr<TerrainDescriptor> _descriptor;
 
     //0 - normal, 1 - wireframe, 2 - normals

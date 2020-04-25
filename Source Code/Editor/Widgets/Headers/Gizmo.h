@@ -76,10 +76,10 @@ namespace Divide {
         bool active() const;
 
         void onMouseButton(bool presseed);
-        void onKey(bool pressed, const Input::KeyEvent& key);
+        bool onKey(bool pressed, const Input::KeyEvent& key);
     protected:
         void update(const U64 deltaTimeUS);
-        void render(const Camera& camera);
+        void render(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
         void updateSelections(const vectorEASTL<SceneGraphNode*>& node);
         void setTransformSettings(const TransformSettings& settings);
         const TransformSettings& getTransformSettings() const;
@@ -93,14 +93,14 @@ namespace Divide {
         vectorEASTL<SceneGraphNode*> _selectedNodes;
         ImGuiContext* _imguiContext = nullptr;
         TransformSettings _transformSettings;
-        UndoEntry<TransformValues> _undoEntry;
+        TransformValues _workValues;
     };
 
     namespace Attorney {
         class GizmoEditor {
         private:
-            static void render(Gizmo& gizmo, const Camera& camera) {
-                gizmo.render(camera);
+            static void render(Gizmo& gizmo, const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+                gizmo.render(camera, targetViewport, bufferInOut);
             }
 
             static void updateSelection(Gizmo& gizmo, const vectorEASTL<SceneGraphNode*>& nodes) {

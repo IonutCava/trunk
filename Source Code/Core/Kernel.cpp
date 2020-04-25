@@ -811,7 +811,7 @@ bool Kernel::onKeyDown(const Input::KeyEvent& key) {
     if_constexpr (Config::Build::ENABLE_EDITOR) {
 
         Editor& editor = _platformContext.editor();
-        if (editor.onKeyDown(key)) {
+        if (!_sceneManager->wantsKeyboard() && editor.onKeyDown(key)) {
             return true;
         }
     }
@@ -825,7 +825,7 @@ bool Kernel::onKeyDown(const Input::KeyEvent& key) {
 bool Kernel::onKeyUp(const Input::KeyEvent& key) {
     if_constexpr (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
-        if (editor.onKeyUp(key)) {
+        if (!_sceneManager->wantsKeyboard() && editor.onKeyUp(key)) {
             return true;
         }
     }
@@ -857,7 +857,7 @@ vec2<I32> Kernel::remapMouseCoords(const vec2<I32>& absPositionIn, bool& remaped
 bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
-        if (editor.mouseMoved(arg)) {
+        if (!_sceneManager->wantsMouse() && editor.mouseMoved(arg)) {
             return true;
         }
     }
@@ -884,7 +884,7 @@ bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
     
     if_constexpr (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
-        if (editor.mouseButtonPressed(arg)) {
+        if (!_sceneManager->wantsMouse() && editor.mouseButtonPressed(arg)) {
             return true;
         }
     }
@@ -910,7 +910,7 @@ bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     
     if_constexpr (Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
-        if (editor.mouseButtonReleased(arg)) {
+        if (!_sceneManager->wantsMouse() && editor.mouseButtonReleased(arg)) {
             return true;
         }
     }
@@ -998,7 +998,7 @@ bool Kernel::joystickRemap(const Input::JoystickEvent &arg) {
 bool Kernel::onUTF8(const Input::UTF8Event& arg) {
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
-        if (editor.onUTF8(arg)) {
+        if (!_sceneManager->wantsKeyboard() && editor.onUTF8(arg)) {
             return true;
         }
     }

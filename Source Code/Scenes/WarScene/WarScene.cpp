@@ -735,51 +735,53 @@ U16 WarScene::registerInputActions() {
     U16 actionID = Scene::registerInputActions();
 
     //ToDo: Move these to per-scene XML file
-    PressReleaseActions actions;
-    _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {toggleCamera(param); });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_TAB, actions);
-    actionID++;
-
-    _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(0u, ""); });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_1, actions);
-    actionID++;
-
-    _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(1u, ""); });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_2, actions);
-    actionID++;
-
-    _input->actionList().registerInputAction(actionID, [](InputParams param) {DIVIDE_ASSERT(false, "Test Assert"); });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_5, actions);
-    actionID++;
-
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        /// TTT -> TTF -> TFF -> FFT -> FTT -> TFT -> TTT
-        bool dir   = _lightPool->lightTypeEnabled(LightType::DIRECTIONAL);
-        bool point = _lightPool->lightTypeEnabled(LightType::POINT);
-        bool spot  = _lightPool->lightTypeEnabled(LightType::SPOT);
-        if (dir && point && spot) {
-            _lightPool->toggleLightType(LightType::SPOT, false);
-        } else if (dir && point && !spot) {
-            _lightPool->toggleLightType(LightType::POINT, false);
-        } else if (dir && !point && !spot) {
-            _lightPool->toggleLightType(LightType::DIRECTIONAL, false);
-            _lightPool->toggleLightType(LightType::SPOT, true);
-        } else if (!dir && !point && spot) {
-            _lightPool->toggleLightType(LightType::POINT, true);
-        } else if (!dir && point && spot) {
-            _lightPool->toggleLightType(LightType::DIRECTIONAL, true);
-            _lightPool->toggleLightType(LightType::POINT, false);
-        } else {
-            _lightPool->toggleLightType(LightType::POINT, true);
-        }
-    });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_L, actions);
-
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        actionEntry.releaseIDs().insert(actionID);
+        _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {toggleCamera(param); });
+        _input->addKeyMapping(Input::KeyCode::KC_TAB, actionEntry);
+        actionID++;
+    }
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(0u, ""); });
+        actionEntry.releaseIDs().insert(actionID);
+        _input->addKeyMapping(Input::KeyCode::KC_1, actionEntry);
+        actionID++;
+    }
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(1u, ""); });
+        actionEntry.releaseIDs().insert(actionID);
+        _input->addKeyMapping(Input::KeyCode::KC_2, actionEntry);
+        actionID++;
+    }
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+            /// TTT -> TTF -> TFF -> FFT -> FTT -> TFT -> TTT
+            bool dir   = _lightPool->lightTypeEnabled(LightType::DIRECTIONAL);
+            bool point = _lightPool->lightTypeEnabled(LightType::POINT);
+            bool spot  = _lightPool->lightTypeEnabled(LightType::SPOT);
+            if (dir && point && spot) {
+                _lightPool->toggleLightType(LightType::SPOT, false);
+            } else if (dir && point && !spot) {
+                _lightPool->toggleLightType(LightType::POINT, false);
+            } else if (dir && !point && !spot) {
+                _lightPool->toggleLightType(LightType::DIRECTIONAL, false);
+                _lightPool->toggleLightType(LightType::SPOT, true);
+            } else if (!dir && !point && spot) {
+                _lightPool->toggleLightType(LightType::POINT, true);
+            } else if (!dir && point && spot) {
+                _lightPool->toggleLightType(LightType::DIRECTIONAL, true);
+                _lightPool->toggleLightType(LightType::POINT, false);
+            } else {
+                _lightPool->toggleLightType(LightType::POINT, true);
+            }
+        });
+        actionEntry.releaseIDs().insert(actionID);
+        _input->addKeyMapping(Input::KeyCode::KC_L, actionEntry);
+    }
 
     return actionID++;
 }

@@ -150,14 +150,12 @@ vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float
     return BurleyDiffuse(diffuseColor, roughness, NdotV, NdotL, VdotH);
 }
 
-#define M_PI 3.14159265358979323846
-#define M_EPSILON 0.0000001
-
-vec4 PBR(in vec3 lightDirection, 
+vec4 PBR(in vec3 lightDirectionWV,
          in vec4 lightColourAndAtt,
          in vec4 metallicRoughness, //r - metallic, g - roughness, b - rim lighting
          in vec4 albedoAndShadow,
-         in vec3 normalWV)
+         in vec3 normalWV,
+         in float ndl)
 {
     float metallic = metallicRoughness.r;
     float roughness = metallicRoughness.g;
@@ -167,10 +165,9 @@ vec4 PBR(in vec3 lightDirection,
     //vec3 envdiff = textureCubeLod(texEnvironmentCube, vec4(tnrm * N, 0), 10).xyz;
 
     // direction is NOT normalized
-    vec3 Hn = normalize(VAR._viewDirectionWV + lightDirection);
+    vec3 Hn = normalize(VAR._viewDirectionWV + lightDirectionWV);
     float vdh = clamp((dot(VAR._viewDirectionWV, Hn)), M_EPSILON, 1.0);
     float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
-    float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0);
     float ndv = clamp((dot(normalWV, VAR._viewDirectionWV)), M_EPSILON, 1.0);
     vec3 diffuseFactor = Diffuse(albedoAndShadow.rgb, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
 

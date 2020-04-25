@@ -38,12 +38,12 @@ namespace Divide {
 struct TransformValues {
     /// All orientation/rotation info is stored in a Quaternion
     /// (because they are awesome and also have an internal mat4 if needed)
-    Quaternion<F32> _orientation;
+    Quaternion<F32> _orientation = {};
     /// The object's position in the world as a 3 component vector
-    vec3<F32> _translation;
+    vec3<F32> _translation = VECTOR3_ZERO;
     /// Scaling is stored as a 3 component vector.
     /// This helps us check more easily if it's an uniform scale or not
-    vec3<F32> _scale;
+    vec3<F32> _scale = VECTOR3_UNIT;
 };
 
 bool operator==(const TransformValues& lhs, const TransformValues& rhs);

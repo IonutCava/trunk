@@ -881,11 +881,27 @@ U16 Scene::registerInputActions() {
     };
 
     const auto dragSelectBegin = [this](InputParams param) {
-        beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), vec2<I32>(param._var[2], param._var[3]));
+        beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), vec2<I32>(param._var[2], param._var[3]), false);
     };
 
     const auto dragSelectEnd = [this](InputParams param) {
-        endDragSelection(getPlayerIndexForDevice(param._deviceIndex));
+        endDragSelection(getPlayerIndexForDevice(param._deviceIndex), false);
+    };
+
+    const auto dragSelectBeginEditor = [this](InputParams param) {
+        if_constexpr(Config::Build::ENABLE_EDITOR) {
+            beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), vec2<I32>(param._var[2], param._var[3]), true);
+        } else {
+            NOP();
+        }
+    };
+
+    const auto dragSelectEndEditor = [this](InputParams param) {
+        if_constexpr(Config::Build::ENABLE_EDITOR) {
+            endDragSelection(getPlayerIndexForDevice(param._deviceIndex), true);
+        } else {
+            NOP();
+        }
     };
 
     InputActionList& actions = _input->actionList();
@@ -924,8 +940,10 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(32, toggleConsole);
     actions.registerInputAction(33, dragSelectBegin);
     actions.registerInputAction(34, dragSelectEnd);
+    actions.registerInputAction(35, dragSelectBeginEditor);
+    actions.registerInputAction(36, dragSelectEndEditor);
 
-    return 35;
+    return 37;
 }
 
 void Scene::loadKeyBindings() {
@@ -1303,7 +1321,7 @@ void Scene::onLostFocus() {
 
     for (const Player* player : _scenePlayers) {
         state().playerState(player->index()).resetMovement();
-        endDragSelection(player->index());
+        endDragSelection(player->index(), false);
     }
 
     //_paramHandler.setParam(_ID_32("freezeLoopTime"), true);
@@ -1573,28 +1591,24 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
     return false;
 }
 
-void Scene::beginDragSelection(PlayerIndex idx, vec2<I32> mousePos) {
+void Scene::beginDragSelection(PlayerIndex idx, vec2<I32> mousePos, bool inEditor) {
     DragSelectData& data = _dragSelectData[idx];
 
     const vec2<U16>& resolution = _context.gfx().renderingResolution();
     data._targetViewport.set(0, 0, resolution.width, resolution.height);
     mousePos = COORD_REMAP(mousePos, _context.gfx().getCurrentViewport(), data._targetViewport);
 
-    bool inEditor = false;
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _context.editor();
-        inEditor = editor.running();
-        if (inEditor && !editor.scenePreviewFocused()) {
+        if (editor.running() && !editor.scenePreviewFocused() && !inEditor) {
             return;
         }
     }
 
-
-    if (!findSelection(idx, true) || inEditor) {
+    if (inEditor || !findSelection(idx, true)) {
         data._startDragPos = mousePos;
         data._endDragPos = mousePos;
         data._isDragging = true;
-        _parent.resetSelection(idx);
     }
 }
 
@@ -1610,7 +1624,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
         const Editor& editor = _context.editor();
         if (editor.running()) {
             if (!editor.scenePreviewFocused()) {
-                endDragSelection(idx);
+                endDragSelection(idx, true);
                 return;
             } else if (!remaped) {
                 const Rect<I32> previewRect = _context.editor().scenePreviewRect(false);
@@ -1665,7 +1679,9 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
     }
 }
 
-void Scene::endDragSelection(PlayerIndex idx) {
+void Scene::endDragSelection(PlayerIndex idx, bool inEditor) {
+    ACKNOWLEDGE_UNUSED(inEditor);
+
     _dragSelectData[idx]._isDragging = false;
     _linesPrimitive->clearBatch();
 }

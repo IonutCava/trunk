@@ -132,6 +132,8 @@ class Editor : public PlatformContextComponent,
     void close();
     void idle();
     void update(const U64 deltaTimeUS);
+    /// Render any editor specific element that needs to be part of the scene (e.g. Control Gizmo)
+    void drawScreenOverlay(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
     void toggle(const bool state);
     void onSizeChange(const SizeChangeParams& params);
@@ -204,7 +206,7 @@ class Editor : public PlatformContextComponent,
     PROPERTY_R_IW(bool, unsavedSceneChanges, false);
 
   protected: // attorney
-    void renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID);
+    void renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut);
 
     bool saveSceneChanges(DELEGATE<void, const char*> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
     void updateCameraSnapshot();
@@ -266,8 +268,8 @@ class Editor : public PlatformContextComponent,
 namespace Attorney {
     class EditorGizmo {
     private:
-        static void renderDrawList(Editor& editor, ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID) {
-            editor.renderDrawList(pDrawData, overlayOnScene, windowGUID);
+        static void renderDrawList(Editor& editor, ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut) {
+            editor.renderDrawList(pDrawData, targetViewport, windowGUID, bufferInOut);
         }
 
         static ImGuiViewport* findViewportByPlatformHandle(Editor& editor, ImGuiContext* context, DisplayWindow* window) {

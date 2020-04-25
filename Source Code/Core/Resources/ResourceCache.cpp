@@ -9,30 +9,33 @@
 
 namespace Divide {
 
-Mutex ResourceLoadLock::s_hashLock;
-eastl::unordered_set<size_t> ResourceLoadLock::s_loadingHashes;
+namespace {
+    Mutex g_hashLock;
+    std::set<size_t> g_loadingHashes;
+};
 
 ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded)
     : _loadingHash(hash)
 {
-    while (true) {
+    do {
         {
-            UniqueLock<Mutex> w_lock(s_hashLock);
-            const auto [it, success] = s_loadingHashes.insert(_loadingHash);
-            if (success) {
+            UniqueLock<Mutex> w_lock(g_hashLock);
+            if (g_loadingHashes.insert(_loadingHash).second) {
                 return;
             }
         }
         if (threaded) {
             notifyTaskPool(context);
         }
-    }
+    } while (true);
 }
 
 ResourceLoadLock::~ResourceLoadLock()
 {
-    UniqueLock<Mutex> w_lock(s_hashLock);
-    s_loadingHashes.erase(_loadingHash);
+    UniqueLock<Mutex> w_lock(g_hashLock);
+    const size_t prevSize = g_loadingHashes.size();
+    g_loadingHashes.erase(_loadingHash);
+    DIVIDE_ASSERT(prevSize > g_loadingHashes.size(), "ResourceLoadLock failed to remove a resource lock!");
 }
 
 void ResourceLoadLock::notifyTaskPool(PlatformContext& context) {

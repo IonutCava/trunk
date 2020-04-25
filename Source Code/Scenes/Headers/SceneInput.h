@@ -46,9 +46,15 @@ namespace Divide {
             return hash;
         }
     };
+
 // This is the callback equivalent of PressReleaseAction with IDs resolved
 struct PressReleaseActionCbks {
-    std::array<vectorEASTL<DELEGATE<void, InputParams>>, to_base(PressReleaseActions::Action::COUNT)> _actions;
+    struct Entry {
+        std::set<Input::KeyCode> _modifiers;
+        std::array<vectorEASTL<DELEGATE<void, InputParams>>, to_base(PressReleaseActions::Action::COUNT)> _actions;
+    };
+
+    vectorEASTL<Entry> _entries;
 
     void from(const PressReleaseActions& actions, const InputActionList& actionList);
 };
@@ -90,7 +96,7 @@ class SceneInput : public Input::InputAggregatorInterface {
     bool onUTF8(const Input::UTF8Event& arg) override;
     /// Returns false if the key is already assigned and couldn't be merged
     /// Call removeKeyMapping for the specified key first
-    bool addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks);
+    bool addKeyMapping(Input::KeyCode key, const PressReleaseActions::Entry& keyCbks);
     /// Returns false if the key wasn't previously assigned
     bool removeKeyMapping(Input::KeyCode key);
     /// Returns true if the key has a valid mapping and sets the callback output
@@ -99,7 +105,7 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     /// Returns false if the button is already assigned.
     /// Call removeButtonMapping for the specified key first
-    bool addMouseMapping(Input::MouseButton button, PressReleaseActions btnCbks);
+    bool addMouseMapping(Input::MouseButton button, const PressReleaseActions::Entry& btnCbks);
     /// Returns false if the button wasn't previously assigned
     bool removeMouseMapping(Input::MouseButton button);
     /// Returns true if the button has a valid mapping and sets the callback
@@ -108,7 +114,7 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     /// Returns false if the button is already assigned.
     /// Call removeJoystickMapping for the specified key first
-    bool addJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id, PressReleaseActions btnCbks);
+    bool addJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id, const PressReleaseActions::Entry& btnCbks);
     /// Returns false if the button wasn't previously assigned
     bool removeJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id);
     /// Returns true if the button has a valid mapping and sets the callback

@@ -14,11 +14,19 @@ namespace {
 };
 
 void PressReleaseActionCbks::from(const PressReleaseActions& actions, const InputActionList& actionList) {
-    for (U8 i = 0; i < to_base(PressReleaseActions::Action::COUNT); ++i) {
-        const auto& ids = actions.getActionIDs(static_cast<PressReleaseActions::Action>(i));
-        _actions[i].reserve(ids.size());
-        for (U16 id : ids) {
-            _actions[i].push_back(actionList.getInputAction(id)._action);
+
+    _entries.reserve(actions.entries().size());
+    for (const PressReleaseActions::Entry& entry : actions.entries()) {
+        Entry& newEntry = _entries.emplace_back();
+        newEntry._actions[to_base(PressReleaseActions::Action::PRESS)].reserve(entry.pressIDs().size());
+        newEntry._actions[to_base(PressReleaseActions::Action::RELEASE)].reserve(entry.releaseIDs().size());
+        newEntry._modifiers = entry.modifiers();
+
+        for (const U16 id : entry.pressIDs()) {
+            newEntry._actions[to_base(PressReleaseActions::Action::PRESS)].push_back(actionList.getInputAction(id)._action);
+        }
+        for (const U16 id : entry.releaseIDs()) {
+            newEntry._actions[to_base(PressReleaseActions::Action::RELEASE)].push_back(actionList.getInputAction(id)._action);
         }
     }
 }
@@ -56,44 +64,29 @@ bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
                                  const InputParams& params,
                                  bool onPress)
 {
-    const auto& lAltCbk = cbks._actions[to_base(onPress ? PressReleaseActions::Action::LEFT_ALT_PRESS : PressReleaseActions::Action::LEFT_ALT_RELEASE)];
-    if (Input::getKeyState(params._deviceIndex, Input::KeyCode::KC_LMENU) == Input::InputState::PRESSED && !lAltCbk.empty()) {
-        for (const auto& it : lAltCbk) {
-            it(params);
+    for (const PressReleaseActionCbks::Entry& entry : cbks._entries) {
+        //Check modifiers
+        for (const Input::KeyCode modifier : entry._modifiers) {
+            if (Input::getKeyState(params._deviceIndex, modifier) != Input::InputState::PRESSED) {
+                goto next;
+            }
         }
-        return true;
-    }
 
-    auto& rAltCbk = cbks._actions[to_base(onPress ? PressReleaseActions::Action::RIGHT_ALT_PRESS : PressReleaseActions::Action::RIGHT_ALT_RELEASE)];
-    if (Input::getKeyState(params._deviceIndex, Input::KeyCode::KC_RMENU) == Input::InputState::PRESSED && !rAltCbk.empty()) {
-        for (const auto& it : rAltCbk) {
-            it(params);
-        }
-        return true;
-    }
+        {
+            const auto& actions = entry._actions[to_base(onPress ? PressReleaseActions::Action::PRESS 
+                                                                 : PressReleaseActions::Action::RELEASE)];
+            if (!actions.empty()) {
+                for (const auto& action : actions) {
+                    action(params);
+                }
 
-    auto& lCtrlCbk = cbks._actions[to_base(onPress ? PressReleaseActions::Action::LEFT_CTRL_PRESS : PressReleaseActions::Action::LEFT_CTRL_RELEASE)];
-    if (Input::getKeyState(params._deviceIndex, Input::KeyCode::KC_LCONTROL) == Input::InputState::PRESSED && !lCtrlCbk.empty()) {
-        for (const auto& it : lCtrlCbk) {
-            it(params);
+                return true;
+            }
         }
-        return true;
-    }
 
-    auto& rCtrlCbk = cbks._actions[to_base(onPress ? PressReleaseActions::Action::RIGHT_CTRL_PRESS : PressReleaseActions::Action::RIGHT_CTRL_RELEASE)];
-    if (Input::getKeyState(params._deviceIndex, Input::KeyCode::KC_RCONTROL) == Input::InputState::PRESSED && !rCtrlCbk.empty()) {
-        for (const auto& it : rCtrlCbk) {
-            it(params);
-        }
-        return true;
-    }
-
-    auto& noModCbk = cbks._actions[to_base(onPress ? PressReleaseActions::Action::PRESS : PressReleaseActions::Action::RELEASE)];
-    if (!noModCbk.empty()) {
-        for (const auto& it : noModCbk) {
-            it(params);
-        }
-        return true;
+    next:
+        //Failed modifier test
+        NOP();
     }
 
     return false;
@@ -276,13 +269,8 @@ bool SceneInput::onUTF8(const Input::UTF8Event& arg) {
     return false;
 }
 
-bool SceneInput::addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks) {
-    auto result = hashAlg::insert(_keyMap, key, keyCbks);
-    if (!result.second) {
-        return result.first->second.merge(keyCbks);
-    }
-
-    return result.second;
+bool SceneInput::addKeyMapping(Input::KeyCode key, const PressReleaseActions::Entry& keyCbks) {
+    return _keyMap[key].add(keyCbks);
 }
 
 bool SceneInput::removeKeyMapping(Input::KeyCode key) {
@@ -314,10 +302,8 @@ bool SceneInput::getKeyMapping(Input::KeyCode key, PressReleaseActionCbks& keyCb
     return false;
 }
 
-bool SceneInput::addMouseMapping(Input::MouseButton button, PressReleaseActions btnCbks) {
-    auto result = hashAlg::insert(_mouseMap, button, btnCbks);
-
-    return result.second;
+bool SceneInput::addMouseMapping(Input::MouseButton button, const PressReleaseActions::Entry& btnCbks) {
+    return _mouseMap[button].add(btnCbks);
 }
 
 bool SceneInput::removeMouseMapping(Input::MouseButton button) {
@@ -350,47 +336,9 @@ bool SceneInput::getMouseMapping(Input::MouseButton button, PressReleaseActionCb
     return false;
 }
 
-bool SceneInput::addJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id, PressReleaseActions btnCbks) {
-    if (elementType == Input::JoystickElementType::POV_MOVE ||
-        elementType == Input::JoystickElementType::AXIS_MOVE ||
-        elementType == Input::JoystickElementType::BALL_MOVE)
-    {
-        // non-buttons have no pressed/release states so map on release to on press's action as well
-        if (!btnCbks.getActionIDs(PressReleaseActions::Action::PRESS).empty()){
-            btnCbks.insertActionIDs(PressReleaseActions::Action::RELEASE, btnCbks.getActionIDs(PressReleaseActions::Action::PRESS));
-        } else {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::PRESS, btnCbks.getActionIDs(PressReleaseActions::Action::RELEASE));
-        }
-
-        if (!btnCbks.getActionIDs(PressReleaseActions::Action::LEFT_CTRL_PRESS).empty()) {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::LEFT_CTRL_RELEASE, btnCbks.getActionIDs(PressReleaseActions::Action::LEFT_CTRL_PRESS));
-        } else {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::LEFT_CTRL_PRESS, btnCbks.getActionIDs(PressReleaseActions::Action::LEFT_CTRL_RELEASE));
-        }
-
-        if (!btnCbks.getActionIDs(PressReleaseActions::Action::RIGHT_CTRL_PRESS).empty()) {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::RIGHT_CTRL_RELEASE, btnCbks.getActionIDs(PressReleaseActions::Action::RIGHT_CTRL_PRESS));
-        } else {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::RIGHT_CTRL_PRESS, btnCbks.getActionIDs(PressReleaseActions::Action::RIGHT_CTRL_RELEASE));
-        }
-
-        if (!btnCbks.getActionIDs(PressReleaseActions::Action::LEFT_ALT_PRESS).empty()) {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::LEFT_ALT_RELEASE, btnCbks.getActionIDs(PressReleaseActions::Action::LEFT_ALT_PRESS));
-        } else {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::LEFT_ALT_PRESS, btnCbks.getActionIDs(PressReleaseActions::Action::LEFT_ALT_RELEASE));
-        }
-
-        if (!btnCbks.getActionIDs(PressReleaseActions::Action::RIGHT_ALT_PRESS).empty()) {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::RIGHT_ALT_RELEASE, btnCbks.getActionIDs(PressReleaseActions::Action::RIGHT_ALT_PRESS));
-        } else {
-            btnCbks.insertActionIDs(PressReleaseActions::Action::RIGHT_ALT_PRESS, btnCbks.getActionIDs(PressReleaseActions::Action::RIGHT_ALT_RELEASE));
-        }
-    }
-    JoystickMapKey key = std::make_pair(to_base(elementType), id);
-    bool existing = _joystickMap[to_base(device)].find(key) != std::cend(_joystickMap[to_base(device)]);
-    _joystickMap[to_base(device)][key] = btnCbks;
-
-    return existing;
+bool SceneInput::addJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id, const PressReleaseActions::Entry& btnCbks) {
+    const JoystickMapKey key = std::make_pair(to_base(elementType), id);
+    return _joystickMap[to_base(device)][key].add(btnCbks);
 }
 
 bool SceneInput::removeJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id) {

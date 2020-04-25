@@ -8,7 +8,7 @@ vec2 computeMoments(const float depth) {
 }
 
 vec2 computeMoments() {
-    return computeMoments(gl_FragCoord.z);
+    return computeMoments(gl_FragCoord.z / gl_FragCoord.w);
 }
 
 #endif //_VSM_FRAG_

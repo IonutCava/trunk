@@ -347,16 +347,11 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
 
                 if (validResult) {
                     meshAABB.transform(lightViewMatrix);
-
-                    //const F32 newMax = meshAABB.getMax().y;
-                    //const F32 newMax = meshAABB.getExtent().y;
-                    //const F32 newMax = meshAABB.getExtent().maxComponent();
                     const F32 newMax = meshAABB.getHalfExtent().y;
-                    //const F32 newMax = meshAABB.getHalfExtent().maxComponent();
 
                     appliedDiff = newMax - radius;
                     if (appliedDiff > 0.5f) {
-                        radius += appliedDiff;
+                        radius += appliedDiff * 0.75f;
 
                         maxExtents.set(radius, radius, radius);
                         minExtents = -maxExtents;

@@ -5,7 +5,8 @@ vec4 Phong(in vec3 lightDirectionWV,
            in vec4 lightColourAndAtt,
            in vec4 specularShininess,
            in vec4 albedoAndShadow,
-           in vec3 normalWV)
+           in vec3 normalWV,
+           in float lambertian)
 {
     const float kPi = 3.14159265;
     const float kShininess = specularShininess.a;
@@ -13,7 +14,6 @@ vec4 Phong(in vec3 lightDirectionWV,
     const vec3 lightColour = lightColourAndAtt.rgb;
     const float attenuation = lightColourAndAtt.a;
     const float shadowFactor = albedoAndShadow.a;
-    const float lambertian = saturate(dot(lightDirectionWV, normalWV));
 
     float specularCoefficient = 0.0;
     if (lambertian > 0.0f) {

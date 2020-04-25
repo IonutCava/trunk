@@ -68,14 +68,14 @@ struct TessellatedNodeData {
     vec4<F32> _tScale = {1.0f, 1.0f, 1.0f, 1.0f};
 };
 
-constexpr U32 MAX_TERRAIN_RENDER_NODES = 256;
+constexpr U32 MAX_TERRAIN_RENDER_NODES = 384;
 
 class TerrainTessellator {
 public:
     struct Configuration {
         vec2<U16> _terrainDimensions = { 128, 128 };
         // The size of a patch in meters at which point to stop subdividing a terrain patch once it's width is less than the cutoff
-        F32 _cutoffDistance = 100.0f;
+        F32 _minPatchSize = 100.0f;
         bool _useCameraDistance = true;
         bool _useFrustumCulling = true;
     };
@@ -87,26 +87,25 @@ public:
 
 public:
     // Builds a terrain quadtree based on specified parameters and current camera position.
-    bufferPtr createTree(const Frustum& frust, const vec3<F32>& camPos, const vec3<F32>& origin, U16& renderDepth);
+    const TerrainTessellator::RenderData& createTree(const Frustum& frust, const vec3<F32>& camPos, const vec3<F32>& origin, const F32 maxDistance, U16& renderDepth);
 
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
     // n = the current node we are testing
     TessellatedTerrainNode* find(TessellatedTerrainNode* const n, F32 x, F32 z, bool& found);
 
-    const RenderData& renderData() const;
+    const RenderData& renderData() const noexcept;
 
-    const vec3<F32>& getOrigin() const;
-    const Frustum& getFrustum() const;
-    U16 getRenderDepth() const;
-    U16 getPrevRenderDepth() const;
+    const vec3<F32>& getOrigin() const noexcept;
+    const vec3<F32>& getEyeCache() const noexcept;
+    const Frustum& getFrustum() const noexcept;
+    U16 getRenderDepth() const noexcept;
 
-    inline void overrideConfig(const Configuration& config) { _config = config; }
-
+    inline void overrideConfig(const Configuration& config) noexcept { _config = config; }
 
 protected:
     // Prepare data to draw the terrain. Returns the final render depth
-    bufferPtr updateAndGetRenderData(const Frustum& frust, U16& renderDepth);
+    const TerrainTessellator::RenderData& updateAndGetRenderData(const Frustum& frust, U16& renderDepth);
 
     // Determines whether a node should be subdivided based on its distance to the camera.
     // Returns true if the node should be subdivided.
@@ -133,9 +132,9 @@ private:
     vec3<F32> _cameraEyeCache;
     vec3<F32> _originCache;
     Configuration _config = {};
+    F32 _maxDistanceSQ = 0.0f;
     I32 _numNodes = 0;
     U16 _renderDepth = 0;
-    U16 _prevRenderDepth = 0;
     I8  _lastFrustumPlaneCache = -1;
 }; //TerrainTessellator
 

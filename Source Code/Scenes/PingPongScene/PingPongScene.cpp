@@ -334,26 +334,27 @@ bool PingPongScene::load(const Str128& name) {
 U16 PingPongScene::registerInputActions() {
     U16 actionID = Scene::registerInputActions();
 
-    //ToDo: Move these to per-scene XML file
-    PressReleaseActions actions;
-
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall(-1);});
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-
-    _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElementType::BUTTON_PRESS, 0, actions);
-    actionID++;
-
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        _freeFly = !_freeFly;
-        if (!_freeFly) {
-            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(_paddleCam);
-        } else {
-            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(nullptr);
-        }
-    });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_L, actions);
-
+    {
+        //ToDo: Move these to per-scene XML file
+        PressReleaseActions::Entry actionEntry = {};
+        actionEntry.releaseIDs().insert(actionID);
+        _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall(-1); });
+        _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElementType::BUTTON_PRESS, 0, actionEntry);
+        actionID++;
+    }
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        actionEntry.releaseIDs().insert(actionID);
+        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+            _freeFly = !_freeFly;
+            if (!_freeFly) {
+                state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(_paddleCam);
+            } else {
+                state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(nullptr);
+            }
+        });
+        _input->addKeyMapping(Input::KeyCode::KC_L, actionEntry);
+    }
     return actionID++;
 }
 

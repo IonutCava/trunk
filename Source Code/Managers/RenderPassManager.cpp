@@ -10,6 +10,7 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Editor/Headers/Editor.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
@@ -202,6 +203,9 @@ namespace Divide {
            const Rect<I32>& targetViewport = params._targetViewport;
            gfx.drawTextureInViewport(texData, targetViewport, true, false, buf);
            Attorney::SceneManagerRenderPass::drawCustomUI(*_parent.sceneManager(), targetViewport, buf);
+           if_constexpr(Config::Build::ENABLE_EDITOR) {
+               context.editor().drawScreenOverlay(cam, targetViewport, buf);
+           }
            context.gui().draw(gfx, targetViewport, buf);
            gfx.renderDebugUI(targetViewport, buf);
 

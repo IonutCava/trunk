@@ -28,7 +28,7 @@ float VSM(vec2 moments, float distance) {
     return saturate(max(p, distance <= moments.x ? 1.0f : 0.0f));
 }
 
-float getShadowFactorDirectional(in int idx, in int arrayOffset, in float bias) {
+float getShadowFactorDirectional(in int idx, in int arrayOffset, in float bias, in float TanAcosNdotL) {
     const int Split = getCSMSlice(idx);
 
     const vec4 sc = dvd_shadowLightVP[Split + (idx * 6)] * VAR._vertexW;
@@ -54,23 +54,23 @@ float getShadowFactorDirectional(in int idx, in int arrayOffset, in float bias) 
         //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
 
         //float bias = max(angleBias * (1.0 - dot(normal, lightDirection)), 0.0008);
-        ret = max(VSM(moments, shadowCoord.z - bias), 0.2f);
+        ret = max(VSM(moments, shadowCoord.z - clamp(bias * TanAcosNdotL, 0, 0.01f)), 0.2f);
     }
 
     return saturate(ret / SHADOW_INTENSITY_FACTOR);
 }
 
-float getShadowFactorDirectional(int idx) {
+float getShadowFactorDirectional(int idx, in float TanAcosNdotL) {
     if (dvd_receivesShadow && idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
         const vec4 crtDetails = dvd_shadowLightDetails[idx];
-        return getShadowFactorDirectional(idx, int(crtDetails.y), crtDetails.z);
+        return getShadowFactorDirectional(idx, int(crtDetails.y), crtDetails.z, TanAcosNdotL);
     }
 
     return 1.0f;
 }
 
 
-float getShadowFactorPoint(in int idx, in int arrayIndex) {
+float getShadowFactorPoint(in int idx, in int arrayIndex, in float NdotL) {
     // SHADOW MAPS
     vec3 position_ls = dvd_shadowLightPosition[idx * 6].xyz;
     vec3 abs_position = abs(position_ls);
@@ -78,14 +78,15 @@ float getShadowFactorPoint(in int idx, in int arrayIndex) {
     vec4 clip = (dvd_shadowLightVP[idx * 6] * VAR._vertexW) * vec4(0.0, 0.0, fs_z, 1.0);
     float depth = (clip.z / clip.w) * 0.5 + 0.5;
     float ret = texture(texDepthMapFromLightCube, vec4(position_ls.xyz, arrayIndex), depth).r;
+    //float bias = clamp(biasIn * TanAcosNdotL, 0, 0.01f);
 
     return saturate(ret / SHADOW_INTENSITY_FACTOR);
 }
 
-float getShadowFactorPoint(int idx) {
+float getShadowFactorPoint(int idx, in float TanAcosNdotL) {
     if (dvd_receivesShadow && idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
         const vec4 crtDetails = dvd_shadowLightDetails[idx];
-        return getShadowFactorPoint(idx, int(crtDetails.y));
+        return getShadowFactorPoint(idx, int(crtDetails.y), TanAcosNdotL);
     }
     return 1.0f;
 }
@@ -117,28 +118,28 @@ float filterFinalShadow(in sampler2DArrayShadow shadowMap, in vec3 projCoords, i
     return visiblity;
 }
 
-float getShadowFactorSpot(in int idx, in int arrayOffset, in float bias) {
+float getShadowFactorSpot(in int idx, in int arrayOffset, in float bias, in float TanAcosNdotL) {
     const vec4 temp_coord = dvd_shadowLightVP[idx * 6] * VAR._vertexW;
     const vec3 shadow_coord = 0.5f + (temp_coord.xyz / temp_coord.w) * 0.5f;
-    const float ret = filterFinalShadow(texDepthMapFromLight, shadow_coord, arrayOffset, bias, 0.001f);
+    const float ret = filterFinalShadow(texDepthMapFromLight, shadow_coord, arrayOffset, clamp(bias * TanAcosNdotL, 0, 0.01f), 0.001f);
     return saturate(ret / SHADOW_INTENSITY_FACTOR);
 }
 
-float getShadowFactorSpot(int idx) {
+float getShadowFactorSpot(int idx, in float TanAcosNdotL) {
     if (dvd_receivesShadow && idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
         const vec4 crtDetails = dvd_shadowLightDetails[idx];
-        return getShadowFactorSpot(idx, int(crtDetails.y), crtDetails.z);
+        return getShadowFactorSpot(idx, int(crtDetails.y), crtDetails.z, TanAcosNdotL);
     }
     return 1.0f;
 }
 #else
-float getShadowFactorDirectional(in uint idx, in vec4 details) {
+float getShadowFactorDirectional(in uint idx, in vec4 details, in float TanAcosNdotL) {
     return 1.0f;
 }
-float getShadowFactorPoint(in uint idx, in int arrayOffset) {
+float getShadowFactorPoint(in uint idx, in int arrayOffset, in float TanAcosNdotL) {
     return 1.0f;
 }
-float getShadowFactorSpot(in uint idx, in int arrayOffset, in float bias) {
+float getShadowFactorSpot(in uint idx, in int arrayOffset, in float bias, in float TanAcosNdotL) {
     return 1.0f;
 }
 #endif

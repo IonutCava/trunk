@@ -53,4 +53,20 @@ const InputAction& InputActionList::getInputAction(U16 id) const {
     return _noOPAction;
 }
 
+
+void PressReleaseActions::clear() {
+    for (Entry& entry : _entries) {
+        entry.clear();
+    }
+}
+
+bool PressReleaseActions::add(const Entry& entry) {
+    _entries.push_back(entry);
+    std::sort(std::begin(_entries), std::end(_entries), [](const Entry& lhs, const Entry& rhs) {
+        return lhs.modifiers().size() > rhs.modifiers().size();
+    });
+
+    return true;
+}
+
 }; //namespace Divide

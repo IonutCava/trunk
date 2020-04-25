@@ -54,33 +54,52 @@ namespace detail {
     }
 };
 
-void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
-    constexpr std::pair<PressReleaseActions::Action, const char*> actionNames[10] = {
-        {PressReleaseActions::Action::PRESS, "actionDown"},
-        {PressReleaseActions::Action::RELEASE, "actionUp"},
-        {PressReleaseActions::Action::LEFT_CTRL_PRESS, "actionLCtrlDown"},
-        {PressReleaseActions::Action::LEFT_CTRL_RELEASE, "actionLCtrlUp"},
-        {PressReleaseActions::Action::RIGHT_CTRL_PRESS, "actionRCtrlDown"},
-        {PressReleaseActions::Action::RIGHT_CTRL_RELEASE, "actionRCtrlUp"},
-        {PressReleaseActions::Action::LEFT_ALT_PRESS, "actionLAltDown"},
-        {PressReleaseActions::Action::LEFT_ALT_RELEASE, "actionLAtlUp"},
-        {PressReleaseActions::Action::RIGHT_ALT_PRESS, "actionRAltDown"},
-        {PressReleaseActions::Action::RIGHT_ALT_RELEASE, "actionRAltUp"}
-    };
+void populatePressRelease(const ptree & attributes, PressReleaseActions::Entry& entryOut) {
+    static vectorEASTL<std::string> modifiersOut, actionsUpOut, actionsDownOut;
 
-    actions.clear();
+    entryOut.clear();
+    modifiersOut.reset_lose_memory();
+    actionsUpOut.reset_lose_memory();
+    actionsDownOut.reset_lose_memory();
 
     U16 id = 0;
-    vectorEASTL<std::string> actionsOut;
-    for (const auto it : actionNames) {
-        const std::string actionList = attributes.get<std::string>(it.second, "");
-        Util::Split<vectorEASTL<std::string>, std::string>(actionList.c_str(), ',', actionsOut);
-        for (const std::string& it2 : actionsOut) {
-            if (!it2.empty()) {
-                std::stringstream ss(Util::Trim(it2));
+
+    const std::string modifiers = attributes.get<std::string>("modifier", "");
+    if (!modifiers.empty()) {
+        Util::Split<vectorEASTL<std::string>, std::string>(modifiers.c_str(), ',', modifiersOut);
+        for (const auto& it : modifiersOut) {
+            for (U8 i = 0; i < to_base(PressReleaseActions::Modifier::COUNT); ++i) {
+                if (it == PressReleaseActions::s_modifierNames[i]) {
+                    entryOut.modifiers().insert(PressReleaseActions::s_modifierMappings[i]);
+                    break;
+                }
+            }
+        }
+    }
+
+    const std::string actionsUp = attributes.get<std::string>("actionUp", "");
+    if (!actionsUp.empty()) {
+        Util::Split<vectorEASTL<std::string>, std::string>(actionsUp.c_str(), ',', actionsUpOut);
+        for (const auto& it : actionsUpOut) {
+            if (!it.empty()) {
+                std::stringstream ss(Util::Trim(it));
                 ss >> id;
                 if (!ss.fail()) {
-                    actions.insertActionID(it.first, id);
+                    entryOut.releaseIDs().insert(id);
+                }
+            }
+        }
+    }
+
+    const std::string actionsDown = attributes.get<std::string>("actionDown", "");
+    if (!actionsDown.empty()) {
+        Util::Split<vectorEASTL<std::string>, std::string>(actionsDown.c_str(), ',', actionsDownOut);
+        for (const auto& it : actionsDownOut) {
+            if (!it.empty()) {
+                std::stringstream ss(Util::Trim(it));
+                ss >> id;
+                if (!ss.fail()) {
+                    entryOut.pressIDs().insert(id);
                 }
             }
         }
@@ -100,18 +119,19 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
                       .displayName(attributes.get<stringImpl>("name", "").c_str());
     }
 
-    PressReleaseActions actions;
+    PressReleaseActions::Entry entry = {};
     for (const ptree::value_type & f : pt.get_child("keys", g_emptyPtree))
     {
         if (f.first.compare("<xmlcomment>") == 0) {
             continue;
         }
 
+        
         const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
-        populatePressRelease(actions, attributes);
+        populatePressRelease(attributes, entry);
 
         Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data()).c_str());
-        scene->input().addKeyMapping(key, actions);
+        scene->input().addKeyMapping(key, entry);
     }
 
     for (const ptree::value_type & f : pt.get_child("mouseButtons", g_emptyPtree))
@@ -121,11 +141,11 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
         }
 
         const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
-        populatePressRelease(actions, attributes);
+        populatePressRelease(attributes, entry);
 
         Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()).c_str());
 
-        scene->input().addMouseMapping(btn, actions);
+        scene->input().addMouseMapping(btn, entry);
     }
 
     const stringImpl label("joystickButtons.joystick");
@@ -139,11 +159,11 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
             }
 
             const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
-            populatePressRelease(actions, attributes);
+            populatePressRelease(attributes, entry);
 
             Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()).c_str());
 
-            scene->input().addJoystickMapping(joystick, element._type, element._elementIndex, actions);
+            scene->input().addJoystickMapping(joystick, element._type, element._elementIndex, entry);
         }
     }
 }

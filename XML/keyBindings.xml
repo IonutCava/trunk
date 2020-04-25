@@ -39,24 +39,31 @@
 <action id="32" name="toggle console" />
 <action id="33" name="drag select begin" />
 <action id="34" name="drag select end" />
+<action id="35" name="drag select begin in editor" />
+<action id="36" name="drag select end in editor" />
 </actions>
 
 <!--
 #provide at least one action per mapped key, even if said action is "0", otherwise skip key declaration entirely. Will assert.
 #do not duplicate action declarations. Will assert.
 #actionDown, actionUp = on button press / on button release action
-#action L/R Alt/Ctrl Up/Down = action to be performed on key down / key up when specified modifier (left alt, right alt, left control or right control) is held down
-<key actionDown="1" actionUp="2" actionLCtrlDown="3" actionLCtrlUp="4" actionRCtrlDown="5" actionRCtrlUp = "6" actionLAltDown="6" actionLAtlUp="7" actionRAltDown="8" actionRAltUp="9">KEY</key>
+#modifier="X" where X is a comma sepparated list of modifier keys needed for the input to register for the action. e.g.: modifier="LCtrl" or modifier="LCtrl,RShift". Available modifiers: LCtrl/LAlt/LShift/RCtrl/RAlt/RShift.
+e.g.: <key actionDown="1" actionUp="2">KEY</key> =? actions 1 and 2 will only be performned when KEY is pressed/released
+e.g.: <key actionDown="1,3,4,5" actionUp="2" modifier="LCtrl">KEY</key> =? actions 1,3,4,5 and 2 will only be performned when Left Ctrl is held and KEY is pressed/released
 -->
+
 <keys>
 <key actionUp="1">END</key>
-<key actionDown="2" actionLCtrlUp="4">+</key>
-<key actionDown="3" actionLCtrlUp="5">-</key>
+<key actionDown="2">+</key>
+<key actionUp="4" modifier="LCtrl">+</key>
+<key actionDown="3">-</key>
+<key actionUp="5" modifier="LCtrl">-</key>
 <key actionDown="6" actionUp="8">W</key>
 <key actionDown="7" actionUp="8">S</key>
 <key actionDown="9" actionUp="11">A</key>
 <key actionDown="10" actionUp="11">D</key>
-<key actionDown="12" actionUp="14" actionLCtrlUp="27">Q</key>
+<key actionDown="12" actionUp="14">Q</key>
+<key actionUp="27" modifier="LCtrl">Q</key>
 <key actionDown="13" actionUp="14">E</key>
 <key actionDown="15" actionUp="17">LEFT</key>
 <key actionDown="16" actionUp="17">RIGHT</key>
@@ -64,17 +71,20 @@
 <key actionDown="19" actionUp="20">DOWN</key>
 <key actionUp="21">P</key>
 <key actionUp="22">SYSREQ</key>
-<key actionLAtlUp="23">RETURN</key>
+<key actionUp="23" modifier="LAlt">RETURN</key>
 <key actionUp="24">F</key>
 <key actionUp="34">Y</key>
-<key actionLCtrlUp="31" actionUp="30">F11</key>
+<key actionUp="30">F11</key>
+<key actionUp="31" modifier="LCtrl,LShift">F11</key>
 <key actionUp="32">`</key>
 </keys>
 
 <!-- Only a single mouse is supported (and a maximum of 8 buttons)! -->
 <mouseButtons>
 <!-- Allowed mouse button names: LEFT, RIGHT, MIDDLE, Button3, Button4, Button5, Button6, Button7 -->
-<button actionDown="33" actionUp="34" actionLCtrlUp="26" actionRCtrlUp="26">LEFT</button>
+<button actionDown="33" actionUp="34">LEFT</button>
+<button actionDown="35" actionUp="36" modifier="LShift">LEFT</button>
+<button actionUp="26" modifier="LCtrl">LEFT</button>
 <button actionDown="25" actionUp="26">RIGHT</button>
 </mouseButtons>
 

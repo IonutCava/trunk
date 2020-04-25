@@ -186,11 +186,15 @@ float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in 
 }
 
 float getTessLevel(in int idx0, in int idx1, in float diameter) {
+#if MAX_TESS_SCALE != MIN_TESS_SCALE
     const vec3 p0 = gl_in[idx0].gl_Position.xyz;
     const vec3 p1 = gl_in[idx1].gl_Position.xyz;
 
     const float tess = SphereToScreenSpaceTessellation(p0, p1, diameter);
     return pow(2, ceil(log2(tess)));
+#else
+    return float(MAX_TESS_SCALE);
+#endif
 }
 
 #define neighbourMinusX z

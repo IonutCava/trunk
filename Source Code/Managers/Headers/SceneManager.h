@@ -191,6 +191,10 @@ public:  /// Input
                      bool unloadPrevious,
                      const Rect<U16>& targetRenderViewport,
                      bool threaded = true);
+
+    PROPERTY_RW(bool, wantsMouse, false);
+    PROPERTY_RW(bool, wantsKeyboard, false);
+
 // networking
 protected:
     bool networkUpdate(U32 frameCount);

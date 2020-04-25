@@ -379,7 +379,14 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 Editor* editor = &context->editor();
 
                 ImGui::SetCurrentContext(editor->_imguiContexts[to_base(ImGuiContextType::Editor)]);
-                editor->renderDrawList(viewport->DrawData, false, ((DisplayWindow*)viewport->PlatformHandle)->getGUID());
+                GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
+                GFX::CommandBuffer& buffer = sBuffer();
+                ImGuiIO& io = ImGui::GetIO();
+                ImDrawData* pDrawData = viewport->DrawData;
+                const I32 fb_width = to_I32(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
+                const I32 fb_height = to_I32(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
+                editor->renderDrawList(viewport->DrawData, Rect<I32>(0, 0, fb_width, fb_height), ((DisplayWindow*)viewport->PlatformHandle)->getGUID(), buffer);
+                context->gfx().flushCommandBuffer(buffer);
             }
         };
 
@@ -670,10 +677,12 @@ bool Editor::render(const U64 deltaTime) {
     return true;
 }
 
+void Editor::drawScreenOverlay(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    Attorney::GizmoEditor::render(*_gizmo, camera, targetViewport, bufferInOut);
+}
+
 bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
-    Attorney::GizmoEditor::render(*_gizmo, 
-                                  *Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager()));
     return true;
 }
 
@@ -695,7 +704,15 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     if (render(evt._timeSinceLastFrameUS)) {
 
         ImGui::Render();
-        renderDrawList(ImGui::GetDrawData(), false, _mainWindow->getGUID());
+
+        GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
+        GFX::CommandBuffer& buffer = sBuffer();
+        ImGuiIO& io = ImGui::GetIO();
+        ImDrawData* pDrawData = ImGui::GetDrawData();
+        const I32 fb_width = to_I32(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
+        const I32 fb_height = to_I32(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
+        renderDrawList(pDrawData, Rect<I32>(0, 0, fb_width, fb_height), _mainWindow->getGUID(), buffer);
+        _context.gfx().flushCommandBuffer(buffer);
 
         ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
         if (editorContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -725,29 +742,20 @@ bool Editor::frameEnded(const FrameEvent& evt) {
 }
 
 const Rect<I32>& Editor::scenePreviewRect(bool globalCoords) const {
-    SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
+    const SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
     return sceneView->sceneRect(globalCoords);
 }
 
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
-void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 windowGUID)
+void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut)
 {
     if (windowGUID == -1) {
         windowGUID = _mainWindow->getGUID();
     }
 
-    // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     ImGuiIO& io = ImGui::GetIO();
-    I32 fb_width = (I32)(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
-    I32 fb_height = (I32)(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
 
-    if (overlayOnScene) {
-        const RenderTarget& rt = context().gfx().renderTargetPool().screenTarget();
-        fb_width = rt.getWidth();
-        fb_height = rt.getHeight();
-    }
-
-    if (fb_width <= 0 || fb_height <= 0) {
+    if (targetViewport.z <= 0 || targetViewport.w <= 0) {
         return;
     }
 
@@ -756,9 +764,6 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
     if (pDrawData->CmdListsCount == 0) {
         return;
     }
-
-    GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
-    GFX::CommandBuffer& buffer = sBuffer();
 
     RenderStateBlock state = {};
     state.setCullMode(CullMode::NONE);
@@ -771,23 +776,8 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = std::numeric_limits<U16>::max();
-    beginDebugScopeCmd._scopeName = overlayOnScene ? "Render IMGUI [Overlay]" : "Render IMGUI [Full]";
-    GFX::EnqueueCommand(buffer, beginDebugScopeCmd);
-
-    if (overlayOnScene) {
-
-        // Draw the gizmos and overlayed graphics to the main render target but don't clear anything
-        RTDrawDescriptor screenTarget = {};
-        screenTarget.drawMask().disableAll();
-        screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO), true);
-
-        // We already blitted any MS targets so ... no MS for ImGUI :)
-        GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-        beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
-        beginRenderPassCmd._descriptor = screenTarget;
-        beginRenderPassCmd._name = "DO_IMGUI_PRE_PASS";
-        GFX::EnqueueCommand(buffer, beginRenderPassCmd);
-    }
+    beginDebugScopeCmd._scopeName = "Render IMGUI";
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::SetBlendCommand blendCmd = {};
     blendCmd._blendProperties = BlendingProperties{
@@ -796,11 +786,11 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
         BlendOperation::ADD
     };
     blendCmd._blendProperties._enabled = true;
-    GFX::EnqueueCommand(buffer, blendCmd);
+    GFX::EnqueueCommand(bufferInOut, blendCmd);
 
     GFX::BindPipelineCommand pipelineCmd = {};
     pipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDesc);
-    GFX::EnqueueCommand(buffer, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     PushConstants pushConstants = {};
     pushConstants.set(_ID("toggleChannel"), GFX::PushConstantType::IVEC4, vec4<I32>(1, 1, 1, 1));
@@ -809,11 +799,9 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants = pushConstants;
-    GFX::EnqueueCommand(buffer, pushConstantsCommand);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    GFX::SetViewportCommand viewportCmd = {};
-    viewportCmd._viewport.set(0, 0, fb_width, fb_height);
-    GFX::EnqueueCommand(buffer, viewportCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ targetViewport });
 
     const F32 L = pDrawData->DisplayPos.x;
     const F32 R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
@@ -831,20 +819,17 @@ void Editor::renderDrawList(ImDrawData* pDrawData, bool overlayOnScene, I64 wind
         Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->snapshot()
     };
     memcpy(cameraCmd._cameraSnapshot._projectionMatrix.m, ortho_projection, sizeof(F32) * 16);
-    GFX::EnqueueCommand(buffer, cameraCmd);
+    GFX::EnqueueCommand(bufferInOut, cameraCmd);
 
     GFX::DrawIMGUICommand drawIMGUI = {};
     drawIMGUI._data = pDrawData;
     drawIMGUI._windowGUID = windowGUID;
-    GFX::EnqueueCommand(buffer, drawIMGUI);
+    GFX::EnqueueCommand(bufferInOut, drawIMGUI);
 
-    if (overlayOnScene) {
-        GFX::EnqueueCommand(buffer, GFX::EndRenderPassCommand{});
-    }
+    blendCmd._blendProperties._enabled = false;
+    GFX::EnqueueCommand(bufferInOut, blendCmd);
 
-    GFX::EnqueueCommand(buffer, GFX::EndDebugScopeCommand{});
-
-    _context.gfx().flushCommandBuffer(buffer);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) {
@@ -879,11 +864,6 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
         return false;
     }
 
-    if (scenePreviewFocused()) {
-        _gizmo->onKey(true, key);
-        return false;
-    }
-
     for (ImGuiContext* ctx : _imguiContexts) {
         ImGuiIO& io = ctx->IO;
 
@@ -906,17 +886,16 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
         }
     }
 
+    if (scenePreviewFocused()) {
+        return _gizmo->onKey(true, key);
+    }
+
     return wantsKeyboard();
 }
 
 // Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
     if (!isInit() || !running()) {
-        return false;
-    }
-
-    if (scenePreviewFocused()) {
-        _gizmo->onKey(false, key);
         return false;
     }
 
@@ -948,6 +927,10 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
         if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
             io.KeySuper = false;
         }
+    }
+
+    if (scenePreviewFocused()) {
+        return _gizmo->onKey(false, key);
     }
 
     return wantsKeyboard();

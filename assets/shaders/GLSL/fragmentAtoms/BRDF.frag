@@ -7,23 +7,26 @@
 #include "materialData.frag"
 #include "shadowMapping.frag"
 
+#define M_PI 3.14159265358979323846
+#define M_EPSILON 0.0000001
+
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
 #include "pbr.frag"
 vec4 getExtraData(in mat4 colourMatrix, in vec2 uv) {
     return vec4(getMetallicRoughness(colourMatrix, uv), getRimLighting(colourMatrix, uv), 0.0f);
 }
-#define getBRDFFactors(LDir, LCol, MetallicRoughness, Albedo, N) PBR(LDir, LCol, MetallicRoughness, Albedo, N);
+#define getBRDFFactors(LDir, LCol, MetallicRoughness, Albedo, N, NdotL) PBR(LDir, LCol, MetallicRoughness, Albedo, N, NdotL);
 #elif defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
 #include "phong_lighting.frag"
 vec4 getExtraData(in mat4 colourMatrix, in vec2 uv) {
     return vec4(getSpecular(colourMatrix, uv), getShininess(colourMatrix));
 }
-#define getBRDFFactors(LDir, LCol, SpecularShininess, Albedo, N) Phong(normalize(LDir), LCol, SpecularShininess, Albedo, N)
+#define getBRDFFactors(LDir, LCol, SpecularShininess, Albedo, N, NdotL) Phong(normalize(LDir), LCol, SpecularShininess, Albedo, N, NdotL)
 #else
 #if defined(USE_SHADING_TOON) // ToDo
-#   define getBRDFFactors(LDir, LCol, Data, Albedo, N) vec4(0.6f, 0.2f, 0.9f, 0.0f); //obvious pink
+#   define getBRDFFactors(LDir, LCol, Data, Albedo, N, NdotL) vec4(0.6f, 0.2f, 0.9f, 0.0f); //obvious pink
 #else
-#   define getBRDFFactors(LDir, LCol, Data, Albedo, N) vec4(0.6f, 1.0f, 0.7f, 0.0f); //obvious lime-green
+#   define getBRDFFactors(LDir, LCol, Data, Albedo, N, NdotL) vec4(0.6f, 1.0f, 0.7f, 0.0f); //obvious lime-green
 #endif
 #endif
 
@@ -41,7 +44,16 @@ void getDirectionalLightContribution(in vec3 albedo, in vec4 data, in vec3 norma
 
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
-        vec4 ret = getBRDFFactors(-light._directionWV.xyz, vec4(light._colour.rgb, 1.0f), data, vec4(albedo, getShadowFactorDirectional(light._options.y)), normalWV);
+
+        const vec3 lightDirectionWV = -light._directionWV.xyz;
+        const float ndl = clamp((dot(normalWV, normalize(lightDirectionWV))), M_EPSILON, 1.0f);
+        vec4 ret = getBRDFFactors(
+            lightDirectionWV,
+            vec4(light._colour.rgb, 1.0f),
+            data,
+            vec4(albedo, getShadowFactorDirectional(light._options.y, tan(acos(ndl)))), 
+            normalWV,
+            ndl);
 
         lightColour.rgb += ret.rgb;
         lightColour.a = max(ret.a, lightColour.a);
@@ -62,29 +74,33 @@ void getOtherLightContribution(in vec3 albedo, in vec4 data, in vec3 normalWV, i
         
         const vec3 lightDirection = VAR._vertexWV.xyz - light._positionWV.xyz;
         float att = getLightAttenuationPoint(light._positionWV.w, lightDirection);
+        const float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0f);
 
         float shadowFactor = 1.0f;
 
         if (light._options.x == 2) {
             att = getLightAttenuationSpot(light, lightDirection, att);
-            shadowFactor = getShadowFactorSpot(light._options.y);
+            shadowFactor = getShadowFactorSpot(light._options.y, tan(acos(ndl)));
         } else {
-            shadowFactor = getShadowFactorPoint(light._options.y);
+            shadowFactor = getShadowFactorPoint(light._options.y, tan(acos(ndl)));
         }
 
         const vec4 colourAndAtt = vec4(light._colour.rgb, att);
-        vec4 ret = getBRDFFactors(lightDirection, colourAndAtt, data, vec4(albedo, shadowFactor), normalWV);
+        
+        vec4 ret = getBRDFFactors(lightDirection, colourAndAtt, data, vec4(albedo, shadowFactor), normalWV, ndl);
         lightColour.rgb += ret.rgb;
         lightColour.a = max(ret.a, lightColour.a);
     }
 }
 
-float getShadowFactor() {
+float getShadowFactor(in vec3 normalWV) {
     float ret = 1.0f;
     const uint dirLightCount = dvd_LightData.x;
 
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
-        ret *= getShadowFactorDirectional(dvd_LightSource[lightIdx]._options.y);
+        const Light light = dvd_LightSource[lightIdx];
+        const float ndl = clamp((dot(normalWV, normalize(-light._directionWV.xyz))), M_EPSILON, 1.0f);
+        ret *= getShadowFactorDirectional(dvd_LightSource[lightIdx]._options.y, tan(acos(ndl)));
     }
     //if (dvd_lodLevel < 2)
     {
@@ -95,10 +111,12 @@ float getShadowFactor() {
                 break;
             }
             const Light light = dvd_LightSource[lightIdx + dirLightCount];
+            const vec3 lightDirection = VAR._vertexWV.xyz - light._positionWV.xyz;
+            const float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0f);
             if (light._options.x == 2) {
-                ret *= getShadowFactorSpot(light._options.y);
+                ret *= getShadowFactorSpot(light._options.y, tan(acos(ndl)));
             } else {
-                ret *= getShadowFactorPoint(light._options.y);
+                ret *= getShadowFactorPoint(light._options.y, tan(acos(ndl)));
             }
         }
     }
@@ -132,7 +150,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
         case DEBUG_ROUGHNESS: return vec3(getMetallicRoughness(colourMatrix, uv).g);
         case DEBUG_METALLIC: return vec3(getMetallicRoughness(colourMatrix, uv).r);
         case DEBUG_NORMALS: return (inverse(dvd_ViewMatrix) * vec4(normalWV, 0)).xyz;
-        case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor());
+        case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor(normalWV));
         case DEBUG_LIGHT_TILES: return lightTileColour();
     }
 

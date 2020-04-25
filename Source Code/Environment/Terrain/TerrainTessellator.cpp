@@ -19,45 +19,45 @@ namespace {
     }
 };
 
-const vec3<F32>& TerrainTessellator::getOrigin() const {
+const vec3<F32>& TerrainTessellator::getOrigin() const noexcept {
     return _originCache;
 }
 
-const Frustum& TerrainTessellator::getFrustum() const {
+const vec3<F32>& TerrainTessellator::getEyeCache() const noexcept {
+    return _cameraEyeCache;
+}
+
+const Frustum& TerrainTessellator::getFrustum() const noexcept {
     return _frustumCache;
 }
 
-U16 TerrainTessellator::getRenderDepth() const {
+U16 TerrainTessellator::getRenderDepth() const noexcept {
     return _renderDepth;
 }
 
-U16 TerrainTessellator::getPrevRenderDepth() const {
-    return _prevRenderDepth;
-}
 
-bufferPtr TerrainTessellator::updateAndGetRenderData(const Frustum& frust, U16& renderDepth) {
+const TerrainTessellator::RenderData& TerrainTessellator::updateAndGetRenderData(const Frustum& frust, U16& renderDepth) {
     renderDepth = 0;
     _frustumCache.set(frust);
     renderRecursive(_tree.data(), renderDepth);
-    _prevRenderDepth = _renderDepth;
     _renderDepth = renderDepth;
-    return _renderData.data();
+    return _renderData;
 }
 
-const TerrainTessellator::RenderData& TerrainTessellator::renderData() const {
+const TerrainTessellator::RenderData& TerrainTessellator::renderData() const noexcept {
     return _renderData;
 }
 
 bool TerrainTessellator::inDivideCheck(TessellatedTerrainNode* node) const {
     if (_config._useCameraDistance) {
         // Distance from current origin to camera
-        F32 d = std::abs(Sqrt(SQUARED(_cameraEyeCache[0] - node->origin[0]) + SQUARED(_cameraEyeCache[2] - node->origin[2])));
-        if (d > 2.5 * Sqrt(SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height)) || node->dim.width < _config._cutoffDistance) {
+        const F32 d = std::abs(Sqrt(SQUARED(_cameraEyeCache.x - node->origin.x) + SQUARED(_cameraEyeCache.z - node->origin.z)));
+        if (d > 2.5f * Sqrt(SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height))) {
             return false;
         }
     }
 
-    return true;
+    return node->dim.width > _config._minPatchSize;
 }
 
 bool TerrainTessellator::checkDivide(TessellatedTerrainNode* node) {
@@ -119,9 +119,10 @@ bool TerrainTessellator::divideNode(TessellatedTerrainNode* node) {
     return divided;
 }
 
-bufferPtr TerrainTessellator::createTree(const Frustum& frust, const vec3<F32>& camPos, const vec3<F32>& origin, U16& renderDepth) {
+const TerrainTessellator::RenderData& TerrainTessellator::createTree(const Frustum& frust, const vec3<F32>& camPos, const vec3<F32>& origin, const F32 maxDistance, U16& renderDepth) {
     _cameraEyeCache.set(camPos);
     _originCache.set(origin);
+    _maxDistanceSQ = SQUARED(maxDistance);
 
     _numNodes = 0;
     _tree.resize(std::max(_config._terrainDimensions.width, _config._terrainDimensions.height));
@@ -169,16 +170,19 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
     // If all children are null, render this node
     if (!hasChildren(*node)) {
         // We used a N x sized buffer, so we should allow for some margin in frustum culling
-        const F32 radiusAdjustmentFactor = 1.75f;
+        constexpr F32 radiusAdjustmentFactor = 1.55f;
 
         assert(renderDepth < MAX_TERRAIN_RENDER_NODES);
 
         bool inFrustum = true;
         if (_config._useFrustumCulling) {
             // half of the diagonal of the rectangle
-            F32 radius = Sqrt(SQUARED(node->dim.width * 0.5f) + SQUARED(node->dim.height * 0.5f));
-            radius *= radiusAdjustmentFactor;
-            inFrustum = _frustumCache.ContainsSphere(node->origin, radius, _lastFrustumPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT;
+            const F32 radius = Sqrt(SQUARED(node->dim.width * 0.5f) + SQUARED(node->dim.height * 0.5f));
+            if (_cameraEyeCache.distanceSquared(node->origin) > _maxDistanceSQ) {
+                inFrustum = false;
+            } else {
+                inFrustum = _frustumCache.ContainsSphere(node->origin, radius * radiusAdjustmentFactor, _lastFrustumPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT;
+            }
         }
 
         if (inFrustum) {

@@ -209,50 +209,54 @@ bool MainScene::load(const Str128& name) {
 U16 MainScene::registerInputActions() {
     U16 actionID = Scene::registerInputActions();
 
-    //ToDo: Move these to per-scene XML file
-    PressReleaseActions actions;
-
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {_context.sfx().playSound(_beep);});
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_X, actions);
-    actionID++;
-    
-
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        _musicPlaying = !_musicPlaying;
-        if (_musicPlaying) {
-            SceneState::MusicPlaylist::const_iterator it;
-            it = state().music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
-            if (it != std::cend(state().music(MusicType::TYPE_BACKGROUND))) {
-                _context.sfx().playMusic(it->second);
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        actionEntry.releaseIDs().insert(actionID);
+        _input->actionList().registerInputAction(actionID, [this](InputParams param) {_context.sfx().playSound(_beep); });
+        _input->addKeyMapping(Input::KeyCode::KC_X, actionEntry);
+        actionID++;
+    }
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        actionEntry.releaseIDs().insert(actionID);
+        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+            _musicPlaying = !_musicPlaying;
+            if (_musicPlaying) {
+                SceneState::MusicPlaylist::const_iterator it;
+                it = state().music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
+                if (it != std::cend(state().music(MusicType::TYPE_BACKGROUND))) {
+                    _context.sfx().playMusic(it->second);
+                }
+            } else {
+                _context.sfx().stopMusic();
             }
-        } else {
-            _context.sfx().stopMusic();
-        }
-    });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_M, actions);
-    actionID++;
+        });
+        _input->addKeyMapping(Input::KeyCode::KC_M, actionEntry);
+        actionID++;
+    }
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        actionEntry.releaseIDs().insert(actionID);
+        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+            _freeflyCamera = !_freeflyCamera;
+            FreeFlyCamera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
+            cam.setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
+        });
+        _input->addKeyMapping(Input::KeyCode::KC_L, actionEntry);
+        actionID++;
+    }
+    {
+        PressReleaseActions::Entry actionEntry = {};
+        actionEntry.releaseIDs().insert(actionID);
+        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+            vectorEASTL<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
 
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        _freeflyCamera = !_freeflyCamera;
-        FreeFlyCamera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
-        cam.setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
-    });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_L, actions);
-    actionID++;
-
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        vectorEASTL<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
-
-        for (SceneGraphNode* terrainNode : terrains) {
-            terrainNode->getNode<Terrain>().toggleBoundingBoxes();
-        }
-    });
-    actions.insertActionID(PressReleaseActions::Action::RELEASE, actionID);
-    _input->addKeyMapping(Input::KeyCode::KC_T, actions);
-
+            for (SceneGraphNode* terrainNode : terrains) {
+                terrainNode->getNode<Terrain>().toggleBoundingBoxes();
+            }
+        });
+        _input->addKeyMapping(Input::KeyCode::KC_T, actionEntry);
+    }
     return actionID++;
 }
 

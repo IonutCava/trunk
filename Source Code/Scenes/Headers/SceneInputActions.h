@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SCENE_INPUT_ACTIONS_H_
 
 #include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Input/Headers/Input.h"
 
 namespace Divide {
 
@@ -73,53 +74,51 @@ public:
     enum class Action : U8 {
         PRESS = 0,
         RELEASE,
-        LEFT_CTRL_PRESS,
-        LEFT_CTRL_RELEASE,
-        RIGHT_CTRL_PRESS,
-        RIGHT_CTRL_RELEASE,
-        LEFT_ALT_PRESS,
-        LEFT_ALT_RELEASE,
-        RIGHT_ALT_PRESS,
-        RIGHT_ALT_RELEASE,
         COUNT
     };
 
-    inline void clear() {
-        for (auto& entries : _actions) {
-            entries.resize(0);
+    enum class Modifier : U8 {
+        LEFT_CTRL,
+        RIGHT_CTRL,
+        LEFT_ALT,
+        RIGHT_ALT,
+        LEFT_SHIFT,
+        RIGHT_SHIFT,
+        COUNT
+    };
+
+    static constexpr Input::KeyCode s_modifierMappings[to_base(Modifier::COUNT)] = {
+        Input::KeyCode::KC_LCONTROL,
+        Input::KeyCode::KC_RCONTROL,
+        Input::KeyCode::KC_LMENU,
+        Input::KeyCode::KC_RMENU,
+        Input::KeyCode::KC_LSHIFT,
+        Input::KeyCode::KC_RSHIFT
+    };
+
+    static constexpr const char* s_modifierNames[to_base(Modifier::COUNT)] = {
+        "LCtrl", "RCtrl", "LAlt", "RAlt", "LShift", "RShift"
+    };
+
+    struct Entry {
+        PROPERTY_RW(std::set<Input::KeyCode>, modifiers);
+        inline std::set<Input::KeyCode>& modifiers() noexcept { return _modifiers; }
+        PROPERTY_RW(std::set<U16>, pressIDs);
+        inline std::set<U16>& pressIDs() noexcept { return _pressIDs; }
+        PROPERTY_RW(std::set<U16>, releaseIDs);
+        inline std::set<U16>& releaseIDs() noexcept { return _releaseIDs; }
+
+        inline void clear() {
+            modifiers().clear();
+            pressIDs().clear();
+            releaseIDs().clear();
         }
-    }
-
-    inline bool merge(const PressReleaseActions& other) {
-        bool conflict = false;
-
-        for (U8 i = 0; i < to_U8(Action::COUNT); ++i) {
-            if (!other._actions[i].empty()) {
-                if (!_actions[i].empty()) {
-                    conflict = true;
-                }
-                insert_unique(_actions[i], other._actions[i]);
-            }
-        }
-
-        return conflict;
-    }
-
-    inline const vectorEASTL<U16>& getActionIDs(Action action) const noexcept {
-        return _actions[to_base(action)];
-    }
-
-    inline void insertActionID(Action action, U16 ID) {
-        insert_unique(_actions[to_base(action)], ID);
-    }
-
-    inline void insertActionIDs(Action action, const vectorEASTL<U16>& IDs) {
-        _actions[to_base(action)] = IDs;
-    }
-
-private:
-    // keys only
-    std::array<vectorEASTL<U16>, to_base(Action::COUNT)> _actions;
+    };
+public:
+    void clear();
+    bool add(const Entry& entry);
+    
+    PROPERTY_R(vectorEASTL<Entry>, entries);
 };
 
 struct InputAction {

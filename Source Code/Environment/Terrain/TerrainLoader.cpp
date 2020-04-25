@@ -437,8 +437,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             tempModule._variant = "Shadow.VSM";
         }
         tempModule._defines.emplace_back("SHADOW_PASS", true);
-        tempModule._defines.emplace_back("MAX_TESS_SCALE 16", true);
-        tempModule._defines.emplace_back("MIN_TESS_SCALE 16", true);
+        tempModule._defines.emplace_back("MAX_TESS_SCALE 32", true);
+        tempModule._defines.emplace_back("MIN_TESS_SCALE 32", true);
 
     }
 
@@ -470,7 +470,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
         shaderModule._defines.emplace_back("USE_SSAO", true);
         shaderModule._defines.emplace_back("MAX_TESS_SCALE 64", true);
-        shaderModule._defines.emplace_back("MIN_TESS_SCALE 2", true);
+        shaderModule._defines.emplace_back("MIN_TESS_SCALE 8", true);
         shaderModule._defines.emplace_back("USE_DEFERRED_NORMALS", true);
     }
 
@@ -537,42 +537,47 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setShaderProgram(terrainShadowShader,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
     terrainMaterial->setShaderProgram(terrainShadowShaderVSM,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
 
-    // Generate a render state
-    RenderStateBlock terrainRenderState;
-    terrainRenderState.setCullMode(CullMode::BACK);
-    terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
-    terrainRenderState.setTessControlPoints(4);
+    { //Normal rendering
+        RenderStateBlock terrainRenderState = {};
+        terrainRenderState.setTessControlPoints(4);
+        terrainRenderState.setCullMode(CullMode::BACK);
+        terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
 
-    // Generate a render state for drawing reflections
-    RenderStateBlock terrainRenderStatePrePass = terrainRenderState;
-    terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
+        RenderStateBlock terrainRenderStatePrePass = terrainRenderState;
+        terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
 
-    RenderStateBlock terrainRenderStateReflection = terrainRenderState;
-    terrainRenderStateReflection.setCullMode(CullMode::FRONT);
-
-    RenderStateBlock terrainRenderStateReflectionPrePass = terrainRenderStateReflection;
-    terrainRenderStateReflectionPrePass.setZFunc(ComparisonFunction::LEQUAL);
-
-    // Generate a shadow render state
-    RenderStateBlock terrainRenderStateShadow = terrainRenderState;
-    terrainRenderStateShadow.setZBias(1.0f, 1.0f);
-    terrainRenderStateShadow.setZFunc(ComparisonFunction::LEQUAL);
-    terrainRenderStateShadow.setColourWrites(false, false, false, false);
-
-    RenderStateBlock terrainRenderStateShadowVSM = terrainRenderStateShadow;
-    if_constexpr(!Config::Lighting::USE_SEPARATE_VSM_PASS) {
-        terrainRenderStateShadowVSM.setColourWrites(true, true, false, false);
+        terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
+        terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
     }
+    { //Reflected rendering
+        RenderStateBlock terrainRenderStateReflection = {};
+        terrainRenderStateReflection.setTessControlPoints(4);
+        terrainRenderStateReflection.setCullMode(CullMode::FRONT);
+        terrainRenderStateReflection.setZFunc(ComparisonFunction::EQUAL);
 
-    terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
-    terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+        RenderStateBlock terrainRenderStateReflectionPrePass = terrainRenderStateReflection;
+        terrainRenderStateReflectionPrePass.setZFunc(ComparisonFunction::LEQUAL);
 
-    terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION, RenderPassType::MAIN_PASS, 0u);
-    terrainMaterial->setRenderStateBlock(terrainRenderStateReflectionPrePass.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS, 0u);
-    
-    terrainMaterial->setRenderStateBlock(terrainRenderStateShadowVSM.getHash(), RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
-    terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
-    terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+        terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION, RenderPassType::MAIN_PASS, 0u);
+        terrainMaterial->setRenderStateBlock(terrainRenderStateReflectionPrePass.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS, 0u);
+    }
+    { //Shadow rendering
+        RenderStateBlock terrainRenderStateShadow = {};
+        terrainRenderStateShadow.setTessControlPoints(4);
+        terrainRenderStateShadow.setZBias(4.0f, 20.0f);
+        terrainRenderStateShadow.setCullMode(CullMode::BACK);
+        terrainRenderStateShadow.setZFunc(ComparisonFunction::LEQUAL);
+        terrainRenderStateShadow.setColourWrites(false, false, false, false);
+
+        RenderStateBlock terrainRenderStateShadowVSM = terrainRenderStateShadow;
+        if_constexpr(!Config::Lighting::USE_SEPARATE_VSM_PASS) {
+            terrainRenderStateShadowVSM.setColourWrites(true, true, false, false);
+        }
+
+        terrainMaterial->setRenderStateBlock(terrainRenderStateShadowVSM.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL));
+        terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::SPOT));
+        terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::POINT));
+    }
 
     terrain->setMaterialTpl(terrainMaterial);
 
