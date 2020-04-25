@@ -93,19 +93,22 @@ float ClipToScreenSpaceTessellation(in vec4 clip0, in vec4 clip1)
 {
     clip0 /= clip0.w;
     clip1 /= clip1.w;
-
+#if 1
+    clip0.xy *= dvd_ViewPort.zw;
+    clip1.xy *= dvd_ViewPort.zw;
+    const float d = distance(clip0, clip1);
+#else
     vec2 halfViewport = (dvd_ViewPort.zw * 0.5f);
     vec2 screen0 = (clamp(clip0.xy, -1.3f, 1.3f) + 1.0f) * halfViewport;
     vec2 screen1 = (clamp(clip1.xy, -1.3f, 1.3f) + 1.0f) * halfViewport;
-    float d = distance(screen0, screen1);
-
+    const float d = distance(screen0, screen1);
+#endif
     // tessTriangleWidth is desired pixels per tri edge
     return clamp(d / tessTriangleWidth, 1, 64);
 }
 
 float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
 {
-#if MAX_TESS_SCALE != MIN_TESS_SCALE
     const vec3 center = 0.5f * (p0 + p1);
     const vec4 view0 = dvd_ViewMatrix * vec4(center, 1.0f);
     vec4 view1 = view0;
@@ -115,9 +118,6 @@ float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
     const vec4 clip1 = dvd_ProjectionMatrix * view1;
 
     return ClipToScreenSpaceTessellation(clip0, clip1);
-#else
-    return MAX_TESS_SCALE;
-#endif
 }
 
 
@@ -141,10 +141,28 @@ float LargerNeighbourAdjacencyClamp(in float tess) {
     return clamp(t, 2, 32);
 }
 
+void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1, in int idx0, in int idx1)
+{
+    // This ought to work: if the adjacency has repositioned a vertex in XZ, we need to re-acquire its height.
+    // However, causes an internal fxc error.  Again! :-(
+    //float h0 = SampleHeightForVS(g_CoarseHeightMap, SamplerClampLinear, p0.xz, g_DetailNoiseScale, g_DetailUVScale);
+    //float h1 = SampleHeightForVS(g_CoarseHeightMap, SamplerClampLinear, p0.xz, g_DetailNoiseScale, g_DetailUVScale);
+    //p0.y = h0;
+    //p1.y = h1;
+
+    // Instead set both vertex heights to zero.  It's the only way I can think to agree with the neighbours
+    // when sampling is broken in fxc.
+#if 0
+    p0.y = p1.y = 0.0f;
+#else
+    p0.y = p1.y = max(vtx_height[idx0], vtx_height[idx1]);
+#endif
+}
+
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
     vec3 p0 = gl_in[idx0].gl_Position.xyz;
     vec3 p1 = gl_in[idx1].gl_Position.xyz;
-
+    MakeVertexHeightsAgree(p0, p1, idx0, idx1);
     const float t = SphereToScreenSpaceTessellation(p0, p1, diameter);
     return SmallerNeighbourAdjacencyClamp(t);
 }
@@ -166,20 +184,14 @@ float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in 
     // +  <----  p0   Us   p1		Move p0
     // |    0    |    1    |		patchIdx % 2 
     //
-#if 0
     if (patchIdx % 2 != 0) {
         p0 += (p0 - p1);
     } else { 
         p1 += (p1 - p0);
     }
-#else
-    const int evenPatch = int(patchIdx % 2 != 0);
-    p0 += (p0 - p1) * (0 + evenPatch);
-    p1 += (p1 - p0) * (1 - evenPatch);
-#endif
-    // Having moved the vertex in (x,z), its height is no longer correct.
-    p0.y = p1.y = vtx_height[idx0];
 
+    // Having moved the vertex in (x,z), its height is no longer correct.
+    MakeVertexHeightsAgree(p0, p1, idx0, idx1);
     // Half the tessellation because the edge is twice as long.
     const float t = 0.5f * SphereToScreenSpaceTessellation(p0, p1, 2 * diameter);
     return LargerNeighbourAdjacencyClamp(t);

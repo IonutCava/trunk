@@ -164,8 +164,8 @@ class Camera : public Resource {
     /// Extract the frustum associated with our current PoV
     virtual bool updateFrustum();
     /// Get the camera's current frustum
-    inline const Frustum& getFrustum() const noexcept { return _frustum; }
-    inline Frustum& getFrustum() noexcept { return _frustum; }
+    inline const Frustum& getFrustum() const noexcept { assert(!_frustumDirty); return _frustum; }
+    inline Frustum& getFrustum() noexcept { assert(!_frustumDirty); return _frustum; }
     inline void lockFrustum(bool state) noexcept { _frustumLocked = state; }
 
     /// Get the world space position from the specified screen coordinates

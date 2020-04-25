@@ -83,8 +83,6 @@ public:
     using TreeVector = vectorEASTL<TessellatedTerrainNode>;
     using RenderData = std::array<TessellatedNodeData, MAX_TERRAIN_RENDER_NODES>;
 
-    static constexpr U32 MAX_TESS_NODES = 2048;
-
 public:
     // Builds a terrain quadtree based on specified parameters and current camera position.
     const TerrainTessellator::RenderData& createTree(const Frustum& frust, const vec3<F32>& camPos, const vec3<F32>& origin, const F32 maxDistance, U16& renderDepth);
@@ -122,8 +120,6 @@ protected:
 
     // Traverses the terrain quadtree to draw nodes with no children.
     void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth);
-
-    bool inDivideCheck(TessellatedTerrainNode* node) const;
 
 private:
     Frustum _frustumCache;

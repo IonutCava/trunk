@@ -48,7 +48,12 @@ const TerrainTessellator::RenderData& TerrainTessellator::renderData() const noe
     return _renderData;
 }
 
-bool TerrainTessellator::inDivideCheck(TessellatedTerrainNode* node) const {
+bool TerrainTessellator::checkDivide(TessellatedTerrainNode* node) {
+    // Check base case:
+    // Distance to camera is greater than twice the length of the diagonal
+    // from current origin to corner of current square.
+    // OR
+    // Max recursion level has been hit
     if (_config._useCameraDistance) {
         // Distance from current origin to camera
         const F32 d = std::abs(Sqrt(SQUARED(_cameraEyeCache.x - node->origin.x) + SQUARED(_cameraEyeCache.z - node->origin.z)));
@@ -57,19 +62,7 @@ bool TerrainTessellator::inDivideCheck(TessellatedTerrainNode* node) const {
         }
     }
 
-    return node->dim.width > _config._minPatchSize;
-}
-
-bool TerrainTessellator::checkDivide(TessellatedTerrainNode* node) {
-    if (_numNodes >= MAX_TESS_NODES - 4) {
-        return false;
-    }
-    // Check base case:
-    // Distance to camera is greater than twice the length of the diagonal
-    // from current origin to corner of current square.
-    // OR
-    // Max recursion level has been hit
-    return inDivideCheck(node);
+    return node->dim.width >= _config._minPatchSize;
 }
 
 bool TerrainTessellator::divideNode(TessellatedTerrainNode* node) {
