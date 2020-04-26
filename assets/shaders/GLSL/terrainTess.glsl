@@ -104,7 +104,7 @@ float ClipToScreenSpaceTessellation(in vec4 clip0, in vec4 clip1)
     const float d = distance(screen0, screen1);
 #endif
     // tessTriangleWidth is desired pixels per tri edge
-    return clamp(d / tessTriangleWidth, 1, 64);
+    return clamp(d / tessTriangleWidth, 0, 64);
 }
 
 float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
