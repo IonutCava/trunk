@@ -14,9 +14,10 @@ namespace {
     std::set<size_t> g_loadingHashes;
 };
 
-ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded)
+ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context)
     : _loadingHash(hash)
 {
+    const bool threaded = !Runtime::isMainThread();
     do {
         {
             UniqueLock<Mutex> w_lock(g_hashLock);

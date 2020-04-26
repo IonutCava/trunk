@@ -22,6 +22,7 @@ void NavigationComponent::navigationContext(const NavigationContext& newContext)
         if (navComp != nullptr) {
             navComp->navigationContext(newContext);
         }
+        return true;
     });
 }
 
@@ -33,6 +34,7 @@ void NavigationComponent::navigationDetailOverride(const bool detailOverride) {
         if (navComp != nullptr) {
             navComp->navigationDetailOverride(detailOverride);
         }
+        return true;
 
     });
 }

@@ -69,13 +69,13 @@ namespace Divide {
         
     }
 
-    void TransformComponent::onParentTransformDirty(U32 transformMask) {
+    void TransformComponent::onParentTransformDirty(U32 transformMask) noexcept {
         if (transformMask != to_base(TransformType::NONE)) {
             setTransformDirty(transformMask);
         }
     }
 
-    void TransformComponent::onParentUsageChanged(NodeUsageContext context) {
+    void TransformComponent::onParentUsageChanged(NodeUsageContext context) noexcept {
         _parentUsageContext = context;
     }
 
@@ -114,12 +114,12 @@ namespace Divide {
         if (previousMask != to_U32(TransformType::NONE)) {
             updateWorldMatrix();
 
-            ECS::CustomEvent event = {
+            _parentSGN.SendEvent(
+            {
                 ECS::CustomEvent::Type::TransformUpdated,
                 this,
                 previousMask
-            };
-            _parentSGN.SendEvent(event);
+            });
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
@@ -131,11 +131,11 @@ namespace Divide {
         setTransformDirty(TransformType::ALL);
     }
 
-    void TransformComponent::setTransformDirty(TransformType type) {
+    void TransformComponent::setTransformDirty(TransformType type) noexcept {
         setTransformDirty(to_U32(type));
     }
 
-    void TransformComponent::setTransformDirty(U32 typeMask) {
+    void TransformComponent::setTransformDirty(U32 typeMask) noexcept {
         SetBit(_transformUpdatedMask, typeMask);
     }
 
@@ -630,36 +630,25 @@ namespace Divide {
     }
 
     bool TransformComponent::saveCache(ByteBuffer& outputBuffer) const {
-        outputBuffer << uniqueID();
-        outputBuffer << _hasChanged;
+        outputBuffer << _hasChanged.load();
 
-        if (_hasChanged) {
+        if (_hasChanged.exchange(false)) {
             SharedLock<SharedMutex> r_lock(_lock);
             TransformValues values = _transformInterface.getValues();
             
             outputBuffer << values._translation;
             outputBuffer << values._scale;
             outputBuffer << values._orientation;
-            _hasChanged = false;
         }
 
         return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::saveCache(outputBuffer);
     }
 
     bool TransformComponent::loadCache(ByteBuffer& inputBuffer) {
-        I64 tempID = -1;
-        inputBuffer >> tempID;
-        if (tempID != uniqueID()) {
-            // corrupt save
-            return false;
-        }
-
         bool hasChanged = false;
         inputBuffer >> hasChanged;
 
         if (hasChanged) {
-            inputBuffer >> tempID;
-
             TransformValues valuesIn = {};
             inputBuffer >> valuesIn._translation;
             inputBuffer >> valuesIn._scale;
@@ -668,6 +657,6 @@ namespace Divide {
             setTransform(valuesIn);
         }
 
-        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::saveCache(inputBuffer);
+        return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::loadCache(inputBuffer);
     }
 }; //namespace

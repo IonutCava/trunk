@@ -54,27 +54,23 @@ class CommandBufferPool {
 
 class ScopedCommandBuffer {
   public:
-    ScopedCommandBuffer(bool useSecondaryBuffers);
     ~ScopedCommandBuffer();
+    inline CommandBuffer& operator()() noexcept { return *_buffer; }
+    inline const CommandBuffer& operator()() const noexcept { return *_buffer; }
 
-    inline CommandBuffer& operator()() noexcept {
-        return *_buffer;
-    }
-
-    inline const CommandBuffer& operator()() const noexcept {
-        return *_buffer;
-    }
+  protected:
+    friend ScopedCommandBuffer allocateScopedCommandBuffer();
+    ScopedCommandBuffer();
 
   private:
     GFX::CommandBuffer* _buffer;
-    bool _useSecondaryBuffers;
 };
 
 void initPools();
 void destroyPools();
-ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false);
-CommandBuffer* allocateCommandBuffer(bool useSecondaryBuffers = false);
-void deallocateCommandBuffer(CommandBuffer*& buffer, bool useSecondaryBuffers = false);
+ScopedCommandBuffer allocateScopedCommandBuffer();
+CommandBuffer* allocateCommandBuffer();
+void deallocateCommandBuffer(CommandBuffer*& buffer);
 
 }; //namespace GFX
 }; //namespace Divide

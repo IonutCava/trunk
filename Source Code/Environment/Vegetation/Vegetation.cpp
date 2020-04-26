@@ -564,6 +564,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
             RenderingComponent* rComp = child->get<RenderingComponent>();
             // negative value to disable occlusion culling
             rComp->cullFlagValue(-1.0f * ID);
+            return true;
         });
 
         const vec3<F32>& extents = _treeParentNode->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
@@ -636,6 +637,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
                     RenderingComponent* rComp = child->get<RenderingComponent>();
                     // negative value to disable occlusion culling
                     rComp->setRenderRange(-sceneTreeDistance, sceneTreeDistance);
+                    return true;
                 });
             }
         }

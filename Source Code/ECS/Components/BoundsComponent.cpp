@@ -85,15 +85,18 @@ BoundsComponent::~BoundsComponent()
 void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
     OPTICK_EVENT();
 
-    if (!_boundingBoxDirty.exchange(true)) {
-        if (recursive) {
-            SceneGraphNode* parent = _parentSGN.parent();
-            if (parent != nullptr) {
-                BoundsComponent* bounds = parent->get<BoundsComponent>();
-                // We stop if the parent sgn doesn't have a bounds component.
-                if (bounds != nullptr) {
-                    bounds->flagBoundingBoxDirty(true);
-                }
+    if (_boundingBoxDirty.exchange(true)) {
+        // already dirty
+        return;
+    }
+
+    if (recursive) {
+        SceneGraphNode* parent = _parentSGN.parent();
+        if (parent != nullptr) {
+            BoundsComponent* bounds = parent->get<BoundsComponent>();
+            // We stop if the parent sgn doesn't have a bounds component.
+            if (bounds != nullptr) {
+                bounds->flagBoundingBoxDirty(true);
             }
         }
     }
@@ -107,7 +110,7 @@ void BoundsComponent::OnData(const ECS::CustomEvent& data) {
     }
 }
 
-void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) {
+void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) noexcept {
     // All the parents should already be dirty thanks to the bounds system
     _refBoundingBox.set(nodeBounds);
     _boundingBoxDirty.store(true);
@@ -115,23 +118,26 @@ void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) {
 
 const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     OPTICK_EVENT();
-
-    if (_boundingBoxDirty.exchange(false)) {
-        _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
-            child->get<BoundsComponent>()->updateAndGetBoundingBox();
-        });
-
-        _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), _tCompCache->getWorldMatrix());
-        _boundingSphere.fromBoundingBox(_boundingBox);
-
-        ECS::CustomEvent event =
-        {
-            ECS::CustomEvent::Type::BoundsUpdated,
-            this,
-            0u
-        };
-        _parentSGN.SendEvent(event);
+    if (!_boundingBoxDirty.exchange(false)) {
+        // already clean
+        return _boundingBox;
     }
+
+    _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
+        child->get<BoundsComponent>()->updateAndGetBoundingBox();
+        return true;
+    });
+
+    _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), _tCompCache->getWorldMatrix());
+    _boundingSphere.fromBoundingBox(_boundingBox);
+
+    _parentSGN.SendEvent(
+    {
+        ECS::CustomEvent::Type::BoundsUpdated,
+        this,
+        0u
+    });
+    
 
     return _boundingBox;
 }

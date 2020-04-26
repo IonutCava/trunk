@@ -58,6 +58,7 @@ void SGNRelationshipCache::updateChildren(U8 level, vectorEASTL<std::pair<I64, U
     _parentNode.forEachChild([level, &cache](const SceneGraphNode* child, I32 /*childIdx*/) {
         cache.emplace_back(child->getGUID(), level);
         Attorney::SceneGraphNodeRelationshipCache::relationshipCache(*child).updateChildren(level + 1, cache);
+        return true;
     });
 }
 

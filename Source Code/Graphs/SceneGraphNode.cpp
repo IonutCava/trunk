@@ -52,13 +52,13 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _serialize(descriptor._serialize),
       _node(descriptor._node),
       _instanceCount(to_U32(descriptor._instanceCount)),
-      _componentMask(0),
       _usageContext(descriptor._usageContext),
-      //_frustPlaneCache(-1),
-      _elapsedTimeUS(0ULL),
-      _lastDeltaTimeUS(0ULL),
-      _relationshipCache(*this)
+      _relationshipCache(*this),
+      _children{}
 {
+    _children.reserve(INITIAL_CHILD_COUNT);
+    std::atomic_init(&_childCount, 0u);
+
     _name = (descriptor._name.empty() ? Util::StringFormat("%s_SGN", (_node->resourceName().empty() ? "ERROR"   
                                                                                                     : _node->resourceName().c_str())).c_str()
                                       : descriptor._name);
@@ -81,7 +81,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     }
 
     assert(_node != nullptr);
-    _children.reserve(INITIAL_CHILD_COUNT);
 
     AddComponents(descriptor._componentMask, false);
     AddComponents(_node->requiredComponentMask(), false);
@@ -107,6 +106,7 @@ SceneGraphNode::~SceneGraphNode()
         _sceneGraph.destroySceneGraphNode(_children[i]);
     }
     _children.clear();
+    //_childCount.store(0u);
 
     _compManager->RemoveAllComponents(GetEntityID());
 }
@@ -141,10 +141,9 @@ void SceneGraphNode::setTransformDirty(U32 transformMask) {
     Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
 
     SharedLock<SharedMutex> r_lock(_childLock);
-    U32 childCount = getChildCountLocked();
-    for (U32 i = 0; i < childCount; ++i) {
-        TransformComponent* tComp = _children[i]->get<TransformComponent>();
-        if (tComp) {
+    for (SceneGraphNode* node : _children) {
+        TransformComponent* tComp = node->get<TransformComponent>();
+        if (tComp != nullptr) {
             Attorney::TransformComponentSGN::onParentTransformDirty(*tComp, transformMask);
         }
     }
@@ -182,6 +181,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
 
     {// Add ourselves in the new parent's children map
         {
+            parent._childCount.fetch_add(1);
             UniqueLock<SharedMutex> w_lock(parent._childLock);
             parent._children.push_back(this);
         }
@@ -242,16 +242,16 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
         if (child->removeNodesByType(nodeType)) {
             ++childRemovalCount;
         }
+        return true;
     });
 
     {
         SharedLock<SharedMutex> r_lock(_childLock);
-        for (U32 i = 0; i < getChildCountLocked(); ++i) {
+        const U32 count = to_U32(_children.size());
+        for (U32 i = 0; i < count; ++i) {
             if (_children[i]->getNode().type() == nodeType) {
-                {
-                    _sceneGraph.addToDeleteQueue(this, i);
-                    ++removalCount;
-                }
+                _sceneGraph.addToDeleteQueue(this, i);
+                ++removalCount;
             }
         }
     }
@@ -268,13 +268,10 @@ bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive)
     I64 targetGUID = node.getGUID();
     {
         SharedLock<SharedMutex> r_lock(_childLock);
-        U32 childCount = getChildCountLocked();
-        for (U32 i = 0; i < childCount; ++i) {
+        const U32 count = to_U32(_children.size());
+        for (U32 i = 0; i < count; ++i) {
             if (_children[i]->getGUID() == targetGUID) {
-                {
-                    _sceneGraph.addToDeleteQueue(this, i);
-                }
-
+                _sceneGraph.addToDeleteQueue(this, i);
                 return true;
             }
         }
@@ -282,7 +279,7 @@ bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive)
 
     // If this didn't finish, it means that we found our node
     return !recursive || 
-           !forEachChildInterruptible([&node](SceneGraphNode* child, I32 /*childIdx*/) {
+           !forEachChild([&node](SceneGraphNode* child, I32 /*childIdx*/) {
                 if (child->removeChildNode(node, true)) {
                     return false;
                 }
@@ -291,11 +288,10 @@ bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive)
 }
 
 void SceneGraphNode::postLoad() {
-    const ECS::CustomEvent event = {
+    SendEvent(
+    {
         ECS::CustomEvent::Type::EntityPostLoad
-    };
-
-    SendEvent(event);
+    });
 }
 
 bool SceneGraphNode::isChildOfType(U16 typeMask, bool ignoreRoot) const {
@@ -333,22 +329,20 @@ bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const
     return type == SGNRelationshipCache::RelationshipType::CHILD;
 }
 
-SceneGraphNode* SceneGraphNode::findChild(const Str128& name, bool sceneNodeName, bool recursive) const {
+SceneGraphNode* SceneGraphNode::findChild(const U64 nameHash, bool sceneNodeName, bool recursive) const {
     SharedLock<SharedMutex> r_lock(_childLock);
     for (auto& child : _children) {
-        if (sceneNodeName ? child->getNode().resourceName().compare(name) == 0
-                          : child->name().compare(name) == 0)
-        {
+        const U64 cmpHash = sceneNodeName ? _ID(child->getNode().resourceName().c_str()) : _ID(child->name().c_str());
+        if (cmpHash == nameHash) {
             return child;
-        } else {
-            if (recursive) {
-                SceneGraphNode* recChild = child->findChild(name, sceneNodeName, recursive);
-                if (recChild) {
-                    return recChild;
-                }
+        } else if (recursive) {
+            SceneGraphNode* recChild = child->findChild(nameHash, sceneNodeName, recursive);
+            if (recChild != nullptr) {
+                return recChild;
             }
         }
     }
+
     // no children's name matches or there are no more children
     // so return nullptr, indicating that the node was not found yet
     return nullptr;
@@ -359,15 +353,14 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool sceneNodeGuid, bool rec
     for (auto& child : _children) {
         if (sceneNodeGuid ? (child->getNode().getGUID() == GUID) : (child->getGUID() == GUID)) {
             return child;
-        } else {
-            if (recursive) {
-                SceneGraphNode* recChild = child->findChild(GUID, sceneNodeGuid, true);
-                if (recChild) {
-                    return recChild;
-                }
+        } else if (recursive) {
+            SceneGraphNode* recChild = child->findChild(GUID, sceneNodeGuid, true);
+            if (recChild != nullptr) {
+                return recChild;
             }
         }
     }
+
     // no children's name matches or there are no more children
     // so return nullptr, indicating that the node was not found yet
     return nullptr;
@@ -378,6 +371,7 @@ bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<S
     if (_sceneGraph.getRoot() == *this) {
         forEachChild([&ray, start, end, &intersections](const SceneGraphNode* child, I32 /*childIdx*/) {
             child->intersect(ray, start, end, intersections);
+            return true;
         });
     } else {
         // If we hit an AABB, we keep going down the graph
@@ -386,6 +380,7 @@ bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<S
             intersections.push_back({ getGUID(), result.dist, name().c_str() });
             forEachChild([&ray, start, end, &intersections](const SceneGraphNode* child, I32 /*childIdx*/) {
                 child->intersect(ray, start, end, intersections);
+                return true;
             });
         }
     }
@@ -413,6 +408,7 @@ void SceneGraphNode::processDeleteQueue(vectorEASTL<size_t>& childList) {
             _sceneGraph.destroySceneGraphNode(_children[childIdx]);
         }
         EraseIndices(_children, childList);
+        _childCount.store(to_U32(_children.size()));
     }
 }
 
@@ -500,6 +496,7 @@ bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {
 void SceneGraphNode::onNetworkSend(U32 frameCount) {
     forEachChild([frameCount](SceneGraphNode* child, I32 /*childIdx*/) {
         child->onNetworkSend(frameCount);
+        return true;
     });
 
     NetworkingComponent* net = get<NetworkingComponent>();
@@ -563,7 +560,8 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     }
 
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
-    I8 _frustPlaneCache = -1;
+    _frustPlaneCache = -1;
+    I8 fakePlaneCache = -1;
 
     const BoundingSphere& sphere = bComp->getBoundingSphere();
     const BoundingBox& boundingBox = bComp->getBoundingBox();
@@ -576,11 +574,10 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     if (!boundingBox.containsPoint(eye)) {
         const Frustum& frust = params._currentCamera->getFrustum();
         // Check if the bounding sphere is in the frustum, as Frustum <-> Sphere check is fast
-        collisionTypeOut = frust.ContainsSphere(center, radius, _frustPlaneCache);
+        collisionTypeOut = frust.ContainsSphere(center, radius, fakePlaneCache);
         if (collisionTypeOut == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // If the sphere is not completely in the frustum, check the AABB
-            _frustPlaneCache = -1;
-            collisionTypeOut = frust.ContainsBoundingBox(boundingBox, _frustPlaneCache);
+            collisionTypeOut = frust.ContainsBoundingBox(boundingBox, fakePlaneCache);
         }
     } else {
         // We are inside the AABB. So ... intersect?
@@ -595,11 +592,10 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
         return;
     }
 
-    const ECS::CustomEvent event = {
+    SendEvent(
+    {
         ECS::CustomEvent::Type::RelationshipCacheInvalidated
-    };
-
-    SendEvent(event);
+    });
 
     _relationshipCache.invalidate();
 
@@ -610,68 +606,9 @@ void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
             if (!source || child->getGUID() != source->getGUID()) {
                 child->invalidateRelationshipCache(this);
             }
+            return true;
         });
     }
-}
-
-void SceneGraphNode::forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
-    SharedLock<SharedMutex> r_lock(_childLock);
-    if (end == 0u) {
-        end = getChildCountLocked();
-    } else {
-        CLAMP<U32>(end, start, getChildCountLocked());
-    }
-
-    for (U32 i = start; i < end; ++i) {
-        callback(_children[i], i);
-    }
-}
-
-void SceneGraphNode::forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
-    SharedLock<SharedMutex> r_lock(_childLock);
-    if (end == 0u) {
-        end = getChildCountLocked();
-    } else {
-        CLAMP<U32>(end, start, getChildCountLocked());
-    }
-
-    for (U32 i = start; i < end; ++i) {
-        callback(_children[i], i);
-    }
-}
-
-bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I32>&& callback, U32 start, U32 end) {
-    SharedLock<SharedMutex> r_lock(_childLock);
-    if (end == 0u) {
-        end = getChildCountLocked();
-    } else {
-        CLAMP<U32>(end, start, getChildCountLocked());
-    }
-
-    for (U32 i = start; i < end; ++i) {
-        if (!callback(_children[i], i)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool SceneGraphNode::forEachChildInterruptible(DELEGATE<bool, const SceneGraphNode*, I32>&& callback, U32 start, U32 end) const {
-    SharedLock<SharedMutex> r_lock(_childLock);
-    if (end == 0u) {
-        end = getChildCountLocked();
-    } else {
-        CLAMP<U32>(end, start, getChildCountLocked());
-    }
-
-    for (U32 i = start; i < end; ++i) {
-        if (!callback(_children[i], i)) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 bool SceneGraphNode::saveCache(ByteBuffer& outputBuffer) const {
@@ -687,9 +624,7 @@ bool SceneGraphNode::saveCache(ByteBuffer& outputBuffer) const {
         return false;
     }
 
-    return forEachChildInterruptible([&outputBuffer](const SceneGraphNode* child, I32 /*childIdx*/) {
-        return child->saveCache(outputBuffer);
-    });
+    return true;
 }
 
 bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
@@ -705,9 +640,7 @@ bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
         return false;
     }
 
-    return forEachChildInterruptible([&inputBuffer](SceneGraphNode* child, I32 /*childIdx*/) {
-        return child->loadCache(inputBuffer);
-    });
+    return true;
 }
 
 void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, const char*> msgCallback) const {
@@ -739,6 +672,7 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, const
 
     forEachChild([&sceneLocation, &msgCallback](const SceneGraphNode* child, I32 /*childIdx*/){
         child->saveToXML(sceneLocation, msgCallback);
+        return true;
     });
 }
 
@@ -771,15 +705,16 @@ void SceneGraphNode::setFlag(Flags flag) noexcept {
     if (PropagateFlagToChildren(flag)) {
         forEachChild([flag](SceneGraphNode* child, I32 /*childIdx*/) {
             child->setFlag(flag);
+            return true;
         });
     }
     if (flag == Flags::ACTIVE) {
-        const ECS::CustomEvent evt = {
+        SendEvent(
+        {
             ECS::CustomEvent::Type::EntityActiveStateChange,
             true,
             0u
-        };
-        SendEvent(evt);
+        });
     }
 }
 
@@ -788,20 +723,27 @@ void SceneGraphNode::clearFlag(Flags flag) noexcept {
     if (PropagateFlagToChildren(flag)) {
         forEachChild([flag](SceneGraphNode* child, I32 /*childIdx*/) {
             child->clearFlag(flag);
+            return true;
         });
     }
     if (flag == Flags::ACTIVE) {
-        const ECS::CustomEvent evt = {
+        SendEvent(
+        {
             ECS::CustomEvent::Type::EntityActiveStateChange,
             false,
             0u
-        };
-        SendEvent(evt);
+        });
     }
 }
 
 bool SceneGraphNode::hasFlag(Flags flag) const noexcept {
     return BitCompare(_nodeFlags, to_U32(flag));
+}
+
+void SceneGraphNode::SendEvent(ECS::CustomEvent&& event) {
+    if (_events.enqueue(std::move(event))) {
+        //?
+    }
 }
 
 void SceneGraphNode::SendEvent(const ECS::CustomEvent& event) {

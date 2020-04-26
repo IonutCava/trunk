@@ -62,38 +62,16 @@ class SceneGraph : private NonCopyable,
 
     void unload();
 
-    inline const SceneGraphNode& getRoot() const noexcept {
-        return *_root;
-    }
+    inline const SceneGraphNode& getRoot() const noexcept { return *_root; }
+    inline SceneGraphNode& getRoot() noexcept { return *_root; }
 
-    inline SceneGraphNode& getRoot() noexcept {
-        return *_root;
-    }
+    SceneGraphNode* findNode(const Str128& name, bool sceneNodeName = false) const;
+    SceneGraphNode* findNode(const U64 nameHash, bool sceneNodeName = false) const;
+    SceneGraphNode* findNode(I64 guid) const;
 
-    inline SceneGraphNode* findNode(const Str128& name, bool sceneNodeName = false) const {
-        if (sceneNodeName ? _root->getNode().resourceName().compare(name.c_str()) == 0
-                          : _root->name().compare(name) == 0) {
-            return _root;
-        }
+    inline Octree& getOctree() noexcept { return *_octree; }
 
-        return _root->findChild(name, sceneNodeName, true);
-    }
-
-    inline SceneGraphNode* findNode(I64 guid) const {
-        if (_root->getGUID() == guid) {
-            return _root;
-        }
-
-        return _root->findChild(guid, false, true);
-    }
-
-    inline Octree& getOctree() noexcept {
-        return *_octree;
-    }
-
-    inline const Octree& getOctree() const noexcept {
-        return *_octree;
-    }
+    inline const Octree& getOctree() const noexcept { return *_octree; }
 
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
@@ -130,8 +108,8 @@ class SceneGraph : private NonCopyable,
 
     void postLoad();
 
-    void saveToXML(DELEGATE<void, const char*> msgCallback) const;
-    void loadFromXML();
+    void saveToXML(const char* assetsFile, DELEGATE<void, const char*> msgCallback) const;
+    void loadFromXML(const char* assetsFile);
 
     ECSManager& GetECSManager() noexcept { return *_ecsManager; }
     const ECSManager& GetECSManager() const noexcept { return *_ecsManager; }
@@ -154,6 +132,9 @@ class SceneGraph : private NonCopyable,
 
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
+
+    bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const;
+    bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
 
    private:
     ECS::ECSEngine _ecsEngine;

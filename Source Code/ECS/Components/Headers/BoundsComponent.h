@@ -63,7 +63,7 @@ namespace Divide {
 
         void OnData(const ECS::CustomEvent& data) final;
 
-        void setRefBoundingBox(const BoundingBox& nodeBounds);
+        void setRefBoundingBox(const BoundingBox& nodeBounds) noexcept;
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(bool recursive);

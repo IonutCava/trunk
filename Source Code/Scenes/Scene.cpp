@@ -175,6 +175,7 @@ void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) {
 
 bool Scene::saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) const {
     using boost::property_tree::ptree;
+    const char* assetsFile = "assets.xml";
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_START")), resourceName().c_str());
 
@@ -202,7 +203,7 @@ bool Scene::saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool
         ParamHandler& par = _context.paramHandler();
 
         ptree pt;
-        pt.put("assets", "assets.xml");
+        pt.put("assets", assetsFile);
         pt.put("musicPlaylist", "musicPlaylist.xml");
 
         pt.put("vegetation.grassVisibility", state().renderState().grassVisibility());
@@ -244,7 +245,7 @@ bool Scene::saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool
     if (msgCallback) {
         msgCallback("Saving scene graph data ...");
     }
-    sceneGraph().saveToXML(msgCallback);
+    sceneGraph().saveToXML(assetsFile, msgCallback);
 
     //save music
     {
@@ -279,7 +280,7 @@ bool Scene::loadXML(const Str128& name) {
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
     if (!fileExists(sceneDataFile.c_str())) {
-        XML::loadSceneGraph(sceneLocation, "assets.xml", this);
+        sceneGraph().loadFromXML("assets.xml");
         XML::loadMusicPlaylist(sceneLocation, "musicPlaylist.xml", this, config);
         return true;
     }
@@ -358,8 +359,7 @@ bool Scene::loadXML(const Str128& name) {
                           pt.get<U16>("lod.lodThresholds.<xmlattr>.w", lodThresholds.w));
     }
     state().renderState().lodThresholds().set(lodThresholds);
-
-    XML::loadSceneGraph(sceneLocation, pt.get("assets", ""), this);
+    sceneGraph().loadFromXML(pt.get("assets", "assets.xml").c_str());
     XML::loadMusicPlaylist(sceneLocation, pt.get("musicPlaylist", ""), this, config);
 
     return true;
@@ -494,7 +494,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
                 }
             }
             normalMask |= to_base(ComponentType::RENDERING);
-            SceneGraphNode* subMesh = parent->findChild(sceneNode.name, false, false);
+            SceneGraphNode* subMesh = parent->findChild(_ID(sceneNode.name.c_str()), false, false);
             if (subMesh != nullptr) {
                 subMesh->loadFromXML(nodeTree);
             }

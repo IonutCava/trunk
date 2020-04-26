@@ -15,7 +15,7 @@ RenderPackage::RenderPackage() noexcept
 RenderPackage::~RenderPackage()
 {
     if (_commands != nullptr) {
-        GFX::deallocateCommandBuffer(_commands, true);
+        GFX::deallocateCommandBuffer(_commands);
     }
 }
 
@@ -243,7 +243,7 @@ void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLev
 
 GFX::CommandBuffer* RenderPackage::commands() {
     if (_commands == nullptr) {
-        _commands = GFX::allocateCommandBuffer(true);
+        _commands = GFX::allocateCommandBuffer();
     }
 
     return _commands;

@@ -303,6 +303,7 @@ void RenderingComponent::rebuildMaterial() {
         if (renderable) {
             renderable->rebuildMaterial();
         }
+        return true;
     });
 }
 

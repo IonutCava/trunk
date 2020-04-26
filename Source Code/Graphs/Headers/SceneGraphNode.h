@@ -55,7 +55,7 @@ struct SceneGraphNodeDescriptor {
     SceneNode_ptr    _node = nullptr;
     Str64            _name = "";
     size_t           _instanceCount = 1;
-    U32              _componentMask = 0;
+    U32              _componentMask = 0u;
     NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
     bool             _serialize = true;
 };
@@ -114,7 +114,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         bool removeChildNode(const SceneGraphNode& node, bool recursive = true);
 
         /// Find a child Node using the given name (either SGN name or SceneNode name)
-        SceneGraphNode* findChild(const Str128& name, bool sceneNodeName = false, bool recursive = false) const;
+        SceneGraphNode* findChild(const U64 nameHash, bool sceneNodeName = false, bool recursive = false) const;
 
         /// Find a child using the given SGNN or SceneNode GUID
         SceneGraphNode* findChild(I64 GUID, bool sceneNodeGuid = false, bool recursive = false) const;
@@ -134,42 +134,28 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Returns true if the specified target node is a parent or grandparent(if recursive == true) of the current node
         bool isChild(const SceneGraphNode& target, bool recursive) const;
 
-        /// Recursively call the delegate function on all children. Use start and end to only affect a range (useful for parallel algorithms)
-        void forEachChild(DELEGATE<void, SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u);
-
-        /// Recursively call the delegate function on all children. Use start and end to only affect a range (useful for parallel algorithms)
-        void forEachChild(DELEGATE<void, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
-
         /// Recursively call the delegate function on all children. Returns false if the loop was interrupted. Use start and end to only affect a range (useful for parallel algorithms)
-        bool forEachChildInterruptible(DELEGATE<bool, SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u);
-
-        /// Recursively call the delegate function on all children. Returns false if the loop was interrupted. Use start and end to only affect a range (useful for parallel algorithms)
-        bool forEachChildInterruptible(DELEGATE<bool, const SceneGraphNode*, I32>&& callback, U32 start = 0u, U32 end = 0u) const;
+        template<class Predicate>
+        bool forEachChild(U32 start, U32 end, Predicate pred) const;
+        template<class Predicate>
+        bool forEachChild(Predicate pred) const;
 
         /// A "locked" call assumes that either access is guaranteed thread-safe or that the child lock is already aquired
         inline const vectorEASTL<SceneGraphNode*>& getChildrenLocked() const noexcept { return _children; }
 
-        /// A "locked" call assumes that either access is guaranteed thread-safe or that the child lock is already aquired
-        inline U32 getChildCountLocked() const noexcept { return to_U32(_children.size()); }
+        /// Return the current number of children that the current node has
+        inline U32 getChildCount() const noexcept { return _childCount.load(); }
 
         /// Return a specific child by indes. Does not recurse.
         inline SceneGraphNode& getChild(U32 idx) {
             SharedLock<SharedMutex> r_lock(_childLock);
-            assert(idx <  getChildCountLocked());
-            return *_children.at(idx);
+            return *_children[idx];
         }
 
         /// Return a specific child by indes. Does not recurse.
         inline const SceneGraphNode& getChild(U32 idx) const {
             SharedLock<SharedMutex> r_lock(_childLock);
-            assert(idx <  getChildCountLocked());
-            return *_children.at(idx);
-        }
-
-        /// Return the current number of children that the current node has
-        inline U32 getChildCount() const {
-            SharedLock<SharedMutex> r_lock(_childLock);
-            return getChildCountLocked();
+            return *_children[idx];
         }
 
         /// Called from parent SceneGraph
@@ -220,6 +206,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         template <>
         inline BoundsComponent* get() const noexcept { return Hacks._boundsComponentCache; }
 
+        void SendEvent(ECS::CustomEvent&& event);
         void SendEvent(const ECS::CustomEvent& event);
 
         /// Sends a global event but dispatched is handled between update steps
@@ -322,6 +309,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
     private:
         SGNRelationshipCache _relationshipCache;
         vectorEASTL<SceneGraphNode*> _children;
+        std::atomic_uint _childCount;
+
         // ToDo: Remove this HORRIBLE hack -Ionut
         struct hacks {
             vectorEASTLFast<EditorComponent*> _editorComponents;
@@ -347,7 +336,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         PROPERTY_R(bool, serialize, true);
         PROPERTY_R(NodeUsageContext, usageContext, NodeUsageContext::NODE_STATIC);
         //ToDo: make this work in a multi-threaded environment
-        //mutable I8 _frustPlaneCache;
+        mutable I8 _frustPlaneCache = -1;
 };
 
 namespace Attorney {
@@ -444,3 +433,5 @@ namespace Attorney {
 
 };  // namespace Divide
 #endif
+
+#include "SceneGraphNode.inl"

@@ -89,8 +89,8 @@ namespace Divide {
         _OITCompositionPipeline = _context.newPipeline(pipelineDescriptor);
 
         _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
-        _postFXCommandBuffer = GFX::allocateCommandBuffer(true);
-        _postRenderBuffer = GFX::allocateCommandBuffer(true);
+        _postFXCommandBuffer = GFX::allocateCommandBuffer();
+        _postRenderBuffer = GFX::allocateCommandBuffer();
     }
 
     namespace {
@@ -309,7 +309,7 @@ RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
     item->initBufferData();
 
     //Secondary command buffers. Used in a threaded fashion
-    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
+    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
 
     eastl::sort(eastl::begin(_renderPasses), eastl::end(_renderPasses), [](RenderPass* a, RenderPass* b) -> bool { return a->sortKey() < b->sortKey(); });
 
@@ -325,7 +325,7 @@ void RenderPassManager::removeRenderPass(const Str64& name) {
             _renderPasses.erase(it);
             // Remove one command buffer
             GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
-            GFX::deallocateCommandBuffer(buf, true);
+            GFX::deallocateCommandBuffer(buf);
             _renderPassCommandBuffer.pop_back();
             break;
         }

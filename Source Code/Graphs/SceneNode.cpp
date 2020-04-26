@@ -173,13 +173,7 @@ void SceneNode::onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const
 }
 
 void SceneNode::saveCache(ByteBuffer& outputBuffer) const {
-    if (type() == SceneNodeType::TYPE_OBJECT3D) {
-        if (static_cast<const Object3D*>(this)->isPrimitive()) {
-            outputBuffer << static_cast<const Object3D*>(this)->getObjectType()._to_string();
-        } else {
-            outputBuffer << resourceName();
-        }
-    }
+    ACKNOWLEDGE_UNUSED(outputBuffer);
 }
 
 void SceneNode::loadCache(ByteBuffer& inputBuffer) {

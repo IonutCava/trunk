@@ -82,44 +82,25 @@ namespace {
     // a[0] * B.row[0] + a[1] * B.row[1] + a[2] * B.row[2] + a[3] * B.row[3]
     static FORCE_INLINE __m128 lincomb_SSE(const __m128 &a, const mat4<F32> &B)
     {
-        __m128 result = _mm_mul_ps(_mm_shuffle_ps(a, a, 0x00), B._reg[0]._reg);
-        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0x55), B._reg[1]._reg));
-        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xaa), B._reg[2]._reg));
-        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xff), B._reg[3]._reg));
+        const auto& bReg = B._reg;
+        __m128 result = _mm_mul_ps(_mm_shuffle_ps(a, a, 0x00), bReg[0]._reg);
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0x55), bReg[1]._reg));
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xaa), bReg[2]._reg));
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xff), bReg[3]._reg));
 
         return result;
-    }
-
-    // this is the right approach for SSE ... SSE4.2
-    static FORCE_INLINE void M4x4_SSE(const mat4<F32>& A, const mat4<F32>& B, mat4<F32>& C)
-    {
-        // out_ij = sum_k a_ik b_kj
-        // => out_0j = a_00 * b_0j + a_01 * b_1j + a_02 * b_2j + a_03 * b_3j
-        for (U8 i = 0; i < 4; ++i) {
-            C._reg[i]._reg = lincomb_SSE(A._reg[i]._reg, B);
-        }
     }
 #else
     // another linear combination, using AVX instructions on XMM regs
     static FORCE_INLINE __m128 lincomb_AVX_4mem(const F32 *a, const mat4<F32> &B) noexcept
     {
-        __m128 result = _mm_mul_ps(_mm_broadcast_ss(&a[0]), B._reg[0]._reg);
-        for (U8 i = 1; i < 4; ++i) {
-            result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[i]), B._reg[i]._reg));
-        }
+        const auto& bReg = B._reg;
+        __m128 result =             _mm_mul_ps(_mm_broadcast_ss(&a[0]), bReg[0]._reg);
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[1]), bReg[1]._reg));
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[2]), bReg[2]._reg));
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[3]), bReg[3]._reg));
         return result;
     }
-
-    // using AVX instructions, 4-wide
-    // this can be better if A is in memory.
-    static FORCE_INLINE void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C) noexcept
-    {
-        _mm256_zeroupper();
-        for (U8 i = 0; i < 4; ++i) {
-            C._reg[i] = lincomb_AVX_4mem(A.m[i], B);
-        }
-    }
-
 #endif
 
     //ref: https://lxjk.github.io/2017/09/03/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained.html
@@ -198,8 +179,7 @@ namespace {
         r._reg[3] = _mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), r._reg[3]._reg);
     }
 
-    // Inverse function is the same no matter column major or row major
-    // this version treats it as column major
+    // Inverse function is the same no matter column major or row major this version treats it as column major
     FORCE_INLINE void GetInverse(const mat4<F32>& inM, mat4<F32>& r) noexcept
     {
         // use block matrix method
@@ -601,8 +581,8 @@ void mat2<T>::set(U m0, U m1, U m2, U m3) noexcept {
 template<typename T>
 template<typename U>
 void mat2<T>::set(const U *matrix) noexcept {
-    if(sizeof(T) == sizeof(U)) {
-        memcpy(mat, matrix, sizeof(U) * 4);
+    if_constexpr(sizeof(T) == sizeof(U)) {
+        std::memcpy(mat, matrix, sizeof(U) * 4);
     } else {
         set(matrix[0], matrix[1],
             matrix[2], matrix[3]);
@@ -1869,8 +1849,8 @@ void mat4<T>::set(std::initializer_list<U> matrix) noexcept {
 template<typename T>
 template<typename U>
 void mat4<T>::set(U const *matrix) noexcept {
-    if (sizeof(T) == sizeof(U)) {
-        memcpy(mat, matrix, sizeof(U) * 16);
+    if_constexpr (sizeof(T) == sizeof(U)) {
+        std::memcpy(mat, matrix, sizeof(U) * 16);
     } else {
         for (U8 i = 0; i < 16; ++i) {
             mat[i] = static_cast<T>(matrix[i]);
@@ -2453,7 +2433,20 @@ mat4<T> mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB) noexce
 
 template<>
 inline void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) noexcept {
-    M4x4_SSE(matrixA, matrixB, ret);
+#if !defined(USE_AVX)
+    auto& retReg = ret._reg;
+    const auto& inputReg = matrixA._reg;
+    for (U8 i = 0; i < 4; ++i) {
+        retReg[i]._reg = lincomb_SSE(inputReg[i]._reg, matrixB);
+    }
+#else
+    // using AVX instructions, 4-wide
+    // this can be better if A is in memory.
+    _mm256_zeroupper();
+    for (U8 i = 0; i < 4; ++i) {
+        ret._reg[i] = lincomb_AVX_4mem(matrixA.m[i], matrixB);
+    }
+#endif
 }
 
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.

@@ -168,7 +168,7 @@ class SGNComponent : private PlatformContextComponent,
         virtual bool saveCache(ByteBuffer& outputBuffer) const;
         virtual bool loadCache(ByteBuffer& inputBuffer);
 
-        I64 uniqueID() const;
+        U64 uniqueID() const;
 
         virtual bool enabled() const;
         virtual void enabled(const bool state);

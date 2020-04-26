@@ -24,7 +24,7 @@ namespace Divide {
 template <typename T>
 inline void ByteBuffer::put(size_t pos, const T& value) {
     //EndianConvert(value);
-    put(pos, (Byte *)&value, sizeof(value));
+    put(pos, (Byte *)&value, sizeof(T));
 }
 
 template <typename T>
@@ -282,7 +282,7 @@ inline void ByteBuffer::put(size_t pos, const Byte *src, size_t cnt) {
 template <typename T>
 inline void ByteBuffer::append(const T& value) {
     //EndianConvert(value);
-    append((Byte *)&value, sizeof(value));
+    append((Byte *)&value, sizeof(T));
 }
 
 //specializations

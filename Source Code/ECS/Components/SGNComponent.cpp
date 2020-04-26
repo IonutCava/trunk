@@ -37,17 +37,23 @@ namespace Divide {
     }
 
     bool SGNComponent::saveCache(ByteBuffer& outputBuffer) const {
-        ACKNOWLEDGE_UNUSED(outputBuffer);
+        outputBuffer << uniqueID();
         return true;
     }
 
     bool SGNComponent::loadCache(ByteBuffer& inputBuffer) {
-        ACKNOWLEDGE_UNUSED(inputBuffer);
+        U64 tempID = 0u;
+        inputBuffer >> tempID;
+        if (tempID != uniqueID()) {
+            // corrupt save
+            return false;
+        }
+
         return true;
     }
 
-    I64 SGNComponent::uniqueID() const {
-        return _ID((_parentSGN.name() + "_" + _editorComponent.name().c_str()).c_str());
+    U64 SGNComponent::uniqueID() const {
+        return _ID(Util::StringFormat("%s_%s", _parentSGN.name().c_str(), _editorComponent.name().c_str()).c_str());
     }
 
     void SGNComponent::PreUpdate(const U64 deltaTime) {

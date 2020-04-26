@@ -72,11 +72,6 @@ namespace {
         b = _mm_hadd_ps(a, a);
         return _mm_hadd_ps(b, b);
     }
-
-    FORCE_INLINE void DOT_SIMD(const __m128 &a, const __m128 &b, F32 &dot) noexcept
-    {
-        _mm_store_ss(&dot, DOT_SIMD(a, b));
-    }
 }
 /*
 *  useful vector functions
@@ -731,9 +726,7 @@ inline T Dot(const vec4<T> &a, const vec4<T> &b) noexcept {
 
 template <>
 inline F32 Dot(const vec4<F32> &a, const vec4<F32> &b) noexcept {
-    F32 ret = 0.0f;
-    DOT_SIMD(a._reg._reg, b._reg._reg, ret);
-    return ret;
+    return _mm_cvtss_f32(DOT_SIMD(a._reg._reg, b._reg._reg));
 }
 
 /// calculate the dot product between this vector and the specified one

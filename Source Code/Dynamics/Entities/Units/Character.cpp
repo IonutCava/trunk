@@ -125,6 +125,7 @@ void Character::playAnimation(I32 index) {
                 if (anim) {
                     anim->playAnimation(index);
                 }
+                return true;
             });
         }
     }
@@ -142,6 +143,7 @@ void Character::playNextAnimation() {
                 if (anim) {
                     anim->playNextAnimation();
                 }
+                return true;
             });
         }
     }
@@ -159,6 +161,7 @@ void Character::playPreviousAnimation() {
                 if (anim) {
                     anim->playPreviousAnimation();
                 }
+                return true;
             });
         }
     }
@@ -176,6 +179,7 @@ void Character::pauseAnimation(bool state) {
                 if (anim) {
                     anim->playAnimations(state);
                 }
+                return true;
             });
         }
     }

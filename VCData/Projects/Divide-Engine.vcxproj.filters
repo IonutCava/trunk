@@ -1049,5 +1049,8 @@
     <None Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.inl">
       <Filter>ECS\Components\Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Graphs\Headers\SceneGraphNode.inl">
+      <Filter>Graphs\Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

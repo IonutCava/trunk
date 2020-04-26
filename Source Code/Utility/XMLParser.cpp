@@ -187,48 +187,6 @@ void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* co
     }
 }
 
-void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene *const scene) {
-    stringImpl file = scenePath + "/" + fileName.c_str();
-    if (!fileExists(file.c_str())) {
-        return;
-    }
-
-    Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
-
-    std::function<void(const ptree& rootNode, SceneNode& graphOut)> readNode;
-
-    readNode = [&readNode](const ptree& rootNode, SceneNode& graphOut) {
-        const ptree& attributes = rootNode.get_child("<xmlattr>", g_emptyPtree);
-        for (const ptree::value_type& attribute : attributes) {
-            if (attribute.first == "name") {
-                graphOut.name = attribute.second.data();
-            } else if (attribute.first == "type") {
-                graphOut.type = attribute.second.data();
-            }
-        }
-        
-        const ptree& children = rootNode.get_child("");
-        for (const ptree::value_type& child : children) {
-            if (child.first == "node") {
-                graphOut.children.emplace_back();
-                readNode(child.second, graphOut.children.back());
-            }
-        }
-    };
-
-    ptree pt;
-    read_xml(file.c_str(), pt);
-
-    SceneNode rootNode = {};
-    const auto& graphs = pt.get_child("entities", g_emptyPtree);
-    const auto& [name, node_pt] = graphs.front();
-    readNode(node_pt, rootNode);
-    // This may not be needed;
-    assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
-    scene->addSceneGraphToLoad(rootNode);
-}
-
-
 };  // namespace XML
 };  // namespace Divide
 

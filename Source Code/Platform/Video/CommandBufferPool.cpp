@@ -6,16 +6,13 @@ namespace Divide {
 namespace GFX {
 
 static CommandBufferPool s_commandBufferPool;
-static CommandBufferPool s_secondaryCommandBufferPool;
 
 void initPools() {
     s_commandBufferPool.init();
-    s_secondaryCommandBufferPool.init();
 }
 
 void destroyPools() {
     s_commandBufferPool.clear();
-    s_secondaryCommandBufferPool.clear();
 }
 
 CommandBuffer* CommandBufferPool::allocateBuffer() {
@@ -41,36 +38,28 @@ void CommandBufferPool::clear() noexcept {
     _pool.reset();
 }
 
-ScopedCommandBuffer::ScopedCommandBuffer(bool useSecondaryBuffers)
-    : _useSecondaryBuffers(useSecondaryBuffers),
-      _buffer(allocateCommandBuffer(useSecondaryBuffers))
+ScopedCommandBuffer::ScopedCommandBuffer()
+    : _buffer(allocateCommandBuffer())
 {
 }
 
 ScopedCommandBuffer::~ScopedCommandBuffer()
 {
-    deallocateCommandBuffer(_buffer, _useSecondaryBuffers);
+    deallocateCommandBuffer(_buffer);
 }
 
 
-ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers) {
+ScopedCommandBuffer allocateScopedCommandBuffer() {
     OPTICK_EVENT();
 
-    return ScopedCommandBuffer(useSecondaryBuffers);
+    return ScopedCommandBuffer();
 }
 
-CommandBuffer* allocateCommandBuffer(bool useSecondaryBuffers) {
-    if (useSecondaryBuffers) {
-        return s_secondaryCommandBufferPool.allocateBuffer();
-    }
+CommandBuffer* allocateCommandBuffer() {
     return s_commandBufferPool.allocateBuffer();
 }
 
-void deallocateCommandBuffer(GFX::CommandBuffer*& buffer, bool useSecondaryBuffers) {
-    if (useSecondaryBuffers) {
-        return s_secondaryCommandBufferPool.deallocateBuffer(buffer);
-    }
-
+void deallocateCommandBuffer(GFX::CommandBuffer*& buffer) {
     s_commandBufferPool.deallocateBuffer(buffer);
 }
 

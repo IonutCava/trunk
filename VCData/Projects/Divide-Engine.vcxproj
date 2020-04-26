@@ -587,6 +587,7 @@
     <None Include="../../Source Code/Geometry\Material\Headers\Material.inl" />
     <None Include="../../Source Code/Scripting\Headers\Script.inl" />
     <None Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.inl" />
+    <None Include="..\..\Source Code\Graphs\Headers\SceneGraphNode.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

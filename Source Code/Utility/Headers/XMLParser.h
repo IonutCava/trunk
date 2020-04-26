@@ -106,7 +106,6 @@ struct SceneNode {
     vectorEASTL<SceneNode> children;
 };
 
-void loadSceneGraph(const Str256& scenePath, const Str64& fileName, Scene* const scene);
 void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config);
 
 };  // namespace XML

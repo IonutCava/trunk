@@ -16,8 +16,8 @@
 namespace Divide {
 
 namespace {
-    constexpr U32 g_nodesPerEventPartition = 16u;
-    constexpr U32 g_nodesPerUpdatePartition = 32u;
+    constexpr I8 g_cacheMarkerByteValue = -126;
+    constexpr U32 g_nodesPerPartition = 32u;
 };
 
 SceneGraph::SceneGraph(Scene& parentScene)
@@ -202,37 +202,19 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(_orderedNodeList.size());
-    descriptor._partitionSize = g_nodesPerEventPartition;
+    descriptor._partitionSize = g_nodesPerPartition;
 
     parallel_for(context,
                     [this](const Task* parentTask, U32 start, U32 end) {
                         for (U32 i = start; i < end; ++i) {
-                            SceneGraphNode* node = _orderedNodeList[i];
-                            Attorney::SceneGraphNodeSceneGraph::processEvents(*node);
+                            Attorney::SceneGraphNodeSceneGraph::processEvents(*_orderedNodeList[i]);
                         }
                     },
                     descriptor);
 
-#if 0 // need a flag maybe, per node, that returns true if the update can be run in parallel. Otherwise, add to a separate list and parse serially after the parallel_for
-
-    ParallelForDescriptor descriptor = {};
-    descriptor._iterCount = to_U32(_orderedNodeList.size());
-    descriptor._partitionSize = g_nodesPerUpdatePartition;
-
-    parallel_for(context,
-                    [this, deltaTimeUS, &sceneState](const Task& parentTask, U32 start, U32 end) {
-                        for (U32 i = start; i < end; ++i) {
-                            SceneGraphNode* node = _orderedNodeList[i];
-                            node->sceneUpdate(deltaTimeUS, sceneState);
-                        }
-                    },
-                    descriptor,
-                    "Process Node Events");
-#else
     for (SceneGraphNode* node : _orderedNodeList) {
         node->sceneUpdate(deltaTimeUS, sceneState);
     }
-#endif
 
     if (_loadComplete) {
         Start(*CreateTask(context,
@@ -317,15 +299,97 @@ ECS::ComponentManager* SceneGraph::GetComponentManager() const {
     return GetECSEngine().GetComponentManager();
 }
 
+SceneGraphNode* SceneGraph::findNode(const Str128& name, bool sceneNodeName) const {
+    return findNode(_ID(name.c_str()), sceneNodeName);
+}
+
+SceneGraphNode* SceneGraph::findNode(const U64 nameHash, bool sceneNodeName) const {
+    const U64 cmpHash = sceneNodeName ? _ID(_root->getNode().resourceName().c_str()) : _ID(_root->name().c_str());
+
+    if (cmpHash == nameHash) {
+        return _root;
+    }
+
+    return _root->findChild(nameHash, sceneNodeName, true);
+}
+
+SceneGraphNode* SceneGraph::findNode(I64 guid) const {
+    if (_root->getGUID() == guid) {
+        return _root;
+    }
+
+    return _root->findChild(guid, false, true);
+}
+
 bool SceneGraph::saveCache(ByteBuffer& outputBuffer) const {
-    return Attorney::SceneGraphNodeSceneGraph::saveCache(*_root, outputBuffer);
+    const bool ret = saveCache(*_root, outputBuffer);
+    outputBuffer << _ID(_root->name().c_str());
+    return ret;
 }
 
 bool SceneGraph::loadCache(ByteBuffer& inputBuffer) {
-    return Attorney::SceneGraphNodeSceneGraph::loadCache(*_root, inputBuffer);
+    const U64 rootID = _ID(_root->name().c_str());
+    U64 nodeID = 0u;
+    I8 marker1 = -1, marker2 = -1;
+
+    bool skipRoot = true;
+    bool missingData = false;
+    do {
+        inputBuffer >> nodeID;
+        if (nodeID == rootID && !skipRoot) {
+            break;
+        }
+
+        SceneGraphNode* node = findNode(nodeID, false);
+
+        if (node != nullptr && loadCache(*node, inputBuffer)) {
+            inputBuffer >> marker1;
+            inputBuffer >> marker2;
+            assert(marker1 == g_cacheMarkerByteValue && marker1 == marker2);
+        } else {
+            missingData = true;
+            while(true) {
+                inputBuffer >> marker1;
+                if (marker1 == g_cacheMarkerByteValue) {
+                    inputBuffer >> marker2;
+                    if (marker2 == g_cacheMarkerByteValue) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (nodeID == rootID && skipRoot) {
+            skipRoot = false;
+            nodeID = 0u;
+        }
+    } while (nodeID != rootID);
+
+    return !missingData;
+}
+
+bool SceneGraph::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const {
+    // Because loading is async, nodes will not be necessarily in the same order. We need a way to find
+    // the node using some sort of ID. Name based ID is bad, but is the only system available at the time of writing -Ionut
+    outputBuffer << _ID(sgn.name().c_str());
+    if (!Attorney::SceneGraphNodeSceneGraph::saveCache(sgn, outputBuffer)) {
+        NOP();
+    }
+    // Data may be bad, so add markers to be able to just jump over the entire node data instead of attempting partial loads
+    outputBuffer << g_cacheMarkerByteValue;
+    outputBuffer << g_cacheMarkerByteValue;
+
+    return sgn.forEachChild([this, &outputBuffer](SceneGraphNode* child, I32 /*idx*/) {
+        return saveCache(*child, outputBuffer);
+    });
+}
+
+bool SceneGraph::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+    return Attorney::SceneGraphNodeSceneGraph::loadCache(sgn, inputBuffer);
 }
 
 namespace {
+    constexpr size_t g_sceneGraphVersion = 1;
+
     boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode* node) {
         boost::property_tree::ptree entry;
         entry.put("<xmlattr>.name", node->name().c_str());
@@ -335,13 +399,14 @@ namespace {
             if (child->serialize()) {
                 entry.add_child("node", dumpSGNtoAssets(child));
             }
+            return true;
         });
 
         return entry;
     }
 };
 
-void SceneGraph::saveToXML(DELEGATE<void, const char*> msgCallback) const {
+void SceneGraph::saveToXML(const char* assetsFile, DELEGATE<void, const char*> msgCallback) const {
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
@@ -349,18 +414,72 @@ void SceneGraph::saveToXML(DELEGATE<void, const char*> msgCallback) const {
 
     {
         boost::property_tree::ptree pt;
+        pt.put("version", g_sceneGraphVersion);
         pt.add_child("entities.node", dumpSGNtoAssets(&getRoot()));
 
-        copyFile((sceneLocation + "/").c_str(), "assets.xml", (sceneLocation + "/").c_str(), "assets.xml.bak", true);
-        write_xml((sceneLocation + "/" + "assets.xml").c_str(), pt, std::locale(), settings);
+        copyFile((sceneLocation + "/").c_str(), assetsFile, (sceneLocation + "/").c_str(), "assets.xml.bak", true);
+        write_xml((sceneLocation + "/" + assetsFile).c_str(), pt, std::locale(), settings);
     }
 
     getRoot().forEachChild([&sceneLocation, &msgCallback](const SceneGraphNode* child, I32 /*childIdx*/) {
         child->saveToXML(sceneLocation, msgCallback);
+        return true;
     });
 }
 
-void SceneGraph::loadFromXML() {
+namespace {
+    boost::property_tree::ptree g_emptyPtree;
+}
 
+void SceneGraph::loadFromXML(const char* assetsFile) {
+    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
+
+    Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
+
+    stringImpl file = sceneLocation + "/" + assetsFile;
+    if (!fileExists(file.c_str())) {
+        return;
+    }
+
+    Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
+    boost::property_tree::ptree pt;
+    read_xml(file.c_str(), pt);
+    if (pt.get("version", g_sceneGraphVersion) != g_sceneGraphVersion) {
+        // Scene graph version mismatch
+        NOP();
+    }
+
+    std::function<void(const boost::property_tree::ptree& rootNode, XML::SceneNode& graphOut)> readNode;
+
+    readNode = [&readNode](const boost::property_tree::ptree& rootNode, XML::SceneNode& graphOut) {
+        const boost::property_tree::ptree& attributes = rootNode.get_child("<xmlattr>", g_emptyPtree);
+        for (const boost::property_tree::ptree::value_type& attribute : attributes) {
+            if (attribute.first == "name") {
+                graphOut.name = attribute.second.data();
+            }
+            else if (attribute.first == "type") {
+                graphOut.type = attribute.second.data();
+            }
+        }
+
+        const boost::property_tree::ptree& children = rootNode.get_child("");
+        for (const boost::property_tree::ptree::value_type& child : children) {
+            if (child.first == "node") {
+                graphOut.children.emplace_back();
+                readNode(child.second, graphOut.children.back());
+            }
+        }
+    };
+
+
+
+    XML::SceneNode rootNode = {};
+    const auto& graphs = pt.get_child("entities", g_emptyPtree);
+    const auto& [name, node_pt] = graphs.front();
+    readNode(node_pt, rootNode);
+    // This may not be needed;
+    assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
+    parentScene().addSceneGraphToLoad(rootNode);
 }
 };

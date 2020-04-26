@@ -78,6 +78,7 @@ namespace Divide {
             if (printNode()) {
                 sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
                     printSceneGraphNode(sceneManager, *child, childIdx, false);
+                    return true;
                 });
                 ImGui::TreePop();
             }
@@ -88,6 +89,7 @@ namespace Divide {
             }
             sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
                 printSceneGraphNode(sceneManager, *child, childIdx, false);
+                return true;
             });
             if (nodeOpen) {
                 ImGui::TreePop();

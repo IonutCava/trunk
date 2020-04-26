@@ -377,7 +377,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
         // I should remove this hack - Ionut
         SceneGraphNode* nodeSGN = sgn;
         if (nodeType == SceneNodeType::TYPE_WATER) {
-            nodeSGN = sgn->findChild("waterPlane");
+            nodeSGN = sgn->findChild(_ID("waterPlane"));
         }
 
         Console::d_printfn(Locale::get(_ID("NAV_MESH_CURRENT_NODE")),
@@ -448,7 +448,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 next:
     ;
 
-    return !sgn->forEachChildInterruptible([&outData](SceneGraphNode* child, I32 /*childIdx*/) {
+    return !sgn->forEachChild([&outData](SceneGraphNode* child, I32 /*childIdx*/) {
                 if (!parse(child->get<BoundsComponent>()->getBoundingBox(), outData, child)) {
                     return false;
                 }

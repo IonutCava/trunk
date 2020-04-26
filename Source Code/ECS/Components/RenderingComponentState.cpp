@@ -14,6 +14,7 @@ void RenderingComponent::toggleRenderOption(RenderOptions option, bool state) {
             if (renderable) {
                 renderable->toggleRenderOption(option, state);
             }
+            return true;
         });
 
         if (state) {

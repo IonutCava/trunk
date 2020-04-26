@@ -45,7 +45,7 @@ namespace Divide {
 
 class ResourceLoadLock : private NonMovable {
 public:
-    explicit ResourceLoadLock(size_t hash, PlatformContext& context, const bool threaded);
+    explicit ResourceLoadLock(size_t hash, PlatformContext& context);
     ~ResourceLoadLock();
 
     static void notifyTaskPool(PlatformContext& context);
@@ -74,15 +74,14 @@ public:
         {
             // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
             const size_t loadingHash = descriptor.getHash();
+            if_constexpr(UseAtomicCounter) {
+                taskCounter.fetch_add(1u);
+            }
 
             // If two thread are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
             // So check if the hash is currently in the "processing" list, and if it is, just busy-spin until done
             // Once done, lock the hash for ourselves
-            ResourceLoadLock res_lock(loadingHash, _context, !Runtime::isMainThread());
-
-            if_constexpr(UseAtomicCounter) {
-                taskCounter.fetch_add(1u);
-            }
+            ResourceLoadLock res_lock(loadingHash, _context);
             /// Check cache first to avoid loading the same resource twice
             ptr = std::static_pointer_cast<T>(find(loadingHash));
             /// If the cache did not contain our resource ...

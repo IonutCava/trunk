@@ -47,11 +47,13 @@ namespace Divide {
 
     // May be wrong endpoint
     bool EditorComponent::saveCache(ByteBuffer& outputBuffer) const {
+        ACKNOWLEDGE_UNUSED(outputBuffer);
         return true;
     }
 
     // May be wrong endpoint
     bool EditorComponent::loadCache(ByteBuffer& inputBuffer) {
+        ACKNOWLEDGE_UNUSED(inputBuffer);
         return true;
     }
 

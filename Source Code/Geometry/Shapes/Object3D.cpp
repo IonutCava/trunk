@@ -259,9 +259,34 @@ void Object3D::playAnimations(const SceneGraphNode& sgn, const bool state) {
             if (animComp != nullptr) {
                 animComp->playAnimations(state && animComp->playAnimations());
             }
+            return true;
         });
     }
 }
+
+void Object3D::saveCache(ByteBuffer& outputBuffer) const {
+    if (isPrimitive()) {
+        outputBuffer << to_U8(getObjectType());
+    } else {
+        outputBuffer << stringImpl(resourceName().c_str());
+    }
+
+    SceneNode::saveCache(outputBuffer);
+};
+
+void Object3D::loadCache(ByteBuffer& inputBuffer) {
+    if (isPrimitive()) {
+        U8 index = 0u;
+        inputBuffer >> index;
+        assert(index == to_U8(getObjectType()));
+    } else {
+        stringImpl tempName = {};
+        inputBuffer >> tempName;
+        assert(tempName == resourceName().c_str());
+    }
+    SceneNode::loadCache(inputBuffer);
+}
+
 void Object3D::saveToXML(boost::property_tree::ptree& pt) const {
     if (static_cast<const Object3D*>(this)->isPrimitive()) {
         pt.put("model", static_cast<const Object3D*>(this)->getObjectType()._to_string());
@@ -273,6 +298,15 @@ void Object3D::saveToXML(boost::property_tree::ptree& pt) const {
 }
 
 void Object3D::loadFromXML(const boost::property_tree::ptree& pt) {
+    stringImpl temp = {};
+    if (static_cast<const Object3D*>(this)->isPrimitive()) {
+        temp = pt.get("model", getObjectType()._to_string());
+        assert(temp == getObjectType()._to_string());
+    } else {
+        temp = pt.get("model", resourceName().c_str());
+        assert(temp == resourceName().c_str());
+    }
+
     SceneNode::loadFromXML(pt);
 }
 

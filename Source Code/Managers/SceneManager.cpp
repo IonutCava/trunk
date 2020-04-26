@@ -900,6 +900,7 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, 
         ByteBuffer save;
         if (Attorney::SceneLoadSave::save(activeScene, save)) {
             ret = save.dumpToFile(path.c_str(), saveFile);
+            assert(ret);
         }
     }
     if (finishCallback) {

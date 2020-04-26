@@ -153,14 +153,14 @@ namespace Divide {
 
       protected:
          friend class TransformSystem;
-         void setTransformDirty(TransformType type);
-         void setTransformDirty(U32 typeMask);
+         void setTransformDirty(TransformType type) noexcept;
+         void setTransformDirty(U32 typeMask) noexcept;
 
          void PreUpdate(const U64 deltaTimeUS) final;
          void Update(const U64 deltaTimeUS) final;
 
-         void onParentTransformDirty(U32 transformMask);
-         void onParentUsageChanged(NodeUsageContext context);
+         void onParentTransformDirty(U32 transformMask) noexcept;
+         void onParentUsageChanged(NodeUsageContext context) noexcept;
 
          void getMatrix(mat4<F32>& matOut) override;
          void getMatrix(D64 interpolationFactor, mat4<F32>& matOut) const;
@@ -202,11 +202,11 @@ namespace Divide {
 
     namespace Attorney {
         class TransformComponentSGN {
-            static void onParentTransformDirty(TransformComponent& comp, U32 transformMask) {
+            static void onParentTransformDirty(TransformComponent& comp, U32 transformMask) noexcept {
                 comp.onParentTransformDirty(transformMask);
             }
 
-            static void onParentUsageChanged(TransformComponent& comp, NodeUsageContext context) {
+            static void onParentUsageChanged(TransformComponent& comp, NodeUsageContext context) noexcept {
                 comp.onParentUsageChanged(context);
             }
             friend class Divide::SceneGraphNode;
