@@ -33,7 +33,6 @@
 #ifndef _CORE_KERNEL_H_
 #define _CORE_KERNEL_H_
 
-#include "EngineTaskPool.h"
 #include "PlatformContext.h"
 #include "Core/Headers/Application.h"
 #include "Managers/Headers/FrameListenerManager.h"

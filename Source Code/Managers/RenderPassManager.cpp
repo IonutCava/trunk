@@ -3,7 +3,6 @@
 #include "Headers/RenderPassManager.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"

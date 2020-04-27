@@ -2,7 +2,6 @@
 
 #include "Headers/PostAAPreRenderOperator.h"
 
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Core/Headers/Configuration.h"
 #include "Platform/Video/Headers/GFXDevice.h"

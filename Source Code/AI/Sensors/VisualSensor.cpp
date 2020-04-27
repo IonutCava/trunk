@@ -3,7 +3,6 @@
 #include "Headers/VisualSensor.h"
 
 #include "AI/Headers/AIEntity.h"
-#include "Core/Headers/Console.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "ECS/Components/Headers/TransformComponent.h"

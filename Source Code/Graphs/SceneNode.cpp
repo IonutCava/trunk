@@ -66,14 +66,6 @@ const char* SceneNode::getTypeName() const {
     return "";
 }
 
-void SceneNode::frameStarted(SceneGraphNode& sgn) {
-    ACKNOWLEDGE_UNUSED(sgn);
-}
-
-void SceneNode::frameEnded(SceneGraphNode& sgn) {
-    ACKNOWLEDGE_UNUSED(sgn);
-}
-
 void SceneNode::sceneUpdate(const U64 deltaTimeUS,
                             SceneGraphNode& sgn,
                             SceneState& sceneState) {

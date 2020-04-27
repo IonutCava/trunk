@@ -7,7 +7,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 

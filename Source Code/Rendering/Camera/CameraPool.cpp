@@ -2,7 +2,6 @@
 
 #include "Headers/Camera.h"
 
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"

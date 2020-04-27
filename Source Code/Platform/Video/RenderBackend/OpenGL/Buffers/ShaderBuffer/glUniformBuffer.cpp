@@ -10,7 +10,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glGenericBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferLockManager.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 

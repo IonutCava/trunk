@@ -586,6 +586,7 @@
     <None Include="../../Source Code/Core\Headers\Application.inl" />
     <None Include="../../Source Code/Geometry\Material\Headers\Material.inl" />
     <None Include="../../Source Code/Scripting\Headers\Script.inl" />
+    <None Include="..\..\Source Code\Core\Headers\EngineTaskPool.inl" />
     <None Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.inl" />
     <None Include="..\..\Source Code\Graphs\Headers\SceneGraphNode.inl" />
   </ItemGroup>

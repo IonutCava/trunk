@@ -2,11 +2,11 @@
 
 #include "Headers/Texture.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ByteBuffer.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"

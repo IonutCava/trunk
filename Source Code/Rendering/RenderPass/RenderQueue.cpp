@@ -3,8 +3,6 @@
 #include "Headers/RenderQueue.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Console.h"
-#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"

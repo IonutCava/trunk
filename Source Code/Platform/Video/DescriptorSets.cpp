@@ -2,7 +2,6 @@
 
 #include "Headers/DescriptorSets.h"
 
-#include "Core/Headers/Console.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 

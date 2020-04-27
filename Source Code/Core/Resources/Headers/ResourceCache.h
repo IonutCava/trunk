@@ -35,7 +35,6 @@
 
 #include "ResourceLoader.h"
 
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Headers/PlatformContextComponent.h"

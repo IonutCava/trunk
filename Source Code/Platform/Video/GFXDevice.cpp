@@ -7,7 +7,6 @@
 #include "Editor/Headers/Editor.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"

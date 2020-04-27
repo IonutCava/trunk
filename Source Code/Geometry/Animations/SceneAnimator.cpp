@@ -6,7 +6,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Headers/AnimationUtils.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 

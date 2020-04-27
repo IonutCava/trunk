@@ -18,7 +18,6 @@
 #include "Editor/Widgets/Headers/ImGuiExtensions.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"

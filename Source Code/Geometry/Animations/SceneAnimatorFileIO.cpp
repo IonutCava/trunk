@@ -4,7 +4,6 @@
 #include "Core/Headers/ByteBuffer.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {

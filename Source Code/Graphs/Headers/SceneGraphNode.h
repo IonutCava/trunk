@@ -161,12 +161,6 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Called from parent SceneGraph
         void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
 
-        /// Called from parent SceneGraph
-        void frameStarted();
-
-        /// Called from parent SceneGraph
-        void frameEnded();
-
         /// Invoked by the contained SceneNode when it finishes all of its internal loading and is ready for processing
         void postLoad();
 

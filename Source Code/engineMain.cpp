@@ -4,12 +4,10 @@
 
 #include "engineMain.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Scripting/Headers/Script.h"
 #include "Platform/File/Headers/FileManagement.h"
 
-#include "Core/Headers/TaskPool.h"
 namespace Divide {
 
 bool TaskPool::USE_OPTICK_PROFILER = true;

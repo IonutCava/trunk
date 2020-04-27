@@ -30,7 +30,7 @@ namespace Divide {
 
         const U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
-        _componentCache.resize(0);
+        _componentCache.reset_lose_memory();
         _componentCache.reserve(_container->size());
 
         auto bComp = _container->begin();

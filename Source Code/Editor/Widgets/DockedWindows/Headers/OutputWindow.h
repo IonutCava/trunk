@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _EDITOR_OUTPUT_WINDOW_H_
 #define _EDITOR_OUTPUT_WINDOW_H_
 
-#include "Core/Headers/Console.h"
 #include "Editor/Widgets/Headers/DockedWindow.h"
 #include <CircularBuffer/CircularBuffer.h>
 

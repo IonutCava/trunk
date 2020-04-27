@@ -2,7 +2,6 @@
 
 #include "Headers/PhysX.h"
 #include "Headers/PhysXSceneInterface.h"
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Core/Headers/Application.h"
 #include "Graphs/Headers/SceneGraphNode.h"

@@ -5,7 +5,6 @@
 #include "Headers/GUIConsoleCommandParser.h"
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"

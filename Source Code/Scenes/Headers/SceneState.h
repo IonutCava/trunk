@@ -38,7 +38,6 @@
 #include "Platform/Audio/Headers/AudioDescriptor.h"
 #include "Platform/Video/Headers/ClipPlanes.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Core/Headers/Console.h"
 #include "Scenes/Headers/SceneComponent.h"
 #include "Utility/Headers/Localization.h"
 

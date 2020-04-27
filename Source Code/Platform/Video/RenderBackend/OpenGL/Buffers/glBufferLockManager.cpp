@@ -2,7 +2,6 @@
 
 #include "Headers/glBufferLockManager.h"
 
-#include "Core/Headers/Console.h"
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 

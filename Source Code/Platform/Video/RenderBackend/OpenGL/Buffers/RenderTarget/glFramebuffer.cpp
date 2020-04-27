@@ -9,7 +9,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glSamplerObject.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"

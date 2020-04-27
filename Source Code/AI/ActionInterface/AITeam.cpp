@@ -5,8 +5,6 @@
 #include "AI/Headers/AIEntity.h"
 #include "AI/Headers/AIManager.h"
 #include "AI/PathFinding/Headers/DivideCrowd.h"
-
-#include "Core/Headers/TaskPool.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
 namespace Divide {
@@ -94,7 +92,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        auto updateIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
+        const auto updateIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::update(*entities[i], deltaTimeUS)) {
                     //print error;
@@ -121,7 +119,7 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        auto inputIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
+        const auto inputIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::processInput(*entities[i], deltaTimeUS)) {
                     //print error;
@@ -149,7 +147,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        auto dataIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
+        const auto dataIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::processData(*entities[i], deltaTimeUS)) {
                     //print error;

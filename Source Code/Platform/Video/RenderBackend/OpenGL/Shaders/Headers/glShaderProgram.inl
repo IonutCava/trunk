@@ -31,7 +31,6 @@
 #ifndef _PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_
 #define _PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_
 
-#include "Core/Headers/Console.h"
 
 namespace Divide {
 

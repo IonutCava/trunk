@@ -5,8 +5,6 @@
 #include "Headers/Configuration.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/TaskPool.h"
-#include "Core/Headers/Console.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/Localization.h"
 

@@ -2,7 +2,6 @@
 
 #include "Headers/DoFPreRenderOperator.h"
 
-#include "Core/Headers/Console.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"

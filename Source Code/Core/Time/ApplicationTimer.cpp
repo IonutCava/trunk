@@ -5,7 +5,6 @@
 #include "Headers/ApplicationTimer.h"
 #include "Headers/ProfileTimer.h"
 
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
 #include "Core/Headers/StringHelper.h"

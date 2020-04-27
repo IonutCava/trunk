@@ -39,7 +39,6 @@ class GUI;
 class Kernel;
 class Server;
 class Editor;
-class TaskPool;
 class GFXDevice;
 class SFXDevice;
 class PXDevice;

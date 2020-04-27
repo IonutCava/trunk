@@ -19,7 +19,7 @@ namespace Divide {
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         // Keep memory in order to avoid mid-frame allocs
-        _componentCache.resize(0);
+        _componentCache.reset_lose_memory();
         _componentCache.reserve(_container->size());
 
         auto anim = _container->begin();

@@ -46,6 +46,9 @@
     <None Include="..\..\Source Code\Core\Headers\ObjectPool.inl">
       <Filter>Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Core\Headers\TaskPool.inl">
+      <Filter>Headers</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Utility">

@@ -1052,5 +1052,8 @@
     <None Include="..\..\Source Code\Graphs\Headers\SceneGraphNode.inl">
       <Filter>Graphs\Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Core\Headers\EngineTaskPool.inl">
+      <Filter>Core\Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

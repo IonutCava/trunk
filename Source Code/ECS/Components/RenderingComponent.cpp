@@ -233,8 +233,6 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, c
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
-    OPTICK_EVENT();
-
     if (_materialInstanceCache != nullptr && _materialInstanceCache->update(deltaTimeUS)) {
         onMaterialChanged();
     }

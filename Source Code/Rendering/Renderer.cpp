@@ -2,7 +2,6 @@
 
 #include "Headers/Renderer.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -23,7 +22,7 @@ namespace {
     constexpr U16 MAX_HEIGHT = 2160u;
     constexpr U16 MAX_WIDTH = 3840u;
 
-    vec2<U32> GetNumTiles(U8 threadGroupSize) {
+    vec2<U32> GetNumTiles(U8 threadGroupSize) noexcept {
         const U8 TILE_RES = Light::GetThreadGroupSize(threadGroupSize);
 
         return
@@ -33,7 +32,7 @@ namespace {
         };
     }
 
-    U32 GetMaxNumTiles(U8 threadGroupSize) {
+    U32 GetMaxNumTiles(U8 threadGroupSize) noexcept {
         const vec2<U32> tileCount = GetNumTiles(threadGroupSize);
         return tileCount.x * tileCount.y;
     }

@@ -5,7 +5,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 

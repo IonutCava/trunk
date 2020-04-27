@@ -7,7 +7,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 

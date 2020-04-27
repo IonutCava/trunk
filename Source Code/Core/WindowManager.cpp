@@ -2,7 +2,6 @@
 
 #include "Headers/WindowManager.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"

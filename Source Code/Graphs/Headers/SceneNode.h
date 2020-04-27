@@ -148,8 +148,6 @@ class SceneNode : public CachedResource {
     virtual void loadFromXML(const boost::property_tree::ptree& pt);
 
    protected:
-    virtual void frameStarted(SceneGraphNode& sgn);
-    virtual void frameEnded(SceneGraphNode& sgn);
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState);
 
@@ -199,13 +197,6 @@ class SceneNodeSceneGraph {
    private:
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
-    }
-    static void frameStarted(SceneNode& node, SceneGraphNode& sgn) {
-        node.frameStarted(sgn);
-    }
-
-    static void frameEnded(SceneNode& node, SceneGraphNode& sgn) {
-        node.frameEnded(sgn);
     }
 
     static void sceneUpdate(SceneNode& node, const U64 deltaTimeUS,

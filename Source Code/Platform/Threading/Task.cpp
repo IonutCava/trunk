@@ -2,8 +2,6 @@
 
 #include "Headers/Task.h"
 
-#include "Core/Headers/TaskPool.h"
-#include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Utility/Headers/Localization.h"
@@ -13,9 +11,7 @@
 namespace Divide {
 
 void finish(Task& task) {
-    const U16 runningCount = task._unfinishedJobs.fetch_sub(1, std::memory_order_relaxed);
-
-    if (runningCount == 1) {
+    if (task._unfinishedJobs.fetch_sub(1, std::memory_order_relaxed) == 1) {
         if (task._parent != nullptr) {
             finish(*task._parent);
         }
@@ -25,7 +21,7 @@ void finish(Task& task) {
 Task& Start(Task& task, TaskPriority priority, DELEGATE<void>&& onCompletionFunction) {
     const bool hasOnCompletionFunction = (priority != TaskPriority::REALTIME && onCompletionFunction);
 
-    const auto run = [&task, priority, hasOnCompletionFunction](bool threadWaitingCall) {
+    const auto run = [&task, hasOnCompletionFunction](bool threadWaitingCall) {
         while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
             if (threadWaitingCall) {
                 TaskYield(task);
@@ -33,25 +29,24 @@ Task& Start(Task& task, TaskPriority priority, DELEGATE<void>&& onCompletionFunc
                 return false;
             }
         }
+
         if (!threadWaitingCall || task._runWhileIdle) {
             if (task._callback) {
                 task._callback(task);
             }
 
             finish(task);
-            task._parentPool->taskCompleted(task._id, priority, hasOnCompletionFunction);
+            task._parentPool->taskCompleted(task._id, hasOnCompletionFunction);
             return true;
         }
 
         return false;
     };
 
-    if (!task._parentPool->enqueue(run, priority, task._id, std::forward<DELEGATE<void>>(onCompletionFunction))) {
+    if (!task._parentPool->enqueue(run, priority, task._id, std::move(onCompletionFunction))) {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
         run(true);
-        if (hasOnCompletionFunction) {
-            onCompletionFunction();
-        }
+        task._parentPool->flushCallbackQueue();
     }
 
     return task;

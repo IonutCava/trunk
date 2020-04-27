@@ -5,7 +5,6 @@
 #include "Headers/ParticleEmitter.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/TaskPool.h"
 #include "Scenes/Headers/Scene.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"

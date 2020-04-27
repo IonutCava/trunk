@@ -6,7 +6,6 @@
 #include "Headers/MeshImporter.h"
 
 #include "Utility/Headers/XMLParser.h"
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"

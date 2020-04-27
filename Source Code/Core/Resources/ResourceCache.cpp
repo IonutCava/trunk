@@ -3,7 +3,6 @@
 #include "Headers/ResourceCache.h"
 
 #include "Environment/Terrain/Headers/TerrainLoader.h"
-#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 

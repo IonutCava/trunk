@@ -181,6 +181,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/TemplateLibraries/Headers/String.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Math/Headers/Quaternion.h"
+#include "Core/Headers/TaskPool.h"
+#include "Core/Headers/Console.h"
 
 #ifndef YES_IMGUIMINIGAMES
 #define YES_IMGUIMINIGAMES

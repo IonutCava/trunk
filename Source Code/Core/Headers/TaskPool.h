@@ -75,7 +75,8 @@ public:
     void flushCallbackQueue();
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
-    Task* createTask(Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
+    template<class Predicate>
+    Task* createTask(Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle = true);
 
     inline U32 workerThreadCount() const noexcept {
         return _workerThreadCount;
@@ -98,16 +99,21 @@ public:
     friend struct Task;
     friend void Wait(const Task& task);
     friend void TaskYield(const Task& task);
+
     friend Task& Start(Task& task, TaskPriority prio, DELEGATE<void>&& onCompletionFunction);
     friend bool StopRequested(const Task& task) noexcept;
-    friend void parallel_for(TaskPool& pool, const DELEGATE<void, const Task&, U32, U32>& cbk, const ParallelForDescriptor& descriptor);
 
-    void taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCompletionFunction);
+    template<class Predicate>
+    friend void parallel_for(TaskPool& pool, Predicate&& cbk, const ParallelForDescriptor& descriptor);
+
+    void taskCompleted(U32 taskIndex, bool hasOnCompletionFunction);
     
     bool enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE<void>&& onCompletionFunction);
     bool stopRequested() const noexcept;
 
     void runCbkAndClearTask(U32 taskIdentifier);
+
+    Task* allocateTask(Task* parentTask, bool allowedInIdle);
 
     template<bool IsBlocking>
     friend class ThreadPool;
@@ -117,9 +123,9 @@ public:
 
   private:
       struct PoolHolder {
-          std::unique_ptr<ThreadPool<true>> _poolImplBlocking = nullptr;
-          std::unique_ptr<ThreadPool<false>> _poolImplLockFree = nullptr;
-          bool _isBlocking = false;
+          template<bool IsBlocking>
+          using PoolImpl = std::unique_ptr<ThreadPool<IsBlocking>>;
+          std::pair<PoolImpl<true>, PoolImpl<false>> _poolImpl = {nullptr, nullptr};
 
           bool addTask(PoolTask&& job);
           bool init() const noexcept;
@@ -131,23 +137,26 @@ public:
      DELEGATE<void, const std::thread::id&> _threadCreateCbk;
      moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
      PoolHolder _poolImpl = {};
-     stringImpl _threadNamePrefix;
-     std::atomic_uint _runningTaskCount;
-     std::atomic_uint _threadCount;
+     stringImpl _threadNamePrefix = "";
+     std::atomic_uint _runningTaskCount = 0u;
+     std::atomic_uint _threadCount = 0u;
      std::atomic_bool _stopRequested = false;
-     U32 _workerThreadCount;
+     U32 _workerThreadCount = 0u;
 };
 
-Task* CreateTask(TaskPool& pool, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
+template<class Predicate>
+Task* CreateTask(TaskPool& pool, Predicate&& threadedFunction, bool allowedInIdle = true);
 
-Task* CreateTask(TaskPool& pool, Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
+template<class Predicate>
+Task* CreateTask(TaskPool& pool, Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle = true);
 
-void parallel_for(TaskPool& pool,
-                  const DELEGATE<void, Task*, U32, U32>& cbk,
-                  const ParallelForDescriptor& descriptor);
+template<class Predicate>
+void parallel_for(TaskPool& pool, Predicate&& cbk, const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);
 
-};
+}; //namespace Divide
 
-#endif _TASK_POOL_H_
+#endif //_TASK_POOL_H_
+
+#include "TaskPool.inl"

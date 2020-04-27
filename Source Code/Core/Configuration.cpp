@@ -2,7 +2,6 @@
 
 #include "Headers/Configuration.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/WindowManager.h"
 
 #include "Utility/Headers/Localization.h"

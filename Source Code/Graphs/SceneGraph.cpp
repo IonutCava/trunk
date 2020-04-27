@@ -2,7 +2,6 @@
 
 #include "Headers/SceneGraph.h"
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
@@ -148,6 +147,8 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
 }
 
 bool SceneGraph::frameStarted(const FrameEvent& evt) {
+    ACKNOWLEDGE_UNUSED(evt);
+
     UniqueLock<SharedMutex> lock(_pendingDeletionLock);
     if (!_pendingDeletion.empty()) {
         for (auto entry : _pendingDeletion) {
@@ -166,18 +167,6 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) {
         _nodeListChanged = false;
     }
 
-    for (SceneGraphNode* node : _orderedNodeList) {
-        node->frameStarted();
-    }
-
-    return true;
-}
-
-bool SceneGraph::frameEnded(const FrameEvent& evt) {
-    for (SceneGraphNode* node : _orderedNodeList) {
-        node->frameEnded();
-    }
- 
     return true;
 }
 

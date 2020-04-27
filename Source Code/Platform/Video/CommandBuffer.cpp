@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/CommandBuffer.h"
-#include "Core/Headers/Console.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 

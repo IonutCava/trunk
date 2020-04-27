@@ -16,7 +16,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/EngineTaskPool.h"
 #include "Utility/Headers/Localization.h"

@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/Defines.h"
-#include "Core/Headers/Console.h"
-#include "Core/Headers/TaskPool.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 

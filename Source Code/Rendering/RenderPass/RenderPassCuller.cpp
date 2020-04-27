@@ -1,9 +1,8 @@
 #include "stdafx.h"
 
-#include "config.h"
-
 #include "Headers/RenderPassCuller.h"
 
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/EngineTaskPool.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraph.h"

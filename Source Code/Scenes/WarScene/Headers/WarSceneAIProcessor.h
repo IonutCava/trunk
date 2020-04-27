@@ -37,11 +37,6 @@
 #include "AI/ActionInterface/Headers/AIProcessor.h"
 #include "Scenes/WarScene/AESOPActions/Headers/WarSceneActions.h"
 
-#ifndef PRINT_AI_TO_FILE
-#define PRINT_AI_TO_FILE
-#include "Core/Headers/Console.h"
-#endif
-
 namespace Divide {
 class Unit;
 

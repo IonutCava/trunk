@@ -16,8 +16,6 @@ All Rights Reserved. (c) Copyright 2016.
 
 #include "Platform.h"
 
-#include "Core/Headers/Console.h"
-
 #define ECS_DISABLE_INFO_LOG
 
 namespace ECS { namespace Log {

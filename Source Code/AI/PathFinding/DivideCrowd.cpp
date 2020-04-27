@@ -3,8 +3,6 @@
 #include "Headers/DivideCrowd.h"
 
 #include "DetourCommon.h"
-
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {

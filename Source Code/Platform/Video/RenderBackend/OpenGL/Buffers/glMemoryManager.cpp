@@ -3,7 +3,6 @@
 #include "Headers/glMemoryManager.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 
 namespace Divide {

@@ -3,7 +3,6 @@
 #include "Headers/ParticleData.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 

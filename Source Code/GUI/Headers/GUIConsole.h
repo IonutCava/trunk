@@ -37,7 +37,6 @@
 
 #include <CEGUI/CEGUI.h>
 
-#include "Core/Headers/Console.h"
 #include "Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/PlatformContextComponent.h"
 

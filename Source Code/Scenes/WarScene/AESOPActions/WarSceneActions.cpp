@@ -2,7 +2,6 @@
 
 #include "Headers/WarSceneActions.h"
 
-#include "Core/Headers/Console.h"
 #include "Scenes/WarScene/Headers/WarSceneAIProcessor.h"
 
 namespace Divide {

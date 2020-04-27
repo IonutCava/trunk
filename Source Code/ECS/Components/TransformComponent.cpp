@@ -96,9 +96,10 @@ namespace Divide {
         OPTICK_EVENT();
 
         // If we have dirty transforms, inform everybody
-        if (_transformUpdatedMask.load() != to_base(TransformType::NONE))
+        const U32 updateMask = _transformUpdatedMask.load();
+        if (updateMask != to_base(TransformType::NONE))
         {
-            Attorney::SceneGraphNodeComponent::setTransformDirty(_parentSGN, _transformUpdatedMask);
+            Attorney::SceneGraphNodeComponent::setTransformDirty(_parentSGN, updateMask);
             SharedLock<SharedMutex> r_lock(_lock);
             _prevTransformValues = _transformInterface.getValues();
         }
@@ -107,8 +108,6 @@ namespace Divide {
     }
 
     void TransformComponent::Update(const U64 deltaTimeUS) {
-        OPTICK_EVENT();
-
         // Cleanup our dirty transforms
         const U32 previousMask = _transformUpdatedMask.exchange(to_U32(TransformType::NONE));
         if (previousMask != to_U32(TransformType::NONE)) {

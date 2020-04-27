@@ -412,14 +412,6 @@ void SceneGraphNode::processDeleteQueue(vectorEASTL<size_t>& childList) {
     }
 }
 
-void SceneGraphNode::frameStarted() {
-    Attorney::SceneNodeSceneGraph::frameStarted(*_node, *this);
-}
-
-void SceneGraphNode::frameEnded() {
-    Attorney::SceneNodeSceneGraph::frameEnded(*_node, *this);
-}
-
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     OPTICK_EVENT();

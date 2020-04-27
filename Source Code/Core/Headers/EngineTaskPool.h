@@ -33,31 +33,36 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ENGINE_TASK_POOL_H_
 #define _ENGINE_TASK_POOL_H_
 
-#include "TaskPool.h"
-
 namespace Divide {
 
 class PlatformContext;
+
+struct Task;
+struct ParallelForDescriptor;
 
 /**
 * @brief Creates a new Task that runs in a separate thread
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 */
-Task* CreateTask(PlatformContext& context, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
+template<class Predicate>
+Task* CreateTask(PlatformContext& context, Predicate&& threadedFunction, bool allowedInIdle = true);
 
 /**
 * @brief Creates a new Task that runs in a separate thread
 * @param context The parent task that would need to wait for our newly created task to complete before finishing
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 */
-Task* CreateTask(PlatformContext& context, Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle = true);
 
-void parallel_for(PlatformContext& context,
-                  const DELEGATE<void, Task*, U32, U32>& cbk,
-                  const ParallelForDescriptor& descriptor);
+template<class Predicate>
+Task* CreateTask(PlatformContext& context, Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle = true);
+
+template<class Predicate>
+void parallel_for(PlatformContext& context, Predicate&& cbk, const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear);
 
 }; //namespace Divide
 
 #endif //_ENGINE_TASK_POOL_H_
+
+#include "EngineTaskPool.inl"

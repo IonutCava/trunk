@@ -3,7 +3,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Headers/glPixelBuffer.h"
 
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"

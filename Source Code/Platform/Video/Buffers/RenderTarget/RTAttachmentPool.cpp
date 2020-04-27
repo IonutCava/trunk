@@ -3,7 +3,6 @@
 #include "Headers/RTAttachmentPool.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 

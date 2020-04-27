@@ -3,7 +3,6 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Headers/PlatformContext.h"
 
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainLoader.h"

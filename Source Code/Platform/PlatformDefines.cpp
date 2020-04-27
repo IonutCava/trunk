@@ -8,8 +8,6 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIMessageBox.h"
 
-#include "Core/Headers/Console.h"
-
 #include <Allocator/xallocator.h>
 
 #include "Utility/Headers/Localization.h"

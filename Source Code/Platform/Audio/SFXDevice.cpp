@@ -6,7 +6,6 @@
 #include "Platform/Audio/sdl_mixer/Headers/SDLWrapper.h"
 #include "Platform/Audio/openAl/Headers/ALWrapper.h"
 
-#include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {
