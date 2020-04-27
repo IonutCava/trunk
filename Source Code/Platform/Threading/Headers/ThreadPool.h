@@ -35,20 +35,33 @@
 
 namespace Divide {
 
-using PoolTask = std::function<bool(bool)>;
+using PoolTask = std::function<bool(bool/*threadWaitingCall*/)>;
 
 class TaskPool;
 
+template<bool IsBlocking>
+struct Queue {};
+
+template<>
+struct Queue<false> {
+    moodycamel::ConcurrentQueue<PoolTask> _container;
+};
+
+template<>
+struct Queue<true> {
+    moodycamel::BlockingConcurrentQueue<PoolTask> _container;
+};
 // Dead simple ThreadPool class
+template<bool IsBlocking>
 class ThreadPool
 {
 public:
 
     explicit ThreadPool(TaskPool& parent, const U32 threadCount);
-    virtual ~ThreadPool();
+    ~ThreadPool();
 
     // Add a new task to the pool's queue
-    virtual bool addTask(PoolTask&& job) = 0;
+    bool addTask(PoolTask&& job);
 
     // Join all of the threads and block until all running tasks have completed.
     void join();
@@ -56,53 +69,24 @@ public:
     // Wait for all running jobs to finish
     void wait() noexcept;
 
-    // Get all of the threads for external usage (e.g. setting affinity)
-    eastl::vector<std::thread>& threads() noexcept;
+    void executeOneTask(bool waitForTask);
 
-    virtual void executeOneTask(bool waitForTask) = 0;
+    PROPERTY_R(vectorEASTL<std::thread>, threads);
 
 protected:
+    bool dequeTask(bool waitForTask, PoolTask& taskOut);
     void onThreadCreate(const std::thread::id& threadID);
     void onThreadDestroy(const std::thread::id& threadID);
 
 protected:
     TaskPool& _parent;
+    Queue<IsBlocking> _queue;
+    std::atomic_int _tasksLeft = 0;
     bool _isRunning = false;
-    std::atomic_int _tasksLeft;
-    eastl::vector<std::thread> _threads;
 };
 
-class BlockingThreadPool final : public ThreadPool
-{
-public:
-
-    explicit BlockingThreadPool(TaskPool& parent, const U32 threadCount);
-    ~BlockingThreadPool() = default;
-
-    // Add a new task to the pool's queue
-    bool addTask(PoolTask&& job) override;
-
-    void executeOneTask(bool waitForTask) override;
-
-private:
-    moodycamel::BlockingConcurrentQueue<PoolTask> _queue;
-};
-
-class LockFreeThreadPool final : public ThreadPool
-{
-public:
-
-    explicit LockFreeThreadPool(TaskPool& parent, const U32 threadCount);
-    ~LockFreeThreadPool() = default;
-
-    // Add a new task to the pool's queue
-    bool addTask(PoolTask&& job) override;
-
-    void executeOneTask(bool waitForTask) override;
-
-private:
-    moodycamel::ConcurrentQueue<PoolTask> _queue;
-};
 }; //namespace Divide
 
 #endif //_PLATFORM_TASK_POOL_H_
+
+#include "ThreadPool.inl"

@@ -52,7 +52,7 @@ struct alignas(64) Task {
     TaskPool* _parentPool = nullptr;
     Task* _parent = nullptr;
     U32 _id = 0;
-    std::atomic_ushort _unfinishedJobs;
+    std::atomic_ushort _unfinishedJobs = 0u;
     std::atomic_bool _stopRequested = false;
     bool _runWhileIdle = true;
 };

@@ -25,25 +25,25 @@ void finish(Task& task) {
 Task& Start(Task& task, TaskPriority priority, DELEGATE<void>&& onCompletionFunction) {
     const bool hasOnCompletionFunction = (priority != TaskPriority::REALTIME && onCompletionFunction);
 
-    const auto run = [&task, priority, hasOnCompletionFunction](bool wait) {
+    const auto run = [&task, priority, hasOnCompletionFunction](bool threadWaitingCall) {
         while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
-            if (wait) {
+            if (threadWaitingCall) {
                 TaskYield(task);
             } else {
                 return false;
             }
         }
-        if (!wait && !task._runWhileIdle) {
-            return false;
+        if (!threadWaitingCall || task._runWhileIdle) {
+            if (task._callback) {
+                task._callback(task);
+            }
+
+            finish(task);
+            task._parentPool->taskCompleted(task._id, priority, hasOnCompletionFunction);
+            return true;
         }
 
-        if (task._callback) {
-            task._callback(task);
-        }
-
-        finish(task);
-        task._parentPool->taskCompleted(task._id, priority, hasOnCompletionFunction);
-        return true;
+        return false;
     };
 
     if (!task._parentPool->enqueue(run, priority, task._id, std::forward<DELEGATE<void>>(onCompletionFunction))) {

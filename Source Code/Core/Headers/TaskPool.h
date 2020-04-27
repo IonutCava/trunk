@@ -109,15 +109,28 @@ public:
 
     void runCbkAndClearTask(U32 taskIdentifier);
 
+    template<bool IsBlocking>
     friend class ThreadPool;
+
     void onThreadCreate(const std::thread::id& threadID);
     void onThreadDestroy(const std::thread::id& threadID);
 
   private:
+      struct PoolHolder {
+          std::unique_ptr<ThreadPool<true>> _poolImplBlocking = nullptr;
+          std::unique_ptr<ThreadPool<false>> _poolImplLockFree = nullptr;
+          bool _isBlocking = false;
+
+          bool addTask(PoolTask&& job);
+          bool init() const noexcept;
+          void waitAndJoin();
+          void threadWaiting();
+      };
+
      hashMap<U32, vectorEASTL<DELEGATE<void>>> _taskCallbacks;
      DELEGATE<void, const std::thread::id&> _threadCreateCbk;
      moodycamel::ConcurrentQueue<U32> _threadedCallbackBuffer;
-     std::unique_ptr<ThreadPool> _poolImpl;
+     PoolHolder _poolImpl = {};
      stringImpl _threadNamePrefix;
      std::atomic_uint _runningTaskCount;
      std::atomic_uint _threadCount;

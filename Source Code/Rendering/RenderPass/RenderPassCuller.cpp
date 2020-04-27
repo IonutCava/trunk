@@ -28,7 +28,7 @@ namespace {
         idxOut = 0;
         while(true) {
             bool expected = true;
-            if (g_freeList[idxOut].compare_exchange_weak(expected, false)) {
+            if (g_freeList[idxOut].compare_exchange_strong(expected, false)) {
                 return g_tempContainers[idxOut];
             }
             (++idxOut) %= g_maxParallelCullingRequests;

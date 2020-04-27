@@ -18,8 +18,7 @@ TaskPool::TaskPool()
       _taskCallbacks(Config::MAX_POOLED_TASKS),
       _runningTaskCount(0u),
       _workerThreadCount(0u),
-      _stopRequested(false),
-      _poolImpl(nullptr)
+      _stopRequested(false)
 {
     _threadCount = 0u;
 }
@@ -30,19 +29,22 @@ TaskPool::~TaskPool()
 }
 
 bool TaskPool::init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
-    if (threadCount == 0 || _poolImpl != nullptr) {
+    if (threadCount == 0 || _poolImpl.init()) {
         return false;
     }
+
     _threadNamePrefix = workerName;
     _threadCreateCbk = onThreadCreate;
     _workerThreadCount = threadCount;
 
     switch (poolType) {
         case TaskPoolType::TYPE_LOCKFREE: {
-            _poolImpl = std::make_unique<LockFreeThreadPool>(*this, _workerThreadCount);
+            _poolImpl._poolImplLockFree = std::make_unique<ThreadPool<false>>(*this, _workerThreadCount);
+            _poolImpl._isBlocking = false;
         } break;
         case TaskPoolType::TYPE_BLOCKING: {
-            _poolImpl = std::make_unique<BlockingThreadPool>(*this, _workerThreadCount);
+            _poolImpl._poolImplBlocking = std::make_unique<ThreadPool<true>>(*this, _workerThreadCount);
+            _poolImpl._isBlocking = true;
         }break;
     }
 
@@ -86,7 +88,7 @@ bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DE
         _taskCallbacks[taskIndex].push_back(onCompletionFunction);
     }
 
-    return _poolImpl->addTask(std::move(task));
+    return _poolImpl.addTask(std::move(task));
 }
 
 void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
@@ -135,8 +137,7 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     }
 
     _stopRequested.store(false);
-    _poolImpl->wait();
-    _poolImpl->join();
+    _poolImpl.waitAndJoin();
 }
 
 void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCompletionFunction) {
@@ -150,16 +151,15 @@ void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, bool hasOnCom
 Task* TaskPool::createTask(Task* parentTask, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle)
 {
     if (parentTask != nullptr) {
-        parentTask->_unfinishedJobs.fetch_add(1, std::memory_order_relaxed);
+        parentTask->_unfinishedJobs.fetch_add(1);
     }
 
     Task* task = nullptr;
     do {
-        constexpr U16 target = to_U16(1u); 
-        U16 expected = to_U16(0u);
-
         Task& crtTask = g_taskAllocator[g_allocatedTasks++ & (Config::MAX_POOLED_TASKS - 1u)];
-        if (crtTask._unfinishedJobs.compare_exchange_weak(expected, target, std::memory_order_acquire, std::memory_order_relaxed)) {
+
+        U16 expected = to_U16(0u);
+        if (crtTask._unfinishedJobs.compare_exchange_strong(expected, 1u)) {
             task = &crtTask;
         }
     } while (task == nullptr);
@@ -181,7 +181,7 @@ bool TaskPool::stopRequested() const noexcept {
 }
 
 void TaskPool::threadWaiting() {
-    _poolImpl->executeOneTask(false);
+    _poolImpl.threadWaiting();
 }
 
 Task* CreateTask(TaskPool& pool, const DELEGATE<void, Task&>& threadedFunction, bool allowedInIdle)
@@ -261,4 +261,33 @@ void parallel_for(TaskPool& pool,
     }
 }
 
+bool TaskPool::PoolHolder::init() const noexcept {
+    return _poolImplBlocking != nullptr || _poolImplLockFree != nullptr;
+}
+
+void TaskPool::PoolHolder::waitAndJoin() {
+    if (_isBlocking) {
+        _poolImplBlocking->wait();
+        _poolImplBlocking->join();
+    } else {
+        _poolImplLockFree->wait();
+        _poolImplLockFree->join();
+    }
+}
+
+void TaskPool::PoolHolder::threadWaiting() {
+    if (_isBlocking) {
+        _poolImplBlocking->executeOneTask(false);
+    } else {
+        _poolImplLockFree->executeOneTask(false);
+    }
+}
+
+bool TaskPool::PoolHolder::addTask(PoolTask&& job) {
+    if (_isBlocking) {
+        return _poolImplBlocking->addTask(std::move(job));
+    }
+
+    return _poolImplLockFree->addTask(std::move(job));
+}
 };

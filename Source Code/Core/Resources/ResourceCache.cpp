@@ -10,7 +10,7 @@
 namespace Divide {
 
 namespace {
-    Mutex g_hashLock;
+    SharedMutex g_hashLock;
     std::set<size_t> g_loadingHashes;
 };
 
@@ -20,9 +20,15 @@ ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context)
     const bool threaded = !Runtime::isMainThread();
     do {
         {
-            UniqueLock<Mutex> w_lock(g_hashLock);
-            if (g_loadingHashes.insert(_loadingHash).second) {
-                return;
+            SharedLock<SharedMutex> r_lock(g_hashLock);
+            if (g_loadingHashes.find(_loadingHash) == std::cend(g_loadingHashes)) {
+                r_lock.unlock();
+                UniqueLock<SharedMutex> w_lock(g_hashLock);
+                //Check again
+                if (g_loadingHashes.find(_loadingHash) == std::cend(g_loadingHashes)) {
+                    g_loadingHashes.insert(_loadingHash);
+                    break;
+                }
             }
         }
         if (threaded) {
@@ -33,7 +39,7 @@ ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context)
 
 ResourceLoadLock::~ResourceLoadLock()
 {
-    UniqueLock<Mutex> w_lock(g_hashLock);
+    UniqueLock<SharedMutex> w_lock(g_hashLock);
     const size_t prevSize = g_loadingHashes.size();
     g_loadingHashes.erase(_loadingHash);
     DIVIDE_ASSERT(prevSize > g_loadingHashes.size(), "ResourceLoadLock failed to remove a resource lock!");

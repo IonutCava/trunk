@@ -124,7 +124,7 @@ namespace Divide {
 
 DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target, bool& result) {
     bool expected = false;
-    if (g_wasSetUp.compare_exchange_weak(expected, true)) {
+    if (g_wasSetUp.compare_exchange_strong(expected, true)) {
         Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
         Assimp::DefaultLogger::get()->attachStream(new assimpStream(), severity);
     }

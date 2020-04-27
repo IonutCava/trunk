@@ -471,9 +471,6 @@
     <ClCompile Include="../../Source Code\Platform\Video\DescriptorSets.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code\Platform\Threading\ThreadPool.cpp">
-      <Filter>Threading</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code\Platform\Video\RenderBackend\None\NoneWrapper.cpp">
       <Filter>Video\RenderBackend\None</Filter>
     </ClCompile>
@@ -905,6 +902,9 @@
     </None>
     <None Include="..\..\Source Code\Platform\Video\Headers\TextureData.inl">
       <Filter>Video\Headers</Filter>
+    </None>
+    <None Include="..\..\Source Code\Platform\Threading\Headers\ThreadPool.inl">
+      <Filter>Threading\Headers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

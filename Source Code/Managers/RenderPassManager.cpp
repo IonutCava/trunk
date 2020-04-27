@@ -178,7 +178,8 @@ namespace Divide {
                                                 GFX::EnqueueCommand(*buf, copyCmd);
 
                                                 buf->batch();
-                                            });
+                                            },
+                                            false);
                     Start(*postFXTask, TaskPriority::DONT_CARE);
                 }
             }

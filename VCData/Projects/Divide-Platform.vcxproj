@@ -174,7 +174,6 @@
     <ClCompile Include="../../Source Code/Platform\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="../../Source Code/Platform\Video\Textures\Texture.cpp" />
     <ClCompile Include="../../Source Code\Platform\File\FileWatcherManager.cpp" />
-    <ClCompile Include="../../Source Code\Platform\Threading\ThreadPool.cpp" />
     <ClCompile Include="../../Source Code\Platform\Video\DescriptorSets.cpp" />
     <ClCompile Include="../../Source Code\Platform\Video\RenderBackend\None\NoneWrapper.cpp" />
     <ClCompile Include="../../Source Code\Platform\Video\PushConstant.cpp" />
@@ -261,6 +260,7 @@
     <None Include="..\..\assets\shaders\GLSL\common\utility.cmn" />
     <None Include="..\..\assets\shaders\GLSL\computeVSM.glsl" />
     <None Include="..\..\assets\shaders\GLSL\EdgeDetection.glsl" />
+    <None Include="..\..\Source Code\Platform\Threading\Headers\ThreadPool.inl" />
     <None Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\TextureData.inl" />
   </ItemGroup>
