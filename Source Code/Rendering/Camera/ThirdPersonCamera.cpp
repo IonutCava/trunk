@@ -44,4 +44,8 @@ bool ThirdPersonCamera::rotateRelative(const vec3<I32>& relRotation) {
 
     return OrbitCamera::rotateRelative(relRotation);
 }
+
+void ThirdPersonCamera::fromCamera(const Camera& camera, bool flag) {
+    OrbitCamera::fromCamera(camera, camera.type() == Type() || flag);
+}
 };

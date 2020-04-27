@@ -96,7 +96,8 @@ class Application : public SDLEventListener {
 
     // Whenever the host window or the rendering resolution is changed, call this
     // Use "window" to determine if the window changed size or if the resolution did
-    void onSizeChange(const SizeChangeParams& params) const;
+    // returns true if the window aspect ration and the draw aspect ratio don't match anymore
+    bool onSizeChange(const SizeChangeParams& params) const;
 
     inline void throwError(ErrorCode err) noexcept;
     inline ErrorCode errorCode() const noexcept;

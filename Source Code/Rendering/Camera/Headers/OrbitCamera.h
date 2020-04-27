@@ -51,7 +51,7 @@ class OrbitCamera : public FreeFlyCamera {
     void setTarget(SceneGraphNode* sgn,
                    const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));
 
-    void fromCamera(const Camera& camera) override;
+    void fromCamera(const Camera& camera, bool flag = false) override;
 
     inline void maxRadius(F32 radius) noexcept { _maxRadius = radius; }
 

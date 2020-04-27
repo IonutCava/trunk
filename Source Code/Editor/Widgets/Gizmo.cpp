@@ -211,7 +211,7 @@ namespace Divide {
         ImGuiIO& io = _imguiContext->IO;
 
         bool ret = false;
-        if (active() && !io.KeyCtrl) {
+        if (active() && io.KeyCtrl) {
             TransformSettings settings = _parent.getTransformSettings();
             if (key._key == Input::KeyCode::KC_T) {
                 settings.currentGizmoOperation = ImGuizmo::TRANSLATE;

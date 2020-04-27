@@ -46,7 +46,7 @@ class FreeFlyCamera : public Camera {
     void updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) noexcept override;
 
   public:
-    void fromCamera(const Camera& camera) override;
+    void fromCamera(const Camera& camera, bool flag = false) override;
 
     void setGlobalRotation(F32 yaw, F32 pitch, F32 roll = 0.0f) override;
     /// Sets the camera's orientation to match the specified yaw, pitch and roll

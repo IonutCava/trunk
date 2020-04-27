@@ -138,8 +138,8 @@ bool Application::onSDLEvent(SDL_Event event) {
     return false;
 }
 
-void Application::onSizeChange(const SizeChangeParams& params) const {
-    Attorney::KernelApplication::onSizeChange(*_kernel, params);
+bool Application::onSizeChange(const SizeChangeParams& params) const {
+    return Attorney::KernelApplication::onSizeChange(*_kernel, params);
 }
 
 void Application::mainThreadTask(const DELEGATE<void>& task, bool wait) {

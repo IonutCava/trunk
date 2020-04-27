@@ -168,7 +168,7 @@ public:
     inline U8   prevOpacity() const noexcept;
 
     inline void clearColour(const FColour4& colour) noexcept;
-    inline void clearColour(const FColour4& colour, bool clearColour, bool clearDepth) noexcept;
+    inline void clearFlags(bool clearColour, bool clearDepth) noexcept;
 
     inline const FColour4& clearColour() const noexcept;
     inline const FColour4& clearColour(bool &clearColour, bool &clearDepth) const noexcept;

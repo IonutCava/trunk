@@ -134,6 +134,9 @@ void Kernel::stopSplashScreen() {
     window.decorated(true);
     WAIT_FOR_CONDITION(window.setDimensions(previousDimensions));
     window.setPosition(vec2<I32>(-1));
+    if (window.type() == WindowType::WINDOW && _platformContext.config().runtime.maximizeOnStart) {
+        window.maximized(true);
+    }
     SDLEventManager::pollEvents();
 }
 
@@ -729,7 +732,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ShadowMap::initShadowMaps(_platformContext.gfx());
     _sceneManager->init(_platformContext, resourceCache());
 
-    if (!_sceneManager->switchScene(entryData.startupScene.c_str(), true, targetViewport, false)) {
+    if (!_sceneManager->switchScene(entryData.startupScene.c_str(), true, {0, 0, config.runtime.resolution.width, config.runtime.resolution.height}, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
     }
@@ -784,9 +787,9 @@ void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
 }
 
-void Kernel::onSizeChange(const SizeChangeParams& params) {
+bool Kernel::onSizeChange(const SizeChangeParams& params) {
 
-    Attorney::GFXDeviceKernel::onSizeChange(_platformContext.gfx(), params);
+    const bool ret = Attorney::GFXDeviceKernel::onSizeChange(_platformContext.gfx(), params);
 
     if (!_splashScreenUpdating) {
         _platformContext.gui().onSizeChange(params);
@@ -799,6 +802,8 @@ void Kernel::onSizeChange(const SizeChangeParams& params) {
     if (!params.isWindowResize) {
         _sceneManager->onSizeChange(params);
     }
+
+    return ret;
 }
 
 ///--------------------------Input Management-------------------------------------///

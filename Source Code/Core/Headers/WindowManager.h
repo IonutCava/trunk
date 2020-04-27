@@ -71,6 +71,7 @@ struct WindowDescriptor {
                        to_base(Flags::ALLOW_HIGH_DPI));
     RenderAPI targetAPI;
     bool externalClose = false;
+    bool startMaximized = false;
 };
 
 class PlatformContext;

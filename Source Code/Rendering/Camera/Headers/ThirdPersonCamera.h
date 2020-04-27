@@ -45,8 +45,10 @@ class ThirdPersonCamera final : public OrbitCamera {
     explicit ThirdPersonCamera(const Str128& name, const vec3<F32>& eye = VECTOR3_ZERO);
 
     static constexpr CameraType Type() noexcept { return CameraType::THIRD_PERSON; }
+
   public:
     bool rotateRelative(const vec3<I32>& relRotation) final;
+    void fromCamera(const Camera& camera, bool flag = false) override;
 };
 
 };  // namespace Divide

@@ -265,9 +265,9 @@ DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descriptor, E
                        winType,
                        descriptor);
 
-    window->clearColour(descriptor.clearColour,
-                        BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
-                        BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
+    window->clearColour(descriptor.clearColour);
+    window->clearFlags(BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
+                       BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
 
     if (err == ErrorCode::NO_ERR) {
         err = applyAPISettings(window, descriptor.flags);

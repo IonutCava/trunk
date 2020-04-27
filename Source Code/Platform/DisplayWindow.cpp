@@ -66,7 +66,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     ToggleBit(_flags, WindowFlags::VSYNC, vsync);
     ToggleBit(_flags, WindowFlags::OWNS_RENDER_CONTEXT, !BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT)));
 
-    _type = initialType;
+    _previousType = _type = initialType;
 
     vec2<I32> position(descriptor.position);
 

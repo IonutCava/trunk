@@ -22,7 +22,9 @@ const CameraSnapshot& Camera::snapshot() const noexcept {
     return _data;
 }
 
-void Camera::fromCamera(const Camera& camera) {
+void Camera::fromCamera(const Camera& camera, bool flag) {
+    ACKNOWLEDGE_UNUSED(flag);
+
     _reflectionPlane = camera._reflectionPlane;
     _reflectionActive = camera._reflectionActive;
     _accumPitchDegrees = camera._accumPitchDegrees;

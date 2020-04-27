@@ -65,7 +65,7 @@ class Camera : public Resource {
    public:
      virtual ~Camera() = default;
 
-    virtual void fromCamera(const Camera& camera);
+    virtual void fromCamera(const Camera& camera, bool flag = false);
     virtual void fromSnapshot(const CameraSnapshot& snapshot);
     const CameraSnapshot& snapshot() const noexcept;
 

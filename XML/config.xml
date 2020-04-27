@@ -33,7 +33,9 @@
 	<windowedMode>0</windowedMode>
 	<!-- do we allow window resizing if running in windowed mode? -->
 	<windowResizable>true</windowResizable>
-	<!-- cap framerate. Set to 0 or less to disable -->
+    <!-- start maximized or use the provided window dimensions? -->
+    <maximizeOnStart>true</maximizeOnStart>
+    <!-- cap framerate. Set to 0 or less to disable -->
 	<frameRateLimit>0</frameRateLimit>
 	<!-- toggle Vsync on or off. This can be overridden by the display driver! -->
 	<enableVSync>false</enableVSync>

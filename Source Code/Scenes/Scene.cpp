@@ -1269,8 +1269,6 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
 
             if (sceneFocused && !state().playerState(idx).cameraLockedToMouse()) {
                 findHoverTarget(idx, arg.absolutePos());
-            } else if (state().playerState(idx).cameraLockedToMouse()) {
-                lockCameraToPlayerMouse(idx, false);
             }
         }
     }
@@ -1457,34 +1455,69 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
     const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
 
-    F32 aimX = to_F32(aimPos.x);
-    F32 aimY = viewport.w - to_F32(aimPos.y) - 1;
+    const F32 aimY = viewport.w - to_F32(aimPos.y) - 1;
 
-    const vec3<F32> startRay = crtCamera.unProject(aimX, aimY, 0.0f, viewport);
-    const vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
+    const vec3<F32> startRay = crtCamera.unProject(to_F32(aimPos.x), aimY, 0.0f, viewport);
+    const vec3<F32> endRay = crtCamera.unProject(to_F32(aimPos.x), aimY, 1.0f, viewport);
+
     // see if we select another one
-    _sceneSelectionCandidates.resize(0);
-
+    _sceneSelectionCandidates.reset_lose_memory();
     // Cast the picking ray and find items between the nearPlane and far Plane
-    Ray mouseRay(startRay, startRay.direction(endRay));
-    sceneGraph().intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates);
+    sceneGraph().intersect(
+        {
+            startRay,
+            startRay.direction(endRay)
+        },
+        zPlanes.x,
+        zPlanes.y,
+        _sceneSelectionCandidates
+    );
 
-    if (_currentHoverTarget[idx] != -1) {
-        SceneGraphNode* target = _sceneGraph->findNode(_currentHoverTarget[idx]);
-        if (target != nullptr) {
-            target->clearFlag(SceneGraphNode::Flags::HOVERED);
-        }
-    }
-
-    _currentHoverTarget[idx] = -1;
     if (!_sceneSelectionCandidates.empty()) {
+
+        const auto IsValidTarget = [](SceneGraphNode* sgn, bool editorRunning)
+        {
+            if (sgn == nullptr) {
+                return false;
+            }
+
+            if (!editorRunning) {
+                return sgn->get<SelectionComponent>() != nullptr &&
+                       sgn->get<SelectionComponent>()->enabled();
+            }
+
+            SceneNodeType sType = sgn->getNode().type();
+            if (sType == SceneNodeType::TYPE_OBJECT3D) {
+                const ObjectType oType = sgn->getNode<Object3D>().getObjectType();
+
+                if (oType._value == ObjectType::TERRAIN || 
+                    oType._value == ObjectType::SUBMESH)
+                {
+                    sType = SceneNodeType::COUNT;
+                } else if (sgn->parent() != nullptr) {
+                    sType = sgn->parent()->getNode().type();
+                    if (sType == SceneNodeType::TYPE_ROOT ||
+                        sType == SceneNodeType::TYPE_EMPTY ||
+                        sType == SceneNodeType::TYPE_TRANSFORM)
+                    {
+                        sType = SceneNodeType::TYPE_OBJECT3D;
+                    }
+                }
+            }
+
+            return sType == SceneNodeType::TYPE_OBJECT3D ||
+                   sType == SceneNodeType::TYPE_TRIGGER ||
+                   sType == SceneNodeType::TYPE_PARTICLE_EMITTER;
+        };
+
         // If we don't force selections, remove all of the nodes that lack a SelectionComponent
         eastl::sort(eastl::begin(_sceneSelectionCandidates),
                     eastl::end(_sceneSelectionCandidates),
-                    [](const SGNRayResult& A, const SGNRayResult& B) -> bool {
+                    [](const SGNRayResult& A, const SGNRayResult& B) noexcept -> bool {
                         return A.dist < B.dist;
                     });
 
+        const bool editorRunning = _context.editor().running();
         SceneGraphNode* target = nullptr;
         for (const SGNRayResult& result : _sceneSelectionCandidates) {
             if (result.dist < 0.0f) {
@@ -1492,23 +1525,26 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
             }
 
             SceneGraphNode* crtNode = _sceneGraph->findNode(result.sgnGUID);
-            if (crtNode && 
-                (_context.editor().running() || 
-                (crtNode->get<SelectionComponent>() && crtNode->get<SelectionComponent>()->enabled())))
-            {
+            if (IsValidTarget(crtNode, editorRunning)) {
                 target = crtNode;
                 break;
             }
         }
 
-        // Well ... this happened somehow ...
-        if (target == nullptr) {
-            return;
+        if (_currentHoverTarget[idx] != -1) {
+            SceneGraphNode* oldTarget = _sceneGraph->findNode(_currentHoverTarget[idx]);
+            if (oldTarget != nullptr) {
+                oldTarget->clearFlag(SceneGraphNode::Flags::HOVERED);
+            }
         }
 
-        _currentHoverTarget[idx] = target->getGUID();
-        if (!target->hasFlag(SceneGraphNode::Flags::SELECTED)) {
-            target->setFlag(SceneGraphNode::Flags::HOVERED);
+        if (target != nullptr) {
+            _currentHoverTarget[idx] = target->getGUID();
+            if (!target->hasFlag(SceneGraphNode::Flags::SELECTED)) {
+                target->setFlag(SceneGraphNode::Flags::HOVERED);
+            }
+        } else {
+            _currentHoverTarget[idx] = -1;
         }
     }
 }

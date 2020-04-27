@@ -768,13 +768,17 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     _renderer = std::make_unique<Renderer>(context(), cache);
 
     WAIT_FOR_CONDITION(loadTasks.load() == 0);
+    DisplayWindow& mainWindow = context().app().windowManager().getMainWindow();
 
     SizeChangeParams params = {};
     params.width = _rtPool->screenTarget().getWidth();
     params.height = _rtPool->screenTarget().getHeight();
     params.isWindowResize = false;
-    params.winGUID = context().app().windowManager().getMainWindow().getGUID();
-    context().app().onSizeChange(params);
+    params.winGUID = mainWindow.getGUID();
+
+    if (context().app().onSizeChange(params)) {
+        NOP();
+    }
 
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
@@ -877,7 +881,9 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
         params.height = _resolutionChangeQueued.first.height;
         params.winGUID = context().activeWindow().getGUID();
 
-        context().app().onSizeChange(params);
+        if (context().app().onSizeChange(params)) {
+            NOP();
+        }
         _resolutionChangeQueued.second = false;
     }
 
@@ -1224,9 +1230,9 @@ void GFXDevice::setShadowMSAASampleCount(U8 sampleCount) {
 }
 
 /// The main entry point for any resolution change request
-void GFXDevice::onSizeChange(const SizeChangeParams& params) {
+bool GFXDevice::onSizeChange(const SizeChangeParams& params) {
     if (params.winGUID != context().app().windowManager().getMainWindow().getGUID()) {
-        return;
+        return false;
     }
 
     const U16 w = params.width;
@@ -1236,7 +1242,7 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
         if (w < 1 || h < 1 || _renderingResolution == vec2<U16>(w, h)) {
-            return;
+            return false;
         }
 
         _renderingResolution.set(w, h);
@@ -1265,10 +1271,10 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         }
     }
 
-    fitViewportInWindow(w, h);
+    return fitViewportInWindow(w, h);
 }
 
-void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
+bool GFXDevice::fitViewportInWindow(U16 w, U16 h) {
     const F32 currentAspectRatio = renderingAspectRatio();
 
     I32 left = 0, bottom = 0;
@@ -1289,6 +1295,12 @@ void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
     }
     
     context().activeWindow().renderingViewport(Rect<I32>(left, bottom, newWidth, newHeight));
+
+    if (!COMPARE(newAspectRatio, currentAspectRatio)) {
+        context().activeWindow().clearFlags(true, false);
+        return true;
+    }
+    return false;
 }
 #pragma endregion
 

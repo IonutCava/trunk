@@ -31,6 +31,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(runtime.maxWorkerThreads);
         GET_PARAM(runtime.windowedMode);
         GET_PARAM(runtime.windowResizable);
+        GET_PARAM(runtime.maximizeOnStart);
         GET_PARAM(runtime.frameRateLimit);
         GET_PARAM(runtime.enableVSync);
         GET_PARAM(runtime.adaptiveSync);
@@ -113,6 +114,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(runtime.maxWorkerThreads);
         PUT_PARAM(runtime.windowedMode);
         PUT_PARAM(runtime.windowResizable);
+        PUT_PARAM(runtime.maximizeOnStart);
         PUT_PARAM(runtime.frameRateLimit);
         PUT_PARAM(runtime.enableVSync);
         PUT_PARAM(runtime.adaptiveSync);

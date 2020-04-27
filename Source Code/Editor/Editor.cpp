@@ -519,6 +519,7 @@ void Editor::toggle(const bool state) {
         activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
         activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
         activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+        _context.kernel().sceneManager()->resetSelection(0);
     } else {
         activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
         activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);

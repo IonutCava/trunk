@@ -371,13 +371,15 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
     const vec3<F32>& eye = camera.getEye();
     const vec2<F32>& zPlanes = camera.getZPlanes();
 
-    auto CheckPointLoS = [&eye, &zPlanes, &sceneGraph](const vec3<F32>& point, I64 nodeGUID, I64 parentNodeGUID) -> bool {
+    vectorEASTL<SGNRayResult> rayResults;
+
+    const auto CheckPointLoS = [&eye, &zPlanes, &sceneGraph](const vec3<F32>& point, I64 nodeGUID, I64 parentNodeGUID, vectorEASTL<SGNRayResult>& resultsOut) -> bool {
         const Ray cameraRay(point, point.direction(eye));
         const F32 distanceToPoint = eye.distance(point);
 
-        vectorEASTL<SGNRayResult> rayResults;
-        sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, rayResults);
-        for (SGNRayResult& result : rayResults) {
+        resultsOut.reset_lose_memory();
+        sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, resultsOut);
+        for (SGNRayResult& result : resultsOut) {
             if (result.sgnGUID == nodeGUID || result.sgnGUID == parentNodeGUID) {
                 continue;
             }
@@ -389,7 +391,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         return true;
     };
 
-    const auto HasLoSToCamera = [&](SceneGraphNode* ignoreNode, const BoundingBox* bb) -> SceneGraphNode* {
+    const auto HasLoSToCamera = [&](SceneGraphNode* ignoreNode, const BoundingBox* bb, vectorEASTL<SGNRayResult>& rayResults) -> SceneGraphNode* {
         SceneGraphNode* parent = nullptr;
         I64 parentNodeGUID = -1;
 
@@ -400,13 +402,13 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         }
 
         // Quick raycast to camera
-        if (CheckPointLoS(bb->getCenter(), nodeGUID, parentNodeGUID)) {
+        if (CheckPointLoS(bb->getCenter(), nodeGUID, parentNodeGUID, rayResults)) {
             return parent == nullptr ? ignoreNode : parent;
         }
         // This is gonna hurt. The raycast failed, but the node might still be visible
         auto points = bb->getPoints();
         for (auto& point : points) {
-            if (CheckPointLoS(point, nodeGUID, parentNodeGUID)) {
+            if (CheckPointLoS(point, nodeGUID, parentNodeGUID, rayResults)) {
                 return parent == nullptr ? ignoreNode : parent;
             }
         }
@@ -450,7 +452,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
     for (const VisibleNode& it : visNodes) {
         auto [parsedNode, bb] = IsNodeInRect(it._node);
         if (parsedNode != nullptr) {
-            parsedNode = HasLoSToCamera(parsedNode, bb);
+            parsedNode = HasLoSToCamera(parsedNode, bb, rayResults);
             if (parsedNode != nullptr) {
                 // submeshes will usually return their parent mesh as a result so we try and avoid having the same mesh multiple times
                 if (eastl::find(eastl::cbegin(ret), eastl::cend(ret), parsedNode) == eastl::cend(ret)) {

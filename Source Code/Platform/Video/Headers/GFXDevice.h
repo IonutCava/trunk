@@ -355,9 +355,10 @@ protected:
 
     void drawText(const TextElementBatch& batch);
 
-    void fitViewportInWindow(U16 w, U16 h);
+    // returns true if the window and the viewport have different aspect ratios
+    bool fitViewportInWindow(U16 w, U16 h);
 
-    void onSizeChange(const SizeChangeParams& params);
+    bool onSizeChange(const SizeChangeParams& params);
 
     void initDebugViews();
     void renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut);
@@ -509,8 +510,8 @@ namespace Attorney {
 
     class GFXDeviceKernel {
     private:
-        static void onSizeChange(GFXDevice& device, const SizeChangeParams& params) {
-            device.onSizeChange(params);
+        static bool onSizeChange(GFXDevice& device, const SizeChangeParams& params) {
+            return device.onSizeChange(params);
         }
         
         friend class Divide::Kernel;

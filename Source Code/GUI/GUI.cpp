@@ -326,6 +326,9 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
     {
         return;
     }
+    if (params.isWindowResize) {
+        return;
+    }
 
     const CEGUI::Sizef windowSize(params.width, params.height);
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(windowSize);
@@ -335,9 +338,9 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
 
 
     if (_rootSheet) {
-        const Rect<I32>& renderViewport = parent().platformContext().activeWindow().renderingViewport();
+        const Rect<I32>& renderViewport = { 0, 0, params.width, params.height };//parent().platformContext().activeWindow().renderingViewport();
         _rootSheet->setSize(CEGUI::USize(CEGUI::UDim(0.0f, to_F32(renderViewport.z)),
-                                            CEGUI::UDim(0.0f, to_F32(renderViewport.w))));
+                                         CEGUI::UDim(0.0f, to_F32(renderViewport.w))));
         _rootSheet->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, to_F32(renderViewport.x)),
                                                 CEGUI::UDim(0.0f, to_F32(renderViewport.y))));
     }

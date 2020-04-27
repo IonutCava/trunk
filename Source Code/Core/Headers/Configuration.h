@@ -63,6 +63,7 @@ struct Configuration final : public XML::IXMLSerializable {
         I16 maxWorkerThreads = -1;
         U8   windowedMode = 0;
         bool windowResizable = false;
+        bool maximizeOnStart = true;
         bool enableVSync = true;
         bool adaptiveSync = false;
         I16  frameRateLimit = -1;

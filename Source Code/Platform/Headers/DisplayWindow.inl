@@ -73,13 +73,10 @@ namespace Divide {
     }
 
     inline void DisplayWindow::clearColour(const FColour4& colour) noexcept {
-        clearColour(colour,
-                    BitCompare(_flags, WindowFlags::CLEAR_COLOUR),
-                    BitCompare(_flags, WindowFlags::CLEAR_DEPTH));
+        _clearColour.set(colour);
     }
 
-    void DisplayWindow::clearColour(const FColour4& colour, bool clearColour, bool clearDepth)noexcept {
-        _clearColour.set(colour);
+    void DisplayWindow::clearFlags(bool clearColour, bool clearDepth)noexcept {
         ToggleBit(_flags, WindowFlags::CLEAR_COLOUR, clearColour);
         ToggleBit(_flags, WindowFlags::CLEAR_DEPTH, clearDepth);
     }
