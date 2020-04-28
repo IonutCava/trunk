@@ -208,9 +208,8 @@ namespace Divide {
             _wasUsed = false;
         }
 
-        ImGuiIO& io = _imguiContext->IO;
-
         bool ret = false;
+        ImGuiIO& io = _imguiContext->IO;
         if (active() && io.KeyCtrl) {
             TransformSettings settings = _parent.getTransformSettings();
             if (key._key == Input::KeyCode::KC_T) {
@@ -223,7 +222,7 @@ namespace Divide {
                 settings.currentGizmoOperation = ImGuizmo::SCALE;
                 ret = true;
             }
-            if (ret) {
+            if (ret && !pressed) {
                 _parent.setTransformSettings(settings);
             }
         }

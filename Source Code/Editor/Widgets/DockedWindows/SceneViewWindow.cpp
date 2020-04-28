@@ -26,7 +26,7 @@ namespace Divide {
 
     void SceneViewWindow::drawInternal() {
 
-        auto button = [](bool disabled, const char* label, const char* tooltip, bool small = false) -> bool {
+        const auto button = [](bool disabled, const char* label, const char* tooltip, bool small = false) -> bool {
             bool ret = false;
             if (disabled) {
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -45,7 +45,7 @@ namespace Divide {
             return ret;
         };
 
-        ImGui::ToggleButton("Play", &_internalScenePlay);
+        ImGui::Text("Play:"); ImGui::SameLine(); ImGui::ToggleButton("Play", &_internalScenePlay);
         if (_internalScenePlay) {
             Attorney::EditorSceneViewWindow::editorStepQueue(_parent, 2);
         }
@@ -54,7 +54,7 @@ namespace Divide {
             ImGui::SetTooltip("Toggle scene playback");
         }
         ImGui::SameLine();
-        bool enableStepButtons = !_internalScenePlay;
+        const bool enableStepButtons = !_internalScenePlay;
         if (button(!enableStepButtons,
                    ">|",
                     "When playback is paused, advanced the simulation by 1 full frame"))
@@ -71,22 +71,41 @@ namespace Divide {
             Attorney::EditorSceneViewWindow::editorStepQueue(_parent, Config::TARGET_FRAME_RATE + 1);
         }
         ImGui::SameLine();
-        
+
+        bool autoSaveCamera = Attorney::EditorSceneViewWindow::autoSaveCamera(_parent);
+        if (autoSaveCamera) {
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+        }
         if (ImGui::Button("Save Camera")) {
             Attorney::EditorSceneViewWindow::updateCameraSnapshot(_parent);
+        }
+        if (autoSaveCamera) {
+            ImGui::PopItemFlag();
+            ImGui::PopStyleVar();
         }
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Keep the current camera position when closing the editor");
         }
         ImGui::SameLine();
 
-        bool autoSaveCamera = Attorney::EditorSceneViewWindow::autoSaveCamera(_parent);
-        ImGui::Checkbox("Auto Save Camera", &autoSaveCamera);
+        ImGui::Text("Auto camera:"); ImGui::SameLine(); ImGui::ToggleButton("Auto Save Camera", &autoSaveCamera);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Keep the current camera position and orientation when closing the editor.\nWhen off, the camera will snap back to the settings it had before opening the editor.");
+        }
         Attorney::EditorSceneViewWindow::autoSaveCamera(_parent, autoSaveCamera);
-        ImGui::SameLine();
 
         ImGuiWindow* window = ImGui::GetCurrentWindow();
-        bool enableGizmo = Attorney::EditorSceneViewWindow::editorEnabledGizmo(_parent);
+        ImGui::SameLine();
+        bool autoFocusEditor = Attorney::EditorSceneViewWindow::autoFocusEditor(_parent);
+        ImGui::Text("Auto focus:"); ImGui::SameLine(); ImGui::ToggleButton("Auto Focus Editor", &autoFocusEditor);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("If off, the first click outside of the scene view will act as a \"focus\" click. (i.e. not be passed down to editor widgets.)");
+        }
+        Attorney::EditorSceneViewWindow::autoFocusEditor(_parent, autoFocusEditor);
+        ImGui::SameLine();
+
+        const bool enableGizmo = Attorney::EditorSceneViewWindow::editorEnabledGizmo(_parent);
         TransformSettings settings = _parent.getTransformSettings();
 
         const F32 ItemSpacing = ImGui::GetStyle().ItemSpacing.x;
@@ -126,19 +145,19 @@ namespace Divide {
         const RenderTarget& rt = _parent.context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::EDITOR));
         const Texture_ptr& gameView = rt.getAttachment(RTAttachmentType::Colour, 0).texture();
 
-        I32 w = (I32)gameView->width();
-        I32 h = (I32)gameView->height();
+        const I32 w = to_I32(gameView->width());
+        const I32 h = to_I32(gameView->height());
 
-        ImVec2 curPos = ImGui::GetCursorPos();
+        const ImVec2 curPos = ImGui::GetCursorPos();
         const ImVec2 wndSz(ImGui::GetWindowSize().x - curPos.x - 30.0f, ImGui::GetWindowSize().y - curPos.y - 30.0f);
 
-        ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + wndSz.x, window->DC.CursorPos.y + wndSz.y));
+        const ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + wndSz.x, window->DC.CursorPos.y + wndSz.y));
         ImGui::ItemSize(bb);
         if (ImGui::ItemAdd(bb, NULL)) {
 
             ImVec2 imageSz = wndSz - ImVec2(0.2f, 0.2f);
             ImVec2 remainingWndSize(0, 0);
-            const F32 aspectRatio = (F32)w / (F32)h;
+            const F32 aspectRatio = w / to_F32(h);
 
             const F32 wndAspectRatio = wndSz.x / wndSz.y;
             if (aspectRatio >= wndAspectRatio) {
@@ -155,7 +174,7 @@ namespace Divide {
                 const F32 deltaUV = uvExtension.x;
                 const F32 remainingUV = 1.f - deltaUV;
                 if (deltaUV < 1) {
-                    F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
+                    const F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
                     uvExtension.x += adder;
                     remainingWndSize.x -= adder * imageSz.x;
                     imageSz.x += adder * imageSz.x;
@@ -180,7 +199,7 @@ namespace Divide {
             endPos.y = startPos.y + imageSz.y;
             window->DrawList->AddImage((void *)(intptr_t)gameView->data()._textureHandle, startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
             
-            DisplayWindow* displayWindow = static_cast<DisplayWindow*>(window->Viewport->PlatformHandle);
+            const DisplayWindow* displayWindow = static_cast<DisplayWindow*>(window->Viewport->PlatformHandle);
             // We might be dragging the window
             if (displayWindow != nullptr) {
                 const vec2<I32> windowPosition = displayWindow->getPosition();
@@ -223,7 +242,7 @@ namespace Divide {
         _parent.setTransformSettings(settings);
     }
 
-    const Rect<I32>& SceneViewWindow::sceneRect(bool globalCoords) const {
+    const Rect<I32>& SceneViewWindow::sceneRect(bool globalCoords) const noexcept {
         return globalCoords ? _sceneRect : _sceneRectLocal;
     };
 };

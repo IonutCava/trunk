@@ -147,22 +147,22 @@ ErrorCode WindowManager::init(PlatformContext& context,
     ClearBit(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH);
 
     ErrorCode err = ErrorCode::NO_ERR;
-    DisplayWindow& window = createWindow(descriptor, err);
+    DisplayWindow* window = createWindow(descriptor, err);
 
     if (err == ErrorCode::NO_ERR) {
-        _mainWindowGUID = window.getGUID();
+        _mainWindowGUID = window->getGUID();
 
-        window.addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
+        window->addEventListener(WindowEvent::MINIMIZED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(true);
             return true;
         });
-        window.addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
+        window->addEventListener(WindowEvent::MAXIMIZED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(false);
             return true;
         });
-        window.addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
+        window->addEventListener(WindowEvent::RESTORED, [this](const DisplayWindow::WindowEventArgs& args) noexcept {
             ACKNOWLEDGE_UNUSED(args);
             _context->app().mainLoopPaused(false);
             return true;
@@ -170,7 +170,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
 
         GPUState& gState = _context->gfx().gpuState();
         // Query available display modes (resolution, bit depth per channel and refresh rates)
-        I32 numberOfDisplayModes[GPUState::maxDisplayCount()];
+        I32 numberOfDisplayModes[GPUState::maxDisplayCount()] = {};
         const I32 numDisplays = std::min(SDL_GetNumVideoDisplays(), to_I32(gState.maxDisplayCount()));
 
         for (I32 display = 0; display < numDisplays; ++display) {
@@ -222,14 +222,16 @@ void WindowManager::close() {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex ) {
+DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex ) {
     windowIndex = std::numeric_limits<U32>::max();
-
     DisplayWindow* window = MemoryManager_NEW DisplayWindow(*this, *_context);
     assert(window != nullptr);
 
-    windowIndex = to_U32(_windows.size());
-    _windows.emplace_back(window);
+    if (err != ErrorCode::NO_ERR) {
+        MemoryManager::SAFE_DELETE(window);
+        windowIndex = 0u;
+        return nullptr;
+    }
 
     U32 mainWindowFlags = _apiFlags;
     if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::RESIZEABLE))) {
@@ -261,21 +263,30 @@ DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descriptor, E
         err = configureAPISettings(descriptor.targetAPI, descriptor.flags);
     }
 
+    if (err != ErrorCode::NO_ERR) {
+        MemoryManager::SAFE_DELETE(window);
+        return nullptr;
+    }
+
     err = window->init(mainWindowFlags,
                        winType,
                        descriptor);
 
-    window->clearColour(descriptor.clearColour);
-    window->clearFlags(BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
-                       BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
-
     if (err == ErrorCode::NO_ERR) {
+        window->clearColour(descriptor.clearColour);
+        window->clearFlags(BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
+                           BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
+
+        windowIndex = to_U32(_windows.size());
+        _windows.emplace_back(window);
         err = applyAPISettings(window, descriptor.flags);
     }
 
     if (err != ErrorCode::NO_ERR) {
         _windows.pop_back();
+        windowIndex = 0u;
         MemoryManager::SAFE_DELETE(window);
+        return nullptr;
     } else {
         window->addEventListener(WindowEvent::SIZE_CHANGED, [this](const DisplayWindow::WindowEventArgs& args) {
             SizeChangeParams params;
@@ -312,7 +323,8 @@ DisplayWindow& WindowManager::createWindow(const WindowDescriptor& descriptor, E
             });
         }
     }
-    return *window;
+
+    return window;
 }
 
 bool WindowManager::destroyWindow(DisplayWindow*& window) {

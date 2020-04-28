@@ -46,7 +46,7 @@ namespace Divide {
 
         void drawInternal() final;
 
-        const Rect<I32>& sceneRect(bool globalCoords) const;
+        const Rect<I32>& sceneRect(bool globalCoords) const noexcept;
 
     protected:
         bool      _internalScenePlay;

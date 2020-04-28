@@ -91,7 +91,7 @@ struct TransformSettings;
 template<typename T>
 struct UndoEntry;
 
-void InitBasicImGUIState(ImGuiIO& io);
+void InitBasicImGUIState(ImGuiIO& io) noexcept;
 
 class Editor : public PlatformContextComponent,
                public FrameListener,
@@ -256,6 +256,7 @@ class Editor : public PlatformContextComponent,
     ImGuiStyleEnum _currentTheme = ImGuiStyle_Count;
 
     bool              _autoSaveCamera = false;
+    bool              _autoFocusEditor = true;
     bool              _showSampleWindow = false;
     bool              _showOptionsWindow = false;
     bool              _showMemoryEditor = false;
@@ -303,6 +304,14 @@ namespace Attorney {
 
         static void autoSaveCamera(Editor& editor, const bool state) noexcept {
             editor._autoSaveCamera = state;
+        } 
+        
+        static bool autoFocusEditor(const Editor& editor) noexcept {
+            return editor._autoFocusEditor;
+        }
+
+        static void autoFocusEditor(Editor& editor, const bool state) noexcept {
+            editor._autoFocusEditor = state;
         }
 
         friend class Divide::SceneViewWindow;

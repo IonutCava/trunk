@@ -1299,6 +1299,11 @@ bool GFXDevice::fitViewportInWindow(U16 w, U16 h) {
     if (!COMPARE(newAspectRatio, currentAspectRatio)) {
         context().activeWindow().clearFlags(true, false);
         return true;
+    } else {
+        // If the aspect ratios match, then we should auto-fit to the entire visible drawing space so 
+        // no need to keep clearing the backbuffer. This is one of the most useless micro-optimizations possible
+        // but is really easy to add -Ionut
+        context().activeWindow().clearFlags(false, false);
     }
     return false;
 }

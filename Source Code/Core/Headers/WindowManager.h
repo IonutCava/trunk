@@ -104,10 +104,10 @@ public:
 
     bool anyWindowFocus() const;
 
-    inline DisplayWindow& createWindow(const WindowDescriptor& descriptor);
-    inline DisplayWindow& createWindow(const WindowDescriptor& descriptor, ErrorCode& err);
+    inline DisplayWindow* createWindow(const WindowDescriptor& descriptor);
+    inline DisplayWindow* createWindow(const WindowDescriptor& descriptor, ErrorCode& err);
 
-    DisplayWindow& createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex);
+    DisplayWindow* createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex);
     bool destroyWindow(DisplayWindow*& window);
 
     bool setGlobalCursorPosition(I32 x, I32 y);

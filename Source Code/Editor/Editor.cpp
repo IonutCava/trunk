@@ -66,7 +66,7 @@ namespace {
     hashMap<I64, TextureCallbackData> g_modalTextureData;
 };
 
-void InitBasicImGUIState(ImGuiIO& io) {
+void InitBasicImGUIState(ImGuiIO& io) noexcept {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
     io.KeyMap[ImGuiKey_Tab] = to_I32(Input::KeyCode::KC_TAB);
@@ -151,9 +151,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     _imguiContexts[to_base(ImGuiContextType::Editor)] = ImGui::CreateContext();
     ImGuiIO& io = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO;
 
-    U8* pPixels;
-    I32 iWidth;
-    I32 iHeight;
+    U8* pPixels = nullptr;
+    I32 iWidth = 0;
+    I32 iHeight = 0;
     io.Fonts->AddFontDefault();
     io.Fonts->GetTexDataAsRGBA32(&pPixels, &iWidth, &iHeight);
 
@@ -173,7 +173,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     _fontTexture = CreateResource<Texture>(parentCache, resDescriptor);
     assert(_fontTexture);
 
-    Texture::TextureLoadInfo info;
+    Texture::TextureLoadInfo info = {};
     _fontTexture->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
 
     ShaderModuleDescriptor vertModule = {};
@@ -251,7 +251,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 winDescriptor.targetAPI = window.context().gfx().getRenderAPI();
 
                 ErrorCode err = ErrorCode::NO_ERR;
-                DisplayWindow* newWindow = &g_windowManager->createWindow(winDescriptor, err);
+                DisplayWindow* newWindow = g_windowManager->createWindow(winDescriptor, err);
                 if (err == ErrorCode::NO_ERR) {
                     assert(newWindow != nullptr);
 
@@ -380,7 +380,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 ImGui::SetCurrentContext(editor->_imguiContexts[to_base(ImGuiContextType::Editor)]);
                 GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
                 GFX::CommandBuffer& buffer = sBuffer();
-                ImGuiIO& io = ImGui::GetIO();
+                const ImGuiIO& io = ImGui::GetIO();
                 ImDrawData* pDrawData = viewport->DrawData;
                 const I32 fb_width = to_I32(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
                 const I32 fb_height = to_I32(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
@@ -485,7 +485,7 @@ void Editor::close() {
 }
 
 void Editor::updateCameraSnapshot() {
-    Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
+    const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
     if (playerCam != nullptr) {
         _cameraSnapshots[playerCam->getGUID()] = playerCam->snapshot();
     }
@@ -508,7 +508,7 @@ void Editor::toggle(const bool state) {
         if (!_autoSaveCamera) {
             Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
             if (playerCam != nullptr) {
-                auto it = _cameraSnapshots.find(playerCam->getGUID());
+                const auto it = _cameraSnapshots.find(playerCam->getGUID());
                 if (it != std::end(_cameraSnapshots)) {
                     playerCam->fromSnapshot(it->second);
                 }
@@ -638,7 +638,7 @@ bool Editor::render(const U64 deltaTime) {
     ImGui::PopStyleVar();
     ImGui::PopStyleVar(2);
 
-    ImGuiID dockspaceId = ImGui::GetID("EditorDockspace");
+    const ImGuiID dockspaceId = ImGui::GetID("EditorDockspace");
     ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), opt_flags);
 
     if (scenePreviewFocused() || optionsVisible) {
@@ -702,24 +702,22 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     }
 
     if (render(evt._timeSinceLastFrameUS)) {
+        ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
+        ImGui::SetCurrentContext(editorContext);
 
         ImGui::Render();
 
         GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
         GFX::CommandBuffer& buffer = sBuffer();
-        ImGuiIO& io = ImGui::GetIO();
+        const ImGuiIO& io = ImGui::GetIO();
         ImDrawData* pDrawData = ImGui::GetDrawData();
         const I32 fb_width = to_I32(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
         const I32 fb_height = to_I32(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
         renderDrawList(pDrawData, Rect<I32>(0, 0, fb_width, fb_height), _mainWindow->getGUID(), buffer);
         _context.gfx().flushCommandBuffer(buffer);
 
-        ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
-        if (editorContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            ImGui::SetCurrentContext(editorContext);
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault(&context(), &context());
-        }
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault(&context(), &context());
 
         return true;
     }
@@ -753,7 +751,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
         windowGUID = _mainWindow->getGUID();
     }
 
-    ImGuiIO& io = ImGui::GetIO();
+    const ImGuiIO& io = ImGui::GetIO();
 
     if (targetViewport.z <= 0 || targetViewport.w <= 0) {
         return;
@@ -899,9 +897,8 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
         return false;
     }
 
-    for (ImGuiContext* ctx : _imguiContexts) {
-        ImGuiIO& io = ctx->IO;
-
+    {
+        ImGuiIO& io = _imguiContexts[to_base(to_base(ImGuiContextType::Editor))]->IO;
         if (io.KeyCtrl) {
             if (key._key == Input::KeyCode::KC_Z) {
                 Undo();
@@ -909,6 +906,10 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
                 Redo();
             }
         }
+    }
+
+    for (ImGuiContext* ctx : _imguiContexts) {
+        ImGuiIO& io = ctx->IO;
 
         io.KeysDown[to_I32(key._key)] = false;
 
@@ -958,7 +959,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
 
     if (!arg.wheelEvent()) {
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-        ImVec2 mousePos = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO.MousePos;
+        const ImVec2 mousePos = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO.MousePos;
         _sceneHovered = sceneView->isHovered() && sceneView->sceneRect(true).contains(mousePos.x, mousePos.y);
     } else {
         for (ImGuiContext* ctx : _imguiContexts) {
@@ -986,10 +987,6 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         return false;
     }
 
-    if (scenePreviewFocused()) {
-        _gizmo->onMouseButton(true);
-    }
-
     for (ImGuiContext* ctx : _imguiContexts) {
         for (U8 i = 0; i < 5; ++i) {
             if (arg.button() == g_oisButtons[i]) {
@@ -999,6 +996,11 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         }
     }
 
+    if (scenePreviewFocused()) {
+        _gizmo->onMouseButton(true);
+        return !_sceneHovered;
+    }
+    
     return wantsMouse();
 }
 
@@ -1007,16 +1009,15 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
     if (!isInit() || !running()) {
         return false;
     }
+
     if (scenePreviewFocused() != _sceneHovered) {
         scenePreviewFocused(_sceneHovered);
 
         ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
         ImGui::SetCurrentContext(editorContext);
-        return true;
-    }
-
-    if (_sceneHovered) {
-        _gizmo->onMouseButton(false);
+        if (!_autoFocusEditor) {
+            return !_sceneHovered;
+        }
     }
 
     for (ImGuiContext* ctx : _imguiContexts) {
@@ -1027,6 +1028,8 @@ bool Editor::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
             }
         }
     }
+
+    _gizmo->onMouseButton(false);
 
     return wantsMouse();
 }
@@ -1107,7 +1110,7 @@ bool Editor::wantsMouse() const {
     }
 
     if (scenePreviewFocused()) {
-        return (_gizmo->needsMouse());
+        return _gizmo->needsMouse();
     }
 
     for (ImGuiContext* ctx : _imguiContexts) {
@@ -1204,7 +1207,7 @@ void Editor::updateMousePosAndButtons() {
         ImGuiPlatformIO& platform_io = editorContext->PlatformIO;
         for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
             viewport = platform_io.Viewports[n];
-            DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
+            const DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
             assert(window != nullptr);
             if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
                 editorContext->IO.MouseHoveredViewport = viewport->ID;
@@ -1320,7 +1323,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, con
         data._flip = false;
         data._isDepthTexture = tex->descriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
 
-        U8 numChannels = tex->descriptor().numChannels();
+        const U8 numChannels = tex->descriptor().numChannels();
 
         assert(numChannels > 0);
 
@@ -1553,6 +1556,7 @@ bool Editor::saveToXML() const {
     pt.put("showMemEditor", _showMemoryEditor);
     pt.put("showSampleWindow", _showSampleWindow);
     pt.put("autoSaveCamera", _autoSaveCamera);
+    pt.put("autoFocusEditor", _autoFocusEditor);
     pt.put("themeIndex", to_I32(_currentTheme));
 
     if (createDirectory(editorPath.c_str())) {
@@ -1581,6 +1585,7 @@ bool Editor::loadFromXML() {
         _showMemoryEditor = pt.get("showMemEditor", false);
         _showSampleWindow = pt.get("showSampleWindow", false);
         _autoSaveCamera = pt.get("autoSaveCamera", false);
+        _autoFocusEditor = pt.get("autoFocusEditor", true);
         _currentTheme = static_cast<ImGuiStyleEnum>(pt.get("themeIndex", to_I32(_currentTheme)));
         ImGui::ResetStyle(_currentTheme);
 
