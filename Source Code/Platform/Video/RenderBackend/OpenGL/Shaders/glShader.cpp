@@ -454,8 +454,18 @@ void glShader::cacheActiveUniforms() {
             glGetProgramResourceName(_programHandle, GL_UNIFORM, attrib, (GLsizei)nameData.size(), NULL, &nameData[0]);
             std::string name((char*)&nameData[0], nameData.size() - 1);
 
-            const U64 hash = _ID(name.c_str());
-            hashAlg::insert(_shaderVarLocation, hash, values.back());
+            if (name.length() > 3 && Util::GetTrailingCharacters(name, 3) == "[0]") {
+                const GLint arraySize = values[2];
+                // Array uniform. Use non-indexed version as an equally-valid alias
+                name = name.substr(0, name.length() - 3);
+                const GLint startLocation = values.back();
+                for (GLint i = 0; i < arraySize; ++i) {
+                    //Arrays and structs will be assigned sequentially increasing locations, starting with the given location
+                    hashAlg::insert(_shaderVarLocation, _ID(Util::StringFormat("%s[%d]", name.c_str(), i).c_str()), startLocation + i);
+                }
+            }
+             
+            hashAlg::insert(_shaderVarLocation, _ID(name.c_str()), values.back());
         }
     }
 }
