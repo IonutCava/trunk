@@ -73,7 +73,7 @@ void PlatformContext::beginFrame(U32 componentMask) {
     OPTICK_EVENT();
 
     if (BitCompare(componentMask, SystemComponentType::GFXDevice)) {
-        _gfx->beginFrame(app().windowManager().getMainWindow(), true);
+        _gfx->beginFrame(*app().windowManager().mainWindow(), true);
     }
 
     if (BitCompare(componentMask, SystemComponentType::SFXDevice)) {
@@ -119,7 +119,7 @@ void PlatformContext::endFrame(U32 componentMask) {
     OPTICK_EVENT();
 
     if (BitCompare(componentMask, SystemComponentType::GFXDevice)) {
-        _gfx->endFrame(app().windowManager().getMainWindow(), true);
+        _gfx->endFrame(*app().windowManager().mainWindow(), true);
     }
 
     if (BitCompare(componentMask, SystemComponentType::SFXDevice)) {
@@ -127,12 +127,12 @@ void PlatformContext::endFrame(U32 componentMask) {
     }
 }
 
-DisplayWindow& PlatformContext::activeWindow() {
-    return app().windowManager().getMainWindow();
+DisplayWindow& PlatformContext::mainWindow() {
+    return *app().windowManager().mainWindow();
 }
 
-const DisplayWindow& PlatformContext::activeWindow() const {
-    return app().windowManager().getMainWindow();
+const DisplayWindow& PlatformContext::mainWindow() const {
+    return *app().windowManager().mainWindow();
 }
 
 Kernel& PlatformContext::kernel() {

@@ -42,7 +42,11 @@ namespace Divide {
             if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->resourceName().c_str())) {
                 if (ImGui::IsItemClicked()) {
                     sceneManager.resetSelection(0);
-                    Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, camera);
+                    if (Attorney::EditorSolutionExplorerWindow::getSelectedCamera(_parent) == camera) {
+                        Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
+                    } else {
+                        Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, camera);
+                    }
                 }
 
                 ImGui::TreePop();
@@ -64,8 +68,11 @@ namespace Divide {
         const auto printNode = [this, &sceneManager, &sgn, node_flags, nodeIDX, open]() {
             bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
             if (ImGui::IsItemClicked()) {
+                const bool wasSelected = sgn.hasFlag(SceneGraphNode::Flags::SELECTED);
                 sceneManager.resetSelection(0);
-                sceneManager.setSelected(0, { &sgn });
+                if (!wasSelected) {
+                    sceneManager.setSelected(0, { &sgn });
+                }
                 Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
             }
             if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered(ImGuiHoveredFlags_None)) {

@@ -118,9 +118,6 @@ public:
     static U32 GetMouseState(vec2<I32>& pos, bool global) noexcept;
     static void SetCaptureMouse(bool state) noexcept;
 
-    inline DisplayWindow& getMainWindow();
-    inline const DisplayWindow& getMainWindow() const;
-
     //Returns null if no window is currently focused
     inline DisplayWindow* getFocusedWindow() noexcept;
     inline const DisplayWindow* getFocusedWindow() const noexcept;
@@ -149,6 +146,9 @@ public:
     static void SetCursorStyle(CursorStyle style);
 
     static void ToggleRelativeMouseMode(bool state) noexcept;
+
+    POINTER_R(DisplayWindow, mainWindow, nullptr);
+
 protected:
     bool onSDLEvent(SDL_Event event) noexcept override;
 

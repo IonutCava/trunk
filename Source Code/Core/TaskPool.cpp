@@ -118,6 +118,10 @@ void TaskPool::flushCallbackQueue() {
 }
 
 void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear) {
+    if (!_poolImpl.init()) {
+        return;
+    }
+
     if (forceClear) {
         _stopRequested.store(true);
     }

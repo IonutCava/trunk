@@ -768,13 +768,13 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     _renderer = std::make_unique<Renderer>(context(), cache);
 
     WAIT_FOR_CONDITION(loadTasks.load() == 0);
-    DisplayWindow& mainWindow = context().app().windowManager().getMainWindow();
+    DisplayWindow* mainWindow = context().app().windowManager().mainWindow();
 
     SizeChangeParams params = {};
     params.width = _rtPool->screenTarget().getWidth();
     params.height = _rtPool->screenTarget().getHeight();
     params.isWindowResize = false;
-    params.winGUID = mainWindow.getGUID();
+    params.winGUID = mainWindow->getGUID();
 
     if (context().app().onSizeChange(params)) {
         NOP();
@@ -787,7 +787,11 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
 
 /// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingAPI() {
-    assert(_api != nullptr && "GFXDevice error: closeRenderingAPI called without init!");
+    if (_api == nullptr) {
+        //closeRenderingAPI called without init!
+        return;
+    }
+
     if (_axisGizmo) {
         destroyIMP(_axisGizmo);
     }
@@ -879,7 +883,7 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
         params.isFullScreen = window.fullscreen();
         params.width = _resolutionChangeQueued.first.width;
         params.height = _resolutionChangeQueued.first.height;
-        params.winGUID = context().activeWindow().getGUID();
+        params.winGUID = context().mainWindow().getGUID();
 
         if (context().app().onSizeChange(params)) {
             NOP();
@@ -1166,7 +1170,7 @@ void GFXDevice::stepResolution(bool increment) {
 
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
-    const vectorEASTL<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.getMainWindow().currentDisplayIndex());
+    const vectorEASTL<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.mainWindow()->currentDisplayIndex());
 
     bool found = false;
     vec2<U16> foundRes;
@@ -1199,15 +1203,15 @@ void GFXDevice::stepResolution(bool increment) {
 void GFXDevice::toggleFullScreen() {
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
-    switch (winManager.getMainWindow().type()) {
+    switch (winManager.mainWindow()->type()) {
         case WindowType::WINDOW:
-            winManager.getMainWindow().changeType(WindowType::FULLSCREEN_WINDOWED);
+            winManager.mainWindow()->changeType(WindowType::FULLSCREEN_WINDOWED);
             break;
         case WindowType::FULLSCREEN_WINDOWED:
-            winManager.getMainWindow().changeType(WindowType::FULLSCREEN);
+            winManager.mainWindow()->changeType(WindowType::FULLSCREEN);
             break;
         case WindowType::FULLSCREEN:
-            winManager.getMainWindow().changeType(WindowType::WINDOW);
+            winManager.mainWindow()->changeType(WindowType::WINDOW);
             break;
     };
 }
@@ -1231,7 +1235,7 @@ void GFXDevice::setShadowMSAASampleCount(U8 sampleCount) {
 
 /// The main entry point for any resolution change request
 bool GFXDevice::onSizeChange(const SizeChangeParams& params) {
-    if (params.winGUID != context().app().windowManager().getMainWindow().getGUID()) {
+    if (params.winGUID != context().app().windowManager().mainWindow()->getGUID()) {
         return false;
     }
 
@@ -1294,16 +1298,16 @@ bool GFXDevice::fitViewportInWindow(U16 w, U16 h) {
         bottom = to_I32((h - newHeight) * 0.5f);
     }
     
-    context().activeWindow().renderingViewport(Rect<I32>(left, bottom, newWidth, newHeight));
+    context().mainWindow().renderingViewport(Rect<I32>(left, bottom, newWidth, newHeight));
 
     if (!COMPARE(newAspectRatio, currentAspectRatio)) {
-        context().activeWindow().clearFlags(true, false);
+        context().mainWindow().clearFlags(true, false);
         return true;
     } else {
         // If the aspect ratios match, then we should auto-fit to the entire visible drawing space so 
         // no need to keep clearing the backbuffer. This is one of the most useless micro-optimizations possible
         // but is really easy to add -Ionut
-        context().activeWindow().clearFlags(false, false);
+        context().mainWindow().clearFlags(false, false);
     }
     return false;
 }

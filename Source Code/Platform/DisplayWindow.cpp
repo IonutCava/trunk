@@ -93,7 +93,6 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
 
     // Check if we have a valid window
     if (!_sdlWindow) {
-        SDL_Quit();
         Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
                          Locale::get(_ID("ERROR_SDL_WINDOW")));
         Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));

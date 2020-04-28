@@ -229,34 +229,37 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
 
     if (err != ErrorCode::NO_ERR) {
         MemoryManager::SAFE_DELETE(window);
-        windowIndex = 0u;
         return nullptr;
     }
 
-    U32 mainWindowFlags = _apiFlags;
+    if (_mainWindow == nullptr) {
+        _mainWindow = window;
+    }
+
+    U32 windowFlags = _apiFlags;
     if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::RESIZEABLE))) {
-        mainWindowFlags |= SDL_WINDOW_RESIZABLE;
+        windowFlags |= SDL_WINDOW_RESIZABLE;
     }
     if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALLOW_HIGH_DPI))) {
-        mainWindowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
+        windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
     }
     if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::HIDDEN))) {
-        mainWindowFlags |= SDL_WINDOW_HIDDEN;
+        windowFlags |= SDL_WINDOW_HIDDEN;
     }
     if (!BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::DECORATED))) {
-        mainWindowFlags |= SDL_WINDOW_BORDERLESS;
+        windowFlags |= SDL_WINDOW_BORDERLESS;
     }
     if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::ALWAYS_ON_TOP))) {
-        mainWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
+        windowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
     }
 
     WindowType winType = WindowType::WINDOW;
     if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN))) {
         winType = WindowType::FULLSCREEN;
-        mainWindowFlags |= SDL_WINDOW_FULLSCREEN;
+        windowFlags |= SDL_WINDOW_FULLSCREEN;
     } else if (BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::FULLSCREEN_DESKTOP))) {
         winType = WindowType::FULLSCREEN_WINDOWED;
-        mainWindowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
 
     if (err == ErrorCode::NO_ERR) {
@@ -268,7 +271,7 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
         return nullptr;
     }
 
-    err = window->init(mainWindowFlags,
+    err = window->init(windowFlags,
                        winType,
                        descriptor);
 
@@ -277,17 +280,15 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
         window->clearFlags(BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
                            BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
 
-        windowIndex = to_U32(_windows.size());
-        _windows.emplace_back(window);
         err = applyAPISettings(window, descriptor.flags);
     }
 
     if (err != ErrorCode::NO_ERR) {
-        _windows.pop_back();
-        windowIndex = 0u;
         MemoryManager::SAFE_DELETE(window);
         return nullptr;
     } else {
+        windowIndex = to_U32(_windows.size());
+        _windows.emplace_back(window);
         window->addEventListener(WindowEvent::SIZE_CHANGED, [this](const DisplayWindow::WindowEventArgs& args) {
             SizeChangeParams params;
             params.width = to_U16(args.x);
@@ -364,24 +365,11 @@ bool WindowManager::anyWindowFocus() const {
 }
 
 U32 WindowManager::createAPIFlags(RenderAPI api) noexcept {
-    U32 windowFlags = 0;
-
     if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES) {
-        Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG |
-                             SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
-
-        if_constexpr (Config::ENABLE_GPU_VALIDATION) {
-            // OpenGL error handling is available in any build configuration
-            // if the proper defines are in place.
-            OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG
-                      /*|  SDL_GL_CONTEXT_DEBUG_FLAG*/;
-        }
-        windowFlags |= SDL_WINDOW_OPENGL;
+        return SDL_WINDOW_OPENGL;
     } 
 
-    validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
-
-    return windowFlags;
+    return 0u;
 }
 
 void WindowManager::destroyAPISettings(DisplayWindow* window) noexcept {
@@ -405,10 +393,10 @@ ErrorCode WindowManager::configureAPISettings(RenderAPI api, U16 descriptorFlags
             OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
         }
     }
-
     validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
     validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE));
 
+    validateAssert(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
     validateAssert(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
     // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
     validateAssert(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));
@@ -439,7 +427,7 @@ ErrorCode WindowManager::configureAPISettings(RenderAPI api, U16 descriptorFlags
 
     validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
     if (BitCompare(descriptorFlags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT))) {
-        validate(SDL_GL_MakeCurrent(getMainWindow().getRawWindow(), (SDL_GLContext)getMainWindow().userData()));
+        validate(SDL_GL_MakeCurrent(mainWindow()->getRawWindow(), (SDL_GLContext)mainWindow()->userData()));
     }
 
     return ErrorCode::NO_ERR;
@@ -450,7 +438,7 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorF
     if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {
         window->_userData = SDL_GL_CreateContext(window->getRawWindow());
     } else {
-        window->_userData = getMainWindow().userData();
+        window->_userData = mainWindow()->userData();
     }
 
     if (window->_userData == nullptr) {
@@ -459,6 +447,8 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorF
         Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
         return ErrorCode::OGL_OLD_HARDWARE;
     }
+
+    validate(SDL_GL_MakeCurrent(window->getRawWindow(), (SDL_GLContext)window->userData()));
 
     if (BitCompare(window->_flags, WindowFlags::VSYNC)) {
         // Vsync is toggled on or off via the external config file
@@ -477,9 +467,7 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorF
     }
 
     // Switch back to the main render context
-    if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {
-        validate(SDL_GL_MakeCurrent(getMainWindow().getRawWindow(), (SDL_GLContext)getMainWindow().userData()));
-    }
+    validate(SDL_GL_MakeCurrent(mainWindow()->getRawWindow(), (SDL_GLContext)mainWindow()->userData()));
 
     return ErrorCode::NO_ERR;
 }
@@ -491,7 +479,7 @@ void WindowManager::captureMouse(bool state) noexcept {
 bool WindowManager::setCursorPosition(I32 x, I32 y) {
     DisplayWindow* focusedWindow = getFocusedWindow();
     if (focusedWindow == nullptr) {
-        focusedWindow = &getMainWindow();
+        focusedWindow = mainWindow();
     }
 
     if (x == -1) {
@@ -549,7 +537,7 @@ void WindowManager::SetCaptureMouse(bool state) noexcept {
 void WindowManager::snapCursorToCenter() {
     const DisplayWindow* focusedWindow = getFocusedWindow();
     if (focusedWindow == nullptr) {
-        focusedWindow = &getMainWindow();
+        focusedWindow = mainWindow();
     }
 
     const vec2<U16>& center = focusedWindow->getDimensions();

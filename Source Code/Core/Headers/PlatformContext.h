@@ -143,8 +143,8 @@ public:
     Kernel& kernel();
     const Kernel& kernel() const;
 
-    DisplayWindow& activeWindow();
-    const DisplayWindow& activeWindow() const;
+    DisplayWindow& mainWindow();
+    const DisplayWindow& mainWindow() const;
 
     protected:
     void onThreadCreated(const std::thread::id& threadID);

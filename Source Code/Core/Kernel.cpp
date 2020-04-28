@@ -91,7 +91,7 @@ void Kernel::startSplashScreen() {
         return;
     }
 
-    DisplayWindow& window = _platformContext.activeWindow();
+    DisplayWindow& window = _platformContext.mainWindow();
     window.changeType(WindowType::WINDOW);
     window.decorated(false);
     WAIT_FOR_CONDITION(window.setDimensions(_platformContext.config().runtime.splashScreenSize));
@@ -124,7 +124,7 @@ void Kernel::startSplashScreen() {
 }
 
 void Kernel::stopSplashScreen() {
-    DisplayWindow& window = _platformContext.activeWindow();
+    DisplayWindow& window = _platformContext.mainWindow();
     window.swapBuffers(true);
     const vec2<U16> previousDimensions = window.getPreviousDimensions();
     _splashScreenUpdating = false;
@@ -236,7 +236,7 @@ void Kernel::onLoop() {
 
     if (frameCount % 4 == 0u) {
         F32 fps = 0.f, frameTime = 0.f;
-        DisplayWindow& window = _platformContext.activeWindow();
+        DisplayWindow& window = _platformContext.mainWindow();
         static stringImpl originalTitle = window.title();
         _platformContext.app().timer().getFrameRateAndTime(fps, frameTime);
         window.title("%s - %5.2f FPS - %3.2f ms - FrameIndex: %d", originalTitle, fps, frameTime, platformContext().gfx().getFrameCount());
@@ -274,7 +274,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
         Camera::update(deltaTimeUS);
     }
 
-    if (_platformContext.activeWindow().minimized()) {
+    if (_platformContext.mainWindow().minimized()) {
         idle(false);
         return true;
     }
@@ -496,7 +496,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     const U8 playerCount = _sceneManager->getActivePlayerCount();
     const bool editorRunning = Config::Build::ENABLE_EDITOR && _platformContext.editor().running();
 
-    const Rect<I32> mainViewport = _platformContext.activeWindow().renderingViewport();
+    const Rect<I32> mainViewport = _platformContext.mainWindow().renderingViewport();
     
     if (_prevViewport != mainViewport || _prevPlayerCount != playerCount) {
         computeViewports(mainViewport, _targetViewports, playerCount);
@@ -693,15 +693,15 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
-    winManager.getMainWindow().addEventListener(WindowEvent::LOST_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) {
+    winManager.mainWindow()->addEventListener(WindowEvent::LOST_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) {
         _sceneManager->onLostFocus();
         return true;
     });
-    winManager.getMainWindow().addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) {
+    winManager.mainWindow()->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) {
         _sceneManager->onGainFocus();
         return true;
     });
-    const vec2<U16>& drawArea = winManager.getMainWindow().getDrawableSize();
+    const vec2<U16>& drawArea = winManager.mainWindow()->getDrawableSize();
     const Rect<U16> targetViewport(0, 0, drawArea.width, drawArea.height);
 
     // Initialize GUI with our current resolution

@@ -134,6 +134,14 @@ SSAOPreRenderOperator::~SSAOPreRenderOperator()
     _context.renderTargetPool().deallocateRT(_ssaoOutput);
 }
 
+bool SSAOPreRenderOperator::ready() const {
+    if (_ssaoBlurShader->getState() == ResourceState::RES_LOADED && _ssaoGenerateShader->getState() == ResourceState::RES_LOADED) {
+        return PreRenderOperator::ready();
+    }
+
+    return false;
+}
+
 void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 

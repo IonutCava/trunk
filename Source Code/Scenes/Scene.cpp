@@ -1155,8 +1155,8 @@ void Scene::onSetActive() {
     assert(_parent.getActivePlayerCount() == 0);
     addPlayerInternal(false);
 
-    static stringImpl originalTitle = _context.activeWindow().title();
-    _context.activeWindow().title("%s - %s", originalTitle.c_str(), resourceName().c_str());
+    static stringImpl originalTitle = _context.mainWindow().title();
+    _context.mainWindow().title("%s - %s", originalTitle.c_str(), resourceName().c_str());
 }
 
 void Scene::onRemoveActive() {

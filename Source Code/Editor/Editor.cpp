@@ -1149,7 +1149,7 @@ void Editor::updateMousePosAndButtons() {
     ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
     DisplayWindow* focusedWindow = g_windowManager->getFocusedWindow();
     if (focusedWindow == nullptr) {
-        focusedWindow = &g_windowManager->getMainWindow();
+        focusedWindow = g_windowManager->mainWindow();
     }
     if (_context.config().gui.imgui.multiViewportEnabled) {
         assert(editorContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);

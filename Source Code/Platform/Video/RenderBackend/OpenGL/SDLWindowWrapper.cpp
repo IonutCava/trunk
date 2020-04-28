@@ -81,7 +81,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GLUtil::fillEnumTables();
 
-    const DisplayWindow& window = _context.context().app().windowManager().getMainWindow();
+    const DisplayWindow& window = *_context.context().app().windowManager().mainWindow();
     g_ContextPool.init(_context.parent().totalThreadCount(), window);
 
     SDL_GL_MakeCurrent(window.getRawWindow(), (SDL_GLContext)window.userData());

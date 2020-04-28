@@ -321,7 +321,7 @@ void GUI::showDebugCursor(const bool state) {
 }
 
 void GUI::onSizeChange(const SizeChangeParams& params) {
-    if (params.winGUID != _context->parent().platformContext().app().windowManager().getMainWindow().getGUID() ||
+    if (params.winGUID != _context->parent().platformContext().mainWindow().getGUID() ||
         !parent().platformContext().config().gui.cegui.enabled)
     {
         return;
@@ -338,7 +338,7 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
 
 
     if (_rootSheet) {
-        const Rect<I32>& renderViewport = { 0, 0, params.width, params.height };//parent().platformContext().activeWindow().renderingViewport();
+        const Rect<I32>& renderViewport = { 0, 0, params.width, params.height };
         _rootSheet->setSize(CEGUI::USize(CEGUI::UDim(0.0f, to_F32(renderViewport.z)),
                                          CEGUI::UDim(0.0f, to_F32(renderViewport.w))));
         _rootSheet->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, to_F32(renderViewport.x)),

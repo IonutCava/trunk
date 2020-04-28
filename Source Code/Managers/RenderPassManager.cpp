@@ -58,9 +58,12 @@ namespace Divide {
             GFX::deallocateCommandBuffer(buf);
         }
 
-        GFX::deallocateCommandBuffer(_postFXCommandBuffer);
-        GFX::deallocateCommandBuffer(_postRenderBuffer);
-
+        if (_postFXCommandBuffer != nullptr) {
+            GFX::deallocateCommandBuffer(_postFXCommandBuffer);
+        }
+        if (_postRenderBuffer != nullptr) {
+            GFX::deallocateCommandBuffer(_postRenderBuffer);
+        }
         MemoryManager::DELETE_CONTAINER(_renderPasses);
     }
 

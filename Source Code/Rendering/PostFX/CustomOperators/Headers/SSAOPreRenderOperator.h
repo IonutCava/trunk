@@ -46,11 +46,13 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
-    inline F32 radius() const { return _radius; }
+    inline F32 radius() const noexcept { return _radius; }
     void radius(const F32 val);
 
-    inline F32 power() const { return _power; }
+    inline F32 power() const noexcept { return _power; }
     void power(const F32 val);
+
+    bool ready() const final;
 
    private:
      void onToggle(const bool state) final;

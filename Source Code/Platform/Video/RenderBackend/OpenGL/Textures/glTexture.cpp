@@ -299,8 +299,6 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
         validateDescriptor();
 
-        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
-        setMipRangeInternal(_descriptor.mipLevels().min, _descriptor.mipLevels().max);
     } else {
         assert(
             _width == imageLayers[0]._dimensions.width && 
@@ -327,6 +325,11 @@ void glTexture::loadData(const TextureLoadInfo& info,
     assert(_width > 0 && _height > 0 && "glTexture error: Invalid texture dimensions!");
     if (getState() == ResourceState::RES_LOADED) {
         _data = _loadingData;
+    }
+
+    if (info._layerIndex == 0) {
+        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
+        setMipRangeInternal(_descriptor.mipLevels().min, _descriptor.mipLevels().max);
     }
 }
 

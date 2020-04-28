@@ -156,7 +156,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
 
 void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (!_sceneToLoad.empty()) {
-        const vec2<U16>& drawSize = _context.activeWindow().getDrawableSize();
+        const vec2<U16>& drawSize = _context.mainWindow().getDrawableSize();
 
         _GUI->modifyText("globalMessage",
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()),
