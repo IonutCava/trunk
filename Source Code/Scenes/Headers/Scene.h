@@ -198,6 +198,8 @@ class Scene : public Resource, public PlatformContextComponent {
 
     void onNodeDestroy(SceneGraphNode& node);
     void findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos);
+    void clearHoverTarget(PlayerIndex idx);
+
     bool checkCameraUnderwater(PlayerIndex idx) const;
     bool checkCameraUnderwater(const Camera& camera) const;
     void toggleFlashlight(PlayerIndex idx);
@@ -410,6 +412,10 @@ class SceneManager {
 
     static void setSelected(Scene& scene, PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
         scene.setSelected(idx, sgns);
+    }
+
+    static void clearHoverTarget(Scene& scene, const Input::MouseMoveEvent& arg) {
+        scene.clearHoverTarget(scene.input().getPlayerIndexForDevice(arg._deviceIndex));
     }
 
     friend class Divide::SceneManager;

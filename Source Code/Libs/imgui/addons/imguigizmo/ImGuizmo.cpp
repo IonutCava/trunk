@@ -2313,4 +2313,13 @@ namespace ImGuizmo
          LookAt(&newEye.x, &camTarget.x, &referenceUp.x, view);
       }
    }
+
+   static GizmoBounds gBounds = {};
+   const GizmoBounds& GetBounds() {
+       gBounds.mRadiusSquareCenter = gContext.mRadiusSquareCenter;
+       gBounds.mScreenSquareCenter = gContext.mScreenSquareCenter;
+       gBounds.mScreenSquareMin = gContext.mScreenSquareMin;
+       gBounds.mScreenSquareMax = gContext.mScreenSquareMax;
+       return gBounds;
+   }
 };

@@ -251,4 +251,11 @@ namespace Divide {
         return false;
     }
 
+    bool Gizmo::hovered() const {
+        const ImGuizmo::GizmoBounds& bounds = ImGuizmo::GetBounds();
+        const ImGuiIO& io = _imguiContext->IO;
+        vec2<F32> deltaScreen = { io.MousePos.x - bounds.mScreenSquareCenter.x, io.MousePos.y - bounds.mScreenSquareCenter.y};
+        const F32 dist = deltaScreen.length();
+        return dist < (bounds.mRadiusSquareCenter + 5.0f);
+    }
 }; //namespace Divide

@@ -90,6 +90,7 @@ namespace Divide {
 
         const char* camName = cam->resourceName().c_str();
         const U64 camID = _ID(camName);
+        ImGui::PushID(to_I32(camID) * 54321);
 
         if (ImGui::CollapsingHeader(camName)) {
             {
@@ -172,6 +173,7 @@ namespace Divide {
             {
                 ImGui::Separator();
                 bool drawFustrum = g_debugFrustums.find(camID) != eastl::cend(g_debugFrustums);
+                ImGui::PushID(to_I32(camID) * 123456);
                 if (ImGui::Checkbox("Draw debug frustum", &drawFustrum)) {
                     if (drawFustrum) {
                         g_debugFrustums[camID] = { cam->getFrustum(), DefaultColours::GREEN, true };
@@ -179,7 +181,6 @@ namespace Divide {
                         g_debugFrustums.erase(camID);
                     }
                 }
-
                 if (drawFustrum) {
                     auto& [frust, colour, realtime] = g_debugFrustums[camID];
                     ImGui::Checkbox("Update realtime", &realtime);
@@ -191,8 +192,10 @@ namespace Divide {
                     ImGui::ColorEdit3("Frust Colour", colour._v, ImGuiColorEditFlags__OptionsDefault);
                     ImGui::PopID();
                 }
+                ImGui::PopID();
             }
         }
+        ImGui::PopID();
 
         return sceneChanged;
     }

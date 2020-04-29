@@ -1531,22 +1531,27 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
             }
         }
 
-        if (_currentHoverTarget[idx] != -1) {
-            SceneGraphNode* oldTarget = _sceneGraph->findNode(_currentHoverTarget[idx]);
-            if (oldTarget != nullptr) {
-                oldTarget->clearFlag(SceneGraphNode::Flags::HOVERED);
-            }
-        }
+        clearHoverTarget(idx);
 
         if (target != nullptr) {
             _currentHoverTarget[idx] = target->getGUID();
             if (!target->hasFlag(SceneGraphNode::Flags::SELECTED)) {
                 target->setFlag(SceneGraphNode::Flags::HOVERED);
             }
-        } else {
-            _currentHoverTarget[idx] = -1;
         }
     }
+}
+
+void Scene::clearHoverTarget(PlayerIndex idx) {
+
+    if (_currentHoverTarget[idx] != -1) {
+        SceneGraphNode* oldTarget = _sceneGraph->findNode(_currentHoverTarget[idx]);
+        if (oldTarget != nullptr) {
+            oldTarget->clearFlag(SceneGraphNode::Flags::HOVERED);
+        }
+    }
+
+    _currentHoverTarget[idx] = -1;
 }
 
 void Scene::onNodeDestroy(SceneGraphNode& node) {
@@ -1707,7 +1712,8 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
     _linesPrimitive->fromLines(s_lines, 4);
 
     if (_context.gfx().getFrameCount() % 2 == 0) {
-        _currentHoverTarget[idx] = -1;
+        clearHoverTarget(idx);
+
         _parent.resetSelection(idx);
         const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
         vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera, data._targetViewport);

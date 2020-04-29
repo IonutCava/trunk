@@ -71,12 +71,14 @@ namespace Divide {
         const ImGuiContext& getContext() const;
 
         bool needsMouse() const;
+        bool hovered() const;
         void enable(bool state);
         bool enabled() const;
         bool active() const;
 
         void onMouseButton(bool presseed);
         bool onKey(bool pressed, const Input::KeyEvent& key);
+
     protected:
         void update(const U64 deltaTimeUS);
         void render(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);

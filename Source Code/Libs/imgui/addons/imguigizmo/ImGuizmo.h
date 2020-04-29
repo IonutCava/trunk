@@ -151,6 +151,16 @@ namespace ImGuizmo
     IMGUI_API void DrawCube(const float* view, const float* projection, const float* matrix);
     IMGUI_API void DrawGrid(const float* view, const float* projection, const float* matrix, const float gridSize);
 
+
+    struct GizmoBounds {
+        float  mRadiusSquareCenter = 0.0f;
+        ImVec2 mScreenSquareCenter = { 0.0f, 0.0f };
+        ImVec2 mScreenSquareMin = { 0.0f, 0.0f };
+        ImVec2 mScreenSquareMax = { 0.0f, 0.0f };
+    };
+
+    IMGUI_API const GizmoBounds& GetBounds();
+
     // call it when you want a gizmo
     // Needs view and projection matrices. 
     // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional

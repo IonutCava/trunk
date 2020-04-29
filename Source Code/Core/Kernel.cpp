@@ -863,6 +863,7 @@ bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         Editor& editor = _platformContext.editor();
         if (!_sceneManager->wantsMouse() && editor.mouseMoved(arg)) {
+            _sceneManager->mouseMovedExternally(arg);
             return true;
         }
     }
@@ -879,6 +880,8 @@ bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
 
     if (!_platformContext.gui().mouseMoved(remapArg)) {
         return _sceneManager->mouseMoved(remapArg);
+    } else {
+        _sceneManager->mouseMovedExternally(arg);
     }
     
     // InputInterface needs to know when this is completed

@@ -616,16 +616,22 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
     playerCamera()->updateLookAt();
 }
 
-void SceneManager::moveCameraToNode(SceneGraphNode* targetNode, F32 targetDistanceFromNode) const {
+void SceneManager::moveCameraToNode(SceneGraphNode* targetNode) const {
     if (targetNode != nullptr) {
-        TransformComponent* tComp = targetNode->get<TransformComponent>();
-        if (tComp != nullptr) {
-            vec3<F32> targetPos = tComp->getPosition();
-            if (targetDistanceFromNode > 0.0f) {
-                targetPos -= Normalized(Rotate(WORLD_Z_NEG_AXIS, playerCamera()->getOrientation())) * targetDistanceFromNode;
+        vec3<F32> targetPos = playerCamera()->getEye();
+        BoundsComponent* bComp = targetNode->get<BoundsComponent>();
+        if (bComp != nullptr) {
+            targetPos = bComp->getBoundingBox().getCenter();
+            targetPos -= bComp->getBoundingSphere().getRadius() * playerCamera()->getForwardDir();
+        } else {
+            TransformComponent* tComp = targetNode->get<TransformComponent>();
+            if (tComp != nullptr) {
+                targetPos = tComp->getPosition();
+                targetPos -= playerCamera()->getForwardDir() * 3.0f;
             }
-            playerCamera()->setEye(targetPos);
         }
+
+        playerCamera()->setEye(targetPos);
     }
 }
 
@@ -741,6 +747,9 @@ void SceneManager::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode
     }
 }
 
+void SceneManager::mouseMovedExternally(const Input::MouseMoveEvent& arg) {
+    Attorney::SceneManager::clearHoverTarget(getActiveScene(), arg);
+}
 ///--------------------------Input Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const Input::KeyEvent& key) {

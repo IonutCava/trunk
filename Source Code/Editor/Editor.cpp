@@ -696,23 +696,17 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     }
 
     Time::ScopedTimer timer(_editorRenderTimer);
-    {
-        updateMousePosAndButtons();
-        ImGui::NewFrame();
-    }
+    ImGui::SetCurrentContext(_imguiContexts[to_base(ImGuiContextType::Editor)]);
+    ImGui::NewFrame();
 
     if (render(evt._timeSinceLastFrameUS)) {
-        ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
-        ImGui::SetCurrentContext(editorContext);
-
         ImGui::Render();
 
         GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
         GFX::CommandBuffer& buffer = sBuffer();
-        const ImGuiIO& io = ImGui::GetIO();
         ImDrawData* pDrawData = ImGui::GetDrawData();
-        const I32 fb_width = to_I32(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
-        const I32 fb_height = to_I32(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
+        const I32 fb_width = to_I32(pDrawData->DisplaySize.x * ImGui::GetIO().DisplayFramebufferScale.x);
+        const I32 fb_height = to_I32(pDrawData->DisplaySize.y * ImGui::GetIO().DisplayFramebufferScale.y);
         renderDrawList(pDrawData, Rect<I32>(0, 0, fb_width, fb_height), _mainWindow->getGUID(), buffer);
         _context.gfx().flushCommandBuffer(buffer);
 
@@ -958,9 +952,89 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
     }
 
     if (!arg.wheelEvent()) {
+        ImGuiViewport* viewport = nullptr;
+                
+        DisplayWindow* focusedWindow = g_windowManager->getFocusedWindow();
+        if (focusedWindow == nullptr) {
+            focusedWindow = g_windowManager->mainWindow();
+        }
+
+        const bool multiViewport = _context.config().gui.imgui.multiViewportEnabled;
+        ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
+        ImGuiContext* gizmoContext = _imguiContexts[to_base(ImGuiContextType::Gizmo)];
+
+        if (multiViewport) {
+            assert(editorContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
+            viewport = findViewportByPlatformHandle(editorContext, focusedWindow);
+        }
+
+        vec2<I32> mPosGlobal(-1);
+        vec2<I32> viewportSize(-1);
+        WindowManager::GetMouseState(mPosGlobal, true);
+        if (viewport == nullptr) {
+            mPosGlobal -= focusedWindow->getPosition();
+            viewportSize = { focusedWindow->getDrawableSize().x, focusedWindow->getDrawableSize().y };
+        } else {
+            viewportSize = { viewport->Size.x, viewport->Size.y };
+        }
+
+        if (multiViewport) {
+            editorContext->IO.MouseHoveredViewport = 0;
+        }
+
+        bool anyDown = false;
+        for (U8 i = 0; i < to_U8(ImGuiContextType::COUNT); ++i) {
+            ImGuiIO& io = _imguiContexts[i]->IO;
+
+            bool mouseSet = false;
+            if (io.WantSetMousePos) {
+                if (multiViewport && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                    mouseSet = g_windowManager->setGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+                } else {
+                    mouseSet = g_windowManager->setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+                }
+            } else if (i == to_base(ImGuiContextType::Editor)) {
+                io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+                mouseSet = true;
+            }
+
+            io.MousePos = ImVec2((F32)mPosGlobal.x, (F32)mPosGlobal.y);
+            for (size_t j = 0; j < 5; ++j) {
+                if (io.MouseDown[j]) {
+                    anyDown = true;
+                    break;
+                }
+            }
+        }
+
+        if (multiViewport) {
+            ImGuiPlatformIO& platform_io = editorContext->PlatformIO;
+            for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
+                viewport = platform_io.Viewports[n];
+                const DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
+                assert(window != nullptr);
+                if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
+                    editorContext->IO.MouseHoveredViewport = viewport->ID;
+                }
+            }
+        }
+
+        WindowManager::SetCaptureMouse(anyDown);
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-        const ImVec2 mousePos = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO.MousePos;
-        _sceneHovered = sceneView->isHovered() && sceneView->sceneRect(true).contains(mousePos.x, mousePos.y);
+        const ImVec2 editorMousePos = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO.MousePos;
+        _sceneHovered = sceneView->isHovered() && sceneView->sceneRect(true).contains(editorMousePos.x, editorMousePos.y);
+
+        if (_sceneHovered) {
+            const Rect<I32>& sceneRect = scenePreviewRect(true);
+            vec2<I32> gizmoMousePos(gizmoContext->IO.MousePos.x, gizmoContext->IO.MousePos.y);
+            if (sceneRect.contains(gizmoMousePos)) {
+                gizmoMousePos = COORD_REMAP(gizmoMousePos, sceneRect, Rect<I32>(0, 0, viewportSize.x, viewportSize.y));
+                gizmoContext->IO.MousePos = ImVec2(to_F32(gizmoMousePos.x), to_F32(gizmoMousePos.y));
+                if (_gizmo->hovered()) {
+                    return true;
+                }
+            }
+        }
     } else {
         for (ImGuiContext* ctx : _imguiContexts) {
             if (arg.WheelH() > 0) {
@@ -1142,79 +1216,6 @@ bool Editor::wantsGamepad() const {
     }
 
     return !scenePreviewFocused();
-}
-
-void Editor::updateMousePosAndButtons() {
-    ImGuiViewport* viewport = nullptr;
-    ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
-    DisplayWindow* focusedWindow = g_windowManager->getFocusedWindow();
-    if (focusedWindow == nullptr) {
-        focusedWindow = g_windowManager->mainWindow();
-    }
-    if (_context.config().gui.imgui.multiViewportEnabled) {
-        assert(editorContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
-        viewport = findViewportByPlatformHandle(editorContext, focusedWindow);
-    }
-
-    vec2<I32> mPosGlobal(-1);
-    vec2<I32> viewportSize(-1);
-    WindowManager::GetMouseState(mPosGlobal, true);
-    if (viewport == nullptr) {
-        mPosGlobal -= focusedWindow->getPosition();
-        viewportSize = { focusedWindow->getDrawableSize().x, focusedWindow->getDrawableSize().y };
-    } else {
-        viewportSize = { viewport->Size.x, viewport->Size.y};
-    }
-
-    bool anyDown = false;
-    for (U8 i = 0; i < to_U8(ImGuiContextType::COUNT); ++i) {
-        ImGui::SetCurrentContext(_imguiContexts[i]);
-
-        ImGuiIO& io = ImGui::GetIO();
-        io.MouseHoveredViewport = 0;
-
-        bool mouseSet = false;
-        if (io.WantSetMousePos) {
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-                mouseSet = g_windowManager->setGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
-            } else {
-                mouseSet = g_windowManager->setCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
-            }
-        } else if (i == to_base(ImGuiContextType::Editor)) {
-            io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
-            mouseSet = true;
-        }
-
-        io.MousePos = ImVec2((F32)mPosGlobal.x, (F32)mPosGlobal.y);
-        if (i == to_base(ImGuiContextType::Gizmo) && scenePreviewFocused()) {
-            const Rect<I32>& sceneRect = scenePreviewRect(true);
-            vec2<I32> mousePos(io.MousePos.x, io.MousePos.y);
-            if (sceneRect.contains(mousePos)) {
-                mousePos = COORD_REMAP(mousePos, sceneRect, Rect<I32>(0, 0, viewportSize.x, viewportSize.y));
-                io.MousePos = ImVec2(to_F32(mousePos.x), to_F32(mousePos.y));
-            }
-        }
-
-        for (size_t j = 0; j < 5; ++j) {
-            if (io.MouseDown[j]) {
-                anyDown = true;
-                break;
-            }
-        }
-    }
-
-    if (_context.config().gui.imgui.multiViewportEnabled) {
-        ImGuiPlatformIO& platform_io = editorContext->PlatformIO;
-        for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
-            viewport = platform_io.Viewports[n];
-            const DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
-            assert(window != nullptr);
-            if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
-                editorContext->IO.MouseHoveredViewport = viewport->ID;
-            }
-        }
-    }
-    WindowManager::SetCaptureMouse(anyDown);
 }
 
 bool Editor::onUTF8(const Input::UTF8Event& arg) {
@@ -1485,7 +1486,7 @@ LightPool& Editor::getActiveLightPool() {
 
 void Editor::teleportToNode(SceneGraphNode* sgn) const {
     if (sgn != nullptr) {
-        Attorney::SceneManagerCameraAccessor::moveCameraToNode(*_context.kernel().sceneManager(), sgn, 3.0f);
+        Attorney::SceneManagerCameraAccessor::moveCameraToNode(*_context.kernel().sceneManager(), sgn);
     }
 }
 

@@ -196,7 +196,6 @@ class Editor : public PlatformContextComponent,
   protected:
     inline bool isInit() const;
     bool render(const U64 deltaTime);
-    void updateMousePosAndButtons();
     void teleportToNode(SceneGraphNode* sgn) const;
 
     void scenePreviewFocused(bool state);

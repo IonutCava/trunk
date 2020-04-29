@@ -192,6 +192,11 @@ public:  /// Input
                      const Rect<U16>& targetRenderViewport,
                      bool threaded = true);
 
+
+    /// Called if a mouse move event was captured by a different system (editor, gui, etc).
+    /// Used to cancel scene specific mouse move tracking
+    void mouseMovedExternally(const Input::MouseMoveEvent& arg);
+
     PROPERTY_RW(bool, wantsMouse, false);
     PROPERTY_RW(bool, wantsKeyboard, false);
 
@@ -234,7 +239,7 @@ protected:
     Camera* playerCamera() const;
     Camera* playerCamera(PlayerIndex idx) const;
     void currentPlayerPass(PlayerIndex idx);
-    void moveCameraToNode(SceneGraphNode* targetNode, F32 targetDistanceFromNode) const;
+    void moveCameraToNode(SceneGraphNode* targetNode) const;
 private:
     bool _init = false;
     bool _processInput = false;
@@ -329,8 +334,8 @@ class SceneManagerCameraAccessor {
         return mgr.playerCamera(idx);
     }
 
-    static void moveCameraToNode(Divide::SceneManager& mgr, SceneGraphNode* targetNode, F32 targetDistanceFromNode) {
-        mgr.moveCameraToNode(targetNode, targetDistanceFromNode);
+    static void moveCameraToNode(Divide::SceneManager& mgr, SceneGraphNode* targetNode) {
+        mgr.moveCameraToNode(targetNode);
     }
 
     friend class Divide::Scene;
