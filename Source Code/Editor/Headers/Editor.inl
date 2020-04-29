@@ -34,35 +34,39 @@
 
 namespace Divide {
 
-inline bool Editor::isInit() const {
+inline bool Editor::isInit() const noexcept {
     return _mainWindow != nullptr;
 }
 
-inline bool Editor::running() const {
+inline bool Editor::running() const noexcept {
     return _running;
 }
 
-inline void Editor::setTransformSettings(const TransformSettings& settings) {
+inline bool Editor::inEditMode() const noexcept {
+    return running() && simulationPauseRequested();
+}
+
+inline void Editor::setTransformSettings(const TransformSettings& settings) noexcept {
     Attorney::GizmoEditor::setTransformSettings(*_gizmo, settings);
 }
 
-inline const TransformSettings& Editor::getTransformSettings() const {
+inline const TransformSettings& Editor::getTransformSettings() const noexcept {
     return Attorney::GizmoEditor::getTransformSettings(*_gizmo);
 }
 
-inline const Rect<I32>& Editor::getTargetViewport() const {
+inline const Rect<I32>& Editor::getTargetViewport() const noexcept {
     return _targetViewport;
 }
 
-inline void Editor::setSelectedCamera(Camera* camera) {
+inline void Editor::setSelectedCamera(Camera* camera) noexcept {
     _selectedCamera = camera;
 }
 
-inline Camera* Editor::getSelectedCamera() const {
+inline Camera* Editor::getSelectedCamera() const noexcept {
     return _selectedCamera;
 }
 
-inline bool Editor::simulationPauseRequested() const {
+inline bool Editor::simulationPauseRequested() const noexcept {
     return _stepQueue == 0;
 }
 
@@ -71,15 +75,15 @@ inline void Editor::registerUndoEntry(const UndoEntry<T>& entry) {
     _undoManager->registerUndoEntry(entry);
 }
 
-inline void Editor::toggleMemoryEditor(bool state) {
+inline void Editor::toggleMemoryEditor(bool state) noexcept {
     _showMemoryEditor = state;
 }
 
-inline bool Editor::scenePreviewFocused() const {
+inline bool Editor::scenePreviewFocused() const noexcept {
     return _scenePreviewFocused;
 }
 
-inline bool Editor::scenePreviewHovered() const {
+inline bool Editor::scenePreviewHovered() const noexcept {
     return _sceneHovered;
 }
 

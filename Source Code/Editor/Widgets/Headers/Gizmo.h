@@ -67,14 +67,14 @@ namespace Divide {
         explicit Gizmo(Editor& parent, ImGuiContext* targetContext);
         ~Gizmo();
 
-        ImGuiContext& getContext();
-        const ImGuiContext& getContext() const;
+        ImGuiContext& getContext() noexcept;
+        const ImGuiContext& getContext() const noexcept;
 
         bool needsMouse() const;
         bool hovered() const;
-        void enable(bool state);
-        bool enabled() const;
-        bool active() const;
+        void enable(bool state) noexcept;
+        bool enabled() const noexcept;
+        bool active() const noexcept;
 
         void onMouseButton(bool presseed);
         bool onKey(bool pressed, const Input::KeyEvent& key);
@@ -83,8 +83,8 @@ namespace Divide {
         void update(const U64 deltaTimeUS);
         void render(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
         void updateSelections(const vectorEASTL<SceneGraphNode*>& node);
-        void setTransformSettings(const TransformSettings& settings);
-        const TransformSettings& getTransformSettings() const;
+        void setTransformSettings(const TransformSettings& settings) noexcept;
+        const TransformSettings& getTransformSettings() const noexcept;
 
     private:
         Editor& _parent;
@@ -113,11 +113,11 @@ namespace Divide {
                 gizmo.update(deltaTimeUS);
             }
 
-            static void setTransformSettings(Gizmo& gizmo, const TransformSettings& settings) {
+            static void setTransformSettings(Gizmo& gizmo, const TransformSettings& settings) noexcept {
                 gizmo.setTransformSettings(settings);
             }
 
-            static const TransformSettings& getTransformSettings(const Gizmo& gizmo) {
+            static const TransformSettings& getTransformSettings(const Gizmo& gizmo) noexcept {
                 return gizmo.getTransformSettings();
             }
             friend class Divide::Editor;

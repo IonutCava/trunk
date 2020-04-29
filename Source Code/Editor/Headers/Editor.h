@@ -149,13 +149,14 @@ class Editor : public PlatformContextComponent,
 
     template<typename T>
     inline void registerUndoEntry(const UndoEntry<T>& entry);
-    inline bool simulationPauseRequested() const;
-    inline void setTransformSettings(const TransformSettings& settings);
-    inline const TransformSettings& getTransformSettings() const;
-    inline const Rect<I32>& getTargetViewport() const;
-    inline bool running() const;
-    inline bool scenePreviewFocused() const;
-    inline bool scenePreviewHovered() const;
+    inline bool simulationPauseRequested() const noexcept;
+    inline void setTransformSettings(const TransformSettings& settings) noexcept;
+    inline const TransformSettings& getTransformSettings() const noexcept;
+    inline const Rect<I32>& getTargetViewport() const noexcept;
+    inline bool running() const noexcept;
+    inline bool inEditMode() const noexcept;
+    inline bool scenePreviewFocused() const noexcept;
+    inline bool scenePreviewHovered() const noexcept;
 
     void showStatusMessage(const stringImpl& message, F32 durationMS);
 
@@ -194,14 +195,14 @@ class Editor : public PlatformContextComponent,
     bool loadFromXML();
 
   protected:
-    inline bool isInit() const;
+    inline bool isInit() const noexcept;
     bool render(const U64 deltaTime);
     void teleportToNode(SceneGraphNode* sgn) const;
 
     void scenePreviewFocused(bool state);
     ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
 
-    U32 saveItemCount() const;
+    U32 saveItemCount() const  noexcept;
     PROPERTY_R_IW(bool, unsavedSceneChanges, false);
 
   protected: // attorney
@@ -218,9 +219,9 @@ class Editor : public PlatformContextComponent,
 
     LightPool& getActiveLightPool();
 
-    inline void toggleMemoryEditor(bool state);
-    inline void setSelectedCamera(Camera* camera);
-    inline Camera* getSelectedCamera() const;
+    inline void toggleMemoryEditor(bool state) noexcept;
+    inline void setSelectedCamera(Camera* camera) noexcept;
+    inline Camera* getSelectedCamera() const noexcept;
 
     bool addComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
     bool addComponent(const Selections& selections, ComponentType newComponentType) const;
@@ -319,11 +320,11 @@ namespace Attorney {
 
     class EditorSolutionExplorerWindow {
     private :
-        static void setSelectedCamera(Editor& editor, Camera* camera) {
+        static void setSelectedCamera(Editor& editor, Camera* camera)  noexcept {
             editor.setSelectedCamera(camera);
         }
 
-        static Camera* getSelectedCamera(const Editor& editor) {
+        static Camera* getSelectedCamera(const Editor& editor)  noexcept {
             return editor.getSelectedCamera();
         }
 
@@ -344,11 +345,11 @@ namespace Attorney {
     class EditorPropertyWindow {
     private :
 
-        static void setSelectedCamera(Editor& editor, Camera* camera) {
+        static void setSelectedCamera(Editor& editor, Camera* camera)  noexcept {
             editor.setSelectedCamera(camera);
         }
 
-        static Camera* getSelectedCamera(const Editor& editor) {
+        static Camera* getSelectedCamera(const Editor& editor)  noexcept {
             return editor.getSelectedCamera();
         }
 
@@ -357,7 +358,7 @@ namespace Attorney {
 
     class EditorMenuBar {
     private:
-        static void toggleMemoryEditor(Editor& editor, bool state) {
+        static void toggleMemoryEditor(Editor& editor, bool state)  noexcept {
             editor.toggleMemoryEditor(state);
         }
 

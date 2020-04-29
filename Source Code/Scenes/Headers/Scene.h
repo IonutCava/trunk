@@ -161,8 +161,8 @@ class Scene : public Resource, public PlatformContextComponent {
     }
 
     bool findSelection(PlayerIndex idx, bool clearOld);
-    void beginDragSelection(PlayerIndex idx, vec2<I32> mousePos, bool editor);
-    void endDragSelection(PlayerIndex idx, bool editor);
+    void beginDragSelection(PlayerIndex idx, vec2<I32> mousePos);
+    void endDragSelection(PlayerIndex idx);
 
     inline void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);

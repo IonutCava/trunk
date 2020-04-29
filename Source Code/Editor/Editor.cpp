@@ -592,7 +592,10 @@ void Editor::update(const U64 deltaTimeUS) {
             _isScenePaused = simulationPauseRequested();
 
             _gizmo->enable(_isScenePaused);
-            Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
+            SceneManager* sMgr = _context.kernel().sceneManager();
+            sMgr->resetSelection(0);
+            Scene& activeScene = sMgr->getActiveScene();
+            
             if (_isScenePaused) {
                 activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
                 activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
@@ -1205,6 +1208,10 @@ bool Editor::wantsMouse() const {
     }
 
     if (scenePreviewFocused()) {
+        if (!simulationPauseRequested()) {
+            return false;
+        }
+
         return _gizmo->needsMouse();
     }
 
@@ -1221,7 +1228,9 @@ bool Editor::wantsKeyboard() const {
     if (!isInit() || !running() || scenePreviewFocused()) {
         return false;
     }
-
+    if (scenePreviewFocused() && !simulationPauseRequested()) {
+        return false;
+    }
     for (ImGuiContext* ctx : _imguiContexts) {
         if (ctx->IO.WantCaptureKeyboard) {
             return true;
@@ -1285,7 +1294,7 @@ bool Editor::saveSceneChanges(DELEGATE<void, const char*> msgCallback, DELEGATE<
     return false;
 }
 
-U32 Editor::saveItemCount() const {
+U32 Editor::saveItemCount() const noexcept {
     U32 ret = 10u; // All of the scene stuff (settings, music, etc)
 
     const SceneGraph& graph = _context.kernel().sceneManager()->getActiveScene().sceneGraph();

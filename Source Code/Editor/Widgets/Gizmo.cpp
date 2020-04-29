@@ -35,25 +35,25 @@ namespace Divide {
         _imguiContext= nullptr;
     }
 
-    ImGuiContext& Gizmo::getContext() {
+    ImGuiContext& Gizmo::getContext() noexcept {
         assert(_imguiContext != nullptr);
         return *_imguiContext;
     }
 
-    const ImGuiContext& Gizmo::getContext() const {
+    const ImGuiContext& Gizmo::getContext() const noexcept {
         assert(_imguiContext != nullptr);
         return *_imguiContext;
     }
 
-    void Gizmo::enable(bool state) {
+    void Gizmo::enable(bool state) noexcept {
         _enabled = state;
     }
 
-    bool Gizmo::enabled() const {
+    bool Gizmo::enabled() const noexcept {
         return _enabled;
     }
 
-    bool Gizmo::active() const {
+    bool Gizmo::active() const noexcept {
         return enabled() && !_selectedNodes.empty();
     }
 
@@ -209,11 +209,11 @@ namespace Divide {
         }
     }
 
-    void Gizmo::setTransformSettings(const TransformSettings& settings) {
+    void Gizmo::setTransformSettings(const TransformSettings& settings) noexcept {
         _transformSettings = settings;
     }
 
-    const TransformSettings& Gizmo::getTransformSettings() const {
+    const TransformSettings& Gizmo::getTransformSettings() const noexcept {
         return _transformSettings;
     }
 

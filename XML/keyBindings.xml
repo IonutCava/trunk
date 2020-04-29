@@ -39,8 +39,6 @@
 <action id="32" name="toggle console" />
 <action id="33" name="drag select begin" />
 <action id="34" name="drag select end" />
-<action id="35" name="drag select begin in editor" />
-<action id="36" name="drag select end in editor" />
 </actions>
 
 <!--
@@ -83,7 +81,6 @@ e.g.: <key actionDown="1,3,4,5" actionUp="2" modifier="LCtrl">KEY</key> =? actio
 <mouseButtons>
 <!-- Allowed mouse button names: LEFT, RIGHT, MIDDLE, Button3, Button4, Button5, Button6, Button7 -->
 <button actionDown="33" actionUp="34">LEFT</button>
-<button actionDown="35" actionUp="36" modifier="LShift">LEFT</button>
 <button actionUp="26" modifier="LCtrl">LEFT</button>
 <button actionDown="25" actionUp="26">RIGHT</button>
 </mouseButtons>
