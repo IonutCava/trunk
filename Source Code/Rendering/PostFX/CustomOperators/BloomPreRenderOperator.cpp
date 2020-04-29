@@ -16,6 +16,10 @@
 
 namespace Divide {
 
+namespace {
+    F32 resolutionDownscaleFactor = 2.0f;
+};
+
 BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_BLOOM),
       _bloomFactor(0.8f),
@@ -65,6 +69,10 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     });
 
     vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
+    if (res.width > 2500) { //over 1440p
+        resolutionDownscaleFactor = 4.0f;
+    }
+
     vectorEASTL<RTAttachmentDescriptor> att = {
         {
             parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(),
@@ -85,7 +93,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     _bloomBlurBuffer[1] = _context.renderTargetPool().allocateRT(desc);
 
     desc._name = "Bloom";
-    desc._resolution = vec2<U16>(res / 4.0f);
+    desc._resolution = vec2<U16>(res / resolutionDownscaleFactor);
     _bloomOutput = _context.renderTargetPool().allocateRT(desc);
 
     factor(_context.context().config().rendering.postFX.bloomFactor);
@@ -108,8 +116,8 @@ bool BloomPreRenderOperator::ready() const {
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 
-    U16 w = to_U16(width / 4.0f);
-    U16 h = to_U16(height / 4.0f);
+    U16 w = to_U16(width / resolutionDownscaleFactor);
+    U16 h = to_U16(height / resolutionDownscaleFactor);
     _bloomOutput._rt->resize(w, h);
     _bloomBlurBuffer[0]._rt->resize(width, height);
     _bloomBlurBuffer[1]._rt->resize(width, height);

@@ -87,18 +87,16 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
                                   descriptor.dimensions.width,
                                   descriptor.dimensions.height,
                                   windowFlags);
-
-    _windowID = SDL_GetWindowID(_sdlWindow);
-    //_drawableSize = getDrawableSize();
-
     // Check if we have a valid window
-    if (!_sdlWindow) {
+    if (_sdlWindow == nullptr) {
         Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
-                         Locale::get(_ID("ERROR_SDL_WINDOW")));
+                         Util::StringFormat(Locale::get(_ID("ERROR_SDL_WINDOW")), SDL_GetError()).c_str());
         Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
         return ErrorCode::SDL_WINDOW_INIT_ERROR;
     }
 
+    _windowID = SDL_GetWindowID(_sdlWindow);
+    //_drawableSize = getDrawableSize();
     return ErrorCode::NO_ERR;
 }
 

@@ -499,7 +499,7 @@ void Editor::toggle(const bool state) {
 
     _running = state;
 
-    _gizmo->enable(state || simulationPauseRequested());
+    _gizmo->enable(state && simulationPauseRequested());
 
     if (!state) {
         _sceneHovered = false;
@@ -521,6 +521,7 @@ void Editor::toggle(const bool state) {
         activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
         _context.kernel().sceneManager()->resetSelection(0);
     } else {
+        _stepQueue = 0;
         activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
         activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
         updateCameraSnapshot();
@@ -535,6 +536,7 @@ void Editor::toggle(const bool state) {
 
 void Editor::update(const U64 deltaTimeUS) {
     OPTICK_EVENT();
+    static bool allGizmosEnabled = false;
 
     Time::ScopedTimer timer(_editorUpdateTimer);
 
@@ -584,6 +586,26 @@ void Editor::update(const U64 deltaTimeUS) {
         _optionsWindow->update(deltaTimeUS);
 
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->update(deltaTimeUS);
+
+
+        if (_isScenePaused != simulationPauseRequested()) {
+            _isScenePaused = simulationPauseRequested();
+
+            _gizmo->enable(_isScenePaused);
+            Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
+            if (_isScenePaused) {
+                activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+                activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
+                if (allGizmosEnabled) {
+                    activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+                }
+            } else {
+                allGizmosEnabled = activeScene.state().renderState().isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+                activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+                activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
+                activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+            }
+        }
     }
 }
 
@@ -1072,7 +1094,6 @@ bool Editor::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
     if (scenePreviewFocused()) {
         _gizmo->onMouseButton(true);
-        return !_sceneHovered;
     }
     
     return wantsMouse();

@@ -49,7 +49,6 @@ namespace Divide {
         const Rect<I32>& sceneRect(bool globalCoords) const noexcept;
 
     protected:
-        bool      _internalScenePlay;
         Rect<I32> _sceneRect;
         Rect<I32> _sceneRectLocal;
     };

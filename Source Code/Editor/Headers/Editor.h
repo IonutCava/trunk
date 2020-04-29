@@ -260,6 +260,7 @@ class Editor : public PlatformContextComponent,
     bool              _showOptionsWindow = false;
     bool              _showMemoryEditor = false;
     bool              _running = false;
+    bool              _isScenePaused = false;
     bool              _sceneHovered = false;
     bool              _scenePreviewFocused = false;
 

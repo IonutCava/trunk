@@ -10,7 +10,7 @@
 namespace Divide {
     namespace {
         constexpr U8 g_maxSelectedNodes = 12;
-        constexpr F32 g_maxScaleFactor = 100.0f;
+        constexpr F32 g_maxScaleFactor = 0.1f;
         using TransformCache = std::array<TransformValues, g_maxSelectedNodes>;
         using NodeCache = std::array<SceneGraphNode*, g_maxSelectedNodes>;
 
@@ -83,6 +83,8 @@ namespace Divide {
 
         const bool multiNodeEdit = _selectedNodes.size() > 1;
 
+        bool hasScale = false;
+        vec3<F32> startScale = {};
         vec3<F32> startPos = {};
         mat4<F32> matrix = {};
         BoundingBox nodesBB = {};
@@ -93,6 +95,10 @@ namespace Divide {
                 TransformComponent* tComp = node->get<TransformComponent>();
                 if (tComp != nullptr) {
                     nodesBB.add(tComp->getLocalPosition());
+                    if (!hasScale) {
+                        startScale = tComp->getLocalScale();
+                        hasScale = true;
+                    }
                     if (++selectionCounter == g_maxSelectedNodes) {
                         break;
                     }
@@ -103,6 +109,7 @@ namespace Divide {
         startPos = nodesBB.getCenter();
         matrix.identity();
         matrix.setTranslation(startPos);
+        matrix.setScale(startScale);
 
         ImGui::SetCurrentContext(_imguiContext);
         ImGui::NewFrame();
@@ -142,15 +149,25 @@ namespace Divide {
             ImGuizmo::DecomposeMatrixToComponents(matrix, _workValues._translation._v, euler._v, _workValues._scale._v);
             matrix.orthoNormalize();
             _workValues._orientation.fromMatrix(mat3<F32>(matrix));
-            CLAMP(_workValues._scale.x, 1 / g_maxScaleFactor, 1 * g_maxScaleFactor);
-            CLAMP(_workValues._scale.y, 1 / g_maxScaleFactor, 1 * g_maxScaleFactor);
-            CLAMP(_workValues._scale.z, 1 / g_maxScaleFactor, 1 * g_maxScaleFactor);
 
             _workValues._translation = _workValues._translation - startPos;
             for (auto& node : _selectedNodes) {
                 TransformComponent* tComp = node->get<TransformComponent>();
+                if (tComp != nullptr) {
+                   
+                    break;
+                }
+            }
+
+            bool gotScale = false;
+            for (auto& node : _selectedNodes) {
+                TransformComponent* tComp = node->get<TransformComponent>();
                 U8 selectionCounter = 0;
                 if (tComp != nullptr) {
+                    if (!gotScale) {
+                        _workValues._scale /= tComp->getScale();
+                        gotScale = true;
+                    }
                     tComp->scale(_workValues._scale);
                     tComp->rotate(_workValues._orientation);
                     tComp->translate(_workValues._translation);
@@ -252,10 +269,14 @@ namespace Divide {
     }
 
     bool Gizmo::hovered() const {
-        const ImGuizmo::GizmoBounds& bounds = ImGuizmo::GetBounds();
-        const ImGuiIO& io = _imguiContext->IO;
-        vec2<F32> deltaScreen = { io.MousePos.x - bounds.mScreenSquareCenter.x, io.MousePos.y - bounds.mScreenSquareCenter.y};
-        const F32 dist = deltaScreen.length();
-        return dist < (bounds.mRadiusSquareCenter + 5.0f);
+        if (active()) {
+            const ImGuizmo::GizmoBounds& bounds = ImGuizmo::GetBounds();
+            const ImGuiIO& io = _imguiContext->IO;
+            vec2<F32> deltaScreen = { io.MousePos.x - bounds.mScreenSquareCenter.x, io.MousePos.y - bounds.mScreenSquareCenter.y };
+            const F32 dist = deltaScreen.length();
+            return dist < (bounds.mRadiusSquareCenter + 5.0f);
+        }
+
+        return false;
     }
 }; //namespace Divide

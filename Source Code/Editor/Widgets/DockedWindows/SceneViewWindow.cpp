@@ -16,7 +16,6 @@ namespace Divide {
 
     SceneViewWindow::SceneViewWindow(Editor& parent, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor)
-        , _internalScenePlay(true)
     {
     }
 
@@ -45,8 +44,9 @@ namespace Divide {
             return ret;
         };
 
-        ImGui::Text("Play:"); ImGui::SameLine(); ImGui::ToggleButton("Play", &_internalScenePlay);
-        if (_internalScenePlay) {
+        bool play = !_parent.simulationPauseRequested();
+        ImGui::Text("Play:"); ImGui::SameLine(); ImGui::ToggleButton("Play", &play);
+        if (play) {
             Attorney::EditorSceneViewWindow::editorStepQueue(_parent, 2);
         }
 
@@ -54,7 +54,7 @@ namespace Divide {
             ImGui::SetTooltip("Toggle scene playback");
         }
         ImGui::SameLine();
-        const bool enableStepButtons = !_internalScenePlay;
+        const bool enableStepButtons = !play;
         if (button(!enableStepButtons,
                    ">|",
                     "When playback is paused, advanced the simulation by 1 full frame"))

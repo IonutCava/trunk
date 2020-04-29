@@ -396,7 +396,6 @@ ErrorCode WindowManager::configureAPISettings(RenderAPI api, U16 descriptorFlags
     validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
     validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE));
 
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
     validateAssert(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
     // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
     validateAssert(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));
@@ -425,9 +424,11 @@ ErrorCode WindowManager::configureAPISettings(RenderAPI api, U16 descriptorFlags
         }
     }
 
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
     if (BitCompare(descriptorFlags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT))) {
         validate(SDL_GL_MakeCurrent(mainWindow()->getRawWindow(), (SDL_GLContext)mainWindow()->userData()));
+    } else {
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
     }
 
     return ErrorCode::NO_ERR;

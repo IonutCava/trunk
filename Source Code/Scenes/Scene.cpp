@@ -1517,7 +1517,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
                         return A.dist < B.dist;
                     });
 
-        const bool editorRunning = _context.editor().running();
+        const bool editorRunning = _context.editor().running() && _context.editor().simulationPauseRequested();
         SceneGraphNode* target = nullptr;
         for (const SGNRayResult& result : _sceneSelectionCandidates) {
             if (result.dist < 0.0f) {
@@ -1641,7 +1641,7 @@ void Scene::beginDragSelection(PlayerIndex idx, vec2<I32> mousePos, bool inEdito
 
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _context.editor();
-        if (editor.running() && !editor.scenePreviewFocused() && !inEditor) {
+        if (editor.running() && !editor.scenePreviewFocused() && !inEditor && !editor.simulationPauseRequested()) {
             return;
         }
     }

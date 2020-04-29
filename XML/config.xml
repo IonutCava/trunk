@@ -4,7 +4,7 @@
 	<!-- if this is not set to -1, then all command buffers used in that frame number will be dumped to the error log for inspection -->
 	<!-- requires a build with ENABLE_GPU_VALIDATION set-->
 	<dumpCommandBuffersOnFrame>-1</dumpCommandBuffersOnFrame>
-	<enableRenderAPIDebugging>false</enableRenderAPIDebugging>
+	<enableRenderAPIDebugging>true</enableRenderAPIDebugging>
 	<enableDebugMsgGroups>true</enableDebugMsgGroups>
 	<useGeometryCache>true</useGeometryCache>
 	<useVegetationCache>true</useVegetationCache>
@@ -22,7 +22,7 @@
 <!-- RUNTIME: Values use by the application after loading is complete -->
 <runtime>
 	<!-- 0 = primary display, 1 = secondary display, etc. Value is clamped between [1, LAST_DISPLAY] -->
-	<targetDisplay>1</targetDisplay>
+	<targetDisplay>0</targetDisplay>
 	<!-- 0 = NULL, 1 - OpenGL4, 2 - GLES3, 3 - Vulkan-->
 	<targetRenderingAPI>1</targetRenderingAPI>
 	<!-- Fixed time step on/off as described here: https://gafferongames.com/post/fix_your_timestep/ -->

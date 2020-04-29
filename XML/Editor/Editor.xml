@@ -2,4 +2,5 @@
 <showMemEditor>true</showMemEditor>
 <showSampleWindow>false</showSampleWindow>
 <autoSaveCamera>false</autoSaveCamera>
+<autoFocusEditor>true</autoFocusEditor>
 <themeIndex>6</themeIndex>
