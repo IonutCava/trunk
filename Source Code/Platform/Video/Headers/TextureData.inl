@@ -116,7 +116,7 @@ namespace Divide {
             for (auto& it : _textures) {
                 if (it.first == binding) {
                     auto& crtData = it.second;
-                    if (crtData == data) {
+                    if (crtData != data) {
                         crtData = data;
                         return TextureUpdateState::REPLACED;
                     } else {
