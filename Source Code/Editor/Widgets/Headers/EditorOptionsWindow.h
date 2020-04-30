@@ -46,7 +46,9 @@ class EditorOptionsWindow : public PlatformContextComponent {
     void update(const U64 deltaTimeUS);
 
  private:
+    ImGuiFs::Dialog _fileOpenDialog;
     U16 _changeCount = 0u;
+    bool _openDialog = false;
 };
 }; //namespace Divide
 

@@ -77,7 +77,7 @@ bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DE
     _runningTaskCount.fetch_add(1);
 
     if (priority == TaskPriority::REALTIME) {
-        WAIT_FOR_CONDITION(task(true));
+        WAIT_FOR_CONDITION(task(false));
         if (onCompletionFunction) {
             onCompletionFunction();
         }

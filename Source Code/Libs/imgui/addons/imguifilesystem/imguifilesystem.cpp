@@ -2036,8 +2036,8 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
 	if (I.wndSize.y<=0) I.wndSize.y = Dialog::WindowSize.y;
         const ImVec2 mousePos = ImGui::GetMousePos();//
         ImGui::GetCursorPos();
-        if (I.wndPos.x<=0)  I.wndPos.x = mousePos.x - I.wndSize.x*0.5f;
-        if (I.wndPos.y<=0)  I.wndPos.y = mousePos.y - I.wndSize.y*0.5f;
+        //if (I.wndPos.x<=0)  I.wndPos.x = mousePos.x - I.wndSize.x*0.5f;
+        //if (I.wndPos.y<=0)  I.wndPos.y = mousePos.y - I.wndSize.y*0.5f;
         const ImVec2 screenSize = ImGui::GetIO().DisplaySize;
     if (I.wndPos.x>screenSize.x-I.wndSize.x-Dialog::WindowLTRBOffsets.z) I.wndPos.x = screenSize.x-I.wndSize.x-Dialog::WindowLTRBOffsets.z;
     if (I.wndPos.y>screenSize.y-I.wndSize.y-Dialog::WindowLTRBOffsets.w) I.wndPos.y = screenSize.y-I.wndSize.y-Dialog::WindowLTRBOffsets.w;

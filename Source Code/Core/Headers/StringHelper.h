@@ -40,13 +40,13 @@ namespace Divide {
         bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix = "--");
 
         template<size_t N, typename T_str = stringImpl>
-        void ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive = false);
+        bool ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive = false);
 
         template<size_t N, typename T_str = stringImpl>
         T_str ReplaceString(const T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive = false);
 
         template<typename T_str = stringImpl>
-        void ReplaceStringInPlace(T_str& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
+        bool ReplaceStringInPlace(T_str& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
         
         template<typename T_str = stringImpl>
         T_str ReplaceString(const T_str& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
@@ -69,9 +69,9 @@ namespace Divide {
         void InsertionSort(FwdIt first, FwdIt last, Compare cmp = Compare());
 
         template<typename T_strA = stringImpl, typename T_strB = stringImpl>
-        bool CompareIgnoreCase(const T_strA& a, const T_strB& b);
+        bool CompareIgnoreCase(const T_strA& a, const T_strB& b) noexcept;
 
-        bool CompareIgnoreCase(const char* a, const char* b);
+        bool CompareIgnoreCase(const char* a, const char* b) noexcept;
 
         /// http://stackoverflow.com/questions/236129/split-a-string-in-c
         template<typename T_vec, typename T_str = stringImpl>

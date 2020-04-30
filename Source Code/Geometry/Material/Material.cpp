@@ -359,7 +359,26 @@ void Material::recomputeShaders() {
     }
 }
 
+I64 Material::computeAndGetProgramGUID(const RenderStagePass& renderStagePass) {
+    constexpr U8 maxRetries = 250;
+
+    if (!canDraw(renderStagePass)) {
+        computeShader(renderStagePass);
+    }
+
+    for (U8 i = 0; i < maxRetries; ++i) {
+        if (!canDraw(renderStagePass)) {
+            _context.shaderComputeQueue().stepQueue();
+        } else {
+            return getProgramGUID(renderStagePass);
+        }
+    }
+
+    return ShaderProgram::defaultShader()->getGUID();
+}
+
 I64 Material::getProgramGUID(const RenderStagePass& renderStagePass) const {
+
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
     if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
@@ -1093,7 +1112,7 @@ void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property
 
             const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
 
-            pt.put(textureNode + ".name", texture->assetName().c_str());
+            pt.put(textureNode + ".name", texture->assetName());
             pt.put(textureNode + ".path", texture->assetLocation());
             pt.put(textureNode + ".flipped", texture->flipped());
 

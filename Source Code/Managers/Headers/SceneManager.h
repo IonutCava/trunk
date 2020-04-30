@@ -150,7 +150,7 @@ public:
 
     void onSizeChange(const SizeChangeParams& params);
 
-    inline U8 playerPass() const { return _currentPlayerPass; }
+    inline U8 playerPass() const noexcept { return _currentPlayerPass; }
 
     template <typename T, class Factory>
     bool register_new_ptr(Factory& factory, BOOST_DEDUCED_TYPENAME Factory::id_param_type id) {

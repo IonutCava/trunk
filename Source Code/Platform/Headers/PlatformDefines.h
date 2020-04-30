@@ -132,7 +132,7 @@ extern void setThreadName(const char* threadName) noexcept;
 //ref: http://stackoverflow.com/questions/1528298/get-path-of-executable
 extern FileWithPath getExecutableLocation(I32 argc, char** argv);
 FileWithPath getExecutableLocation(char* argv0);
-extern bool ShowOpenWithDialog(const char* targetFile);
+extern bool CallSystemCmd(const char* cmd, const char* args);
 
 bool createDirectories(const char* path);
 

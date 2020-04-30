@@ -426,7 +426,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     gizmoContext->Viewports[0]->PlatformHandle = _mainWindow;
     _gizmo = std::make_unique<Gizmo>(*this, gizmoContext);
 
-    //SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+    SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
     DockedWindow::Descriptor descriptor = {};
     descriptor.position = ImVec2(0, 0);
@@ -499,8 +499,6 @@ void Editor::toggle(const bool state) {
 
     _running = state;
 
-    _gizmo->enable(state && simulationPauseRequested());
-
     if (!state) {
         _sceneHovered = false;
         scenePreviewFocused(false);
@@ -520,6 +518,7 @@ void Editor::toggle(const bool state) {
         activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
         activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
         _context.kernel().sceneManager()->resetSelection(0);
+        _stepQueue = 2;
     } else {
         _stepQueue = 0;
         activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
@@ -532,6 +531,8 @@ void Editor::toggle(const bool state) {
             //_context.kernel().sceneManager()->setSelected(0, { &root });
         }
     }
+
+    _gizmo->enable(state && simulationPauseRequested());
 }
 
 void Editor::update(const U64 deltaTimeUS) {
@@ -722,6 +723,20 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
 
     Time::ScopedTimer timer(_editorRenderTimer);
     ImGui::SetCurrentContext(_imguiContexts[to_base(ImGuiContextType::Editor)]);
+
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        io.MouseHoveredViewport = 0;
+        ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+        for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
+            ImGuiViewport* viewport = platform_io.Viewports[n];
+            const DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
+            if (window != nullptr && window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
+                ImGui::GetIO().MouseHoveredViewport = viewport->ID;
+            }
+        }
+    }
+
     ImGui::NewFrame();
 
     if (render(evt._timeSinceLastFrameUS)) {
@@ -735,8 +750,11 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
         renderDrawList(pDrawData, Rect<I32>(0, 0, fb_width, fb_height), _mainWindow->getGUID(), buffer);
         _context.gfx().flushCommandBuffer(buffer);
 
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault(&context(), &context());
+
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault(&context(), &context());
+        }
 
         return true;
     }
@@ -1003,10 +1021,6 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
             viewportSize = { viewport->Size.x, viewport->Size.y };
         }
 
-        if (multiViewport) {
-            editorContext->IO.MouseHoveredViewport = 0;
-        }
-
         bool anyDown = false;
         for (U8 i = 0; i < to_U8(ImGuiContextType::COUNT); ++i) {
             ImGuiIO& io = _imguiContexts[i]->IO;
@@ -1031,19 +1045,6 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
                 }
             }
         }
-
-        if (multiViewport) {
-            ImGuiPlatformIO& platform_io = editorContext->PlatformIO;
-            for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
-                viewport = platform_io.Viewports[n];
-                const DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
-                assert(window != nullptr);
-                if (window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
-                    editorContext->IO.MouseHoveredViewport = viewport->ID;
-                }
-            }
-        }
-
         WindowManager::SetCaptureMouse(anyDown);
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
         const ImVec2 editorMousePos = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO.MousePos;
@@ -1589,6 +1590,7 @@ bool Editor::saveToXML() const {
     pt.put("autoSaveCamera", _autoSaveCamera);
     pt.put("autoFocusEditor", _autoFocusEditor);
     pt.put("themeIndex", to_I32(_currentTheme));
+    pt.put("textEditor", _externalTextEditorPath);
 
     if (createDirectory(editorPath.c_str())) {
         if (copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true)) {
@@ -1617,6 +1619,7 @@ bool Editor::loadFromXML() {
         _showSampleWindow = pt.get("showSampleWindow", false);
         _autoSaveCamera = pt.get("autoSaveCamera", false);
         _autoFocusEditor = pt.get("autoFocusEditor", true);
+        _externalTextEditorPath = pt.get<stringImpl>("textEditor", "");
         _currentTheme = static_cast<ImGuiStyleEnum>(pt.get("themeIndex", to_I32(_currentTheme)));
         ImGui::ResetStyle(_currentTheme);
 

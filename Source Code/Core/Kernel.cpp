@@ -270,8 +270,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
     Time::ScopedTimer timer(_appScenePass);
     {
         Time::ScopedTimer timer2(_cameraMgrTimer);
-        // Update cameras
-        Camera::update(deltaTimeUS);
+        // Update cameras 
+        // ToDo: add a speed slider in the editor -Ionut
+        Camera::update(_timingData.freezeLoopTime() ? (appDeltaTimeUS / 2) : deltaTimeUS);
     }
 
     if (_platformContext.mainWindow().minimized()) {

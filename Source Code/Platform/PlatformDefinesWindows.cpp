@@ -233,8 +233,23 @@ namespace Divide {
         return splitPathToNameAndLocation(buf);
     }
 
-    bool ShowOpenWithDialog(const char* targetFile) {
-        return std::system(targetFile) == 0;
+    bool CallSystemCmd(const char* cmd, const char* args) {
+        STARTUPINFO si;
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
+
+        PROCESS_INFORMATION pi;
+        ZeroMemory(&pi, sizeof(pi));
+
+        const stringImpl commandLine = Util::StringFormat("\"%s\" %s", cmd, args);
+        char* lpCommandLine = (char*)commandLine.c_str();
+
+        BOOL ret = CreateProcess(NULL, lpCommandLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        return ret == TRUE;
     }
 }; //namespace Divide
 

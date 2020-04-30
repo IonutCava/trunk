@@ -141,7 +141,8 @@ bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
 template<typename T,
          typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
 bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType);
-bool openFile(const char* filePath, const char* filename);
+bool openFile(const char* filePath, const char* fileName);
+bool openFile(const char* cmd, const char* filePath, const char* fileName);
 
 bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, size_t length, FileType fileType);
 bool deleteFile(const char* filePath, const char* fileName);

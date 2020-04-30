@@ -54,6 +54,7 @@ namespace Attorney {
     class EditorGizmo;
     class EditorMenuBar;
     class EditorOutputWindow;
+    class EditorOptionsWindow;
     class EditorGeneralWidget;
     class EditorWindowManager;
     class EditorPropertyWindow;
@@ -101,6 +102,7 @@ class Editor : public PlatformContextComponent,
     friend class Attorney::EditorMenuBar;
     friend class Attorney::EditorOutputWindow;
     friend class Attorney::EditorGeneralWidget;
+    friend class Attorney::EditorOptionsWindow;
     friend class Attorney::EditorWindowManager;
     friend class Attorney::EditorPropertyWindow;
     friend class Attorney::EditorSceneViewWindow;
@@ -255,6 +257,7 @@ class Editor : public PlatformContextComponent,
 
     ImGuiStyleEnum _currentTheme = ImGuiStyle_Count;
 
+    stringImpl        _externalTextEditorPath = "";
     bool              _autoSaveCamera = false;
     bool              _autoFocusEditor = true;
     bool              _showSampleWindow = false;
@@ -356,6 +359,28 @@ namespace Attorney {
         friend class Divide::PropertyWindow;
     };
 
+
+    class EditorOptionsWindow {
+    private :
+        static ImGuiStyleEnum getTheme(const Editor& editor) noexcept {
+            return editor._currentTheme;
+        }
+
+        static void setTheme(Editor& editor, const ImGuiStyleEnum newTheme) noexcept {
+            editor._currentTheme = newTheme;
+        }
+
+        static const stringImpl& externalTextEditorPath(Editor& editor) noexcept {
+            return editor._externalTextEditorPath;
+        }
+
+        static void externalTextEditorPath(Editor& editor, const stringImpl& path) noexcept {
+            editor._externalTextEditorPath = path;
+        }
+
+        friend class Divide::EditorOptionsWindow;
+    };
+
     class EditorMenuBar {
     private:
         static void toggleMemoryEditor(Editor& editor, bool state)  noexcept {
@@ -374,6 +399,7 @@ namespace Attorney {
             return editor._showOptionsWindow;
         }
         
+       
         friend class Divide::MenuBar;
     };
 
@@ -451,12 +477,8 @@ namespace Attorney {
             editor.showStatusMessage(message, durationMS);
         }
 
-        static ImGuiStyleEnum getTheme(const Editor& editor) noexcept {
-            return editor._currentTheme;
-        }
-
-        static void setTheme(Editor& editor, const ImGuiStyleEnum newTheme) noexcept {
-            editor._currentTheme = newTheme;
+        static const stringImpl& externalTextEditorPath(Editor& editor) noexcept {
+            return editor._externalTextEditorPath;
         }
 
         friend class Divide::Gizmo;

@@ -72,13 +72,9 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
 
     if (position.x == -1) {
         position.x = SDL_WINDOWPOS_CENTERED_DISPLAY(descriptor.targetDisplay);
-    } else {
-        position.x += _parent.monitorData()[descriptor.targetDisplay].viewport.x;
     }
     if (position.y == -1) {
         position.y = SDL_WINDOWPOS_CENTERED_DISPLAY(descriptor.targetDisplay);
-    } else {
-        position.y += _parent.monitorData()[descriptor.targetDisplay].viewport.x;
     }
 
     _sdlWindow = SDL_CreateWindow(descriptor.title.c_str(),

@@ -78,8 +78,8 @@ namespace Divide {
         return splitPathToNameAndLocation(buf);
     }
 
-    bool ShowOpenWithDialog(const char* targetFile) {
-        return std::system(targetFile) == 0;
+    bool CallSystemCmd(const char* cmd, const char* args) {
+        return std::system(Util::StringFormat("%s %s", cmd, args).c_str()) == 0;
     }
 }; //namespace Divide
 

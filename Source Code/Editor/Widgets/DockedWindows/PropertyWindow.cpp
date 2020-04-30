@@ -815,7 +815,7 @@ namespace Divide {
              stringImpl shaderName = "None";
              ShaderProgram* program = nullptr;
              if (currentStagePass._stage != RenderStage::COUNT && currentStagePass._passType != RenderPassType::COUNT) {
-                 const I64 shaderGUID = material->getProgramGUID(currentStagePass);
+                 const I64 shaderGUID = material->computeAndGetProgramGUID(currentStagePass);
                  program = ShaderProgram::findShaderProgram(shaderGUID);
                  if (program != nullptr) {
                      shaderName = program->resourceName().c_str();
@@ -839,8 +839,13 @@ namespace Divide {
                                 ImGui::Text(define.first.c_str());
                              }
                              if (ImGui::Button("Open Source File")) {
-                                 if (!openFile((program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), module._sourceFile.c_str())) {
-                                     Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Couldn't open specified source file!", Time::SecondsToMilliseconds<F32>(3));
+                                 const stringImpl& textEditor = Attorney::EditorGeneralWidget::externalTextEditorPath(_context.editor());
+                                 if (textEditor.empty()) {
+                                     Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: No text editor specified!", Time::SecondsToMilliseconds<F32>(3));
+                                 } else {
+                                     if (!openFile(textEditor.c_str(), (program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), module._sourceFile.c_str())) {
+                                         Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Couldn't open specified source file!", Time::SecondsToMilliseconds<F32>(3));
+                                     }
                                  }
                              }
                          }

@@ -943,7 +943,8 @@ bool SceneManager::saveActiveScene(bool toCache, bool deferred, DELEGATE<void, c
                            nullptr,
                            [&activeScene, msgCallback, finishCallback, toCache](const Task& parentTask) {
                                LoadSave::saveScene(activeScene, toCache, msgCallback, finishCallback);
-                           });
+                           },
+                           false);
     Start(*_saveTask, deferred ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     return true;

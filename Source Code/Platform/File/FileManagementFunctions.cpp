@@ -88,13 +88,22 @@ bool createFile(const char* filePathAndName, bool overwriteExisting) {
 }
 
 bool openFile(const char* filePath, const char* fileName) {
+    return openFile("", filePath, fileName);
+}
+
+bool openFile(const char* cmd, const char* filePath, const char* fileName) {
     if (Util::IsEmptyOrNull(fileName) || !fileExists(filePath, fileName)) {
         return false;
     }
 
-    const stringImpl file{ const_sysInfo()._pathAndFilename._path + "/" + filePath + fileName};
+    const std::array<stringImpl, 2> searchPattern = { "//", "\\" };
+    const stringImpl file = "\"" + Util::ReplaceString({ const_sysInfo()._pathAndFilename._path + "/" + filePath + fileName }, searchPattern, "/", true) + "\"";
 
-    return ShowOpenWithDialog(file.c_str());
+    if (strlen(cmd) == 0) {
+        return CallSystemCmd(file.c_str(), "");
+    }
+
+    return CallSystemCmd(cmd, file.c_str());
 }
 
 bool deleteFile(const char* filePath, const char* fileName) {

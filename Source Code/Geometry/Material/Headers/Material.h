@@ -188,6 +188,7 @@ class Material : public CachedResource {
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
 
     I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
+    I64 computeAndGetProgramGUID(const RenderStagePass& renderStagePass);
 
     Texture_wptr getTexture(TextureUsage textureUsage) const;
 

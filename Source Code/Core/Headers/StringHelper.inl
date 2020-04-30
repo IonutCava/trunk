@@ -117,26 +117,41 @@ void GetPermutations(const T_str& inputString, vectorEASTL<T_str>& permutationCo
 }
 
 template<size_t N, typename T_str>
-void ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive) {
-    for (const stringImpl& s : search) {
-        ReplaceStringInPlace(subject, s, replace, recursive);
+bool ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive) {
+    bool ret = true;
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (const stringImpl& s : search) {
+            changed = ReplaceStringInPlace(subject, s, replace, recursive);
+            ret = changed || ret;
+            
+        }
     }
+
+    return ret;
 }
 
 template<size_t N, typename T_str>
 T_str ReplaceString(const T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive) {
     T_str ret = subject;
-    for (const stringImpl& s : search) {
-        ReplaceStringInPlace(ret, s, replace, recursive);
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (const stringImpl& s : search) {
+            changed = ReplaceStringInPlace(ret, s, replace, recursive) || changed;
+        }
     }
+
     return ret;
 }
 
 template<typename T_str>
-inline void ReplaceStringInPlace(T_str& subject,
+inline bool ReplaceStringInPlace(T_str& subject,
                                  const stringImpl& search,
                                  const stringImpl& replace,
                                  bool recursive) {
+    bool ret = false;
     bool changed = true;
     while (changed) {
         changed = false;
@@ -146,12 +161,15 @@ inline void ReplaceStringInPlace(T_str& subject,
             subject.replace(pos, search.length(), replace.c_str());
             pos += replace.length();
             changed = true;
+            ret = true;
         }
 
         if (!recursive) {
             break;
         }
     }
+
+    return ret;
 }
 
 template<typename T_str>
@@ -182,13 +200,13 @@ T_str GetStartingCharacters(const T_str& input, size_t count) {
 }
 
 
-inline bool CompareIgnoreCase(const char* a, const char* b) {
+inline bool CompareIgnoreCase(const char* a, const char* b) noexcept {
     assert(a != nullptr && b != nullptr);
     return strcasecmp(a, b) == 0;
 }
 
 template<typename T_strA>
-inline bool CompareIgnoreCase(const T_strA& a, const char* b) {
+inline bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
     if (b != nullptr && !a.empty()) {
         return CompareIgnoreCase(a.c_str(), b);
     } else if (a.empty()) {
@@ -212,7 +230,7 @@ inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
 }
 
 template<>
-inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) {
+inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) noexcept {
     if (a.length() == b.length()) {
         return std::equal(std::cbegin(b),
                           std::cend(b),
@@ -226,7 +244,7 @@ inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) 
 }
 
 template<typename T_strA, typename T_strB>
-inline bool CompareIgnoreCase(const T_strA& a, const T_strB& b) {
+inline bool CompareIgnoreCase(const T_strA& a, const T_strB& b) noexcept {
     return CompareIgnoreCase(a.c_str(), b.c_str());
 }
 
