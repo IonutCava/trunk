@@ -55,22 +55,28 @@ namespace Divide {
     }
 
     void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open) {
-        ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | (open ? ImGuiTreeNodeFlags_DefaultOpen : 0);
+        ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
+                                        //Conflicts with "Teleport to node on double click"
+                                        // | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
+        if (open) {
+            node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
+        }
         if (sgn.hasFlag(SceneGraphNode::Flags::SELECTED)) {
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
 
         if (sgn.getChildCount() == 0u) {
-            node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;//| ImGuiTreeNodeFlags_NoTreePushOnOpen; 
+            node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
         }
 
         const auto printNode = [this, &sceneManager, &sgn, node_flags, nodeIDX, open]() {
-            bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
-            if (ImGui::IsItemClicked()) {
+            const bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
+            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
                 const bool wasSelected = sgn.hasFlag(SceneGraphNode::Flags::SELECTED);
+                const bool parentSelected = (sgn.parent() != nullptr && sgn.parent()->hasFlag(SceneGraphNode::Flags::SELECTED));
                 sceneManager.resetSelection(0);
-                if (!wasSelected) {
+                if (!wasSelected || parentSelected) {
                     sceneManager.setSelected(0, { &sgn });
                 }
                 Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);

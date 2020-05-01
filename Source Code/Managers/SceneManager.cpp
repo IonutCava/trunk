@@ -621,8 +621,9 @@ void SceneManager::moveCameraToNode(SceneGraphNode* targetNode) const {
         vec3<F32> targetPos = playerCamera()->getEye();
         BoundsComponent* bComp = targetNode->get<BoundsComponent>();
         if (bComp != nullptr) {
-            targetPos = bComp->getBoundingBox().getCenter();
-            targetPos -= bComp->getBoundingSphere().getRadius() * playerCamera()->getForwardDir();
+            const BoundingSphere& bSphere = bComp->getBoundingSphere();
+            targetPos = bSphere.getCenter();
+            targetPos -= (bSphere.getRadius() * 1.5f) * playerCamera()->getForwardDir();
         } else {
             TransformComponent* tComp = targetNode->get<TransformComponent>();
             if (tComp != nullptr) {

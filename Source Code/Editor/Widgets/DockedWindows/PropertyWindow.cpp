@@ -233,6 +233,7 @@ namespace Divide {
             static bool closed = false;
             for (U8 i = 0u; i < crtSelections._selectionCount; ++i) {
                 SceneGraphNode* sgnNode = node(crtSelections._selections[i]);
+                ImGui::PushID(sgnNode->name().c_str());
 
                 if (sgnNode != nullptr) {
                     bool enabled = sgnNode->hasFlag(SceneGraphNode::Flags::ACTIVE);
@@ -370,6 +371,7 @@ namespace Divide {
                         }
                     }
                 }
+                ImGui::PopID();
             }
 
             //ToDo: Speed this up. Also, how do we handle adding stuff like RenderingComponents and creating materials and the like?
@@ -384,7 +386,7 @@ namespace Divide {
 
                 bool missing = false;
                 for (U8 i = 0u; i < crtSelections._selectionCount; ++i) {
-                    SceneGraphNode* sgn = node(crtSelections._selections[i]);
+                    const SceneGraphNode* sgn = node(crtSelections._selections[i]);
                     if (sgn != nullptr && !BitCompare(sgn->componentMask(), to_U32(type))) {
                         missing = true;
                         break;
