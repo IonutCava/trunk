@@ -155,7 +155,7 @@ protected:
 
     bool setViewport(const Rect<I32>& viewport) final;
 public:
-    static GLStateTracker& getStateTracker();
+    static GLStateTracker& getStateTracker() noexcept;
 
     /// Queue a mipmap recalculation
     static void queueComputeMipMap(GLuint textureHandle);

@@ -131,10 +131,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void SetSubroutines(ShaderType type, const vectorEASTL<U32>& indices) const;
     /// This works exactly like SetSubroutines, but for a single index.
     void SetSubroutine(ShaderType type, U32 index) const;
-    /// Bind this shader program
-    bool bind(bool& wasBound, bool& wasReady);
+    /// Bind this shader program (returns false if the program was ready/failed validation)
+    bool bind(bool& wasBound);
     /// Returns true if the shader is currently active
-    bool isBound() const;
+    bool isBound() const noexcept;
 
    private:
     GLuint _handle;
@@ -167,8 +167,8 @@ namespace Attorney {
         static void addLineOffset(ShaderType stage, U32 offset) noexcept {
             glShaderProgram::_lineOffset[to_U32(stage)] += offset;
         }
-        static bool bind(glShaderProgram& program, bool& wasBound, bool& wasReady) {
-            return program.bind(wasBound, wasReady);
+        static bool bind(glShaderProgram& program, bool& wasBound) {
+            return program.bind(wasBound);
         }
         static void queueValidation(glShaderProgram& program) noexcept {
             // After using the shader at least once, validate the shader if needed

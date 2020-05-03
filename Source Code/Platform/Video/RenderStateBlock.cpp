@@ -67,11 +67,9 @@ namespace TypeUtil {
 RenderStateBlock::RenderStateBlock() noexcept
     : GUIDWrapper()
 {
-    setDefaultValues();
-    if (s_defaultHashValue == 0) {
+    if (defaultHash() == 0) {
         _dirty = true;
         s_defaultHashValue = getHash();
-        _hash = s_defaultHashValue;
     }
 }
 
@@ -222,31 +220,13 @@ void RenderStateBlock::setStencil(bool enable,
     }
 }
 
-void RenderStateBlock::setDefaultValues()  noexcept {
-    _zBias = 0.0f;
-    _zUnits = 0.0f;
-    _zFunc = ComparisonFunction::LEQUAL;
-    _colourWrite.b[0] = _colourWrite.b[1] = _colourWrite.b[2] = _colourWrite.b[3] = 1;
-    _depthTestEnabled = true;
-    _scissorTestEnabled = false;
-    _cullMode = CullMode::CW;
-    _frontFaceCCW = true;
-    _fillMode = FillMode::SOLID;
-    _tessControlPoints = 3;
-    _stencilMask = 0xFFFFFFFF;
-    _stencilWriteMask = 0xFFFFFFFF;
-    _stencilEnable = false;
-    _stencilRef = 0;
-    _stencilFailOp = StencilOperation::KEEP;
-    _stencilZFailOp = StencilOperation::KEEP;
-    _stencilPassOp = StencilOperation::KEEP;
-    _stencilFunc = ComparisonFunction::NEVER;
-    _hash = s_defaultHashValue;
-}
-
 void RenderStateBlock::clear() {
     UniqueLock<SharedMutex> w_lock(s_stateBlockMapMutex);
     s_stateBlockMap.clear();
+}
+
+size_t RenderStateBlock::defaultHash() noexcept {
+    return s_defaultHashValue;
 }
 
 /// Return the render state block defined by the specified hash value.
@@ -270,7 +250,7 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool&
         return it->second;
     }
 
-    return s_stateBlockMap.find(s_defaultHashValue)->second;
+    return s_stateBlockMap.find(defaultHash())->second;
 }
 
 bool RenderStateBlock::cullEnabled() const noexcept {

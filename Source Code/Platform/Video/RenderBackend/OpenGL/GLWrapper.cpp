@@ -1001,23 +1001,21 @@ bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
         return true;
     }
 
-    GL_API::getStateTracker()._activePipeline = &pipeline;
-
-    // Set the proper render states
-    setStateBlock(pipeline.stateHash());
-
     ShaderProgram* program = ShaderProgram::findShaderProgram(pipeline.shaderProgramHandle());
     if (program == nullptr) {
-        // Should we return false?
-        program = ShaderProgram::defaultShader().get();
+        return false;
     }
 
+    GL_API::getStateTracker()._activePipeline = &pipeline;
+    // Set the proper render states
+    setStateBlock(pipeline.stateHash());
     glShaderProgram& glProgram = static_cast<glShaderProgram&>(*program);
     // We need a valid shader as no fixed function pipeline is available
 
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     bool wasBound = false;
-    if (Attorney::GLAPIShaderProgram::bind(glProgram, wasBound, shaderWasReady)) {
+    shaderWasReady = Attorney::GLAPIShaderProgram::bind(glProgram, wasBound);
+    if (shaderWasReady) {
         const ShaderFunctions& functions = pipeline.shaderFunctions();
         for (U8 type = 0; type < to_U8(ShaderType::COUNT); ++type) {
             Attorney::GLAPIShaderProgram::SetSubroutines(glProgram, static_cast<ShaderType>(type), functions[type]);
@@ -1029,7 +1027,7 @@ bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
     }
 
     GL_API::getStateTracker().setActiveProgram(0u);
-    GL_API::getStateTracker().setActivePipeline(0u);
+    GL_API::getStateTracker().setActiveShaderPipeline(0u);
     GL_API::getStateTracker()._activePipeline = nullptr;
 
     return false;

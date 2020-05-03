@@ -48,15 +48,44 @@ void GLStateTracker::init(GLStateTracker* base) {
         _currentCullMode = GL_BACK;
         _currentFrontFace = GL_CCW;
     }
-    
+
     _init = true;
+}
+
+
+size_t GLStateTracker::setStateBlock(size_t stateBlockHash) {
+    if (_currentStateBlockHash == 0) {
+        _currentStateBlockHash = RenderStateBlock::defaultHash();
+    }
+
+    // If the new state hash is different from the previous one
+    if (stateBlockHash != _currentStateBlockHash) {
+        // Remember the previous state hash
+        _previousStateBlockHash = _currentStateBlockHash;
+        // Update the current state hash
+        _currentStateBlockHash = stateBlockHash;
+
+        bool currentStateValid = false;
+        const RenderStateBlock& currentState = RenderStateBlock::get(_currentStateBlockHash, currentStateValid);
+        bool previousStateValid = false;
+        const RenderStateBlock& previousState = RenderStateBlock::get(_previousStateBlockHash, previousStateValid);
+
+        DIVIDE_ASSERT(currentStateValid && previousStateValid && currentState != previousState,
+                      "GL_API error: Invalid state blocks detected on activation!");
+
+        // Activate the new render state block in an rendering API dependent way
+        activateStateBlock(currentState, previousState);
+    }
+
+    // Return the previous state hash
+    return _previousStateBlockHash;
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
 bool GLStateTracker::setPixelPackAlignment(GLint packAlignment,
-                                   GLint rowLength,
-                                   GLint skipRows,
-                                   GLint skipPixels) {
+                                           GLint rowLength,
+                                           GLint skipRows,
+                                           GLint skipPixels) {
     // Keep track if we actually affect any OpenGL state
     bool changed = false;
     if (_activePackUnpackAlignments[0] != packAlignment) {
@@ -87,40 +116,11 @@ bool GLStateTracker::setPixelPackAlignment(GLint packAlignment,
     return changed;
 }
 
-size_t GLStateTracker::setStateBlock(size_t stateBlockHash) {
-    // If the new state hash is different from the previous one
-    if (stateBlockHash != _currentStateBlockHash) {
-        // Remember the previous state hash
-        _previousStateBlockHash = _currentStateBlockHash;
-        // Update the current state hash
-        _currentStateBlockHash = stateBlockHash;
-
-        bool currentStateValid = false;
-        const RenderStateBlock& currentState = RenderStateBlock::get(_currentStateBlockHash, currentStateValid);
-        if (_previousStateBlockHash != 0) {
-            bool previousStateValid = false;
-            const RenderStateBlock& previousState = RenderStateBlock::get(_previousStateBlockHash, previousStateValid);
-
-            DIVIDE_ASSERT(currentStateValid && previousStateValid &&
-                          currentState != previousState,
-                          "GL_API error: Invalid state blocks detected on activation!");
-
-            // Activate the new render state block in an rendering API dependent way
-            activateStateBlock(currentState, previousState);
-        } else {
-            DIVIDE_ASSERT(currentStateValid, "GL_API error: Invalid state blocks detected on activation!");
-            activateStateBlock(currentState);
-        }
-    }
-
-    // Return the previous state hash
-    return _previousStateBlockHash;
-}
 /// Pixel unpack alignment is usually changed by textures, PBOs, etc
 bool GLStateTracker::setPixelUnpackAlignment(GLint unpackAlignment,
-                                     GLint rowLength,
-                                     GLint skipRows,
-                                     GLint skipPixels) {
+                                             GLint rowLength,
+                                             GLint skipRows,
+                                             GLint skipPixels) {
     // Keep track if we actually affect any OpenGL state
     bool changed = false;
     if (_activePackUnpackAlignments[1] != unpackAlignment) {
@@ -402,7 +402,7 @@ bool GLStateTracker::setActiveProgram(GLuint programHandle) {
     // Check if we are binding a new program or unbinding all shaders
     // Prevent double bind
     if (_activeShaderProgram != programHandle) {
-        setActivePipeline(0u);
+        setActiveShaderPipeline(0u);
 
         // Remember the new binding for future reference
         _activeShaderProgram = programHandle;
@@ -415,7 +415,7 @@ bool GLStateTracker::setActiveProgram(GLuint programHandle) {
 }
 
 /// Change the currently active shader pipeline. Passing null will unbind shaders (will use pipeline 0)
-bool GLStateTracker::setActivePipeline(GLuint pipelineHandle) {
+bool GLStateTracker::setActiveShaderPipeline(GLuint pipelineHandle) {
     // Check if we are binding a new program or unbinding all shaders
     // Prevent double bind
     if (_activeShaderPipeline != pipelineHandle) {
@@ -454,15 +454,12 @@ void GLStateTracker::setClipingPlaneState(const bool lowerLeftOrigin, const bool
     }
 }
 
-void GLStateTracker::setBlendColour(const UColour4& blendColour, bool force) {
-    if (_blendColour != blendColour || force) {
-        const FColour4 floatColour = Util::ToFloatColour(blendColour);
-        glBlendColor(static_cast<GLfloat>(floatColour.r),
-                     static_cast<GLfloat>(floatColour.g),
-                     static_cast<GLfloat>(floatColour.b),
-                     static_cast<GLfloat>(floatColour.a));
-
+void GLStateTracker::setBlendColour(const UColour4& blendColour) {
+    if (_blendColour != blendColour) {
         _blendColour.set(blendColour);
+
+        const FColour4 floatColour = Util::ToFloatColour(blendColour);
+        glBlendColor(floatColour.r, floatColour.g, floatColour.b, floatColour.a);
     }
 }
 
@@ -725,48 +722,5 @@ void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock,
                     cWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
     }
 }
-
-void GLStateTracker::activateStateBlock(const RenderStateBlock& newBlock) {
-    newBlock.cullEnabled() ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
-    newBlock.stencilEnable() ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
-    newBlock.depthTestEnabled() ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
-    newBlock.scissorTestEnabled() ? glEnable(GL_SCISSOR_TEST) : glDisable(GL_SCISSOR_TEST);
-
-    if (newBlock.cullMode() != CullMode::NONE) {
-        const GLenum targetMode = GLUtil::glCullModeTable[to_U32(newBlock.cullMode())];
-        if (_currentCullMode != targetMode) {
-            glCullFace(targetMode);
-            _currentCullMode = targetMode;
-        }
-    }
-
-    _currentFrontFace = newBlock.frontFaceCCW() ? GL_CCW : GL_CW;
-    glFrontFace(_currentFrontFace);
-
-    glPolygonMode(GL_FRONT_AND_BACK, GLUtil::glFillModeTable[to_U32(newBlock.fillMode())]);
-    glDepthFunc(GLUtil::glCompareFuncTable[to_U32(newBlock.zFunc())]);
-    glStencilMask(newBlock.stencilWriteMask());
-    glStencilFunc(GLUtil::glCompareFuncTable[to_U32(newBlock.stencilFunc())],
-                  newBlock.stencilRef(),
-                  newBlock.stencilMask());
-    glStencilOp(GLUtil::glStencilOpTable[to_U32(newBlock.stencilFailOp())],
-                GLUtil::glStencilOpTable[to_U32(newBlock.stencilZFailOp())],
-                GLUtil::glStencilOpTable[to_U32(newBlock.stencilPassOp())]);
-
-    if (IS_ZERO(newBlock.zBias())) {
-        glDisable(GL_POLYGON_OFFSET_FILL);
-    } else {
-        glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(newBlock.zBias(), newBlock.zUnits());
-    }
-
-    const P32 cWrite = newBlock.colourWrite();
-    glColorMask(cWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
-                cWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
-                cWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
-                cWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
-    
-}
-
 
 }; //namespace Divide

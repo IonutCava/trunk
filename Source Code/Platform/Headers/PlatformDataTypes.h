@@ -68,15 +68,31 @@ enum class Byte : U8 {};
 using Byte = std::byte;
 #endif
 
-typedef union {
+union P32 {
     U32 i = 0u;
     U8  b[4];
-} P32;
 
-typedef union {
+    P32() = default;
+    P32(U32 val) : i(val) {}
+    P32(U8 b1, U8 b2, U8 b3, U8 b4) : b{ b1, b2, b3, b4 } {}
+    P32(U8* bytes) : b{ bytes[0], bytes[1], bytes[2], bytes[3] } {}
+};
+
+static const P32 P32_FLAGS_TRUE = { 1u, 1u, 1u, 1u };
+static const P32 P32_FLAGS_FALSE = { 0u, 0u, 0u, 0u };
+
+union P64 {
     U64 i = 0u;
     U8  b[8];
-} P64;
+
+    P64() = default;
+    P64(U64 val) : i(val) {}
+    P64(U8 b1, U8 b2, U8 b3, U8 b4, U8 b5, U8 b6, U8 b7, U8 b8) : b{ b1, b2, b3, b4, b5, b6, b7, b8 } {}
+    P64(U8* bytes) { std::memcpy(b, bytes, 8 * sizeof(U8)); }
+};
+
+static const P64 P64_FLAGS_TRUE = { 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u };
+static const P64 P64_FLAGS_FALSE = { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u };
 
 inline bool operator==(const P32& lhs, const P32& rhs) noexcept {
     return lhs.i == rhs.i;

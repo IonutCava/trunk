@@ -78,19 +78,17 @@ namespace Divide {
             setBlending(drawBufferIdx, _blendProperties[drawBufferIdx]);
         }
 
-        void setBlendColour(const UColour4& blendColour, bool force = false);
+        void setBlendColour(const UColour4& blendColour);
         /// Switch the current framebuffer by binding it as either a R/W buffer, read
         /// buffer or write buffer
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
         /// Change the currently active shader program. Returns true if the program was bound
         bool setActiveProgram(GLuint programHandle);
         /// Change the currently active shader pipeline. Returns true if the pipeline was bound
-        bool setActivePipeline(GLuint ppipelineHandle);
+        bool setActiveShaderPipeline(GLuint ppipelineHandle);
         /// A state block should contain all rendering state changes needed for the next draw call.
         /// Some may be redundant, so we check each one individually
-        void activateStateBlock(const RenderStateBlock& newBlock,
-            const RenderStateBlock& oldBlock);
-        void activateStateBlock(const RenderStateBlock& newBlock);
+        void activateStateBlock(const RenderStateBlock& newBlock, const RenderStateBlock& oldBlock);
         /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
         bool setPixelPackUnpackAlignment(GLint packAlignment = 4, GLint unpackAlignment = 4) {
             return (setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment));

@@ -496,7 +496,7 @@ bool glShaderProgram::recompileInternal(bool force) {
             // Remember bind state
             bool wasBound = isBound();
             if (wasBound) {
-                GL_API::getStateTracker().setActivePipeline(0u);
+                GL_API::getStateTracker().setActiveShaderPipeline(0u);
             }
 
             if (resourceName().compare("NULL") == 0) {
@@ -508,8 +508,7 @@ bool glShaderProgram::recompileInternal(bool force) {
             threadedLoad(true);
             // Restore bind state
             if (wasBound) {
-                bool wasReady = false;
-                bind(wasBound, wasReady);
+                bind(wasBound);
             }
         }
 
@@ -525,22 +524,21 @@ bool glShaderProgram::isValid() const {
     return _handle != GLUtil::k_invalidObjectID;
 }
 
-bool glShaderProgram::isBound() const {
+bool glShaderProgram::isBound() const noexcept {
     return GL_API::getStateTracker()._activeShaderPipeline == _handle;
 }
 
 /// Bind this shader program
-bool glShaderProgram::bind(bool& wasBound, bool& wasReady) {
+bool glShaderProgram::bind(bool& wasBound) {
     validatePreBind();
-    wasReady = false;
     // If the shader isn't ready or failed to link, stop here
     if (_validated || _validationQueued) {
-        wasReady = true;
         // Set this program as the currently active one
-        wasBound = GL_API::getStateTracker().setActivePipeline(_handle);
+        wasBound = GL_API::getStateTracker().setActiveShaderPipeline(_handle);
         validatePostBind();
         return true;
     }
+
     return false;
 }
 

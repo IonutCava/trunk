@@ -65,6 +65,8 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
        //Returns true if we needed a full XML parse (block wasn't in cache)
        static bool loadFromXML(size_t stateHash, const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
+       static size_t defaultHash() noexcept;
+
     protected:
         using RenderStateMap = hashMap<size_t, RenderStateBlock, NoHash<size_t>>;
         static RenderStateMap s_stateBlockMap;
@@ -82,8 +84,6 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
         inline bool operator!=(const RenderStateBlock& rhs) const noexcept {
             return getHash() != rhs.getHash();
         }
-
-        void setDefaultValues() noexcept;
 
         void setFillMode(FillMode mode) noexcept;
         void setTessControlPoints(U32 count) noexcept;
@@ -112,7 +112,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
         size_t getHash() const noexcept override;
 
     public:
-        PROPERTY_R(P32, colourWrite);
+        PROPERTY_R(P32, colourWrite, P32_FLAGS_TRUE);
         PROPERTY_R(F32, zBias, 0.0f);
         PROPERTY_R(F32, zUnits, 0.0f);
         PROPERTY_R(U32, tessControlPoints, 3);

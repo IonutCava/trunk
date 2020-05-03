@@ -34,21 +34,20 @@ Mutex GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
 
-GLStateTracker& GL_API::getStateTracker() {
+GLStateTracker& GL_API::getStateTracker() noexcept {
     return s_stateTracker;
 }
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) {
-    static BlendingProperties defaultBlend = {};
-
     if (global) {
         stateTracker.bindTextures(0, s_maxTextureUnits, nullptr, nullptr, nullptr);
         stateTracker.setPixelPackUnpackAlignment();
-        stateTracker.setActiveBuffer(GL_TEXTURE_BUFFER, 0);
+
+        //stateTracker.setActiveBuffer(GL_TEXTURE_BUFFER, 0);
+        //stateTracker.setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         //stateTracker.setActiveBuffer(GL_UNIFORM_BUFFER, 0);
         //stateTracker.setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-        stateTracker.setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         //stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
         //stateTracker._commandBufferOffset = 0u;
         stateTracker._activePixelBuffer = nullptr;
@@ -58,18 +57,19 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     stateTracker.setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     stateTracker.setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
     stateTracker._activeClearColour.set(window.clearColour());
-    const size_t blendCount = stateTracker._blendEnabled.size();
-    for (size_t i = 0; i < blendCount; ++i) {
-        stateTracker.setBlending(to_U32(i), defaultBlend);
+    const U8 blendCount = to_U8(stateTracker._blendEnabled.size());
+    for (U8 i = 0; i < blendCount; ++i) {
+        stateTracker.setBlending(i, {});
     }
-    stateTracker.setBlendColour(UColour4(0u), true);
+    stateTracker.setBlendColour({ 0u, 0u, 0u, 0u });
 
     const vec2<U16>& drawableSize = _context.getDrawableSize(window);
-    stateTracker.setScissor(Rect<I32>(0, 0, drawableSize.width, drawableSize.height));
+    stateTracker.setScissor({ 0, 0, drawableSize.width, drawableSize.height });
 
     stateTracker._activePipeline = nullptr;
     stateTracker._activeRenderTarget = nullptr;
-    stateTracker.setActivePipeline(0u);
+    stateTracker.setActiveProgram(0u);
+    stateTracker.setActiveShaderPipeline(0u);
 }
 
 bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
@@ -148,7 +148,7 @@ bool GL_API::deleteShaderPipelines(GLuint count, GLuint* programPipelines) {
     if (count > 0 && programPipelines != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             if (getStateTracker()._activeShaderPipeline == programPipelines[i]) {
-                getStateTracker().setActivePipeline(0);
+                getStateTracker().setActiveShaderPipeline(0u);
             }
         }
 
