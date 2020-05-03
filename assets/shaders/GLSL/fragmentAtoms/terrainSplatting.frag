@@ -25,7 +25,7 @@ const int tiling[] = {
 
 
 #if defined(LOW_QUALITY)
-#define sampleTexture texture;
+#define sampleTexture texture
 #else
 vec4 sampleTexture(in sampler2DArray tex, in vec3 texUV) {
 #if defined(REDUCE_TEXTURE_TILE_ARTIFACT) 
