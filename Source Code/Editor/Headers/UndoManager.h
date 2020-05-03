@@ -39,8 +39,6 @@ namespace Divide {
     struct IUndoEntry {
         GFX::PushConstantType _type = GFX::PushConstantType::COUNT;
         stringImpl _name = "";
-        void* _data = nullptr;
-        std::function<void(const void*)> _dataSetter = {};
         DELEGATE<void, const char*> _onChangedCbk;
 
         virtual void swapValues() = 0;
@@ -49,19 +47,17 @@ namespace Divide {
 
     template<typename T>
     struct UndoEntry : public IUndoEntry {
-        T oldVal = {};
-        T newVal = {};
+        T _oldVal = {};
+        T _newVal = {};
+        std::function<void(const T&)> _dataSetter = {};
 
         void swapValues() override {
-            std::swap(oldVal, newVal);
+            std::swap(_oldVal, _newVal);
         }
 
         void apply() override {
-            if (_dataSetter) {
-                _dataSetter(&oldVal);
-            } else {
-                *static_cast<T*>(_data) = oldVal;
-            }
+            assert(_dataSetter != nullptr);
+            _dataSetter(_oldVal);
             if (_onChangedCbk) {
                 _onChangedCbk(_name.c_str());
             }
@@ -79,6 +75,9 @@ namespace Divide {
 
         bool Undo();
         bool Redo();
+
+        inline size_t UndoStackSize() const noexcept { return _undoStack.size(); }
+        inline size_t RedoStackSize() const noexcept { return _redoStack.size(); }
 
         const stringImpl& lasActionName() const;
 

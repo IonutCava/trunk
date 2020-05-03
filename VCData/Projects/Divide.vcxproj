@@ -92,7 +92,7 @@
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
-    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)/../</OutDir>
@@ -108,6 +108,7 @@
     <CodeAnalysisRuleSet>D:\Divide-Framework\VCData\DivideCheckRules.ruleset</CodeAnalysisRuleSet>
     <LinkIncremental>false</LinkIncremental>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <IntDir>Intermediate\$(Configuration)_Executable/</IntDir>
@@ -123,6 +124,7 @@
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
     <LinkIncremental>false</LinkIncremental>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

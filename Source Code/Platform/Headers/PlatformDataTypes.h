@@ -175,28 +175,30 @@ struct I24
     FORCE_INLINE bool operator>  (const I24& val) const noexcept { return static_cast<I32>(*this) >  static_cast<I32>(val); }
     FORCE_INLINE bool operator<  (const I24& val) const noexcept { return static_cast<I32>(*this) <  static_cast<I32>(val); }
 
-    FORCE_INLINE bool operator==  (const I32& val) const noexcept { return static_cast<I32>(*this) == val; }
-    FORCE_INLINE bool operator!=  (const I32& val) const noexcept { return static_cast<I32>(*this) != val; }
-    FORCE_INLINE bool operator>= (const I32& val) const noexcept { return static_cast<I32>(*this) >= val; }
-    FORCE_INLINE bool operator<= (const I32& val) const noexcept { return static_cast<I32>(*this) <= val; }
-    FORCE_INLINE bool operator>  (const I32& val) const noexcept { return static_cast<I32>(*this) > val; }
-    FORCE_INLINE bool operator<  (const I32& val) const noexcept { return static_cast<I32>(*this) < val; }
 
-    FORCE_INLINE bool operator>  (const size_t& val) const noexcept {
-        const I32 lhs = static_cast<I32>(*this);
-        return lhs >= 0 && lhs > val;
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator==  (const T& val) const noexcept {
+        return static_cast<I32>(*this) == val;
     }
-    FORCE_INLINE bool operator<  (const size_t& val) const noexcept { 
-        const I32 lhs = static_cast<I32>(*this);
-        return lhs < 0 || static_cast<size_t>(lhs) < val;
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator!=  (const T& val) const noexcept {
+        return static_cast<I32>(*this) != val;
     }
-    FORCE_INLINE bool operator>  (const U32& val) const noexcept {
-        const I32 lhs = static_cast<I32>(*this);
-        return lhs >= 0 && static_cast<U32>(lhs) > val;
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator> (const T& val) const noexcept {
+        return static_cast<I32>(*this) > val;
     }
-    FORCE_INLINE bool operator<  (const U32& val) const noexcept {
-        const I32 lhs = static_cast<I32>(*this);
-        return lhs < 0 || static_cast<U32>(lhs) < val;
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator<  (const T& val) const noexcept { 
+        return static_cast<I32>(*this) < val;
+    }
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator>=  (const T& val) const noexcept {
+        return static_cast<I32>(*this) >= val;
+    }
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator<=  (const T& val) const noexcept {
+        return static_cast<I32>(*this) <= val;
     }
 };
 
@@ -277,38 +279,33 @@ struct U24
     FORCE_INLINE bool operator>  (const U24& val) const noexcept { return static_cast<U32>(*this) > static_cast<U32>(val); }
     FORCE_INLINE bool operator<  (const U24& val) const noexcept { return static_cast<U32>(*this) < static_cast<U32>(val); }
 
-    FORCE_INLINE bool operator==  (const U32& val) const noexcept { return static_cast<U32>(*this) == val; }
-    FORCE_INLINE bool operator!=  (const U32& val) const noexcept { return static_cast<U32>(*this) != val; }
-    FORCE_INLINE bool operator>= (const U32& val) const noexcept { return static_cast<U32>(*this) >= val; }
-    FORCE_INLINE bool operator<= (const U32& val) const noexcept { return static_cast<U32>(*this) <= val; }
-    FORCE_INLINE bool operator>  (const U32& val) const noexcept { return static_cast<U32>(*this) > val; }
-    FORCE_INLINE bool operator<  (const U32& val) const noexcept { return static_cast<U32>(*this) < val; }
-
-    FORCE_INLINE bool operator>  (const size_t& val) const noexcept {
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator==  (const T& val) const noexcept {
+        return (val >= 0) && static_cast<U32>(*this) == val;
+    }
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator!=  (const T& val) const noexcept {
+        return (val < 0) || static_cast<U32>(*this) != val;
+    }
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator> (const T& val) const noexcept {
         return static_cast<U32>(*this) > val;
     }
-    FORCE_INLINE bool operator<  (const size_t& val) const noexcept {
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator<  (const T& val) const noexcept {
         return static_cast<U32>(*this) < val;
     }
-    FORCE_INLINE bool operator>  (const I32& val) const noexcept {
-        return (val >= 0) && static_cast<U32>(*this) > static_cast<U32>(val);
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator>=  (const T& val) const noexcept {
+        return static_cast<U32>(*this) >= val;
     }
-    FORCE_INLINE bool operator<  (const I32& val) const noexcept {
-        return (val < 0) || static_cast<U32>(*this) < static_cast<U32>(val);
-    }
-    FORCE_INLINE bool operator==  (const I32& val) const noexcept {
-        return (val >= 0) && static_cast<U32>(*this) == static_cast<U32>(val);
-    }
-    FORCE_INLINE bool operator!=  (const I32& val) const noexcept {
-        return (val < 0) || static_cast<U32>(*this) != static_cast<U32>(val);
+    template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+    FORCE_INLINE bool operator<=  (const T& val) const noexcept {
+        return static_cast<U32>(*this) <= val;
     }
 };
 #pragma pack(pop)
 
-// Use for draw command batching so this gives us a slight speedup in debug builds
-FORCE_INLINE U32 u32Diff(const U24& lhs, const U24& rhs) noexcept {
-    return static_cast<U32>(lhs) - static_cast<U32>(rhs); 
-}
 
 template <typename From, typename To>
 struct static_caster

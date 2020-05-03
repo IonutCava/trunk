@@ -75,6 +75,14 @@ inline void Editor::registerUndoEntry(const UndoEntry<T>& entry) {
     _undoManager->registerUndoEntry(entry);
 }
 
+inline size_t Editor::UndoStackSize() const noexcept {
+    return _undoManager->UndoStackSize();
+}
+
+inline size_t Editor::RedoStackSize() const noexcept {
+    return _undoManager->RedoStackSize();
+}
+
 inline void Editor::toggleMemoryEditor(bool state) noexcept {
     _showMemoryEditor = state;
 }

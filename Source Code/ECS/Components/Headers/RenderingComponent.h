@@ -130,10 +130,11 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
            RENDER_BOUNDS_AABB = toBit(3),
            RENDER_BOUNDS_SPHERE = toBit(4),
            RENDER_SKELETON = toBit(5),
-           RENDER_AXIS = toBit(6),
-           CAST_SHADOWS = toBit(7),
-           RECEIVE_SHADOWS = toBit(8),
-           IS_VISIBLE = toBit(9)
+           RENDER_SELECTION = toBit(6),
+           RENDER_AXIS = toBit(7),
+           CAST_SHADOWS = toBit(8),
+           RECEIVE_SHADOWS = toBit(9),
+           IS_VISIBLE = toBit(10)
        };
 
        struct NodeRenderingProperties {
@@ -194,6 +195,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
     void drawDebugAxis(GFX::CommandBuffer& bufferInOut);
+    void drawSelectionGizmo(GFX::CommandBuffer& bufferInOut);
     void drawSkeleton(GFX::CommandBuffer& bufferInOut);
     void drawBounds(const bool AABB, const bool Sphere, GFX::CommandBuffer& bufferInOut);
     
@@ -275,6 +277,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     IMPrimitive* _boundingSpherePrimitive[2] = {nullptr, nullptr};
     IMPrimitive* _skeletonPrimitive = nullptr;
     IMPrimitive* _axisGizmo = nullptr;
+    IMPrimitive* _selectionGizmo = nullptr;
 
     /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
     I32 _reflectionIndex = -1;

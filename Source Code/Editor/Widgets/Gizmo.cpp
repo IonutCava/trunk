@@ -141,7 +141,7 @@ namespace Divide {
                     }
                 }
                 
-                g_undoEntry.oldVal = { g_transformCache, g_selectedNodesCache };
+                g_undoEntry._oldVal = { g_transformCache, g_selectedNodesCache };
             }
 
             //ToDo: This seems slow as hell, but it works. Should I bother? -Ionut
@@ -179,17 +179,15 @@ namespace Divide {
             }
             _wasUsed = true;
 
-            g_undoEntry.newVal = { g_transformCache, g_selectedNodesCache };
+            g_undoEntry._newVal = { g_transformCache, g_selectedNodesCache };
 
-            g_undoEntry._dataSetter = [](const void* data) {
-                const std::pair<TransformCache, NodeCache>& oldData = *(std::pair<TransformCache, NodeCache>*)data;
-
+            g_undoEntry._dataSetter = [](const std::pair<TransformCache, NodeCache>& data) {
                 for (U8 i = 0; i < g_maxSelectedNodes; ++i) {
-                    SceneGraphNode* node = oldData.second[i];
+                    SceneGraphNode* node = data.second[i];
                     if (node != nullptr) {
                         TransformComponent* tComp = node->get<TransformComponent>();
                         if (tComp != nullptr) {
-                            tComp->setTransform(oldData.first[i]);
+                            tComp->setTransform(data.first[i]);
                         }
                     }
                 }

@@ -8,12 +8,11 @@
 #include "Headers/TransformComponent.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/StringHelper.h"
-#include "Core/Headers/PlatformContext.h"
+#include "Editor/Headers/Editor.h"
 
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -137,10 +136,12 @@ RenderingComponent::~RenderingComponent()
         _context.destroyIMP(_skeletonPrimitive);
     }
 
-    if_constexpr (Config::Build::ENABLE_EDITOR) {
-        if (_axisGizmo) {
-            _context.destroyIMP(_axisGizmo);
-        }
+    if (_axisGizmo) {
+        _context.destroyIMP(_axisGizmo);
+    }
+
+    if (_selectionGizmo) {
+        _context.destroyIMP(_selectionGizmo);
     }
 }
 
@@ -409,12 +410,18 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     const bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
     const bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
     const bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
+    const bool renderSelection = renderOptionEnabled(RenderOptions::RENDER_SELECTION);
     const bool renderselectionGizmo = renderOptionEnabled(RenderOptions::RENDER_AXIS) || (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO) && _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED)) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
 
     if (renderselectionGizmo) {
         drawDebugAxis(bufferInOut);
     } else if (_axisGizmo) {
         _context.destroyIMP(_axisGizmo);
+    }
+    if (renderSelection) {
+        drawSelectionGizmo(bufferInOut);
+    } else if (_selectionGizmo) {
+        _context.destroyIMP(_selectionGizmo);
     }
 
     drawBounds(renderBBox, renderBSphere, bufferInOut);
@@ -701,6 +708,32 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
 
     RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;
     defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(), _envProbes.front()->getRTIndex());
+}
+
+/// Draw some kind of selection doodad. May differ if editor is running or not
+void RenderingComponent::drawSelectionGizmo(GFX::CommandBuffer& bufferInOut) {
+    if (!_selectionGizmo) {
+        _selectionGizmo = _context.newIMP();
+        _selectionGizmo->name("AxisGizmo_" + _parentSGN.name());
+        _selectionGizmo->skipPostFX(true);
+        _selectionGizmo->pipeline(*_primitivePipeline[2]);
+    }
+
+    const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
+        const Editor& editor = _context.parent().platformContext().editor();
+        if (editor.inEditMode()) {
+
+            //draw something
+            _selectionGizmo->fromBox(bb.getMin(), bb.getMax(), UColour4(0, 0, 255, 255));
+            bufferInOut.add(_selectionGizmo->toCommandBuffer());
+            return;
+        }
+    }
+
+    //draw something else (at some point ...)
+    _selectionGizmo->fromBox(bb.getMin(), bb.getMax(), UColour4(255, 255, 255, 255));
+    bufferInOut.add(_selectionGizmo->toCommandBuffer());
 }
 
 /// Draw the axis arrow gizmo

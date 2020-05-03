@@ -93,15 +93,17 @@
     <LinkIncremental>false</LinkIncremental>
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
-    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

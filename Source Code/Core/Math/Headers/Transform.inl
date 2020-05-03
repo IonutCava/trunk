@@ -88,13 +88,21 @@ inline void Transform::setScale(const vec3<F32>& scale) {
 /// Set the local orientation using the Axis-Angle system.
 /// The angle can be in either degrees(default) or radians
 inline void Transform::setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
-    setRotation(Quaternion<F32>(axis, degrees));
+    _dirty = true;
+    _rebuild = true;
+
+    _transformValues._orientation.fromAxisAngle(axis, degrees);
+    _transformValues._orientation.normalize();
 }
 
 /// Set the local orientation using the Euler system.
 /// The angles can be in either degrees(default) or radians
 inline void Transform::setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
-    setRotation(Quaternion<F32>(pitch, yaw, roll));
+    _dirty = true;
+    _rebuild = true;
+
+    _transformValues._orientation.fromEuler(pitch, yaw, roll);
+    _transformValues._orientation.normalize();
 }
 
 /// Set the local orientation so that it matches the specified quaternion.

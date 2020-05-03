@@ -296,12 +296,12 @@ void MenuBar::drawFileMenu() {
 void MenuBar::drawEditMenu() {
     if (ImGui::BeginMenu("Edit"))
     {
-        if (ImGui::MenuItem("Undo", "CTRL+Z"))
+        if (ImGui::MenuItem("Undo", "CTRL+Z", false, _context.editor().UndoStackSize() > 0))
         {
             _context.editor().Undo();
         }
 
-        if (ImGui::MenuItem("Redo", "CTRL+Y"))
+        if (ImGui::MenuItem("Redo", "CTRL+Y", false, _context.editor().RedoStackSize() > 0))
         {
             _context.editor().Redo();
         }

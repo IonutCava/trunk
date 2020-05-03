@@ -558,7 +558,7 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
     if (compatible(previousIDC, currentIDC)) {
         const U32 diff = byBaseInstance 
                             ? (currentIDC._cmd.baseInstance - previousIDC._cmd.baseInstance) 
-                            : u32Diff(currentIDC._commandOffset, previousIDC._commandOffset);
+                            : to_U32(currentIDC._commandOffset - previousIDC._commandOffset);
 
         if (diff == previousIDC._drawCount) {
             // If the rendering commands are batchable, increase the draw count for the previous one

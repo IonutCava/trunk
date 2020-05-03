@@ -54,7 +54,7 @@ namespace ECS {
             RelationshipCacheInvalidated,
             BoundsUpdated,
             EntityPostLoad,
-            EntityActiveStateChange,
+            EntityFlagChanged,
             COUNT
         };
 

@@ -28,14 +28,12 @@ namespace Divide {
         const auto button = [](bool disabled, const char* label, const char* tooltip, bool small = false) -> bool {
             bool ret = false;
             if (disabled) {
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                PushReadOnly();
             }
             ret = small ? ImGui::SmallButton(label) : ImGui::Button(label);
 
             if (disabled) {
-                ImGui::PopItemFlag();
-                ImGui::PopStyleVar();
+                PopReadOnly();
             }
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
                 ImGui::SetTooltip(tooltip);
@@ -74,15 +72,13 @@ namespace Divide {
 
         bool autoSaveCamera = Attorney::EditorSceneViewWindow::autoSaveCamera(_parent);
         if (autoSaveCamera) {
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+            PushReadOnly();
         }
         if (ImGui::Button("Save Camera")) {
             Attorney::EditorSceneViewWindow::updateCameraSnapshot(_parent);
         }
         if (autoSaveCamera) {
-            ImGui::PopItemFlag();
-            ImGui::PopStyleVar();
+            PopReadOnly();
         }
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Keep the current camera position when closing the editor");

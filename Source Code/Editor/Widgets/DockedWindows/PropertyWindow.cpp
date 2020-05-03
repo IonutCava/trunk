@@ -67,12 +67,180 @@ namespace ImGui {
 
 namespace Divide {
     namespace {
+        // Separate activate is used for stuff that do continous value changes, e.g. colour selectors, but you only want to register the old val once
+        template<typename T, bool SeparateActivate>
+        void RegisterUndo(Editor& editor, GFX::PushConstantType Type, const T& oldVal, const T& newVal, const char* name, std::function<void(const T&)> dataSetter) {
+            static hashMap<U64, UndoEntry<T>> _undoEntries;
+            UndoEntry<T>& undo = _undoEntries[_ID(name)];
+            if (!SeparateActivate || ImGui::IsItemActivated()) {
+                undo._oldVal = oldVal;
+            }
+            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                undo._type = Type;
+                undo._name = name;
+                undo._newVal = newVal;
+                undo._dataSetter = dataSetter;
+                editor.registerUndoEntry(undo);
+            }
+        }
+
         hashMap<U64, std::tuple<Frustum, FColour3, bool>> g_debugFrustums;
+
+        bool colourInput4(Editor& parent, const char* name, FColour4& col, bool readOnly, std::function<void(const FColour4&)> dataSetter) {
+            FColour4 oldVal = col;
+            const bool ret = ImGui::ColorEdit4(readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
+            if (!readOnly) {
+                RegisterUndo<FColour4, true>(parent, GFX::PushConstantType::FCOLOUR4, oldVal, col, name, [dataSetter](const FColour4& oldColour) {
+                    dataSetter(oldColour._v);
+                });
+            }
+
+            return ret;
+        }
+
+        bool colourInput3(Editor& parent, const char* name, FColour3& col, bool readOnly, std::function<void(const FColour3&)> dataSetter) {
+            FColour3 oldVal = col;
+            const bool ret =  ImGui::ColorEdit3( readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
+            if (!readOnly) {
+                RegisterUndo<FColour3, true>(parent, GFX::PushConstantType::FCOLOUR3, oldVal, col, name, [dataSetter](const FColour4& oldColour) {
+                    dataSetter(oldColour._v);
+                });
+            }
+
+            return ret;
+        }
+
+        bool colourInput4(Editor& parent, const char* name, EditorComponentField& field) {
+            FColour4 val = field.get<FColour4>();
+            const auto setter = [&field](const FColour4& col) {
+                field.set(col);
+            };
+
+            if (colourInput4(parent, name, val, field._readOnly, setter) && val != field.get<FColour4>()) {
+                field.set(val);
+                return true;
+            }
+
+            return false;
+        }
+
+        bool colourInput3(Editor& parent, const char* name, EditorComponentField& field) {
+            FColour3 val = field.get<FColour3>();
+            const auto setter = [&field](const FColour3& col) {
+                field.set(col);
+            };
+
+            if (colourInput3(parent, name, val, field._readOnly, setter) && val != field.get<FColour3>()) {
+                field.set(val);
+                return true;
+            }
+
+            return false;
+        }
+
+        template<typename T, size_t num_comp>
+        bool inputOrSlider(Editor& parent, const bool isSlider, const char* label, const char* name, const float stepIn, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d", float power = 1.0f) {
+            if (isSlider) {
+                return inputOrSlider<T, num_comp, true>(parent, label, name, stepIn, data_type, field, flags, format, power);
+            }
+            return inputOrSlider<T, num_comp, false>(parent, label, name, stepIn, data_type, field, flags, format, power);
+        }
+
+        template<typename T, size_t num_comp, bool IsSlider>
+        bool inputOrSlider(Editor& parent, const char* label, const char* name, const float stepIn, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d", float power = 1.0f) {
+            if (field._readOnly) {
+                PushReadOnly();
+            }
+
+            T val = field.get<T>();
+            const T min = T(field._range.min), max = T(field._range.max);
+            const T cStep = T(stepIn * 100);
+
+            const void* step = IS_ZERO(stepIn) ? nullptr : (void*)&stepIn;
+            const void* step_fast = step == nullptr ? nullptr : (void*)&cStep;
+
+            bool ret = false;
+            if_constexpr (num_comp == 1) {
+                if_constexpr (IsSlider) {
+                    ACKNOWLEDGE_UNUSED(step_fast);
+                    ret = ImGui::SliderScalar(label, data_type, (void*)&val, (void*)&min, (void*)&max, format, power);
+                } else {
+                    ret = ImGui::InputScalar(label, data_type, (void*)&val, step, step_fast, format, flags);
+                }
+            } else {
+                if_constexpr(IsSlider) {
+                    ACKNOWLEDGE_UNUSED(step_fast);
+                    ret = ImGui::SliderScalarN(label, data_type, (void*)&val, num_comp, (void*)&min, (void*)&max, format, power);
+                } else {
+                    ret = ImGui::InputScalarN(label, data_type, (void*)&val, num_comp, step, step_fast, format, flags);
+                }
+            }
+            if (IsSlider || ret) {
+                auto tempData = field._data;
+                auto tempSetter = field._dataSetter;
+                RegisterUndo<T, IsSlider>(parent, field._basicType, field.get<T>(), val, name, [tempData, tempSetter](const T& oldVal) {
+                    if (tempSetter != nullptr) {
+                        tempSetter(&oldVal);
+                    } else {
+                        *static_cast<T*>(tempData) = oldVal;
+                    }
+                });
+            }
+            if (!field._readOnly && ret && val != field.get<T>()) {
+                field.set(val);
+            }
+                
+            if (field._readOnly) {
+                PopReadOnly();
+            }
+
+            return ret;
+        };
+
+        template<typename T, size_t num_rows>
+        bool inputMatrix(Editor & parent, const char* label, const char* name, const float stepIn, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d") {
+            const T cStep = T(stepIn * 100);
+
+            const void* step = IS_ZERO(stepIn) ? nullptr : (void*)&stepIn;
+            const void* step_fast = step == nullptr ? nullptr : (void*)&cStep;
+
+            T mat = field.get<T>();
+            bool ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[0]._v, num_rows, step, step_fast, format, flags) ||
+                        ImGui::InputScalarN(label, data_type, (void*)mat._vec[1]._v, num_rows, step, step_fast, format, flags);
+            if_constexpr(num_rows > 2) {
+                ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[2]._v, num_rows, step, step_fast, format, flags) || ret;
+                if_constexpr(num_rows > 3) {
+                    ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[3]._v, num_rows, step, step_fast, format, flags) || ret;
+                }
+            }
+
+            if (ret && !field._readOnly && mat != field.get<T>()) {
+                auto tempData = field._data;
+                auto tempSetter = field._dataSetter;
+                RegisterUndo<T, false>(parent, field._basicType, field.get<T>(), mat, name, [tempData, tempSetter](const T& oldVal) {
+                    if (tempSetter != nullptr) {
+                        tempSetter(&oldVal);
+                    } else {
+                        *static_cast<T*>(tempData) = oldVal;
+                    }
+                });
+                field.set<>(mat);
+            }
+            return ret;
+        }
+
+        bool isRequiredComponentType(SceneGraphNode* selection, const ComponentType componentType) {
+            if (selection != nullptr) {
+                return BitCompare(selection->getNode().requiredComponentMask(), to_U32(componentType));
+            }
+
+            return false;
+        }
     };
 
     PropertyWindow::PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
-          PlatformContextComponent(context)
+            PlatformContextComponent(context)
     {
 
     }
@@ -95,65 +263,98 @@ namespace Divide {
         if (ImGui::CollapsingHeader(camName)) {
             {
                 vec3<F32> eye = cam->getEye();
-                if (ImGui::InputFloat3("Eye", eye._v)) {
-                    cam->setEye(eye);
-                    sceneChanged = true;
-                }
+                EditorComponentField camField = {};
+                camField._name = "Eye";
+                camField._basicType = GFX::PushConstantType::VEC3;
+                camField._type = EditorComponentFieldType::PUSH_TYPE;
+                camField._readOnly = false;
+                camField._data = eye._v;
+                camField._dataSetter = [cam](const void* eye) {
+                    cam->setEye(*static_cast<const vec3<F32>*>(eye));
+                };
+                sceneChanged = processField(camField) || sceneChanged;
             }
             {
                 vec3<F32> euler = cam->getEuler();
-                if (ImGui::InputFloat3("Euler", euler._v)) {
-                    cam->setEuler(euler);
-                    sceneChanged = true;
-                }
+                EditorComponentField camField = {};
+                camField._name = "Euler";
+                camField._basicType = GFX::PushConstantType::VEC3;
+                camField._type = EditorComponentFieldType::PUSH_TYPE;
+                camField._readOnly = false;
+                camField._data = euler._v;
+                camField._dataSetter = [cam](const void* euler) {
+                    cam->setEuler(*static_cast<const vec3<F32>*>(euler));
+                };
+                sceneChanged = processField(camField) || sceneChanged;
             }
             {
                 F32 aspect = cam->getAspectRatio();
-                if (ImGui::InputFloat("Aspect", &aspect)) {
-                    cam->setAspectRatio(aspect);
-                    sceneChanged = true;
-                }
+                EditorComponentField camField = {};
+                camField._name = "Aspect";
+                camField._basicType = GFX::PushConstantType::FLOAT;
+                camField._type = EditorComponentFieldType::PUSH_TYPE;
+                camField._readOnly = false;
+                camField._data = &aspect;
+                camField._dataSetter = [cam](const void* aspect) {
+                    cam->setAspectRatio(*static_cast<const F32*>(aspect));
+                };
+                sceneChanged = processField(camField) || sceneChanged;
             }
             {
                 F32 horizontalFoV = cam->getHorizontalFoV();
-                if (ImGui::InputFloat("FoV (horizontal)", &horizontalFoV)) {
-                    cam->setHorizontalFoV(horizontalFoV);
-                    sceneChanged = true;
-                }
+                EditorComponentField camField = {};
+                camField._name = "FoV (horizontal)";
+                camField._basicType = GFX::PushConstantType::FLOAT;
+                camField._type = EditorComponentFieldType::PUSH_TYPE;
+                camField._readOnly = false;
+                camField._data = &horizontalFoV;
+                camField._dataSetter = [cam](const void* fov) {
+                    cam->setHorizontalFoV(*static_cast<const F32*>(fov));
+                };
+                sceneChanged = processField(camField) || sceneChanged;
             }
             {
                 vec2<F32> zPlanes = cam->getZPlanes();
-                if (ImGui::InputFloat2("zPlanes", zPlanes._v)) {
+                EditorComponentField camField = {};
+                camField._name = "zPlanes";
+                camField._basicType = GFX::PushConstantType::VEC2;
+                camField._type = EditorComponentFieldType::PUSH_TYPE;
+                camField._readOnly = false;
+                camField._data = zPlanes._v;
+                camField._dataSetter = [cam](const void* planes) {
+                    vec2<F32> zPlanes = *static_cast<const vec2<F32>*>(planes);
                     if (cam->isOrthoProjected()) {
                         cam->setProjection(cam->orthoRect(), zPlanes);
-                    }
-                    else {
+                    } else {
                         cam->setProjection(cam->getAspectRatio(), cam->getVerticalFoV(), zPlanes);
                     }
-                    sceneChanged = true;
-                }
+                };
+                sceneChanged = processField(camField) || sceneChanged;
             }
             if (cam->isOrthoProjected()) {
                 vec4<F32> orthoRect = cam->orthoRect();
-                if (ImGui::InputFloat4("Ortho", orthoRect._v)) {
-                    cam->setProjection(orthoRect, cam->getZPlanes());
-                    sceneChanged = true;
-                }
+                EditorComponentField camField = {};
+                camField._name = "Ortho";
+                camField._basicType = GFX::PushConstantType::VEC4;
+                camField._type = EditorComponentFieldType::PUSH_TYPE;
+                camField._readOnly = false;
+                camField._data = orthoRect._v;
+                camField._dataSetter = [cam](const void* rect) {
+                    cam->setProjection(*static_cast<const vec4<F32>*>(rect), cam->getZPlanes());
+                };
+                sceneChanged = processField(camField) || sceneChanged;
             }
             {
                 ImGui::Text("View Matrix");
                 ImGui::Spacing();
                 mat4<F32> viewMatrix = cam->getViewMatrix();
-                EditorComponentField worldMatrixField;
+                EditorComponentField worldMatrixField = {};
                 worldMatrixField._name = "View Matrix";
                 worldMatrixField._basicType = GFX::PushConstantType::MAT4;
                 worldMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
                 worldMatrixField._readOnly = true;
                 worldMatrixField._data = &viewMatrix;
-
-                if (processBasicField(worldMatrixField)) {
-                    sceneChanged = true;
-                }
+                processBasicField(worldMatrixField);
             }
             {
                 ImGui::Text("Projection Matrix");
@@ -165,10 +366,7 @@ namespace Divide {
                 projMatrixField._readOnly = true;
                 projMatrixField._name = "Projection Matrix";
                 projMatrixField._data = &projMatrix;
-
-                if (processBasicField(projMatrixField)) {
-                    sceneChanged = true;
-                }
+                processBasicField(projMatrixField);
             }
             {
                 ImGui::Separator();
@@ -199,16 +397,6 @@ namespace Divide {
 
         return sceneChanged;
     }
-
-    namespace {
-        bool isRequiredComponentType(SceneGraphNode* selection, const ComponentType componentType) {
-            if (selection != nullptr) {
-                return BitCompare(selection->getNode().requiredComponentMask(), to_U32(componentType));
-            }
-
-            return false;
-        }
-    };
 
     void PropertyWindow::backgroundUpdateInternal() {
         for (const auto& it : g_debugFrustums) {
@@ -250,16 +438,13 @@ namespace Divide {
                     vectorEASTLFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
                     for (EditorComponent* comp : editorComp) {
                         if (comp->fields().empty()) {
-                            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                            PushReadOnly();
                             ImGui::CollapsingHeader(comp->name().c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
-                            ImGui::PopItemFlag();
-                            ImGui::PopStyleVar();
+                            PopReadOnly();
                             continue;
                         }
 
                         if (ImGui::CollapsingHeader(comp->name().c_str(), ImGuiTreeNodeFlags_OpenOnArrow)) {
-                            //const I32 RV = ImGui::AppendTreeNodeHeaderButtons(comp->name().c_str(), ImGui::GetCursorPosX(), 1, &closed, "Remove", NULL, 0);
                             ImGui::NewLine();
                             ImGui::SameLine(xOffset);
                             if (ImGui::Button("INSPECT", ImVec2(smallButtonWidth, 20))) {
@@ -283,7 +468,6 @@ namespace Divide {
                             vectorEASTL<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
                                 ImGui::Text(field._name.c_str());
-                                //ImGui::NewLine();
                                 if (processField(field) && !field._readOnly) {
                                     Attorney::EditorComponentEditor::onChanged(*comp, field);
                                     sceneChanged = true;
@@ -304,9 +488,13 @@ namespace Divide {
                             if (light != nullptr) {
                                 bool isShadowCaster = light->castsShadows();
                                 if (ImGui::Checkbox("Is Shadow Caster", &isShadowCaster)) {
+                                    RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !isShadowCaster, isShadowCaster, "Is Shadow Caster", [light](const bool& oldVal) {
+                                        light->castsShadows(oldVal);
+                                    });
                                     light->castsShadows(isShadowCaster);
                                     sceneChanged = true;
                                 }
+
                                 if (isShadowCaster) {
                                     if (ImGui::CollapsingHeader("Light Shadow Settings", ImGuiTreeNodeFlags_OpenOnArrow)) {
                                         ImGui::Text("Shadow Offset: %d", to_U32(light->getShadowOffset()));
@@ -342,29 +530,64 @@ namespace Divide {
                                 if (ImGui::CollapsingHeader("Scene Shadow Settings", ImGuiTreeNodeFlags_OpenOnArrow)) {
                                     SceneManager* sceneManager = context().kernel().sceneManager();
                                     SceneState& activeSceneState = sceneManager->getActiveScene().state();
-                                    F32 bleedBias = activeSceneState.lightBleedBias();
-                                    if (ImGui::SliderFloat("Light bleed bias", &bleedBias, 0.0f, 1.0f)) {
-                                        activeSceneState.lightBleedBias(bleedBias);
-                                        sceneChanged = true;
+                                    {
+                                        F32 bleedBias = activeSceneState.lightBleedBias();
+                                        EditorComponentField tempField = {};
+                                        tempField._name = "Light bleed bias";
+                                        tempField._basicType = GFX::PushConstantType::FLOAT;
+                                        tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                                        tempField._readOnly = false;
+                                        tempField._data = &bleedBias;
+                                        tempField._range = { 0.0f, 1.0f };
+                                        tempField._dataSetter = [&activeSceneState](const void* bias) {
+                                            activeSceneState.lightBleedBias(*static_cast<const F32*>(bias));
+                                        };
+                                        sceneChanged = processField(tempField) || sceneChanged;
                                     }
-
-                                    F32 shadowVariance = activeSceneState.minShadowVariance();
-                                    if (ImGui::SliderFloat("Min shadow variance", &shadowVariance, 0.0f, 1.0f)) {
-                                        activeSceneState.minShadowVariance(shadowVariance);
-                                        sceneChanged = true;
+                                    {
+                                        F32 shadowVariance = activeSceneState.minShadowVariance();
+                                        EditorComponentField tempField = {};
+                                        tempField._name = "Min shadow variance";
+                                        tempField._basicType = GFX::PushConstantType::FLOAT;
+                                        tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                                        tempField._readOnly = false;
+                                        tempField._data = &shadowVariance;
+                                        tempField._range = { 0.0f, 1.0f };
+                                        tempField._dataSetter = [&activeSceneState](const void* bias) {
+                                            activeSceneState.minShadowVariance(*static_cast<const F32*>(bias));
+                                        };
+                                        sceneChanged = processField(tempField) || sceneChanged;
                                     }
-
                                     constexpr U16 min = 1u, max = 1000u;
-                                    U16 shadowFadeDistance = activeSceneState.shadowFadeDistance();
-                                    if (ImGui::SliderScalar("Shadow fade distance", ImGuiDataType_U16, &shadowFadeDistance, &min, &max)) {
-                                        activeSceneState.shadowFadeDistance(shadowFadeDistance);
-                                        sceneChanged = true;
-                                    } 
-                                    
-                                    U16 shadowMaxDistance = activeSceneState.shadowDistance();
-                                    if (ImGui::SliderScalar("Shadow max distance", ImGuiDataType_U16, &shadowMaxDistance, &min, &max)) {
-                                        activeSceneState.shadowDistance(shadowMaxDistance);
-                                        sceneChanged = true;
+                                    {
+                                        U16 shadowFadeDistance = activeSceneState.shadowFadeDistance();
+                                        EditorComponentField tempField = {};
+                                        tempField._name = "Shadow fade distance";
+                                        tempField._basicType = GFX::PushConstantType::UINT;
+                                        tempField._basicTypeSize = GFX::PushConstantSize::WORD;
+                                        tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                                        tempField._readOnly = false;
+                                        tempField._data = &shadowFadeDistance;
+                                        tempField._range = { min, max };
+                                        tempField._dataSetter = [&activeSceneState](const void* bias) {
+                                            activeSceneState.shadowFadeDistance(*static_cast<const U16*>(bias));
+                                        };
+                                        sceneChanged = processField(tempField) || sceneChanged;
+                                    }
+                                    {
+                                        U16 shadowMaxDistance = activeSceneState.shadowDistance();
+                                        EditorComponentField tempField = {};
+                                        tempField._name = "Shadow max distance";
+                                        tempField._basicType = GFX::PushConstantType::UINT;
+                                        tempField._basicTypeSize = GFX::PushConstantSize::WORD;
+                                        tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                                        tempField._readOnly = false;
+                                        tempField._data = &shadowMaxDistance;
+                                        tempField._range = { min, max };
+                                        tempField._dataSetter = [&activeSceneState](const void* bias) {
+                                            activeSceneState.shadowDistance(*static_cast<const U16*>(bias));
+                                        };
+                                        sceneChanged = processField(tempField) || sceneChanged;
                                     }
                                 }
                             }
@@ -472,24 +695,17 @@ namespace Divide {
     }
 
     bool PropertyWindow::processField(EditorComponentField& field) {
-        ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
-        flags |= field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+        const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | (field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+
+        if (field._readOnly) {
+            PushReadOnly();
+        }
 
         bool ret = false;
         switch (field._type) {
             case EditorComponentFieldType::BUTTON: {
-                if (field._readOnly) {
-                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                }
-
                 if (ImGui::Button(field._name.c_str(), ImVec2(field._range.x, field._range.y))) {
                     ret = true;
-                }
-
-                if (field._readOnly) {
-                    ImGui::PopItemFlag();
-                    ImGui::PopStyleVar();
                 }
             }break;
             case EditorComponentFieldType::SLIDER_TYPE:
@@ -516,10 +732,35 @@ namespace Divide {
 
                 F32* bbMin = Attorney::BoundingBoxEditor::min(bb);
                 F32* bbMax = Attorney::BoundingBoxEditor::max(bb);
-                ret = ImGui::InputFloat3("- Min ", bbMin, "%.3f", flags) ||
-                      ImGui::InputFloat3("- Max ", bbMax, "%.3f", flags);
-                if (ret) {
-                    field.set<BoundingBox>(bb);
+                {
+                    EditorComponentField bbField = {};
+                    bbField._name = "- Min ";
+                    bbField._basicType = GFX::PushConstantType::VEC3;
+                    bbField._type = EditorComponentFieldType::PUSH_TYPE;
+                    bbField._readOnly = field._readOnly;
+                    bbField._data = bbMin;
+                    bbField._dataSetter = [&field](const void* min) {
+                        BoundingBox bb = {};
+                        field.get<BoundingBox>(bb);
+                        bb.setMin(*static_cast<const vec3<F32>*>(min));
+                        field.set<BoundingBox>(bb);
+                    };
+                    ret = processField(bbField) || ret;
+                }
+                {
+                    EditorComponentField bbField = {};
+                    bbField._name = "- Max ";
+                    bbField._basicType = GFX::PushConstantType::VEC3;
+                    bbField._type = EditorComponentFieldType::PUSH_TYPE;
+                    bbField._readOnly = field._readOnly;
+                    bbField._data = bbMax;
+                    bbField._dataSetter = [&field](const void* max) {
+                        BoundingBox bb = {};
+                        field.get<BoundingBox>(bb);
+                        bb.setMax(*static_cast<const vec3<F32>*>(max));
+                        field.set<BoundingBox>(bb);
+                    };
+                    ret = processField(bbField) || ret;
                 }
             }break;
             case EditorComponentFieldType::BOUNDING_SPHERE: {
@@ -527,10 +768,35 @@ namespace Divide {
                 field.get<BoundingSphere>(bs);
                 F32* center = Attorney::BoundingSphereEditor::center(bs);
                 F32& radius = Attorney::BoundingSphereEditor::radius(bs);
-                ret = ImGui::InputFloat3("- Center ", center, "%.3f", flags) ||
-                      ImGui::InputFloat("- Radius ", &radius, 0.0f, 0.0f, -1, flags);
-                if (ret) {
-                    field.set<BoundingSphere>(bs);
+                {
+                    EditorComponentField bbField = {};
+                    bbField._name = "- Center ";
+                    bbField._basicType = GFX::PushConstantType::VEC3;
+                    bbField._type = EditorComponentFieldType::PUSH_TYPE;
+                    bbField._readOnly = field._readOnly;
+                    bbField._data = center;
+                    bbField._dataSetter = [&field](const void* center) {
+                        BoundingSphere bs = {};
+                        field.get<BoundingSphere>(bs);
+                        bs.setCenter(*static_cast<const vec3<F32>*>(center));
+                        field.set<BoundingSphere>(bs);
+                    };
+                    ret = processField(bbField) || ret;
+                }
+                {
+                    EditorComponentField bbField = {};
+                    bbField._name = "- Radius ";
+                    bbField._basicType = GFX::PushConstantType::VEC3;
+                    bbField._type = EditorComponentFieldType::PUSH_TYPE;
+                    bbField._readOnly = field._readOnly;
+                    bbField._data = &radius;
+                    bbField._dataSetter = [&field](const void* radius) {
+                        BoundingSphere bs = {};
+                        field.get<BoundingSphere>(bs);
+                        bs.setRadius(*static_cast<const F32*>(radius));
+                        field.set<BoundingSphere>(bs);
+                    };
+                    ret = processField(bbField) || ret;
                 }
             }break;
             case EditorComponentFieldType::TRANSFORM: {
@@ -543,852 +809,911 @@ namespace Divide {
                 ret = processMaterial(field.getPtr<Material>(), field._readOnly);
             }break;
         };
+        if (field._readOnly) {
+            PopReadOnly();
+        }
         if (!field._tooltip.empty() && ImGui::IsItemHovered()) {
             ImGui::SetTooltip(field._tooltip.c_str());
         }
         return ret;
-     }
+    }
 
     bool PropertyWindow::processTransform(TransformComponent* transform, bool readOnly) {
-        bool ret = false;
-
         if (transform == nullptr) {
-            return ret;
+            return false;
         }
 
-        ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank;
-        flags |= readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+        bool ret = false;
+        const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | (readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
 
-        TransformValues transformValues = transform->getValues();
+        const TransformValues transformValues = transform->getValues();
 
-        vec3<F32> rot; transformValues._orientation.getEuler(rot); rot = Angle::to_DEGREES(rot);
-        vec3<F32>& pos = transformValues._translation;
-        vec3<F32>& scale = transformValues._scale;
-
+        vec3<F32> pos = transformValues._translation;
         if (ImGui::InputFloat3(" - Position ", pos, "%.3f", flags)) {
             if (!readOnly) {
                 ret = true;
+                RegisterUndo<vec3<F32>, false>(_parent, GFX::PushConstantType::VEC3, transformValues._translation, pos, "Transform position", [transform](const vec3<F32>& val) {
+                    transform->setPosition(val);
+                });
+                transform->setPosition(pos);
             }
         }
+
+        vec3<F32> rot; transformValues._orientation.getEuler(rot); rot = Angle::to_DEGREES(rot);
+        const vec3<F32> oldRot = rot;
         if (ImGui::InputFloat3(" - Rotation ", rot, "%.3f", flags)) {
             if (!readOnly) {
                 ret = true;
+                RegisterUndo<vec3<F32>, false>(_parent, GFX::PushConstantType::VEC3, oldRot, rot, "Transform rotation", [transform](const vec3<F32>& val) {
+                    transform->setRotationEuler(val);
+                });
+                transform->setRotationEuler(rot);
             }
         }
 
+        vec3<F32> scale = transformValues._scale;
         if (ImGui::InputFloat3(" - Scale ", scale, "%.3f", flags)) {
             if (!readOnly) {
                 ret = true;
-            }
-        }
-
-        if (ret) {
-            // Scale is tricky as it may invalidate everything if it's set wrong!
-            for (U8 i = 0; i < 3; ++i) {
-                if (IS_ZERO(scale[i])) {
-                    scale[i] = EPSILON_F32;
+                // Scale is tricky as it may invalidate everything if it's set wrong!
+                for (U8 i = 0; i < 3; ++i) {
+                    scale[i] = std::max(EPSILON_F32, scale[i]);
                 }
+                RegisterUndo<vec3<F32>, false>(_parent, GFX::PushConstantType::VEC3, transformValues._scale, scale, "Transform scale", [transform](const vec3<F32>& val) {
+                    transform->setScale(val);
+                });
+                transform->setScale(scale);
             }
-
-            transformValues._orientation.fromEuler(rot);
-            transform->setTransform(transformValues);
         }
 
         return ret;
-     }
+    }
 
-     namespace {
-         bool colourInput4(Editor& parent, const char* name, FColour4& col, bool readOnly, std::function<void(const void*)> dataSetter = {}) {
-             static UndoEntry<FColour4> undo = {};
+    bool PropertyWindow::processMaterial(Material* material, bool readOnly) {
+        if (material == nullptr) {
+            return false;
+        }
 
-             FColour4 oldVal = col;
-             bool ret = ImGui::ColorEdit4(readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
+        if (readOnly) {
+            PushReadOnly();
+        }
 
-             if (!readOnly) {
-                 if (ImGui::IsItemActivated()) {
-                     undo.oldVal = oldVal;
-                 }
+        bool ret = false;
+        static RenderStagePass currentStagePass = {};
+        {
+            const char* crtStage = TypeUtil::RenderStageToString(currentStagePass._stage);
+            if (ImGui::BeginCombo("Stage", crtStage, ImGuiComboFlags_PopupAlignLeft)) {
+                for (U8 n = 0; n < to_U8(RenderStage::COUNT); ++n) {
+                const RenderStage stage = static_cast<RenderStage>(n);
+                const bool isSelected = currentStagePass._stage == stage;
 
-                 if (ImGui::IsItemDeactivatedAfterEdit()) {
-                     undo._type = GFX::PushConstantType::FCOLOUR4;
-                     undo._name = name;
-                     undo._data = col._v;
-                     undo._dataSetter = dataSetter;
-                     undo.newVal = col;
-                     parent.registerUndoEntry(undo);
-                 }
-             }
-
-             return ret;
-         }
-
-         bool colourInput3(Editor& parent, const char* name, FColour3& col, bool readOnly, std::function<void(const void*)> dataSetter = {}) {
-             static UndoEntry<FColour3> undo = {};
-
-             FColour3 oldVal = col;
-             bool ret =  ImGui::ColorEdit3( readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
-
-             if (!readOnly) {
-                 if (ImGui::IsItemActivated()) {
-                     undo.oldVal = oldVal;
-                 }
-
-                 if (ImGui::IsItemDeactivatedAfterEdit()) {
-                     undo._type = GFX::PushConstantType::FCOLOUR3;
-                     undo._name = name;
-                     undo._data = col._v;
-                     undo._dataSetter = dataSetter;
-                     undo.newVal = col;
-                     parent.registerUndoEntry(undo);
-                 }
-             }
-
-             return ret;
-         }
-
-         bool colourInput4(Editor& parent, const char* name, EditorComponentField& field) {
-             FColour4 val = field.get<FColour4>();
-             if (colourInput4(parent, name, val, field._readOnly, field._dataSetter) && val != field.get<FColour4>()) {
-                 field.set(val);
-                 return true;
-             }
-
-             return false;
-         }
-
-         bool colourInput3(Editor& parent, const char* name, EditorComponentField& field) {
-             FColour3 val = field.get<FColour3>();
-             if (colourInput3(parent, name, val, field._readOnly, field._dataSetter) && val != field.get<FColour3>()) {
-                 field.set(val);
-                 return true;
-             }
-
-             return false;
-         }
-
-        template<typename T, size_t num_comp>
-        bool inputOrSlider(Editor& parent, bool slider, const char* label, const char* name, const float stepIn, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d", float power = 1.0f) {
-            static UndoEntry<T> undo = {};
-
-            if (slider && field._readOnly) {
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                if (ImGui::Selectable(TypeUtil::RenderStageToString(stage), isSelected)) {
+                    currentStagePass._stage = stage;
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+                }
+                ImGui::EndCombo();
             }
 
-            T val = field.get<T>();
-            const T min = T(field._range.min), max = T(field._range.max);
-            const T cStep = T(stepIn * 100);
+            const char* crtPass = TypeUtil::RenderPassTypeToString(currentStagePass._passType);
+            if (ImGui::BeginCombo("Pass", crtPass, ImGuiComboFlags_PopupAlignLeft)) {
+                for (U8 n = 0; n < to_U8(RenderPassType::COUNT); ++n) {
+                    const RenderPassType pass = static_cast<RenderPassType>(n);
+                    const bool isSelected = currentStagePass._passType == pass;
 
-            const void* step = IS_ZERO(stepIn) ? nullptr : (void*)&stepIn;
-            const void* step_fast = step == nullptr ? nullptr : (void*)&cStep;
-
-            bool ret = false;
-            if_constexpr (num_comp == 1) {
-                if (slider) {
-                    ret = ImGui::SliderScalar(label, data_type, (void*)&val, (void*)&min, (void*)&max, format, power);
-                } else {
-                    ret = ImGui::InputScalar(label, data_type, (void*)&val, step, step_fast, format, flags);
+                    if (ImGui::Selectable(TypeUtil::RenderPassTypeToString(pass), isSelected)) {
+                        currentStagePass._passType = pass;
+                    }
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
                 }
-            } else {
-                if (slider) {
-                    ret = ImGui::SliderScalarN(label, data_type, (void*)&val, num_comp, (void*)&min, (void*)&max, format, power);
-                } else {
-                    ret = ImGui::InputScalarN(label, data_type, (void*)&val, num_comp, step, step_fast, format, flags);
-                }
+                ImGui::EndCombo();
             }
 
-            if (!field._readOnly) {
-                if (ImGui::IsItemActivated()) {
-                    undo.oldVal = field.get<T>();
-                }
+            constexpr U8 min = 0u, max = Material::g_maxVariantsPerPass;
+            ImGui::SliderScalar("Variant", ImGuiDataType_U8, &currentStagePass._variant, &min, &max);
+            ImGui::InputScalar("Pass Index", ImGuiDataType_U32, &currentStagePass._passIndex);
+            ImGui::InputScalar("Index A", ImGuiDataType_U16, &currentStagePass._indexA);
+            ImGui::InputScalar("Index B", ImGuiDataType_U16, &currentStagePass._indexA);
+        }
 
-                if (ImGui::IsItemDeactivatedAfterEdit()) {
-                    undo._type = field._basicType;
-                    undo._name = name;
-                    undo._data = field._data;
-                    undo._dataSetter = field._dataSetter;
-                    undo.newVal = val;
-                    parent.registerUndoEntry(undo);
-                }
-
-                if (ret && val != field.get<T>()) {
-                    field.set(val);
-                }
-            } else if (slider) {
-                ImGui::PopStyleVar();
-                ImGui::PopItemFlag();
+        size_t stateHash = 0;
+        stringImpl shaderName = "None";
+        ShaderProgram* program = nullptr;
+        if (currentStagePass._stage != RenderStage::COUNT && currentStagePass._passType != RenderPassType::COUNT) {
+            const I64 shaderGUID = material->computeAndGetProgramGUID(currentStagePass);
+            program = ShaderProgram::findShaderProgram(shaderGUID);
+            if (program != nullptr) {
+                shaderName = program->resourceName().c_str();
             }
+            stateHash = material->getRenderStateBlock(currentStagePass);
+        }
 
-            return ret;
-         };
-
-        template<typename T, size_t num_rows>
-        bool inputMatrix(Editor & parent, const char* label, const char* name, const float stepIn, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format = "%d") {
-            static UndoEntry<T> undo = {};
-
-            const T cStep = T(stepIn * 100);
-
-            const void* step = IS_ZERO(stepIn) ? nullptr : (void*)&stepIn;
-            const void* step_fast = step == nullptr ? nullptr : (void*)&cStep;
-
-            T mat = field.get<T>();
-            bool ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[0]._v, num_rows, step, step_fast, format, flags) ||
-                       ImGui::InputScalarN(label, data_type, (void*)mat._vec[1]._v, num_rows, step, step_fast, format, flags);
-            if_constexpr(num_rows > 2) {
-                ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[2]._v, num_rows, step, step_fast, format, flags) || ret;
-                if_constexpr(num_rows > 3) {
-                    ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[3]._v, num_rows, step, step_fast, format, flags) || ret;
+        if (ImGui::CollapsingHeader(("Program: " + shaderName).c_str())) {
+            if (program != nullptr) {
+                const ShaderProgramDescriptor& descriptor = program->descriptor();
+                for (const ShaderModuleDescriptor& module : descriptor._modules) {
+                    const char* stages[] = { "PS", "VS", "GS" "HS", "DS","CS" };
+                    if (ImGui::CollapsingHeader(Util::StringFormat("%s: File [ %s ] Variant [ %s ]",
+                                                                stages[to_base(module._moduleType)],
+                                                                module._sourceFile.c_str(),
+                                                                module._variant.empty() ? "-" : module._variant.c_str()).c_str())) 
+                    {
+                        ImGui::Text("Defines: ");
+                        ImGui::Separator();
+                        for (const auto& define : module._defines) {
+                        ImGui::Text(define.first.c_str());
+                        }
+                        if (ImGui::Button("Open Source File")) {
+                            const stringImpl& textEditor = Attorney::EditorGeneralWidget::externalTextEditorPath(_context.editor());
+                            if (textEditor.empty()) {
+                                Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: No text editor specified!", Time::SecondsToMilliseconds<F32>(3));
+                            } else {
+                                if (!openFile(textEditor.c_str(), (program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), module._sourceFile.c_str())) {
+                                    Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Couldn't open specified source file!", Time::SecondsToMilliseconds<F32>(3));
+                                }
+                            }
+                        }
+                    }
                 }
+                ImGui::Separator();
+                if (ImGui::Button("Rebuild from source") && !readOnly) {
+                    Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Rebuilding shader from source ...", Time::SecondsToMilliseconds<F32>(3));
+                    if (!program->recompile(true)) {
+                        Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Failed to rebuild shader from source!", Time::SecondsToMilliseconds<F32>(3));
+                    } else {
+                        Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Rebuilt shader from source!", Time::SecondsToMilliseconds<F32>(3));
+                        ret = true;
+                    }
+                }
+                ImGui::Separator();
             }
-            if (!field._readOnly) {
-                if (ImGui::IsItemActivated()) {
-                    undo.oldVal = field.get<T>();
-                }
+        }
 
-                if (ImGui::IsItemDeactivatedAfterEdit()) {
-                    undo._type = field._basicType;
-                    undo._name = name;
-                    undo._data = field._data;
-                    undo._dataSetter = field._dataSetter;
-                    undo.newVal = mat;
-                    parent.registerUndoEntry(undo);
-                }
-                if (ret && !field._readOnly) {
-                    if (ret && mat != field.get<T>()) {
-                        field.set<>(mat);
+        if (ImGui::CollapsingHeader(Util::StringFormat("Render State: %zu", stateHash).c_str()) && stateHash > 0)
+        {
+            RenderStateBlock block = RenderStateBlock::get(stateHash);
+            bool changed = false;
+            {
+                P32 colourWrite = block.colourWrite();
+                const char* names[] = { "R", "G", "B", "A" };
+
+                for (U8 i = 0; i < 4; ++i) {
+                    if (i > 0) {
+                        ImGui::SameLine();
+                    }
+
+                    bool val = colourWrite.b[i] == 1;
+                    if (ImGui::Checkbox(names[i], &val)) {
+                        RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !val, val, "Colour Mask", [stateHash, material, i](const bool& oldVal) {
+                            RenderStateBlock block = RenderStateBlock::get(stateHash);
+                            const P32 colourWrite = block.colourWrite();
+                            block.setColourWrites(
+                                i == 0 ? oldVal : colourWrite.b[0],
+                                i == 1 ? oldVal : colourWrite.b[1],
+                                i == 2 ? oldVal : colourWrite.b[2],
+                                i == 3 ? oldVal : colourWrite.b[3]
+                            );
+                            material->setRenderStateBlock(block.getHash(), currentStagePass._stage, currentStagePass._passType, currentStagePass._variant);
+                        });
+                        colourWrite.b[i] = val ? 1 : 0;
+                        block.setColourWrites(colourWrite.b[0] == 1, colourWrite.b[1] == 1, colourWrite.b[2] == 1, colourWrite.b[3] == 1);
+                        changed = true;
                     }
                 }
             }
-            return ret;
-        }
-     };
 
-     bool PropertyWindow::processMaterial(Material* material, bool readOnly) {
-         bool ret = false;
+            F32 zBias = block.zBias();
+            F32 zUnits = block.zUnits();
+            {
+                EditorComponentField tempField = {};
+                tempField._name = "ZBias";
+                tempField._basicType = GFX::PushConstantType::FLOAT;
+                tempField._type = EditorComponentFieldType::PUSH_TYPE;
+                tempField._readOnly = readOnly;
+                tempField._data = &zBias;
+                tempField._range = { 0.0f, 1000.0f };
+                RenderStagePass tempPass = currentStagePass;
+                tempField._dataSetter = [material, stateHash, tempPass, zUnits](const void* data) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.setZBias(*(static_cast<const F32*>(data)), zUnits);
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                };
+                changed = processBasicField(tempField) || changed;
+            }
+            {
+                EditorComponentField tempField = {};
+                tempField._name = "ZUnits";
+                tempField._basicType = GFX::PushConstantType::FLOAT;
+                tempField._type = EditorComponentFieldType::PUSH_TYPE;
+                tempField._readOnly = readOnly;
+                tempField._data = &zUnits;
+                tempField._range = { 0.0f, 65536.0f };
+                RenderStagePass tempPass = currentStagePass;
+                tempField._dataSetter = [material, stateHash, tempPass, zBias](const void* data) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.setZBias(zBias, *(static_cast<const F32*>(data)));
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                };
+                changed = processBasicField(tempField) || changed;
+            }
 
-         if (material) {
-             if (readOnly) {
-                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                 ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-             }
+            ImGui::Text("Tessellation control points: %d", block.tessControlPoints());
+            
+            {
+                CullMode cMode = block.cullMode();
 
-             static RenderStagePass currentStagePass = {};
-             {
-                 const char* crtStage = TypeUtil::RenderStageToString(currentStagePass._stage);
-                 if (ImGui::BeginCombo("Stage", crtStage, ImGuiComboFlags_PopupAlignLeft)) {
-                     for (U8 n = 0; n < to_U8(RenderStage::COUNT); ++n) {
-                        const RenderStage stage = static_cast<RenderStage>(n);
-                        const bool isSelected = currentStagePass._stage == stage;
+                static UndoEntry<I32> cullUndo = {};
+                const char* crtMode = TypeUtil::CullModeToString(cMode);
+                if (ImGui::BeginCombo("Cull Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                    for (U8 n = 0; n < to_U8(CullMode::COUNT); ++n) {
+                        const CullMode mode = static_cast<CullMode>(n);
+                        const bool isSelected = cMode == mode;
 
-                        if (ImGui::Selectable(TypeUtil::RenderStageToString(stage), isSelected)) {
-                            currentStagePass._stage = stage;
+                        if (ImGui::Selectable(TypeUtil::CullModeToString(mode), isSelected)) {
+                            cullUndo._type = GFX::PushConstantType::INT;
+                            cullUndo._name = "Cull Mode";
+                            cullUndo._oldVal = to_I32(cMode);
+                            cullUndo._newVal = to_I32(mode);
+                            RenderStagePass tempPass = currentStagePass;
+                            cullUndo._dataSetter = [material, stateHash, tempPass](const I32& data) {
+                                RenderStateBlock block = RenderStateBlock::get(stateHash);
+                                block.setCullMode(static_cast<CullMode>(data));
+                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                            };
+                            _context.editor().registerUndoEntry(cullUndo);
+
+                            cMode = mode;
+                            block.setCullMode(mode);
+                            changed = true;
                         }
                         if (isSelected) {
                             ImGui::SetItemDefaultFocus();
                         }
-                     }
-                     ImGui::EndCombo();
-                 }
-
-                 const char* crtPass = TypeUtil::RenderPassTypeToString(currentStagePass._passType);
-                 if (ImGui::BeginCombo("Pass", crtPass, ImGuiComboFlags_PopupAlignLeft)) {
-                     for (U8 n = 0; n < to_U8(RenderPassType::COUNT); ++n) {
-                         const RenderPassType pass = static_cast<RenderPassType>(n);
-                         const bool isSelected = currentStagePass._passType == pass;
-
-                         if (ImGui::Selectable(TypeUtil::RenderPassTypeToString(pass), isSelected)) {
-                             currentStagePass._passType = pass;
-                         }
-                         if (isSelected) {
-                             ImGui::SetItemDefaultFocus();
-                         }
-                     }
-                     ImGui::EndCombo();
-                 }
-
-                 constexpr U8 min = 0u, max = Material::g_maxVariantsPerPass;
-                 ImGui::SliderScalar("Variant", ImGuiDataType_U8, &currentStagePass._variant, &min, &max);
-                 ImGui::InputScalar("Pass Index", ImGuiDataType_U32, &currentStagePass._passIndex);
-                 ImGui::InputScalar("Index A", ImGuiDataType_U16, &currentStagePass._indexA);
-                 ImGui::InputScalar("Index B", ImGuiDataType_U16, &currentStagePass._indexA);
-             }
-
-             size_t stateHash = 0;
-             stringImpl shaderName = "None";
-             ShaderProgram* program = nullptr;
-             if (currentStagePass._stage != RenderStage::COUNT && currentStagePass._passType != RenderPassType::COUNT) {
-                 const I64 shaderGUID = material->computeAndGetProgramGUID(currentStagePass);
-                 program = ShaderProgram::findShaderProgram(shaderGUID);
-                 if (program != nullptr) {
-                     shaderName = program->resourceName().c_str();
-                 }
-                 stateHash = material->getRenderStateBlock(currentStagePass);
-             }
-
-             if (ImGui::CollapsingHeader(("Program: " + shaderName).c_str())) {
-                 if (program != nullptr) {
-                     const ShaderProgramDescriptor& descriptor = program->descriptor();
-                     for (const ShaderModuleDescriptor& module : descriptor._modules) {
-                         const char* stages[] = { "PS", "VS", "GS" "HS", "DS","CS" };
-                         if (ImGui::CollapsingHeader(Util::StringFormat("%s: File [ %s ] Variant [ %s ]",
-                                                                        stages[to_base(module._moduleType)],
-                                                                        module._sourceFile.c_str(),
-                                                                        module._variant.empty() ? "-" : module._variant.c_str()).c_str())) 
-                         {
-                             ImGui::Text("Defines: ");
-                             ImGui::Separator();
-                             for (const auto& define : module._defines) {
-                                ImGui::Text(define.first.c_str());
-                             }
-                             if (ImGui::Button("Open Source File")) {
-                                 const stringImpl& textEditor = Attorney::EditorGeneralWidget::externalTextEditorPath(_context.editor());
-                                 if (textEditor.empty()) {
-                                     Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: No text editor specified!", Time::SecondsToMilliseconds<F32>(3));
-                                 } else {
-                                     if (!openFile(textEditor.c_str(), (program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), module._sourceFile.c_str())) {
-                                         Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Couldn't open specified source file!", Time::SecondsToMilliseconds<F32>(3));
-                                     }
-                                 }
-                             }
-                         }
-                     }
-                     ImGui::Separator();
-                     if (ImGui::Button("Rebuild from source") && !readOnly) {
-                         Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Rebuilding shader from source ...", Time::SecondsToMilliseconds<F32>(3));
-                         if (!program->recompile(true)) {
-                             Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Failed to rebuild shader from source!", Time::SecondsToMilliseconds<F32>(3));
-                         } else {
-                             Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Rebuilt shader from source!", Time::SecondsToMilliseconds<F32>(3));
-                             ret = true;
-                         }
-                     }
-                     ImGui::Separator();
-                 }
-             }
-
-             if (ImGui::CollapsingHeader(Util::StringFormat("Render State: %zu", stateHash).c_str()) && stateHash > 0)
-             {
-                RenderStateBlock block = RenderStateBlock::get(stateHash);
-                bool changed = false;
-                {
-                    const P32 colourWrite = block.colourWrite();
-                    bool R = colourWrite.b[0] == 1;
-                    bool G = colourWrite.b[1] == 1;
-                    bool B = colourWrite.b[2] == 1;
-                    bool A = colourWrite.b[3] == 1;
-                    if (ImGui::Checkbox("R", &R)) {
-                        block.setColourWrites(R, G, B, A);
-                        changed = true;
                     }
-                    ImGui::SameLine();
-                    if (ImGui::Checkbox("R", &G)) {
-                        block.setColourWrites(R, G, B, A);
-                        changed = true;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Checkbox("R", &B)) {
-                        block.setColourWrites(R, G, B, A);
-                        changed = true;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Checkbox("R", &A)) {
-                        block.setColourWrites(R, G, B, A);
-                        changed = true;
-                    }
+                    ImGui::EndCombo();
                 }
+            }
+            {
+                static UndoEntry<I32> fillUndo = {};
+                FillMode fMode = block.fillMode();
+                const char* crtMode = TypeUtil::FillModeToString(fMode);
+                if (ImGui::BeginCombo("Fill Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                    for (U8 n = 0; n < to_U8(FillMode::COUNT); ++n) {
+                        const FillMode mode = static_cast<FillMode>(n);
+                        const bool isSelected = fMode == mode;
 
-                F32 bias[] = { block.zBias(), block.zUnits() };
-                if (ImGui::InputFloat2("ZBias", bias)) {
-                    block.setZBias(bias[0], bias[1]);
-                    changed = true;
-                }
+                        if (ImGui::Selectable(TypeUtil::FillModeToString(mode), isSelected)) {
+                            fillUndo._type = GFX::PushConstantType::INT;
+                            fillUndo._name = "Fill Mode";
+                            fillUndo._oldVal = to_I32(fMode);
+                            fillUndo._newVal = to_I32(mode);
+                            RenderStagePass tempPass = currentStagePass;
+                            fillUndo._dataSetter = [material, stateHash, tempPass](const I32& data) {
+                                RenderStateBlock block = RenderStateBlock::get(stateHash);
+                                block.setFillMode(static_cast<FillMode>(data));
+                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                            };
+                            _context.editor().registerUndoEntry(fillUndo);
 
-                ImGui::Text("Tessellation control points: %d", block.tessControlPoints());
-                {
-                    CullMode cMode = block.cullMode();
-
-                    const char* crtMode = TypeUtil::CullModeToString(cMode);
-                    if (ImGui::BeginCombo("Cull Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
-                        for (U8 n = 0; n < to_U8(CullMode::COUNT); ++n) {
-                            const CullMode mode = static_cast<CullMode>(n);
-                            const bool isSelected = cMode == mode;
-
-                            if (ImGui::Selectable(TypeUtil::CullModeToString(mode), isSelected)) {
-                                cMode = mode;
-                                block.setCullMode(mode);
-                                changed = true;
-                            }
-                            if (isSelected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
+                            fMode = mode;
+                            block.setFillMode(mode);
+                            changed = true;
                         }
-                        ImGui::EndCombo();
-                    }
-                }
-
-                {
-                    FillMode fMode = block.fillMode();
-                    const char* crtMode = TypeUtil::FillModeToString(fMode);
-                    if (ImGui::BeginCombo("Fill Mode", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
-                        for (U8 n = 0; n < to_U8(FillMode::COUNT); ++n) {
-                            const FillMode mode = static_cast<FillMode>(n);
-                            const bool isSelected = fMode == mode;
-
-                            if (ImGui::Selectable(TypeUtil::FillModeToString(mode), isSelected)) {
-                                fMode = mode;
-                                block.setFillMode(mode);
-                                changed = true;
-                            }
-                            if (isSelected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
                         }
-                        ImGui::EndCombo();
                     }
+                    ImGui::EndCombo();
                 }
+            }
 
-                U32 stencilReadMask = block.stencilMask();
-                U32 stencilWriteMask = block.stencilWriteMask();
-                if (ImGui::InputScalar("Stencil mask", ImGuiDataType_U32, &stencilReadMask, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
-                    block.setStencilReadWriteMask(stencilReadMask, stencilWriteMask);
-                    changed = true;
-                }
+            U32 stencilReadMask = block.stencilMask();
+            U32 stencilWriteMask = block.stencilWriteMask();
+            if (ImGui::InputScalar("Stencil mask", ImGuiDataType_U32, &stencilReadMask, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                RenderStagePass tempPass = currentStagePass;
+                RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilMask(), stencilReadMask, "Stencil mask", [material, stateHash, stencilWriteMask, tempPass](const U32& oldVal) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.setStencilReadWriteMask(oldVal, stencilWriteMask);
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                });
 
-                if (ImGui::InputScalar("Stencil write mask", ImGuiDataType_U32, &stencilWriteMask, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
-                    block.setStencilReadWriteMask(stencilReadMask, stencilWriteMask);
-                    changed = true;
-                }
+                block.setStencilReadWriteMask(stencilReadMask, stencilWriteMask);
+                changed = true;
+            }
 
-                bool stencilDirty = false;
-                U32 stencilRef = block.stencilRef();
-                if (ImGui::InputScalar("Stencil reference mask", ImGuiDataType_U32, &stencilRef, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
-                    stencilDirty = true;
-                }
+            if (ImGui::InputScalar("Stencil write mask", ImGuiDataType_U32, &stencilWriteMask, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                RenderStagePass tempPass = currentStagePass;
+                RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilWriteMask(), stencilWriteMask, "Stencil write mask", [material, stateHash, stencilReadMask, tempPass](const U32& oldVal) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.setStencilReadWriteMask(stencilReadMask, oldVal);
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                });
 
-                {
-                    ComparisonFunction zFunc = block.zFunc();
-                    const char* crtMode = TypeUtil::ComparisonFunctionToString(zFunc);
-                    if (ImGui::BeginCombo("Depth function", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
-                        for (U8 n = 0; n < to_U8(ComparisonFunction::COUNT); ++n) {
-                            const ComparisonFunction func = static_cast<ComparisonFunction>(n);
-                            const bool isSelected = zFunc == func;
+                block.setStencilReadWriteMask(stencilReadMask, stencilWriteMask);
+                changed = true;
+            }
 
-                            if (ImGui::Selectable(TypeUtil::ComparisonFunctionToString(func), isSelected)) {
-                                zFunc = func;
-                                block.setZFunc(func);
-                                changed = true;
-                            }
-                            if (isSelected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
+            bool stencilDirty = false;
+            U32 stencilRef = block.stencilRef();
+            bool stencilEnabled = block.stencilEnable();
+            StencilOperation sFailOp = block.stencilFailOp();
+            StencilOperation sZFailOp = block.stencilZFailOp();
+            StencilOperation sPassOp = block.stencilPassOp();
+            ComparisonFunction sFunc = block.stencilFunc();
+
+            if (ImGui::InputScalar("Stencil reference mask", ImGuiDataType_U32, &stencilRef, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                RenderStagePass tempPass = currentStagePass;
+                RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilRef(), stencilRef, "Stencil reference mask", [material, stateHash, tempPass, stencilEnabled, stencilReadMask, sFailOp, sZFailOp, sPassOp, sFunc](const U32& oldVal) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.setStencil(stencilEnabled, oldVal, sFailOp, sZFailOp, sPassOp, sFunc);
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                });
+                stencilDirty = true;
+            }
+
+            {
+                static UndoEntry<I32> stencilUndo = {};
+                ComparisonFunction zFunc = block.zFunc();
+                const char* crtMode = TypeUtil::ComparisonFunctionToString(zFunc);
+                if (ImGui::BeginCombo("Depth function", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                    for (U8 n = 0; n < to_U8(ComparisonFunction::COUNT); ++n) {
+                        const ComparisonFunction func = static_cast<ComparisonFunction>(n);
+                        const bool isSelected = zFunc == func;
+
+                        if (ImGui::Selectable(TypeUtil::ComparisonFunctionToString(func), isSelected)) {
+                            stencilUndo._type = GFX::PushConstantType::INT;
+                            stencilUndo._name = "Depth function";
+                            stencilUndo._oldVal = to_I32(zFunc);
+                            stencilUndo._newVal = to_I32(func);
+                            RenderStagePass tempPass = currentStagePass;
+                            stencilUndo._dataSetter = [material, stateHash, tempPass](const I32& data) {
+                                RenderStateBlock block = RenderStateBlock::get(stateHash);
+                                block.setZFunc(static_cast<ComparisonFunction>(data));
+                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                            };
+                            _context.editor().registerUndoEntry(stencilUndo);
+
+                            zFunc = func;
+                            block.setZFunc(func);
+                            changed = true;
                         }
-                        ImGui::EndCombo();
-                    }
-                }
-                StencilOperation sFailOp = block.stencilFailOp();
-                {
-                    const char* crtMode = TypeUtil::StencilOperationToString(sFailOp);
-                    if (ImGui::BeginCombo("Stencil fail op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
-                        for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
-                            const StencilOperation op = static_cast<StencilOperation>(n);
-                            const bool isSelected = sFailOp == op;
-
-                            if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
-                                sFailOp = op;
-                                stencilDirty = true;
-                            }
-                            if (isSelected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
                         }
-                        ImGui::EndCombo();
                     }
+                    ImGui::EndCombo();
                 }
-                StencilOperation sZFailOp = block.stencilZFailOp();
-                {
-                    const char* crtMode = TypeUtil::StencilOperationToString(sZFailOp);
-                    if (ImGui::BeginCombo("Stencil depth fail op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
-                        for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
-                            const StencilOperation op = static_cast<StencilOperation>(n);
-                            const bool isSelected = sZFailOp == op;
+            }
+            {
+                static UndoEntry<I32> stencilUndo = {};
+                const char* crtMode = TypeUtil::StencilOperationToString(sFailOp);
+                if (ImGui::BeginCombo("Stencil fail op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                    for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
+                        const StencilOperation op = static_cast<StencilOperation>(n);
+                        const bool isSelected = sFailOp == op;
 
-                            if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
-                                sZFailOp = op;
-                                stencilDirty = true;
-                            }
-                            if (isSelected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
+                        if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
+                            stencilUndo._type = GFX::PushConstantType::INT;
+                            stencilUndo._name = "Stencil fail op";
+                            stencilUndo._oldVal = to_I32(sFailOp);
+                            stencilUndo._newVal = to_I32(op);
+                            RenderStagePass tempPass = currentStagePass;
+                            stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sZFailOp, sPassOp, sFunc](const I32& data) {
+                                RenderStateBlock block = RenderStateBlock::get(stateHash);
+                                block.setStencil(stencilEnabled, stencilRef, static_cast<StencilOperation>(data), sZFailOp, sPassOp, sFunc);
+                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                            };
+                            _context.editor().registerUndoEntry(stencilUndo);
+
+                            sFailOp = op;
+                            stencilDirty = true;
                         }
-                        ImGui::EndCombo();
-                    }
-                }
-                StencilOperation sPassOp = block.stencilPassOp();
-                {
-                    const char* crtMode = TypeUtil::StencilOperationToString(sPassOp);
-                    if (ImGui::BeginCombo("Stencil pass op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
-                        for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
-                            const StencilOperation op = static_cast<StencilOperation>(n);
-                            const bool isSelected = sPassOp == op;
-
-                            if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
-                                sPassOp = op;
-                                stencilDirty = true;
-                            }
-                            if (isSelected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
                         }
-                        ImGui::EndCombo();
                     }
+                    ImGui::EndCombo();
                 }
-                ComparisonFunction sFunc = block.stencilFunc();
-                {
-                    const char* crtMode = TypeUtil::ComparisonFunctionToString(sFunc);
-                    if (ImGui::BeginCombo("Stencil function", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
-                        for (U8 n = 0; n < to_U8(ComparisonFunction::COUNT); ++n) {
-                            const ComparisonFunction mode = static_cast<ComparisonFunction>(n);
-                            const bool isSelected = sFunc == mode;
+            }
+            {
+                static UndoEntry<I32> stencilUndo = {};
+                const char* crtMode = TypeUtil::StencilOperationToString(sZFailOp);
+                if (ImGui::BeginCombo("Stencil depth fail op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                    for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
+                        const StencilOperation op = static_cast<StencilOperation>(n);
+                        const bool isSelected = sZFailOp == op;
 
-                            if (ImGui::Selectable(TypeUtil::ComparisonFunctionToString(mode), isSelected)) {
-                                sFunc = mode;
-                                stencilDirty = true;
-                            }
-                            if (isSelected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
+                        if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
+                            stencilUndo._type = GFX::PushConstantType::INT;
+                            stencilUndo._name = "Stencil depth fail op";
+                            stencilUndo._oldVal = to_I32(sZFailOp);
+                            stencilUndo._newVal = to_I32(op);
+                            RenderStagePass tempPass = currentStagePass;
+                            stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sPassOp, sFunc](const I32& data) {
+                                RenderStateBlock block = RenderStateBlock::get(stateHash);
+                                block.setStencil(stencilEnabled, stencilRef, sFailOp, static_cast<StencilOperation>(data), sPassOp, sFunc);
+                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                            };
+                            _context.editor().registerUndoEntry(stencilUndo);
+
+                            sZFailOp = op;
+                            stencilDirty = true;
                         }
-                        ImGui::EndCombo();
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
                     }
+                    ImGui::EndCombo();
                 }
+            }
+            {
+                static UndoEntry<I32> stencilUndo = {};
+                const char* crtMode = TypeUtil::StencilOperationToString(sPassOp);
+                if (ImGui::BeginCombo("Stencil pass op", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                    for (U8 n = 0; n < to_U8(StencilOperation::COUNT); ++n) {
+                        const StencilOperation op = static_cast<StencilOperation>(n);
+                        const bool isSelected = sPassOp == op;
 
-                bool frontFaceCCW = block.frontFaceCCW();
-                if (ImGui::Checkbox("CCW front face", &frontFaceCCW)) {
-                    block.setFrontFaceCCW(frontFaceCCW);
-                    changed = true;
+                        if (ImGui::Selectable(TypeUtil::StencilOperationToString(op), isSelected)) {
+
+                            stencilUndo._type = GFX::PushConstantType::INT;
+                            stencilUndo._name = "Stencil pass op";
+                            stencilUndo._oldVal = to_I32(sPassOp);
+                            stencilUndo._newVal = to_I32(op);
+                            RenderStagePass tempPass = currentStagePass;
+                            stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sZFailOp, sFunc](const I32& data) {
+                                RenderStateBlock block = RenderStateBlock::get(stateHash);
+                                block.setStencil(stencilEnabled, stencilRef, sFailOp, sZFailOp, static_cast<StencilOperation>(data), sFunc);
+                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                            };
+                            _context.editor().registerUndoEntry(stencilUndo);
+
+                            sPassOp = op;
+                            stencilDirty = true;
+                        }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
                 }
+            }
+            {
+                static UndoEntry<I32> stencilUndo = {};
+                const char* crtMode = TypeUtil::ComparisonFunctionToString(sFunc);
+                if (ImGui::BeginCombo("Stencil function", crtMode, ImGuiComboFlags_PopupAlignLeft)) {
+                    for (U8 n = 0; n < to_U8(ComparisonFunction::COUNT); ++n) {
+                        const ComparisonFunction mode = static_cast<ComparisonFunction>(n);
+                        const bool isSelected = sFunc == mode;
 
-                bool scissorEnabled = block.scissorTestEnabled();
-                if (ImGui::Checkbox("Scissor test", &scissorEnabled)) {
-                    block.setScissorTest(scissorEnabled);
-                    changed = true;
+                        if (ImGui::Selectable(TypeUtil::ComparisonFunctionToString(mode), isSelected)) {
+
+                            stencilUndo._type = GFX::PushConstantType::INT;
+                            stencilUndo._name = "Stencil function";
+                            stencilUndo._oldVal = to_I32(sFunc);
+                            stencilUndo._newVal = to_I32(mode);
+                            RenderStagePass tempPass = currentStagePass;
+                            stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp](const I32& data) {
+                                RenderStateBlock block = RenderStateBlock::get(stateHash);
+                                block.setStencil(stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp, static_cast<ComparisonFunction>(data));
+                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                            };
+                            _context.editor().registerUndoEntry(stencilUndo);
+
+                            sFunc = mode;
+                            stencilDirty = true;
+                        }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
                 }
+            }
 
-                bool depthTestEnabled = block.depthTestEnabled();
-                if (ImGui::Checkbox("Depth test", &depthTestEnabled)) {
-                    block.depthTestEnabled(depthTestEnabled);
-                    changed = true;
+            bool frontFaceCCW = block.frontFaceCCW();
+            if (ImGui::Checkbox("CCW front face", &frontFaceCCW)) {
+                const RenderStagePass tempPass = currentStagePass;
+                RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !frontFaceCCW, frontFaceCCW, "CCW front face", [material, stateHash, tempPass](const bool& oldVal) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.setFrontFaceCCW(oldVal);
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                });
+
+                block.setFrontFaceCCW(frontFaceCCW);
+                changed = true;
+            }
+
+            bool scissorEnabled = block.scissorTestEnabled();
+            if (ImGui::Checkbox("Scissor test", &scissorEnabled)) {
+                const RenderStagePass tempPass = currentStagePass;
+                RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !scissorEnabled, scissorEnabled, "Scissor test", [material, stateHash, tempPass](const bool& oldVal) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.setScissorTest(oldVal);
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                });
+
+                block.setScissorTest(scissorEnabled);
+                changed = true;
+            }
+
+            bool depthTestEnabled = block.depthTestEnabled();
+            if (ImGui::Checkbox("Depth test", &depthTestEnabled)) {
+                const RenderStagePass tempPass = currentStagePass;
+                RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !depthTestEnabled, depthTestEnabled, "Depth test", [material, stateHash, tempPass](const bool& oldVal) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.depthTestEnabled(oldVal);
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                });
+
+                block.depthTestEnabled(depthTestEnabled);
+                changed = true;
+            }
+
+            if (ImGui::Checkbox("Stencil test", &stencilEnabled)) {
+                const RenderStagePass tempPass = currentStagePass;
+                RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !stencilEnabled, stencilEnabled, "Stencil test", [material, stateHash, tempPass, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc](const bool& oldVal) {
+                    RenderStateBlock block = RenderStateBlock::get(stateHash);
+                    block.setStencil(oldVal, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc);
+                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                });
+
+                stencilDirty = true;
+            }
+
+            if (stencilDirty) {
+                block.setStencil(stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc);
+                changed = true;
+            }
+
+            if (changed && !readOnly) {
+                material->setRenderStateBlock(block.getHash(), currentStagePass._stage, currentStagePass._passType, currentStagePass._variant);
+                ret = true;
+            }
+        }
+
+        if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", TypeUtil::ShadingModeToString(material->getShadingMode())).c_str())) {
+            const auto diffuseSetter = [material](const void* data) {
+                material->getColourData().baseColour(*(FColour4*)data);
+            };
+
+            FColour4 diffuse = material->getColourData().baseColour();
+            if (colourInput4(_parent, " - BaseColour", diffuse, readOnly, diffuseSetter)) {
+                diffuseSetter(diffuse._v);
+                ret = true;
+            }
+
+            const auto emissiveSetter = [material](const void* data) {
+                material->getColourData().emissive(*(FColour3*)data);
+            };
+            FColour3 emissive = material->getColourData().emissive();
+            if (colourInput3(_parent, " - Emissive", emissive, readOnly, emissiveSetter)) {
+                emissiveSetter(emissive._v);
+                ret = true;
+            }
+
+            if (material->isPBRMaterial()) {
+                {
+                    F32 reflectivity = material->getColourData().reflectivity();
+                    EditorComponentField tempField = {};
+                    tempField._name = " - Reflectivity";
+                    tempField._basicType = GFX::PushConstantType::FLOAT;
+                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                    tempField._readOnly = readOnly;
+                    tempField._data = &reflectivity;
+                    tempField._range = { 0.0f, 1.0f };
+                    tempField._dataSetter = [material](const void* reflectivity) {
+                        material->getColourData().reflectivity(*static_cast<const F32*>(reflectivity));
+                    };
+                    ret = processField(tempField) || ret;
                 }
-
-                bool stencilEnabled = block.stencilEnable();
-                if (ImGui::Checkbox("Stencil test", &stencilEnabled)) {
-                    stencilDirty = true;
+                {
+                    F32 metallic = material->getColourData().metallic();
+                    EditorComponentField tempField = {};
+                    tempField._name = " - Metallic";
+                    tempField._basicType = GFX::PushConstantType::FLOAT;
+                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                    tempField._readOnly = readOnly;
+                    tempField._data = &metallic;
+                    tempField._range = { 0.0f, 1.0f };
+                    tempField._dataSetter = [material](const void* metallic) {
+                        material->getColourData().metallic(*static_cast<const F32*>(metallic));
+                    };
+                    ret = processField(tempField) || ret;
                 }
-
-                if (stencilDirty) {
-                    block.setStencil(stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc);
-                    changed = true;
+                {
+                    F32 roughness = material->getColourData().roughness();
+                    EditorComponentField tempField = {};
+                    tempField._name = " - Roughness";
+                    tempField._basicType = GFX::PushConstantType::FLOAT;
+                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                    tempField._readOnly = readOnly;
+                    tempField._data = &roughness;
+                    tempField._range = { 0.0f, 1.0f };
+                    tempField._dataSetter = [material](const void* roughness) {
+                        material->getColourData().roughness(*static_cast<const F32*>(roughness));
+                    };
+                    ret = processField(tempField) || ret;
                 }
-
-                if (changed && !readOnly) {
-                    material->setRenderStateBlock(block.getHash(), currentStagePass._stage, currentStagePass._passType, currentStagePass._variant);
+            } else {
+                const auto specularSetter = [material](const void* data) {
+                    material->getColourData().specular(*(FColour3*)data);
+                };
+                FColour3 specular = material->getColourData().specular();
+                if (colourInput3(_parent, " - Specular", specular, readOnly, specularSetter)) {
+                    specularSetter(specular._v);
                     ret = true;
                 }
-             }
 
-             if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", TypeUtil::ShadingModeToString(material->getShadingMode())).c_str())) {
-                 const auto diffuseSetter = [material](const void* data) {
-                     material->getColourData().baseColour(*(FColour4*)data);
-                 };
+                F32 shininess = material->getColourData().shininess();
+                EditorComponentField tempField = {};
+                tempField._name = " - Shininess";
+                tempField._basicType = GFX::PushConstantType::FLOAT;
+                tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                tempField._readOnly = readOnly;
+                tempField._data = &shininess;
+                tempField._range = { 0.0f, 1.0f };
+                tempField._dataSetter = [material](const void* shininess) {
+                    material->getColourData().shininess(*static_cast<const F32*>(shininess));
+                };
+                ret = processField(tempField) || ret;
+            }
 
-                 FColour4 diffuse = material->getColourData().baseColour();
-                 if (colourInput4(_parent, " - BaseColour", diffuse, readOnly, diffuseSetter)) {
-                     diffuseSetter(diffuse._v);
-                     ret = true;
-                 }
-                 
-                 const auto emissiveSetter = [material](const void* data) {
-                     material->getColourData().emissive(*(FColour3*)data);
-                 };
-                 FColour3 emissive = material->getColourData().emissive();
-                 if (colourInput3(_parent, " - Emissive", emissive, readOnly, emissiveSetter)) {
-                     emissiveSetter(emissive._v);
-                     ret = true;
-                 }
-             
-                 if (material->isPBRMaterial()) {
-                     F32 reflectivity = material->getColourData().reflectivity();
-                     if (ImGui::SliderFloat(" - Specular", &reflectivity, 0.0f, 1.0f)) {
-                         material->getColourData().reflectivity(reflectivity);
-                         ret = true;
-                     }
-                     F32 metallic = material->getColourData().metallic();
-                     if (ImGui::SliderFloat(" - Shininess", &metallic, 0.0f, 1.0f)) {
-                         material->getColourData().metallic(metallic);
-                         ret = true;
-                     }
-                     F32 roughness = material->getColourData().roughness();
-                     if (ImGui::SliderFloat(" - Roughness", &roughness, 0.0f, 1.0f)) {
-                         material->getColourData().roughness(roughness);
-                         ret = true;
-                     }
-                 } else {
-                     const auto specularSetter = [material](const void* data) {
-                         material->getColourData().specular(*(FColour3*)data);
-                     };
-                     FColour3 specular = material->getColourData().specular();
-                     if (colourInput3(_parent, " - Specular", specular, readOnly, specularSetter)) {
-                         specularSetter(specular._v);
-                         ret = true;
-                     }
+            bool doubleSided = material->isDoubleSided();
+            bool receivesShadows = material->receivesShadows();
 
-                     F32 shininess = material->getColourData().shininess();
-                     if (ImGui::SliderFloat(" - Shininess", &shininess, 0.0f, 1.0f)) {
-                         material->getColourData().shininess(shininess);
-                         ret = true;
-                     }
-                 }
+            if (ImGui::Checkbox("DoubleSided", &doubleSided) && !readOnly) {
+                RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !doubleSided, doubleSided, "DoubleSided", [material](const bool& oldVal) {
+                    material->setDoubleSided(oldVal);
+                });
+                material->setDoubleSided(doubleSided);
+                ret = true;
+            }
 
-                 bool doubleSided = material->isDoubleSided();
-                 bool receivesShadows = material->receivesShadows();
+            if (ImGui::Checkbox("ReceivesShadows", &receivesShadows) && !readOnly) {
+                RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !receivesShadows, receivesShadows, "ReceivesShadows", [material](const bool& oldVal) {
+                    material->setReceivesShadows(oldVal);
+                });
+                material->setReceivesShadows(receivesShadows);
+                ret = true;
+            }
+        }
 
-                 ret = ImGui::Checkbox("DoubleSided", &doubleSided) || ret;
-                 ret = ImGui::Checkbox("ReceivesShadows", &receivesShadows) || ret;
-                 if (!readOnly) {
-                     material->setDoubleSided(doubleSided);
-                     material->setReceivesShadows(receivesShadows);
-                 }
-             }
-
-             if (readOnly) {
-                 ImGui::PopStyleVar();
-                 ImGui::PopItemFlag();
-                 ret = false;
-             }
-         }
-
-         return ret;
-     }
+        if (readOnly) {
+            PopReadOnly();
+            ret = false;
+        }
+        return ret;
+    }
 
 
-     bool PropertyWindow::processBasicField(EditorComponentField& field) {
-         const bool isSlider = field._type == EditorComponentFieldType::SLIDER_TYPE &&
-                               field._basicType != GFX::PushConstantType::BOOL &&
-                               !field.isMatrix();
+        bool PropertyWindow::processBasicField(EditorComponentField& field) {
+            const bool isSlider = field._type == EditorComponentFieldType::SLIDER_TYPE &&
+                                field._basicType != GFX::PushConstantType::BOOL &&
+                                !field.isMatrix();
 
-         const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue |
-                                           ImGuiInputTextFlags_CharsNoBlank |
-                                           ImGuiInputTextFlags_CharsDecimal |
-                                           (field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+            const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue |
+                                            ImGuiInputTextFlags_CharsNoBlank |
+                                            ImGuiInputTextFlags_CharsDecimal |
+                                            (field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
 
-         const char* name = field._name.c_str();
-         ImGui::PushID(name);
+            const char* name = field._name.c_str();
+            ImGui::PushID(name);
 
-         const F32 step = field._step;
+            const F32 step = field._step;
 
-         bool ret = false;
-         switch (field._basicType) {
-             case GFX::PushConstantType::BOOL: {
-                 bool val = field.get<bool>();
-                 ret = ImGui::Checkbox("", &val);
-                 if (ret && !field._readOnly) {
-                     field.set<bool>(val);
-                 }
-             }break;
-             case GFX::PushConstantType::INT: {
+            bool ret = false;
+            switch (field._basicType) {
+                case GFX::PushConstantType::BOOL: {
+                    static UndoEntry<bool> undo = {};
+
+                    bool val = field.get<bool>();
+                    ret = ImGui::Checkbox("", &val);
+                    if (ret && !field._readOnly) {
+                        RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !val, val, name, [&field](const bool& oldVal) {
+                            field.set(oldVal);
+                        });
+                        field.set<bool>(val);
+                    }
+                }break;
+                case GFX::PushConstantType::INT: {
                 switch (field._basicTypeSize) {
                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<I64, 1>(_parent, isSlider, "", name, step, ImGuiDataType_S64, field, flags); break;
                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<I32, 1>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags); break;
                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<I16, 1>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags); break;
                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<I8,  1>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags); break;
                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::UINT: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<U64, 1>(_parent, isSlider, "", name, step, ImGuiDataType_U64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<U32, 1>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<U16, 1>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<U8,  1>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags); break;
+                    }
+                }break;
+                case GFX::PushConstantType::UINT: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputOrSlider<U64, 1>(_parent, isSlider, "", name, step, ImGuiDataType_U64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputOrSlider<U32, 1>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputOrSlider<U16, 1>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<U8,  1>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags); break;
                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::DOUBLE: {
-                 ret = inputOrSlider<D64, 1>(_parent, isSlider, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
-             }break;
-             case GFX::PushConstantType::FLOAT: {
-                 ret = inputOrSlider<F32, 1>(_parent, isSlider, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
-             }break;
-             case GFX::PushConstantType::IVEC2: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec2<I64>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_S64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec2<I32>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec2<I16>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec2<I8>,  2>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::IVEC3: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec3<I64>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_S64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec3<I32>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec3<I16>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec3<I8>,  3>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::IVEC4: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec4<I64>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_S64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec4<I32>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec4<I16>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec4<I8>,  4>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::UVEC2: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec2<U64>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_U64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec2<U32>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec2<U16>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec2<U8>,  2>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::UVEC3: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec3<U64>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_U64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec3<U32>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec3<U16>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec3<U8>,  3>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::UVEC4: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec4<U64>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_U64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec4<U32>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec4<U16>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec4<U8>,  4>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::VEC2: {
-                 ret = inputOrSlider<vec2<F32>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
-             }break;
-             case GFX::PushConstantType::VEC3: {
-                 ret = inputOrSlider<vec3<F32>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
-             }break;
-             case GFX::PushConstantType::VEC4: {
-                 ret = inputOrSlider<vec4<F32>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
-             }break;
-             case GFX::PushConstantType::DVEC2: {
-                 ret = inputOrSlider<vec2<D64>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
-             }break;
-             case GFX::PushConstantType::DVEC3: {
-                 ret = inputOrSlider<vec3<D64>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
-             }break;
-             case GFX::PushConstantType::DVEC4: {
-                 ret = inputOrSlider<vec4<D64>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
-             }break;
-             case GFX::PushConstantType::IMAT2: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat2<I64>, 2>(_parent, "", name, step, ImGuiDataType_S64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat2<I32>, 2>(_parent, "", name, step, ImGuiDataType_S32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat2<I16>, 2>(_parent, "", name, step, ImGuiDataType_S16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat2<I8>,  2>(_parent, "", name, step, ImGuiDataType_S8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::IMAT3: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat3<I64>, 3>(_parent, "", name, step, ImGuiDataType_S64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat3<I32>, 3>(_parent, "", name, step, ImGuiDataType_S32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat3<I16>, 3>(_parent, "", name, step, ImGuiDataType_S16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat3<I8>,  3>(_parent, "", name, step, ImGuiDataType_S8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::IMAT4: {
-                 switch (field._basicTypeSize) {
-                 case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat4<I64>, 4>(_parent, "", name, step, ImGuiDataType_S64, field, flags); break;
-                 case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<I32>, 4>(_parent, "", name, step, ImGuiDataType_S32, field, flags); break;
-                 case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<I16>, 4>(_parent, "", name, step, ImGuiDataType_S16, field, flags); break;
-                 case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<I8>,  4>(_parent, "", name, step, ImGuiDataType_S8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::UMAT2: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat2<U64>, 2>(_parent, "", name, step, ImGuiDataType_U64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat2<U32>, 2>(_parent, "", name, step, ImGuiDataType_U32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat2<U16>, 2>(_parent, "", name, step, ImGuiDataType_U16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat2<U8>,  2>(_parent, "", name, step, ImGuiDataType_U8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::UMAT3: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat3<U64>, 3>(_parent, "", name, step, ImGuiDataType_U64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat3<U32>, 3>(_parent, "", name, step, ImGuiDataType_U32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat3<U16>, 3>(_parent, "", name, step, ImGuiDataType_U16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat3<U8>,  3>(_parent, "", name, step, ImGuiDataType_U8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::UMAT4: {
-                 switch (field._basicTypeSize) {
-                     case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat4<U64>, 4>(_parent, "", name, step, ImGuiDataType_U64, field, flags); break;
-                     case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<U32>, 4>(_parent, "", name, step, ImGuiDataType_U32, field, flags); break;
-                     case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<U16>, 4>(_parent, "", name, step, ImGuiDataType_U16, field, flags); break;
-                     case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<U8>,  4>(_parent, "", name, step, ImGuiDataType_U8,  field, flags); break;
-                     default: DIVIDE_UNEXPECTED_CALL(); break;
-                 }
-             }break;
-             case GFX::PushConstantType::MAT2: {
-                 ret = inputMatrix<mat2<F32>, 2>(_parent, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
-             }break;
-             case GFX::PushConstantType::MAT3: {
-                 ret = inputMatrix<mat3<F32>, 3>(_parent, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
-             }break;
-             case GFX::PushConstantType::MAT4: {
-                 ret = inputMatrix<mat4<F32>, 4>(_parent, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
-             }break;
-             case GFX::PushConstantType::DMAT2: {
-                 ret = inputMatrix<mat2<D64>, 2>(_parent, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
-             }break;
-             case GFX::PushConstantType::DMAT3: {
-                 ret = inputMatrix<mat3<D64>, 3>(_parent, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
-             }break;
-             case GFX::PushConstantType::DMAT4: {
-                 ret = inputMatrix<mat4<D64>, 4>(_parent, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
-             }break;
-             case GFX::PushConstantType::FCOLOUR3: {
-                 ret = colourInput3(_parent, "", field);
-             }break;
-             case GFX::PushConstantType::FCOLOUR4: {
-                 ret = colourInput4(_parent, "", field);
-             }break;
-             default: {
-                 ImGui::Text(name);
-             }break;
-         }
+                    }
+                }break;
+                case GFX::PushConstantType::DOUBLE: {
+                    ret = inputOrSlider<D64, 1>(_parent, isSlider, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
+                }break;
+                case GFX::PushConstantType::FLOAT: {
+                    ret = inputOrSlider<F32, 1>(_parent, isSlider, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
+                }break;
+                case GFX::PushConstantType::IVEC2: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec2<I64>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_S64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec2<I32>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec2<I16>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec2<I8>,  2>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::IVEC3: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec3<I64>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_S64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec3<I32>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec3<I16>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec3<I8>,  3>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::IVEC4: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec4<I64>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_S64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec4<I32>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec4<I16>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec4<I8>,  4>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::UVEC2: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec2<U64>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_U64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec2<U32>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec2<U16>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec2<U8>,  2>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::UVEC3: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec3<U64>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_U64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec3<U32>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec3<U16>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec3<U8>,  3>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::UVEC4: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputOrSlider<vec4<U64>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_U64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec4<U32>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec4<U16>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec4<U8>,  4>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::VEC2: {
+                    ret = inputOrSlider<vec2<F32>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
+                }break;
+                case GFX::PushConstantType::VEC3: {
+                    ret = inputOrSlider<vec3<F32>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
+                }break;
+                case GFX::PushConstantType::VEC4: {
+                    ret = inputOrSlider<vec4<F32>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
+                }break;
+                case GFX::PushConstantType::DVEC2: {
+                    ret = inputOrSlider<vec2<D64>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
+                }break;
+                case GFX::PushConstantType::DVEC3: {
+                    ret = inputOrSlider<vec3<D64>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
+                }break;
+                case GFX::PushConstantType::DVEC4: {
+                    ret = inputOrSlider<vec4<D64>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
+                }break;
+                case GFX::PushConstantType::IMAT2: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat2<I64>, 2>(_parent, "", name, step, ImGuiDataType_S64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat2<I32>, 2>(_parent, "", name, step, ImGuiDataType_S32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat2<I16>, 2>(_parent, "", name, step, ImGuiDataType_S16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat2<I8>,  2>(_parent, "", name, step, ImGuiDataType_S8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::IMAT3: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat3<I64>, 3>(_parent, "", name, step, ImGuiDataType_S64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat3<I32>, 3>(_parent, "", name, step, ImGuiDataType_S32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat3<I16>, 3>(_parent, "", name, step, ImGuiDataType_S16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat3<I8>,  3>(_parent, "", name, step, ImGuiDataType_S8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::IMAT4: {
+                    switch (field._basicTypeSize) {
+                    case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat4<I64>, 4>(_parent, "", name, step, ImGuiDataType_S64, field, flags); break;
+                    case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<I32>, 4>(_parent, "", name, step, ImGuiDataType_S32, field, flags); break;
+                    case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<I16>, 4>(_parent, "", name, step, ImGuiDataType_S16, field, flags); break;
+                    case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<I8>,  4>(_parent, "", name, step, ImGuiDataType_S8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::UMAT2: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat2<U64>, 2>(_parent, "", name, step, ImGuiDataType_U64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat2<U32>, 2>(_parent, "", name, step, ImGuiDataType_U32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat2<U16>, 2>(_parent, "", name, step, ImGuiDataType_U16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat2<U8>,  2>(_parent, "", name, step, ImGuiDataType_U8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::UMAT3: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat3<U64>, 3>(_parent, "", name, step, ImGuiDataType_U64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat3<U32>, 3>(_parent, "", name, step, ImGuiDataType_U32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat3<U16>, 3>(_parent, "", name, step, ImGuiDataType_U16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat3<U8>,  3>(_parent, "", name, step, ImGuiDataType_U8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::UMAT4: {
+                    switch (field._basicTypeSize) {
+                        case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat4<U64>, 4>(_parent, "", name, step, ImGuiDataType_U64, field, flags); break;
+                        case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<U32>, 4>(_parent, "", name, step, ImGuiDataType_U32, field, flags); break;
+                        case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<U16>, 4>(_parent, "", name, step, ImGuiDataType_U16, field, flags); break;
+                        case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<U8>,  4>(_parent, "", name, step, ImGuiDataType_U8,  field, flags); break;
+                        default: DIVIDE_UNEXPECTED_CALL(); break;
+                    }
+                }break;
+                case GFX::PushConstantType::MAT2: {
+                    ret = inputMatrix<mat2<F32>, 2>(_parent, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
+                }break;
+                case GFX::PushConstantType::MAT3: {
+                    ret = inputMatrix<mat3<F32>, 3>(_parent, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
+                }break;
+                case GFX::PushConstantType::MAT4: {
+                    ret = inputMatrix<mat4<F32>, 4>(_parent, "", name, step, ImGuiDataType_Float, field, flags, "%.3f");
+                }break;
+                case GFX::PushConstantType::DMAT2: {
+                    ret = inputMatrix<mat2<D64>, 2>(_parent, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
+                }break;
+                case GFX::PushConstantType::DMAT3: {
+                    ret = inputMatrix<mat3<D64>, 3>(_parent, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
+                }break;
+                case GFX::PushConstantType::DMAT4: {
+                    ret = inputMatrix<mat4<D64>, 4>(_parent, "", name, step, ImGuiDataType_Double, field, flags, "%.6f");
+                }break;
+                case GFX::PushConstantType::FCOLOUR3: {
+                    ret = colourInput3(_parent, "", field);
+                }break;
+                case GFX::PushConstantType::FCOLOUR4: {
+                    ret = colourInput4(_parent, "", field);
+                }break;
+                default: {
+                    ImGui::Text(name);
+                }break;
+            }
 
-         ImGui::Spacing();
-         ImGui::PopID();
+            ImGui::Spacing();
+            ImGui::PopID();
 
-         return ret;
-     }
+            return ret;
+        }
 
-     const char* PropertyWindow::name() const noexcept {
-         const Selections& nodes = selections();
-         if (nodes._selectionCount == 0) {
-             return DockedWindow::name();
-         }
-         if (nodes._selectionCount == 1) {
-             return node(nodes._selections[0])->name().c_str();
-         }
+        const char* PropertyWindow::name() const noexcept {
+            const Selections& nodes = selections();
+            if (nodes._selectionCount == 0) {
+                return DockedWindow::name();
+            }
+            if (nodes._selectionCount == 1) {
+                return node(nodes._selections[0])->name().c_str();
+            }
 
-         return Util::StringFormat("%s, %s, ...", node(nodes._selections[0])->name().c_str(), node(nodes._selections[1])->name().c_str()).c_str();
-     }
+            return Util::StringFormat("%s, %s, ...", node(nodes._selections[0])->name().c_str(), node(nodes._selections[1])->name().c_str()).c_str();
+        }
 }; //namespace Divide

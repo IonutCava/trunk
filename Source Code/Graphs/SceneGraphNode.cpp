@@ -448,11 +448,20 @@ void SceneGraphNode::processEvents() {
                 if (!_relationshipCache.isValid()) {
                     _relationshipCache.rebuild();
                 }
-            }break;
-            default: {
-                _compManager->PassDataToAllComponents(id, evt);
             } break;
+            case ECS::CustomEvent::Type::EntityFlagChanged: {
+                const Flags flag = static_cast<Flags>(std::any_cast<U32>(evt._flag));
+                if (flag == Flags::SELECTED) {
+                    RenderingComponent* rComp = get<RenderingComponent>();
+                    if (rComp != nullptr) {
+                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SELECTION, std::any_cast<bool>(evt._userData));
+                    }
+                }
+            } break;
+            default: break;
         };
+
+        _compManager->PassDataToAllComponents(id, evt);
     }
 }
 
@@ -700,14 +709,13 @@ void SceneGraphNode::setFlag(Flags flag) noexcept {
             return true;
         });
     }
-    if (flag == Flags::ACTIVE) {
-        SendEvent(
-        {
-            ECS::CustomEvent::Type::EntityActiveStateChange,
-            true,
-            0u
-        });
-    }
+
+    SendEvent(
+    {
+        ECS::CustomEvent::Type::EntityFlagChanged,
+        true,
+        to_U32(flag)
+    });
 }
 
 void SceneGraphNode::clearFlag(Flags flag) noexcept {
@@ -718,14 +726,13 @@ void SceneGraphNode::clearFlag(Flags flag) noexcept {
             return true;
         });
     }
-    if (flag == Flags::ACTIVE) {
-        SendEvent(
-        {
-            ECS::CustomEvent::Type::EntityActiveStateChange,
-            false,
-            0u
-        });
-    }
+    
+    SendEvent(
+    {
+        ECS::CustomEvent::Type::EntityFlagChanged,
+        false,
+        to_U32(flag)
+    });
 }
 
 bool SceneGraphNode::hasFlag(Flags flag) const noexcept {

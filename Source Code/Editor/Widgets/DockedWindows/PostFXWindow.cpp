@@ -150,15 +150,14 @@ namespace Divide {
             checkBox(FilterType::FILTER_VIGNETTE, true, PostFX::FilterName(FilterType::FILTER_VIGNETTE));
             checkBox(FilterType::FILTER_UNDERWATER, true, PostFX::FilterName(FilterType::FILTER_UNDERWATER));
         }
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+
+        PushReadOnly();
         if (ImGui::CollapsingHeader("SS Reflections")) {
             checkBox(FilterType::FILTER_SS_REFLECTIONS);
         }
         if (ImGui::CollapsingHeader("Motion Blur")) {
             checkBox(FilterType::FILTER_MOTION_BLUR);
         }
-        ImGui::PopItemFlag();
-        ImGui::PopStyleVar();
+        PopReadOnly();
     }
 };

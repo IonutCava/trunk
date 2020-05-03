@@ -118,17 +118,19 @@
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
-    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -165,7 +167,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <ConformanceMode>true</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <AdditionalOptions>/Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
+      <AdditionalOptions>/bigobj /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <SupportJustMyCode>true</SupportJustMyCode>
       <SDLCheck>true</SDLCheck>
@@ -216,7 +218,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions> /Zc:twoPhase-</AdditionalOptions>
+      <AdditionalOptions>/bigobj /Zc:twoPhase- </AdditionalOptions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
@@ -270,7 +272,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-   /d2cgsummary</AdditionalOptions>
+      <AdditionalOptions>/bigobj /Zc:twoPhase-  /Zc:twoPhase-   /d2cgsummary</AdditionalOptions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
       <SupportJustMyCode>true</SupportJustMyCode>

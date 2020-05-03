@@ -668,8 +668,7 @@ bool Editor::render(const U64 deltaTime) {
     ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), opt_flags);
 
     if (scenePreviewFocused() || optionsVisible) {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+        PushReadOnly();
     }
 
     _menuBar->draw();
@@ -692,8 +691,7 @@ bool Editor::render(const U64 deltaTime) {
     }
 
     if (scenePreviewFocused() || optionsVisible) {
-        ImGui::PopItemFlag();
-        ImGui::PopStyleVar();
+        PopReadOnly();
     }
 
     _optionsWindow->draw(_showOptionsWindow);
@@ -939,7 +937,7 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
         if (io.KeyCtrl) {
             if (key._key == Input::KeyCode::KC_Z) {
                 Undo();
-            } else if (key._key == Input::KeyCode::KC_R) {
+            } else if (key._key == Input::KeyCode::KC_Y) {
                 Redo();
             }
         }
@@ -1627,5 +1625,15 @@ bool Editor::loadFromXML() {
     }
 
     return false;
+}
+
+void PushReadOnly() noexcept {
+    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+}
+
+void PopReadOnly() noexcept {
+    ImGui::PopItemFlag();
+    ImGui::PopStyleVar();
 }
 }; //namespace Divide

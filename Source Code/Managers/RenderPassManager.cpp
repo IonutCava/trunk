@@ -418,14 +418,10 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
     //set properties.w to negative value to skip occlusion culling for the node
     dataOut._colourMatrix.element(3, 3) = properties._cullFlagValue;
 
-    // Temp: Make the hovered/selected node brighter by setting emissive to something bright
-    if (properties._isSelected || properties._isHovered) {
+    // Temp: Make the hovered node brighter by setting emissive to something bright
+    if (stagePass._stage == RenderStage::DISPLAY && properties._isHovered) {
         FColour4 matColour = dataOut._colourMatrix.getRow(2);
-        if (properties._isSelected) {
-            matColour.rgb({0.f, 0.50f, 0.f});
-        } else {
-            matColour.rgb({0.f, 0.25f, 0.f});
-        }
+        matColour.rgb({0.f, 0.25f, 0.f});
         dataOut._colourMatrix.setRow(2, matColour);
     }
 

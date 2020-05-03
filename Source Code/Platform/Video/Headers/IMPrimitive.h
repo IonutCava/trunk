@@ -95,7 +95,8 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     inline bool forceWireframe() const noexcept { return _forceWireframe; }
 
     inline const mat4<F32>& worldMatrix() const noexcept { return _worldMatrix; }
-    inline void worldMatrix(const mat4<F32>& worldMatrix) {
+
+    inline void worldMatrix(const mat4<F32>& worldMatrix) noexcept {
         _worldMatrix.set(worldMatrix);
         _cmdBufferDirty = true;
     }
@@ -127,9 +128,11 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     void fromBox(const vec3<F32>& min,
                  const vec3<F32>& max,
                  const UColour4& colour = DefaultColours::WHITE);
+
     void fromSphere(const vec3<F32>& center,
                     F32 radius,
                     const UColour4& colour = DefaultColours::WHITE);
+
     void fromLines(const Line* lines, const size_t count);
 
     PROPERTY_RW(bool, skipPostFX, false);

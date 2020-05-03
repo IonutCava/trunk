@@ -57,10 +57,10 @@ namespace Divide {
 
             undo._type = GFX::PushConstantType::INT;
             undo._name = "Theme Selection";
-            undo.oldVal = crtThemeIdx;
-            undo.newVal = selection;
-            undo._dataSetter = [this](const void* data) {
-                const ImGuiStyleEnum style = *(ImGuiStyleEnum*)data;
+            undo._oldVal = crtThemeIdx;
+            undo._newVal = selection;
+            undo._dataSetter = [this](const I32& data) {
+                const ImGuiStyleEnum style = static_cast<ImGuiStyleEnum>(data);
                 ImGui::ResetStyle(style);
                 Attorney::EditorOptionsWindow::setTheme(_context.editor(), style);
             };
@@ -84,6 +84,7 @@ namespace Divide {
         ImGui::Separator();
         if (ImGui::Button("Cancel", ImVec2(120, 0))) {
             open = false;
+            assert(_changeCount < _context.editor().UndoStackSize());
             for (U16 i = 0; i < _changeCount; ++i) {
                 _context.editor().Undo();
             }

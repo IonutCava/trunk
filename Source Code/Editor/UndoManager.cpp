@@ -39,7 +39,7 @@ bool UndoManager::Redo() {
 }
 
 bool UndoManager::apply(const std::shared_ptr<IUndoEntry>& entry) {
-    if (entry != nullptr && (entry->_data != nullptr || entry->_dataSetter)) {
+    if (entry != nullptr) {
         entry->apply();
         _lastActionName = entry->_name;
         return true;

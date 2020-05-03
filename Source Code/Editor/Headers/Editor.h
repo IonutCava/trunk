@@ -142,7 +142,10 @@ class Editor : public PlatformContextComponent,
     void selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node);
 
     bool Undo();
+    inline size_t UndoStackSize() const noexcept;
+
     bool Redo();
+    inline size_t RedoStackSize() const noexcept;
 
     const Rect<I32>& scenePreviewRect(bool globalCoords) const;
     bool wantsMouse() const;
@@ -151,6 +154,7 @@ class Editor : public PlatformContextComponent,
 
     template<typename T>
     inline void registerUndoEntry(const UndoEntry<T>& entry);
+
     inline bool simulationPauseRequested() const noexcept;
     inline void setTransformSettings(const TransformSettings& settings) noexcept;
     inline const TransformSettings& getTransformSettings() const noexcept;
@@ -490,6 +494,8 @@ namespace Attorney {
     };
 };
 
+void PushReadOnly() noexcept;
+void PopReadOnly() noexcept;
 
 }; //namespace Divide
 

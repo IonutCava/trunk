@@ -68,18 +68,20 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CodeAnalysisRuleSet>D:\Divide-Framework\VCData\DivideCheckRules.ruleset</CodeAnalysisRuleSet>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
-    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <CodeAnalysisRuleSet>D:\Divide-Framework\VCData\DivideCheckRules.ruleset</CodeAnalysisRuleSet>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CodeAnalysisRuleSet>D:\Divide-Framework\VCData\DivideCheckRules.ruleset</CodeAnalysisRuleSet>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

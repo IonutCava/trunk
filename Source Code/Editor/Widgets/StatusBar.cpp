@@ -7,7 +7,6 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/PlatformContext.h"
 
-#include <imgui.h>
 #include <imgui_internal.h>
 
 namespace Divide {
