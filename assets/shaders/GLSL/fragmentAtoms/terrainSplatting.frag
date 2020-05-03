@@ -24,12 +24,16 @@ const int tiling[] = {
 };
 
 
-vec4 sampleTexture(in sampler2DArray tex, in vec2 uv, in uint arrayIdx) {
-    const vec3 texUV = vec3(uv, arrayIdx);
-#if defined(REDUCE_TEXTURE_TILE_ARTIFACT) && !defined(LOW_QUALITY)
+#if defined(LOW_QUALITY)
+#define sampleTexture texture;
+#else
+vec4 sampleTexture(in sampler2DArray tex, in vec3 texUV) {
+#if defined(REDUCE_TEXTURE_TILE_ARTIFACT) 
+
 #if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
-    if (LoD == 0) 
+    if (LoD < 2) 
 #endif //REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS
+
     {
 #if defined(HIGH_QUALITY_TILE_ARTIFACT_REDUCTION)
         return textureNoTile(tex, helperTextures, 3, texUV, 0.5f);
@@ -37,10 +41,12 @@ vec4 sampleTexture(in sampler2DArray tex, in vec2 uv, in uint arrayIdx) {
         return textureNoTile(tex, texUV);
 #endif //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
     }
+
 #endif //REDUCE_TEXTURE_TILE_ARTIFACT
 
     return texture(tex, texUV);
 }
+#endif //LOW_QUALITY
 
 void getBlendFactor(in vec2 uv, inout float blendAmount[TOTAL_LAYER_COUNT]) {
     uint offset = 0;
@@ -58,7 +64,7 @@ void getBlendFactor(in vec2 uv, inout float blendAmount[TOTAL_LAYER_COUNT]) {
 float getDisplacementValueFromCoords(in vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
     float ret = 0.0f;
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        ret = mix(ret, sampleTexture(texExtraMaps, sampleUV, DISPLACEMENT_IDX[i]).r, amnt[i]);
+        ret = mix(ret, sampleTexture(texExtraMaps, vec3(sampleUV, DISPLACEMENT_IDX[i])).r, amnt[i]);
     }
     return ret;
 }
@@ -77,7 +83,7 @@ vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt) {
     const vec2 scaledCoords = scaledTextureCoords(TexCoords, tiling[LoD]);
 
 #if defined(HAS_PARALLAX)
-    if (LoD == 0 && dvd_bumpMethod != BUMP_NONE) {
+    if (LoD < 2 && dvd_bumpMethod != BUMP_NONE) {
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
         if (dvd_bumpMethod == BUMP_PARALLAX) {
             return ParallaxOffset(scaledCoords, VAR._viewDirectionWV, currentHeight);
@@ -99,7 +105,7 @@ vec3 getTerrainNormal() {
 
     vec3 normal = vec3(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        normal = mix(normal, sampleTexture(texNormalMaps, scaledUV, NORMAL_IDX[i]).rgb, blendAmount[i]);
+        normal = mix(normal, sampleTexture(texNormalMaps, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
     }
 
     return normal;
@@ -139,7 +145,7 @@ vec4 getTerrainAlbedo() {
     vec4 ret = vec4(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
         // Albedo & Roughness
-        ret = mix(ret, sampleTexture(texTileMaps, scaledUV, ALBEDO_IDX[i]), blendAmount[i]);
+        ret = mix(ret, sampleTexture(texTileMaps, vec3(scaledUV, ALBEDO_IDX[i])), blendAmount[i]);
         // ToDo: AO
     }
 

@@ -380,9 +380,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             if (context.config().rendering.terrainDetailLevel > 1) {
                 shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT", true);
                 if (context.config().rendering.terrainDetailLevel > 2) {
-                    shaderModule._defines.emplace_back("HIGH_QUALITY_TILE_ARTIFACT_REDUCTION", true);
-                    if (context.config().rendering.terrainDetailLevel > 2) {
-                        shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS", true);
+                    shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS", true);
+                    if (context.config().rendering.terrainDetailLevel > 3) {
+                        shaderModule._defines.emplace_back("HIGH_QUALITY_TILE_ARTIFACT_REDUCTION", true);
                     }
                 }
             }
