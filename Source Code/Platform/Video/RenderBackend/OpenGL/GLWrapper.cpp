@@ -1183,7 +1183,11 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             OPTICK_EVENT("GL: Compute MipMaps");
             GFX::ComputeMipMapsCommand* crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
             if (crtCmd->_layerRange.x == 0 && crtCmd->_layerRange.y <= 1) {
-                glGenerateTextureMipmap(crtCmd->_texture->data()._textureHandle);
+                if (crtCmd->_defer) {
+                    queueComputeMipMap(crtCmd->_texture->data()._textureHandle);
+                } else {
+                    glGenerateTextureMipmap(crtCmd->_texture->data()._textureHandle);
+                }
             } else {
                 TextureView view = {};
                 view._texture = crtCmd->_texture;
@@ -1198,9 +1202,9 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
                 const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
 
-                std::pair<GLuint, bool> handle = s_texturePool.allocate(view.getHash(), GL_NONE);
-                if (!handle.second) {
-                    glTextureView(handle.first,
+                auto[handle, cacheHit] = s_texturePool.allocate(view.getHash(), GL_NONE);
+                if (!cacheHit) {
+                    glTextureView(handle,
                         type,
                         data._textureHandle,
                         glInternalFormat,
@@ -1209,10 +1213,12 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                         (GLuint)view._layerRange.x,
                         (GLuint)view._layerRange.y);
                 }
-
-                glGenerateTextureMipmap(handle.first);
-
-                s_texturePool.deallocate(handle.first, GL_NONE, 3);
+                if (crtCmd->_defer) {
+                    queueComputeMipMap(handle);
+                } else {
+                    glGenerateTextureMipmap(handle);
+                }
+                s_texturePool.deallocate(handle, GL_NONE, 3);
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {

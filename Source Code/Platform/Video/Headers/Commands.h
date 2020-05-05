@@ -295,6 +295,7 @@ END_COMMAND(CopyTextureCommand);
 BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);
     Texture* _texture = nullptr;
     vec2<U32> _layerRange = { 0, 1 };
+    bool _defer = true;
 END_COMMAND(ComputeMipMapsCommand);
 
 BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR);
