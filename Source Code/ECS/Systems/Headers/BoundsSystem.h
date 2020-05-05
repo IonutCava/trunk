@@ -44,13 +44,6 @@ namespace Divide {
        public:
         BoundsSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~BoundsSystem();
-
-        void PreUpdate(F32 dt) final;
-        void Update(F32 dt) final;
-        void PostUpdate(F32 dt) final;
-
-      protected:
-        void onBoundsChanged(SceneGraphNode& sgn) const;
     };
 };
 

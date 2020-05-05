@@ -32,12 +32,27 @@ Mesh::~Mesh()
 }
 
 void Mesh::postImport() {
-    _boundingBox.reset();
-    for (const SubMesh_ptr& subMesh : _subMeshList) {
-        _boundingBox.add(subMesh->getBounds());
-    }
+    recomputeBB();
+}
 
-    setBounds(_boundingBox);
+void Mesh::recomputeBB() {
+    if (_recomputeBBQueued) {
+        _boundingBox.reset();
+        for (const SubMesh_ptr& subMesh : _subMeshList) {
+            _boundingBox.add(subMesh->getBounds());
+        }
+
+        setBounds(_boundingBox);
+        _recomputeBBQueued = false;
+    }
+}
+
+void Mesh::sceneUpdate(const U64 deltaTimeUS,
+                       SceneGraphNode& sgn,
+                       SceneState& sceneState) {
+
+    recomputeBB();
+    return Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 void Mesh::addSubMesh(SubMesh_ptr subMesh) {
@@ -82,8 +97,13 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
     subMeshDescriptor._instanceCount = sgn.instanceCount();
 
     for (const SubMesh_ptr& submesh : _subMeshList) {
+        const bool subMeshSkinned = submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED);
+        if (subMeshSkinned) {
+            assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
+        }
+
         subMeshDescriptor._node = submesh;
-        subMeshDescriptor._componentMask = submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask;
+        subMeshDescriptor._componentMask = subMeshSkinned ? skinnedMask : normalMask;
         if (sgn.get<RigidBodyComponent>() != nullptr) {
             subMeshDescriptor._componentMask |= to_base(ComponentType::RIGID_BODY);
         }

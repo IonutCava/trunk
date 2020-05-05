@@ -42,11 +42,7 @@ namespace Divide {
                             public ECSSystem<AnimationSystem, AnimationComponent> {
       public:
         AnimationSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
-        virtual ~AnimationSystem();
-
-        void PreUpdate(F32 dt) final;
-        void Update(F32 dt) final;
-        void PostUpdate(F32 dt) final;
+        virtual ~AnimationSystem() = default;
 
         bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) final;
         bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) final;

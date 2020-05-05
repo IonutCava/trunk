@@ -153,6 +153,9 @@ namespace Divide {
 
       protected:
          friend class TransformSystem;
+         template<typename T, typename U>
+         friend class ECSSystem;
+
          void setTransformDirty(TransformType type) noexcept;
          void setTransformDirty(U32 typeMask) noexcept;
 

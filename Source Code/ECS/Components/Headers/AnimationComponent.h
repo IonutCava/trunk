@@ -103,6 +103,8 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
 
    protected:
     friend class AnimationSystem;
+    template<typename T, typename U>
+    friend class ECSSystem;
     void Update(const U64 deltaTimeUS) final;
 
    protected:

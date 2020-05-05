@@ -73,6 +73,10 @@ class Mesh : public Object3D {
 
     void addSubMesh(SubMesh_ptr subMesh);
 
+    void sceneUpdate(const U64 deltaTimeUS,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) final;
+
     void setAnimator(const std::shared_ptr<SceneAnimator>& animator) {
         assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         _animator = animator;
@@ -87,14 +91,18 @@ class Mesh : public Object3D {
         return _subMeshList;
     }
 
+    inline void queueRecomputeBB() noexcept { _recomputeBBQueued = true; }
+
    protected:
     const char* getResourceTypeName() const noexcept override { return "Mesh"; }
 
     friend class MeshImporter;
     void postImport();
 
+    void recomputeBB();
    protected:
-    bool _visibleToNetwork;
+    bool _visibleToNetwork = true;
+    bool _recomputeBBQueued = true;
     U64 _lastTimeStamp = 0ull;
     /// Animation player to animate the mesh if necessary
     std::shared_ptr<SceneAnimator> _animator;

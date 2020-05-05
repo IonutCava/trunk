@@ -46,28 +46,15 @@ namespace Divide {
     public:
         using Super = ECSSystem<T, U>;
 
-        explicit ECSSystem(ECS::ECSEngine& engine) 
-            : _engine(engine)
-            , _compManager(engine.GetComponentManager())
-            , _container(_compManager->GetComponentContainer<U>())
-        {
-        }
+        explicit ECSSystem(ECS::ECSEngine& engine);
+        virtual ~ECSSystem();
 
-        virtual ~ECSSystem()
-        {
-        }
+        virtual bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer);
+        virtual bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
 
-        virtual bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
-            ACKNOWLEDGE_UNUSED(sgn);
-            ACKNOWLEDGE_UNUSED(outputBuffer);
-            return true;
-        }
-
-        virtual bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
-            ACKNOWLEDGE_UNUSED(sgn);
-            ACKNOWLEDGE_UNUSED(inputBuffer);
-            return true;
-        }
+        virtual void PreUpdate(F32 dt);
+        virtual void Update(F32 dt);
+        virtual void PostUpdate(F32 dt);
 
     protected:
         ECS::ECSEngine& _engine;
@@ -79,3 +66,5 @@ namespace Divide {
 };
 
 #endif //_ECS_SYSTEM_H_
+
+#include "ECSSystem.inl"

@@ -16,44 +16,6 @@ namespace Divide {
     {
     }
 
-    void TransformSystem::PreUpdate(F32 dt) {
-        OPTICK_EVENT();
-
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
-
-        // Keep memory in order to avoid mid-frame allocs
-        _componentCache.reset_lose_memory();
-        _componentCache.reserve(_container->size());
-
-        auto transform = _container->begin();
-        auto transformEnd = _container->end();
-        for (;transform != transformEnd; ++transform)
-        {
-            _componentCache.push_back(transform.ptr());
-            transform->PreUpdate(microSec);
-        }
-    }
-
-    void TransformSystem::Update(F32 dt) {
-        OPTICK_EVENT();
-
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
-
-        for (TransformComponent* tComp : _componentCache) {
-            tComp->Update(microSec);
-        }
-    }
-
-    void TransformSystem::PostUpdate(F32 dt) {
-        OPTICK_EVENT();
-
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
-
-        for (TransformComponent* tComp : _componentCache) {
-            tComp->PostUpdate(microSec);
-        }
-    }
-
     bool TransformSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
         TransformComponent* tComp = sgn.GetComponent<TransformComponent>();
         if (tComp != nullptr && !tComp->saveCache(outputBuffer)) {

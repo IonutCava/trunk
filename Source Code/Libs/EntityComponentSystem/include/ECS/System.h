@@ -84,13 +84,13 @@ namespace ECS
 			this->m_SystemManagerInstance->AddSystemDependency(this, std::forward<Dependencies>(dependencies)...);
 		}
 
-		virtual void PreUpdate(f32 dt) override
+		virtual void PreUpdate(f32 dt)
 		{}
 
-		virtual void Update(f32 dt) override
+		virtual void Update(f32 dt)
 		{}
 
-		virtual void PostUpdate(f32 dt) override
+		virtual void PostUpdate(f32 dt)
 		{}
 	}; // class System<T>
 

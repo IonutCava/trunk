@@ -57,7 +57,10 @@ namespace Divide {
     protected:
         friend class SceneGraph;
         friend class BoundsSystem;
-                
+        template<typename T, typename U>
+        friend class ECSSystem;
+
+        void PreUpdate(const U64 deltaTimeUS) final;
         void Update(const U64 deltaTimeUS) final;
         void PostUpdate(const U64 deltaTimeUS) final;
 
@@ -67,6 +70,7 @@ namespace Divide {
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(bool recursive);
+        void onBoundsChanged(SceneGraphNode& sgn) const;
 
     private:
         std::atomic_bool _boundingBoxDirty;
