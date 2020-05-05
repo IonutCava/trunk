@@ -193,8 +193,8 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 
     if (!_sortedShadowLights.empty()) {
 
-        U32 shadowLightCount = 0;
-        U32 directionalLightCount = 0;
+        U32 shadowLightCount = 0u;
+        U32 directionalLightCount = 0u;
         for (Light* light : _sortedShadowLights) {
             if (shadowLightCount >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
                 break;
@@ -212,10 +212,8 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
                 std::memcpy(&_shadowBufferData._lightPosition[shadowLightCount * 6]._v, &shadowProp._lightPosition[0]._v, ShadowMap::MAX_PASSES_PER_LIGHT * sizeof(vec4<F32>));
                 std::memcpy(&_shadowBufferData._lightVP[shadowLightCount * 6].mat,      &shadowProp._lightVP[0].mat,      ShadowMap::MAX_PASSES_PER_LIGHT * sizeof(mat4<F32>));
 
-                ++shadowLightCount;
-                if (isDirLight) {
-                    ++directionalLightCount;
-                }
+                shadowLightCount += 1u;
+                directionalLightCount += (isDirLight ? 1u : 0u);
             }
         }
 
@@ -227,7 +225,7 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     buffer._buffer = _shadowBuffer;
     buffer._elementRange = { 0u, _shadowBuffer->getPrimitiveCount() };
 
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set.addShaderBuffer(buffer);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 

@@ -56,12 +56,6 @@ GFXDevice::gpuState() noexcept {
     return _state;
 }
 
-/// returns the standard state block
-inline size_t
-GFXDevice::getDefaultStateBlock(bool noDepth) const noexcept {
-    return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash;
-}
-
 inline size_t
 GFXDevice::get2DStateBlock() const noexcept {
     return _state2DRenderingHash;

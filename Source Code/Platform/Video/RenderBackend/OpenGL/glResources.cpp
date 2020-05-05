@@ -543,6 +543,7 @@ void glTexturePool::onFrameEndInternal(poolImpl & impl) {
 
         if (lifeLeft == 0) {
             impl._tempBuffer[count++] = impl._handles[i];
+            GL_API::dequeueComputeMipMap(impl._handles[i]);
         }
     }
 

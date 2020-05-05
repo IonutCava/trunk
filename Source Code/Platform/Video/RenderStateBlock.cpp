@@ -286,7 +286,7 @@ size_t RenderStateBlock::getHash() const noexcept {
     Util::Hash_combine(_hash, to_U32(_stencilPassOp));
     Util::Hash_combine(_hash, to_U32(_stencilFunc));
     Util::Hash_combine(_hash, to_U32(_fillMode));
-    Util::Hash_combine(_hash, to_U32(_tessControlPoints));
+    Util::Hash_combine(_hash, _tessControlPoints);
 
     if (previousCache != _hash) {
         UniqueLock<SharedMutex> w_lock(s_stateBlockMapMutex);

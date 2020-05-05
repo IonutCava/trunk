@@ -116,6 +116,46 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     endBatch();
 }
 
+//ref: http://www.freemancw.com/2012/06/opengl-cone-function/
+void IMPrimitive::fromCone(const vec3<F32>& root,
+                           const vec3<F32>& direction,
+                           F32 length, F32 radius,
+                           const UColour4& colour) {
+    constexpr U8 slices = 16u;
+    const vec3<F32> invDirection = -direction;
+    const vec3<F32> c = root + (-invDirection * length);
+    const vec3<F32> e0 = Perpendicular(invDirection);
+    const vec3<F32> e1 = Cross(e0, invDirection);
+    const F32 angInc = 360.0f / slices * M_PIDIV180;
+
+    // calculate points around directrix
+    std::array<vec3<F32>, slices> pts = {};
+    for (U8 i = 0; i < pts.size(); ++i) {
+        const F32 rad = angInc * i;
+        pts[i] = c + (((e0 * std::cos(rad)) + (e1 * std::sin(rad))) * radius);
+    }
+
+    // draw cone top
+    beginBatch(true, slices + 1, 1);
+    attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
+    // Top
+    begin(PrimitiveType::TRIANGLE_FAN);
+        vertex(root);
+        for (U8 i = 0; i < slices; ++i) {
+            vertex(pts[i]);
+        }
+    end();
+
+    // Bottom
+    begin(PrimitiveType::TRIANGLE_FAN);
+        vertex(c);
+        for (I8 i = slices - 1; i >= 0; --i) {
+            vertex(pts[i]);
+        }
+    end();
+    endBatch();
+}
+
 void IMPrimitive::fromLines(const Line* lines, const size_t count) {
     static const vec3<F32> vertices[] = {
         vec3<F32>(-1.0f, -1.0f,  1.0f),

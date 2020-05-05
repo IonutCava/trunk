@@ -42,9 +42,13 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
 {
    public:
     explicit SpotLightComponent(SceneGraphNode& sgn, PlatformContext& context);
+    void PreUpdate(const U64 deltaTime) final;
 
    protected:
     void OnData(const ECS::CustomEvent& data) final;
+
+   private:
+     bool _drawImpostor = false;
 };
 
 INIT_COMPONENT(SpotLightComponent);

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/PointLightComponent.h"
+
+#include "Core/Headers/PlatformContext.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -28,6 +30,14 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
     _shadowProperties._lightDetails.z = 0.05f;
 
 
+    EditorComponentField colourField = {};
+    colourField._name = "Colour";
+    colourField._dataGetter = [this](void* dataOut) { static_cast<FColour3*>(dataOut)->set(getDiffuseColour()); };
+    colourField._dataSetter = [this](const void* data) { setDiffuseColour(*static_cast<const FColour3*>(data)); };
+    colourField._type = EditorComponentFieldType::PUSH_TYPE;
+    colourField._readOnly = false;
+    colourField._basicType = GFX::PushConstantType::FCOLOUR3;
+
     EditorComponentField rangeAndConeField = {};
     rangeAndConeField._name = "Range and Cone";
     rangeAndConeField._data = &_rangeAndCones;
@@ -45,9 +55,26 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
     _directionCache.set(VECTOR3_ZERO);
 }
 
+void PointLightComponent::PreUpdate(const U64 deltaTime) {
+    using Parent = BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>;
+
+    if (_drawImpostor) {
+        _parentPool.context().gfx().debugDrawSphere(positionCache(), 0.5f, getDiffuseColour());
+        _parentPool.context().gfx().debugDrawSphere(positionCache(), getRange(), DefaultColours::GREEN);
+    }
+
+    Parent::PreUpdate(deltaTime);
+}
+
 void PointLightComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
         Light::updateCache(data);
+    } else if (data._type == ECS::CustomEvent::Type::EntityFlagChanged) {
+        const SceneGraphNode::Flags flag = static_cast<SceneGraphNode::Flags>(std::any_cast<U32>(data._flag));
+        if (flag == SceneGraphNode::Flags::SELECTED) {
+            const auto [state, recursive] = std::any_cast<std::pair<bool, bool>>(data._userData);
+            _drawImpostor = state;
+        }
     }
 }
 

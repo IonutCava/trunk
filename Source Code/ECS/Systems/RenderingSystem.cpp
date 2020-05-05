@@ -14,44 +14,6 @@ namespace Divide {
 
     }
 
-    void RenderingSystem::PreUpdate(F32 dt) {
-        OPTICK_EVENT();
-
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
-
-        _componentCache.reset_lose_memory();
-        _componentCache.reserve(_container->size());
-
-        auto rComp = _container->begin();
-        auto rCompEnd = _container->end();
-        for (;rComp != rCompEnd; ++rComp)
-        {
-            _componentCache.push_back(rComp.ptr());
-            rComp->PreUpdate(microSec);
-        }
-    }
-
-    void RenderingSystem::Update(F32 dt) {
-        OPTICK_EVENT();
-
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
-
-        for (RenderingComponent* rComp : _componentCache) {
-            rComp->Update(microSec);
-        }
-    }
-
-    void RenderingSystem::PostUpdate(F32 dt) {
-        OPTICK_EVENT();
-
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
-
-        for (RenderingComponent* rComp : _componentCache)
-        {
-            rComp->PostUpdate(microSec);
-        }
-    }
-
     bool RenderingSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
         RenderingComponent* rComp = sgn.GetComponent<RenderingComponent>();
         if (rComp != nullptr && !rComp->saveCache(outputBuffer)) {

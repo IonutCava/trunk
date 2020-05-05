@@ -100,9 +100,6 @@ GFXDevice::GFXDevice(Kernel & parent)
 {
     _viewport.set(-1);
 
-    std::atomic_init(&_debugFrustumId, 0u);
-    _debugFrustumPrimitives.fill(nullptr);
-
     Line temp = {};
     temp.widthStart(3.0f);
     temp.widthEnd(3.0f);
@@ -243,9 +240,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
     // Create general purpose render state blocks
-    RenderStateBlock defaultState;
-    _defaultStateBlockHash = defaultState.getHash();
-
     RenderStateBlock defaultStateNoDepth;
     defaultStateNoDepth.depthTestEnabled(false);
     _defaultStateNoDepthHash = defaultStateNoDepth.getHash();
@@ -264,10 +258,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     // differ from each other at a state hash level
     assert(_stateDepthOnlyRenderingHash != _state2DRenderingHash && "GFXDevice error: Invalid default state hash detected!");
     assert(_state2DRenderingHash != _defaultStateNoDepthHash && "GFXDevice error: Invalid default state hash detected!");
-    assert(_defaultStateNoDepthHash != _defaultStateBlockHash && "GFXDevice error: Invalid default state hash detected!");
+    assert(_defaultStateNoDepthHash != RenderStateBlock::defaultHash() && "GFXDevice error: Invalid default state hash detected!");
 
     // Activate the default render states
-    _api->setStateBlock(_defaultStateBlockHash);
+    _api->setStateBlock(RenderStateBlock::defaultHash());
 
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
@@ -795,12 +789,10 @@ void GFXDevice::closeRenderingAPI() {
     if (_axisGizmo) {
         destroyIMP(_axisGizmo);
     }
-    for (IMPrimitive*& primitive : _debugFrustumPrimitives) {
-        if (primitive != nullptr) {
-            destroyIMP(primitive);
-        }
-    }
-
+    _debugBoxes.reset();
+    _debugFrustums.reset();
+    _debugCones.reset();
+    _debugSpheres.reset();
     _debugViews.clear();
 
     // Delete the renderer implementation
@@ -892,7 +884,7 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
     }
 
     _api->beginFrame(window, global);
-    _api->setStateBlock(_defaultStateBlockHash);
+    _api->setStateBlock(RenderStateBlock::defaultHash());
 
     const vec2<U16>& drawableSize = window.getDrawableSize();
     setViewport(0, 0, drawableSize.width, drawableSize.height);
@@ -2160,22 +2152,90 @@ void GFXDevice::getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, bool>>
     }
 }
 
-void GFXDevice::debugDrawFrustum(const Frustum& frustum, const FColour3& colour) {
-    const U32 frustumID = _debugFrustumId.fetch_add(1);
-    if (frustumID == g_maxDebugFrustums) {
-        return;
+void GFXDevice::debugDrawBox(const vec3<F32>& min, const vec3<F32>& max, const FColour3& colour) {
+    _debugBoxes.add({ min, max, colour });
+}
+
+void GFXDevice::debugDrawBoxes(GFX::CommandBuffer& bufferInOut) {
+    const U32 boxesCount = _debugBoxes._Id.load();
+    for (U32 f = 0; f < boxesCount; ++f) {
+        IMPrimitive*& boxPrimitive = _debugBoxes._debugPrimitives[f];
+        if (boxPrimitive == nullptr) {
+            boxPrimitive = newIMP();
+            boxPrimitive->name(Util::StringFormat("DebugBox_%d", f));
+            boxPrimitive->pipeline(*_AxisGizmoPipeline);
+            boxPrimitive->skipPostFX(true);
+        }
+
+        const auto&[min, max, colour3] = _debugBoxes._debugData[f];
+        const FColour4 colour = FColour4(colour3, 1.0f);
+        boxPrimitive->fromBox(min, max, Util::ToByteColour(colour));
+        bufferInOut.add(boxPrimitive->toCommandBuffer());
     }
-    _debugFrustums[frustumID] = { frustum, colour };
+
+    _debugBoxes._Id.store(0u);
+}
+
+void GFXDevice::debugDrawSphere(const vec3<F32>& center, F32 radius, const FColour3& colour) {
+    _debugSpheres.add({ center, radius, colour });
+}
+
+void GFXDevice::debugDrawSpheres(GFX::CommandBuffer& bufferInOut) {
+    const U32 spheresCount = _debugSpheres._Id.load();
+    for (U32 f = 0; f < spheresCount; ++f) {
+        IMPrimitive*& spherePrimitive = _debugSpheres._debugPrimitives[f];
+        if (spherePrimitive == nullptr) {
+            spherePrimitive = newIMP();
+            spherePrimitive->name(Util::StringFormat("DebugSphere_%d", f));
+            spherePrimitive->pipeline(*_AxisGizmoPipeline);
+            spherePrimitive->skipPostFX(true);
+        }
+
+        const auto&[center, radius, colour3] = _debugSpheres._debugData[f];
+        const FColour4 colour = FColour4(colour3, 1.0f);
+        spherePrimitive->fromSphere(center, radius, Util::ToByteColour(colour));
+        bufferInOut.add(spherePrimitive->toCommandBuffer());
+    }
+
+    _debugSpheres._Id.store(0u);
+}
+
+void GFXDevice::debugDrawCone(const vec3<F32>& root, const vec3<F32>& direction, F32 length, F32 radius, const FColour3& colour) {
+    _debugCones.add({root, direction, length, radius, colour});
+}
+
+void GFXDevice::debugDrawCones(GFX::CommandBuffer& bufferInOut) {
+    const U32 conesCount = _debugCones._Id.load();
+    for (U32 f = 0; f < conesCount; ++f) {
+        IMPrimitive*& conePrimitive = _debugCones._debugPrimitives[f];
+        if (conePrimitive == nullptr) {
+            conePrimitive = newIMP();
+            conePrimitive->name(Util::StringFormat("DebugCone_%d", f));
+            conePrimitive->pipeline(*_AxisGizmoPipeline);
+            conePrimitive->skipPostFX(true);
+        }
+
+        const auto&[root, dir, length, radius, colour3] = _debugCones._debugData[f];
+        const FColour4 colour = FColour4(colour3, 1.0f);
+        conePrimitive->fromCone(root, dir, length, radius, Util::ToByteColour(colour));
+        bufferInOut.add(conePrimitive->toCommandBuffer());
+    }
+
+    _debugCones._Id.store(0u);
+}
+
+void GFXDevice::debugDrawFrustum(const Frustum& frustum, const FColour3& colour) {
+    _debugFrustums.add({ frustum, colour });
 }
 
 void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
-    const U32 frustumCount = _debugFrustumId.load();
+    const U32 frustumCount = _debugFrustums._Id.load();
 
     Line temp = {};
     std::array<Line, to_base(Frustum::FrustPlane::COUNT) * 2> lines = {};
     std::array<vec3<F32>, to_base(Frustum::FrustPoints::COUNT)> corners = {};
     for (U32 f = 0; f < frustumCount; ++f) {
-        IMPrimitive*& frustumPrimitive = _debugFrustumPrimitives[f];
+        IMPrimitive*& frustumPrimitive = _debugFrustums._debugPrimitives[f];
         if (frustumPrimitive == nullptr) {
             frustumPrimitive = newIMP();
             frustumPrimitive->name(Util::StringFormat("DebugFrustum_%d", f));
@@ -2184,8 +2244,8 @@ void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
         }
 
         //_debugFrustums[f].first.getCornersViewSpace(_debugFrustums[f].second, corners);
-        _debugFrustums[f].first.getCornersWorldSpace(corners);
-        const FColour3& endColour = _debugFrustums[f].second;
+        _debugFrustums._debugData[f].first.getCornersWorldSpace(corners);
+        const FColour3& endColour = _debugFrustums._debugData[f].second;
         const FColour3 startColour = endColour * 0.25f;
 
         UColour4 startColourU = Util::ToUIntColour(startColour);
@@ -2270,12 +2330,16 @@ void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
         frustumPrimitive->fromLines(lines.data(), lineCount);
         bufferInOut.add(frustumPrimitive->toCommandBuffer());
     }
-    std::atomic_init(&_debugFrustumId, 0u);
+
+    _debugFrustums._Id.store(0u);
 }
 
 /// Render all of our immediate mode primitives. This isn't very optimised and most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut) {
     debugDrawFrustums(bufferInOut);
+    debugDrawBoxes(bufferInOut);
+    debugDrawSpheres(bufferInOut);
+    debugDrawCones(bufferInOut);
 
     if_constexpr(Config::Build::ENABLE_EDITOR)
     {
@@ -2617,6 +2681,11 @@ void GFXDevice::Screenshot(const stringImpl& filename) {
                            vec2<U16>(width, height),
                            32,
                            imageData.data());
+}
+
+/// returns the standard state block
+size_t GFXDevice::getDefaultStateBlock(bool noDepth) const noexcept {
+    return noDepth ? _defaultStateNoDepthHash : RenderStateBlock::defaultHash();
 }
 
 };

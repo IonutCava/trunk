@@ -91,11 +91,11 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     virtual ~Light();
 
     /// Get light diffuse colour
-    inline void getDiffuseColour(FColour3& colourOut) const {
+    inline void getDiffuseColour(FColour3& colourOut) const noexcept {
         Util::ToFloatColour(_colour.rgb(), colourOut);
     }
 
-    inline FColour3 getDiffuseColour() const {
+    inline FColour3 getDiffuseColour() const noexcept {
         return Util::ToFloatColour(_colour.rgb());
     }
 
@@ -195,6 +195,8 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
    protected:
     SceneGraphNode& _sgn;
+    ShadowCameraPool _shadowCameras = {};
+    LightPool& _parentPool;
     /// x - range, y = iner cone, z - cos outer cone
     vec3<F32> _rangeAndCones;
     /// rgb - diffuse, a - reserved
@@ -204,9 +206,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
     LightType _type;
 
-   private:
-    ShadowCameraPool _shadowCameras = {};
-    LightPool& _parentPool;
 };
 
 };  // namespace Divide

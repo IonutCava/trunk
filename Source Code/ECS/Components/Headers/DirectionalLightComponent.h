@@ -50,6 +50,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     ~DirectionalLightComponent() = default;
 
     void setDirection(const vec3<F32>& direction);
+    void PreUpdate(const U64 deltaTime) final;
 
     // Quick hack to store previous frame's culling results
     vectorEASTL<RenderPassManager::FeedBackContainer>& feedBackContainers() noexcept { return _feedbackContainers; }
@@ -59,7 +60,10 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     PROPERTY_RW(F32, csmNearClipOffset, 0.0f);
     /// If this is true, we use the combined AABB of culled shadow casters to "correct" each split frustum to avoid near-clipping/culling artefacts.
     PROPERTY_RW(bool, csmUseSceneAABBFit, true);
-
+    /// If this is true, we render a cone narrow cone to approximate the light's direction
+    PROPERTY_RW(bool, showDirectionCone, false);
+    /// Same as showDirectionCone but triggered differently (i.e. on selection in editor)
+    PROPERTY_R_IW(bool,  drawImpostor, false);
 protected:
      void OnData(const ECS::CustomEvent& data) final;
 

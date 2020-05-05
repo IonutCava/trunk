@@ -24,6 +24,16 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     _shadowProperties._lightDetails.z = 0.0f;
     csmSplitCount(context.config().rendering.shadowMapping.defaultCSMSplitCount);
 
+    EditorComponentField colourField = {};
+    colourField._name = "Colour";
+    colourField._dataGetter = [this](void* dataOut) { static_cast<FColour3*>(dataOut)->set(getDiffuseColour()); };
+    colourField._dataSetter = [this](const void* data) { setDiffuseColour(*static_cast<const FColour3*>(data)); };
+    colourField._type = EditorComponentFieldType::PUSH_TYPE;
+    colourField._readOnly = false;
+    colourField._basicType = GFX::PushConstantType::FCOLOUR3;
+
+    getEditorComponent().registerField(std::move(colourField));
+
     EditorComponentField rangeAndConeField = {};
     rangeAndConeField._name = "Range and Cone";
     rangeAndConeField._data = &_rangeAndCones;
@@ -62,6 +72,15 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
 
     getEditorComponent().registerField(std::move(csmNearClip));
 
+    EditorComponentField showConeField = {};
+    showConeField._name = "Show direction cone";
+    showConeField._data = &_showDirectionCone;
+    showConeField._type = EditorComponentFieldType::PUSH_TYPE;
+    showConeField._readOnly = false;
+    showConeField._basicType = GFX::PushConstantType::BOOL;
+
+    getEditorComponent().registerField(std::move(showConeField));
+
     BoundingBox bb = {};
     bb.setMin(-g_defaultLightDistance * 0.5f);
     bb.setMax(-g_defaultLightDistance * 0.5f);
@@ -71,9 +90,33 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     _feedbackContainers.resize(csmSplitCount());
 }
 
+void DirectionalLightComponent::PreUpdate(const U64 deltaTime) {
+    using Parent = BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>;
+
+    if (drawImpostor() || showDirectionCone()) {
+        const F32 coneDist = 11.f;
+        Camera* playerCam = getSGN().sceneGraph().parentScene().playerCamera();
+        // Try and place the cone in such a way that it's always in view, because directional lights have no "source"
+        const vec3<F32> min = (-coneDist * directionCache()) + 
+                              playerCam->getEye() + 
+                             (playerCam->getForwardDir() * 10.0f) + 
+                             (playerCam->getRightDir() * 2.0f);
+
+        _parentPool.context().gfx().debugDrawCone(min, directionCache(), coneDist, 1.f, getDiffuseColour());
+    }
+
+    Parent::PreUpdate(deltaTime);
+}
+
 void DirectionalLightComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
         Light::updateCache(data);
+    } else if (data._type == ECS::CustomEvent::Type::EntityFlagChanged) {
+        const SceneGraphNode::Flags flag = static_cast<SceneGraphNode::Flags>(std::any_cast<U32>(data._flag));
+        if (flag == SceneGraphNode::Flags::SELECTED) {
+            const auto [state, recursive] = std::any_cast<std::pair<bool, bool>>(data._userData);
+            drawImpostor(state);
+        }
     }
 }
 

@@ -7,15 +7,17 @@
 
 namespace Divide {
 
-void RenderingComponent::toggleRenderOption(RenderOptions option, bool state) {
+void RenderingComponent::toggleRenderOption(RenderOptions option, bool state, bool recursive) {
     if (renderOptionEnabled(option) != state) {
-        _parentSGN.forEachChild([option, state](const SceneGraphNode* child, I32 /*childIdx*/) {
-            RenderingComponent* const renderable = child->get<RenderingComponent>();
-            if (renderable) {
-                renderable->toggleRenderOption(option, state);
-            }
-            return true;
-        });
+        if (recursive) {
+            _parentSGN.forEachChild([option, state, recursive](const SceneGraphNode* child, I32 /*childIdx*/) {
+                RenderingComponent* const renderable = child->get<RenderingComponent>();
+                if (renderable) {
+                    renderable->toggleRenderOption(option, state, recursive);
+                }
+                return true;
+            });
+        }
 
         if (state) {
             SetBit(_renderMask, to_U32(option));

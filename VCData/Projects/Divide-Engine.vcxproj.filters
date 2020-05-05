@@ -584,6 +584,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\FrameListener.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Systems\ECSSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1054,6 +1057,9 @@
     </None>
     <None Include="..\..\Source Code\Core\Headers\EngineTaskPool.inl">
       <Filter>Core\Headers</Filter>
+    </None>
+    <None Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.inl">
+      <Filter>ECS\Systems\Headers</Filter>
     </None>
   </ItemGroup>
 </Project>

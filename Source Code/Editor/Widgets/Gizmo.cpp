@@ -94,9 +94,9 @@ namespace Divide {
             for (auto& node : _selectedNodes) {
                 TransformComponent* tComp = node->get<TransformComponent>();
                 if (tComp != nullptr) {
-                    nodesBB.add(tComp->getLocalPosition());
+                    nodesBB.add(tComp->getPosition());
                     if (!hasScale) {
-                        startScale = tComp->getLocalScale();
+                        startScale = tComp->getScale();
                         hasScale = true;
                     }
                     if (++selectionCounter == g_maxSelectedNodes) {

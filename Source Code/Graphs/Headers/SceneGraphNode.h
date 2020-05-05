@@ -93,9 +93,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
             SELECTED = toBit(4),
             ACTIVE = toBit(5),
             VISIBILITY_LOCKED = toBit(6),
-            BOUNDING_BOX_RENDERED = toBit(7),
-            SKELETON_RENDERED = toBit(8),
-            COUNT = 8
+            MESH_POST_RENDERED = toBit(7),
+            COUNT = 7
         };
 
     public:
@@ -170,9 +169,9 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void changeUsageContext(const NodeUsageContext& newContext);
 
         /// General purpose flag management. Certain flags propagate to children (e.g. selection)!
-        void setFlag(Flags flag) noexcept;
+        void setFlag(Flags flag, bool recursive = true) noexcept;
         /// Clearing a flag might propagate to child nodes (e.g. selection).
-        void clearFlag(Flags flag) noexcept;
+        void clearFlag(Flags flag, bool recursive = true) noexcept;
         /// Returns true only if the currrent node has the specified flag. Does not check children!
         bool hasFlag(Flags flag) const noexcept;
 

@@ -105,7 +105,7 @@ public:
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
     void resetSelection(PlayerIndex idx);
-    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns);
+    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive);
 
     // cull the scenegraph against the current view frustum
     const VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount);

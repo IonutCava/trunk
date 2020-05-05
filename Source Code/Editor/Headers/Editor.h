@@ -335,11 +335,11 @@ namespace Attorney {
             return editor.getSelectedCamera();
         }
 
-        static bool editorEnableGizmo(const Editor& editor) {
+        static bool editorEnableGizmo(const Editor& editor) noexcept {
             return editor._gizmo->enabled();
         }
 
-        static void editorEnableGizmo(const Editor& editor, bool state) {
+        static void editorEnableGizmo(const Editor& editor, bool state) noexcept {
             editor._gizmo->enable(state);
         }
 

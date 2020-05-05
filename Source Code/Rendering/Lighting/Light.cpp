@@ -86,7 +86,7 @@ void Light::updateCache(const ECS::CustomEvent& data) {
     }
 
     if (_type != LightType::POINT && BitCompare(data._flag, to_U32(TransformType::ROTATION))) {
-        _directionCache = Normalized(Rotate(WORLD_Z_NEG_AXIS, tComp->getOrientation()));
+        _directionCache = DirectionFromAxis(tComp->getOrientation(), WORLD_Z_NEG_AXIS);
     }
 }
 

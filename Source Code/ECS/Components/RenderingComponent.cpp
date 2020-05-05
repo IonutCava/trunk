@@ -90,7 +90,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
         // Do not cull the sky
         if (static_cast<const Object3D&>(node).type() == SceneNodeType::TYPE_SKY) {
-            _cullFlagValue = -1.0f;
+            cullFlag(-1.0f);
         }
         // Prepare it for rendering lines
         if (static_cast<const Object3D&>(node).getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
@@ -123,13 +123,12 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
 
 RenderingComponent::~RenderingComponent()
 {
-    for (U8 i = 0; i < 2; ++i) {
-        if (_boundingBoxPrimitive[i]) {
-            _context.destroyIMP(_boundingBoxPrimitive[i]);
-        }
-        if (_boundingSpherePrimitive[i]) {
-            _context.destroyIMP(_boundingSpherePrimitive[i]);
-        }
+    if (_boundingBoxPrimitive) {
+        _context.destroyIMP(_boundingBoxPrimitive);
+    }
+
+    if (_boundingSpherePrimitive) {
+        _context.destroyIMP(_boundingSpherePrimitive);
     }
 
     if (_skeletonPrimitive) {
@@ -241,12 +240,8 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
     const SceneNode& node = _parentSGN.getNode();
     if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
         const Object3D& node3D = static_cast<const Object3D&>(node);
-        if (node3D.getObjectType()._value == ObjectType::SUBMESH) {
-            _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
-
-            if (node3D.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
-                _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::SKELETON_RENDERED);
-            }
+        if (_parentSGN.parent() != nullptr && node3D.getObjectType()._value == ObjectType::SUBMESH) {
+            _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
         }
     }
 
@@ -391,7 +386,7 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
     propertiesOut._isSelected = _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED);
     propertiesOut._receivesShadows = _config.rendering.shadowMapping.enabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
-    propertiesOut._cullFlagValue = _cullFlagValue;
+    propertiesOut._cullFlagValue = cullFlag();
     propertiesOut._reflectionIndex = defaultReflectionTextureIndex();
     propertiesOut._reflectionIndex = defaultRefractionTextureIndex();
     if (_materialInstanceCache != nullptr) {
@@ -429,6 +424,15 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         drawSkeleton(bufferInOut);
     }
 
+    if (_parentSGN.parent() != nullptr) {
+        if (!_parentSGN.parent()->hasFlag(SceneGraphNode::Flags::MESH_POST_RENDERED)) {
+            _parentSGN.parent()->setFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
+            RenderingComponent* rComp = _parentSGN.parent()->get<RenderingComponent>();
+            if (rComp != nullptr) {
+                rComp->postRender(sceneRenderState, renderStagePass, bufferInOut);
+            }
+        }
+    }
 }
 
 U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
@@ -795,9 +799,12 @@ void RenderingComponent::drawDebugAxis(GFX::CommandBuffer& bufferInOut) {
 }
 
 void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
-
-    SceneGraphNode* grandParent = _parentSGN.parent();
     const SceneNode& node = _parentSGN.getNode();
+    const bool isMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::MESH;
+    if (!isMesh) {
+        return;
+    }
+
     // Continue only for skinned 3D objects
     if (static_cast<const Object3D&>(node).getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
     {
@@ -807,18 +814,20 @@ void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
             _skeletonPrimitive->name("Skeleton_" + _parentSGN.name());
             _skeletonPrimitive->pipeline(*_primitivePipeline[1]);
         }
-        if (!grandParent->hasFlag(SceneGraphNode::Flags::SKELETON_RENDERED)) {
-            // Get the animation component of any submesh. They should be synced anyway.
-            const AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
-            // Get the skeleton lines from the submesh's animation component
-            const vectorEASTL<Line>& skeletonLines = childAnimComp->skeletonLines();
-            _skeletonPrimitive->worldMatrix(_parentSGN.get<TransformComponent>()->getWorldMatrix());
-            // Submit the skeleton lines to the GPU for rendering
-            _skeletonPrimitive->fromLines(skeletonLines.data(), skeletonLines.size());
-            bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
-
-            grandParent->setFlag(SceneGraphNode::Flags::SKELETON_RENDERED);
-        }
+        // Get the animation component of any submesh. They should be synced anyway.
+        for (U32 i = 0; i < _parentSGN.getChildCount(); ++i) {
+            const SceneGraphNode& child = _parentSGN.getChild(i);
+            AnimationComponent* animComp = child.get<AnimationComponent>();
+            if (animComp != nullptr) {
+                // Get the skeleton lines from the submesh's animation component
+                const vectorEASTL<Line>& skeletonLines = animComp->skeletonLines();
+                // Submit the skeleton lines to the GPU for rendering
+                _skeletonPrimitive->fromLines(skeletonLines.data(), skeletonLines.size());
+                _skeletonPrimitive->worldMatrix(_parentSGN.get<TransformComponent>()->getWorldMatrix());
+                bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
+                return;
+            }
+        };
     } else if (_skeletonPrimitive) {
         _context.destroyIMP(_skeletonPrimitive);
     }
@@ -829,83 +838,39 @@ void RenderingComponent::drawBounds(const bool AABB, const bool Sphere, GFX::Com
         return;
     }
 
-    SceneGraphNode* grandParent = _parentSGN.parent();
     const SceneNode& node = _parentSGN.getNode();
     const bool isSubMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH;
 
-    bool setGrandparentFlag = !grandParent->hasFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
     if (AABB) {
-        if (!_boundingBoxPrimitive[0]) {
-            _boundingBoxPrimitive[0] = _context.newIMP();
-            _boundingBoxPrimitive[0]->name("BoundingBox_" + _parentSGN.name());
-            _boundingBoxPrimitive[0]->pipeline(*_primitivePipeline[0]);
-            _boundingBoxPrimitive[0]->skipPostFX(true);
+        if (_boundingBoxPrimitive == nullptr) {
+            _boundingBoxPrimitive = _context.newIMP();
+            _boundingBoxPrimitive->name("BoundingBox_" + _parentSGN.name());
+            _boundingBoxPrimitive->pipeline(*_primitivePipeline[0]);
+            _boundingBoxPrimitive->skipPostFX(true);
         }
 
 
         const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
-        _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour4(0, 0, 255, 255));
-        bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
-
-        if (isSubMesh && !setGrandparentFlag) {
-            if (!_boundingBoxPrimitive[1]) {
-                _boundingBoxPrimitive[1] = _context.newIMP();
-                _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + _parentSGN.name());
-                _boundingBoxPrimitive[1]->pipeline(*_primitivePipeline[0]);
-                _boundingBoxPrimitive[1]->skipPostFX(true);
-            }
-
-            const BoundingBox& bbGrandParent = grandParent->get<BoundsComponent>()->getBoundingBox();
-            _boundingBoxPrimitive[1]->fromBox(bbGrandParent.getMin(), bbGrandParent.getMax(), UColour4(255, 0, 0, 255));
-            bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
-            setGrandparentFlag = true;
-        }
-    } else if (_boundingBoxPrimitive[0]) {
-        _context.destroyIMP(_boundingBoxPrimitive[0]);
-        if (_boundingBoxPrimitive[1]) {
-            _context.destroyIMP(_boundingBoxPrimitive[1]);
-        }
+        _boundingBoxPrimitive->fromBox(bb.getMin(), bb.getMax(), isSubMesh ? UColour4(0, 0, 255, 255) : UColour4(255, 0, 255, 255));
+        bufferInOut.add(_boundingBoxPrimitive->toCommandBuffer());
+    } else if (_boundingBoxPrimitive != nullptr) {
+        _context.destroyIMP(_boundingBoxPrimitive);
     }
 
     if (Sphere) {
-        if (!_boundingSpherePrimitive[0]) {
-            _boundingSpherePrimitive[0] = _context.newIMP();
-            _boundingSpherePrimitive[0]->name("BoundingSphere_" + _parentSGN.name());
-            _boundingSpherePrimitive[0]->pipeline(*_primitivePipeline[0]);
-            _boundingSpherePrimitive[0]->skipPostFX(true);
+        if (_boundingSpherePrimitive == nullptr) {
+            _boundingSpherePrimitive = _context.newIMP();
+            _boundingSpherePrimitive->name("BoundingSphere_" + _parentSGN.name());
+            _boundingSpherePrimitive->pipeline(*_primitivePipeline[0]);
+            _boundingSpherePrimitive->skipPostFX(true);
         }
 
         const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
-        _boundingSpherePrimitive[0]->fromSphere(bs.getCenter(), bs.getRadius(), UColour4(0, 255, 0, 255));
-        bufferInOut.add(_boundingSpherePrimitive[0]->toCommandBuffer());
-
-        if (isSubMesh && !setGrandparentFlag) {
-            if (!_boundingSpherePrimitive[1]) {
-                _boundingSpherePrimitive[1] = _context.newIMP();
-                _boundingSpherePrimitive[1]->name("BoundingSphere_Parent_" + _parentSGN.name());
-                _boundingSpherePrimitive[1]->pipeline(*_primitivePipeline[0]);
-                _boundingSpherePrimitive[1]->skipPostFX(true);
-            }
-
-            const BoundingSphere& bsGrandParent = grandParent->get<BoundsComponent>()->getBoundingSphere();
-            _boundingSpherePrimitive[1]->fromSphere(bsGrandParent.getCenter(), bsGrandParent.getRadius(), UColour4(255, 0, 0, 255));
-            bufferInOut.add(_boundingSpherePrimitive[1]->toCommandBuffer());
-            setGrandparentFlag = true;
-        }
-    } else if (_boundingSpherePrimitive[0]) {
-        _context.destroyIMP(_boundingSpherePrimitive[0]);
-        if (_boundingSpherePrimitive[1]) {
-            _context.destroyIMP(_boundingSpherePrimitive[1]);
-        }
+        _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), isSubMesh ? UColour4(0, 255, 0, 255) : UColour4(255, 255, 0, 255));
+        bufferInOut.add(_boundingSpherePrimitive->toCommandBuffer());
+    } else if (_boundingSpherePrimitive != nullptr) {
+        _context.destroyIMP(_boundingSpherePrimitive);
     }
-
-    if (setGrandparentFlag) {
-        grandParent->setFlag(SceneGraphNode::Flags::BOUNDING_BOX_RENDERED);
-    }
-}
-
-void RenderingComponent::cullFlagValue(F32 newValue) noexcept {
-    _cullFlagValue = newValue;
 }
 
 };

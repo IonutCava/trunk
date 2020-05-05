@@ -741,8 +741,8 @@ void SceneManager::resetSelection(PlayerIndex idx) {
     }
 }
 
-void SceneManager::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
-    Attorney::SceneManager::setSelected(getActiveScene(), idx, sgns);
+void SceneManager::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive) {
+    Attorney::SceneManager::setSelected(getActiveScene(), idx, sgns, recursive);
     for (auto& cbk : _selectionChangeCallbacks) {
         cbk(idx, sgns);
     }

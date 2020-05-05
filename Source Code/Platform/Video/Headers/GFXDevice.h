@@ -133,6 +133,42 @@ struct DebugView : public GUIDWrapper {
 
 FWD_DECLARE_MANAGED_STRUCT(DebugView);
 
+template<typename Data, size_t N>
+struct DebugPrimitiveHandler
+{
+    DebugPrimitiveHandler()             
+    {
+        std::atomic_init(&_Id, 0u);
+        _debugPrimitives.fill(nullptr);
+    }
+    ~DebugPrimitiveHandler()
+    {
+        reset();
+    }
+
+    inline void reset() {
+        for (IMPrimitive*& primitive : _debugPrimitives) {
+            if (primitive != nullptr) {
+                primitive->context().destroyIMP(primitive);
+            }
+        }
+        _Id.store(0u);
+        _debugPrimitives.fill(nullptr);
+    }
+
+    inline void add(Data&& data) {
+        if (_Id.load() == N) {
+            return;
+        }
+
+        _debugData[_Id.fetch_add(1)] = std::move(data);
+    }
+
+    std::array<IMPrimitive*, N>  _debugPrimitives;
+    std::array<Data, N> _debugData;
+    std::atomic_uint _Id;
+};
+
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 class GFXDevice : public KernelComponent, public PlatformContextComponent {
@@ -204,6 +240,9 @@ public:  // GPU interface
     void endFrame(DisplayWindow& window, bool global);
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
+    void debugDrawBox(const vec3<F32>& min, const vec3<F32>& max, const FColour3& colour);
+    void debugDrawSphere(const vec3<F32>& center, F32 radius, const FColour3& colour);
+    void debugDrawCone(const vec3<F32>& root, const vec3<F32>& direction, F32 length, F32 radius, const FColour3& colour);
     void debugDrawFrustum(const Frustum& frustum, const FColour3& colour);
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch = true);
     
@@ -259,7 +298,7 @@ public:  // Accessors and Mutators
     inline const GPUState& gpuState() const noexcept;
     inline GPUState& gpuState() noexcept;
     /// returns the standard state block
-    inline size_t getDefaultStateBlock(bool noDepth) const noexcept;
+    size_t getDefaultStateBlock(bool noDepth) const noexcept;
     inline size_t get2DStateBlock() const noexcept;
     inline const Texture_ptr& getPrevDepthBuffer() const noexcept;
     inline GFXRTPool& renderTargetPool() noexcept;
@@ -364,6 +403,9 @@ protected:
     void renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut);
     
     void stepResolution(bool increment);
+    void debugDrawBoxes(GFX::CommandBuffer& bufferInOut);
+    void debugDrawCones(GFX::CommandBuffer& bufferInOut);
+    void debugDrawSpheres(GFX::CommandBuffer& bufferInOut);
     void debugDrawFrustums(GFX::CommandBuffer& bufferInOut);
 
 protected:
@@ -404,10 +446,10 @@ private:
     std::array<Line, 3> _axisLines;
     IMPrimitive* _axisGizmo = nullptr;
 
-    static constexpr U32 g_maxDebugFrustums = 8u;
-    std::array<IMPrimitive*, g_maxDebugFrustums>  _debugFrustumPrimitives;
-    std::array<std::pair<Frustum, FColour3>, g_maxDebugFrustums> _debugFrustums;
-    std::atomic_uint _debugFrustumId;
+    DebugPrimitiveHandler<std::tuple<vec3<F32> /*min*/, vec3<F32> /*max*/, FColour3>, 16u> _debugBoxes;
+    DebugPrimitiveHandler<std::tuple<vec3<F32> /*center*/, F32 /*radius*/, FColour3>, 16u> _debugSpheres;
+    DebugPrimitiveHandler<std::tuple<vec3<F32> /*root*/, vec3<F32> /*dir*/, F32 /*length*/, F32 /*radius*/, FColour3>, 16u> _debugCones;
+    DebugPrimitiveHandler<std::pair<Frustum, FColour3>, 8u> _debugFrustums;
 
     CameraSnapshot  _activeCameraSnapshot;
 
@@ -417,7 +459,6 @@ private:
     std::pair<vec2<U16>, bool> _resolutionChangeQueued;
 
     Texture_ptr _prevDepthBuffer = nullptr;
-    size_t _defaultStateBlockHash = 0;
     /// The default render state buth with depth testing disabled
     size_t _defaultStateNoDepthHash = 0;
     /// Special render state for 2D rendering

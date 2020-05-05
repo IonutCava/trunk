@@ -407,6 +407,7 @@
     <ClCompile Include="..\..\Source Code\ECS\Systems\AnimationSystem.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Systems\BoundsSystem.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Systems\ECSManager.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Systems\ECSSystem.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Systems\RenderingSystem.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Systems\TransformSystem.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\API.cpp" />
@@ -590,6 +591,7 @@
     <None Include="../../Source Code/Scripting\Headers\Script.inl" />
     <None Include="..\..\Source Code\Core\Headers\EngineTaskPool.inl" />
     <None Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.inl" />
+    <None Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.inl" />
     <None Include="..\..\Source Code\Graphs\Headers\SceneGraphNode.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

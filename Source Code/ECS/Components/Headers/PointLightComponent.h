@@ -42,12 +42,14 @@ class PointLightComponent final : public BaseComponentType<PointLightComponent, 
 {
    public:
     explicit PointLightComponent(SceneGraphNode& sgn, PlatformContext& context);
+    void PreUpdate(const U64 deltaTime) final;
 
    protected:
     void OnData(const ECS::CustomEvent& data) final;
 
    private:
     vec3<F32> _direction[6];
+    bool _drawImpostor = false;
 };
 
 INIT_COMPONENT(PointLightComponent);

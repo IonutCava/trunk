@@ -434,6 +434,14 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
 
         Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTimeUS, *this, sceneState);
     }
+
+    if (get<RenderingComponent>() == nullptr) {
+        BoundsComponent* bComp = get<BoundsComponent>();
+        if (bComp->showAABB()) {
+            const BoundingBox& bb = bComp->getBoundingBox();
+            _context.gfx().debugDrawBox(bb.getMin(), bb.getMax(), DefaultColours::WHITE);
+        }
+    }
 }
 
 void SceneGraphNode::processEvents() {
@@ -452,9 +460,18 @@ void SceneGraphNode::processEvents() {
             case ECS::CustomEvent::Type::EntityFlagChanged: {
                 const Flags flag = static_cast<Flags>(std::any_cast<U32>(evt._flag));
                 if (flag == Flags::SELECTED) {
+                    const auto [state, recursive] = std::any_cast<std::pair<bool, bool>>(evt._userData);
+
                     RenderingComponent* rComp = get<RenderingComponent>();
                     if (rComp != nullptr) {
-                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SELECTION, std::any_cast<bool>(evt._userData));
+                        rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SELECTION, state, recursive);
+                    } else {
+                        BoundsComponent* bComp = get<BoundsComponent>();
+                        if (bComp != nullptr) {
+                            bComp->showAABB(state);
+                        } else {
+                            DIVIDE_UNEXPECTED_CALL();
+                        }
                     }
                 }
             } break;
@@ -482,7 +499,7 @@ bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStageP
             pkg.addShaderBuffer(0, buffer);
         }
     }
-    
+
     return _node->prepareRender(*this, rComp, renderStagePass, camera, refreshData);
 }
 
@@ -701,11 +718,11 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
     }
 }
 
-void SceneGraphNode::setFlag(Flags flag) noexcept {
+void SceneGraphNode::setFlag(Flags flag, bool recursive) noexcept {
     SetBit(_nodeFlags, to_U32(flag));
-    if (PropagateFlagToChildren(flag)) {
-        forEachChild([flag](SceneGraphNode* child, I32 /*childIdx*/) {
-            child->setFlag(flag);
+    if (recursive && PropagateFlagToChildren(flag)) {
+        forEachChild([flag, recursive](SceneGraphNode* child, I32 /*childIdx*/) {
+            child->setFlag(flag, recursive);
             return true;
         });
     }
@@ -713,16 +730,16 @@ void SceneGraphNode::setFlag(Flags flag) noexcept {
     SendEvent(
     {
         ECS::CustomEvent::Type::EntityFlagChanged,
-        true,
+        std::make_pair(true, recursive),
         to_U32(flag)
     });
 }
 
-void SceneGraphNode::clearFlag(Flags flag) noexcept {
+void SceneGraphNode::clearFlag(Flags flag, bool recursive) noexcept {
     ClearBit(_nodeFlags, to_U32(flag));
-    if (PropagateFlagToChildren(flag)) {
-        forEachChild([flag](SceneGraphNode* child, I32 /*childIdx*/) {
-            child->clearFlag(flag);
+    if (recursive && PropagateFlagToChildren(flag)) {
+        forEachChild([flag, recursive](SceneGraphNode* child, I32 /*childIdx*/) {
+            child->clearFlag(flag, recursive);
             return true;
         });
     }
@@ -730,7 +747,7 @@ void SceneGraphNode::clearFlag(Flags flag) noexcept {
     SendEvent(
     {
         ECS::CustomEvent::Type::EntityFlagChanged,
-        false,
+        std::make_pair(false, recursive),
         to_U32(flag)
     });
 }

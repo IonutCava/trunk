@@ -156,7 +156,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void Update(const U64 deltaTimeUS) final;
 
-    void toggleRenderOption(RenderOptions option, bool state);
+    void toggleRenderOption(RenderOptions option, bool state, bool recursive = true);
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
 
@@ -164,9 +164,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void setMaxRenderRange(F32 maxRange) noexcept;
     inline void setRenderRange(F32 minRange, F32 maxRange) noexcept { setMinRenderRange(minRange); setMaxRenderRange(maxRange); }
     inline const vec2<F32>& renderRange() const noexcept { return _renderRange; }
-
-    // If the new value is negative, this disables occlusion culling!
-    void cullFlagValue(F32 newValue) noexcept;
 
     inline void lockLoD(U8 level) { _lodLockLevels.fill({ true, level }); }
     inline void unlockLoD() { _lodLockLevels.fill({ false, to_U8(0u) }); }
@@ -243,6 +240,9 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     PROPERTY_R(bool, showAxis, false);
 
+    // If the new value is negative, this disables occlusion culling!
+    PROPERTY_RW(F32, cullFlag, 1.0f);
+
    protected:
     void updateReflectionIndex(ReflectorType type, I32 index);
     void updateRefractionIndex(ReflectorType type, I32 index);
@@ -273,8 +273,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     vec2<F32> _renderRange;
 
     Pipeline*    _primitivePipeline[3] = {nullptr, nullptr, nullptr};
-    IMPrimitive* _boundingBoxPrimitive[2] = {nullptr, nullptr};
-    IMPrimitive* _boundingSpherePrimitive[2] = {nullptr, nullptr};
+    IMPrimitive* _boundingBoxPrimitive = nullptr;
+    IMPrimitive* _boundingSpherePrimitive = nullptr;
     IMPrimitive* _skeletonPrimitive = nullptr;
     IMPrimitive* _axisGizmo = nullptr;
     IMPrimitive* _selectionGizmo = nullptr;
@@ -282,7 +282,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
     I32 _reflectionIndex = -1;
     I32 _refractionIndex = -1;
-    F32 _cullFlagValue = 1.0f;
     U32 _renderMask = 0u;
     std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
     ReflectorType _reflectorType = ReflectorType::COUNT;

@@ -893,7 +893,7 @@ bool Editor::Redo() {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!isInit() || !running()) {
+    if (!isInit() || !running() || !inEditMode()) {
         return false;
     }
 
@@ -928,7 +928,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
 // Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!isInit() || !running()) {
+    if (!isInit() || !running() || !inEditMode()) {
         return false;
     }
 
