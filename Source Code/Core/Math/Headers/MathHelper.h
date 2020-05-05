@@ -42,6 +42,7 @@
 
 #include "Platform/Headers/PlatformDefines.h"
 
+
 namespace Divide {
 template <typename T>
 class mat2;
@@ -278,6 +279,28 @@ void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) noexcept;
 #define BitMaskCheck(arg, mask) ((arg) & (mask))
 
 namespace Angle {
+
+template<typename T>
+using RADIANS = T;
+
+template<typename T>
+using DEGREES = T;
+
+template <typename T>
+constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) noexcept;
+template <typename T>
+constexpr DEGREES<T> to_DEGREES(const RADIANS<T> angle) noexcept;
+template <typename T>
+constexpr vec2<DEGREES<T>> to_DEGREES(const vec2<RADIANS<T>>& angle) noexcept;
+template <typename T>
+constexpr vec3<RADIANS<T>> to_RADIANS(const vec3<DEGREES<T>>& angle) noexcept;
+template <typename T>
+constexpr vec3<DEGREES<T>> to_DEGREES(const vec3<RADIANS<T>>& angle) noexcept;
+template <typename T>
+constexpr vec4<RADIANS<T>> to_RADIANS(const vec4<DEGREES<T>>& angle) noexcept;
+template <typename T>
+constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) noexcept;
+
 /// Return the radian equivalent of the given degree value
 template <typename T>
 constexpr T DegreesToRadians(const T angleDegrees) noexcept;
@@ -372,6 +395,11 @@ constexpr T Nano(const U a);
 /// Base value * 0.000000000001
 template <typename T, typename U>
 constexpr T Pico(const U a);
+};
+
+struct SimpleTime {
+    U8 _hour = 0u;
+    U8 _minutes = 0u;
 };
 
 namespace Time {

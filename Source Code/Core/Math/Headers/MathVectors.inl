@@ -153,6 +153,23 @@ inline vec3<T> Inverse(const vec3<T> &v) noexcept {
 }
 
 template <typename T>
+inline vec3<T> Perpendicular(const vec3<T>& v) noexcept {
+    T min = std::abs(v.x);
+    vec3<T> cardinalAxis = WORLD_X_AXIS;
+
+    if (std::abs(v.y) < min) {
+        min = std::abs(v.y);
+        cardinalAxis = WORLD_Y_AXIS;
+    }
+
+    if (std::abs(v.z) < min) {
+        cardinalAxis = WORLD_Z_AXIS;
+    }
+
+    return Cross(v, cardinalAxis);
+}
+
+template <typename T>
 inline void OrthoNormalize(vec3<T> &n, vec3<T> &u) {
     n.normalize();
     u.set(Cross(Normalized((Cross(n, u))), n));
@@ -301,27 +318,26 @@ inline vec2<T> vec2<T>::closestPointOnSegment(const vec2 &vA, const vec2 &vB) {
 /// lerp between this and the specified vector by the specified amount
 template <typename T>
 inline void vec2<T>::lerp(const vec2 &v, T factor) noexcept {
-    set((*this * (1 - factor)) + (v * factor));
+    set(Lerp(*this, v, factor));
 }
 
 /// lerp between this and the specified vector by the specified amount for each
 /// component
 template <typename T>
 inline void vec2<T>::lerp(const vec2 &v, const vec2 &factor) noexcept {
-    set((*this * (1 - factor)) + (v * factor));
+    set(Lerp(*this, v, factor));
 }
 
 /// linear interpolation between 2 vectors
 template <typename T, typename U>
 inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor) noexcept {
-    return ((u * (1 - factor)) + (v * factor));
+    return { Lerp(u.x, v.x, factor), Lerp(u.y, v.y, factor) };
 }
 
 /// linear interpolation between 2 vectors based on separate x and y factors
 template <typename T>
 inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) noexcept {
-    return (vec2<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
-                    (u.y * (1 - factor.y)) + (v.y * factor.y)));
+    return { Lerp(u.x, v.x, factor.x), Lerp(u.y, v.y, factor.y) };
 }
 
 /*
@@ -440,14 +456,14 @@ inline T vec3<T>::projectionOnLine(const vec3 &vA, const vec3 &vB) const {
 /// lerp between this and the specified vector by the specified amount
 template <typename T>
 inline void vec3<T>::lerp(const vec3 &v, T factor) noexcept {
-    set((*this * (1 - factor)) + (v * factor));
+    set(Lerp(*this, v, factor));
 }
 
 /// lerp between this and the specified vector by the specified amount for each
 /// component
 template <typename T>
 inline void vec3<T>::lerp(const vec3 &v, const vec3 &factor) noexcept {
-    set((*this * (1 - factor)) + (v * factor));
+    set(Lerp(*this, v, factor));
 }
 
 /// rotate this vector on the X axis
@@ -540,16 +556,14 @@ inline vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T, typename U>
 inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor) noexcept {
-    return ((u * (1 - factor)) + (v * factor));
+    return { Lerp(u.x, v.x, factor), Lerp(u.y, v.y, factor), Lerp(u.z, v.z, factor) };
 }
 
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
 inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) noexcept {
-    return (vec3<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
-                    (u.y * (1 - factor.y)) + (v.y * factor.y),
-                    (u.z * (1 - factor.z)) + (v.z * factor.z)));
+    return { Lerp(u.x, v.x, factor.x), Lerp(u.y, v.y, factor.y), Lerp(u.z, v.z, factor.z) };
 }
 /*
 *  vec4 inline definitions
@@ -778,29 +792,26 @@ inline T vec4<T>::maxComponent() const noexcept {
 /// lerp between this and the specified vector by the specified amount
 template <typename T>
 inline void vec4<T>::lerp(const vec4 &v, T factor) noexcept {
-    set((*this * (1 - factor)) + (v * factor));
+    set(Lerp(*this, v, factor));
 }
 
 /// lerp between this and the specified vector by the specified amount for each
 /// component
 template <typename T>
 inline void vec4<T>::lerp(const vec4 &v, const vec4 &factor) noexcept {
-    set((*this * (1 - factor)) + (v * factor));
+    set(Lerp(*this, v, factor));
 }
 /// lerp between the 2 vectors by the specified amount
 template <typename T>
 inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, T factor) noexcept {
-    return ((u * (1 - factor)) + (v * factor));
+    return { Lerp(u.x, v.x, factor), Lerp(u.y, v.y, factor), Lerp(u.z, v.z, factor), Lerp(u.w, v.w, factor) };
 }
 
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
 inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) noexcept {
-    return (vec4<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
-                    (u.y * (1 - factor.y)) + (v.y * factor.y),
-                    (u.z * (1 - factor.z)) + (v.z * factor.z),
-                    (u.w * (1 - factor.w)) + (v.w * factor.w)));
+    return { Lerp(u.x, v.x, factor.x), Lerp(u.y, v.y, factor.y), Lerp(u.z, v.z, factor.z), Lerp(u.w, v.w, factor.w) };
 }
 
 template <typename Type>

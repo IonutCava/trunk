@@ -698,6 +698,17 @@ inline vec3<T> Rotate(vec3<T> const & v, Quaternion<T> const & q) {
     return v + q.W() * t + Cross(xyz, t);
 }
 
+template <typename T>
+inline vec3<T> DirectionFromAxis(const Quaternion<T>& q, const vec3<T>& AXIS) {
+    return Normalized(Rotate(AXIS, q));
+}
+
+template <typename T>
+inline vec3<T> DirectionFromEuler(vec3<Angle::DEGREES<T>> const & euler, const vec3<T>& FORWARD_DIRECTION) {
+    Quaternion<F32> q = {};
+    q.fromEuler(euler);
+    return DirectionFromAxis(q, FORWARD_DIRECTION);
+}
 };  // namespace Divide
 
 #endif  //_QUATERNION_INL_

@@ -831,6 +831,8 @@ template <typename T>
 inline vec3<T> operator*(T fl, const vec3<T> &v) noexcept;
 template <typename T>
 inline void OrthoNormalize(vec3<T> &v1, vec3<T> &v2);
+template<typename T>
+inline vec3<T> Perpendicular(const vec3<T> &v) noexcept;
 
 /*************************************************************************************
  * vec4 -  A 4-tuple used to represent things like a vector in 4D space

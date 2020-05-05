@@ -497,7 +497,11 @@ constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept {
 
 template <typename T, typename U>
 inline T Lerp(const T v1, const T v2, const U t) {
-    return v1 + (v2 - v1 * t);
+#if defined(FAST_LERP)
+    return v1 + t * (v2 - v1);
+#else
+    return (v1 * ((U)(1) - t)) + (v2 * t);
+#endif
 }
 
 template <typename T>
@@ -583,13 +587,7 @@ inline void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) noexcept {
 
 namespace Angle {
 
-template<typename T>
-using RADIANS = T;
-
-template<typename T>
-using DEGREES = T;
-
-template <typename T>
+    template <typename T>
 constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) noexcept {
     return static_cast<RADIANS<T>>(angle * M_PIDIV180);
 }
@@ -627,6 +625,29 @@ constexpr vec4<RADIANS<T>> to_RADIANS(const vec4<DEGREES<T>>& angle) noexcept {
 template <typename T>
 constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) noexcept {
     return vec4<DEGREES<T>>(angle * M_180DIVPI);
+}
+
+/// Return the radian equivalent of the given degree value
+template <typename T>
+constexpr T DegreesToRadians(const T angleDegrees) noexcept {
+    return to_RADIANS(angleDegrees);
+}
+
+/// Return the degree equivalent of the given radian value
+template <typename T>
+constexpr T RadiansToDegrees(const T angleRadians) noexcept {
+    return to_DEGREES(angleRadians);
+}
+/// Returns the specified value. Used only for emphasis
+template <typename T>
+constexpr T Degrees(const T degrees) noexcept {
+    return degrees;
+}
+
+/// Returns the specified value. Used only for emphasis
+template <typename T>
+constexpr T Radians(const T radians) noexcept {
+    return radians;
 }
 
 };  // namespace Angle
