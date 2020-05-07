@@ -323,8 +323,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     prevDepthTex.threaded(false);
     _prevDepthBuffer = CreateResource<Texture>(cache, prevDepthTex);
     assert(_prevDepthBuffer);
-    const Texture::TextureLoadInfo info = {};
-    _prevDepthBuffer->loadData(info, NULL, renderResolution);
+    _prevDepthBuffer->loadData({ NULL, 0 }, renderResolution);
 
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
@@ -1253,7 +1252,7 @@ bool GFXDevice::onSizeChange(const SizeChangeParams& params) {
             _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
         }
 
-        _prevDepthBuffer->resize(NULL, vec2<U16>(w, h));
+        _prevDepthBuffer->resize({ NULL, 0 }, vec2<U16>(w, h));
 
         // Update post-processing render targets and buffers
         _renderer->updateResolution(w, h);

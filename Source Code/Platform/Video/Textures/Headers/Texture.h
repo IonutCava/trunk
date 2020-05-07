@@ -59,19 +59,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     friend class ResourceLoader;
     template <typename T>
     friend class ImplResourceLoader;
-    public:
-       struct TextureLoadInfo {
-           TextureLoadInfo() noexcept :
-               _layerIndex(0),
-               _cubeMapCount(0)
-           {
-           }
-
-           U32 _layerIndex;
-           U32 _cubeMapCount;
-       };
-
-    public:
+  public:
 
     explicit Texture(GFXDevice& context,
                      size_t descriptorHash,
@@ -89,18 +77,14 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
     /// Resize the texture to the specified dimensions and upload the new data
-    virtual void resize(const bufferPtr ptr, const vec2<U16>& dimensions) = 0;
+    virtual void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) = 0;
     /// Change the number of MSAA samples for this current texture
     void setSampleCount(U8 newSampleCount) noexcept;
 
     // API-dependent loading function that uploads ptr data to the GPU using the
     // specified parameters
-    virtual void loadData(const TextureLoadInfo& info,
-                          const vectorEASTL<ImageTools::ImageLayer>& imageLayers) = 0;
-
-    virtual void loadData(const TextureLoadInfo& info,
-                          const bufferPtr data,
-                          const vec2<U16>& dimensions) = 0;
+    virtual void loadData(const ImageTools::ImageData& imageData) = 0;
+    virtual void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) = 0;
 
     /// Specify the sampler descriptor used to sample from this texture in the shaders
     virtual void setCurrentSampler(const SamplerDescriptor& descriptor);
@@ -134,7 +118,8 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
-    bool loadFile(const TextureLoadInfo& info, const stringImpl& name, ImageTools::ImageData& fileData);
+    bool loadFile(const stringImpl& name, ImageTools::ImageData& fileData);
+    bool checkTransparency(const stringImpl& name, ImageTools::ImageData& fileData);
     /// Load texture data using the specified file name
     virtual bool load();
     virtual void threadedLoad();

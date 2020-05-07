@@ -78,7 +78,7 @@ Vegetation::Vegetation(GFXDevice& context,
 {
     _treeMeshNames.insert(eastl::cend(_treeMeshNames), eastl::cbegin(details.treeMeshes), eastl::cend(details.treeMeshes));
 
-    assert(_grassMap->data() != nullptr && _treeMap->data() != nullptr);
+    assert(!_grassMap->imageLayers().empty() && !_treeMap->imageLayers().empty());
 
     setBounds(parentChunk.bounds());
 
@@ -767,8 +767,8 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy();
         const F32 waterLevel = 0.0f;// ToDo: make this dynamic! (cull underwater points later on?)
         auto map = treeData ? _treeMap : _grassMap;
-        const U16 mapWidth = map->dimensions().width;
-        const U16 mapHeight = map->dimensions().height;
+        const U16 mapWidth = map->dimensions(0u, 0u).width;
+        const U16 mapHeight = map->dimensions(0u, 0u).height;
         const auto& positions = treeData ? s_treePositions : s_grassPositions;
         const auto& scales = treeData ? _treeScales : _grassScales;
         const F32 slopeLimit = treeData ? 10.0f : 35.0f;
@@ -776,10 +776,6 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         for (vec2<F32> pos : positions) {
             if (!ScaleAndCheckBounds(chunkPos, chunkSize, pos)) {
                 continue;
-            }
-
-            if (parentTask._stopRequested) {
-                goto end;
             }
 
             const vec2<F32> mapCoord(pos.x + mapWidth * 0.5f, pos.y + mapHeight * 0.5f);
@@ -839,8 +835,6 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         chunkCache.append(container.data(), container.size());
         chunkCache.dumpToFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), cacheFileName.c_str());
     }
-    
-end:
     Console::printfn(Locale::get(_ID("CREATE_GRASS_END")));
 }
 

@@ -53,17 +53,18 @@ bool Texture::load() {
 void Texture::threadedLoad() {
     OPTICK_EVENT();
 
-    TextureLoadInfo info = {};
-
     // Each texture face/layer must be in a comma separated list
     stringstreamImpl textureLocationList(assetLocation());
     stringstreamImpl textureFileList(assetName().c_str());
 
-    const bool loadFromFile = false;
-
     _descriptor._sourceFileList.reserve(6);
 
-    hashMap<U64, ImageTools::ImageData> dataStorage;
+    ImageTools::ImageData dataStorage = {};
+    // Flip image if needed
+    dataStorage.flip(_flipped);
+    dataStorage.set16Bit(_descriptor.dataType() == GFXDataFormat::FLOAT_16 ||
+                         _descriptor.dataType() == GFXDataFormat::SIGNED_SHORT ||
+                         _descriptor.dataType() == GFXDataFormat::UNSIGNED_SHORT);
 
     bool loadedFromFile = false;
     // We loop over every texture in the above list and store it in this temporary string
@@ -84,17 +85,9 @@ void Texture::threadedLoad() {
             _descriptor._sourceFileList.push_back(currentTextureFile);
 
             // Attempt to load the current entry
-            if (!loadFile(info, currentTextureFullPath, dataStorage[_ID(currentTextureFullPath.c_str())])) {
+            if (!loadFile(currentTextureFullPath, dataStorage)) {
                 // Invalid texture files are not handled yet, so stop loading
                 continue;
-            }
-
-            info._layerIndex++;
-            if (_descriptor.type() == TextureType::TEXTURE_CUBE_ARRAY) {
-                if (info._layerIndex == 6) {
-                    info._layerIndex = 0;
-                    info._cubeMapCount++;
-                }
             }
 
             loadedFromFile = true;
@@ -102,10 +95,19 @@ void Texture::threadedLoad() {
     }
     _descriptor._sourceFileList.shrink_to_fit();
 
-    if (loadFromFile) {
+    if (loadedFromFile) {
+        // Create a new Rendering API-dependent texture object
+        _descriptor._mipLevels.max = to_U16(dataStorage.mipCount());
+        _descriptor._mipCount = _descriptor.mipLevels().max;
+        _descriptor._compressed = dataStorage.compressed();
+        _descriptor.baseFormat(dataStorage.format());
+        _descriptor.dataType(dataStorage.dataType());
+        // Uploading to the GPU dependents on the rendering API
+        loadData(dataStorage);
+
         if (_descriptor.type() == TextureType::TEXTURE_CUBE_MAP ||
             _descriptor.type() == TextureType::TEXTURE_CUBE_ARRAY) {
-            if (info._layerIndex != 6) {
+            if (dataStorage.layerCount() % 6 != 0) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
                     resourceName().c_str());
@@ -115,7 +117,7 @@ void Texture::threadedLoad() {
 
         if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY ||
             _descriptor.type() == TextureType::TEXTURE_2D_ARRAY_MS) {
-            if (info._layerIndex != _numLayers) {
+            if (dataStorage.layerCount() != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                     resourceName().c_str());
@@ -124,7 +126,7 @@ void Texture::threadedLoad() {
         }
 
         if (_descriptor.type() == TextureType::TEXTURE_CUBE_ARRAY) {
-            if (info._cubeMapCount != _numLayers) {
+            if (dataStorage.layerCount() / 6 != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                     resourceName().c_str());
@@ -134,116 +136,88 @@ void Texture::threadedLoad() {
     }
 }
 
-bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, ImageTools::ImageData& fileData) {
-    // If we haven't already loaded this file, do so
-    if (!fileData.data()) {
-        // Flip image if needed
-        fileData.flip(_flipped);
-        fileData.set16Bit(_descriptor.dataType() == GFXDataFormat::FLOAT_16 ||
-            _descriptor.dataType() == GFXDataFormat::SIGNED_SHORT ||
-            _descriptor.dataType() == GFXDataFormat::UNSIGNED_SHORT);
+bool Texture::loadFile(const stringImpl& name, ImageTools::ImageData& fileData) {
 
-        // Save file contents in  the "img" object
-        ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor.srgb(), fileData);
-
-        bufferPtr data = fileData.data();
-        // Validate data
-        if (data == nullptr) {
-            if (info._layerIndex > 0) {
-                Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LAYER_LOAD")), name.c_str());
-                return false;
-            }
-            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
-            // Missing texture fallback.
-            fileData.flip(false);
-            // missing_texture.jpg must be something that really stands out
-            ImageTools::ImageDataInterface::CreateImageData(((Paths::g_assetsLocation + Paths::g_texturesLocation) + s_missingTextureFileName).c_str(), _width, _height, _descriptor.srgb(), fileData);
-
+    if (!ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor.srgb(), fileData)) {
+        if (fileData.layerCount() > 0) {
+            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LAYER_LOAD")), name.c_str());
+            return false;
         }
+        Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
+        // Missing texture fallback.
+        fileData.flip(false);
+        // missing_texture.jpg must be something that really stands out
+        ImageTools::ImageDataInterface::CreateImageData(((Paths::g_assetsLocation + Paths::g_texturesLocation) + s_missingTextureFileName).c_str(), _width, _height, _descriptor.srgb(), fileData);
+    } else {
+        return checkTransparency(name, fileData);
+    }
 
-        // Extract width, height and bitdepth
-        const U16 width = fileData.dimensions().width;
-        const U16 height = fileData.dimensions().height;
-        // If we have an alpha channel, we must check for translucency/transparency
+    return true;
+}
 
-        FileWithPath fwp = splitPathToNameAndLocation(name.c_str());
-        const std::array<stringImpl, 2> searchPattern = { "//", "\\" };
-        Util::ReplaceStringInPlace(fwp._path, searchPattern, "/");
-        Util::ReplaceStringInPlace(fwp._path, "/", "_");
-        if (fwp._path.back() == '_') {
-            fwp._path.pop_back();
-        }
-        const Str256 cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation + fwp._path + "/";
-        const Str64 cacheName = (fwp._fileName + ".cache");
+bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& fileData) {
+    const U32 layer = to_U32(fileData.layerCount() - 1);
 
-        ByteBuffer metadataCache = {};
-        if (metadataCache.loadFromFile(cachePath.c_str(), cacheName.c_str())) {
-            metadataCache >> _hasTransparency;
-            metadataCache >> _hasTranslucency;
-        } else {
-            STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
-            if (fileData.alpha()) {
-                const auto findAlpha = [this, &fileData, height](const Task* parent, U32 start, U32 end) {
-                    U8 tempA = 0u;
-                    for (U32 i = start; i < end; ++i) {
-                        for (I32 j = 0; j < height; ++j) {
-                            if (_hasTransparency && _hasTranslucency) {
-                                if (parent && parent->_parent) {
-                                    Stop(*parent->_parent);
-                                }
+    // Extract width, height and bitdepth
+    const U16 width = fileData.dimensions(layer, 0u).width;
+    const U16 height = fileData.dimensions(layer, 0u).height;
+    // If we have an alpha channel, we must check for translucency/transparency
+
+    FileWithPath fwp = splitPathToNameAndLocation(name.c_str());
+    const std::array<stringImpl, 2> searchPattern = { "//", "\\" };
+    Util::ReplaceStringInPlace(fwp._path, searchPattern, "/");
+    Util::ReplaceStringInPlace(fwp._path, "/", "_");
+    if (fwp._path.back() == '_') {
+        fwp._path.pop_back();
+    }
+    const Str256 cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation + fwp._path + "/";
+    const Str64 cacheName = (fwp._fileName + ".cache");
+
+    ByteBuffer metadataCache = {};
+    if (metadataCache.loadFromFile(cachePath.c_str(), cacheName.c_str())) {
+        metadataCache >> _hasTransparency;
+        metadataCache >> _hasTranslucency;
+    } else {
+        STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
+        if (fileData.alpha()) {
+            const auto findAlpha = [this, &fileData, height, layer](const Task* parent, U32 start, U32 end) {
+                U8 tempA = 0u;
+                for (U32 i = start; i < end; ++i) {
+                    for (I32 j = 0; j < height; ++j) {
+                        if (_hasTransparency && _hasTranslucency) {
+                            return;
+                        }
+                        fileData.getAlpha(i, j, tempA, layer);
+                        if (IS_IN_RANGE_INCLUSIVE(tempA, 0, 254)) {
+                            _hasTransparency = true;
+                            _hasTranslucency = tempA > 1;
+                            if (_hasTranslucency) {
                                 return;
                             }
-                            fileData.getAlpha(i, j, tempA);
-                            if (IS_IN_RANGE_INCLUSIVE(tempA, 0, 254)) {
-                                _hasTransparency = true;
-                                _hasTranslucency = tempA > 1;
-                                if (_hasTranslucency) {
-                                    if (parent && parent->_parent) {
-                                        Stop(*parent->_parent);
-                                    }
-                                    return;
-                                }
-                            }
-                        }
-                        if (parent && ((parent->_parent && StopRequested(*parent->_parent)) || StopRequested(*parent))) {
-                            break;
                         }
                     }
-                };
+                }
+            };
 
-                ParallelForDescriptor descriptor = {};
-                descriptor._iterCount = width;
-                descriptor._partitionSize = std::max(16u, to_U32(width / 10));
-                descriptor._useCurrentThread = true;
+            ParallelForDescriptor descriptor = {};
+            descriptor._iterCount = width;
+            descriptor._partitionSize = std::max(16u, to_U32(width / 10));
+            descriptor._useCurrentThread = true;
 
-                parallel_for(_context.context(), findAlpha, descriptor);
+            parallel_for(_context.context(), findAlpha, descriptor);
 
-                metadataCache << _hasTransparency;
-                metadataCache << _hasTranslucency;
-                metadataCache.dumpToFile(cachePath.c_str(), cacheName.c_str());
-            }
+            metadataCache << _hasTransparency;
+            metadataCache << _hasTranslucency;
+            metadataCache.dumpToFile(cachePath.c_str(), cacheName.c_str());
         }
-
-        Console::printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
-                                      name.c_str(),
-                                      _hasTransparency ? "yes" : "no",
-                                      _hasTranslucency ? "yes" : "no");
     }
 
-    // Create a new Rendering API-dependent texture object
-    if (info._layerIndex == 0) {
-        _descriptor._mipLevels.max = to_U16(fileData.mipCount());
-        _descriptor._mipCount = _descriptor.mipLevels().max;
-        _descriptor._compressed = fileData.compressed();
-        _descriptor.baseFormat(fileData.format());
-        _descriptor.dataType(fileData.dataType());
-    }
-    // Uploading to the GPU dependents on the rendering API
-    loadData(info, fileData.imageLayers());
-    
-    // We will always return true because we load the "missing_texture.jpg" in case of errors
+    Console::printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
+                                    name.c_str(),
+                                    _hasTransparency ? "yes" : "no",
+                                    _hasTranslucency ? "yes" : "no");
+
     return true;
-    
 }
 
 void Texture::setCurrentSampler(const SamplerDescriptor& descriptor) {
@@ -255,7 +229,7 @@ void Texture::setSampleCount(U8 newSampleCount) noexcept {
     CLAMP(newSampleCount, to_U8(0u), _context.gpuState().maxMSAASampleCount());
     if (_descriptor._msaaSamples != newSampleCount) {
         _descriptor._msaaSamples = newSampleCount;
-        resize(NULL, { width(), height() });
+        resize({ NULL, 0 }, { width(), height() });
     }
 }
 

@@ -156,9 +156,9 @@ namespace Divide {
         {}
 
         void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) final {}
-        void resize(const bufferPtr ptr, const vec2<U16>& dimensions) final {}
-        void loadData(const TextureLoadInfo& info, const vectorEASTL<ImageTools::ImageLayer>& imageLayers) final {}
-        void loadData(const TextureLoadInfo& info, const bufferPtr data, const vec2<U16>& dimensions) final {}
+        void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) final {}
+        void loadData(const ImageTools::ImageData& imageData) final {}
+        void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) final {}
     };
 
     class noShaderProgram final : public ShaderProgram {

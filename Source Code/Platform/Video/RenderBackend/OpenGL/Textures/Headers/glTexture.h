@@ -57,14 +57,11 @@ class glTexture final : public Texture,
 
     void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept final;
 
-    void resize(const bufferPtr ptr, const vec2<U16>& dimensions) final;
+    void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) final;
 
-    void loadData(const TextureLoadInfo& info,
-                  const vectorEASTL<ImageTools::ImageLayer>& imageLayers) final;
+    void loadData(const ImageTools::ImageData& imageData) final;
 
-    void loadData(const TextureLoadInfo& info,
-                  const bufferPtr data,
-                  const vec2<U16>& dimensions) final;
+    void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) final;
 
 
     void setCurrentSampler(const SamplerDescriptor& descriptor) final;
@@ -77,11 +74,9 @@ class glTexture final : public Texture,
 
     void processTextureType() noexcept;
     void validateDescriptor() final;
-    void loadDataCompressed(const TextureLoadInfo& info,
-                            const vectorEASTL<ImageTools::ImageLayer>& imageLayers);
+    void loadDataCompressed(const ImageTools::ImageData& imageData);
 
-    void loadDataUncompressed(const TextureLoadInfo& info,
-                              bufferPtr data);
+    void loadDataUncompressed(const ImageTools::ImageData& imageData);
 
     void setMipRangeInternal(U16 base, U16 max) noexcept;
 
